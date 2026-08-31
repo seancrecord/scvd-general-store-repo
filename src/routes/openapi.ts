@@ -645,6 +645,91 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * should be able to check without trusting the publisher.
  */
 /**
+ * THE SIGNED-ARTIFACT RECORD, AS A FACTORY, because five doors serve
+ * the same envelope with a different payload inside it.
+ *
+ * /api/service-audit, /api/good-buyer, /api/launch-check,
+ * /api/reconciliation and /api/bitcoin-anchor each store
+ * `{ <payload>: Signed…, cert_id, created_at }` and each route adds
+ * the same two closing fields. Writing that shape five times is five
+ * chances for one of them to drift; deriving it once means a reader
+ * who learns one of these doors has learned all five.
+ *
+ * THE PAYLOAD IS DESCRIBED, NOT ENUMERATED. Every signed observation
+ * carries `signature`, `public_key` and `signature_covers` — that is
+ * the part a verifier needs and the part these schemas promise. What
+ * sits beside them differs per instrument and is deep; claiming an
+ * exhaustive field list for each would be five more things to keep
+ * true, and `additionalProperties` is left open so the claim stays
+ * one this store can keep.
+ */
+function signedArtifactSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  /**
+   * NOT ALWAYS `created_at`. The reconciliation record stores
+   * `stored_at`, and a factory that assumed otherwise would have
+   * published a required field that door never sends — the precise
+   * way a schema written from a hopeful reading goes wrong.
+   */
+  timestampKey?: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  const timestampKey = options.timestampKey ?? "created_at";
+  return {
+    type: "object",
+    required: [options.payloadKey, "cert_id", timestampKey, "how_to_verify"],
+    properties: {
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+        required: ["signature", "public_key", "signature_covers"],
+        properties: {
+          signature: {
+            type: "string",
+            description: "ed25519 over the canonical form of the fields this object declares.",
+          },
+          public_key: { type: "string" },
+          signature_covers: {
+            type: "string",
+            description:
+              "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
+          },
+          evidence_hash: { type: "string" },
+          observed_at: { type: "string", format: "date-time" },
+          criteria: {
+            type: "string",
+            description: "The published criteria this observation was rendered under.",
+          },
+          verdict: {
+            type: "string",
+            enum: ["ready", "not_ready", "unreachable", "refused"],
+          },
+        },
+      },
+      cert_id: {
+        type: "string",
+        description:
+          "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash.",
+      },
+      [timestampKey]: { type: "string", format: "date-time" },
+      how_to_verify: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "The steps a stranger runs without asking the buyer OR this store to be honest.",
+      },
+      what_this_is_not: {
+        type: "string",
+        description:
+          "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
+      },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
  * THE PREFLIGHT VERDICT — the flagship free instrument's answer, and
  * the one response in this contract most likely to be parsed by
  * something that will act on it.
@@ -2600,18 +2685,40 @@ openapiRoutes.get("/openapi.json", async (c) => {
        */
       "/api/good-buyer/{reading_id}": {
         get: {
-          ...freeOp(
-              "A purchased payment dry run, served forever",
-              "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+          ...returns(
+  freeOp(
+                "A purchased payment dry run, served forever",
+                "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "reading",
+              payloadDescription:
+                "The signed good-buyer reading: what this wallet's settled purchases looked like at one moment.",
+            }),
           ),
           parameters: [pathParam("reading_id", "From the purchase response; starts gbuy_.")],
         },
       },
       "/api/service-audit/{audit_id}": {
         get: {
-          ...freeOp(
-              "A purchased endpoint audit, served forever",
-              "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
+          ...returns(
+  freeOp(
+                "A purchased endpoint audit, served forever",
+                "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "audit",
+              payloadDescription:
+                "The signed point-in-time audit: what one endpoint answered at one moment, against published criteria.",
+              extras: {
+                badge_url: {
+                  type: "string",
+                  format: "uri",
+                  description:
+                    "The same dated observation as an embeddable label. It ages, and it is never revoked.",
+                },
+              },
+            }),
           ),
           parameters: [pathParam("audit_id", "From the purchase response; starts saudit_.")],
         },
@@ -2651,9 +2758,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/reconciliation/{reconciliation_id}": {
         get: {
-          ...freeOp(
-              "A settlement reconciliation, served forever",
-              "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
+          ...returns(
+  freeOp(
+                "A settlement reconciliation, served forever",
+                "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "reconciliation",
+              payloadDescription:
+                "The signed settlement reconciliation: what the chain said about a settlement this store was asked to confirm.",
+              timestampKey: "stored_at",
+              extras: {
+                read_this_first: {
+                  type: "string",
+                  description:
+                    "The verdict a skimmer takes away, stated before the detail rather than left to be inferred from it.",
+                },
+              },
+            }),
           ),
           parameters: [pathParam("reconciliation_id", "From the purchase response; starts srec_.")],
         },
@@ -3214,9 +3336,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/launch-check/{check_id}": {
         get: {
-          ...freeOp(
-            "A purchased launch check record",
-            "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased launch check record",
+              "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "check",
+              payloadDescription:
+                "The signed launch check: a real mainnet purchase made against the buyer's own endpoint, and what it answered.",
+            }),
           ),
           parameters: [
             pathParam("check_id", "From the purchase response; starts lcheck_."),
