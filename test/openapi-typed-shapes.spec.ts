@@ -76,28 +76,23 @@ const UNTYPED_YET = new Set<string>([
   "post /api/standing-note",
   "get /samples",
   "get /samples/once-over.json",
-  "get /doors",
-  "get /doors.json",
-  "get /corpus/battery-delta.json",
   "get /corpus/diff.json",
   "post /mcp",
   "get /zodiac",
   "get /zodiac/{address}",
   "get /zodiac/archive",
-  "get /almanac",
   "get /gazette",
   "post /api/tip",
   "get /api/letter/{letter_id}",
   "get /api/phantom/{check_id}",
   "get /api/anchor/{anchor_id}",
   "get /api/patronage/{pass_id}",
-  "get /directory",
   "get /api/refund/{refund_id}",
   "get /developers",
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 46;
+const UNTYPED_CEILING = 41;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 

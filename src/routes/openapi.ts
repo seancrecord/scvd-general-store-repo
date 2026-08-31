@@ -1570,6 +1570,189 @@ const PROFILES_INDEX_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE DOOR INDEX. /doors and /doors.json serve the same document —
+ * every x402 door this store has probed, with its latest verdict and,
+ * beside it, the limits of what that verdict settles.
+ *
+ * `what_this_is_not`, `honest_limits` and `verdict_means` are required
+ * rather than optional. A list of endpoints with verdicts and no stated
+ * limits is a ranking, which is the one thing this store does not
+ * publish; the fields that keep it from being one belong in the
+ * contract, not just in the payload.
+ */
+const DOOR_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "what_this_is",
+    "what_this_is_not",
+    "hosts",
+    "total_hosts",
+    "verdict_means",
+    "honest_limits",
+  ],
+  properties: {
+    what_this_is: { type: "string" },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "Never a ranking or a score on whoever runs the door — a dated observation of what each answered.",
+    },
+    what_you_can_use_it_for: { type: "string" },
+    hosts: {
+      type: "array",
+      description: "One entry per host, with its latest verdict and when it was taken.",
+      items: { type: "object" },
+    },
+    by_latest_verdict: {
+      type: "object",
+      description: "The same hosts grouped by their most recent verdict.",
+    },
+    total_hosts: { type: "integer" },
+    returned: { type: "integer" },
+    weeks_read: { type: "integer" },
+    latest_week: { type: "object" },
+    verdict_means: {
+      type: "object",
+      description: "What each verdict does and does not assert.",
+      properties: {
+        ready: { type: "string" },
+        not_ready: { type: "string" },
+        unreachable: { type: "string" },
+        not_probed: {
+          type: "string",
+          description: "Named, because absence from a probe is not a finding about the door.",
+        },
+      },
+    },
+    honest_limits: { type: "string" },
+    how_to_call: { type: "object" },
+    how_to_rederive: {
+      type: "string",
+      description: "How to recompute this whole surface from the signed corpus, without asking us.",
+    },
+    price: { type: "object" },
+    security: { type: "object" },
+    errors: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          code: { type: "string" },
+          http: { type: "integer" },
+          means: { type: "string" },
+          what_to_do: { type: "string" },
+        },
+      },
+    },
+    faq: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+      },
+    },
+    expected_outcome: { type: "string" },
+    corrections: { type: "string", format: "uri" },
+  },
+};
+
+/** The Town Directory: neighbours, listed, with nobody paying to be here. */
+const DIRECTORY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["district", "listings", "no_pay_for_placement"],
+  properties: {
+    district: { type: "string" },
+    listings: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "url", "category"],
+        properties: {
+          name: { type: "string" },
+          url: { type: "string", format: "uri" },
+          category: { type: "string" },
+          review: { type: "string" },
+          added: { type: "string" },
+          slug: { type: "string" },
+          listing_url: { type: "string", format: "uri" },
+          trust_list: { type: "string" },
+        },
+      },
+    },
+    no_pay_for_placement: {
+      type: "string",
+      description:
+        "The condition the whole list depends on, stated in the list rather than in a policy elsewhere.",
+    },
+    signed_list: { type: "string", format: "uri" },
+    suggest_a_listing: { type: "string", format: "uri" },
+    updated: { type: "string" },
+    note: { type: "string" },
+  },
+};
+
+/** The Almanac rack: what is on the shelf and what a page costs. */
+const ALMANAC_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["entries", "price_usdc"],
+  properties: {
+    almanac: { type: "string" },
+    entries: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["slug", "title", "date", "url"],
+        properties: {
+          slug: { type: "string" },
+          title: { type: "string" },
+          date: { type: "string" },
+          teaser: { type: "string" },
+          price_usdc: { type: "number" },
+          url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    price_usdc: { type: "number" },
+    how_to_buy: { type: "string" },
+  },
+};
+
+/**
+ * The battery delta: this store's own instrument, scored against
+ * itself. A scorecard on our own tooling, published on the same terms
+ * as the gaps we count against ourselves.
+ */
+const BATTERY_DELTA_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "overall"],
+  properties: {
+    what_this_is: { type: "string" },
+    overall: {
+      type: "object",
+      properties: {
+        scored: { type: "integer" },
+        agreed: { type: "integer" },
+        caught_by_v2_only: {
+          type: "integer",
+          description: "Doors v1 would have called ready that v2 caught.",
+        },
+        by_check: { type: "object" },
+        batteries: { type: "object" },
+        what_this_does_not_settle: { type: "string" },
+      },
+    },
+    weeks: { type: "array", items: { type: "object" } },
+    v2_only_checks: { type: "array", items: { type: "string" } },
+    the_open_question: {
+      type: "string",
+      description: "What the delta cannot answer, kept beside what it can.",
+    },
+    how_to_rederive: { type: "string" },
+    corrections: { type: "string", format: "uri" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3876,21 +4059,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/doors": {
-        get: freeOp(
-          "Every door we have checked",
-          "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
+        get: returns(
+  freeOp(
+            "Every door we have checked",
+            "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
+          ),
+          DOOR_INDEX_SCHEMA,
         ),
       },
       "/doors.json": {
-        get: freeOp(
-          "Every endpoint observed, listed",
-          "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
+        get: returns(
+  freeOp(
+            "Every endpoint observed, listed",
+            "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
+          ),
+          DOOR_INDEX_SCHEMA,
         ),
       },
       "/corpus/battery-delta.json": {
-        get: freeOp(
-          "What the stricter battery catches that the frozen one misses",
-          "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
+        get: returns(
+  freeOp(
+            "What the stricter battery catches that the frozen one misses",
+            "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
+          ),
+          BATTERY_DELTA_SCHEMA,
         ),
       },
       "/corpus/wallet-facts.json": {
@@ -4025,9 +4217,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/almanac": {
-        get: freeOp(
-          "Almanac index",
-          "Free index of the keeper's journal pages, newest first.",
+        get: returns(
+  freeOp(
+            "Almanac index",
+            "Free index of the keeper's journal pages, newest first.",
+          ),
+          ALMANAC_INDEX_SCHEMA,
         ),
       },
       ...pennyPagePaths(
@@ -4231,7 +4426,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/directory": {
-        get: freeOp("Town Directory", "Honest one-line reviews of the neighbors."),
+        get: returns(
+  freeOp("Town Directory", "Honest one-line reviews of the neighbors."),
+          DIRECTORY_SCHEMA,
+        ),
       },
       "/api/refund/{refund_id}": {
         get: {
