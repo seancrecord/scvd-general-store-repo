@@ -7,6 +7,7 @@ import {
 } from "@/routes/webmcp";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { inferChannel } from "@/lib/channel";
+import { WEBMCP_ORIGIN_TRIAL_TOKENS } from "@/pages/storefront-page";
 
 /**
  * THE WEBMCP SURFACE (P7, 2026-08-27). The store's second executable
@@ -143,28 +144,81 @@ describe("the door itself", () => {
     }
   });
 
-  it("carries an origin-trial token bound to this origin and this feature", async () => {
-    // Chrome 149-156 gate document.modelContext behind the trial; the
-    // token is inert data, but a token for the WRONG origin or feature
-    // would silently unlock nothing — so the binding is the assertion.
+  it("carries a token per vendor, each bound to this origin and this feature", async () => {
+    /*
+     * Chrome and Edge gate document.modelContext behind SEPARATE origin
+     * trials with separate signing keys, so the store carries one tag
+     * per vendor. A token is inert data, but a token for the WRONG
+     * origin or feature silently unlocks nothing — so the binding is
+     * the assertion, and it is made about EVERY tag rather than the
+     * first one found. An earlier cut read only the first match, which
+     * would have gone blind to a second vendor's token the day it
+     * shipped.
+     */
     const response = await SELF.fetch(`${BASE}/`);
     const html = await response.text();
-    const match = /<meta http-equiv="origin-trial" content="([^"]+)">/.exec(
-      html,
+    const tags = [
+      ...html.matchAll(/<meta http-equiv="origin-trial" content="([^"]+)">/g),
+    ];
+    expect(tags.length, "the storefront lost an origin-trial meta tag").toBe(
+      WEBMCP_ORIGIN_TRIAL_TOKENS.length,
     );
-    expect(match, "the storefront lost its origin-trial meta tag").toBeTruthy();
-    // The token is a binary signature followed by a JSON tail; the
-    // tail alone carries the binding. Signature bytes can contain a
-    // stray "{", so anchor on the JSON's first key, not the brace.
-    const decoded = atob(match![1] ?? "");
-    const payload = JSON.parse(
-      decoded.slice(decoded.indexOf('{"origin"')),
-    ) as Record<string, unknown>;
-    expect(payload["origin"]).toBe("https://scvd.store:443");
-    expect(payload["feature"]).toBe("WebMCP");
-    // A token quietly expiring is a silent no-op in Chrome; surface it
-    // here instead. Bump this on renewal (Google mails a reminder).
-    expect(payload["expiry"]).toBe(1794873600);
+    expect(tags.length, "both vendors are declared").toBeGreaterThanOrEqual(2);
+
+    for (const [index, tag] of tags.entries()) {
+      const browser = WEBMCP_ORIGIN_TRIAL_TOKENS[index]?.browser ?? "?";
+      // The token is a binary signature followed by a JSON tail; the
+      // tail alone carries the binding. Signature bytes can contain a
+      // stray "{", so anchor on the JSON's first key, not the brace.
+      const decoded = atob(tag[1] ?? "");
+      const payload = JSON.parse(
+        decoded.slice(decoded.indexOf('{"origin"')),
+      ) as Record<string, unknown>;
+      expect(payload["origin"], `${browser} token origin`).toBe(
+        "https://scvd.store:443",
+      );
+      expect(payload["feature"], `${browser} token feature`).toBe("WebMCP");
+      // NARROWEST GRANT THAT DOES THE JOB. Neither trial was registered
+      // for subdomains (nothing is served off one) or for third-party
+      // injection (we never inject our token into anybody else's
+      // origin). Both would be wider than what the store does.
+      expect(payload["isSubdomain"], `${browser} subdomain grant`).toBeFalsy();
+      expect(payload["isThirdParty"], `${browser} third-party grant`).toBeFalsy();
+      // A token quietly expiring is a silent no-op in the browser —
+      // no error, nothing on the page. Surface it here instead.
+      expect(
+        typeof payload["expiry"],
+        `${browser} token has no expiry`,
+      ).toBe("number");
+      expect(
+        (payload["expiry"] as number) * 1000,
+        `${browser} origin trial has EXPIRED — that door is shut and the page does not say so`,
+      ).toBeGreaterThan(Date.now());
+    }
+  });
+
+  it("names the soonest expiry, because the door shuts on the earliest one", () => {
+    /*
+     * Edge's trial ends 2026-10-15 and Chrome's 2026-11-17. A reader
+     * that reported the first token, or the longest-lived one, would
+     * call the browser door healthy for a month after it had already
+     * closed in Edge. The door battery reads every token and reports
+     * the soonest; this pins the same property in the source of truth.
+     */
+    const expiries = WEBMCP_ORIGIN_TRIAL_TOKENS.map((entry) => {
+      const decoded = atob(entry.token);
+      return (
+        JSON.parse(decoded.slice(decoded.indexOf('{"origin"'))) as {
+          expiry: number;
+        }
+      ).expiry;
+    });
+    const soonest = Math.min(...expiries);
+    expect(expiries.length).toBeGreaterThanOrEqual(2);
+    // The soonest is a real date in the future, and it is NOT simply
+    // whichever token happens to be listed first.
+    expect(soonest * 1000).toBeGreaterThan(Date.now());
+    expect(Math.max(...expiries)).toBeGreaterThan(soonest);
   });
 
   it("?src=webmcp is its own channel, the skill's pattern", () => {

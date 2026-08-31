@@ -1,5 +1,5 @@
 import { goDeeperSection } from "@/store/go-deeper";
-import { WEBMCP_ORIGIN_TRIAL_TOKEN } from "@/pages/storefront-page";
+import { webmcpOriginTrialTags } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
 import { PAPER_CSS } from "@/pages/paper-css";
@@ -104,8 +104,11 @@ export function renderSimplePage(options: SimplePageOptions): string {
   // Suffix shortened 2026-08-20 for SERP truncation; the full name stays on the page header and homepage.
   const title = `${escapeHtml(options.title)}, scvd.store`;
   const description = escapeHtml(options.description);
+  // One origin-trial tag per browser vendor, derived from the same
+  // list the storefront emits — a third trial is one entry there, not
+  // an edit in two files that can disagree.
   const webmcp = options.webmcp
-    ? `\n  <meta http-equiv="origin-trial" content="${WEBMCP_ORIGIN_TRIAL_TOKEN}">\n  <script src="/webmcp.js" defer></script>`
+    ? `\n${webmcpOriginTrialTags()}\n  <script src="/webmcp.js" defer></script>`
     : "";
   const markdownAlt = options.markdownAlt
     ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
