@@ -617,7 +617,10 @@ async function serveMenuItem(c: Context<HonoEnv>) {
  */
 function renderMenuIndex(base: string): string {
   const rows = MENU_ITEMS.map(
-    (item) => `<div class="menu-item">
+    // data-item is the item's own id, so a script reading the shelf
+    // holds the same identifier the API, the menu and the till use —
+    // never the display name, which is copy and gets rewritten.
+    (item) => `<div class="menu-item" data-item="${escapeHtml(item.id)}">
       <div class="menu-line">
         <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></span>
         <span class="menu-dots"></span>

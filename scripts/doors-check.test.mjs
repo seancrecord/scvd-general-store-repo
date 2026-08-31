@@ -8,6 +8,7 @@ import {
   REVIEW_EVERY_DAYS,
   compare,
   declaresWebmcp,
+  mainCarriesHandle,
   originTrialExpiries,
   originTrialExpiry,
   readDoors,
@@ -403,31 +404,60 @@ test("entries with no isLatest row abstain rather than accuse", () => {
 
 test("somebody else's injected data attribute is not our hook", () => {
   // The first reader read `met` off `data-cf-beacon`, on a script
-  // Cloudflare injects. The store had shipped no hook at all.
-  const snapshot = goodSnapshot();
-  snapshot.home.text = `<html><body><main class="road"><h1>Store</h1>
-    <script data-cf-beacon='{"version":"1"}'></script>
-    <section class="shelf">x</section></main></body></html>`;
-  const automation = readDoors(snapshot, NOW).doors.find(
-    (d) => d.id === "browser_automation",
+  // Cloudflare injects, while the store shipped no handle at all.
+  // The exclusion is exercised where it can actually bite: a
+  // third-party attribute ON the landmark itself. An earlier cut of
+  // this test put the beacon on a <script> INSIDE <main>, which the
+  // reader never looks at — so it passed with the exclusion removed
+  // and proved nothing. A test that cannot fail is not a test.
+  assert.equal(
+    mainCarriesHandle('<main class="road" data-cf-beacon="{}">'),
+    false,
+    "somebody else's attribute is not our handle",
   );
-  const hooks = automation.criteria.find((c) => c.id === "stable_hooks");
-  assert.equal(hooks.verdict, "unmet");
-  assert.match(hooks.note, /no first-party/);
+  assert.equal(mainCarriesHandle('<main class="road">plain</main>'), false);
+  // Only the opening tag counts: a handle deeper in the page is not a
+  // handle on the landmark a script reaches for first.
+  assert.equal(
+    mainCarriesHandle('<main class="road"><div data-room="x"></div></main>'),
+    false,
+  );
+  assert.equal(mainCarriesHandle('<main class="road" data-room="storefront">'), true);
+  assert.equal(mainCarriesHandle('<main id="road">'), true);
 });
 
-test("hooks that miss the main landmark are partial, not met", () => {
+test("a store where no room hooks its main is unmet", () => {
   const snapshot = goodSnapshot();
-  snapshot.home.text = snapshot.home.text.replace(
-    '<main data-room="storefront">',
-    "<main class=\"road\">",
-  );
-  const automation = readDoors(snapshot, NOW).doors.find(
-    (d) => d.id === "browser_automation",
-  );
-  const hooks = automation.criteria.find((c) => c.id === "stable_hooks");
+  snapshot.rooms = {
+    ...snapshot.rooms,
+    total: 3,
+    unhooked: ["/", "/menu", "/what"],
+  };
+  const hooks = readDoors(snapshot, NOW)
+    .doors.find((d) => d.id === "browser_automation")
+    .criteria.find((c) => c.id === "stable_hooks");
+  assert.equal(hooks.verdict, "unmet");
+  assert.match(hooks.note, /no room hooks/);
+});
+
+test("hooking only some rooms is partial, and names the ones still bare", () => {
+  /*
+   * The mirror image of the declarative_forms bug. That criterion read
+   * only the front door, where there is no form, so it would have said
+   * `unmet` forever after the fix shipped elsewhere. A hook criterion
+   * reading only the front door has the opposite failure: it goes green
+   * the moment ONE page is fixed, while a tool arriving at any other
+   * room still finds nothing to hold. Both are answered the same way —
+   * ask the whole store.
+   */
+  const snapshot = goodSnapshot();
+  snapshot.rooms = { ...snapshot.rooms, total: 4, unhooked: ["/what"] };
+  const hooks = readDoors(snapshot, NOW)
+    .doors.find((d) => d.id === "browser_automation")
+    .criteria.find((c) => c.id === "stable_hooks");
   assert.equal(hooks.verdict, "partial");
-  assert.match(hooks.note, /<main> carries none/);
+  assert.match(hooks.note, /3 of 4/);
+  assert.match(hooks.note, /\/what/);
 });
 
 test("the room sweep asks for HTML, so negotiated rooms are read as pages", async () => {
