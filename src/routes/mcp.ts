@@ -19,6 +19,7 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
 import { factBlockText } from "@/lib/listing-spec";
@@ -687,37 +688,6 @@ async function callPurchaseTool(
   return rpcResult(id, toolText(flat));
 }
 
-/**
- * Bookkeeping goes BESIDE the answer, never in front of it (rule 50).
- *
- * The agent on the other side of an MCP call is spending its own
- * budget waiting for us to finish our paperwork, so a counter that
- * cannot change the reply must not be able to delay it either. Both
- * counters at this door swallow their own failures for the same
- * reason: a handshake that fails because a census failed is a worse
- * trade than not counting.
- *
- * The work is already IN FLIGHT when this is called — the promise is
- * built by the caller — so the only thing waitUntil adds is a
- * guarantee the runtime keeps the isolate alive until it finishes.
- * Where there is no executionCtx (test and internal invocations) the
- * write still goes, unguaranteed; that is the honest description and
- * it is the right trade for a counter, which is exactly the kind of
- * thing rule 50 says belongs beside the answer. It would be the
- * WRONG trade for anything a later request must be able to read as a
- * fact, so nothing but counters comes through here.
- */
-function deferBookkeeping(
-  c: Context<HonoEnv>,
-  work: Promise<unknown>,
-): void {
-  const quiet = work.catch(() => undefined);
-  try {
-    c.executionCtx.waitUntil(quiet);
-  } catch {
-    void quiet;
-  }
-}
 
 async function handleRpc(
   c: Context<HonoEnv>,

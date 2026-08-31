@@ -7,6 +7,7 @@ import type {
 import type { Context, MiddlewareHandler } from "hono";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
 import { offerExtensionsFor } from "@/lib/offer-receipt";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { sendAlert } from "@/lib/alerts";
 import { isHouseTraffic } from "@/lib/channel";
@@ -1409,7 +1410,15 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     await recordSettlement(c.env, c.req.path, settlementSignals).catch(
       (error) => console.error("settle count lost:", String(error)),
     );
-    await recordReferralFor(c, "settled", till.payer).catch(() => undefined);
+    /*
+     * Beside the answer, like its own sibling. The SAME function runs
+     * on arrival at the 402, where it already rides a Promise.all wave
+     * and blocks nothing; this call blocked a buyer who had just paid.
+     * One writer, one door, two treatments, and the difference was
+     * nobody looking. The settle ledger above stays awaited — that one
+     * is money in, not a courtesy.
+     */
+    deferBookkeeping(c, recordReferralFor(c, "settled", till.payer));
     const payment: SettledPayment = {
       paidUsdc,
       tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),

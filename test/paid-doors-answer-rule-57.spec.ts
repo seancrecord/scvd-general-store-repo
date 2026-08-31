@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import BUY_SOURCE from "../src/routes/buy.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -56,6 +57,60 @@ describe("the roster is the shelf, and it is not empty", () => {
   });
 });
 
+/**
+ * THE CHECK THAT WOULD HAVE CAUGHT THE FIRST VERSION.
+ *
+ * The listings shipped with an invented catalogue — missing_input,
+ * input_refused, subject_refused — and not one was a code the buy
+ * doors emit. A client branching on subject_refused would never match;
+ * the door sends target_refused. The guard below reads the codes out
+ * of buy.ts itself, so a documented code that nothing sends, or a sent
+ * code nothing documents, fails by name.
+ */
+describe("the documented codes are the codes the doors send", () => {
+  const EMITTED = new Set(
+    [...BUY_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
+  );
+
+  it("finds codes in the source at all, or the check is vacuous", () => {
+    expect(EMITTED.size).toBeGreaterThan(3);
+  });
+
+  it("documents nothing the money path cannot send", async () => {
+    const listing = (await (
+      await SELF.fetch(`${BASE}/menu/service_audit`, {
+        headers: { Accept: "application/json" },
+      })
+    ).json()) as Record<string, any>;
+    const invented = (listing.errors as Array<Record<string, any>>)
+      .filter((error) => error.code_on_the_wire === true)
+      .map((error) => String(error.code))
+      .filter((code) => !EMITTED.has(code));
+    expect(
+      invented,
+      `a listing publishes a code no buy door emits — a client branching on it never matches:\n${invented.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("leaves no code the doors send undocumented", async () => {
+    const listing = (await (
+      await SELF.fetch(`${BASE}/menu/service_audit`, {
+        headers: { Accept: "application/json" },
+      })
+    ).json()) as Record<string, any>;
+    const documented = new Set(
+      (listing.errors as Array<Record<string, any>>).map((error) =>
+        String(error.code),
+      ),
+    );
+    const missing = [...EMITTED].filter((code) => !documented.has(code));
+    expect(
+      missing,
+      `the money path sends a code no listing documents:\n${missing.join("\n")}`,
+    ).toEqual([]);
+  });
+});
+
 describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
   const item = MENU_ITEMS.find((candidate) => candidate.id === id)!;
   const schema = buyInputSchema(item);
@@ -103,14 +158,20 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
         `${error.code} on ${id} says what it is and not what to do`,
       ).toBeGreaterThan(40);
     }
-    // The derivations, held against the door's own facts. A published
-    // error category that cannot happen is as misleading as a missing
-    // one — it tells a client to handle a branch that never fires.
-    expect(codes.includes("missing_input")).toBe(required.length > 0);
+    // A published error category that cannot happen is as misleading
+    // as a missing one — it tells a client to handle a branch that
+    // never fires.
     expect(codes.includes("sold_out")).toBe(
       item.weekly_inventory !== undefined || item.stocked === true,
     );
-    expect(codes.includes("subject_refused")).toBe(FETCHES.has(item.reads));
+    // Every refusal says whether it cost anything. On a money path
+    // that is the one fact a client must not have to infer.
+    for (const error of errors) {
+      expect(
+        error.charged,
+        `${error.code} on ${id} does not say whether it charged`,
+      ).toBe(false);
+    }
   });
 
   it("57.5 — says what it reads, what it keeps, and that the goods are signed", async () => {

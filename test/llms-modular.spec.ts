@@ -302,13 +302,34 @@ const BASE = "https://scvd.store";
  * that argued the same thing are one, and the area sits at 29,484 with
  * 516 characters of headroom. Whoever crosses it next should tighten
  * their own prose the same way rather than move the line.
+ * Re-taken 2026-08-30 for the /how-it-works section — the NINTH, and
+ * the first of the nine that is a plain guide edit rather than a merge
+ * of two branches that each re-took it. The room was built, registered
+ * in ROOMS, and named on no discovery surface at all; the guard in
+ * test/no-orphan-capability.spec.ts caught it before it shipped, which
+ * is that guard doing exactly its job. Verified present in these bytes
+ * before this value was taken: the nav line and the drafted
+ * /how-it-works paragraphs, which carry a ⚑ under rule 7 because the
+ * wording is the keeper's to settle.
+ *
+ * Re-taken 2026-08-31 — the TWELFTH — and this one is a MERGE, which
+ * is the case the eight notes above keep describing and the one this
+ * constant is worst at. Two branches each re-took it correctly for
+ * their own edit: main for the /how-it-works section, this branch for
+ * the discoverability doors and the declined positions. Neither value
+ * described the text that exists once both landed, exactly as the
+ * older notes predicted. Both sides' notes are kept above rather than
+ * one being dropped, and the value below was taken from the merged
+ * guide with BOTH sides' work verified present in it together — the
+ * /how-it-works nav line and paragraphs, and the seven new doors and
+ * the tightened refusals.
  *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a666ea01af11c568fa0caf83e137004bc80c3b25a6efcf990488024d4cc91e93";
+  "8d7ce1fbbb3705a55dfef4c470ecec493eadd35b96de919273c223de4019bc6c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

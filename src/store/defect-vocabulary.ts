@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "5";
+export const DEFECT_VOCABULARY_VERSION = "6";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -99,6 +99,13 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "this store, from a public thread (@danbuildss, 2026-08-28) chased to the actual observable",
     what_changed:
       "Added transfer-method-unrecognized: an accepts entry naming an authorization standard in extra.assetTransferMethod that no published client can build, leaving a buyer with a field they can read and nothing they can sign. Registered with the reading that produced it — this store had been reading extra.name and extra.version out of that object and stepping over the field that decides whether a signature is acceptable at all. ONE CLASS ONLY, DELIBERATELY: a door asking for permit2 or erc7710 gets no class, because naming a recognized method in the place the spec provides is not a defect. That case ships as an advisory (nonstandard-transfer-method), where a fact a buyer should read before signing belongs, and a register that called it a defect would be charging an operator for telling the truth about themselves.",
+  },
+  {
+    version: "6",
+    date: "2026-08-30",
+    at_the_instigation_of: "the keeper, ruling on a question this register raised",
+    what_changed:
+      "transfer-method-unrecognized keeps its assertion, its falsifier and its repair hint unchanged; what moved is our_signal, from the advisory `unrecognized-transfer-method` to the check `transfer-method-signable`, because the v2 battery now FOLDS that reading into its verdict rather than carrying it beside one. A reader joining our findings to another instrument's needs the pointer to name the signal that actually decides, and after 2026-08-30 that signal is a check. Nothing about when the class is present changed: falsified_by remains the only authority on that.",
   },
 ];
 
@@ -264,7 +271,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     costs:
       "A buyer who reads the field has nothing to construct from it and a buyer who ignores it signs blind. The refusal lands before any payment reaches the seller, whose logs record it as nobody wanting the goods. Absence of the field is not this class: it is optional, most doors omit it, and eip3009 is the settled default.",
     detectable: "unpaid",
-    our_signal: "unrecognized-transfer-method",
+    our_signal: "transfer-method-signable",
     falsified_by:
       "The same entry naming one of the published methods at the stated moment, or a client implementation that builds an authorization from the named method — the second retires the finding by making the method recognized, and the register is the thing that should move.",
     repair_hint:

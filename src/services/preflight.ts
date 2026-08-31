@@ -5,7 +5,14 @@ import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
-import { KNOWN_TESTNETS, isCanonicalUsdc, l3bChecks } from "@/lib/value-checks";
+import {
+  declaredTransferMethod,
+  DEFAULT_TRANSFER_METHOD,
+  isCanonicalUsdc,
+  KNOWN_TESTNETS,
+  KNOWN_TRANSFER_METHODS,
+  l3bChecks,
+} from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
@@ -127,12 +134,16 @@ export const PREFLIGHT_V2_SINCE = "2026-08-23";
  */
 export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
   v1: [],
-  // 2.1c: the L3b consistency trio joined the rail read in v2's
+  // 2.1c: the L3b consistency checks joined the rail read in v2's
   // verdict — same observations v1 carries as advisories, scored.
+  // transfer-method-signable joined them 2026-08-30 on the keeper's
+  // ruling: a standard no client can build is unsignable in exactly
+  // the sense an unsignable amount is.
   v2: [
     "payto-payable",
     "amount-atomic",
     "network-mainnet",
+    "transfer-method-signable",
     "solana-rail-receivable",
   ],
 };
@@ -153,6 +164,13 @@ export const VERDICT_FOLD_CHECK_NAMES = [
   "payto-payable",
   "amount-atomic",
   "network-mainnet",
+  /*
+   * Promoted out of the advisory list on the keeper's ruling
+   * (2026-08-30): a door naming an authorization standard no
+   * published client can build is unsignable in exactly the sense
+   * amount-atomic is unsignable.
+   */
+  "transfer-method-signable",
   "solana-rail-receivable",
 ] as const;
 
@@ -178,7 +196,14 @@ export const ADVISORY_NAMES = [
    * reading, free, before anybody spends.
    */
   "nonstandard-transfer-method",
-  "unrecognized-transfer-method",
+  /*
+   * `unrecognized-transfer-method` was RETIRED from this list on
+   * 2026-08-30 and promoted into the v2 verdict as the check
+   * `transfer-method-signable`. Its sibling above stays advisory on
+   * purpose: a door asking for permit2 is telling the truth about
+   * itself in the place the spec provides, and scoring that would be
+   * charging an operator for honesty.
+   */
   "conflicting-amounts",
   "above-default-client-cap",
   "placement-mismatch",
@@ -262,6 +287,12 @@ export const BATTERY_CHANGELOG: readonly {
     change:
       "The input contract is read for a retry key: retry-key-declared when a declared input names a field a buyer can hold steady across a retry (idempotency key, order id, request id, client reference, purchase id), retry-key-not-in-challenge when inputs are declared and none of them is one. Advisory in both batteries, folded by neither, and read ONLY where inputs are declared — a door declaring no input contract already draws that advisory, and counting one silence twice would inflate a finding. The absent case names the three readings it cannot separate and carries a falsifier, the same discipline signed-offers-not-in-challenge took on 08-28: a door may key idempotency on a header this probe never sees. Occasioned by an outside reading (CV, 2026-08-28) that the ecosystem absorbed the double-charge lesson at the SDK layer, leaving hand-rolled authorization paths — where a retry signs a fresh nonce, which the x402 nonce rule does not protect.",
   },
+  {
+    date: "2026-08-30",
+    battery: "v2",
+    change:
+      "v2 FOLDS a new check: transfer-method-signable. An accepts entry naming an authorization standard in extra.assetTransferMethod that no published client can build is unsignable in exactly the sense amount-atomic is unsignable, so it now costs a door its ready under v2 instead of riding as an advisory. THIS MOVES READY on doors this battery has already published rows about, which is why it took a keeper's ruling rather than a build decision — rows sealed before this date were scored under the battery as it stood and stand as history, and v1 is frozen and unaffected. The advisory `unrecognized-transfer-method` is retired from ADVISORY_NAMES the same day: one observation gets one voice, and carrying both would double-count it. What is NOT folded: a door asking for permit2 or erc7710 still passes and still draws only the advisory `nonstandard-transfer-method`. Those are real standards that real clients build, named in the place the spec provides, and counting them against a door would be scoring an operator for telling the truth about themselves. Absence passes too — the field is optional and eip3009 is the settled default.",
+  },
 ];
 
 /**
@@ -270,26 +301,16 @@ export const BATTERY_CHANGELOG: readonly {
  * till will sign an offer over an entry. One law, both directions.
  */
 /**
- * WHAT A DOOR ASKS THE BUYER TO SIGN.
- *
- * `accepts[].extra.assetTransferMethod` names the authorization
- * standard the seller's facilitator will accept — the field that
- * decides whether a buyer's signature is acceptable at all.
- * `eip3009` (TransferWithAuthorization) is what a generic x402
- * client produces; `permit2` and `erc7710` are different signatures
- * over different types. One law, both directions: the launch check
- * signs DEFAULT_TRANSFER_METHOD and refuses to knock at a door
- * asking for anything else, and this battery reads the same field
- * from the same place before a buyer spends anything.
+ * The transfer-method law lives in lib/value-checks with the rest of
+ * the value judgments, now that the v2 verdict counts it
+ * (2026-08-30). Re-exported here because the launch check and this
+ * battery both reached for it at this address first, and one law
+ * with two spellings is how instruments drift apart.
  */
-export const DEFAULT_TRANSFER_METHOD = "eip3009";
-
-/** The methods a published x402 client knows how to produce. */
-export const KNOWN_TRANSFER_METHODS: readonly string[] = [
-  "eip3009",
-  "permit2",
-  "erc7710",
-];
+export {
+  DEFAULT_TRANSFER_METHOD,
+  KNOWN_TRANSFER_METHODS,
+} from "@/lib/value-checks";
 
 export const ACCEPT_REQUIRED_FIELDS = [
   "scheme",
@@ -880,16 +901,18 @@ export function runChecks(
      * because it did not expect it there is the habit this finding
      * exists to break.
      */
-    const declared = isRecord(entry["extra"])
-      ? (entry["extra"] as Record<string, unknown>)["assetTransferMethod"]
-      : undefined;
-    if (typeof declared === "string" && declared.trim() !== "") {
-      const method = declared.trim().toLowerCase();
+    const method = declaredTransferMethod(entry);
+    if (method !== undefined) {
       if (!KNOWN_TRANSFER_METHODS.includes(method)) {
-        advisories.push({
-          name: "unrecognized-transfer-method",
-          detail: `accepts entry declares extra.assetTransferMethod "${declared}", which is none of the methods a published x402 client knows how to build (${KNOWN_TRANSFER_METHODS.join(", ")}). A buyer who reads the field has nothing to construct from it; a buyer who ignores it signs blind. Either way the refusal lands before any payment reaches you, and your logs record it as nobody wanting the goods. If this names a method your own stack defines, publishing what it means is the difference between a door generic clients can walk and one only your clients can.`,
-        });
+        /*
+         * PROMOTED OUT OF THE ADVISORIES on the keeper's ruling
+         * (2026-08-30). A method no published client can build is
+         * unsignable in the same sense an unsignable amount is, so
+         * the v2 verdict counts it as `transfer-method-signable`
+         * rather than shrugging at it here. Nothing is pushed: one
+         * observation gets one voice, and a double-count would
+         * inflate a number this store would then have to publish.
+         */
       } else if (method !== DEFAULT_TRANSFER_METHOD) {
         advisories.push({
           name: "nonstandard-transfer-method",
@@ -1616,7 +1639,7 @@ export async function preflightUrl(
    */
   const v1Checks = [...checks];
   /*
-   * 2.1c: v2 counts the L3b consistency trio the same way it counts
+   * 2.1c: v2 counts the L3b consistency checks the same way it counts
    * the rail read — same observation the advisories carry, scored
    * instead of shrugged at. v1 stays frozen; the two batteries can
    * never disagree about what was seen, only about what counts.
@@ -1644,7 +1667,11 @@ export async function preflightUrl(
    * saying so plainly beats implying a distinction that did not apply.
    */
   const v2Extras = [
-    ...(l3b ? ["the L3b consistency trio (payto-payable, amount-atomic, network-mainnet)"] : []),
+    ...(l3b
+      ? [
+          "the L3b consistency checks (payto-payable, amount-atomic, network-mainnet, transfer-method-signable)",
+        ]
+      : []),
     ...(rail.check ? ["solana-rail-receivable"] : []),
   ];
   const railNote = rail.check

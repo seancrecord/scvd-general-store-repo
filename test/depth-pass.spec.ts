@@ -145,7 +145,13 @@ describe("what the door asks the buyer to sign", () => {
     });
   }
 
-  it("a method no client can build draws unrecognized-transfer-method", () => {
+  it("a method no client can build is a CHECK now, not an advisory", () => {
+    /*
+     * The keeper's ruling, 2026-08-30: promoted out of the advisories
+     * into the v2 verdict as `transfer-method-signable`. One
+     * observation, one voice — it must not ride in both lists, or a
+     * number this store publishes double-counts it.
+     */
     const { response, body } = door({
       x402Version: 2,
       accepts: [
@@ -155,12 +161,13 @@ describe("what the door asks the buyer to sign", () => {
         },
       ],
     });
-    const { advisories } = runChecks(response, false, body);
-    const flagged = advisories.find(
-      (advisory) => advisory.name === "unrecognized-transfer-method",
+    const { advisories, l3b } = runChecks(response, false, body);
+    const check = l3b?.find((entry) => entry.name === "transfer-method-signable");
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain("gokite-aa");
+    expect(advisoryNames(advisories)).not.toContain(
+      "unrecognized-transfer-method",
     );
-    expect(flagged).toBeDefined();
-    expect(flagged!.detail).toContain("gokite-aa");
     expect(advisoryNames(advisories)).not.toContain(
       "nonstandard-transfer-method",
     );
@@ -201,7 +208,7 @@ describe("what the door asks the buyer to sign", () => {
     );
   });
 
-  it("neither reading moves a verdict", () => {
+  it("the recognized-but-different reading still moves no verdict", () => {
     const asked = door({
       x402Version: 2,
       accepts: [

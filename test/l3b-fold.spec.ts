@@ -82,16 +82,53 @@ describe("runChecks hands back the L3b trio beside the battery", () => {
     );
   };
 
-  it("a clean door passes all three", () => {
+  it("a clean door passes every one of them", () => {
     const { l3b } = probe({});
     expect(l3b?.map((c) => c.name).sort()).toEqual([
       "amount-atomic",
       "network-mainnet",
       "payto-payable",
+      "transfer-method-signable",
     ]);
     for (const check of l3b ?? []) {
       expect(check.ok).toBe(true);
     }
+  });
+
+  /**
+   * THE FOLD THE KEEPER RULED ON, 2026-08-30. A door naming an
+   * authorization standard no published client can build is
+   * unsignable in exactly the sense an unsignable amount is, so v2
+   * counts it. The line that took the ruling: a door asking for a
+   * REAL standard that is not ours passes, because naming permit2 in
+   * the place the spec provides is telling the truth about yourself.
+   */
+  it("a method no published client can build fails transfer-method-signable", () => {
+    const { l3b } = probe({
+      extra: { name: "USD Coin", version: "2", assetTransferMethod: "gokite-aa" },
+    });
+    const check = l3b?.find((c) => c.name === "transfer-method-signable");
+    expect(check?.ok).toBe(false);
+    expect(check?.detail).toContain("accepts[0]");
+    expect(check?.detail).toContain("gokite-aa");
+  });
+
+  for (const method of ["permit2", "erc7710", "eip3009", "EIP3009"]) {
+    it(`a door asking for ${method} still passes transfer-method-signable`, () => {
+      const { l3b } = probe({
+        extra: { name: "USD Coin", version: "2", assetTransferMethod: method },
+      });
+      expect(
+        l3b?.find((c) => c.name === "transfer-method-signable")?.ok,
+      ).toBe(true);
+    });
+  }
+
+  it("a door that names no method passes — silence is the ordinary case", () => {
+    const { l3b } = probe({ extra: { name: "USD Coin", version: "2" } });
+    expect(l3b?.find((c) => c.name === "transfer-method-signable")?.ok).toBe(
+      true,
+    );
   });
 
   it("a payTo name fails payto-payable and cites the entry", () => {
