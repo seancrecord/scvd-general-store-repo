@@ -154,7 +154,18 @@ describe("paid purchases", () => {
     // the floor is the tip. Derived so the assertion states the RULE
     // rather than one shelf's arithmetic.
     const response = await buyPaid("the_collab", 1);
-    expect(response.status).toBe(200);
+    /*
+     * 202, not 200 (2026-08-31). A human-labor item is bought and paid
+     * for in this request and DONE in somebody's week — "Accepted" is
+     * what happened, and the two headers say where to look and when it
+     * is worth looking. The money is untouched by this: settlement
+     * already happened, 202 is still a success, and every field the
+     * body carried before it carries now.
+     */
+    expect(response.status).toBe(202);
+    expect(response.headers.get("Location")).toContain("/api/order/");
+    // The promise, in seconds, rather than a number somebody picked.
+    expect(Number(response.headers.get("Retry-After"))).toBe(168 * 3600);
     const body = await json(response);
     expect(body["status"]).toBe("queued");
     expect(body["paid_usdc"]).toBe(COLLAB_TIERS[1]);
@@ -227,7 +238,11 @@ describe("weekly inventory", () => {
     const rate = getMenuItem("the_collab")!.weekly_inventory!;
     for (let i = 0; i < rate; i += 1) {
       const sale = await buyPaid("the_collab", 0, "?detail=Ship+or+refactor%3F");
-      expect(sale.status).toBe(200);
+      // 202: a human-labor item is accepted here and finished in
+      // somebody's week. What this loop is testing is that the sale
+      // LANDED, so it asserts success rather than one exact code.
+      expect(sale.ok, `sale ${i + 1} of ${rate}`).toBe(true);
+      expect(sale.status).toBe(202);
     }
     const soldOut = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(soldOut.status).toBe(409);
