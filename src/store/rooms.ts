@@ -110,6 +110,24 @@ export const ROOMS: readonly Room[] = [
     writes_its_own_deeper: true,
   },
   /**
+   * THE MECHANISM (the keeper's ask, 2026-08-30: "i think we need a
+   * machine readable /how-it-works url"). The store published what it
+   * SAW across a dozen surfaces and what it SELLS on every item page,
+   * and had HOW IT WORKS in one piece nowhere — a stranger could
+   * assemble it from eight pages, and an agent deciding whether to
+   * trust or spend could not, because the assembling is the part it
+   * cannot do cheaply.
+   *
+   * It writes its own go-deeper section: the free instruments are the
+   * point of the page and belong in the body, not in a derived
+   * footer under it.
+   */
+  {
+    path: "/how-it-works",
+    name: "How this store works",
+    writes_its_own_deeper: true,
+  },
+  /**
    * THE SAMPLE (#31, 2026-08-29). The shelf described every paid
    * artifact and showed nobody one, which asks a buyer to take our
    * word — the one thing this store tells everybody not to do.

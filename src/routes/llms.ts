@@ -146,6 +146,8 @@ find out.
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
 
+How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
+
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
@@ -892,6 +894,26 @@ NOT signed and does NOT verify; the paid artifact is and does, at
 resolve, so it is an observation about nobody. The room is at
 ${base}/samples, and the free way to check your own door before
 buying anything is ${base}/api/preflight/v1.
+
+⚑ KEEPER'S PEN, RULE 7: the paragraph below is DRAFTED, not canon.
+The list decides whether a room is named here; the wording is yours.
+
+${base}/how-it-works.json is the mechanism in one document: the five
+steps by which a look at somebody else's door becomes evidence a
+stranger can check without trusting us — the knock, the reading, the
+signature, the hash chain, the Bitcoin anchor — and every step names
+the thing you can go and verify yourself. It also says, in the place
+a buyer actually meets it, what happens to money here: the store
+delivers first and settles after, so a delivery that fails takes
+nothing and there is no refund queue to join. Prices and cadence in
+it are read off the live shelf, never typed. It is free, needs no
+key, and the human page is at ${base}/how-it-works.
+
+It exists because this store published WHAT it saw on a dozen
+surfaces and WHAT it sells on every item page, and had HOW IT WORKS
+in one piece nowhere. A person could assemble that from eight pages.
+An agent deciding whether to trust us or spend with us could not,
+because the assembling is the expensive part.
 
 ${base}/doors.json is the LIST of every host the chain has ever
 carried — one entry each, alphabetical, with the most recent dated
