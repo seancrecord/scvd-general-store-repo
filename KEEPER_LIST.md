@@ -489,6 +489,523 @@ four Base hashes in the TASKS archive's NOW block;
   public endpoints today and prefers the secrets the moment they
   exist; this is resilience, not function.
 
+**THE SIX DOORS — 26 OF 26, and the interesting part is what it cost
+(SIX_DOORS.md; `npm run doors:check`).** Read against production
+2026-08-31 after four merges: raw API 5/5, MCP door 5/5, computer use
+4/4, browser automation 4/4, WebMCP 5/5, the site assistant 3/3 and
+deliberately not taken. Recorded, expires 2026-09-30, re-taken weekly
+by `.github/workflows/doors-check.yml`.
+
+~~BUTTON 1 — the registry republish~~ DONE by the keeper 2026-08-31.
+0.2.2 is live and the listing finally repeats what we say we are.
+Two things learned at the counter: a published version is immutable
+exactly as npm's is, so a description edit without a version bump
+changes nothing anywhere; and the workflow's read-back FAILED A
+PUBLISH THAT HAD SUCCEEDED because it read once into the gap before
+the registry marks isLatest. It polls ninety seconds now — a red build
+for work that worked is the most expensive false finding there is,
+because it teaches the person holding the button to disbelieve it.
+
+~~BUTTON 2 — the Edge origin trial~~ DONE by the keeper 2026-08-31.
+Both toggles correctly left off: no subdomain grant (nothing is served
+off one), no third-party grant (we never inject our token into anybody
+else's origin). **Edge expires 2026-10-15, thirty-two days BEFORE
+Chrome's 2026-11-17** — so the diary date that matters is now October,
+and the battery reports the soonest of the two rather than the first.
+
+⚑ **STILL YOURS TO RULE: does the reading become a public room at
+`/doors`?** The most on-brand thing imaginable — the observatory
+publishing its own misses, counted against itself — against rule 44's
+sweep and the risk that a public self-reading reads as the score rule
+43 forbids. NOT BUILT without your word.
+
+**LOOK, ten minutes, still open.** Cloudflare injects `beacon.min.js`
+from `static.cloudflareinsights.com` into the storefront under a
+`script-src 'self'` CSP we set ourselves. Either the fence is not
+doing what its comment says, or the beacon is blocked in visitors'
+browsers and the analytics behind it are thinner than they look.
+
+**HYGIENE, no rush.** Two `v=MCPv1` TXT records sit on the apex; both
+work, and the registry tries both. Delete the stale one only after a
+publish has succeeded, so you never remove the key you are using.
+
+**THE STANDING LESSON, worth more than the score.** Five of the
+findings in this work were the CHECKER's fault, not the store's, and
+three more were defects in the tests themselves. Every one was caught
+by pointing the instrument at an answer already known before trusting
+it. A confident reading from an unverified instrument is worse than no
+reading: it spends the credibility that makes the next one worth
+anything. That is the thing this store sells, and it now has its own
+receipts.
+
+## NEXT` heading from a bad merge; re-read NOW-4's
+version numbers off the source files (they were three minors stale);
+verified NOW-8's rail line on the live storefront. What it did NOT
+do: strike anything on the strength of a PR title. An item here is
+struck when its evidence has been walked, and walking sixty is its
+own sitting — the alternative is striking something still open,
+which is the failure this desk exists to prevent.
+
+NOW-1 (the bank walk), NOW-2, NOW-5, the favicon and the alerts
+mailbox need the keeper's own eyes and cannot be trued from here.
+
+---
+
+## NOW
+
+**0. Rulings landed 2026-08-21 (the keeper's four-part note):**
+- HOSTED TRUST PROFILES: APPROVED to build ("why not right? we can
+  always remove them"). Monthly SKU, his $9–49 shape — exact price
+  still ⚑ (a $19/mo draft will ship flagged unless he names one
+  first). Queued as the next revenue build after the favicon swap.
+- PASSPORT_REFRESH at $1: CONFIRMED "for now" — ⚑ struck in
+  menu-utility.ts, copy still drafted-not-canon per rule 7.
+- KEY SUCCESSION (F3): deferred by the keeper — "another day." The
+  authority pack keeps naming the gap honestly meanwhile.
+- FAVICON: the keeper put a preferred favicon in his Google Drive
+  ("scvd.store" folder) to REPLACE the 08-21 house tyrannosaur; needs
+  a Drive-tool approval click, then resize + swap. Small PR.
+- ALERTS MAILBOX: keeper believes he fixed the alerts@ reply path
+  (the pre-reply-to sends) but is unsure — verify by sending it a
+  test mail from an outside account and watching it arrive.
+- SPEC READS filed: docs/SPEC_READS.md — MPP (chargeback RULE now
+  framed with a recommended `settlement_finality` field), Gateway
+  (we likely already qualify — all three of our rails are Gateway
+  chains; confirm criteria on the Haider call), x401 (watch, don't
+  implement). Primary spec hosts egress-blocked; positions built on
+  secondary coverage, byte-level claims deferred to build time.
+
+**0a. THE OBSERVATORY OUTLINE (docs/OBSERVATORY.md, opened 08-21).**
+The coverage/credibility brainstorm, outlined at the keeper's
+direction — "outline it all before even considering building."
+NOTHING IN IT IS BUILT and nothing is canon. Split STANDING /
+PROPOSED / OPEN throughout so advice never blurs into shipped work.
+Covers: the seven layers of "works", the observation record and its
+un-backfillable fields, published methodology, the supply funnel and
+its growth routines, rot as a product, the instrument ladder
+(Sweep/Round/Beat/Watch), probe diversity (identity before geography)
+and federation, the watch grammar, the canary, and panel+random
+sampling. Six open rulings for the keeper sit in §12. He has more
+material to add; §14 is the parking lot.
+
+**0b. WEBMCP AND MCP APPS — brainstorm filed, THE GATING RULING
+LANDED 08-27, THE SHAPE RULING STILL OPEN
+(docs/WEBMCP_AND_MCP_APPS_2026-08.md, opened 08-27; §8 is the
+ruling and supersedes several sections above it).**
+**RULE 17 IS AMENDED** — the keeper's word, "this is why it's got to
+go": the mechanism wording ("never asks a visiting agent to run
+code; public endpoints only") is retired and preserved in place
+beside its replacement, which is a property — *nothing the store
+hands you can act without your decision, and the store never asks
+for credentials, keys, or key material.* The credentials half stays
+absolute. Shape stops being the test; capability becomes the test.
+⚑ The wording awaits his own ink, and the rule now carries a DEBT
+it names itself: the old sentence handed strangers a free one-line
+impersonation check that worked because it was crude, and **no code
+ships until its replacement is written and he has put his pen to
+it** (rule 7). Nothing served changes today — the store still ships
+no script, so the published sentence is still TRUE.
+STILL OPEN: the P8 SHAPE (narrow / the third door / broad); whether
+the refusal test — does this surface make it easier to refuse or
+easier to accept? — becomes its own rule beside 43; the rule 4
+check on publishing our own capability absence. AND ONE TEST GATES
+ALL OF IT, before the shape ruling rather than after: build one
+throwaway verify card and render it in all four hosts. If the gaps
+and the expiry come out as small grey text under a big verdict, we
+shipped a score and broke rule 43 while believing we honored it.
+P7 UNBLOCKED FROM P2 on the keeper's read ("hands in many pots when
+it's easy reduces my ability to bet the wrong horse") — the earlier
+analysis priced an OPTION as an expected-value bet. Two arguments
+found in that exchange: WebMCP declarations are themselves a thing
+to observe, with no conformance infrastructure behind any of them;
+and you cannot credibly run a conformance desk for a surface you
+refuse to implement. Sequencing runs OPPOSITE to the brief: the
+copy amendment is a fixed cost paid once, so the marginal cost of
+the second item is near zero and the cheap play is BOTH OR NEITHER.
+Build constraint corrected by the keeper — not "small enough to be
+wrong about" but smart enough not to create risk or headache, which
+measures as two questions with construction answers: can it act (no
+— read-only verbs mirroring public endpoints, and a first CSP is
+net risk DOWN) and can it drift (no, if the registration derives
+from the same source as the HTTP route, as MENU_ITEMS and ROOMS
+already do).
+FIRST RENDER LANDED 08-27 and the keeper's read was "excellent" —
+which opened §8.5a: the card is one of a FAMILY (conformance result on
+a competitor's artifact, the shelf, the 402 approval card, a corpus
+round with the misses published against us), and it carries a MAKER'S
+MARK. The distinction that decides that last one, because the obvious
+implementation is forbidden: a BADGE marks the subject ("this endpoint
+is approved") and is a score rule 43 bans outright; a COLOPHON marks
+the artifact ("we took this reading") and is a signature — a hallmark,
+an assayer's stamp, a printer's mark. Drafted as a colophon. The
+rotating line he asked for (the small-blessings treatment) is
+DETERMINISTIC per rule 22, derived from the observation's own id, so
+the same reading always carries the same line and the card stays
+reproducible offline like everything else. **THREE RULINGS LANDED AND ONE BUILD SHIPPED, 08-27 evening:**
+(1) ~~the P8 shape~~ RULED — THE THIRD DOOR plus narrow cards, never
+broad, conditional on the four-host render test: if any host turns the
+gaps into fine print, it drops to narrow-or-nothing automatically.
+(2) ~~preflight/conformance as MCP tools~~ RULED AND BUILT the same
+day: `preflight_endpoint` and `check_conformance` are in the catalog
+(12 tools now), each calling the exact service function its HTTP door
+calls, limiter included; the routing resource's printed gap came out
+and its test flipped to guard the closed state. (3) ~~rule 4 on
+publishing our capability absence~~ RULED AGAINST, with the line that
+decides future cases: publish a gap where the person it protects will
+trip over it, never where a critic will score it. AND THE SENTENCE:
+the keeper picked draft B — "Nothing from this store can act without
+your decision, and we never ask for credentials, keys, or wallet
+secrets. Anything that does either is not us." — recorded in rule 17;
+the swap onto live surfaces deliberately WAITS for the first rendered
+surface, because the current sentence is stronger and still true
+(rule 45). THE TEST KIT IS BUILT: scripts/render-test/ — a throwaway
+zero-dependency server plus the card plus per-host steps written for
+the keeper's hands; wire details read from the spec repo itself, not
+coverage. ~~WAITING ON THE KEEPER: run the kit~~ — HE RAN IT, five
+rounds, 08-27 evening. HOST ONE (Claude Desktop): **FULL PASS** — the
+card renders at full height, size-changed honored, gaps and age at
+full weight, colophon intact; rule 54's eye test passed, dark theme.
+Three findings the rounds paid out: an MCP Apps page must itself
+speak MCP (`ui/initialize` over postMessage) or the host shows
+nothing while its own marker claims otherwise; that "widget rendered"
+marker is an UNVERIFIABLE CLAIM, observed asserting a render nobody
+saw — the artifact-without-verification shape, found in the render
+pipeline of the flagship host; and THE FUNNEL WORKED END TO END — the
+host model read the card, refused correctly ("anyone quoting this as
+'verified' is quoting it past what it says"), and routed to
+`preflight_endpoint`, the live free tool, unprompted. ⚑ ONE COPY FLAG
+with two independent machine readers behind it: "expires in N days"
+reads as a forward warranty; "stale after" / "current until" are the
+candidates, the keeper's pen. Light + narrow confirmed 08-27 late — host one COMPLETE. VS CODE
+PASSED the same night (chat sidebar = a natural narrow test; ladder
+and colophon intact). **Two independent hosts at full weight — the
+shape ruling's condition is MET and the third door stands.** ChatGPT
+(tunnel) and Goose remain as record rows, not gates.
+
+**PRODUCTION CARDS SHIPPED 08-27, same day the condition closed
+(src/lib/mcp-apps.ts; design doc §11 is the ship record).** Two cards
+on the live MCP door and only two: the preflight reading and the
+signature check — both free tools, display only, populated over the
+proven tool-result bridge, unclimbed rungs and the conflict of
+interest at full weight, colophon with the inked line. NOTHING PAID
+RENDERS: no buy_* tool carries ui metadata and test/mcp-apps.spec.ts
+pins that as the payment-surface guard, beside pins on the handshake
+(the load-bearing finding), textContent-only rendering, and
+no-network self-containment. AND THE SENTENCE SWAP EXECUTED in the
+same commit, per rule 17's own timing clause — this is the store's
+first rendered surface, so draft B replaced the mechanism sentence
+across every surface that carried it (402 body, skill.md + clawhub
+bundle, llms.txt, agents.md, openapi, MCP instructions, /what, /try,
+gazette founding note, registry submission), each in its own
+register; the promise tests now assert both halves (property +
+absolute) instead of the old string. ⚑ Still the keeper's: the expiry
+label call ("stale after" / "current until") — deliberately ABSENT
+from v1, both live cards are seconds-old readings ("one probe, one
+moment"); it lands with the first corpus/stored-reading card.
+~~⚑ NEW from the keeper, 08-27, unruled: label which tools are
+agent-use vs human-use~~ — HE SAID BUILD IT, same evening, and it
+shipped as drafts on the evidence-instrument / store-errand cut
+(design doc §12.2); ⚑ the sentences await his re-ink. SAME EVENING,
+THREE MORE AT HIS WORD: the scvd:// and ui:// resources are now
+NAMED in llms.txt and agents.md instead of discoverable-only
+(§12.3, his flag: "that's really important"); the production
+connector test landed its row — Claude's custom-remote-connector
+path runs the tools but withholds the render, a known host gap
+(anthropics/claude-ai-mcp#471), stdio renders, our wire is correct,
+recorded as a dated host observation in §8.5; and WEBMCP IS BUILT
+(§12.1) — /webmcp.js registers the free read-only instruments on
+document.modelContext, derived from the MCP catalog so it cannot
+act and cannot drift (test-pinned), every fetch tagged ?src=webmcp
+as its own channel, and the storefront's first CSP rides along.
+~~⚑ Keeper's errand: origin-trial tokens~~ — REGISTERED AND LIVE
+same night (Chrome token in the storefront head, test-pinned on
+binding and expiry). THE EXPIRY LABEL IS RULED, same night: draft
+A, "observed {date} · stale after {date}" — decay named, nothing
+warranted forward. It lands with the first stored-reading card
+(design doc §12.4).
+SECOND BRAINSTORM RULED, 08-28 (design doc §13, the full record):
+build list = check_this_store (renamed off "scam" at his word),
+draft_purpose/cite_mandate, THE WEBMCP CONFORMANCE INSTRUMENT (his
+strongest yes — "sellable to indexers and users alike"),
+is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
+miniature: porch-class writes only — free, publish nothing, touch
+no money; guestbook stays off because it publishes words). The
+co-piloted till is PARKED on his frictionless argument, reasoning
+kept in §13.2. HIS GRAFFITI WALL is BUILT (§13.3, 08-29) and SITED
+OUT BACK on his own second read — the storefront slot was dropped
+because no-URLs is not no-ads and money buying prominence on the
+front page of an evidence observatory is a sentence a competitor
+could write and be right. The head car rides /train: biggest
+recorded bid of a day, marked in place with its date, its amount and
+"paid, and saying so"; ties to whoever got there first; /train
+publishes the standing bid and what it does NOT buy (nothing else on
+this store). His approval still gates every car. The storefront is
+untouched. THE POP-OFF CANDIDATE
+(§13.4, scvd.store/check/{host} — the shareable endpoint report
+page, the SSL-Labs wedge) is HELD SPECED: worth building on his
+read, not sold on readiness — built on his word, not before.
+SCOPED 08-30 against the code (§13.4): most of it EXISTS —
+/passport/{host} is already a free, signed, dated per-host page for
+any observed host, and preflightUrl already produces the whole
+reading. Two versions: CHEAP (render census evidence for observed
+hosts, never probe on demand — small, low risk) and EXPENSIVE (type
+any host, probe live — a GET that fires an outbound request at a
+caller-named host is a reflected-probe surface every link unfurler
+will hit, and a permalink implies persistence we deliberately do not
+keep). The trigger to watch for on the expensive one: somebody else
+linking a scvd.store reading unprompted.
+
+THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
+name and the address at once, so a card screenshotted out of its host
+still tells a stranger where to go and check), it cites HOUSE RULE 43
+on its own face — the keeper's idea and the best one in the stretch,
+an instrument printing the standard it is held to — and it carries
+THE KEEPER'S OWN LINE, inked 08-27 after two struck sets:
+**"You know your own risk better than we do."** The only line of three
+sets that does rule 54's work instead of narrating it: it hands the
+decision back rather than describing our limits. ⚑ The rest of the
+drawer is still draft (the mechanism rotates, so one line is a start
+and not a drawer) — candidates in §8.5a, rule 7 stands.
+The brainstorm below it stands as the reasoning trail, annotated
+where superseded rather than rewritten, at his request.
+ORIGINAL FILING, kept because the findings are what moved the rule:
+NOTHING BUILT, nothing canon. The
+outside audit's two agent-surface items, worked against the store as
+it stands. Three findings that change the brief as posed: (1) the
+audit's own item, WebMCP, is scored against `navigator.modelContext`,
+which is DEPRECATED in Chrome 150 — the spec moved the surface to
+`document.modelContext` and removed `provideContext()` in March, so
+building to the audited name ships a deprecation on day one; (2)
+BOTH items need the ruling, not just MCP Apps — a WebMCP
+`registerTool` handler is our JavaScript executing in the visiting
+agent's browser, and the store ships zero JavaScript today (verified:
+no script tag outside `application/ld+json`, no form, no listener, no
+CSP), so rule 17 and the impersonation sentence every served surface
+carries are in play for P7 exactly as they are for P8; (3) there is a THIRD DOOR
+on the MCP Apps ruling the brief does not list — a card at the
+approval moment that RENDERS and CANNOT ACT, keeping the evidence in
+front of the human and our button away from anybody's wallet. Also
+argued: the strongest reason to build a card has nothing to do with
+the audit — prose collapses "ready, nineteen days old, at L3, four
+checks not observed" into "ready", and a card with a live expiry and
+the gaps at equal weight does rule 43's work that a paragraph
+structurally cannot; and if a card cannot be built to read as an
+observation rather than a rating, it should not be built at all.
+~~**RULE, and it governs both items:** does "never asks you to run
+code" mean *we never ask you to execute anything*, or *the public
+HTTPS surface is the entire relationship*?~~ **STRUCK 08-27 with its
+evidence — ruled the first way, and the rule was rewritten as a
+property rather than patched as a mechanism. HOUSE_RULES rule 17,
+amended, wording awaiting his ink.** **LOOK, still open and now
+cheaper than it was, since P7 no longer waits on P2:** how many
+storefront-HTML requests come from agent-shaped clients that never
+touch /mcp or llms.txt — rule 19's demand tag, and we keep the logs.
+It no longer gates the build; it sizes it.
+
+**0c. RULINGS LANDED 2026-08-28 (the instrument audit's sheet,
+docs/AUDIT_RULINGS_2026-08.md):**
+- L3d BURST ON PAID WATCHES: APPROVED — "yes paid." Three probes a
+  tick on a watch somebody bought, published as a distribution
+  rather than a single look. The census stays single-probe until the
+  etiquette ceiling (Observatory 12.3) is ruled: bursting 750
+  strangers is a different question from bursting a door its owner
+  paid us to watch. Unbuilt; the sheet holds the design.
+- THE DEPTH PASS ADVISORIES: HELD, WITH A REVISIT — "okay, but note
+  we need to revisit and what we need to do when revisited." None of
+  the five folds into a verdict yet.
+  WHEN: after four weekly rounds carry them (about 2026-09-25), or
+  sooner if any one of them fires on more than a tenth of probed
+  doors.
+  WHAT TO BRING: per advisory, the per-round count, and three doors
+  it fired on checked BY HAND — the point is proving the finding is
+  a real defect and not an artifact of how we read.
+  THE TEST TO FOLD: it fires on true defects when hand-checked, AND
+  every instrument citing the battery can actually run it. The EVM
+  blacklist read fails that second half today — the census cannot
+  afford an eth_call per door — so folding it needs a budget change
+  or a battery the census does not cite, not just a ruling.
+  LIKELIEST TO EARN IT: `resource-host-mismatch`. A challenge naming
+  another host is not a door a buyer can safely pay.
+- THE REGISTRY'S DROPPED COVERAGE FIELDS: APPROVED — "yes safer
+  better." The round already records `capped`, `coverage_suspect`
+  and `coverage_drop` honestly and the publish step throws them
+  away; they carry through to the published week now and print
+  beside the tally. Additive fields, no stored week rewritten.
+- THE AUDIT'S COPY: CONFIRMED — "i think these are fine." The Night
+  Watch line (shape, not payability) and the seven corrections filed
+  2026-08-28 stand as written. Rule 7's drafted-not-canon flag is
+  struck on both.
+- THE payTo INFLOW READER: APPROVED, T1 ONLY — "agree with rest,"
+  on the recommendation that inflows publish as counts with no names
+  and never land on a named host's page in this market. NOTE THE
+  CORRECTION THIS RULING CARRIES: the G2 tiers were ruled for
+  ADVERTISEMENT history (which doors advertise which address), and
+  an inflow is a different fact — what a party EARNED, which they
+  did not publish about themselves. The tier SHAPES transfer; G2's
+  authorization did not, so this is that fact's own first ruling.
+  T1 is the whole of it: "N of the doors we walked received USDC at
+  their advertised address this week," captioned as addresses that
+  RECEIVED, never as doors that made sales — an inflow at an
+  advertised address is not proof of a sale (treasury movement, a
+  shared or facilitator wallet, an operator funding themselves).
+  T2 and T3 stay unruled and unbuilt; the three reasons T2 was held
+  are the damaging zero (rule 52 — the modal case in a market this
+  young is the least reliable and most harmful number), shared
+  wallets making inflows unattributable to the door whose page they
+  would print on, and that "has been paid" as a published trust
+  signal is bought for a few cents of self-payment.
+- L3c ENDPOINT-SIDE SIGNATURE VERIFICATION: DEFERRED by the keeper —
+  "maybe we just wait on the forgery piece and save it for later on
+  down the road." Not declined; parked. The standing facts for
+  whenever it comes back: no probe path verifies a signature (the
+  battery passes a door on a JWS PARSE), so a forged live signature
+  has never been observed and CANNOT be by anything we run — the
+  count is zero either way. What we have seen is one door of 35
+  attempting signed offers and serving ones that fail to parse.
+  The exposure is insurance against our own success: the day signed
+  offers become a signal buyers act on, faking one is free and our
+  instrument is what gets faked past. Cheap when it comes back —
+  $0, and it can run RETROACTIVELY over the challenge bytes the
+  chain already stores.
+
+
+**1. The bank walk — LOOK, first, because the records disagree.**
+The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
+2026-08-13) says the walk stalled hourly from
+08-12 13:30Z, cursor frozen at block 49,858,030, nineteen straight
+failures shaped like a blown key quota, blocks going permanently
+unreadable past ~2026-08-14 11:00Z — past that the hole is forever.
+PROBLEMS.md #24 says the walk's backlog disease was FIXED 2026-08-11,
+catch-up passes proven in tests. Both records stand with their dates;
+neither is picked here. Open the dashboard and the admin: cursor past
+49,858,030 means the stall record is stale and this closes; frozen
+means follow the archived entry's steps — check/rotate the Alchemy key
+(`BASE_RPC_URL_PRIMARY`), set the second-provider secret
+(`BASE_RPC_URL_SECONDARY`) — and measure the hole honestly.
+
+**2. The outreach recovery — TEST, two minutes** (08-19 batch).
+`/admin/outreach`: "Clear ALL stamps (keeps contacts)" once, scout to
+zero, then per card send the draft yourself, THEN mark sent. Nothing
+on that page transmits; stamping without sending poisons next week's
+list.
+
+**3. Publish W34 to the public tally — LOOK + one press.**
+`/admin/market` → Publish 2026-W34 to /registry (31% rot, the
+signed-offers gap, the price map). Re-pressing replaces the row.
+
+**4. ClawHub republish — TEST, five minutes.** From a level main:
+`npm run skill:publish`. The ClawHub copy lags the site; the number
+that is never stale is `SKILL_VERSION` in `src/store/spec.ts` vs
+`registry/clawhub/published.json`. Read 2026-08-30: **3.7.0 vs
+3.6.0** — the drift is real and one minor wide.
+(Every figure written into this line has been stale within days —
+3.3.0, then 3.3.1, then 3.4.0, now this one. Per rule 45 the source
+files are the count; the number above is a reading with a date on
+it, not a fact this file keeps.)
+
+**5. The directory PR sidecar — keeper follow-through** (08-19).
+Regenerate `providers/scvd/store/openapi.json` from the live
+/openapi.json and /menu.json now that the dual-rail build deployed;
+the Solana directory's two Greptile blockers dissolve.
+
+**6. RULED 2026-08-29 — the settlement-attempt lane: YES, the
+sampled lane.** Open since 2026-08-18; the keeper's word is the
+hard-capped sampled lane, aggregate-only publication, private notice
+to the host when a purchase fails. 20 doors a week, at most $0.05 a
+probe (the August run averaged $0.0005), under the standing wallet
+law: $25/month funding discipline, ask-first above $1.
+
+WHAT MADE THE CASE, and it was not appetite. The inflow census was
+rebuilt four times across 2026-08-28/29 trying to answer "does
+anyone actually PAY these asks" from chain data alone. It cannot,
+and the reason is not that the data ran out: a transfer does not
+carry intent. The instrument's own numbers established the ceiling —
+a median of one distinct payer per receiving address, one address
+holding 44% of every transfer seen, and a narrowest-possible figure
+that one operator with two wallets would clear. `docs/
+INSTRUMENT_AUDIT_2026-08.md` §§10-13 is the whole record.
+
+WHAT THE KEEPER IS BUYING, stated plainly because it is the part
+worth weighing: real money at strangers' doors, consuming a unit of
+something they sell, without them asking us to. The same posture the
+ward round already takes by knocking uninvited — but this one
+spends, and a shop being bought from is a normal act only as long as
+the caps and the notice hold.
+
+STILL HIS HAND, NOT THE CLOCK (rule 30). The ruling authorises the
+lane to EXIST. It does not authorise a cron to spend: the lane is
+pressed, hard-capped, and refuses rather than overruns. Nothing in
+this ruling lets money leave without a person.
+
+Consenting-panel and self-only variants were both on the table and
+were not chosen: a panel that agreed to be measured is a biased
+sample and cannot speak for the market, which is the whole reason
+the lane is worth having.
+
+THE TWO PEOPLE-QUESTIONS, RULED 2026-08-29 the same day the scope
+raised them, both toward the store's existing habits rather than
+away from them:
+
+  NOTICE — notify where a channel exists, record "no channel found"
+  where it does not, and publish the aggregate either way. Holding a
+  finding until its operator can be reached would silently drop the
+  least-reachable operators out of every number, which is a coverage
+  hole that has to be disclosed anyway. Count the gap in public; keep
+  the finding.
+
+  THE GOODS — keep the delivery's shape (status, size, content-type,
+  sha256) and discard the body. The finding is whether goods arrived,
+  never what they were. Holding strangers' paid products with no
+  licence to is an exposure a named LLC does not need, and the hash
+  still proves a specific thing was received if a walk is disputed.
+
+**7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
+position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)
+— do not re-read it. One ruling remains and alone blocks the
+testnet-run build: yes/no/which key for the no-custody evaluator
+wallet.
+
+**8. The shopfront rail line — LOOK, check don't act** (2026-08-13).
+READ 2026-08-30: the live storefront serves "USDC on Base, Polygon,
+Solana" and names all three rails consistently in its body copy. The
+"8 on Base, 2 on Solana" split described below is NOT what the front
+shows today, so either the split moved or this note outlived the
+copy it was written about. The keeper's eyes decide which; the
+reading is recorded so the next pass starts from a measurement.
+After the next rail-split cron the front should read "8 on Base, 2 on
+Solana," tail gone. If it persists, the unplaced sale is one of the
+four Base hashes in the TASKS archive's NOW block;
+`RAILS_ENTERED_BY_HAND` wants exactly one.
+
+---
+
+- ~~**Light the Polygon rail**~~ — DONE 2026-08-21. The keeper set
+  POLYGON_PAY_TO; the rail went live at merge. Proven with real money
+  the same day: CV's hand-rolled $0.50 settled on Polygon, cert
+  `cert_s83s3dqvjf`, `network: eip155:137`, tx `0x1d78fdc7…`, both
+  signatures verified. House-flagged (his wallet is listed), so it
+  correctly does NOT appear in the organic split — the first ORGANIC
+  Polygon dollar is still unclaimed.
+- ~~**The three-rails copy pass**~~ — DONE 2026-08-21 (PR #186). The
+  sweep found two AEO surfaces with ZERO Polygon mentions — agents.md
+  and the OpenAPI contract had never been swept. Copy for machinery
+  that was still Base-only was deliberately left alone and moved with
+  its machinery instead, below.
+- ~~LATER: the Polygon bank walk~~ — DONE 2026-08-21 (PR #186), and it
+  came with the rest of EVM parity rather than alone, because the
+  keeper's ruling was parity by parameterization: the RPC reader takes
+  an EvmChain, the attestation reads BOTH EVM rails before signing
+  NOT_FOUND (a Polygon settlement is 0x-hex too, and the old dispatch
+  would have signed a false NOT_FOUND about real money one chain
+  over), the Statement takes a `network`, and the board walks Polygon
+  doors. Both walks share ONE read of the certificate drawer — the
+  naive version bought a 2,000-key scan twice an hour for a
+  chain-independent fact.
+  STILL OPEN, small: `POLYGON_RPC_URL_PRIMARY` / `_SECONDARY` secrets
+  (the Alchemy account covers Polygon). The walk runs on keyless
+  public endpoints today and prefers the secrets the moment they
+  exist; this is resilience, not function.
+
 **THE SIX DOORS — the instrument was wrong twice before it was right,
 and two buttons are yours (SIX_DOORS.md; `npm run doors:check`).** The
 lineup is the Chrome/Edge WebMCP framing, adopted because it is
