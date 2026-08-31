@@ -14,6 +14,20 @@ claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
 
+## 2026-08-30 — the cross-protocol re-read (supersedes the sourcing caveat above, in part)
+
+The three reads below were assembled under an egress block. On
+2026-08-30 a wider read reached some of those primaries and their
+mirrors — the cloudflare-docs repository, the AWS AgentCore SDK, the
+x402 Foundation issue tracker — and could still not reach
+paymentauth.org, docs.stripe.com or developers.circle.com directly.
+The result, with what changed, what stands, and what is still
+secondhand, is filed at `docs/PROTOCOL_EXPANSION_2026-08.md`. It covers
+MPP, Circle Gateway nanopayments, AP2, ACP/UCP, x401 and the discovery
+surfaces around them, and it re-poses (does not re-rule) the MPP gate
+in PAYMENT_RAILS Part B. The positions below stand until the keeper
+rules; the door-cost sizing in the MPP entry is superseded there.
+
 ## 2026-08-21 — MPP (Machine Payments Protocol, Stripe + Tempo)
 
 **What it is.** An open protocol co-authored by Stripe and Tempo,

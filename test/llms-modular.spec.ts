@@ -324,12 +324,35 @@ const BASE = "https://scvd.store";
  * /how-it-works nav line and paragraphs, and the seven new doors and
  * the tightened refusals.
  *
+ * Re-taken 2026-08-31 by the THIRD RAIL REACHING THE COPY — the
+ * THIRTEENTH, and a MERGE again, which the note above had just
+ * finished calling the case this constant is worst at. The Polygon flag is lit, and
+ * settlement_attestation's shelf description still said "on Base or
+ * on Solana ... a 0x hash reads Base" while observeSettlement has
+ * asked Base AND Polygon of every 0x hash since 2026-08-21. The guide
+ * builds its menu lines from MENU_ITEMS, so correcting the item moved
+ * the served bytes with it. No guide sentence was edited by hand; the
+ * derivation carried the fix in, exactly as the price move above
+ * carried a count in. Confirmed before this value was taken: the
+ * served guide now carries "on Base, Polygon or Solana ... the
+ * identifier's own shape picks the rail", carries neither of the two
+ * retired phrasings anywhere, and still carries the idempotency and
+ * scvd-tab paragraphs the earlier re-takes pinned.
+ *
+ * The merge half, stated separately from the edit half because they
+ * fail differently: main's twelfth value describes a guide without the
+ * rail correction, and this branch's described one without main's
+ * /how-it-works room, the seven discoverability doors, or the tightened
+ * refusals. Neither parent's value describes the merged text. The value
+ * below was taken from the merged guide with BOTH sides verified
+ * present in it together.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8d7ce1fbbb3705a55dfef4c470ecec493eadd35b96de919273c223de4019bc6c";
+  "24193baf328be4fa35ed48e7b6c3625872b8639f3fa091df29cab7770a2e3f00";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

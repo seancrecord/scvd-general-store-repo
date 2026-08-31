@@ -171,7 +171,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     signs:
       "The whole record: the wallet, the exact block window and chain head at read, every USDC transfer in and out (counts and totals over the full window; per-direction lists capped and saying so), each row's transaction hash, counterparty, amount and block, the coverage word, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
     does_not_prove:
-      "What any transfer was FOR, whether the wallet's owner knows about them, or anything outside the stated window, asset, or chain — USDC on Base only, and a wallet moving other tokens or on other networks shows none of that here. No comparison to the agent's own ledger was made or possible: we never see one. window_unreadable is a fact about our read, never about the wallet.",
+      "What any transfer was FOR, whether the wallet's owner knows about them, or anything outside the stated window, asset, or chain — USDC on the one chain named on the artifact, and a wallet moving other tokens or on other networks shows none of that here. No comparison to the agent's own ledger was made or possible: we never see one. window_unreadable is a fact about our read, never about the wallet.",
     verify_url: "/api/statement/{statement_id}",
   },
   {

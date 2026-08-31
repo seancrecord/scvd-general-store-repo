@@ -172,8 +172,8 @@ block.
   kept answering, from an observer who is not you.
   → `GET /api/buy/standing_watch?url=https://...` ($5)
 - You need to show a third party that an x402 payment actually
-  settled — on Base or on Solana; the identifier's shape picks the
-  chain — and your own word for it is not worth anything because you
+  settled — on Base, Polygon or Solana; the identifier's shape picks
+  the rail — and your own word for it is not worth anything because you
   are a party to it.
   → `GET /api/buy/settlement_attestation?tx_hash=0x...` ($0.004, one
   chain read, signed, no human in the loop — that is the point)
