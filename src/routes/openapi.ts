@@ -644,6 +644,2128 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * publishing its own traffic figures is exactly the claim a reader
  * should be able to check without trusting the publisher.
  */
+/**
+ * THE SIGNED-ARTIFACT RECORD, AS A FACTORY, because five doors serve
+ * the same envelope with a different payload inside it.
+ *
+ * /api/service-audit, /api/good-buyer, /api/launch-check,
+ * /api/reconciliation and /api/bitcoin-anchor each store
+ * `{ <payload>: Signed…, cert_id, created_at }` and each route adds
+ * the same two closing fields. Writing that shape five times is five
+ * chances for one of them to drift; deriving it once means a reader
+ * who learns one of these doors has learned all five.
+ *
+ * THE PAYLOAD IS DESCRIBED, NOT ENUMERATED. Every signed observation
+ * carries `signature`, `public_key` and `signature_covers` — that is
+ * the part a verifier needs and the part these schemas promise. What
+ * sits beside them differs per instrument and is deep; claiming an
+ * exhaustive field list for each would be five more things to keep
+ * true, and `additionalProperties` is left open so the claim stays
+ * one this store can keep.
+ */
+function signedArtifactSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  /**
+   * NOT ALWAYS `created_at`. The reconciliation record stores
+   * `stored_at`, and a factory that assumed otherwise would have
+   * published a required field that door never sends — the precise
+   * way a schema written from a hopeful reading goes wrong.
+   */
+  timestampKey?: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  const timestampKey = options.timestampKey ?? "created_at";
+  return {
+    type: "object",
+    required: [options.payloadKey, "cert_id", timestampKey, "how_to_verify"],
+    properties: {
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+        required: ["signature", "public_key", "signature_covers"],
+        properties: {
+          signature: {
+            type: "string",
+            description: "ed25519 over the canonical form of the fields this object declares.",
+          },
+          public_key: { type: "string" },
+          signature_covers: {
+            type: "string",
+            description:
+              "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
+          },
+          evidence_hash: { type: "string" },
+          observed_at: { type: "string", format: "date-time" },
+          criteria: {
+            type: "string",
+            description: "The published criteria this observation was rendered under.",
+          },
+          verdict: {
+            type: "string",
+            enum: ["ready", "not_ready", "unreachable", "refused"],
+          },
+        },
+      },
+      cert_id: {
+        type: "string",
+        description:
+          "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash.",
+      },
+      [timestampKey]: { type: "string", format: "date-time" },
+      how_to_verify: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "The steps a stranger runs without asking the buyer OR this store to be honest.",
+      },
+      what_this_is_not: {
+        type: "string",
+        description:
+          "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
+      },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
+ * THE PREFLIGHT VERDICT — the flagship free instrument's answer, and
+ * the one response in this contract most likely to be parsed by
+ * something that will act on it.
+ *
+ * DERIVED FROM `PreflightReport` in services/preflight.ts, field for
+ * field, including the two that are conditionally present. That type
+ * is the authority; this is its contract-side twin, and the enums
+ * below are the type's unions rather than a list somebody typed.
+ *
+ * The honesty fields are here for the same reason they are in the
+ * response: `single_probe_note`, `what_this_cannot_tell_you` and
+ * `our_conflict_of_interest` are what stop a caller quoting a passing
+ * verdict as an uptime claim, and a generated client that dropped them
+ * would be a client that had lost the only part a buyer needs.
+ */
+const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "version",
+    "verdict",
+    "reached_level",
+    "checks_vector",
+    "checks",
+    "advisories",
+    "single_probe_note",
+    "what_this_cannot_tell_you",
+    "our_conflict_of_interest",
+  ],
+  properties: {
+    version: {
+      type: "string",
+      description: "The battery that scored this probe.",
+    },
+    verdict: {
+      type: "string",
+      enum: ["ready", "not_ready", "unreachable"],
+      description:
+        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on.",
+    },
+    reached_level: {
+      type: "string",
+      enum: ["none", "L1", "L2", "L3a"],
+      description: "The rung this probe reached before it stopped.",
+    },
+    reached_level_meaning: { type: "string" },
+    network_failure: {
+      type: "string",
+      enum: ["unlocalized"],
+      description: 'Present only when reached_level is "none".',
+    },
+    checks_vector: {
+      type: "array",
+      description:
+        "The tri-state view: a check that never ran is not a check that passed, and blocked_by names what stopped it.",
+      items: {
+        type: "object",
+        required: ["name", "state", "detail"],
+        properties: {
+          name: { type: "string" },
+          state: { type: "string", enum: ["pass", "fail", "not_reached"] },
+          blocked_by: {
+            type: "string",
+            description: "Set only on not_reached.",
+          },
+          detail: { type: "string" },
+        },
+      },
+    },
+    checks: {
+      type: "array",
+      description: "The legacy two-state list, unchanged, for consumers that read the old shape.",
+      items: {
+        type: "object",
+        required: ["name", "ok", "detail"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    advisories: {
+      type: "array",
+      description: "True and worth knowing, never folded into the verdict.",
+      items: {
+        type: "object",
+        required: ["name", "detail"],
+        properties: {
+          name: { type: "string" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    also_under: {
+      type: "object",
+      description:
+        "The SAME probe scored under the other battery, so a reader comparing verdicts never has to guess whether the doors differed or the rules did.",
+      properties: {
+        version: { type: "string" },
+        verdict: { type: "string", enum: ["ready", "not_ready", "unreachable"] },
+        difference: { type: "string" },
+      },
+    },
+    single_probe_note: {
+      type: "string",
+      description:
+        "One request, one moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so.",
+    },
+    what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
+    our_conflict_of_interest: {
+      type: "string",
+      description: "Published in the verdict itself rather than in a policy nobody fetches.",
+    },
+    rate_limit: { type: "object" },
+    store_identity: { type: "object" },
+    next_steps: {
+      type: "object",
+      description: "Where to go for what one probe deliberately cannot answer.",
+      properties: {
+        conformance_desk: { type: "string" },
+        signed_report: { type: "string" },
+        across_a_week: { type: "string" },
+        behavioral_check: { type: "string" },
+      },
+    },
+  },
+};
+
+/**
+ * THE NLWEB ANSWER. Field names are the protocol's; the honesty block
+ * beside them is ours, and it is in the schema for the same reason it
+ * is in the response — a client that generates from this contract
+ * should know the score is recomputable before it trusts the ranking.
+ */
+const ASK_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["_meta", "query_id", "query", "site", "mode", "count", "results"],
+  properties: {
+    _meta: {
+      type: "object",
+      required: ["response_type", "version"],
+      description:
+        "NLWeb's envelope: which shape this response is and which revision of the protocol produced it.",
+      properties: {
+        response_type: { type: "string", enum: ["list"] },
+        version: { type: "string" },
+        protocol: { type: "string" },
+        site: { type: "string" },
+      },
+    },
+    query_id: {
+      type: "string",
+      description:
+        "Yours if you sent one, ours if not. Echoed so you can pair a response with its question; never stored.",
+    },
+    query: { type: "string" },
+    site: { type: "string" },
+    mode: { type: "string", enum: ["list"] },
+    count: { type: "integer" },
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["url", "name", "site", "score", "description", "schema_object"],
+        properties: {
+          url: { type: "string", format: "uri" },
+          name: { type: "string" },
+          site: { type: "string" },
+          score: {
+            type: "number",
+            description:
+              "Recomputable from scoring_rule and the entry returned. Not a rating of anything.",
+          },
+          description: { type: "string" },
+          schema_object: {
+            type: "object",
+            description: "The entry as a schema.org object.",
+            properties: {
+              "@context": { type: "string" },
+              "@type": { type: "string" },
+              name: { type: "string" },
+              description: { type: "string" },
+              url: { type: "string", format: "uri" },
+            },
+          },
+        },
+      },
+    },
+    this_is_an_index_not_a_model: { type: "string" },
+    scoring_rule: {
+      type: "string",
+      description:
+        "The rule itself rather than a link to it, so any score above can be recomputed by the reader holding it.",
+    },
+    the_whole_index: { type: "string", format: "uri" },
+    every_result_is_a_live_url: { type: "boolean" },
+    nothing_matched: {
+      type: "string",
+      description: "Present only when the index matched nothing.",
+    },
+  },
+};
+
+/** The askable index as a schema.org DataFeed. */
+const ASK_FEED_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["@context", "@type", "name", "url", "dataFeedElement"],
+  properties: {
+    "@context": { type: "string" },
+    "@type": { type: "string", enum: ["DataFeed"] },
+    name: { type: "string" },
+    description: { type: "string" },
+    url: { type: "string", format: "uri" },
+    isAccessibleForFree: { type: "boolean" },
+    license: { type: "string", format: "uri" },
+    publisher: { type: "object", properties: { "@type": { type: "string" }, name: { type: "string" }, url: { type: "string" } } },
+    dataFeedElement: {
+      type: "array",
+      description: "Every entry /ask can return, in the order it ranks them.",
+      items: {
+        type: "object",
+        properties: {
+          "@type": { type: "string", enum: ["DataFeedItem"] },
+          item: { type: "object" },
+        },
+      },
+    },
+  },
+};
+
+/** NLWeb's site list. One site: this store. */
+const SITES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message-type", "sites"],
+  properties: {
+    "message-type": { type: "string", enum: ["sites"] },
+    sites: { type: "array", items: { type: "string" } },
+    note: { type: "string" },
+  },
+};
+
+/**
+ * RFC 9728 protected-resource metadata. The absences are in the schema
+ * as prose rather than as empty fields: a generated client should
+ * learn that no authorization server exists here, not that we forgot
+ * to list one.
+ */
+const PROTECTED_RESOURCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["resource", "resource_documentation", "bearer_methods_supported"],
+  properties: {
+    resource: { type: "string", format: "uri" },
+    resource_name: { type: "string" },
+    resource_documentation: { type: "string", format: "uri" },
+    resource_policy_uri: { type: "string", format: "uri" },
+    resource_tos_uri: { type: "string", format: "uri" },
+    bearer_methods_supported: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "Empty, and that is the answer: this store issues no bearer tokens, so it supports no way of presenting one. `authorization_servers` is absent entirely for the same reason — there is no OAuth issuer, the field is optional, and naming one that does not exist would be a false claim in machine form.",
+    },
+    scopes_supported: { type: "array", items: { type: "string" } },
+    x402: {
+      type: "object",
+      description: "What actually gates the paid doors.",
+      properties: {
+        supported: { type: "boolean" },
+        version: { type: "integer" },
+        request_header: { type: "string" },
+        challenge_header: { type: "string" },
+        discovery: { type: "string", format: "uri" },
+      },
+    },
+    agent_auth: {
+      type: "object",
+      description:
+        "The WorkOS auth.md block. register_uri, claim_uri and revocation_uri are null because no credential is ever issued here.",
+      properties: {
+        summary: { type: "string" },
+        skill: { type: "string", format: "uri" },
+        identity_types_supported: {
+          type: "array",
+          items: { type: "string", enum: ["anonymous"] },
+        },
+        anonymous: { type: "object", properties: { credential_types_supported: { type: "array", items: { type: "string" } } } },
+        register_uri: { type: "string", nullable: true },
+        claim_uri: { type: "string", nullable: true },
+        revocation_uri: { type: "string", nullable: true },
+        why_no_endpoints: { type: "string" },
+        documentation_url: { type: "string", format: "uri" },
+        protected_resource_metadata: { type: "string", format: "uri" },
+        contact: { type: "string", format: "uri" },
+      },
+    },
+  },
+};
+
+/**
+ * The batch preflight. Each entry keeps the status its own probe
+ * returned, so a bad URL beside a good one does not flatten the call.
+ */
+const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["battery", "count", "results"],
+  properties: {
+    battery: { type: "string" },
+    count: { type: "integer" },
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["url", "status", "result"],
+        properties: {
+          url: { type: "string", nullable: true },
+          status: {
+            type: "integer",
+            description: "The status this entry's own probe returned.",
+          },
+          result: {
+            ...PREFLIGHT_VERDICT_SCHEMA,
+            description: "The same verdict body a single-URL probe returns.",
+          },
+        },
+      },
+    },
+    not_a_discount: {
+      type: "string",
+      description:
+        "Says plainly that each entry was metered as its own probe, so a caller learns it here rather than from a 429 halfway down their list.",
+    },
+    one_moment_each: { type: "string" },
+    single_door: { type: "string", format: "uri" },
+    defect_vocabulary: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * THE WELL-KNOWN DISCOVERY DOCUMENTS, DESCRIBED FROM WHAT THEY SERVE.
+ *
+ * Each of these shapes was read off the live response rather than
+ * inferred from the handler, because a schema derived from a hopeful
+ * reading of code is exactly the confidently-wrong kind this store
+ * refuses to publish. None sets `additionalProperties: false`: they
+ * name the load-bearing fields accurately and do not claim to be an
+ * exhaustive census of documents that gain a pointer whenever the
+ * store gains a surface. `required` is reserved for fields the handler
+ * cannot omit.
+ */
+const X402_DISCOVERY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "description", "resources"],
+  properties: {
+    version: { type: "integer" },
+    name: { type: "string" },
+    description: { type: "string" },
+    tags: { type: "array", items: { type: "string" } },
+    network: {
+      type: "string",
+      description:
+        "The single-rail field, kept for readers that learned it before the second rail existed.",
+    },
+    networks: {
+      type: "array",
+      items: { type: "string" },
+      description: "Every rail a 402 from this store offers. The truth since the second rail shipped.",
+    },
+    resources: {
+      type: "array",
+      description: "Every paid door, with its price and terms.",
+      items: { type: "object" },
+    },
+    when_to_use: { type: "object" },
+    openapi: { type: "string", format: "uri" },
+    catalog: { type: "string", format: "uri" },
+    stats: { type: "string", format: "uri" },
+    practice_counter: { type: "string", format: "uri" },
+    listing_spec_schema: { type: "string", format: "uri" },
+    signing_key: { type: "string", format: "uri" },
+    attestation: { type: "string", format: "uri" },
+    rights: { type: "string", format: "uri" },
+    trust: { type: "string", format: "uri" },
+    did: { type: "string", format: "uri" },
+    liveness: { type: "string", format: "uri" },
+    anchor_log: { type: "string", format: "uri" },
+    a2a: { type: "string", format: "uri" },
+    conformance: { type: "string", format: "uri" },
+    conformance_landing: { type: "string", format: "uri" },
+    corpus: { type: "string", format: "uri" },
+  },
+};
+
+/** When to reach for this store, shaped for a scheduler rather than a reader. */
+const AGENT_INSTRUCTIONS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "what_this_is", "when_to_use", "how_to_call"],
+  properties: {
+    name: { type: "string" },
+    what_this_is: { type: "string" },
+    when_to_use: {
+      type: "array",
+      description: "One entry per situation, with the items that answer it and a worked request.",
+      items: {
+        type: "object",
+        properties: {
+          situation: { type: "string" },
+          items: { type: "array", items: { type: "string" } },
+          example_request: { type: "string" },
+        },
+      },
+    },
+    when_not_to_use: {
+      type: "string",
+      description:
+        "Named rather than left to be discovered, because the cheapest call is the one nobody had to make.",
+    },
+    how_to_call: {
+      type: "object",
+      properties: {
+        free: { type: "string" },
+        paid: { type: "string" },
+        rails: { type: "array", items: { type: "string" } },
+      },
+    },
+    full_briefing: { type: "string", format: "uri" },
+    transaction_manual: { type: "string", format: "uri" },
+    documentation: { type: "string", format: "uri" },
+    contract: { type: "string", format: "uri" },
+    catalog: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * The public key, its history, and what a signature from it does and
+ * does not prove. The continuity block is the load-bearing half.
+ */
+const SIGNING_KEY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["algorithm", "encoding", "public_key"],
+  properties: {
+    algorithm: { type: "string" },
+    encoding: { type: "string" },
+    public_key: { type: "string" },
+    note: { type: "string" },
+    identity_policy: { type: "string" },
+    sample_artifact_id: { type: "string" },
+    sample_verify_url: {
+      type: "string",
+      format: "uri",
+      description: "A real artifact to check the key against, so the document is testable rather than assertable.",
+    },
+    did: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        document: { type: "string", format: "uri" },
+        note: { type: "string" },
+      },
+    },
+    key_history: {
+      type: "object",
+      properties: {
+        current: { type: "object" },
+        retired: { type: "array", items: { type: "object" } },
+        rotations_performed: { type: "integer" },
+      },
+    },
+    continuity: {
+      type: "object",
+      description:
+        "Whether this key has ever changed, whether a successor exists, and where the externally anchored history lives. It proves WHEN a key state was committed, never WHO SHOULD HAVE held it.",
+      properties: {
+        key_count: { type: "integer" },
+        rotations_performed: { type: "integer" },
+        successor_key_exists: { type: "boolean" },
+        if_this_key_ever_changes: { type: "string" },
+        externally_anchored_history: { type: "string" },
+        full_policy: { type: "string" },
+      },
+    },
+  },
+};
+
+/**
+ * The Web Bot Auth key directory. One field, and the media type is the
+ * rest of the contract.
+ */
+const SIGNATURES_DIRECTORY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["keys"],
+  properties: {
+    keys: {
+      type: "array",
+      description: "JWK entries for the key this store signs its outbound census requests with.",
+      items: { type: "object" },
+    },
+  },
+};
+
+/**
+ * THE INTAKE DOORS ANSWER 201, AND THE CONTRACT SAID 200.
+ *
+ * Found by the typing sweep rather than by a scanner: /api/guestbook,
+ * /api/stamp, /api/letter, /api/request and the waitlist all return
+ * `201 Created` — correctly, they each create something — and every
+ * one of them inherited `freeOp`'s 200. That is the same class of
+ * defect as the two markdown doors that declared application/json: not
+ * a vague schema but a wrong one, and a generated client keyed on the
+ * declared status handles a response the contract said would not
+ * arrive.
+ *
+ * `created` replaces the 200 rather than sitting beside it, because
+ * these doors never send a 200 and a contract listing both would be
+ * describing a door that does not exist.
+ */
+function created(
+  operation: OpenApiObject,
+  schema: OpenApiObject,
+): OpenApiObject {
+  const responses = { ...(operation["responses"] as OpenApiObject) };
+  delete responses["200"];
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "201": {
+        description: "Created.",
+        content: { "application/json": { schema } },
+      },
+    },
+  };
+}
+
+/**
+ * WHEN THE KEEPER GETS TO IT, on every door that puts something in
+ * front of a human. One shape, because the promise is one promise: a
+ * named day, and the assurance that nothing waits unread.
+ */
+const CADENCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  description:
+    "When a human next reads this pile. Published on the intake rather than left to be wondered about.",
+  properties: {
+    every: { type: "string" },
+    next_at: { type: "string", format: "date-time" },
+    note: { type: "string" },
+    nothing_is_lost: {
+      type: "boolean",
+      description:
+        "That the queue is read in full rather than sampled — the thing a sender actually wants to know.",
+    },
+  },
+};
+
+const GUESTBOOK_ENTRY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "entry"],
+  properties: {
+    message: { type: "string" },
+    entry: {
+      type: "object",
+      required: ["id", "name", "message", "date"],
+      properties: {
+        id: { type: "string" },
+        name: { type: "string" },
+        message: { type: "string" },
+        date: { type: "string" },
+      },
+    },
+    sticker_url: {
+      type: "string",
+      format: "uri",
+      description: "A rendered sticker for the entry, free to read forever.",
+    },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const STAMP_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "stamp", "signature", "public_key"],
+  properties: {
+    message: { type: "string" },
+    stamp: {
+      type: "object",
+      required: ["stamp_id", "week", "date"],
+      properties: {
+        stamp_id: { type: "string" },
+        week: { type: "string", description: "The ISO week this stamp's design belongs to." },
+        date: { type: "string" },
+        variant: { type: "string" },
+        card: { type: "string" },
+        condition: { type: "string" },
+        consecutive: {
+          type: "integer",
+          description: "How many consecutive weeks this visitor has stamped.",
+        },
+      },
+    },
+    signature: { type: "string", description: "ed25519 over the stamp above." },
+    public_key: { type: "string" },
+    verification_code: { type: "string" },
+    verify_url: { type: "string", format: "uri" },
+    svg_url: { type: "string", format: "uri" },
+    note: { type: "string" },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const LETTER_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "letter_id"],
+  properties: {
+    message: { type: "string" },
+    letter_id: { type: "string" },
+    pickup_url: {
+      type: "string",
+      format: "uri",
+      description: "Where the keeper's reply appears, if he writes one.",
+    },
+    privacy: {
+      type: "string",
+      description: "What happens to the letter's contents, said on the intake rather than in a policy nobody opens.",
+    },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const REQUEST_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "request"],
+  properties: {
+    message: { type: "string" },
+    request: {
+      type: "object",
+      required: ["id", "description", "offer_usdc", "contact", "date"],
+      properties: {
+        id: { type: "string" },
+        description: { type: "string" },
+        offer_usdc: { type: "number" },
+        contact: { type: "string" },
+        date: { type: "string" },
+      },
+    },
+    status_url: { type: "string", format: "uri" },
+    how_the_desk_answers: {
+      type: "string",
+      description:
+        "What happens next and what will not — a commission desk that quotes rather than a promise to build.",
+    },
+  },
+};
+
+/**
+ * THE ROOMS, IN JSON. Each of these pages serves prose to a browser
+ * and a structured twin to anything that asks in JSON, and the twin is
+ * what an agent deciding whether to trust this store actually reads.
+ *
+ * `honest_limit` appears on three of them and is not boilerplate: it
+ * is the sentence naming what the page does NOT establish. A schema
+ * that dropped it would describe a more confident document than the
+ * store publishes.
+ */
+const RIGHTS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["standfirst", "clauses", "honest_limit"],
+  properties: {
+    standfirst: { type: "string" },
+    summary: { type: "string" },
+    clauses: {
+      type: "array",
+      description: "What you are owed, as question and answer, with what it means in practice.",
+      items: {
+        type: "object",
+        required: ["question", "answer"],
+        properties: {
+          question: { type: "string" },
+          answer: { type: "string" },
+          in_practice: {
+            type: "string",
+            description: "The clause turned into what actually happens, so it can be checked rather than believed.",
+          },
+        },
+      },
+    },
+    refund_policy: { type: "string" },
+    decided_on: { type: "string", description: "The date this position was settled." },
+    honest_limit: {
+      type: "string",
+      description: "What this page does NOT establish, stated on the page rather than left to be discovered.",
+    },
+  },
+};
+
+const WIND_DOWN_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["promise", "classes", "honest_limit"],
+  properties: {
+    promise: {
+      type: "string",
+      description: "What happens to what you bought if this store closes.",
+    },
+    standfirst: { type: "string" },
+    classes: {
+      type: "array",
+      description: "One row per class of thing the store holds, and what happens to it.",
+      items: {
+        type: "object",
+        required: ["holds", "line"],
+        properties: {
+          holds: { type: "string" },
+          line: { type: "string" },
+          because: { type: "string" },
+        },
+      },
+    },
+    note: { type: "string" },
+    decided_on: { type: "string" },
+    honest_limit: { type: "string" },
+  },
+};
+
+const ATTESTATION_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["standfirst", "artifact_classes", "honest_limit"],
+  properties: {
+    standfirst: { type: "string" },
+    key_architecture: { type: "object" },
+    why_signed_payload: { type: "string" },
+    key_continuity: { type: "object" },
+    trust_models: {
+      type: "object",
+      description: "The named models an artifact class can be rendered under.",
+    },
+    artifact_classes: {
+      type: "array",
+      description:
+        "Per class: what a signature from this store signs, and — the load-bearing half — what it does NOT prove.",
+      items: {
+        type: "object",
+        required: ["id", "name", "signs", "does_not_prove"],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          trust_model: { type: "string" },
+          trust_model_name: { type: "string" },
+          signs: { type: "string" },
+          does_not_prove: {
+            type: "string",
+            description:
+              "Published beside what it does prove, because a signature whose limits are unstated is read as proving more than it does.",
+          },
+          verify_url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    money_path: { type: "object" },
+    maker_marks: { type: "object" },
+    maker_mark_policy: { type: "object" },
+    marked_items: { type: "object" },
+    not_built: {
+      type: "string",
+      description: "What this store has not built, named rather than implied by absence.",
+    },
+    held_against_us: { type: "string" },
+    criteria_page: { type: "string", format: "uri" },
+    honest_limit: { type: "string" },
+  },
+};
+
+const CORRECTIONS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["title", "corrections", "count"],
+  properties: {
+    title: { type: "string" },
+    summary: { type: "string" },
+    how_things_get_caught: { type: "string" },
+    what_we_cannot_do_ourselves: {
+      type: "string",
+      description:
+        "The store's own blind spots — a record of corrections that only listed what we found ourselves would be the less plausible document.",
+    },
+    scope: { type: "string" },
+    what_this_record_cannot_show_you: { type: "string" },
+    corrections: {
+      type: "array",
+      description: "Every claim this store made that turned out not to be true, dated.",
+      items: {
+        type: "object",
+        required: ["date", "what_was_wrong", "what_changed"],
+        properties: {
+          date: { type: "string" },
+          what_was_wrong: { type: "string" },
+          how_long: {
+            type: "string",
+            description: "How long the wrong thing stood, which is the figure a reader most wants and the one most tempting to omit.",
+          },
+          found_by: { type: "string" },
+          what_changed: {
+            type: "string",
+            description: "The structural change that stops it recurring quietly — not an apology.",
+          },
+        },
+      },
+    },
+    count: { type: "integer" },
+    corrections_url: { type: "string", format: "uri" },
+    mailbox: { type: "string", format: "uri" },
+    invitation: { type: "string" },
+  },
+};
+
+const PORCH_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["porch"],
+  properties: {
+    porch: { type: "object", description: "Who has been by, and when." },
+    tonight: { type: "object" },
+    cat: { type: "object" },
+    seat_tonight: { type: "object" },
+    treat_rail: { type: "object" },
+    note: { type: "string" },
+    back_inside: { type: "string", format: "uri" },
+  },
+};
+
+const PROFILES_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "profiles"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "string" },
+    profiles: {
+      type: "array",
+      description: "One entry per host this store holds observations about.",
+      items: { type: "object" },
+    },
+  },
+};
+
+/**
+ * THE DOOR INDEX. /doors and /doors.json serve the same document —
+ * every x402 door this store has probed, with its latest verdict and,
+ * beside it, the limits of what that verdict settles.
+ *
+ * `what_this_is_not`, `honest_limits` and `verdict_means` are required
+ * rather than optional. A list of endpoints with verdicts and no stated
+ * limits is a ranking, which is the one thing this store does not
+ * publish; the fields that keep it from being one belong in the
+ * contract, not just in the payload.
+ */
+const DOOR_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "what_this_is",
+    "what_this_is_not",
+    "hosts",
+    "total_hosts",
+    "verdict_means",
+    "honest_limits",
+  ],
+  properties: {
+    what_this_is: { type: "string" },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "Never a ranking or a score on whoever runs the door — a dated observation of what each answered.",
+    },
+    what_you_can_use_it_for: { type: "string" },
+    hosts: {
+      type: "array",
+      description: "One entry per host, with its latest verdict and when it was taken.",
+      items: { type: "object" },
+    },
+    by_latest_verdict: {
+      type: "object",
+      description: "The same hosts grouped by their most recent verdict.",
+    },
+    total_hosts: { type: "integer" },
+    returned: { type: "integer" },
+    weeks_read: { type: "integer" },
+    latest_week: { type: "object" },
+    verdict_means: {
+      type: "object",
+      description: "What each verdict does and does not assert.",
+      properties: {
+        ready: { type: "string" },
+        not_ready: { type: "string" },
+        unreachable: { type: "string" },
+        not_probed: {
+          type: "string",
+          description: "Named, because absence from a probe is not a finding about the door.",
+        },
+      },
+    },
+    honest_limits: { type: "string" },
+    how_to_call: { type: "object" },
+    how_to_rederive: {
+      type: "string",
+      description: "How to recompute this whole surface from the signed corpus, without asking us.",
+    },
+    price: { type: "object" },
+    security: { type: "object" },
+    errors: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          code: { type: "string" },
+          http: { type: "integer" },
+          means: { type: "string" },
+          what_to_do: { type: "string" },
+        },
+      },
+    },
+    faq: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+      },
+    },
+    expected_outcome: { type: "string" },
+    corrections: { type: "string", format: "uri" },
+  },
+};
+
+/** The Town Directory: neighbours, listed, with nobody paying to be here. */
+const DIRECTORY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["district", "listings", "no_pay_for_placement"],
+  properties: {
+    district: { type: "string" },
+    listings: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "url", "category"],
+        properties: {
+          name: { type: "string" },
+          url: { type: "string", format: "uri" },
+          category: { type: "string" },
+          review: { type: "string" },
+          added: { type: "string" },
+          slug: { type: "string" },
+          listing_url: { type: "string", format: "uri" },
+          trust_list: { type: "string" },
+        },
+      },
+    },
+    no_pay_for_placement: {
+      type: "string",
+      description:
+        "The condition the whole list depends on, stated in the list rather than in a policy elsewhere.",
+    },
+    signed_list: { type: "string", format: "uri" },
+    suggest_a_listing: { type: "string", format: "uri" },
+    updated: { type: "string" },
+    note: { type: "string" },
+  },
+};
+
+/** The Almanac rack: what is on the shelf and what a page costs. */
+const ALMANAC_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["entries", "price_usdc"],
+  properties: {
+    almanac: { type: "string" },
+    entries: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["slug", "title", "date", "url"],
+        properties: {
+          slug: { type: "string" },
+          title: { type: "string" },
+          date: { type: "string" },
+          teaser: { type: "string" },
+          price_usdc: { type: "number" },
+          url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    price_usdc: { type: "number" },
+    how_to_buy: { type: "string" },
+  },
+};
+
+/**
+ * The battery delta: this store's own instrument, scored against
+ * itself. A scorecard on our own tooling, published on the same terms
+ * as the gaps we count against ourselves.
+ */
+const BATTERY_DELTA_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "overall"],
+  properties: {
+    what_this_is: { type: "string" },
+    overall: {
+      type: "object",
+      properties: {
+        scored: { type: "integer" },
+        agreed: { type: "integer" },
+        caught_by_v2_only: {
+          type: "integer",
+          description: "Doors v1 would have called ready that v2 caught.",
+        },
+        by_check: { type: "object" },
+        batteries: { type: "object" },
+        what_this_does_not_settle: { type: "string" },
+      },
+    },
+    weeks: { type: "array", items: { type: "object" } },
+    v2_only_checks: { type: "array", items: { type: "string" } },
+    the_open_question: {
+      type: "string",
+      description: "What the delta cannot answer, kept beside what it can.",
+    },
+    how_to_rederive: { type: "string" },
+    corrections: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * THE CONFORMANCE FIXTURE SET — the vectors any issuer can run their
+ * own implementation against, ours included.
+ *
+ * `fixture_set_digest` and `digest_rule` are required together: a
+ * fixture set whose digest cannot be recomputed by the person holding
+ * it is a fixture set they have to trust us about, which defeats the
+ * purpose of publishing one. `how_to_integrate_fail_closed` stays
+ * required for the same reason it exists — a conformance check wired
+ * to pass when it errors is worse than no check.
+ */
+const CONFORMANCE_FIXTURES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "version", "fixtures", "fixture_set_digest", "digest_rule"],
+  properties: {
+    what_this_is: { type: "string" },
+    version: { type: "string" },
+    fixture_set_digest: { type: "string" },
+    digest_rule: {
+      type: "string",
+      description: "How to recompute the digest above from the fixtures below, without asking us.",
+    },
+    fixtures: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "artifact", "expect"],
+        properties: {
+          id: { type: "string" },
+          artifact: { type: "string" },
+          canonical_signed_input: { type: "string" },
+          payload: { type: "object" },
+          call: { type: "object" },
+          expect: {
+            type: "object",
+            description: "What a conformant implementation must answer for this vector.",
+          },
+          note: { type: "string" },
+        },
+      },
+    },
+    how_to_integrate_fail_closed: {
+      type: "array",
+      items: { type: "string" },
+      description: "A conformance check wired to pass when it errors is worse than no check.",
+    },
+    signer_registry: {
+      type: "object",
+      properties: {
+        did: { type: "string" },
+        signing_key_url: { type: "string", format: "uri" },
+        did_json_url: { type: "string", format: "uri" },
+        public_key_hex: { type: "string" },
+      },
+    },
+  },
+};
+
+/** The bounty board: what is on offer, and the budget that bounds it. */
+const BOUNTIES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "bounties", "the_rules"],
+  properties: {
+    what_this_is: { type: "string" },
+    board: { type: "string" },
+    bounties: { type: "array", items: { type: "object" } },
+    the_rules: { type: "array", items: { type: "string" } },
+    how_to_claim: { type: "string" },
+    method: { type: "string" },
+    week: { type: "string" },
+    weekly_budget_usd: { type: "number" },
+    spent_this_week_usd: { type: "number" },
+    payouts_enabled: {
+      type: "boolean",
+      description:
+        "Whether the board can actually pay right now. Published rather than implied, so a claimant learns it before doing the work.",
+    },
+    the_board: { type: "string", format: "uri" },
+    the_room: { type: "string", format: "uri" },
+  },
+};
+
+/** The wallet-claim desk: how to prove a wallet is yours, and its limits. */
+const CLAIMS_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "how", "free"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "array", items: { type: "string" } },
+    free: { type: "boolean" },
+    why_a_challenge: {
+      type: "string",
+      description: "Why a signature over a nonce rather than a claim we take on trust.",
+    },
+    limits: { type: "string" },
+  },
+};
+
+/** The standing note: one statement a subject may attach to its own record. */
+const STANDING_NOTE_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "limits"],
+  properties: {
+    what_this_is: { type: "string" },
+    who_would_use_it: { type: "string" },
+    where_it_rides: { type: "string" },
+    host_lane: { type: "object", properties: { how: { type: "string" }, proof: { type: "string" } } },
+    wallet_lane: {
+      type: "object",
+      properties: {
+        how: { type: "string" },
+        challenge_template: { type: "string" },
+        proof: { type: "string" },
+        not_yet: { type: "string" },
+      },
+    },
+    limits: {
+      type: "object",
+      properties: {
+        statement_max_chars: { type: "integer" },
+        one_note_per_subject: { type: "boolean" },
+        subject_must_be_observed: {
+          type: "boolean",
+          description:
+            "A note can only be attached to a subject this store has actually observed — it is a right of reply, not a listing mechanism.",
+        },
+      },
+    },
+    disputes: { type: "string" },
+  },
+};
+
+/** The Tab pool: what the shared reads are, and what they are not. */
+const TAB_POOL_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "trust_model"],
+  properties: {
+    what_this_is: { type: "string" },
+    pooled_reads: { type: "string" },
+    what_a_delta_carries: { type: "string" },
+    sample_sizes: {
+      type: "object",
+      properties: {
+        opened_deltas: { type: "integer" },
+        outcome_deltas: { type: "integer" },
+        by_category: { type: "object" },
+      },
+    },
+    trust_model: {
+      type: "string",
+      description: "What these pooled numbers can and cannot support, since nobody's submission is verified.",
+    },
+    gaming: {
+      type: "string",
+      description: "How this surface could be gamed, published by the surface itself.",
+    },
+    daily_intake_cap: { type: "integer" },
+    contribute: { type: "string" },
+  },
+};
+
+/**
+ * THE PRICING CHARTER, SIGNED. The signature block is required and so
+ * is `canonical_form`: a signed promise whose exact signed bytes are
+ * not served beside it is a promise you have to take the server's word
+ * about, which is the opposite of why it is signed.
+ */
+const PRICING_CHARTER_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "version", "effective", "clauses", "current_floor_usd"],
+  properties: {
+    what_this_is: { type: "string" },
+    version: { type: "string" },
+    effective: { type: "string" },
+    current_floor_usd: {
+      type: "number",
+      description: "Counted off the live shelf as the page rendered, never typed.",
+    },
+    clauses: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "rule", "check"],
+        properties: {
+          id: { type: "string" },
+          rule: { type: "string" },
+          check: {
+            type: "string",
+            description: "How a stranger tests the clause without asking us — every clause ships with one.",
+          },
+        },
+      },
+    },
+    signature: {
+      type: "object",
+      description: "Present when a signing key is configured; absent, with a stated reason, rather than faked.",
+      properties: {
+        algorithm: { type: "string" },
+        discipline: { type: "string", description: "JCS (RFC 8785) over signed_payload." },
+        signed_payload: { type: "object" },
+        canonical_form: {
+          type: "string",
+          description: "The exact bytes the signature covers, served beside it so verification needs nothing from us.",
+        },
+        signature: { type: "string" },
+        public_key: { type: "string", format: "uri" },
+        how_to_verify: { type: "string" },
+      },
+    },
+    signature_absent: { type: "string" },
+    a_ceiling_that_is_not_ours: {
+      type: "object",
+      description:
+        "The stock x402 client's default per-payment cap — a fact about the BUYER's client, deliberately outside the signed charter because signing someone else's constant would be a promise we have no standing to make.",
+      properties: {
+        what: { type: "string" },
+        doors_above_it: { type: "integer" },
+        priced_doors: { type: "integer" },
+        what_to_do: { type: "string" },
+        why_we_mention_it: { type: "string" },
+        not_part_of_the_charter: { type: "string" },
+      },
+    },
+    the_shelf: { type: "string", format: "uri" },
+    the_promise_if_we_miss: { type: "string", format: "uri" },
+  },
+};
+
+/** The developer index: every surface someone building against this store needs. */
+const DEVELOPERS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "description", "authentication", "openapi", "sections"],
+  properties: {
+    name: { type: "string" },
+    description: { type: "string" },
+    authentication: {
+      type: "string",
+      description: "None. No account or API key exists to obtain — stated here rather than left to be discovered by trying.",
+    },
+    openapi: { type: "string", format: "uri" },
+    guide: { type: "string", format: "uri" },
+    manual: { type: "string", format: "uri" },
+    mcp: { type: "string", format: "uri" },
+    api_catalog: { type: "string", format: "uri" },
+    deprecation_policy: { type: "string", format: "uri" },
+    cli: {
+      type: "object",
+      properties: {
+        npm: { type: "string" },
+        published: {
+          type: "boolean",
+          description:
+            "Whether the package actually installs today. A boolean rather than a link, because an agent reading this decides whether to try.",
+        },
+        install: { type: "string" },
+        install_available: { type: "boolean" },
+        source: { type: "string", format: "uri" },
+        run_from_source: { type: "string" },
+        bin: { type: "string" },
+        license: { type: "string" },
+        registry: { type: "string" },
+        commands: { type: "array", items: { type: "object" } },
+        note: { type: "string" },
+      },
+    },
+    sections: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          heading: { type: "string" },
+          entries: { type: "array", items: { type: "object" } },
+        },
+      },
+    },
+    conventions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+      },
+    },
+    declined_on_purpose: {
+      type: "array",
+      description:
+        "Scanner recommendations this store refuses, with reasons. A point chosen not to score is a decision, and decisions get published.",
+      items: {
+        type: "object",
+        properties: { heading: { type: "string" }, body: { type: "string" } },
+      },
+    },
+  },
+};
+
+/** Store credit: the terms, and the ceilings that bound them. */
+const CREDIT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "rate_pct"],
+  properties: {
+    what_this_is: { type: "string" },
+    rate_pct: { type: "number" },
+    balance_cap_usd: { type: "number" },
+    cash_out: { type: "string" },
+    cash_out_floor_usd: { type: "number" },
+    idle_expiry_days: {
+      type: "integer",
+      description: "When an untouched balance expires — a term a holder must be able to read before they hold one.",
+    },
+    outstanding_all_wallets_usd: {
+      type: "number",
+      description: "What the store owes in credit across every wallet, published rather than kept.",
+    },
+    read_a_balance: { type: "string" },
+  },
+};
+
+/** The Gazette rack. */
+const GAZETTE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["issues", "price_usdc"],
+  properties: {
+    gazette: { type: "string" },
+    district: { type: "string" },
+    issues: { type: "array", items: { type: "object" } },
+    price_usdc: { type: "number" },
+    leave_a_tip: { type: "string" },
+  },
+};
+
+/**
+ * The on-page desk's verdict. Same honesty fields as the preflight,
+ * for the same reason: they are what stop a passing verdict being
+ * quoted as a broader claim than one GET can support.
+ */
+const ONPAGE_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "version",
+    "verdict",
+    "checks",
+    "single_probe_note",
+    "what_this_cannot_tell_you",
+    "our_conflict_of_interest",
+  ],
+  properties: {
+    version: { type: "string" },
+    verdict: { type: "string" },
+    checks: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "ok"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    advisories: { type: "array", items: { type: "object" } },
+    single_probe_note: {
+      type: "string",
+      description: "One GET at one moment, with scripts never run — the blind spot named on the report itself.",
+    },
+    what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
+    our_conflict_of_interest: {
+      type: "string",
+      description: "This store sells the signed version of this same check, and says so on the free answer.",
+    },
+    store_identity: { type: "object" },
+    next_steps: { type: "object" },
+  },
+};
+
+/**
+ * THE SIGNED CARD, AS A FACTORY. The phantom check, the lucky and the
+ * bitcoin anchor all serve a payload with the signature beside it and
+ * a free verify URL — a shape a holder can check without a certificate
+ * and without asking us.
+ */
+function signedCardSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  return {
+    type: "object",
+    required: [options.payloadKey, "signature", "public_key", "verify_url"],
+    properties: {
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+      },
+      signature: { type: "string" },
+      public_key: { type: "string" },
+      algorithm: { type: "string" },
+      verify_url: {
+        type: "string",
+        format: "uri",
+        description: "Free, forever, no account — and checkable offline against the published key.",
+      },
+      note: { type: "string" },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
+ * THE CITED RECORDS — the mandate and the wallet statement.
+ *
+ * Both open with `what_this_is`, and on these two doors that field is
+ * the whole product's boundary rather than a summary: the mandate is
+ * "chain-of-custody, not truth-of-intent" (it proves a claim was made,
+ * never that the principal said it), and the statement is "a statement,
+ * never a judgment" (no comparison to anyone's ledger was made). It is
+ * required here because a reader who lost it would take both documents
+ * to establish considerably more than they do.
+ */
+function citedRecordSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  return {
+    type: "object",
+    required: ["what_this_is", options.payloadKey, "certificate"],
+    properties: {
+      what_this_is: {
+        type: "string",
+        description:
+          "What the record establishes AND what it does not. On these doors that boundary is the product.",
+      },
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+      },
+      certificate: {
+        type: "string",
+        format: "uri",
+        description: "The certificate this record was minted under; verifies free, forever.",
+      },
+      how_to_verify: { type: "array", items: { type: "string" } },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
+ * A refund, in whatever state it is actually in.
+ *
+ * `status` and `note` are required together and the reason is rule 10:
+ * refunds here are created pending and paid BY HAND. The note says
+ * which of those two is true right now, and a schema that made it
+ * optional would allow a document that reads as settled when it is not.
+ */
+const REFUND_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["refund_id", "item", "amount_usdc", "status", "created_at", "note"],
+  properties: {
+    refund_id: { type: "string" },
+    item: { type: "string" },
+    amount_usdc: { type: "number" },
+    status: { type: "string" },
+    created_at: { type: "string", format: "date-time" },
+    tx_hash: {
+      type: "string",
+      description: "Present once paid — the hash that proves it, on a door that would otherwise be our word.",
+    },
+    paid_at: { type: "string", format: "date-time" },
+    note: {
+      type: "string",
+      description:
+        "Paid, or pending and honest about it. Nothing here is automatic and this store does not claim it is.",
+    },
+  },
+};
+
+/**
+ * THE FREE SPECIMEN. A real artifact of the paid kind, marked as a
+ * specimen and NOT signed — so nobody can pass it off as a verdict
+ * about anyone.
+ *
+ * `specimen`, `not_signed` and `not_about_anyone` are all required.
+ * They are what keep a sample from being usable as evidence, and a
+ * schema that let any of them go missing would describe a document
+ * this store would not publish.
+ */
+const SAMPLE_ARTIFACT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "specimen", "not_signed", "not_about_anyone", "sample"],
+  properties: {
+    what_this_is: { type: "string" },
+    of_item: { type: "string" },
+    specimen: { type: "boolean" },
+    not_signed: {
+      type: "string",
+      description: "Why this carries no signature: a signed specimen would be indistinguishable from a real verdict.",
+    },
+    not_about_anyone: {
+      type: "string",
+      description: "The subject is fictional or the store's own, so nothing here is a finding about a third party.",
+    },
+    mark: { type: "string" },
+    sample: { type: "object", description: "The artifact itself, in the shape the paid door returns." },
+    price_of_the_real_thing: { type: "string" },
+    buy_url: { type: "string", format: "uri" },
+  },
+};
+
+/** The specimen rack. */
+const SAMPLES_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "samples", "free"],
+  properties: {
+    what_this_is: { type: "string" },
+    samples: { type: "array", items: { type: "string", format: "uri" } },
+    free: { type: "string" },
+    the_real_thing: { type: "string" },
+    check_your_own_door_free: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * The receipt verifier, described. `what_it_never_checks` is required
+ * beside `what_it_checks`, and `verdicts` enumerates every answer the
+ * desk can give — including `indeterminate` and
+ * `insufficient_evidence`, which are the two a checker that wanted to
+ * look decisive would quietly drop.
+ */
+const VERIFY_RECEIPT_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "how", "what_it_checks", "what_it_never_checks", "verdicts"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "string" },
+    what_it_checks: { type: "string" },
+    what_it_never_checks: {
+      type: "string",
+      description: "Named beside what it does check, because a verifier's silence about its limits gets read as coverage.",
+    },
+    verdicts: {
+      type: "object",
+      description:
+        "Every answer this desk can return, including the two that admit it could not decide.",
+      properties: {
+        valid: { type: "string" },
+        invalid: { type: "string" },
+        expired: { type: "string" },
+        insufficient_evidence: { type: "string" },
+        unsupported: { type: "string" },
+        indeterminate: { type: "string" },
+      },
+    },
+    stateless: {
+      type: "string",
+      description: "Nothing submitted here is stored.",
+    },
+    our_own_artifacts_by_id: { type: "string" },
+  },
+};
+
+/** This week's zodiac, and the archive behind it. */
+const ZODIAC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["week", "signs"],
+  properties: {
+    week: { type: "string" },
+    season_week: { type: "integer" },
+    signs: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "name"],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          essence: { type: "string" },
+          penalty: { type: "string" },
+        },
+      },
+    },
+    your_sign: { type: "string" },
+    almanac: { type: "string", format: "uri" },
+    archive: { type: "string", format: "uri" },
+  },
+};
+
+const ZODIAC_ARCHIVE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["pages"],
+  properties: {
+    archive: { type: "string" },
+    pages: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          sign: { type: "string" },
+          week: { type: "string" },
+          url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    price_usdc: { type: "number" },
+    season_weeks_elapsed: { type: "integer" },
+  },
+};
+
+/**
+ * THE WALLET CHALLENGE. `single_use` and `expires_in_seconds` are
+ * required: they are the two properties that make a captured signature
+ * replay nothing, and a client that could not see them would have no
+ * way to know the challenge is not a bearer token.
+ */
+const CLAIMS_CHALLENGE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["challenge", "expires_in_seconds", "single_use"],
+  properties: {
+    challenge: {
+      type: "string",
+      description: "The exact UTF-8 string to sign, with the same key that signs your payments.",
+    },
+    expires_in_seconds: { type: "integer" },
+    single_use: {
+      type: "boolean",
+      description: "Spent on first use, so a captured signature replays nothing.",
+    },
+    format: { type: "string" },
+    sign_how: { type: "string" },
+  },
+};
+
+/** What a wallet's proof returns: every record this store holds for it. */
+const CLAIMS_RESULT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["wallet", "certificates"],
+  properties: {
+    wallet: { type: "string" },
+    address: { type: "string" },
+    rails: { type: "array", items: { type: "string" } },
+    certificates: {
+      type: "array",
+      description: "Signed certificates from instant purchases, each with its permanent URL.",
+      items: { type: "object" },
+    },
+    record: { type: "object" },
+    verify_url: { type: "string", format: "uri" },
+    what: { type: "string" },
+    how: { type: "array", items: { type: "string" } },
+    sensitive: {
+      type: "string",
+      description: "What this response contains that a holder would not want logged.",
+    },
+  },
+};
+
+/**
+ * The Web Bot Auth battery. `what_this_is_not` is required for the
+ * same reason it is on every other verdict here: a passing check on a
+ * key directory says the directory is well-formed, not that whoever
+ * publishes it is trustworthy.
+ */
+const BOT_AUTH_CHECK_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["subject", "verdict", "checks", "criteria", "what_this_is_not"],
+  properties: {
+    subject: { type: "string" },
+    verdict: { type: "string" },
+    criteria: { type: "string", description: "The criteria version this verdict was rendered under." },
+    checks: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "ok"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    directory_url: { type: "string", format: "uri" },
+    expected_content_type: { type: "string" },
+    signed_version: {
+      type: "string",
+      description: "Where to buy the signed, certificate-bound version of this same battery.",
+    },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "A well-formed key directory is not a trustworthy operator. This checks the shape, never the party.",
+    },
+  },
+};
+
+/**
+ * A Tab delta submission. `accepted` is required and is a boolean
+ * rather than an implied 2xx: a delta can be received and refused, and
+ * `problems` says why. A client reading only the status would think
+ * everything landed.
+ */
+const TAB_DELTA_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["accepted"],
+  properties: {
+    accepted: { type: "boolean" },
+    problems: {
+      type: "array",
+      items: { type: "string" },
+      description: "Why a delta was refused, named rather than swallowed.",
+    },
+    what_a_delta_carries: { type: "string" },
+  },
+};
+
+/** A commissioned host profile, or the honest absence of one. */
+const HOST_PROFILE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["profile"],
+  properties: {
+    profile: {
+      type: "object",
+      nullable: true,
+      description: "Null when no profile has been commissioned for this host — an absence, never an adverse finding.",
+    },
+    in_term: { type: "boolean" },
+    freshness: { type: "object" },
+    latest_verdict: { type: "string" },
+    last_observed: { type: "string", format: "date-time" },
+    detail: { type: "string" },
+  },
+};
+
+/**
+ * A PRACTICE SCENARIO. This door answers 402 ALWAYS and on purpose —
+ * it is an obstacle course of deliberately broken challenges, so a
+ * client can meet each named failure once, safely, before meeting it
+ * in production. There is no 200 to describe, and inventing one would
+ * describe a door that does not exist.
+ */
+const PRACTICE_SCENARIO_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["practice", "scenario", "what_is_wrong", "what_a_good_client_does"],
+  properties: {
+    practice: {
+      type: "boolean",
+      description: "Always true. Nothing here mints, charges, or counts toward any metric.",
+    },
+    scenario: { type: "string" },
+    what_is_wrong: { type: "string" },
+    what_a_good_client_does: { type: "string" },
+    preflight_names_this: {
+      type: "string",
+      description: "The named check in the free battery that catches this defect on a real door.",
+    },
+    the_course: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * A signed receipt verdict. `not_checked` rides beside `checks` and
+ * `assurance_level` says how far the verdict reaches — a verifier that
+ * published only what it checked would be read as having checked
+ * everything.
+ */
+const RECEIPT_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["payload", "signature", "public_key"],
+  properties: {
+    payload: {
+      type: "object",
+      required: ["verdict", "checks", "not_checked", "assurance_level"],
+      properties: {
+        artifact: { type: "string" },
+        verified_at: { type: "string", format: "date-time" },
+        verdict: { type: "string" },
+        receipt_sha256: { type: "string" },
+        issuer: { type: "object" },
+        checks: { type: "array", items: { type: "object" } },
+        not_checked: {
+          type: "array",
+          items: { type: "object" },
+          description: "What this verdict did NOT establish, beside what it did.",
+        },
+        assurance_level: {
+          type: "string",
+          description: "How far the verdict reaches, so it is not quoted past its own scope.",
+        },
+        stateless: { type: "string", description: "Nothing submitted here is stored." },
+      },
+    },
+    signature: { type: "string" },
+    signature_jcs: { type: "string" },
+    signed_payload: {
+      type: "string",
+      description: "The exact bytes the signature covers, served beside it.",
+    },
+    public_key: { type: "string" },
+    verify_hint: { type: "string" },
+  },
+};
+
+/** A wallet's sign for the week. Fortune, plainly labelled as such. */
+const ZODIAC_READING_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["address", "sign", "week"],
+  properties: {
+    address: { type: "string" },
+    sign: { type: "string" },
+    sign_id: { type: "string" },
+    week: { type: "string" },
+    season: { type: "integer" },
+    season_week: { type: "integer" },
+    essence: { type: "string" },
+    penalty: { type: "string" },
+    forecast: { type: "string" },
+    auspicious: { type: "string" },
+    avoid: { type: "string" },
+    compatible: { type: "string" },
+    conditions: { type: "string" },
+    page: { type: "string", format: "uri" },
+  },
+};
+
+/** A filed tip on a door somebody found. */
+const TIP_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "tip_id", "status"],
+  properties: {
+    message: { type: "string" },
+    tip_id: { type: "string" },
+    status: {
+      type: "string",
+      description: "Filed for the keeper's review. A human reads every one; nothing publishes automatically.",
+    },
+    counter_sign: { type: "string" },
+    gazette_url: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * THE MCP DOOR, AND THE HONEST LIMIT OF WHAT A SCHEMA CAN SAY HERE.
+ *
+ * This is JSON-RPC 2.0. The envelope is fixed and describable —
+ * jsonrpc, id, and exactly one of result or error — but `result` is
+ * shaped by the METHOD, and there are as many shapes as there are
+ * methods. Enumerating them in this contract would duplicate the MCP
+ * specification, go stale the first time a method gains a field, and
+ * put this store in the position of publishing a second, worse copy of
+ * somebody else's protocol.
+ *
+ * So the envelope is typed and `result` is not, and the description
+ * says where the real shapes live. That is thinner than every other
+ * schema in this file, and it is the accurate thinness rather than the
+ * lazy kind: a client learns the frame it will get back and is pointed
+ * at the specification for the contents.
+ */
+const MCP_RPC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["jsonrpc"],
+  properties: {
+    jsonrpc: { type: "string", enum: ["2.0"] },
+    id: {
+      description: "Echoed from the request. Absent on a notification.",
+    },
+    result: {
+      type: "object",
+      description:
+        "Shaped by the method called — tools/list returns tools, resources/read returns contents, and so on. The shapes are the Model Context Protocol's rather than this store's; the free server card at /.well-known/mcp names the methods and capabilities actually served.",
+    },
+    error: {
+      type: "object",
+      description:
+        "JSON-RPC error. The buy_* tools carry their x402 payment terms in error.data on the first call — a 402 expressed in the protocol's own vocabulary rather than an HTTP status this transport cannot use.",
+      properties: {
+        code: { type: "integer" },
+        message: { type: "string" },
+        data: { type: "object" },
+      },
+    },
+  },
+};
+
+/** A wallet's store-credit balance, and the ceilings that bound it. */
+const CREDIT_BALANCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["wallet", "balance_usd"],
+  properties: {
+    wallet: { type: "string" },
+    balance_usd: { type: "number" },
+    earned_total_usd: { type: "number" },
+    redeemed_total_usd: { type: "number" },
+    expired_total_usd: {
+      type: "number",
+      description: "Credit that lapsed unspent — published rather than quietly dropped from the balance.",
+    },
+    outstanding_all_wallets_usd: { type: "number" },
+    what_this_is: { type: "string" },
+    cash_out: { type: "string" },
+  },
+};
+
+/** A letter the keeper has, and whether he has answered it. */
+const LETTER_STATUS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["letter_id", "status"],
+  properties: {
+    letter_id: { type: "string" },
+    status: { type: "string" },
+    received: { type: "string", format: "date-time" },
+    response: {
+      type: "string",
+      description: "The keeper's reply, once written. Absent until then rather than stubbed.",
+    },
+    note: { type: "string" },
+  },
+};
+
+/** A patronage pass, and what it does and does not buy. */
+const PATRONAGE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["note"],
+  properties: {
+    pass_id: { type: "string" },
+    badge_url: { type: "string", format: "uri" },
+    renew_url: {
+      type: "string",
+      format: "uri",
+      description: "Renewal is a fresh purchase a buyer decides to make. Nothing here charges again by itself.",
+    },
+    monthly_note: { type: "string" },
+    note: { type: "string" },
+  },
+};
+
+/**
+ * WHAT CHANGED BETWEEN TWO SIGNED WEEKS. `appeared`, `disappeared` and
+ * `transitions` are the whole product, and `how_to_rederive` is what
+ * makes it checkable: the two snapshots are named so a reader can
+ * recompute the diff and compare, rather than take this surface's word
+ * for what moved.
+ */
+const CORPUS_DIFF_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["from", "to", "appeared", "disappeared", "transitions"],
+  properties: {
+    from: { type: "object", description: "The baseline snapshot, with its sequence and digest." },
+    to: { type: "object", description: "The latest signed snapshot." },
+    appeared: {
+      type: "array",
+      items: { type: "object" },
+      description: "Doors present in the later week and not the earlier one.",
+    },
+    disappeared: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "Doors present in the earlier week and not the later one. An absence, never a verdict about the operator.",
+    },
+    transitions: {
+      type: "array",
+      items: { type: "object" },
+      description: "Doors whose verdict moved between the two weeks.",
+    },
+    drift: { type: "object" },
+    hosts_in_from: { type: "integer" },
+    hosts_in_to: { type: "integer" },
+    hosts_in_both: { type: "integer" },
+    how_to_rederive: {
+      type: "string",
+      description:
+        "Which two snapshots to fetch and how to recompute this diff yourself, so the surface is checkable rather than trusted.",
+    },
+  },
+};
+
+/** A filed bounty claim. */
+const BOUNTY_CLAIM_SCHEMA: OpenApiObject = {
+  type: "object",
+  properties: {
+    payer: { type: "string" },
+    status: { type: "string" },
+    message: { type: "string" },
+    what_this_is: { type: "string" },
+    the_rules: { type: "array", items: { type: "string" } },
+    how_to_claim: { type: "string" },
+    the_board: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * A standing note, attached. `rides_at` is the point of the whole
+ * door: it says WHERE the note will appear beside the store's own
+ * observation, so a subject exercising a right of reply can see that
+ * it actually rides rather than being filed somewhere nobody reads.
+ */
+const STANDING_NOTE_ACCEPTED_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["attached", "rides_at"],
+  properties: {
+    attached: { type: "boolean" },
+    rides_at: {
+      type: "string",
+      format: "uri",
+      description: "Where the note appears beside this store's observation of the subject.",
+    },
+    host: { type: "string" },
+    address: { type: "string" },
+    statement: { type: "string" },
+    signature: { type: "string" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -1371,6 +3493,57 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
  * being a second copy of the handler that drifts (rule 46) — they
  * cannot describe a store that does not exist without failing.
  */
+/**
+ * A door that serves MARKDOWN, said correctly.
+ *
+ * `freeOp` declares a JSON 200, which is right for most of this
+ * contract and was wrong for /auth.md and /pricing.md the day they
+ * shipped: both serve `text/markdown` and the spec claimed otherwise.
+ * That is worse than a vague schema — a generated client would have
+ * parsed a markdown body as JSON and failed on the first byte.
+ */
+function returnsMarkdown(operation: OpenApiObject): OpenApiObject {
+  const responses = operation["responses"] as OpenApiObject;
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "200": {
+        description: "OK",
+        ...MARKDOWN_RESPONSE,
+      },
+    },
+  };
+}
+
+/**
+ * A DOOR WHOSE ONLY ANSWER IS 402, DESCRIBED ON THE 402.
+ *
+ * The practice course answers 402 always and on purpose. There is no
+ * 200 to describe and no 200 to declare, so the schema rides the
+ * status the door actually sends. `returns` would have added a success
+ * this door never produces — the same defect as the intake doors'
+ * missing 201, facing the other way.
+ */
+function returnsOn402(
+  operation: OpenApiObject,
+  schema: OpenApiObject,
+): OpenApiObject {
+  const responses = { ...(operation["responses"] as OpenApiObject) };
+  delete responses["200"];
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "402": {
+        description:
+          "Payment Required — the scenario's deliberately broken challenge. This is the success case for this door.",
+        content: { "application/json": { schema } },
+      },
+    },
+  };
+}
+
 function returns(
   operation: OpenApiObject,
   schema: OpenApiObject,
@@ -2034,27 +4207,39 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/porch": {
-        get: freeOp(
-          "The porch",
-          "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+        get: returns(
+  freeOp(
+            "The porch",
+            "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+          ),
+          PORCH_SCHEMA,
         ),
       },
       "/attestation": {
-        get: freeOp(
-          "What this store signs",
-          "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "What this store signs",
+            "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
+          ),
+          ATTESTATION_SCHEMA,
         ),
       },
       "/rights": {
-        get: freeOp(
-          "What you own once you buy it",
-          "Who owns an artifact bought here, whether it transfers, and what may be done with it. You own it completely from settlement; the store has custody only. It is immutable after signing and the signature makes that checkable. It transfers, because these are bearer artifacts and no register of owners is kept. Redistribution is permitted including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee. Carries the rulings as booleans beside the prose. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "What you own once you buy it",
+            "Who owns an artifact bought here, whether it transfers, and what may be done with it. You own it completely from settlement; the store has custody only. It is immutable after signing and the signature makes that checkable. It transfers, because these are bearer artifacts and no register of owners is kept. Redistribution is permitted including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee. Carries the rulings as booleans beside the prose. HTML for browsers, JSON otherwise. Free.",
+          ),
+          RIGHTS_SCHEMA,
         ),
       },
       "/wind-down": {
-        get: freeOp(
-          "If the lights go off",
-          "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "If the lights go off",
+            "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
+          ),
+          WIND_DOWN_SCHEMA,
         ),
       },
       "/pulse.json": {
@@ -2077,18 +4262,40 @@ openapiRoutes.get("/openapi.json", async (c) => {
        */
       "/api/good-buyer/{reading_id}": {
         get: {
-          ...freeOp(
-              "A purchased payment dry run, served forever",
-              "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+          ...returns(
+  freeOp(
+                "A purchased payment dry run, served forever",
+                "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "reading",
+              payloadDescription:
+                "The signed good-buyer reading: what this wallet's settled purchases looked like at one moment.",
+            }),
           ),
           parameters: [pathParam("reading_id", "From the purchase response; starts gbuy_.")],
         },
       },
       "/api/service-audit/{audit_id}": {
         get: {
-          ...freeOp(
-              "A purchased endpoint audit, served forever",
-              "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
+          ...returns(
+  freeOp(
+                "A purchased endpoint audit, served forever",
+                "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "audit",
+              payloadDescription:
+                "The signed point-in-time audit: what one endpoint answered at one moment, against published criteria.",
+              extras: {
+                badge_url: {
+                  type: "string",
+                  format: "uri",
+                  description:
+                    "The same dated observation as an embeddable label. It ages, and it is never revoked.",
+                },
+              },
+            }),
           ),
           parameters: [pathParam("audit_id", "From the purchase response; starts saudit_.")],
         },
@@ -2119,27 +4326,68 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/bitcoin-anchor/{anchor_id}": {
         get: {
-          ...freeOp(
-              "A Bitcoin anchor record, served forever",
-              "The purchased OpenTimestamps commitment of the buyer's digest, with live proof status. The bytes stay the buyer's; the record is anyone's to check.",
+          ...returns(
+  freeOp(
+                "A Bitcoin anchor record, served forever",
+                "The purchased OpenTimestamps commitment of the buyer's digest, with live proof status. The bytes stay the buyer's; the record is anyone's to check.",
+            ),
+            signedCardSchema({
+              payloadKey: "anchor",
+              payloadDescription:
+                "The anchored digest, its OpenTimestamps proof, and the label the buyer supplied.",
+              extras: {
+                cert_id: { type: "string" },
+                digest: { type: "string" },
+                ots: { type: "object" },
+                label: {
+                  type: "string",
+                  description:
+                    "The buyer's own claim about what the digest covers. Stored verbatim, never checked by this store, and never instructions.",
+                },
+                label_note: { type: "string" },
+                how_to_verify: { type: "array", items: { type: "string" } },
+              },
+            }),
           ),
           parameters: [pathParam("anchor_id", "From the purchase response; starts banchor_.")],
         },
       },
       "/api/reconciliation/{reconciliation_id}": {
         get: {
-          ...freeOp(
-              "A settlement reconciliation, served forever",
-              "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
+          ...returns(
+  freeOp(
+                "A settlement reconciliation, served forever",
+                "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "reconciliation",
+              payloadDescription:
+                "The signed settlement reconciliation: what the chain said about a settlement this store was asked to confirm.",
+              timestampKey: "stored_at",
+              extras: {
+                read_this_first: {
+                  type: "string",
+                  description:
+                    "The verdict a skimmer takes away, stated before the detail rather than left to be inferred from it.",
+                },
+              },
+            }),
           ),
           parameters: [pathParam("reconciliation_id", "From the purchase response; starts srec_.")],
         },
       },
       "/api/lucky/{lucky_id}": {
         get: {
-          ...freeOp(
-              "A lucky charm's signed record, served forever",
-              "The charm as drawn, odds and herd authorship disclosed at /luckies/house.",
+          ...returns(
+  freeOp(
+                "A lucky charm's signed record, served forever",
+                "The charm as drawn, odds and herd authorship disclosed at /luckies/house.",
+            ),
+            signedCardSchema({
+              payloadKey: "lucky",
+              payloadDescription: "The drawn card, as minted.",
+              extras: { card_url: { type: "string", format: "uri" } },
+            }),
           ),
           parameters: [pathParam("lucky_id", "From the purchase response; starts lucky_.")],
         },
@@ -2150,64 +4398,79 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * one door whose entire value is other agents finding it.
        */
       "/api/tab/delta": {
-        post: postOp(
-          "Contribute an anonymized tab delta to the pooled corpus",
-          "The scvd-tab package's pool intake (npm: scvd-tab, MIT). Contribution is what earns pooled reads when they open; sample sizes are public at /api/tab/pool.",
-          "One delta. Two shapes, selected by `kind`; an undeclared field is refused by name.",
-          tabDeltaSchema(),
-        ),
+        post: returns(
+  postOp(
+            "Contribute an anonymized tab delta to the pooled corpus",
+            "The scvd-tab package's pool intake (npm: scvd-tab, MIT). Contribution is what earns pooled reads when they open; sample sizes are public at /api/tab/pool.",
+            "One delta. Two shapes, selected by `kind`; an undeclared field is refused by name.",
+            tabDeltaSchema(),
+          ),
+            TAB_DELTA_SCHEMA,
+          ),
       },
       "/api/tab/pool": {
-        get: freeOp(
-          "The pooled tab corpus's sample sizes",
-          "What the pool holds so far, counted. Pooled reads are not built yet and this endpoint says so honestly.",
+        get: returns(
+  freeOp(
+            "The pooled tab corpus's sample sizes",
+            "What the pool holds so far, counted. Pooled reads are not built yet and this endpoint says so honestly.",
+          ),
+          TAB_POOL_SCHEMA,
         ),
       },
       "/api/claims/challenge": {
-        post: postOp(
-          "Start a purchase-recovery claim",
-          "Send { address } — the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
-          "The wallet that paid. Nothing else, and nothing about you.",
-          {
-            type: "object",
-            required: ["address"],
-            additionalProperties: false,
-            properties: {
-              address: {
-                type: "string",
-                description:
-                  "0x + 40 hex for the EVM rails (Base and Polygon share addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+        post: returns(
+  postOp(
+            "Start a purchase-recovery claim",
+            "Send { address } — the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
+            "The wallet that paid. Nothing else, and nothing about you.",
+            {
+              type: "object",
+              required: ["address"],
+              additionalProperties: false,
+              properties: {
+                address: {
+                  type: "string",
+                  description:
+                    "0x + 40 hex for the EVM rails (Base and Polygon share addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+                },
               },
             },
-          },
-        ),
+          ),
+            CLAIMS_CHALLENGE_SCHEMA,
+          ),
       },
       "/api/claims": {
-        get: freeOp(
-          "How purchase recovery works",
-          "The claims door, described: challenge-response, every rail the store settles on, what a valid claim returns.",
+        get: returns(
+  freeOp(
+            "How purchase recovery works",
+            "The claims door, described: challenge-response, every rail the store settles on, what a valid claim returns.",
+          ),
+          CLAIMS_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Recover everything a wallet paid for",
-          "A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
-          "The address and its signature over the challenge string from POST /api/claims/challenge.",
-          {
-            type: "object",
-            required: ["address", "signature"],
-            additionalProperties: false,
-            properties: {
-              address: {
-                type: "string",
-                description: "The same address the challenge was issued for.",
-              },
-              signature: {
-                type: "string",
-                description:
-                  "The challenge string signed by that address's key. Possession of the key is the whole test; a bare address returns nothing.",
+        post: returns(
+  postOp(
+            "Recover everything a wallet paid for",
+            "A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
+            "The address and its signature over the challenge string from POST /api/claims/challenge.",
+            {
+              type: "object",
+              required: ["address", "signature"],
+              additionalProperties: false,
+              properties: {
+                address: {
+                  type: "string",
+                  description: "The same address the challenge was issued for.",
+                },
+                signature: {
+                  type: "string",
+                  description:
+                    "The challenge string signed by that address's key. Possession of the key is the whole test; a bare address returns nothing.",
+                },
               },
             },
-          },
-        ),
+          ),
+            CLAIMS_RESULT_SCHEMA,
+          ),
       },
       "/registry": {
         get: returns(
@@ -2229,29 +4492,38 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/practice/{scenario}": {
         get: {
-          ...freeOp(
-              "One practice scenario",
-              "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+          ...returnsOn402(
+  freeOp(
+                "One practice scenario",
+                "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+            ),
+            PRACTICE_SCENARIO_SCHEMA,
           ),
           parameters: [pathParam("scenario", "The scenario name, from GET /api/practice.")],
         },
       },
       "/api/verify-receipt": {
-        get: freeOp(
-          "Receipt verification — the doc",
-          "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+        get: returns(
+  freeOp(
+            "Receipt verification — the doc",
+            "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+          ),
+          VERIFY_RECEIPT_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Verify any receipt",
-          "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
-          "The receipt itself, as JSON, whoever issued it. Max 32KB.",
-          {
-            type: "object",
-            description:
-              "ANY receipt or signed artifact — no field list, and that is the contract rather than an omission: the desk exists to read OTHER issuers' documents, and a property list here would describe this store's own shape and quietly refuse everybody else's. What the desk could not read, it names in the verdict.",
-            additionalProperties: true,
-          },
-        ),
+        post: returns(
+  postOp(
+            "Verify any receipt",
+            "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
+            "The receipt itself, as JSON, whoever issued it. Max 32KB.",
+            {
+              type: "object",
+              description:
+                "ANY receipt or signed artifact — no field list, and that is the contract rather than an omission: the desk exists to read OTHER issuers' documents, and a property list here would describe this store's own shape and quietly refuse everybody else's. What the desk could not read, it names in the verdict.",
+              additionalProperties: true,
+            },
+          ),
+            RECEIPT_VERDICT_SCHEMA,
+          ),
       },
       "/passport": {
         get: returns(
@@ -2275,16 +4547,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/profiles": {
-        get: freeOp(
-          "Hosted trust profiles",
-          "What a hosted profile is, plus every in-term profile whose latest evidence is on the ready side. A profile is a standing page an operator commissions about their own endpoint (the trust_profile item, 30 days per purchase, renewable) aggregating the live passport, chip and signed history. Reading is free forever.",
+        get: returns(
+  freeOp(
+            "Hosted trust profiles",
+            "What a hosted profile is, plus every in-term profile whose latest evidence is on the ready side. A profile is a standing page an operator commissions about their own endpoint (the trust_profile item, 30 days per purchase, renewable) aggregating the live passport, chip and signed history. Reading is free forever.",
+          ),
+          PROFILES_INDEX_SCHEMA,
         ),
       },
       "/profiles/{host}": {
         get: {
-          ...freeOp(
-              "One host's hosted profile",
-              "The commissioned standing page for one endpoint: the signed commission record plus live-derived freshness and latest verdict. Serves honestly in both directions — a broken host shows broken, an expired term says so. 404 when nobody has commissioned one. Free to read.",
+          ...returns(
+  freeOp(
+                "One host's hosted profile",
+                "The commissioned standing page for one endpoint: the signed commission record plus live-derived freshness and latest verdict. Serves honestly in both directions — a broken host shows broken, an expired term says so. 404 when nobody has commissioned one. Free to read.",
+            ),
+            HOST_PROFILE_SCHEMA,
           ),
           parameters: [pathParam("host", "A hostname, no scheme and no path — e.g. example.com.")],
         },
@@ -2308,9 +4586,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corrections": {
-        get: freeOp(
-          "Corrections",
-          "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "Corrections",
+            "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+          ),
+          CORRECTIONS_SCHEMA,
         ),
       },
       /**
@@ -2320,9 +4601,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * desk or the corpus existed.
        */
       "/api/conformance/v1/fixtures": {
-        get: freeOp(
-          "Signed envelope fixtures for fail-closed integrations",
-          "Complete artifacts with real production signatures — valid, expired, tampered, and unknown-signer cases — each with the exact canonical string its signature covers, the exact desk call to make, and the verdict it returns. Every fixture is re-verified against the live desk before serving. Pin the set digest; build and test an integration without paying anything.",
+        get: returns(
+  freeOp(
+            "Signed envelope fixtures for fail-closed integrations",
+            "Complete artifacts with real production signatures — valid, expired, tampered, and unknown-signer cases — each with the exact canonical string its signature covers, the exact desk call to make, and the verdict it returns. Every fixture is re-verified against the live desk before serving. Pin the set digest; build and test an integration without paying anything.",
+          ),
+          CONFORMANCE_FIXTURES_SCHEMA,
         ),
       },
       "/api/conformance/v1": {
@@ -2392,28 +4676,31 @@ openapiRoutes.get("/openapi.json", async (c) => {
        */
       "/api/preflight/batch": {
         post: withRateLimitHeaders(
-          postOp(
+          returns(
+            postOp(
             "Preflight several x402 doors in one call",
             "The same probe as /api/preflight, run over up to 10 URLs, sequentially, each metered as its own probe — batching saves you connections, not outbound requests. Each entry carries the status its own probe returned, so a bad URL beside a good one does not fail the call. A batch over the ceiling is refused whole rather than truncated: a report on doors nobody looked at is the exact defect this instrument exists to catch. Free.",
             "The x402 doors to walk, at most 10.",
-            {
-              type: "object",
-              required: ["urls"],
-              additionalProperties: false,
-              properties: {
-                urls: {
-                  type: "array",
-                  minItems: 1,
-                  maxItems: 10,
-                  items: {
-                    type: "string",
-                    format: "uri",
-                    description:
-                      "An https URL on a public host, same rules as the single-URL door.",
+              {
+                type: "object",
+                required: ["urls"],
+                additionalProperties: false,
+                properties: {
+                  urls: {
+                    type: "array",
+                    minItems: 1,
+                    maxItems: 10,
+                    items: {
+                      type: "string",
+                      format: "uri",
+                      description:
+                        "An https URL on a public host, same rules as the single-URL door.",
+                    },
                   },
                 },
               },
-            },
+            ),
+            PREFLIGHT_BATCH_SCHEMA,
           ),
         ),
       },
@@ -2424,14 +4711,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * description is the only documentation some callers ever read.
        */
       "/ask": {
-        get: freeOp(
+        get: returns(
+          freeOp(
           "Ask this store a question about itself",
-          "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+            "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+          ),
+          ASK_SCHEMA,
         ),
         post: {
-          ...freeOp(
-            "Ask this store a question about itself (POST)",
-            "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+          ...returns(
+            freeOp(
+              "Ask this store a question about itself (POST)",
+              "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+            ),
+            ASK_SCHEMA,
           ),
           ...jsonBody("The question, and how you want it answered.", {
             type: "object",
@@ -2481,15 +4774,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/ask/feed.json": {
-        get: freeOp(
-          "The askable index, as a schema.org DataFeed",
-          "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+        get: returns(
+          freeOp(
+            "The askable index, as a schema.org DataFeed",
+            "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+          ),
+          ASK_FEED_SCHEMA,
         ),
       },
       "/sites": {
-        get: freeOp(
-          "Which sites /ask answers for",
-          "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+        get: returns(
+          freeOp(
+            "Which sites /ask answers for",
+            "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+          ),
+          SITES_SCHEMA,
         ),
       },
       /**
@@ -2499,21 +4798,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * know to fetch.
        */
       "/auth.md": {
-        get: freeOp(
-          "How an agent authenticates here",
-          "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+        get: returnsMarkdown(
+          freeOp(
+            "How an agent authenticates here",
+            "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+          ),
         ),
       },
       "/.well-known/oauth-protected-resource": {
-        get: freeOp(
+        get: returns(
+          freeOp(
           "Protected-resource metadata (RFC 9728)",
-          "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+            "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+          ),
+          PROTECTED_RESOURCE_SCHEMA,
         ),
       },
       "/pricing.md": {
-        get: freeOp(
-          "The pricing charter, in markdown",
-          "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+        get: returnsMarkdown(
+          freeOp(
+            "The pricing charter, in markdown",
+            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+          ),
         ),
       },
       "/api/preflight/checks": {
@@ -2536,7 +4842,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               ),
               PREFLIGHT_DOC_SCHEMA,
             ),
-            post: withRateLimitHeaders(postOp(
+            post: withRateLimitHeaders(returns(postOp(
               `Check an x402 endpoint's payment challenge shape (${battery})`,
               `One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free, and metered — the RFC RateLimit fields ride every answer. ${
                 battery === PREFLIGHT_VERSION_NEXT
@@ -2545,7 +4851,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               }`,
               "The x402 door to walk.",
               URL_BODY,
-            )),
+            ), PREFLIGHT_VERDICT_SCHEMA)),
           },
         ]),
       ),
@@ -2557,18 +4863,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           ONPAGE_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Check what a page serves a machine reader",
-          "One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.",
-          "The page to read, as served.",
-          URL_BODY,
+        post: returns(
+  postOp(
+            "Check what a page serves a machine reader",
+            "One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.",
+            "The page to read, as served.",
+            URL_BODY,
+          ),
+          ONPAGE_VERDICT_SCHEMA,
         ),
       },
       "/api/onpage-audit/{audit_id}": {
         get: {
-          ...freeOp(
-            "A purchased on-page audit report",
-            "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased on-page audit report",
+              "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "audit",
+              payloadDescription:
+                "The signed on-page report: what one page served a machine reader at one moment, scripts never run.",
+            }),
           ),
           parameters: [
             pathParam("audit_id", "From the purchase response; starts opage_."),
@@ -2576,77 +4892,103 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/pricing": {
-        get: freeOp(
-          "The pricing charter",
-          "How prices are set here, as a versioned, ed25519-signed commitment: same price for every wallet, sub-penny floor, verification free forever, dated changes, scarcity only where a human fulfils. Each clause names the check a stranger can run. HTML for browsers, JSON (with the signature and its canonical form) otherwise. Free.",
+        get: returns(
+  freeOp(
+            "The pricing charter",
+            "How prices are set here, as a versioned, ed25519-signed commitment: same price for every wallet, sub-penny floor, verification free forever, dated changes, scarcity only where a human fulfils. Each clause names the check a stranger can run. HTML for browsers, JSON (with the signature and its canonical form) otherwise. Free.",
+          ),
+          PRICING_CHARTER_SCHEMA,
         ),
       },
       "/bounties": {
-        get: freeOp(
-          "The Bounty Board",
-          "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
+        get: returns(
+  freeOp(
+            "The Bounty Board",
+            "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
+          ),
+          BOUNTIES_SCHEMA,
         ),
       },
       "/credit": {
-        get: freeOp(
-          "Regulars' credit",
-          "The rebate scheme in one page: the rate, the cash-out floor, the per-wallet cap, the idle expiry, and what it deliberately is NOT — a closed-loop IOU, never transferable, not a token. HTML for browsers, JSON otherwise; a single wallet's balance is /api/credit/{wallet}. Free.",
+        get: returns(
+  freeOp(
+            "Regulars' credit",
+            "The rebate scheme in one page: the rate, the cash-out floor, the per-wallet cap, the idle expiry, and what it deliberately is NOT — a closed-loop IOU, never transferable, not a token. HTML for browsers, JSON otherwise; a single wallet's balance is /api/credit/{wallet}. Free.",
+          ),
+          CREDIT_SCHEMA,
         ),
       },
       "/api/credit/{wallet}": {
         get: {
-          ...freeOp(
-            "Regulars' credit balance",
-            "The rebate balance a wallet has earned — 5% of every organic purchase banks to the wallet that paid, no account, the wallet is the card. Closed-loop: redeemable as USDC back to the earning wallet only (challenge-signed, POST /api/credit/challenge then /api/credit/redeem), never transferable, idle balances expire. The store's total outstanding credit is published on the same response, because a loyalty liability off the books is how real stores rot.",
+          ...returns(
+  freeOp(
+              "Regulars' credit balance",
+              "The rebate balance a wallet has earned — 5% of every organic purchase banks to the wallet that paid, no account, the wallet is the card. Closed-loop: redeemable as USDC back to the earning wallet only (challenge-signed, POST /api/credit/challenge then /api/credit/redeem), never transferable, idle balances expire. The store's total outstanding credit is published on the same response, because a loyalty liability off the books is how real stores rot.",
+            ),
+            CREDIT_BALANCE_SCHEMA,
           ),
           parameters: [pathParam("wallet", "A 0x Base address.")],
         },
       },
       "/api/bounties": {
-        get: freeOp(
-          "The bounty board — get paid to shop",
-          "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
+        get: returns(
+  freeOp(
+            "The bounty board — get paid to shop",
+            "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
+          ),
+          BOUNTIES_SCHEMA,
         ),
-        post: postOp(
-          "Claim a bounty (POST /api/bounty-claim)",
-          "POST /api/bounty-claim. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
-          "The settlement you are claiming against, and where the reward should go.",
-          {
-            type: "object",
-            required: ["bounty_id", "tx_hash", "payer", "payout_to"],
-            properties: {
-              bounty_id: {
-                type: "string",
-                description: "From the board at GET /api/bounties.",
-              },
-              tx_hash: {
-                type: "string",
-                description:
-                  "The Base transaction that settled your purchase at the bounty's door. One payout per transaction, ever.",
-              },
-              payer: {
-                type: "string",
-                description: "The wallet that paid, 0x + 40 hex.",
-              },
-              payout_to: {
-                type: "string",
-                description:
-                  "Where the signed EIP-3009 authorization pays. Screened before the authorization is issued.",
-              },
-              observation: {
-                type: "string",
-                description:
-                  "Optional. What you saw at that door, in your own words. Stored as written and never interpreted.",
+        post: returns(
+  postOp(
+            "Claim a bounty (POST /api/bounty-claim)",
+            "POST /api/bounty-claim. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
+            "The settlement you are claiming against, and where the reward should go.",
+            {
+              type: "object",
+              required: ["bounty_id", "tx_hash", "payer", "payout_to"],
+              properties: {
+                bounty_id: {
+                  type: "string",
+                  description: "From the board at GET /api/bounties.",
+                },
+                tx_hash: {
+                  type: "string",
+                  description:
+                    "The Base transaction that settled your purchase at the bounty's door. One payout per transaction, ever.",
+                },
+                payer: {
+                  type: "string",
+                  description: "The wallet that paid, 0x + 40 hex.",
+                },
+                payout_to: {
+                  type: "string",
+                  description:
+                    "Where the signed EIP-3009 authorization pays. Screened before the authorization is issued.",
+                },
+                observation: {
+                  type: "string",
+                  description:
+                    "Optional. What you saw at that door, in your own words. Stored as written and never interpreted.",
+                },
               },
             },
-          },
-        ),
+          ),
+            BOUNTY_CLAIM_SCHEMA,
+          ),
       },
       "/api/mandate/{mandate_id}": {
         get: {
-          ...freeOp(
-            "A purchased mandate record",
-            "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased mandate record",
+              "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+            ),
+            citedRecordSchema({
+              payloadKey: "mandate",
+              payloadDescription:
+                "The submitted mandate text, signed and dated as received. Proof the claim was made, never that the principal made it.",
+              extras: { cited_by: { type: "string" } },
+            }),
           ),
           parameters: [
             pathParam("mandate_id", "From the purchase response; starts m_."),
@@ -2655,9 +4997,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/statement/{statement_id}": {
         get: {
-          ...freeOp(
-            "A purchased wallet statement",
-            "The signed transfer record a the_statement purchase produced — every USDC transfer in and out of one Base wallet over the stated window — with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased wallet statement",
+              "The signed transfer record a the_statement purchase produced — every USDC transfer in and out of one Base wallet over the stated window — with its cert binding and verification steps. Served free, forever.",
+            ),
+            citedRecordSchema({
+              payloadKey: "statement",
+              payloadDescription:
+                "Every USDC transfer in and out of the named wallet over exactly the block window stated. No comparison to anyone's ledger was made — the holder does the comparing.",
+            }),
           ),
           parameters: [
             pathParam(
@@ -2669,9 +5018,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/launch-check/{check_id}": {
         get: {
-          ...freeOp(
-            "A purchased launch check record",
-            "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased launch check record",
+              "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "check",
+              payloadDescription:
+                "The signed launch check: a real mainnet purchase made against the buyer's own endpoint, and what it answered.",
+            }),
           ),
           parameters: [
             pathParam("check_id", "From the purchase response; starts lcheck_."),
@@ -2679,30 +5035,36 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/api/bot-auth/check": {
-        post: postOp(
-          "Check a Web Bot Auth key directory",
-          "One fetch, every check named: status, media type, JWK Set shape, Ed25519 keys, and the proof-of-possession signature verified against the listed keys. Free. The signed version is /api/buy/signature_agent_card; the readable landing is /bot-auth.",
-          "Your origin, or the directory's full URL.",
-          {
-            type: "object",
-            required: ["url"],
-            additionalProperties: false,
-            properties: {
-              url: {
-                type: "string",
-                format: "uri",
-                description:
-                  "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given.",
+        post: returns(
+  postOp(
+            "Check a Web Bot Auth key directory",
+            "One fetch, every check named: status, media type, JWK Set shape, Ed25519 keys, and the proof-of-possession signature verified against the listed keys. Free. The signed version is /api/buy/signature_agent_card; the readable landing is /bot-auth.",
+            "Your origin, or the directory's full URL.",
+            {
+              type: "object",
+              required: ["url"],
+              additionalProperties: false,
+              properties: {
+                url: {
+                  type: "string",
+                  format: "uri",
+                  description:
+                    "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given.",
+                },
               },
             },
-          },
-        ),
+          ),
+            BOT_AUTH_CHECK_SCHEMA,
+          ),
       },
       "/api/bot-auth-card/{card_id}": {
         get: {
-          ...freeOp(
-            "A purchased signature-agent card",
-            "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased signature-agent card",
+              "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
+            ),
+            BOT_AUTH_CHECK_SCHEMA,
           ),
           parameters: [
             pathParam("card_id", "From the purchase response; starts sacard_."),
@@ -2760,9 +5122,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/.well-known/http-message-signatures-directory": {
-        get: freeOp(
-          "This store's own Web Bot Auth key directory",
-          "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
+        get: returns(
+  freeOp(
+            "This store's own Web Bot Auth key directory",
+            "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
+          ),
+          SIGNATURES_DIRECTORY_SCHEMA,
         ),
       },
       /**
@@ -2806,55 +5171,76 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/standing-note": {
-        get: freeOp(
-          "The standing-note lane, explained",
-          "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+        get: returns(
+  freeOp(
+            "The standing-note lane, explained",
+            "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+          ),
+          STANDING_NOTE_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Attach a standing note",
-          "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
-          "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
-          {
-            type: "object",
-            required: ["subject", "statement"],
-            properties: {
-              subject: { type: "string", enum: ["host", "wallet"] },
-              statement: { type: "string", maxLength: 500 },
-              host: { type: "string" },
-              address: { type: "string" },
-              signature: { type: "string" },
+        post: returns(
+  postOp(
+            "Attach a standing note",
+            "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
+            "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
+            {
+              type: "object",
+              required: ["subject", "statement"],
+              properties: {
+                subject: { type: "string", enum: ["host", "wallet"] },
+                statement: { type: "string", maxLength: 500 },
+                host: { type: "string" },
+                address: { type: "string" },
+                signature: { type: "string" },
+              },
             },
-          },
-        ),
+          ),
+            STANDING_NOTE_ACCEPTED_SCHEMA,
+          ),
       },
       "/samples": {
-        get: freeOp(
-          "What a purchase hands back",
-          "The room showing a free, unsigned sample of a paid artifact, so nobody has to buy a document sight unseen. HTML to a browser, JSON to everything else. Free.",
+        get: returns(
+  freeOp(
+            "What a purchase hands back",
+            "The room showing a free, unsigned sample of a paid artifact, so nobody has to buy a document sight unseen. HTML to a browser, JSON to everything else. Free.",
+          ),
+          SAMPLES_INDEX_SCHEMA,
         ),
       },
       "/samples/once-over.json": {
-        get: freeOp(
-          "A free specimen of the Once-Over",
-          "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
+        get: returns(
+  freeOp(
+            "A free specimen of the Once-Over",
+            "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
+          ),
+          SAMPLE_ARTIFACT_SCHEMA,
         ),
       },
       "/doors": {
-        get: freeOp(
-          "Every door we have checked",
-          "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
+        get: returns(
+  freeOp(
+            "Every door we have checked",
+            "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
+          ),
+          DOOR_INDEX_SCHEMA,
         ),
       },
       "/doors.json": {
-        get: freeOp(
-          "Every endpoint observed, listed",
-          "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
+        get: returns(
+  freeOp(
+            "Every endpoint observed, listed",
+            "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
+          ),
+          DOOR_INDEX_SCHEMA,
         ),
       },
       "/corpus/battery-delta.json": {
-        get: freeOp(
-          "What the stricter battery catches that the frozen one misses",
-          "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
+        get: returns(
+  freeOp(
+            "What the stricter battery catches that the frozen one misses",
+            "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
+          ),
+          BATTERY_DELTA_SCHEMA,
         ),
       },
       "/corpus/wallet-facts.json": {
@@ -2867,49 +5253,61 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corpus/diff.json": {
-        get: freeOp(
-          "What changed since a signed week",
-          "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
-        ),
+        get: returns(
+  freeOp(
+            "What changed since a signed week",
+            "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
+          ),
+            CORPUS_DIFF_SCHEMA,
+          ),
       },
       "/mcp": {
-        post: postOp(
-          "The MCP door",
-          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
-          "One JSON-RPC 2.0 request. `initialize` is the handshake.",
-          {
-            type: "object",
-            required: ["jsonrpc", "method"],
-            properties: {
-              jsonrpc: { type: "string", const: "2.0" },
-              id: {
-                oneOf: [{ type: "string" }, { type: "integer" }],
-                description:
-                  "Omit for a notification; the store answers nothing.",
-              },
-              method: {
-                type: "string",
-                description:
-                  "initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list.",
-              },
-              params: {
-                type: "object",
-                additionalProperties: true,
-                description:
-                  "Per the MCP spec for the named method. A paid tools/call carries its x402 payment in the request _meta.",
+        post: returns(
+  postOp(
+            "The MCP door",
+            "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
+            "One JSON-RPC 2.0 request. `initialize` is the handshake.",
+            {
+              type: "object",
+              required: ["jsonrpc", "method"],
+              properties: {
+                jsonrpc: { type: "string", const: "2.0" },
+                id: {
+                  oneOf: [{ type: "string" }, { type: "integer" }],
+                  description:
+                    "Omit for a notification; the store answers nothing.",
+                },
+                method: {
+                  type: "string",
+                  description:
+                    "initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list.",
+                },
+                params: {
+                  type: "object",
+                  additionalProperties: true,
+                  description:
+                    "Per the MCP spec for the named method. A paid tools/call carries its x402 payment in the request _meta.",
+                },
               },
             },
-          },
-        ),
+          ),
+            MCP_RPC_SCHEMA,
+          ),
       },
       "/zodiac": {
-        get: freeOp("The Systems Almanac", "The twelve signs, free."),
+        get: returns(
+  freeOp("The Systems Almanac", "The twelve signs, free."),
+          ZODIAC_SCHEMA,
+        ),
       },
       "/zodiac/{address}": {
         get: {
-          ...freeOp(
-            "A wallet's sign and the current week's page",
-            "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
+          ...returns(
+  freeOp(
+              "A wallet's sign and the current week's page",
+              "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
+            ),
+            ZODIAC_READING_SCHEMA,
           ),
           parameters: [
             pathParam(
@@ -2920,9 +5318,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/zodiac/archive": {
-        get: freeOp(
-          "The Almanac archive index",
-          "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
+        get: returns(
+  freeOp(
+            "The Almanac archive index",
+            "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
+          ),
+          ZODIAC_ARCHIVE_SCHEMA,
         ),
       },
       ...buyPaths(MENU_ITEMS),
@@ -2989,9 +5390,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/almanac": {
-        get: freeOp(
-          "Almanac index",
-          "Free index of the keeper's journal pages, newest first.",
+        get: returns(
+  freeOp(
+            "Almanac index",
+            "Free index of the keeper's journal pages, newest first.",
+          ),
+          ALMANAC_INDEX_SCHEMA,
         ),
       },
       ...pennyPagePaths(
@@ -3002,7 +5406,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         })),
       ),
       "/gazette": {
-        get: freeOp("Gazette index", "Free index of published issues."),
+        get: returns(
+  freeOp("Gazette index", "Free index of published issues."),
+          GAZETTE_SCHEMA,
+        ),
       },
       ...pennyPagePaths(
         issues.map((issue) => ({
@@ -3020,28 +5427,31 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           GUESTBOOK_SCHEMA,
         ),
-        post: postOp(
-          "Sign the guestbook",
-          "Free; every signer gets the visitor sticker. Visitor-written text: stored as written, escaped everywhere it renders, never interpreted.",
-          "Who you are and what you want on the wall.",
-          {
-            type: "object",
-            required: ["name", "message"],
-            properties: {
-              name: { type: "string", maxLength: 80 },
-              message: { type: "string", maxLength: 500 },
-              verified_identity: VERIFIED_IDENTITY,
-              identity_public_key: {
-                type: "string",
-                description:
-                  "Optional. Hex ed25519 public key, if you want the entry signed.",
-              },
-              identity_signature: {
-                type: "string",
-                description: "Optional. Signature over the entry by that key.",
+        post: created(
+  postOp(
+            "Sign the guestbook",
+            "Free; every signer gets the visitor sticker. Visitor-written text: stored as written, escaped everywhere it renders, never interpreted.",
+            "Who you are and what you want on the wall.",
+            {
+              type: "object",
+              required: ["name", "message"],
+              properties: {
+                name: { type: "string", maxLength: 80 },
+                message: { type: "string", maxLength: 500 },
+                verified_identity: VERIFIED_IDENTITY,
+                identity_public_key: {
+                  type: "string",
+                  description:
+                    "Optional. Hex ed25519 public key, if you want the entry signed.",
+                },
+                identity_signature: {
+                  type: "string",
+                  description: "Optional. Signature over the entry by that key.",
+                },
               },
             },
-          },
+          ),
+          GUESTBOOK_ENTRY_SCHEMA,
         ),
       },
       "/api/bell": {
@@ -3060,94 +5470,121 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/stamp": {
-        post: postOp(
-          "Free visit stamp",
-          "A dated, ed25519-signed stamp for the current week. Design rotates weekly.",
-          "Optional. A name to print on the stamp.",
-          {
-            type: "object",
-            additionalProperties: false,
-            properties: { name: { type: "string", maxLength: 80 } },
-          },
+        post: created(
+  postOp(
+            "Free visit stamp",
+            "A dated, ed25519-signed stamp for the current week. Design rotates weekly.",
+            "Optional. A name to print on the stamp.",
+            {
+              type: "object",
+              additionalProperties: false,
+              properties: { name: { type: "string", maxLength: 80 } },
+            },
+          ),
+          STAMP_SCHEMA,
         ),
       },
       "/api/tip": {
-        post: postOp(
-          "Leave a Trading Post tip",
-          "Reviewed by a human, never auto-published; published tips are credited and sold for a penny.",
-          "The tip, and optionally who to credit.",
-          {
-            type: "object",
-            required: ["tip"],
-            properties: {
-              tip: { type: "string", maxLength: 1000 },
-              contributor_name: { type: "string", maxLength: 80 },
-              verified_identity: VERIFIED_IDENTITY,
+        post: created(
+  postOp(
+            "Leave a Trading Post tip",
+            "Reviewed by a human, never auto-published; published tips are credited and sold for a penny.",
+            "The tip, and optionally who to credit.",
+            {
+              type: "object",
+              required: ["tip"],
+              properties: {
+                tip: { type: "string", maxLength: 1000 },
+                contributor_name: { type: "string", maxLength: 80 },
+                verified_identity: VERIFIED_IDENTITY,
+              },
             },
-          },
-        ),
+          ),
+            TIP_RECEIPT_SCHEMA,
+          ),
       },
       "/api/request": {
-        post: postOp(
-          "Commission request",
-          "Ask the keeper for something that is not on the shelf. A human reads it.",
-          "What you want, what you would pay, and where to reach you.",
-          {
-            type: "object",
-            required: ["description", "offer_usdc", "contact"],
-            properties: {
-              description: {
-                type: "string",
-                description: "What you want made.",
-              },
-              offer_usdc: {
-                oneOf: [{ type: "number" }, { type: "string" }],
-                description: "What you would pay, in USDC.",
-              },
-              contact: {
-                type: "string",
-                description: "Where the keeper answers you.",
-              },
-              verified_identity: VERIFIED_IDENTITY,
-              suggest_listing: {
-                type: "boolean",
-                description:
-                  "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+        post: created(
+  postOp(
+            "Commission request",
+            "Ask the keeper for something that is not on the shelf. A human reads it.",
+            "What you want, what you would pay, and where to reach you.",
+            {
+              type: "object",
+              required: ["description", "offer_usdc", "contact"],
+              properties: {
+                description: {
+                  type: "string",
+                  description: "What you want made.",
+                },
+                offer_usdc: {
+                  oneOf: [{ type: "number" }, { type: "string" }],
+                  description: "What you would pay, in USDC.",
+                },
+                contact: {
+                  type: "string",
+                  description: "Where the keeper answers you.",
+                },
+                verified_identity: VERIFIED_IDENTITY,
+                suggest_listing: {
+                  type: "boolean",
+                  description:
+                    "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+                },
               },
             },
-          },
+          ),
+          REQUEST_RECEIPT_SCHEMA,
         ),
       },
       "/api/letter": {
-        post: postOp(
-          "Post a letter to the Mailbox",
-          "Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.",
-          "The letter. A name is optional and nothing else is asked for.",
-          {
-            type: "object",
-            required: ["letter"],
-            properties: {
-              letter: { type: "string", maxLength: 2000 },
-              from_name: { type: "string", maxLength: 80 },
-              verified_identity: VERIFIED_IDENTITY,
+        post: created(
+  postOp(
+            "Post a letter to the Mailbox",
+            "Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.",
+            "The letter. A name is optional and nothing else is asked for.",
+            {
+              type: "object",
+              required: ["letter"],
+              properties: {
+                letter: { type: "string", maxLength: 2000 },
+                from_name: { type: "string", maxLength: 80 },
+                verified_identity: VERIFIED_IDENTITY,
+              },
             },
-          },
+          ),
+          LETTER_RECEIPT_SCHEMA,
         ),
       },
       "/api/letter/{letter_id}": {
         get: {
-          ...freeOp(
-            "Check a letter",
-            "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+          ...returns(
+  freeOp(
+              "Check a letter",
+              "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+            ),
+            LETTER_STATUS_SCHEMA,
           ),
           parameters: [pathParam("letter_id", "From the posting response.")],
         },
       },
       "/api/phantom/{check_id}": {
         get: {
-          ...freeOp(
-            "Pick up a phantom_check attestation",
-            "Scheduled until the store walks past (~6h after purchase); then the signed observation.",
+          ...returns(
+  freeOp(
+              "Pick up a phantom_check attestation",
+              "Scheduled until the store walks past (~6h after purchase); then the signed observation.",
+            ),
+            signedCardSchema({
+              payloadKey: "observation",
+              payloadDescription: "What the watched door answered, at the moment stated.",
+              extras: {
+                check_id: { type: "string" },
+                status: { type: "string" },
+                target: { type: "string" },
+                due_at: { type: "string", format: "date-time" },
+              },
+            }),
           ),
           parameters: [pathParam("check_id", "From the phantom_check purchase.")],
         },
@@ -3166,44 +5603,71 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/anchor/{anchor_id}": {
         get: {
-          ...freeOp(
-            "Read a context anchor",
-            "A signed agent memory restore point, verified on every read.",
+          ...returns(
+  freeOp(
+              "Read a context anchor",
+              "A signed agent memory restore point, verified on every read.",
+            ),
+            signedCardSchema({
+              payloadKey: "anchor",
+              payloadDescription: "The anchored digest and what it commits to.",
+              extras: {
+                held_at: { type: "string" },
+                signed_payload: { type: "object" },
+                how_to_verify: { type: "array", items: { type: "string" } },
+                label_note: { type: "string" },
+              },
+            }),
           ),
           parameters: [pathParam("anchor_id", "From the context_anchor purchase.")],
         },
       },
       "/api/patronage/{pass_id}": {
         get: {
-          ...freeOp(
-            "Check a patronage pass",
-            "Pass dates, current status, and (while current) the keeper's signed monthly note.",
+          ...returns(
+  freeOp(
+              "Check a patronage pass",
+              "Pass dates, current status, and (while current) the keeper's signed monthly note.",
+            ),
+            PATRONAGE_SCHEMA,
           ),
           parameters: [pathParam("pass_id", "From the recurring_patronage purchase.")],
         },
       },
       "/directory": {
-        get: freeOp("Town Directory", "Honest one-line reviews of the neighbors."),
+        get: returns(
+  freeOp("Town Directory", "Honest one-line reviews of the neighbors."),
+          DIRECTORY_SCHEMA,
+        ),
       },
       "/api/refund/{refund_id}": {
         get: {
-          ...freeOp(
-              "Refund status",
-              "The honest status of a refund on the ledger: pending until the keeper pays it by hand, then paid with the transaction hash.",
+          ...returns(
+  freeOp(
+                "Refund status",
+                "The honest status of a refund on the ledger: pending until the keeper pays it by hand, then paid with the transaction hash.",
+            ),
+            REFUND_SCHEMA,
           ),
           parameters: [pathParam("refund_id", "From the refund record; starts refund_.")],
         },
       },
       "/.well-known/x402": {
-        get: freeOp(
-          "x402 discovery (minimal)",
-          "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
+        get: returns(
+  freeOp(
+            "x402 discovery (minimal)",
+            "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
+          ),
+          X402_DISCOVERY_SCHEMA,
         ),
       },
       "/.well-known/x402.json": {
-        get: freeOp(
-          "x402 discovery (full)",
-          "The richer origin-hosted catalog of payable resources.",
+        get: returns(
+  freeOp(
+            "x402 discovery (full)",
+            "The richer origin-hosted catalog of payable resources.",
+          ),
+          X402_DISCOVERY_SCHEMA,
         ),
       },
       /**
@@ -3213,27 +5677,39 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * the store rather than doing anything to it.
        */
       "/developers": {
-        get: freeOp(
-          "Developer documentation",
-          "One index of everything needed to build against this store: the OpenAPI contract, the free preflight and conformance endpoints, the MCP server, the CLI, and the conventions — authentication (there is none, and no account or API key exists), the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. HTML for browsers, JSON otherwise, markdown when the Accept header prefers it. Also served at /docs and /api, which carry a canonical link back here.",
+        get: returns(
+  freeOp(
+            "Developer documentation",
+            "One index of everything needed to build against this store: the OpenAPI contract, the free preflight and conformance endpoints, the MCP server, the CLI, and the conventions — authentication (there is none, and no account or API key exists), the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. HTML for browsers, JSON otherwise, markdown when the Accept header prefers it. Also served at /docs and /api, which carry a canonical link back here.",
+          ),
+          DEVELOPERS_SCHEMA,
         ),
       },
       "/.well-known/mcp": {
-        get: freeOp(
-          "Where the MCP server is",
-          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
+        get: returns(
+  freeOp(
+            "Where the MCP server is",
+            "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
+          ),
+          MCP_CARD_SCHEMA,
         ),
       },
       "/.well-known/agent-instructions": {
-        get: freeOp(
-          "When to reach for this store",
-          "The situations this store is the right call for, each with the items that answer it and the exact request to make — plus the half nobody publishes: when you do not need us. Derived from the same list /llms.txt renders, so the two cannot disagree.",
+        get: returns(
+  freeOp(
+            "When to reach for this store",
+            "The situations this store is the right call for, each with the items that answer it and the exact request to make — plus the half nobody publishes: when you do not need us. Derived from the same list /llms.txt renders, so the two cannot disagree.",
+          ),
+          AGENT_INSTRUCTIONS_SCHEMA,
         ),
       },
       "/.well-known/scvd-signing-key": {
-        get: freeOp(
-          "The store's public key",
-          "ed25519, hex. Anything we sign, this key verifies.",
+        get: returns(
+  freeOp(
+            "The store's public key",
+            "ed25519, hex. Anything we sign, this key verifies.",
+          ),
+          SIGNING_KEY_SCHEMA,
         ),
       },
     },
