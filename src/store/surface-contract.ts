@@ -236,6 +236,102 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
 ] as const;
 
 /**
+ * THE MCP DOOR'S REFUSALS (rule 57.4, the sweep's last stop,
+ * 2026-08-30).
+ *
+ * POST /mcp is a third front door beside the HTTP API and the rooms,
+ * and rule 57 binds "anything on this site". Measured before
+ * building: all 13 served tools carried outputSchema and annotations,
+ * and not one carried an error catalogue or a security block.
+ *
+ * TWO THINGS THE MEASUREMENT FOUND ON THE WIRE.
+ *
+ * `error.data` was null on every refusal, so the fact that mattered —
+ * nothing was charged — lived only in the English message. That is
+ * the same defect the buy doors carried until the sweep's second
+ * stop, and it is sharper here: the commit that fixed it there named
+ * this store's own MCP till as a client of those doors, while this
+ * door refuses on its own before ever reaching them.
+ *
+ * And -32602 was doing four different jobs — missing item_id, an
+ * item_id belonging to another shelf, a malformed tool input, and a
+ * prompts request. A caller could not tell "you asked the wrong
+ * shelf, here is the right one" from "your URL was not a URL" without
+ * parsing prose we are free to reword.
+ *
+ * THE STRING CODES ARE SHARED WITH THE MONEY PATH WHEREVER THE
+ * REFUSAL IS THE SAME. sold_out on MCP is sold_out on HTTP. Only the
+ * genuinely MCP-shaped ones are new — a cluster tool's shelves, and
+ * the resource door — because a third vocabulary for the same
+ * refusals is exactly what this file exists to prevent.
+ */
+export interface RpcRefusal {
+  /** The stable string a caller branches on, in error.data.code. */
+  code: string;
+  /** The JSON-RPC code on the envelope. Several refusals share one. */
+  jsonrpc: number;
+  means: string;
+  what_to_do: string;
+}
+
+export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
+  {
+    code: "bad_request",
+    jsonrpc: -32602,
+    means:
+      "the arguments did not match the tool's inputSchema, or a required one was missing. The message names which",
+    what_to_do:
+      "Read inputSchema on the tool and resend. Nothing was charged: the check runs before any payment is taken.",
+  },
+  {
+    code: "unknown_item",
+    jsonrpc: -32602,
+    means:
+      "the item_id you passed is not sold by any shelf at this store",
+    what_to_do:
+      "Call tools/list and read itemIds on the buy_* tools, or read /menu.json. Nothing was charged.",
+  },
+  {
+    code: "wrong_shelf",
+    jsonrpc: -32602,
+    means:
+      "the item exists but another buy_* tool sells it. The clusters partition the menu, so an item has exactly one shelf",
+    what_to_do:
+      "The message names the tool that sells it; call that one with the same item_id. Nothing was charged.",
+  },
+  {
+    code: "sold_out",
+    jsonrpc: -32000,
+    means:
+      "every unit is keeper-made ahead of time and the shelf is bare until he stocks it again",
+    what_to_do:
+      "Nothing was charged and no order was opened. The machine shelves never run out; this is a stocked one.",
+  },
+  {
+    code: "shelf_closed",
+    jsonrpc: -32000,
+    means:
+      "the human-labour shelf is shuttered because the keeper is away from the counter",
+    what_to_do:
+      "Nothing was charged. The machine shelves never close — buy one of those, or come back.",
+  },
+  {
+    code: "unknown_tool",
+    jsonrpc: -32602,
+    means: "no tool by that name is on the shelf",
+    what_to_do:
+      "Call tools/list, which is free and unauthenticated, and read the names. Nothing was charged.",
+  },
+  {
+    code: "no_such_resource",
+    jsonrpc: -32002,
+    means: "no resource is served at the uri you asked for",
+    what_to_do:
+      "The message lists what is on the shelf. This door costs nothing either way.",
+  },
+] as const;
+
+/**
  * The clauses themselves, as data, so the guard and any surface that
  * wants to publish the standard read one list rather than two.
  */
@@ -313,7 +409,7 @@ function doorFacts(
  * than an absent one, so MenuItem.reads is a stated fact, required by
  * the type, established from each fulfillment service's import graph.
  */
-const READS_SENTENCE: Record<MenuItem["reads"], string> = {
+export const READS_SENTENCE: Record<MenuItem["reads"], string> = {
   subject_fetch:
     "One unauthenticated outbound GET from our infrastructure to the endpoint you name — no credentials of yours, nothing of yours forwarded to it, and never a private, loopback or link-local address, nor our own hostname.",
   subject_purchase:

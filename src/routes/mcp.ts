@@ -121,6 +121,30 @@ function rpcResult(id: number | string | null, result: unknown): Response {
   return Response.json({ jsonrpc: "2.0", id, result });
 }
 
+/**
+ * A REFUSAL THAT COST NOTHING, SAID IN A FIELD (rule 57.4,
+ * 2026-08-30).
+ *
+ * Every pre-payment refusal on this door used to answer with the fact
+ * in English only — "No charge.", "No item, no charge.", "Nothing was
+ * charged." — and `error.data` null. The same defect the buy doors
+ * carried until the sweep's second stop, and sharper here, because
+ * -32602 was doing four different jobs at once: a caller could not
+ * tell a wrong shelf from a malformed input without parsing prose.
+ *
+ * Additive, exactly as it was there: the JSON-RPC code and the
+ * message are byte-for-byte what they were, and the string code and
+ * `charged` ride in data where a client can branch on them.
+ */
+function rpcRefusal(
+  id: number | string | null,
+  jsonrpc: number,
+  code: string,
+  message: string,
+): Response {
+  return rpcError(id, jsonrpc, message, { code, charged: false });
+}
+
 function rpcError(
   id: number | string | null,
   code: number,
@@ -432,7 +456,7 @@ async function callPurchaseTool(
 ): Promise<Response> {
   const invalid = validatePurchaseArgs(item, args);
   if (invalid) {
-    return rpcError(id, -32602, invalid);
+    return rpcRefusal(id, -32602, "bad_request", invalid);
   }
   /**
    * Idempotency replay, same mechanism as the HTTP door (see
@@ -494,9 +518,10 @@ async function callPurchaseTool(
   // Sold out honestly, same as the HTTP door: bare stocked shelves
   // never issue terms nobody can settle.
   if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
-    return rpcError(
+    return rpcRefusal(
       id,
       -32000,
+      "sold_out",
       `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
     );
   }
@@ -504,9 +529,10 @@ async function callPurchaseTool(
   if (await requiresPresentKeeper(c.env, item)) {
     const state = await shutterState(c.env);
     if (state.closed) {
-      return rpcError(
+      return rpcRefusal(
         id,
         -32000,
+        "shelf_closed",
         "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
       );
     }
@@ -847,9 +873,10 @@ async function handleRpc(
       const found = await readMcpResource(c.env, c.env.STORE_BASE_URL, uri);
       if (!found) {
         // -32002 is the spec's "resource not found".
-        return rpcError(
+        return rpcRefusal(
           id,
           -32002,
+          "no_such_resource",
           `No resource at ${uri || "(no uri given)"}. The shelf: ${[
             ...mcpResourceCatalog(),
             ...uiResourceCatalog(),
@@ -896,9 +923,10 @@ async function handleRpc(
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
       const tool = findMcpTool(name, c.env.STORE_BASE_URL);
       if (!tool) {
-        return rpcError(
+        return rpcRefusal(
           id,
           -32602,
+          "unknown_tool",
           `No tool by that name on the shelf: ${name}`,
         );
       }
@@ -944,9 +972,10 @@ async function handleRpc(
           const asked =
             typeof args["item_id"] === "string" ? args["item_id"] : "";
           if (!asked) {
-            return rpcError(
+            return rpcRefusal(
               id,
               -32602,
+              "bad_request",
               `This shelf needs an item_id. Pass one of: ${tool.itemIds.join(", ")}. No item, no charge.`,
             );
           }
@@ -974,9 +1003,10 @@ async function handleRpc(
             const sells = mcpToolCatalog(c.env.STORE_BASE_URL).find(
               (shelf) => shelf.itemId === asked || shelf.itemIds?.includes(asked),
             );
-            return rpcError(
+            return rpcRefusal(
               id,
               -32602,
+              sells ? "wrong_shelf" : "unknown_item",
               sells
                 ? `"${asked}" is not on this shelf, but it is on ${sells.name} — call that one with the same item_id. This shelf sells: ${tool.itemIds.join(", ")}. Nothing was charged.`
                 : `"${asked}" is not on this shelf, and no shelf here sells it. This one sells: ${tool.itemIds.join(", ")}. Nothing was charged.`,
@@ -1009,7 +1039,7 @@ async function handleRpc(
       }
       const result = await callFreeTool(c, name, args);
       if (typeof result === "string") {
-        return rpcError(id, -32602, result);
+        return rpcRefusal(id, -32602, "bad_request", result);
       }
       // MCP Apps: the call result repeats the card pointer (the
       // render-test hosts read it from both places).
