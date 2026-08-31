@@ -216,7 +216,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
   return [
     {
       q: "Authentication",
-      a: "There is none, and there is nothing to sign up for. Free shelves are open to anyone. Paid endpoints answer HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON); you sign one of the offered accepts and retry with the payment. Payment is per request and settles wallet-to-wallet — this store never holds your funds, issues a key, or keeps an account.",
+      a: `There is none, and there is nothing to sign up for. Free shelves are open to anyone. Paid endpoints answer HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON); you sign one of the offered accepts and retry with the payment. Payment is per request and settles wallet-to-wallet — this store never holds your funds, issues a key, or keeps an account. Written out with the worked procedure at ${base}/auth.md; the machine-readable form is ${base}/.well-known/oauth-protected-resource (RFC 9728), which every 402 from this store points at in its WWW-Authenticate header. That document names no authorization server because there is none, which is the honest shape of "no OAuth here" rather than an omission.`,
     },
     {
       q: "Errors",
@@ -232,7 +232,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Content negotiation",
-      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched.`,
+      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched. For callers that would rather guess a path than send a header, ${base}/index.md and ${base}/pricing.md serve the same bytes their negotiated originals do, with a canonical link back. What this store does NOT do is decide the dialect from your user-agent — see the declined positions below.`,
     },
   ];
 }

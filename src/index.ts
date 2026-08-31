@@ -1,3 +1,4 @@
+import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -55,6 +56,8 @@ import {
   noticeRoutes,
   standingNoteRoutes,
   trustRoutes,
+  agentAuthRoutes,
+  askRoutes,
   passportRoutes,
   profilesRoutes,
   receiptVerifyRoutes,
@@ -246,6 +249,8 @@ app.route("/", defectRoutes);
 app.route("/", noticeRoutes);
 app.route("/", standingNoteRoutes);
 app.route("/", trustRoutes);
+app.route("/", agentAuthRoutes);
+app.route("/", askRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
 app.route("/", receiptVerifyRoutes);
@@ -398,7 +403,75 @@ function methodsFor(path: string): string[] {
   return [...allowed].sort();
 }
 
-app.notFound((c) => {
+/**
+ * THE `.md` SUFFIX, ANSWERED BY THE PAGE THAT ALREADY SPEAKS MARKDOWN.
+ *
+ * Content negotiation is the right mechanism and this store has done
+ * it properly for a long time: parse Accept by q-value, serve the best
+ * representation, send Vary. It is not the only mechanism anybody
+ * uses. An agent that learned the llms.txt-era convention appends
+ * `.md` to a URL, and a 404 there reads as "this page has no markdown"
+ * rather than "ask for it differently" — a 2026-08-30 scan sampled
+ * three such paths and graded us partial on exactly that reading.
+ *
+ * DERIVED, NOT DUPLICATED. This does not render anything. It asks the
+ * store for the same path with `Accept: text/markdown` and passes the
+ * answer through, so a twin exists exactly where a real markdown
+ * representation exists and nowhere else. A page that only speaks HTML
+ * still 404s here, which is the honest answer: inventing a markdown
+ * rendering by stripping tags would publish a document nobody wrote.
+ *
+ * IT RUNS IN notFound, so it can never shadow a hand-built twin.
+ * /index.md, /pricing.md, /skill.md, /mcp.md, /sitemap.md and
+ * /agents.md are real routes with their own bytes and their own tests;
+ * they match first and this is never reached for them.
+ *
+ * PAID DOORS ARE EXCLUDED. `/api/buy/{id}.md` would make the till sign
+ * a full 402 challenge — nine offers on the widest item — to produce a
+ * 404, and a crawler walking the shelf with a `.md` suffix would do
+ * that once per item. No payment could be taken (a 402 is not a
+ * markdown 200), so this is a cost bound rather than a safety one, but
+ * it is a real cost and the shelf is the one place it multiplies.
+ */
+const MARKDOWN_SUFFIX = ".md";
+
+async function markdownTwin(c: Context<HonoEnv>): Promise<Response | null> {
+  if (c.req.method !== "GET") return null;
+  const path = c.req.path;
+  if (!path.endsWith(MARKDOWN_SUFFIX)) return null;
+  const target = path.slice(0, -MARKDOWN_SUFFIX.length);
+  if (!target || target === "/" || target.startsWith("/api/buy/")) return null;
+
+  const url = new URL(c.req.url);
+  url.pathname = target;
+  let upstream: Response;
+  try {
+    upstream = await app.fetch(
+      new Request(url, { headers: { Accept: "text/markdown" } }),
+      c.env,
+      c.executionCtx,
+    );
+  } catch {
+    // No execution context, or the inner request threw. A missing twin
+    // is a 404, never a 500 on the caller's behalf.
+    return null;
+  }
+  const type = upstream.headers.get("content-type") ?? "";
+  if (!upstream.ok || !type.includes("text/markdown")) return null;
+
+  const body = await upstream.text();
+  return c.text(body, 200, {
+    "content-type": MARKDOWN_MEDIA_TYPE,
+    Vary: VARY_ACCEPT,
+    // One document at two addresses. Saying otherwise hands an indexer
+    // a duplicate to adjudicate.
+    Link: `<${c.env.STORE_BASE_URL}${target}>; rel="canonical"`,
+  });
+}
+
+app.notFound(async (c) => {
+  const twin = await markdownTwin(c);
+  if (twin) return twin;
   const base = c.env.STORE_BASE_URL;
   const allowed = methodsFor(c.req.path);
   if (allowed.length > 0 && !allowed.includes(c.req.method.toUpperCase())) {

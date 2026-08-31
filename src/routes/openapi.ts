@@ -1953,9 +1953,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * for. One limiter, on one family of paths, reporting itself.
        */
       application_level_limit: true,
-      limited_paths: PREFLIGHT_VERSIONS.map(
-        (battery) => `/api/preflight/${battery}`,
-      ),
+      /*
+       * The batch door joins the versioned ones because it draws on
+       * the SAME buckets and draws harder: ten URLs is ten probes
+       * against the identical ceiling, and its answer carries the
+       * budget left when the last of them finished. A batching door
+       * that did not report the limiter would be the one place a
+       * caller most needs the number and least likely to have it.
+       */
+      limited_paths: [
+        ...PREFLIGHT_VERSIONS.map((battery) => `/api/preflight/${battery}`),
+        "/api/preflight/batch",
+      ],
       headers_returned: Object.keys(RATE_LIMIT_HEADER_SPEC),
       note: NO_APP_RATE_LIMIT,
       policy_url: `${base}/developers`,
@@ -2374,6 +2383,139 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * in the contract the day it is served rather than the day
        * somebody remembers this file.
        */
+      /**
+       * THE BATCH DOOR. Listed beside the single-URL one because a
+       * caller choosing between them should see both in the same
+       * place, and because the only thing worth saying about it is
+       * the thing a contract can say: same probe, same meter, a
+       * ceiling, and an oversized batch refused whole.
+       */
+      "/api/preflight/batch": {
+        post: withRateLimitHeaders(
+          postOp(
+            "Preflight several x402 doors in one call",
+            "The same probe as /api/preflight, run over up to 10 URLs, sequentially, each metered as its own probe — batching saves you connections, not outbound requests. Each entry carries the status its own probe returned, so a bad URL beside a good one does not fail the call. A batch over the ceiling is refused whole rather than truncated: a report on doors nobody looked at is the exact defect this instrument exists to catch. Free.",
+            "The x402 doors to walk, at most 10.",
+            {
+              type: "object",
+              required: ["urls"],
+              additionalProperties: false,
+              properties: {
+                urls: {
+                  type: "array",
+                  minItems: 1,
+                  maxItems: 10,
+                  items: {
+                    type: "string",
+                    format: "uri",
+                    description:
+                      "An https URL on a public host, same rules as the single-URL door.",
+                  },
+                },
+              },
+            },
+          ),
+        ),
+      },
+      /**
+       * NLWeb. Three doors, and the contract is where a function-calling
+       * client will meet them: the summary has to carry the honest
+       * shape of the thing (an index, not a model) because a tool
+       * description is the only documentation some callers ever read.
+       */
+      "/ask": {
+        get: freeOp(
+          "Ask this store a question about itself",
+          "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+        ),
+        post: {
+          ...freeOp(
+            "Ask this store a question about itself (POST)",
+            "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+          ),
+          ...jsonBody("The question, and how you want it answered.", {
+            type: "object",
+            required: ["query"],
+            additionalProperties: false,
+            properties: {
+              query: {
+                type: "string",
+                minLength: 1,
+                description:
+                  "The natural-language question, about this store and what it publishes.",
+              },
+              mode: {
+                type: "string",
+                enum: ["list", "summarize", "generate"],
+                default: "list",
+                description:
+                  "Only `list` is implemented. The other two are real NLWeb modes this store has not built, and asking for one returns 501 naming what to send instead — never a paraphrase assembled from keyword matches.",
+              },
+              limit: {
+                type: "integer",
+                minimum: 1,
+                maximum: 50,
+                default: 10,
+                description: "Maximum results to return.",
+              },
+              streaming: {
+                type: "boolean",
+                default: false,
+                description:
+                  "True for a text/event-stream response instead of JSON.",
+              },
+              prefer: {
+                type: "object",
+                additionalProperties: false,
+                description:
+                  "NLWeb's nested spelling of the same preference. Honoured identically to `streaming` above.",
+                properties: { streaming: { type: "boolean" } },
+              },
+              query_id: {
+                type: "string",
+                description:
+                  "Optional. Echoed back so you can pair a response with its question in a log. Never stored: nothing about a query is kept, here or anywhere.",
+              },
+            },
+          }),
+        },
+      },
+      "/ask/feed.json": {
+        get: freeOp(
+          "The askable index, as a schema.org DataFeed",
+          "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+        ),
+      },
+      "/sites": {
+        get: freeOp(
+          "Which sites /ask answers for",
+          "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+        ),
+      },
+      /**
+       * HOW YOU GET IN, IN THE CONTRACT. The store's answer is "you do
+       * not have to", and that answer belongs where an integrator
+       * looks for auth rather than only in a document they have to
+       * know to fetch.
+       */
+      "/auth.md": {
+        get: freeOp(
+          "How an agent authenticates here",
+          "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+        ),
+      },
+      "/.well-known/oauth-protected-resource": {
+        get: freeOp(
+          "Protected-resource metadata (RFC 9728)",
+          "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+        ),
+      },
+      "/pricing.md": {
+        get: freeOp(
+          "The pricing charter, in markdown",
+          "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+        ),
+      },
       "/api/preflight/checks": {
         get: returns(
           freeOp(

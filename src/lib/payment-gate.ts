@@ -1,4 +1,5 @@
 import { HonoAdapter } from "@x402/hono";
+import { challengeHint } from "@/store/agent-auth";
 import type {
   HTTPRequestContext,
   HTTPResponseInstructions,
@@ -610,6 +611,44 @@ class DialectTolerantAdapter extends HonoAdapter {
  * did no payment work, and folding it in would flatter the figure with
  * requests that never touched the till.
  */
+/**
+ * THE `WWW-Authenticate` HINT ON THE 402, for the client that arrived
+ * having read nothing.
+ *
+ * RFC 9110 §11.6.1 permits this header on responses other than 401
+ * "to indicate that supplying credentials might affect the response",
+ * which is exactly the 402's situation: there IS something you can
+ * send that changes this answer, and until now the only place that
+ * said so was a body some clients never parse and a header
+ * (PAYMENT-REQUIRED) no generic tooling knows to look at. A scan of
+ * this store on 2026-08-30 read the 402s, found no standard auth
+ * hint, and concluded the door had no documented way in.
+ *
+ * ONE PARAMETER, AND THE REASON IS A BUDGET RATHER THAN TASTE. The
+ * widest item's challenge already carries nine signed offers against
+ * Node's 16KB header cliff (test/challenge-header-budget.spec.ts), so
+ * every byte here is spent from a real allowance. `resource_metadata`
+ * is the one a probe reads (RFC 9728 §5.1) and it leads to a document
+ * that carries everything else, so a second parameter would buy a
+ * reader nothing and cost the buyer bytes.
+ *
+ * NEVER LET THE HINT FAIL THE CHALLENGE. A frozen header list on a
+ * response the SDK constructed is a hint we do without; it is not a
+ * reason a buyer fails to learn a price.
+ */
+function attachChallengeHint(
+  c: Context<HonoEnv>,
+  response: Response | void,
+): void {
+  const value = challengeHint(c.env.STORE_BASE_URL);
+  try {
+    (response ?? c.res)?.headers.set("WWW-Authenticate", value);
+  } catch {
+    // Immutable headers. The 402 body and PAYMENT-REQUIRED still say
+    // everything this header points at.
+  }
+}
+
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const startedAt = Date.now();
   let response: Response | void;
@@ -630,6 +669,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   const status = response?.status ?? c.res?.status;
   if (status === 402) {
+    attachChallengeHint(c, response);
     const elapsed = Date.now() - startedAt;
     try {
       c.executionCtx.waitUntil(

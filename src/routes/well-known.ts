@@ -1,5 +1,5 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
-import { apiCatalog, LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
+import { apiCatalog, API_CATALOG_MEDIA_TYPE } from "@/lib/api-catalog";
 import {
   ARD_LINK_REL,
   ARD_PREDECESSOR_PATH,
@@ -21,6 +21,7 @@ import {
   SPEC_SCHEMA_PATH,
 } from "@/lib/listing-spec";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { agentAuthBlock } from "@/store/agent-auth";
 import { freshness } from "@/lib/freshness";
 import {
   manifestAccepts,
@@ -112,6 +113,18 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * happy path a demo needs.
      */
     wallet_safety: WALLET_SAFETY,
+    /**
+     * HOW A READER GETS IN, IN THE DOCUMENT THEY ALREADY HAVE OPEN.
+     *
+     * "Is there an account? a key? an approval queue?" is the question
+     * immediately after "is this real", and a diligence pass that had
+     * to fetch a second document to learn the answer would often
+     * simply not. The same block the RFC 9728 document carries, from
+     * the same constants, so this can no more disagree with
+     * /.well-known/oauth-protected-resource than either can disagree
+     * with /auth.md.
+     */
+    agent_auth: agentAuthBlock(base),
     /**
      * Absolute, so a reader following this document never has to
      * resolve a relative path against a base it had to guess.
@@ -819,7 +832,21 @@ function mcpManifest(base: string) {
  * server behind three URLs, so it is not possible for these paths to
  * negotiate a different protocol version than /mcp does.
  */
-for (const path of ["/.well-known/mcp", "/.well-known/mcp.json"] as const) {
+/*
+ * THE THIRD SPELLING, ADDED 2026-08-30 FOR THE SAME REASON AS THE
+ * SECOND. A discoverability scan looked for the card at
+ * /.well-known/mcp/server-card.json — the path the SEP's own filename
+ * suggests — and reported this store as having no MCP server card,
+ * which is the identical false negative the `.json` alias was added to
+ * close. One object, three URLs, one server behind all of them; the
+ * cost of a guess being wrong is a 404 that reads as absence, and the
+ * cost of covering the guess is this line.
+ */
+for (const path of [
+  "/.well-known/mcp",
+  "/.well-known/mcp.json",
+  "/.well-known/mcp/server-card.json",
+] as const) {
   wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
   wellKnownRoutes.post(path, handleMcpPost);
 }
@@ -868,7 +895,7 @@ for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH] as const) {
  */
 wellKnownRoutes.get("/.well-known/api-catalog", (c) =>
   c.body(JSON.stringify(apiCatalog(c.env.STORE_BASE_URL), null, 2), 200, {
-    "Content-Type": `${LINKSET_MEDIA_TYPE}; charset=utf-8`,
+    "Content-Type": `${API_CATALOG_MEDIA_TYPE}; charset=utf-8`,
   }),
 );
 

@@ -1,9 +1,10 @@
 import { OG_IMAGE_PNG_BASE64 } from "@/store/og-image";
 import { Hono } from "hono";
 import { ARD_WELL_KNOWN_PATH } from "@/lib/ard-catalog";
+import { SCHEMA_MAP_PATH } from "@/routes/ask";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
-import { MENU_ITEMS } from "@/store";
+import { MENU_ITEMS, STORE_SERVICE_NAME } from "@/store";
 import { ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
@@ -50,6 +51,74 @@ export const HUMAN_SURFACES: readonly string[] = [
 export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
 
 /**
+ * THE NAMED AI CRAWLERS, ALLOWED OUT LOUD.
+ *
+ * `User-agent: *` with `Allow: /` already permits every one of these,
+ * so this list adds no permission the file did not grant. It adds
+ * something else, and a 2026-08-30 discoverability scan is what
+ * showed the difference: the scan read a wildcard and reported "no AI
+ * crawler policy", because a wildcard is what a site that has never
+ * thought about the question also serves. Silence and consent are
+ * byte-identical at the top of this file.
+ *
+ * So the position gets stated in the vocabulary the question is asked
+ * in. Each of these is a real, documented, currently-operating agent
+ * with a published user-agent token — no invented names, and none
+ * kept here after its operator retires it, because a stanza for a
+ * crawler that does not exist is the same class of false claim as a
+ * `sameAs` pointing at a page nobody wrote.
+ *
+ * WHY YES TO ALL OF THEM. The store's product is being the reference
+ * an agent reaches for on x402 conformance. A model that learned this
+ * corpus and can answer from it is distribution, and the argument is
+ * the same one CONTENT_SIGNAL makes above — printed twice because the
+ * two mechanisms are read by different readers, from one list, so
+ * they cannot come to disagree.
+ *
+ * TRAINING AND FETCHING ARE SEPARATE PERMISSIONS and both are yes
+ * here, which is worth saying because they are not the same question:
+ * `ClaudeBot` and `GPTBot` gather for training, `Claude-User` and
+ * `ChatGPT-User` fetch a page because a person asked about it this
+ * second, and `OAI-SearchBot` and `PerplexityBot` index for citation.
+ * A site can sensibly say yes to one and no to another. This one says
+ * yes to all three, and the third is the one it most wants: being
+ * CITED is the whole business.
+ */
+export const NAMED_AI_CRAWLERS: readonly string[] = [
+  // Anthropic: training, user-initiated fetch, search indexing.
+  "ClaudeBot",
+  "Claude-User",
+  "Claude-SearchBot",
+  "anthropic-ai",
+  // OpenAI: training, user-initiated fetch, search indexing.
+  "GPTBot",
+  "ChatGPT-User",
+  "OAI-SearchBot",
+  // Google's AI-training opt-out token (Googlebot proper is covered
+  // by the wildcard and has never been an AI-policy question).
+  "Google-Extended",
+  // Answer engines that cite their sources, which is the traffic this
+  // store is actually built to receive.
+  "PerplexityBot",
+  "Perplexity-User",
+  // Apple's AI-training token, same shape as Google-Extended.
+  "Applebot-Extended",
+  // Meta, Amazon, ByteDance, Mistral, Cohere, Common Crawl — the
+  // corpora that end up inside models we will never be told about.
+  "Meta-ExternalAgent",
+  "meta-externalagent",
+  "Amazonbot",
+  "Bytespider",
+  "MistralAI-User",
+  "cohere-ai",
+  "CCBot",
+  // Diffbot and Timpi build structured indexes that other agents buy
+  // from; a store that sells evidence wants to be inside those.
+  "Diffbot",
+  "Timpibot",
+];
+
+/**
  * The social card: the keeper's dino, pixel-drawn by
  * scripts/generate-og-image.mjs into a committed module — the same
  * bytes forever, no asset pipeline, cacheable hard.
@@ -81,7 +150,25 @@ Allow: /
 # a policy we would not enforce is one we should not print.
 Content-Signal: ${CONTENT_SIGNAL}
 
+# NAMED, BECAUSE A WILDCARD AND AN UNANSWERED QUESTION LOOK THE SAME.
+# Every agent below is already allowed by the wildcard above. Saying
+# so by name is the difference between a shop that permits AI crawling
+# and a shop that never considered it, and only one of those is true
+# here. Gathering for training, fetching because a person just asked,
+# and indexing for citation are three different permissions; all three
+# are yes. Being cited is the entire business.
+${NAMED_AI_CRAWLERS.map((agent) => `User-agent: ${agent}`).join("\n")}
+Allow: /
+
 Sitemap: ${base}/sitemap.xml
+# The schemamap directive: NLWeb's Schema Feeds convention, the
+# structured-data twin of the line above. The sitemap lists pages a
+# crawler reads; this lists the feeds an ingesting agent would rather
+# have than any page — the shelf, the corpus, the doors, the defect
+# vocabulary and the askable index, each already published for its own
+# reasons. Named here because robots.txt is the one file every crawler
+# already reads.
+Schemamap: ${base}${SCHEMA_MAP_PATH}
 # The Agentmap directive: ARD's robots.txt entry-source mechanism
 # (spec section 5.1). Same document a consumer would find at the
 # well-known path; named here because robots.txt is the one file every
@@ -179,15 +266,36 @@ siteMetaRoutes.get("/sitemap.md", async (c) => {
     .map((path) => `- [${base}${path}](${base}${path})`)
     .join("\n");
   return c.text(
-    `# Sitemap — Sean-Claude Van Damme's General Store
+    /*
+     * Frontmatter above the heading, like the store's other served
+     * markdown (2026-08-30): an agent gets the title, the canonical
+     * address and the update date without reading the list for them.
+     * `last_updated` is the same derived figure the body prints, not a
+     * second copy of it — one of the two going stale is exactly what
+     * a duplicated date does.
+     */
+    `---
+title: "Sitemap"
+description: "Every public page of ${STORE_SERVICE_NAME}, one line each — the same list sitemap.xml serves, in the format you are already reading."
+canonical: "${base}/sitemap.md"
+url: "${base}/sitemap.md"
+xml_twin: "${base}/sitemap.xml"
+schema_feeds: "${base}${SCHEMA_MAP_PATH}"
+last_updated: "${catalogLastUpdated()}"
+---
 
-Every public page, one line each — the same list [sitemap.xml](${base}/sitemap.xml) serves, in the format you are already reading. Machine maps: [llms.txt](${base}/llms.txt), [menu.json](${base}/menu.json), [openapi.json](${base}/openapi.json).
+# Sitemap — Sean-Claude Van Damme's General Store
+
+Every public page, one line each — the same list [sitemap.xml](${base}/sitemap.xml) serves, in the format you are already reading. Machine maps: [llms.txt](${base}/llms.txt), [menu.json](${base}/menu.json), [openapi.json](${base}/openapi.json). The structured-data feeds, as their own map: [schemamap.xml](${base}${SCHEMA_MAP_PATH}).
 
 Updated: ${catalogLastUpdated()}
 
 ${lines}
 `,
     200,
-    { "Content-Type": "text/markdown; charset=utf-8" },
+    {
+      "Content-Type": "text/markdown; charset=utf-8",
+      Link: `<${base}/sitemap.xml>; rel="alternate"; type="application/xml"`,
+    },
   );
 });

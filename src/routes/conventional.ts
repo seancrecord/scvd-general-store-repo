@@ -62,6 +62,24 @@ const GUESSED: Record<string, string> = {
   // /.well-known/security.txt left this map 2026-08-01: a real RFC
   // 9116 file is served by well-known.ts now, and a redirect here
   // would shadow it (this router mounts first).
+  /**
+   * THE AGENT-MODE VIEW, AT THE ADDRESS IT IS GUESSED AT.
+   *
+   * A 2026-08-30 discoverability scan looked for an "agent mode" view
+   * of the site and found none. The store HAS one and has had one for
+   * a month: /agents.md is the operational manual, written for a
+   * machine, with the doors, the payment procedure and the honest
+   * account of what this place cannot do. It is named on every
+   * discovery surface we have. What it is not is guessable by a reader
+   * that learned the convention as a mode rather than as a filename.
+   *
+   * Same reasoning as every other line in this map, and the same
+   * discipline: no new page, no new claim, no second copy that can
+   * drift from the first. One hop from the guess to the document that
+   * already answers.
+   */
+  "/agent": "/agents.md",
+  "/agent-mode": "/agents.md",
 };
 
 for (const [guessed, real] of Object.entries(GUESSED)) {

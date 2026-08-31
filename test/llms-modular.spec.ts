@@ -272,6 +272,36 @@ const BASE = "https://scvd.store";
  * corpus area, and the form/doors/mcp.md work), verified present
  * together before this value was taken.
  *
+ * Re-taken 2026-08-30 — the NINTH — for the doors opened in answer to
+ * a discoverability scan. The door list in the guide gained seven
+ * entries and no prose was touched: the batch preflight and /ask on
+ * the free-instruments line, and /pricing.md, /auth.md, the RFC 9728
+ * protected-resource metadata, /ask/feed.json and /sites on the
+ * catalog line. All seven were verified present TOGETHER in the served
+ * guide before this value was taken, which is the check this constant
+ * exists to force — the eight notes above are all the same lesson
+ * about digests re-taken against a text that had drifted since.
+ *
+ * Re-taken again 2026-08-30 — the TENTH — for one sentence. A declined
+ * position said "inventing three of them", which
+ * test/derived-not-typed.spec.ts reads as a typed tally on a served
+ * surface and refuses. That guard is blunt on purpose and was right to
+ * be: the phrase named three fields in the sentence before it, but a
+ * reader cannot tell that from the regex's side, and the fix is to
+ * write the sentence differently rather than to teach the guard an
+ * exception. The seven doors added earlier today are still present in
+ * these bytes and were re-verified before this value was taken.
+ *
+ * Re-taken 2026-08-31 — the ELEVENTH — on the declined-positions
+ * section, and this one is worth reading because the guard next to it
+ * is what forced the edit. Three new refusals went in and the
+ * developers area file crossed the llmstxt.org 30,000-character
+ * budget: 31,803. The fix was not to raise the budget or to exempt the
+ * area; it was that the new entries were written at 820 characters
+ * where the store's own average is 590. They are tighter now, two
+ * that argued the same thing are one, and the area sits at 29,484 with
+ * 516 characters of headroom. Whoever crosses it next should tighten
+ * their own prose the same way rather than move the line.
  * Re-taken 2026-08-30 for the /how-it-works section — the NINTH, and
  * the first of the nine that is a plain guide edit rather than a merge
  * of two branches that each re-took it. The room was built, registered
@@ -282,12 +312,24 @@ const BASE = "https://scvd.store";
  * /how-it-works paragraphs, which carry a ⚑ under rule 7 because the
  * wording is the keeper's to settle.
  *
+ * Re-taken 2026-08-31 — the TWELFTH — and this one is a MERGE, which
+ * is the case the eight notes above keep describing and the one this
+ * constant is worst at. Two branches each re-took it correctly for
+ * their own edit: main for the /how-it-works section, this branch for
+ * the discoverability doors and the declined positions. Neither value
+ * described the text that exists once both landed, exactly as the
+ * older notes predicted. Both sides' notes are kept above rather than
+ * one being dropped, and the value below was taken from the merged
+ * guide with BOTH sides' work verified present in it together — the
+ * /how-it-works nav line and paragraphs, and the seven new doors and
+ * the tightened refusals.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a0eafe29e5f2c9d4e3db8867a26170f81632fe3e130a8e0077d3c108cf8558c8";
+  "8d7ce1fbbb3705a55dfef4c470ecec493eadd35b96de919273c223de4019bc6c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

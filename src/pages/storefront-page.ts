@@ -311,6 +311,99 @@ function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
   };
 }
 
+/**
+ * THE FREE INSTRUMENTS, AS SERVICES RATHER THAN AS PRODUCTS.
+ *
+ * The shelf is Products with Offers, correctly: each one is a thing
+ * you buy and receive. The three free desks are not that — nothing is
+ * sold, nothing is delivered to an owner, and modelling them as
+ * zero-priced Products would say something false about what they are.
+ * schema.org has the right type for a capability offered rather than
+ * an item transferred, and a 2026-08-30 scan noted the store's
+ * structured data stopped at Organization, WebSite, ItemList and
+ * Product.
+ *
+ * THE FREE ONES ONLY, and that is the whole point of the block. This
+ * is the half of the store an answer engine most needs to be able to
+ * describe — "is there anything here I can use without paying" — and
+ * it was the half with no structured data of its own. `isAccessibleForFree`
+ * and a zero-price Offer both say so, because different consumers read
+ * different fields and neither is a claim we would not stand behind.
+ *
+ * NO AggregateRating and no Review, here or anywhere. See the declined
+ * positions at /developers: nothing this store publishes is a score, a
+ * rating, or a ranking, and that has to be true of our own page too.
+ */
+function freeServicesJsonLd(base: string): string {
+  const service = (options: {
+    name: string;
+    description: string;
+    path: string;
+    type: string;
+  }) => ({
+    "@type": "Service",
+    name: options.name,
+    description: options.description,
+    serviceType: options.type,
+    url: `${base}${options.path}`,
+    isAccessibleForFree: true,
+    provider: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    areaServed: "Worldwide",
+    offers: {
+      "@type": "Offer",
+      price: 0,
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: `${base}${options.path}`,
+    },
+  });
+
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${STORE_SERVICE_NAME} — the free instruments`,
+    description:
+      "What this store does for anyone, for nothing, with no account: check an x402 door before paying it, check any issuer's signed offers and receipts, and verify anything this store has ever signed.",
+    itemListElement: [
+      service({
+        name: "x402 endpoint preflight",
+        description:
+          "Send any x402 door's URL and get back what its 402 actually serves: whether it answers a well-formed challenge, whether its payTo can be credited on the rail it named, and what was not checked. One probe, one moment — a shape check, never an uptime claim.",
+        path: "/api/preflight",
+        type: "API endpoint verification",
+      }),
+      service({
+        name: "Conformance desk",
+        description:
+          "Check any issuer's signed x402 offers and receipts against published criteria — ours, or a competitor's. Free, no account, and the criteria are published so a verdict can be recomputed without asking us.",
+        path: "/api/conformance",
+        type: "Signed artifact conformance checking",
+      }),
+      /*
+       * ANCHORED AT THE PAGE, NOT AT THE TEMPLATE. The instrument
+       * itself is /api/verify/{cert_id}, which is a shape rather than
+       * an address — a Service whose url carried literal braces would
+       * be a link nothing can follow, and one anchored at the bare
+       * /api/verify would be a 404. The room that explains what a
+       * signature from this store proves is the door a reader can
+       * actually open, and it names the template. Caught by this
+       * file's own guard, which fetches every url it publishes.
+       */
+      service({
+        name: "Artifact verification",
+        description:
+          "Verify anything this store has ever signed, free, forever, with no account and no wallet: every certificate answers at /api/verify/{cert_id}. The public key is published, so it can also be done offline, without a request to us at all.",
+        path: "/attestation",
+        type: "Signature verification",
+      }),
+    ].map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item,
+    })),
+  });
+}
+
 function productListJsonLd(base: string): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
@@ -676,6 +769,7 @@ export function renderStorefront(data: StorefrontData): string {
   <script type="application/ld+json">${jsonLdBody(ardInPageEntries(data.base ?? "https://scvd.store"))}</script>
   <script type="application/ld+json">${webSiteJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
+  <script type="application/ld+json">${freeServicesJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
   <!--

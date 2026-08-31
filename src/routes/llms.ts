@@ -144,13 +144,13 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
@@ -1684,5 +1684,32 @@ for (const area of LLMS_AREAS) {
   llmsRoutes.get(`${area.path}/llms.txt`, (c) => {
     const body = llmsForArea(c.env.STORE_BASE_URL, area.slug);
     return c.text(body ?? "", body ? 200 : 404);
+  });
+}
+
+/**
+ * THE DEVELOPER AREA'S FILE, AT THE OTHER TWO NAMES ITS ROOM ANSWERS TO
+ * (2026-08-30).
+ *
+ * /developers, /docs and /api have been three paths onto one page since
+ * the room shipped, for the reason developers.ts states: redirecting
+ * would cost a round trip and hide the page from anything that does not
+ * follow 301s. The per-area llms file did not inherit that, so
+ * /docs/llms.txt and /api/llms.txt were 404s — and a scan looking for
+ * modular llms.txt files probed exactly those two, found nothing, and
+ * reported one area where there are five.
+ *
+ * Same document, same function, canonical link back at the one path
+ * that is canonical for the room. Nothing new is written and no sixth
+ * area is invented; this is the room's own alias list, applied to the
+ * file that hangs under it.
+ */
+for (const alias of ["/docs", "/api"] as const) {
+  llmsRoutes.get(`${alias}/llms.txt`, (c) => {
+    const base = c.env.STORE_BASE_URL;
+    const body = llmsForArea(base, "developers");
+    return c.text(body ?? "", body ? 200 : 404, {
+      Link: `<${base}/developers/llms.txt>; rel="canonical"`,
+    });
   });
 }

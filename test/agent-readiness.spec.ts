@@ -151,7 +151,10 @@ describe("the front door answers in the dialect it was asked in", () => {
      */
     expect(doc.headers.get("vary")).toContain("Accept");
     const body = await doc.text();
-    expect(body.startsWith("#")).toBe(true);
+    // A frontmatter block, then the heading (2026-08-30): metadata
+    // above the document, the document still led by its H1.
+    expect(body.startsWith("---\n")).toBe(true);
+    expect(body).toMatch(/\n---\n+# /);
   });
 
   it("declares Vary on the HTML variant too, not just the markdown one", async () => {
