@@ -133,26 +133,39 @@ jobs:
       # PROVE IT LANDED, rather than trusting the exit code. The same
       # question the weekly door battery asks: does the published entry
       # now repeat what server.json says?
+      #
+      # IT POLLS, because the first cut slept five seconds and failed a
+      # publish that had ALREADY SUCCEEDED (2026-08-31, the keeper's
+      # first real run). The registry accepts a version and marks it
+      # isLatest a beat later; reading once into that gap reports the
+      # previous row and calls a good publish broken. A red build for
+      # work that worked is the most expensive kind of false finding —
+      # it teaches the person holding the button to disbelieve the
+      # button. Ninety seconds of patience, then a verdict.
       - name: Read the listing back
         if: ${{ !inputs.dry_run }}
         run: |
-          sleep 5
-          curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > after.json
-          node -e '
-            const rows = require("./after.json").servers ?? [];
-            const mine = require("./server.json");
-            const live = rows.filter((r) => r.server?.name === mine.name);
-            const latest = live.find(
-              (r) => r._meta?.["io.modelcontextprotocol.registry/official"]?.isLatest,
-            );
-            if (!latest) {
-              console.error("Published, but no entry is marked isLatest yet. Re-check in a minute.");
-              process.exit(1);
-            }
-            console.log("live latest:", latest.server.version, "-", latest.server.description);
-            if (latest.server.description !== mine.description) {
-              console.error("The registry latest does not repeat server.json. Something else is newest.");
-              process.exit(1);
-            }
-            console.log("The registry now repeats what we publish.");
-          '
+          for attempt in $(seq 1 15); do
+            sleep 6
+            curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > after.json
+            if node -e '
+              const rows = require("./after.json").servers ?? [];
+              const mine = require("./server.json");
+              const latest = rows
+                .filter((r) => r.server?.name === mine.name)
+                .find((r) => r._meta?.["io.modelcontextprotocol.registry/official"]?.isLatest);
+              if (!latest) process.exit(1);
+              if (latest.server.version !== mine.version) process.exit(1);
+              if (latest.server.description !== mine.description) process.exit(1);
+              console.log("live latest:", latest.server.version, "-", latest.server.description);
+            '; then
+              echo "The registry now repeats what we publish."
+              exit 0
+            fi
+            echo "  not visible yet (attempt $attempt) — the registry is still catching up"
+          done
+          echo "::error::Published, but the registry has not shown it as latest after 90s."
+          echo "This may be propagation rather than failure. Check the listing by hand before re-running:"
+          echo "  curl -s 'https://registry.modelcontextprotocol.io/v0/servers?search=scvd'"
+          echo "A version that IS published cannot be published again — bump server.json instead."
+          exit 1

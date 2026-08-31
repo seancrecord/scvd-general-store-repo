@@ -66,6 +66,20 @@ From a laptop it is still two commands, and they still work:
     mcp-publisher login dns --domain scvd.store --private-key <key>
     mcp-publisher publish
 
+**DONE 2026-08-31.** The keeper pressed it: `0.2.2` is on the registry,
+marked `isLatest`, carrying the observatory sentence. PulseMCP and every
+other reader downstream now repeat what we serve.
+
+One thing was learned at the counter and is worth keeping. The
+workflow's read-back step slept five seconds and then checked — and the
+registry marks a new version `isLatest` a beat later than it accepts
+it, so the first real run reported "the registry latest does not repeat
+server.json" about a publish that had ALREADY SUCCEEDED. A red build
+for work that worked is the most expensive kind of false finding: it
+teaches the person holding the button to disbelieve the button. The
+step now polls for ninety seconds and only then gives a verdict, and
+says out loud that the failure may be propagation rather than failure.
+
 **And it is now watched.** `npm run doors:check` compares the
 registry's `isLatest` entry against `server.json` every week and goes
 red on a mismatch, so the next time the file and the listing part
