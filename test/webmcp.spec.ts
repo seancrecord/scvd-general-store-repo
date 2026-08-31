@@ -221,6 +221,42 @@ describe("the door itself", () => {
     expect(Math.max(...expiries)).toBeGreaterThan(soonest);
   });
 
+  /**
+   * AND THE DATE THE SKILL BUNDLE PRINTS, which is the copy that gets
+   * INSTALLED into somebody else's agent and cannot be edited once it
+   * is.
+   *
+   * The bundle tells a browser-side reader when the trial it is riding
+   * runs out. That is a genuinely useful thing to state and a
+   * genuinely dangerous thing to type: it is true on the day it is
+   * written and false forever after the tokens are renewed, in a
+   * document we do not control a copy of. The 2026-08-31 overhaul
+   * typed it by hand, which is the same habit that had the same file
+   * quoting a $5 audit at $0.10 for four days.
+   *
+   * So it is derived here instead of trusted. If the tokens are
+   * renewed and the bundle is not, this fails and names both dates.
+   */
+  it("prints the soonest expiry the tokens actually carry", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const stated = bundle.match(/expires (\d{4}-\d{2}-\d{2})/);
+    expect(stated, "the bundle no longer states a trial expiry").not.toBeNull();
+    const soonest = Math.min(
+      ...WEBMCP_ORIGIN_TRIAL_TOKENS.map((entry) => {
+        const decoded = atob(entry.token);
+        return (
+          JSON.parse(decoded.slice(decoded.indexOf('{"origin"'))) as {
+            expiry: number;
+          }
+        ).expiry;
+      }),
+    );
+    expect(
+      stated?.[1],
+      "the published skill states a trial expiry the tokens do not carry",
+    ).toBe(new Date(soonest * 1000).toISOString().slice(0, 10));
+  });
+
   it("?src=webmcp is its own channel, the skill's pattern", () => {
     expect(inferChannel({ declaredSource: "webmcp" })).toBe("webmcp");
     // Claims are claims: the marker never overrides the MCP door's

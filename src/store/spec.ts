@@ -104,6 +104,37 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * is the guard working, and also the reason nobody notices.
  */
 /**
+ * 3.8.0 (2026-08-31): THE OVERHAUL. The bundle had gone four days
+ * describing a store that had moved underneath it, and the drift was
+ * not one kind of thing.
+ *
+ * WRONG, now right: the Once-Over at $0.10 against a $5 shelf, the
+ * Hosted Profile at $19 after the keeper repriced it to $21, a shelf
+ * range of "$0.005 to $50" against a real $0.001 to $300, and a
+ * frontmatter promising entry "from $0.004" under a $0.001 floor.
+ * Every one of those is now pinned by test/skill-prices.spec.ts and
+ * the whole class is written up at /corrections.
+ *
+ * MISSING, now present: THE BROWSER DOOR, which the bundle did not
+ * mention at all — webmcp.js, five read-only browser tools registered
+ * through document.modelContext, both origin trials, and the
+ * conformance desk's declaratively annotated form with the ruling
+ * that toolautosubmit is deliberately absent. Also the free desks
+ * collected into one table beside the paid twin each one is the
+ * battery for; the doors that were on the shelf and never named
+ * (spot_check, good_buyer, onpage_audit, certificate_of_patronage);
+ * and the standing rooms derived from the corpus that a reader had no
+ * way to find (/doors, /fresh-set, /defects, /criteria, /inflows).
+ *
+ * NEW, and the frame the rest hangs on: "six ways in" — the six roads
+ * an agent can take to an app, each named, each walkable here, and the
+ * sixth (a hosted chat surface) named as deliberately not taken.
+ *
+ * MINOR rather than MAJOR: nothing an installed 3.7.0 reader was told
+ * to call has moved or gone away. It was reading a smaller and, in
+ * four places, a cheaper store than the one that exists.
+ */
+/**
  * 3.7.0 (2026-08-21): trust_profile ($19 ⚑) — the keeper's ruled
  * recurring door, a STANDING page for an endpoint at
  * /profiles/{host}: live passport, chip and signed history at one
@@ -114,7 +145,7 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * quote a shelf that has since grown. Mid-flight until the keeper
  * republishes — and this time the record on disk will say so.
  */
-export const SKILL_VERSION = "3.7.0";
+export const SKILL_VERSION = "3.8.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
