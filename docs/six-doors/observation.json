@@ -1,6 +1,6 @@
 {
-  "taken_at": "2026-08-29T18:01:19.623Z",
-  "expires_at": "2026-09-28T18:01:19.623Z",
+  "taken_at": "2026-08-31T17:22:24.796Z",
+  "expires_at": "2026-09-30T17:22:24.796Z",
   "doors": [
     {
       "id": "raw_api",
@@ -19,7 +19,7 @@
           "asks": "Is there a machine-readable description of every HTTP door?",
           "how": "curl -s https://scvd.store/openapi.json | head",
           "verdict": "met",
-          "note": "112 paths described"
+          "note": "124 paths described"
         },
         {
           "id": "catalog_discoverable",
@@ -47,7 +47,7 @@
           "asks": "Does the description cover the paid doors, not just the free ones?",
           "how": "curl -s https://scvd.store/openapi.json | grep -c '\"402\"'",
           "verdict": "met",
-          "note": "27 documented 402 responses"
+          "note": "28 documented 402 responses"
         }
       ]
     },
@@ -57,9 +57,9 @@
       "name": "A backend MCP server",
       "stance": null,
       "tally": {
-        "met": 4,
+        "met": 5,
         "partial": 0,
-        "unmet": 1,
+        "unmet": 0,
         "unknown": 0
       },
       "criteria": [
@@ -95,8 +95,8 @@
           "id": "registry_description_current",
           "asks": "Does the public registry repeat the description we currently publish?",
           "how": "compare server.json's description against the isLatest entry at https://registry.modelcontextprotocol.io/v0/servers?search=scvd",
-          "verdict": "unmet",
-          "note": "published 0.2.1 says \"The trust layer of the x402 economy: free conformance checks, attestation, corpus, agent store.\" — server.json (0.2.2) says \"Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store.\""
+          "verdict": "met",
+          "note": "published 0.2.2 repeats server.json's description"
         }
       ]
     },
@@ -124,7 +124,7 @@
           "asks": "Is one look at the front door cheap?",
           "how": "curl -s -o /dev/null -w \"%{size_download}\" https://scvd.store/",
           "verdict": "met",
-          "note": "101 KB, budget 195 KB"
+          "note": "105 KB, budget 195 KB"
         },
         {
           "id": "cheaper_road_advertised",
@@ -148,9 +148,9 @@
       "name": "Browser automation",
       "stance": null,
       "tally": {
-        "met": 3,
+        "met": 4,
         "partial": 0,
-        "unmet": 1,
+        "unmet": 0,
         "unknown": 0
       },
       "criteria": [
@@ -163,17 +163,17 @@
         },
         {
           "id": "stable_hooks",
-          "asks": "Is there anything on the page a script can hold that is not a style class?",
-          "how": "curl -s https://scvd.store/ | grep -o 'data-[a-z-]*=\\|id=\"[^\"]*\"' | sort -u",
-          "verdict": "unmet",
-          "note": "no first-party data-* attributes and no ids: every hook is a style class, which redesigns move"
+          "asks": "Is there anything on the rooms a script can hold that is not a style class?",
+          "how": "fetch every URL in /sitemap.xml as a browser and check each page's <main> for a first-party data-* or id",
+          "verdict": "met",
+          "note": "every one of 70 HTML rooms hooks its <main>"
         },
         {
           "id": "navigation_is_links",
           "asks": "Is getting around the site real hrefs rather than script handlers?",
           "how": "curl -s https://scvd.store/ | grep -c '<a href='",
           "verdict": "met",
-          "note": "42 plain links; navigation needs no script"
+          "note": "45 plain links; navigation needs no script"
         },
         {
           "id": "machine_twin_linked",
@@ -190,9 +190,9 @@
       "name": "WebMCP",
       "stance": null,
       "tally": {
-        "met": 4,
+        "met": 5,
         "partial": 0,
-        "unmet": 1,
+        "unmet": 0,
         "unknown": 0
       },
       "criteria": [
@@ -215,21 +215,21 @@
           "asks": "Do the rooms an agent lands in declare the door, or only the front page?",
           "how": "fetch every URL in /sitemap.xml and grep for the /webmcp.js script tag",
           "verdict": "met",
-          "note": "28 of 68 published rooms declare it (41%)"
+          "note": "29 of 71 published rooms declare it (41%)"
         },
         {
           "id": "origin_trial_unexpired",
           "asks": "Will a shipping Chrome still enable the API on our origin tomorrow?",
           "how": "read the origin-trial meta on https://scvd.store/ and base64-decode its payload",
           "verdict": "met",
-          "note": "origin trial valid until 2026-11-17 (79 days)"
+          "note": "origin trials valid to at least 2026-10-15 (44 days) (2 tokens, soonest shown)"
         },
         {
           "id": "declarative_forms",
           "asks": "Is the zero-JavaScript path — toolname on a form — taken anywhere in the store?",
           "how": "fetch every URL in /sitemap.xml as a browser and grep for '<form ... toolname='",
-          "verdict": "unmet",
-          "note": "no annotated form in any published room — the cheapest declaration in the lineup is untaken"
+          "verdict": "met",
+          "note": "annotated forms on /conformance"
         }
       ]
     },
@@ -257,7 +257,7 @@
           "asks": "Is the thing a chat box would have explained published as text any model can read?",
           "how": "curl -s https://scvd.store/llms.txt; curl -s https://scvd.store/agents.md",
           "verdict": "met",
-          "note": "llms.txt (19 KB) and /agents.md carry the guide"
+          "note": "llms.txt (20 KB) and /agents.md carry the guide"
         },
         {
           "id": "no_model_lock_in",

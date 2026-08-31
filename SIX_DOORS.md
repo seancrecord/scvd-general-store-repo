@@ -109,118 +109,57 @@ sells against: **a confident reading taken with an instrument nobody
 had pointed at a known answer first.** Each now has a test that fails
 without its fix, and each was shown to fail before it was trusted.
 
-## The reading, 2026-08-29 (second, after the instrument was fixed)
+## The reading, 2026-08-31 — 26 of 26
 
-**23 of 26 criteria met, 3 unmet.** Taken against production, recorded
-in `docs/six-doors/observation.json`, re-derivable by anyone with
-`npm run doors:check`.
+Taken against production after the last of the day's four merges
+deployed, recorded in `docs/six-doors/observation.json`, re-derivable
+by anyone with `npm run doors:check`. Every criterion met.
 
-Two of the three misses have their fix sitting in this tree rather
-than on the live store, and the reading says so instead of counting
-them early: the registry bump (0.2.2, waiting on a button) and the
-declarative form (waiting on this branch to deploy). The number goes
-to 25 of 26 when both land, and the checker will say so on its own
-rather than being told.
+| Door | | What closed it |
+|---|---|---|
+| 1. The raw API | 5/5 | Already strongest: x402 removes the key management that makes this door expensive elsewhere |
+| 2. A backend MCP server | 5/5 | The registry republished at 0.2.2 and now repeats `server.json` |
+| 3. Computer use | 4/4 | Server-rendered, 105 KB, no wall, cheaper text road advertised |
+| 4. Browser automation | 4/4 | Every one of 70 HTML rooms hooks its `<main>` |
+| 5. WebMCP | 5/5 | Two vendor tokens, a declarative form, 29 rooms declaring |
+| 6. The site's own assistant | 3/3 | Deliberately not taken — met means we did not build it |
 
-### 1. The raw API — 5/5
+**A full reading is the least interesting state this instrument can
+be in, and saying so is the point.** Nothing here is a grade; it is
+one dated observation that expires on 2026-09-30 and gets re-taken. The
+soonest thing that will move it is Edge's origin trial ending
+2026-10-15, which the battery turns `partial` thirty days ahead of.
 
-111 paths in `/openapi.json`, 27 of them documenting a 402. The RFC
-9727 catalog and the x402 discovery document are both at their
-well-known paths. A caller holding no credential at all gets a shaped
-400 telling it what was wrong, not a 401 telling it who to be.
+### What it took, and what that cost
 
-This door is the strongest one we have, and it is worth naming why:
-x402 removed the thing that normally makes door 1 expensive. There is
-no key to issue, rotate, or scope, because payment travels in the
-request. The lineup's usual complaint about the raw API — *you manage
-the key* — does not apply to us.
+Four merges in two days closed three misses. The work that mattered
+was not the fixes — those were small — but that **five of the findings
+along the way were the instrument's fault rather than the store's**,
+and each one was caught only by pointing the checker at an answer
+already known:
 
-### 2. A backend MCP server — 4/5
+1. A room sweep with no `Accept` header, reading markdown twins and
+   reporting the browser door on 1 of 68 rooms instead of 28.
+2. A registry reader taking the oldest search hit, reporting a listing
+   retired two positionings earlier as current.
+3. A hook criterion passing on `data-cf-beacon`, an attribute
+   Cloudflare injects, while the store shipped no handle at all.
+4. Two criteria asking only the front door — one that would have said
+   `unmet` forever after its fix shipped elsewhere, one that would have
+   gone green with a single page fixed and every other room bare.
+5. A markdown twin counted as a room missing its HTML landmark.
 
-13 tools, every one annotated with a `readOnlyHint`, typed in plain
-JSON Schema, and described in prose a model can route on. Six of them
-are purchasable and each names how payment is presented, so an agent
-can buy without leaving the door it arrived through.
+Three more were defects in the tests rather than the readers: a guard
+that passed with its own protection removed, a spliced edit that
+duplicated nine cases, and a hand-typed room list that missed the one
+room rendering its own markup. That last one shipped `/porch` bare and
+was only caught by the next production reading.
 
-**The miss: the published listing is one positioning behind.** The
-registry's latest entry (0.2.1) says "The trust layer of the x402
-economy"; `server.json` says "Evidence observatory for agentic
-commerce". Editing the file changed nothing, because a published
-version is immutable — the fix is a bump, and 0.2.2 is in the tree
-waiting for the button. DISTRIBUTION.md §1 has the corrected story and
-the workflow.
-
-### 3. Computer use — 4/4
-
-101 KB on the front door against a stated 195 KB budget, content
-server-rendered, no interstitial and no bot wall, and `robots.txt`
-points a pixel-reading agent at the cheaper text road before it starts
-paying for screenshots.
-
-Read honestly, this door is met because of decisions made for other
-reasons — the store renders on the server because it is a Worker
-serving prose, not because anybody was thinking about screenshots. The
-budget is here so that stops being luck.
-
-### 4. Browser automation — 3/4
-
-Landmarks, 42 plain links, and a machine-readable twin linked from the
-head, so an automation tool never has to scrape a page whose JSON it
-could have fetched.
-
-**The miss: no first-party hook anywhere, and none on `<main>`.** Every
-handle a script could hold is a style class, and style classes are
-exactly what a redesign moves. This is the failure the lineup
-describes — *the agent is left inferring meaning from anonymous
-divs* — and we ship it. The fix is small and mechanical: a `data-room`
-on each page's `<main>` and a `data-item` on the catalog rows, derived
-from ids the menu already has.
-
-### 5. WebMCP — 4/5 today, 5/5 on the next deploy
-
-The browser door is real and now declares itself two ways.
-
-**Imperative:** `/webmcp.js` registers 5 free read-only tools, every
-one derived from the MCP catalog rather than hand-typed beside it, so
-a tool renamed on one door changes on the other in the same deploy.
-Declared on 28 of 68 published rooms — the front door, `/try`, every
-till page, and now the conformance desk.
-
-**Declarative, built 2026-08-29 and not yet deployed:** the conformance
-desk has a form. It carries `toolname`, `tooldescription` and a
-`toolparamdescription` on each input, so the browser compiles the input
-schema itself and there is no second definition to drift. It is the
-lineup's own cheapest path, and it closes two gaps at once: the desk
-had been free and public since it opened and unusable without a
-terminal. Until it deploys, the criterion reads `unmet` against
-production, which is the correct answer to "is this true of the live
-store" — a fix in a branch is not a fix on the door.
-
-**`toolautosubmit` is deliberately absent, and that missing attribute
-is the whole ruling.** With it, an agent submits on the visitor's
-behalf. Without it, the browser focuses the button and the person
-presses it — rule 17 exactly. An agent may prepare this check; only a
-human runs it. A test asserts the absence, because a future edit that
-added it would pass every other test in the file.
-
-The origin-trial token is valid until **2026-11-17**, and when it
-expires the API goes back to feature-detection, the script no-ops
-gracefully, and the door shuts with no error anywhere. That date is a
-checked criterion rather than a comment. Edge runs its own trial with
-its own registration, which we have not made — so Edge visitors'
-agents do not have this door today.
-
-### 6. The site's built-in assistant — 3/3, deliberately not taken
-
-There is no chat box, and there will not be one. This is the one door
-where **met means we did not build it**: the whole position is that
-the visiting agent is the customer, so a hosted model standing between
-an agent and the shelf would be a regression. What a chat box would
-have explained is published instead as text any model can read —
-`/llms.txt` at 19 KB, `/agents.md`, `/skill.md`.
-
-The criteria check that the refusal still holds, because a position
-nothing checks is a preference, and preferences drift.
+The lesson is the one the store already sells and now has its own
+receipts for: **a confident reading taken with an unverified instrument
+is worse than no reading**, because it spends the credibility that
+makes the next reading worth anything. Every criterion in this battery
+now has a test that was shown red before it was trusted.
 
 ## What the lineup says about this product, beyond our own doors
 
