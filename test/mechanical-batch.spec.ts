@@ -31,6 +31,39 @@ const BASE = "https://scvd.store";
  * file is a guard on.
  */
 
+/**
+ * FOLLOW A `$ref` BACK TO WHAT IT NAMES.
+ *
+ * The contract moved its repeated pieces into `components` on
+ * 2026-08-31 — it had reached 1.48 MB, past the 1 MB cap the
+ * agent-side scanners fetch under, which made a correct contract an
+ * unread one. The Idempotency-Key parameter is one of the pieces:
+ * twenty-seven identical copies became one definition and
+ * twenty-seven references.
+ *
+ * Resolving rather than relaxing matters here. A test that accepted
+ * "there is a $ref where the parameter used to be" would pass on a
+ * reference to a component that does not exist, and the header that
+ * stops a retry becoming a second charge is not a thing to assert
+ * loosely.
+ */
+function deref(
+  document: Record<string, unknown>,
+  node: Record<string, unknown>,
+): Record<string, unknown> {
+  const ref = node["$ref"];
+  if (typeof ref !== "string") return node;
+  let current: unknown = document;
+  for (const segment of ref.replace(/^#\//, "").split("/")) {
+    expect(
+      current && typeof current === "object" && segment in current,
+      `${ref} points at nothing: ${segment} is missing`,
+    ).toBe(true);
+    current = (current as Record<string, unknown>)[segment];
+  }
+  return current as Record<string, unknown>;
+}
+
 describe("1. the source is in sameAs", () => {
   it("lists the repository, derived from where the store already publishes it", () => {
     const repository = STANDARDS_POSTURE.code_transparency.repository;
@@ -80,9 +113,11 @@ describe("2. Idempotency-Key is in the contract", () => {
     for (const [path, item] of Object.entries(paths)) {
       for (const [method, operation] of Object.entries(item)) {
         if (!isRecord(operation)) continue;
-        const parameters = Array.isArray(operation["parameters"])
-          ? (operation["parameters"] as Array<Record<string, unknown>>)
-          : [];
+        const parameters = (
+          Array.isArray(operation["parameters"])
+            ? (operation["parameters"] as Array<Record<string, unknown>>)
+            : []
+        ).map((parameter) => deref(document, parameter));
         const declared = parameters.filter(
           (parameter) =>
             String(parameter["name"]).toLowerCase() === "idempotency-key",
@@ -124,9 +159,10 @@ describe("2. Idempotency-Key is in the contract", () => {
     for (const item of Object.values(paths)) {
       for (const operation of Object.values(item)) {
         if (!isRecord(operation) || !operation["x-payment"]) continue;
-        for (const parameter of (operation["parameters"] ?? []) as Array<
+        for (const declared of (operation["parameters"] ?? []) as Array<
           Record<string, unknown>
         >) {
+          const parameter = deref(document, declared);
           if (String(parameter["name"]).toLowerCase() === "idempotency-key") {
             parameters.push(parameter);
           }
