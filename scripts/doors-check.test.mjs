@@ -8,6 +8,7 @@ import {
   REVIEW_EVERY_DAYS,
   compare,
   declaresWebmcp,
+  looksLikeHtml,
   mainCarriesHandle,
   originTrialExpiries,
   originTrialExpiry,
@@ -624,4 +625,49 @@ test("a token that will not parse is skipped, not counted as valid", () => {
     <meta http-equiv="origin-trial" content="${originTrialToken(good)}">
   </head>`;
   assert.deepEqual(originTrialExpiries(html), [good * 1000]);
+});
+
+test("a markdown twin is not a room missing its landmark", async () => {
+  /*
+   * /sitemap.md is served as markdown and correctly has no <main>.
+   * The first cut counted it as an unhooked room, which is not a
+   * finding about the store — it is the instrument asking a markdown
+   * document about its HTML landmark. The denominator is HTML rooms.
+   */
+  assert.equal(looksLikeHtml("# The sitemap\n\n- /menu\n"), false);
+  assert.equal(looksLikeHtml("<!doctype html><html><body>x</body></html>"), true);
+  assert.equal(looksLikeHtml("<html lang=\"en\"><main>x</main></html>"), true);
+
+  const pages = {
+    "/": '<!doctype html><html><main data-room="storefront">x</main></html>',
+    "/sitemap.md": "# The sitemap\n\nEvery room, one line each.\n",
+  };
+  const server = createServer((request, response) => {
+    response.writeHead(200, { "Content-Type": "text/html" });
+    response.end(pages[request.url] ?? "");
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const get = async (url, init) => {
+    const answer = await fetch(url, init);
+    return { ok: answer.ok, status: answer.status, text: await answer.text() };
+  };
+  try {
+    const swept = await sweepRooms(
+      `<loc>${base}/</loc><loc>${base}/sitemap.md</loc>`,
+      base,
+      get,
+    );
+    assert.equal(swept.total, 2, "both URLs were reachable");
+    assert.equal(swept.htmlRooms, 1, "only one of them is an HTML document");
+    assert.deepEqual(swept.unhooked, [], "the markdown twin is not a miss");
+
+    const reading = readDoors({ ...goodSnapshot(), rooms: swept }, NOW)
+      .doors.find((d) => d.id === "browser_automation")
+      .criteria.find((c) => c.id === "stable_hooks");
+    assert.equal(reading.verdict, "met");
+    assert.match(reading.note, /1 HTML rooms?/);
+  } finally {
+    server.close();
+  }
 });

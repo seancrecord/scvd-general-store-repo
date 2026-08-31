@@ -94,6 +94,21 @@ export function declaresFormTool(html) {
 }
 
 /**
+ * Is this response an HTML document at all?
+ *
+ * The sitemap publishes `/sitemap.md`, which is served as markdown and
+ * correctly has no `<main>` — so counting it as a room missing its
+ * landmark handle is a category error, and the first cut did exactly
+ * that. Asking a markdown twin about its HTML landmark is not a
+ * finding about the store; it is the instrument counting something it
+ * should not. Read off the bytes rather than a header so the sweep's
+ * injected `get` keeps its narrow contract.
+ */
+export function looksLikeHtml(text) {
+  return /<!doctype html|<html[\s>]/i.test(String(text ?? ""));
+}
+
+/**
  * A first-party handle on the page's own main landmark.
  *
  * THIRD-PARTY PREFIXES ARE EXCLUDED because the first cut of this read
@@ -218,6 +233,7 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
   const missing = [];
   const annotatedForms = [];
   const unhooked = [];
+  let htmlRooms = 0;
   let declaring = 0;
   let unreachable = 0;
   const queue = [...urls];
@@ -231,7 +247,11 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
       if (declaresWebmcp(row.text)) declaring += 1;
       else missing.push(url.slice(base.length) || "/");
       if (declaresFormTool(row.text)) annotatedForms.push(url.slice(base.length) || "/");
-      if (!mainCarriesHandle(row.text)) unhooked.push(url.slice(base.length) || "/");
+      // Only HTML documents are asked about their HTML landmark.
+      if (looksLikeHtml(row.text)) {
+        htmlRooms += 1;
+        if (!mainCarriesHandle(row.text)) unhooked.push(url.slice(base.length) || "/");
+      }
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
@@ -242,6 +262,7 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
     missing: missing.sort(),
     annotatedForms: annotatedForms.sort(),
     unhooked: unhooked.sort(),
+    htmlRooms,
   };
 }
 
@@ -662,9 +683,12 @@ export const DOORS = [
           const rooms = snap.rooms;
           if (!rooms || rooms.total === 0) return unknown("rooms were not swept");
           const unhooked = rooms.unhooked ?? [];
-          const hooked = rooms.total - unhooked.length;
+          // The denominator is HTML rooms, not every published URL: a
+          // markdown twin has no landmark to hook and never will.
+          const total = rooms.htmlRooms ?? rooms.total;
+          const hooked = total - unhooked.length;
           if (unhooked.length === 0) {
-            return met(`every one of ${rooms.total} rooms hooks its <main>`);
+            return met(`every one of ${total} HTML rooms hooks its <main>`);
           }
           if (hooked === 0) {
             return unmet(
@@ -672,7 +696,7 @@ export const DOORS = [
             );
           }
           return partial(
-            `${hooked} of ${rooms.total} rooms hook their <main>; ${unhooked.length} do not (${unhooked.slice(0, 5).join(", ")}${unhooked.length > 5 ? ", …" : ""})`,
+            `${hooked} of ${total} HTML rooms hook their <main>; ${unhooked.length} do not (${unhooked.slice(0, 5).join(", ")}${unhooked.length > 5 ? ", …" : ""})`,
           );
         },
       },
