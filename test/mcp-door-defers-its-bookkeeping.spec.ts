@@ -186,3 +186,54 @@ describe("the money writes on the paid path keep their await", () => {
     }
   });
 });
+
+/**
+ * ONE WAVE, NOT A QUEUE — the part of rule 50 that needs no ruling
+ * changed, because it costs nothing anybody has ruled on.
+ *
+ * THE CASE I BROUGHT AND WITHDREW. Asked whether the paid path could
+ * go faster, I proposed deferring the settle ledger. Two facts I had
+ * not checked killed it. metrics.ts already parallelised
+ * recordSettlement — it used to be "twenty serial KV round trips" and
+ * is now ONE Promise.all wave, measured here at 36ms cold and ~16ms
+ * warm, so the latency I offered to reclaim was about one round trip
+ * rather than the queue I described. And the same comment records
+ * that a previous waitUntil attempt broke referrals.spec, with the
+ * prescription written out: "Remove the QUEUE, keep the awaits."
+ *
+ * What was left after that is this: the rail meter is a SECOND round
+ * trip, on a different key, awaited behind the wave rather than
+ * inside it. Rule 50 names exactly this — "Writes that touch
+ * different keys go out in one wave, never a queue." Folding it in
+ * keeps every await, risks no money record, touches no ruling, and
+ * takes the same time as the wave it joins.
+ */
+describe("the settle path writes its money counters in one wave", () => {
+  it("puts the rail meter in the wave rather than behind it", () => {
+    const source = code(Object.values(GATE)[0]!);
+    const rails = ["recordSolanaSettle(", "recordPolygonSettle("];
+    for (const rail of rails) {
+      expect(
+        source,
+        `${rail} is gone from this door; the guard has gone stale`,
+      ).toContain(rail);
+    }
+    /*
+     * Derived from the queue's own shape rather than a line number: a
+     * rail meter that starts its own statement with `await` is a
+     * second trip the buyer pays for. Inside the wave it is an
+     * argument, never the head of an awaited statement.
+     */
+    const queued = source
+      .split("\n")
+      .map((line, index) => ({ line: line.trim(), number: index + 1 }))
+      .filter(
+        ({ line }) =>
+          line.startsWith("await ") && rails.some((r) => line.includes(r)),
+      );
+    expect(
+      queued.map((entry) => `line ${entry.number}: ${entry.line}`),
+      "a rail meter is awaited on its own, queued behind the settle wave",
+    ).toEqual([]);
+  });
+});
