@@ -33,6 +33,19 @@ const CODES = [
   "bad_request",
   "upstream_unavailable",
   "already_done",
+  /*
+   * THE SHELF GATE'S THREE, added 2026-08-30. The middleware that
+   * turns away a retired, unknown or sold-out item refuses before any
+   * money moves and carried neither field — missed by this sweep
+   * because not one of its three sentences contains the words
+   * "nothing charged", which is what the walk above matches on. A
+   * boundary drawn by a grep rather than by a decision. A buyer
+   * turned away at the shelf needs the same fact as one turned away
+   * at the parameter check.
+   */
+  "retired",
+  "unknown_item",
+  "sold_out",
 ] as const;
 
 /**

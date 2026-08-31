@@ -233,6 +233,15 @@ describe("weekly inventory", () => {
     expect(soldOut.status).toBe(409);
     const body = await json(soldOut);
     expect(body["error"]).toContain("Shelf's empty");
+    /*
+     * The two fields a buying agent branches on, checked at the one
+     * place in the suite that actually reaches an empty shelf. The
+     * shelf gate refuses before any money moves and said so only in
+     * English until 2026-08-30; 409 alone was never enough, because
+     * already_done is a 409 too.
+     */
+    expect(body["code"]).toBe("sold_out");
+    expect(body["charged"]).toBe(false);
 
     const waitlist = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
       method: "POST",
