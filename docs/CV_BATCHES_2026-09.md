@@ -64,10 +64,11 @@ post anything yourself.
 
 ---
 
-## BATCH B — the walkabout run (weekly, after the runner exists)
+## BATCH B — the walkabout run (weekly)
 
-Do not send until roadmap N6 has shipped a runner that meets
-WALKABOUT.md rules 1–8. The August script is not that runner.
+The runner is `scripts/walkabout.mjs` (roadmap N6, shipped
+2026-09-01). The August script under research/ is not it and must not
+be used.
 
 ```
 Standing rules: report what you saw, not what you expected. One batch
@@ -80,24 +81,29 @@ Cap for this run, under the keeper's standing weekly approval
 item, one purchase per domain. Stop at the cap. Anything above these
 numbers is not approved.
 
-Read WALKABOUT.md in full before starting. Confirm the field wallet's
-public address is in src/store/house-wallets.json ON MAIN and live at
-https://scvd.store/house-ledger.json. If it is not, stop.
+Read WALKABOUT.md in full before starting, then the section "The
+runner". Fresh clone, main, npm ci. Put FIELD_WALLET_KEY (0x-hex) in a
+.env file in the repo root; never paste it anywhere else. Confirm the
+wallet's public address is in src/store/house-wallets.json ON MAIN and
+live at https://scvd.store/house-ledger.json. If it is not, stop — the
+runner will refuse anyway.
 
-Run the walkabout runner (roadmap N6) against the target set it
-derives: the 2026-08-18 domain set filtered to doors that settled or
-returned a spec-shaped 402, plus this week's ward round. Every request
-carries the calling-card User-Agent. Every payTo is sanctions-screened
-before payment. One attempt per endpoint. Raw JSONL per attempt.
+Run, in this order, and paste each command's output into your report:
 
-Before writing the report, reconcile: every USDC transfer out of the
-field wallet this run, read from the chain, against the ledger. State
-the gap in dollars and transfers, even if it is zero.
+  npm run walkabout:test
+  node scripts/walkabout.mjs derive --out targets.json
+  node scripts/walkabout.mjs walk --targets targets.json --dry-run --limit 5
+  node scripts/walkabout.mjs walk --targets targets.json
+  node scripts/walkabout.mjs reconcile research/field-run-$(date -u +%F)/ledger.jsonl
+  node scripts/walkabout.mjs report    research/field-run-$(date -u +%F)/ledger.jsonl
 
-Deliver: research/field-run-{date}/ledger.jsonl and report.md, on a
-branch, as a pull request. Every number in the report must re-derive
-from the ledger; say the taxonomy before any percentage. The keeper
-merges; merging is the publish.
+Do not pass --override or --second-run; if the runner asks for either,
+stop and report the message. Do not edit the ledger. If reconcile
+reports a gap above zero, say so in the report's first line.
+
+Deliver: research/field-run-{date}/ledger.jsonl, reconciliation.json,
+report.md and targets.json, on a branch, as a pull request touching
+nothing else. The keeper merges; merging is the publish.
 ```
 
 ---

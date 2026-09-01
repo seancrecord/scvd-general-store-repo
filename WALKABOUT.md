@@ -4,7 +4,8 @@ Status: approved as written by the keeper on 2026-09-01 (his word in
 session: "agreed with all listed", against the three items put to him —
 the spec, the approval shape below, and the wallet funding). Runs may
 proceed under rule 1 as amended. The runner that meets rules 1–8 is
-roadmap N6 and does not exist yet; the August script is not it.
+`scripts/walkabout.mjs` (shipped 2026-09-01, roadmap N6); the August
+script under research/ is run zero's tooling and is not it.
 Written 2026-08-18, after the first field run. Spec first, then the walking — the same order the Tab
 was built in, and this document exists because run zero inverted it
 (see "Run zero," below, which is the first correction this program
@@ -115,6 +116,62 @@ these clarifications:
 - The raw record ships as the signed artifact itself (stage-by-stage
   at /api/launch-check/{check_id}, free forever) rather than a
   research/ ledger — same rawness, same re-derivability, per-buyer.
+
+## The runner — `scripts/walkabout.mjs`
+
+The eight rules as code, split so every decision is a tested pure
+function (`scripts/lib/walkabout.mjs`, `npm run walkabout:test`) and
+the CLI is only fetch, sign, append. Four subcommands, in the order a
+run happens:
+
+    node scripts/walkabout.mjs derive --out targets.json
+    node scripts/walkabout.mjs walk --targets targets.json [--dry-run]
+    node scripts/walkabout.mjs reconcile research/field-run-YYYY-MM-DD/ledger.jsonl
+    node scripts/walkabout.mjs report    research/field-run-YYYY-MM-DD/ledger.jsonl
+
+What each rule became:
+
+- **Rule 1** — caps default to $0.05 / $10 / one per domain and the
+  run line records the approval it ran under. Caps above a default
+  refuse without `--override "<the keeper's words>"`; a second run in
+  the same ISO week refuses without `--second-run "<his words>"`.
+  Both strings land in the ledger, so the press is part of the record.
+- **Rule 2** — `derive` builds targets from the August ledger (settled
+  or spec-shaped 402) and the latest corpus round's `ready` hosts, one
+  URL per domain, never this store's own host.
+- **Rule 3** — every payTo is screened against the Chainalysis on-chain
+  oracle on Base before any signature, fail closed: a listed address,
+  an unscreenable one, or a screen that did not answer all withhold
+  payment as `unpaid_by_rule`. The screen is the same one the Launch
+  Check runs.
+- **Rule 4** — one unpaid request, one paid request, per URL. No retry
+  on any status. A configurable pause between doors (`--delay`, 750ms).
+- **Rule 5** — one JSONL line per attempt: timestamp, exact UA,
+  headers, body verbatim (sha256 + a 2KB head above 8KB), the parsed
+  terms, the screen result, both statuses, the receipt header, the tx
+  hash. A `run` line opens the file with wallet, caps, approval and
+  start block; a `run_end` line closes it with the end block. `report`
+  reads nothing but that file; `reconcile` reads the wallet's USDC
+  transfers between the two blocks and states the gap in dollars.
+- **Rule 6** — verdicts are the Launch Check's, verbatim: `settled`,
+  `payment_refused`, `no_payment_gate`, `malformed_challenge`,
+  `unpaid_by_rule`, `unreachable`. The 402 shape is bucketed as
+  spec_conformant / other_structured / empty / non_402, header read
+  first and body second. No score is computed anywhere.
+- **Rule 7** — a door that answers 2xx unpaid is recorded once as
+  `no_payment_gate` with the note that nothing was harvested.
+- **Rule 8** — `report` renders the taxonomy before any percentage and
+  a "what this is not" paragraph last; it refuses to print a number it
+  did not derive.
+
+Gate zero holds in code: the wallet behind `FIELD_WALLET_KEY` must be
+in `src/store/house-wallets.json` or the runner refuses before its
+first request. Only Base USDC over the exact scheme is paid; a door
+offering only another rail or a permit2 / erc7710 transfer is recorded
+as `unpaid_by_rule` with the reason, a statement about our reach. When
+`WBA_SIGNING_KEY` is set the egress carries the store's Web Bot Auth
+signature exactly as the Worker's own does; unset, the calling-card
+UA still goes on every request.
 
 ## What a run delivers
 
