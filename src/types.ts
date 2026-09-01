@@ -13,6 +13,23 @@ export interface Env {
    * with observer_status "unchecked".
    */
   CONTROL_BEACON_URL?: string;
+  /**
+   * GLAMA'S OWNERSHIP CLAIM TOKEN, for the HTTP challenge on the
+   * connector listing. Optional and flag-gating: unset,
+   * /.well-known/glama.json 404s exactly as it did before this
+   * existed, because a claim document with nothing to claim is a
+   * document that fails its own check.
+   *
+   * PUBLIC BY DESIGN, held as a secret anyway. The token is meant to
+   * be served at a public URL — that is the whole mechanism — so
+   * keeping it out of the repo buys no confidentiality. It buys the
+   * ability to set it without a code change, and it keeps a value
+   * bound to a person's Glama account out of git history, where
+   * rotating it would leave the old one readable forever.
+   *
+   * Set with: wrangler secret put GLAMA_CLAIM
+   */
+  GLAMA_CLAIM?: string;
   GUESTBOOK: KVNamespace;
   COUNTERS: KVNamespace;
   PATRONS: KVNamespace;

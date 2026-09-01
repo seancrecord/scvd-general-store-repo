@@ -992,6 +992,47 @@ wellKnownRoutes.get("/.well-known/agent-instructions", (c) => {
   });
 });
 
+/**
+ * GET /.well-known/glama.json — the connector ownership claim.
+ *
+ * Glama carries this store twice: an auto-crawled entry under the
+ * REPOSITORY, and a connector page under the registry name
+ * store.scvd/general-store. The repo entry is claimed by the root
+ * glama.json naming a GitHub maintainer, which this store already
+ * ships. The CONNECTOR is claimed a different way — an HTTP challenge
+ * that wants Glama's own opaque token served as JSON from the
+ * connector's own origin, which is this worker.
+ *
+ * THE SHAPE IS THEIRS, READ OFF THEIR OWN INSTRUCTION rather than
+ * guessed: `$schema` naming the connector schema, and `claim` carrying
+ * the glama_claim_ token. The last time something here was written to
+ * a spec nobody had read against the reader that consumes it, the
+ * answer was a card that declared tools and named none, and it cost
+ * 37 points for two days. So: their field names, their token, and no
+ * invention beyond that.
+ *
+ * 404 WHEN UNSET, AND THAT IS THE FEATURE. An unclaimed store serves
+ * nothing here, exactly as before this route existed. A claim document
+ * carrying an empty or placeholder claim would be a document that
+ * fails its own check while looking like it passed — the same class of
+ * failure as a card that answers with less than the server has. The
+ * token arrives by `wrangler secret put GLAMA_CLAIM`; no redeploy of
+ * this file, and nothing to revert if the claim is ever withdrawn.
+ *
+ * NOT A SECOND SOURCE OF TRUTH ABOUT ANYTHING ELSE. It carries the
+ * claim and nothing more: no maintainer list, no tool count, no
+ * description. Those live where they already live, and a claim
+ * document is not the place to start a third copy of them.
+ */
+wellKnownRoutes.get("/.well-known/glama.json", (c) => {
+  const claim = c.env.GLAMA_CLAIM?.trim();
+  if (!claim) return c.notFound();
+  return c.json({
+    $schema: "https://glama.ai/mcp/schemas/connector.json",
+    claim,
+  });
+});
+
 wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   const base = c.env.STORE_BASE_URL;
   const expires = new Date(Date.now() + 182 * 24 * 3600 * 1000).toISOString();
