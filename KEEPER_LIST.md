@@ -29,7 +29,7 @@ struck when its evidence has been walked, and walking sixty is its
 own sitting — the alternative is striking something still open,
 which is the failure this desk exists to prevent.
 
-NOW-1 (the bank walk), NOW-2, NOW-5, the favicon and the alerts
+NOW-1 (the bank walk), NOW-2, NOW-5, and the alerts
 mailbox need the keeper's own eyes and cannot be trued from here.
 
 ---
@@ -45,9 +45,9 @@ mailbox need the keeper's own eyes and cannot be trued from here.
   menu-utility.ts, copy still drafted-not-canon per rule 7.
 - KEY SUCCESSION (F3): deferred by the keeper — "another day." The
   authority pack keeps naming the gap honestly meanwhile.
-- FAVICON: the keeper put a preferred favicon in his Google Drive
-  ("scvd.store" folder) to REPLACE the 08-21 house tyrannosaur; needs
-  a Drive-tool approval click, then resize + swap. Small PR.
+- ~~FAVICON~~ — SWAPPED 2026-09-01. The Drive mark (pale mint
+  tyrannosaur on forest-green rounded square) replaced the 08-21
+  chocolate house drawing at `/favicon.svg` and `/favicon.ico`.
 - ALERTS MAILBOX: keeper believes he fixed the alerts@ reply path
   (the pre-reply-to sends) but is unsure — verify by sending it a
   test mail from an outside account and watching it arrive.
@@ -591,7 +591,7 @@ struck when its evidence has been walked, and walking sixty is its
 own sitting — the alternative is striking something still open,
 which is the failure this desk exists to prevent.
 
-NOW-1 (the bank walk), NOW-2, NOW-5, the favicon and the alerts
+NOW-1 (the bank walk), NOW-2, NOW-5, and the alerts
 mailbox need the keeper's own eyes and cannot be trued from here.
 
 ---
@@ -607,9 +607,9 @@ mailbox need the keeper's own eyes and cannot be trued from here.
   menu-utility.ts, copy still drafted-not-canon per rule 7.
 - KEY SUCCESSION (F3): deferred by the keeper — "another day." The
   authority pack keeps naming the gap honestly meanwhile.
-- FAVICON: the keeper put a preferred favicon in his Google Drive
-  ("scvd.store" folder) to REPLACE the 08-21 house tyrannosaur; needs
-  a Drive-tool approval click, then resize + swap. Small PR.
+- ~~FAVICON~~ — SWAPPED 2026-09-01. The Drive mark (pale mint
+  tyrannosaur on forest-green rounded square) replaced the 08-21
+  chocolate house drawing at `/favicon.svg` and `/favicon.ico`.
 - ALERTS MAILBOX: keeper believes he fixed the alerts@ reply path
   (the pre-reply-to sends) but is unsure — verify by sending it a
   test mail from an outside account and watching it arrive.
