@@ -1,7 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { CENSUS_FINDING, CENSUS_NUMBER } from "@/store/copy/census";
-import { OPERATED_BY } from "@/store/copy/position";
+import { OPERATED_BY, VALUE_PROPOSITION } from "@/store/copy/position";
 import { CAPABILITY_QUERY } from "@/store/spec";
 import { isRecord } from "@/types";
 
@@ -273,8 +273,15 @@ describe("the sideways surfaces carry the position too", () => {
     const og =
       page.match(/<meta property="og:description" content="([^"]*)"/)?.[1] ??
       "";
-    expect(og).toContain("conformance");
-    expect(og.toLowerCase()).toContain("corpus");
+    /*
+     * 2026-09-01 (roadmap N2): the social card is one of the six first
+     * screens, so it carries the keeper's sixty words verbatim rather
+     * than a third short form. The differentiators it used to name by
+     * keyword are inside those words ("check the signed offer or
+     * receipt"; "a dated corpus"). test/first-screen.spec.ts holds the
+     * same line on every other surface.
+     */
+    expect(og).toBe(VALUE_PROPOSITION);
   });
 
   it("the repo README walks a reader to both landings and states the jobs", async () => {

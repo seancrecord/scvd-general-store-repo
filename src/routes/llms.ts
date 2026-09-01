@@ -6,6 +6,7 @@ import {
   DELIVERY_ORDER,
   POSITION_NOT,
   POSITION_OPENING,
+  firstScreenPaths,
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
@@ -72,17 +73,11 @@ export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
 
-> An evidence observatory for agentic commerce. It observes what other
-> people's x402 endpoints, artifacts and payments actually did, signs
-> every observation, and publishes the gaps in its own coverage beside
-> the findings. Never a score, a rating or a ranking — every verdict is
-> one dated observation that expires and is re-taken. Everything this
-> store signs verifies free, forever, at \`${base}/api/verify/{id}\` — no
-> account, no wallet, no rate limit, checkable offline without us.
+> ${POSITION_OPENING}
+> ${POSITION_NOT}
+> ${ALSO_A_STORE}
 
-${POSITION_OPENING}
-${POSITION_NOT}
-${ALSO_A_STORE}
+${firstScreenPaths(base)}
 
 Everything this store signs verifies free, forever, at
 \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The

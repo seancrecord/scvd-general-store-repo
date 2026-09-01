@@ -9,12 +9,21 @@ mcp-name: store.scvd/general-store
 [![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=scvd.store%2Fapi%2Fbuy%2Fhello)](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 
-**An evidence observatory for agentic commerce.** Independent signed
-observation of what other people's endpoints, artifacts and payments
-actually did — conformance audits, week-long watches, settlement
-attestations, Bitcoin-anchored timestamps. Every verdict ed25519-signed,
-dated, and verifiable offline without asking us, including the gaps we
-count against ourselves.
+**scvd.store is an evidence observatory for agentic commerce. Before an
+agent pays an unfamiliar door, we preflight it. After it pays, we check
+the signed offer or receipt. Over time we watch, and we publish a dated
+corpus. Every artifact is signed, expires, and names what we did not
+see. Not escrow, not a rating, not a guarantee.**
+
+Three paths, in that order. Before you pay: preflight any x402 door,
+free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).
+After you pay: check any issuer's signed offer or receipt, free, at
+[scvd.store/conformance](https://scvd.store/conformance). Over time:
+read the dated, Bitcoin-anchored corpus, free, at
+[scvd.store/corpus](https://scvd.store/corpus). Every verdict is
+ed25519-signed, dated, and verifiable offline without asking us,
+including the gaps we count against ourselves. Operated by Record
+Creative Co. LLC.
 
 Not an escrow, a guarantor, or a dispute court. Those absorb the risk
 between payment and delivery and need a balance sheet; we observe that

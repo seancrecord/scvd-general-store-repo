@@ -1,4 +1,8 @@
-import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
+import {
+  CHEAPEST_ON_THE_SHELF,
+  FIRST_SCREEN_PATHS,
+  VALUE_PROPOSITION,
+} from "@/store/copy/position";
 /**
  * KEEPER-EDITABLE COPY, the human storefront at GET /.
  * Every word on the front of the building lives here: sign, gauges,
@@ -142,9 +146,16 @@ export const STOREFRONT_COPY = {
    * which is the actual fix and is now counted in that register.
    */
   metaDescription:
-    "An evidence observatory for agentic commerce: free x402 conformance checks of any issuer's signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base, Polygon, Solana.",
-  ogDescription:
-    "An evidence observatory for agentic commerce. Free conformance checking for any issuer's x402 signed offers and receipts — including our competitors' — a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us. Never a score, a rating or a ranking.",
+    "An evidence observatory for agentic commerce: preflight an x402 door before paying, free conformance checks on the signed receipt after, a Bitcoin-anchored corpus over time. USDC on Base, Polygon, Solana. Dated 2026-09-01.",
+  /*
+   * 2026-09-01 (roadmap N2): the social card carries the keeper's
+   * sixty words verbatim, derived, so the sentence a share unfurls is
+   * the sentence every other first screen opens with. The meta
+   * description stays a short form under the ~160-character budget
+   * and is dated rather than derived for the same reason it always
+   * was.
+   */
+  ogDescription: VALUE_PROPOSITION,
   /**
    * JSON-LD Organization description for the answer engines. C3 strip:
    * "sincere" was an unsupported adjective on a machine surface.
@@ -221,7 +232,11 @@ export const STOREFRONT_COPY = {
   whatThisIsHead: "WHAT THIS PLACE IS",
   /** Pre-escaped HTML: carries the two landing-page links. */
   whatThisIsDoors:
-    'Payment infrastructure first, general store second. The conformance desk takes any issuer\u2019s x402 signed offer or receipt and returns a verdict \u2014 free, no account, no wallet \u2014 at <a href="/conformance">/conformance</a>. The corpus, a weekly signed and Bitcoin-anchored record of the x402 ecosystem, reads free at <a href="/corpus">/corpus</a>. What every signature proves, and what it doesn\u2019t, is at <a href="/attestation">/attestation</a>.',
+    FIRST_SCREEN_PATHS.map(
+      (entry) =>
+        `${entry.when}: ${entry.what} at <a href="${entry.path}">${entry.path}</a>.`,
+    ).join(" ") +
+    ' What every signature proves, and what it doesn\u2019t, is at <a href="/attestation">/attestation</a>.',
   whatThisIsShop:
     "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base, Polygon, or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",

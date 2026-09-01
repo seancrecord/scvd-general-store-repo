@@ -373,12 +373,26 @@ const BASE = "https://scvd.store";
  * and no longer carries "the frozen v1 verdict this series has
  * always cited".
  *
+ * Re-taken 2026-09-01 — the SIXTEENTH — by roadmap N2, the first-
+ * screen packaging. The guide opened with TWO paragraphs about what
+ * the store is: a hand-typed blockquote, then POSITION_OPENING under
+ * it, saying the same thing in other words. The blockquote is now the
+ * constant itself, the constant now opens with the keeper's sixty
+ * words (VALUE_PROPOSITION, inked 2026-09-01), and one derived line
+ * names the three paths in the order those words name them.
+ * Confirmed before this value was taken: the served guide carries
+ * the sixty words verbatim exactly once in the opening, no longer
+ * carries "checkable offline without us" (the twin's tell), and
+ * still carries every pin the earlier re-takes established.
+ * test/first-screen.spec.ts holds the same sentence on the other
+ * five surfaces.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6994afc296ef0efad2c8ea7f49c6d22b58beb7d181d9dacfb26da29b4c36093a";
+  "7aaf1b1b03dd5be2acb456fd89a83afdc50260d2b9a085ea4665737c0134ca77";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
