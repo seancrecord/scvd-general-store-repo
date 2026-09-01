@@ -51,7 +51,7 @@
     "@x402/hono": "^2.23.0",
     "@x402/svm": "~2.23.0",
     "hono": "^4.13.3",
-    "viem": "^2.55.19"
+    "viem": "^2.56.0"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
