@@ -7,6 +7,7 @@ mcp-name: store.scvd/general-store
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 [![scvd.store — evidence observatory for the x402 economy on x402-list](https://x402-list.com/badge/sean-claude-van-damme-s-general-store.svg?data=uptime)](https://x402-list.com/services/sean-claude-van-damme-s-general-store?utm_source=badge&utm_medium=referral&utm_campaign=embed)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/seancrecord/scvd-general-store-repo)
+[![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fattestation_bundle)](https://agents.circle.com/sell/score?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fattestation_bundle)
 
 **An evidence observatory for agentic commerce.** Independent signed
 observation of what other people's endpoints, artifacts and payments

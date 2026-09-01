@@ -1807,6 +1807,54 @@ and the alert says so instead of promising sequels. Three tests in
 `test/chain-reconciliation.spec.ts`, shown red on stashed source
 (3 failed / 26 passed).
 
+### 25. The contract was correct and nobody could fetch it — FIXED 2026-08-31
+
+Every readiness pass this store has run since July has been about
+making the OpenAPI document TRUE: every path real, every free shelf
+marked `security: []`, every operation given an id, every one of the
+76 bare `{"type":"object"}` schemas typed, the error model made RFC
+9457, the async job pattern declared, the deprecation policy given
+its own room. Twelve entries' worth of work, all of it correct, none
+of it reaching a single agent — because the document had grown to
+**1,480,775 bytes** and the scanners that read a seller's spec fetch
+with a **1 MB cap**. Over the cap they do not truncate, they do not
+warn, they simply do not fetch, and the store reads to them as having
+no contract at all. Circle's Sell-to-Agents check reported exactly
+that, and from where it was standing it was right.
+
+**The failure that made it possible.** Nobody was measuring the
+document. Every guard on it asserted a property of its CONTENT — is
+this true, is this typed, is this complete — and adding truth to a
+spec makes it bigger, so a decade of good decisions walked it over a
+cliff nothing was watching. The typed-shapes ratchet that closed the
+last 76 bare schemas is the single largest contributor to the bytes
+that made the whole thing unreadable. Both of those were the right
+call. Neither of them was weighed against a limit nobody had written
+down.
+
+**The fix was not a diet.** Not one path was dropped and not one
+sentence was cut. The document had never used `components` — the
+RFC 9457 problem object was inlined **1,072 times** at 848 bytes
+apiece, the four shared failure responses 131 times each, the
+delivery envelope 25 times at 11 KB. Five objects, hoisted into
+`components` and referenced, took the document from 1,480,775 bytes
+to **365,288** — 25% of its old size, saying the same things.
+
+**What stops it recurring:** `test/openapi-fetchable.spec.ts`, which
+asserts a 700 KB budget inside the 1 MB cap, asserts the path count
+did NOT fall (the cheap way to pass a size test is to delete doors,
+which trades an unreadable contract for an incomplete one), and
+resolves every `$ref` in the document against its own components —
+the one new way this file can now be silently wrong.
+
+**The general lesson, which is the part worth keeping:** a surface
+published FOR a reader has the reader's limits as part of its
+contract, and this store had been checking its surfaces against the
+truth and never against the reader. The same question is now owed to
+every other machine surface here — `/menu.json`, `/corpus.json`,
+`/.well-known/x402.json`, `/llms.txt` — and none of them has a
+measured ceiling yet. Filed as the open half of this entry.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare

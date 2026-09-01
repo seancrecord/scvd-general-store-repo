@@ -19,7 +19,12 @@ import {
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
 import { buyInputSchema, itemsRequiring } from "@/lib/bazaar-discovery";
-import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
+import {
+  PENNY_PAGE_USDC,
+  SIGNING_WINDOW_SECONDS,
+  manifestAccepts,
+  priceTiersUsdc,
+} from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import {
@@ -36,7 +41,7 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
-import type { HonoEnv, MenuItem } from "@/types";
+import type { Env, HonoEnv, MenuItem } from "@/types";
 
 /**
  * GET /openapi.json, an OpenAPI 3.1 contract for the whole store,
@@ -93,11 +98,28 @@ const PROBLEM_SCHEMA: OpenApiObject = {
   required: ["error"],
 };
 
+/**
+ * THE ONE-MEGABYTE WALL, AND WHY THIS SCHEMA IS A REFERENCE NOW.
+ *
+ * Circle's Sell-to-Agents scanner gives up on a spec it cannot fetch,
+ * and its fetch cap is 1 MB. This document served 1,480,775 bytes on
+ * 2026-08-31 — an OpenAPI contract that no agent could read, which is
+ * the same as not having one. The cause was not too many doors; it
+ * was ONE schema inlined 1,072 times. The problem object above is
+ * eight hundred bytes and every operation carries four copies of it.
+ *
+ * `components` is the part of OpenAPI built for exactly this, and the
+ * store had never used it. Nothing about the contract changes for a
+ * reader — every generator and every scanner resolves an internal
+ * `$ref` — and the document loses the better part of a megabyte.
+ */
+const PROBLEM_REF: OpenApiObject = { $ref: "#/components/schemas/Problem" };
+
 const PROBLEM_RESPONSE = (description: string): OpenApiObject => ({
   description,
   content: {
-    "application/problem+json": { schema: PROBLEM_SCHEMA },
-    "application/json": { schema: PROBLEM_SCHEMA },
+    "application/problem+json": { schema: PROBLEM_REF },
+    "application/json": { schema: PROBLEM_REF },
   },
 });
 
@@ -189,13 +211,61 @@ export function operationIdFor(method: string, path: string): string {
   return `${method.toLowerCase()}_${cleaned || "root"}`;
 }
 
-/** The responses every operation carries, whatever else it declares. */
-const COMMON_RESPONSES: OpenApiObject = {
-  "400": PROBLEM_RESPONSE("The request was malformed or a required parameter was missing."),
-  "404": PROBLEM_RESPONSE("No such resource. The body names where to look instead."),
-  "429": TOO_MANY_REQUESTS,
-  "500": PROBLEM_RESPONSE("Something fell off a shelf. Nothing was charged."),
+/**
+ * The four failure responses every operation carries, defined ONCE.
+ *
+ * These were spread inline into all 131 operations, which is where
+ * the other half of the megabyte went — the 429 alone is 2,879 bytes
+ * because it restates the whole rate-limit position, times 131. They
+ * live in `components.responses` now and every operation points at
+ * them; `SHARED_RESPONSES` is the definition side, `COMMON_RESPONSES`
+ * the reference side, and the document renders both from this object
+ * so a reference can never name a component that does not exist.
+ */
+const SHARED_RESPONSES: Record<string, OpenApiObject> = {
+  BadRequest: PROBLEM_RESPONSE(
+    "The request was malformed or a required parameter was missing.",
+  ),
+  NotFound: PROBLEM_RESPONSE(
+    "No such resource. The body names where to look instead.",
+  ),
+  TooManyRequests: TOO_MANY_REQUESTS,
+  ServerError: PROBLEM_RESPONSE("Something fell off a shelf. Nothing was charged."),
 };
+
+const SHARED_RESPONSE_BY_STATUS: Record<string, string> = {
+  "400": "BadRequest",
+  "404": "NotFound",
+  "429": "TooManyRequests",
+  "500": "ServerError",
+};
+
+/** The responses every operation carries, whatever else it declares. */
+const COMMON_RESPONSES: OpenApiObject = Object.fromEntries(
+  Object.entries(SHARED_RESPONSE_BY_STATUS).map(([status, name]) => [
+    status,
+    { $ref: `#/components/responses/${name}` },
+  ]),
+);
+
+/**
+ * A shared response, made concrete again.
+ *
+ * OpenAPI's Reference Object takes no siblings worth having, so an
+ * operation that needs to ADD something to a shared response — the
+ * metered doors, which hang RateLimit headers on every status — has
+ * to inline it rather than reference it. Three paths do this and the
+ * cost is a few kilobytes; the alternative is a `$ref` with a
+ * `headers` key beside it, which is a shape no reader is required to
+ * honour and several will silently drop.
+ */
+function inlineSharedResponse(response: OpenApiObject): OpenApiObject {
+  const ref = response["$ref"];
+  if (typeof ref !== "string") return response;
+  const name = ref.slice(ref.lastIndexOf("/") + 1);
+  return SHARED_RESPONSES[name] ?? response;
+}
+
 const MARKDOWN_RESPONSE: OpenApiObject = {
   content: { "text/markdown": { schema: { type: "string" } } },
 };
@@ -3249,6 +3319,54 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
 };
 
 /**
+ * THE HEADER THAT STOPS A RETRY BECOMING A SECOND CHARGE.
+ *
+ * `Idempotency-Key` has been honoured on every paid door since the
+ * gate learned it, the suggested value rides in every 402 body, and
+ * /agents.md, /skill.md, /llms.txt and /try all tell a buyer to send
+ * it. The OpenAPI contract — the one document a generated client is
+ * built from — said nothing about it at all until 2026-08-28. So the
+ * readers most likely to have a naive retry loop were the readers
+ * with no way to find the fix, which is the wrong way round.
+ *
+ * DERIVED, NOT HAND-TYPED. The bounds and the window come from
+ * lib/idempotency.ts, the module the gate validates with. A spec that
+ * advertised 16-128 while the code enforced something else would be
+ * worse than a spec that stayed quiet: a client generated from it
+ * would send keys the door discards, and discarded keys fail silently
+ * by design — the purchase still completes, and still charges.
+ */
+const IDEMPOTENCY_PARAMETER: OpenApiObject = {
+  name: "Idempotency-Key",
+  in: "header",
+  required: false,
+  schema: {
+    type: "string",
+    minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
+    maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
+  },
+  description: `Optional, and it can never refuse a purchase. Repeat the same key for the same item from the same paying wallet within ${IDEMPOTENCY_TTL_SECONDS / 3600} hours and the second call returns the ORIGINAL result from cache, marked idempotent_replay — no settlement, no second charge. The chain already refuses to settle one authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge. A value the 402 body suggests (idempotency.suggested_key) is ready to use and needs nothing fetched first. Treat your own keys as secrets: cache slots are keyed by the verified paying wallet, and a key shorter than ${IDEMPOTENCY_KEY_MIN_LENGTH} characters is treated as absent rather than guessably honoured. Only settled sales replay; errors and 402s stay retryable.`,
+  example: "scvd-your-own-high-entropy-value-0001",
+};
+
+const IDEMPOTENCY_PARAMETER_REF: OpenApiObject = {
+  $ref: "#/components/parameters/IdempotencyKey",
+};
+
+/**
+ * Both envelopes are componentised for the same reason the problem
+ * object is: twenty-five instant shelves each carried an identical
+ * eleven-kilobyte copy of the delivery envelope. The schema itself is
+ * unchanged — only where it is written down.
+ */
+const DELIVERY_ENVELOPE_REF: OpenApiObject = {
+  $ref: "#/components/schemas/DeliveryEnvelope",
+};
+const ORDER_RECEIPT_REF: OpenApiObject = {
+  $ref: "#/components/schemas/OrderReceipt",
+};
+
+/**
  * THE OPERATOR GLANCE. 3,680 organic visits this month — the busiest
  * untyped door on the site until now, and the page a reader reaches
  * for when the question is "what is this and should I trust it".
@@ -3833,43 +3951,231 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
   return {
     ...operation,
     responses: Object.fromEntries(
-      Object.entries(responses).map(([status, response]) => [
-        status,
-        {
-          ...response,
-          headers: {
-            ...((response["headers"] as OpenApiObject) ?? {}),
-            ...RATE_LIMIT_HEADER_SPEC,
+      Object.entries(responses).map(([status, response]) => {
+        const concrete = inlineSharedResponse(response);
+        return [
+          status,
+          {
+            ...concrete,
+            headers: {
+              ...((concrete["headers"] as OpenApiObject) ?? {}),
+              ...RATE_LIMIT_HEADER_SPEC,
+            },
           },
-        },
-      ]),
+        ];
+      }),
     ),
   };
 }
 
+/**
+ * THE 402 BODY, TYPED — the same object payment-gate.ts renders.
+ *
+ * A paid door's 402 is not an error page here, it is the offer, and
+ * until now the contract declared it `{"type":"object"}`. An agent
+ * deciding whether it could pay this store had to provoke a challenge
+ * and read it, which is exactly the call the spec exists to make
+ * unnecessary. Every field named below is on the live 402 today;
+ * `accepts` is the part a payer actually needs, and it is the part
+ * the bare schema hid.
+ */
+const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
+  type: "object",
+  description:
+    "The x402 v2 challenge, in the response body. The canonical, signable copy of the same terms rides base64-encoded in the PAYMENT-REQUIRED header; this body is the readable twin plus the things a first-time payer needs — a fill-in-the-blanks payload template, the atomic-vs-decimal amount check, and a suggested idempotency key.",
+  /*
+   * THREE FIELDS, NOT FIVE. The first draft of this schema required
+   * `item_id` and `min_price_usdc` — true of every /api/buy/* door
+   * and of none of the penny pages, which carry `price_usdc` and no
+   * item id at all because a gazette issue is not a menu item. A
+   * contract that requires a field half its doors do not send is a
+   * false claim in machine form, on the surface this store's whole
+   * argument rests on. Only what EVERY paid door sends is required;
+   * the rest say which doors they appear on.
+   */
+  required: ["error", "note", "payload_template"],
+  properties: {
+    error: {
+      type: "string",
+      description: "The counter's own sentence about what is being asked for.",
+    },
+    note: {
+      type: "string",
+      description:
+        "Where the signable requirements are and what to retry with: sign one of the accepts and resend with the PAYMENT-SIGNATURE header. The v1 X-PAYMENT header is still honoured.",
+    },
+    item_id: {
+      type: "string",
+      description:
+        "The shelf being bought. Present on the /api/buy/* doors; a penny page has no menu item and sends none.",
+    },
+    min_price_usdc: {
+      type: "number",
+      description:
+        "The cheapest tier on offer, in USDC, on the /api/buy/* doors. Paying above it is a tip and is recorded as one, never required.",
+    },
+    price_usdc: {
+      type: "number",
+      description:
+        "The flat price, on the penny pages — the almanac and gazette doors, which are single-price and send this instead of min_price_usdc.",
+    },
+    pay_more_if_you_like: {
+      type: "string",
+      description:
+        "The penny pages' note that the higher tiers in the header buy exactly the same page and are recorded as a tip.",
+    },
+    pricing: {
+      type: "string",
+      description: "fixed, or tiered where the item offers more than one price.",
+    },
+    required_params: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "Query parameters this item refuses to be bought without. Asking the price without them is free; buying without them is refused before any money moves. Absent where the door takes none.",
+    },
+    required_params_note: { type: "string" },
+    payload_template: {
+      type: "object",
+      description:
+        "A complete EVM payment payload with exactly three <angle-bracketed> blanks — your wallet address, a fresh nonce, your signature. Everything else is already correct for THIS challenge; `accepted` in particular must stay byte-identical to what was offered.",
+    },
+    payload_template_note: {
+      type: "string",
+      description:
+        "How to fill the template in, including the EIP-712 domain wall that otherwise fails silently.",
+    },
+    hand_rolling_url: {
+      type: "string",
+      format: "uri",
+      description: "The worked example, for a client being written by hand.",
+    },
+    amount_check: {
+      type: "object",
+      description:
+        "The decimal USDC price and the atomic string beside it, stated together — a six-decimal mismatch is the most common way a first payment fails.",
+    },
+    idempotency: {
+      type: "object",
+      description:
+        "A ready-to-use suggested_key and what it does. Sending it back as Idempotency-Key makes a retry loop safe from a second charge.",
+    },
+    spec: {
+      type: "object",
+      description: "What this call does and what comes back, machine-readable.",
+    },
+    spec_note: { type: "string", description: "The same, as one sentence." },
+    guarantee: {
+      type: "string",
+      description: "What is promised and — the half that matters — what is not.",
+    },
+    verification: {
+      type: "object",
+      description:
+        "Everything about this offer that is checkable before signing, from this response and public URLs, without asking the store.",
+    },
+    wallet_safety: {
+      type: "object",
+      description:
+        "The two mechanisms that protect a payer from their own retry loop, both free and live on every paid door.",
+    },
+    house_rule: {
+      type: "string",
+      description:
+        "The standing refusal: nothing here acts without your decision, and the store never asks for credentials, keys, or wallet secrets.",
+    },
+    want_something_else: { type: "string" },
+    extensions: {
+      type: "object",
+      description:
+        "x402 extension blocks. `offer-receipt` carries a JWS-signed copy of each accepts entry, so the offer is verifiable against the store's published key before a payment is signed.",
+    },
+  },
+};
+
+const PAYMENT_REQUIRED_REF: OpenApiObject = {
+  $ref: "#/components/schemas/PaymentRequiredChallenge",
+};
+
+/**
+ * A PAID OPERATION, DESCRIBED THE WAY A BUYER'S AGENT READS ONE.
+ *
+ * `x-payment-info` is the field Circle's Sell-to-Agents scanner looks
+ * for, and its contents are not written here: they come from
+ * `manifestAccepts`, which derives from `railAccepts`, which is the
+ * exact function the till builds real 402 terms with. That indirection
+ * is the whole point. A rail opens or closes, a price moves, the payTo
+ * address changes — and this document moves with it in the same
+ * deploy, because there is no second copy of the numbers to forget.
+ *
+ * `x-payment` stays beside it, unchanged. It predates this block, the
+ * store's own stamping passes key off it to find the paid operations,
+ * and readers have generated against it; adding a field is free,
+ * removing one breaks somebody quietly.
+ */
 function paidOp(
+  env: Env,
   summary: string,
   description: string,
   priceUsdcOptions: number[],
   markdown = false,
 ): OpenApiObject {
+  const accepts = manifestAccepts(env, priceUsdcOptions);
   return {
     summary,
     description,
     "x-payment": {
       protocol: "x402",
       version: 2,
-      // The single string predates the second rail and stays for
-      // readers that learned it (same legacy posture as x402.json);
-      // `networks` beside it is the truth — every 402 offers all three.
-      network: "eip155:8453",
-      networks: [
-        "eip155:8453",
-        "eip155:137",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-      ],
+      /*
+       * The single string predates the second rail and stays for
+       * readers that learned it (same legacy posture as x402.json);
+       * `networks` beside it is the truth. Both are DERIVED from the
+       * accepts the till would actually offer rather than typed here,
+       * so a rail that closes closes on this surface too — the old
+       * hand-written list would have gone on advertising three rails
+       * on the day one of them stopped answering.
+       */
+      network: accepts[0]?.network ?? "eip155:8453",
+      networks: [...new Set(accepts.map((accept) => accept.network))],
       asset: "USDC",
       price_usdc_options: priceUsdcOptions,
+    },
+    "x-payment-info": {
+      protocol: "x402",
+      x402Version: 2,
+      scheme: "exact",
+      asset: "USDC",
+      /*
+       * MULTI-CHAIN, AND NOT AS A CLAIM. One entry per rail per price
+       * tier, each with the atomic amount, the USDC contract on that
+       * chain and the payTo address that chain actually settles to —
+       * the same four fields, with the same values, that come back in
+       * the PAYMENT-REQUIRED header on a live challenge. A buyer picks
+       * whichever chain it has funded.
+       */
+      accepts,
+      price_usdc: priceUsdcOptions,
+      max_timeout_seconds: SIGNING_WINDOW_SECONDS,
+      /*
+       * NO `facilitator` FIELD, and its absence is deliberate. The
+       * first draft named one from memory and named the wrong one —
+       * this store verifies through CDP, not x402.org — which is the
+       * exact failure mode the rest of this block is built to avoid.
+       * A buyer does not need it either: it signs one of the accepts
+       * and retries, and which facilitator the SELLER verifies
+       * through is the seller's business and can change without a
+       * buyer noticing. A field that can be wrong and cannot be used
+       * is a field worth not having.
+       */
+      challenge_header: "PAYMENT-REQUIRED",
+      payment_header: "PAYMENT-SIGNATURE",
+      /* The v1 spelling is still accepted; saying so costs one field. */
+      legacy_payment_header: "X-PAYMENT",
+      settlement:
+        "The store delivers first and settles after: the goods are produced, then the payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all.",
+      discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
+      documentation: `${env.STORE_BASE_URL}/developers`,
     },
     responses: {
       "200": {
@@ -3878,15 +4184,20 @@ function paidOp(
       },
       "402": {
         description:
-          "Payment required. Requirements ride in the PAYMENT-REQUIRED response header (base64 JSON, x402 v2); retrying with a signed PAYMENT-SIGNATURE header completes the purchase.",
+          "Payment required — this is the offer, not a failure. The signable requirements ride base64-encoded in the PAYMENT-REQUIRED response header (x402 v2); the body carries the same terms readably, plus a fill-in-the-blanks payload template. Retry the same URL with a signed PAYMENT-SIGNATURE header to complete the purchase.",
         headers: {
           "PAYMENT-REQUIRED": {
             schema: { type: "string" },
             description:
-              "Base64-encoded x402 v2 payment requirements: the accepts[] array, one entry per rail.",
+              "Base64-encoded x402 v2 payment requirements: the accepts[] array, one entry per rail per price tier, mirroring x-payment-info.accepts on this operation.",
+          },
+          "WWW-Authenticate": {
+            schema: { type: "string" },
+            description:
+              'X402 resource_metadata="<origin>/.well-known/oauth-protected-resource" — what gates this resource, at the fixed path a client constructs without being told.',
           },
         },
-        ...JSON_RESPONSE,
+        content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
       },
       ...COMMON_RESPONSES,
     },
@@ -3936,7 +4247,7 @@ function pathParam(
  * spec cannot drift from the behaviour — which is the bug we have
  * been finding all week, in four different costumes.
  */
-function buyItemOperation(item: MenuItem): OpenApiObject {
+function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   const schema = buyInputSchema(item);
   const required = new Set(schema.required ?? []);
   const parameters = Object.entries(schema.properties).map(
@@ -3955,9 +4266,34 @@ function buyItemOperation(item: MenuItem): OpenApiObject {
       };
     },
   );
-  return {
+  /**
+   * THE REQUEST, AS ONE SCHEMA WITH DESCRIBED FIELDS.
+   *
+   * The parameters array below says the same thing, and says it in
+   * the vocabulary a generated client needs. This says it in the
+   * vocabulary a payment scanner reads: one JSON Schema object,
+   * $schema-declared, every property carrying its own description and
+   * `required` naming what the door will refuse without. Both come
+   * from `buyInputSchema` — the same object the Bazaar entry, the MCP
+   * tool definition, the live 402 body and the buy route's own guard
+   * are built from — so there is one place a field can be described
+   * and four surfaces that move when it is.
+   */
+  const requestSchema: OpenApiObject = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    title: `${item.name} request`,
+    description: `Query parameters for GET /api/buy/${item.id}. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.`,
+    properties: schema.properties,
+    ...(schema.required && schema.required.length > 0
+      ? { required: [...schema.required] }
+      : {}),
+    additionalProperties: false,
+  };
+  const operation: OpenApiObject = {
     ...returns(
       paidOp(
+      env,
       // A1: the summary is the first line a spec reader shows, so it
       // carries the query an agent would run rather than our label
       // for the thing. Falls back to the name where no query exists.
@@ -3977,41 +4313,60 @@ function buyItemOperation(item: MenuItem): OpenApiObject {
        * work has not happened yet.
        */
       item.fulfillment === "instant"
-        ? DELIVERY_ENVELOPE_SCHEMA
-        : ORDER_RECEIPT_SCHEMA,
+        ? DELIVERY_ENVELOPE_REF
+        : ORDER_RECEIPT_REF,
     ),
     parameters,
   };
+  const paymentInfo = operation["x-payment-info"] as OpenApiObject;
+  paymentInfo["input"] = {
+    location: "query",
+    method: "GET",
+    schema: requestSchema,
+  };
+  operation["x-request-schema"] = requestSchema;
+  return operation;
 }
 
 /** Every paid buy route, by its real path. */
-function buyPaths(items: readonly MenuItem[]): Record<string, OpenApiObject> {
+function buyPaths(
+  env: Env,
+  items: readonly MenuItem[],
+): Record<string, OpenApiObject> {
   const paths: Record<string, OpenApiObject> = {};
   for (const item of items) {
-    paths[`/api/buy/${item.id}`] = { get: buyItemOperation(item) };
+    paths[`/api/buy/${item.id}`] = { get: buyItemOperation(env, item) };
   }
   return paths;
 }
 
 /** Penny pages that actually exist. A path with no instances is not a resource. */
 function pennyPagePaths(
+  env: Env,
   entries: readonly { path: string; summary: string; description: string }[],
 ): Record<string, OpenApiObject> {
   const paths: Record<string, OpenApiObject> = {};
   for (const entry of entries) {
     paths[entry.path] = {
-      get: paidOp(entry.summary, entry.description, [PENNY_PAGE_USDC], true),
+      get: paidOp(
+        env,
+        entry.summary,
+        entry.description,
+        [PENNY_PAGE_USDC],
+        true,
+      ),
     };
   }
   return paths;
 }
 
-function buyOperation(items: readonly MenuItem[]): OpenApiObject {
+function buyOperation(env: Env, items: readonly MenuItem[]): OpenApiObject {
   const allPrices = [...new Set(items.flatMap((i) => priceTiersUsdc(i)))].sort(
     (a, b) => a - b,
   );
   return {
     ...paidOp(
+      env,
       "Buy an item from the menu",
       "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
       allPrices,
@@ -4121,6 +4476,38 @@ openapiRoutes.get("/openapi.json", async (c) => {
         "SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on Base eip155:8453, Polygon eip155:137, or Solana mainnet — pick any; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt.",
     },
     servers: [{ url: base }],
+    /**
+     * WHERE THE PROSE IS, SAID IN THE FIELD BUILT FOR IT (2026-08-31).
+     *
+     * Circle's Sell-to-Agents scanner reads `externalDocs.url` to
+     * decide whether a service has documentation an agent can go and
+     * read. The store has had /developers since 2026-08-21 and named
+     * it in three vendor extensions, a description, and a Link
+     * header — every place except the one field OpenAPI reserves for
+     * the answer. A reader should not have to know our extensions to
+     * find our manual.
+     */
+    externalDocs: {
+      url: `${base}/developers`,
+      description:
+        "The developer index: the free preflight and conformance doors, the MCP server, the CLI, the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. The full agent briefing is at /llms.txt.",
+    },
+    /**
+     * EVERYTHING WRITTEN ONCE. See PROBLEM_REF for why this section
+     * exists at all: the document was 1,480,775 bytes and unreadable
+     * by the scanners it is written for, because five objects were
+     * inlined a thousand times between them.
+     */
+    components: {
+      schemas: {
+        Problem: PROBLEM_SCHEMA,
+        DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
+        OrderReceipt: ORDER_RECEIPT_SCHEMA,
+        PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
+      },
+      responses: SHARED_RESPONSES,
+      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
+    },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
      * versioned in the URL — /api/preflight/v1, /api/conformance/v1 —
@@ -5341,7 +5728,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ZODIAC_ARCHIVE_SCHEMA,
         ),
       },
-      ...buyPaths(MENU_ITEMS),
+      ...buyPaths(c.env, MENU_ITEMS),
       "/api/order/{order_id}": {
         get: {
           ...freeOp(
@@ -5414,6 +5801,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       ...pennyPagePaths(
+        c.env,
         ALMANAC_ENTRIES.map((entry) => ({
           path: `/almanac/${entry.slug}`,
           summary: `Almanac: ${entry.title}`,
@@ -5427,6 +5815,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       ...pennyPagePaths(
+        c.env,
         issues.map((issue) => ({
           path: `/gazette/issue-${issue.issue_number}`,
           summary: `Gazette no. ${issue.issue_number}: ${issue.title}`,
@@ -5928,24 +6317,13 @@ export function stampIdempotencyKey(document: OpenApiObject): void {
       if (
         parameters.some(
           (parameter) =>
-            String(parameter["name"]).toLowerCase() === "idempotency-key",
+            String(parameter["name"]).toLowerCase() === "idempotency-key" ||
+            parameter["$ref"] === IDEMPOTENCY_PARAMETER_REF["$ref"],
         )
       ) {
         continue;
       }
-      parameters.push({
-        name: "Idempotency-Key",
-        in: "header",
-        required: false,
-        schema: {
-          type: "string",
-          minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
-          maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
-        },
-        description:
-          `Optional, and it can never refuse a purchase. Repeat the same key for the same item from the same paying wallet within ${IDEMPOTENCY_TTL_SECONDS / 3600} hours and the second call returns the ORIGINAL result from cache, marked idempotent_replay — no settlement, no second charge. The chain already refuses to settle one authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge. A value the 402 body suggests (idempotency.suggested_key) is ready to use and needs nothing fetched first. Treat your own keys as secrets: cache slots are keyed by the verified paying wallet, and a key shorter than ${IDEMPOTENCY_KEY_MIN_LENGTH} characters is treated as absent rather than guessably honoured. Only settled sales replay; errors and 402s stay retryable.`,
-        example: "scvd-your-own-high-entropy-value-0001",
-      });
+      parameters.push({ ...IDEMPOTENCY_PARAMETER_REF });
       op["parameters"] = parameters;
     }
   }
