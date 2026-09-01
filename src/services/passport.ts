@@ -68,6 +68,56 @@ export function freshnessOf(
 }
 
 /**
+ * THE AGENT DECISION — the coarsest honest read of a passport, for
+ * the caller who has one question ("do I act on this or not?") and
+ * no budget for five freshness words (outside review, 2026-08-31).
+ *
+ * It is a TOTAL FUNCTION OF `freshness` and nothing else. It reads
+ * no clock, fetches nothing, and cannot say READY about a passport
+ * whose own freshness does not already say so — which is the whole
+ * reason it is safe to put a four-word vocabulary in front of the
+ * five-word one. `aging` decides READY on purpose: aging evidence
+ * has not expired, and collapsing it to NOT_READY would make the
+ * decision disagree with the artifact's own expiry rule. The nuance
+ * it drops stays one field away, in `status` and `evidence_age_days`.
+ */
+export type AgentDecision =
+  | "READY"
+  | "NOT_READY"
+  | "EXPIRED"
+  | "INDETERMINATE";
+
+export function decisionOf(freshness: FreshnessState): AgentDecision {
+  switch (freshness) {
+    case "fresh":
+    case "aging":
+      return "READY";
+    case "broken":
+      return "NOT_READY";
+    case "expired":
+      return "EXPIRED";
+    case "indeterminate":
+      return "INDETERMINATE";
+  }
+}
+
+/** What each decision means for the caller, in plain words. Rendered
+ * on the passport pages and stated on the artifact itself, so a
+ * reader never has to guess what this store means by READY. */
+export const DECISION_MEANING: Record<AgentDecision, string> = {
+  READY:
+    "The latest observation found a working x402 door and the evidence has not expired. This is the evidence saying go ahead — it is not a promise that the door will deliver, and it says nothing about what happens after payment.",
+  NOT_READY:
+    "The latest observation found the door failing. Do not treat this host as payable on our evidence. Refusal is the honest read: something we could check did not work when we checked it.",
+  EXPIRED:
+    "The evidence is older than the passport's own expiry and means nothing now. Refuse it and get a newer observation — do not fall back to reading the stale verdict.",
+  INDETERMINATE:
+    "We do not know. Either nothing was observed, or the checks disagreed with each other. Treat this exactly like no evidence at all rather than like a soft yes.",
+};
+
+export const DECISION_RULE = `fresh or aging -> READY; broken -> NOT_READY; expired -> EXPIRED; indeterminate -> INDETERMINATE. Derived from status alone, so it can never disagree with the freshness rule above it.`;
+
+/**
  * THE SUMMARY BLOCK — the one dead-simple read (outside review,
  * 2026-08-27, accepted): three answers fast — can it be paid, what
  * evidence says so, when does that evidence expire — without walking
@@ -79,6 +129,9 @@ export function freshnessOf(
  * could rewrite freely.
  */
 export interface PassportSummary {
+  /** The four-word read, a total function of `status` below. */
+  decision: AgentDecision;
+  decision_rule: string;
   /** Same value as payload.freshness — the one-word answer. */
   status: FreshnessState;
   verdict: string | null;
@@ -94,6 +147,11 @@ export interface PassportSummary {
   /** Failing checks on the evidence this passport rides. Stated as []
    * on a ready-side passport rather than omitted. */
   failed: string[];
+  /** What this passport's own modules say they did NOT look at — the
+   * union of their `not_checked` lists, deduped and sorted. A silent
+   * gap reads as a clean bill; this one is stated beside the verdict
+   * where a hurried reader cannot miss it. */
+  not_observed: string[];
   verify: string;
   history_url: string;
   corrections_url: string;
@@ -162,6 +220,13 @@ export type PassportOutcome =
 const NOT_A_GUARANTEE =
   "A passport is evidence, not endorsement: it says what this store's instruments observed at the stated moments, nothing about delivery quality, solvency, or anything after expiry. Not an escrow, not a guarantor. Verify the signature yourself and refuse expired evidence.";
 
+/** The union of every module's own `not_checked`, deduped and sorted
+ * so the same passport hashes the same way twice. Modules that cite
+ * nothing produce [], which is stated rather than omitted. */
+function notObservedFrom(modules: readonly PassportModule[]): string[] {
+  return [...new Set(modules.flatMap((module) => module.not_checked))].sort();
+}
+
 /** One builder, both passports: the summary is arithmetic over the
  * values the payload already states, never a second source. */
 function summarize(parts: {
@@ -174,6 +239,10 @@ function summarize(parts: {
   observedAt: string | null;
   offer?: { networks: string[]; min_usdc?: number; max_usdc?: number };
   failed: string[];
+  /** The same array the payload carries. `not_observed` is a view over
+   * it, never a second list — which is why the modules are computed
+   * before the summary in both issuers rather than after. */
+  modules: readonly PassportModule[];
 }): PassportSummary {
   const ageDays =
     parts.observedAt === null
@@ -184,6 +253,8 @@ function summarize(parts: {
             86_400_000,
         );
   return {
+    decision: decisionOf(parts.freshness),
+    decision_rule: DECISION_RULE,
     status: parts.freshness,
     verdict: parts.verdict,
     observed_at: parts.observedAt,
@@ -201,6 +272,7 @@ function summarize(parts: {
         }
       : {}),
     failed: parts.failed,
+    not_observed: notObservedFrom(parts.modules),
     verify:
       "ed25519_verify(utf8(signed_payload), hex(signature), hex(public_key)); the key and its Bitcoin-anchored history are at /.well-known/scvd-signing-key.",
     history_url: `${parts.base}/corpus/host/${parts.host}.json`,
@@ -316,6 +388,10 @@ export async function issuePassport(
             }
           : {}),
       };
+  /* Read before the payload, not inside it: `summary.not_observed` is
+   * a view over this exact array, and a view cannot be computed after
+   * the thing it views. */
+  const modules = await citedModulesForHost(env, host);
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
@@ -329,6 +405,7 @@ export async function issuePassport(
       observedAt: latest.observed_at ?? null,
       ...(offer ? { offer } : {}),
       failed: refreshIsNewest ? [] : (latestProbed?.failed ?? []),
+      modules,
     }),
     issued_at: issuedAt,
     expires,
@@ -346,7 +423,7 @@ export async function issuePassport(
     chip_url: `${base}/badges/passport/${host}.svg`,
     observer: `${new URL(base).host} weekly census (signed corpus; one GET per host per week, Web Bot Auth)`,
     not_a_guarantee: NOT_A_GUARANTEE,
-    modules: await citedModulesForHost(env, host),
+    modules,
   };
   return { issued: true, passport: await signPassport(env, payload) };
 }
@@ -406,6 +483,7 @@ export async function issueSelfPassport(
       verdict: selfVerdict,
       observedAt: at,
       failed: disagreeing,
+      modules,
     }),
     issued_at: at,
     expires: selfExpires,
