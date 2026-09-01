@@ -1,8 +1,11 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { ARTIFACT_CLASSES } from "@/store/attestation-spec";
-import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
-import { PREFLIGHT_VERSION } from "@/services/preflight";
+import {
+  AUDIT_BATTERY_CHANGE_NOTE,
+  AUDIT_CRITERIA_VERSION,
+} from "@/services/service-audit";
+import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import { GRADUATED, WATCHED } from "@/store/becoming";
 
@@ -40,7 +43,10 @@ describe("the criteria page", () => {
     const body = await json("/criteria");
     const battery = body.criteria_battery as { version: string; url: string };
     expect(battery.version).toBe(AUDIT_CRITERIA_VERSION);
-    expect(battery.url).toBe(`${BASE}/api/preflight/${PREFLIGHT_VERSION}`);
+    expect(battery.url).toBe(`${BASE}/api/preflight/${PREFLIGHT_VERSION_NEXT}`);
+    expect(String((body.criteria_battery as { changed: string }).changed)).toBe(
+      AUDIT_BATTERY_CHANGE_NOTE,
+    );
     // And the named URL actually answers — a criteria page whose
     // criteria 404 is a contract pointing at a wall.
     const criteria = await SELF.fetch(battery.url);

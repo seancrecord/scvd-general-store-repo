@@ -156,8 +156,9 @@ describe("the sample shows what the purchase actually hands back", () => {
    * demonstration of the instrument's exit path rather than its work.
    * The fix moved the defect deeper, and landed somewhere better than
    * intended: the door now passes v1's frozen core and fails v2's
-   * atomic-amount check, so the specimen shows ONE probe reaching TWO
-   * verdicts that disagree.
+   * atomic-amount check. Since 2026-09-01 the specimen headline is
+   * the v2 verdict (not_ready), with v1 ready in also_under — ONE
+   * probe reaching TWO verdicts that disagree.
    *
    * That disagreement is the single most valuable and least
    * explicable thing the $5 buys, and no prose description of this
@@ -168,8 +169,9 @@ describe("the sample shows what the purchase actually hands back", () => {
   it("shows one probe reaching two verdicts that disagree", async () => {
     const sample = await sampleOnceOver(testEnv, 5);
     expect(sample.sample.checks.length).toBeGreaterThan(3);
-    expect(sample.sample.verdict).toBe("ready");
-    expect(sample.sample.also_under?.verdict).toBe("not_ready");
+    expect(sample.sample.verdict).toBe("not_ready");
+    expect(sample.sample.also_under?.verdict).toBe("ready");
+    expect(sample.sample.also_under?.battery).toBe("preflight-v1");
     expect(
       sample.sample.also_under?.verdict,
       "the constructed door no longer splits the two batteries, so the sample demonstrates nothing a prose description could not",

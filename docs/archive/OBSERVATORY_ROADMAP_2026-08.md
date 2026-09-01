@@ -3,6 +3,18 @@
 A segmented execution roadmap FOR AN AI AGENT. Written 2026-08-24
 from the audit ledger and the architecture spec; keeper-directed.
 
+`KEEPER_LIST.md` is the other living queue: LOOK / TEST / RULE
+for the keeper's hands (directory entries, walks, presses,
+decisions). This file is the feature order. Two queues, one
+job each. Do not put a build on the desk, and do not put his
+pen on this sheet.
+
+**Still open.** Phases 0–3 largely shipped. Phases 4–5 and
+Phase 6 are not done. Ranking a queue is not closing a row.
+Batches 1–21 of the 2026-09-01 dump are archived at
+`docs/archive/DESK_DUMP_2026-09-01.md`. Another dump is
+incoming; do not re-rank until he says that batch is in.
+
 ## How to use this document
 
 - **Sources of truth:** every item cites a ledger ID (e.g. `I2`,
@@ -225,4 +237,91 @@ countersigning, no proprietary math, no caller-directed payments
 (spec §11).
 - Every derived number stays derived — if a count or version is
 typed twice, the build is wrong (AT_SCALE rule 1).
+
+---
+
+## Phase 6 — remaining, ranked 2026-09-01
+
+This is the living agent queue. It does not replace Phases
+4–5; it says what to build *before* those, and why. The
+desk is not a second roadmap.
+
+**Closed on `main` the same day this was ranked, before this
+branch rebased:** `/coverage` HTML (batch 16's sharpest leftover
+— honesty already signed, JSON only). Paid-page parity. Do not
+rebuild either.
+
+**Not built. Confirmed in the tree 2026-09-01.**
+
+| Item | Evidence it is still open |
+| --- | --- |
+| #82 paid audit on battery v2 | `AUDIT_CRITERIA_VERSION = PREFLIGHT_BATTERY` (v1). v2 rides `also_under`. Census already folds v2. Two instruments still disagree in public. |
+| M5 provenance shelf | Specced. `docs/PROVENANCE_CHECK_SPEC_2026-08.md` header: SPECCED, NOT BUILT. No route, no SKU wired. Copy ⚑. |
+| Replay census (#37) | Parked behind legibility. Passport summary and `/coverage` HTML now exist. The census re-pin itself is not done. Different ticket from leftover-queue #37 (CV test-segment). |
+| Phase 4 `/agent/v1`, `find_endpoints`, `@scvd/agent` | No routes, no package. |
+| Phase 5 chips, `@scvd/launch-check`, first `cross_ref` consumer | Unbuilt. 5.1 partly covered by `/corpus/diff.json`. |
+| Lane B readers (MPP / AP2 / Circle) | `docs/PROTOCOL_EXPANSION_2026-08.md` §10. No parser shipped. |
+
+### The rule that ranked it
+
+Stop paper that is untrue. Then ship the one instrument already
+named and priced. Look before a new door. Do not start Gateway,
+a score, a second WebMCP note, or a live-probe `/check/{host}`.
+
+Assumption 0 still holds: a stranger paying for a verification-
+tier item reorders this file behind that item.
+
+### Serial — one branch at a time (#65)
+
+| # | What | Why this order | Acceptance |
+| --- | --- | --- | --- |
+| 6.1 | **#82 — paid audit to battery v2.** Already ruled. Move the paid audit to v2 everywhere, re-run fixtures, dated instrument-change note. | Two instruments disagree in public, and one of them is what a buyer paid for. Same class as 0.14: the check exists; the flagship record does not consume it. 1.3 made the disagreement visible; this closes it. | `AUDIT_CRITERIA_VERSION ===` the census battery. Fixtures re-run. Dated note on the criteria page. A v1-only fixture fails the paid door. |
+| 6.2 | **Provenance shelf (M5).** After he inks the draft. Name and price already ruled: "The Company an Address Keeps", $5 / free for proved-own. Spec: `docs/PROVENANCE_CHECK_SPEC_2026-08.md`. | The only new SKU this sitting already named. Copy is the gate (rule 7), not the code. Do not merge `claude/m5-provenance-copy-draft` in parallel. | Item on the shelf, derived from MENU_ITEMS, free-own path tested, B7b refusal in the body, self-audit offer stated on the listing. |
+| 6.3 | **Replay census (#37).** After 6.1 (the battery the replay would cite) and after the coverage room (now on main). | Dump 1 parked it behind legibility. That gate closed. Still not before the criteria rename, or a replay cites the battery we just retired. Different #37 from the CV test-segment. | Re-pin is a TEST that fails if the live census and the published battery part. |
+| 6.4 | **First instrument-side reader (lane B).** After he inks the rail run-through and the `PAYMENT_RAILS` vs `PROTOCOL_EXPANSION` intake collision. Re-read primaries first. | Hands in many pots, cheap, no till. A parser and a subject row. Not Gateway. Not a one-liner that goes cross-protocol before a second protocol has run. | One rail, one subject row, one test against recorded bytes. Unset flag = no till change. |
+
+Then, and not before, return to Phase 4 / 5 as demand directs.
+4.1 is not the next build because nothing is asking for
+`/agent/v1` and the free desks already have MCP tools. 5.2
+pricing is ⚑.
+
+Keeper-hand rows that unblock 6.2 and 6.4 (copy, rail ink,
+§11, listings) live on `KEEPER_LIST.md`. They are not this
+table. Roadmap 0.9 and 0.14–0.16 are the same: his press,
+already filed on the desk.
+
+### Parked features — one home, not the serial
+
+Pulled off the dump so they are not lost. Do not start these
+ahead of 6.1–6.4. Detail in
+`docs/archive/DESK_DUMP_2026-09-01.md`.
+
+| Item | Note |
+| --- | --- |
+| 4.1–4.5, 5.1–5.6 | Still the later phases. 5.1 partly live as `/corpus/diff.json`. |
+| #83 vocabulary, #70 speed budgets, #71 reliability row | Dump 1 promotions. After the serial, not instead of it. |
+| #68 declared-shape, #80 reindex, #57 per-rail breaker | Same. #57 last unless a till rail starts. |
+| #58 distribution pack | Passport outreach: profile, JSON twin, chip, checklist. |
+| Compatibility mapping | Unblocked by the MPP read. Same family as old desk #12. |
+| #37 CV test-segment | Different ticket from replay census 6.3. Do not collapse. |
+| #11 / #40 / #33 | Tab: variability, adoption, bank CSV. |
+| #36 paid directories | Fund/capture/readers is a build; paying the invoice is the desk. |
+| `/observatory` page | Porch is live. No room that reads it. |
+| Solana parity | Five gaps in `SOLANA_PARITY.md`. Per-build. Do not copy-paste EVM. |
+| #27 x402list token route | Remove only after they confirm. Confirm is the desk. |
+| Cairn disagreement + referral surfaces | Arrangement live. The two shipped gaps. Rule 51. |
+| `does_not_prove` HTML family guard | `/coverage` HTML shipped. The *family* test is still unbuilt. |
+| Card family / WebMCP extras | Behind demand tags / webmcp arrival data. |
+| Cheap `/check/{host}` | Census-only. Live-probe waits on someone linking a reading unprompted. |
+| D5 patronage sell-up | B6 drafts. Copy is the desk; the feature waits on ink. |
+| #95 | Waits on x402 #3208. |
+| Gateway / MPP till (lane A) | After the rail ink. Flag-dark. Not 6.4. |
+
+### Deliberately not a feature
+
+Scores, KYA, certification tiers, health indexes,
+"commercial evidence authority." Wikipedia. Broad approval
+widgets. Joint certification. A second WebMCP note. Host-
+flavoured skills. Dependabot as a block (merge bar is the
+desk). Parked remotes as a merge pile.
 

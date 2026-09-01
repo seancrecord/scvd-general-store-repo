@@ -75,7 +75,7 @@ describe("the battery signs its own name", () => {
       at: "2026-08-26T17:00:00.000Z",
       verdict: "ready",
       failed: [],
-      battery: AUDIT_CRITERIA_VERSION,
+      battery: PREFLIGHT_BATTERY,
     });
     const parsed = JSON.parse(preimage) as Record<string, unknown>;
     expect(parsed["battery"]).toBe("preflight-v1");
@@ -94,18 +94,15 @@ describe("the battery signs its own name", () => {
     stubDoor();
     const row = await probeHost(testEnv, "https://door.example/x");
     /*
-     * 2.5: the law is that each producer cites the battery IT
-     * applies — not that two producers cite the same string. This
-     * assertion read `AUDIT_CRITERIA_VERSION` while both happened to
-     * be v1, which quietly encoded a coincidence as a rule and hid a
-     * real divergence: the census has folded the rail read since
-     * 0.14 (a v2 rule) while the paid audit runs runChecks alone (v1),
-     * and both were citing v1. The census now cites v2 because it
-     * applies v2; the audit still cites v1 because it applies v1.
+     * #82: the paid headline now applies the same battery the
+     * census applies. The law is still that each producer cites
+     * the battery IT applies — and these two now apply the same
+     * one. If they part again, two instruments disagree in public
+     * and one of them is what a buyer paid for.
      */
     expect(row.battery).toBe(CENSUS_BATTERY);
-    expect(AUDIT_CRITERIA_VERSION).toBe(PREFLIGHT_BATTERY);
-    expect(CENSUS_BATTERY).not.toBe(AUDIT_CRITERIA_VERSION);
+    expect(AUDIT_CRITERIA_VERSION).toBe(CENSUS_BATTERY);
+    expect(AUDIT_CRITERIA_VERSION).not.toBe(PREFLIGHT_BATTERY);
   });
 
   it("an unreachable door ran no battery, and the row says none", async () => {

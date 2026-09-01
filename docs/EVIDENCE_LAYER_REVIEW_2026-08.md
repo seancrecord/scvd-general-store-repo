@@ -1728,8 +1728,12 @@ The normative spec derived from this ledger lives at
 `docs/EVIDENCE_ARCHITECTURE_V1.md` — packages, APIs, watches, and
 paid products derive from THAT document; this ledger keeps the
 findings and their reasons. The agent-executable ordering lives at
-`docs/OBSERVATORY_ROADMAP_2026-08.md` (phases, acceptance criteria,
-gates) — three documents, three jobs, no duplicated detail.
+`ROADMAP.md` (now / soon / later). August phases and
+acceptance criteria are archived at
+`docs/archive/OBSERVATORY_ROADMAP_2026-08.md`. The
+desk is `KEEPER_LIST.md` — LOOK / TEST / RULE for his hands,
+not the build order. Ledger, spec, roadmap: three documents,
+three jobs. The desk is a fourth job, not a second roadmap.
 
 **Original ordering note (superseded by the phases above, kept for
 the record):** fix live false public claims first (A1,

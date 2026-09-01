@@ -422,7 +422,8 @@ The store's standing documents, so nobody needs `ls` to find them:
 - [AT_SCALE.md](AT_SCALE.md) — what the till does under load, verified against the code
 - [THE_TAB.md](THE_TAB.md) — the Tab: specification and flow, one file
 - [THE_PAPER_KEY.md](THE_PAPER_KEY.md) — key custody, the keeper's hands only
-- [KEEPER_LIST.md](KEEPER_LIST.md) — the keeper's one desk file (successor to MONDAY.md and TASKS.md, both archived)
+- [KEEPER_LIST.md](KEEPER_LIST.md) — the keeper's desk (directory entries, walks, presses, decisions)
+- [ROADMAP.md](ROADMAP.md) — the feature order (now / soon / later)
 - [PROBLEMS.md](PROBLEMS.md) — the standing problem ledger
 - [PAYMENT_RAILS.md](PAYMENT_RAILS.md) — how a new payment rail earns admission; [REGISTRATION_RUN.md](REGISTRATION_RUN.md) — the runbook every future rail repeats
 - [AGENT_UX.md](AGENT_UX.md) — the cold-walk research: what a stranger's agent hits in its first thirty seconds

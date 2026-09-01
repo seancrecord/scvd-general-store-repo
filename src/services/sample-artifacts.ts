@@ -1,11 +1,10 @@
-import { probeOnce, runChecks } from "@/services/preflight";
+import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import {
   AUDIT_CRITERIA_VERSION,
   AUDIT_SCOPE,
   auditCriteriaNote,
   type ServiceAuditObservation,
 } from "@/services/service-audit";
-import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 import type { Env } from "@/types";
 
 /**
@@ -86,10 +85,11 @@ const NOT_ABOUT_ANYONE =
  * scheme requires atomic units. That is a real defect the census
  * finds in the wild, and it is the most useful one this sample could
  * carry, because of where the two batteries land on it: v1's frozen
- * core passes the door, and v2 catches it. One artifact, two verdicts,
- * disagreeing — which is exactly the property a buyer is paying $5 to
- * have somebody run for them, and the thing a prose description of
- * this product has never been able to show.
+ * core passes the door, and v2 (the paid headline since 2026-09-01)
+ * catches it. One artifact, two verdicts, disagreeing — which is
+ * exactly the property a buyer is paying $5 to have somebody run
+ * for them, and the thing a prose description of this product has
+ * never been able to show.
  */
 function cannedChallenge(): Response {
   const challenge = {
@@ -153,7 +153,7 @@ export async function sampleOnceOver(
     outcome.body,
     SAMPLE_SUBJECT_URL,
   );
-  const verdict = ran.checks.every((check) => check.ok) ? "ready" : "not_ready";
+  const v1Verdict = ran.checks.every((check) => check.ok) ? "ready" : "not_ready";
   const v2Checks = [...ran.checks, ...(ran.l3b ?? [])];
   const v2Verdict = v2Checks.every((check) => check.ok) ? "ready" : "not_ready";
   return {
@@ -171,8 +171,8 @@ export async function sampleOnceOver(
       observed_at: SAMPLE_OBSERVED_AT,
       /* The same sentence the paid artifact prints, not a copy of it. */
       criteria: auditCriteriaNote(env.STORE_BASE_URL),
-      verdict,
-      checks: ran.checks,
+      verdict: v2Verdict,
+      checks: v2Checks,
       advisories: ran.advisories,
       /*
        * THE SECOND READING, and the differential test is what put it
@@ -187,9 +187,9 @@ export async function sampleOnceOver(
        * rather than implying a read we did not do.
        */
       also_under: {
-        battery: PREFLIGHT_BATTERY_NEXT,
-        verdict: v2Verdict,
-        difference: `${PREFLIGHT_BATTERY_NEXT} folds the L3b consistency trio into the verdict; ${AUDIT_CRITERIA_VERSION} reports the same observations as advisories. On this constructed probe the two batteries ${verdict === v2Verdict ? "agreed" : "DISAGREED"} \u2014 which is the whole reason a purchased report carries both. On a REAL purchase the ${PREFLIGHT_BATTERY_NEXT} reading also folds the Solana rail read; no network call was made to build this specimen, so that check is absent here and present there.`,
+        battery: PREFLIGHT_BATTERY,
+        verdict: v1Verdict,
+        difference: `${AUDIT_CRITERIA_VERSION} folds the L3b consistency trio into the verdict; ${PREFLIGHT_BATTERY} reports the same observations as advisories. On this constructed probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"} \u2014 which is the whole reason a purchased report carries both. On a REAL purchase the ${AUDIT_CRITERIA_VERSION} reading also folds the Solana rail read; no network call was made to build this specimen, so that check is absent here and present there.`,
       },
       scope: AUDIT_SCOPE,
     },

@@ -2,7 +2,11 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { performServiceAudit } from "@/services/service-audit";
+import {
+  AUDIT_CRITERIA_VERSION,
+  performServiceAudit,
+} from "@/services/service-audit";
+import { CENSUS_BATTERY } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
@@ -163,7 +167,7 @@ describe("the once-over", () => {
     expect(checkNames).toContain("status-402");
     expect(checkNames).toContain("accepts");
     // The criteria are named ON the artifact, versioned.
-    expect(body.audit.criteria).toContain("preflight-v1");
+    expect(body.audit.criteria).toContain("preflight-v2");
 
     // The certificate's attests field IS the report's evidence hash:
     // the store's dated word, on the endpoint that already existed.
@@ -204,15 +208,19 @@ describe("the audit's honest boundaries", () => {
     expect(audit.checks[0]?.detail).toContain("does not prove the endpoint is down");
   });
 
-  it("carries the same probe scored under v2 beside the v1 verdict — and says when they disagree", async () => {
+  it("a v1-only door fails the paid headline — #82", async () => {
     /*
-     * The buyer-protection case the instrument audit (2026-08-28)
-     * found missing: a door with a dollar-typed amount passes every
-     * v1 structural check and cannot be paid at its asked price. The
-     * $5 artifact used to sign "ready" and nothing else while the
-     * free /api/preflight/v2 called the same door not_ready in
-     * public. Now the v2 score rides inside the signed bytes.
+     * Same GET, same bytes, different headline — until today. A door
+     * with a dollar-typed amount passes every v1 structural check and
+     * cannot be paid at its asked price. The $5 artifact used to sign
+     * ready while the census and free /api/preflight/v2 called the
+     * same door not_ready. The paid headline now cites the census
+     * battery; v1 rides in also_under so the overlap stays visible.
+     *
+     * This is the acceptance pin: a v1-only fixture fails the paid
+     * door. Deleting the fold turns this green in the wrong direction.
      */
+    expect(AUDIT_CRITERIA_VERSION).toBe(CENSUS_BATTERY);
     const decimalDoor = {
       x402Version: 2,
       accepts: [
@@ -236,11 +244,13 @@ describe("the audit's honest boundaries", () => {
           })) as unknown as typeof fetch,
       },
     );
-    expect(audit.verdict).toBe("ready");
+    expect(audit.verdict).toBe("not_ready");
+    expect(audit.criteria).toContain("preflight-v2");
     expect(audit.also_under).toBeDefined();
-    expect(audit.also_under!.battery).toBe("preflight-v2");
-    expect(audit.also_under!.verdict).toBe("not_ready");
+    expect(audit.also_under!.battery).toBe("preflight-v1");
+    expect(audit.also_under!.verdict).toBe("ready");
     expect(audit.also_under!.difference).toContain("DISAGREED");
+    expect(audit.checks.map((check) => check.name)).toContain("amount-atomic");
   });
 
   it("no battery ran, no also_under — an unreachable audit does not invent a second verdict", async () => {

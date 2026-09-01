@@ -242,6 +242,13 @@ OPERATIONS & STAFF
     everything discovered — nothing gets dropped, things get filed.
     (AMENDED 2026-08-19: PROJECT_LOG.md and TASKS.md live under
     docs/archive/; KEEPER_LIST.md is the one desk file.)
+    AMENDED 2026-09-01: two living queues, one job each.
+    `KEEPER_LIST.md` is the keeper's hands — directory entries,
+    walks, presses, and decisions (LOOK / TEST / RULE). Feature
+    order lives on `ROADMAP.md`. A row
+    an agent can build without a press or a pen does not belong
+    on the desk. A directory form or a wording only he can ink
+    does not belong on the roadmap.
 30. No agent holds keys, sends money, or publishes without an
     approval queue. Read + draft roles by default.
     AMENDED 2026-08-20, keeper's word ("if im looking at it just
@@ -782,6 +789,48 @@ LORE & TRADITION
     money buys is our labour on them. A page that made the free
     record harder to reach in order to sell the reading would be
     the exact defect this store files against other people.
+
+
+59. A SURFACE PUBLISHED FOR A READER HAS THE READER'S LIMITS AS
+    PART OF ITS CONTRACT. (Drafted 2026-09-01 from PROBLEMS #25's
+    open half, at the keeper's instruction. ⚑ The wording is
+    drafted from the lesson already on the ledger, not his
+    verbatim sentence — ink when he has it.)
+
+    A document that is true and unreadable is not published. The
+    reader's fetch cap, context window, and timeout are conditions
+    of the claim, the same as the bytes inside it. A surface that
+    has never been measured against the thing that reads it has
+    not been checked.
+
+    THE PRECEDENT. /openapi.json on 2026-08-31: 1,480,775 bytes,
+    every path real, every operation typed — and scanners with a
+    1 MB cap treated the store as having no contract at all.
+    Circle's Sell-to-Agents check reported exactly that, and from
+    where it was standing it was right. Every guard on the
+    document had asserted a property of its CONTENT. Adding truth
+    made it bigger. Nothing was watching the reader.
+
+    THE PRACTICE. Every machine surface an agent is told to fetch
+    carries a measured ceiling, derived from the readers we already
+    know about, and a test that fails when we walk past it. The
+    cheap way to pass is not to delete doors — a size guard that
+    can be satisfied by dropping paths trades an unreadable
+    contract for an incomplete one.
+
+    THE SURFACES. Listed once, in src/store/reader-limits.ts.
+    OpenAPI has held its ceiling since 2026-08-31
+    (test/openapi-fetchable.spec.ts). The others named on #25 —
+    /menu.json, /corpus.json, /.well-known/x402.json, /llms.txt —
+    take the same shape of guard
+    (test/machine-surfaces-fetchable.spec.ts). A new machine
+    surface an agent is told to fetch is added to that list in
+    the same change that publishes it.
+
+    WHAT THIS RULE IS NOT. It is not a demand to write less. The
+    OpenAPI fix lost no path and no sentence; it stopped inlining
+    the same object a thousand times. Depth stays. The reader's
+    limit is a constraint on HOW we publish, not on WHAT we know.
 
 
 =====================================================================

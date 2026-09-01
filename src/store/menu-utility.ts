@@ -120,7 +120,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     reads: "subject_fetch",
     fulfillment: "instant",
     description:
-      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the frozen v1 verdict this series has always cited, the same probe scored under the current v2 battery beside it (payability folded in — the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
+      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the current v2 verdict this series now cites (the same battery the weekly census applies), the same probe scored under the frozen v1 battery beside it (the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
     /* #31: the free specimen, so nobody buys a document sight unseen. */
     sample_url: "/samples/once-over.json",
     note_402:
@@ -128,7 +128,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     constraints: [
       "Give the endpoint in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
       "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
-      "The cited criteria are the frozen v1 battery (GET /api/preflight/v1); the signed report also carries the same probe scored under v2 (also_under), so the paid artifact can never quietly say less than the free door",
+      "The cited criteria are the v2 battery (GET /api/preflight/v2), the same battery the weekly census applies; also_under carries the frozen v1 score so a reader can see the overlap. Reports signed before 2026-09-01 cite v1 and keep that citation forever",
       "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
       "The report URL is free to read forever",
     ],

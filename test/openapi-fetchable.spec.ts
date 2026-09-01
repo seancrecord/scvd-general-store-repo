@@ -1,6 +1,10 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { STORE_CONTACT_EMAIL } from "@/store";
+import {
+  SCANNER_BUDGET_BYTES,
+  SCANNER_FETCH_CAP_BYTES,
+} from "@/store/reader-limits";
 
 const BASE = "https://scvd.store";
 
@@ -30,15 +34,9 @@ const BASE = "https://scvd.store";
  * working.
  */
 
-/** What the agent-side scanners will fetch, in bytes. */
-const FETCH_CAP_BYTES = 1_000_000;
-
-/**
- * Where the alarm goes off. Deliberately well under the cap: a guard
- * that fires at 99% of a limit fires when it is already too late to
- * do anything cheap about it.
- */
-const BUDGET_BYTES = 700_000;
+/** Scanner fetch cap and budget: src/store/reader-limits.ts, once. */
+const FETCH_CAP_BYTES = SCANNER_FETCH_CAP_BYTES;
+const BUDGET_BYTES = SCANNER_BUDGET_BYTES;
 
 async function document(): Promise<{ text: string; json: Record<string, unknown> }> {
   const response = await SELF.fetch(`${BASE}/openapi.json`);

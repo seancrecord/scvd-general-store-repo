@@ -14,8 +14,11 @@ import {
   VERDICT_VOCABULARY,
 } from "@/store/copy/criteria";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
-import { PREFLIGHT_VERSION } from "@/services/preflight";
-import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
+import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
+import {
+  AUDIT_BATTERY_CHANGE_NOTE,
+  AUDIT_CRITERIA_VERSION,
+} from "@/services/service-audit";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -90,8 +93,9 @@ criteriaRoutes.get("/criteria", (c) => {
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
     criteria_battery: {
       version: AUDIT_CRITERIA_VERSION,
-      url: `${base}/api/preflight/${PREFLIGHT_VERSION}`,
+      url: `${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}`,
       note: "The published check battery. A criteria-governed check runs those checks and no others; a new battery is a new version, and the version is named on every artifact it produces.",
+      changed: AUDIT_BATTERY_CHANGE_NOTE,
     },
     verdict_vocabulary: VERDICT_VOCABULARY,
     /**
@@ -170,7 +174,8 @@ criteriaRoutes.get("/criteria", (c) => {
       </section>
       <section>
         <h2>The criteria</h2>
-        <p class="menu-desc">Version <strong><code>${escapeHtml(AUDIT_CRITERIA_VERSION)}</code></strong>: the published check battery at <a href="/api/preflight/${escapeHtml(PREFLIGHT_VERSION)}"><code>/api/preflight/${escapeHtml(PREFLIGHT_VERSION)}</code></a>. A criteria-governed check runs those checks and no others; a new battery is a new version, named on every artifact it produces.</p>
+        <p class="menu-desc">Version <strong><code>${escapeHtml(AUDIT_CRITERIA_VERSION)}</code></strong>: the published check battery at <a href="/api/preflight/${escapeHtml(PREFLIGHT_VERSION_NEXT)}"><code>/api/preflight/${escapeHtml(PREFLIGHT_VERSION_NEXT)}</code></a>. A criteria-governed check runs those checks and no others; a new battery is a new version, named on every artifact it produces.</p>
+        <p class="menu-meta">${escapeHtml(AUDIT_BATTERY_CHANGE_NOTE)}</p>
         <table border="1" cellpadding="6">
           <tr><th>verdict</th><th>what it means, and no more</th></tr>
           ${verdicts}
