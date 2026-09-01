@@ -138,6 +138,51 @@ at most three findings: the ones that would cost the most if left
 alone. No recommendations for new pages; roadmap says rooms exist.
 ```
 
+### BATCH C, API tier — when CV has no browser
+
+Batch C is the one batch that needs a browser: the point is what the
+consumer products show a person. CV ran into exactly that on
+2026-09-01. Two ways through. The keeper runs the browser version
+himself (it was his "findability afternoon" before CV existed), or CV
+runs this API tier with keys the keeper hands him, and every row says
+which tier it is. Google AI Mode has no API; Gemini with search
+grounding is the stand-in and is labeled as such.
+
+```
+Standing rules: report what you saw, not what you expected. One batch
+per reply. If blocked, stop and say so. You draft; the keeper presses.
+Create no accounts and fill no profiles. Use only API keys the keeper
+gave you; if one is missing, skip that system and say so in the table.
+
+You have no browser, so this is the API tier of the findability
+afternoon, and every row must say so. Run each query below as a fresh
+request with web search enabled:
+  - OpenAI Responses API, web_search tool
+  - Anthropic Messages API, web search tool
+  - Perplexity API, a sonar model
+  - xAI API, Grok with live search
+  - Gemini API with Google Search grounding, labeled "stand-in for
+    AI Mode, not AI Mode"
+
+Queries:
+  1. how do I independently verify what an AI agent did
+  2. check whether an x402 endpoint actually accepts payment
+  3. where can an agent buy a signed artifact
+  4. x402 conformance check
+  5. who pays agents to test x402 endpoints
+  6. get paid to mystery shop x402 endpoints
+  7. scvd.store
+  8. SCVD general store
+
+For each row record: system and tier, date, whether scvd.store appears,
+the exact sentence that names it if so, the other sites named, whether
+the answer understands what the store does, and what question the
+store cannot yet answer. Save the raw responses to a file alongside.
+
+Deliver one table, 40 rows, then at most three findings. No page
+recommendations.
+```
+
 ---
 
 ## BATCH D — the research trails (weekly)
