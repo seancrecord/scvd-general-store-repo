@@ -6,6 +6,7 @@ import {
   decodePaymentRequired,
 } from "./helpers/payment";
 import { getMenuItem } from "@/store";
+import { FAVICON_BADGE, FAVICON_MARK } from "@/services/favicon";
 import type { Certificate, Env } from "@/types";
 
 /*
@@ -144,7 +145,15 @@ describe("the dinosaur by the door", () => {
     const svg = await SELF.fetch(`${BASE}/favicon.svg`);
     expect(svg.status).toBe(200);
     expect(svg.headers.get("Content-Type")).toBe("image/svg+xml");
-    expect(await svg.text()).toContain("<svg");
+    const svgText = await svg.text();
+    expect(svgText).toContain("<svg");
+    expect(svgText).toContain(FAVICON_BADGE);
+    expect(svgText).toContain(FAVICON_MARK);
+    // The 08-21 chocolate drawing is gone — this is the keeper's
+    // forest-green mark, and a regression to the old fills would
+    // ship the wrong dinosaur while the tests stayed green.
+    expect(svgText).not.toContain("#4e2c18");
+    expect(svgText).not.toContain("#f4ead8");
 
     const ico = await SELF.fetch(`${BASE}/favicon.ico`);
     expect(ico.status).toBe(200);
@@ -152,9 +161,15 @@ describe("the dinosaur by the door", () => {
     const bytes = new Uint8Array(await ico.arrayBuffer());
     // ICO header: reserved 0, type 1 (icon), one image.
     expect(Array.from(bytes.slice(0, 6))).toEqual([0, 0, 1, 0, 1, 0]);
+    // PNG-in-ICO, so the rounded corners stay transparent.
+    expect(Array.from(bytes.slice(22, 26))).toEqual([
+      0x89, 0x50, 0x4e, 0x47,
+    ]);
 
     const manifest = await json(await SELF.fetch(`${BASE}/site.webmanifest`));
     expect(manifest["short_name"]).toBe("SCVD");
+    expect(manifest["theme_color"]).toBe(FAVICON_BADGE);
+    expect(manifest["background_color"]).toBe(FAVICON_BADGE);
     const icons = manifest["icons"] as Array<Record<string, unknown>>;
     expect(icons.some((icon) => icon["src"] === "/favicon.svg")).toBe(true);
   });
