@@ -145,7 +145,15 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * quote a shelf that has since grown. Mid-flight until the keeper
  * republishes — and this time the record on disk will say so.
  */
-export const SKILL_VERSION = "3.8.0";
+/*
+ * 3.9.0 (2026-09-01): the desk's rulings. Two doors join the shelf —
+ * opening_day (the merchant kit as one purchase) and provenance_check
+ * (The Company an Address Keeps, with the free self-audit) — and the
+ * four operator instruments gain plain subtitles. The bundle names
+ * both doors and the self-audit challenge; nothing already published
+ * is reworded.
+ */
+export const SKILL_VERSION = "3.9.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

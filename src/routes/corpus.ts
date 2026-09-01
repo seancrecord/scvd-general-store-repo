@@ -278,6 +278,7 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
       week: null,
       ...(week ? { error: note } : { note }),
       known_weeks,
+      corrections: CORRECTIONS_POINTER,
     };
     return html
       ? c.html(

@@ -606,6 +606,16 @@ wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
 
+### Two doors and the subtitles (3.9.0, 2026-09-01)
+
+`opening_day` — the merchant kit as one purchase: a launch check, a
+week of conformance watch on the same door, and the passport, under
+one certificate at one URL. `provenance_check` — The Company an
+Address Keeps: which doors advertised a receiving address and when,
+from the signed chain, delivered and never published; your own address
+free once proved at `/api/provenance/self`. The four operator
+instruments carry a plain subtitle beside their name.
+
 ### The evidence layer (3.8.0, 2026-08-31)
 
 The observations above compose into standing surfaces an agent can
