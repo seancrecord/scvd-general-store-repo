@@ -48,12 +48,13 @@ build, it is on the roadmap.
   until you press. CV's batch A drafts the five; you paste
   them at `/admin/market`. Monday, weekly, your press.
 - **Hand CV the batches** — `docs/CV_BATCHES_2026-09.md`,
-  one at a time, A first. Batch B waits on the runner
-  (roadmap N6).
+  one at a time. A is sent. B is runnable now
+  (`scripts/walkabout.mjs`, roadmap N6 done) once the
+  field wallet holds Base USDC.
 - **Fund the field wallet** for the walkabout: Base USDC
   to the declared field wallet; Polygon if you want
   Polygon walks. Not a code task.
-- Next agent item after this merge: roadmap N6, then N2.
+- Next agent item after this merge: roadmap N2.
   One branch at a time (#65). Do not merge parked remotes.
 
 ---
