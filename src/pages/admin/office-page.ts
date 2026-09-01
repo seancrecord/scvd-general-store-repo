@@ -257,6 +257,23 @@ export function takeSectionHtml(
         <td><strong>${money(t.house_usdc)}</strong> (${t.house_sales})</td>
       </tr>
     </table>
+    <h3>By item, all-time</h3>
+    <table border="1" cellpadding="4">
+      <tr><th>item</th><th>organic (sales)</th><th>house (sales)</th></tr>
+      ${
+        take.items.length === 0
+          ? '<tr><td colspan="3">No certificates yet.</td></tr>'
+          : take.items
+              .map(
+                (line) => `<tr>
+        <td>${escapeHtml(line.label)} <small><code>${escapeHtml(line.item)}</code></small></td>
+        <td><strong>${money(line.organic_usdc)}</strong> (${line.organic_sales})</td>
+        <td>${money(line.house_usdc)} (${line.house_sales})</td>
+      </tr>`,
+              )
+              .join("\n")
+      }
+    </table>
     <p><small>Off the certificates — every dollar verifiable by its tx in
     <a href="/admin/files">the keeper's files</a>. Tips counted with their
     sales; ${take.refund_usdc > 0 ? `$${take.refund_usdc.toFixed(2)} of refunds netted out` : "no refunds to net"};
