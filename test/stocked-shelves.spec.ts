@@ -43,9 +43,15 @@ async function buyPaid(url: string): Promise<Record<string, unknown>> {
 
 describe("the stocked shelves", () => {
 
-  it("the jar is gone: scrapped, not sold out", async () => {
+  it("the jar is gone: scrapped, not sold out, and not unheard-of", async () => {
+    // A 404 here was tallied as a request for something never
+    // stocked, 1196 times by 2026-09-01. The jar was stocked; it was
+    // scrapped. The tombstone says so and nothing counts it.
     const gone = await SELF.fetch(`${BASE}/api/buy/jar_of_tuesday`);
-    expect(gone.status).toBe(404);
+    expect(gone.status).toBe(410);
+    const body = (await gone.json()) as Record<string, unknown>;
+    expect(String(body["error"])).toContain("retired 2026-07-25");
+    expect(body["folded_into"]).toBeUndefined();
   });
 
   it("nomenclature is retired: registry closed, granted names stand", async () => {
