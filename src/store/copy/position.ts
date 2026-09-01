@@ -67,9 +67,12 @@ export const POSITION_LINE =
   "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself.";
 
 /**
- * THE SIXTY WORDS — the keeper's ink, 2026-09-01 ("i agree with your
- * suggested words"). Verbatim, and the ONE paragraph every first
- * screen opens with (roadmap N2; rule 44). The desk's finding that
+ * THE SIXTY WORDS — the keeper's ink, 2026-09-01: first "i agree with
+ * your suggested words", then, the same day, the sharper draft that
+ * trades the store's nouns for the reader's (endpoint, payment,
+ * receipt) and says who buys ("i like the sharper 60 word draft").
+ * Verbatim, and the ONE paragraph every first screen opens with
+ * (roadmap N2; rule 44). The desk's finding that
  * day: agents already have doors, and what humans and routing models
  * lacked was a first screen that makes the value obvious in the
  * order it happens — before a payment, after it, and over time. So
@@ -83,7 +86,7 @@ export const POSITION_LINE =
  */
 export const VALUE_PROPOSITION_DATED = "2026-09-01";
 export const VALUE_PROPOSITION =
-  "scvd.store is an evidence observatory for agentic commerce. Before an agent pays an unfamiliar door, we preflight it. After it pays, we check the signed offer or receipt. Over time we watch, and we publish a dated corpus. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
+  "scvd.store is an evidence observatory for agentic commerce. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
 
 /**
  * THE THREE PATHS, in the order the sixty words name them, each into

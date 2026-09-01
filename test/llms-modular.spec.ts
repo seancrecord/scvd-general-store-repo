@@ -385,14 +385,21 @@ const BASE = "https://scvd.store";
  * carries "checkable offline without us" (the twin's tell), and
  * still carries every pin the earlier re-takes established.
  * test/first-screen.spec.ts holds the same sentence on the other
- * five surfaces.
+ * five surfaces. Re-taken once more the same day, after the full
+ * suite caught what the targeted runs had not: the free-forever
+ * verify line belongs inside the first 1,400 characters
+ * (test/capability-query.spec.ts), so it rides the blockquote again
+ * — derived, and worded without the twin's tell. And once more when
+ * the keeper inked the sharper draft of the sixty words the same
+ * evening ("i like the sharper 60 word draft"): one constant moved,
+ * every surface followed, this value with it.
  *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7aaf1b1b03dd5be2acb456fd89a83afdc50260d2b9a085ea4665737c0134ca77";
+  "314a6bf72fe37945064af4c446941d7d962383617b812c712307db79d23a65d4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

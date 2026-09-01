@@ -10,10 +10,11 @@ mcp-name: store.scvd/general-store
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 
 **scvd.store is an evidence observatory for agentic commerce. Before an
-agent pays an unfamiliar door, we preflight it. After it pays, we check
-the signed offer or receipt. Over time we watch, and we publish a dated
-corpus. Every artifact is signed, expires, and names what we did not
-see. Not escrow, not a rating, not a guarantee.**
+agent pays an x402 endpoint, we check that it can be paid. After it
+pays, we check the signed receipt. Over time we watch endpoints and
+publish a dated, signed corpus. Sellers use it to prove a door works;
+buyers use it before spending. Every artifact is signed, expires, and
+names what we did not see. Not escrow, not a rating, not a guarantee.**
 
 Three paths, in that order. Before you pay: preflight any x402 door,
 free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).

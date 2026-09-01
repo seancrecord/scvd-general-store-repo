@@ -76,12 +76,13 @@ export function storeGuideText(base: string): string {
 > ${POSITION_OPENING}
 > ${POSITION_NOT}
 > ${ALSO_A_STORE}
+> Everything this store signs verifies free, forever, at
+> \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit,
+> verifiable offline without asking us.
 
 ${firstScreenPaths(base)}
 
-Everything this store signs verifies free, forever, at
-\`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The
-conformance desk explains itself in plain language at
+The conformance desk explains itself in plain language at
 ${base}/conformance and now takes a pasted artifact in a form on that
 page — declared to browser agents with WebMCP's \`toolname\` attributes,
 and deliberately without \`toolautosubmit\`, so an agent may fill it and

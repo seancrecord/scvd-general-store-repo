@@ -57,8 +57,13 @@ describe("every agent-facing surface leads with what this store is", () => {
      * not a footnote. A reader who stops after two sentences should
      * have learned what we will not do before learning what we charge.
      */
+    /*
+     * 2026-09-01 (roadmap N2): the opening is the keeper's sixty
+     * words, whose refusal reads "Not escrow, not a rating, not a
+     * guarantee" and still lands before the paid list.
+     */
     const body = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
-    const refusal = body.indexOf("is a score, a rating, or a ranking");
+    const refusal = body.indexOf("not a rating, not a guarantee");
     const paid = body.indexOf("Paid instruments");
     expect(refusal).toBeGreaterThanOrEqual(0);
     expect(paid).toBeGreaterThan(refusal);
