@@ -533,7 +533,10 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * than taking five dollars for a walk that cannot pay.
  */
 const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (buyRequestPath(c) !== "/api/buy/launch_check" || !isBuying(c)) {
+  if (
+    !["/api/buy/launch_check", "/api/buy/opening_day"].includes(buyRequestPath(c)) ||
+    !isBuying(c)
+  ) {
     return next();
   }
   // Screening needs no secret: the keyless on-chain oracle is the
@@ -1321,7 +1324,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // onpageAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
-  if (item.id === "launch_check") {
+  if (item.id === "launch_check" || item.id === "opening_day") {
     // launchCheckCheck validated the URL, refused our own host, and
     // confirmed the field wallet and screen are provisioned.
     input.targetUrl = c.req.query("url") ?? "";

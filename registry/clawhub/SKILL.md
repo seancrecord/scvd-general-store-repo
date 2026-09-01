@@ -318,6 +318,9 @@ block.
 - You need your own x402 buy path walked by a real paying stranger, or
   an agent wallet's books audited against the chain.
   → `GET /api/buy/launch_check`, `GET /api/buy/the_statement`
+- You are opening a door and want the whole opening day at once: that
+  walk, a week of daily passes on the same door, and your passport.
+  → `GET /api/buy/opening_day?url=https://...` (one certificate, one URL)
 - You are on a schedule and want somewhere to come back to.
   → `POST /api/bell` (daily, free), `POST /api/stamp` (weekly, free),
   `recurring_patronage` (a renewable pass)
@@ -416,7 +419,7 @@ not need this store today. Take a free stamp on the way past.
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
 `url` on standing_watch, service_audit, good_buyer, onpage_audit,
-conformance_watch, launch_check, trust_profile and
+conformance_watch, launch_check, opening_day, trust_profile and
 signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
 the_confession. Pay-what-it-deserves items offer several amounts in
@@ -504,6 +507,11 @@ prove.
   substitute: a real EIP-3009 authorization from the store's declared
   field wallet, presented at your till, settled or refused, the whole
   walk signed stage by stage. We pay at most $0.05 at your door.
+- **`opening_day`** ($9) — the merchant's opening day in one purchase:
+  the launch check's real walk of your till, then seven daily signed
+  conformance passes on the same door, then your passport page, under
+  one certificate at one URL. Bought apart, $10 and a receipt each. It
+  ends after the week and never renews itself.
 - **`signature_agent_card`** ($0.99) — the audit's point-in-time shape
   aimed at a Web Bot Auth key directory: the document fetched once,
   every check named, the proof-of-possession signature verified rather

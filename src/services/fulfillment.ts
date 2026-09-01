@@ -341,7 +341,9 @@ export async function fulfillPurchase(
    * failed walk is still a signed observation, never a refund case.
    */
   let launchCheck: SignedLaunchCheck | undefined;
-  if (item.id === "launch_check") {
+  // The Opening Day bundle walks the same door with the same engine;
+  // its certificate binds the walk, and the watch opens after the mint.
+  if (item.id === "launch_check" || item.id === "opening_day") {
     launchCheck = await performLaunchCheck(env, input.targetUrl ?? "", {
       /*
        * 3.2: the paid walk gets the real chain reader, so a seller's

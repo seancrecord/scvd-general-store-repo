@@ -1,3 +1,5 @@
+import { KV_KEYS } from "@/lib/kv-keys";
+import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
 import { createPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
@@ -49,6 +51,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   launchCheckNote,
+  openingDayNote,
   mandateNote,
   onpageAuditNote,
   statementNote,
@@ -235,6 +238,66 @@ export async function deliverInstantGoods(
           history_url: watch.historyUrl,
           first_pass_by:
             "the store's next hourly rounds; one pass a day after that, and the history URL is readable now and fills in as the week goes",
+        },
+      };
+    }
+    case "opening_day": {
+      /*
+       * THE OPENING DAY (roadmap S3): the walk was made and signed
+       * upstream so the certificate could bind it; here it is filed,
+       * the week opens on the same door, and one row remembers the
+       * three so one URL can serve them. The watch starts AFTER the
+       * mint on purpose — a failed walk still opens the week (the
+       * walk's verdict is the walk's, not a gate), and a failed mint
+       * opens nothing, because nothing was sold.
+       */
+      const walk = input.launchCheck;
+      if (!walk) {
+        throw new Error("opening_day reached goods with no walk record");
+      }
+      const certId = input.certId ?? "";
+      await storeLaunchCheck(env, walk, certId);
+      const watch = await startConformanceWatch(
+        env,
+        input.targetUrl ?? "",
+        input.payer,
+      );
+      const host = new URL(input.targetUrl ?? "https://invalid.example").host;
+      await kvPut(
+        env.ORDERS,
+        KV_KEYS.openingDay(certId),
+        JSON.stringify({
+          cert_id: certId,
+          host,
+          url: input.targetUrl ?? "",
+          check_id: walk.check_id,
+          watch_id: watch.record.watch_id,
+          opened_at: new Date().toISOString(),
+        }),
+      );
+      return {
+        deliverable: openingDayNote(walk.verdict, watch.record.ends_at),
+        extras: {
+          opening_day_url: `/api/opening-day/${certId}`,
+          launch_check: {
+            check_id: walk.check_id,
+            verdict: walk.verdict,
+            paid_usd: walk.paid_usd,
+            replay_served: walk.replay_served,
+            ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
+            check_url: `/api/launch-check/${walk.check_id}`,
+          },
+          conformance_watch: {
+            watch_id: watch.record.watch_id,
+            ends_at: watch.record.ends_at,
+            history_url: watch.historyUrl,
+            first_pass_by:
+              "the store's next hourly rounds; one pass a day after that, and the history URL is readable now and fills in as the week goes",
+          },
+          passport_url: `/passport/${host}`,
+          check: walk,
+          verify_note:
+            "The walk is signed on its own and its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it. Each daily pass of the watch is signed alone at the history URL. The passport derives from the public corpus and says when its reading goes stale. Nothing here is a badge.",
         },
       };
     }

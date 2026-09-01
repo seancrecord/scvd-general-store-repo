@@ -407,12 +407,19 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "/corpus/brief" and "never a host
  * named beside its verdict", and still every earlier pin.
  *
+ * Re-taken 2026-09-01 — the NINETEENTH — by roadmap S3, the keeper's
+ * price and name: The Opening Day ($9) joins the shelf and the guide
+ * prints its menu line like every other item's. Confirmed before
+ * this value was taken: the guide carries "opening_day, The Opening
+ * Day — one launch check, seven days of conformance watch, and your
+ * passport page, at one URL" and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c70aa371064a887ead7bdc708757a988ce8f50ef7f2f938acc98fc7bd0fae2cb";
+  "e73ef3e97d495cea880e04da5c885f14a5d57bc8025cfaedc4d59eed19f6fede";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

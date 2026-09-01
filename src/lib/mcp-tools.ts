@@ -183,6 +183,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // attempt of the buyer's own door, from the declared field
       // wallet, the whole walk signed stage by stage.
       "launch_check",
+      // The merchant's opening day: that walk, then a week of daily
+      // passes on the same door, then the passport — one certificate.
+      "opening_day",
       // The same neutrality pointed at a whole wallet window: every
       // USDC transfer in and out, off the chain, signed by neither
       // the agent nor its operator.

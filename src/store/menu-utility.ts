@@ -293,6 +293,43 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * sums, never a judgment — we never see the agent's own ledger, so
    * no comparison is even possible from here.
    */
+  /**
+   * THE OPENING DAY (roadmap S3, the keeper's price and name,
+   * 2026-09-01): the merchant kit as a bundle, not a brand. One
+   * launch check, then seven days of conformance watch on the same
+   * door, then the passport page — three things this store already
+   * sells, under one certificate and one URL a merchant can hand to a
+   * directory. Bought apart they are $10 and a receipt each. No second
+   * battery, no new primitive: the launch walk is performLaunchCheck,
+   * the week is startConformanceWatch, the passport is the census's.
+   */
+  {
+    id: "opening_day",
+    listed_week: "2026-W36",
+    name: "The Opening Day",
+    subtitle: "one launch check, seven days of conformance watch, and your passport page, at one URL",
+    price_usdc: 9,
+    pricing: "fixed",
+    cadence: "term",
+    term_days: 7,
+    reads: "subject_purchase",
+    fulfillment: "instant",
+    description:
+      "Name your x402 endpoint (the url query parameter) and three things happen under one certificate. First, the Launch Check: this store walks your door the way a paying stranger does — one real EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, every stage signed. Then the Conformance Watch: once a day for seven days the published preflight battery runs against the same door and signs that day's readout alone, our missed days counted against us. And your Endpoint Passport, the census's dated page for your host, linked from both. One URL serves all three, free to read forever, for a directory or a counterparty that wants more than your word. Bought apart these cost ten dollars and come as a receipt each. Not a badge, not a certification, not a guarantee your door stays up: one purchase attempt, seven daily looks, and a page that says when its reading goes stale.",
+    /* #31: the free specimen of the walk half. */
+    sample_url: "/samples/once-over.json",
+    note_402:
+      "Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is ten, and a receipt each.",
+    constraints: [
+      "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",
+      "The launch check is one real purchase attempt from the declared field wallet, once — never a retry loop",
+      `We pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till; a costlier cheapest rail gets a signed record of exactly where the check stopped instead of a payment`,
+      "The payTo is sanctions-screened before any payment, and no screen means no payment — the rule fails closed",
+      "The watch is one pass a day for seven days, each signed alone; it ends after seven days and never renews itself",
+      "We refuse our own hostname — a report about our own till, signed by us, would be the instrument vouching for itself",
+      "The bundle URL, the check URL and the watch history are free to read forever",
+    ],
+  },
   {
     id: "the_statement",
     listed_week: "2026-W34",

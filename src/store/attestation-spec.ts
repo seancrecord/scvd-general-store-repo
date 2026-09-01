@@ -155,6 +155,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/launch-check/{check_id}",
   },
   {
+    id: "opening_day",
+    name: "Opening days (one real purchase attempt, then a week of daily passes, then the passport, under one certificate)",
+    trust_model: "third_party_observation",
+    signs:
+      "The launch check's whole walk (endpoint, moment, User-Agent, every stage, what was paid and to whom, the settlement transaction where one came back, the field wallet) and its evidence hash, which the purchase certificate binds in its attests field. Each of the watch's daily passes is signed on its own at the history URL. The passport is the census's own signed, expiring object.",
+    does_not_prove:
+      "Anything about any other moment, buyer, or the seller generally: one transaction once, seven daily looks, and a page that names its own stale date. The three under one certificate are still three observations, not a grade. Never a badge, never a score, never a guarantee the door stays up.",
+    verify_url: "/api/opening-day/{cert_id}",
+  },
+  {
     id: "the_mandate",
     name: "Mandates (claimed authorization, recorded before the acting)",
     trust_model: "third_party_observation",

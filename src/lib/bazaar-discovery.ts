@@ -145,6 +145,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "opening_day") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        `Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet (we pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till), then seven daily signed conformance passes on the same door, then your passport page — one certificate, one URL. We refuse our own hostname.`,
+    };
+    required.push("url");
+  }
   if (item.id === "launch_check") {
     properties["url"] = {
       type: "string",
@@ -445,6 +454,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     example["url"] = "https://your-site.example/pricing";
   }
   if (item.id === "launch_check") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "opening_day") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "passport_refresh") {

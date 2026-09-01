@@ -90,10 +90,13 @@ describe("every price says what it is buying, and for how long", () => {
    * these are the doors where a buyer's money buys days, and if that
    * set changes it should change on purpose.
    */
-  it("names the four items that sell a stretch of time", () => {
+  it("names the five items that sell a stretch of time", () => {
     const term = MENU_ITEMS.filter((item) => item.cadence === "term").map((item) => item.id);
     expect([...term].sort()).toEqual([
       "conformance_watch",
+      // The Opening Day (2026-09-01) bundles a week of conformance
+      // watch, so it sells a term and says so like its parts do.
+      "opening_day",
       "recurring_patronage",
       "standing_watch",
       "trust_profile",
@@ -317,7 +320,7 @@ describe("the coverage statement's term table matches the shelf", () => {
     expect(
       tableRows().length,
       "the term table is gone or reshaped — update this pattern rather than deleting the check",
-    ).toBe(4);
+    ).toBe(5);
   });
 
   it("names every term item the shelf sells, and no others", () => {

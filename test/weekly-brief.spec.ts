@@ -105,7 +105,7 @@ describe("The Week's Doors", () => {
   it("names an earlier week on request and refuses one it does not hold", async () => {
     await seedWeek("2026-W33", [hostRow("alpha.example", "ready"), hostRow("omitted.example", "not_probed")]);
     await seedWeek("2026-W34", [hostRow("alpha.example", "ready")]);
-    const earlier = (await (await SELF.fetch(`${BASE}/corpus/brief.json?week=2026-W33`)).json()) as Record<string, any>;
+    const earlier = (await (await SELF.fetch(`${BASE}/corpus/brief?week=2026-W33`)).json()) as Record<string, any>;
     expect(earlier.week).toBe("2026-W33");
     expect(earlier.our_gaps.not_probed).toBe(1);
     expect(earlier.previous).toBeUndefined();

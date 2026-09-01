@@ -290,6 +290,13 @@ export const KV_KEYS = {
    */
   launchCheck: (checkId: string): string => `launch_check:${checkId}`,
   /**
+   * The Opening Day bundle (roadmap S3, 2026-09-01): the certificate
+   * that bound the launch walk, the watch it opened, and the host —
+   * one small row so one URL can name all three. ORDERS, keyed by
+   * the certificate id the buyer holds.
+   */
+  openingDay: (certId: string): string => `opening_day:${certId}`,
+  /**
    * A purchased wallet statement: the signed transfer record and the
    * certificate that bound its evidence hash. PATRONS, terminal at
    * write, never scanned — the reconciliation's storage shape pointed

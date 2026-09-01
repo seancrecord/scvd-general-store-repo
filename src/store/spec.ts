@@ -237,6 +237,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Get a signed readout of what my page actually serves a machine reader — title, metadata, structured data — that I can hand to a third party",
   launch_check:
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
+  opening_day:
+    "Open my x402 endpoint properly — one real purchase attempt, a week of signed daily checks, and my passport page, under one certificate at one URL",
   spot_check:
     "Ask what the observatory already knows about an x402 host — signed, from its books, before I spend anything at that door",
   the_statement:
@@ -309,6 +311,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "the observatory's books on one host, read before any money moves toward it: rounds, verdicts as recorded, coverage, gaps with reasons — and not_observed stated as the answer it is. The same facts serve free per host; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite to a third party.",
   launch_check:
     "the one observation no probe can substitute: what your buy path does when a real stranger pays it — a genuine EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, the whole walk signed stage by stage. The field run's method, pointed at your door at your request.",
+  opening_day:
+    "the merchant's opening day in one purchase: the launch check's real walk of your till, then seven daily signed conformance passes on the same door, then your passport page — one certificate, one URL a directory can read, all free to read forever, and cheaper than the parts bought apart.",
   the_statement:
     "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one Base wallet over a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
   the_mandate:
@@ -380,6 +384,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed JSON report — verdict (ready, not_ready, unreachable or refused), every check and advisory from the published on-page battery, the blind spots printed on the artifact, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET of the HTML as served, never a render, never monitoring.",
   launch_check:
     "A signed JSON walk record — verdict (settled, payment_refused, no_payment_gate, malformed_challenge, unpaid_by_rule or unreachable), every stage with its detail (approach, challenge, terms, screen, payment, settle, delivery), what this store paid and to whom, the settlement transaction where the seller returned one, the paying field wallet, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable check URL serving the record free forever. Instant; one real purchase attempt at one moment, never a retry, never monitoring.",
+  opening_day:
+    "The launch check's signed JSON walk record (verdict, every stage, what was paid, the settlement transaction where one came back), its evidence hash bound into the purchase certificate's attests field; a conformance watch opened on the same door for seven days, each daily pass signed alone at a history URL; the host's endpoint passport URL; and one bundle URL (/api/opening-day/{cert_id}) naming all three, free to read forever. Instant to open; the week fills in day by day and never renews itself.",
   the_statement:
     "A signed JSON transfer record for one EVM wallet — coverage (complete or window_unreadable), the exact block window and chain head at read, inflows and outflows each with count and total over the whole window plus up to 200 listed transfers (transaction hash, counterparty, amount, block; the list says how many it carries), dated, its evidence hash bound into the purchase certificate's attests field — plus a stable statement URL serving the record free forever. Instant; two bounded chain reads at one moment, never monitoring. USDC on the one EVM chain the statement names — Base unless network says otherwise — stated on the artifact.",
   the_mandate:

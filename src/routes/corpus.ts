@@ -306,8 +306,9 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
   return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER });
 }
 
+// One address, both dialects — a .json twin would be a seventh surface
+// to list, and the room contract already answers JSON here.
 corpusRoutes.get("/corpus/brief", (c) => serveBrief(c, wantsHtml(c.req.header("Accept"))));
-corpusRoutes.get("/corpus/brief.json", (c) => serveBrief(c, false));
 
 /**
  * GET /corpus/diff.json?since={week} — what changed between a named
