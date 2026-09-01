@@ -5,3 +5,6 @@ CDP_API_KEY_SECRET=your-cdp-api-key-secret
 # 64 hex chars — generate with: npm run keys:generate
 SIGNING_KEY=replace-with-64-hex-char-ed25519-seed
 ADMIN_PASSWORD=pick-something-the-keeper-can-remember
+# Optional. Glama's connector ownership claim token (glama_claim_...),
+# served at /.well-known/glama.json. Unset, that path 404s.
+GLAMA_CLAIM=
