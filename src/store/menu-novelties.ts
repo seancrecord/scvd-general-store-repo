@@ -8,7 +8,8 @@ import type { MenuItem } from "@/types";
  */
 export const NOVELTY_ITEMS: readonly MenuItem[] = [
   // jar_of_tuesday scrapped entirely, keeper's ruling 2026-07-25
-  // ("lets just scrap the fucking jar"). Id retired, never reused.
+  // ("lets just scrap the fucking jar"). Id retired, never reused;
+  // its tombstone is on the retired shelf (src/store/retired.ts).
   {
     id: "luckies",
     listed_week: "2026-W30",

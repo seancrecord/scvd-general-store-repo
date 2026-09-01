@@ -309,13 +309,40 @@ export async function openBounty(
   return record;
 }
 
+/**
+ * A bounty's status AS OF NOW, derived from the record rather than
+ * read off it. The stored status is written at two moments only —
+ * "open" at posting, "paid" at claim — and nothing ever wrote
+ * "expired", so a listing that repeated the stored word kept showing
+ * every unclaimed bounty as open forever. The claim door had always
+ * checked the clock; the board had not. Between 2026-08-27 and
+ * 2026-09-01 the public board offered five doors a shopper could pay
+ * and never be paid for. Same lesson as rule 46 and the corrections
+ * page: the status a stranger reads must be computed by the same
+ * test that would refuse their claim.
+ */
+export function bountyStatusAt(
+  record: Pick<BountyRecord, "status" | "expires_at">,
+  now: Date,
+): BountyRecord["status"] {
+  if (record.status === "open" && now.toISOString() > record.expires_at) {
+    return "expired";
+  }
+  return record.status;
+}
+
 /** The public board: every record, plus the week's remaining budget. */
 export async function bountyBoard(env: Env, now: Date = new Date()) {
   const records = await listBountyRecords(env);
   const weekKey = currentWeekKey(now);
   const spent = await weekSpent(env, weekKey);
+  const bounties = records
+    .map((record) => ({ ...record, status: bountyStatusAt(record, now) }))
+    .sort((a, b) => b.opened_at.localeCompare(a.opened_at));
   return {
-    bounties: records.sort((a, b) => b.opened_at.localeCompare(a.opened_at)),
+    bounties,
+    /** Doors a shopper can still walk and be paid for, as of this read. */
+    open_count: bounties.filter((entry) => entry.status === "open").length,
     week: weekKey,
     weekly_budget_usd: BOUNTY_WEEKLY_BUDGET_USD,
     spent_this_week_usd: spent,

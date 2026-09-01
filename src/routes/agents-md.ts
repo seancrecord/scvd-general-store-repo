@@ -112,7 +112,11 @@ live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
 Base (eip155:8453), Polygon (eip155:137) or Solana (all three offered in every 402; Base entries
 first). Two doors, same catalog: an
 HTTP door and an MCP door. Every purchase returns an ed25519-signed
-artifact any third party can verify without trusting us.
+artifact any third party can verify without trusting us. Money also
+runs the other way: the bounty board at ${base}/bounties pays your
+wallet to walk other operators' x402 doors (board JSON at
+${base}/api/bounties; the terms are on the board and further down
+this file).
 
 ## Installation
 

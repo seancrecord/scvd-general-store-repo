@@ -117,6 +117,29 @@ export interface StorefrontData {
   ledgerLine?: string;
   /** The empty frame by the register. Null means "It's waiting." */
   firstDollar?: FirstDollar | null;
+  /**
+   * The bounty board, read live for the strip (2026-09-01, the
+   * keeper's finding that the board was buried): how many doors a
+   * shopper can walk today and what is left of the week's budget.
+   * Null when the read failed, and the strip says only what the
+   * copy already said — never a count that might be stale.
+   */
+  board?: { open_count: number; budget_left_usd: number } | null;
+}
+
+/**
+ * The live line under the regulars' strip. Derived, not typed: the
+ * count and the budget come off the same read /api/bounties serves,
+ * so the front cannot promise doors the board does not hold — which
+ * is exactly what it did between 2026-08-27 and 2026-09-01.
+ */
+function boardLineHtml(board: StorefrontData["board"]): string {
+  if (!board) return "";
+  if (board.open_count === 0) {
+    return `<p class="what-line">The board is between postings — it reopens with the ISO week, and the machine-readable copy at <a href="/api/bounties"><code>/api/bounties</code></a> is the one to poll.</p>`;
+  }
+  const doors = board.open_count === 1 ? "one door" : `${board.open_count} doors`;
+  return `<p class="what-line"><strong>${doors} open on the board right now</strong>, $${board.budget_left_usd.toFixed(2)} of this week's budget unspent. The list, the prices and the expiries: <a href="/bounties">/bounties</a>.</p>`;
 }
 
 /** Canon 2026-07-24: the frame holds the first organic settlement, forever. */
@@ -896,6 +919,7 @@ ${webmcpOriginTrialTags()}
     <section class="what-this-is regulars">
       <h2 class="night-head">${COPY.regularsHead}</h2>
       <p class="what-line">${COPY.regularsBody}</p>
+      ${boardLineHtml(data.board)}
     </section>
 
     <section class="doors">
