@@ -3,11 +3,11 @@
 mcp-name: store.scvd/general-store
 
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
-[![smithery badge](https://smithery.ai/badge/seancrecord/scvd-general-store)](https://smithery.ai/servers/seancrecord/scvd-general-store)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 [![scvd.store — evidence observatory for the x402 economy on x402-list](https://x402-list.com/badge/sean-claude-van-damme-s-general-store.svg?data=uptime)](https://x402-list.com/services/sean-claude-van-damme-s-general-store?utm_source=badge&utm_medium=referral&utm_campaign=embed)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/seancrecord/scvd-general-store-repo)
-[![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fattestation_bundle)](https://agents.circle.com/sell/score?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fattestation_bundle)
+[![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=scvd.store%2Fapi%2Fbuy%2Fhello)](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
+[![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 
 **An evidence observatory for agentic commerce.** Independent signed
 observation of what other people's endpoints, artifacts and payments
@@ -537,6 +537,24 @@ are not:
   [auto-crawled server index entry](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
   and a [connectors page](https://glama.ai/mcp/connectors/store.scvd/general-store).
 - **mcpindex.ai** — [a listing with its own live verdict](https://mcpindex.ai/server/store-scvd-general-store).
+- **agent-tools.cloud** — [the Bazaar-registered service](https://agent-tools.cloud/services/scvd-store-bazaar)
+  among the paid tools it indexes.
+- **x402.fuchss.app** — [a provider index entry](https://x402.fuchss.app/provider/scvd.store)
+  keyed on the origin rather than on anything we submitted.
+- **Circle (Sell to Agents)** — a
+  [readiness score](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
+  for the paid interface: the scanner fetches the OpenAPI contract and
+  the live 402 and rates how legible the door is to a buying agent. An
+  instrument, not a listing — it never buys, so it says nothing about
+  the goods. Scored per endpoint, with no summary page; one door
+  stands for the set, because every one of them is described by the
+  same contract and answers the same challenge. The badge at the top
+  of this file renders the live value; no number is written down here,
+  because a number written down is a number that rots.
+- **Drio** — [an MCP index listing](https://www.getdrio.com/mcp/store-scvd-general-store)
+  under the store's canonical name.
+- **ZBS Index** — [a listing](https://index.zbs.gg/en/mcp/store-scvd-general-store/)
+  resolving to the same canonical name every other registry landed on.
 - **mcpservers.org** — the
   [claimed server listing](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo)
   and a second, [llms.txt-derived entry](https://mcpservers.org/servers/scvd-store-llms-txt).
