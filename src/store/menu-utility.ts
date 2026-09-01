@@ -39,6 +39,13 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * ids are API surface), probes are the preflight's own checks, gaps
    * derived at read, nothing said about anyone but the buyer.
    */
+  /**
+   * ⚑ KEEPER REVIEW (2026-09-01): one clause added to the description —
+   * "Where the money goes is watched, though…" — because the watch now
+   * reports payTo movement (summary.payto_changes) and the listing said
+   * nothing about where the money goes. Capability stated, his words to
+   * recut.
+   */
   {
     id: "standing_watch",
     listed_week: "2026-W32",
@@ -50,7 +57,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     term_days: 7,
     fulfillment: "instant",
     description:
-      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Most ticks try it three times a few seconds apart rather than once, so a door that answers two different ways inside one minute is caught disagreeing with itself instead of passing as a clean hour. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
+      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Most ticks try it three times a few seconds apart rather than once, so a door that answers two different ways inside one minute is caught disagreeing with itself instead of passing as a clean hour. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Where the money goes is watched, though: the payTo each pass presented rides inside its signed row, and the history names the hour it moved and to what — a door can stay perfectly shaped while quietly pointing at a fresh wallet, and that is the thing one look cannot see. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   /**

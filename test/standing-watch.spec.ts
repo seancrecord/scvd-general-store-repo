@@ -277,6 +277,133 @@ describe("the watch evidence boundary", () => {
   });
 });
 
+describe("the recipient moved", () => {
+  /**
+   * THE FAILURE A ONE-OFF CHECK CANNOT SEE (2026-09-01): a door that
+   * stays conformant while its payTo quietly moves to a fresh wallet.
+   * The watch already kept every challenge inside its signed rows; it
+   * had simply never compared two of them. The derivation is read-time
+   * arithmetic over that evidence, so a stored row means nothing new
+   * and a reader can recompute the finding without us.
+   */
+  function challengeBytes(payTo: string, network = "eip155:8453"): string {
+    return btoa(
+      JSON.stringify({
+        ...GOOD_CHALLENGE,
+        accepts: [{ ...GOOD_CHALLENGE.accepts[0], network, payTo }],
+      }),
+    );
+  }
+
+  async function watchWithChallenges(
+    rows: Array<{ verdict: "ready" | "unreachable"; bytes?: string }>,
+  ): Promise<string> {
+    const { record } = await startWatch(testEnv, "https://moved.example/api/buy/x");
+    const key = KV_KEYS.standingWatch(record.watch_id);
+    const stored = (await testEnv.ORDERS.get<StandingWatchRecord>(key, "json"))!;
+    stored.started_at = new Date(Date.now() - rows.length * 3600_000).toISOString();
+    stored.probes = rows.map((row, i) => ({
+      at: new Date(Date.now() - (rows.length - i) * 3600_000).toISOString(),
+      verdict: row.verdict,
+      status: row.verdict === "ready" ? 402 : undefined,
+      failed: [],
+      ...(row.bytes
+        ? {
+            evidence: {
+              challenge_bytes: row.bytes,
+              headers: {},
+              body_sha256: null,
+              body_bytes: 0,
+              body_truncated: false,
+              tls: "unavailable-from-this-vantage" as const,
+            },
+          }
+        : {}),
+      signature: "unchecked-here",
+      public_key: "unchecked-here",
+    }));
+    await testEnv.ORDERS.put(key, JSON.stringify(stored));
+    return record.watch_id;
+  }
+
+  const OLD = "0x1111111111111111111111111111111111111111";
+  const NEW = "0x2222222222222222222222222222222222222222";
+
+  it("names the tick the payTo moved, what it was, what it became, and where to read the new wallet", async () => {
+    const id = await watchWithChallenges([
+      { verdict: "ready", bytes: challengeBytes(OLD) },
+      { verdict: "ready", bytes: challengeBytes(OLD) },
+      { verdict: "ready", bytes: challengeBytes(NEW) },
+      { verdict: "ready", bytes: challengeBytes(NEW) },
+    ]);
+    const history = (await readWatch(testEnv, id))!;
+    expect(history.summary.payto_changed).toBe(true);
+    expect(history.summary.payto_changes).toHaveLength(1);
+    const change = history.summary.payto_changes[0]!;
+    expect(change.at).toBe(history.probes[2]!.at);
+    expect(change.previously_at).toBe(history.probes[1]!.at);
+    expect(change.previous).toEqual([{ network: "eip155:8453", pay_to: OLD }]);
+    expect(change.current).toEqual([{ network: "eip155:8453", pay_to: NEW }]);
+    // A pointer to the new wallet's own history, on its own rail —
+    // the watch read no chain and says so.
+    expect(change.new_recipient_statement).toHaveLength(1);
+    expect(change.new_recipient_statement[0]!.url).toContain("/api/buy/the_statement?");
+    expect(change.new_recipient_statement[0]!.url).toContain(`wallet=${NEW}`);
+    expect(change.new_recipient_statement[0]!.url).toContain("network=eip155%3A8453");
+    expect(history.what_this_is_not).toContain("payto_changes");
+    // Served over the free door, same derivation.
+    const response = await SELF.fetch(`${BASE}/api/watch/${id}`);
+    const body = (await response.json()) as { summary: { payto_changed: boolean } };
+    expect(body.summary.payto_changed).toBe(true);
+  });
+
+  it("an unreachable hour is a network moment, not a rotation; a re-cased address is the same wallet", async () => {
+    const id = await watchWithChallenges([
+      { verdict: "ready", bytes: challengeBytes(OLD) },
+      { verdict: "unreachable" },
+      { verdict: "ready", bytes: challengeBytes(OLD.toUpperCase().replace("0X", "0x")) },
+    ]);
+    const history = (await readWatch(testEnv, id))!;
+    expect(history.summary.payto_changed).toBe(false);
+    expect(history.summary.payto_changes).toEqual([]);
+  });
+
+  it("a recipient on a rail the Statement cannot read gets the change and no pointer", async () => {
+    const solana = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
+    const id = await watchWithChallenges([
+      { verdict: "ready", bytes: challengeBytes(OLD) },
+      {
+        verdict: "ready",
+        bytes: challengeBytes(solana, "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"),
+      },
+    ]);
+    const history = (await readWatch(testEnv, id))!;
+    expect(history.summary.payto_changes).toHaveLength(1);
+    expect(history.summary.payto_changes[0]!.new_recipient_statement).toEqual([]);
+  });
+
+  it("reads recipients out of a challenge without asserting anything about them", async () => {
+    const { recipientsFromChallenge } = await import("@/services/watch-evidence");
+    expect(recipientsFromChallenge(null)).toEqual([]);
+    expect(recipientsFromChallenge("not base64 json")).toEqual([]);
+    expect(recipientsFromChallenge(btoa(JSON.stringify({ accepts: "no" })))).toEqual([]);
+    const two = btoa(
+      JSON.stringify({
+        accepts: [
+          { network: "eip155:8453", payTo: OLD },
+          { network: "eip155:8453", payTo: OLD },
+          { network: "eip155:137", payTo: NEW },
+          { network: "eip155:137" },
+        ],
+      }),
+    );
+    expect(recipientsFromChallenge(two)).toEqual([
+      { network: "eip155:8453", pay_to: OLD },
+      { network: "eip155:137", pay_to: NEW },
+    ]);
+  });
+});
+
 describe("the history door", () => {
   it("derives OUR gaps at read time instead of storing a politer number", async () => {
     const { record } = await startWatch(testEnv, "https://gappy.example/api/buy/x");

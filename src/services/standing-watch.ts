@@ -10,8 +10,13 @@ import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { sweepWatches } from "@/services/watch-sweep";
 import {
   captureWatchEvidenceKeepingBody,
+  recipientsFromChallenge,
+  recipientSetKey,
+  type ChallengeRecipient,
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
+import { evmChainOf } from "@/lib/base-rpc";
+import { STATEMENT_MAX_HOURS } from "@/services/wallet-statement";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -606,6 +611,47 @@ export async function watchesForPayer(
   return { watches: found, truncated };
 }
 
+/**
+ * THE PAYTO MOVED (2026-09-01) — one change, as the signed rows show it.
+ *
+ * Derived at read time from evidence every row already carried inside
+ * its signature (challenge_bytes), so nothing about the preimage
+ * changed and a reader recomputes this without trusting the summary:
+ * decode each reachable row's challenge, take its accepts[].payTo set
+ * per network, compare in order. The row where the set first differs
+ * is the change.
+ *
+ * WHAT IT SAYS AND DOES NOT SAY. It says the door PRESENTED a
+ * different recipient than the last time this watch looked. It does
+ * not say why. A deliberate rotation and a hijacked deploy are the
+ * same observation from outside; the reader who needs to tell them
+ * apart has the new address, the moment, and a pointer to what that
+ * wallet has actually done — not a verdict.
+ */
+export interface PayToChange {
+  /** The probe that first presented the new recipients. */
+  at: string;
+  /** The probe before it: the last time the old set was presented. */
+  previously_at: string;
+  previous: ChallengeRecipient[];
+  current: ChallengeRecipient[];
+  /**
+   * Where to read what each NEW wallet has done: a Statement over the
+   * longest window the till sells, on the rail the recipient appears
+   * on. A POINTER, not a reading — this watch did not read the chain
+   * (an hourly cron dialling an RPC per change is a cost nobody
+   * priced, and a paid reading inside a free readout is a second
+   * price nobody mentioned), and it says so rather than implying it
+   * looked. Recipients on a rail the Statement cannot read carry no
+   * pointer, which is the honest rendering of that gap.
+   */
+  new_recipient_statement: Array<{
+    network: string;
+    pay_to: string;
+    url: string;
+  }>;
+}
+
 export interface WatchHistory {
   watch_id: string;
   url: string;
@@ -662,6 +708,16 @@ export interface WatchHistory {
      */
     ticks_burst: number;
     ticks_burst_disagreed: number;
+    /**
+     * THE PAYTO MOVED (2026-09-01): every tick where the set of
+     * (network, payTo) pairs the door presented differed from the
+     * previous reachable tick. Arithmetic over the signed rows, like
+     * drift on the conformance watch; recomputable without us. Empty
+     * is the ordinary week. `payto_changed` is the same fact as a
+     * boolean, for a reader scanning rather than reading.
+     */
+    payto_changed: boolean;
+    payto_changes: PayToChange[];
     /** The claim boundary, on the artifact rather than in our heads. */
     nothing_claimed_between_probes: string;
   };
@@ -718,6 +774,7 @@ export async function readWatch(
   latencies.sort((a, b) => a - b);
   const quantile = (q: number): number =>
     latencies[Math.min(latencies.length - 1, Math.floor(q * latencies.length))]!;
+  const paytoChanges = payToChanges(record.probes, env.STORE_BASE_URL);
   return {
     watch_id: record.watch_id,
     url: record.url,
@@ -746,6 +803,8 @@ export async function readWatch(
       ticks_burst_disagreed: record.probes.filter(
         (probe) => probe.burst && probe.burst_agreed === false,
       ).length,
+      payto_changed: paytoChanges.length > 0,
+      payto_changes: paytoChanges,
       nothing_claimed_between_probes:
         "One probe per hour — three inside the tick where a burst ran — and NOTHING is claimed between probes: a door can fall and recover inside an hour without a row here. A burst widens the moment to a few seconds; it does not widen it to the hour. Every count above has its denominator beside it (probes_expected, ticks_burst); this artifact serves no ratio, because a percentage with a hidden denominator is how availability lies.",
     },
@@ -753,7 +812,61 @@ export async function readWatch(
     how_to_verify:
       "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence, battery, observer_status, and finally burst with burst_agreed when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence, battery and observer_status; refused rows omit all three, and unreachable rows omit evidence and battery, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
-      "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
+      "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched. payto_changes is arithmetic over the signed rows — each reachable row's challenge_bytes decoded, its accepts[].payTo set per network compared with the previous reachable row's — recomputable without us; a change is the fact that the door presented a different recipient, never a claim about why, and the watch read no chain to find it.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
   };
+}
+
+/**
+ * The derivation behind summary.payto_changes. Walks the rows in the
+ * order they were taken; a row that made no request, could not reach
+ * the door, or carries a challenge with no readable recipient at all
+ * says nothing about WHERE the money goes and is skipped rather than
+ * read as "the recipient vanished" — an unreachable hour is a network
+ * moment, not a rotation. The set is what is compared: a door adding
+ * a second rail did change what it presents, and a reader who wants
+ * only the swapped-wallet case can filter on the addresses given.
+ */
+function payToChanges(
+  probes: readonly WatchProbe[],
+  base: string,
+): PayToChange[] {
+  const changes: PayToChange[] = [];
+  let last: { at: string; recipients: ChallengeRecipient[]; key: string } | null =
+    null;
+  for (const probe of probes) {
+    if (probe.verdict === "refused" || probe.verdict === "unreachable") continue;
+    const recipients = recipientsFromChallenge(probe.evidence?.challenge_bytes);
+    if (recipients.length === 0) continue;
+    const key = recipientSetKey(recipients);
+    if (last && key !== last.key) {
+      const known = new Set(last.recipients.map((r) => recipientSetKey([r])));
+      changes.push({
+        at: probe.at,
+        previously_at: last.at,
+        previous: last.recipients,
+        current: recipients,
+        new_recipient_statement: recipients
+          .filter((recipient) => !known.has(recipientSetKey([recipient])))
+          .flatMap((recipient) => {
+            const chain = evmChainOf(recipient.network);
+            if (!chain) return [];
+            const query = new URLSearchParams({
+              wallet: recipient.pay_to,
+              hours: String(STATEMENT_MAX_HOURS),
+              network: chain.caip2,
+            });
+            return [
+              {
+                network: recipient.network,
+                pay_to: recipient.pay_to,
+                url: `${base}/api/buy/the_statement?${query.toString()}`,
+              },
+            ];
+          }),
+      });
+    }
+    last = { at: probe.at, recipients, key };
+  }
+  return changes;
 }

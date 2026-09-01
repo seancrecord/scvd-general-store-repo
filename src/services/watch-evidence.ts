@@ -108,6 +108,76 @@ export function signerKidsFromChallenge(
   return kids;
 }
 
+/**
+ * THE RECIPIENT, FREE NOW AND UNCOLLECTABLE LATER (2026-09-01).
+ *
+ * Every probe already keeps the challenge bytes inside its signed
+ * row, and inside those bytes is the one field the money actually
+ * goes to: accepts[].payTo, per network. This store had been reading
+ * that field to ask whether it was PAYABLE and never to ask whether
+ * it was the SAME field as an hour ago — and a door that stays
+ * perfectly conformant while quietly pointing its payTo at a fresh
+ * wallet is exactly the failure a one-off check cannot see. A
+ * competitor's pitch named that shape before this code did; the
+ * defect vocabulary credits them rather than pretending otherwise.
+ *
+ * Reads only; asserts nothing. A recipient here is what the door
+ * PRESENTED in that moment, never a claim that it is honest or
+ * theirs. Malformed bytes yield an empty list, and an entry missing
+ * either half is dropped: a change computed over half-read pairs
+ * would be a finding about our parser.
+ */
+export interface ChallengeRecipient {
+  network: string;
+  pay_to: string;
+}
+
+export function recipientsFromChallenge(
+  challengeBytes: string | null | undefined,
+): ChallengeRecipient[] {
+  if (!challengeBytes) return [];
+  let challenge: Record<string, unknown>;
+  try {
+    challenge = JSON.parse(atob(challengeBytes)) as Record<string, unknown>;
+  } catch {
+    return [];
+  }
+  const accepts = challenge["accepts"];
+  if (!Array.isArray(accepts)) return [];
+  const seen = new Set<string>();
+  const recipients: ChallengeRecipient[] = [];
+  for (const entry of accepts) {
+    if (!entry || typeof entry !== "object") continue;
+    const network = (entry as Record<string, unknown>)["network"];
+    const payTo = (entry as Record<string, unknown>)["payTo"];
+    if (typeof network !== "string" || typeof payTo !== "string") continue;
+    if (!network || !payTo) continue;
+    const key = recipientKey({ network, pay_to: payTo });
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recipients.push({ network, pay_to: payTo });
+  }
+  return recipients;
+}
+
+/**
+ * One recipient, in the form two rows are compared by. An EVM address
+ * is case-insensitive (checksum casing is presentation, not identity),
+ * so a door that re-cased its payTo did not move it; a Solana pubkey
+ * is base58 and case IS identity, so it compares as written.
+ */
+export function recipientKey(recipient: ChallengeRecipient): string {
+  const address = recipient.pay_to.startsWith("0x")
+    ? recipient.pay_to.toLowerCase()
+    : recipient.pay_to;
+  return `${recipient.network} ${address}`;
+}
+
+/** The whole set, order-independent, so two rows compare as sets. */
+export function recipientSetKey(recipients: ChallengeRecipient[]): string {
+  return recipients.map(recipientKey).sort().join("\n");
+}
+
 function curatedHeaders(headers: Headers): Record<string, string> {
   const retained: Record<string, string> = {};
   for (const name of CURATED_RESPONSE_HEADERS) {
