@@ -1,7 +1,11 @@
 # The Walkabout — paid field observation of the x402 ecosystem
 
-Status: spec, awaiting the keeper's pen. Written 2026-08-18, after the
-first field run. Spec first, then the walking — the same order the Tab
+Status: approved as written by the keeper on 2026-09-01 (his word in
+session: "agreed with all listed", against the three items put to him —
+the spec, the approval shape below, and the wallet funding). Runs may
+proceed under rule 1 as amended. The runner that meets rules 1–8 is
+roadmap N6 and does not exist yet; the August script is not it.
+Written 2026-08-18, after the first field run. Spec first, then the walking — the same order the Tab
 was built in, and this document exists because run zero inverted it
 (see "Run zero," below, which is the first correction this program
 carries).
@@ -44,6 +48,12 @@ hard way). No undeclared wallet ever walks.
 1. **The keeper approves each run before it starts**, with its cap.
    Defaults, until he says otherwise: at most $0.05 per item, at most
    $10 per run, one purchase per domain per run.
+   AMENDED 2026-09-01 (keeper): approval is STANDING for one run per
+   week at exactly those defaults, the same shape launch checks
+   already carry. A run above any default, or a second run in the
+   same ISO week, is a per-run press. The committed ledger is the
+   audit; a run whose ledger is not committed did not happen under
+   this approval.
 2. **Targets come from the public discovery lists** (the CDP Bazaar
    catalog and its mirrors) — services that chose to be discoverable.
    Nothing gets walked that did not list itself.

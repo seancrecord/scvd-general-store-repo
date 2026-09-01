@@ -109,6 +109,7 @@ storefrontRoutes.get("/", async (c) => {
     patronRaw,
     stats,
     firstDollar,
+    board,
   ] = await Promise.all([
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
@@ -129,6 +130,19 @@ storefrontRoutes.get("/", async (c) => {
     kvGet(c.env.COUNTERS, KV_KEYS.patronNumber),
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
+    /*
+     * The bounty board, for the strip: one capped key-list and a bulk
+     * read, the same cost /api/bounties pays. Fail-soft to null like
+     * every other gauge here — the strip then says only what the
+     * keeper's copy already says, never a stale count.
+     */
+    import("@/services/bounty-board")
+      .then(({ bountyBoard }) => bountyBoard(c.env))
+      .then((b) => ({
+        open_count: b.open_count,
+        budget_left_usd: Math.max(0, b.weekly_budget_usd - b.spent_this_week_usd),
+      }))
+      .catch(() => null),
   ]);
   /*
    * A CSP arrives with the storefront's first first-party script
@@ -185,6 +199,7 @@ storefrontRoutes.get("/", async (c) => {
       stats,
       ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
       firstDollar,
+      board,
     }),
   );
 });

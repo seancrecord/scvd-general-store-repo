@@ -42,9 +42,19 @@ build, it is on the roadmap.
 
 ## NOW
 
-Empty after this merge. Next agent item is roadmap N2
-(first-screen packaging — 60-word already inked). One
-branch at a time (#65). Do not merge parked remotes.
+- **Post this week's bounties.** The five on the board
+  expired 2026-08-27 and read as open until 2026-09-01
+  (`/corrections`). The board now says "between postings"
+  until you press. CV's batch A drafts the five; you paste
+  them at `/admin/market`. Monday, weekly, your press.
+- **Hand CV the batches** — `docs/CV_BATCHES_2026-09.md`,
+  one at a time, A first. Batch B waits on the runner
+  (roadmap N6).
+- **Fund the field wallet** for the walkabout: Base USDC
+  to the declared field wallet; Polygon if you want
+  Polygon walks. Not a code task.
+- Next agent item after this merge: roadmap N6, then N2.
+  One branch at a time (#65). Do not merge parked remotes.
 
 ---
 
@@ -69,6 +79,19 @@ Do not relitigate without you.
   modules / battery families, not brands.
 - **Wedge.** Signed observations, contradictions,
   corrections, batteries, expiry. Not scores.
+- **Walkabout (2026-09-01, "agreed with all listed").**
+  Spec approved as written. Rule 1 amended: standing
+  approval for one run per week at $0.05 / $10 / one per
+  domain; anything above is a press. Runner is roadmap N6.
+- **Bounty board.** Weekly repost is your press, Monday.
+  Board surfaces its live open count on the storefront and
+  agents.md; expired bounties read as expired everywhere.
+- **CV.** Six batches in `docs/CV_BATCHES_2026-09.md`,
+  sent one at a time. Research trails restart under
+  batch D; merging the PR is the publish.
+- **Bounty tweet.** Three drafts in the batches file,
+  appendix. Your ink, and only after the board carries
+  live bounties.
 
 ### Eliminate / defer
 
@@ -213,6 +236,9 @@ Do not relitigate without you.
 
 ## STANDING
 
+- **Monday bounties:** paste CV's batch A draft at
+  `/admin/market`. A board between postings is honest
+  and earns nothing.
 - **Sunday Grind:** ward round; Gazette draft behind
   THE_NINETY; recount before the digest; trip-wire
   glance; weekly `/llms.txt` cold read; glance at
