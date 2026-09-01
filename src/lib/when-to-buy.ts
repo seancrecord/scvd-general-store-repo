@@ -112,7 +112,7 @@ export const ROUTES: readonly Route[] = [
   {
     job: "I am about to pay an endpoint I have never used. Is its door even shaped right?",
     free: "Preflight — the preflight_endpoint tool, one probe, free, no account.",
-    items: ["spot_check", "service_audit"],
+    items: ["spot_check", "service_audit", "provenance_check"],
   },
   {
     /*
@@ -145,7 +145,7 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I am launching a paid endpoint and want to know a real buyer can actually get through it.",
-    items: ["launch_check", "onpage_audit"],
+    items: ["launch_check", "opening_day", "onpage_audit"],
   },
   {
     job: "I need my own claim, or my principal's authorization, dated by somebody neutral before I act on it.",

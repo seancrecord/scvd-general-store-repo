@@ -4,6 +4,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { readWatch } from "@/services/standing-watch";
 import type { WatchHistory } from "@/services/standing-watch";
 import { readConformanceWatch } from "@/services/conformance-watch";
+import { nextWeek, type NextWeek } from "@/services/watch-next-week";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -41,6 +42,7 @@ function watchHistoryHtml(
   history: WatchHistory,
   jsonPath: string,
   kind: string,
+  next: NextWeek | null,
 ): string {
   const rows = history.probes
     .map((probe) => {
@@ -90,7 +92,16 @@ function watchHistoryHtml(
     <p class="menu-meta">${escapeHtml(history.what_this_is_not)}</p>
     <p class="menu-meta">${escapeHtml(history.who_pays_and_what_it_buys)}</p>
     <p class="menu-meta">Free to read forever, by anyone, ${escapeHtml(kind)}. The buyer paid for the WATCHING; reading what was seen costs nobody anything.</p>
-  </section>`;
+  </section>
+  ${
+    next
+      ? `<section>
+    <h2>When the week is over</h2>
+    <p class="menu-desc">${escapeHtml(next.what_now)}</p>
+    <p class="menu-meta">${escapeHtml(next.the_rule)} <a href="${escapeHtml(next.buy_url)}">${escapeHtml(String(next.item["name"]))}</a>, ${escapeHtml(String(next.item["price"]))}.</p>
+  </section>`
+      : ""
+  }`;
 }
 
 /**
@@ -115,6 +126,13 @@ watchRoutes.get("/api/watch/:watch_id", async (c) => {
       404,
     );
   }
+  const next = nextWeek(
+    c.env.STORE_BASE_URL,
+    "standing_watch",
+    history.url,
+    history.ends_at,
+    history.complete,
+  );
   if (wantsHtml(c.req.header("Accept"))) {
     return c.html(
       renderSimplePage({
@@ -125,13 +143,18 @@ watchRoutes.get("/api/watch/:watch_id", async (c) => {
           history,
           `/api/watch/${watchId}`,
           "hourly for seven days",
+          next,
         ),
       }),
       200,
       { "Cache-Control": "no-store" },
     );
   }
-  return c.json(history, 200, { "Cache-Control": "no-store" });
+  return c.json(
+    { ...history, ...(next ? { the_next_week: next } : {}) },
+    200,
+    { "Cache-Control": "no-store" },
+  );
 });
 
 /**
@@ -148,5 +171,16 @@ watchRoutes.get("/api/conformance-watch/:watch_id", async (c) => {
       404,
     );
   }
-  return c.json(history, 200, { "Cache-Control": "no-store" });
+  const next = nextWeek(
+    c.env.STORE_BASE_URL,
+    "conformance_watch",
+    history.url,
+    history.ends_at,
+    history.complete,
+  );
+  return c.json(
+    { ...history, ...(next ? { the_next_week: next } : {}) },
+    200,
+    { "Cache-Control": "no-store" },
+  );
 });

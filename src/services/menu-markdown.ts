@@ -102,7 +102,7 @@ export function renderItemMarkdown(item: MenuItem, base: string): string {
       ? `\nStock: ${item.weekly_inventory} per week; a waitlist opens when the shelf empties.\n`
       : "";
   return `# ${item.name}
-
+${item.subtitle ? `\n_${item.subtitle}_\n` : ""}
 ${item.description}
 
 - **id:** \`${item.id}\`

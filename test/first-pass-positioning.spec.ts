@@ -1,7 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { CENSUS_FINDING, CENSUS_NUMBER } from "@/store/copy/census";
-import { OPERATED_BY } from "@/store/copy/position";
+import { OPERATED_BY, VALUE_PROPOSITION } from "@/store/copy/position";
 import { CAPABILITY_QUERY } from "@/store/spec";
 import { isRecord } from "@/types";
 
@@ -273,8 +273,15 @@ describe("the sideways surfaces carry the position too", () => {
     const og =
       page.match(/<meta property="og:description" content="([^"]*)"/)?.[1] ??
       "";
-    expect(og).toContain("conformance");
-    expect(og.toLowerCase()).toContain("corpus");
+    /*
+     * 2026-09-01 (roadmap N2): the social card is one of the six first
+     * screens, so it carries the keeper's sixty words verbatim rather
+     * than a third short form. The differentiators it used to name by
+     * keyword are inside those words ("check the signed offer or
+     * receipt"; "a dated corpus"). test/first-screen.spec.ts holds the
+     * same line on every other surface.
+     */
+    expect(og).toBe(VALUE_PROPOSITION);
   });
 
   it("the repo README walks a reader to both landings and states the jobs", async () => {
@@ -344,14 +351,15 @@ describe("the sideways surfaces carry the position too", () => {
     const script = (
       await import("../scripts/generate-og-image.mjs?raw")
     ).default;
-    expect(script).toContain('drawText("the trust layer of the x402 economy"');
+    // Re-inked 2026-09-01 with the noun the keeper settled at /becoming.
+    expect(script).toContain('drawText("an evidence observatory for agentic commerce"');
     expect(script, "the store line must stay on the card, second").toContain(
       'drawText("a general store for ai agents"',
     );
     const page = await text("/", true);
     const alt =
       page.match(/<meta property="og:image:alt" content="([^"]*)"/)?.[1] ?? "";
-    expect(alt).toContain("trust layer of the x402 economy");
+    expect(alt).toContain("evidence observatory for agentic commerce");
   });
 
   it("the README no longer claims settle-then-deliver", async () => {

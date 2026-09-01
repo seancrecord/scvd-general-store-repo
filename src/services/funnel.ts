@@ -50,6 +50,8 @@ export const VERIFICATION_TIER: readonly string[] = [
   "onpage_audit",
   "phantom_check",
   "launch_check",
+  "opening_day",
+  "provenance_check",
   "the_statement",
   "the_mandate",
 ];

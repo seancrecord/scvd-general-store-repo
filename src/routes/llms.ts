@@ -6,6 +6,7 @@ import {
   DELIVERY_ORDER,
   POSITION_NOT,
   POSITION_OPENING,
+  firstScreenPaths,
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
@@ -45,7 +46,8 @@ function menuLine(item: MenuItem): string {
   const constraints = item.constraints?.length
     ? ` House rules: ${item.constraints.join("; ").toLowerCase()}.`
     : "";
-  return `  ${item.id}, ${item.name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
+  const name = item.subtitle ? `${item.name} — ${item.subtitle}` : item.name;
+  return `  ${item.id}, ${name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
 }
 
 /**
@@ -72,21 +74,16 @@ export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
 
-> An evidence observatory for agentic commerce. It observes what other
-> people's x402 endpoints, artifacts and payments actually did, signs
-> every observation, and publishes the gaps in its own coverage beside
-> the findings. Never a score, a rating or a ranking — every verdict is
-> one dated observation that expires and is re-taken. Everything this
-> store signs verifies free, forever, at \`${base}/api/verify/{id}\` — no
-> account, no wallet, no rate limit, checkable offline without us.
+> ${POSITION_OPENING}
+> ${POSITION_NOT}
+> ${ALSO_A_STORE}
+> Everything this store signs verifies free, forever, at
+> \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit,
+> verifiable offline without asking us.
 
-${POSITION_OPENING}
-${POSITION_NOT}
-${ALSO_A_STORE}
+${firstScreenPaths(base)}
 
-Everything this store signs verifies free, forever, at
-\`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The
-conformance desk explains itself in plain language at
+The conformance desk explains itself in plain language at
 ${base}/conformance and now takes a pasted artifact in a form on that
 page — declared to browser agents with WebMCP's \`toolname\` attributes,
 and deliberately without \`toolautosubmit\`, so an agent may fill it and
@@ -853,6 +850,14 @@ instrument never sent. Do not quote its failure rates. The chain-side
 arithmetic stands and the raw evidence stays committed, so anyone can
 redo the classification. The store makes no claim about ecosystem
 payment-failure rates until a repaired instrument has walked again.
+
+The week, on one page a stranger can quote: ${base}/corpus/brief is
+The Week's Doors — how many doors the feeds named, how many were
+knocked on, how many could be paid and how many could not, the
+defects by their registered names, and the gaps counted against us —
+read from the latest signed snapshot, with ?week= naming an earlier
+one. Counts with their denominators; never a ratio, never a rank,
+never a host named beside its verdict.
 
 The chain also reads as time, derived at read from the same signed
 snapshots. ${base}/corpus/trajectory.json serves one point per weekly

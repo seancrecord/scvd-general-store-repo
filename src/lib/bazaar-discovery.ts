@@ -145,6 +145,23 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "provenance_check") {
+    properties["address"] = {
+      type: "string",
+      description:
+        "The receiving address to ask about: an EVM address (0x + 40 hex) or a Solana pubkey (base58). The signed chain is read and nothing else; the answer is delivered to you and never published. Your own address is free once proved — GET /api/provenance/self.",
+    };
+    required.push("address");
+  }
+  if (item.id === "opening_day") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        `Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet (we pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till), then seven daily signed conformance passes on the same door, then your passport page — one certificate, one URL. We refuse our own hostname.`,
+    };
+    required.push("url");
+  }
   if (item.id === "launch_check") {
     properties["url"] = {
       type: "string",
@@ -446,6 +463,12 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "launch_check") {
     example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "opening_day") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "provenance_check") {
+    example["address"] = "0x1111111111111111111111111111111111111111";
   }
   if (item.id === "passport_refresh") {
     example["url"] = "https://your-endpoint.example/api/thing";

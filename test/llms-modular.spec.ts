@@ -373,12 +373,59 @@ const BASE = "https://scvd.store";
  * and no longer carries "the frozen v1 verdict this series has
  * always cited".
  *
+ * Re-taken 2026-09-01 — the SIXTEENTH — by roadmap N2, the first-
+ * screen packaging. The guide opened with TWO paragraphs about what
+ * the store is: a hand-typed blockquote, then POSITION_OPENING under
+ * it, saying the same thing in other words. The blockquote is now the
+ * constant itself, the constant now opens with the keeper's sixty
+ * words (VALUE_PROPOSITION, inked 2026-09-01), and one derived line
+ * names the three paths in the order those words name them.
+ * Confirmed before this value was taken: the served guide carries
+ * the sixty words verbatim exactly once in the opening, no longer
+ * carries "checkable offline without us" (the twin's tell), and
+ * still carries every pin the earlier re-takes established.
+ * test/first-screen.spec.ts holds the same sentence on the other
+ * five surfaces. Re-taken once more the same day, after the full
+ * suite caught what the targeted runs had not: the free-forever
+ * verify line belongs inside the first 1,400 characters
+ * (test/capability-query.spec.ts), so it rides the blockquote again
+ * — derived, and worded without the twin's tell. And once more when
+ * the keeper inked the sharper draft of the sixty words the same
+ * evening ("i like the sharper 60 word draft"): one constant moved,
+ * every surface followed, this value with it.
+ *
+ * Re-taken 2026-09-01 — the SEVENTEENTH — by roadmap S4, the keeper's
+ * ink: the four operator instruments carry a plain subtitle beside
+ * their name on every shelf surface, and the guide's menu lines
+ * print "name — subtitle". Confirmed before this value was taken:
+ * the guide carries "The Conformance Watch — seven days of signed
+ * daily checks on your x402 endpoint" and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the EIGHTEENTH — by roadmap S1: the guide's
+ * corpus section names The Week's Doors (/corpus/brief), the weekly
+ * brief derived from the signed snapshot. Confirmed before this value
+ * was taken: the guide carries "/corpus/brief" and "never a host
+ * named beside its verdict", and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the NINETEENTH — by roadmap S3, the keeper's
+ * price and name: The Opening Day ($9) joins the shelf and the guide
+ * prints its menu line like every other item's. Confirmed before
+ * this value was taken: the guide carries "opening_day, The Opening
+ * Day — one launch check, seven days of conformance watch, and your
+ * passport page, at one URL" and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the TWENTIETH — by roadmap N4: The Company an
+ * Address Keeps joins the shelf with the keeper's approved copy, and
+ * the guide prints its line. Confirmed before this value was taken:
+ * the guide carries "provenance_check, The Company an Address Keeps"
+ * and "does not grade operators", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6994afc296ef0efad2c8ea7f49c6d22b58beb7d181d9dacfb26da29b4c36093a";
+  "100ca1a831ea51a8bd7846cec61ab7742eed503465af5e22c90ad38b08e70fe7";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

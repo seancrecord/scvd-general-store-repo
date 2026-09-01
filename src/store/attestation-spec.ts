@@ -155,6 +155,26 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/launch-check/{check_id}",
   },
   {
+    id: "opening_day",
+    name: "Opening days (one real purchase attempt, then a week of daily passes, then the passport, under one certificate)",
+    trust_model: "third_party_observation",
+    signs:
+      "The launch check's whole walk (endpoint, moment, User-Agent, every stage, what was paid and to whom, the settlement transaction where one came back, the field wallet) and its evidence hash, which the purchase certificate binds in its attests field. Each of the watch's daily passes is signed on its own at the history URL. The passport is the census's own signed, expiring object.",
+    does_not_prove:
+      "Anything about any other moment, buyer, or the seller generally: one transaction once, seven daily looks, and a page that names its own stale date. The three under one certificate are still three observations, not a grade. Never a badge, never a score, never a guarantee the door stays up.",
+    verify_url: "/api/opening-day/{cert_id}",
+  },
+  {
+    id: "provenance_check",
+    name: "Provenance checks (which doors advertised a receiving address, and when)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole record: the subject address verbatim and its digest, every signed week the address was advertised with the doors, verdicts and offered terms as the round recorded them, the dated drift between weeks, the subject's standing note verbatim, the caveat, the limits, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+    does_not_prove:
+      "Who operates any door or holds the address: a shared address is a fact about the address, not a verdict about operators, and custodial and platform wallets make unrelated doors share one. Nothing between weekly rounds, nothing about doors our feeds never listed, and never a score, a rating or a compliance verdict. Delivered to the buyer; the artifact existing publishes nothing.",
+    verify_url: "/api/provenance-check/{provenance_id}",
+  },
+  {
     id: "the_mandate",
     name: "Mandates (claimed authorization, recorded before the acting)",
     trust_model: "third_party_observation",

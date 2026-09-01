@@ -25,7 +25,20 @@
  *   about its own state, which is worth more than any feature claim.
  */
 
-import { STORE_SERVICE_NAME } from "@/store/metadata";
+/*
+ * LOAD ORDER, STATED (2026-09-01). This file reads the shelf floor at
+ * module time (CHEAPEST_ON_THE_SHELF below) and so does metadata.ts,
+ * and the shelf's own chain circles back: menu → menu-utility →
+ * launch-check → … → store/index → metadata. Whichever of the two
+ * files loads first must reach menu.ts THROUGH metadata, or metadata
+ * evaluates while the shelf is still half-built and reduces over
+ * nothing. For a month an import of STORE_SERVICE_NAME from
+ * metadata.ts stood at the top of this file and kept that order by
+ * accident; the sixty-words rebuild stopped using the name, the
+ * import went, and every spec that imported this file first fell
+ * over. The order is now a fact on the record rather than a habit.
+ */
+import "@/store/metadata";
 
 /** When the store stopped calling itself only a shop. */
 export const POSITION_DATED = "2026-08-07";
@@ -54,16 +67,79 @@ export const POSITION_LINE =
   "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself.";
 
 /**
- * THE OPENING, for the surfaces a stranger meets first (llms.txt, the
- * OpenAPI contract, the MCP handshake, agents.md). Decided 2026-08-10
- * after five outside models were asked "what is scvd.store": the two
- * that read our own pages got it roughly right, the three that read
- * third-party directories filed us as a novelty shop, and none of the
- * five found the conformance desk or the corpus — the two things here
- * that exist nowhere else. An entity resolver files you under your
- * first clause, so the first clause now carries the infrastructure,
- * the entity, and both differentiators. The whimsy is the store's
- * soul and it stays; it goes second, not first.
+ * THE SIXTY WORDS — the keeper's ink, 2026-09-01: first "i agree with
+ * your suggested words", then, the same day, the sharper draft that
+ * trades the store's nouns for the reader's (endpoint, payment,
+ * receipt) and says who buys ("i like the sharper 60 word draft").
+ * Verbatim, and the ONE paragraph every first screen opens with
+ * (roadmap N2; rule 44). The desk's finding that
+ * day: agents already have doors, and what humans and routing models
+ * lacked was a first screen that makes the value obvious in the
+ * order it happens — before a payment, after it, and over time. So
+ * this says what the store DOES, in that order, and ends on what it
+ * is not. Do not write a second one-liner per marketplace; paste
+ * this one.
+ *
+ * It is not derived from anything because it is the thing the rest
+ * derives from. Change it here and every surface follows; change it
+ * anywhere else and the sweep test fails.
+ */
+export const VALUE_PROPOSITION_DATED = "2026-09-01";
+export const VALUE_PROPOSITION =
+  "scvd.store is an evidence observatory for agentic commerce. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
+
+/**
+ * THE THREE PATHS, in the order the sixty words name them, each into
+ * a room that already exists. This is the whole of what N2 allowed a
+ * `/start` page to be — three routes, not a seventh sitemap — so it
+ * lives as data the first screens print rather than as a page.
+ */
+export const FIRST_SCREEN_PATHS = [
+  {
+    when: "Before you pay",
+    what: "preflight any x402 door, free",
+    path: "/api/preflight/v1",
+  },
+  {
+    when: "After you pay",
+    what: "check any issuer's signed offer or receipt, free",
+    path: "/conformance",
+  },
+  {
+    when: "Over time",
+    what: "read the dated, Bitcoin-anchored corpus, free",
+    path: "/corpus",
+  },
+] as const;
+
+/** The three paths as one sentence for a text surface. */
+export const firstScreenPaths = (base: string): string =>
+  FIRST_SCREEN_PATHS.map(
+    (entry) => `${entry.when}: ${entry.what} at ${base}${entry.path}.`,
+  ).join(" ");
+
+/**
+ * THE OPENING, for the surfaces a stranger meets first (the homepage,
+ * llms.txt, agents.md, the OpenAPI contract, the MCP handshake, the
+ * skill). Decided 2026-08-10 after five outside models were asked
+ * "what is scvd.store": the two that read our own pages got it
+ * roughly right, the three that read third-party directories filed
+ * us as a novelty shop, and none of the five found the conformance
+ * desk or the corpus — the two things here that exist nowhere else.
+ * An entity resolver files you under your first clause, so the first
+ * clause carries the infrastructure, then the entity and both
+ * differentiators. The whimsy is the store's soul and it stays; it
+ * goes second, not first.
+ *
+ * REBUILT 2026-09-01 (roadmap N2): the paragraph now OPENS with the
+ * keeper's sixty words and keeps only what they do not already say —
+ * which instruments are free, which are paid, and who operates the
+ * place. The earlier opening's "signs every observation, publishes
+ * the gaps counted against itself, never a score" is inside the
+ * sixty words already ("names what we did not see"; "not a rating"),
+ * and saying it twice in one paragraph is how a reader learns to
+ * skim us. POSITION_LINE keeps the cross-protocol phrase for the
+ * rooms that reason about direction.
  */
 import { MENU_ITEMS } from "@/store/menu";
 
@@ -80,28 +156,11 @@ export const CHEAPEST_ON_THE_SHELF = (() => {
   );
   return `$${low.toFixed(low < 0.01 ? 3 : 2)}`;
 })();
-/*
- * ROADMAP 0.10, keeper's canon 2026-08-24. This read "the trust layer
- * of the x402 economy", which is a POSITIONING claim — the kind a
- * competitor can simply assert too, and nobody can check. It now
- * leads with a METHOD claim, which is falsifiable and therefore
- * defensible: an observatory either publishes its coverage gaps
- * against itself or it does not, and anyone can look.
- *
- * "Agentic commerce — x402 today, cross-protocol by design" widens
- * the subject without overclaiming the present. The H1 stays x402,
- * because that is the term an agent searches this week.
- *
- * ONE WORD CHANGED FROM THE KEEPER'S DRAFT, and it is flagged rather
- * than absorbed: the draft read "a Bitcoin-anchored history that
- * appends DAILY". The corpus appends weekly — cron `0 11 * * SUN`,
- * and the published chain runs W32, W33, W34, W35. Shipping "daily"
- * would have put a false claim on the most-quoted sentence this store
- * has, which is the one place it can least afford one. "History"
- * became "corpus" in the same edit: it is the product's actual name
- * and the term a reader can go look up.
- */
-export const POSITION_OPENING = `${STORE_SERVICE_NAME} is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. Nothing here is a score, a rating, or a ranking: every verdict is one dated observation that expires and is re-taken, verifiable offline by anyone, without asking us. Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Operated by ${OPERATED_BY}.`;
+
+/** What the sixty words leave to a second sentence: the instruments by price, and the operator. */
+export const FIRST_SCREEN_FACTS = `Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Operated by ${OPERATED_BY}.`;
+
+export const POSITION_OPENING = `${VALUE_PROPOSITION} ${FIRST_SCREEN_FACTS}`;
 
 /**
  * The boundary, which gets louder as the ecosystem fills in around us.

@@ -159,6 +159,12 @@ describe("the storefront", () => {
        * #52 part 1 was for.
        */
       "launch_check",
+      // The Opening Day rides right behind the walk it bundles — $9,
+      // listed after it on the utility shelf, same stable ladder.
+      "opening_day",
+      // The provenance check: $5, listed behind the bundle on the
+      // utility shelf — same stable ladder.
+      "provenance_check",
       "recurring_patronage",
       // The hosted profile's $19 slots between the patronages by
       // price — the ladder's stable sort, nothing hand-picked.

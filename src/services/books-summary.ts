@@ -33,8 +33,26 @@ export interface RailSlice {
   usdc: number;
 }
 
+/** One shelf item, all-time, off the certificates. */
+export interface TakeItemLine {
+  item: string;
+  label: string;
+  organic_usdc: number;
+  house_usdc: number;
+  organic_sales: number;
+  house_sales: number;
+}
+
 export interface TakeSummary {
   lines: TakeLine[];
+  /**
+   * BY ITEM, ALL-TIME (the keeper's question, 2026-09-01: "where do I
+   * see organic sales by item of all time? I only see month"). The
+   * month ledger is per item and resets; the take was all-time and
+   * per shelf kind. This is the missing cell: the same certificate
+   * walk, grouped by item id, organic first, most money first.
+   */
+  items: TakeItemLine[];
   total: TakeLine;
   /** Organic only, split by settlement rail off each cert's network. */
   rails: { base: RailSlice; solana: RailSlice; unknown: RailSlice };
@@ -82,8 +100,35 @@ export async function takeSummary(env: Env): Promise<TakeSummary> {
     solana: { sales: 0, usdc: 0 },
     unknown: { sales: 0, usdc: 0 },
   };
+  const byItem = new Map<string, TakeItemLine>();
+  const itemLine = (id: string): TakeItemLine => {
+    let existing = byItem.get(id);
+    if (!existing) {
+      existing = {
+        item: id,
+        label: getMenuItem(id)?.name ?? `${id} (retired)`,
+        organic_usdc: 0,
+        house_usdc: 0,
+        organic_sales: 0,
+        house_sales: 0,
+      };
+      byItem.set(id, existing);
+    }
+    return existing;
+  };
   for (const row of rows) {
     const target = line(shelfKindOf(row.item));
+    const perItem = itemLine(row.item);
+    {
+      const amount = row.amount_usdc + row.tip_usdc;
+      if (row.house_flagged === "house") {
+        perItem.house_usdc += amount;
+        if (row.row_type === "sale") perItem.house_sales += 1;
+      } else {
+        perItem.organic_usdc += amount;
+        if (row.row_type === "sale") perItem.organic_sales += 1;
+      }
+    }
     const amount = row.amount_usdc + row.tip_usdc;
     if (row.row_type === "refund") {
       // amount is already negative on refund rows: netting, in the open.
@@ -130,8 +175,15 @@ export async function takeSummary(env: Env): Promise<TakeSummary> {
       house_sales: 0,
     },
   );
+  const items = [...byItem.values()].sort(
+    (a, b) =>
+      b.organic_usdc - a.organic_usdc ||
+      b.organic_sales - a.organic_sales ||
+      a.item.localeCompare(b.item),
+  );
   return {
     lines: ordered,
+    items,
     total,
     rails,
     refund_usdc: refundUsdc,

@@ -80,6 +80,8 @@ import {
   preflightRoutes,
   discoveryRoutes,
   launchCheckRoutes,
+  openingDayRoutes,
+  provenanceRoutes,
   bountyRoutes,
   creditRoutes,
   pricingRoutes,
@@ -276,6 +278,8 @@ app.route("/", beforeYouPayRoutes);
 app.route("/", goodBuyerRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", launchCheckRoutes);
+app.route("/", openingDayRoutes);
+app.route("/", provenanceRoutes);
 app.route("/", bountyRoutes);
 app.route("/", creditRoutes);
 app.route("/", pricingRoutes);

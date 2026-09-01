@@ -185,6 +185,8 @@ export const PAID_EXAMPLES: { id: string; answers: string }[] = [
   { id: "service_audit", answers: "one fresh, signed look at one endpoint, servable to a third party" },
   { id: "conformance_watch", answers: "the same battery daily for a term, with drift derived from the signed rows" },
   { id: "launch_check", answers: "one real purchase attempt of your own door, from our field wallet, signed stage by stage" },
+  { id: "opening_day", answers: "that walk, then a week of daily passes on the same door, then your passport page — one certificate, one URL" },
+  { id: "provenance_check", answers: "which doors advertised a receiving address and when, read from the signed chain, delivered to you and never published" },
 ];
 
 function paidItems(): { item: MenuItem; answers: string }[] {

@@ -206,6 +206,31 @@ export function passportCard(passport: EndpointPassport): string {
   </section>`;
 }
 
+/**
+ * THE SHARE COLOPHON (roadmap S2, the keeper's ink 2026-09-01). What a
+ * merchant may paste beside their door: it carries the date, the
+ * gaps-against-the-observer clause, the stale-after date and the link
+ * to the dated page — and never a verdict word, never "preflight
+ * passed", never a green mark. A colophon says who looked and when; a
+ * badge says what to think. This store issues only the first.
+ */
+export function colophonText(passport: EndpointPassport, base: string): string {
+  const s = passport.payload.summary;
+  const observed = s.observed_at ? s.observed_at.slice(0, 10) : "a date the record does not carry";
+  return `Observed by scvd.store on ${observed}. Gaps counted against the observer. Stale after ${s.valid_until.slice(0, 10)}. Read the dated page: ${base}/passport/${passport.payload.host}`;
+}
+
+export function colophonBlock(passport: EndpointPassport, base: string): string {
+  const text = colophonText(passport, base);
+  const url = `${base}/passport/${passport.payload.host}`;
+  return `<section>
+    <h2>To share</h2>
+    <p class="menu-desc">A colophon, not a badge: it says who looked and when, and it links the dated page. Paste it beside your door as it stands — the words carry their own expiry.</p>
+    <pre class="menu-desc"><code>${escapeHtml(text)}</code></pre>
+    <pre class="menu-desc"><code>${escapeHtml(`[${text.replace(/ Read the dated page: .*$/, "")}](${url})`)}</code></pre>
+  </section>`;
+}
+
 /** Small enough to keep in one place: the decision word, set big, and
  * the two blocks that carry the compressed read. Everything else on
  * the page is ordinary paper. */

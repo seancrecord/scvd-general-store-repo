@@ -319,6 +319,7 @@ amount to every agent that reads the tool list:
 | `recurring_patronage` | $3 | 30 days |
 | `standing_watch` | $5 | 7 days |
 | `conformance_watch` | $5 | 7 days |
+| `opening_day` | $9 | 7 days |
 | `trust_profile` | $21 | 30 days |
 
 > **❌ CORRECTED 2026-08-30, within the hour of publishing it.** This

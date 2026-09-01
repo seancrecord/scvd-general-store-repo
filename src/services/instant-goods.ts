@@ -1,3 +1,6 @@
+import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
+import { KV_KEYS } from "@/lib/kv-keys";
+import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
 import { createPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
@@ -49,6 +52,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   launchCheckNote,
+  openingDayNote,
   mandateNote,
   onpageAuditNote,
   statementNote,
@@ -114,6 +118,7 @@ export interface InstantGoodsInput {
   trustProfile?: SignedTrustProfile;
   /** spot_check only: the signed reading, already made and bound. */
   spotCheck?: SignedSpotCheck;
+  provenanceCheck?: SignedProvenanceCheck;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
@@ -235,6 +240,66 @@ export async function deliverInstantGoods(
           history_url: watch.historyUrl,
           first_pass_by:
             "the store's next hourly rounds; one pass a day after that, and the history URL is readable now and fills in as the week goes",
+        },
+      };
+    }
+    case "opening_day": {
+      /*
+       * THE OPENING DAY (roadmap S3): the walk was made and signed
+       * upstream so the certificate could bind it; here it is filed,
+       * the week opens on the same door, and one row remembers the
+       * three so one URL can serve them. The watch starts AFTER the
+       * mint on purpose — a failed walk still opens the week (the
+       * walk's verdict is the walk's, not a gate), and a failed mint
+       * opens nothing, because nothing was sold.
+       */
+      const walk = input.launchCheck;
+      if (!walk) {
+        throw new Error("opening_day reached goods with no walk record");
+      }
+      const certId = input.certId ?? "";
+      await storeLaunchCheck(env, walk, certId);
+      const watch = await startConformanceWatch(
+        env,
+        input.targetUrl ?? "",
+        input.payer,
+      );
+      const host = new URL(input.targetUrl ?? "https://invalid.example").host;
+      await kvPut(
+        env.ORDERS,
+        KV_KEYS.openingDay(certId),
+        JSON.stringify({
+          cert_id: certId,
+          host,
+          url: input.targetUrl ?? "",
+          check_id: walk.check_id,
+          watch_id: watch.record.watch_id,
+          opened_at: new Date().toISOString(),
+        }),
+      );
+      return {
+        deliverable: openingDayNote(walk.verdict, watch.record.ends_at),
+        extras: {
+          opening_day_url: `/api/opening-day/${certId}`,
+          launch_check: {
+            check_id: walk.check_id,
+            verdict: walk.verdict,
+            paid_usd: walk.paid_usd,
+            replay_served: walk.replay_served,
+            ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
+            check_url: `/api/launch-check/${walk.check_id}`,
+          },
+          conformance_watch: {
+            watch_id: watch.record.watch_id,
+            ends_at: watch.record.ends_at,
+            history_url: watch.historyUrl,
+            first_pass_by:
+              "the store's next hourly rounds; one pass a day after that, and the history URL is readable now and fills in as the week goes",
+          },
+          passport_url: `/passport/${host}`,
+          check: walk,
+          verify_note:
+            "The walk is signed on its own and its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it. Each daily pass of the watch is signed alone at the history URL. The passport derives from the public corpus and says when its reading goes stale. Nothing here is a badge.",
         },
       };
     }
@@ -376,6 +441,32 @@ export async function deliverInstantGoods(
           public_key: spot.public_key,
           how_to_verify:
             "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too.",
+        },
+      };
+    }
+    case "provenance_check": {
+      const prov = input.provenanceCheck;
+      if (!prov) {
+        throw new Error("provenance_check reached goods with no record");
+      }
+      await storeProvenanceCheck(env, prov, input.certId ?? "");
+      const r = prov.record;
+      const last = r.weeks[r.weeks.length - 1];
+      const seen = !last
+        ? "The signed chain has never seen a door advertise this address — that absence is the finding, recorded and signed."
+        : `Advertised by ${last.doors.length} door${last.doors.length === 1 ? "" : "s"} in the latest week it appears (${last.week}), across ${r.weeks.length} signed week${r.weeks.length === 1 ? "" : "s"}; ${r.drift.length} dated change${r.drift.length === 1 ? "" : "s"} in the pairings or terms.`;
+      return {
+        deliverable: `The company this address keeps, read from the signed chain at ${r.asked_at}. ${seen} The full signed record rides in extras and is served at /api/provenance-check/${r.provenance_id}, to you; nothing about it is published by us.`,
+        extras: {
+          provenance_check: r,
+          record_url: `/api/provenance-check/${r.provenance_id}`,
+          evidence_hash: prov.evidence_hash,
+          signed_payload: prov.signed_payload,
+          signature: prov.signature,
+          signature_jcs: prov.signature_jcs,
+          public_key: prov.public_key,
+          how_to_verify:
+            "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too; how_to_rederive on the record rebuilds every line from the public chain.",
         },
       };
     }
