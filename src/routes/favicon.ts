@@ -1,5 +1,9 @@
 import { Hono } from "hono";
-import { FAVICON_SVG, faviconIcoBytes } from "@/services/favicon";
+import {
+  FAVICON_BADGE,
+  FAVICON_SVG,
+  faviconIcoBytes,
+} from "@/services/favicon";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -37,8 +41,8 @@ faviconRoutes.get("/site.webmanifest", (c) => {
         { src: "/favicon.svg", sizes: "any", type: "image/svg+xml" },
         { src: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
       ],
-      theme_color: "#f4ead8",
-      background_color: "#f4ead8",
+      theme_color: FAVICON_BADGE,
+      background_color: FAVICON_BADGE,
       display: "browser",
       start_url: "/",
     },

@@ -280,6 +280,14 @@ export function sitemapRooms(xml, base) {
  * up to use it, and the criteria we hold ourselves to on it.
  */
 
+/**
+ * What an agent-side scanner will fetch before it gives up, and where
+ * this battery starts saying so. See the openapi_fetchable criterion:
+ * the cap is the wall, the budget is the room left to act in.
+ */
+export const OPENAPI_FETCH_CAP_BYTES = 1_000_000;
+export const OPENAPI_BUDGET_BYTES = 700_000;
+
 export const DOORS = [
   {
     id: "raw_api",
@@ -315,6 +323,63 @@ export const DOORS = [
             return unmet("openapi.json served but declares no paths");
           }
           return met(`${Object.keys(paths).length} paths described`);
+        },
+      },
+      {
+        /**
+         * SERVED IS NOT THE SAME AS FETCHED, and for eleven months
+         * this battery could not tell the difference.
+         *
+         * On 2026-08-31 /openapi.json answered 200 with 124 real
+         * paths and 1,480,775 bytes. The criterion above passed on
+         * every reading. Meanwhile the agent-side scanners that read
+         * a seller's contract fetch under a 1 MB cap, and past it
+         * they do not truncate or warn — they do not fetch. Circle's
+         * readiness check reported the store as having no
+         * discoverable OpenAPI document at all, which was, from where
+         * it stood, exactly true.
+         *
+         * WHY THIS BELONGS ON THE PRODUCTION BATTERY rather than only
+         * in the suite. `test/openapi-fetchable.spec.ts` holds a
+         * 700 KB budget on the document the build renders, which
+         * catches the regression at the commit that causes it. It
+         * cannot catch what production actually serves: the deployed
+         * document is bigger than the test one, because the accepts
+         * arrays are derived from the rails that are live, and the
+         * gazette grows a path per issue. The number that matters is
+         * the one a stranger's fetch gets, so it is read from a
+         * stranger's fetch, weekly, from outside.
+         *
+         * THE THRESHOLD IS NOT THE CAP. Reporting `partial` at
+         * 700 KB leaves room to act while the document is still
+         * being read; a check that only fires at 1 MB fires when the
+         * damage is already done and every scanner has already
+         * walked away.
+         */
+        id: "openapi_fetchable",
+        asks: "Is that description small enough that an agent's fetch actually completes?",
+        how: 'curl -s -o /dev/null -w "%{size_download}" https://scvd.store/openapi.json',
+        read(snap) {
+          const miss = reached(snap, "openapi");
+          if (miss) return miss;
+          const bytes = snap.openapi.text?.length;
+          if (typeof bytes !== "number" || bytes === 0) {
+            return unknown("openapi.json: body never measured");
+          }
+          const kb = Math.round(bytes / 1024);
+          if (bytes >= OPENAPI_FETCH_CAP_BYTES) {
+            return unmet(
+              `openapi.json is ${kb} KB, past the ${Math.round(OPENAPI_FETCH_CAP_BYTES / 1024)} KB fetch cap — scanners do not truncate it, they do not read it at all`,
+            );
+          }
+          if (bytes >= OPENAPI_BUDGET_BYTES) {
+            return partial(
+              `openapi.json is ${kb} KB, past the ${Math.round(OPENAPI_BUDGET_BYTES / 1024)} KB budget and closing on the ${Math.round(OPENAPI_FETCH_CAP_BYTES / 1024)} KB cap — move what got inlined into components before it stops being fetched`,
+            );
+          }
+          return met(
+            `openapi.json is ${kb} KB, inside the ${Math.round(OPENAPI_BUDGET_BYTES / 1024)} KB budget`,
+          );
         },
       },
       {

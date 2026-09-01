@@ -313,6 +313,75 @@ async function signPassport(
 }
 
 /**
+ * THE NEWEST-WINS FOLD, IN ONE PLACE (correction #114, a second time).
+ *
+ * A buyer-commissioned refresh outranks the weekly round wherever it
+ * is NEWER — in BOTH directions, so a refresh that found the door
+ * broken darkens the chip and makes the passport refuse. Payment buys
+ * the check, never the grade.
+ *
+ * That rule shipped in the passport, and /profiles — the paid standing
+ * page — carried its own copy of the comparison. Correction #114 is
+ * what happened the first time the two drifted: a door that broke
+ * mid-term went dark on its chip and its passport while staying
+ * ready-side on the URL its operator hands to counterparties. The fix
+ * then was to make the profile perform the same comparison; this is
+ * the fix that makes performing it twice impossible, because there is
+ * now one function and both callers are inside it.
+ */
+export interface EffectiveObservation {
+  history: SubjectHistory;
+  latestProbed: SubjectHistory["timeline"][number] | undefined;
+  refresh: Awaited<ReturnType<typeof readPassportRefresh>>;
+  refreshIsNewest: boolean;
+  /** The verdict that wins, or null when nothing has been observed. */
+  verdict: string | null;
+  observed_at: string | null;
+  /** Rails/asks the door's own 402 offered, when the winner captured them. */
+  offer: { networks: string[]; min_usdc?: number; max_usdc?: number } | undefined;
+  failed: string[];
+  /** Neither the census nor a refresh has ever seen this host. */
+  never_observed: boolean;
+}
+
+export async function effectiveObservation(
+  env: Env,
+  host: string,
+  now: Date = new Date(),
+): Promise<EffectiveObservation> {
+  const history: SubjectHistory = await subjectHistory(
+    env,
+    host,
+    env.STORE_BASE_URL,
+    now,
+  );
+  const latestProbed = [...history.timeline]
+    .reverse()
+    .find((round) => round.probed && round.verdict);
+  const refresh = await readPassportRefresh(env, host);
+  const censusObserved = latestProbed ? history.last_observed : null;
+  const refreshIsNewest =
+    refresh !== null &&
+    (censusObserved === null || refresh.observed_at > censusObserved);
+  return {
+    history,
+    latestProbed,
+    refresh,
+    refreshIsNewest,
+    verdict: refreshIsNewest
+      ? refresh!.verdict
+      : (latestProbed?.verdict ?? null),
+    observed_at: refreshIsNewest ? refresh!.observed_at : history.last_observed,
+    /* A refresh captures a verdict, not the door's declared terms, so
+     * a refresh that wins carries no offer rather than inheriting the
+     * stale one from a round it just outranked. */
+    offer: refreshIsNewest ? undefined : latestProbed?.offer,
+    failed: refreshIsNewest ? [] : (latestProbed?.failed ?? []),
+    never_observed: !latestProbed && !refresh,
+  };
+}
+
+/**
  * The passport for any census-observed host. Ready-side only; the
  * refusals carry the reason so the route can answer honestly.
  */
@@ -323,27 +392,10 @@ export async function issuePassport(
 ): Promise<PassportOutcome> {
   const base = env.STORE_BASE_URL;
   const host = rawHost.trim().toLowerCase();
-  const history: SubjectHistory = await subjectHistory(env, host, base, now);
-  const latestProbed = [...history.timeline]
-    .reverse()
-    .find((round) => round.probed && round.verdict);
-  /**
-   * THE PAID REFRESH FOLDS IN HERE (keeper's "both" ruling): a
-   * buyer-commissioned observation from the census's own instrument
-   * outranks the weekly round wherever it is NEWER — in both
-   * directions. A refresh that found the door broken makes the
-   * passport refuse and the chip go dark; payment bought the check,
-   * never the grade.
-   */
-  const refresh = await readPassportRefresh(env, host);
-  const censusObserved = latestProbed ? history.last_observed : null;
-  const refreshIsNewest =
-    refresh !== null &&
-    (censusObserved === null || refresh.observed_at > censusObserved);
-  const effectiveVerdict = refreshIsNewest
-    ? refresh.verdict
-    : latestProbed?.verdict;
-  if (!latestProbed && !refresh) {
+  const observation = await effectiveObservation(env, host, now);
+  const { history, latestProbed, refresh, refreshIsNewest } = observation;
+  const effectiveVerdict = observation.verdict ?? undefined;
+  if (observation.never_observed) {
     return {
       issued: false,
       reason: "never-observed",
@@ -357,17 +409,15 @@ export async function issuePassport(
       detail: `${host}'s latest observation is not on the ready side, and this store publishes names only on the ready side. If you operate it: the free self-check is POST ${base}/api/preflight, and the census will read the door again on its weekly pass.`,
     };
   }
-  const lastObserved = refreshIsNewest
-    ? refresh.observed_at
-    : history.last_observed;
+  const lastObserved = observation.observed_at;
   const issuedAt = now.toISOString();
   const expires = expiryFrom(lastObserved ?? issuedAt);
   const freshness = freshnessOf(lastObserved, effectiveVerdict, now);
-  const offer = refreshIsNewest ? undefined : latestProbed?.offer;
+  const offer = observation.offer;
   const latest = refreshIsNewest
     ? {
-        verdict: refresh.verdict,
-        observed_at: refresh.observed_at,
+        verdict: refresh!.verdict,
+        observed_at: refresh!.observed_at,
         week: null,
         source:
           "paid refresh — buyer-commissioned, census instrument; same probe, same rules, no favor",
@@ -404,7 +454,7 @@ export async function issuePassport(
       verdict: latest.verdict ?? null,
       observedAt: latest.observed_at ?? null,
       ...(offer ? { offer } : {}),
-      failed: refreshIsNewest ? [] : (latestProbed?.failed ?? []),
+      failed: observation.failed,
       modules,
     }),
     issued_at: issuedAt,

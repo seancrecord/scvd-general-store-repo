@@ -1,48 +1,28 @@
 /**
- * The store's favicon: the house tyrannosaur, drawn to match the
- * chocolate T-rex the keeper stamped on the connector logo — chunky
- * silhouette, open toothy jaw, white eye, on the same shop paper the
- * artifact family uses. Nobody explains the dinosaur. The SVG is the
- * primary; the .ico fallback is the same drawing at 32px, one PNG
- * entry in a minimal ICO wrapper, for clients that only ever ask for
- * /favicon.ico.
+ * The store's favicon: the keeper's forest-green tyrannosaur, traced
+ * from the mark he put in the Drive folder to replace the 08-21
+ * chocolate house drawing. Nobody explains the dinosaur. The SVG is
+ * the primary; the .ico fallback is the same drawing at 32px, one
+ * image in a minimal ICO wrapper, for clients that only ever ask
+ * for /favicon.ico.
  */
 
-export const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#f4ead8"/>
-  <g fill="#4e2c18">
-    <!-- tail, thick and low -->
-    <path d="M6 52 Q16 44 28 47 L36 66 Q18 66 8 59 Q3 56 6 52 Z"/>
-    <!-- body, big and round -->
-    <ellipse cx="44" cy="58" rx="22" ry="16"/>
-    <!-- neck, wide -->
-    <path d="M46 50 L54 20 L78 24 L68 56 Z"/>
-    <!-- skull with snout -->
-    <path d="M54 22 Q53 11 64 10 L86 13 Q94 15 93 22 L92 29 L56 33 Z"/>
-    <!-- lower jaw, open -->
-    <path d="M61 40 L89 36 Q94 38 92 42 Q86 46 73 45 L60 44 Z"/>
-    <!-- legs with forward feet -->
-    <path d="M33 66 L43 66 L45 85 L53 85 L53 90 L37 90 Z"/>
-    <path d="M51 63 L60 63 L64 84 L72 84 L72 89 L55 89 Z"/>
-    <!-- tiny arms -->
-    <path d="M56 44 q8 -3 11 2 l-2 5 q-5 -4 -9 -3 z"/>
-    <path d="M53 51 q7 -2 10 3 l-3 4 q-4 -4 -7 -3 z"/>
-  </g>
-  <!-- teeth: brown triangles hanging from the skull into the open gap -->
-  <g fill="#4e2c18">
-    <path d="M66 32.4 L71 32 L68.5 36.4 Z"/>
-    <path d="M74 31.7 L79 31.3 L76.5 35.7 Z"/>
-    <path d="M82 31 L87 30.6 L84.5 35 Z"/>
-    <path d="M89 30.4 L92.5 30.1 L90.7 34 Z"/>
-  </g>
-  <!-- eye and nostril -->
-  <circle cx="66" cy="18" r="3" fill="#f4ead8"/>
-  <circle cx="87" cy="17.5" r="1.8" fill="#f4ead8"/>
-</svg>`;
+/** Badge field — the rounded square behind the mark. */
+export const FAVICON_BADGE = "#0B1F12";
+/** The mark itself — pale mint on the badge. */
+export const FAVICON_MARK = "#E5F4E2";
 
-/** 1528 bytes: one 32x32 PNG inside an ICO header. Generated from FAVICON_SVG. */
+export const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="18" ry="18" fill="${FAVICON_BADGE}"/>
+  <g transform="translate(0 100) scale(0.01118568 -0.01118568)" fill="${FAVICON_MARK}">
+    <path d="M5576 7469 c-344 -36 -663 -228 -856 -515 -155 -228 -240 -487 -330 -999 -84 -474 -173 -625 -460 -770 -511 -259 -796 -532 -1065 -1020 -21 -38 -47 -86 -58 -105 -11 -19 -45 -80 -75 -135 -226 -408 -437 -600 -724 -659 -388 -80 -742 142 -838 524 -36 146 -46 160 -113 160 -110 0 -217 -228 -217 -461 0 -427 309 -862 775 -1089 416 -204 963 -237 1434 -88 94 29 100 33 139 83 23 29 64 78 92 108 l51 56 -62 83 c-71 95 -131 214 -155 308 -20 76 -24 261 -6 303 17 41 45 32 55 -18 51 -237 144 -420 294 -576 45 -47 83 -90 83 -95 0 -5 -40 -51 -89 -102 -283 -293 -376 -534 -306 -792 9 -36 21 -123 25 -193 7 -116 11 -133 37 -174 53 -87 53 -87 537 -84 l259 1 -5 68 c-5 72 -36 146 -90 214 -32 41 -30 58 8 58 100 0 214 -139 230 -281 7 -66 13 -68 134 -59 l65 5 3 46 c4 56 -26 139 -74 211 -51 76 -28 101 54 59 80 -41 142 -140 165 -262 13 -65 8 -62 102 -59 66 2 78 17 72 95 -16 211 -196 395 -448 455 -154 37 -170 43 -199 70 -25 24 -30 36 -30 76 0 54 30 89 222 251 112 95 191 186 254 293 231 392 91 913 -310 1150 -96 57 -97 75 -5 74 129 -1 311 -119 409 -266 140 -211 199 -493 151 -731 -16 -82 -15 -84 41 -58 189 87 454 330 610 560 l50 73 -26 48 c-18 32 -30 76 -37 131 -14 117 1 111 -164 65 -283 -78 -526 40 -672 329 -79 154 -109 420 -48 420 15 0 28 -22 61 -105 118 -301 204 -424 342 -488 86 -40 220 -38 353 6 107 36 137 39 177 18 66 -34 98 -101 109 -223 7 -85 30 -104 81 -66 56 41 77 98 79 211 0 57 3 106 6 109 23 22 100 -99 112 -176 15 -89 46 -105 90 -47 56 73 55 248 -1 359 -36 69 -126 157 -199 193 -94 46 -258 42 -404 -9 -176 -62 -201 -52 -201 84 0 155 -38 272 -126 396 -60 85 -49 116 29 77 121 -62 213 -203 232 -358 8 -64 4 -62 87 -35 107 36 283 38 381 5 101 -34 93 -37 107 46 15 88 2 245 -31 363 -32 120 -9 232 71 345 31 43 26 47 -63 53 -366 29 -643 271 -703 614 -25 142 6 181 53 68 161 -385 506 -591 874 -521 47 9 109 16 137 16 54 0 81 -5 522 -95 399 -82 528 -85 669 -14 143 71 254 259 208 352 -9 18 -24 59 -34 92 -25 83 -38 81 -118 -15 -87 -105 -95 -104 -155 12 -30 59 -51 88 -62 88 -10 0 -42 -32 -73 -74 -85 -113 -103 -111 -154 16 -52 129 -62 131 -150 24 -80 -96 -96 -93 -146 29 -47 115 -52 117 -133 45 -90 -80 -92 -79 -314 140 -159 157 -175 163 -363 145 -95 -9 -159 12 -215 70 -40 41 -36 70 7 58 16 -5 69 -8 118 -8 81 0 97 3 158 33 98 47 151 55 206 31 46 -20 55 -28 135 -122 27 -31 56 -57 65 -57 9 0 41 28 71 61 72 80 82 75 135 -55 53 -130 52 -130 139 -13 82 109 94 106 146 -33 52 -138 61 -139 144 -14 49 73 60 84 85 84 27 0 31 -5 67 -100 56 -148 58 -149 149 -21 75 106 78 105 140 -22 51 -105 62 -106 128 -9 63 93 82 94 113 7 29 -82 45 -82 86 0 26 50 43 72 73 88 62 35 89 110 89 252 1 300 -120 532 -333 640 -73 36 -132 52 -536 144 -334 76 -394 103 -515 226 -224 230 -535 332 -894 294z m392 -468 c183 -94 164 -372 -31 -437 -151 -50 -297 62 -297 227 0 174 176 288 328 210z m1500 -496 c44 -47 45 -103 3 -146 -67 -67 -184 -8 -183 92 2 97 108 129 180 54z M6220 4283 c-58 -6 -130 -22 -217 -50 -74 -23 -83 -28 -83 -50 0 -13 -5 -44 -11 -68 -11 -42 -10 -46 20 -84 17 -21 45 -69 62 -105 l30 -65 65 6 c115 11 184 -64 194 -212 5 -73 7 -80 27 -83 80 -11 155 142 133 273 -4 28 -5 54 0 58 24 26 102 -88 115 -168 11 -68 15 -75 40 -75 54 0 91 104 82 231 -16 235 -226 415 -457 392z M5610 3242 c-38 -12 -50 -23 -78 -71 -122 -208 -349 -447 -564 -590 -85 -57 -93 -73 -53 -111 78 -73 73 -169 -18 -351 -119 -238 -126 -335 -39 -531 28 -62 58 -148 67 -191 12 -58 24 -87 47 -113 62 -71 44 -68 532 -66 259 1 444 6 449 11 28 28 -35 191 -102 264 -51 55 -51 67 -3 67 115 -1 239 -138 258 -286 3 -30 9 -55 13 -55 10 -2 38 -2 162 -1 110 2 118 3 144 28 40 37 34 149 -15 244 -80 157 -210 243 -471 309 -184 47 -214 59 -257 104 -67 70 -50 149 64 304 284 384 281 676 -12 992 -61 66 -58 65 -124 43z"/>
+  </g>
+</svg>
+`;
+
+/** 1931 bytes: one 32x32 PNG inside an ICO header. Generated from FAVICON_SVG. */
 const FAVICON_ICO_BASE64 =
-  "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";
+  "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";
 
 export function faviconIcoBytes(): Uint8Array<ArrayBuffer> {
   const raw = atob(FAVICON_ICO_BASE64);
