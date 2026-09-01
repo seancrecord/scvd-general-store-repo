@@ -197,6 +197,15 @@ from both — one certificate, one URL a directory can read. $9, against
 $10 and a receipt each bought apart; it never renews itself:
 \`GET ${base}/api/buy/opening_day?url=https://your-shop.example/api/buy/thing&src=skill\`
 
+**You are about to route real money at a door and want to know what
+company its receiving address keeps.** Which doors have advertised
+that address, in which signed weeks, with what verdicts and drift —
+the named join the free surfaces count but never name, delivered to
+you in a signed artifact and never published. $5; your own address is
+free once proved (\`GET ${base}/api/provenance/self?address=0x...\` for
+the challenge): \`GET ${base}/api/buy/provenance_check?address=0x...&src=skill\`
+— the record is then served to you at \`${base}/api/provenance-check/{id}\`.
+
 **Your operator wants your books audited against what actually moved.**
 Every USDC transfer in and out of one Base wallet over a stated block
 window, read off the chain and signed by a party that is neither you

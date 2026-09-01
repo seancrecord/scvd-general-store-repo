@@ -330,6 +330,38 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "The bundle URL, the check URL and the watch history are free to read forever",
     ],
   },
+  /**
+   * THE COMPANY AN ADDRESS KEEPS (roadmap N4; the G2 ruling's tier-3
+   * lane; K3 price ruled 2026-08-29; shelf copy the keeper's, approved
+   * 2026-09-01). The named join the public tiers withhold, delivered
+   * to the buyer inside a signed artifact and never published. Free
+   * for an operator asking about their own address, once proved; the
+   * free answer ends with the consent offer. Spec:
+   * docs/PROVENANCE_CHECK_SPEC_2026-08.md.
+   */
+  {
+    id: "provenance_check",
+    listed_week: "2026-W36",
+    name: "The Company an Address Keeps",
+    subtitle: "which doors advertised this receiving address, and when — signed, from the public chain",
+    price_usdc: 5,
+    pricing: "fixed",
+    cadence: "one_off",
+    reads: "our_books",
+    fulfillment: "instant",
+    description:
+      "Which doors have advertised this receiving address, and when: the hosts, the signed weeks, each week's verdict, drift in the door's own terms, and the snapshot digest behind every line. Rebuild it from the public chain without our word. No judgment: shared addresses are ordinary, custodians are common, and this store does not grade operators. Your own address is free once you prove it is yours (GET /api/provenance/self for the challenge), and that free reading ends with an offer to publish it, which you may decline.",
+    note_402:
+      "Five dollars for somebody else's address. Nothing for your own, once you have proved it is your own.",
+    constraints: [
+      "Give the receiving address in the address query parameter: an EVM address (0x + 40 hex) or a Solana pubkey (base58)",
+      "Reads the signed chain and nothing else — no request is made to any door, and nothing private feeds it",
+      "Delivered to you and never published; no operator field, no score, no identity assertion — pairings and dates only",
+      "The subject's standing note rides the artifact verbatim, beside the observation, never instead of it",
+      "An address the chain has never seen returns never_seen, which is the answer you paid for",
+      "Your own address: GET /api/provenance/self?address= for the challenge, POST it back signed (EIP-191), and the same answer is free",
+    ],
+  },
   {
     id: "the_statement",
     listed_week: "2026-W34",

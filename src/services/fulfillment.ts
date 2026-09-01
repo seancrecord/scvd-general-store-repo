@@ -1,3 +1,4 @@
+import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { storeIdentity } from "@/lib/identity";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { canonicalizeCertificate } from "@/lib/signing";
@@ -89,6 +90,8 @@ export interface FulfillmentInput {
   callbackUrl?: string;
   /** context_anchor: pre-validated summary. */
   summary?: string;
+  /** provenance_check: the receiving address, pre-validated at the door. */
+  subjectAddress?: string;
   /** phantom_check, standing_watch, service_audit: pre-validated URL. */
   targetUrl?: string;
   /**
@@ -392,6 +395,11 @@ export async function fulfillPurchase(
    * only — the one paid item here that touches neither chain nor
    * subject, which is what lets it price at the floor.
    */
+  let provenanceCheck: SignedProvenanceCheck | undefined;
+  if (item.id === "provenance_check") {
+    provenanceCheck = await performProvenanceCheck(env, input.subjectAddress ?? "");
+    mintOptions.attests = provenanceCheck.evidence_hash;
+  }
   let spotCheck: SignedSpotCheck | undefined;
   if (item.id === "spot_check") {
     spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
@@ -684,6 +692,9 @@ export async function fulfillPurchase(
     }
     if (spotCheck) {
       goodsInput.spotCheck = spotCheck;
+    }
+    if (provenanceCheck) {
+      goodsInput.provenanceCheck = provenanceCheck;
     }
     if (mandate) {
       goodsInput.mandate = mandate;

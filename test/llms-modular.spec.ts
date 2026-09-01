@@ -414,12 +414,18 @@ const BASE = "https://scvd.store";
  * Day — one launch check, seven days of conformance watch, and your
  * passport page, at one URL" and still every earlier pin.
  *
+ * Re-taken 2026-09-01 — the TWENTIETH — by roadmap N4: The Company an
+ * Address Keeps joins the shelf with the keeper's approved copy, and
+ * the guide prints its line. Confirmed before this value was taken:
+ * the guide carries "provenance_check, The Company an Address Keeps"
+ * and "does not grade operators", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e73ef3e97d495cea880e04da5c885f14a5d57bc8025cfaedc4d59eed19f6fede";
+  "100ca1a831ea51a8bd7846cec61ab7742eed503465af5e22c90ad38b08e70fe7";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

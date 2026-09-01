@@ -1,3 +1,4 @@
+import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
@@ -117,6 +118,7 @@ export interface InstantGoodsInput {
   trustProfile?: SignedTrustProfile;
   /** spot_check only: the signed reading, already made and bound. */
   spotCheck?: SignedSpotCheck;
+  provenanceCheck?: SignedProvenanceCheck;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
@@ -439,6 +441,32 @@ export async function deliverInstantGoods(
           public_key: spot.public_key,
           how_to_verify:
             "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too.",
+        },
+      };
+    }
+    case "provenance_check": {
+      const prov = input.provenanceCheck;
+      if (!prov) {
+        throw new Error("provenance_check reached goods with no record");
+      }
+      await storeProvenanceCheck(env, prov, input.certId ?? "");
+      const r = prov.record;
+      const last = r.weeks[r.weeks.length - 1];
+      const seen = !last
+        ? "The signed chain has never seen a door advertise this address — that absence is the finding, recorded and signed."
+        : `Advertised by ${last.doors.length} door${last.doors.length === 1 ? "" : "s"} in the latest week it appears (${last.week}), across ${r.weeks.length} signed week${r.weeks.length === 1 ? "" : "s"}; ${r.drift.length} dated change${r.drift.length === 1 ? "" : "s"} in the pairings or terms.`;
+      return {
+        deliverable: `The company this address keeps, read from the signed chain at ${r.asked_at}. ${seen} The full signed record rides in extras and is served at /api/provenance-check/${r.provenance_id}, to you; nothing about it is published by us.`,
+        extras: {
+          provenance_check: r,
+          record_url: `/api/provenance-check/${r.provenance_id}`,
+          evidence_hash: prov.evidence_hash,
+          signed_payload: prov.signed_payload,
+          signature: prov.signature,
+          signature_jcs: prov.signature_jcs,
+          public_key: prov.public_key,
+          how_to_verify:
+            "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too; how_to_rederive on the record rebuilds every line from the public chain.",
         },
       };
     }

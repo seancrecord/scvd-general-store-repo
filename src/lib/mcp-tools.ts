@@ -186,6 +186,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // The merchant's opening day: that walk, then a week of daily
       // passes on the same door, then the passport — one certificate.
       "opening_day",
+      // The books read for a receiving address: which doors advertised
+      // it and when, signed, delivered to the buyer and never published.
+      "provenance_check",
       // The same neutrality pointed at a whole wallet window: every
       // USDC transfer in and out, off the chain, signed by neither
       // the agent nor its operator.

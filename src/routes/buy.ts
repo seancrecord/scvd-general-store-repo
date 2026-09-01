@@ -813,6 +813,26 @@ const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** provenance_check needs a receiving address BEFORE money moves; own address is free elsewhere. */
+const provenanceGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/provenance_check" || !isBuying(c)) {
+    return next();
+  }
+  const { validSubjectAddress } = await import("@/services/provenance-check");
+  if (!validSubjectAddress(c.req.query("address"))) {
+    return c.json(
+      {
+        charged: false,
+        code: "bad_request",
+        error:
+          "Give a receiving address in the address query parameter — an EVM address (0x + 40 hex) or a Solana pubkey (base58). We read the signed chain about it; no address, no charge. Your own address is free: GET /api/provenance/self?address= for the challenge.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** coffees_for_closers needs the win BEFORE money moves: no win, no coffee. */
 const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/coffees_for_closers" || !isBuying(c)) {
@@ -1203,6 +1223,7 @@ buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", spotCheckGate);
+buyRoutes.use("/api/buy/*", provenanceGate);
 buyRoutes.use("/api/buy/*", tagCheck);
 /**
  * The dilemma IS the order (2026-08-19): quick_judgment's prose always
@@ -1323,6 +1344,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (item.id === "onpage_audit") {
     // onpageAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "provenance_check") {
+    // provenanceGate validated the address shape.
+    input.subjectAddress = c.req.query("address") ?? "";
   }
   if (item.id === "launch_check" || item.id === "opening_day") {
     // launchCheckCheck validated the URL, refused our own host, and

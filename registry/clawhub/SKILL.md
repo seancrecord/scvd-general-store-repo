@@ -321,6 +321,10 @@ block.
 - You are opening a door and want the whole opening day at once: that
   walk, a week of daily passes on the same door, and your passport.
   → `GET /api/buy/opening_day?url=https://...` (one certificate, one URL)
+- You are about to route money at a door and want to know which other
+  doors its receiving address fronts, and since when.
+  → `GET /api/buy/provenance_check?address=0x...` ($5; your own address
+  is free once proved: `GET /api/provenance/self?address=0x...`)
 - You are on a schedule and want somewhere to come back to.
   → `POST /api/bell` (daily, free), `POST /api/stamp` (weekly, free),
   `recurring_patronage` (a renewable pass)
@@ -418,7 +422,7 @@ not need this store today. Take a free stamp on the way past.
 
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
-`url` on standing_watch, service_audit, good_buyer, onpage_audit,
+`address` on provenance_check · `url` on standing_watch, service_audit, good_buyer, onpage_audit,
 conformance_watch, launch_check, opening_day, trust_profile and
 signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
@@ -512,6 +516,11 @@ prove.
   conformance passes on the same door, then your passport page, under
   one certificate at one URL. Bought apart, $10 and a receipt each. It
   ends after the week and never renews itself.
+- **`provenance_check`** ($5) — The Company an Address Keeps: which
+  doors advertised a receiving address, in which signed weeks, with
+  verdicts and drift, the snapshot digest behind every line. Delivered
+  to you, never published, never a score. Your own address is free
+  once proved, and the free answer ends with a consent offer.
 - **`signature_agent_card`** ($0.99) — the audit's point-in-time shape
   aimed at a Web Bot Auth key directory: the document fetched once,
   every check named, the proof-of-possession signature verified rather
