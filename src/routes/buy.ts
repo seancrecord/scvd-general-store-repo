@@ -533,7 +533,10 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * than taking five dollars for a walk that cannot pay.
  */
 const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (buyRequestPath(c) !== "/api/buy/launch_check" || !isBuying(c)) {
+  if (
+    !["/api/buy/launch_check", "/api/buy/opening_day"].includes(buyRequestPath(c)) ||
+    !isBuying(c)
+  ) {
     return next();
   }
   // Screening needs no secret: the keyless on-chain oracle is the
@@ -803,6 +806,26 @@ const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         code: "bad_request",
         error:
           "Give a bare hostname in the host query parameter — example.com, not a URL. We read our own books about it; no host, no charge.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
+/** provenance_check needs a receiving address BEFORE money moves; own address is free elsewhere. */
+const provenanceGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/provenance_check" || !isBuying(c)) {
+    return next();
+  }
+  const { validSubjectAddress } = await import("@/services/provenance-check");
+  if (!validSubjectAddress(c.req.query("address"))) {
+    return c.json(
+      {
+        charged: false,
+        code: "bad_request",
+        error:
+          "Give a receiving address in the address query parameter — an EVM address (0x + 40 hex) or a Solana pubkey (base58). We read the signed chain about it; no address, no charge. Your own address is free: GET /api/provenance/self?address= for the challenge.",
       },
       400,
     );
@@ -1200,6 +1223,7 @@ buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", spotCheckGate);
+buyRoutes.use("/api/buy/*", provenanceGate);
 buyRoutes.use("/api/buy/*", tagCheck);
 /**
  * The dilemma IS the order (2026-08-19): quick_judgment's prose always
@@ -1321,7 +1345,11 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // onpageAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
-  if (item.id === "launch_check") {
+  if (item.id === "provenance_check") {
+    // provenanceGate validated the address shape.
+    input.subjectAddress = c.req.query("address") ?? "";
+  }
+  if (item.id === "launch_check" || item.id === "opening_day") {
     // launchCheckCheck validated the URL, refused our own host, and
     // confirmed the field wallet and screen are provisioned.
     input.targetUrl = c.req.query("url") ?? "";

@@ -3577,6 +3577,11 @@ const WATCH_HISTORY_SCHEMA: OpenApiObject = {
       description:
         "Who commissioned the watch, stated on the artifact — the conflict declared where the evidence is read.",
     },
+    the_next_week: {
+      type: "object",
+      description:
+        "What happens when the purchased week ends, on the artifact: nothing renews itself (rule 23a); the same item, price read off the shelf, with this door pre-filled in buy_url, and `ended` mirroring `complete`.",
+    },
   },
 };
 
@@ -3597,6 +3602,11 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
     },
     passes: { type: "array", items: { type: "object" } },
     how_to_verify: { type: "string" },
+    the_next_week: {
+      type: "object",
+      description:
+        "What happens when the purchased week ends, on the artifact: nothing renews itself (rule 23a); the same item, price read off the shelf, with this door pre-filled in buy_url, and `ended` mirroring `complete`.",
+    },
   },
 };
 

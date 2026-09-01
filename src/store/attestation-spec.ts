@@ -155,6 +155,26 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/launch-check/{check_id}",
   },
   {
+    id: "opening_day",
+    name: "Opening days (one real purchase attempt, then a week of daily passes, then the passport, under one certificate)",
+    trust_model: "third_party_observation",
+    signs:
+      "The launch check's whole walk (endpoint, moment, User-Agent, every stage, what was paid and to whom, the settlement transaction where one came back, the field wallet) and its evidence hash, which the purchase certificate binds in its attests field. Each of the watch's daily passes is signed on its own at the history URL. The passport is the census's own signed, expiring object.",
+    does_not_prove:
+      "Anything about any other moment, buyer, or the seller generally: one transaction once, seven daily looks, and a page that names its own stale date. The three under one certificate are still three observations, not a grade. Never a badge, never a score, never a guarantee the door stays up.",
+    verify_url: "/api/opening-day/{cert_id}",
+  },
+  {
+    id: "provenance_check",
+    name: "Provenance checks (which doors advertised a receiving address, and when)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole record: the subject address verbatim and its digest, every signed week the address was advertised with the doors, verdicts and offered terms as the round recorded them, the dated drift between weeks, the subject's standing note verbatim, the caveat, the limits, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+    does_not_prove:
+      "Who operates any door or holds the address: a shared address is a fact about the address, not a verdict about operators, and custodial and platform wallets make unrelated doors share one. Nothing between weekly rounds, nothing about doors our feeds never listed, and never a score, a rating or a compliance verdict. Delivered to the buyer; the artifact existing publishes nothing.",
+    verify_url: "/api/provenance-check/{provenance_id}",
+  },
+  {
     id: "the_mandate",
     name: "Mandates (claimed authorization, recorded before the acting)",
     trust_model: "third_party_observation",
@@ -297,6 +317,25 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
  * the same defect class as a stale capability claim, and this page is
  * the last place that should carry one.
  */
+/**
+ * WHICH CLASS A SHELF ITEM MINTS (roadmap N3, 2026-09-01). Most items
+ * mint the class of their own id; the two watches mint one signed row
+ * per probe or pass, and the class is the row. An item with no class
+ * here mints only its certificate, which is the `certificate` class.
+ * The item page and menu.json print the class's `does_not_prove`
+ * beside the price, in the class's exact words — the family guard in
+ * test/item-limits.spec.ts holds the two dialects to the same text.
+ */
+const ITEM_CLASS_ALIASES: Readonly<Record<string, string>> = {
+  standing_watch: "standing_watch_probe",
+  conformance_watch: "conformance_watch_pass",
+};
+
+export function artifactClassForItem(itemId: string): ArtifactClass | undefined {
+  const classId = ITEM_CLASS_ALIASES[itemId] ?? itemId;
+  return ARTIFACT_CLASSES.find((entry) => entry.id === classId);
+}
+
 export const NOT_BUILT: readonly string[] = [
   "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten, and do nothing for the shelf.)",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",

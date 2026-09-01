@@ -318,6 +318,13 @@ block.
 - You need your own x402 buy path walked by a real paying stranger, or
   an agent wallet's books audited against the chain.
   → `GET /api/buy/launch_check`, `GET /api/buy/the_statement`
+- You are opening a door and want the whole opening day at once: that
+  walk, a week of daily passes on the same door, and your passport.
+  → `GET /api/buy/opening_day?url=https://...` (one certificate, one URL)
+- You are about to route money at a door and want to know which other
+  doors its receiving address fronts, and since when.
+  → `GET /api/buy/provenance_check?address=0x...` ($5; your own address
+  is free once proved: `GET /api/provenance/self?address=0x...`)
 - You are on a schedule and want somewhere to come back to.
   → `POST /api/bell` (daily, free), `POST /api/stamp` (weekly, free),
   `recurring_patronage` (a renewable pass)
@@ -415,8 +422,8 @@ not need this store today. Take a free stamp on the way past.
 
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
-`url` on standing_watch, service_audit, good_buyer, onpage_audit,
-conformance_watch, launch_check, trust_profile and
+`address` on provenance_check · `url` on standing_watch, service_audit, good_buyer, onpage_audit,
+conformance_watch, launch_check, opening_day, trust_profile and
 signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
 the_confession. Pay-what-it-deserves items offer several amounts in
@@ -504,6 +511,16 @@ prove.
   substitute: a real EIP-3009 authorization from the store's declared
   field wallet, presented at your till, settled or refused, the whole
   walk signed stage by stage. We pay at most $0.05 at your door.
+- **`opening_day`** ($9) — the merchant's opening day in one purchase:
+  the launch check's real walk of your till, then seven daily signed
+  conformance passes on the same door, then your passport page, under
+  one certificate at one URL. Bought apart, $10 and a receipt each. It
+  ends after the week and never renews itself.
+- **`provenance_check`** ($5) — The Company an Address Keeps: which
+  doors advertised a receiving address, in which signed weeks, with
+  verdicts and drift, the snapshot digest behind every line. Delivered
+  to you, never published, never a score. Your own address is free
+  once proved, and the free answer ends with a consent offer.
 - **`signature_agent_card`** ($0.99) — the audit's point-in-time shape
   aimed at a Web Bot Auth key directory: the document fetched once,
   every check named, the proof-of-possession signature verified rather
@@ -588,6 +605,16 @@ Coverage is published beside every verdict rather than left for you to
 wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
+
+### Two doors and the subtitles (3.9.0, 2026-09-01)
+
+`opening_day` — the merchant kit as one purchase: a launch check, a
+week of conformance watch on the same door, and the passport, under
+one certificate at one URL. `provenance_check` — The Company an
+Address Keeps: which doors advertised a receiving address and when,
+from the signed chain, delivered and never published; your own address
+free once proved at `/api/provenance/self`. The four operator
+instruments carry a plain subtitle beside their name.
 
 ### The evidence layer (3.8.0, 2026-08-31)
 

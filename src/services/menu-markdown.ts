@@ -1,3 +1,4 @@
+import { artifactClassForItem } from "@/store/attestation-spec";
 import { priceTiersUsdc } from "@/lib/payments";
 import { STORE_METADATA } from "@/store/metadata";
 import { getMenuItem } from "@/store/menu";
@@ -102,14 +103,18 @@ export function renderItemMarkdown(item: MenuItem, base: string): string {
       ? `\nStock: ${item.weekly_inventory} per week; a waitlist opens when the shelf empties.\n`
       : "";
   return `# ${item.name}
-
+${item.subtitle ? `\n_${item.subtitle}_\n` : ""}
 ${item.description}
 
 - **id:** \`${item.id}\`
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
 - **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on Base, Polygon, or Solana)
-${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${stock}${constraints}
+${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
+    artifactClassForItem(item.id)
+      ? `- **does not prove:** ${artifactClassForItem(item.id)!.does_not_prove}\n`
+      : ""
+  }${stock}${constraints}
 > ${item.note_402}
 `;
 }

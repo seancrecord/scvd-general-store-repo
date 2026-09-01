@@ -232,6 +232,14 @@ export type ItemReads =
 export interface MenuItem {
   id: string;
   name: string;
+  /**
+   * THE UTILITARIAN PAIR (roadmap S4, the keeper's ink 2026-09-01).
+   * The name is the store's voice; the subtitle is the search term —
+   * what the item does, in the buyer's words, beside the name on
+   * every shelf surface. Only the operator-facing instruments carry
+   * one; a lucky does not need explaining.
+   */
+  subtitle?: string;
   /** Minimum (or fixed) price in USDC. */
   price_usdc: number;
   pricing: ItemPricing;

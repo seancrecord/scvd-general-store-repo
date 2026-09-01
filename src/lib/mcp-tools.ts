@@ -183,6 +183,12 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // attempt of the buyer's own door, from the declared field
       // wallet, the whole walk signed stage by stage.
       "launch_check",
+      // The merchant's opening day: that walk, then a week of daily
+      // passes on the same door, then the passport — one certificate.
+      "opening_day",
+      // The books read for a receiving address: which doors advertised
+      // it and when, signed, delivered to the buyer and never published.
+      "provenance_check",
       // The same neutrality pointed at a whole wallet window: every
       // USDC transfer in and out, off the chain, signed by neither
       // the agent nor its operator.
@@ -718,7 +724,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "preflight_endpoint",
     reads: "subject_fetch",
     description:
-      "Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
+      "For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
     inputSchema: {
       type: "object",
       properties: {
@@ -768,7 +774,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "check_before_you_pay",
     reads: "subject_fetch",
     description:
-      "Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
+      "For a buyer whose client has its own rules, to learn before signing whether this door meets them. Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
     inputSchema: {
       type: "object",
       properties: {
@@ -834,7 +840,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "check_conformance",
     reads: "subject_fetch",
     description:
-      "Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
+      "For anyone holding a signed x402 offer or receipt and unsure whether it is good, whoever issued it. Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
     inputSchema: {
       type: "object",
       properties: {

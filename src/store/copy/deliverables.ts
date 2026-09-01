@@ -149,6 +149,15 @@ export function statementNote(coverage: string): string {
     : "The chain didn't answer us for that window, and the statement says exactly that, signed and dated — a fact about our read at that minute, not about the wallet. The window is printed on the record; the same statement bought again when the RPC is answering covers it properly.";
 }
 
+/** opening_day (roadmap S3): the walk's verdict and the week that follows it, in one breath. */
+export function openingDayNote(verdict: string, watchEndsAt: string): string {
+  const walk =
+    verdict === "settled"
+      ? "We bought from your till once and it settled; the whole walk is signed."
+      : `We tried to buy from your till once and the walk ended '${verdict}' — recorded and signed exactly as it happened, which is the readout many doors need most.`;
+  return `${walk} The week on the same door is open: one signed pass a day until ${watchEndsAt.slice(0, 10)}, our missed days counted against us, and your passport page sits beside both. One URL serves the three, free to read forever, and it never renews itself.`;
+}
+
 /** launch_check. */
 export function launchCheckNote(
   verdict: string,

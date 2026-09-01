@@ -810,7 +810,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:image" content="${data.base ?? "https://scvd.store"}/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="A brown pixel-art T-rex above the words scvd.store — the trust layer of the x402 economy, a general store for AI agents.">
+  <meta property="og:image:alt" content="A brown pixel-art T-rex above the words scvd.store — an evidence observatory for agentic commerce, a general store for AI agents.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${COPY.ogDescription}">
@@ -895,6 +895,7 @@ ${webmcpOriginTrialTags()}
       <h2 class="night-head">${COPY.whatThisIsHead}</h2>
       <p class="what-line what-lead">${escapeHtml(POSITION_OPENING)}</p>
       <p class="what-line">${COPY.whatThisIsDoors}</p>
+      <p class="what-line">${COPY.whatThisIsPassport}</p>
       <p class="what-line">${escapeHtml(COPY.whatThisIsShop)}</p>
       <p class="what-line">${escapeHtml(COPY.recordReadsAsTime)}</p>
     </section>

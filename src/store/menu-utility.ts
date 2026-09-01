@@ -50,6 +50,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "standing_watch",
     listed_week: "2026-W32",
     name: "The Night Watch",
+    subtitle: "seven days of signed hourly probes on your x402 endpoint",
+    sample_url: "/samples/night-watch.json",
     price_usdc: 5,
     pricing: "fixed",
     cadence: "term",
@@ -121,6 +123,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "service_audit",
     listed_week: "2026-W32",
     name: "The Once-Over",
+    subtitle: "one signed check of your x402 endpoint, at a permanent URL",
     price_usdc: 5,
     pricing: "fixed",
     cadence: "one_off",
@@ -155,6 +158,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "conformance_watch",
     listed_week: "2026-W32",
     name: "The Conformance Watch",
+    subtitle: "seven days of signed daily checks on your x402 endpoint",
+    sample_url: "/samples/conformance-watch.json",
     price_usdc: 5,
     pricing: "fixed",
     cadence: "term",
@@ -264,6 +269,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "launch_check",
     listed_week: "2026-W34",
     name: "The Launch Check",
+    subtitle: "a real paid purchase against your endpoint, signed, before you announce it",
+    sample_url: "/samples/launch-check.json",
     price_usdc: 5,
     pricing: "fixed",
     cadence: "one_off",
@@ -296,6 +303,75 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * sums, never a judgment — we never see the agent's own ledger, so
    * no comparison is even possible from here.
    */
+  /**
+   * THE OPENING DAY (roadmap S3, the keeper's price and name,
+   * 2026-09-01): the merchant kit as a bundle, not a brand. One
+   * launch check, then seven days of conformance watch on the same
+   * door, then the passport page — three things this store already
+   * sells, under one certificate and one URL a merchant can hand to a
+   * directory. Bought apart they are $10 and a receipt each. No second
+   * battery, no new primitive: the launch walk is performLaunchCheck,
+   * the week is startConformanceWatch, the passport is the census's.
+   */
+  {
+    id: "opening_day",
+    listed_week: "2026-W36",
+    name: "The Opening Day",
+    subtitle: "one launch check, seven days of conformance watch, and your passport page, at one URL",
+    price_usdc: 9,
+    pricing: "fixed",
+    cadence: "term",
+    term_days: 7,
+    reads: "subject_purchase",
+    fulfillment: "instant",
+    description:
+      "Name your x402 endpoint (the url query parameter) and three things happen under one certificate. First, the Launch Check: this store walks your door the way a paying stranger does — one real EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, every stage signed. Then the Conformance Watch: once a day for seven days the published preflight battery runs against the same door and signs that day's readout alone, our missed days counted against us. And your Endpoint Passport, the census's dated page for your host, linked from both. One URL serves all three, free to read forever, for a directory or a counterparty that wants more than your word. Bought apart these cost ten dollars and come as a receipt each. Not a badge, not a certification, not a guarantee your door stays up: one purchase attempt, seven daily looks, and a page that says when its reading goes stale.",
+    /* #31: the free specimen of the walk half. */
+    sample_url: "/samples/once-over.json",
+    note_402:
+      "Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is ten, and a receipt each.",
+    constraints: [
+      "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",
+      "The launch check is one real purchase attempt from the declared field wallet, once — never a retry loop",
+      `We pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till; a costlier cheapest rail gets a signed record of exactly where the check stopped instead of a payment`,
+      "The payTo is sanctions-screened before any payment, and no screen means no payment — the rule fails closed",
+      "The watch is one pass a day for seven days, each signed alone; it ends after seven days and never renews itself",
+      "We refuse our own hostname — a report about our own till, signed by us, would be the instrument vouching for itself",
+      "The bundle URL, the check URL and the watch history are free to read forever",
+    ],
+  },
+  /**
+   * THE COMPANY AN ADDRESS KEEPS (roadmap N4; the G2 ruling's tier-3
+   * lane; K3 price ruled 2026-08-29; shelf copy the keeper's, approved
+   * 2026-09-01). The named join the public tiers withhold, delivered
+   * to the buyer inside a signed artifact and never published. Free
+   * for an operator asking about their own address, once proved; the
+   * free answer ends with the consent offer. Spec:
+   * docs/PROVENANCE_CHECK_SPEC_2026-08.md.
+   */
+  {
+    id: "provenance_check",
+    listed_week: "2026-W36",
+    name: "The Company an Address Keeps",
+    subtitle: "which doors advertised this receiving address, and when — signed, from the public chain",
+    price_usdc: 5,
+    pricing: "fixed",
+    cadence: "one_off",
+    reads: "our_books",
+    fulfillment: "instant",
+    description:
+      "Which doors have advertised this receiving address, and when: the hosts, the signed weeks, each week's verdict, drift in the door's own terms, and the snapshot digest behind every line. Rebuild it from the public chain without our word. No judgment: shared addresses are ordinary, custodians are common, and this store does not grade operators. Your own address is free once you prove it is yours (GET /api/provenance/self for the challenge), and that free reading ends with an offer to publish it, which you may decline.",
+    note_402:
+      "Five dollars for somebody else's address. Nothing for your own, once you have proved it is your own.",
+    constraints: [
+      "Give the receiving address in the address query parameter: an EVM address (0x + 40 hex) or a Solana pubkey (base58)",
+      "Reads the signed chain and nothing else — no request is made to any door, and nothing private feeds it",
+      "Delivered to you and never published; no operator field, no score, no identity assertion — pairings and dates only",
+      "The subject's standing note rides the artifact verbatim, beside the observation, never instead of it",
+      "An address the chain has never seen returns never_seen, which is the answer you paid for",
+      "Your own address: GET /api/provenance/self?address= for the challenge, POST it back signed (EIP-191), and the same answer is free",
+    ],
+  },
   {
     id: "the_statement",
     listed_week: "2026-W34",
@@ -477,6 +553,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "settlement_attestation",
     listed_week: "2026-W31",
     name: "Settlement Attestation",
+    sample_url: "/samples/settlement-attestation.json",
     price_usdc: 0.004,
     pricing: "fixed",
     cadence: "one_off",

@@ -373,7 +373,55 @@ const BASE = "https://scvd.store";
  * and no longer carries "the frozen v1 verdict this series has
  * always cited".
  *
- * Re-taken 2026-09-01 — the SIXTEENTH — by derivation. The standing
+ * Re-taken 2026-09-01 — the SIXTEENTH — by roadmap N2, the first-
+ * screen packaging. The guide opened with TWO paragraphs about what
+ * the store is: a hand-typed blockquote, then POSITION_OPENING under
+ * it, saying the same thing in other words. The blockquote is now the
+ * constant itself, the constant now opens with the keeper's sixty
+ * words (VALUE_PROPOSITION, inked 2026-09-01), and one derived line
+ * names the three paths in the order those words name them.
+ * Confirmed before this value was taken: the served guide carries
+ * the sixty words verbatim exactly once in the opening, no longer
+ * carries "checkable offline without us" (the twin's tell), and
+ * still carries every pin the earlier re-takes established.
+ * test/first-screen.spec.ts holds the same sentence on the other
+ * five surfaces. Re-taken once more the same day, after the full
+ * suite caught what the targeted runs had not: the free-forever
+ * verify line belongs inside the first 1,400 characters
+ * (test/capability-query.spec.ts), so it rides the blockquote again
+ * — derived, and worded without the twin's tell. And once more when
+ * the keeper inked the sharper draft of the sixty words the same
+ * evening ("i like the sharper 60 word draft"): one constant moved,
+ * every surface followed, this value with it.
+ *
+ * Re-taken 2026-09-01 — the SEVENTEENTH — by roadmap S4, the keeper's
+ * ink: the four operator instruments carry a plain subtitle beside
+ * their name on every shelf surface, and the guide's menu lines
+ * print "name — subtitle". Confirmed before this value was taken:
+ * the guide carries "The Conformance Watch — seven days of signed
+ * daily checks on your x402 endpoint" and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the EIGHTEENTH — by roadmap S1: the guide's
+ * corpus section names The Week's Doors (/corpus/brief), the weekly
+ * brief derived from the signed snapshot. Confirmed before this value
+ * was taken: the guide carries "/corpus/brief" and "never a host
+ * named beside its verdict", and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the NINETEENTH — by roadmap S3, the keeper's
+ * price and name: The Opening Day ($9) joins the shelf and the guide
+ * prints its menu line like every other item's. Confirmed before
+ * this value was taken: the guide carries "opening_day, The Opening
+ * Day — one launch check, seven days of conformance watch, and your
+ * passport page, at one URL" and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the TWENTIETH — by roadmap N4: The Company an
+ * Address Keeps joins the shelf with the keeper's approved copy, and
+ * the guide prints its line. Confirmed before this value was taken:
+ * the guide carries "provenance_check, The Company an Address Keeps"
+ * and "does not grade operators", and still every earlier pin.
+ *
+ * Re-taken 2026-09-01 — the TWENTY-FIRST — by derivation,
+ * merged in behind the five re-takes above. The standing
  * watch learned to report the hour a door's payTo moved
  * (summary.payto_changes), and the standing_watch shelf description
  * gained one clause saying so ("Where the money goes is watched,
@@ -387,7 +435,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "413787c07e9587ba7dd930a5a519f77f2bda4e238525aaa12c5d0fcd9759f62f";
+  "a471b6f4b8654330be1529169dc292ae5e6e566dcd2960c0c18e971f0018c413";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

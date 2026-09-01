@@ -178,6 +178,24 @@ export function readReason(raw: string): {
         "The facilitator's own settle endpoint errored (the 5xx in parentheses is its HTTP status; the text after the colon is its raw response body). The signature had already VERIFIED, so the buyer and the payload are fine and there is nothing to fix on either side — the payment rail was down. Transient: the till now retries one settle on this shape before booking the decline. One caveat: a 5xx is an AMBIGUOUS outcome, so if one recurs, check the bank reconciliation for an orphan transfer around this timestamp — the rare settle that landed on-chain while its response died would surface there.",
     };
   }
+  /*
+   * A VERIFY-TIME REVERT (2026-09-01, the keeper's $21 field report).
+   * The facilitator simulates the USDC transferWithAuthorization before
+   * it settles; when the payer's balance is below the amount, the
+   * simulation reverts and the answer comes back as invalid_payload
+   * with "contract call failed: execution reverted" — no balance word
+   * anywhere in it. It fell through to the signature rule below and
+   * read as "the signature did not verify", pointing at the client or
+   * at us, when the first suspect is the wallet against the amount:
+   * the same signing code had just cleared three cheaper items.
+   */
+  if (reason.includes("revert")) {
+    return {
+      fault: "buyer",
+      reading:
+        "The facilitator's simulation of the transfer REVERTED before settling. The commonest cause by far is the payer's USDC balance on the rail the payment named being below the amount — a signature that verified for a cheaper item and reverts for a dearer one is that case exactly. Check the wallet's balance on that chain against this item's price before suspecting the client or us. If the balance was clearly sufficient, then it is the contract or the facilitator, and worth the accepts entry that was signed.",
+    };
+  }
   if (reason.includes("insufficient") || reason.includes("balance")) {
     return {
       fault: "buyer",

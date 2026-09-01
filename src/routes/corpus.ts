@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import {
   getCorpusEntry,
   listCorpus,
@@ -9,6 +9,9 @@ import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { deriveWalletFacts } from "@/services/operator-facts";
 import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
+import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { escapeHtml } from "@/lib/sanitize";
 import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
@@ -206,6 +209,107 @@ corpusRoutes.get("/corpus/trajectory.json", async (c) => {
     how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for each point (sequences are named on the points), recount the round's rows with your own tools, and compare digests against the chain at ${base}/corpus.json. Nothing here exists outside those signed entries.`,
   });
 });
+
+/**
+ * THE WEEK'S DOORS (roadmap S1, the keeper's name 2026-09-01): one
+ * brief per signed week, derived from the trajectory point, HTML for
+ * a person and JSON for a machine at the same address. ?week= names a
+ * week the chain holds; absent, the latest.
+ */
+function briefHtml(brief: WeeklyBrief): string {
+  const d = brief.doors;
+  const g = brief.our_gaps;
+  const defects =
+    brief.defects.length === 0
+      ? `<p class="menu-desc">No failed checks recorded on the probed doors this week.</p>`
+      : `<table border="1" cellpadding="6"><tr><th>defect, by its registered name</th><th>doors</th></tr>${brief.defects
+          .map(
+            (row) =>
+              `<tr><td><a href="/defects#${escapeHtml(row.id)}">${escapeHtml(row.title)}</a> <code>${escapeHtml(row.id)}</code></td><td>${row.count}</td></tr>`,
+          )
+          .join("")}</table>`;
+  const networks = Object.entries(brief.networks)
+    .sort((a, b) => b[1] - a[1])
+    .map(([network, count]) => `<code>${escapeHtml(network)}</code> ${count}`)
+    .join(" · ");
+  const previous = brief.previous
+    ? `<p class="menu-meta">The week before, ${escapeHtml(brief.previous.week)}: ${brief.previous.payable} payable and ${brief.previous.not_payable} not, of ${brief.previous.probed} probed. Two points, not a trend.</p>`
+    : "";
+  return `<section>
+    <p class="menu-desc"><strong>Week ${escapeHtml(brief.week)}</strong>, read from signed snapshot ${brief.sequence}, taken ${escapeHtml(brief.taken_at.slice(0, 10))}${brief.battery ? `, verdicts under battery <code>${escapeHtml(brief.battery)}</code>` : ""}.</p>
+    <p class="menu-desc"><strong>${d.listed} doors named</strong> by the discovery feeds; <strong>${d.probed} knocked on</strong>. Of those, <strong>${d.payable} answered with a challenge a buyer could pay</strong>, ${d.not_payable} answered with one a buyer could not pay as served, and ${d.unreachable} did not answer. ${d.offers_seen} carried a parseable offer.</p>
+    ${networks ? `<p class="menu-meta">Doors per chain, from the offers' own declarations: ${networks}.</p>` : ""}
+    ${previous}
+  </section>
+  <section>
+    <h2>Defects, by name</h2>
+    ${defects}
+    <p class="menu-meta">Names are the store's <a href="/defects">defect vocabulary</a>; a defect is a fact about one challenge at one moment, never about an operator.</p>
+  </section>
+  <section>
+    <h2>The gaps, counted against us</h2>
+    <p class="menu-desc">${g.not_probed} doors a feed named that this round never reached. ${g.observer_degraded} ticks where our own vantage was blind, which are nobody's outage. ${g.coverage_suspect ? "<strong>The round itself flagged its coverage as suspect.</strong>" : "The round did not flag its coverage as suspect."}</p>
+  </section>
+  <section>
+    <h2>What this is not</h2>
+    <p class="menu-desc">${escapeHtml(brief.not_a_ranking)}</p>
+    <p class="menu-meta">${escapeHtml(brief.how_to_rederive)} Every door, alphabetical: <a href="/doors">/doors</a>.</p>
+  </section>`;
+}
+
+async function serveBrief(c: Context<HonoEnv>, html: boolean) {
+  const base = c.env.STORE_BASE_URL;
+  const week = c.req.query("week") ?? undefined;
+  const { brief, known_weeks } = deriveWeeklyBrief(await listCorpus(c.env), base, week);
+  if (!brief) {
+    /*
+     * A week we do not hold is a 404 naming the weeks we do (rule 52).
+     * An EMPTY chain is not an error — the room exists, the first
+     * Sunday round fills it — so it answers 200 with the empty state
+     * said plainly rather than a number we do not have.
+     */
+    const status = week ? 404 : 200;
+    const note = week
+      ? `The chain holds no signed week named ${week}.`
+      : "The chain holds no signed week yet; the first Sunday round writes the first brief.";
+    const body = {
+      artifact: "weekly_brief" as const,
+      name: "The Week's Doors" as const,
+      week: null,
+      ...(week ? { error: note } : { note }),
+      known_weeks,
+      corrections: CORRECTIONS_POINTER,
+    };
+    return html
+      ? c.html(
+          renderSimplePage({
+            title: "The Week's Doors",
+            description: "The weekly brief of the x402 corpus: doors named, probed, payable and not, defects by name, and the gaps counted against the observer. Not a ranking.",
+            path: "/corpus/brief",
+            markdownAlt: "/corpus/brief",
+            bodyHtml: `<section><p class="menu-desc">${escapeHtml(note)}${known_weeks.length ? ` Weeks held: ${known_weeks.map((w) => `<a href="/corpus/brief?week=${escapeHtml(w)}">${escapeHtml(w)}</a>`).join(", ")}.` : ""}</p></section>`,
+          }),
+          status,
+        )
+      : c.json(body, status);
+  }
+  if (html) {
+    return c.html(
+      renderSimplePage({
+        title: `The Week's Doors — ${brief.week}`,
+        description: `The x402 corpus for ${brief.week} in one page: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Not a ranking.`,
+        path: "/corpus/brief",
+        markdownAlt: "/corpus/brief",
+        bodyHtml: briefHtml(brief),
+      }),
+    );
+  }
+  return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER });
+}
+
+// One address, both dialects — a .json twin would be a seventh surface
+// to list, and the room contract already answers JSON here.
+corpusRoutes.get("/corpus/brief", (c) => serveBrief(c, wantsHtml(c.req.header("Accept"))));
 
 /**
  * GET /corpus/diff.json?since={week} — what changed between a named

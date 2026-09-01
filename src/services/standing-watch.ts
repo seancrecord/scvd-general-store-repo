@@ -746,7 +746,21 @@ export async function readWatch(
   if (!record) {
     return null;
   }
-  const now = Date.now();
+  return watchHistoryOf(record, Date.now(), env.STORE_BASE_URL);
+}
+
+/**
+ * The history as ARITHMETIC over a record — pure, so the free specimen
+ * (services/sample-artifacts) and the served page derive the same
+ * numbers from the same rows by the same function. Extracted
+ * 2026-09-01 for roadmap N3; nothing here changed.
+ */
+export function watchHistoryOf(
+  record: StandingWatchRecord,
+  now: number,
+  /** The store's own origin, for the Statement pointers a payTo change carries. */
+  base: string,
+): WatchHistory {
   const end = Math.min(now, Date.parse(record.ends_at));
   const hoursElapsed = Math.max(
     0,
@@ -774,7 +788,7 @@ export async function readWatch(
   latencies.sort((a, b) => a - b);
   const quantile = (q: number): number =>
     latencies[Math.min(latencies.length - 1, Math.floor(q * latencies.length))]!;
-  const paytoChanges = payToChanges(record.probes, env.STORE_BASE_URL);
+  const paytoChanges = payToChanges(record.probes, base);
   return {
     watch_id: record.watch_id,
     url: record.url,
