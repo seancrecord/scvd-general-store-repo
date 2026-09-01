@@ -851,6 +851,14 @@ arithmetic stands and the raw evidence stays committed, so anyone can
 redo the classification. The store makes no claim about ecosystem
 payment-failure rates until a repaired instrument has walked again.
 
+The week, on one page a stranger can quote: ${base}/corpus/brief is
+The Week's Doors — how many doors the feeds named, how many were
+knocked on, how many could be paid and how many could not, the
+defects by their registered names, and the gaps counted against us —
+read from the latest signed snapshot, with ?week= naming an earlier
+one. Counts with their denominators; never a ratio, never a rank,
+never a host named beside its verdict.
+
 The chain also reads as time, derived at read from the same signed
 snapshots. ${base}/corpus/trajectory.json serves one point per weekly
 snapshot — counts with their denominators, never a ratio, every point

@@ -401,12 +401,18 @@ const BASE = "https://scvd.store";
  * the guide carries "The Conformance Watch — seven days of signed
  * daily checks on your x402 endpoint" and still every earlier pin.
  *
+ * Re-taken 2026-09-01 — the EIGHTEENTH — by roadmap S1: the guide's
+ * corpus section names The Week's Doors (/corpus/brief), the weekly
+ * brief derived from the signed snapshot. Confirmed before this value
+ * was taken: the guide carries "/corpus/brief" and "never a host
+ * named beside its verdict", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "9724a4061ae1b2f35a142238d00ca1f01791fcc5ca435310e2857ca3200c1782";
+  "c70aa371064a887ead7bdc708757a988ce8f50ef7f2f938acc98fc7bd0fae2cb";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

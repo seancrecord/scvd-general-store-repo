@@ -97,6 +97,18 @@ export const ROOMS: readonly Room[] = [
   },
   { path: "/corpus", name: "The corpus", deeper: ["spot_check"] },
   /**
+   * THE WEEK'S DOORS (roadmap S1; the keeper's name, 2026-09-01). The
+   * one page a week a stranger can quote, derived from the signed
+   * snapshot and never a ranking. Its deeper rung is the week on
+   * YOUR door, because that is the question a reader of this page
+   * is left holding.
+   */
+  {
+    path: "/corpus/brief",
+    name: "The Week's Doors",
+    deeper: ["conformance_watch"],
+  },
+  /**
    * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
    * indexes snapshots and /corpus/host/{host}.json needs a hostname
    * you already know, so "which doors do you have?" — the first
