@@ -45,6 +45,14 @@ export interface McpToolAnnotations {
 
 export interface McpTool {
   name: string;
+  /**
+   * The spec's own display name (MCP 2025-06-18 promoted `title` to a
+   * top-level Tool field; `annotations.title` is the older spelling it
+   * supersedes). Filled at the `underContract` chokepoint FROM
+   * annotations.title, never typed twice — a display name that exists
+   * in two places is the scvd-tab 0.2.0/0.3.0 drift in miniature.
+   */
+  title?: string;
   description: string;
   inputSchema: Schema;
   outputSchema?: Schema;
@@ -1084,6 +1092,13 @@ function underContract(tool: McpTool, base: string): McpTool {
   const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
   return {
     ...tool,
+    /**
+     * The spec's top-level display name, lifted from the annotation
+     * that already carries it. Every tool defines annotations.title;
+     * the `??` is the guard for one that forgets rather than a second
+     * naming policy.
+     */
+    title: tool.title ?? tool.annotations?.title ?? tool.name,
     errors: MCP_REFUSAL_CODES.filter(
       (refusal) => paid || FREE_TOOL_CODES.has(refusal.code),
     ),
@@ -1107,6 +1122,39 @@ export function mcpToolCatalog(base: string): McpTool[] {
     frontCounterTool(base),
     ...SHELF_CLUSTERS.map((cluster) => clusterTool(cluster, base)),
   ].map((tool) => underContract(tool, base));
+}
+
+/**
+ * THE TOOL, WITH ONLY THE FIELDS THE PROTOCOL DEFINES.
+ *
+ * Added 2026-09-01, for the server card. This catalog carries a lot
+ * that MCP has no field for — the rule-57 error catalogue and security
+ * block, `reads`, the per-item listing specs, the shelf bookkeeping —
+ * and at /mcp those ride along harmlessly, because a client that does
+ * not know a key ignores it.
+ *
+ * A CARD IS NOT A TOOL LIST. Smithery types the card's `tools` from
+ * `@modelcontextprotocol/sdk/types.js` and reads it INSTEAD OF calling
+ * tools/list, so the card is the one place where an extra key is a
+ * reader's problem rather than its own. It is also the one place where
+ * size is not free: the full catalog serialises to 164 KB, 113 KB of
+ * which is fields no card reader has a use for.
+ *
+ * So the card gets the spec's Tool and nothing else. The whitelist is
+ * deliberate — a field added to McpTool tomorrow stays off the card
+ * until somebody names it here, which is the direction this should
+ * fail in.
+ */
+export function specShapedTool(tool: McpTool): Record<string, unknown> {
+  const shaped: Record<string, unknown> = {
+    name: tool.name,
+    description: tool.description,
+    inputSchema: tool.inputSchema,
+  };
+  if (tool.title !== undefined) shaped["title"] = tool.title;
+  if (tool.outputSchema !== undefined) shaped["outputSchema"] = tool.outputSchema;
+  if (tool.annotations !== undefined) shaped["annotations"] = tool.annotations;
+  return shaped;
 }
 
 /** Menu items no shelf sells. Must be empty; a test enforces it. */

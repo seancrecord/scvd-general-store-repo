@@ -13,6 +13,41 @@ export default defineConfig({
      * stated here rather than discovered again.
      */
     include: ["test/**/*.spec.ts"],
+    /**
+     * TIMEOUTS CHOSEN, RATHER THAN INHERITED (2026-09-01).
+     *
+     * CI went red on main at run 2350 with a hook timeout in
+     * test/queue-capacity.spec.ts — a file nothing had touched since
+     * 08-28, on a commit whose whole diff was a favicon. The run
+     * before it was green on the same test code, the file passes 13/13
+     * in isolation, and a local full-suite run on the same tree timed
+     * out somewhere else entirely (test/passport-decision.spec.ts).
+     * Two unrelated files, two machines, no assertion failure and no
+     * change to either: that is contention, not a defect, and the
+     * thing actually at fault is this config.
+     *
+     * Vitest's defaults are 5s per test and 10s per hook. Nobody chose
+     * them for THIS suite — 404 files and roughly 13 minutes, with
+     * imports dominating the wall clock and every file paying for a
+     * Worker isolate. Twenty spec files open with a beforeEach that
+     * lists a KV prefix and deletes through it; each is a handful of
+     * storage round-trips that cost a millisecond on an idle laptop
+     * and, on a loaded shared runner, do not. The defaults left them
+     * no headroom, so the suite failed a different random file per
+     * run and told the reader nothing true about the code.
+     *
+     * NOT A TEST SKIPPED, DISABLED OR LOOSENED. Every test still runs
+     * and every assertion still has to hold; only the patience does.
+     * 30s is roughly 20x the slowest legitimate test measured in
+     * isolation, which is headroom for a bad neighbour and still short
+     * enough that a genuine hang fails the job rather than holding it
+     * for the timeout of the whole run.
+     *
+     * If a test ever needs MORE than this, that is a finding about the
+     * test, and it belongs at that test's own call rather than here.
+     */
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
   resolve: {
     alias: {

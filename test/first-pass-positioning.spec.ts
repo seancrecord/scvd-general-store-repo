@@ -295,15 +295,32 @@ describe("the sideways surfaces carry the position too", () => {
   });
 
   it("the README carries the Smithery backlink its verification scan looks for", async () => {
-    // Smithery's ownership check scans the README for a link to the
-    // server page (the badge counts as one). Losing it would silently
-    // fail the next verification scan.
+    /*
+     * Smithery's ownership check scans the README for a link to the
+     * SERVER PAGE. That is the requirement, and it is what this
+     * asserts.
+     *
+     * THE BADGE WAS ALSO PINNED HERE UNTIL 2026-09-01, and dropping
+     * that assertion is a deliberate narrowing rather than a
+     * loosening. Smithery was acquired and its badge endpoint now
+     * serves a broken image, so the badge was removed from the top of
+     * the README on the keeper's call — a broken image is a worse
+     * advertisement than none. The backlink itself did not go
+     * anywhere: it lives in the directories section, in prose, where
+     * the same scan reads it.
+     *
+     * The risk this leaves, stated rather than buried: nobody here
+     * has read Smithery's scanner. If it turns out to key on the
+     * badge URL specifically rather than on any link to the server
+     * page, the next verification scan fails and this test will not
+     * have caught it. Restoring the badge line is the one-line
+     * revert. What is NOT acceptable is dropping the assertion
+     * below — the backlink is the claim, and a claim ships with the
+     * check that fails when it stops being true.
+     */
     const readme = (await import("../README.md?raw")).default;
     expect(readme).toContain(
       "https://smithery.ai/servers/seancrecord/scvd-general-store",
-    );
-    expect(readme).toContain(
-      "https://smithery.ai/badge/seancrecord/scvd-general-store",
     );
   });
 

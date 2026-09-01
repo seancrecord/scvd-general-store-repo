@@ -1086,7 +1086,15 @@ host as a single signed, EXPIRING object — latest verdict, observation
 history with its gaps counted, a freshness state you can act on
 mechanically (fresh / aging / expired / broken / indeterminate — refuse
 expired passports), and the signed per-host history it derives from.
-Free. Landing and the store's own self-passport (labeled self-observed)
+Free. READ \`payload.summary\` FIRST: it is the whole pre-pay answer in
+one block, inside the signature — \`decision\` (READY / NOT_READY /
+EXPIRED / INDETERMINATE, a total function of \`status\`, so it can never
+disagree with the freshness rule), \`observed_at\`, \`valid_until\`,
+\`evidence_age_days\`, the door's declared networks and USDC range,
+\`failed\`, and \`not_observed\` — what the cited modules declined to
+check, stated beside the verdict rather than left silent. A refusal
+answers \`decision: INDETERMINATE\` too, so an agent reading one field
+never has to special-case the status code. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
 refusal, not a row: names appear only on the ready side here. Every
 passport carries a free embeddable chip (\`${base}/badges/passport/{host}.svg\`)

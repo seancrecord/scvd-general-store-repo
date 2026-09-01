@@ -45,6 +45,28 @@ export interface Correction {
 
 export const CORRECTIONS: readonly Correction[] = [
   {
+    date: "2026-09-01",
+    what_was_wrong:
+      "The public bounty board listed five doors as open that had expired unclaimed on 2026-08-27. A bounty's stored status is written at two moments — 'open' at posting, 'paid' at claim — and nothing ever wrote 'expired', so the board and its JSON repeated the stored word while the claim door, which checks the clock, would have refused every one of them. A shopper who read /bounties on any of those five days, paid one of the doors with their own wallet and claimed, would have lost the door's price and been told the bounty had expired. The room and the JSON also carried no count, so nothing on the front could say whether there was anything to walk.",
+    how_long:
+      "Five days, 2026-08-27 through 2026-09-01, the whole span between the first board's expiry and its next read. No claim was attempted in that window, which is the only reason nobody was refused.",
+    found_by:
+      "A read of the live board during the keeper's own question about why the board was not being found — not by a test, because the listing had no test for a record aged past its expiry.",
+    what_changed:
+      "The board derives each bounty's status from its expiry at read time, through the same check the claim door applies, and publishes open_count beside the list. The storefront strip reads the same figure live and says how many doors are open and what is left of the week's budget, or says the board is between postings; it never prints a count from copy. test/bounty-board.spec.ts ages a record past its expiry in KV exactly as the live ones were and fails if any face — the JSON, the room, or the claim door — disagrees with the others. Reposting bounties weekly remains the keeper's press.",
+  },
+  {
+    date: "2026-09-01",
+    what_was_wrong:
+      "The $5 Once-Over cited preflight-v1 as its headline battery while the weekly census had applied preflight-v2 since 2026-08-24. Same GET, same bytes, different headline: a door with a dollar-typed amount (or any other v2-only fold) could buy a signed ready the same week the corpus called it not_ready. The paid report already computed the v2 score and hid it in also_under as DISAGREED — so the contradiction was visible inside the artifact and still published as ready on the face a buyer hands to a stranger. Same class as 0.14: the check existed; the flagship record did not consume it.",
+    how_long:
+      "From the Once-Over's listing through 2026-09-01. Every report signed before this date still cites preflight-v1 and keeps that citation forever; we do not resign old artifacts.",
+    found_by:
+      "The store's own roadmap, as N1 / leftover #82, after the census citation was corrected on 2026-08-26 and the paid headline was left on the loose battery.",
+    what_changed:
+      "AUDIT_CRITERIA_VERSION is now PREFLIGHT_BATTERY_NEXT, the same string the census cites. The paid headline and the sample headline are the v2 set; also_under carries the frozen v1 overlap. A dated note on /criteria records the instrument change. test/battery-inside-the-bytes.spec.ts fails the build if the two producers part again, and test/service-audit.spec.ts fails the paid door on a v1-only fixture (dollar-typed amount) so deleting the fold turns a signed ready green in a test that watched it happen.",
+  },
+  {
     date: "2026-08-31",
     what_was_wrong:
       "The skill bundle published to ClawHub — the copy that gets INSTALLED into somebody else's agent — priced `service_audit` at $0.10 when it has cost $5 the whole time that document has existed, and `trust_profile` at $19 after the keeper repriced it to $21. It also described the shelf as running '$0.005 to $50' when it runs $0.001 to $300, and its frontmatter advertised entry 'from $0.004' when the cheapest door is $0.001. Two failures with different shapes and the second is the worse one. The `service_audit` price was wrong in the bundle's FIRST COMMIT: nothing ever compared it to the shelf, so it was never right. The `trust_profile` price was correct when written and went stale two days later when the keeper's 2026-08-29 repricing reached the shelf, the room and the JSON, and not the bundle. A wrong price here fails silently in the worst direction: an agent budgets a tenth of what the 402 will ask, declines the purchase it meant to make, and concludes this store is unaffordable. We would never hear about it, and we cannot edit the copy already installed.",

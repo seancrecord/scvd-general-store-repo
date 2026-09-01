@@ -3,7 +3,7 @@ import { storeGuideText } from "@/routes/llms";
 import { renderMenuMarkdown } from "@/services/menu-markdown";
 import { buildFreshSet } from "@/services/fresh-set";
 import { MENU_ITEMS } from "@/store";
-import { PREFLIGHT_VERSION } from "@/services/preflight";
+import { PREFLIGHT_VERSION, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { whenToBuyMarkdown } from "@/lib/when-to-buy";
 import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
 import type { Env } from "@/types";
@@ -86,7 +86,7 @@ function definitions(): ResourceDefinition[] {
       name: "preflight_criteria",
       title: "The published conformance criteria",
       description:
-        `The named battery every free preflight and every paid audit runs against an x402 endpoint, version ${AUDIT_CRITERIA_VERSION} — each check, what it means, and what a failure does and does not prove. Published so a verdict can be re-derived by anyone rather than taken on trust.`,
+        `The named battery the paid Once-Over and the weekly census cite against an x402 endpoint, version ${AUDIT_CRITERIA_VERSION} — each check, what it means, and what a failure does and does not prove. The free door still serves both /api/preflight/${PREFLIGHT_VERSION} and /api/preflight/${PREFLIGHT_VERSION_NEXT}. Published so a verdict can be re-derived by anyone rather than taken on trust.`,
       mimeType: "text/markdown",
       read: (_env, base) => criteriaMarkdown(base),
     },
@@ -168,13 +168,14 @@ function criteriaMarkdown(base: string): string {
 
 Version \`${AUDIT_CRITERIA_VERSION}\`.
 
-Every check the free preflight runs, and every check a paid audit
-signs, comes from this battery and no other. It is published so that
-a verdict this store signs can be re-derived by anyone who disagrees
-with it.
+The paid Once-Over and the weekly census cite this battery and no
+other. The free door still serves the frozen v1 series beside it.
+It is published so that a verdict this store signs can be re-derived
+by anyone who disagrees with it.
 
-- The machine-readable criteria: ${base}/api/preflight/${PREFLIGHT_VERSION}
-- Run it free against any endpoint: \`POST ${base}/api/preflight/${PREFLIGHT_VERSION}\` with \`{"url": "..."}\`
+- The machine-readable criteria: ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}
+- Run it free against any endpoint: \`POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}\` with \`{"url": "..."}\`
+- The frozen v1 overlap: ${base}/api/preflight/${PREFLIGHT_VERSION}
 - What each artifact class is signed over: ${base}/attestation
 
 What a passing verdict does NOT claim: anything about the endpoint

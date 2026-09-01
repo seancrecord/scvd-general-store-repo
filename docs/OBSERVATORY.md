@@ -1588,9 +1588,11 @@ parallel eleven-pass audit produced three documents on branch
   A–M, with file pointers
 - `docs/EVIDENCE_ARCHITECTURE_V1.md` — NORMATIVE spec (DRAFT for
   keeper review)
-- `docs/OBSERVATORY_ROADMAP_2026-08.md` — agent-executable, Phase 0
-  safety → Phase 5 distribution, ledger IDs and acceptance criteria
-  per item, keeper gates marked ⚑
+- `ROADMAP.md` — living feature order (now / soon / later).
+  August phases 0–5 are archived at
+  `docs/archive/OBSERVATORY_ROADMAP_2026-08.md`.
+  `KEEPER_LIST.md` is the keeper's desk, not the build
+  order.
 
 The two efforts were independent and **converged hard**, which is the
 best available evidence that the architecture is right. Where they

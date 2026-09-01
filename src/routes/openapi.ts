@@ -3458,6 +3458,21 @@ const PASSPORT_DOC_SCHEMA: OpenApiObject = {
       description:
         "How old a passport may be before it stops meaning anything — the rule that keeps a stale reading from passing as current.",
     },
+    decision_rule: {
+      type: "string",
+      description:
+        "How the four-word agent decision derives from the freshness state. A total function of status, so the decision can never disagree with the freshness rule beside it.",
+    },
+    decision_meaning: {
+      type: "object",
+      description:
+        "Each decision word (READY / NOT_READY / EXPIRED / INDETERMINATE) and what it means for the caller, in plain words.",
+    },
+    read_first: {
+      type: "string",
+      description:
+        "Names the one field that answers the pre-pay question — payload.summary — so a client need not walk the whole object to decide.",
+    },
     the_example: { type: "object", description: "A worked passport." },
   },
 };

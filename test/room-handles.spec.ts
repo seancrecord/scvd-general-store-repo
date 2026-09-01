@@ -55,10 +55,21 @@ describe("every room hands an automation tool something to hold", () => {
       .filter((path) => path.startsWith("/"));
     expect(paths.length, "the sitemap should list rooms").toBeGreaterThan(20);
 
+    /*
+     * Fetched in parallel rather than one after another. The walk is
+     * loopback I/O over every room in the sitemap, so it grew with the
+     * store — 71 rooms by 2026-09-01 — and adding a room was enough to
+     * push a sequential version past the default timeout. That is a
+     * test that gets flakier the more the store ships, which is the
+     * wrong direction for a guard meant to catch the NEXT room. Not one
+     * assertion below changed.
+     */
+    const pages = await Promise.all(
+      paths.map(async (path) => ({ path, page: await html(path) })),
+    );
     const bare: string[] = [];
     let htmlRooms = 0;
-    for (const path of paths) {
-      const page = await html(path);
+    for (const { path, page } of pages) {
       if (!/<!doctype html|<html[\s>]/i.test(page)) continue;
       htmlRooms += 1;
       if (!/\sid="|\sdata-(?!cf-)[a-z-]+=/.test(mainTag(page))) bare.push(path);

@@ -8,11 +8,15 @@ the root directory reads as what the store IS rather than everything
 it has ever thought about.
 
 The living documents stay at the root (list trued up 2026-08-20,
-after the documentation audit): README (the store), HOUSE_RULES
+after the documentation audit; desk archived-and-restarted
+2026-09-01): README (the store), HOUSE_RULES
 (the constitution, with the drift watchlist appended), AGENTS (the
-coding-agent contract), KEEPER_LIST (the one desk file — successor
-to MONDAY and TASKS, both archived here with their dates; the old
-KEEPER_LIST was rewritten in place, git history holds it),
+coding-agent contract), KEEPER_LIST (the desk — successor to
+MONDAY and TASKS; the 2026-09-01 sheet is
+`KEEPER_LIST_2026-09-01.md` here, and the dump attic is
+`DESK_DUMP_2026-09-01.md`), the living feature roadmap at
+`ROADMAP.md` (the August phased sheet is
+`OBSERVATORY_ROADMAP_2026-08.md` here),
 PROBLEMS (the open ledger, its research annex archived here),
 SECURITY, NOTICE, CONTRIBUTING, CODE_OF_CONDUCT, AT_SCALE,
 PAYMENT_RAILS, REGISTRATION_RUN (the runbook every future rail

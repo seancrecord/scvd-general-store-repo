@@ -86,6 +86,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/site.webmanifest": "browsers find it via the link tag on every page head",
   "/.well-known/security.txt":
     "RFC 9116: the fixed path is the discovery mechanism — our own contact scout finds others' the same way",
+  "/.well-known/glama.json":
+    "an ownership challenge, not a capability: one directory's crawler fetches this fixed path to check we control the origin, and it answers only while GLAMA_CLAIM is set. No agent chooses to read a proof that we are us, and the six surfaces are where agents read — listing it would advertise a door with nothing behind it for the reader being advertised to",
 
   // ---- pending removal, tracked ----
   "/.well-known/x402list.txt":

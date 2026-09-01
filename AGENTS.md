@@ -6,8 +6,10 @@ agent performance, so this is the minimum that is actually load-bearing.
 Human-facing product docs live elsewhere (see `PROBLEMS.md`,
 `AT_SCALE.md`, and the historical record under `docs/archive/`).
 Before working, read `HOUSE_RULES.md` (the standing rules; rule 29
-requires this) and `KEEPER_LIST.md` (the keeper's one desk file —
-what is open, what is decided, what only he can rule on).
+requires this), `KEEPER_LIST.md` (his hands — directory entries,
+walks, presses, decisions), and
+`ROADMAP.md` (the feature order: now / soon / later). Two
+queues, one job each. Do not put a build on the desk.
 
 ## What this is
 

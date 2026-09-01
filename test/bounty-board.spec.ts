@@ -342,6 +342,58 @@ describe("the public board", () => {
     expect(typeof board.payouts_enabled).toBe("boolean");
   });
 
+  /**
+   * 2026-08-27 → 2026-09-01: five bounties past their expiry were
+   * listed as open on the public board while the claim door refused
+   * them as expired. The status a stranger reads has to come from the
+   * same clock that would refuse their claim — written red first,
+   * against a record aged past its expiry in KV exactly as the live
+   * ones were.
+   */
+  it("an unclaimed bounty past its expiry reads as expired on every face", async () => {
+    const bounty = await openTestBounty();
+    const stored = await testEnv.COUNTERS.get<Record<string, unknown>>(
+      KV_KEYS.bounty(bounty.bounty_id),
+      "json",
+    );
+    await testEnv.COUNTERS.put(
+      KV_KEYS.bounty(bounty.bounty_id),
+      JSON.stringify({ ...stored, expires_at: "2026-08-27T20:58:35.233Z" }),
+    );
+
+    // The derived reading, at both moments.
+    const before = await bountyBoard(testEnv, new Date("2026-08-26T00:00:00Z"));
+    expect(before.bounties[0]?.status).toBe("open");
+    expect(before.open_count).toBe(1);
+    const after = await bountyBoard(testEnv, new Date("2026-09-01T00:00:00Z"));
+    expect(after.bounties[0]?.status).toBe("expired");
+    expect(after.open_count).toBe(0);
+
+    // The JSON door and the room, read as a stranger would today.
+    const json = (await (await SELF.fetch(`${BASE}/api/bounties`)).json()) as {
+      bounties: Array<{ bounty_id: string; status: string }>;
+      open_count: number;
+    };
+    const row = json.bounties.find((b) => b.bounty_id === bounty.bounty_id);
+    expect(row?.status).toBe("expired");
+    expect(json.open_count).toBe(0);
+    const room = await (
+      await SELF.fetch(`${BASE}/bounties`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(room).toContain("Nothing posted right now");
+    expect(room).not.toContain(`<code>${bounty.bounty_id}</code>`);
+
+    // And the claim door agrees with the board, as it always did.
+    vi.stubGlobal("fetch", world());
+    await expect(
+      claimBounty(
+        testEnv,
+        { bountyId: bounty.bounty_id, txHash: TX, payer: SHOPPER, payoutTo: PAYOUT_TO },
+        await claimOptions(),
+      ),
+    ).rejects.toThrow(/expired/);
+  });
+
   it("a malformed claim is refused with the shape named", async () => {
     const response = await SELF.fetch(`${BASE}/api/bounty-claim`, {
       method: "POST",

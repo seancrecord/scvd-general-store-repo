@@ -25,20 +25,38 @@ const HTML = { Accept: "text/html" };
  * months later in a search console nobody opened.
  */
 describe("every room in the sitemap is a room", () => {
+  /*
+   * These three walk every human surface in the store — 71 of them by
+   * 2026-09-01 — and did it one fetch after another against the
+   * default 5s budget. That is a guard that gets flakier with every
+   * room the store ships, and it started tipping over under full-suite
+   * contention. Fetched in parallel now; not one assertion changed.
+   */
+  async function everyPage(): Promise<{ path: string; page: string }[]> {
+    return Promise.all(
+      HUMAN_SURFACES.map(async (path) => ({
+        path,
+        page: await (
+          await SELF.fetch(`${BASE}${path}`, { headers: HTML })
+        ).text(),
+      })),
+    );
+  }
+
   it("answers on every listed path", async () => {
-    for (const path of HUMAN_SURFACES) {
-      const response = await SELF.fetch(`${BASE}${path}`, { headers: HTML });
-      expect(response.status, `${path} is in the sitemap and does not answer`).toBe(
-        200,
-      );
+    const answers = await Promise.all(
+      HUMAN_SURFACES.map(async (path) => ({
+        path,
+        status: (await SELF.fetch(`${BASE}${path}`, { headers: HTML })).status,
+      })),
+    );
+    for (const { path, status } of answers) {
+      expect(status, `${path} is in the sitemap and does not answer`).toBe(200);
     }
   });
 
   it("says what it is, in a sentence something can quote", async () => {
-    for (const path of HUMAN_SURFACES) {
-      const page = await (
-        await SELF.fetch(`${BASE}${path}`, { headers: HTML })
-      ).text();
+    for (const { path, page } of await everyPage()) {
       const description = /<meta name="description" content="([^"]*)"/.exec(page);
       expect(description, `${path} has no meta description`).toBeTruthy();
       const said = description?.[1] ?? "";
@@ -53,10 +71,7 @@ describe("every room in the sitemap is a room", () => {
   });
 
   it("gives an answer engine a title and a card to work from", async () => {
-    for (const path of HUMAN_SURFACES) {
-      const page = await (
-        await SELF.fetch(`${BASE}${path}`, { headers: HTML })
-      ).text();
+    for (const { path, page } of await everyPage()) {
       expect(page, `${path} has no og:title`).toContain('property="og:title"');
       expect(page, `${path} has no og:description`).toContain(
         'property="og:description"',

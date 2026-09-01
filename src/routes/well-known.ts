@@ -1,4 +1,5 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { mcpToolCatalog, specShapedTool } from "@/lib/mcp-tools";
 import { apiCatalog, API_CATALOG_MEDIA_TYPE } from "@/lib/api-catalog";
 import {
   ARD_LINK_REL,
@@ -733,6 +734,23 @@ function mcpManifest(base: string) {
     // second copy (C2; the scvd-tab 0.2.0/0.3.0 lesson).
     version: MCP_SERVER_VERSION,
     /**
+     * THE SAME IDENTITY IN THE OTHER DRAFT'S SPELLING (2026-09-01).
+     *
+     * There are two live drafts of this document and they disagree
+     * about where the server's name and version go. SEP-2127 puts them
+     * flat, which is what this card has always done. SEP-1649 nests
+     * them under `serverInfo` and marks it REQUIRED — and SEP-1649 is
+     * the one Smithery's scanner reads. A card missing the field it
+     * calls required is a card that scans as half a server.
+     *
+     * Both spellings, one source: these are the same two constants the
+     * flat fields above use, so the card cannot say two things.
+     */
+    serverInfo: {
+      name: "scvd-general-store",
+      version: MCP_SERVER_VERSION,
+    },
+    /**
      * The card's face (scanner, 2026-08-28: name and description but
      * no icon — the anonymous grey square in a host's picker).
      * SEP-2127 lists icons as optional; the src is the favicon the
@@ -801,12 +819,43 @@ function mcpManifest(base: string) {
       resources: true,
       prompts: false,
     },
+    /**
+     * THE SHELVES THE CARD FORGOT TO MENTION (2026-09-01).
+     *
+     * This card listed six resources and declared `capabilities.tools:
+     * true` — and then named no tools. A reader that takes the card as
+     * the catalog, rather than as a pointer to one, therefore found a
+     * server with six resources and nothing to call. Smithery is such
+     * a reader: its scan log says "Using .well-known/mcp/server-
+     * card.json: (6 resources)" and it never calls tools/list at all.
+     *
+     * WHICH MAKES THE 08-30 PATH ALIAS THE CAUSE. Serving this object
+     * at /.well-known/mcp/server-card.json closed a 404 that read as
+     * absence — and handed a card with no tools in it to the one
+     * scanner that had been reading them off the live server. The
+     * store's capability score went 97 to 60 on a commit that touched
+     * no tool. A discovery surface that answers is worse than one that
+     * 404s if it answers with less than the server has.
+     *
+     * Generated from `mcpToolCatalog`, the same function /mcp serves
+     * tools/list from, so there is no second list to drift. Projected
+     * through `specShapedTool` — see the reasoning there for why the
+     * card, alone among the surfaces, gets spec fields and nothing
+     * else.
+     */
+    tools: mcpToolCatalog(base).map(specShapedTool),
     resources: mcpResourceCatalog().map((resource) => ({
       uri: resource.uri,
       name: resource.name,
       title: resource.title,
       mimeType: resource.mimeType,
     })),
+    /**
+     * Declared empty, not omitted: `capabilities.prompts` is false and
+     * prompts/list answers with an empty array, so the card says the
+     * same thing in the third place a reader might look.
+     */
+    prompts: [],
     documentation: `${base}/developers`,
     openapi: `${base}/openapi.json`,
   };
@@ -940,6 +989,47 @@ wellKnownRoutes.get("/.well-known/agent-instructions", (c) => {
     contract: `${base}/openapi.json`,
     documentation: `${base}/developers`,
     catalog: `${base}/menu.json`,
+  });
+});
+
+/**
+ * GET /.well-known/glama.json — the connector ownership claim.
+ *
+ * Glama carries this store twice: an auto-crawled entry under the
+ * REPOSITORY, and a connector page under the registry name
+ * store.scvd/general-store. The repo entry is claimed by the root
+ * glama.json naming a GitHub maintainer, which this store already
+ * ships. The CONNECTOR is claimed a different way — an HTTP challenge
+ * that wants Glama's own opaque token served as JSON from the
+ * connector's own origin, which is this worker.
+ *
+ * THE SHAPE IS THEIRS, READ OFF THEIR OWN INSTRUCTION rather than
+ * guessed: `$schema` naming the connector schema, and `claim` carrying
+ * the glama_claim_ token. The last time something here was written to
+ * a spec nobody had read against the reader that consumes it, the
+ * answer was a card that declared tools and named none, and it cost
+ * 37 points for two days. So: their field names, their token, and no
+ * invention beyond that.
+ *
+ * 404 WHEN UNSET, AND THAT IS THE FEATURE. An unclaimed store serves
+ * nothing here, exactly as before this route existed. A claim document
+ * carrying an empty or placeholder claim would be a document that
+ * fails its own check while looking like it passed — the same class of
+ * failure as a card that answers with less than the server has. The
+ * token arrives by `wrangler secret put GLAMA_CLAIM`; no redeploy of
+ * this file, and nothing to revert if the claim is ever withdrawn.
+ *
+ * NOT A SECOND SOURCE OF TRUTH ABOUT ANYTHING ELSE. It carries the
+ * claim and nothing more: no maintainer list, no tool count, no
+ * description. Those live where they already live, and a claim
+ * document is not the place to start a third copy of them.
+ */
+wellKnownRoutes.get("/.well-known/glama.json", (c) => {
+  const claim = c.env.GLAMA_CLAIM?.trim();
+  if (!claim) return c.notFound();
+  return c.json({
+    $schema: "https://glama.ai/mcp/schemas/connector.json",
+    claim,
   });
 });
 

@@ -175,6 +175,56 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page — this record only proves the listing exists.",
   },
   {
+    url: "https://agent-tools.cloud/services/scvd-store-bazaar",
+    registry: "agent-tools.cloud",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That agent-tools.cloud carries the store's Bazaar-registered service among the paid tools it indexes. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
+    url: "https://x402.fuchss.app/provider/scvd.store",
+    registry: "x402.fuchss.app (provider index)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That an independent x402 provider index carries this origin as a provider — keyed on the domain rather than on a submitted listing. Not an endorsement and not an audit: an index proves the door was found, nothing about what comes through it.",
+  },
+  {
+    /**
+     * AN INSTRUMENT, NOT A DIRECTORY, and the wording below is careful
+     * about the difference. Circle's readiness scanner fetches the
+     * origin's OpenAPI document and the live 402 and scores what it
+     * finds — how legible the interface is to a buying agent. It never
+     * buys anything, so it cannot speak to whether the goods are worth
+     * the money, which is the line every entry in this array holds.
+     *
+     * NO NUMBER IS QUOTED HERE ON PURPOSE. The score is re-taken on
+     * every scan and this file is not re-read on every scan; a figure
+     * written down here would be a claim that rots quietly, which is
+     * the failure /corrections exists to catch. The badge in the
+     * README renders the live value, which is the honest place for a
+     * number that moves.
+     */
+    url: "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+    registry: "Circle — Sell to Agents readiness score",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That Circle's readiness scanner reaches this origin, fetches its OpenAPI contract and its live 402, and scores how legible the paid interface is to a buying agent. Scored per endpoint with no summary page, so one door stands for the set — every paid door here is described by the same contract and answers the same challenge, which is the fact the reading actually turns on. An instrument reading, not a listing and not an audit: it measures the shape of the door — payment terms declared, inputs described, guidance present — and never buys anything, so it says nothing about the goods behind it.",
+  },
+  {
+    url: "https://www.getdrio.com/mcp/store-scvd-general-store",
+    registry: "Drio (getdrio.com)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That Drio's MCP index carries the server under its canonical name. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
+    url: "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+    registry: "ZBS Index (index.zbs.gg)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That the ZBS MCP index carries the server, under the same canonical name every other registry resolved it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
     url: "https://mcpservers.org/servers/scvd-store-llms-txt",
     registry: "mcpservers.org (llms.txt entry)",
     confirmed: "2026-08-04",
@@ -218,7 +268,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     registry: "x402-bazaar.com (Bazaar mirror)",
     confirmed: "2026-08-04",
     what_it_proves:
-      "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
+      "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. ONE URL STANDS FOR THE SET on purpose: the mirror pages every registered resource separately and has no summary page, and a row per endpoint would repeat a single fact fourteen times, which is the logo wall this array's docblock refuses. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
   },
   {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
@@ -297,16 +347,33 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     registry: "Smithery",
     confirmed: "2026-08-11",
     /**
-     * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
-     * its quality scan grades "Annotations 0/27" against a 27-tool
-     * catalog this store has not served since 2026-08-02 — the live
-     * catalog is 10 tools and every one has carried all four MCP
-     * behavior hints since, asserted through tools/list by
-     * test/mcp-tool-hardening.spec.ts. Stale readings refresh on the
-     * next scan and are not argued with.
+     * ITS READING WAS WRONG, AND THEN IT WAS OURS (2026-09-01).
+     *
+     * This record used to say the scan graded descriptions, parameter
+     * descriptions and output schemas at full marks, with a stale
+     * "Annotations 0/27" against a catalog retired on 2026-08-02. That
+     * was true when it was written and is not now, and the reason is
+     * ours rather than theirs.
+     *
+     * Smithery reads /.well-known/mcp/server-card.json INSTEAD OF
+     * calling tools/list. This store began serving the card at that
+     * path on 2026-08-30, closing a 404 that read as absence — and the
+     * card declared `capabilities.tools: true` while naming no tools.
+     * So the scan found six resources and nothing to call, and graded
+     * capability quality 0 of 40: not a judgement on the tools, a
+     * denominator. The card names all thirteen since; the reading
+     * refreshes on the next scan and is not argued with.
+     *
+     * WHY IT IS WRITTEN OUT RATHER THAN QUIETLY DROPPED. Every other
+     * entry here records a registry's wrong reading against the
+     * registry. This one records a wrong reading we caused, in the one
+     * document whose whole claim is that the gaps get counted against
+     * us too. See test/server-card-names-the-tools.spec.ts, which
+     * fails if the card ever again declares a capability it does not
+     * enumerate.
      */
     what_it_proves:
-      "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan (descriptions, parameter descriptions and output schemas at full marks). Not an endorsement and not an audit: a directory page proves indexing — and this one's annotations reading (0 of 27) describes the pre-2026-08-02 catalog rather than the 10 annotated tools the server has served since, so it lags until its next scan.",
+      "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan. Not an endorsement and not an audit: a directory page proves indexing — and this one's capability reading (0 of 40, descriptions 0 of 0) is a fault of ours, not a finding about the tools: its scanner reads our server card instead of calling tools/list, and from 2026-08-30 that card declared tools and named none. The card lists all thirteen since, so the reading lags until its next scan.",
   },
   {
     url: "https://mcp.so/servers/scvd-store",

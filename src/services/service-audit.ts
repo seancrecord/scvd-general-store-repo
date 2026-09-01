@@ -5,7 +5,7 @@ import { ProbeTargetRefused } from "@/lib/probe-target";
 import {
   PREFLIGHT_BATTERY,
   PREFLIGHT_BATTERY_NEXT,
-  PREFLIGHT_VERSION,
+  PREFLIGHT_VERSION_NEXT,
   probeOnce,
   runChecks,
 } from "@/services/preflight";
@@ -57,11 +57,22 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * report never made.
  */
 
-/** The criteria the audit runs — the preflight battery, versioned. */
-export const AUDIT_CRITERIA_VERSION = PREFLIGHT_BATTERY;
+/**
+ * The criteria the audit cites — the SAME battery the weekly census
+ * applies (PREFLIGHT_BATTERY_NEXT / preflight-v2). #82, 2026-09-01:
+ * the $5 headline used to cite v1 while the corpus cited v2, so a
+ * door the census called not_ready could buy a signed ready. Old
+ * reports keep the citation they were signed under.
+ */
+export const AUDIT_CRITERIA_VERSION = PREFLIGHT_BATTERY_NEXT;
+
+/** The day the paid headline moved to v2. Named so the criteria page and the correction derive one date. */
+export const AUDIT_BATTERY_CHANGED = "2026-09-01";
+
+export const AUDIT_BATTERY_CHANGE_NOTE = `${AUDIT_BATTERY_CHANGED}: the paid Once-Over cites ${AUDIT_CRITERIA_VERSION} as its headline battery, the same battery the weekly census has applied since 2026-08-24. Reports signed before this date cite preflight-v1 and keep that citation forever. The frozen v1 score still rides in also_under so the overlap is visible. We do not resign old artifacts.`;
 
 export function auditCriteriaNote(base: string): string {
-  return `${AUDIT_CRITERIA_VERSION}: the published check battery documented at ${base}/api/preflight/${PREFLIGHT_VERSION} (GET). The audit runs those checks and no others; the criteria page is the contract.`;
+  return `${AUDIT_CRITERIA_VERSION}: the published check battery documented at ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} (GET). The audit runs those checks and no others; the criteria page is the contract.`;
 }
 
 /**
@@ -89,17 +100,14 @@ export interface ServiceAuditObservation {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   /**
-   * THE SAME PROBE, SCORED UNDER THE CURRENT BATTERY (the instrument
-   * audit, 2026-08-28). The $5 artifact cited v1 honestly and
-   * carried nothing else — so a door with an unpayable payTo bought
-   * a signed "ready" here while the free /api/preflight/v2 called
-   * the same door not_ready in public, the 0.14 contradiction shape
-   * with the PAID artifact on the wrong side. One probe, both
-   * verdicts, beside each other in the signed bytes; they can never
-   * disagree about what was seen, only about what counts. Appended
-   * under the append-law: new audits only, a stored audit keeps its
-   * exact original preimage. Absent when the probe never completed
-   * (refused / unreachable — no battery ran).
+   * THE SAME PROBE, SCORED UNDER THE FROZEN BATTERY (v1). Since
+   * 2026-09-01 the headline cites v2 — the census battery — so a
+   * paid ready cannot quietly say less than the corpus. also_under
+   * is the overlap: what v1 would have printed, from the same
+   * observation. They can never disagree about what was seen, only
+   * about what counts. Append-law: new audits only. Absent when
+   * the probe never completed (refused / unreachable — no battery
+   * ran).
    */
   also_under?: {
     battery: string;
@@ -162,15 +170,13 @@ export async function performServiceAudit(
   try {
     const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
     const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, url);
-    checks = ran.checks;
     advisories = ran.advisories;
-    verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
     /*
      * The v2 score, from the free door's own recipe (preflightUrl):
      * fold the L3b trio and the rail read into the same observation.
-     * The rail read is best-effort exactly as it is everywhere else —
-     * a throw is our RPC trouble, never this door's defect, and the
-     * advisory says so.
+     * THAT is the headline now (#82). The rail read is best-effort
+     * exactly as it is everywhere else — a throw is our RPC trouble,
+     * never this door's defect, and the advisory says so.
      */
     const rail = ran.accepts
       ? await checkRailReceivable(env, ran.accepts).catch(() => ({
@@ -196,8 +202,9 @@ export async function performServiceAudit(
       }));
       advisories.push(...evm.advisories);
     }
+    const v1Checks = ran.checks;
     const v2Checks = [
-      ...checks,
+      ...ran.checks,
       ...(ran.l3b ?? []),
       ...(rail.check ? [rail.check] : []),
     ];
@@ -205,15 +212,20 @@ export async function performServiceAudit(
       ...(ran.l3b ? ["the L3b consistency trio"] : []),
       ...(rail.check ? ["solana-rail-receivable"] : []),
     ];
+    const v1Verdict = v1Checks.every((check) => check.ok)
+      ? ("ready" as const)
+      : ("not_ready" as const);
     const v2Verdict = v2Checks.every((check) => check.ok)
       ? ("ready" as const)
       : ("not_ready" as const);
+    checks = v2Checks;
+    verdict = v2Verdict;
     alsoUnder = {
-      battery: PREFLIGHT_BATTERY_NEXT,
-      verdict: v2Verdict,
+      battery: PREFLIGHT_BATTERY,
+      verdict: v1Verdict,
       difference:
         v2Extras.length > 0
-          ? `${PREFLIGHT_BATTERY_NEXT} folds ${v2Extras.join(" and ")} into the verdict; ${AUDIT_CRITERIA_VERSION} reports the same observations as advisories. On this probe the two batteries ${verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
+          ? `${AUDIT_CRITERIA_VERSION} folds ${v2Extras.join(" and ")} into the verdict; ${PREFLIGHT_BATTERY} reports the same observations as advisories. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
           : "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks.",
     };
   } catch (error) {

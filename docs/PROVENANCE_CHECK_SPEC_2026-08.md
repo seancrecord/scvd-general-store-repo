@@ -4,7 +4,7 @@
 about somebody else's address, FREE for an operator querying their
 own, with the consent offer in v1 (ruled 2026-08-29). Shelf copy is
 the last thing outstanding — the keeper's pen, M5. THREE DRAFTS NOW
-EXIST at docs/POST_ROADMAP_SWEEP_2026-08.md section B7 (name,
+EXIST at docs/archive/POST_ROADMAP_SWEEP_2026-08.md section B7 (name,
 description and 402 note, plus the shared factual constraints and one
 argument the keeper should have with all three). Nothing is wired;
 this item builds when he picks.** Ruling:
