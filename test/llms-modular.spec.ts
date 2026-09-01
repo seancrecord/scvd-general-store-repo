@@ -373,12 +373,21 @@ const BASE = "https://scvd.store";
  * and no longer carries "the frozen v1 verdict this series has
  * always cited".
  *
+ * Re-taken 2026-09-01 — the SIXTEENTH — by derivation. The standing
+ * watch learned to report the hour a door's payTo moved
+ * (summary.payto_changes), and the standing_watch shelf description
+ * gained one clause saying so ("Where the money goes is watched,
+ * though…"), flagged for the keeper's pen; the guide prints
+ * MENU_ITEMS lines, so it carried the clause in. Confirmed before
+ * this value was taken: the served guide carries that clause and
+ * does not carry the new /what answer, which lives on /what alone.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6994afc296ef0efad2c8ea7f49c6d22b58beb7d181d9dacfb26da29b4c36093a";
+  "413787c07e9587ba7dd930a5a519f77f2bda4e238525aaa12c5d0fcd9759f62f";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

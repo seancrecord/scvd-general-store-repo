@@ -1,3 +1,4 @@
+import { getRetiredItem } from "@/store/retired";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { CloserEntry } from "@/services/closers";
@@ -375,9 +376,22 @@ function sideCountersHtml(data: CounterPageData): string {
     failed.length === 0
       ? "<p>Nobody's asked for anything we don't have. Yet.</p>"
       : `<ul>${failed
-          .map(
-            ([item, count]) => `<li>${escapeHtml(item)}, asked ${count}x</li>`,
-          )
+          .map(([item, count]) => {
+            /*
+             * A RETIRED CHARGE, NOT A MISSING SHELF (2026-09-01). The
+             * jar sat here at 1196 for a month reading like demand for
+             * something never stocked; it was a shelf that closed
+             * before the tombstones existed. The count stays — it is
+             * what happened — and the row says whose it is, from the
+             * one register that already knows.
+             */
+            const retired = getRetiredItem(item);
+            return `<li>${escapeHtml(item)}, asked ${count}x${
+              retired
+                ? ` \u00B7 <em>retired ${escapeHtml(retired.retired_on)}; tombstoned, knocks no longer counted</em>`
+                : ""
+            }</li>`;
+          })
           .join("\n")}</ul>`;
   return `
     <details>
