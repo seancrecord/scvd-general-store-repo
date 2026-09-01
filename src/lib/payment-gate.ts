@@ -273,6 +273,21 @@ function payloadTemplate(
   };
 }
 
+/** The buyer's first thing to check, when the facilitator's words point at the wallet without saying so. */
+export function firstSuspect(
+  decline: DeclineReason,
+  priceUsdc: number | undefined,
+): string | undefined {
+  const text = `${decline.reason} ${decline.message ?? ""}`.toLowerCase();
+  if (text.includes("revert")) {
+    return `The facilitator's simulation of the transfer reverted before settling. Check first that the paying wallet holds at least $${priceUsdc ?? "the item's price"} USDC on the rail you signed for; a balance below the amount reverts exactly like this, and a signature that cleared a cheaper item here will still revert for a dearer one. If the balance is clearly sufficient, keep the accepts entry you signed and say so — that would be the contract or the facilitator, not you.`;
+  }
+  if (text.includes("insufficient") || text.includes("balance")) {
+    return `The wallet was short on the rail you signed for. This item is $${priceUsdc ?? "the price in the 402"} USDC; top up on that chain, or pay from a wallet that holds it, and retry with the idempotency key below.`;
+  }
+  return undefined;
+}
+
 async function enrich402Body(
   env: Env,
   path: string,
@@ -295,6 +310,18 @@ async function enrich402Body(
             reason: decline.reason,
             ...(decline.message ? { message: decline.message } : {}),
             note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+            /*
+             * THE FIRST SUSPECT, NAMED (2026-09-01). A verify-time revert
+             * arrives as invalid_payload with "execution reverted" and no
+             * balance word; a buyer whose same signing code had just
+             * cleared three cheaper items was left staring at a raw
+             * contract error. The commonest cause is the wallet's USDC
+             * balance on the rail it signed for being below this
+             * item's price, so the 402 says that first.
+             */
+            ...(firstSuspect(decline, item?.price_usdc)
+              ? { first_suspect: firstSuspect(decline, item?.price_usdc) }
+              : {}),
             // The one thing we can be precise about: our own matcher
             // refused before the facilitator was called, and we hold
             // both objects, so we can name the field.
