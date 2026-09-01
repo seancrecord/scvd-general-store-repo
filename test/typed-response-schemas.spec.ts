@@ -270,6 +270,39 @@ function matchesType(value: unknown, declared: string): boolean {
   }
 }
 
+/**
+ * FOLLOW A `$ref` BACK TO WHAT IT NAMES.
+ *
+ * The two buy envelopes moved into `components.schemas` on
+ * 2026-08-31: twenty-five instant shelves were each carrying an
+ * identical eleven-kilobyte copy of the delivery envelope, and the
+ * document had reached 1.48 MB — past the 1 MB cap the agent-side
+ * scanners fetch under, which made a correct contract an unread one.
+ *
+ * The assertions below still check the same properties on the same
+ * schemas. Resolving is what keeps them honest: a test that settled
+ * for "there is a $ref here" would pass on a reference pointing at
+ * nothing, and the whole point of these two envelopes is that a
+ * client can tell goods from a queue ticket.
+ */
+function deref(
+  doc: Record<string, any>,
+  node: Record<string, any> | undefined,
+): Record<string, any> | undefined {
+  if (!node) return node;
+  const ref = node["$ref"];
+  if (typeof ref !== "string") return node;
+  let current: any = doc;
+  for (const segment of ref.replace(/^#\//, "").split("/")) {
+    expect(
+      current && typeof current === "object" && segment in current,
+      `${ref} points at nothing: ${segment} is missing`,
+    ).toBe(true);
+    current = current[segment];
+  }
+  return current as Record<string, any>;
+}
+
 describe("the free instruments declare what they return", () => {
   it.each(PROBES)("$method $path declares more than 'an object'", async (probe) => {
     const schema = schemaFor(await document(), probe);
@@ -391,10 +424,12 @@ describe("every paid door declares its shape, not just the ones walked", () => {
     for (const [path, ops] of Object.entries(paths)) {
       if (!path.startsWith("/api/buy/")) continue;
       for (const [method, op] of Object.entries(ops as Record<string, any>)) {
-        const schema =
+        const schema = deref(
+          doc,
           op?.["responses"]?.["200"]?.["content"]?.["application/json"]?.[
             "schema"
-          ];
+          ],
+        );
         if (schema && !schema["properties"]) bare.push(`${method} ${path}`);
       }
     }
@@ -417,9 +452,12 @@ describe("every paid door declares its shape, not just the ones walked", () => {
       const op = paths[`/api/buy/${item.id}`]?.["get"];
       if (!op) continue;
       const properties =
-        op["responses"]?.["200"]?.["content"]?.["application/json"]?.["schema"]?.[
-          "properties"
-        ] ?? {};
+        deref(
+          doc,
+          op["responses"]?.["200"]?.["content"]?.["application/json"]?.[
+            "schema"
+          ],
+        )?.["properties"] ?? {};
       if (item.fulfillment === "instant") {
         expect("certificate" in properties, `${item.id} is instant`).toBe(true);
       } else {

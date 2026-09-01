@@ -39,6 +39,39 @@ function operations(
   return out;
 }
 
+/**
+ * FOLLOW A `$ref` BACK TO WHAT IT NAMES.
+ *
+ * The document moved its repeated pieces into `components` on
+ * 2026-08-31 — it was 1.48 MB and over the 1 MB cap every agent-side
+ * scanner fetches under, which made a correct contract an unreadable
+ * one. Nothing it says changed; four hundred copies of the problem
+ * object became one plus four hundred references.
+ *
+ * These assertions resolve rather than relax. A test that stopped at
+ * "there is a $ref here" would pass on a reference to a component
+ * that does not exist, which is the one new way this document can now
+ * be wrong.
+ */
+function resolve<T extends Record<string, unknown>>(
+  document: Record<string, unknown>,
+  node: T | undefined,
+): T {
+  expect(node, "nothing to resolve").toBeTruthy();
+  const ref = (node as Record<string, unknown>)["$ref"];
+  if (typeof ref !== "string") return node as T;
+  expect(ref.startsWith("#/"), `${ref} is not an internal reference`).toBe(true);
+  let current: unknown = document;
+  for (const segment of ref.slice(2).split("/")) {
+    expect(
+      current && typeof current === "object" && segment in current,
+      `${ref} points at nothing: ${segment} is missing`,
+    ).toBe(true);
+    current = (current as Record<string, unknown>)[segment];
+  }
+  return current as T;
+}
+
 describe("every operation is callable by name", () => {
   it("gives all of them an operationId — not most of them", async () => {
     const all = operations(await spec());
@@ -179,13 +212,24 @@ describe("every operation an LLM would call is typed, not described in prose", (
 
 describe("the error model, typed", () => {
   it("documents 4xx and 5xx as RFC 9457 problem objects", async () => {
-    const all = operations(await spec());
+    const document = await spec();
+    const all = operations(document);
     for (const entry of all) {
       const responses = entry.op["responses"] as Record<string, Operation>;
       for (const code of ["400", "404", "429", "500"]) {
-        expect(responses[code]).toBeTruthy();
+        expect(
+          responses[code],
+          `${entry.method} ${entry.path} has no ${code}`,
+        ).toBeTruthy();
+        // Resolving every one of them on every operation is what
+        // proves the componentised document still says four hundred
+        // times what it now writes down once.
+        resolve(document, responses[code]);
       }
-      const problem = responses["400"]?.["content"] as Record<string, unknown>;
+      const problem = resolve(document, responses["400"])["content"] as Record<
+        string,
+        unknown
+      >;
       expect(problem["application/problem+json"]).toBeTruthy();
     }
   });
@@ -200,9 +244,12 @@ describe("the error model, typed", () => {
     const document = await spec();
     const all = operations(document);
     const responses = all[0]?.op["responses"] as Record<string, Operation>;
-    const schema = responses["400"] as Operation;
+    const schema = resolve(document, responses["400"] as Operation);
     const content = schema["content"] as Record<string, Operation>;
-    const problem = (content["application/problem+json"] as Operation)["schema"] as {
+    const problem = resolve(
+      document,
+      (content["application/problem+json"] as Operation)["schema"] as Operation,
+    ) as {
       required: string[];
       properties: Record<string, unknown>;
     };
@@ -256,9 +303,10 @@ describe("the error model, typed", () => {
   });
 
   it("still documents the 429 that can arrive from the edge", async () => {
-    const all = operations(await spec());
+    const document = await spec();
+    const all = operations(document);
     const responses = all[0]?.op["responses"] as Record<string, Operation>;
-    const tooMany = responses["429"] as Operation;
+    const tooMany = resolve(document, responses["429"] as Operation);
     const headers = tooMany["headers"] as Record<string, unknown>;
     expect(headers["Retry-After"]).toBeTruthy();
   });
