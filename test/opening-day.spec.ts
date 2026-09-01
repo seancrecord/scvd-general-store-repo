@@ -133,7 +133,10 @@ describe("The Opening Day, delivered", () => {
       (async (input: RequestInfo | URL, init?: RequestInit) => {
         const url =
           typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-        if (url.startsWith(SHOP)) return seller(input as never, init as never);
+        // Parsed, not prefix-matched: CodeQL reads a bare startsWith on
+        // an origin as an incomplete URL check, and it is right that
+        // "https://opening.example.evil" would pass it.
+        if (new URL(url).host === new URL(SHOP).host) return seller(input as never, init as never);
         if (String(init?.body ?? "").includes("0xdf592f7d")) {
           return new Response(JSON.stringify({ result: `0x${"0".repeat(64)}` }), {
             status: 200,
