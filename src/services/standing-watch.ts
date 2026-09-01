@@ -690,7 +690,19 @@ export async function readWatch(
   if (!record) {
     return null;
   }
-  const now = Date.now();
+  return watchHistoryOf(record, Date.now());
+}
+
+/**
+ * The history as ARITHMETIC over a record — pure, so the free specimen
+ * (services/sample-artifacts) and the served page derive the same
+ * numbers from the same rows by the same function. Extracted
+ * 2026-09-01 for roadmap N3; nothing here changed.
+ */
+export function watchHistoryOf(
+  record: StandingWatchRecord,
+  now: number,
+): WatchHistory {
   const end = Math.min(now, Date.parse(record.ends_at));
   const hoursElapsed = Math.max(
     0,

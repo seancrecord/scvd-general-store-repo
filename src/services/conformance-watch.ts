@@ -296,7 +296,14 @@ export async function readConformanceWatch(
   if (!record) {
     return null;
   }
-  const now = Date.now();
+  return conformanceWatchHistoryOf(record, Date.now());
+}
+
+/** Pure over the record, for the same reason as watchHistoryOf. */
+export function conformanceWatchHistoryOf(
+  record: ConformanceWatchRecord,
+  now: number,
+): ConformanceWatchHistory {
   const end = Math.min(now, Date.parse(record.ends_at));
   const daysElapsed = Math.max(
     0,

@@ -30,6 +30,8 @@ import {
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
 import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
+import { TRUST_MODELS, artifactClassForItem, type ArtifactClass } from "@/store/attestation-spec";
+import { sampleForItem, type SampleEnvelope } from "@/services/sample-artifacts";
 import { getRetiredItem } from "@/store/retired";
 
 /**
@@ -124,6 +126,18 @@ catalogRoutes.get("/menu.json", async (c) => {
       buy_url: `${base}/api/buy/${item.id}`,
       ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
       ...(item.subtitle ? { subtitle: item.subtitle } : {}),
+      /*
+       * ROADMAP N3 (2026-09-01): the class this item mints and what
+       * its signature does not prove, in the class's exact words —
+       * the same words the item page prints (test/item-limits.spec.ts).
+       */
+      ...(artifactClassForItem(item.id)
+        ? {
+            attestation_class: artifactClassForItem(item.id)!.id,
+            signs: artifactClassForItem(item.id)!.signs,
+            does_not_prove: artifactClassForItem(item.id)!.does_not_prove,
+          }
+        : {}),
       price_tiers_usdc: priceTiersUsdc(item),
       /*
        * ADDED 2026-08-30. The catalogue named a buy_url and no way to
@@ -375,6 +389,10 @@ function renderItemPage(
   item: MenuItem,
   base: string,
   state: FulfillmentState,
+  /* Roadmap N3: the class the item mints and its free specimen, both
+   * derived — the page prints them in the JSON's exact words. */
+  artifactClass: ArtifactClass | undefined,
+  specimen: SampleEnvelope<unknown> | undefined,
 ): string {
   const required = (buyInputSchema(item).required ?? []).filter(
     (name) => name !== "agent_name",
@@ -457,6 +475,27 @@ function renderItemPage(
         ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
         <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
       </section>
+      ${
+        artifactClass
+          ? `<section>
+        <h2>What the signature covers, and what it does not prove</h2>
+        <p class="menu-desc"><strong>Signs:</strong> ${escapeHtml(artifactClass.signs)}</p>
+        <p class="menu-desc"><strong>Does not prove:</strong> ${escapeHtml(artifactClass.does_not_prove)}</p>
+        <p class="menu-meta">Artifact class <code>${escapeHtml(artifactClass.id)}</code>, ${escapeHtml(TRUST_MODELS[artifactClass.trust_model].name.toLowerCase())}; the whole vocabulary is at <a href="/attestation">/attestation</a>.</p>
+      </section>`
+          : ""
+      }
+      ${
+        specimen
+          ? `<section>
+        <h2>The specimen</h2>
+        <p class="menu-desc">${escapeHtml(specimen.what_this_is)}</p>
+        <p class="menu-meta">${escapeHtml(specimen.not_signed)}</p>
+        <details><summary>Every field, as the JSON at <code>${escapeHtml(item.sample_url ?? "")}</code> serves it</summary>
+        <pre class="menu-desc" data-specimen="${escapeHtml(item.id)}"><code>${escapeHtml(JSON.stringify(specimen, null, 2))}</code></pre></details>
+      </section>`
+          : ""
+      }
       <section>
         <h2>What the 402 says</h2>
         <p class="menu-desc">${escapeHtml(item.note_402)}</p>
@@ -554,7 +593,13 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     c.header("Link", canonical.Link);
     // P8: the page carries /webmcp.js, so the P7 script fence rides too.
     c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
-    return c.html(renderItemPage(item, base, state));
+    const listing = sampleForItem(item.id);
+    const specimen = listing
+      ? await Promise.resolve(listing.build(c.env, item.price_usdc)).catch(() => undefined)
+      : undefined;
+    return c.html(
+      renderItemPage(item, base, state, artifactClassForItem(item.id), specimen),
+    );
   }
 
   c.header("Link", canonical.Link);

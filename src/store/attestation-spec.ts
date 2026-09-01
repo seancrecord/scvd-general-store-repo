@@ -317,6 +317,25 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
  * the same defect class as a stale capability claim, and this page is
  * the last place that should carry one.
  */
+/**
+ * WHICH CLASS A SHELF ITEM MINTS (roadmap N3, 2026-09-01). Most items
+ * mint the class of their own id; the two watches mint one signed row
+ * per probe or pass, and the class is the row. An item with no class
+ * here mints only its certificate, which is the `certificate` class.
+ * The item page and menu.json print the class's `does_not_prove`
+ * beside the price, in the class's exact words — the family guard in
+ * test/item-limits.spec.ts holds the two dialects to the same text.
+ */
+const ITEM_CLASS_ALIASES: Readonly<Record<string, string>> = {
+  standing_watch: "standing_watch_probe",
+  conformance_watch: "conformance_watch_pass",
+};
+
+export function artifactClassForItem(itemId: string): ArtifactClass | undefined {
+  const classId = ITEM_CLASS_ALIASES[itemId] ?? itemId;
+  return ARTIFACT_CLASSES.find((entry) => entry.id === classId);
+}
+
 export const NOT_BUILT: readonly string[] = [
   "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten, and do nothing for the shelf.)",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",

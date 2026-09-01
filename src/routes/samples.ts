@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { priceLine } from "@/services/menu-markdown";
-import { sampleOnceOver } from "@/services/sample-artifacts";
+import { SAMPLES, sampleOnceOver } from "@/services/sample-artifacts";
 import { getMenuItem } from "@/store/menu";
 import type { HonoEnv } from "@/types";
 
@@ -61,6 +61,15 @@ function pageHtml(base: string, artifact: Awaited<ReturnType<typeof sampleOnceOv
       <p class="menu-desc">${escapeHtml(artifact.not_about_anyone)}</p>
     </section>
     <section>
+      <h2>The other specimens</h2>
+      <p class="menu-desc">One per flagship item, built the same way — unsigned, against a door that cannot exist, showing the instrument finding something. Each item's own page prints its specimen in full beside the price: ${SAMPLES.filter((entry) => entry.slug !== "once-over")
+        .map(
+          (entry) =>
+            `<a href="/menu/${escapeHtml(entry.item)}">${escapeHtml(getMenuItem(entry.item)?.name ?? entry.item)}</a> (<a href="/samples/${escapeHtml(entry.slug)}.json"><code>/samples/${escapeHtml(entry.slug)}.json</code></a>)`,
+        )
+        .join(" · ")}.</p>
+    </section>
+    <section>
       <h2>Buying the real one</h2>
       <p class="menu-desc"><strong>${escapeHtml(item?.name ?? "The Once-Over")}</strong> &mdash; ${escapeHtml(item ? priceLine(item) : "$5 fixed")}. Same battery, your endpoint, signed and dated, verifiable offline forever at <code>/api/verify/{id}</code>: <a href="/menu/service_audit">what it is</a>, or <code>GET ${base}/api/buy/service_audit?url=&hellip;</code> over x402.</p>
       <p class="menu-desc"><strong>Or check your own door for nothing first.</strong> The same battery runs free at <a href="/conformance">/conformance</a> and at <a href="/api/preflight/v1"><code>/api/preflight/v1</code></a>. What the $5 adds is the signature, the date and the artifact &mdash; not the checking. If the free run tells you what you needed, that is the honest outcome and you owe us nothing.</p>
@@ -68,8 +77,26 @@ function pageHtml(base: string, artifact: Awaited<ReturnType<typeof sampleOnceOv
     </section>`;
 }
 
-samplesRoutes.get("/samples/once-over.json", async (c) => {
-  return c.json(await sampleOnceOver(c.env, onceOverPrice()));
+/**
+ * EVERY SPECIMEN, ONE ROUTE (roadmap N3, 2026-09-01). The registry in
+ * services/sample-artifacts names the slug, the item and the builder;
+ * the price is read off the shelf at request time so a repriced item
+ * never serves a stale "price of the real thing".
+ */
+samplesRoutes.get("/samples/:slug{[a-z-]+\\.json}", async (c) => {
+  const slug = c.req.param("slug").replace(/\.json$/, "");
+  const listing = SAMPLES.find((entry) => entry.slug === slug);
+  if (!listing) {
+    return c.json(
+      {
+        error: "No specimen by that name.",
+        samples: SAMPLES.map((entry) => `${c.env.STORE_BASE_URL}/samples/${entry.slug}.json`),
+      },
+      404,
+    );
+  }
+  const price = getMenuItem(listing.item)?.price_usdc ?? PRICE_FALLBACK;
+  return c.json(await listing.build(c.env, price));
 });
 
 samplesRoutes.get("/samples", async (c) => {
@@ -88,7 +115,8 @@ samplesRoutes.get("/samples", async (c) => {
   }
   return c.json({
     what_this_is: artifact.what_this_is,
-    samples: [`${base}/samples/once-over.json`],
+    samples: SAMPLES.map((entry) => `${base}/samples/${entry.slug}.json`),
+    of_items: Object.fromEntries(SAMPLES.map((entry) => [entry.item, `${base}/samples/${entry.slug}.json`])),
     free: "Yes. Nothing on this surface is charged for, now or later.",
     the_real_thing: `${base}/api/buy/service_audit`,
     check_your_own_door_free: `${base}/api/preflight/v1`,

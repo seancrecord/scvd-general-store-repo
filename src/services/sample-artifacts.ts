@@ -195,3 +195,299 @@ export async function sampleOnceOver(
     },
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* ROADMAP N3 (2026-09-01): the other flagship specimens.               */
+/*                                                                      */
+/* Same law as the Once-Over above: constructed against a door that     */
+/* cannot exist, produced by the SAME arithmetic the paid artifact      */
+/* runs (the watches' pure history builders; the attestation's own      */
+/* classifier over a constructed receipt), unsigned, evidence_hash      */
+/* withheld, and marked SPECIMEN in the body. A specimen that shows a   */
+/* column of ticks teaches nothing, so each one is built to show the   */
+/* instrument finding something — and the gaps counted against us.     */
+/* ------------------------------------------------------------------ */
+
+import {
+  conformanceWatchHistoryOf,
+  type ConformancePass,
+  type ConformanceWatchHistory,
+} from "@/services/conformance-watch";
+import {
+  watchHistoryOf,
+  type StandingWatchRecord,
+  type WatchHistory,
+  type WatchProbe,
+} from "@/services/standing-watch";
+import { observeWithFacts, type SignedAttestation } from "@/services/attestation";
+import { LAUNCH_CHECK_UA, type LaunchCheckObservation } from "@/services/launch-check";
+import { BASE_EVM, TRANSFER_TOPIC } from "@/lib/base-rpc";
+
+export type SampleSlug =
+  | "once-over"
+  | "conformance-watch"
+  | "night-watch"
+  | "launch-check"
+  | "settlement-attestation";
+
+export interface SampleEnvelope<T> {
+  specimen: true;
+  mark: string;
+  what_this_is: string;
+  not_signed: string;
+  not_about_anyone: string;
+  of_item: string;
+  price_of_the_real_thing: string;
+  buy_url: string;
+  sample: T;
+}
+
+const SAMPLE_WEEK_START = "2026-08-22T00:00:00.000Z";
+const SAMPLE_WEEK_END = "2026-08-29T00:00:00.000Z";
+/** Read one hour after the week ended, so `complete` is true. */
+const SAMPLE_READ_AT = Date.parse("2026-08-29T01:00:00.000Z");
+
+const NOT_SIGNED_ROWS =
+  "This sample is NOT signed and will NOT verify. On the real artifact every row carries its own ed25519 signature and the public key that checks it; here the rows carry neither, and no row here answers anywhere. If you are ever handed one of these as evidence about anybody, the missing signatures are your answer.";
+
+function envelope<T>(
+  env: Env,
+  itemId: string,
+  price: number,
+  whatThisIs: string,
+  notSigned: string,
+  sample: T,
+): SampleEnvelope<T> {
+  return {
+    specimen: true,
+    mark: SAMPLE_MARK,
+    what_this_is: whatThisIs,
+    not_signed: notSigned,
+    not_about_anyone: NOT_ABOUT_ANYONE,
+    of_item: itemId,
+    price_of_the_real_thing: `$${price}`,
+    buy_url: `${env.STORE_BASE_URL}/api/buy/${itemId}`,
+    sample,
+  };
+}
+
+type UnsignedPass = Omit<ConformancePass, "signature" | "public_key">;
+type UnsignedProbe = Omit<WatchProbe, "signature" | "public_key">;
+
+/** The rows are unsigned by construction; the history builder does not read the signature fields. */
+function unsignedRows<T>(rows: T[]): never[] {
+  return rows as unknown as never[];
+}
+
+export function sampleConformanceWatch(
+  env: Env,
+  price: number,
+): SampleEnvelope<ConformanceWatchHistory> {
+  const day = (n: number): string =>
+    new Date(Date.parse(SAMPLE_WEEK_START) + n * 24 * 3600_000 + 7 * 3600_000).toISOString();
+  const passes: UnsignedPass[] = [
+    { at: day(0), verdict: "ready", status: 402, failed: [], advisories: [], battery: "v1" },
+    { at: day(1), verdict: "ready", status: 402, failed: [], advisories: [], battery: "v1" },
+    { at: day(2), verdict: "ready", status: 402, failed: [], advisories: [], battery: "v1" },
+    // Tuesday's deploy: the accepts amount became a decimal — the exact
+    // defect the watch exists to catch mid-week.
+    { at: day(3), verdict: "not_ready", status: 402, failed: ["amount-atomic-units"], advisories: [], battery: "v1" },
+    // Day 4 is missing on purpose: our missed pass, counted against us.
+    { at: day(5), verdict: "not_ready", status: 402, failed: ["amount-atomic-units"], advisories: [], battery: "v1" },
+    { at: day(6), verdict: "ready", status: 402, failed: [], advisories: ["signed-offer-absent"], battery: "v1" },
+  ];
+  const history = conformanceWatchHistoryOf(
+    {
+      watch_id: "cwatch_specimen_not_a_real_watch",
+      url: SAMPLE_SUBJECT_URL,
+      started_at: SAMPLE_WEEK_START,
+      ends_at: SAMPLE_WEEK_END,
+      passes: unsignedRows(passes),
+    },
+    SAMPLE_READ_AT,
+  );
+  return envelope(
+    env,
+    "conformance_watch",
+    price,
+    "A free, unsigned sample of the Conformance Watch — seven days of signed daily checks on one x402 endpoint. Every field below is the field a buyer gets, derived by the same arithmetic the served history runs, over a constructed week in which a deploy broke the door on day four and the store itself missed day five.",
+    NOT_SIGNED_ROWS,
+    history,
+  );
+}
+
+export function sampleNightWatch(env: Env, price: number): SampleEnvelope<WatchHistory> {
+  const probes: UnsignedProbe[] = [];
+  const start = Date.parse(SAMPLE_WEEK_START);
+  for (let hour = 0; hour < 168; hour += 1) {
+    // Hours 40–43: nothing probed at all — the store's own missed
+    // rounds, derived at read and counted against the watcher.
+    if (hour >= 40 && hour <= 43) continue;
+    const at = new Date(start + hour * 3600_000).toISOString();
+    // Hours 100–102: the door did not answer.
+    if (hour >= 100 && hour <= 102) {
+      probes.push({ at, verdict: "unreachable", failed: [], battery: "v1" });
+      continue;
+    }
+    // Hour 120: the door answered, but its challenge no longer parsed.
+    if (hour === 120) {
+      probes.push({ at, verdict: "not_ready", status: 402, latency_ms: 412, failed: ["challenge-parses"], battery: "v1" });
+      continue;
+    }
+    // Hour 64: a burst — the tick's three probes disagreed.
+    if (hour === 64) {
+      probes.push({
+        at,
+        verdict: "ready",
+        status: 402,
+        latency_ms: 233,
+        failed: [],
+        battery: "v1",
+        burst: [
+          { at, verdict: "ready", status: 402, latency_ms: 233 },
+          { at: new Date(start + hour * 3600_000 + 4000).toISOString(), verdict: "unreachable" },
+          { at: new Date(start + hour * 3600_000 + 8000).toISOString(), verdict: "ready", status: 402, latency_ms: 251 },
+        ] as unknown as WatchProbe["burst"],
+        burst_agreed: false,
+      });
+      continue;
+    }
+    probes.push({ at, verdict: "ready", status: 402, latency_ms: 180 + ((hour * 37) % 90), failed: [], battery: "v1" });
+  }
+  const record: StandingWatchRecord = {
+    watch_id: "watch_specimen_not_a_real_watch",
+    url: SAMPLE_SUBJECT_URL,
+    started_at: SAMPLE_WEEK_START,
+    ends_at: SAMPLE_WEEK_END,
+    probes: unsignedRows(probes),
+  };
+  const history = watchHistoryOf(record, SAMPLE_READ_AT);
+  return envelope(
+    env,
+    "standing_watch",
+    price,
+    "A free, unsigned sample of the Night Watch — seven days of signed hourly probes on one x402 endpoint. Every field below is the field a buyer gets, derived by the same arithmetic the served history runs, over a constructed week with four hours nobody probed, three hours the door did not answer, one hour its challenge stopped parsing, and one burst whose three probes disagreed.",
+    NOT_SIGNED_ROWS,
+    history,
+  );
+}
+
+const SAMPLE_TX_HASH = `0x${"0".repeat(60)}beef`;
+const SAMPLE_PAYER = "0x00000000000000000000000000000000000000fe";
+const SAMPLE_PAY_TO = "0x00000000000000000000000000000000000000ff";
+
+export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<LaunchCheckObservation> {
+  const walk: LaunchCheckObservation = {
+    check_id: "lcheck_specimen_not_a_real_check",
+    url: SAMPLE_SUBJECT_URL,
+    observed_at: SAMPLE_OBSERVED_AT,
+    ua_sent: LAUNCH_CHECK_UA,
+    verdict: "settled",
+    stages: [
+      { stage: "approach", ok: true, detail: "One unpaid GET with the declared User-Agent; the door answered 402 in 188 ms." },
+      { stage: "challenge", ok: true, detail: "PAYMENT-REQUIRED parsed: x402 v2, one accepts entry, exact scheme on eip155:8453." },
+      { stage: "terms", ok: true, detail: "Cheapest rail Base USDC at $0.005; under the field spend cap; assetTransferMethod absent, read as eip3009." },
+      { stage: "screen", ok: true, detail: "payTo screened against the on-chain sanctions oracle: not listed." },
+      { stage: "payment", ok: true, detail: "EIP-3009 authorization signed by the field wallet and presented in the PAYMENT-SIGNATURE header." },
+      { stage: "settle", ok: true, detail: "The till answered 200 with a PAYMENT-RESPONSE naming a settlement transaction." },
+      { stage: "delivery", ok: true, detail: "A JSON body arrived with the goods; the same payment presented again was refused, so nothing reached the seller twice." },
+    ],
+    paid_usd: 0.005,
+    pay_to: SAMPLE_PAY_TO,
+    tx_hash: SAMPLE_TX_HASH,
+    tx_hash_status: "confirmed_on_chain",
+    tx_verification: {
+      read: "receipt",
+      chain: BASE_EVM.caip2,
+      chain_status: "0x1",
+      block_height: 34_000_000,
+      confirmations: 12,
+      observed_payer: SAMPLE_PAYER,
+      observed_recipient: SAMPLE_PAY_TO,
+      observed_amount_usdc: 0.005,
+      read_at: SAMPLE_OBSERVED_AT,
+      detail: "Constructed for the specimen: on a real walk this is the store's own read of the chain, and the chain's copy is nobody's to edit.",
+    },
+    field_wallet: SAMPLE_PAYER,
+  } as LaunchCheckObservation;
+  return envelope(
+    env,
+    "launch_check",
+    price,
+    "A free, unsigned sample of the Launch Check — one real purchase attempt at one x402 endpoint, from the store's declared field wallet, recorded stage by stage. Every field below is the field a buyer gets; this walk is constructed to show a door that settles cleanly, so the seven stages read in order.",
+    NOT_SIGNED,
+    walk,
+  );
+}
+
+type UnsignedAttestation = Omit<
+  SignedAttestation,
+  "signature" | "public_key" | "signature_covers" | "signature_jcs" | "signature_jcs_covers" | "evidence_hash"
+>;
+
+export async function sampleSettlementAttestation(
+  env: Env,
+  price: number,
+): Promise<SampleEnvelope<UnsignedAttestation>> {
+  const pad = (address: string): string => `0x${address.slice(2).padStart(64, "0")}`;
+  const amount = 5_000n; // $0.005 in USDC atomic units
+  const receipt = {
+    status: "0x1",
+    blockNumber: `0x${(34_000_000).toString(16)}`,
+    logs: [
+      {
+        address: BASE_EVM.usdc,
+        topics: [TRANSFER_TOPIC, pad(SAMPLE_PAYER), pad(SAMPLE_PAY_TO)],
+        data: `0x${amount.toString(16).padStart(64, "0")}`,
+      },
+    ],
+  };
+  const signed = await observeWithFacts(
+    env,
+    { txHash: SAMPLE_TX_HASH },
+    receipt,
+    34_000_012,
+    BASE_EVM,
+    {},
+    new Date(SAMPLE_OBSERVED_AT),
+  );
+  // Everything the classifier and the readings produced stays; the
+  // signature material and the evidence hash go, because a specimen
+  // must never look checkable.
+  const {
+    signature: _s,
+    public_key: _k,
+    signature_covers: _c,
+    signature_jcs: _j,
+    signature_jcs_covers: _jc,
+    evidence_hash: _e,
+    ...unsigned
+  } = signed;
+  return envelope(
+    env,
+    "settlement_attestation",
+    price,
+    "A free, unsigned sample of the Settlement Attestation — one signed observation of whether an x402 payment settled on chain. Every field below is the field a buyer gets, produced by the same classifier the paid artifact runs, over a constructed receipt that carries one USDC transfer, so the reading says SETTLED and names what that does and does not mean.",
+    NOT_SIGNED.replace("Once-Over", "Settlement Attestation"),
+    unsigned,
+  );
+}
+
+export interface SampleListing {
+  slug: SampleSlug;
+  item: string;
+  build: (env: Env, price: number) => Promise<SampleEnvelope<unknown>> | SampleEnvelope<unknown>;
+}
+
+/** Every specimen, once — the routes, the index and the item pages read this. */
+export const SAMPLES: readonly SampleListing[] = [
+  { slug: "once-over", item: "service_audit", build: (env, price) => sampleOnceOver(env, price) },
+  { slug: "conformance-watch", item: "conformance_watch", build: (env, price) => sampleConformanceWatch(env, price) },
+  { slug: "night-watch", item: "standing_watch", build: (env, price) => sampleNightWatch(env, price) },
+  { slug: "launch-check", item: "launch_check", build: (env, price) => sampleLaunchCheck(env, price) },
+  { slug: "settlement-attestation", item: "settlement_attestation", build: (env, price) => sampleSettlementAttestation(env, price) },
+];
+
+export function sampleForItem(itemId: string): SampleListing | undefined {
+  return SAMPLES.find((entry) => entry.item === itemId);
+}
