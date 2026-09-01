@@ -237,6 +237,14 @@ export const STOREFRONT_COPY = {
         `${entry.when}: ${entry.what} at <a href="${entry.path}">${entry.path}</a>.`,
     ).join(" ") +
     ' What every signature proves, and what it doesn\u2019t, is at <a href="/attestation">/attestation</a>.',
+  /**
+   * THE PASSPORT DOOR (roadmap S2, the keeper's ink 2026-09-01). The
+   * third door under "what this place is": a merchant looks up what
+   * the census saw of their own door and shares the dated page.
+   * Pre-escaped HTML: carries the one link.
+   */
+  whatThisIsPassport:
+    'Was your x402 door observed? Look it up at <a href="/passport">/passport</a>. A dated page of what the census saw, what it did not, and when the reading goes stale. Not a badge, not a pass mark.',
   whatThisIsShop:
     "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base, Polygon, or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",

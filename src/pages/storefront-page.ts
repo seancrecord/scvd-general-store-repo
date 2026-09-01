@@ -872,6 +872,7 @@ ${webmcpOriginTrialTags()}
       <h2 class="night-head">${COPY.whatThisIsHead}</h2>
       <p class="what-line what-lead">${escapeHtml(POSITION_OPENING)}</p>
       <p class="what-line">${COPY.whatThisIsDoors}</p>
+      <p class="what-line">${COPY.whatThisIsPassport}</p>
       <p class="what-line">${escapeHtml(COPY.whatThisIsShop)}</p>
       <p class="what-line">${escapeHtml(COPY.recordReadsAsTime)}</p>
     </section>

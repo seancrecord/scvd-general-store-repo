@@ -230,10 +230,14 @@ export const ROOMS: readonly Room[] = [
    * order: one signed, expiring object per ready-side host, our own
    * self-passport as the public example.
    */
+  /*
+   * ON THE STOREFRONT since 2026-09-01, the keeper's slot ruling
+   * (roadmap S2): a merchant shares a page that makes them look
+   * observed, never approved.
+   */
   {
     path: "/passport",
     name: "Endpoint passports",
-    on_storefront: false,
     deeper: ["passport_refresh"],
   },
   /**

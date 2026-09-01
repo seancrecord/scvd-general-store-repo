@@ -5,6 +5,8 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   PASSPORT_CSS,
+  colophonBlock,
+  colophonText,
   decisionWord,
   passportCard,
 } from "@/pages/passport-card";
@@ -313,7 +315,13 @@ passportRoutes.get("/passport/:host", async (c) => {
   }
 
   if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json(passportOrRefusal.passport);
+    /* Additive, outside the signed payload, like verify_hint: the
+     * words a merchant may paste, derived from the summary they sit
+     * beside. */
+    return c.json({
+      ...passportOrRefusal.passport,
+      colophon: colophonText(passportOrRefusal.passport, base),
+    });
   }
   return c.html(
     renderSimplePage({
@@ -322,6 +330,7 @@ passportRoutes.get("/passport/:host", async (c) => {
       path: `/passport/${rawHost}`,
       extraCss: PASSPORT_CSS,
       bodyHtml: `${passportCard(passportOrRefusal.passport)}
+      ${colophonBlock(passportOrRefusal.passport, base)}
       <section><p class="menu-desc">What a passport is, the four decisions it
       can return, and the expiry rule that governs this one:
       <a href="/passport">the passport landing</a>. Reading is free forever.</p></section>`,
