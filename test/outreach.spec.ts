@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   deriveProspects,
+  deriveWelcomes,
   draftNote,
+  draftWelcome,
   healedAfterOutreach,
   parseSecurityContacts,
   type OutreachLedger,
@@ -369,5 +371,53 @@ describe("the log-reader's landing", () => {
     const body = (await page.json()) as { found_us_in_your_logs: string };
     expect(body.found_us_in_your_logs).toContain("scvd-general-store/1.0");
     expect(body.found_us_in_your_logs).toContain("/api/preflight");
+  });
+});
+
+describe("the ready doors — the welcome with the passport page (2026-09-01)", () => {
+  it("ranks newly listed ready doors first, then claims, and leaves out the broken and ourselves", () => {
+    const previous = round("2026-W34", [host("old.example", "ready")]);
+    const latest = round("2026-W35", [
+      host("old.example", "ready"),
+      host("new.example", "ready"),
+      host("broke.example", "not_ready"),
+      host("scvd.store", "ready"),
+      host("rich.example", "ready", { volume_claim: { usd: 40, calls: 9, window: "30d" } as never }),
+    ]);
+    const welcomes = deriveWelcomes(latest, previous, "scvd.store");
+    // Both new; the claim breaks the tie. The old door trails.
+    expect(welcomes.map((w) => w.host)).toEqual(["rich.example", "new.example", "old.example"]);
+    expect(welcomes[0]!.newly_listed).toBe(true);
+    expect(welcomes[1]!.newly_listed).toBe(true);
+    expect(welcomes[2]!.newly_listed).toBe(false);
+    expect(welcomes[0]!.reason).toContain("newly listed");
+    expect(welcomes.some((w) => w.host === "broke.example")).toBe(false);
+  });
+
+  it("with no previous round nobody is newly listed — old news, like the queue", () => {
+    const latest = round("2026-W35", [host("a.example", "ready")]);
+    expect(deriveWelcomes(latest, null)[0]!.newly_listed).toBe(false);
+  });
+
+  it("the welcome hands them the passport, the colophon, the free checks, and prices off the shelf", async () => {
+    const { getMenuItem } = await import("@/store/menu");
+    const latest = round("2026-W35", [host("new.example", "ready")]);
+    const note = draftWelcome(deriveWelcomes(latest, round("2026-W34", []))[0]!, BASE);
+    expect(note).toContain(`${BASE}/passport/new.example`);
+    expect(note).toContain("colophon");
+    expect(note).toContain("never says \"passed\"");
+    expect(note).toContain(`${BASE}/api/preflight`);
+    expect(note).toContain(`${BASE}/api/standing-note`);
+    expect(note).toContain(`$${getMenuItem("conformance_watch")!.price_usdc}`);
+    expect(note).toContain(`$${getMenuItem("opening_day")!.price_usdc}`);
+    expect(note).toContain("first week");
+    expect(note).toContain("nothing to unsubscribe from");
+  });
+
+  it("the broken-door draft now points at the passport page too", () => {
+    const latest = round("2026-W35", [host("broke.example", "not_ready", { failed: ["accepts"] })]);
+    const note = draftNote(deriveProspects(latest, null)[0]!, BASE);
+    expect(note).toContain(`${BASE}/passport/broke.example`);
+    expect(note).toContain("/menu/conformance_watch");
   });
 });
