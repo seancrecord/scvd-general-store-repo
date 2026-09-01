@@ -1847,13 +1847,15 @@ which trades an unreadable contract for an incomplete one), and
 resolves every `$ref` in the document against its own components —
 the one new way this file can now be silently wrong.
 
-**The general lesson, which is the part worth keeping:** a surface
+**The general lesson became rule 59 (2026-09-01).** A surface
 published FOR a reader has the reader's limits as part of its
-contract, and this store had been checking its surfaces against the
-truth and never against the reader. The same question is now owed to
-every other machine surface here — `/menu.json`, `/corpus.json`,
-`/.well-known/x402.json`, `/llms.txt` — and none of them has a
-measured ceiling yet. Filed as the open half of this entry.
+contract. The ceilings live once in `src/store/reader-limits.ts`.
+The four surfaces this entry still owed a measurement —
+`/menu.json`, `/corpus.json`, `/.well-known/x402.json`, `/llms.txt`
+— are held by `test/machine-surfaces-fetchable.spec.ts`, same shape
+as the OpenAPI guard: a budget inside the reader's cap, and a
+refusal to pass by deleting the shelf. ⚑ Rule wording awaits the
+keeper's own ink.
 
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 

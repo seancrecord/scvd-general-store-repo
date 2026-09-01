@@ -6,6 +6,7 @@ import {
   LLMS_AREAS,
   storeGuideText,
 } from "@/routes/llms";
+import { LLMS_INDEX_CHARACTER_BUDGET } from "@/store/reader-limits";
 
 const BASE = "https://scvd.store";
 
@@ -364,15 +365,23 @@ const BASE = "https://scvd.store";
  * phrasing, and the idempotency, scvd-tab and /how-it-works pins the
  * earlier re-takes established.
  *
+ * Re-taken 2026-09-01 — the FIFTEENTH — by derivation, not a hand
+ * edit of the guide. #82 moved the paid Once-Over's cited battery
+ * to v2; the shelf description is MENU_ITEMS, and the guide prints
+ * those lines. Confirmed before this value was taken: the served
+ * guide carries "the current v2 verdict this series now cites"
+ * and no longer carries "the frozen v1 verdict this series has
+ * always cited".
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1e21668b7e12ab0d4b44e2b40218cbd5938c588707fb467a58d7db79dc3ea706";
+  "6994afc296ef0efad2c8ea7f49c6d22b58beb7d181d9dacfb26da29b4c36093a";
 
 /** The llmstxt.org recommendation the index is being held to. */
-const INDEX_CHARACTER_BUDGET = 30_000;
+const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
 
 function normalize(text: string): string {
   return text
