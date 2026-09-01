@@ -163,6 +163,14 @@ export const ROOMS: readonly Room[] = [
   { path: "/neighbours", name: "What we bought from the neighbours" },
   { path: "/stack", name: "What this store rests on" },
   { path: "/corrections", name: "Corrections" },
+  /**
+   * The coverage matrix got a room 2026-09-01. It had been published
+   * since M1 — derived, honest, `none` stated rather than omitted —
+   * and only as JSON at a .json URL, which meant the store's clearest
+   * statement of its own limits was legible to indexers and invisible
+   * to the operator deciding whether to trust it.
+   */
+  { path: "/coverage", name: "What we observe, and what we do not" },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   /**
