@@ -21,6 +21,43 @@ export interface RetiredItem {
 }
 
 export const RETIRED_ITEMS: readonly RetiredItem[] = [
+  /**
+   * THE FOUR THAT CLOSED BEFORE THIS SHELF EXISTED, entered 2026-09-01.
+   * Cut in the first week (2026-07-23/25), when a cut was still a
+   * deletion, so they answered a bare 404 and — worse — every knock
+   * on them was tallied as a request for something never stocked.
+   * The failed-item ledger read jar_of_tuesday at 1196 by 2026-09-01,
+   * six times anything real, all of it a directory (AgentIndex, crawl
+   * frozen on the 07-23 copy) and catalog walkers re-probing a door
+   * that had been open for three days. Their dates are the house
+   * record's (docs/archive/PROJECT_LOG.md), not the commit clock's.
+   */
+  {
+    id: "pet_rock",
+    name: "Pet Rock (Custodial)",
+    retired_on: "2026-07-23",
+    note: "The rock retired into the luckies, which took over the whole custody mechanic: a real object, named by the keeper, held forever.",
+    folded_into: "luckies",
+  },
+  {
+    id: "retired_word",
+    name: "Retire a Word",
+    retired_on: "2026-07-23",
+    note: "Retired. No epitaph, which is the epitaph.",
+  },
+  {
+    id: "smoker_blessing",
+    name: "Blessing from the Smoker",
+    retired_on: "2026-07-23",
+    note: "Gone with the last of the post oak: the smoker schtick was shelved as invention the same day, and the blessing went with it.",
+  },
+  {
+    id: "jar_of_tuesday",
+    name: "Jar of Tuesday",
+    retired_on: "2026-07-25",
+    note: "Scrapped on the keeper's ruling, jar and all. It was on the shelf three days; one was bought, by the house, and that card verifies forever.",
+  },
+  /** FIRST RETIREMENT, 2026-08-05: the consolidation. */
   {
     id: "a_secret",
     name: "A Secret",
