@@ -92,6 +92,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   // ---- pending removal, tracked ----
   "/.well-known/x402list.txt":
     "pending removal (tracker #27, the token-route delisting); do not advertise a door being closed",
+  "/.well-known/agentindex-verify.txt":
+    "an ownership challenge, not a capability: AgentIndex fetches this fixed path once to check we control the origin (claim submitted 2026-09-01); pending removal on confirmation, like the x402-list token above",
 
   // ---- discoverable at the only moment it matters: the artifact in
   // hand carries the URL, so a standing listing would be noise ----

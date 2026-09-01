@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "6";
+export const DEFECT_VOCABULARY_VERSION = "7";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -106,6 +106,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     at_the_instigation_of: "the keeper, ruling on a question this register raised",
     what_changed:
       "transfer-method-unrecognized keeps its assertion, its falsifier and its repair hint unchanged; what moved is our_signal, from the advisory `unrecognized-transfer-method` to the check `transfer-method-signable`, because the v2 battery now FOLDS that reading into its verdict rather than carrying it beside one. A reader joining our findings to another instrument's needs the pointer to name the signal that actually decides, and after 2026-08-30 that signal is a check. Nothing about when the class is present changed: falsified_by remains the only authority on that.",
+  },
+  {
+    version: "7",
+    date: "2026-09-01",
+    at_the_instigation_of:
+      "the keeper, on reading a competitor's pitch (x402 Trust, x402.fuchss.app) and asking why the failure it described had no name here",
+    what_changed:
+      "Added payto-moved: the payTo a door presents for a network is not the one it presented the last time it was observed. Unpaid-detectable, and detectable ONLY ACROSS TIME — a single probe cannot carry it, which is why no battery folds it and no verdict moved: it is a property of a series, and the standing watch derives it at read time from the challenge_bytes every row already carried inside its signature, so no preimage changed and no old row means anything new. The pitch that named the shape is credited in sourced_by under the registrar-not-author rule: the observation was theirs to name first, and a vocabulary is worth less the moment it pretends otherwise. What the class does NOT say: why the recipient changed. A rotation and a hijack are the same observation from outside; the class asserts the change and never the motive, and the readout that reports it points at where the new wallet's own history can be read rather than reading it for you.",
   },
 ];
 
@@ -431,6 +439,24 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     falsified_by: "A non-empty response body accompanying the 2xx.",
     repair_hint:
       "Produce the goods before presenting the settlement, and treat an empty body as a failed delivery that aborts the charge — deliver-first ordering makes this class impossible by construction.",
+  },
+  {
+    id: "payto-moved",
+    title: "The recipient changed under a door that otherwise stayed the same",
+    asserts:
+      "The payTo a door presents for a given network is the one it presented the last time it was observed, or the change was announced where the door's buyers read before the door presented it.",
+    costs:
+      "A buyer whose client trusts the door on its history pays a wallet that history never covered. Every structural check still passes — the challenge is well-formed, the amount atomic, the address payable — so a one-off preflight reads the door as ready at the exact moment it is most worth not paying. Visible only to something that looked twice.",
+    detectable: "unpaid",
+    our_signal:
+      "standing_watch summary: payto_changes, derived at read time from the signed rows' challenge_bytes",
+    falsified_by:
+      "Two signed rows from the same watch, bracketing the claimed change, whose challenge_bytes decode to the same (network, payTo) set; or a dated notice of the rotation, published where the door's buyers read, that predates the first row showing it.",
+    repair_hint:
+      "Rotate deliberately: publish the new payTo and its date where your buyers read — your llms.txt, your directory listings, a signed offer under a key they already hold — BEFORE the door presents it, and keep the old address listed as retired. A silent move is indistinguishable from a hijack to anyone watching, because from outside it is the same observation.",
+    sourced_by:
+      "x402 Trust (x402.fuchss.app), whose pitch of 2026-09-01 named the failure shape — a payTo moved to a fresh wallet a week ago, invisible to a one-off check — before this register did. Source, not author: the class text is ours, the observation was theirs to name first.",
+    registered: "2026-09-01",
   },
 ];
 

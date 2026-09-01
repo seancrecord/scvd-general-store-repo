@@ -361,7 +361,7 @@ export function sampleNightWatch(env: Env, price: number): SampleEnvelope<WatchH
     ends_at: SAMPLE_WEEK_END,
     probes: unsignedRows(probes),
   };
-  const history = watchHistoryOf(record, SAMPLE_READ_AT);
+  const history = watchHistoryOf(record, SAMPLE_READ_AT, env.STORE_BASE_URL);
   return envelope(
     env,
     "standing_watch",

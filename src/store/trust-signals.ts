@@ -190,6 +190,22 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   },
   {
     /**
+     * FOUND, NOT SUBMITTED, and the crawl says when. AgentIndex walked
+     * this store's Appendix C catalog and the agentic.market listing
+     * on its own; its snapshot froze on the July 23/24 copy and still
+     * carried jar_of_tuesday on 2026-09-01, which is the same day the
+     * keeper claimed the host so they re-read (/.well-known/
+     * agentindex-verify.txt). A stale index is still a record that we
+     * were found — it is just a dated one, like everything else here.
+     */
+    url: "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+    registry: "AgentIndex (agents.traderszone.net)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That AgentIndex carries this store's doors as resources it found on its own — this row is the certificate_of_patronage door as their crawl of the agentic.market listing saw it; the host page at agents.traderszone.net/explore?host=scvd.store lists the rest. Not an endorsement and not an audit: an index proves the door was found, and this one also proves how long a found listing can lag the shelf.",
+  },
+  {
+    /**
      * AN INSTRUMENT, NOT A DIRECTORY, and the wording below is careful
      * about the difference. Circle's readiness scanner fetches the
      * origin's OpenAPI document and the live 402 and scores what it

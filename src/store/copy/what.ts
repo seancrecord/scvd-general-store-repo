@@ -168,6 +168,21 @@ export function whatFaq(base: string): FaqPair[] {
       answer: `No instrument here answers that question outright, and distrust any that claims to. What can be checked, for free: whether the endpoint answers a proper x402 v2 challenge (${base}/api/preflight/v1), whether its signed artifacts verify (${base}/api/conformance/v1), and what it has actually served week over week (${base}/corpus/host/{host}.json). Asked about this store specifically: the machine-readable diligence answers are at ${base}/.well-known/trust.json, the record of every claim we got wrong is at ${base}/corrections, and every wallet we control is declared and signed at ${base}/house-ledger.json. Legitimacy is a conclusion; these are the checkable inputs.`,
     },
     {
+      /**
+       * THE SCORE QUESTION, 2026-09-01. The keeper read a competitor's
+       * pitch — a trust score and a recommendation verdict over tens
+       * of thousands of x402 doors, sold as the thing a one-off check
+       * cannot see — and asked, in his words, "no punches pulled, why
+       * would someone use us over them." This is the answer, with the
+       * trade running both ways in it, because an answer that only
+       * runs one way is an advertisement and the reader can tell.
+       * ⚑ KEEPER REVIEW — new public copy; the question is the exact
+       * string a buyer types when they are choosing.
+       */
+      question: "Why use this over a trust score for x402 endpoints?",
+      answer: `Because a score is an opinion about a stranger and a signed observation is a record of a moment, and only one of those survives being handed to the person who asked why the money went where it went. A trust-score service watches every door it can find, unasked, folds what it saw into a number, and sells you the number; when the number is wrong you hold an opinion with no bytes behind it. Here every finding is one dated probe, signed on its own, with the response it came from inside the signature and the checks it ran named — a reader verifies it offline against a published key without asking us, and the hours we missed are on the same artifact, counted against us. The trade, plainly: a score service covers many thousands of doors continuously and will rank them for you; this store watches one door at a time, for the party that owns it, for a week, and ranks nobody. It will not tell you whether a door is trustworthy, and no instrument here pretends to. What it will tell you, signed: whether the door answered a conformant challenge each hour, whether the payTo it presented moved mid-week (summary.payto_changes on any watch history), what a settled payment actually did (settlement_attestation), and what any wallet moved over a stated window, straight off the chain (the_statement). If you need a recommendation, buy a score. If you need evidence you can show somebody, this is the shelf.`,
+    },
+    {
       question: "Is there a free x402 conformance check?",
       answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
     },

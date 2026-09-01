@@ -420,12 +420,22 @@ const BASE = "https://scvd.store";
  * the guide carries "provenance_check, The Company an Address Keeps"
  * and "does not grade operators", and still every earlier pin.
  *
+ * Re-taken 2026-09-01 — the TWENTY-FIRST — by derivation,
+ * merged in behind the five re-takes above. The standing
+ * watch learned to report the hour a door's payTo moved
+ * (summary.payto_changes), and the standing_watch shelf description
+ * gained one clause saying so ("Where the money goes is watched,
+ * though…"), flagged for the keeper's pen; the guide prints
+ * MENU_ITEMS lines, so it carried the clause in. Confirmed before
+ * this value was taken: the served guide carries that clause and
+ * does not carry the new /what answer, which lives on /what alone.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "100ca1a831ea51a8bd7846cec61ab7742eed503465af5e22c90ad38b08e70fe7";
+  "a471b6f4b8654330be1529169dc292ae5e6e566dcd2960c0c18e971f0018c413";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

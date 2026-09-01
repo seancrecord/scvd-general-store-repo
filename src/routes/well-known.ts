@@ -1083,6 +1083,22 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
 // today was issued 2026-08-18 and had been expired since roughly the
 // 21st — serving a dead nonce at a well-known path for three days is
 // litter of exactly the kind the first comment warned about.
+// AgentIndex (agents.traderszone.net) domain-ownership token, issued
+// 2026-09-01 on a claim the keeper submitted by hand. Their index found
+// this store on its own, by walking the Appendix C catalog, and froze
+// its crawl on the 07-23/24 copy — it still lists jar_of_tuesday, which
+// is where a third of that door's 1196 failed lookups plausibly came
+// from. The claim is the only way to make them re-read. Same category
+// as the token below: a proof-of-control nonce, useless to anyone who
+// does not already control scvd.store. REMOVE once they confirm — and
+// the note above about how many times that promise has been broken
+// applies to this line too.
+wellKnownRoutes.get("/.well-known/agentindex-verify.txt", (c) =>
+  c.text("agentindex-verify=aix-9ky116a9nowvdn7c9rifu2d4\n", 200, {
+    "content-type": "text/plain; charset=utf-8",
+  }),
+);
+
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
   c.text(
     [

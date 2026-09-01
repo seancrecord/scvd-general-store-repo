@@ -92,6 +92,16 @@ describe("the method line, which is the whole interop", () => {
 });
 
 describe("a taxonomy that does not become a scoreboard", () => {
+  it("payto-moved is unpaid, a property of a series, and credits who named it", () => {
+    const moved = defectClass("payto-moved");
+    expect(moved?.detectable).toBe("unpaid");
+    expect(moved?.our_signal).toContain("payto_changes");
+    expect(moved?.sourced_by).toContain("x402 Trust");
+    expect(moved?.registered).toBe("2026-09-01");
+    // Not folded anywhere: no battery can see two moments at once.
+    expect(moved?.our_signal).not.toContain("battery");
+  });
+
   it("names no operator, host or wallet anywhere in the vocabulary", () => {
     /*
      * Rule 43 survives contact with a taxonomy or the taxonomy goes.
