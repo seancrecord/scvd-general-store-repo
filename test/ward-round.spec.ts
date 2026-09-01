@@ -179,6 +179,28 @@ describe("the round itself, with the outside world stubbed", () => {
     );
   });
 
+  it("names which of our own doors the index returns, and which it has dropped (N5)", async () => {
+    const { MENU_ITEMS } = await import("@/store/menu");
+    stubWorld({
+      listedUrls: ["https://shop-a.example/api/buy/x"],
+      searchBody: {
+        items: [
+          { resourceUrl: `${BASE}/api/buy/hello` },
+          { resourceUrl: `${BASE}/api/buy/service_audit` },
+        ],
+      },
+    });
+    const round = await runWardRound(testEnv);
+    expect(round.our_doors?.could_not_check).toBe(false);
+    expect(round.our_doors?.claimed).toBe(MENU_ITEMS.length);
+    expect(round.our_doors?.found.sort()).toEqual(["hello", "service_audit"]);
+    expect(round.our_doors?.missing).toContain("conformance_watch");
+    expect(round.our_doors?.missing.length).toBe(MENU_ITEMS.length - 2);
+    // The miss is on the signed round, dated: what the corpus freezes.
+    const stored = await latestWardRound(testEnv);
+    expect(stored?.our_doors?.missing).toEqual(round.our_doors?.missing);
+  });
+
   it("an unreadable search is 'could not check', never 'absent', and no alarm fires", async () => {
     stubWorld({
       listedUrls: ["https://shop-c.example/api/buy/x"],
@@ -195,6 +217,12 @@ describe("the round itself, with the outside world stubbed", () => {
     });
     const round = await runWardRound(testEnv);
     expect(round.our_search_presence).toBeNull();
+    expect(round.our_doors).toEqual({
+      claimed: (await import("@/store/menu")).MENU_ITEMS.length,
+      found: [],
+      missing: [],
+      could_not_check: true,
+    });
   });
 });
 

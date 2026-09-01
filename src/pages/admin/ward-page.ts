@@ -72,6 +72,19 @@ export function renderWardPage(
           : "ABSENT — see the alert; re-run bazaar:check by hand"
     }</strong>.</li>
     ${
+      round.our_doors
+        ? `<li>Our doors in the search index: <strong>${
+            round.our_doors.could_not_check
+              ? "could not check (never read as missing)"
+              : `${round.our_doors.found.length} of ${round.our_doors.claimed} found`
+          }</strong>.${
+            round.our_doors.missing.length > 0
+              ? ` <strong style="color:#8c2f1b">Missing: ${escapeHtml(round.our_doors.missing.join(", "))}.</strong> Re-register those (your press); the miss stays on the signed round until the index returns them.`
+              : ""
+          }</li>`
+        : "<li>Our doors in the search index: not measured this round (predates the door check).</li>"
+    }
+    ${
       round.coverage_drop
         ? `<li><strong style="color:#8c2f1b">COVERAGE DROPPED: the last round probed ${round.coverage_drop.previous_hosts} doors (${escapeHtml(round.coverage_drop.previous_at.slice(0, 16))}Z), this one only ${round.coverage_drop.this_round}.</strong> The list feed likely changed its pagination shape under us — this round is a FLOOR, not the ward shrinking, and week-over-week comparisons are unsafe until coverage recovers.</li>`
         : ""

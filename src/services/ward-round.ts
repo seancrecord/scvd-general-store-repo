@@ -51,6 +51,7 @@ import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { MENU_ITEMS } from "@/store/menu";
 
 /**
  * THE WARD ROUND — the weekly in-Worker census of the x402 discovery
@@ -202,6 +203,15 @@ export interface WardHostResult {
   offer?: OfferFacts;
 }
 
+export interface OurDoors {
+  /** Every payable resource the shelf claims, by item id. */
+  claimed: number;
+  found: string[];
+  missing: string[];
+  /** The search could not be read: a gap in our vantage, never a miss. */
+  could_not_check: boolean;
+}
+
 export interface WardRound {
   week: string;
   at: string;
@@ -235,6 +245,16 @@ export interface WardRound {
   };
   capped: boolean;
   our_search_presence: boolean | null;
+  /**
+   * OUR OWN DOORS, FOUND OR NOT (roadmap N5, 2026-09-01). Recency
+   * decay is how a listed store goes invisible: the search index is
+   * the authoritative surface, and a payable resource we claim that
+   * the index no longer returns is a miss — logged here, dated, in
+   * the signed round, counted against us. Re-registering is the
+   * keeper's press; this row is what tells him to. Absent on rounds
+   * before the check existed.
+   */
+  our_doors?: OurDoors;
   /**
    * Leaderboard feed health, could-not-check kept distinct from
    * absent: sellers null = the FEED was unreachable this round (say
@@ -753,8 +773,20 @@ export async function readAgent402Leaderboard(
 }
 
 /** Search decides presence; a list miss says nothing (bazaar-check's law). */
-async function ourSearchPresence(env: Env): Promise<boolean | null> {
+/**
+ * One search, two readings: whether the store is in the index at all,
+ * and which of the doors it claims the index actually returns. The
+ * second is roadmap N5 — a listing decays door by door, and a store
+ * that only watched its own name would not notice until the last one.
+ */
+async function ourSearchReading(
+  env: Env,
+): Promise<{ presence: boolean | null; doors: OurDoors }> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
+  const claimed = MENU_ITEMS.map((item) => ({
+    id: item.id,
+    url: `${env.STORE_BASE_URL}/api/buy/${item.id}`.toLowerCase(),
+  }));
   try {
     const body = (await cdpGet(
       env,
@@ -762,12 +794,22 @@ async function ourSearchPresence(env: Env): Promise<boolean | null> {
       `?query=${encodeURIComponent(ownHost)}`,
     )) as Record<string, unknown>;
     const text = JSON.stringify(body).toLowerCase();
-    return text.includes(ownHost);
+    const found = claimed.filter((door) => text.includes(door.url)).map((door) => door.id);
+    const missing = claimed.filter((door) => !text.includes(door.url)).map((door) => door.id);
+    return {
+      presence: text.includes(ownHost),
+      doors: { claimed: claimed.length, found, missing, could_not_check: false },
+    };
   } catch {
-    // An unreadable search is "could not check", never "absent".
-    return null;
+    // An unreadable search is "could not check", never "absent" — for
+    // the store and for every door alike.
+    return {
+      presence: null,
+      doors: { claimed: claimed.length, found: [], missing: [], could_not_check: true },
+    };
   }
 }
+
 
 /**
  * The shared tail of every round, walked or one-shot: the coverage
@@ -816,6 +858,16 @@ async function sealRound(
    * on the round is a reading for the keeper's eyes on his own time;
    * this one is a channel dying with no symptom anywhere else.
    */
+  const doors = round.our_doors;
+  if (doors && !doors.could_not_check && doors.missing.length > 0) {
+    const before = JSON.stringify(previous?.our_doors?.missing ?? []);
+    if (before !== JSON.stringify(doors.missing)) {
+      await sendAlert(env, {
+        condition: "worker_health",
+        detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims; missing: ${doors.missing.join(", ")}. A door the index no longer returns is invisible to every agent that shops by search. Re-register it (your press); the miss is on the signed round until it is found again.`,
+      }).catch(() => undefined);
+    }
+  }
   if (presence === false) {
     await sendAlert(env, {
       condition: "worker_health",
@@ -839,7 +891,7 @@ async function assembleWalkRound(
   walk: import("@/services/long-walk").LongWalkState,
 ): Promise<WardRound> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const presence = await ourSearchPresence(env);
+  const { presence, doors } = await ourSearchReading(env);
   const walked = walk.results.filter(
     (entry) => entry.verdict !== "not_probed",
   ).length;
@@ -868,6 +920,7 @@ async function assembleWalkRound(
     // The tail the week never reached is the cap that bound here.
     capped: walk.cursor < walk.roster.length,
     our_search_presence: presence,
+    our_doors: doors,
     leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
     leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
     our_leaderboard_rank: walk.leaderboard ? walk.leaderboard.our_rank : null,
@@ -990,7 +1043,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
       ...probe,
     } satisfies WardHostResult;
   });
-  const presence = await ourSearchPresence(env);
+  const { presence, doors } = await ourSearchReading(env);
   const walked = results.filter((entry) => entry.verdict !== "not_probed").length;
   /**
    * THE CENSUS RIDES THE FEEDS THIS ROUND ALREADY READ — no extra
@@ -1043,6 +1096,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     ...(doorBankNote ? { door_bank: doorBankNote } : {}),
     capped,
     our_search_presence: presence,
+    our_doors: doors,
     leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
     leaderboard_window: leaderboard ? leaderboard.window : null,
     our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,
