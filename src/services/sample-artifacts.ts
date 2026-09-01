@@ -373,6 +373,9 @@ export function sampleNightWatch(env: Env, price: number): SampleEnvelope<WatchH
 }
 
 const SAMPLE_TX_HASH = `0x${"0".repeat(60)}beef`;
+/** The constructed purchase, in dollars and in USDC atomic units — one number, two spellings. */
+const SAMPLE_PAID_USD = 0.005;
+const SAMPLE_PAID_UNITS = BigInt(Math.round(SAMPLE_PAID_USD * 1_000_000));
 const SAMPLE_PAYER = "0x00000000000000000000000000000000000000fe";
 const SAMPLE_PAY_TO = "0x00000000000000000000000000000000000000ff";
 
@@ -386,13 +389,13 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
     stages: [
       { stage: "approach", ok: true, detail: "One unpaid GET with the declared User-Agent; the door answered 402 in 188 ms." },
       { stage: "challenge", ok: true, detail: "PAYMENT-REQUIRED parsed: x402 v2, one accepts entry, exact scheme on eip155:8453." },
-      { stage: "terms", ok: true, detail: "Cheapest rail Base USDC at $0.005; under the field spend cap; assetTransferMethod absent, read as eip3009." },
+      { stage: "terms", ok: true, detail: `Cheapest rail Base USDC at $${SAMPLE_PAID_USD}; under the field spend cap; assetTransferMethod absent, read as eip3009.` },
       { stage: "screen", ok: true, detail: "payTo screened against the on-chain sanctions oracle: not listed." },
       { stage: "payment", ok: true, detail: "EIP-3009 authorization signed by the field wallet and presented in the PAYMENT-SIGNATURE header." },
       { stage: "settle", ok: true, detail: "The till answered 200 with a PAYMENT-RESPONSE naming a settlement transaction." },
       { stage: "delivery", ok: true, detail: "A JSON body arrived with the goods; the same payment presented again was refused, so nothing reached the seller twice." },
     ],
-    paid_usd: 0.005,
+    paid_usd: SAMPLE_PAID_USD,
     pay_to: SAMPLE_PAY_TO,
     tx_hash: SAMPLE_TX_HASH,
     tx_hash_status: "confirmed_on_chain",
@@ -404,7 +407,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
       confirmations: 12,
       observed_payer: SAMPLE_PAYER,
       observed_recipient: SAMPLE_PAY_TO,
-      observed_amount_usdc: 0.005,
+      observed_amount_usdc: SAMPLE_PAID_USD,
       read_at: SAMPLE_OBSERVED_AT,
       detail: "Constructed for the specimen: on a real walk this is the store's own read of the chain, and the chain's copy is nobody's to edit.",
     },
@@ -430,7 +433,7 @@ export async function sampleSettlementAttestation(
   price: number,
 ): Promise<SampleEnvelope<UnsignedAttestation>> {
   const pad = (address: string): string => `0x${address.slice(2).padStart(64, "0")}`;
-  const amount = 5_000n; // $0.005 in USDC atomic units
+  const amount = SAMPLE_PAID_UNITS;
   const receipt = {
     status: "0x1",
     blockNumber: `0x${(34_000_000).toString(16)}`,
