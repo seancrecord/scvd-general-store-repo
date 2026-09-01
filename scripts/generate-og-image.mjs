@@ -67,6 +67,11 @@ const FONT = {
   u: ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", "#####"],
   y: ["#...#", "#...#", "#...#", "#####", "..#..", "..#..", "..#.."],
   m: ["#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#"],
+  // Added 2026-09-01 for the observatory line; same 5x7 hand.
+  b: ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+  p: ["####.", "#...#", "#...#", "####.", "#....", "#....", "#...."],
+  w: ["#...#", "#...#", "#...#", "#.#.#", "#.#.#", "##.##", "#...#"],
+  k: ["#...#", "#..#.", "#.#..", "##...", "#.#..", "#..#.", "#...#"],
   "4": ["#..#.", "#..#.", "#..#.", "#####", "...#.", "...#.", "...#."],
   "0": ["#####", "#...#", "#...#", "#...#", "#...#", "#...#", "#####"],
   "2": ["#####", "....#", "....#", "#####", "#....", "#....", "#####"],
@@ -119,10 +124,12 @@ function drawText(text, centerY, cell) {
 }
 
 // Infrastructure first, whimsy second — the same flip every other
-// surface got on 2026-08-10. Both lines stay on the card: the trust
-// layer is what it is, the store line is its soul.
+// surface got on 2026-08-10. Both lines stay on the card: the
+// observatory is what it is, the store line is its soul. The middle
+// line said "the trust layer of the x402 economy" until 2026-09-01,
+// when the keeper re-inked the noun at /becoming; the card follows.
 drawText("scvd.store", 448, 10);
-drawText("the trust layer of the x402 economy", 545, 4);
+drawText("an evidence observatory for agentic commerce", 545, 4);
 drawText("a general store for ai agents", 590, 3);
 
 if (process.env.PREVIEW) {

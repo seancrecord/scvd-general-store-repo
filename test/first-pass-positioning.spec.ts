@@ -351,14 +351,15 @@ describe("the sideways surfaces carry the position too", () => {
     const script = (
       await import("../scripts/generate-og-image.mjs?raw")
     ).default;
-    expect(script).toContain('drawText("the trust layer of the x402 economy"');
+    // Re-inked 2026-09-01 with the noun the keeper settled at /becoming.
+    expect(script).toContain('drawText("an evidence observatory for agentic commerce"');
     expect(script, "the store line must stay on the card, second").toContain(
       'drawText("a general store for ai agents"',
     );
     const page = await text("/", true);
     const alt =
       page.match(/<meta property="og:image:alt" content="([^"]*)"/)?.[1] ?? "";
-    expect(alt).toContain("trust layer of the x402 economy");
+    expect(alt).toContain("evidence observatory for agentic commerce");
   });
 
   it("the README no longer claims settle-then-deliver", async () => {

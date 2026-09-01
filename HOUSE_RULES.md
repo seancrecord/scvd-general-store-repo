@@ -793,9 +793,8 @@ LORE & TRADITION
 
 59. A SURFACE PUBLISHED FOR A READER HAS THE READER'S LIMITS AS
     PART OF ITS CONTRACT. (Drafted 2026-09-01 from PROBLEMS #25's
-    open half, at the keeper's instruction. ⚑ The wording is
-    drafted from the lesson already on the ledger, not his
-    verbatim sentence — ink when he has it.)
+    open half, at the keeper's instruction; inked by him the same
+    day, wording as drafted.)
 
     A document that is true and unreadable is not published. The
     reader's fetch cap, context window, and timeout are conditions

@@ -78,7 +78,7 @@ export const SETTLED: readonly Settled[] = [
      * rather than waved past.
      */
     answer:
-      "Answered 'No, it stays a shop' on 2026-07-30. Reversed by the keeper on 2026-08-07: the store is evolving toward the trust layer of the x402 economy, deliberately and on the record.",
+      "Answered 'No, it stays a shop' on 2026-07-30. Reversed by the keeper on 2026-08-07: the store is evolving toward the trust layer of the x402 economy, deliberately and on the record. Re-inked by the keeper on 2026-09-01, the noun corrected and the direction kept: an evidence observatory for agentic commerce, not a trust layer. A trust layer is a claim anyone can assert; an observatory publishes its own gaps beside its findings, and anyone can check.",
     because:
       "The old answer's objection was architectural and it was real: infrastructure means other people's uptime depending on one keeper, a pager pointed at a man with a day job and a family. What changed is evidence, not appetite — the till has settled organic purchases across two payment rails, the technology this store rides is maturing under it, and the gates open so the store can provide what the agents it serves actually need. The objection is answered, not dismissed: every standing obligation stays bounded, prepaid, and gap-published in the Night Watch shape (an end date, renewed only by the buyer, our missed passes in the book); degradation stays graceful and published; and the succession work sits on this page's own watched list with its trigger. A reader who held the old answer against us is invited to: that is what this page is for.",
   },
