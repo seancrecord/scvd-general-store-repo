@@ -175,6 +175,56 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page — this record only proves the listing exists.",
   },
   {
+    url: "https://agent-tools.cloud/services/scvd-store-bazaar",
+    registry: "agent-tools.cloud",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That agent-tools.cloud carries the store's Bazaar-registered service among the paid tools it indexes. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
+    url: "https://x402.fuchss.app/provider/scvd.store",
+    registry: "x402.fuchss.app (provider index)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That an independent x402 provider index carries this origin as a provider — keyed on the domain rather than on a submitted listing. Not an endorsement and not an audit: an index proves the door was found, nothing about what comes through it.",
+  },
+  {
+    /**
+     * AN INSTRUMENT, NOT A DIRECTORY, and the wording below is careful
+     * about the difference. Circle's readiness scanner fetches the
+     * origin's OpenAPI document and the live 402 and scores what it
+     * finds — how legible the interface is to a buying agent. It never
+     * buys anything, so it cannot speak to whether the goods are worth
+     * the money, which is the line every entry in this array holds.
+     *
+     * NO NUMBER IS QUOTED HERE ON PURPOSE. The score is re-taken on
+     * every scan and this file is not re-read on every scan; a figure
+     * written down here would be a claim that rots quietly, which is
+     * the failure /corrections exists to catch. The badge in the
+     * README renders the live value, which is the honest place for a
+     * number that moves.
+     */
+    url: "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+    registry: "Circle — Sell to Agents readiness score",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That Circle's readiness scanner reaches this origin, fetches its OpenAPI contract and its live 402, and scores how legible the paid interface is to a buying agent. Scored per endpoint with no summary page, so one door stands for the set — every paid door here is described by the same contract and answers the same challenge, which is the fact the reading actually turns on. An instrument reading, not a listing and not an audit: it measures the shape of the door — payment terms declared, inputs described, guidance present — and never buys anything, so it says nothing about the goods behind it.",
+  },
+  {
+    url: "https://www.getdrio.com/mcp/store-scvd-general-store",
+    registry: "Drio (getdrio.com)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That Drio's MCP index carries the server under its canonical name. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
+    url: "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+    registry: "ZBS Index (index.zbs.gg)",
+    confirmed: "2026-09-01",
+    what_it_proves:
+      "That the ZBS MCP index carries the server, under the same canonical name every other registry resolved it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
+  },
+  {
     url: "https://mcpservers.org/servers/scvd-store-llms-txt",
     registry: "mcpservers.org (llms.txt entry)",
     confirmed: "2026-08-04",
@@ -218,7 +268,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     registry: "x402-bazaar.com (Bazaar mirror)",
     confirmed: "2026-08-04",
     what_it_proves:
-      "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
+      "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. ONE URL STANDS FOR THE SET on purpose: the mirror pages every registered resource separately and has no summary page, and a row per endpoint would repeat a single fact fourteen times, which is the logo wall this array's docblock refuses. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
   },
   {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
