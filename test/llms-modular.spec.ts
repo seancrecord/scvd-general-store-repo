@@ -347,12 +347,29 @@ const BASE = "https://scvd.store";
  * below was taken from the merged guide with BOTH sides verified
  * present in it together.
  *
+ * Re-taken 2026-09-01 by the PASSPORT LEGIBILITY PASS — the
+ * FOURTEENTH, and a hand edit rather than a derivation carrying one
+ * in, which is the case this constant is actually FOR. The outside
+ * read found /passport rendering none of the summary block it had
+ * been signing since 2026-08-27, and the fix names the field agents
+ * should read first. The guide's passport section is prose, so it
+ * could not learn that by derivation: the paragraph now says READ
+ * `payload.summary` FIRST and lists what rides in it — `decision`
+ * (READY / NOT_READY / EXPIRED / INDETERMINATE, a total function of
+ * `status`), `valid_until`, `evidence_age_days`, `failed`, and
+ * `not_observed` — plus the rule that a refusal answers with a
+ * decision too. Confirmed before this value was taken: the served
+ * guide carries all three of those additions, and still carries the
+ * rail correction ("on Base, Polygon or Solana"), neither retired
+ * phrasing, and the idempotency, scvd-tab and /how-it-works pins the
+ * earlier re-takes established.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "24193baf328be4fa35ed48e7b6c3625872b8639f3fa091df29cab7770a2e3f00";
+  "1e21668b7e12ab0d4b44e2b40218cbd5938c588707fb467a58d7db79dc3ea706";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
