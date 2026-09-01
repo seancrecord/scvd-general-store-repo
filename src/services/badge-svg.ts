@@ -159,6 +159,17 @@ const CHIP_STATE: Record<
 export interface PassportChipOptions {
   host: string;
   freshness: "fresh" | "aging" | "expired";
+  /**
+   * The passport's own decision word, passed in rather than re-derived
+   * (2026-09-01). The chip draws three states and the passport decides
+   * four, so a reader who embeds the chip and a machine that reads the
+   * passport were being handed two vocabularies for the same host. The
+   * chip keeps its palette — that is a design ruling, and an expired
+   * chip going grey rather than red is the honest picture — but its
+   * accessible label now says the word the passport says, so the two
+   * cannot be quoted against each other.
+   */
+  decision: string;
   observedAt: string;
   passportUrl: string;
   /**
@@ -192,7 +203,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
     ? "self-read of our own catalogs at render, not a census probe"
     : state.sub;
   const label = options.selfObserved ? "SCVD PASSPORT · SELF" : "SCVD PASSPORT";
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}">
   <rect width="300" height="56" fill="${PAPER}" rx="6"/>
   <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
   <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">${label}</text>
