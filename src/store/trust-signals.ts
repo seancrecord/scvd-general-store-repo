@@ -347,16 +347,33 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     registry: "Smithery",
     confirmed: "2026-08-11",
     /**
-     * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
-     * its quality scan grades "Annotations 0/27" against a 27-tool
-     * catalog this store has not served since 2026-08-02 — the live
-     * catalog is 10 tools and every one has carried all four MCP
-     * behavior hints since, asserted through tools/list by
-     * test/mcp-tool-hardening.spec.ts. Stale readings refresh on the
-     * next scan and are not argued with.
+     * ITS READING WAS WRONG, AND THEN IT WAS OURS (2026-09-01).
+     *
+     * This record used to say the scan graded descriptions, parameter
+     * descriptions and output schemas at full marks, with a stale
+     * "Annotations 0/27" against a catalog retired on 2026-08-02. That
+     * was true when it was written and is not now, and the reason is
+     * ours rather than theirs.
+     *
+     * Smithery reads /.well-known/mcp/server-card.json INSTEAD OF
+     * calling tools/list. This store began serving the card at that
+     * path on 2026-08-30, closing a 404 that read as absence — and the
+     * card declared `capabilities.tools: true` while naming no tools.
+     * So the scan found six resources and nothing to call, and graded
+     * capability quality 0 of 40: not a judgement on the tools, a
+     * denominator. The card names all thirteen since; the reading
+     * refreshes on the next scan and is not argued with.
+     *
+     * WHY IT IS WRITTEN OUT RATHER THAN QUIETLY DROPPED. Every other
+     * entry here records a registry's wrong reading against the
+     * registry. This one records a wrong reading we caused, in the one
+     * document whose whole claim is that the gaps get counted against
+     * us too. See test/server-card-names-the-tools.spec.ts, which
+     * fails if the card ever again declares a capability it does not
+     * enumerate.
      */
     what_it_proves:
-      "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan (descriptions, parameter descriptions and output schemas at full marks). Not an endorsement and not an audit: a directory page proves indexing — and this one's annotations reading (0 of 27) describes the pre-2026-08-02 catalog rather than the 10 annotated tools the server has served since, so it lags until its next scan.",
+      "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan. Not an endorsement and not an audit: a directory page proves indexing — and this one's capability reading (0 of 40, descriptions 0 of 0) is a fault of ours, not a finding about the tools: its scanner reads our server card instead of calling tools/list, and from 2026-08-30 that card declared tools and named none. The card lists all thirteen since, so the reading lags until its next scan.",
   },
   {
     url: "https://mcp.so/servers/scvd-store",
