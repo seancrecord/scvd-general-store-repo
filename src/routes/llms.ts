@@ -46,7 +46,8 @@ function menuLine(item: MenuItem): string {
   const constraints = item.constraints?.length
     ? ` House rules: ${item.constraints.join("; ").toLowerCase()}.`
     : "";
-  return `  ${item.id}, ${item.name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
+  const name = item.subtitle ? `${item.name} — ${item.subtitle}` : item.name;
+  return `  ${item.id}, ${name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
 }
 
 /**

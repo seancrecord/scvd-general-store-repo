@@ -394,12 +394,19 @@ const BASE = "https://scvd.store";
  * evening ("i like the sharper 60 word draft"): one constant moved,
  * every surface followed, this value with it.
  *
+ * Re-taken 2026-09-01 — the SEVENTEENTH — by roadmap S4, the keeper's
+ * ink: the four operator instruments carry a plain subtitle beside
+ * their name on every shelf surface, and the guide's menu lines
+ * print "name — subtitle". Confirmed before this value was taken:
+ * the guide carries "The Conformance Watch — seven days of signed
+ * daily checks on your x402 endpoint" and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "314a6bf72fe37945064af4c446941d7d962383617b812c712307db79d23a65d4";
+  "9724a4061ae1b2f35a142238d00ca1f01791fcc5ca435310e2857ca3200c1782";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -123,6 +123,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       ...item,
       buy_url: `${base}/api/buy/${item.id}`,
       ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
+      ...(item.subtitle ? { subtitle: item.subtitle } : {}),
       price_tiers_usdc: priceTiersUsdc(item),
       /*
        * ADDED 2026-08-30. The catalogue named a buy_url and no way to
@@ -442,6 +443,7 @@ function renderItemPage(
       verifyHint: `${base}/api/verify/{cert_id}`,
     }),
     bodyHtml: `<section>
+        ${item.subtitle ? `<p class="menu-meta"><strong>${escapeHtml(item.subtitle)}</strong></p>` : ""}
         <p class="menu-desc">${escapeHtml(item.description)}</p>
         ${
           state.shutter === "closed"
@@ -622,7 +624,7 @@ function renderMenuIndex(base: string): string {
     // never the display name, which is copy and gets rewritten.
     (item) => `<div class="menu-item" data-item="${escapeHtml(item.id)}">
       <div class="menu-line">
-        <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></span>
+        <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a>${item.subtitle ? ` <span class="menu-meta">— ${escapeHtml(item.subtitle)}</span>` : ""}</span>
         <span class="menu-dots"></span>
         <span class="menu-price">${escapeHtml(priceLine(item))}</span>
       </div>
