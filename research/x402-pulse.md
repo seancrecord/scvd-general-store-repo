@@ -71,3 +71,34 @@ ecosystem (many more buyers than sellers, by a wide margin). Single
 source, self-reported, not corroborated anywhere else found this week.
 Worth remembering, not worth building on yet — the honest caveat stays
 loud specifically *because* it would be a nice thing to be true.
+
+## 2026-09-01
+
+**Our own credit landed in a live spec PR — verified, not relayed.** Read
+the full comment thread on x402-foundation/x402#3234 (response-provenance)
+directly via the GitHub API, not a search snippet. whawk46 (Corrente Labs)
+credited @cv-scvd by name on 2026-08-31 for the Aug-27 conformance-desk
+production data, folding three takeaways from it into PR #3304's actual
+spec text. **Tier: verified** — read the comment and the PR myself, same
+day. PR #3304 is still open/unmerged as of this check; the credit comment
+is real, the merge (the actual receipt) isn't in yet.
+
+**We're absent from the biggest thread in our own stated lane — also
+verified directly.** x402-foundation/x402#2332 ("post-settlement
+accountability layer," action_ref/TrailRecord) is a 201-comment, ~4-month-
+old thread with real, cross-validated production implementations already
+shipped: Mycelium Trails/argentum-core (giskard09), AURA, AlgoVoi (filed
+IETF Internet-Drafts), TKCollective's verification.v0.3, MolTrust/CEP,
+Presidio, AgentOracle/AgentTrust — several cross-checking each other's
+hash outputs byte-for-byte. **Tier: verified** (read the full thread).
+This is squarely our own "trust/evidence layer" positioning and we are
+not in it at all. Not a crisis, but a real gap between where we say we're
+headed and where the thread already converged without us.
+
+**One number carried forward from an earlier pass, not re-checked today
+— staying honest about the tier.** mako-verifier (ChrisDover), a live
+competitor bundling Verifier + Pulse + Pricing Index + Reputation Score
+as paid x402 endpoints, was logged from a prior day's scan. **Tier:
+single source, not re-verified this session** — noting it stays open as
+a market comparator, not upgrading its confidence just because it's
+convenient to keep tracking.
