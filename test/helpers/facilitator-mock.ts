@@ -18,6 +18,8 @@ export interface WebhookCall {
 export interface FacilitatorMockState {
   settleShouldFail: boolean;
   verifyShouldFail: boolean;
+  /** The facilitator's own words for a failed verify; the default is the funds case. */
+  verifyInvalidReason?: string;
   /**
    * Consecutive settle calls that die the way the real facilitator
    * died on 2026-08-07: a bare HTTP 502 with Cloudflare's plain-text
@@ -165,7 +167,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
       if (state.verifyShouldFail) {
         return Response.json({
           isValid: false,
-          invalidReason: "insufficient_funds",
+          invalidReason: state.verifyInvalidReason ?? "insufficient_funds",
           payer: TEST_PAYER,
         });
       }
