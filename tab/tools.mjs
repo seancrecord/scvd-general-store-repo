@@ -1032,8 +1032,8 @@ export const TOOL_DEFS = [
         replaced_with: { type: "string", description: "replaced only: canonical name of the tool that took over" },
         retroactive: { type: "boolean", description: "true when backfilling; pair with occurred_at" },
         occurred_at: { type: "string", description: "ISO date the event really happened, for backfill; defaults to now" },
-        payment_method: { type: "string", description: "how it is paid — card, invoice, crypto, free" },
-        source_url: { type: "string", description: "the page or receipt this came from" },
+        payment_method: { type: "string", description: "how it is paid — card, invoice, crypto, free. The builder's own label; refused on a swept entry, which cannot know it" },
+        source_url: { type: "string", description: "the page or receipt this came from. Refused on a swept entry: a letter's link is its own words in a different coat" },
         notes: { type: "string", description: "anything else, kept verbatim" },
         signup_friction: {
           type: "string",
@@ -1145,7 +1145,7 @@ export const TOOL_DEFS = [
             type: "object",
             properties: {
               amount: { type: "number", description: "the money the letter carried" },
-              currency: { type: "string", description: "ISO 4217 code" },
+              currency: { type: "string", description: "ISO 4217 code as the letter stated it; recorded as null when absent, never assumed USD" },
               sender: { type: "string", description: "the sender domain" },
             },
           },
@@ -1156,7 +1156,7 @@ export const TOOL_DEFS = [
   {
     name: "sweep_tally",
     description:
-      "THE SWEEP'S RUNNING COUNT — use this while executing SWEEP.md instead of counting in your head. Report every message you read, in batches, each with its message_id and exactly one bucket: matched (include the entry; it is written to the tab for you, deduped on the message id), unmatched_transactional (include amount and sender), or not_transactional. Refused verdicts are returned with reasons and NOT counted — fix and resubmit them, never drop them. Duplicates are counted once. There is no fourth bucket on purpose.",
+      "THE SWEEP'S RUNNING COUNT — use this while executing SWEEP.md instead of counting in your head. Report every message you read, in batches, each with its message_id and exactly one bucket: matched (include the entry; it is written to the tab for you, deduped on the message id), unmatched_transactional (include amount, currency and sender — a bare amount is refused, never stamped USD), or not_transactional. Refused verdicts are returned with reasons and NOT counted — fix and resubmit them, never drop them. Duplicates are counted once. There is no fourth bucket on purpose.",
     annotations: {
       title: "Sweep Tally",
       readOnlyHint: false,
@@ -1218,7 +1218,7 @@ export const TOOL_DEFS = [
                 },
               },
               amount: { type: "number", description: "unmatched_transactional only: the money the letter carried" },
-              currency: { type: "string", description: "unmatched_transactional only: ISO 4217 code" },
+              currency: { type: "string", description: "unmatched_transactional only: ISO 4217 code as the letter carried it — required; the tally will not assume USD" },
               sender: { type: "string", description: "unmatched_transactional only: the sender domain" },
             },
           },

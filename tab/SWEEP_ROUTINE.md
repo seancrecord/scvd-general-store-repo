@@ -38,7 +38,9 @@ decide exactly one bucket:
   (`stated` or `inferred`), `occurred_at` (the letter's own date).
   Never `problem_solved`, never prose — the tally refuses both.
 - `unmatched_transactional` — it carries money and places on
-  nothing. Report `amount`, `currency`, `sender`.
+  nothing. Report `amount`, `currency`, `sender` — the currency the
+  letter carried; the tally refuses a bare amount rather than stamp
+  `USD` on it.
 - `not_transactional` — read, and plainly no money in it.
 
 Then report the page with **`sweep_tally`** (batches up to 200):

@@ -75,8 +75,11 @@ broken one telling you it is fine.
 
 Mail-sourced entries carry the **closed vocabulary, numbers, dates,
 and a message id.** That is all, and `validateEvent` enforces the hard
-edge of it: `captured_text` and `notes` are **refused outright** on any
-`mail_sweep` or `historical_pass` entry.
+edge of it: `captured_text`, `notes`, `payment_method` and `source_url`
+are **refused outright** on any `mail_sweep` or `historical_pass`
+entry. The last two joined the list after a trial run put a vendor's
+"five stars" on disk through both: a payment label the builder never
+wrote, and a URL whose path was the sentence, percent-encoded.
 
 The reason is structural rather than squeamish. The agent renders
 stored fields back in chat, so a field holding a vendor's prose is a
@@ -132,6 +135,7 @@ back named rather than invented.
 | `trial_ends` | the stated end date | a trial with no end date cannot warn anybody; leave it out and let it be `adopted` |
 | `category` | inferred | `other` is a fine answer |
 | `problem_solved` | **never** | `(not said yet)` |
+| `payment_method`, `source_url` | **never** | refused; the builder's own label and a link the letter chose are both the letter's words |
 | `source` | `mail_sweep`, or `historical_pass` on the backward run | sets `confirmed: false` automatically |
 | `confidence` | `stated` if the letter said it outright, `inferred` if you read it out of ambiguous text | an inferred price must stay visibly inferred |
 | `dedupe_key` | **the message id** | this is what stops a re-found receipt becoming a second charge |

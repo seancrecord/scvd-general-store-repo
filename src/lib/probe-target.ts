@@ -204,11 +204,22 @@ export function checkProbeTarget(url: URL, ownHost: string): ProbeTargetVerdict 
     };
   }
 
-  const hostname = url.hostname.toLowerCase();
+  /*
+   * A trailing dot is the DNS root written out: `localhost.` and
+   * `metadata.google.internal.` resolve exactly where the bare names
+   * do, and the URL parser keeps the dot on a NAME while stripping it
+   * from an IP literal. Every name rule below is an exact or suffix
+   * match, so one dot walked past all of them at once — the metadata
+   * hostname included (trial run 2026-09-02, segment 4). Struck here,
+   * before any name is compared, and struck on the own-host side too
+   * so `scvd.store.` is still us.
+   */
+  const bare = (name: string): string => name.toLowerCase().replace(/\.+$/, "");
+  const hostname = bare(url.hostname);
   if (hostname === "") {
     return { ok: false, reason: "That URL names no host." };
   }
-  if (hostname === url.host.toLowerCase() && hostname === ownHost.toLowerCase()) {
+  if (hostname === bare(url.host) && hostname === bare(ownHost)) {
     // Handled by the doors with a fuller explanation; kept here so the
     // backstop is complete rather than nearly complete.
     return {
