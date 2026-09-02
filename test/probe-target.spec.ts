@@ -140,6 +140,32 @@ describe("the names that resolve inside somebody's network", () => {
   it("refuses an onion address rather than reporting a probe it never made", () => {
     expect(verdict("https://abcdefgh.onion/x").ok).toBe(false);
   });
+
+  /*
+   * TRIAL RUN 2026-09-02, segment 4. A trailing dot is the DNS root
+   * written out — the name resolves exactly where the bare one does —
+   * and the URL parser keeps it on names while stripping it from IP
+   * literals. Every name rule is an exact or suffix match, so one dot
+   * walked past all of them: `metadata.google.internal.` reached the
+   * probe. The IP forms were never affected and stay in their own
+   * cases above.
+   */
+  it.each([
+    ["localhost with the root dot", "https://localhost./x"],
+    ["a .localhost name with the root dot", "https://api.localhost./x"],
+    ["the GCP metadata host with the root dot", "https://metadata.google.internal./x"],
+    ["a .internal name with the root dot", "https://db.internal./x"],
+    ["a single-label name with the root dot", "https://intranet./x"],
+    ["an onion address with the root dot", "https://abcdefgh.onion./x"],
+    ["our own hostname with the root dot", `https://${OWN}./x`],
+    ["several trailing dots, which the parser also keeps", "https://localhost.../x"],
+  ])("refuses %s", (_label, url) => {
+    expect(verdict(url).ok).toBe(false);
+  });
+
+  it("still allows a public name written with the root dot", () => {
+    expect(verdict("https://example.com./x")).toEqual({ ok: true });
+  });
 });
 
 describe("the rules that were already there, now in one place", () => {
