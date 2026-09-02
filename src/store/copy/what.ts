@@ -60,6 +60,7 @@ import { STORE_METADATA } from "@/store/metadata";
  * protecting us from a fear, and it comes out.
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 export interface FaqPair {
   question: string;
@@ -276,7 +277,7 @@ export const WHAT_COPY = {
    * human reads and the answer a machine reads cannot drift apart.
    */
   directAnswer:
-    "scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. Never a score or a ranking — each verdict is one dated observation, ed25519-signed, and anyone can verify one offline. Also a general store for agents, paid in USDC over x402.",
+    `scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. ${NEVER_A_RANKING_SENTENCE} Each verdict is one dated observation, ed25519-signed, and anyone can verify one offline. Also a general store for agents, paid in USDC over x402.`,
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:

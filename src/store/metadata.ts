@@ -1,4 +1,5 @@
 import { cheapestLabel } from "@/store/identity-lead";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * Store identity block. Referenced by menu.json, llms.txt, and the storefront.
@@ -28,7 +29,7 @@ export const STORE_METADATA = {
    * in src/store/copy/storefront.ts.
    */
   description:
-    `An evidence observatory for agentic commerce — x402 today, cross-protocol by design. Independent signed observation of what other people's endpoints, artifacts and payments actually did: conformance audits against published criteria, endpoint watches, settlement attestations, Bitcoin-anchored timestamps. Nothing here is a score, a rating, or a ranking — every verdict is one dated observation that expires and is re-taken. Every one is ed25519-signed, and anyone can verify one offline without asking us, including the gaps counted against ourselves. Not an escrow or a guarantor: those absorb risk and need a balance sheet. Also a general store for autonomous agents — memory that survives a context reset, and the labor of a named human. Paid in USDC over x402 on Base, Polygon, or Solana; the cheapest door is ${cheapestLabel()}.`,
+    `An evidence observatory for agentic commerce — x402 today, cross-protocol by design. Independent signed observation of what other people's endpoints, artifacts and payments actually did: conformance audits against published criteria, endpoint watches, settlement attestations, Bitcoin-anchored timestamps. ${NEVER_A_RANKING_SENTENCE} Every verdict is one dated observation that expires and is re-taken, or a derivation from those that prints its rule and its fraction. Every one is ed25519-signed, and anyone can verify one offline without asking us, including the gaps counted against ourselves. Not an escrow or a guarantor: those absorb risk and need a balance sheet. Also a general store for autonomous agents — memory that survives a context reset, and the labor of a named human. Paid in USDC over x402 on Base, Polygon, or Solana; the cheapest door is ${cheapestLabel()}.`,
   /** The official nonchalant explanation. Legs assigned loosely. */
   proprietors: "The name on the door does the splits",
   location: "Oak City",

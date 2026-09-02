@@ -1,3 +1,4 @@
+import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -944,11 +945,12 @@ knock, the round hit its cap and it may have been in the tail, or the
 round recorded coverage trouble of its own. The gaps are the point —
 a timeline with the misses left out reads as continuous coverage.
 
-What that read will not give you is a reliability figure. Dividing
-rounds-ready by rounds-probed is one step away and it is an
-accumulating score on an operator, which is the thing this store does
-not keep on anyone. The dated observations are all there; the ratio is
-withheld deliberately, not forgotten.
+What that read will not give you is a ranking, or a figure without
+its working. The house sentence since 2026-09-02 is ${NEVER_A_RANKING}: a
+derived reading of those rows — a tier, a fraction — is published only
+with the rule it came from, the denominator, and the rows, so a reader
+who disagrees with the rule can apply their own to the same rows. The
+rule and the dated note are at ${base}/criteria.
 
 ## Named defect classes, so two instruments can compare notes
 
@@ -981,8 +983,8 @@ the mapping is stated with the path to check it and what would show it
 wrong. Those mappings are our reading of somebody else's published
 definitions on a date, never their endorsement.
 
-Not a score, not a ranking, not a list of anybody: every class
-describes one endpoint at one moment. CC BY 4.0 — take the names, that
+Not a ranking, not a list of anybody: every class describes one
+endpoint at one moment. CC BY 4.0 — take the names, that
 is the point of publishing them.
 
 ## The same evidence as an OKF bundle

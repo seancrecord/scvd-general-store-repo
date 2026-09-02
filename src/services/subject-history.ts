@@ -67,12 +67,14 @@ import { CORRECTIONS_POINTER } from "@/store/corrections";
  * the register's [first_seen, last_seen] window instead, and the
  * timeline says which record it came from.
  *
- * WHAT THIS REFUSES TO COMPUTE, and it is the obvious feature: an
- * aggregate. "Ready in 8 of 12 rounds" is one division away and it is
- * a score on an operator, which rule 43 forbids by name — dated
- * observations on artifacts, never accumulating judgments on actors.
- * The transitions are published because each one is itself a dated
- * observation. The ratio is not, and no amount of it being useful
+ * WHAT THIS REFUSES TO COMPUTE, and it is the obvious feature: a
+ * figure without its working. "Ready in 8 of 12 rounds" is one
+ * division away; until 2026-09-02 rule 43 forbade the division by
+ * name, and the amended rule permits it only with the rule it came
+ * from, the denominator and the rows beside it (the passport tier is
+ * that derivation; it lives on the passport, not here). The
+ * transitions are published because each one is itself a dated
+ * observation. A bare ratio is not, and no amount of it being useful
  * changes what it would be.
  */
 
@@ -407,7 +409,7 @@ export async function subjectHistory(
       "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
       "Why a verdict changed. We record what a probe saw, never the cause.",
       "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
-      "A reliability figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed would be a score on an operator, which this store does not keep on anyone. Every dated observation is here; the aggregate is deliberately not.",
+      "A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.",
       "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
       "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
       "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did.",

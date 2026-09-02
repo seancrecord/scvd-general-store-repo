@@ -6,6 +6,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
 import { listCorpus } from "@/services/corpus";
 import type { HonoEnv } from "@/types";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /corpus — the crawlable landing beside /corpus.json.
@@ -127,7 +128,7 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
     </section>
     <section>
       <h2>What it is not</h2>
-      <p class="menu-desc">Not a rating, not a ranking, and never a score on any operator. Each entry records what one probe saw at one moment. Dividing rounds-ready by rounds-probed is one step away and it is an accumulating score on an actor, which is the thing this store does not keep on anyone — the dated observations are all there; that ratio is withheld deliberately, not forgotten.</p>
+      <p class="menu-desc">Not a rating. ${escapeHtml(NEVER_A_RANKING_SENTENCE)} Each entry records what one probe saw at one moment, and no entry is ever ordered against another. A reading derived from the entries — a tier, a fraction — is published only with the rule it came from, its denominator and its rows, so the arithmetic can be redone or replaced; the rule and the dated note are at <a href="/criteria">/criteria</a>.</p>
       <p class="menu-desc">The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. The chain proves the record has not been rewritten; it cannot prove a round saw everything, and each round says so itself where its coverage fell short.</p>
     </section>
     <section>

@@ -68,7 +68,7 @@ export interface WeeklyBrief {
 }
 
 export const NOT_A_RANKING =
-  "Counts, with their denominators, for one signed week. No host is ranked, scored or named on this page; the doors themselves are listed alphabetically at /doors, each with its own dated observation. Dividing any two numbers here is one step away and is yours to take, not ours to publish.";
+  "Counts, with their denominators, for one signed week. No host is ranked or named on this page; the doors themselves are listed alphabetically at /doors, each with its own dated observation. Every figure here carries the two numbers it came from, which is the house sentence: never a ranking, and never a verdict without its derivation and denominator beside it.";
 
 function briefOf(point: WeekPoint, previous: WeekPoint | undefined, base: string): WeeklyBrief {
   const defects = Object.entries(point.failure_classes)

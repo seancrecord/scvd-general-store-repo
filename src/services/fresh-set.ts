@@ -180,7 +180,7 @@ export async function buildFreshSet(env: Env): Promise<FreshSet | null> {
     what_this_is:
       "The doors that answered a spec-conformant x402 payment challenge in this week's census, with what each door's own 402 offered. Dated observations an agent can route on; every row cites the signed per-host history that backs it.",
     what_this_is_not:
-      "Not a ranking, not a score, not an endorsement. A row is a fact about one dated moment; nothing accumulates across weeks into a judgment on an operator. Doors that failed this round are counted in aggregates and never named here.",
+      "Not a ranking, not an endorsement, and no figure without its denominator. A row is a fact about one dated moment; nothing accumulates across weeks into a judgment on an operator. Doors that failed this round are counted in aggregates and never named here.",
     rows: rows.slice(0, FRESH_SET_ROW_CAP),
     truncated: rows.length > FRESH_SET_ROW_CAP,
     aggregates: {

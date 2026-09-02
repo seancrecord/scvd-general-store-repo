@@ -165,7 +165,7 @@ export async function buildOperatorNotice(
     listing_status:
       "This page is not linked from any index of ours, named in no listing, and served noindex. Doors that failed a round are counted in our public aggregates and never named there; only the ready side is listed. Nothing on this page is published about you anywhere else. It is unlisted, which is not the same as secret — you are reading it, and so could anyone who knows your hostname.",
     what_this_is_not: [
-      "Not a score and not a ranking. Every line is one observation at one dated moment; nothing here accumulates across weeks into a judgment on you.",
+      "Not a ranking. Every line is one observation at one dated moment, and any figure carries its denominator; nothing here accumulates across weeks into a judgment on you.",
       "Not a statement that your service is down. We check the SHAPE of a payment challenge, never whether what sits behind it works.",
       "Not a bill, not a sales call, and not a condition on anything. The check was free, this page is free, and there is nothing to buy to make it go away.",
     ],

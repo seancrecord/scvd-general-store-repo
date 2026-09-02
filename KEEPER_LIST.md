@@ -177,6 +177,11 @@ Do not relitigate without you.
 
 - **ClawHub republish at 3.9.0.** 3.8.0 went out
   2026-09-01 (done); the tree moved again the same night.
+- **x402-list description: the doctrine sentence.** The row
+  there still reads "never a score, a rating or a ranking";
+  swap in your sentence ("never a ranking, and never a
+  verdict without its derivation and denominator beside it").
+  Their domain-proof flow runs again on an edit. Your press.
 - **x402-list owner update.** Followed up twice (done).
   Signability re-capture and FORTE probe ride the same
   press when they answer.

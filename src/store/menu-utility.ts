@@ -1,6 +1,7 @@
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
 import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import type { MenuItem } from "@/types";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * THE GOOD BUYER'S PRICE IS DERIVED, AND THE DERIVATION IS THE ARGUMENT.
@@ -545,7 +546,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Give the host in the host query parameter: a bare hostname, e.g. example.com",
       "Reads what we already recorded — no request is made to the subject",
       "A host we've never met returns not_observed, which is an answer",
-      "Never a score, a rating or a ranking",
+      NEVER_A_RANKING_SENTENCE,
       "Want a live read instead? The preflight at /api/preflight/v2 is free and knocks right now",
     ],
   },

@@ -48,7 +48,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     description:
       "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw. Hash-chained, ed25519-signed, Bitcoin-anchored.",
     caution:
-      "Dated observations of moments, never scores on operators. A verdict is what one probe saw from one vantage at one time.",
+      "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator.",
     cadence: "weekly, appended",
   },
   {
@@ -75,7 +75,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     description:
       "The doors that answered a spec-conformant x402 challenge in the latest census, named, with the rails and cheapest USDC ask each door's own 402 offered.",
     caution:
-      "Routing data, not a ranking. A row is a dated fact that a door was answering correctly, never a score on its operator or a promise about delivery.",
+      "Routing data, not a ranking. A row is a dated fact that a door was answering correctly, never a promise about delivery and never a verdict on its operator.",
     cadence: "weekly, with the census",
   },
   {

@@ -2,6 +2,7 @@ import { signJcs } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
 import type { Env } from "@/types";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * THE SPOT CHECK — the observatory's own data, at the counter, for a
@@ -17,8 +18,9 @@ import type { Env } from "@/types";
  * pre-transaction question ("what does the observatory know about
  * this door?") answered at the cheapest price on the shelf.
  *
- * WHAT IT IS NOT, in the store's own law: never a score, a rating,
- * or a ranking. A host we have never met returns not_observed, and
+ * WHAT IT IS NOT, in the store's own law: never a ranking, and never
+ * a verdict without its derivation and denominator beside it (the
+ * 2026-09-02 sentence). A host we have never met returns not_observed, and
  * not_observed IS the answer — Rule 52 forbids this lookup from
  * letting its own blindness read as a verdict about the subject.
  *
@@ -50,7 +52,7 @@ const WHAT_THIS_IS =
   "What the observatory already holds on this host, read from the books at the counter: corpus rounds, verdicts as recorded, when we last actually knocked, our own coverage of the window, and the gaps with their reasons. No request was made to the host — this answer is as fresh as our last round and no fresher, and the timestamps say exactly when that was.";
 
 const WHAT_THIS_IS_NOT =
-  "Not a score, a rating, or a ranking — house law. Not a live probe: the free preflight at /api/preflight/v2 knocks on the door right now; this reads the ledger instead. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host.";
+  `${NEVER_A_RANKING_SENTENCE} House law. Not a live probe: the free preflight at /api/preflight/v2 knocks on the door right now; this reads the ledger instead. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host.`;
 
 /** A refusal with a buyer-facing reason; thrown pre-mint, charges nothing. */
 export class SpotCheckRefused extends Error {}

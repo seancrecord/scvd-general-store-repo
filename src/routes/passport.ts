@@ -72,8 +72,8 @@ function decisionLegend(): string {
     .join("");
   return `<section><h2>The agent decision view</h2>
   <p class="menu-desc">Every passport decides one of four words, and the
-  decision is arithmetic over the freshness state — no judgement, no
-  score, nothing to appeal.</p>
+  decision is arithmetic over the freshness state — no judgement, the
+  rule printed beside it, nothing to appeal.</p>
   <table><thead><tr><th>decision</th><th>what it means for you</th></tr></thead>
   <tbody>${rows}</tbody></table>
   <p class="menu-meta">${escapeHtml(DECISION_RULE)}</p></section>`;

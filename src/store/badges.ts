@@ -99,5 +99,5 @@ export const BADGE_SURFACES: readonly BadgeSurface[] = [
 export function badgesTodayLine(): string {
   const free = BADGE_SURFACES.filter((entry) => entry.cost === "free").length;
   const paid = BADGE_SURFACES.length - free;
-  return `${BADGE_SURFACES.length} — ${free} free, ${paid} bought. Each carries a dated observation and states what it refuses to assert; none accumulates into a score on anyone, which is the gate rule 43 puts in front of every mark this store serves.`;
+  return `${BADGE_SURFACES.length} — ${free} free, ${paid} bought. Each carries a dated observation and states what it refuses to assert; none is a ranking, and none carries a verdict without its derivation and denominator beside it, which is the gate rule 43 puts in front of every mark this store serves.`;
 }

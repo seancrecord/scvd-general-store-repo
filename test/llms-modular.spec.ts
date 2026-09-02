@@ -454,12 +454,24 @@ const BASE = "https://scvd.store";
  * guide carries "daily_fortune" and "fortune_date", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-FOURTH — by the keeper's doctrine
+ * ruling (roadmap N7a): "never a score, a rating or a ranking" became
+ * "never a ranking, and never a verdict without its derivation and
+ * denominator beside it." The sentence rides the first screen (the
+ * opening paragraph the guide shares with the homepage, the MCP
+ * handshake and the skill), the per-host history paragraph no longer
+ * refuses the division but requires its working, and the defect
+ * vocabulary line drops "not a score". Confirmed before this value
+ * was taken: the guide carries the new sentence, carries no retired
+ * form (test/doctrine.spec.ts hunts them), and still every earlier
+ * pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "12dbee136efa9ef654e855fab4f2054ba21b3bc744175747d848c338e9ff429c";
+  "bb8f6f228c9080364ad02ed23daf66c136c090852e4e88413bce66bbf95c7a2f";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

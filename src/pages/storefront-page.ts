@@ -393,8 +393,9 @@ function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
  * different fields and neither is a claim we would not stand behind.
  *
  * NO AggregateRating and no Review, here or anywhere. See the declined
- * positions at /developers: nothing this store publishes is a score, a
- * rating, or a ranking, and that has to be true of our own page too.
+ * positions at /developers: nothing this store publishes is a ranking
+ * or a verdict without its derivation, and that has to be true of our
+ * own page too.
  */
 function freeServicesJsonLd(base: string): string {
   const service = (options: {

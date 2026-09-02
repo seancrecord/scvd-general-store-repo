@@ -443,7 +443,7 @@ registryRoutes.get("/registry", async (c) => {
         measurementTechnique:
           "One signed GET per declared host per week against the published preflight battery, verifiable in the host's own logs. The walk is capped; where a round hit that cap or lost coverage, the week's coverage block says so. Published by the keeper's hand, never by a clock.",
         whatThisIsNot:
-          "NOT a score, rating or ranking of any operator, and not a claim any door is safe to buy from. A verdict is shape-conformance from one vantage at one moment: the census parses signed offers as JWS and does NOT verify their signatures. A door counted as answering is a door that answered our probe, not a door that delivers goods. Weeks whose coverage block is absent were measured before that layer existed — treat missing as NOT MEASURED, never as full coverage.",
+          "NOT a ranking of any operator, no verdict without its derivation and denominator beside it, and not a claim any door is safe to buy from. A verdict is shape-conformance from one vantage at one moment: the census parses signed offers as JWS and does NOT verify their signatures. A door counted as answering is a door that answered our probe, not a door that delivers goods. Weeks whose coverage block is absent were measured before that layer existed — treat missing as NOT MEASURED, never as full coverage.",
         howToRead:
           "Every percentage ships beside the counts it was computed from; use those rather than recomputing against another field. Read each week's coverage block before comparing weeks — a capped round and a quiet week produce the same totals. The weeks array is ascending by ISO week.",
         variableMeasured: [
