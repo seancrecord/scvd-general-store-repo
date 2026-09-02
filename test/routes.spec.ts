@@ -91,6 +91,9 @@ describe("the storefront", () => {
       // question one turn deeper, and lands beside it for the same
       // persona that made the cheap-door reorder worth doing.
       "settlement_reconciliation",
+      // Two pennies, tied, in Penny Shelf file order: the fortune
+      // (relisted 2026-09-02) ahead of the confession.
+      "daily_fortune",
       "the_confession",
       "attestation_bundle",
       // A dime: the mandate rides the cheap-door region on purpose —

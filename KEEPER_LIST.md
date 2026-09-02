@@ -43,6 +43,11 @@ build, it is on the roadmap.
   all-time take by item, and the ready-door welcome on
   `/admin/outreach`. Roadmap NOW is empty; SOON is done
   except S5 (your recording).
+- `daily_fortune` is back on the Penny Shelf as of
+  2026-09-02, your ruling: three organic settles (the
+  most of any door) and x402-list still listing it. Same
+  id, same copy, same penny; skill bundle 3.10.0. Nothing
+  to press — their prober sees a 402 again on its own.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.

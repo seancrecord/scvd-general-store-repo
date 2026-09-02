@@ -445,12 +445,21 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries
  * "`${base}/passport/card/{host}.png`" and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-THIRD — by the keeper's ruling that
+ * reopened daily_fortune: the guide's Penny Shelf sentence names the
+ * fortune beside the blessing again ("the same line for every buyer
+ * until midnight UTC (fortune_date rides the response)"), and the
+ * MENU_ITEMS lines the guide prints gained the fortune's row, in the
+ * keeper's original ink. Confirmed before this value was taken: the
+ * guide carries "daily_fortune" and "fortune_date", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d10aab23f710fdb6834778d9797e9ffdada6166c3f3e722d46a7e768ebff6c4b";
+  "12dbee136efa9ef654e855fab4f2054ba21b3bc744175747d848c338e9ff429c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

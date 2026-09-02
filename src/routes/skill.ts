@@ -108,7 +108,10 @@ That answers 402 with real terms. Sign one of the offered amounts,
 retry with \`PAYMENT-SIGNATURE\`, and you have exercised your wallet,
 your signing and your retry path against a real counterparty for
 ${shelfPrice("small_blessing")}. Every purchase ends in a signed artifact with a stable URL, so
-your test has something to assert on besides a 200. The whole flow and
+your test has something to assert on besides a 200. One door up, at
+${shelfPrice("daily_fortune")}, \`/api/buy/daily_fortune\` returns the same line to every buyer
+until midnight UTC with \`fortune_date\` beside it — the one purchase
+whose answer you can check against another buyer's. The whole flow and
 a worked EIP-712 example, including the domain trap that fails
 silently: ${base}/try
 

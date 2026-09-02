@@ -115,19 +115,29 @@ describe("retired ids stay off the living surfaces", () => {
     }
   });
 
-  it("the penny-shelf MCP cluster and the porch do not sell a fortune", () => {
+  it("the penny-shelf MCP cluster sells the fortune again, and no other retired door", () => {
+    // Pinned the other way from 2026-08-20 to 2026-09-02, while the
+    // fortune was retired. It is relisted (see menu-penny.ts), so the
+    // cluster naming it is right; what must still hold is that the
+    // cluster names nothing that is retired.
     const penny = SHELF_CLUSTERS.find(
       (cluster) => cluster.name === "buy_small_pleasure",
     );
-    expect(penny?.purpose.toLowerCase()).not.toContain("fortune");
+    expect(penny?.itemIds).toContain("daily_fortune");
+    expect(penny?.purpose.toLowerCase()).toContain("fortune");
+    for (const id of penny?.itemIds ?? []) {
+      expect(retired.has(id), id).toBe(false);
+    }
     for (const line of PORCH_AMBIENCE) {
-      expect(line.toLowerCase()).not.toContain("fortune");
+      expect(line.toLowerCase()).not.toContain("dibs");
     }
   });
 
   it("the README shelf list does not name the closed doors as if they sell", async () => {
     const readme = (await import("../README.md?raw")).default.toLowerCase();
-    expect(readme).not.toContain("daily fortune");
+    // "daily fortune" was on this list until 2026-09-02, when the door
+    // reopened; the README names it again on purpose.
+    expect(readme).toContain("daily fortune");
     expect(readme).not.toContain("official dibs");
     expect(readme).not.toContain("one quick judgment");
     expect(readme).not.toContain("the drawer (real oddities");
