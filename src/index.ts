@@ -1,3 +1,4 @@
+import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
@@ -585,7 +586,10 @@ app.onError((err, c) => {
 const worker: ExportedHandler<Env> = {
   fetch: app.fetch,
   // Hourly: phantom walk + the health rounds. Sundays 7am ET: the digest.
-  scheduled: async (event, env, ctx) => {
+  // Every KV call under a cron tick takes the patient retry budget
+  // (kv-retry.ts): nobody is waiting on a walk, so it can sit out the
+  // kind of blip that has now killed three of them.
+  scheduled: (event, env, ctx) => withPatientKv(async () => {
     if (event.cron === "0 11 * * SUN") {
       /**
        * THE COLD EXPORT rides the same press as the ward round
@@ -980,7 +984,7 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
-  },
+  }),
 };
 
 // Cloudflare Workers requires a default export for its fetch/scheduled handlers.
