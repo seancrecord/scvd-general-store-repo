@@ -81,6 +81,18 @@ export function renderWardPage(
             round.our_doors.missing.length > 0
               ? ` <strong style="color:#8c2f1b">Missing: ${escapeHtml(round.our_doors.missing.join(", "))}.</strong> Re-register those (your press); the miss stays on the signed round until the index returns them.`
               : ""
+          }${
+            (round.our_doors.stale?.length ?? 0) > 0
+              ? ` <strong style="color:#8c2f1b">Stale: ${escapeHtml((round.our_doors.stale ?? []).join(", "))}.</strong> Retired doors the index still returns. Each answers 410 with Sunset, and each is a row an outside prober scores as down. The catalog never delists on its own; removal is a letter to Coinbase (your hand).`
+              : ""
+          }${
+            (round.our_doors.unknown?.length ?? 0) > 0
+              ? ` <strong style="color:#8c2f1b">Unrecognized: ${escapeHtml((round.our_doors.unknown ?? []).join(", "))}.</strong> Paths under /api/buy/ the index carries that are neither on the menu nor retired.`
+              : ""
+          }${
+            round.our_doors.stale === undefined
+              ? " Stale doors: not measured this round (predates the reading)."
+              : ""
           }</li>`
         : "<li>Our doors in the search index: not measured this round (predates the door check).</li>"
     }

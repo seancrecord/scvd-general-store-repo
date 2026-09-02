@@ -270,8 +270,33 @@ Do not relitigate without you.
 - **Maha Strategies observatory.** LOOK their surfaces
   the way we read Cairn. Do not write an arrangement
   until you say yes.
-- **`/stats` vs the Agent Economy card** ($0 settled).
-  Their grade is not ours. LOOK your books.
+- **Agent Economy card, read (09-02).** Their 66% is not
+  uptime: it is 21 of 33 CDP catalog rows answering 402.
+  The other 11 are the retired shelf, each a 410 we
+  serve on purpose (`a_secret`, `app_gutcheck`, `dibs`,
+  `grudge`, `human_witness`, `nomenclature`,
+  `phantom_check`, `phone_call`, `portrait`,
+  `quick_judgment`, `the_drawer`). Eight of them have
+  been 410 for the whole 17 days they have watched us,
+  so 66% was the ceiling from day one, not a decline.
+  The catalog admits on first settle and never delists;
+  we never registered, so there is nothing of ours to
+  re-register. The ward round now names these as
+  `stale` on `/admin/ward` and alerts when the set
+  changes. Three hands, in order:
+  1. SEND `docs/AGENT_ECONOMY_ASK.md` §1 to André: the
+     RFC 9745/8594 ask, and the request for the 33
+     URLs and which catalogs they read.
+  2. SEND §2 to Coinbase CDP support: drop the 11 URLs.
+     The only fix that lands on the catalog itself.
+  3. RULE on the 11 doors meanwhile. Options named in
+     §3; the shopkeeper recommends leaving them shut.
+  Separately: 9 menu doors have never settled and are
+  not in the catalog at all (the next `our_doors`
+  reading names them). One house buy each is their
+  registration fee; their adoption signals exclude
+  captive wallets, so the buys cannot flatter the
+  grade. Their grade is still not ours. LOOK your books.
 - **Receipt treaty.** Ask is drafted
   (`docs/RECEIPT_TREATY_ASK.md`). Send is your hand.
 - **Key succession.** Gate is physical: a second seed,

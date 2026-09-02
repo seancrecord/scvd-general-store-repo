@@ -8,6 +8,20 @@
  * First enacted 2026-08-05, on the keeper's word, after the first
  * month of real demand data (docs/archive/MENU_CONSOLIDATION.md). The rule
  * that survives the list: nothing with an organic settle was cut.
+ *
+ * A CUT IS ALSO A LETTER (learned 2026-08-24 and again 2026-09-02).
+ * The CDP catalog admits a door on its first settle and never
+ * delists it, so every door on this shelf is still announced there,
+ * and an outside prober that reads the catalog scores each 410 as
+ * DOWN: x402-list called the store DEGRADED over daily_fortune, and
+ * Agent Economy Report read 21 of 33 rows answering 402 and printed
+ * 66% available — the rest were this list. The tombstone
+ * (routes/buy.ts) says "closed on purpose" in RFC 9745/8594 headers;
+ * the ward round names the doors the index still carries as `stale`;
+ * neither removes the row. Retiring a door now means, in order: the
+ * entry here, the tombstone it gets for free, and a letter to every
+ * catalog carrying the door (the keeper's hand — docs/AGENT_ECONOMY_ASK.md
+ * holds the first two).
  */
 
 export interface RetiredItem {
