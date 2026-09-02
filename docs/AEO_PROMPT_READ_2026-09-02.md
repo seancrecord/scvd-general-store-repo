@@ -210,6 +210,112 @@ column, which was empty on every row of batch 1. A topic where the
 winner is Datadog or Stripe after the rewrite is a topic still
 phrased wrong, not a topic to work harder on.
 
+## Batch 3 — the semantic families, ruled against the record
+
+An outside read (another model, citing Agenstry and MCP.so as its
+picture of us) proposed twelve query families and a positioning
+pyramid. Most of the families are real. Two of its conclusions
+collide with rulings already on the record, and its map of our
+pages is wrong in a way that is itself a finding.
+
+### What collides
+
+- **"Independent verification layer for agentic commerce."** N2
+  (2026-09-01) ruled: no "verification layer", no "trust layer".
+  The noun is "evidence observatory", it is one constant, and six
+  surfaces inherit it. The category question is closed. What the
+  outside read gets right is the mechanic beneath it: broad noun at
+  the top, the asked-for noun on every leaf. That is items 4 to 6
+  above, already on the list.
+- **"Proof for agentic commerce."** Closer, and ⚑ worth a look as a
+  tagline, but "proof" overclaims what a dated observation that
+  expires can carry. The store's word is evidence. Keeper's call.
+- **"Which x402 APIs are trustworthy / find verified services."**
+  Never a ranking. The store answers "which doors were ready this
+  week, with the fraction and the rows" (/doors, /fresh-set, the N7
+  tier). It does not answer "which should I use". Track the first
+  form, never the second.
+- **"Did the seller deliver?"** The outside read calls this
+  "potentially huge". The store's own artifacts say the opposite in
+  full weight: the settlement attestation "does not attest that
+  anything was delivered", and the case file prints "delivery not
+  observed by this store" because that is usually true. The launch
+  check sees delivery for exactly one purchase. Two canary prompts,
+  not a category.
+- **"Control what an agent can do / prevent it exceeding
+  authority."** That is enforcement, and the mandate is a dated
+  record that is never enforced. Spend-cap and guardrail vendors win
+  those prompts and should. Track only "prove what an agent was
+  authorized to do, dated and signed by a third party".
+
+### What the outside read got wrong about our pages
+
+It answered "verify an x402 payment" with /attestation (that page is
+the trust model, "What we sign"), and cited /watch, /mandate and
+/context, none of which exist (they are /menu/standing_watch,
+/menu/the_mandate, /menu/context_anchor). A model that had read us
+carefully still guessed the map. The instruments are findable by
+house name only, and a house name is not what anyone types. Same
+finding as batch 1, from the other direction.
+
+### The families, ruled
+
+Fit is a call; "who wins today" is a call until the tracker runs
+them. Prompts are worded to be added as-is.
+
+| Family | Fit | Who wins today (call) | Track (worded) | Page that answers |
+| --- | --- | --- | --- | --- |
+| Verify an AI agent before using it | narrow only | agentlair, identity vendors, generic "AI agent security" posts | "How do I independently verify an agent-facing API before my agent pays it?" / "How do I know an x402 endpoint is what it claims to be?" | preflight, the Once-Over, passport |
+| Verify a third-party API | narrow only; generic form is Checkly / UptimeRobot (batch 1 proved it) | Checkly, Datadog | "How do I prove an API was working on a specific date?" / "How do I get a signed, dated record of what a URL returned?" | the Once-Over, bitcoin anchor |
+| What happened on chain | strong | block explorers for the generic form; DefaultVerifier, Ledge for the signed form | "How do I verify a USDC payment settled on Base without trusting the merchant?" / "…on Solana?" / "How do I reconcile the amount my agent was authorized to spend against what moved on chain?" / "How do I get a third-party signed receipt that an x402 payment settled?" | settlement attestation, settlement reconciliation |
+| Did the seller deliver | canary | nobody; the honest answer is "mostly unobservable" | "How do I get everything a neutral party observed about one agent purchase, payment through delivery, in one signed file?" / "How do I verify delivery after an x402 payment?" | the case file, launch check |
+| Verify a receipt or certificate | strongest, highest intent | libsodium docs for "verify an Ed25519 signature"; nobody for the x402 form | "How do I verify an x402 signed receipt?" / "How do I verify an x402 signed offer before paying?" / "How do I verify a signed attestation without trusting the issuer?" / "Is there a free checker for x402 receipts?" | the conformance desk, /api/verify |
+| Prove something happened at a time | medium | OpenTimestamps for the generic form | "How do I timestamp a hash into Bitcoin for under a cent?" / "How do I prove an x402 endpoint was live on a given date?" | bitcoin anchor, corpus rows |
+| Did it stay conformant | strong, uncontested | generic uptime tools | "How do I monitor an x402 endpoint for conformance drift after a deploy?" / "How do I get a signed weekly history of whether my x402 endpoint stayed conformant?" / "How do I catch a deploy silently breaking my 402 challenge?" | standing watch, conformance watch, corpus host page |
+| Verify another party's claim | strongest doctrinal fit | nobody | "How do I check a competitor's x402 receipt with a tool they don't run?" / "Can I verify an attestation from another provider without trusting them?" | the conformance desk |
+| Is the agent really making money | strong, uncontested, ⚑ investigate before building | x402-list "measured traction" | "How do I verify an x402 service has real payers and not self-generated volume?" / "How do I read what actually arrived at the address an x402 endpoint advertises?" / "How do I tell payer concentration for an agent service?" | /inflows, /registry, the Statement, house-wallets |
+| Which service should I use | only the "working now" form | x402-list, x402scan | "Which x402 endpoints were actually reachable and payable this week?" / "Where is a dated, signed dataset of x402 endpoint readiness?" | /doors, /fresh-set, corpus |
+| Verify before allowing to act | record form only | Skyfire, AP2, spend-cap vendors | "How do I record what my agent is authorized to do, dated and signed by a third party, before it spends?" | the mandate |
+| Preserve agent memory | secondary, one prompt | mem0, LangSmith | "How do I store a memory an agent can read back next session, with a signed timestamp?" | context anchor |
+| Meta: prove what an agent did | the category test, two prompts | nobody clearly | "How do I independently verify what an AI agent did in a transaction?" / "How can an agent produce evidence of its actions a stranger can check?" | the case file, /api/verify, corpus |
+
+Twenty-seven prompts above. The tracker holds fifty and batch 2
+already fills it. The attestation bucket in batch 2 carries eleven
+near-duplicates (3, 8, 9, 15, 18, 32, 35, 38, 48, 49, and 11); keep
+six. The conformance bucket has 7, 27, 37 saying the same thing;
+keep two. That returns eight slots; with the eight refills from
+batch 2 reassigned here, sixteen of the twenty-seven fit. Take the
+receipt, on-chain, stayed-conformant, another-party and
+making-money rows first; they are the uncontested ones.
+
+### The map the store already has
+
+The outside read's four layers (service, transaction, authority,
+evidence) are sound, but the store already has its own three
+tenses, and they are the value proposition: **before you pay**
+(preflight, practice till, launch check, mandate), **after you pay**
+(settlement attestation, reconciliation, receipt check, case file),
+**over time** (watch, corpus, tiers, inflows). The fourth thing is
+the one the outside read named correctly: **on anyone's artifact,
+not only ours** (the conformance desk, /api/verify). Four tracker
+topics in those words replace the four in batch 2. Every family
+above sits in one of them; x402 sits across all four, which is the
+one line in the outside read to keep verbatim: x402 is the wedge,
+not the category.
+
+### Query-shaped pages, in the store's own route style
+
+Not a rename, not /x402/conformance. One additional page per
+uncontested family, each a question in its title, each derived
+from the same constants as the instrument it points at, each
+carrying FAQPage and Service JSON-LD with the price, each linking
+the house-named page as the door. Six to start: verify an x402
+receipt; verify a USDC settlement on Base or Solana; monitor an
+x402 endpoint for conformance drift; x402 launch check; test your
+x402 payment client; whether an x402 service has real payers. Run
+the prompts through the tracker first, then build only the pages
+whose prompts came back with nobody winning.
+
 ## What to do, in order
 
 Keeper's hands are marked ⚑. The rest is a branch.
@@ -285,6 +391,22 @@ Keeper's hands are marked ⚑. The rest is a branch.
     29 and 43 ask about automated versus manual audits. The
     commission desk and the AURa walk are the manual side; neither
     page says so in those words.
+
+12. ⚑ **Run the twenty-seven semantic prompts before building.** A
+    new tracker topic set, one week, recording for each: does the
+    store appear, who does, what noun the winner uses, what the
+    engine thinks we do, and which of our pages it guessed at. That
+    last column is the one that decides which pages get built.
+13. **Retopic the tracker to the store's tenses**: before you pay,
+    after you pay, over time, on anyone's artifact. Cut the
+    attestation and conformance duplicates in batch 2 to make the
+    sixteen slots.
+14. **Six question-titled pages**, only for the families that come
+    back uncontested, in the store's route style, derived not typed.
+15. ⚑ **The inflows family is a market question, not a page.**
+    "Does this agent have real payers" is asked by directories and
+    investors, and x402-list already sells the traction number. Look
+    at it before anything is built on it.
 
 ## What not to do
 
