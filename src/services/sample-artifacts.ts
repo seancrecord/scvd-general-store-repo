@@ -221,7 +221,8 @@ import {
   type WatchProbe,
 } from "@/services/standing-watch";
 import { observeWithFacts, type SignedAttestation } from "@/services/attestation";
-import { LAUNCH_CHECK_UA, type LaunchCheckObservation } from "@/services/launch-check";
+import type { LaunchCheckObservation } from "@/services/launch-check";
+import { LAUNCH_CHECK_UA } from "@/services/launch-check-terms";
 import { BASE_EVM, TRANSFER_TOPIC } from "@/lib/base-rpc";
 
 export type SampleSlug =
