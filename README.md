@@ -59,6 +59,11 @@ What people arrive here to do, and where each door is:
   [`x402-verify`](https://www.npmjs.com/package/x402-verify) (MIT,
   zero deps), and [`x402-sign`](https://www.npmjs.com/package/x402-sign)
   mints offers and receipts that pass it.
+- **Fail your deploy when your door breaks** — the free preflight as a
+  GitHub Action, one probe per door after the deploy step, `not_ready`
+  fails the job and `unreachable` does not:
+  [`action/preflight`](action/preflight/README.md). The terminal form
+  is `scvd preflight` from [`scvd-cli`](https://www.npmjs.com/package/scvd-cli).
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
   [scvd.store/corpus](https://scvd.store/corpus).

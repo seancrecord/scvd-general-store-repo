@@ -209,6 +209,21 @@ INSTRUCTIONS the day the publish runs and are a forward reference
 until then — the same posture as the MCP Registry republish above,
 and worth closing quickly for the same reason.
 
+## 4c. GitHub Action — the preflight in somebody else's deploy
+
+DONE 2026-09-02 (roadmap L7): `action/preflight/` is a composite
+GitHub Action, `uses: seancrecord/scvd-general-store-repo/action/preflight@main`,
+that POSTs each named door to `/api/preflight/v2` and fails the job on
+`not_ready` — the CLI's exit law, kept, `unreachable` exiting 0 unless
+the workflow says otherwise in writing. One file, no dependencies,
+tested offline against a local store (`npm run action:test`, in CI).
+Nothing to press: it is used by path from this repository at a ref
+the operator chooses. A Marketplace listing would be a press of yours
+(rule 30) and is not required for `uses:` to work. Demand tag on the
+row was "a stranger installs it"; the count of workflows that do is
+not observable from here, so the porch's `preflight` channel is the
+only number this will ever produce.
+
 ## 5. Other client directories (lower priority, same shape)
 
 - Cursor: directory driven by docs.cursor.com MCP listings; community

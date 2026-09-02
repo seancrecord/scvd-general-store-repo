@@ -92,6 +92,14 @@ statement about the network path at one moment and not a finding about
 the endpoint, and a CI job that treated it as one would be drawing a
 conclusion the evidence refuses.
 
+## In a deploy
+
+The same `preflight`, as a GitHub Action with the same exit law:
+[`action/preflight`](https://github.com/seancrecord/scvd-general-store-repo/tree/main/action/preflight)
+— `uses: seancrecord/scvd-general-store-repo/action/preflight@main`
+with `urls`, one probe per door, `not_ready` fails the job and
+`unreachable` does not unless the workflow says so.
+
 ## Pointing it somewhere else
 
 ```

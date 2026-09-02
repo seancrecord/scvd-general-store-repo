@@ -129,6 +129,9 @@ Do not relitigate without you.
   look's copy — the door's own document at `/api/look/v1`,
   the `look_at_door` tool description, the guide paragraph
   and the atlas line — is drafted for your ink (rule 7).
+  L7 shipped the same day: `action/preflight/`, used by
+  path from this repository; a Marketplace listing is your
+  press (rule 30) and is not needed for `uses:` to work.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit
@@ -289,7 +292,19 @@ Do not relitigate without you.
   went through, then LOOK the description carries the
   doctrine sentence ("never a ranking, and never a verdict
   without its derivation and denominator beside it") and
-  not the old one. daily_fortune active, DEGRADED gone:
+  not the old one. LOOKED 2026-09-02 22:30 UTC by the
+  agent: the update went through — the five doors first
+  seen by their prober 21:52 UTC, all active, service
+  ONLINE, 14 of 14 — but the description on file still
+  ends "Not escrow, not a rating, not a guarantee" and the
+  instruments list, WITHOUT the doctrine sentence (dropped
+  in the update or capped by their field). And
+  `operator_statement`, listed the same day, is not in
+  their record. Both are one more owner update: resubmit
+  the sixty-word description and add the sixth door. The
+  "degraded" you saw on good_buyer was their intake window
+  between submission and first confirmed check; by 22:23
+  UTC it read online. daily_fortune active, DEGRADED gone:
   97, third of ~50. The last points, per the 08-24 read:
   signability re-capture (their eip712_domain_extra check
   read unknown from a pre-08-21 envelope; the live 402

@@ -1,0 +1,69 @@
+# THE PREFLIGHT, IN YOUR DEPLOY (roadmap L7, named by the keeper
+# 2026-09-02): a GitHub Action that runs the store's free x402 door
+# check against the doors you name, and fails the job on a not_ready
+# verdict.
+#
+# Same instrument, same law. It POSTs to /api/preflight/v2 — the same
+# single probe, the same battery, the same limiter every preflight
+# door serves — and reads the verdict exactly as the scvd CLI does:
+# not_ready fails the job; unreachable does NOT, because that is a
+# fact about the path from the store's vantage at one moment and a
+# deploy that failed on it would be drawing a conclusion the evidence
+# refuses. Every check is printed by name with its detail, and the
+# store's own JSON is kept as an artifact-ready file, so the red is
+# never a bare exit code.
+#
+# Zero dependencies: the runner's Node and global fetch, nothing
+# installed. A deploy gate that pulls a thousand packages to make one
+# POST is a supply-chain event on every deploy.
+#
+# It stores nothing about you. The store meters the probe on the same
+# budget as any caller and keeps no account, no cookie and no caller
+# identifier (the door's own security block says so at
+# https://scvd.store/api/preflight/v2).
+name: "scvd preflight"
+description: "Fail a deploy when an x402 door does not answer a well-formed, payable 402: the free scvd.store preflight, one probe per door, checks named."
+author: "Record Creative Co. LLC"
+branding:
+  icon: "shield"
+  color: "gray-dark"
+
+inputs:
+  urls:
+    description: "The x402 door(s) to check, one per line: https, default port, on the public internet, the URL a buyer would GET expecting a 402."
+    required: true
+  fail_on:
+    description: "Which verdicts fail the job. `not_ready` (the default) fails only a door that answered and failed the battery. `not_ready,unreachable` also fails a door the store could not reach — read the caveat in the README before choosing it."
+    required: false
+    default: "not_ready"
+  base:
+    description: "The store to ask. Only change this to point at a staging copy of scvd.store."
+    required: false
+    default: "https://scvd.store"
+  report_path:
+    description: "Where to write the store's own JSON for every door checked, for upload-artifact or a later step."
+    required: false
+    default: "scvd-preflight.json"
+
+outputs:
+  verdicts:
+    description: "JSON object of url -> verdict (ready | not_ready | unreachable | refused)."
+    value: ${{ steps.preflight.outputs.verdicts }}
+  worst:
+    description: "The worst verdict across the doors: not_ready, then unreachable, then refused, then ready."
+    value: ${{ steps.preflight.outputs.worst }}
+  report_path:
+    description: "The file the store's JSON was written to."
+    value: ${{ steps.preflight.outputs.report_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: preflight
+      shell: bash
+      env:
+        SCVD_PREFLIGHT_URLS: ${{ inputs.urls }}
+        SCVD_PREFLIGHT_FAIL_ON: ${{ inputs.fail_on }}
+        SCVD_PREFLIGHT_BASE: ${{ inputs.base }}
+        SCVD_PREFLIGHT_REPORT: ${{ inputs.report_path }}
+      run: node "$GITHUB_ACTION_PATH/preflight.mjs"
