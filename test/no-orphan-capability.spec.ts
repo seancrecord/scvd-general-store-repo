@@ -92,6 +92,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   // ---- pending removal, tracked ----
   "/.well-known/x402list.txt":
     "an ownership challenge, not a capability: x402-list.com fetches this fixed path once per listing update to check we control the origin. Tokens carry their own last day (store/site-verification.ts) and the file serves only live ones, so nothing here is pending removal any more",
+  "/mcp/":
+    "the same door as /mcp, which every surface lists, reached by the commonest typo: a trailing slash. It 308s to /mcp so a POSTed initialize lands as a POST (2026-09-02, after a scanner read the old 404 as no server); listing it would advertise two doors that are one door",
   "/.well-known/openai-apps-challenge":
     "an ownership challenge, not a capability: the OpenAI plugin submission portal fetches this fixed path at the origin root to check we control the MCP host, and it answers only while OPENAI_APPS_CHALLENGE is set (store/site-verification.ts). Unlike the two below it stays up for the life of the listing, because OpenAI asks that a host's token not be removed while a plugin uses it",
   "/.well-known/owners.json":
