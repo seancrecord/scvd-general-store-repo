@@ -216,14 +216,23 @@ Do not relitigate without you.
   2026-09-01 (done); the tree moved five bundle versions
   since (the fortune, the doctrine, the tier, the case
   file, the aura walk). One press covers all of them.
-- **x402-list description: the doctrine sentence.** The row
-  there still reads "never a score, a rating or a ranking";
-  swap in your sentence ("never a ranking, and never a
-  verdict without its derivation and denominator beside it").
-  Their domain-proof flow runs again on an edit. Your press.
-- **x402-list owner update.** Followed up twice (done).
-  Signability re-capture and FORTE probe ride the same
-  press when they answer.
+- **x402-list owner update, round five (09-02).** Submitted
+  by your hand: the five doors listed W35-W36 and the
+  description. Their token is served at
+  `/.well-known/x402list.txt` until 09-06 and then stops on
+  its own (the file now renders from a dated list; no
+  removal to remember). Request id is in
+  `src/store/site-verification.ts`. LOOK that the update
+  went through, then LOOK the description carries the
+  doctrine sentence ("never a ranking, and never a verdict
+  without its derivation and denominator beside it") and
+  not the old one. daily_fortune active, DEGRADED gone:
+  97, third of ~50. The last points, per the 08-24 read:
+  signability re-capture (their eip712_domain_extra check
+  read unknown from a pre-08-21 envelope; the live 402
+  passes) and the FORTE tier (they pay one real call;
+  `settlement_attestation` at $0.004 is the cheapest
+  target). Both are asks through the same owner flow.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.

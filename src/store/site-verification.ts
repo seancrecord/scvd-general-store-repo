@@ -37,6 +37,70 @@ export const VERIFICATION_TAGS: readonly VerificationTag[] = [
   },
 ];
 
+/**
+ * x402-list.com DOMAIN-OWNERSHIP TOKENS, served at /.well-known/x402list.txt.
+ *
+ * Their owner-update flow issues a one-time token that expires 72h
+ * after issue; the file may carry several lines, and lines starting
+ * with # are ignored. Every previous round hard-coded the token in the
+ * route with a "remove after verification" note, and the note was
+ * broken every time — the 08-26 token was still being served on
+ * 09-02, a week dead. So the token now carries its own last day and
+ * the file renders only the live ones: nothing to remember to remove,
+ * and a dead nonce cannot sit at a well-known path by omission.
+ *
+ * Proof-of-control nonces, not secrets: useless to anyone who does not
+ * already control scvd.store. The request id is kept so the check can
+ * be re-run from their API if the page is lost.
+ */
+export interface DirectoryToken {
+  issuer: string;
+  /** ISO date the token was issued. */
+  issued: string;
+  /** ISO date, exclusive: the token is not served on or after this day. */
+  serve_until: string;
+  token: string;
+  request_id?: string;
+  /** What the round was for, one line. */
+  purpose: string;
+}
+
+export const X402LIST_TOKENS: readonly DirectoryToken[] = [
+  {
+    issuer: "x402-list.com",
+    issued: "2026-09-02",
+    serve_until: "2026-09-06",
+    token: "x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco",
+    request_id: "d766c4a7-1918-4f4f-b0f3-2215ec15bb72",
+    purpose:
+      "listing update: the five doors listed W35-W36 (aura_walk, good_buyer, opening_day, provenance_check, the_case_file) and the sixty-word description",
+  },
+];
+
+/**
+ * The file body for /.well-known/x402list.txt at a given moment. The
+ * clock is injected (AGENTS.md: a test whose verdict moves with the
+ * wall clock is not a test). Comments only when nothing is live, so
+ * the path keeps answering 200 with an honest explanation instead of
+ * a dead nonce.
+ */
+export function x402listTokenFile(now: Date): string {
+  const lines = [
+    "# x402-list.com domain-ownership tokens for scvd.store.",
+    "# One-time nonces, each served only until its own last day; see src/store/site-verification.ts.",
+  ];
+  for (const entry of X402LIST_TOKENS) {
+    if (now < new Date(`${entry.serve_until}T00:00:00Z`)) {
+      lines.push(`# issued ${entry.issued}, ${entry.purpose}`);
+      lines.push(entry.token);
+    }
+  }
+  if (lines.length === 2) {
+    lines.push("# No verification in progress.");
+  }
+  return `${lines.join("\n")}\n`;
+}
+
 /** The tags as head markup. Empty string when there are none. */
 export function verificationMetaTags(): string {
   return VERIFICATION_TAGS.map(
