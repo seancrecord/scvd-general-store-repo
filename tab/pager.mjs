@@ -61,12 +61,33 @@ export const PAGE_KINDS = [
  * `superseded` and `retired` are both terminal and mean OPPOSITE
  * things: superseded is the same worry re-raised fresher (the old
  * page's count is evidence of days unspoken), retired is the worry
- * no longer holding at all — canceled trial, filled gap, a worry
- * that crossed into another kind. Only superseded feeds
- * unspoken_pct; a moot page counted as "missed" would let resolved
- * worries inflate the instrument's failure number.
+ * no longer holding at all — canceled trial, filled gap. Only
+ * superseded feeds unspoken_pct; a moot page counted as "missed"
+ * would let resolved worries inflate the instrument's failure number.
+ *
+ * A worry that got WORSE is not moot. "Charges you today" going
+ * unspoken until the charge lands is the paradigm miss, and the first
+ * cut closed that page as retired — which dropped the single costliest
+ * silence out of unspoken_pct and let the past-end page start its own
+ * count at zero, as if the clock had only just noticed (trial run
+ * 2026-09-02). So a page whose worry crossed into its successor kind
+ * is superseded by the successor's page, and the successor inherits
+ * the days unspoken.
  */
 const PAGE_STATES = ["queued", "handed_over", "acknowledged", "superseded", "retired"];
+
+/** kind → the kind the same worry becomes when it goes unspoken too long. */
+const WORRY_SUCCESSOR = { trial_converting: "trial_past_end" };
+
+/**
+ * The worry a page is about, across the kinds it passes through:
+ * trial_converting and trial_past_end are one worry at two ages, so
+ * the days unspoken follow it over the boundary instead of resetting.
+ */
+function worryOf(kind, toolName) {
+  const root = Object.entries(WORRY_SUCCESSOR).find(([, next]) => next === kind)?.[0] ?? kind;
+  return `${root}:${toolName}`;
+}
 
 function pagesPath(tabPath) {
   return sidecarPath(tabPath, ".pages.jsonl");
@@ -78,6 +99,14 @@ function day(now) {
 
 function money(amount) {
   return Number.isInteger(amount) ? `$${amount}` : `$${amount.toFixed(2)}`;
+}
+
+/**
+ * "1 day", "2 days". These lines are shown to the builder verbatim,
+ * and "ended 1 days ago" was (trial run 2026-09-02).
+ */
+function plural(count, unit) {
+  return `${count} ${unit}${count === 1 ? "" : "s"}`;
 }
 
 /**
@@ -108,7 +137,7 @@ export function duePages(current, { horizonDays = 7 } = {}) {
         ? "today"
         : trial.days_left === 1
           ? "tomorrow"
-          : `in ${trial.days_left} days`;
+          : `in ${plural(trial.days_left, "day")}`;
     /**
      * THE STATED PRICE, ON ITS OWN CLOCK. The line used to print
      * monthlyOf(), which announced an annual conversion at a twelfth
@@ -140,7 +169,7 @@ export function duePages(current, { horizonDays = 7 } = {}) {
       "trial_past_end",
       trial.tool_name,
       900 + Math.min(trial.days_since_end, 49),
-      `${trial.tool_name}'s trial ended ${trial.days_since_end} days ago and the tab never learned what happened at the boundary.`,
+      `${trial.tool_name}'s trial ended ${plural(trial.days_since_end, "day")} ago and the tab never learned what happened at the boundary.`,
     );
   }
 
@@ -288,15 +317,20 @@ export function queueDue(tabPath = defaultTabPath(), { horizonDays = 7, now = ne
    * open page delivering a stale, now-false warning forever. Found by
    * the 2026-08-21 dark-team run. An open page whose (kind, tool) is
    * absent from today's due set is moot: retired, not superseded,
-   * because moot is not missed.
+   * because moot is not missed — UNLESS it is absent because the worry
+   * got worse. A trial_converting page still open on the day the
+   * trial_past_end page arrives is the same worry, older, and unspoken:
+   * superseded, and counted (trial run 2026-09-02).
    */
   const dueKeys = new Set(due.map((page) => `${page.kind}:${page.tool_name}`));
   for (const [id, old] of known) {
     const open = old.state === "queued" || old.state === "handed_over";
-    if (open && !dueKeys.has(`${old.kind}:${old.tool_name}`)) {
-      appendPage(tabPath, { page_id: id, state: "retired", at });
-      old.state = "retired";
-    }
+    if (!open || dueKeys.has(`${old.kind}:${old.tool_name}`)) continue;
+    const successor = WORRY_SUCCESSOR[old.kind];
+    const crossed = successor !== undefined && dueKeys.has(`${successor}:${old.tool_name}`);
+    const state = crossed ? "superseded" : "retired";
+    appendPage(tabPath, { page_id: id, state, at });
+    old.state = state;
   }
 
   for (const page of due) {
@@ -324,7 +358,9 @@ export function openPages(tabPath = defaultTabPath(), { limit = 3 } = {}) {
   const missedBy = new Map();
   for (const page of known.values()) {
     if (page.state !== "superseded") continue;
-    const key = `${page.kind}:${page.tool_name}`;
+    // Keyed by worry, not kind: the past-end page carries every day
+    // the converting warning went unsaid before it.
+    const key = worryOf(page.kind, page.tool_name);
     missedBy.set(key, (missedBy.get(key) ?? 0) + 1);
   }
   const open = [...known.values()]
@@ -336,7 +372,7 @@ export function openPages(tabPath = defaultTabPath(), { limit = 3 } = {}) {
       line: page.line,
       urgency: page.urgency,
       handovers: page.handovers,
-      days_unspoken: missedBy.get(`${page.kind}:${page.tool_name}`) ?? 0,
+      days_unspoken: missedBy.get(worryOf(page.kind, page.tool_name)) ?? 0,
     }))
     .sort((a, b) => b.urgency - a.urgency);
   return { open, shown: open.slice(0, limit), total: open.length };
@@ -458,7 +494,7 @@ export function runPager(argv = []) {
   if (shown.length === 0) return "";
   const lines = shown.map((page) =>
     page.days_unspoken > 0
-      ? `${page.line} (${page.days_unspoken} days on the pager, never put to you)`
+      ? `${page.line} (${plural(page.days_unspoken, "day")} on the pager, never put to you)`
       : page.line,
   );
   if (total > shown.length) {

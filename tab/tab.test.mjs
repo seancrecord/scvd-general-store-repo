@@ -2021,6 +2021,65 @@ test("a page whose worry resolves is retired, not delivered forever", () => {
 });
 
 /**
+ * TRIAL RUN 2026-09-02, segment 1: a $30/mo trial converting on day
+ * 3, the clock run day 0 → 5, nothing acknowledged. The day-3
+ * "charges you today" page was the last preventable warning. When the
+ * charge landed unspoken the first cut closed that page as retired —
+ * moot — and the past-end page started counting from zero, so the
+ * honesty number dropped the single costliest silence it had. Also
+ * "ended 1 days ago", shown to the builder verbatim.
+ */
+test("a trial that converts unspoken is a miss carried forward, not a worry gone moot", () => {
+  const path = freshPath();
+  const day0 = new Date();
+  const at = (n) => new Date(day0.getTime() + n * 24 * 3600_000);
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(3), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  const runDay = (n) => {
+    queueDue(path, { now: at(n) });
+    return openPages(path).open;
+  };
+  assert.equal(runDay(0)[0].line, "midjourney charges you $30 in 3 days.");
+  runDay(1);
+  // Singular where singular is true.
+  assert.ok(runPager(["--path", path]).includes("(1 day on the pager, never put to you)"));
+  runDay(2);
+  const day3 = runDay(3);
+  assert.equal(day3.length, 1);
+  assert.equal(day3[0].line, "midjourney charges you $30 today.");
+  assert.equal(day3[0].days_unspoken, 3);
+  // Day 4: the charge landed. The stale "today" page is gone from the
+  // top of the pager, and the page that replaced it knows how long the
+  // clock has been talking to nobody about this tool.
+  const day4 = runDay(4);
+  assert.equal(day4.length, 1, "the trial_converting page outlived the trial");
+  assert.equal(day4[0].kind, "trial_past_end");
+  assert.equal(
+    day4[0].line,
+    "midjourney's trial ended 1 day ago and the tab never learned what happened at the boundary.",
+  );
+  assert.equal(day4[0].days_unspoken, 4);
+  const coverage = pagerCoverage(path);
+  assert.equal(coverage.pages_missed, 4, "the unspoken last chance is a miss");
+  assert.equal(coverage.pages_retired, 0, "an unspoken charge is not moot");
+  assert.equal(coverage.unspoken_pct, 100);
+  const day5 = runDay(5);
+  assert.equal(
+    day5[0].line,
+    "midjourney's trial ended 2 days ago and the tab never learned what happened at the boundary.",
+  );
+  assert.equal(day5[0].days_unspoken, 5);
+  assert.equal(pagerCoverage(path).pages_missed, 5);
+  // The old page is settled as superseded, and stays that way: it
+  // cannot be acknowledged into the record after the fact.
+  const late = acknowledge({ page_ids: [day3[0].page_id] }, path);
+  assert.deepEqual(late.already_settled, [{ page_id: day3[0].page_id, state: "superseded" }]);
+});
+
+/**
  * DARK TEAM 2026-08-21, ROUND TWO — the verified tail. Thirteen more
  * claims went to adversarial verification and all thirteen held.
  * Each test below pins one of them.
