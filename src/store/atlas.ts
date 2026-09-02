@@ -1,6 +1,7 @@
 import { MENU_ITEMS } from "@/store/menu";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
 import { ROOMS } from "@/store/rooms";
+import { shoppingFields } from "@/lib/shopping-fields";
 
 /**
  * THE ATLAS — every door, what it costs, and what it is FOR, in one
@@ -258,6 +259,12 @@ export function buildAtlas(base: string): Record<string, unknown> {
         fulfillment: item.fulfillment,
         purpose: item.description,
         buy: `${base}/menu.json`,
+        buy_url: `${base}/api/buy/${item.id}`,
+        listing_url: `${base}/menu/${item.id}`,
+        /* ROADMAP S6 (2026-09-02): when (the routing table reversed),
+         * sample_url (the specimen roster) and verify (the one door),
+         * the same derivation menu.json carries. */
+        ...shoppingFields(item.id, base),
       })),
       /* Derived from the dataset roster, cautions and all. */
       data: PUBLISHED_DATASETS.map((dataset) => ({
