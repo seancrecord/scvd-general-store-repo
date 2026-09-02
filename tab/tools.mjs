@@ -1012,27 +1012,29 @@ export const TOOL_DEFS = [
     handler: logToolEvent,
     inputSchema: {
       type: "object",
+      examples: [{ tool_name: "vercel", event: "trial_started", problem_solved: "preview deploys for the app", category: "hosting", trial_ends: "2026-09-16", price: { amount: 20, currency: "USD", period: "month" } }],
       properties: {
         tool_name: { type: "string", description: "canonical lowercase name" },
         event: {
           type: "string",
           enum: ["trial_started", "paid_started", "adopted", "canceled", "replaced", "renewed", "price_changed"],
+          description: "which lifecycle moment this is",
         },
-        problem_solved: { type: "string" },
-        category: { type: "string", enum: CATEGORIES },
+        problem_solved: { type: "string", description: "the job the tool was taken on for, in the builder's words" },
+        category: { type: "string", enum: CATEGORIES, description: "the closed category list; other when nothing fits" },
         price: {
           type: "object",
           description:
             "{amount, currency, period: month|quarter|year|week|once, basis?: fixed|metered|free_with_paid_path}. basis marks what kind of number amount is: absent/fixed = the bill; metered = your ESTIMATE of a usage-based bill (enters the burn, marked as estimate); free_with_paid_path = what a free tool's paid tier would cost (adopted only, never enters the burn).",
         },
-        previous_price: { type: "object" },
-        trial_ends: { type: "string" },
-        replaced_with: { type: "string" },
-        retroactive: { type: "boolean" },
-        occurred_at: { type: "string" },
-        payment_method: { type: "string" },
-        source_url: { type: "string" },
-        notes: { type: "string" },
+        previous_price: { type: "object", description: "price_changed only: the price before, same shape as price" },
+        trial_ends: { type: "string", description: "ISO date the trial converts — the number the pager runs on" },
+        replaced_with: { type: "string", description: "replaced only: canonical name of the tool that took over" },
+        retroactive: { type: "boolean", description: "true when backfilling; pair with occurred_at" },
+        occurred_at: { type: "string", description: "ISO date the event really happened, for backfill; defaults to now" },
+        payment_method: { type: "string", description: "how it is paid — card, invoice, crypto, free" },
+        source_url: { type: "string", description: "the page or receipt this came from" },
+        notes: { type: "string", description: "anything else, kept verbatim" },
         signup_friction: {
           type: "string",
           enum: FRICTION,
@@ -1059,21 +1061,22 @@ export const TOOL_DEFS = [
     handler: captureToolEvent,
     inputSchema: {
       type: "object",
+      examples: [{ tool_name: "linear", captured_text: "Welcome to Linear — your 14-day trial has started", source: "capture" }],
       properties: {
-        tool_name: { type: "string" },
-        event: { type: "string", enum: ["trial_started", "paid_started", "adopted", "canceled", "replaced", "renewed", "price_changed"] },
-        problem_solved: { type: "string" },
-        category: { type: "string", enum: CATEGORIES },
-        price: { type: "object" },
-        trial_ends: { type: "string" },
-        signup_friction: { type: "string", enum: FRICTION },
-        confidence: { type: "string", enum: ["stated", "inferred"] },
-        source: { type: "string", enum: SOURCES },
+        tool_name: { type: "string", description: "canonical lowercase name — the only required field" },
+        event: { type: "string", enum: ["trial_started", "paid_started", "adopted", "canceled", "replaced", "renewed", "price_changed"], description: "which lifecycle moment, if known" },
+        problem_solved: { type: "string", description: "the job the tool was taken on for, if said" },
+        category: { type: "string", enum: CATEGORIES, description: "the closed category list, if known" },
+        price: { type: "object", description: "{amount, currency, period}, as much of it as the fragment states" },
+        trial_ends: { type: "string", description: "ISO date the trial converts, if stated" },
+        signup_friction: { type: "string", enum: FRICTION, description: "what the signup path demanded" },
+        confidence: { type: "string", enum: ["stated", "inferred"], description: "stated when the source said it; inferred when you worked it out" },
+        source: { type: "string", enum: SOURCES, description: "where the fragment came from" },
         dedupe_key: { type: "string", description: "message id when captured from mail — stops a re-found receipt double-counting" },
         captured_text: { type: "string", description: "the raw fragment, kept verbatim" },
-        retroactive: { type: "boolean" },
-        occurred_at: { type: "string" },
-        notes: { type: "string" },
+        retroactive: { type: "boolean", description: "true when backfilling; pair with occurred_at" },
+        occurred_at: { type: "string", description: "ISO date it really happened; defaults to now" },
+        notes: { type: "string", description: "anything else, kept verbatim" },
       },
       required: ["tool_name"],
     },
@@ -1092,9 +1095,10 @@ export const TOOL_DEFS = [
     handler: burnRollup,
     inputSchema: {
       type: "object",
+      examples: [{}, { since_days: 30 }],
       properties: {
-        since_days: { type: "integer", minimum: 1 },
-        unused_days: { type: "integer", minimum: 1 },
+        since_days: { type: "integer", minimum: 1, description: "how far back the trajectory reads, in days; default 90" },
+        unused_days: { type: "integer", minimum: 1, description: "days of silence before a tool counts as idle; default 45" },
       },
     },
   },
@@ -1113,8 +1117,9 @@ export const TOOL_DEFS = [
     handler: recordCoverage,
     inputSchema: {
       type: "object",
+      examples: [{ addresses_swept: ["me@example.com"], window_from: "2026-08-01", window_to: "2026-08-31", scanned: 412, matched: 9, not_transactional: 401, attributed_amount: 184, unmatched_transactional: [{ amount: 12, currency: "USD", sender: "billing.example.net" }] }],
       properties: {
-        addresses_swept: { type: "array", items: { type: "string" } },
+        addresses_swept: { type: "array", items: { type: "string" }, description: "the mailboxes the sweep read" },
         window_from: { type: "string", description: "ISO date the sweep started from" },
         window_to: { type: "string", description: "ISO date the sweep read through" },
         scanned: {
@@ -1132,15 +1137,16 @@ export const TOOL_DEFS = [
           type: "number",
           description: "money in this window the sweep DID place on a tool, in the same units as the unmatched amounts",
         },
-        matched: { type: "integer" },
+        matched: { type: "integer", description: "messages placed on a tool" },
         unmatched_transactional: {
           type: "array",
+          description: "money-shaped mail no tool claimed, one row each",
           items: {
             type: "object",
             properties: {
-              amount: { type: "number" },
-              currency: { type: "string" },
-              sender: { type: "string" },
+              amount: { type: "number", description: "the money the letter carried" },
+              currency: { type: "string", description: "ISO 4217 code" },
+              sender: { type: "string", description: "the sender domain" },
             },
           },
         },
@@ -1162,6 +1168,7 @@ export const TOOL_DEFS = [
     handler: sweepTally,
     inputSchema: {
       type: "object",
+      examples: [{ sweep_id: "sweep_2026-08", window_from: "2026-08-01", window_to: "2026-08-31", source: "mail_sweep", messages: [{ message_id: "<a1@mail.example.com>", bucket: "matched", entry: { tool_name: "vercel.com", event: "renewed", price: { amount: 20, currency: "USD", period: "month" }, confidence: "stated", occurred_at: "2026-08-03" } }, { message_id: "<b2@mail.example.com>", bucket: "not_transactional" }] }],
       required: ["sweep_id", "window_from", "window_to", "messages"],
       properties: {
         sweep_id: {
@@ -1175,7 +1182,7 @@ export const TOOL_DEFS = [
           enum: ["mail_sweep", "historical_pass"],
           description: "historical_pass on the six-month backward run; mail_sweep forward",
         },
-        addresses_swept: { type: "array", items: { type: "string" } },
+        addresses_swept: { type: "array", items: { type: "string" }, description: "the mailboxes this sweep reads" },
         messages: {
           type: "array",
           description: "one verdict per message read, up to 200 per call",
@@ -1187,6 +1194,7 @@ export const TOOL_DEFS = [
               bucket: {
                 type: "string",
                 enum: ["matched", "unmatched_transactional", "not_transactional"],
+                description: "exactly one of the three; there is no fourth",
               },
               entry: {
                 type: "object",
@@ -1197,20 +1205,21 @@ export const TOOL_DEFS = [
                   event: {
                     type: "string",
                     enum: ["trial_started", "paid_started", "renewed", "canceled", "price_changed", "adopted"],
+                    description: "which lifecycle moment the letter reports",
                   },
                   price: {
                     type: "object",
                     description: "the STATED amount and period — the annual/monthly slip is a 12x error",
                   },
-                  trial_ends: { type: "string" },
-                  category: { type: "string" },
-                  confidence: { type: "string", enum: ["stated", "inferred"] },
+                  trial_ends: { type: "string", description: "ISO date the trial converts, if the letter says" },
+                  category: { type: "string", description: "the closed category list" },
+                  confidence: { type: "string", enum: ["stated", "inferred"], description: "stated when the letter says it; inferred when you worked it out" },
                   occurred_at: { type: "string", description: "the letter's date — recorded as a retroactive claim" },
                 },
               },
               amount: { type: "number", description: "unmatched_transactional only: the money the letter carried" },
-              currency: { type: "string" },
-              sender: { type: "string" },
+              currency: { type: "string", description: "unmatched_transactional only: ISO 4217 code" },
+              sender: { type: "string", description: "unmatched_transactional only: the sender domain" },
             },
           },
         },
@@ -1232,9 +1241,10 @@ export const TOOL_DEFS = [
     handler: sweepFinish,
     inputSchema: {
       type: "object",
+      examples: [{ sweep_id: "sweep_2026-08" }],
       required: ["sweep_id"],
       properties: {
-        sweep_id: { type: "string" },
+        sweep_id: { type: "string", description: "the sweep to close — the same id every batch carried" },
       },
     },
   },
@@ -1253,15 +1263,17 @@ export const TOOL_DEFS = [
     handler: reconcileCardStatement,
     inputSchema: {
       type: "object",
+      examples: [{ statement_from: "2026-08-01", statement_to: "2026-08-31", charges: [{ date: "2026-08-03", amount: 20, descriptor: "VERCEL INC" }] }],
       properties: {
         statement_from: { type: "string", description: "ISO date the statement window opens — off the export, not remembered" },
         statement_to: { type: "string", description: "ISO date the statement window closes" },
         charges: {
           type: "array",
+          description: "every debit row on the statement, unfiltered",
           items: {
             type: "object",
             properties: {
-              date: { type: "string" },
+              date: { type: "string", description: "ISO date the charge posted" },
               amount: { type: "number", description: "the debit amount; credits and refunds stay off" },
               descriptor: { type: "string", description: "the merchant string as the bank printed it" },
             },
@@ -1285,7 +1297,8 @@ export const TOOL_DEFS = [
     handler: trialsConverting,
     inputSchema: {
       type: "object",
-      properties: { days: { type: "integer", minimum: 1 } },
+      examples: [{}, { days: 14 }],
+      properties: { days: { type: "integer", minimum: 1, description: "the horizon in days; default 7" } },
     },
   },
   {
@@ -1302,9 +1315,10 @@ export const TOOL_DEFS = [
     handler: checkBeforeSignup,
     inputSchema: {
       type: "object",
+      examples: [{ tool_name: "posthog", category: "analytics" }],
       properties: {
-        tool_name: { type: "string" },
-        category: { type: "string", enum: CATEGORIES },
+        tool_name: { type: "string", description: "canonical lowercase name of the tool being considered" },
+        category: { type: "string", enum: CATEGORIES, description: "what it would cover, so the overlap can be read" },
       },
       required: ["tool_name"],
     },
@@ -1323,7 +1337,8 @@ export const TOOL_DEFS = [
     handler: stackAudit,
     inputSchema: {
       type: "object",
-      properties: { unused_days: { type: "integer", minimum: 1 } },
+      examples: [{}],
+      properties: { unused_days: { type: "integer", minimum: 1, description: "days of silence before a tool counts as unused; default 45" } },
     },
   },
   {
@@ -1342,7 +1357,8 @@ export const TOOL_DEFS = [
     handler: whatsCurrent,
     inputSchema: {
       type: "object",
-      properties: { category: { type: "string", enum: CATEGORIES } },
+      examples: [{ category: "hosting" }],
+      properties: { category: { type: "string", enum: CATEGORIES, description: "the category to read the builder's history in" } },
       required: ["category"],
     },
   },
@@ -1362,18 +1378,20 @@ export const TOOL_DEFS = [
     handler: contributeDelta,
     inputSchema: {
       type: "object",
+      examples: [{ kind: "opened", tool_name: "vercel", category: "hosting", week: "2026-W35" }],
       properties: {
-        kind: { type: "string", enum: ["opened", "outcome"] },
-        tool_name: { type: "string" },
-        category: { type: "string", enum: CATEGORIES },
-        week: { type: "string" },
+        kind: { type: "string", enum: ["opened", "outcome"], description: "opened when a trial began; outcome when it resolved" },
+        tool_name: { type: "string", description: "canonical lowercase name" },
+        category: { type: "string", enum: CATEGORIES, description: "the closed category list" },
+        week: { type: "string", description: "ISO week the delta belongs to, e.g. 2026-W35" },
         outcome: {
           type: "string",
           enum: ["kept_past_conversion", "canceled_pre_conversion", "canceled_post_conversion", "replaced"],
+          description: "outcome only: how the trial resolved",
         },
-        weeks_held: { type: "integer", minimum: 0 },
-        replaced_with: { type: "string" },
-        signup_friction: { type: "string", enum: FRICTION },
+        weeks_held: { type: "integer", minimum: 0, description: "outcome only: whole weeks between opening and resolving" },
+        replaced_with: { type: "string", description: "replaced only: the tool that took over" },
+        signup_friction: { type: "string", enum: FRICTION, description: "what the signup path demanded" },
       },
       required: ["kind", "tool_name", "category"],
     },
@@ -1393,8 +1411,9 @@ export const TOOL_DEFS = [
     handler: confirmEntry,
     inputSchema: {
       type: "object",
+      examples: [{ tool_name: "vercel" }],
       properties: {
-        tool_name: { type: "string" },
+        tool_name: { type: "string", description: "the swept entry to confirm, by canonical name" },
         private: { type: "boolean", description: "keep it on the tab, never let it leave the box — not in a delta, not in a shared count" },
       },
       required: ["tool_name"],
@@ -1414,7 +1433,8 @@ export const TOOL_DEFS = [
     handler: needsAttention,
     inputSchema: {
       type: "object",
-      properties: { limit: { type: "integer", minimum: 1 } },
+      examples: [{}],
+      properties: { limit: { type: "integer", minimum: 1, description: "how many to return, dearest first; default 3" } },
     },
   },
   {
@@ -1434,8 +1454,9 @@ export const TOOL_DEFS = [
     handler: whatsDue,
     inputSchema: {
       type: "object",
+      examples: [{}],
       properties: {
-        limit: { type: "integer", minimum: 1 },
+        limit: { type: "integer", minimum: 1, description: "how many pages to raise, worth most first; default 3" },
         days: { type: "integer", minimum: 1, description: "conversion horizon, default 7" },
       },
     },
@@ -1455,7 +1476,8 @@ export const TOOL_DEFS = [
     handler: acknowledge,
     inputSchema: {
       type: "object",
-      properties: { page_ids: { type: "array", items: { type: "string" } } },
+      examples: [{ page_ids: ["page_example"] }],
+      properties: { page_ids: { type: "array", items: { type: "string" }, description: "the ids whats_due returned and you actually said" } },
       required: ["page_ids"],
     },
   },
@@ -1475,7 +1497,8 @@ export const TOOL_DEFS = [
     handler: setConsent,
     inputSchema: {
       type: "object",
-      properties: { contribute: { type: "boolean" } },
+      examples: [{ contribute: true }],
+      properties: { contribute: { type: "boolean", description: "true to allow anonymized deltas to leave the box; false to stop" } },
       required: ["contribute"],
     },
   },
@@ -1493,7 +1516,8 @@ export const TOOL_DEFS = [
     handler: exportTab,
     inputSchema: {
       type: "object",
-      properties: { format: { type: "string", enum: ["jsonl", "csv"] } },
+      examples: [{ format: "csv" }],
+      properties: { format: { type: "string", enum: ["jsonl", "csv"], description: "jsonl is the tab as stored; csv flattens it for a spreadsheet" } },
     },
   },
 ];

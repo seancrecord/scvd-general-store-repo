@@ -2556,3 +2556,140 @@ test("by_grant: two numbers per grant, one per lane, never added", () => {
    */
   assert.equal(state.by_grant["(no grant cited)"].one_off, 1);
 });
+
+/*
+ * TWO ERAS ON ONE PROCESS (2026-09-02). Revision 2026-07-28 retired
+ * the initialize handshake; a modern client carries its version in
+ * `_meta` on every request and probes a stdio server with
+ * `server/discover` first. The tab answers both eras, and the spec's
+ * compatibility matrix says exactly what each pairing must see.
+ */
+function ask(messages) {
+  const server = spawnSync(
+    process.execPath,
+    [join(HERE, "server.mjs"), "--path", freshPath()],
+    {
+      input: messages.map((m) => `${JSON.stringify(m)}\n`).join(""),
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+  return server.stdout.trim().split("\n").map((line) => JSON.parse(line));
+}
+
+const MODERN_META = {
+  "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+  "io.modelcontextprotocol/clientCapabilities": {},
+  "io.modelcontextprotocol/clientInfo": { name: "tab-spec", version: "1" },
+};
+
+test("server/discover answers the modern probe: versions, capabilities, identity, instructions", () => {
+  const [reply] = ask([
+    { jsonrpc: "2.0", id: 1, method: "server/discover", params: { _meta: MODERN_META } },
+  ]);
+  assert.equal(reply.error, undefined);
+  assert.equal(reply.result.resultType, "complete");
+  assert.equal(reply.result.supportedVersions[0], "2026-07-28");
+  assert.ok(reply.result.supportedVersions.includes("2025-11-25"));
+  assert.ok(reply.result.capabilities.tools);
+  assert.equal(typeof reply.result.instructions, "string");
+  assert.ok(reply.result.ttlMs > 0);
+  assert.equal(reply.result.cacheScope, "public");
+  const info = reply.result._meta["io.modelcontextprotocol/serverInfo"];
+  assert.equal(info.name, "scvd-tab");
+  const packaged = JSON.parse(readFileSync(join(HERE, "package.json"), "utf8")).version;
+  assert.equal(info.version, packaged);
+});
+
+test("a modern tools/list carries the envelope; a legacy one is the shape it always was", () => {
+  const [modern, legacy] = ask([
+    { jsonrpc: "2.0", id: 1, method: "tools/list", params: { _meta: MODERN_META } },
+    { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} },
+  ]);
+  assert.equal(modern.result.resultType, "complete");
+  assert.ok(modern.result.ttlMs > 0);
+  assert.equal(modern.result.cacheScope, "public");
+  assert.ok(modern.result._meta["io.modelcontextprotocol/serverInfo"]);
+  assert.equal(legacy.result.resultType, undefined);
+  assert.equal(legacy.result.ttlMs, undefined);
+  assert.equal(legacy.result._meta, undefined);
+  // Same tools, same order, whichever era asks: deterministic, cacheable.
+  assert.deepEqual(
+    modern.result.tools.map((t) => t.name),
+    legacy.result.tools.map((t) => t.name),
+  );
+});
+
+test("a modern tools/call completes with the envelope and the same content as before", () => {
+  const [reply] = ask([
+    {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/call",
+      params: { name: "whats_due", arguments: {}, _meta: MODERN_META },
+    },
+  ]);
+  assert.equal(reply.result.resultType, "complete");
+  assert.ok(Array.isArray(reply.result.content));
+  assert.ok(reply.result._meta["io.modelcontextprotocol/serverInfo"]);
+});
+
+test("a version the tab does not speak is refused with -32022, naming what it does", () => {
+  const [reply] = ask([
+    {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/list",
+      params: { _meta: { ...MODERN_META, "io.modelcontextprotocol/protocolVersion": "1900-01-01" } },
+    },
+  ]);
+  assert.equal(reply.error.code, -32022);
+  assert.equal(reply.error.data.requested, "1900-01-01");
+  assert.ok(reply.error.data.supported.includes("2026-07-28"));
+});
+
+test("initialize negotiates by the handshake era's rule and never offers the modern revision", () => {
+  const [echo, unknown, modernAsk, bare] = ask([
+    { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } },
+    { jsonrpc: "2.0", id: 2, method: "initialize", params: { protocolVersion: "1900-01-01" } },
+    { jsonrpc: "2.0", id: 3, method: "initialize", params: { protocolVersion: "2026-07-28" } },
+    { jsonrpc: "2.0", id: 4, method: "initialize", params: {} },
+  ]);
+  assert.equal(echo.result.protocolVersion, "2025-06-18");
+  assert.equal(unknown.result.protocolVersion, "2025-11-25");
+  assert.equal(modernAsk.result.protocolVersion, "2025-11-25");
+  assert.equal(bare.result.protocolVersion, "2025-11-25");
+  // The old shape, untouched: no envelope on a handshake.
+  assert.equal(echo.result.resultType, undefined);
+  assert.ok(echo.result.serverInfo.name);
+});
+
+test("every parameter is described and every tool shows a worked call that fits its own schema", () => {
+  /**
+   * An outside grader (VerifyMCP, 2026-09-02) read 28% of the tab's
+   * parameters as described and none of its tools as carrying an
+   * example. Both were true. A parameter with no description is a
+   * guess the model has to make; an example is the cheapest way to
+   * stop it guessing.
+   */
+  for (const def of TOOL_DEFS) {
+    const properties = def.inputSchema.properties ?? {};
+    for (const [field, schema] of Object.entries(properties)) {
+      assert.equal(typeof schema.description, "string", `${def.name}.${field} undescribed`);
+    }
+    const examples = def.inputSchema.examples;
+    assert.ok(Array.isArray(examples) && examples.length > 0, `${def.name} has no examples`);
+    for (const example of examples) {
+      for (const field of def.inputSchema.required ?? []) {
+        assert.ok(field in example, `${def.name} example lacks required ${field}`);
+      }
+      for (const [field, value] of Object.entries(example)) {
+        const schema = properties[field];
+        assert.ok(schema, `${def.name} example names unknown field ${field}`);
+        if (Array.isArray(schema.enum)) {
+          assert.ok(schema.enum.includes(value), `${def.name}.${field} example off the enum`);
+        }
+      }
+    }
+  }
+});

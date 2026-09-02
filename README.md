@@ -573,6 +573,22 @@ are not:
   because a number written down is a number that rots.
 - **Drio** — [an MCP index listing](https://www.getdrio.com/mcp/store-scvd-general-store)
   under the store's canonical name.
+- **VerifyMCP** — a [scored page for the store](https://verifymcp.io/servers/store-scvd-general-store/scvd)
+  and [one for the tab](https://verifymcp.io/servers/store-scvd-tab/scvd-tab),
+  both ingested from the official registry and probed live. Their
+  rows are their instrument; the store publishes an
+  [owners.json](https://scvd.store/.well-known/owners.json) at the
+  host root, which is how a publisher claims a server there.
+- **agentage MCP Catalog** — [the store](https://catalog.agentage.io/mcp/store-scvd-general-store)
+  and [the tab](https://catalog.agentage.io/mcp/store-scvd-tab),
+  synced from the official registry and saying so: the page holds
+  what the registry entry holds and nothing more.
+- **Seen, no page to link** — the
+  [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
+  servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)
+  scans the door on demand and lists its tools. A search result and
+  a scan are both true and neither is an address, so neither is a
+  `sameAs`.
 - **ZBS Index** — [a listing](https://index.zbs.gg/en/mcp/store-scvd-general-store/)
   resolving to the same canonical name every other registry landed on.
 - **mcpservers.org** — the

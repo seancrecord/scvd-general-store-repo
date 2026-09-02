@@ -5,7 +5,7 @@ import {
   type RpcRefusal,
   type SecurityBlock,
 } from "@/store/surface-contract";
-import type { ItemReads } from "@/types";
+import { isRecord, type ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import {
   frontCounterItems,
@@ -20,7 +20,7 @@ import {
   priceLine,
 } from "@/services/menu-markdown";
 import { MENU_ITEMS, getMenuItem } from "@/store";
-import { GUARANTEE_BLOCK_TEXT, SPEC_RETURNS } from "@/store/spec";
+import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
@@ -310,13 +310,109 @@ function purchaseOutputSchema(item: MenuItem): Schema {
  * the machine schema was a cousin, so tools/list could name a field
  * in prose and not require it. schema_coherence found it.
  */
+/**
+ * ONE WORKED CALL PER TOOL, DERIVED FROM THE SCHEMA IT RIDES ON
+ * (2026-09-02). JSON Schema 2020-12 defines `examples` as an
+ * annotation keyword, and revision 2026-07-28 of MCP admits any
+ * 2020-12 keyword in inputSchema — so a tool can show a model what a
+ * correct call looks like in the one place every client already
+ * reads, without a second document to drift. An outside grader
+ * (VerifyMCP) scored every tool here nought for usage examples; the
+ * absence was real, and this is the spec-shaped way to close it.
+ *
+ * Derived, never typed per item: the example is built from the
+ * schema's own required fields, so an item that grows a field grows
+ * its example in the same commit. The sample VALUES are the only
+ * hand-written part, keyed by field name, and each is shaped like
+ * the thing the field's description asks for. Optional fields stay
+ * out — the example is the smallest correct call, not the largest.
+ */
+const EXAMPLE_STRINGS: Record<string, string> = {
+  agent_name: "my-agent",
+  url: "https://example.com/api/paid-answer",
+  callback_url: "https://example.com/hooks/scvd-order",
+  detail: "A one-paragraph review of my agent's README, plain language.",
+  summary:
+    "Session 42 with Ada (ops) and Kit (billing). Mattered because the invoice reconciler shipped. Blocked on Kit approving the refund path.",
+  tag: "an agent was here",
+  max_usd: "1.00",
+  no_spend_controls: "false",
+  address: "0x0000000000000000000000000000000000000001",
+  amount_usdc: "0.10",
+  declared_cap_usdc: "1.00",
+  digest: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  expires_at: "2026-12-31T00:00:00Z",
+  host: "example.com",
+  label: "my-launch",
+  launch_check_id: "lc_example",
+  mandate_id: "mnd_example",
+  network: "eip155:8453",
+  nonce: "a1b2c3d4",
+  pass_id: "pass_example",
+  payer: "0x0000000000000000000000000000000000000001",
+  recipient: "0x0000000000000000000000000000000000000002",
+  tx_hash: "0x" + "ab".repeat(32),
+  wallet: "0x0000000000000000000000000000000000000001",
+};
+
+function exampleValue(name: string, schema: Schema): unknown {
+  const enumerated = schema["enum"];
+  if (Array.isArray(enumerated) && enumerated.length > 0) return enumerated[0];
+  const type = Array.isArray(schema["type"])
+    ? String(schema["type"][0])
+    : String(schema["type"] ?? "string");
+  if (type === "number" || type === "integer") {
+    return typeof schema["minimum"] === "number" ? schema["minimum"] : 1;
+  }
+  if (type === "boolean") return false;
+  if (type === "array") {
+    const items = isRecord(schema["items"]) ? (schema["items"] as Schema) : {};
+    return [exampleValue(name, items)];
+  }
+  if (type === "object") {
+    const properties = isRecord(schema["properties"])
+      ? (schema["properties"] as Record<string, Schema>)
+      : {};
+    const required = Array.isArray(schema["required"])
+      ? (schema["required"] as string[])
+      : [];
+    return Object.fromEntries(
+      required
+        .filter((field) => field in properties)
+        .map((field) => [field, exampleValue(field, properties[field]!)]),
+    );
+  }
+  const known = EXAMPLE_STRINGS[name];
+  const cap = typeof schema["maxLength"] === "number" ? schema["maxLength"] : Infinity;
+  if (known !== undefined && known.length <= cap) return known;
+  if (schema["format"] === "uri") return "https://example.com/api/paid-answer";
+  return name.replace(/_/g, " ");
+}
+
+/** The smallest correct call: every required field, sample values. */
+function exampleArguments(
+  properties: Record<string, Schema>,
+  required: string[],
+  fixed: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const example: Record<string, unknown> = { ...fixed };
+  for (const field of required) {
+    if (field in example || !(field in properties)) continue;
+    example[field] = exampleValue(field, properties[field]!);
+  }
+  return example;
+}
+
 function purchaseInputSchema(item: MenuItem): Schema {
   const base = buyInputSchema(item);
+  const properties = base.properties as Record<string, Schema>;
+  const required = base.required ?? [];
   return {
     type: "object",
     additionalProperties: false,
-    properties: base.properties,
-    required: base.required ?? [],
+    properties,
+    required,
+    examples: [exampleArguments(properties, required)],
   };
 }
 
@@ -411,10 +507,16 @@ function clusterInputSchema(items: MenuItem[]): Schema {
     },
   };
   const branches: Schema[] = [];
+  // One worked call per item on the shelf, item_id included — the
+  // field a caller most often forgets is the one every example shows.
+  const examples: Record<string, unknown>[] = [];
   for (const item of items) {
     const per = purchaseInputSchema(item);
     const perProperties = (per["properties"] ?? {}) as Record<string, Schema>;
     const perRequired = (per["required"] ?? []) as string[];
+    examples.push(
+      exampleArguments(perProperties, perRequired, { item_id: item.id }),
+    );
     for (const [field, schema] of Object.entries(perProperties)) {
       if (!(field in properties)) {
         properties[field] = schema;
@@ -435,6 +537,7 @@ function clusterInputSchema(items: MenuItem[]): Schema {
     properties,
     required: ["item_id"],
     additionalProperties: false,
+    examples,
     ...(branches.length > 0 ? { allOf: branches } : {}),
   };
 }
@@ -629,7 +732,12 @@ const FREE_TOOLS: McpTool[] = [
     reads: "made_here",
     description:
       "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide. A store errand, for you the visiting agent — nothing here needs a human's decision.",
-    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+      examples: [{}],
+    },
     outputSchema: {
       type: "object",
       properties: { guide: str("The whole guide, plain text.") },
@@ -652,6 +760,7 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: { agent_name: str("Who's ringing. Optional but neighborly.", 80) },
       additionalProperties: false,
+      examples: [{ agent_name: "my-agent" }],
     },
     outputSchema: {
       type: "object",
@@ -695,6 +804,7 @@ const FREE_TOOLS: McpTool[] = [
       },
       required: ["name", "message"],
       additionalProperties: false,
+      examples: [{ name: "my-agent", message: "Passed through, bought nothing, liked the bell." }],
     },
     outputSchema: {
       type: "object",
@@ -739,6 +849,7 @@ const FREE_TOOLS: McpTool[] = [
       },
       required: ["url"],
       additionalProperties: false,
+      examples: [{ url: "https://example.com/api/paid-answer" }],
     },
     outputSchema: {
       type: "object",
@@ -804,6 +915,13 @@ const FREE_TOOLS: McpTool[] = [
       },
       required: ["url"],
       additionalProperties: false,
+      examples: [
+        { url: "https://example.com/api/paid-answer" },
+        {
+          url: "https://example.com/api/paid-answer",
+          client_profile: { max_amount_per_payment_usd: 1 },
+        },
+      ],
     },
     outputSchema: {
       type: "object",
@@ -860,6 +978,12 @@ const FREE_TOOLS: McpTool[] = [
       },
       required: ["artifact"],
       additionalProperties: false,
+      examples: [
+        {
+          artifact:
+            "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.c2lnbmF0dXJl",
+        },
+      ],
     },
     outputSchema: {
       type: "object",
@@ -895,6 +1019,7 @@ const FREE_TOOLS: McpTool[] = [
       properties: { id: str("A cert_, stamp_, or anchor_ id.", 60) },
       required: ["id"],
       additionalProperties: false,
+      examples: [{ id: SAMPLE_ARTIFACT_ID }],
     },
     outputSchema: {
       type: "object",
@@ -991,6 +1116,7 @@ function frontCounterTool(base: string): McpTool {
       },
       required: ["item_id"],
       additionalProperties: false,
+      examples: items.slice(0, 2).map((item) => ({ item_id: item.id })),
     },
     /*
      * THE ONE TOOL THAT WAS TELLING A MODEL NOTHING ABOUT ITS RETURN
