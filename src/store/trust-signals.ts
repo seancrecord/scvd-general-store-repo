@@ -321,6 +321,58 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     what_it_proves:
       "That the ZBS MCP index carries the server, under the same canonical name every other registry resolved it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods.",
   },
+  /**
+   * THE REGISTRY'S DOWNSTREAM, FOUND BY WHO KNOCKED (2026-09-02). The
+   * MCP door's client census showed a month of handshakes from names
+   * the store had never listed. The keeper walked the ones that
+   * resolved to a website; these are the ones with a page of their
+   * own that points at THIS server rather than at a directory. Each
+   * of them ingested the official registry entry, so the slug is the
+   * registry name with its punctuation flattened, and each carries
+   * both entries this repo publishes — the store and the tab.
+   */
+  {
+    url: "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+    registry: "VerifyMCP (verifymcp.io)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That VerifyMCP connected to the live door, read its tools and scored what it found — endpoint security, schema quality, tool safety, spec recency — with the derivation of each row on the page. Not an endorsement and not an audit: an instrument reading on the shape of the door, taken by their probe on their schedule, which says nothing about the goods behind it. Their handshake name is verifymcp-probe.",
+  },
+  {
+    url: "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
+    registry: "VerifyMCP (verifymcp.io) — the tab",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That VerifyMCP carries the second server this repo publishes, scvd-tab, and scored it from the npm package and the repository — the first third-party number on the tab at all. Not an endorsement and not an audit: their instrument, their rows, read on their page.",
+  },
+  {
+    url: "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+    registry: "mcpbeat (mcpbeat.com)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That mcpbeat lists the server, pings the door on a fifteen-minute loop, and shows the tool list it read there. Not an endorsement and not an audit: a liveness directory proves the door answered its last knock, nothing about the goods. Its handshake name is mcpbeat.",
+  },
+  {
+    url: "https://mcpbeat.com/mcp-servers/scvd/tab/",
+    registry: "mcpbeat (mcpbeat.com) — the tab",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That mcpbeat carries scvd-tab too, from the same registry ingest. Not an endorsement and not an audit: a directory page proves indexing, nothing more.",
+  },
+  {
+    url: "https://catalog.agentage.io/mcp/store-scvd-general-store",
+    registry: "agentage MCP Catalog (catalog.agentage.io)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That the agentage catalog, synced from the official MCP registry, carries the server under its registry name. Their page says plainly that it holds only what the registry entry says; a directory page proves indexing, nothing about the goods. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://catalog.agentage.io/mcp/store-scvd-tab",
+    registry: "agentage MCP Catalog (catalog.agentage.io) — the tab",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That the same catalog carries scvd-tab, from the same registry sync. Not an endorsement and not an audit: indexing, nothing more.",
+  },
   {
     url: "https://mcpservers.org/servers/scvd-store-llms-txt",
     registry: "mcpservers.org (llms.txt entry)",
@@ -516,7 +568,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
  * the empty space it fills.
  */
 export const RECORDS_NOT_LISTED =
-  "Three further listings exist and are deliberately not linked in the sameAs above, for one reason: none publishes a per-service page that points at THIS store. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both you are in the index and that is all there is. MIT's Project NANDA index (the 'DNS of the agentic web', where an agent publishes an Agent Facts file) lists the store as scvd.store, and its entry links OUT to this site's llms.txt — which is NANDA pointing at us, not a NANDA page identifying us, so there is still no URL that points at this store rather than at the directory. NANDA carries no organization verification of the entry, and this says so rather than borrowing the word. That is a permanent property of these catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. All three are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
+  "Five further listings exist and are deliberately not linked in the sameAs above, for one reason: none publishes a per-service page that points at THIS store. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both you are in the index and that is all there is. The MCP Census (mcpcensus.com) returns both of this repo's servers to a lookup and no page of their own, and Spanly (spanly.com) will scan the door on demand and list its tools without keeping a record of having done so; a search result and a scan-on-demand are both true and neither is an address. MIT's Project NANDA index (the 'DNS of the agentic web', where an agent publishes an Agent Facts file) lists the store as scvd.store, and its entry links OUT to this site's llms.txt — which is NANDA pointing at us, not a NANDA page identifying us, so there is still no URL that points at this store rather than at the directory. NANDA carries no organization verification of the entry, and this says so rather than borrowing the word. That is a permanent property of these catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. All three are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
 
 /**
  * THE OPERATOR, stated the way a diligence check expects to find it.

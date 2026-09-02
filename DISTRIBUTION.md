@@ -66,6 +66,18 @@ From a laptop it is still two commands, and they still work:
     mcp-publisher login dns --domain scvd.store --private-key <key>
     mcp-publisher publish
 
+**0.2.3 WAITING (2026-09-02).** `server.json` is bumped again, this
+time for a protocol change rather than a sentence: the door now
+speaks MCP 2026-07-28 (stateless, `server/discover`, per-request
+`_meta`) beside the three handshake revisions, `MCP_SERVER_VERSION`
+is `0.5.0`, and every tool carries a worked example in its schema.
+Same press as before, same workflow, version `0.2.3`. The tab's
+`server.json` moved to `0.11.0` for the same reasons plus a full set
+of parameter descriptions; publish it to npm FIRST (the registry
+entry names the npm package) — and publish it from the Actions
+workflow, not the laptop: VerifyMCP's provenance row on the tab
+reads Fail because `0.10.0` went out by hand with no attestation.
+
 **DONE 2026-08-31.** The keeper pressed it: `0.2.2` is on the registry,
 marked `isLatest`, carrying the observatory sentence. PulseMCP and every
 other reader downstream now repeat what we serve.
