@@ -56,7 +56,10 @@ import {
 } from "@/store/trust-signals";
 import type { Env, HonoEnv } from "@/types";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
-import { x402listTokenFile } from "@/store/site-verification";
+import {
+  OPENAI_APPS_CHALLENGE,
+  x402listTokenFile,
+} from "@/store/site-verification";
 
 /**
  * Origin-hosted x402 discovery. The core x402 spec doesn't define a
@@ -1109,6 +1112,25 @@ wellKnownRoutes.get("/.well-known/agentindex-verify.txt", (c) =>
  * renders only the live ones; when none is live the file says so.
  * Adding a token is one entry; removing one is nothing.
  */
+/**
+ * OpenAI plugin directory domain challenge (2026-09-02). The token
+ * and the reasoning live in store/site-verification.ts; this route
+ * serves exactly the token or a 404, never a body OpenAI's checker
+ * could misread as one.
+ */
+wellKnownRoutes.get("/.well-known/openai-apps-challenge", (c) => {
+  if (!OPENAI_APPS_CHALLENGE) {
+    return c.text("No OpenAI plugin verification in progress.\n", 404, {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store",
+    });
+  }
+  return c.text(OPENAI_APPS_CHALLENGE, 200, {
+    "content-type": "text/plain; charset=utf-8",
+    "cache-control": "no-store",
+  });
+});
+
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
   c.text(x402listTokenFile(new Date()), 200, {
     "content-type": "text/plain; charset=utf-8",
