@@ -74,15 +74,17 @@ beforeEach(clearOrders);
 
 describe("counting what is already promised", () => {
   it("counts open labor orders and ignores finished ones", async () => {
-    // One labor door since the 2026-08-20 retirement, so the mixed
-    // multi-item case this once covered no longer has a second item
-    // to mix in. What still matters is that completed work stops
-    // counting, which is the whole point of the tally.
+    // One labor door from the 2026-08-20 retirement until the aura
+    // walk joined on 2026-09-02, which gave the mixed multi-item case
+    // its second item back. What still matters is that completed
+    // work stops counting, which is the whole point of the tally.
     await putOrder("a", "the_collab");
     await putOrder("b", "the_collab", "completed");
+    await putOrder("c", "aura_walk");
     const load = await queueLoad(testEnv);
-    expect(load.open_total).toBe(1);
+    expect(load.open_total).toBe(2);
     expect(load.open_by_item["the_collab"]).toBe(1);
+    expect(load.open_by_item["aura_walk"]).toBe(1);
     expect(load.cap).toBe(OPEN_LABOR_CAP);
   });
 
@@ -101,9 +103,10 @@ describe("counting what is already promised", () => {
 
 describe("the ceiling that weekly inventory was never going to be", () => {
   it("refuses a labor item once its own open count reaches its declared weekly rate", async () => {
-    // the_collab carries the only per-item rate since the 2026-08-20
-    // retirement moved it here from quick_judgment. Read the rate
-    // rather than typing it: the number is the keeper's to change.
+    // the_collab carried the only per-item rate from the 2026-08-20
+    // retirement (moved here from quick_judgment) until the aura walk
+    // brought its own on 2026-09-02. Read the rate rather than typing
+    // it: the number is the keeper's to change.
     const item = getMenuItem("the_collab")!;
     const rate = item.weekly_inventory!;
     expect(rate).toBeGreaterThan(0);

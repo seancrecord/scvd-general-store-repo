@@ -766,6 +766,9 @@ export async function fulfillPurchase(
   if (input.detail) {
     orderOptions.detail = input.detail;
   }
+  if (input.targetUrl !== undefined && input.targetUrl !== "") {
+    orderOptions.targetUrl = input.targetUrl;
+  }
   if (input.slaHours) {
     orderOptions.slaHours = input.slaHours;
   }

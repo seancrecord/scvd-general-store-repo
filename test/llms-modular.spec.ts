@@ -491,12 +491,19 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "under \`exclusions\`" and "cannot change a
  * number quietly", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-EIGHTH — by roadmap S11, the aura
+ * walk: one paragraph after "a keeper who answers" naming aura_walk
+ * and its method, the use_when list gains the walk's moment, and the
+ * collab's moment drops "One door now". Confirmed before this value
+ * was taken: the guide carries "aura_walk" and "never a grade", no
+ * longer carries "One door now", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7638048f9ec53ae8722c79bb8f0eda6550f71aae23d41e0b59d29c6303faf893";
+  "d67889f5cb29899ddef99c64095678bfde84b5f8413254ecbf0b5b6677d336a1";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

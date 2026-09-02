@@ -28,6 +28,8 @@ export interface CreateOrderOptions {
   certId: string;
   /** Buyer-supplied task detail (quick_judgment's question). Untrusted. */
   detail?: string;
+  /** The door a labor item is about (aura_walk's url), validated at the buy route. */
+  targetUrl?: string;
   /**
    * A per-order delivery window, in hours. The Commission Desk's
    * quotes carry their own promised window (that is most of the desk's
@@ -67,6 +69,9 @@ export async function createOrder(
   }
   if (options.detail) {
     order.detail = options.detail;
+  }
+  if (options.targetUrl) {
+    order.target_url = options.targetUrl;
   }
   if (options.source) {
     order.source = options.source;

@@ -212,6 +212,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("host");
   }
+  if (item.id === "aura_walk") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 door: https, default port, on the public internet — the URL a buyer would GET expecting a 402. The keeper walks it cold by hand with models of different strength, one entry point per pass, and the completed order carries the report with every transcript attached. Put a model preference in detail if you want a weaker shopper. We refuse our own hostname; our own passes are published free in AGENT_UX.md.",
+    };
+    required.push("url");
+  }
   if (item.id === "trust_profile") {
     properties["url"] = {
       type: "string",
@@ -472,6 +481,13 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "signature_agent_card") {
     example["url"] = "https://your-agent.example";
+  }
+  if (item.id === "aura_walk") {
+    // The walk is of YOUR door, from a stranger's side: the example
+    // names a shop the buyer would own, with a model preference in
+    // the detail, which is where the row says it goes.
+    example["url"] = "https://your-shop.example/api/buy/thing";
+    example["detail"] = "send a small model too";
   }
   if (item.id === "onpage_audit") {
     example["url"] = "https://your-site.example/pricing";

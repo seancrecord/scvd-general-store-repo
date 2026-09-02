@@ -371,6 +371,62 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * between the quote and the payment, and the verified-fact law says
  * the check runs when it matters, not when it was cheap.)
  */
+/**
+ * The aura walk needs a door BEFORE money moves, under the shared law
+ * (https, default port, public internet, never our own hostname).
+ * Our own hostname is refused for a reason that is not the platform's
+ * self-fetch limit — the keeper's machines could reach us fine — but
+ * the older one: the store's own cold passes are already published,
+ * free and dated, in AGENT_UX.md, and a walk of ourselves sold to a
+ * stranger would be the instrument vouching for itself. Nothing is
+ * charged for a refusal here.
+ */
+const auraWalkCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/aura_walk" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
+        error:
+          "The walk needs a url query parameter — your own x402 door, https, on the public internet, the URL a buyer would GET expecting a 402. No door, no charge.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        charged: false,
+        code: "target_refused",
+        error:
+          "That is this store's own hostname. Our own cold passes are published free and dated in AGENT_UX.md, and a walk of ourselves sold to you would be the instrument vouching for itself. Nothing charged.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/trust_profile" || !isBuying(c)) {
     return next();
@@ -1276,6 +1332,7 @@ buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", trustProfileCheck);
+buyRoutes.use("/api/buy/*", auraWalkCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
@@ -1402,6 +1459,12 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "signature_agent_card") {
     // signatureCardCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "aura_walk") {
+    // auraWalkCheck validated the URL (and refused our own host). The
+    // door rides the order record so the keeper's counter shows what
+    // to walk, separate from the buyer's free-text detail.
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "onpage_audit") {

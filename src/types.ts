@@ -360,6 +360,8 @@ export interface OrderRecord {
   acknowledged_at?: string;
   /** Buyer-supplied task detail (e.g. the quick_judgment question). Untrusted text. */
   detail?: string;
+  /** The door a labor order is about (aura_walk's url), validated before the gate. */
+  target_url?: string;
   /** Declared discovery channel (source query param). Untrusted text. */
   source?: string;
   /** Request metadata captured at purchase, for the monthly ledger review. */

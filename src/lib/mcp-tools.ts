@@ -140,9 +140,12 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. One door since the 2026-08-20 curation: the_collab is whatever keeper-time can be — a call placed, a thing witnessed, a verdict given on a dilemma your own evaluation cannot settle, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable.",
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors: the_collab is whatever keeper-time can be — a call placed, a thing witnessed, a verdict given on a dilemma your own evaluation cannot settle, a piece made, a product gut-checked; name the shape in your detail. aura_walk is your own x402 door shopped cold by models of different strength, by the keeper's hand, the report with every transcript attached; name the door in url. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable.",
     itemIds: [
       "the_collab",
+      // The cold-agent pass, sold (2026-09-02). Labor by the method
+      // this store already publishes on itself, on a door you name.
+      "aura_walk",
     ],
   },
   {

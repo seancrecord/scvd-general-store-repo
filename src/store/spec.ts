@@ -183,7 +183,15 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * /case/{case_id}. MINOR: a reader holding 3.12.0 has a shelf one door
  * short.
  */
-export const SKILL_VERSION = "3.13.0";
+/*
+ * 3.14.0 (2026-09-02): the aura walk. aura_walk ($150, human queue)
+ * joins the shelf — the cold-agent pass this store runs on itself,
+ * sold on a door the buyer names and run by the keeper's hand, the
+ * report with every transcript attached. Keeper-time answers to two
+ * doors now. MINOR: a reader holding 3.13.0 has a shelf one door
+ * short and a use_when list that does not name it.
+ */
+export const SKILL_VERSION = "3.14.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -333,9 +341,13 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
+  aura_walk:
+    "Have models of different strength shop my x402 door cold and show me where each one stalled",
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  aura_walk:
+    "the buyer's side of your door as weaker and stronger models actually experience it — where each stalls, retries, misreads the accepts or pays the wrong rail — counted per entry point and quoted verbatim, by a person's hand. A preflight says the door is well-formed; this says whether a cold agent gets through it.",
   passport_refresh:
     "a new census observation of your endpoint, now instead of Sunday — folded into your endpoint passport wherever newest, moving the passport (and the chip that decays with it) back to fresh. The verdict lands whatever it says: a broken finding darkens the chip. The check is bought; the grade never is.",
   trust_profile:
@@ -402,12 +414,18 @@ export const SPEC_WHY_USE: Record<string, string> = {
  *   trust path and none should pretend to be. (a_secret, grudge and
  *   portrait were in this family until the 2026-08-05 retirement.)
  *
- *   HUMAN CRAFT — the_collab, the one door keeper-time answers to
- *   since the 2026-08-05 consolidation. Real labor by a named person,
- *   and the value is the made thing itself; there is no capability
- *   gap to state that would not be marketing. Flagged rather than
- *   filled: if it ever needs a why_use to sell, the honest reading is
- *   that it is priced as utility and isn't.
+ *   HUMAN CRAFT — the_collab, the door keeper-time answered to alone
+ *   from the 2026-08-05 consolidation until 2026-09-02. Real labor by
+ *   a named person, and the value is the made thing itself; there is
+ *   no capability gap to state that would not be marketing. Flagged
+ *   rather than filled: if it ever needs a why_use to sell, the honest
+ *   reading is that it is priced as utility and isn't.
+ *
+ *   The second labor door, aura_walk (2026-09-02), is NOT in this
+ *   list on purpose: it is priced as utility and is utility — the
+ *   cold-agent pass on somebody else's door — so it carries a why_use
+ *   like any instrument, and a person's hand is the method rather
+ *   than the product.
  */
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
@@ -454,6 +472,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   the_collab:
     "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
+  aura_walk:
+    "An order id now; within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:
@@ -563,9 +583,15 @@ export const USE_WHEN: readonly UseWhen[] = [
       "GET /api/buy/the_mandate?mandate=Buy+verification+artifacts+as+needed,+max+$5+per+item&declared_cap_usdc=10",
   },
   {
-    when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
+    when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. Name the shape.",
     items: ["the_collab"],
     example: "GET /api/buy/the_collab?detail=the+shape+you+want",
+  },
+  {
+    when: "You want to know where a cold agent — a weak one especially — actually gets stuck at your own door, with the transcript, before a paying one does.",
+    items: ["aura_walk"],
+    example:
+      "GET /api/buy/aura_walk?url=https://your-door.example/api/thing&detail=send+a+small+model+too",
   },
   {
     when: "Someone has to be able to check a claim you are making without taking your word for it.",

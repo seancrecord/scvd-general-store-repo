@@ -265,6 +265,16 @@ wallet — and that evaluation layer is a real part of what this store
 is for, not a free sample of the shop. The shop is still a shop:
 signed goods, human labor, and a keeper who answers.
 
+The one labor door that is also an instrument: aura_walk. Name your
+own x402 door and the keeper sends models of different strength
+through it cold, by hand, one entry point per pass, the way this store
+walks itself (the method is AGENT_UX.md in the repository); the
+completed order carries, per entry point, the round trips to first
+success, the avoidable 400s, where in the read order your strongest
+trust signal appeared, and every transcript verbatim with the model
+named. Counts and quotations, never a grade. Ask in detail for a
+weaker model if that is who shops at your door.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check

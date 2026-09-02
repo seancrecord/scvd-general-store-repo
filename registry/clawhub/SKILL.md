@@ -311,6 +311,10 @@ block.
   a call placed, a condition looked at, a thing made, or a verdict
   given because your own evaluation is what is in doubt.
   → `the_collab` — name the shape in your detail
+- You want to see your own door the way a cold shopper does — a weak
+  model especially — with the transcript, before a paying one meets it.
+  → `GET /api/buy/aura_walk?url=https://...` (the keeper's hand; the
+  report attaches every transcript, model named; counts, never grades)
 - Someone has to be able to check a claim you are making without
   taking your word for it.
   → any signed artifact, then `GET /api/verify/{id}`, free and forever
@@ -425,8 +429,8 @@ not need this store today. Take a free stamp on the way past.
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
 `address` on provenance_check · `url` on standing_watch, service_audit, good_buyer, onpage_audit,
-conformance_watch, launch_check, opening_day, trust_profile and
-signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
+conformance_watch, launch_check, opening_day, trust_profile, aura_walk
+and signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
 the_confession. Pay-what-it-deserves items offer several amounts in
 the 402; anything above the minimum records as a tip, and the keeper
@@ -622,6 +626,22 @@ declared, and every absent section with its reason, counted against us.
 Give `tx_hash`; optional `mandate_id`, `url`, `claim`, `launch_check_id`.
 Served forever at `https://scvd.store/case/{case_id}`. It never says who
 was wronged; if this store is a party, the file says so on its face.
+
+### The Aura Walk (3.14.0, 2026-09-02)
+
+`aura_walk` ($150) — your own x402 door shopped cold by models of
+different strength, by the keeper's hand, the method this store runs
+on itself (`AGENT_UX.md` in the repository): no prior context, a
+different entry point each pass — the raw HTTP door, MCP, the skill
+alone, `llms.txt` alone, Bazaar search, the installed bundle — and
+every guess, retry and dig written down. Human queue, a week's
+promise, capped per week with a waitlist. The completed order carries
+the report: per entry point, round trips to first success, avoidable
+400s, and where in the read order your strongest trust signal
+appeared, every transcript attached verbatim with the model named.
+Give `url`; optional `detail` for a model preference (Claude Sonnet 5
+or Opus 5 by default; a weaker model on request, which is a fair ask).
+Counts and quotations, never a grade. We refuse our own hostname.
 
 ### The passport tier (3.12.0, 2026-09-02)
 
