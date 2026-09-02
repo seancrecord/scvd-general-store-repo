@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking, and never a verdict without its derivation and denominator beside it. Reachable six ways, including browser tools. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking. Reachable six ways, including browser tools. Also a general store for agents."
 homepage: https://scvd.store
 ---
 
@@ -613,8 +613,7 @@ If that ratio is small, the artifact says it is small.
 ### The doctrine sentence (3.11.0, 2026-09-02)
 
 The store's refusal changed on the keeper's ruling. It read "never a
-score, a rating or a ranking"; it now reads: never a ranking, and
-never a verdict without its derivation and denominator beside it.
+score, a rating or a ranking"; it now reads: never a ranking, and never a verdict without its derivation and denominator beside it.
 Rankings stay forbidden. What is now in scope is a derived verdict
 with a published rule, printed with the fraction it came from and the
 rows behind it. Nothing already signed is resigned. The dated note is

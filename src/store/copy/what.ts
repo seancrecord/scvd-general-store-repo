@@ -277,7 +277,7 @@ export const WHAT_COPY = {
    * human reads and the answer a machine reads cannot drift apart.
    */
   directAnswer:
-    `scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. ${NEVER_A_RANKING_SENTENCE} Each verdict is one dated observation, ed25519-signed, and anyone can verify one offline. Also a general store for agents, paid in USDC over x402.`,
+    `scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. ${NEVER_A_RANKING_SENTENCE} Each verdict is ed25519-signed; anyone can verify it offline. Also a general store for agents, paid in USDC over x402.`,
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:

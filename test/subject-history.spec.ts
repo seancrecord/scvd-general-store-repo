@@ -372,7 +372,8 @@ describe("what it refuses to publish", () => {
 
     const said = history.what_this_cannot_see.join(" ");
     expect(said).toContain("refusal rather than a limitation");
-    expect(said).toContain("score on an operator");
+    // 2026-09-02: the refusal is of the bare quotient, not the division.
+    expect(said).toContain("verdict without its derivation");
     // The only percentage on the object is about OUR coverage.
     expect(history.observation_coverage_pct).toBe(100);
   });
@@ -424,7 +425,7 @@ describe("the door it is served through", () => {
       `${BASE}/corpus/host/{host}.json`,
     );
     expect(index.per_subject["what_it_will_not_answer"]).toContain(
-      "reliability figure",
+      "figure without its working",
     );
   });
 });
