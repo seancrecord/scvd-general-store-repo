@@ -625,7 +625,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "the_case_file",
     listed_week: "2026-W36",
     name: "The Case File",
-    subtitle: "everything this store observed about one purchase, in one signed file",
     price_usdc: 0.25,
     pricing: "fixed",
     cadence: "one_off",

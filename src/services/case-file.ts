@@ -3,7 +3,7 @@ import { signJcs } from "@/lib/jcs";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { houseWallets } from "@/lib/channel";
 import { signMessage } from "@/lib/signing";
 import { isSolanaSignature } from "@/lib/solana-rpc";
@@ -422,7 +422,7 @@ export async function performCaseFile(
   // 5. delivery — a launch check the buyer holds, or our own certificate against this settlement.
   let delivery: DeliverySection = { presence: { present: false, reason: "" } };
   const launch = input.launchCheckId ? await getLaunchCheck(env, input.launchCheckId) : null;
-  const ourCertId = await env.PATRONS.get(KV_KEYS.settlementCert(input.txHash.toLowerCase()));
+  const ourCertId = await kvGet(env.PATRONS, KV_KEYS.settlementCert(input.txHash.toLowerCase()));
   const ourCert = ourCertId ? await getCertificate(env, ourCertId) : null;
   if (launch || ourCert) {
     delivery = {
@@ -545,7 +545,7 @@ export async function existingCaseFor(
   txHash: string,
   mandateId: string | undefined,
 ): Promise<CaseFileRecord | null> {
-  const caseId = await env.PATRONS.get(KV_KEYS.caseFileQuery(await caseFileQueryDigest(txHash, mandateId)));
+  const caseId = await kvGet(env.PATRONS, KV_KEYS.caseFileQuery(await caseFileQueryDigest(txHash, mandateId)));
   return caseId ? getCaseFile(env, caseId) : null;
 }
 
