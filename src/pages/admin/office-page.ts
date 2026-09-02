@@ -305,6 +305,84 @@ export function takeSectionHtml(
  * say which item they were on, so a remainder is printed rather than
  * absorbed.
  */
+/**
+ * THE ROWS, DERIVED WITHOUT TRUSTING EITHER CLASSIFICATION (2026-09-02,
+ * the keeper: "something is very incorrect here"). The first version
+ * subtracted organic certificates from organic till counts and house
+ * from house. But the till classifies a settle when it happens and a
+ * certificate is classified when it is READ, against today's
+ * house-wallet list — so every settle the reclassification ledger
+ * later moved from organic to house showed up here as an organic sale
+ * with no certificate, in red, with "chase it" beside it. Nineteen of
+ * twenty-one rows were that ledger wearing a missing certificate.
+ *
+ * So the difference is taken on the TOTAL per item, which neither
+ * classification can move: settles the till booked, less certificates
+ * that exist, is the count with no certificate behind it. The ledger's
+ * effect is then printed as its own named number per item — settles
+ * the till booked organic that certificates now class house — and
+ * only what is left after that reads as organic money with nothing
+ * behind it. A house row with no certificate is the proprietors' own
+ * test or a failed mint on our own wallet, said in those words rather
+ * than in red.
+ */
+export interface NoCertificateRow {
+  item: string;
+  booked: number;
+  certificates: number;
+  no_certificate: number;
+  moved_to_house_since_booking: number;
+  organic_no_certificate: number;
+  house_no_certificate: number;
+  list_price: number;
+  penny_page: boolean;
+}
+
+export function noCertificateRows(
+  take: TakeSummary,
+  till: Record<string, TillItemCount>,
+): NoCertificateRow[] {
+  const certs = new Map(
+    take.items.map((line) => [
+      line.item,
+      { organic: line.organic_sales, house: line.house_sales },
+    ]),
+  );
+  return Object.entries(till)
+    .map(([item, count]) => {
+      const cert = certs.get(item) ?? { organic: 0, house: 0 };
+      const booked = count.organic + count.house;
+      const certificates = cert.organic + cert.house;
+      const noCertificate = Math.max(0, booked - certificates);
+      const moved = Math.max(0, cert.house - count.house);
+      const organicNoCert = Math.min(
+        noCertificate,
+        Math.max(0, count.organic - cert.organic - moved),
+      );
+      // A penny page's till key is its path with colons for slashes.
+      const path = item.includes(":") ? `/${item.replace(/:/g, "/")}` : `/api/buy/${item}`;
+      const listPrice = minimumUsdcForPath(path);
+      return {
+        item,
+        booked,
+        certificates,
+        no_certificate: noCertificate,
+        moved_to_house_since_booking: moved,
+        organic_no_certificate: organicNoCert,
+        house_no_certificate: noCertificate - organicNoCert,
+        list_price: listPrice,
+        penny_page: item.includes(":") && listPrice > 0,
+      };
+    })
+    .filter((row) => row.no_certificate > 0)
+    .sort(
+      (a, b) =>
+        b.organic_no_certificate - a.organic_no_certificate ||
+        b.no_certificate - a.no_certificate ||
+        a.item.localeCompare(b.item),
+    );
+}
+
 function noCertificateHtml(
   take: TakeSummary,
   allTime: { organic: number; house: number } | null,
@@ -312,53 +390,47 @@ function noCertificateHtml(
 ): string {
   if (!till) {
     return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
-    <p><small>The till counters didn't load, so the no-certificate rows can't be derived this time.</small></p>`;
+    <p><small>The per-item till counters are not cached on the desk; <a href="/admin/take">the take</a> walks them and derives these rows.</small></p>`;
   }
-  const certs = new Map(
-    take.items.map((line) => [
-      line.item,
-      { organic: line.organic_sales, house: line.house_sales },
-    ]),
-  );
-  const rows = Object.entries(till)
-    .map(([item, count]) => {
-      const cert = certs.get(item) ?? { organic: 0, house: 0 };
-      const organic = Math.max(0, count.organic - cert.organic);
-      const house = Math.max(0, count.house - cert.house);
-      // A penny page's till key is its path with colons for slashes.
-      const path = item.includes(":") ? `/${item.replace(/:/g, "/")}` : `/api/buy/${item}`;
-      const listPrice = minimumUsdcForPath(path);
-      const pennyPage = item.includes(":") && listPrice > 0;
-      return { item, organic, house, listPrice, pennyPage };
-    })
-    .filter((row) => row.organic + row.house > 0)
-    .sort((a, b) => b.organic - a.organic || a.item.localeCompare(b.item));
+  const rows = noCertificateRows(take, till);
   const money = (value: number): string => `$${value.toFixed(2)}`;
-  const noCertOrganic = rows.reduce((sum, row) => sum + row.organic, 0);
-  const noCertHouse = rows.reduce((sum, row) => sum + row.house, 0);
+  const noCertOrganic = rows.reduce((sum, row) => sum + row.organic_no_certificate, 0);
+  const noCertHouse = rows.reduce((sum, row) => sum + row.house_no_certificate, 0);
+  const movedTotal = Object.entries(till).reduce((sum, [item, count]) => {
+    const line = take.items.find((entry) => entry.item === item);
+    return sum + Math.max(0, (line?.house_sales ?? 0) - count.house);
+  }, 0);
   const table =
     rows.length === 0
       ? "<p>Every settle on the till has a certificate behind it.</p>"
       : `<table border="1" cellpadding="4">
-      <tr><th>item</th><th>organic (sales)</th><th>house (sales)</th><th>why no certificate</th></tr>
+      <tr><th>item</th><th>booked at the till</th><th>certificates</th><th>no certificate</th><th>of which organic today</th><th>moved to house since booking</th><th>why</th></tr>
       ${rows
         .map(
           (row) => `<tr>
         <td><code>${escapeHtml(row.item)}</code></td>
-        <td><strong>${money(row.organic * row.listPrice)}</strong> (${row.organic})</td>
-        <td>${money(row.house * row.listPrice)} (${row.house})</td>
+        <td>${row.booked}</td>
+        <td>${row.certificates}</td>
+        <td><strong>${row.no_certificate}</strong> (${money(row.no_certificate * row.list_price)} at list)</td>
+        <td>${row.organic_no_certificate > 0 ? `<strong>${money(row.organic_no_certificate * row.list_price)}</strong> (${row.organic_no_certificate})` : "0"}</td>
+        <td>${row.moved_to_house_since_booking}</td>
         <td>${
-          row.pennyPage
-            ? `penny page at ${money(row.listPrice)} list; delivers the page, mints nothing`
-            : `<strong style="color:#8c2f1b">a shelf item that settled without a certificate — money that bought nothing, or a mint that failed. Chase it.</strong>`
+          row.penny_page
+            ? `penny page at ${money(row.list_price)} list; delivers the page, mints nothing`
+            : row.organic_no_certificate > 0
+              ? `<strong style="color:#8c2f1b">organic money with no certificate behind it — a mint that failed, or a settle that bought nothing. Chase it.</strong>`
+              : `house: the proprietors' own settles with no certificate behind them — a test, or a mint that failed on our own wallet. Not a customer's money.`
         }</td>
       </tr>`,
         )
         .join("\n")}
       <tr>
         <td><strong>No certificate, total</strong></td>
+        <td></td>
+        <td></td>
+        <td><strong>${noCertOrganic + noCertHouse}</strong></td>
         <td><strong>(${noCertOrganic})</strong></td>
-        <td>(${noCertHouse})</td>
+        <td>${movedTotal}</td>
         <td></td>
       </tr>
     </table>`;
@@ -368,15 +440,15 @@ function noCertificateHtml(
     const remainder = allTime.organic - explained;
     const sum = `${take.total.organic_sales} on certificates + ${noCertOrganic} with no certificate = ${explained}`;
     if (remainder === 0) {
-      return `<p><strong>${sum}</strong>, which is the storefront's ${allTime.organic}. The books reconcile.</p>`;
+      return `<p><strong>${sum}</strong>, which is the storefront's ${allTime.organic}. The books reconcile.${movedTotal > 0 ? ` (${movedTotal} settle${movedTotal === 1 ? "" : "s"} the till booked organic now class house by today's wallet list — the reclassification ledger, shown per item above rather than counted as missing money.)` : ""}</p>`;
     }
     if (remainder > 0) {
       return `<p><strong style="color:#8c2f1b">${sum}, but the storefront says ${allTime.organic}: ${remainder} organic settle${remainder === 1 ? "" : "s"} unaccounted for.</strong> Neither the certificates nor the till's per-item rows carry ${remainder === 1 ? "it" : "them"}; the chain on the receiving wallets is where to look.</p>`;
     }
-    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${-remainder} more here than there. The per-item rows are raw till counters and the storefront's figure has the reclassification ledger applied (family settles moved to house at read, not by item), so a small overshoot here is that ledger, not extra money.</p>`;
+    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${-remainder} more here than there. The storefront applies the reclassification ledger to its total and the certificates apply today's wallet list per row; ${movedTotal} settle${movedTotal === 1 ? "" : "s"} moved to house since booking are shown per item above. What is left over is not extra money; if it is not that ledger, the chain on the receiving wallets is where to look.</p>`;
   })();
   return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
-    <p><small>The till counts every settle by item; the table above counts certificates. This is the difference, per item. Amounts are list price × count — the till records that a settle happened, not what was paid; the chain on the receiving wallets is the backstop.</small></p>
+    <p><small>The till counts every settle by item when it happens; certificates are classified when they are read, against today's house-wallet list. So the difference is taken on the total per item — booked less certificates — and the reclassification ledger's effect is printed as its own column instead of reading as missing money. Amounts are list price × count: the till records that a settle happened, not what was paid, and the chain on the receiving wallets is the backstop.</small></p>
     ${table}
     ${reconcile}`;
 }
