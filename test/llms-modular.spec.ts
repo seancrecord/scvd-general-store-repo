@@ -505,12 +505,22 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "operator_statement"
  * and "never a share", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the THIRTIETH — by roadmap S8 Tier B, the
+ * door's other surfaces: one section, "Prices, by the convention",
+ * filed under the shelf's area, carrying a derived line per paid door
+ * in the code-span shape the paid audit reads other people's llms.txt
+ * by. The store's own guide is the first door that reader was pointed
+ * at, and test/surface-reads.spec.ts holds it to the shelf. Confirmed
+ * before this value was taken: the guide carries "Prices, by the
+ * convention" and "never a number in prose", and still every earlier
+ * pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8b176da76902d0d6db747d688bdaf0135d92eaf839d1008153307ed28fb68718";
+  "91b55d7cab55d06fae78bfbd91f01a0fe01cb8e46ad8d19a53f8f0a98eb462e7";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

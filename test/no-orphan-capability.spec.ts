@@ -94,6 +94,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "an ownership challenge, not a capability: x402-list.com fetches this fixed path once per listing update to check we control the origin. Tokens carry their own last day (store/site-verification.ts) and the file serves only live ones, so nothing here is pending removal any more",
   "/.well-known/openai-apps-challenge":
     "an ownership challenge, not a capability: the OpenAI plugin submission portal fetches this fixed path at the origin root to check we control the MCP host, and it answers only while OPENAI_APPS_CHALLENGE is set (store/site-verification.ts). Unlike the two below it stays up for the life of the listing, because OpenAI asks that a host's token not be removed while a plugin uses it",
+  "/.well-known/owners.json":
+    "an ownership claim, not a capability: VerifyMCP reads this fixed path on its own schedule to check that the publisher named in it controls the origin serving the MCP endpoint (2026-09-02). No agent chooses to read a statement of who owns us, and the six surfaces are where agents read",
   "/.well-known/agentindex-verify.txt":
     "an ownership challenge, not a capability: AgentIndex fetches this fixed path once to check we control the origin (claim submitted 2026-09-01); pending removal on confirmation, like the x402-list token above",
 

@@ -1,3 +1,4 @@
+import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
 import { DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
 import { Hono, type Context } from "hono";
 import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
@@ -59,6 +60,16 @@ interface CatalogItem extends MenuItem {
   not_guaranteed: readonly string[];
   /** Fulfillment restructure: agents deserve to know before they 402. */
   fulfillment_state: FulfillmentState;
+  /**
+   * ROADMAP S6 (2026-09-02): the shopping fields, derived. `when` is
+   * the routing table (scvd://when) reversed per item, free instrument
+   * first where the counter names one; `verify` is the one door every
+   * certificate resolves at. `sample_url` already rode here from the
+   * item; where the specimen roster has one, the two must agree
+   * (test/shopping-fields.spec.ts).
+   */
+  when: WhenEntry[];
+  verify: string;
 }
 
 interface FulfillmentState {
@@ -154,6 +165,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       guaranteed: GUARANTEED,
       not_guaranteed: NOT_GUARANTEED,
       fulfillment_state: await fulfillmentState(c.env, item, shutter),
+      ...shoppingFields(item.id, base),
       ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
       ...(wideDepth && item.id in DEPTH_ITEMS ? { archive_depth: wideDepth } : {}),
     })),
@@ -517,7 +529,7 @@ function renderItemPage(
       <section>
         <h2>Checking it afterwards</h2>
         <p class="menu-desc">Every purchase here ends in an ed25519-signed certificate with a permanent verify URL. That check is free, needs no account, and answers for anyone you show it to — not only for you.</p>
-        <p class="menu-meta">Verify: <code>${escapeHtml(`${base}/api/verify/{cert_id}`)}</code> \u2022 this item as JSON: <code>${escapeHtml(`${base}/menu/${item.id}`)}</code> with <code>Accept: application/json</code> \u2022 the whole shelf: <a href="/menu.json"><code>/menu.json</code></a></p>
+        <p class="menu-meta">Verify: <code>${escapeHtml(verifyPattern(base))}</code> \u2022 this item as JSON: <code>${escapeHtml(`${base}/menu/${item.id}`)}</code> with <code>Accept: application/json</code> \u2022 the whole shelf: <a href="/menu.json"><code>/menu.json</code></a></p>
       </section>
       ${itemServiceJsonLd(item, base, state)}`,
   });

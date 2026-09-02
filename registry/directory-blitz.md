@@ -83,3 +83,75 @@ server card just to get listed unless the keeper decides it's worth it.
 2. One line in PROJECT_LOG with the date and any claim tokens' location
    (tokens themselves go in the back office, never this repo).
 3. The ?src= venue-marker table in /admin shows which papers pull.
+
+## Handshake census — who knocked on the MCP door, 2026-09 (added 2026-09-02)
+
+The door records the `clientInfo.name` every MCP client announces
+(the modern revision carries it in `_meta` instead; counted the same).
+One month read off the live table, matched to a website where one
+could be found. Two outside censuses keep live versions of this same
+crowd and were the source for most rows —
+[thefomite.com/mcp-observatory](https://thefomite.com/mcp-observatory)
+and [fetchgate.dev/tools/agent-census](https://fetchgate.dev/tools/agent-census)
+(JSON at `fetchgate.dev/v1/agent-census.json`). Handshake counts are a
+floor: concurrent handshakes can lose one.
+
+### Already a trust signal (src/store/trust-signals.ts)
+
+| Handshake name | Site | Page |
+|---|---|---|
+| glama, glama-mcp-inspector | glama.ai | server + connectors pages |
+| smithery-probe | smithery.ai | server page |
+| agent-tools.cloud | agent-tools.cloud | service page |
+| mcpindex-trust | mcpindex.ai | verdict page |
+| x402-observer | x402.fuchss.app | provider page |
+| verifymcp-probe | verifymcp.io | store + tab pages, scored (2026-09-02) |
+| agentage-mcp-catalog-health | catalog.agentage.io | store + tab pages (2026-09-02) |
+
+### Seen, no page of ours to link
+
+| Handshake name | Site | What it is |
+|---|---|---|
+| mcpcensus | mcpcensus.com | Health + ownership lookup, 26k servers; returns both our servers to a search, no per-server page found. Crawler page: radixia.ai/census/crawler |
+| spanly-health-monitor | spanly.com | MCP observability vendor; `/scan/?url=` lists our tools on demand, keeps nothing |
+| sasame-audit | srl-sasame.com | SaSame Observatory: ten-criterion readiness standard, signed "MCP-Ready" certificates, paid alerts. Lookup under the Smithery name returned nothing; retry under the registry name |
+
+### Not yet opened (in handshake order)
+
+| Handshake name | Handshakes | Site | What it is |
+|---|---|---|---|
+| glimind-probe | 286 | glimind.com | Reliability feed for agent tools; badges, alerts. HTTP crawler is `SentinelOracle`, liveness-only; opt-out at glimind.com/opt-out |
+| mcpbeat | 158 | mcpbeat.com | Directory that pings every server every 15 min and publishes status pages; bot page mcpbeat.com/bot/ |
+| proofbench-probe | 11 | proofbench.dev/about/probe | MCP registry health probe |
+| mcp-checker | 7 | mcpplaygroundonline.com/mcp-checker | Probable match: free spec + health check for a server URL |
+| factanker-probe | 7 | factanker.com | Itself a registry-lookup MCP server in the official registry; why it probes is unclear |
+| orank-scanner | 7 | orank.ai | Probable match: agent-readiness scoring; thin public detail |
+| mcpscan | 6 | modc2.com/mcpscan | MCP index crawler (not mcpscan.ai, not the hergertsynthora endpoint from the August field run) |
+| golemreach-trust | 2 | golemreach.com/trust/bot | Liveness + trust monitor |
+| mcphq-probe | 2 | mcphq.ai | Directory ranked by installs |
+| hultra-link | 2 | donnees.hultra.link/sondes.md | "Link", a verified directory of agent-callable capabilities; publishes what broke since yesterday |
+| agent-almanac-snapshot | 1 | agentalmanac.org | Already on this desk (submit returned 500) |
+
+### Named in the public censuses, no site of their own
+
+mcpwatch ("longitudinal MCP security research"), reliability-bureau-spike,
+measure-mcp-schema, agent-world-probe ("research; MCP census"),
+mcp-observatory (github.com/yhouta/mcp-observatory, a transparency
+log), mcpgrade (a CLI scorecard, no hosted directory).
+
+### Unresolved
+
+acton-skill-extractor / acton-probe, avp1-scan, mcp-ledger-probe,
+endpointaudit, centinela, zowza-indexer, otter. The two census pages
+above are where to look; both were unreachable from the build sandbox.
+
+### Not sites
+
+claude-code, claude-ai, anthropicclaudeai, mcp, other: real clients,
+nothing to list.
+
+Fetchgate's table also names crawlers that arrive by user-agent rather
+than MCP handshake and are absent from ours: zevruna.com,
+mcpwitness.com, mcpqueen.com, toll402.com, clearedindex.com,
+aive.global, lastseen.dev, station70.com, discover.paygent.net.
+

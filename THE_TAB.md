@@ -362,6 +362,15 @@ A superseded page also rides on the line it was superseded by:
 to you)."* Silence about being ignored would be the one thing the
 instrument must never do.
 
+The count follows the worry across the boundary. When the trial
+converts with "charges you today" still unspoken, that page is
+superseded by the `trial_past_end` page — not retired as moot, which
+is what a trial run caught the first cut doing — so the line reads
+*"midjourney's trial ended 1 day ago … (4 days on the pager, never put
+to you)"* and the day the charge could still have been stopped stays
+in `unspoken_pct`. Retired is reserved for worries that actually
+resolved: a canceled trial, a filled gap.
+
 ### One page per worry per day
 
 `page_id` is `kind:tool:YYYY-MM-DD`, so the clock running four times

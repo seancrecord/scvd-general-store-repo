@@ -288,9 +288,13 @@ worry raises one page a day. A handover is not a delivery; only
 become `unspoken_pct`, and a superseded page cannot be acknowledged
 after the fact — otherwise the party being measured could edit its own
 failure out of the record. `retired` is the opposite of superseded: the
-worry stopped holding (trial canceled, gap filled, worry crossed into
-another kind), so the page is closed as **moot, not missed** — retired
-pages are counted (`pages_retired`) but never feed `unspoken_pct`.
+worry stopped holding (trial canceled, gap filled), so the page is
+closed as **moot, not missed** — retired pages are counted
+(`pages_retired`) but never feed `unspoken_pct`. A worry that got
+*worse* is not moot: a `trial_converting` page still open when the trial
+crosses its end is superseded by that day's `trial_past_end` page, which
+inherits its `days_unspoken` — the last unspoken "charges you today" is
+the costliest miss the instrument has, and it stays in `unspoken_pct`.
 
 ## Versioning
 

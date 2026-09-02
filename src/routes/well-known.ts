@@ -9,11 +9,13 @@ import {
 } from "@/lib/ard-catalog";
 import {
   DEFAULT_PROTOCOL,
+  LATEST_PROTOCOL,
   handleMcpPost,
   MCP_SERVER_VERSION,
   PROTOCOL_VERSIONS,
 } from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
+import { STORE_CONTACT_EMAIL } from "@/store";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
 import {
@@ -613,7 +615,7 @@ function a2aCard(base: string) {
       {
         url: `${base}/mcp`,
         protocolBinding: "https://modelcontextprotocol.io",
-        protocolVersion: DEFAULT_PROTOCOL,
+        protocolVersion: LATEST_PROTOCOL,
       },
       {
         url: `${base}/llms.txt`,
@@ -793,6 +795,37 @@ function mcpManifest(base: string) {
       required: false,
       note: "No key, no account, no header. tools/list, resources/list and resources/read are free; buy_* tools answer with x402 v2 payment terms in error.data and settle per call.",
     },
+    /**
+     * THE MODERN WAY IN (2026-07-28): no handshake, the version and
+     * the caller's identity ride `_meta` on every request, and
+     * `server/discover` answers what `initialize` used to. Printed
+     * beside the legacy handshake, not instead of it, because both
+     * eras of client are on the porch and this card is read by both.
+     */
+    discover: {
+      method: "POST",
+      url: `${base}/mcp`,
+      headers: {
+        "Content-Type": "application/json",
+        "MCP-Protocol-Version": LATEST_PROTOCOL,
+        "Mcp-Method": "server/discover",
+      },
+      body: {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "server/discover",
+        params: {
+          _meta: {
+            "io.modelcontextprotocol/protocolVersion": LATEST_PROTOCOL,
+            "io.modelcontextprotocol/clientCapabilities": {},
+            "io.modelcontextprotocol/clientInfo": {
+              name: "your-client",
+              version: "1.0.0",
+            },
+          },
+        },
+      },
+    },
     handshake: {
       method: "POST",
       url: `${base}/mcp`,
@@ -810,6 +843,7 @@ function mcpManifest(base: string) {
     },
     /** The methods that answer without payment, so a scanner knows what to probe. */
     free_methods: [
+      "server/discover",
       "initialize",
       "ping",
       "tools/list",
@@ -1036,6 +1070,28 @@ wellKnownRoutes.get("/.well-known/glama.json", (c) => {
     claim,
   });
 });
+
+/**
+ * WHO OWNS THIS SERVER, IN THE FORM ONE INDEX ASKED FOR (2026-09-02).
+ *
+ * VerifyMCP (verifymcp.io) lists both of this repo's registry entries
+ * and marks a server "claimed" when the host serving its endpoint
+ * publishes an owners.json naming the publisher — checked
+ * continuously, so the claim reflects today rather than the day it
+ * was filed. Host level, at the root, because every server on this
+ * hostname is ours. The address is the one the store already
+ * publishes as its contact (STORE_CONTACT_EMAIL); a claim document
+ * that named a second address would be a second thing to keep true.
+ *
+ * Same category as the glama.json claim below it: a proof of control
+ * that is useless to anyone who does not already control scvd.store.
+ */
+wellKnownRoutes.get("/.well-known/owners.json", (c) =>
+  c.json({
+    $schema: "https://verifymcp.io/schemas/owners.json",
+    owners: [STORE_CONTACT_EMAIL],
+  }),
+);
 
 wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   const base = c.env.STORE_BASE_URL;

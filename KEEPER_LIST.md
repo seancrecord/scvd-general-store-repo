@@ -120,7 +120,9 @@ Do not relitigate without you.
   The practice door is `two-surfaces`. The three Tier A
   advisories beyond the two that fold into v3 fold only
   after a month of rows, by your hand. Design:
-  `docs/S8_CROSS_SURFACE_2026-09.md`.
+  `docs/S8_CROSS_SURFACE_2026-09.md`. PRs 1, 3 and 4
+  shipped 2026-09-02; PR 2 (the v3 fold) waits on the
+  SOON row, not before 2026-10-02.
 - **The Aura Walk cap, 2026-09-02.** One a week; two after
   the first three ship inside the window.
 
@@ -215,6 +217,57 @@ Do not relitigate without you.
   report goes on the completed order as the deliverable.
 
 ### Directory and listings (press is yours, rule 30)
+
+- **Publish the two MCP servers at their new versions.** Both
+  now speak MCP 2026-07-28 beside the handshake revisions
+  (`server/discover`, per-request `_meta`, cache hints), every
+  tool shows a worked call, the tab's parameters are all
+  described. Nothing outside reads it until you press:
+  1. Actions → "Publish npm package" → `scvd-tab`, version
+     `0.11.0`, dry run then real. The `--provenance` flag is
+     in the workflow; a hand publish from the laptop is why
+     VerifyMCP's provenance row reads Fail today.
+  2. Actions → "Publish MCP registry listing" → `0.2.3`
+     (store), then the tab's `server.json` at `0.11.0`.
+  3. `wrangler deploy` (or the usual press) so
+     `/.well-known/owners.json` goes live.
+- **VerifyMCP claim.** LOOK, after the deploy:
+  https://verifymcp.io/servers/store-scvd-general-store/scvd
+  should read "claimed" from the owners.json within their
+  re-check cycle. The tab has no host to serve one from;
+  their other route is connecting the GitHub account that
+  holds the repo, on their site. Your press.
+- **DNSSEC.** VerifyMCP's one Fail on endpoint security.
+  Cloudflare dashboard → DNS → Settings → Enable DNSSEC,
+  then paste the DS record at the registrar. Five minutes,
+  yours alone; no code can do it.
+- **`check_before_you_pay` — rename or leave.** RULE.
+  VerifyMCP reads "pay" in the name as an irreversible act
+  and wants a `destructiveHint` on it; the tool declares
+  `readOnlyHint: true` because it is read-only, and their
+  grader discounts a destructiveHint under a read-only flag.
+  The only fixes are a rename (drops "pay" from a name six
+  documents use) or a false flag. Recommendation: leave it
+  and take the row.
+- **Context footprint.** RULE. VerifyMCP measures the
+  store's tool and resource definitions at ~9.3k tokens (21
+  items) and the tab's at ~2.3k (18) and calls both over
+  budget. The store's descriptions are the product's own
+  voice (rule 7, your pen) and were left alone; trimming is
+  a wording decision, not a code one. The tab's grew with
+  the parameter descriptions their other row asked for.
+- **Sasame.** LOOK: their observatory query for
+  `scvd-store-MCP` returned nothing; try `scvd.store`,
+  `general-store`, or the bare `/mcp` URL — their probe
+  (`sasame-audit`) did connect. https://srl-sasame.com
+- **The handshake census venues.** LOOK, five minutes each,
+  in order of handshake volume; the list with what each is
+  lives in `registry/directory-blitz.md` under "Handshake
+  census". Unopened as of 2026-09-02: glimind.com (286
+  handshakes, the most of anyone), mcpbeat.com,
+  proofbench.dev, mcphq.ai, hultra.link, golemreach.com,
+  mcpplaygroundonline.com/mcp-checker, factanker.com,
+  orank.ai.
 
 - **ClawHub republish at 3.14.0.** 3.8.0 went out
   2026-09-01 (done); the tree moved five bundle versions

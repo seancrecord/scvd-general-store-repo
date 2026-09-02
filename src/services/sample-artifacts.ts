@@ -1,3 +1,4 @@
+import { surfacesSectionOf, type SurfaceReads } from "@/services/surface-reads";
 import { NO_VERDICT } from "@/services/case-file";
 import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import {
@@ -192,8 +193,37 @@ export async function sampleOnceOver(
         verdict: v1Verdict,
         difference: `${AUDIT_CRITERIA_VERSION} folds the L3b consistency trio into the verdict; ${PREFLIGHT_BATTERY} reports the same observations as advisories. On this constructed probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"} \u2014 which is the whole reason a purchased report carries both. On a REAL purchase the ${AUDIT_CRITERIA_VERSION} reading also folds the Solana rail read; no network call was made to build this specimen, so that check is absent here and present there.`,
       },
+      /*
+       * THE SURFACES SECTION (S8 Tier B), built through the paid
+       * artifact's own function over constructed reads — nothing is
+       * dialled for a specimen. The constructed origin serves a
+       * llms.txt that names a different price for the widget than its
+       * 402 asks, no OpenAPI document, no second resource URL, and a
+       * bookend that held still: one read row that disagrees, one
+       * absent, one absent, one bookend, so the sample shows the
+       * section finding something.
+       */
+      surfaces: surfacesSectionOf(sampleSurfaceReads(), ran.accepts ?? null, SAMPLE_OBSERVED_AT),
       scope: AUDIT_SCOPE,
     },
+  };
+}
+
+function sampleSurfaceReads(): SurfaceReads {
+  const origin = new URL(SAMPLE_SUBJECT_URL).origin;
+  const pathname = new URL(SAMPLE_SUBJECT_URL).pathname;
+  const accepts = (JSON.parse(atob(cannedChallenge().headers.get("PAYMENT-REQUIRED") ?? "")) as Record<string, unknown>)["accepts"];
+  return {
+    probed_url: SAMPLE_SUBJECT_URL,
+    llms: {
+      url: `${origin}/llms.txt`,
+      status: 200,
+      text: `# A shop that sells widgets\n\nBuy a widget: \`GET ${pathname}\` ($0.10, one widget, signed).\n`,
+    },
+    openapi: { url: `${origin}/openapi.json`, status: 404, text: null },
+    resource: null,
+    resource_url: null,
+    bookend: { url: SAMPLE_SUBJECT_URL, status: 402, text: JSON.stringify(accepts) },
   };
 }
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scvd-general-store",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store.",
   "author": {
     "name": "Record Creative Co. LLC",
