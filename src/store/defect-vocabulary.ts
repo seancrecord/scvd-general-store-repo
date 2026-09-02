@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "7";
+export const DEFECT_VOCABULARY_VERSION = "8";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -114,6 +114,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "the keeper, on reading a competitor's pitch (x402 Trust, x402.fuchss.app) and asking why the failure it described had no name here",
     what_changed:
       "Added payto-moved: the payTo a door presents for a network is not the one it presented the last time it was observed. Unpaid-detectable, and detectable ONLY ACROSS TIME — a single probe cannot carry it, which is why no battery folds it and no verdict moved: it is a property of a series, and the standing watch derives it at read time from the challenge_bytes every row already carried inside its signature, so no preimage changed and no old row means anything new. The pitch that named the shape is credited in sourced_by under the registrar-not-author rule: the observation was theirs to name first, and a vocabulary is worth less the moment it pretends otherwise. What the class does NOT say: why the recipient changed. A rotation and a hijack are the same observation from outside; the class asserts the change and never the motive, and the readout that reports it points at where the new wallet's own history can be read rather than reading it for you.",
+  },
+  {
+    version: "8",
+    date: "2026-09-02",
+    at_the_instigation_of:
+      "this store, roadmap S8 (cross-surface consistency), after being caught by the same shape in its own published bundle on 2026-08-31",
+    what_changed:
+      "Added two classes for a door disagreeing with itself inside one response — the first tier of cross-surface consistency, where the truth costs no second request. discovery-info-invalid: the bazaar discovery block does not satisfy the schema served beside it, which is the catalog's own listing rule and so a door absent from the catalog without knowing. offer-contradicts-challenge: a signed offer commits to a network, asset, payTo or amount the challenge's accepts do not carry, a signed promise of one price beside a challenge for another. Both unpaid-detectable from the bytes every probe already holds; both ship as advisories first (discovery-info-fails-schema, offer-contradicts-challenge) and fold into a verdict only under a later battery, by the keeper's hand. The catalog's copy differing from the live door and a same-origin surface differing from the 402 are the next tiers and are not classes yet: no signal reports them, and a class with no signal is a word with nothing behind it.",
   },
 ];
 
@@ -457,6 +465,36 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     sourced_by:
       "x402 Trust (x402.fuchss.app), whose pitch of 2026-09-01 named the failure shape — a payTo moved to a fresh wallet a week ago, invisible to a one-off check — before this register did. Source, not author: the class text is ours, the observation was theirs to name first.",
     registered: "2026-09-01",
+  },
+  {
+    id: "discovery-info-invalid",
+    title: "The discovery block fails the schema served beside it",
+    asserts:
+      "Where a challenge carries extensions.bazaar, its info block satisfies its schema block on every keyword a catalog's validator applies before listing.",
+    costs:
+      "The catalog's documented rule is to validate info against schema and reject the entry otherwise, so the door is absent from the place buyers search while every structural check still passes. The operator opted into discovery and got silence; the buyer never finds the door at all.",
+    detectable: "unpaid",
+    our_signal: "discovery-info-fails-schema (advisory)",
+    falsified_by:
+      "The info block validating against the schema block under a standard JSON Schema validator; or the endpoint appearing in an ingestion-built catalog with a complete listing despite the block failing.",
+    repair_hint:
+      "Generate info and schema from one declaration rather than typing them twice (the reference helpers do this), and run a JSON Schema validator over the pair in your own tests, which is how this store found the same shape in its own listings.",
+    registered: "2026-09-02",
+  },
+  {
+    id: "offer-contradicts-challenge",
+    title: "A signed offer promises terms the challenge does not carry",
+    asserts:
+      "Every signed offer a door serves commits to a network, asset, payTo and amount that appear together on one entry of the same response's accepts.",
+    costs:
+      "A buyer holding the offer as a pre-payment commitment and the challenge as the terms to sign has two prices from one door in one breath, and whichever it pays, the other document says it paid wrong. In a dispute the door's own signature argues against its own challenge.",
+    detectable: "unpaid",
+    our_signal: "offer-contradicts-challenge (advisory)",
+    falsified_by:
+      "The offer's decoded payload matching an accepts entry of the same response on network, asset, payTo and amount; the spec tells verifiers to match on those fields, never on array position.",
+    repair_hint:
+      "Sign offers from the accepts entries themselves at the moment the challenge is built, one offer per entry, so the two cannot drift; never sign a cached offer beside a freshly priced challenge.",
+    registered: "2026-09-02",
   },
 ];
 

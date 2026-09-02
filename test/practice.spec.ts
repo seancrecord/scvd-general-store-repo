@@ -20,6 +20,7 @@ describe("the obstacle course", () => {
       "testnet-network",
       "name-payto",
       "wrong-rail-payto",
+      "two-surfaces",
       "dust-correct",
     ]);
     expect(index.when_it_is_your_door).toContain("service_audit");

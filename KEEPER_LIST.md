@@ -111,6 +111,17 @@ build, it is on the roadmap.
 
 Do not relitigate without you.
 
+- **S8, 2026-09-02, "agreed on all."** Tier B rides
+  `service_audit` always, same price, no flag. The
+  `llms.txt` price convention: a dollar amount in a code
+  span beside an endpoint path, machine-read, never prose.
+  The practice door is `two-surfaces`. The three Tier A
+  advisories beyond the two that fold into v3 fold only
+  after a month of rows, by your hand. Design:
+  `docs/S8_CROSS_SURFACE_2026-09.md`.
+- **The Aura Walk cap, 2026-09-02.** One a week; two after
+  the first three ship inside the window.
+
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit
   offer on the shelf. $5 / free for proved-own. ⚑ ink the
@@ -189,21 +200,12 @@ Do not relitigate without you.
 - **`/trust`, `/profiles` storefront slots.** Still held
   off the front; `/passport` went on 2026-09-01 by your
   ruling. Nod or leave.
-- **S8, four rulings** (`docs/S8_CROSS_SURFACE_2026-09.md`,
-  the last section). ⚑ Tier B on `service_audit` always or
-  behind `surfaces=true`. ⚑ The `llms.txt` price convention
-  to publish. ⚑ The practice door's name. ⚑ Whether the three
-  Tier A advisories ever fold, after a month of rows. The
-  build starts with PR 1 (advisories, fixtures, vocabulary
-  v8) and needs none of the four to begin.
-- **The Aura Walk, two rulings.** ⚑ The weekly cap on
-  `aura_walk` is drafted at one (the collab's is two, your
-  2026-08-20 "2 is fine"); six passes with transcripts is
-  more of a week than a made thing, but only you know your
-  throughput. ⚑ The copy on the row (`src/store/menu.ts`:
-  the description, the 402 line and the constraints) is
-  drafted; the price and the model rule are yours already.
-  Ink or edit, rule 7.
+- **The Aura Walk, one ruling left.** ⚑ The copy on the row
+  (`src/store/menu.ts`, the description, the 402 line and the
+  constraints) is drafted; the price, the model rule and the
+  cap of one a week are yours already (cap ruled 2026-09-02,
+  "agreed"; raise to two after the first three ship inside
+  the window). Ink or edit, rule 7.
 - **The Aura Walk, the first order.** TEST: when one lands,
   `/admin` prints the door under "Door to walk" and the
   buyer's detail under it. The passes are your machines and
