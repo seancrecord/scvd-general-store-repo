@@ -148,24 +148,39 @@ function zlibStored(raw: Uint8Array): Uint8Array {
   return out;
 }
 
-export function encodePng(width: number, height: number, rgb: Uint8Array): Uint8Array {
-  // One filter byte (0 = none) per row, then RGB.
-  const raw = new Uint8Array((width * 3 + 1) * height);
+/**
+ * A two-colour image is one bit per pixel. Colour type 3 (indexed) at
+ * bit depth 1 with a two-entry palette: 1200x630 packs into ~95 KB
+ * uncompressed, against 2.2 MB as truecolour — the difference between
+ * a social card every unfurler fetches and one they give up on.
+ */
+export function encodePng1Bit(
+  width: number,
+  height: number,
+  bits: Uint8Array,
+  palette: readonly (readonly [number, number, number])[],
+): Uint8Array {
+  const rowBytes = Math.ceil(width / 8);
+  // One filter byte (0 = none) per row, then the packed row.
+  const raw = new Uint8Array((rowBytes + 1) * height);
   for (let y = 0; y < height; y += 1) {
-    raw[y * (width * 3 + 1)] = 0;
-    raw.set(rgb.subarray(y * width * 3, (y + 1) * width * 3), y * (width * 3 + 1) + 1);
+    raw[y * (rowBytes + 1)] = 0;
+    raw.set(bits.subarray(y * rowBytes, (y + 1) * rowBytes), y * (rowBytes + 1) + 1);
   }
   const ihdr = new Uint8Array(13);
   ihdr.set(u32(width), 0);
   ihdr.set(u32(height), 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 2; // colour type: truecolour
+  ihdr[8] = 1; // bit depth
+  ihdr[9] = 3; // colour type: indexed
   ihdr[10] = 0;
   ihdr[11] = 0;
   ihdr[12] = 0;
+  const plte = new Uint8Array(palette.length * 3);
+  palette.forEach((colour, i) => plte.set(colour, i * 3));
   const parts = [
     new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk("IHDR", ihdr),
+    chunk("PLTE", plte),
     chunk("IDAT", zlibStored(raw)),
     chunk("IEND", new Uint8Array(0)),
   ];
@@ -182,12 +197,9 @@ export function encodePng(width: number, height: number, rgb: Uint8Array): Uint8
 /* ---------------- The card ---------------- */
 
 export function renderCardPng(lines: readonly CardLine[]): Uint8Array {
-  const rgb = new Uint8Array(W * H * 3);
-  for (let i = 0; i < W * H; i += 1) {
-    rgb[i * 3] = CREAM[0];
-    rgb[i * 3 + 1] = CREAM[1];
-    rgb[i * 3 + 2] = CREAM[2];
-  }
+  // Palette index 0 is cream (every bit starts 0); index 1 is brown.
+  const rowBytes = Math.ceil(W / 8);
+  const bits = new Uint8Array(rowBytes * H);
   const rect = (x: number, y: number, w: number, h: number): void => {
     for (let dy = 0; dy < h; dy += 1) {
       const yy = y + dy;
@@ -195,10 +207,7 @@ export function renderCardPng(lines: readonly CardLine[]): Uint8Array {
       for (let dx = 0; dx < w; dx += 1) {
         const xx = x + dx;
         if (xx < 0 || xx >= W) continue;
-        const i = (yy * W + xx) * 3;
-        rgb[i] = BROWN[0];
-        rgb[i + 1] = BROWN[1];
-        rgb[i + 2] = BROWN[2];
+        bits[yy * rowBytes + (xx >> 3)]! |= 0x80 >> (xx & 7);
       }
     }
   };
@@ -225,7 +234,7 @@ export function renderCardPng(lines: readonly CardLine[]): Uint8Array {
   // A thin brown rule top and bottom, the paper's edge.
   rect(0, 0, W, 6);
   rect(0, H - 6, W, 6);
-  return encodePng(W, H, rgb);
+  return encodePng1Bit(W, H, bits, [CREAM, BROWN]);
 }
 
 export const CARD_WIDTH = W;

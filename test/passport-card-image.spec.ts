@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { encodePng, fitCell, renderCardPng } from "@/lib/pixel-card";
+import { encodePng1Bit, fitCell, renderCardPng } from "@/lib/pixel-card";
 import { cardLines } from "@/pages/passport-card";
 import type { EndpointPassport } from "@/services/passport";
 
@@ -15,23 +15,25 @@ const BASE = "https://scvd.store";
  * bytes are exactly the pixels.
  */
 describe("the PNG encoder", () => {
-  it("emits a valid signature, IHDR, IDAT and IEND for a tiny image", () => {
-    const png = encodePng(2, 1, new Uint8Array([255, 0, 0, 0, 255, 0]));
+  it("emits a valid signature, IHDR, PLTE, IDAT and IEND for a tiny two-colour image", () => {
+    const png = encodePng1Bit(2, 1, new Uint8Array([0x80]), [[1, 2, 3], [4, 5, 6]]);
     expect([...png.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const text = new TextDecoder("latin1").decode(png);
     expect(text).toContain("IHDR");
+    expect(text).toContain("PLTE");
     expect(text).toContain("IDAT");
     expect([...png.slice(-8)]).toEqual([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
-    // width 2, height 1, 8-bit truecolour
+    // width 2, height 1, 1-bit indexed
     expect([...png.slice(16, 24)]).toEqual([0, 0, 0, 2, 0, 0, 0, 1]);
-    expect(png[24]).toBe(8);
-    expect(png[25]).toBe(2);
+    expect(png[24]).toBe(1);
+    expect(png[25]).toBe(3);
   });
 
-  it("draws a card of the declared size", () => {
+  it("draws a card of the declared size, light enough for every unfurler", () => {
     const png = renderCardPng([{ text: "hello", cell: 8 }]);
     expect([...png.slice(16, 24)]).toEqual([0, 0, 4, 176, 0, 0, 2, 118]); // 1200 x 630
-    expect(png.length).toBeGreaterThan(1200 * 630 * 3);
+    expect(png.length).toBeGreaterThan(90_000);
+    expect(png.length).toBeLessThan(120_000);
   });
 
   it("shrinks a long host to fit rather than cutting it", () => {
