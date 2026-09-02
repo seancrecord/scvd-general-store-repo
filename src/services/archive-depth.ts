@@ -1,3 +1,5 @@
+import { KV_KEYS } from "@/lib/kv-keys";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payToDigest } from "@/lib/pay-to-digest";
 import { listCorpus } from "@/services/corpus";
 import { deriveDoorIndex } from "@/services/door-index";
@@ -25,7 +27,22 @@ import type { Env } from "@/types";
  * signed rounds stand behind an answer, never what the answer is. A
  * tier is not printed here, because a tier before the money would be
  * the grade for free with the check sold after it.
+ *
+ * HELD, NOT RECOMPUTED ON EVERY KNOCK (2026-09-02, the evening after
+ * it shipped). The first version derived the depth on every free 402
+ * and every menu.json read: a KV list, a bulk get, and one R2 get per
+ * signed week, before the challenge could be served. The speed desk's
+ * report the next morning put trust_profile at +429ms and spot_check
+ * at +196ms day over day, with menu.json doubled. The chain appends
+ * once a week, so a figure derived from it can be held for a few
+ * minutes without lying: each derivation is kept in KV under its kind
+ * and subject with the time it was taken, printed on the object as
+ * derived_at, and expires on its own. The trust panel holds its
+ * corpus count the same way. Nothing about the arithmetic changed.
  */
+
+/** How long one derivation is served before the chain is read again. */
+export const DEPTH_HOLD_SECONDS = 600;
 
 /** The items that sell history, and what names their subject. */
 export const DEPTH_ITEMS: Record<string, "host" | "url" | "address"> = {
@@ -67,10 +84,46 @@ export interface ArchiveDepthWide {
 export type ArchiveDepth = (HostDepth | AddressDepth | ArchiveDepthWide) & {
   what_this_is: string;
   what_this_is_not: string;
+  /** When this derivation was taken from the chain. Held up to DEPTH_HOLD_SECONDS. */
+  derived_at: string;
 };
 
-const WHAT_THIS_IS =
-  "How much signed history stands behind what this item would sell you, counted from the chain at read time, before any money moves. Zero is printed as zero.";
+const WHAT_THIS_IS = `How much signed history stands behind what this item would sell you, counted from the chain before any money moves and re-derived at most every ${DEPTH_HOLD_SECONDS / 60} minutes; derived_at says when. Zero is printed as zero.`;
+
+interface HeldDepth {
+  derived_at: string;
+  depth: ArchiveDepth;
+}
+
+/**
+ * Serve the held derivation while it is younger than the hold;
+ * otherwise derive, hold, and serve. A held value that will not
+ * parse or has no derived_at is treated as absent, never trusted.
+ */
+async function held(
+  env: Env,
+  kind: string,
+  subject: string,
+  derive: () => Promise<Omit<ArchiveDepth, "derived_at" | "what_this_is" | "what_this_is_not">>,
+): Promise<ArchiveDepth> {
+  const key = KV_KEYS.archiveDepth(kind, subject);
+  const stored = await kvGetJson<HeldDepth>(env.COUNTERS, key, "json").catch(() => null);
+  if (stored?.derived_at && stored.depth) {
+    const age = (Date.now() - Date.parse(stored.derived_at)) / 1000;
+    if (Number.isFinite(age) && age >= 0 && age < DEPTH_HOLD_SECONDS) return stored.depth;
+  }
+  const derived_at = new Date().toISOString();
+  const depth = {
+    ...(await derive()),
+    what_this_is: WHAT_THIS_IS,
+    what_this_is_not: WHAT_THIS_IS_NOT,
+    derived_at,
+  } as ArchiveDepth;
+  await kvPut(env.COUNTERS, key, JSON.stringify({ derived_at, depth } satisfies HeldDepth), {
+    expirationTtl: DEPTH_HOLD_SECONDS,
+  }).catch(() => undefined);
+  return depth;
+}
 const WHAT_THIS_IS_NOT =
   "Not a preview of the answer. The depth says how many signed rounds an answer would draw on, never what they say; a subject the chain never met is stated as never met, not counted as anything.";
 
@@ -119,17 +172,17 @@ async function addressDepth(env: Env, address: string): Promise<AddressDepth> {
 
 /** The archive's own depth, for the surfaces that name no subject. */
 export async function archiveWideDepth(env: Env): Promise<ArchiveDepth> {
-  const records = await listCorpus(env);
-  const index = deriveDoorIndex(records);
-  return {
-    kind: "archive",
-    weeks_in_chain: records.length,
-    hosts_seen: index.total_hosts,
-    first_week: records[0]?.snapshot.week ?? null,
-    latest_week: index.latest_week,
-    what_this_is: WHAT_THIS_IS,
-    what_this_is_not: WHAT_THIS_IS_NOT,
-  };
+  return held(env, "archive", "all", async () => {
+    const records = await listCorpus(env);
+    const index = deriveDoorIndex(records);
+    return {
+      kind: "archive",
+      weeks_in_chain: records.length,
+      hosts_seen: index.total_hosts,
+      first_week: records[0]?.snapshot.week ?? null,
+      latest_week: index.latest_week,
+    };
+  });
 }
 
 /**
@@ -148,11 +201,11 @@ export async function archiveDepthFor(
   if (names === "address") {
     const address = (query.address ?? "").trim();
     if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return archiveWideDepth(env);
-    return { ...(await addressDepth(env, address)), what_this_is: WHAT_THIS_IS, what_this_is_not: WHAT_THIS_IS_NOT };
+    return held(env, "address", address.toLowerCase(), () => addressDepth(env, address));
   }
   const host = hostOf(names === "url" ? query.url : query.host);
   if (!host) return archiveWideDepth(env);
-  return { ...(await hostDepth(env, base, host)), what_this_is: WHAT_THIS_IS, what_this_is_not: WHAT_THIS_IS_NOT };
+  return held(env, "host", host, () => hostDepth(env, base, host));
 }
 
 /** One line for a page: the numbers with their nouns, never a ratio. */
