@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "8";
+export const DEFECT_VOCABULARY_VERSION = "9";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -122,6 +122,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "this store, roadmap S8 (cross-surface consistency), after being caught by the same shape in its own published bundle on 2026-08-31",
     what_changed:
       "Added two classes for a door disagreeing with itself inside one response — the first tier of cross-surface consistency, where the truth costs no second request. discovery-info-invalid: the bazaar discovery block does not satisfy the schema served beside it, which is the catalog's own listing rule and so a door absent from the catalog without knowing. offer-contradicts-challenge: a signed offer commits to a network, asset, payTo or amount the challenge's accepts do not carry, a signed promise of one price beside a challenge for another. Both unpaid-detectable from the bytes every probe already holds; both ship as advisories first (discovery-info-fails-schema, offer-contradicts-challenge) and fold into a verdict only under a later battery, by the keeper's hand. The catalog's copy differing from the live door and a same-origin surface differing from the 402 are the next tiers and are not classes yet: no signal reports them, and a class with no signal is a word with nothing behind it.",
+  },
+  {
+    version: "9",
+    date: "2026-09-02",
+    at_the_instigation_of:
+      "this store, roadmap S8 Tier B, on the keeper's ruling that the paid audit reads the door's other surfaces always",
+    what_changed:
+      "Added surface-contradicts-challenge: a machine-readable surface on the same origin — the llms.txt read by the published code-span convention, or the OpenAPI document's payment fields — names a different price for the probed path than the 402's minimum on its first rail; or the challenge's own resource URL serves a 402 whose accepts differ from the probed door's. Paid-detectable only: the reads cost two to four requests the free preflight and the census have promised not to make, so the signal is the surfaces section of the paid single-door audit and nothing else. The class is never present when the 402 moved between the audit's first read and its bookend, when a surface is absent or silent, or when the surface's number sits in prose — silence is not disagreement and prose is not read. The catalog's copy differing from the door is a fact about the catalog and stays out of the vocabulary.",
   },
 ];
 
@@ -494,6 +502,21 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The offer's decoded payload matching an accepts entry of the same response on network, asset, payTo and amount; the spec tells verifiers to match on those fields, never on array position.",
     repair_hint:
       "Sign offers from the accepts entries themselves at the moment the challenge is built, one offer per entry, so the two cannot drift; never sign a cached offer beside a freshly priced challenge.",
+    registered: "2026-09-02",
+  },
+  {
+    id: "surface-contradicts-challenge",
+    title: "A same-origin surface names a different price than the 402",
+    asserts:
+      "Every machine-readable surface on the door's own origin that names a price for the probed path — llms.txt by the code-span convention, the OpenAPI document's payment fields, the challenge's own resource URL — names the 402's minimum on its first rail.",
+    costs:
+      "A buyer who budgets from the surface it happened to read first — an installed skill, a fetched llms.txt, a client generated from the OpenAPI document — arrives at the till with the wrong number, refuses or overpays, and reports the door as something it is not. This store did exactly that to its own doors in an installed bundle for weeks before a check looked at a number beside a name.",
+    detectable: "paid",
+    our_signal: "surfaces (the paid single-door audit's section; rows with state read and agrees false, when the bookend did not move)",
+    falsified_by:
+      "The surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
+    repair_hint:
+      "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
     registered: "2026-09-02",
   },
 ];

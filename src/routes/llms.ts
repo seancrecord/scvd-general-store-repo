@@ -403,6 +403,18 @@ and marked declared. Served forever at \`${base}/case/{case_id}\`. It
 never says who was in the wrong; if this store is a party, the file
 says so on its face.
 
+## Prices, by the convention
+
+The store's own doors, read the way the paid audit reads anybody's
+llms.txt (the convention, ruled 2026-09-02): a code span holding the
+endpoint path with the dollar amount beside it, and never a number in
+prose. Pay-what-it-deserves doors show their minimum. Derived from the
+shelf every time this file is served, so it cannot drift from the 402.
+
+${MENU_ITEMS.filter((item) => item.price_usdc > 0)
+  .map((item) => `- \`GET ${base}/api/buy/${item.id}\` ($${item.price_usdc}${item.pricing === "fixed" ? "" : " minimum"})`)
+  .join("\n")}
+
 ## The reading room
 
 The Keeper's Almanac, his journal, serialized. Free index at
@@ -1566,6 +1578,7 @@ const SECTION_AREAS: Record<string, string> = {
 
   "When you'd use this store": "menu",
   "The menu": "menu",
+  "Prices, by the convention": "menu",
   "The reading room": "menu",
   "How prices are set, signed": "menu",
   "Money that flows the other way": "menu",
