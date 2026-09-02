@@ -53,7 +53,7 @@ const BAZAAR_REFERRER_HINTS = ["x402scan", "bazaar", "x402-catalog", "x402index"
 const SKILL_HINTS = ["agentskills", "skills.sh", "skill-runner", "skillrunner", "clawhub"];
 
 /** Conservative known-crawler table. Real agents using curl are customers. */
-const INFRASTRUCTURE_UA_HINTS = [
+export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
   "googlebot", "bingbot", "duckduckbot", "yandexbot", "baiduspider",
   "gptbot", "ccbot", "claudebot", "perplexitybot", "bytespider",
   "x402scan", "x402-crawler", "clawhub-scanner",
@@ -185,7 +185,7 @@ export interface HouseSignals {
  * organic is the failure the house rules exist to prevent. When only
  * two directions are available, take the one that flatters nobody.
  */
-const HOUSE_AGENTS = ["scvd-walkabout"] as const;
+export const HOUSE_AGENTS = ["scvd-walkabout"] as const;
 
 /** Family doesn't make the paper: true when a wallet is the house's own. */
 export function isHouseWallet(env: Env, address: string): boolean {
