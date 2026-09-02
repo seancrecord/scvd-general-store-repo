@@ -474,12 +474,22 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "summary.tier_line"
  * and "/corpus/tiers.json", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-SIXTH — by roadmap N8, the case
+ * file: the guide gains one paragraph before the reading room naming
+ * the_case_file, what it binds, and its door at /case/{case_id}, and
+ * the MENU_ITEMS lines gained its row. Re-taken once more the same
+ * hour when the case file's drafted subtitle came off (under-a-dollar
+ * doors carry none), because the guide prints "name — subtitle" and
+ * CI caught the stale value. Confirmed before this value was taken:
+ * the guide carries "/case/{case_id}" and "never says who was in the
+ * wrong", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8f2030d5e3164bb1351fc581b8f76f514cea66c7c4d1c13139d486d7c64b8fea";
+  "6a474e7b3ba6fbbabf6d74ab227e751d2b439943a3af5d38cbfd6811902f2ced";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

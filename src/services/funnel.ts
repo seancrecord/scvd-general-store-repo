@@ -52,6 +52,7 @@ export const VERIFICATION_TIER: readonly string[] = [
   "launch_check",
   "opening_day",
   "provenance_check",
+  "the_case_file",
   "the_statement",
   "the_mandate",
 ];

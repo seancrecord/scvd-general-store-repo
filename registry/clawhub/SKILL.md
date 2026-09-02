@@ -610,6 +610,19 @@ wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
 
+### The Case File (3.13.0, 2026-09-02)
+
+`the_case_file` ($0.25) — one signed file over one purchase for the
+human who has to decide what went wrong: a fresh settlement
+attestation, the reconciliation (EVM), the mandate you cite with its
+declared cap printed beside the settled amount, the door over the seven
+days around the transaction with the passport tier at the time,
+delivery where anyone observed it, your own account verbatim and marked
+declared, and every absent section with its reason, counted against us.
+Give `tx_hash`; optional `mandate_id`, `url`, `claim`, `launch_check_id`.
+Served forever at `https://scvd.store/case/{case_id}`. It never says who
+was wronged; if this store is a party, the file says so on its face.
+
 ### The passport tier (3.12.0, 2026-09-02)
 
 Every endpoint passport carries a tier — `observed`, `established`,

@@ -156,6 +156,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // but "did what moved stay inside the ceiling in force" — and
       // whether the ceiling was on the chain or merely asserted.
       "settlement_reconciliation",
+      "the_case_file",
       "attestation_bundle",
       "standing_watch",
       // The point-in-time audit is the shelf's namesake shape: one

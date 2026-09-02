@@ -54,6 +54,10 @@ build, it is on the roadmap.
   a tier with its fraction and rows; `/corpus/tiers.json`
   is alphabetical. Rule 43's amendment in HOUSE_RULES.md
   is drafted around your sentence, ⚑ your ink.
+- The Case File (N8) is on the shelf 2026-09-02 at the
+  prompt's $0.25 ⚑ — your price to confirm or move. It
+  never says who was in the wrong; when we are a party it
+  says so on its face.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.

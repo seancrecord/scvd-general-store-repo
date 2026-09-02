@@ -371,6 +371,18 @@ A2A agent card: ${base}/.well-known/a2a.json (also served at
 card, honestly labeled: skills derive live from the menu, and the
 transport field says MCP because that is what we actually speak.
 
+The case file (the_case_file, a quarter, since 2026-09-02) is the
+observation shelf assembled for the human who has to decide what went
+wrong with one purchase: give a tx_hash and the file binds, under one
+signature, the settlement attestation, the reconciliation, the mandate
+you cite with its declared cap beside the settled amount, the door over
+the seven days around the transaction with the passport tier at the
+time, and delivery where anyone observed it — each section present or
+absent by name, the gaps counted against us, your own account verbatim
+and marked declared. Served forever at \`${base}/case/{case_id}\`. It
+never says who was in the wrong; if this store is a party, the file
+says so on its face.
+
 ## The reading room
 
 The Keeper's Almanac, his journal, serialized. Free index at

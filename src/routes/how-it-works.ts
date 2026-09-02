@@ -188,6 +188,7 @@ export const PAID_EXAMPLES: { id: string; answers: string }[] = [
   { id: "launch_check", answers: "one real purchase attempt of your own door, from our field wallet, signed stage by stage" },
   { id: "opening_day", answers: "that walk, then a week of daily passes on the same door, then your passport page — one certificate, one URL" },
   { id: "provenance_check", answers: "which doors advertised a receiving address and when, read from the signed chain, delivered to you and never published" },
+  { id: "the_case_file", answers: "everything this store observed about one purchase in one signed file, each section present or absent by name, never a verdict" },
 ];
 
 function paidItems(): { item: MenuItem; answers: string }[] {

@@ -335,6 +335,18 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("tx_hash");
   }
+  if (item.id === "the_case_file") {
+    properties["tx_hash"] = {
+      type: "string",
+      description:
+        "The transaction to assemble the case around: 0x + 64 hex for Base or Polygon, a base58 signature for Solana. The shape picks the chain.",
+    };
+    properties["mandate_id"] = { type: "string", description: "Optional. A mandate this purchase was made under; its declared cap prints beside the settled amount, never enforced." };
+    properties["url"] = { type: "string", format: "uri", description: "Optional. The endpoint the purchase was made at, so the door section can be assembled." };
+    properties["claim"] = { type: "string", maxLength: 1000, description: "Optional. Your own account of what happened, stored verbatim and marked declared. Never checked." };
+    properties["launch_check_id"] = { type: "string", description: "Optional. A launch check you hold about the same door, for the delivery section." };
+    required.push("tx_hash");
+  }
   if (item.id === "settlement_reconciliation") {
     properties["tx_hash"] = {
       type: "string",
@@ -433,6 +445,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     // to learn the field would otherwise learn to send its OWN
     // ceiling by default, which is the weaker artifact. The strong
     // one needs no extra input at all.
+    example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+  }
+  if (item.id === "the_case_file") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
   }
   if (item.id === "attestation_bundle") {

@@ -140,6 +140,10 @@ export const ROUTES: readonly Route[] = [
     items: ["settlement_attestation", "settlement_reconciliation"],
   },
   {
+    job: "A purchase went wrong and a person has to decide what happened; I want everything a neutral party observed about it in one file, with what it did not observe stated.",
+    items: ["the_case_file"],
+  },
+  {
     job: "I need to catch it if a door breaks midweek, not find out after it cost me.",
     items: ["conformance_watch", "standing_watch"],
   },

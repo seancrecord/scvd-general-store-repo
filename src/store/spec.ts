@@ -176,7 +176,14 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * /corpus/tiers.json lists every host's, alphabetical. MINOR: a reader
  * holding 3.11.0 does not know summary.tier_line exists.
  */
-export const SKILL_VERSION = "3.12.0";
+/*
+ * 3.13.0 (2026-09-02): the case file. the_case_file ($0.25) joins the
+ * observation shelf — one signed assembly over one purchase, every
+ * section present or absent by name, never a verdict — served at
+ * /case/{case_id}. MINOR: a reader holding 3.12.0 has a shelf one door
+ * short.
+ */
+export const SKILL_VERSION = "3.13.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -288,6 +295,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Prove to a third party that a payment actually settled on chain",
   settlement_reconciliation:
     "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+  the_case_file:
+    "Hand the person deciding what went wrong with one agent purchase everything a neutral party observed about it, in one signed file, with what it did not observe stated",
   attestation_bundle:
     "Prove a whole run of payments settled, one signed receipt per transaction",
   graffiti_on_a_train: "Leave a mark that survives my context window",
@@ -377,6 +386,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "A real settlement on the shelf at half a cent, and the cheapest door that takes no arguments: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
   recurring_patronage:
     "A dated pass at a stable URL that anyone can check is current — a standing relationship as a verifiable artifact rather than a claim about one.",
+  the_case_file:
+    "one signed file over one purchase for the person deciding what went wrong: settlement, reconciliation, the cited mandate beside the settled amount, the door that week, and delivery where anyone observed it — each present or absent by name, the gaps counted against us. Never a verdict; neither party controls it.",
 };
 
 /**
@@ -461,6 +472,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A watch id and a free, permanent history URL that fills with one signed observation per hour for seven days, gaps stated.",
   certificate_of_patronage:
     "A signed certificate of patronage and a gilt badge; entitles the holder to nothing whatsoever.",
+  the_case_file:
+    "A signed JSON case file — settlement, reconciliation (EVM), mandate with declared cap beside settled amount, the door over the seven days around the transaction with the passport tier at the time, delivery where observed, your declared claim verbatim, and every absent section with its reason — dated, its evidence hash bound into the purchase certificate's attests field, plus a stable /case/{id} URL serving the record free forever. Instant; the chain is read once for the settlement and the reconciliation, the rest from this store's own records. Never a verdict.",
 };
 
 /**
