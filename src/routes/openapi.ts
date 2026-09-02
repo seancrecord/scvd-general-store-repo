@@ -4789,6 +4789,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [pathParam("reconciliation_id", "From the purchase response; starts srec_.")],
         },
       },
+      "/case/{case_id}": {
+        get: {
+          ...returns(
+  freeOp(
+                "A case file, served forever",
+                "The signed assembly a purchase minted: everything this store observed about one purchase, each section present or absent by name, the gaps counted against us, the buyer's declared inputs marked as such, and never a verdict. Read `case.gaps` first.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "case",
+              payloadDescription:
+                "The signed case file: settlement, reconciliation, mandate, door, delivery, declared, gaps, and the conflict line when this store is a party.",
+              timestampKey: "created_at",
+              extras: {
+                read_this_first: {
+                  type: "string",
+                  description: "Read the gaps, then the declared inputs, then the observed sections — in that order, because the absences and the claims are what a hurried reader gets wrong.",
+                },
+                no_verdict: { type: "string" },
+              },
+            }),
+          ),
+          parameters: [pathParam("case_id", "From the purchase response; starts case_.")],
+        },
+      },
       "/api/lucky/{lucky_id}": {
         get: {
           ...returns(

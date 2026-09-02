@@ -205,6 +205,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/reconciliation/{reconciliation_id}",
   },
   {
+    id: "the_case_file",
+    name: "Case files (one purchase, every section present or absent by name)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole assembly at one moment: the fresh settlement attestation, the reconciliation where the chain is EVM, the cited mandate with its declared cap printed beside the settled amount, the door's corpus rounds, watch rows and tier over the window, delivery where this store observed it, the buyer's declared inputs marked as such, every absent section with its reason, and the conflict line whenever this store is a party. Each observed section is the shelf's own artifact, produced by the same function.",
+    does_not_prove:
+      "Who was wronged, at fault, or liable: the file never says, and a reader who wants that sentence must write it themselves from the evidence. That anything was delivered where the delivery section is absent — 'not observed by this store' is the usual answer and it is stated in full weight. That the buyer's declared claim, expected amount, payer or recipient is true: those are stored verbatim and never checked. Anything about the door outside the window, or about a host the corpus never met.",
+    verify_url: "/case/{case_id}",
+  },
+  {
     id: "bitcoin_anchor",
     name: "Patron Bitcoin anchors",
     trust_model: "custody_only",

@@ -100,6 +100,9 @@ describe("the storefront", () => {
       // the thing you buy BEFORE anything goes wrong should be among
       // the first prices a scanning agent sees.
       "the_mandate",
+      // A quarter (2026-09-02): the case file, between the dime and the
+      // fifty-cent hello.
+      "the_case_file",
       "hello",
       /*
        * THE $0.99 BLOCK, new on 2026-08-28 and the shelf's own rule

@@ -173,7 +173,8 @@ a call, a look, a made thing. Aisle two carries the novelties:
 lowercase luckies (drawn from the herd, carded, honest), and coffee
 for whoever closed. Aisle three is utility: context anchors (signed
 agent memory restore points), a standing watch (a week of signed
-hourly probes on your endpoint), settlement attestations, and 30-day
+hourly probes on your endpoint), settlement attestations, the case file (everything we observed
+about one purchase, in one signed file, never a verdict), and 30-day
 recurring patronage passes. The Penny Shelf by the door holds
 half-cent blessings, the daily fortune (one line a day, the same
 for everyone until midnight UTC, back on the shelf 2026-09-02), and

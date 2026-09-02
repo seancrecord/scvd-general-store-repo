@@ -1,3 +1,4 @@
+import { NO_VERDICT } from "@/services/case-file";
 import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import {
   AUDIT_CRITERIA_VERSION,
@@ -228,7 +229,8 @@ export type SampleSlug =
   | "conformance-watch"
   | "night-watch"
   | "launch-check"
-  | "settlement-attestation";
+  | "settlement-attestation"
+  | "case-file";
 
 export interface SampleEnvelope<T> {
   specimen: true;
@@ -476,6 +478,53 @@ export async function sampleSettlementAttestation(
   );
 }
 
+/**
+ * THE CASE FILE SPECIMEN (roadmap N8): the settlement specimen above,
+ * assembled into the file's shape with every other section absent
+ * and its reason stated — which is the honest picture of the usual
+ * case, where this store observed the money and nothing else.
+ */
+export async function sampleCaseFile(
+  env: Env,
+  price: number,
+): Promise<SampleEnvelope<Record<string, unknown>>> {
+  const settlement = await sampleSettlementAttestation(env, price);
+  const gaps = [
+    { section: "reconciliation", reason: "the specimen's constructed receipt carries a transfer and no ceiling; the real desk reads both off the receipt" },
+    { section: "mandate", reason: "no mandate_id was given; nothing was cited" },
+    { section: "door", reason: "no endpoint url was given, so there is no door to look up" },
+    { section: "delivery", reason: "delivery not observed by this store. This is the section a dispute usually turns on, and this store usually does not have it: nothing here saw what the seller sent after the money moved." },
+  ];
+  const sample: Record<string, unknown> = {
+    artifact: "case_file",
+    case_id: "case_specimen0000",
+    assembled_at: SAMPLE_OBSERVED_AT,
+    query: { tx_hash: SAMPLE_TX_HASH, chain: "evm", mandate_id: null, endpoint_url: null, launch_check_id: null },
+    declared: {
+      claim: "I paid and the tool returned an empty body.",
+      expected_amount_usdc: null,
+      payer: null,
+      recipient: null,
+      note: "The buyer's own inputs, stored verbatim and marked declared. Never checked, and never allowed to change what the chain or this store's records answered.",
+    },
+    settlement: { presence: { present: true }, attestation: settlement.sample },
+    reconciliation: { presence: { present: false, reason: gaps[0]!.reason } },
+    mandate: { presence: { present: false, reason: gaps[1]!.reason } },
+    door: { presence: { present: false, reason: gaps[2]!.reason } },
+    delivery: { presence: { present: false, reason: gaps[3]!.reason } },
+    gaps,
+    no_verdict: NO_VERDICT,
+  };
+  return envelope(
+    env,
+    "the_case_file",
+    price,
+    "A free, unsigned sample of the Case File — one signed assembly of everything this store observed about one purchase. This specimen carries the settlement section (the Settlement Attestation specimen, same classifier) and every other section absent with its reason, which is the usual shape: the store observed the money and nothing else, and says so. The real artifact is signed as a whole and each observed section is signed on its own.",
+    NOT_SIGNED.replace("Once-Over", "Case File"),
+    sample,
+  );
+}
+
 export interface SampleListing {
   slug: SampleSlug;
   item: string;
@@ -489,6 +538,7 @@ export const SAMPLES: readonly SampleListing[] = [
   { slug: "night-watch", item: "standing_watch", build: (env, price) => sampleNightWatch(env, price) },
   { slug: "launch-check", item: "launch_check", build: (env, price) => sampleLaunchCheck(env, price) },
   { slug: "settlement-attestation", item: "settlement_attestation", build: (env, price) => sampleSettlementAttestation(env, price) },
+  { slug: "case-file", item: "the_case_file", build: (env, price) => sampleCaseFile(env, price) },
 ];
 
 export function sampleForItem(itemId: string): SampleListing | undefined {

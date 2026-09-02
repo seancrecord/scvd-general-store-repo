@@ -352,6 +352,15 @@ export const KV_KEYS = {
   settlementReconciliation: (reconciliationId: string): string =>
     `settlement_reconciliation:${reconciliationId}`,
   /**
+   * A purchased case file (roadmap N8, 2026-09-02): the signed assembly
+   * and the certificate that bound its evidence hash. PATRONS beside
+   * the cert, terminal at write. The query key beside it is the
+   * idempotency index — same tx and same mandate inside a day is the
+   * same case — written with a one-day TTL so it expires on its own.
+   */
+  caseFile: (caseId: string): string => `case_file:${caseId}`,
+  caseFileQuery: (digest: string): string => `case_file_query:${digest}`,
+  /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).

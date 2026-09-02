@@ -1,3 +1,4 @@
+import { caseFileNote, storeCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvPut } from "@/lib/kv-retry";
@@ -118,6 +119,10 @@ export interface InstantGoodsInput {
   trustProfile?: SignedTrustProfile;
   /** spot_check only: the signed reading, already made and bound. */
   spotCheck?: SignedSpotCheck;
+  /** the_case_file only: the assembly, already made and signed, and what was asked. */
+  caseFile?: SignedCaseFile;
+  caseFileInput?: CaseFileInput;
+  caseFileReused?: boolean;
   provenanceCheck?: SignedProvenanceCheck;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
@@ -642,6 +647,33 @@ export async function deliverInstantGoods(
           reconciliation_url: `/api/reconciliation/${reconciliation.reconciliation_id}`,
           verify_note:
             "Two ways to check this without trusting us or whoever commissioned it. The observation is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it too. Read cap_observed before you read the verdict — it says which of the two numbers we actually saw.",
+        },
+      };
+    }
+    case "the_case_file": {
+      // Assembled and signed upstream so its evidence hash could go into
+      // the certificate; filed here, after the mint, so the record
+      // carries the cert id. A reused case (same tx and mandate inside a
+      // day) is filed again under the same id with the new cert.
+      const caseFile = input.caseFile;
+      if (!caseFile || !input.caseFileInput) {
+        throw new Error("the_case_file reached goods with no assembly");
+      }
+      await storeCaseFile(env, caseFile, input.certId ?? "", input.caseFileInput);
+      return {
+        deliverable: caseFileNote(caseFile),
+        extras: {
+          case_id: caseFile.case_id,
+          case_url: `/case/${caseFile.case_id}`,
+          sections_present: ["settlement", "reconciliation", "mandate", "door", "delivery"].filter(
+            (section) => (caseFile[section as keyof SignedCaseFile] as { presence: { present: boolean } }).presence.present,
+          ),
+          gaps: caseFile.gaps,
+          ...(caseFile.conflict ? { conflict: caseFile.conflict } : {}),
+          ...(input.caseFileReused ? { reused: true, reused_note: "The same tx_hash and mandate_id were assembled inside the last 24 hours; this is that case file, under the same id, bound to this new certificate." } : {}),
+          case_file: caseFile,
+          verify_note:
+            "The file is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it too. Read `gaps` before anything else: the sections this store could not observe are the file's most important fact.",
         },
       };
     }

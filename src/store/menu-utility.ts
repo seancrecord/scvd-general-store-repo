@@ -615,6 +615,37 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE CASE FILE (roadmap N8, 2026-09-02, the keeper's prompt): one
+   * signed artifact over one purchase, assembled for the human who has
+   * to decide what went wrong, from the observations this store already
+   * sells one at a time. Never a verdict. ⚑ price is his ($0.25: the
+   * parts are under a dime; the rest is the assembly).
+   */
+  {
+    id: "the_case_file",
+    listed_week: "2026-W36",
+    name: "The Case File",
+    subtitle: "everything this store observed about one purchase, in one signed file",
+    price_usdc: 0.25,
+    pricing: "fixed",
+    cadence: "one_off",
+    reads: "chain_read",
+    fulfillment: "instant",
+    sample_url: "/samples/case-file.json",
+    description:
+      "Give a transaction hash and this assembles, at one moment and under one signature, everything this store already observed about that purchase: a fresh settlement attestation; the reconciliation of amount taken against ceiling in force (EVM); the mandate you cite, its declared cap printed beside the settled amount and never enforced; the door over the seven days around the transaction — corpus rounds, any watch rows, the passport tier at the time — or not_observed, which is an answer about our books; and delivery, if you hold a launch check or this store itself was the seller, otherwise 'delivery not observed by this store' in full weight, because that is the section a dispute usually turns on and we usually do not have it. Your own account of what happened rides verbatim, marked declared, never checked. Every absent section is listed with its reason and counted against us. It says what was observed and what was not; it never says who was wronged. If this store is a party to the purchase, the file says so on its face and still assembles.",
+    note_402:
+      "A quarter. The parts are under a dime apiece; the rest is the assembly, and the assembly is the point — one URL a human can hand to the other side.",
+    constraints: [
+      "Give the transaction hash in the tx_hash query parameter: 0x + 64 hex for Base or Polygon, a base58 signature for Solana — the shape picks the chain",
+      "Optional: mandate_id, url (the endpoint paid), payer, recipient, expected_amount_usdc, launch_check_id",
+      "Optional claim: your own account, up to 1000 characters, stored verbatim and marked declared — never checked, never allowed to change an observed field",
+      "Same tx_hash and mandate_id inside 24 hours returns the same case file, not a second charge for a second assembly",
+      "Reconciliation is EVM only; a Solana purchase gets that section as absent, with the reason",
+      "No verdict, ever: the file never says who was wronged, at fault, or liable",
+    ],
+  },
+  /**
    * THE REFRESH (2026-08-21, the keeper's "both" ruling off the
    * passport strategy talk): the paid fresh check for an endpoint
    * passport. Uses the CENSUS'S OWN probe — not the audit battery —
