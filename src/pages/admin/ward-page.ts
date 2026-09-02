@@ -85,6 +85,24 @@ export function renderWardPage(
         : "<li>Our doors in the search index: not measured this round (predates the door check).</li>"
     }
     ${
+      round.catalog_agreement
+        ? `<li>The catalog's copy against the doors: <strong>${round.catalog_agreement.agrees} of ${round.catalog_agreement.compared} listed-with-terms doors agree</strong>; ${round.catalog_agreement.differs} differ, ${round.catalog_agreement.not_comparable} not comparable, ${round.catalog_agreement.not_listed} not listed this round.${
+            round.hosts.some((host) => host.catalog?.state === "differs")
+              ? ` Differing: ${escapeHtml(
+                  round.hosts
+                    .filter((host) => host.catalog?.state === "differs")
+                    .map((host) => `${host.host} (${(host.catalog?.fields ?? []).join("; ")})`)
+                    .join(" · "),
+                )}. The catalog's copy, not the door's defect.`
+              : ""
+          }${
+            round.our_doors?.catalog_differs && round.our_doors.catalog_differs.length > 0
+              ? ` <strong style="color:#8c2f1b">Ours: the index's cheapest amount is not the shelf minimum for ${escapeHtml(round.our_doors.catalog_differs.join(", "))}.</strong>`
+              : ""
+          }</li>`
+        : "<li>The catalog's copy against the doors: not measured this round (predates the column).</li>"
+    }
+    ${
       round.coverage_drop
         ? `<li><strong style="color:#8c2f1b">COVERAGE DROPPED: the last round probed ${round.coverage_drop.previous_hosts} doors (${escapeHtml(round.coverage_drop.previous_at.slice(0, 16))}Z), this one only ${round.coverage_drop.this_round}.</strong> The list feed likely changed its pagination shape under us — this round is a FLOOR, not the ward shrinking, and week-over-week comparisons are unsafe until coverage recovers.</li>`
         : ""

@@ -94,6 +94,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "week-over-week delta: newly failing, newly fixed, flappers",
       "population known versus walked, and the coverage percentage between them",
       "listing lifecycle: first seen, last seen, newly delisted, listed again",
+      "the discovery catalog's copy of each door's terms against the live 402: agrees, differs (field and rail), not listed, or not comparable, with the catalog's own lastUpdated",
     ],
     distribution: [
       {
