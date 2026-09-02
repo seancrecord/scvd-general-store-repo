@@ -1,3 +1,4 @@
+import { DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
 import { Hono, type Context } from "hono";
 import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { paidDoorContract } from "@/store/surface-contract";
@@ -120,6 +121,8 @@ catalogRoutes.get("/menu.json", async (c) => {
   const shutter: ShutterState = await shutterState(c.env).catch(() => ({
     closed: false,
   }));
+  // S7: the archive's own depth, once per request, on the items that sell history.
+  const wideDepth = await archiveWideDepth(c.env).catch(() => null);
   const items: CatalogItem[] = await Promise.all(
     MENU_ITEMS.map(async (item) => ({
       ...item,
@@ -152,6 +155,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       not_guaranteed: NOT_GUARANTEED,
       fulfillment_state: await fulfillmentState(c.env, item, shutter),
       ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+      ...(wideDepth && item.id in DEPTH_ITEMS ? { archive_depth: wideDepth } : {}),
     })),
   );
   return c.json({
@@ -393,6 +397,8 @@ function renderItemPage(
    * derived — the page prints them in the JSON's exact words. */
   artifactClass: ArtifactClass | undefined,
   specimen: SampleEnvelope<unknown> | undefined,
+  /* Roadmap S7: how much signed history stands behind the item, when it sells history. */
+  depth: string | undefined = undefined,
 ): string {
   const required = (buyInputSchema(item).required ?? []).filter(
     (name) => name !== "agent_name",
@@ -417,6 +423,7 @@ function renderItemPage(
           ["Stock", `${item.weekly_inventory} a week; a waitlist opens when the shelf empties`],
         ] as Array<[string, string]>)
       : []),
+    ...(depth ? ([["Archive depth", depth]] as Array<[string, string]>) : []),
   ];
   const factsHtml = facts
     .map(
@@ -598,7 +605,18 @@ async function serveMenuItem(c: Context<HonoEnv>) {
       ? await Promise.resolve(listing.build(c.env, item.price_usdc)).catch(() => undefined)
       : undefined;
     return c.html(
-      renderItemPage(item, base, state, artifactClassForItem(item.id), specimen),
+      renderItemPage(
+        item,
+        base,
+        state,
+        artifactClassForItem(item.id),
+        specimen,
+        item.id in DEPTH_ITEMS
+          ? await archiveWideDepth(c.env)
+              .then((wide) => depthLine(wide))
+              .catch(() => undefined)
+          : undefined,
+      ),
     );
   }
 
