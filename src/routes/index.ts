@@ -92,6 +92,7 @@ export { railsRoutes } from "@/routes/rails";
 export { privacyRoutes } from "@/routes/privacy";
 export { mandateRoutes } from "@/routes/mandate";
 export { statementRoutes } from "@/routes/statement";
+export { operatorStatementRoutes } from "@/routes/operator-statement";
 export { onpageRoutes } from "@/routes/onpage";
 export { watchRoutes } from "@/routes/watch";
 export { anchorLogRoutes } from "@/routes/anchor-log";

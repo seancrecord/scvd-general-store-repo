@@ -663,6 +663,10 @@ export async function fulfillPurchase(
     if (input.targetUrl !== undefined) {
       goodsInput.targetUrl = input.targetUrl;
     }
+    if (input.statementWallet !== undefined) {
+      goodsInput.statementWallet = input.statementWallet;
+      goodsInput.statementNetwork = input.statementNetwork;
+    }
     if (input.passId) {
       goodsInput.passId = input.passId;
     }

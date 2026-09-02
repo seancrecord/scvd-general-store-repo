@@ -248,6 +248,19 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("wallet");
   }
+  if (item.id === "operator_statement") {
+    properties["wallet"] = {
+      type: "string",
+      description:
+        "Your receiving address: a 0x EVM address. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
+    };
+    properties["network"] = {
+      type: "string",
+      description:
+        'Which rail to read: "eip155:8453" (Base, the default) or "eip155:137" (Polygon). One chain per statement.',
+    };
+    required.push("wallet");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -510,6 +523,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "the_statement") {
     example["wallet"] = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
     example["hours"] = "6";
+  }
+  if (item.id === "operator_statement") {
+    example["wallet"] = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
   }
   if (item.id === "the_mandate") {
     example["mandate"] =

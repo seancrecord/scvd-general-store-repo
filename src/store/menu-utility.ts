@@ -722,4 +722,38 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "The passport, chip and history stay free to read forever; this buys only the standing page",
     ],
   },
+  /**
+   * THE OPERATOR'S STATEMENT (roadmap S10; the keeper's name, price
+   * and cadence, ruled 2026-09-02). the_statement's engine pointed at
+   * an operator's receiving address and kept up for a month: four
+   * signed chain reads a day that stitch into one continuous block
+   * range, payers counted, never a renewal. Sold to the operators
+   * with real payers, which is who the desk said was mis-served by a
+   * one-off statement at ninety-nine cents. ⚑ Keeper's pen on the
+   * copy; the number and the term are his already.
+   */
+  {
+    id: "operator_statement",
+    listed_week: "2026-W36",
+    name: "The Operator's Statement",
+    subtitle:
+      "your receiving address for 30 days: every USDC transfer in and out, signed four times a day, payers counted",
+    price_usdc: 21,
+    pricing: "fixed",
+    cadence: "term",
+    reads: "chain_read",
+    term_days: 30,
+    fulfillment: "instant",
+    description:
+      "Name your receiving address (the wallet query parameter; Base by default, Polygon with network=eip155:137) and for 30 days the store's rounds read every USDC transfer in and out of it, straight off the chain, four times a day: each pass picks up at the block after the last one and is signed alone, so the month stitches into one continuous block range and any single pass can be quoted without the rest. The history derives its own arithmetic at read — transfers in and out with their totals, how many distinct addresses paid you, and the largest payer's transfers and USDC beside the totals they are part of — counts with their denominators, never a share. A pass the rounds miss is a gap counted against us on the same page. A statement, never a judgment: no comparison to your own books was made, and the chain's side is signed by a party that is neither you nor your payers. Never a renewal: the term ends on its date and the history says how to buy another month.",
+    note_402:
+      "A month of your till, read off the chain by somebody who is not you. The page is bought; what it shows never is.",
+    constraints: [
+      "Give the address in the wallet query parameter: a 0x EVM address. USDC on Base by default, or Polygon with network=eip155:137 — one chain per statement, named on every pass",
+      "Four reads a day for 30 days, each from the block after the last pass to the chain head, never more than the engine's eleven-hour ceiling in one read; a missed pass is closed by the next one where it can be and counted against us where it cannot",
+      "Counts and totals cover every block read; per-pass payer tallies are capped at a named number of distinct addresses and say when they stopped naming",
+      "Public chain state only: nothing of yours is fetched, and the address is the whole input",
+      "The history URL is free to read forever and ends on its own date; nothing here renews itself",
+    ],
+  },
 ] as const;

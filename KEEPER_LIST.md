@@ -58,9 +58,12 @@ build, it is on the roadmap.
 - The Case File (N8) is on the shelf at $0.25, confirmed
   2026-09-02. It never says who was in the wrong; when we
   are a party it says so on its face.
-- S10 is named: The Operator's Statement (your ink,
-  2026-09-02); $21 a month and the 30-day cadence confirmed
-  the same day. Not built yet.
+- The Operator's Statement (S10) is on the shelf at $21 a
+  month as `operator_statement`, your name, price and
+  cadence (2026-09-02): four signed chain reads a day on a
+  receiving address for 30 days, payers counted, never a
+  renewal. Skill bundle 3.15.0. ⚑ The copy on the row is
+  drafted for your ink, rule 7.
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.

@@ -35,6 +35,8 @@ import {
   type SignedGoodBuyerReading,
 } from "@/services/good-buyer";
 import { startWatch } from "@/services/standing-watch";
+import { bindOperatorStatementCert, startOperatorStatement } from "@/services/operator-statement";
+import { statementChain } from "@/services/wallet-statement";
 import { startConformanceWatch } from "@/services/conformance-watch";
 import {
   anchorNote,
@@ -76,6 +78,9 @@ import type { Env, MenuItem } from "@/types";
 export interface InstantGoodsInput {
   patronNumber: number;
   agentName?: string;
+  /** The operator's statement: the receiving address and its rail, validated at the door. */
+  statementWallet?: string;
+  statementNetwork?: string;
   /**
    * The wallet that paid. Recorded on the WATCHES so a lost watch id
    * is recoverable at the claims door instead of by buying the thing
@@ -225,6 +230,29 @@ export async function deliverInstantGoods(
           history_url: watch.historyUrl,
           first_probe_by:
             "the top of the next hour, on the store's rounds; the history URL is readable now and fills in as the week goes",
+        },
+      };
+    }
+    case "operator_statement": {
+      const term = await startOperatorStatement(
+        env,
+        input.statementWallet ?? "",
+        statementChain(input.statementNetwork) ?? undefined,
+        input.payer,
+      );
+      // The certificate minted first; the term carries its id so the
+      // history can point at the purchase that opened it.
+      if (input.certId) {
+        await bindOperatorStatementCert(env, term.record.statement_id, input.certId);
+      }
+      return {
+        deliverable: `A month of ${term.record.wallet} on ${term.record.chain}, read off the chain four times a day until ${term.record.ends_at}. The history is readable now at ${term.historyUrl} and fills in pass by pass; each pass is signed alone, the passes we miss are counted against us on the same page, and the term ends on its date without renewing itself.`,
+        extras: {
+          statement_id: term.record.statement_id,
+          ends_at: term.record.ends_at,
+          history_url: term.historyUrl,
+          first_pass_by:
+            "the store's next hourly rounds; one pass every six hours after that, each from the block after the last, and the history URL is readable now and fills in as the month goes",
         },
       };
     }
