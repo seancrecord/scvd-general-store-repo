@@ -61,6 +61,14 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
     );
   }
   const { payload } = outcome.passport;
+  /*
+   * KEEPER-RULED 2026-09-02: a host whose latest observation is not on
+   * the ready side gets no chip, even with tiers on the face. The
+   * passport refuses there, and this store names hosts only on the
+   * ready side; the broken tier shows on the hosted profile, the
+   * per-host read and tiers.json, which already name every observed
+   * host. Indeterminate draws dark.
+   */
   if (
     payload.freshness !== "fresh" &&
     payload.freshness !== "aging" &&
