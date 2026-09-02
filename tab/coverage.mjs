@@ -44,7 +44,14 @@ export function recordCoverage(input, path = defaultTabPath()) {
     unmatched_transactional: Array.isArray(input?.unmatched_transactional)
       ? input.unmatched_transactional.map((row) => ({
           amount: Number(row?.amount) || 0,
-          currency: String(row?.currency ?? "USD"),
+          // Never stamped: a row that names no currency is recorded
+          // as naming none, not as USD (trial run 2026-09-02). The
+          // tally lane refuses such a row; this by-hand lane keeps it
+          // and says what it did not know.
+          currency:
+            typeof row?.currency === "string" && row.currency.trim() !== ""
+              ? row.currency.trim().slice(0, 8)
+              : null,
           sender: String(row?.sender ?? "").slice(0, 120),
         }))
       : [],

@@ -255,12 +255,21 @@ function checkMessage(message, state, batchSeen, source) {
     if (!Number.isFinite(message.amount) || message.amount < 0) {
       return { problems: ["unmatched_transactional needs the amount the letter carried — money-shaped mail with no number is not a measurement of the blind spot."] };
     }
+    // The currency is the letter's too. This door used to stamp USD
+    // on a bare amount — a denomination the letter may never have
+    // carried, fabricated in the very number that measures the blind
+    // spot (trial run 2026-09-02). Refused instead, so the sweep
+    // resubmits with what the letter actually said.
+    const currency = typeof message.currency === "string" ? message.currency.trim() : "";
+    if (currency === "" || currency.length > 8) {
+      return { problems: ["unmatched_transactional needs the currency the letter carried, beside the amount — a number in no currency is not a measurement of the blind spot, and the tally will not stamp USD on it. Report the code as the letter stated it."] };
+    }
     return {
       row: {
         message_id: id,
         bucket: "unmatched_transactional",
         amount: message.amount,
-        currency: String(message.currency ?? "USD").slice(0, 8),
+        currency,
         sender: String(message.sender ?? "").slice(0, 120),
       },
     };

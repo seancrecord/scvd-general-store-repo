@@ -290,6 +290,16 @@ const CAPS = {
 };
 
 /**
+ * THE QUARANTINE LIST — free text a swept source may never carry.
+ * captured_text and notes since v0.4. payment_method and source_url
+ * since the 2026-09-02 trial run, which put a vendor's "five stars"
+ * line on disk through both: a label the builder never wrote, and a
+ * URL whose path is prose in a different coat. A receipt can supply
+ * neither honestly, so nothing is lost by refusing them.
+ */
+export const QUARANTINED = ["captured_text", "notes", "payment_method", "source_url"];
+
+/**
  * Validation is the whole reason writes go through tools. Returns a
  * list of human-useful problems; empty means the write may append.
  * The messages are for an AGENT to read and repair from, so each one
@@ -339,10 +349,13 @@ export function validateEvent(input) {
    */
   const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
   if (swept) {
-    for (const field of ["captured_text", "notes"]) {
+    for (const field of QUARANTINED) {
       // Any present, non-empty value — string or not. The old
       // string-only guard let an array of vendor prose straight
-      // through the quarantine (dark team 2026-08-21).
+      // through the quarantine (dark team 2026-08-21). And every
+      // free-text field, not two of them: payment_method and
+      // source_url were never on the list and carried a letter's
+      // words verbatim (trial run 2026-09-02).
       const value = input?.[field];
       if (value !== undefined && !(typeof value === "string" && value.trim() === "")) {
         problems.push(
@@ -626,6 +639,22 @@ export function captureEvent(path, input) {
   const incomplete = [];
   const draft = { ...input };
   draft.source = SOURCES.includes(draft.source) ? draft.source : "capture";
+  /**
+   * DROPPED BY NAME, NOT REFUSED INTO THE BLOB. A swept capture that
+   * carried a quarantined field used to be refused by the validator
+   * and rescued as an unparsed blob — the letter's good numbers lost
+   * over a field the tab was never going to keep. The field goes,
+   * the numbers stay, and the drop is named in the result.
+   */
+  const quarantined = [];
+  if (draft.source === "mail_sweep" || draft.source === "historical_pass") {
+    for (const field of QUARANTINED) {
+      if (draft[field] === undefined) continue;
+      quarantined.push(field);
+      delete draft[field];
+    }
+  }
+  const named = quarantined.length > 0 ? { quarantined } : {};
   draft.event = EVENTS.includes(draft.event) && draft.event !== "consent_changed"
     ? draft.event
     : (incomplete.push("event"), "adopted");
@@ -688,7 +717,7 @@ export function captureEvent(path, input) {
   }
   const result = appendEvent(path, draft);
   if (result.logged || result.duplicate) {
-    return { ...result, incomplete };
+    return { ...result, incomplete, ...named };
   }
   /**
    * LAST RESORT — and the two bugs the red team found here, because
@@ -753,7 +782,7 @@ export function captureEvent(path, input) {
   // The response names the wreck the same way the entry does — a bare
   // {logged:true} from this branch read as a clean capture while the
   // ledger held a blob (dark team 2026-08-21).
-  return { ...rescue, incomplete: ["everything"] };
+  return { ...rescue, incomplete: ["everything"], ...named };
 }
 
 /** The date an event claims for itself: the retroactive claim when

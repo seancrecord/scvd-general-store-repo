@@ -62,9 +62,9 @@ envelope. Every other event carries the tool fields below.
 | retroactive | bool | no | marks a backfilled entry |
 | occurred_at | ISO date | only with `retroactive` | the caller's claim about the past, displayed as a claim |
 | incomplete | string[] | server (capture lane) | fields capture could not fill; nothing was invented |
-| payment_method | string | no | the builder's own label; never parsed, never contributed |
+| payment_method | string | no | the builder's own label; never parsed, never contributed — **refused on swept entries** |
 | grant | string | no | v0.10: the label of the authorization this entry spends under, cited as the caller writes it; grouped in `by_grant`, never parsed |
-| source_url | string | no | |
+| source_url | string | no | **refused on swept entries** |
 | notes | string | no | **refused on swept entries** |
 
 ### `basis` — what kind of number `price` is holding (v0.8)
@@ -127,13 +127,23 @@ recorded as `adopted` and rewrote the very tool it was vouching for.
 Both gates — corpus suggestion and the contribute door itself — refuse
 private and unconfirmed tools from derived state.
 
-## The quarantine (v0.4, closed in v0.6)
+## The quarantine (v0.4, closed in v0.6, widened in v0.11)
 
 On any entry whose `source` is `mail_sweep` or `historical_pass`:
 
 - `captured_text` — **refused**
 - `notes` — **refused**
+- `payment_method` — **refused** (v0.11: the builder's own label, which a letter does not hold)
+- `source_url` — **refused** (v0.11: a link the letter chose is the letter's words in a different coat)
 - `problem_solved` — must be exactly `(not said yet)`
+
+Through `capture_tool_event` the four refused fields are dropped by
+name instead — the result carries `quarantined: [...]` — so a receipt's
+good numbers are not lost to the rescue blob over a field the tab was
+never going to keep. A sweep that reports `unmatched_transactional`
+money must name the currency the letter carried: the tally refuses a
+bare amount rather than stamp `USD` on it, and a by-hand
+`record_coverage` row with no currency is recorded as `currency: null`.
 
 The agent renders stored fields back in chat, so a field holding a
 vendor's prose is a vendor addressing the agent. Scrubbing the text is

@@ -230,8 +230,8 @@ So the rule is structural rather than a filter:
   numbers, dates, and a message id. A receipt's wording is the
   vendor's words, not yours — "verbatim" was never promised there and
   nothing is lost by dropping it. **Enforced in `validateEvent`:**
-  `captured_text` and `notes` are refused outright on a `mail_sweep`
-  or `historical_pass` entry.
+  `captured_text`, `notes`, `payment_method` and `source_url` are
+  refused outright on a `mail_sweep` or `historical_pass` entry.
 - **Manual and `/log` text stays verbatim**, because it is yours. You
   are already inside the boundary; quarantining the user from their
   own sentence buys nothing and costs the fragment lane its reason to
@@ -516,9 +516,9 @@ cancels, renews, replaces, or learns of a price change on a tool.
 | replaced_with | string | see validation | required for `replaced`; the successor tool. Logged against the OUTGOING tool — same vocabulary as the delta's `replaced_with`, one name for one edge |
 | retroactive | bool | no | default false; true marks a backfilled entry |
 | occurred_at | ISO date | no | allowed only when `retroactive`; the claim about when it really happened |
-| payment_method | string | no | the builder's own label, free text; never parsed, never contributed |
+| payment_method | string | no | the builder's own label, free text; never parsed, never contributed; refused on swept entries |
 | signup_friction | enum | no | what the signup path demanded: `agent_native`, `email_only`, `phone_required`, `kyc_required`, `human_only` (addendum #11) |
-| source_url | string | no | where the signup happened |
+| source_url | string | no | where the signup happened; refused on swept entries |
 | notes | string | no | anything else worth remembering |
 
 Category vocabulary (v0.2, extensible): `llm`, `agent-framework`,
