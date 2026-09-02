@@ -100,12 +100,10 @@ build, it is on the roadmap.
   `/admin/ward` prints `our_doors` — which of our paid
   doors the CDP search index still returns. `opening_day`
   and `provenance_check` will be missing until you press.
-- **ClawHub republish at 3.9.0.** The bundle in the tree
-  names both new doors and the self-audit; the published
-  copy is 3.8.0.
-- No agent item is queued. Next builds need a trigger
-  (roadmap LATER) or your yes (L7 is the candidate named).
-  One branch at a time (#65).
+- No agent item is queued (2026-09-02, after S6). The
+  roadmap's NOW table is empty; S8-v3 waits on its date
+  (not before 2026-10-02); everything in LATER needs a
+  trigger or your ruling. One branch at a time (#65).
 
 ---
 
@@ -269,10 +267,12 @@ Do not relitigate without you.
   mcpplaygroundonline.com/mcp-checker, factanker.com,
   orank.ai.
 
-- **ClawHub republish at 3.14.0.** 3.8.0 went out
-  2026-09-01 (done); the tree moved five bundle versions
-  since (the fortune, the doctrine, the tier, the case
-  file, the aura walk). One press covers all of them.
+- **ClawHub republish.** 3.15.0 went out 2026-09-02 by
+  your hand (done), carrying everything since 3.8.0: the
+  fortune, the doctrine sentence, the passport tier, the
+  case file, the aura walk, the operator's statement. The
+  tree and the registry agree at 3.15.0; the next press is
+  due when `SKILL_VERSION` moves again.
 - **x402-list owner update, round five (09-02).** Submitted
   by your hand: the five doors listed W35-W36 and the
   description. Their token is served at

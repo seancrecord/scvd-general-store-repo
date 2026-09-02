@@ -72,7 +72,7 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L5 | Corpus slices as paid history / API | Free public summaries stay free. Paid = convenience and history, not a score. Demand tag. |
 | L6 | "Buyer safety" *looks* | An agent asks "what do you hold about this door?" — that is preflight + passport, maybe a threshold SKU. Not a wallet trust score. Not KYA. |
 | L7 | CI check for *our* fixtures | A GitHub Action that fails *their* deploy is a new product. Demand tag. x402-verify already exists on npm. |
-| L8 | #83 / #70 / #71 / #68 / #80 / #57 / #58 | Parked tickets. After NOW. |
+| L8 | Parked tickets: none. | Checked 2026-09-02: the seven numbers this row carried (#83, #70, #71, #68, #80, #57, #58) are August pull requests, all merged, and the tracker holds no open issue. The row stays so the next parked ticket has a place to land. |
 | L9 | `/observatory` page, Solana parity, Tab leftovers | Per-build. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L11 | Cross-protocol evidence desk | Same as L3, grown up. "First attestation authority" is not the goal; cheap readers are. |
