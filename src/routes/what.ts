@@ -59,7 +59,7 @@ whatRoutes.get("/what", (c) => {
   const base = c.env.STORE_BASE_URL;
   const pairs = whatFaq(base);
   const longTail = longTailFaq(base);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const pairsHtml = pairs
       .map(
         (pair) => `<div class="menu-item">

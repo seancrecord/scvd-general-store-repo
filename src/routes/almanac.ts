@@ -51,7 +51,7 @@ almanacRoutes.get("/almanac", async (c) => {
   // Seed pages and keeper pages, merged; a keeper page of the same slug
   // wins, so the office can correct an entry without a deploy.
   const entries = await listAlmanacEntries(c.env);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const entriesHtml = entries.map(
       (entry) => `<div class="menu-item">
         <div class="menu-line">

@@ -54,7 +54,7 @@ table.coverage td:first-child { white-space: nowrap; }
 coverageRoutes.get("/coverage", (c) => {
   const base = c.env.STORE_BASE_URL;
   const doc = publicCoverageDocument(base);
-  if (!wantsHtml(c.req.header("Accept"))) return c.json(doc);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(doc);
 
   const chains = [...KNOWN_CHAINS];
   const rows = coverageMatrix()

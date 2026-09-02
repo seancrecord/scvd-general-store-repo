@@ -31,7 +31,7 @@ export const zodiacRoutes = new Hono<HonoEnv>();
 
 zodiacRoutes.get("/zodiac", (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const signsHtml = ZODIAC_SIGNS.map(
       (sign) => `<div class="menu-item">
         <div class="menu-line">

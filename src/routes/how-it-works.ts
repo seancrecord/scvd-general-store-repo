@@ -399,7 +399,7 @@ howItWorksRoutes.get("/how-it-works.json", (c) => c.json(bodyJson(c.env.STORE_BA
 
 howItWorksRoutes.get("/how-it-works", (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: "How this store works",

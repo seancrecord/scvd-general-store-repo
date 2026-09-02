@@ -622,11 +622,11 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 
 | # | Fix | Found | Plan ref |
 | --- | --- | --- | --- |
-| F1 | `/api/buy/*` 402s get `X-Robots-Tag: noindex` (or a search-only robots disallow), so Search Console stops reporting every paid door as a 4xx error. | GSC pre-read | B |
-| F2 | Trailing-slash URLs 301 to the canonical instead of 404 JSON. | GSC pre-read | B |
+| F1 | Every 402 leaves with `X-Robots-Tag: noindex`, set once in the app's middleware so no door can forget. Built 2026-09-02 (PR 1); `test/noindex-on-402.spec.ts` walks the shelf. | GSC pre-read | B |
+| F2 | Trailing-slash GET or HEAD on a human path is one 301 to the canonical, query kept; `/api/` untouched so a machine caller gets its answer or its 410 where it asked. Built 2026-09-02 (PR 1); `test/one-url-per-page.spec.ts`. | GSC pre-read | B |
 | F3 | ⚑ Decide which lore rooms stay in the sitemap; the rest get a description and an Article/FAQ block or come out. | GSC pre-read | B |
 | F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
-| F5 | HTML by default on every Accept-negotiated route; `*/*` and no Accept get HTML. | crawler probe | B1 |
+| F5 | Named crawlers get the page. Built 2026-09-02 (PR 1) as a narrower rule than first written: a User-Agent on the robots.txt list (now `lib/crawlers.ts`, one list for both readers) that states no Accept preference gets HTML; a crawler that asks for JSON or markdown still gets it; every other caller is unchanged, because an agent's `fetch(url)` sends the same bare wildcard and expects JSON, and the store's own CLI and the six-doors check depend on that. `Vary` gains `User-Agent` everywhere, merged in one place. `test/crawler-negotiation.spec.ts`. | crawler probe | B1 |
 | F6 | /what's first two pairs: the sixty words and the three paths, not July's shelf. | live /what | B2 |
 | F7 | `ASKED_FOR_NOUNS` constant into alternateName, knowsAbout, llms.txt, agents.md, index.md, OpenAPI, MCP handshake. | export read | B3 |
 | F8 | Branded and category FAQ pairs; error-shaped pairs re-titled to the words people type. | bank review | B4 |
@@ -634,7 +634,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F10 | MCP tool descriptions carry the nouns. | tools/list | B6 |
 | F11 | README, GitHub About, server.json, plugin.json, glama.json, mcp.json, npm descriptions, ClawHub bundle: sixty words or nouns line, sweep-tested. | mirrors | B7 |
 | F12 | Dataset JSON-LD on corpus, registry, inflows; SoftwareApplication on /mcp.md and /developers. | standards check | B8 |
-| F13 | IndexNow key file and deploy ping. | Bing | B9 |
+| F13 | IndexNow: the key served at `/indexnow/{key}.txt` from `INDEXNOW_KEY`, and `npm run deploy` pings api.indexnow.org with the live sitemap's URLs afterwards (`scripts/indexnow-ping.mjs`; no key means skipped, exit 0). Built 2026-09-02 (PR 1). ⚑ The key goes in with `wrangler secret put INDEXNOW_KEY` (32 hex chars) and the same value in Bing Webmaster Tools. | Bing | B9 |
 | F14 | HTML twin of `/corpus/host/{host}.json`, titled with the readiness fraction, in the sitemap. | no evidence pages | C1 |
 | F15 | Per-round corpus page with Dataset JSON-LD, stable URL. | no evidence pages | C2 |
 | F16 | Per-defect-class page. | no evidence pages | C3 |

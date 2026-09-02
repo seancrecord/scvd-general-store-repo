@@ -60,7 +60,7 @@ rightsRoutes.get("/rights", (c) => {
      */
     refund_policy: REFUND_POLICY,
   };
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
 

@@ -13,7 +13,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy && node scripts/indexnow-ping.mjs",
+    "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
     "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run till:test && npm run cli:test && npm run doors:test && npm run walkabout:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",

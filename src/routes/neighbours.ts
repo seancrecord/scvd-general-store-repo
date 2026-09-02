@@ -23,7 +23,7 @@ export const neighboursRoutes = new Hono<HonoEnv>();
 neighboursRoutes.get("/neighbours", (c) => {
   const rows = NEIGHBOUR_RECEIPTS;
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const table = rows
       .map(
         (row) => `<div class="menu-item">

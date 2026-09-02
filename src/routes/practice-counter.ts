@@ -161,7 +161,7 @@ practiceCounterRoutes.get("/try", (c) => {
   const low = cheapest();
   const flow = steps(base, low?.id ?? "hello");
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const list = (lines: readonly string[]): string =>
       lines.map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`).join("\n");
 

@@ -61,7 +61,7 @@ trainRoutes.get("/train", async (c) => {
   const tags = await listApprovedTags(c.env).catch(() => []);
   const top = topTagOfDay(tags);
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const wall =
       tags.length > 0
         ? tags

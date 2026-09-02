@@ -93,7 +93,7 @@ profilesRoutes.get("/profiles", async (c) => {
   const listed = views.filter(
     (v) => v.in_term && v.latest_verdict === "ready",
   );
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       what: `A hosted trust profile is a standing page an operator commissions about their own endpoint: this store's public evidence — the live passport, the chip, the signed history — aggregated at one URL for ${PROFILE_TERM_DAYS} days per purchase, renewable. Never a verdict: the page derives from the same corpus everyone reads free, and a host that breaks mid-term shows broken on its own page.`,
       how: `Buy trust_profile at ${base}/api/buy/trust_profile?url={your endpoint}. The index lists only in-term hosts whose latest evidence is on the ready side — names on the ready side, everywhere.`,
@@ -153,7 +153,7 @@ profilesRoutes.get("/profiles/:host", async (c) => {
   const profile = await readTrustProfile(c.env, rawHost);
   if (!profile) {
     const detail = `${rawHost} has no hosted profile — nobody has commissioned one. The free evidence for any ready-side host is its passport at /passport/${rawHost}; commissioning is GET /api/buy/trust_profile?url={endpoint}.`;
-    if (!wantsHtml(c.req.header("Accept"))) {
+    if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       return c.json({ profile: null, detail }, 404);
     }
     return c.html(
@@ -173,7 +173,7 @@ profilesRoutes.get("/profiles/:host", async (c) => {
       ? "active"
       : "active — latest evidence NOT on the ready side"
     : "term expired — renewable";
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       state,
       in_term: view.in_term,

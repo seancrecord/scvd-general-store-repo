@@ -113,7 +113,7 @@ pulseRoutes.get("/pulse.json", async (c) => {
 
 pulseRoutes.get("/pulse", async (c) => {
   const pulse = await computePulse(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(pulse);
   }
   const base = c.env.STORE_BASE_URL;

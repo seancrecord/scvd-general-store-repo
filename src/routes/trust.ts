@@ -25,7 +25,7 @@ export const trustRoutes = new Hono<HonoEnv>();
 trustRoutes.get("/trust", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const panel = await buildTrustPanel(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       ...panel,
       assurance_ladder: ASSURANCE_LADDER,

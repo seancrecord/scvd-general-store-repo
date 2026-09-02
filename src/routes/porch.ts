@@ -51,7 +51,7 @@ porchRoutes.get("/porch", async (c) => {
   const cat = catIsOut(now);
   const seat = await takeSeat(c.env, now).catch(() => 0);
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(`<!DOCTYPE html>
 <html lang="en">
 <head>

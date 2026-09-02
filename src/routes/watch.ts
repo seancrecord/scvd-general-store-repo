@@ -133,7 +133,7 @@ watchRoutes.get("/api/watch/:watch_id", async (c) => {
     history.ends_at,
     history.complete,
   );
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: `A week watching ${history.url}`,

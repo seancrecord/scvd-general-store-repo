@@ -17,7 +17,7 @@ export const visitorsRoutes = new Hono<HonoEnv>();
 visitorsRoutes.get("/visitors", async (c) => {
   const register = await readVisitorsRegister(c.env);
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const signers =
       register.signers.length > 0
         ? register.signers

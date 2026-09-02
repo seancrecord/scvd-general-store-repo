@@ -29,8 +29,15 @@
 
 export const MARKDOWN_MEDIA_TYPE = "text/markdown; charset=utf-8";
 
-/** What a negotiated response must send so a CDN keeps variants apart. */
-export const VARY_ACCEPT = "Accept, Accept-Encoding";
+/**
+ * What a negotiated response must send so a CDN keeps variants
+ * apart. User-Agent joined the list on 2026-09-02, the day the
+ * negotiation started reading it (wantsHtml in pages/simple-page.ts):
+ * a named crawler and an agent both send `*​/*` and get different
+ * bodies, and a cache that does not know that would hand the crawler
+ * the agent's JSON.
+ */
+export const VARY_ACCEPT = "Accept, Accept-Encoding, User-Agent";
 
 interface AcceptEntry {
   type: string;

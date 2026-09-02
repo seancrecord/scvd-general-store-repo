@@ -34,7 +34,7 @@ becomingRoutes.get("/becoming", (c) => {
     watched_then_built: GRADUATED,
     available_today: `${c.env.STORE_BASE_URL}/what`,
   };
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
 

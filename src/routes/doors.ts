@@ -406,7 +406,7 @@ doorsRoutes.get("/doors.json", async (c) => {
 doorsRoutes.get("/doors", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const index = await readIndex(c.env);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: "Every door we have checked",

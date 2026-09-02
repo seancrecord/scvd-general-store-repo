@@ -214,7 +214,7 @@ passportRoutes.get("/passport", async (c) => {
     new Date(),
     loopbackCatalogFetcher(c),
   );
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       what: "One canonical, signed, expiring object per endpoint: the census's evidence about one host, with a freshness state an agent can act on mechanically. Ready-side hosts only — names appear only on the ready side, everywhere in this store.",
       how: `GET ${base}/passport/{host} — JSON by default, HTML for eyes. Refusals say why (never-observed | not-ready).`,
@@ -316,7 +316,7 @@ passportRoutes.get("/passport/:host", async (c) => {
 
   if (!passportOrRefusal.issued) {
     const status = passportOrRefusal.reason === "never-observed" ? 404 : 403;
-    if (!wantsHtml(c.req.header("Accept"))) {
+    if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       return c.json(
         {
           issued: false,
@@ -345,7 +345,7 @@ passportRoutes.get("/passport/:host", async (c) => {
     );
   }
 
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     /* Additive, outside the signed payload, like verify_hint: the
      * words a merchant may paste, derived from the summary they sit
      * beside. */

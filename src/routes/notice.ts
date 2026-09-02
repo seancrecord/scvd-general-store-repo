@@ -222,7 +222,7 @@ function noticeHtml(notice: OperatorNotice, base: string): string {
 noticeRoutes.get("/notice", (c) => {
   const base = c.env.STORE_BASE_URL;
   const accept = c.req.header("Accept");
-  if (wantsHtml(accept)) {
+  if (wantsHtml(accept, c.req.header("User-Agent"))) {
     return c.html(landingHtml(base), 200, { Vary: VARY_ACCEPT });
   }
   c.header("Vary", VARY_ACCEPT);
@@ -276,7 +276,7 @@ noticeRoutes.get("/notice/:host", async (c) => {
       },
     });
   }
-  if (wantsHtml(accept)) {
+  if (wantsHtml(accept, c.req.header("User-Agent"))) {
     return c.html(noticeHtml(notice, base), 200);
   }
   return c.json(notice);
