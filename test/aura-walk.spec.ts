@@ -116,7 +116,7 @@ describe("the row", () => {
   it("carries the spec maps an instrument carries, and is not filed as a novelty", () => {
     expect(CAPABILITY_QUERY[ID]).toBeTruthy();
     expect(SPEC_WHY_USE[ID]).toBeTruthy();
-    expect(SPEC_WHY_USE[ID].length).toBeLessThan(320);
+    expect(SPEC_WHY_USE[ID]!.length).toBeLessThan(320);
     expect(SPEC_RETURNS[ID]).toBeTruthy();
     expect(NOVELTY_ONLY).not.toContain(ID);
     expect(USE_WHEN.some((entry) => entry.items.includes(ID))).toBe(true);
