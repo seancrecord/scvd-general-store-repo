@@ -452,103 +452,72 @@ house-named page as the door.
 | E3 | **Cloudflare scan and crawl log.** | Monthly. |
 | E4 | **One dated finding under the keeper's name**, linking a corpus page. | Monthly. |
 
-### Left for the keeper to rule on before execution
+### Ruled by the keeper, 2026-09-02
 
-1. README H1: keep the full name, or lead with the domain and the sixty words? The naming law's tiers decide; the H1 is the string Glama, DeepWiki and agentmods summarise from.
-2. The retired phrases ("trust layer", "verification layer") as `alternateName`: the keeper's principle says yes; N2's test only forbids them ahead of the sixty words. Confirm.
-3. Per-host pages (C1) publish a fraction about every observed host on our domain. N7 already rules a tier with its fraction is not a ranking. Confirm the same for a page per host, and whether a host may ask to be unlisted.
-4. Whether the keeper's byline pieces (A8) are in scope this month.
-5. The Solana PR and the Vouch row: read before acting, both his hands.
-6. The IETF drafts (draft-hopley-x402-*, draft-vauban-x402-consolidated) are the receipt-format work engines cite from ietf.org. Whether /spec/scvd-attestation/v1 should cite or align with them is a spec question, not an AEO one, and it is not in this plan.
-7. The openseo connector attached to this session needs authorising in claude.ai's connector settings before it can be used; nothing above depends on it.
+1. README H1 leads with the domain and the sixty words. (F11)
+2. Every name and every phrase people use goes in `alternateName`:
+   Sean-Claude Van Damme's General Store, scvd.store, SCVD General
+   Store, SCVD, and the category phrases including the retired ones.
+   The naming-law test's pinned first entry stays first. (F7)
+3. Per-host evidence pages: publish. A host may ask to be delisted;
+   the notice desk is the door, and a delisted host's page says it
+   was delisted on a date rather than vanishing, so the corpus rows
+   and the page agree. (F14)
+4. Byline pieces: yes, and the two that exist (HackerNoon's AURa
+   piece, a dev.to piece the keeper will link) get linked from the
+   site as `subjectOf` on the Organization and on a "Written about
+   this store" line in /what and llms.txt. The how is under A8.
+5. Solana PR: CV pastes the text above. Vouch: the keeper reads it.
+6. IETF drafts: explained under A10 below; the cheap half is in the
+   plan, the spec half is not.
+7. The openseo connector stays unauthorised; nothing depends on it.
 
-## What not to do
+**Not yet ruled, and it gates A1:** F19, the category clause in the
+sixty words. The mirrors should carry the final paragraph, not the
+current one and then a second edit. Rule on the clause, then sweep.
 
-- No comparison page, no "best x402 audit tools" post on our domain.
-  Rule 5. The roundups exist; our job is to be the row and the
-  dataset in them.
-- No renaming the instruments. The house names are the voice; the
-  query nouns go in the machine fields beside them.
-- No claim we cannot sign. DefaultVerifier's "no account, no API
-  key" line wins because it is checkable in a browser in ten seconds.
-  Ours has to be the same kind of sentence.
+### A8, the byline, made concrete
 
-## Source
+The store's voice is bound by rule 5; the keeper's byline is not.
+Every piece is a dated finding the store already holds, under his
+name, on a domain engines already cite (dev.to and HackerNoon both
+appear in the export's citation diet), linking the corpus page it
+came from. Three that exist today, titled the way people search:
 
-`chats-export-scvd-general-store-from-2026-09-01-to-2026-09-01.csv`,
-355 rows, columns id / promptId / model / user / assistant / mentions
-/ sources / citations. Read 2026-09-02. Bucketing is by prompt text
-and is a call; the counts are not.
+- "34 of 35 x402 hosts served no signed offer. A census, reproducible
+  by anyone." (the conformance desk's census; links /conformance and
+  the corpus round)
+- "Two surfaces, one door: when an x402 endpoint's 402 disagrees with
+  its own catalog" (the S8 cross-surface finding; links the defect
+  class page once C3 lands)
+- "What actually arrives at the addresses x402 endpoints advertise"
+  (the inflows reading; links /inflows)
 
-## Appendix — the fifty, by tense
+One a month. Each links the two existing pieces and the store links
+back (`subjectOf`), so the engines see one author, one store, one
+subject. The dev.to piece's URL is needed for the link.
 
-Paste verbatim. Numbers are slot order, not priority.
+### A10, the IETF drafts, explained
 
-**Before you pay (12)**
+Two independent Internet-Drafts define x402 receipt formats, and
+ietf.org was cited 27 times in the export for the attestation
+prompts, more than any vendor:
 
-1. How do I check an x402 endpoint before my agent pays it?
-2. Is there a free preflight check for x402 endpoints?
-3. How do I know an x402 endpoint is what it claims to be?
-4. How do I independently verify an agent-facing API before my agent pays it?
-5. Show me services that test whether my agent's x402 payment client works against a real endpoint.
-6. Find a simple way to test that my agent can complete an x402 payment.
-7. Which technical specialists provide x402 launch checks for new autonomous commerce deployments?
-8. Find a partner for x402 launch checks that fits a startup budget.
-9. How do I record what my agent is authorized to do, dated and signed by a third party, before it spends?
-10. Where can I get a quick check of my x402 endpoint?
-11. Which platforms are considered industry leaders for x402 protocol conformance testing in agentic commerce?
-12. List services that offer x402 conformance audits at a reasonable price.
+- `draft-hopley-x402-canonicalisation-jcs-v1` and
+  `draft-hopley-x402-compliance-receipt` (AlgoVoi, May 2026): a JCS
+  (RFC 8785) canonicalisation discipline for agentic-payment
+  receipts, with cross-validated conformance vectors on GitHub.
+- `draft-vauban-x402-consolidated` : cryptographic receipts, a
+  post-quantum discipline, a Starknet anchor.
 
-**After you pay (13)**
-
-13. How do I verify an x402 signed receipt?
-14. How do I verify an x402 signed offer before paying?
-15. Is there a free checker for x402 receipts?
-16. How do I verify a USDC payment settled on Base without trusting the merchant?
-17. How do I verify a USDC payment settled on Solana without trusting the merchant?
-18. How do I get a third-party signed receipt that an x402 payment settled?
-19. How do I reconcile the amount my agent was authorized to spend against what moved on chain?
-20. Suggest a service for signed settlement attestations with fast turnaround.
-21. What are the most robust options for ensuring my AI agent's settlement attestations are verifiable?
-22. Review the top-rated platforms for verifying signed settlement attestations in autonomous transactions.
-23. How do I get everything a neutral party observed about one agent purchase, payment through delivery, in one signed file?
-24. How do I verify delivery after an x402 payment?
-25. Help me find a service that checks whether my agent's x402 payments actually settled.
-
-**Over time (13)**
-
-26. How do I monitor an x402 endpoint for conformance drift after a deploy?
-27. How do I get a signed weekly history of whether my x402 endpoint stayed conformant?
-28. How do I catch a deploy silently breaking my 402 challenge?
-29. Find an affordable service to monitor my x402 endpoint with signed uptime history.
-30. Which providers offer x402 endpoint monitoring for under $500 monthly?
-31. Which companies offer x402 endpoint monitoring with signed, verifiable results?
-32. Trade-offs between automated x402 endpoint monitoring and a one-off human-run conformance audit?
-33. Which x402 endpoints were actually reachable and payable this week?
-34. Where is a dated, signed dataset of x402 endpoint readiness?
-35. How do I prove an x402 endpoint was live on a given date?
-36. How do I verify an x402 service has real payers and not self-generated volume?
-37. How do I read what actually arrived at the address an x402 endpoint advertises?
-38. How do I timestamp a hash into Bitcoin for under a cent?
-
-**On anyone's artifact (12)**
-
-39. How do I verify a signed attestation without trusting the issuer?
-40. Can I verify an attestation from another provider without trusting them?
-41. How do I check a competitor's x402 receipt with a tool they don't run?
-42. Compare the technical depth of various conformance desk services for AI agents.
-43. Which x402 audit services give the most transparent reports?
-44. What criteria should I use to choose an x402 conformance audit provider?
-45. What makes a provider effective at verifying x402 protocol adherence?
-46. Trade-offs between automated and human-run audits for x402 commerce agents?
-47. How do I independently verify what an AI agent did in a transaction?
-48. How can an agent produce evidence of its actions a stranger can check?
-49. Which companies are an independent verification layer for agentic commerce?
-50. Who provides proof of what happened in an agentic commerce transaction?
-
-Prompt 42 is the canary (already cites us, never names us). Prompts
-49 and 50 carry the phrases the store does not use for itself and
-should answer to anyway.
+Our attestation spec at /spec/scvd-attestation/v1 defines our own
+artifact format and cites neither. The cheap half, in the plan: a
+dated paragraph on the spec page saying how our format relates to
+each (what we share, where we differ, that we are not aligned to
+either), which puts our page next to the pages engines already cite
+for these questions. The expensive half, not in the plan: adopting
+JCS canonicalisation or emitting a draft-vauban receipt alongside
+ours, which is a signing-format change and a spec decision.
 
 ## The noun, answered — 2026-09-02, late
 
@@ -706,3 +675,75 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F21 | ⚑ Solana pay-skills#219 body replaced with the text above. | mirrors | A4 |
 | F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
 
+## Execution plan — 2026-09-02
+
+Four branches in order, each one PR, each with the tests it ships.
+Keeper's hands run in parallel and are listed after. Nothing opens
+as a PR until the keeper says go on this section.
+
+### PR 1 — mechanics: what a crawler receives
+
+Small, pure plumbing, no copy. Ships first because everything after
+it is invisible until it lands.
+
+| Fix | Change | Test |
+| --- | --- | --- |
+| F5 | HTML by default: `wantsHtml` becomes "unless the caller prefers `application/json` or `text/markdown` over `text/html`"; `*/*` and no Accept get HTML. Every negotiated route. | Fetch every negotiated route four ways (`*/*`, none, `application/json`, `text/markdown`); expect HTML, HTML, JSON, markdown. Walk the router the way `derived-not-typed` does, not a typed list. |
+| F1 | `X-Robots-Tag: noindex` on every 402 response. | The paid-surface parity test asserts the header on every door's 402. |
+| F2 | Trailing slash 301s to the canonical path. | `/what/` → 301 → `/what`; a route with a real trailing slash (none today) is not touched. |
+| F13 | IndexNow key file at `/{key}.txt` from an env var; `scripts/indexnow-ping.mjs` reads the sitemap and pings after deploy. | The key route answers the key; the script dry-runs against the sitemap. |
+
+### PR 2 — the words machines read
+
+The vocabulary, the first screens, the menu fields, the tool
+descriptions, the manifests. One constant, many surfaces, one sweep.
+
+| Fix | Change | Test |
+| --- | --- | --- |
+| F7 | `ASKED_FOR_NOUNS` in `src/store/copy/asked-for.ts`, plus `ITEM_ASKED_FOR` (item id → noun). Organization and WebSite `alternateName` gain every name and phrase after the pinned first; `knowsAbout` lists the topics. "Words people use for this" block in llms.txt (filed under the trust area), agents.md, index.md; OpenAPI description tail; MCP handshake instructions. | `test/asked-for.spec.ts`: every noun found on every surface; every item with a `CAPABILITY_QUERY` has a noun; a noun typed outside the constant fails. |
+| F6 | /what pair one: "What is scvd.store?" = the name spelled, the sixty words, who runs it. Pair two: the three paths. | first-screen sweep extended to /what. |
+| F8 | FAQ pairs: the three category questions, the branded three, the error-shaped three re-titled. | FAQPage carries each question verbatim. |
+| F9 | Menu pages: `<title>` and meta lead with the noun, H1 stays; Service `alternateName`; the five-line spec block on the page and as `at_a_glance` in menu.json, derived from `MENU_ITEMS`, the artifact class and the pricing charter. | Block present on every paid item; every value traces to a constant; item-limits test still passes. |
+| F10 | MCP tool descriptions carry the nouns from the same constant. | tool-surface test asserts each. |
+| F11 | README H1 → "scvd.store", then the sixty words (ruled). GitHub About text, `server.json`, `plugin.json`, `glama.json`, `mcp.json`, the three npm descriptions, the ClawHub bundle: sixty words or nouns line. | Naming-law test updated for the new tier of the H1; a manifest sweep reads each file. |
+| F4/rulings 4 | `subjectOf` on the Organization for the two byline pieces; "Written about this store" line on /what and llms.txt. | Both URLs present on both surfaces. |
+| F19 | If the keeper has inked the category clause by then, `VALUE_PROPOSITION` changes here and every surface follows; if not, PR 2 ships without it and the clause is its own one-line PR later. | first-screen sweep. |
+
+### PR 3 — the evidence as pages
+
+| Fix | Change | Test |
+| --- | --- | --- |
+| F14 | `/corpus/host/{host}` HTML twin: title with the readiness fraction and the week, rows, tier when N7 lands, payTo history, `dateModified`, CC BY line, free preflight as the call to action; delist state honoured (a delisted host's page says so and when). Alphabetical index on /doors; every host in the sitemap with lastmod. | Every host in the corpus answers HTML; a fixture host renders the fraction from its rows; delist fixture renders the notice; sitemap count equals host count plus the static list; no ordering field anywhere. |
+| F15 | `/corpus/round/{week}` HTML, Dataset JSON-LD, stable; `/corpus/brief` stays the latest. | Every round in the corpus answers; the JSON-LD parses. |
+| F16 | `/defects/{class}` one page each, derived from the vocabulary and the last round's counts with denominators. | Every class answers; adding a class without a page is impossible by construction. |
+| F12 | Dataset JSON-LD on /corpus, /corpus.json, /registry, /inflows; SoftwareApplication on /mcp.md and /developers. | Blocks parse; sweep finds them. |
+| F17 | JSON-LD on verify pages. | Parses. |
+| A10 | The dated paragraph on the spec page relating our format to the two draft families. | Present, dated. |
+
+### PR 4 — the mirrors, watched
+
+| Fix | Change | Test |
+| --- | --- | --- |
+| F18 | `npm run listings:check`: fetch every `sameAs` URL, classify the text it carries (July, August, September, or unknown) by matching the sixty words and the retired phrases, print a table, exit non-zero on a regression from a recorded baseline. | Unit test on the classifier with fixture pages. |
+| F20 | `registry/awesome-x402-submission.md` recut to the new entry; the Solana PR text filed beside it. | Docs only. |
+| F3/F22 | Sitemap pruned to the rooms the keeper keeps; those get a description block. | Sitemap test lists the kept set. |
+
+### Keeper's hands, in parallel
+
+In this order, because the first gates the rest:
+
+1. Rule on F19 (the category clause). Then the sixty words are final.
+2. A1 the mirror sweep with the final words; mcpvault, cursor,
+   mcp.so, Glama re-sync after PR 2 lands.
+3. A4 hand CV the Solana PR text. A2 the two awesome-list PRs.
+4. A6 Search Console and Bing, the IndexNow key into the env for PR 1.
+5. A5 read the Vouch row. A3 x402.org.
+6. A7 the Cloudflare scan, once.
+7. A8 the dev.to link, and the first monthly piece.
+8. F3 which lore rooms stay in the sitemap.
+
+### After
+
+Question-titled pages (D) once a hand check shows which families
+nobody wins. The listings check weekly. The hand check and the
+Cloudflare scan monthly. One byline piece a month.
