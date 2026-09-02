@@ -57,6 +57,11 @@ build, it is on the roadmap.
 - The Case File (N8) is on the shelf at $0.25, confirmed
   2026-09-02. It never says who was in the wrong; when we
   are a party it says so on its face.
+- The Aura Walk (S11) is on the shelf at $150 as
+  `aura_walk`, your number and your model rule
+  (2026-09-02): keeper-time answers to two doors now.
+  Human queue, a week's promise, one a week ⚑ drafted.
+  Skill bundle 3.14.0.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.
@@ -181,11 +186,26 @@ Do not relitigate without you.
 - **`/trust`, `/profiles` storefront slots.** Still held
   off the front; `/passport` went on 2026-09-01 by your
   ruling. Nod or leave.
+- **The Aura Walk, two rulings.** ⚑ The weekly cap on
+  `aura_walk` is drafted at one (the collab's is two, your
+  2026-08-20 "2 is fine"); six passes with transcripts is
+  more of a week than a made thing, but only you know your
+  throughput. ⚑ The copy on the row (`src/store/menu.ts`:
+  the description, the 402 line and the constraints) is
+  drafted; the price and the model rule are yours already.
+  Ink or edit, rule 7.
+- **The Aura Walk, the first order.** TEST: when one lands,
+  `/admin` prints the door under "Door to walk" and the
+  buyer's detail under it. The passes are your machines and
+  your wallet; what each pass paid is on its transcript. The
+  report goes on the completed order as the deliverable.
 
 ### Directory and listings (press is yours, rule 30)
 
-- **ClawHub republish at 3.9.0.** 3.8.0 went out
-  2026-09-01 (done); the tree moved again the same night.
+- **ClawHub republish at 3.14.0.** 3.8.0 went out
+  2026-09-01 (done); the tree moved five bundle versions
+  since (the fortune, the doctrine, the tier, the case
+  file, the aura walk). One press covers all of them.
 - **x402-list description: the doctrine sentence.** The row
   there still reads "never a score, a rating or a ranking";
   swap in your sentence ("never a ranking, and never a

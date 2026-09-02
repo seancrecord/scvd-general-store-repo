@@ -176,6 +176,10 @@ export const ROUTES: readonly Route[] = [
     items: ["the_collab"],
   },
   {
+    job: "I want to see my own door the way a cold model shopper sees it, with the transcripts, before a paying one arrives.",
+    items: ["aura_walk"],
+  },
+  {
     job: "I want to record that something happened, at a time, checkable by anyone later.",
     items: [
       "hello",

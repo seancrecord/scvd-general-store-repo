@@ -176,6 +176,9 @@ describe("the storefront", () => {
       // price — the ladder's stable sort, nothing hand-picked.
       "trust_profile",
       "certificate_of_patronage",
+      // The aura walk ($150, 2026-09-02) sits between the certificate
+      // and the collab by price — the same stable ladder.
+      "aura_walk",
       // The collab closes the ladder as the dearest thing here, and
       // the novelty shelf that used to trail it moved to the $0.99
       // block.
