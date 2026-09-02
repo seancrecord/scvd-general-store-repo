@@ -41,8 +41,9 @@ build, it is on the roadmap.
   limits on the item pages, N5 our-doors freshness on
   every round, the verify-time revert reading, the
   all-time take by item, and the ready-door welcome on
-  `/admin/outreach`. Roadmap NOW is empty; SOON is done
-  except S5 (your recording).
+  `/admin/outreach`. S5, the `/try` demo, recorded by you
+  2026-09-02. The roadmap's NOW section is the open queue
+  in order, done rows at the bottom (your ask, 2026-09-02).
 - `daily_fortune` is back on the Penny Shelf as of
   2026-09-02, your ruling: three organic settles (the
   most of any door) and x402-list still listing it. Same
@@ -99,8 +100,6 @@ build, it is on the roadmap.
 - **ClawHub republish at 3.9.0.** The bundle in the tree
   names both new doors and the self-audit; the published
   copy is 3.8.0.
-- **S5, the demo.** Script drafted:
-  `docs/DEMO_SCRIPT_2026-09.md`. You record; edit any line.
 - No agent item is queued. Next builds need a trigger
   (roadmap LATER) or your yes (L7 is the candidate named).
   One branch at a time (#65).
@@ -245,9 +244,6 @@ Do not relitigate without you.
 - **After the 60-word is inked:** paste it on npm
   package descriptions and marketplace profiles. Same
   sentence. Your press.
-- **60-second demo video + transcript.** `/try` is the
-  set; the script is `docs/DEMO_SCRIPT_2026-09.md`. You
-  record. We do not rebuild the counter.
 
 ### Walks
 

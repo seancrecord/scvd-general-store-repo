@@ -138,8 +138,11 @@ describe("on the census", () => {
   function stubWorld(options: { walk?: boolean } = {}) {
     vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
       const url = String(input instanceof Request ? input.url : input);
-      if (url.includes("api.cdp.coinbase.com")) {
-        if (url.includes("/discovery/search")) {
+      // Matched by parsed host, never by substring: CodeQL's standing
+      // finding on this repo's own stubs, and a real one.
+      const { host, pathname } = new URL(url);
+      if (host === "api.cdp.coinbase.com") {
+        if (pathname.endsWith("/discovery/search")) {
           return Response.json({
             items: [
               { resourceUrl: `${BASE}/api/buy/hello`, accepts: [accept("500000")] },
@@ -154,12 +157,12 @@ describe("on the census", () => {
             : { items: rows },
         );
       }
-      if (url.startsWith("https://silent.example/")) {
+      if (host === "silent.example") {
         // No answer at all: the probe's fetch throws, which is the one
         // path that reads unreachable (a 503 is a door answering badly).
         throw new Error("connection refused");
       }
-      if (url.includes("agent402.tools") || url.includes("fuchss")) {
+      if (host === "agent402.tools" || host === "x402.fuchss.app") {
         return new Response("gone", { status: 503 });
       }
       return door402([accept("1000")]);
