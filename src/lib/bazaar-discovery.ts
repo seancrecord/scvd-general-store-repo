@@ -2,7 +2,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
-import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every

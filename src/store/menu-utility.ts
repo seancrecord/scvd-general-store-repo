@@ -1,4 +1,4 @@
-import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import type { MenuItem } from "@/types";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
