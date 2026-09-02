@@ -36,7 +36,7 @@ function document(base: string) {
     what_this_is:
       "Stable names for the ways an x402 endpoint can be broken, each with what it asserts, what a finding of it would be falsified by, and whether an unpaid probe can see it at all. Published so that two independent instruments observing the same door can tell whether they agree.",
     what_this_is_not:
-      "Not a score, not a ranking, and not a list of anybody. Every class describes an observable property of ONE endpoint at ONE moment; nothing here accumulates across weeks into a judgment on an operator.",
+      "Not a ranking, and not a list of anybody. Every class describes an observable property of ONE endpoint at ONE moment; nothing here accumulates across weeks into a judgment on an operator.",
     the_method_line:
       "unpaid = visible from a GET nobody paid for. paid = only a settled payment reveals it. A door clean to an unpaid probe and defective to a paid walk is not a contradiction; it is two instruments measuring different things, and this field is how a reader tells the difference.",
     cross_instrument_mappings_read_on: MAPPINGS_READ_ON,
@@ -149,7 +149,7 @@ function html(base: string): string {
       <p>Stable names for the ways an x402 endpoint can be broken. Published
       so that two independent instruments observing the same door can tell
       whether they <em>agree</em> — or whether they measured different things.</p>
-      <p><strong>Not a score, not a ranking, not a list of anybody.</strong>
+      <p><strong>Not a ranking, not a list of anybody.</strong>
       Every class below describes an observable property of one endpoint at
       one moment. Nothing here accumulates into a judgment on an operator.</p>
       <p>The column that does the work is <em>detectable</em>. A free probe

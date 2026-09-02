@@ -161,7 +161,15 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * same penny. MINOR because a reader holding 3.9.0 has a shelf that
  * is one door short and a use_when list that does not name it.
  */
-export const SKILL_VERSION = "3.10.0";
+/*
+ * 3.11.0 (2026-09-02): the doctrine sentence. "Never a score, a rating
+ * or a ranking" became "never a ranking, and never a verdict without
+ * its derivation and denominator beside it" on the keeper's ruling;
+ * the bundle's description and its per-host-history paragraph say so.
+ * MINOR: a reader holding 3.10.0 quotes a refusal the store no longer
+ * makes in those words.
+ */
+export const SKILL_VERSION = "3.11.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

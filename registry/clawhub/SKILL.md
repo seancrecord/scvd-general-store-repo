@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score. Reachable six ways, including browser tools. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking. Reachable six ways, including browser tools. Also a general store for agents."
 homepage: https://scvd.store
 ---
 
@@ -596,17 +596,28 @@ blank — `before_first_sighting`, `not_listed`, `listed_not_walked`,
 `possibly_beyond_cap`, `instrument_degraded`. Five different facts
 were being written as one silence.
 
-**It refuses to compute a reliability score.** Ready-in-8-of-12 is one
-division away and this store will not publish it. Each transition is a
-dated observation and is published as one; an accumulating score on an
-operator is a different product and we do not sell it. The document
-says so out loud rather than letting the absence look like an
-oversight.
+**It publishes no figure without its working.** Each transition is a
+dated observation and is published as one. Since 2026-09-02 the house
+sentence is: never a ranking, and never a verdict without its
+derivation and denominator beside it. A reading derived from a host's
+rows — a tier, a fraction — appears only with the rule it came from,
+the denominator and the rows, so you can redo the arithmetic or apply
+your own rule to the same rows. Nothing orders one host against
+another. The rule and the dated note are at `https://scvd.store/criteria`.
 
 Coverage is published beside every verdict rather than left for you to
 wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
+
+### The doctrine sentence (3.11.0, 2026-09-02)
+
+The store's refusal changed on the keeper's ruling. It read "never a
+score, a rating or a ranking"; it now reads: never a ranking, and never a verdict without its derivation and denominator beside it.
+Rankings stay forbidden. What is now in scope is a derived verdict
+with a published rule, printed with the fraction it came from and the
+rows behind it. Nothing already signed is resigned. The dated note is
+at `https://scvd.store/criteria`.
 
 ### The fortune is back (3.10.0, 2026-09-02)
 

@@ -19,6 +19,7 @@ import {
   AUDIT_BATTERY_CHANGE_NOTE,
   AUDIT_CRITERIA_VERSION,
 } from "@/services/service-audit";
+import { DOCTRINE_NOTE } from "@/store/copy/doctrine";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -72,7 +73,7 @@ function criteriaTermsJsonLd(base: string): string {
     name: "What 'verified' means at scvd.store — x402 verdict vocabulary and artifact classes",
     description:
       "The published meaning of every verdict this store's checks can return, and for each class of signed artifact, what the signature covers and what it still does not prove. Criteria version " +
-      `${AUDIT_CRITERIA_VERSION}. No verdict here is ever a score on an operator; each is a dated observation of one moment.`,
+      `${AUDIT_CRITERIA_VERSION}. Never a ranking, and never a verdict without its derivation and denominator beside it; each verdict is a dated observation of one moment, or a derivation that prints its rule and its fraction.`,
     url: `${base}/criteria`,
     inLanguage: "en",
     license: "https://creativecommons.org/licenses/by/4.0/",
@@ -89,7 +90,14 @@ criteriaRoutes.get("/criteria", (c) => {
     dated: CRITERIA_DATED,
     what_a_badge_is: BADGE_IS,
     what_retires_a_badge: BADGE_RETIREMENT,
-    never_a_score_on_an_actor: NEVER_AN_ACTOR_SCORE,
+    never_a_ranking: NEVER_AN_ACTOR_SCORE,
+    /**
+     * THE DOCTRINE NOTE (2026-09-02). The sentence changed on the
+     * keeper's ruling, and a sentence that governs every surface
+     * changes in public, dated, with the why beside it — the same
+     * manner as the battery change note above it.
+     */
+    doctrine: DOCTRINE_NOTE,
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
     criteria_battery: {
       version: AUDIT_CRITERIA_VERSION,
@@ -167,6 +175,14 @@ criteriaRoutes.get("/criteria", (c) => {
         <h2>What a badge is</h2>
         <p class="menu-desc">${escapeHtml(BADGE_IS)}</p>
         <p class="menu-desc">${escapeHtml(NEVER_AN_ACTOR_SCORE)}</p>
+      </section>
+      <section>
+        <h2>The sentence changed on ${escapeHtml(DOCTRINE_NOTE.dated)}</h2>
+        <p class="menu-desc">It read: <em>${escapeHtml(DOCTRINE_NOTE.was)}</em> It now reads: <strong>${escapeHtml(DOCTRINE_NOTE.now)}</strong></p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_changed)}</p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.why)}</p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_did_not_change)}</p>
+        <p class="menu-meta">${escapeHtml(DOCTRINE_NOTE.what_keeps_its_bytes)} ${escapeHtml(DOCTRINE_NOTE.rule)}</p>
       </section>
       <section>
         <h2>What retires a badge</h2>

@@ -118,7 +118,7 @@ const VERDICT_LABEL: Record<AuditBadgeOptions["verdict"], { line: string; sub: s
  * THE AUDIT BADGE — the displayable half of the verification
  * marketplace, built 2026-08-20 under the /criteria ruling: a badge
  * is a DATED observation rendered small enough to embed, it ages
- * rather than retires, and it is never a score on an operator. So
+ * rather than retires, and it is never a ranking. So
  * the date shares the line with the verdict, the criteria version is
  * printed, and the whole label links to the signed report anyone can
  * verify without us. All four verdicts render — a store that badges
@@ -138,7 +138,7 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
   <text x="190" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${INK}">${escapeHtml(host)}</text>
   <text x="190" y="78" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${verdict.color}">${verdict.line} • ${date}</text>
   <text x="190" y="94" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="10" fill="${FADED}">${escapeHtml(verdict.sub)} • criteria ${escapeHtml(options.criteria)}</text>
-  <text x="190" y="107" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">a dated observation of one moment — it ages, it is never a score</text>
+  <text x="190" y="107" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">a dated observation of one moment — it ages, it is never a ranking</text>
   <a xlink:href="${escapeHtml(options.reportUrl)}" href="${escapeHtml(options.reportUrl)}">
     <text x="190" y="119" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">signed report: ${escapeHtml(options.reportUrl)}</text>
   </a>
@@ -212,7 +212,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
   <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
     <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
   </a>
-  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a score</text>
+  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a ranking</text>
 </svg>`;
 }
 

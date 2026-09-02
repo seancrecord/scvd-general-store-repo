@@ -64,7 +64,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from ${CHEAPEST_ON_THE_SHELF}. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score or a ranking, plus a public corpus queryable by subject. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from ${CHEAPEST_ON_THE_SHELF}. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking, plus a public corpus queryable by subject. Also a general store for agents."
 license: "All store copy is the keeper's; call the endpoints all you like."
 compatibility: "Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453), Polygon (eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)."
 metadata:
@@ -354,9 +354,10 @@ OpenTimestamps-anchored snapshot. Free to read.
 
 It returns the GAPS with a reason for each (\`not_listed\`,
 \`listed_not_walked\`, \`possibly_beyond_cap\`, \`instrument_degraded\`,
-\`before_first_sighting\`), and it refuses to compute a reliability
-ratio: transitions are dated observations, a score is an accumulating
-judgement on an operator, and this store does not sell the second one.
+\`before_first_sighting\`). Since 2026-09-02 it may carry a derived
+reading of those rows — a tier with the rule it came from, the
+fraction, and the rows — and it never carries a ratio without its
+denominator or a ranking of one host against another.
 Coverage rides alongside — \`population_known\` against
 \`population_walked\` — so a small sample says it is small.
 

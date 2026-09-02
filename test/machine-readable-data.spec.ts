@@ -36,7 +36,7 @@ const JSON_HEADERS = { Accept: "application/json" };
  * a reader is most likely to quote as a market fact.
  */
 const DATA_SURFACES = [
-  { path: "/registry", mustMention: ["not a score", "shape"] },
+  { path: "/registry", mustMention: ["not a ranking", "shape"] },
   { path: "/inflows", mustMention: ["NOT sales", "facilitator"] },
 ] as const;
 

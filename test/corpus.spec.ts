@@ -160,8 +160,9 @@ describe("the corpus, published", () => {
     expect(body.entries).toBe(1);
     expect(body.chain.intact).toBe(true);
     expect(body.how_to_verify.length).toBeGreaterThan(3);
-    // Rule 43, on the surface itself: the corpus never scores actors.
-    expect(body.what_this_is_not).toContain("score");
+    // Rule 43, on the surface itself, as amended 2026-09-02: never a
+    // ranking, and no verdict without its derivation and denominator.
+    expect(body.what_this_is_not).toContain("ranking");
     expect(body.index[0].url).toBe(`${BASE}/corpus/1.json`);
 
     const entry = (await (

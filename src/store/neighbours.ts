@@ -85,7 +85,7 @@ export const NEIGHBOURS_STANDFIRST =
   "Services we have paid for with our own money, what we asked them, and what came back. Every row is a receipt rather than an opinion — there is no row here without a purchase behind it, which is also why this page grows slowly.";
 
 export const NEIGHBOURS_SCOPE_NOTE =
-  "WHAT THIS IS NOT: a ranking, a score, or a recommendation. We do not rate these services and we will not tell you which to use — those are predictions about somebody else's future behaviour, and this store does not sign those, for neighbours or for itself. What is recorded is a dated observation of one transaction. A service that served us well on the date shown may be different today, and a reading in the last column is OURS, not theirs.";
+  "WHAT THIS IS NOT: a ranking or a recommendation. We do not rate these services and we will not tell you which to use — those are predictions about somebody else's future behaviour, and this store does not sign those, for neighbours or for itself. What is recorded is a dated observation of one transaction. A service that served us well on the date shown may be different today, and a reading in the last column is OURS, not theirs.";
 
 export const NEIGHBOURS_OWN_SCORE_NOTE =
   "The first row is a competitor's product assessing this store, and it did not come back flattering: `review`, 63/100, on the grounds that almost nobody but us has ever paid us. That is true. It is here first on purpose — a comparison page written by an interested party is worth reading only if the author's own bad number is on it.";

@@ -19,6 +19,7 @@ import {
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /corpus.json — the ecosystem's observed history, published.
@@ -108,7 +109,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     what_this_is:
       "The corpus: the public x402 ecosystem as this store's weekly ward round observed it, frozen one snapshot per round — hash-chained, ed25519-signed, and each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, kept because a continuous record cannot be backfilled later at any price.",
     what_this_is_not:
-      "Not a rating, not a ranking, not a score on any operator, and never becoming one. Each entry records what a probe saw at a moment. Judgments are a different product with its own published criteria, and accumulating scores on actors is the thing this store's rule 43 forbids by name.",
+      `${NEVER_A_RANKING_SENTENCE} Each entry records what a probe saw at a moment, and never becomes a ranking of one host against another. What may be derived from the entries — a tier, a fraction — is published only with its rule, its denominator and its rows (the 2026-09-02 amendment to rule 43, at /criteria).`,
     /**
      * The per-subject read, advertised where a crawler will find it.
      * A template rather than an enumeration: the corpus can hold
@@ -120,7 +121,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       what_it_answers:
         "Everything this store has observed about one host over time, replayed from the signed chain, with every round it was NOT observed carrying a reason: not listed by any feed, listed but not walked, possibly beyond the round's cap, or the instrument itself degraded. The gaps are the point — a timeline with misses omitted reads as continuous coverage.",
       what_it_will_not_answer:
-        "A reliability figure. Dividing rounds-ready by rounds-probed is one step away and it is a score on an operator, which this store does not keep on anyone. The dated observations are all there; the aggregate is deliberately withheld.",
+        "A ranking, or any figure without its working. A derived reading of these rows — a tier, a fraction — appears only with the rule it came from, the denominator, and the rows, so you can redo the arithmetic or apply your own rule to the same rows. The dated observations are all there either way.",
     },
     started: first,
     entries: records.length,

@@ -42,6 +42,7 @@ import {
   STORE_SERVICE_NAME,
 } from "@/store";
 import type { Env, HonoEnv, MenuItem } from "@/types";
+import { NEVER_A_RANKING, NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /openapi.json, an OpenAPI 3.1 contract for the whole store,
@@ -341,7 +342,7 @@ const CORPUS_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "The refusal, published beside the data: observations, never a score or a ranking.",
+        `The refusal, published beside the data: observations, ${NEVER_A_RANKING}.`,
     },
     per_subject: { type: "object" },
     started: {
@@ -535,7 +536,7 @@ const CONFORMANCE_SCHEMA: OpenApiObject = {
     version: { type: "string" },
     verdict: {
       type: "string",
-      description: "The dated observation, never a score.",
+      description: "The dated observation, never a ranking.",
     },
     kind: {
       type: ["string", "null"],
@@ -1666,7 +1667,7 @@ const DOOR_INDEX_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "Never a ranking or a score on whoever runs the door — a dated observation of what each answered.",
+        "Never a ranking of the doors, and no verdict on whoever runs one — a dated observation of what each answered.",
     },
     what_you_can_use_it_for: { type: "string" },
     hosts: {
@@ -3427,7 +3428,7 @@ const TRUST_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "The refusal. Never a score, never a rating, never a ranking.",
+        `The refusal. ${NEVER_A_RANKING_SENTENCE}`,
     },
   },
 };

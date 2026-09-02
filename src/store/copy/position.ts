@@ -38,6 +38,7 @@
  * import went, and every spec that imported this file first fell
  * over. The order is now a fact on the record rather than a habit.
  */
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import "@/store/metadata";
 
 /** When the store stopped calling itself only a shop. */
@@ -158,7 +159,7 @@ export const CHEAPEST_ON_THE_SHELF = (() => {
 })();
 
 /** What the sixty words leave to a second sentence: the instruments by price, and the operator. */
-export const FIRST_SCREEN_FACTS = `Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Operated by ${OPERATED_BY}.`;
+export const FIRST_SCREEN_FACTS = `Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. ${NEVER_A_RANKING_SENTENCE} Operated by ${OPERATED_BY}.`;
 
 export const POSITION_OPENING = `${VALUE_PROPOSITION} ${FIRST_SCREEN_FACTS}`;
 
