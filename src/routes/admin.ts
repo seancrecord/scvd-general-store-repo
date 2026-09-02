@@ -1656,7 +1656,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
   const { latestWardRound, previousWardRound } = await import(
     "@/services/ward-round"
   );
-  const { deriveProspects, healedAfterOutreach, readOutreachLedger } =
+  const { deriveProspects, deriveWelcomes, healedAfterOutreach, readOutreachLedger } =
     await import("@/services/outreach");
   const round = await latestWardRound(c.env);
   if (!round) {
@@ -1672,9 +1672,14 @@ adminRoutes.get("/admin/outreach", async (c) => {
   const previous = await previousWardRound(c.env);
   const ledger = await readOutreachLedger(c.env);
   const prospects = deriveProspects(round, previous);
+  const welcomes = deriveWelcomes(
+    round,
+    previous,
+    new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+  );
   const healed = healedAfterOutreach(round, ledger);
   if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json({ week: round.week, at: round.at, prospects, healed, ledger });
+    return c.json({ week: round.week, at: round.at, prospects, welcomes, healed, ledger });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
   return c.html(
@@ -1685,6 +1690,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       ledger,
       c.env.STORE_BASE_URL,
       c.req.query("notice"),
+      welcomes,
     ),
   );
 });

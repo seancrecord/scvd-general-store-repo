@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
+import { getMenuItem } from "@/store/menu";
 import type {
   WardHostResult,
   WardRound,
@@ -195,6 +196,100 @@ export function deriveProspects(
  * derived fresh each read — the ledger itself is never edited by
  * arithmetic, only by the keeper's hand.
  */
+/** "$5 fixed, seven days" off the shelf — never typed into a draft. */
+function sellLine(itemId: string): string {
+  const item = getMenuItem(itemId);
+  if (!item) return "on the shelf";
+  const term = item.term_days ? `, ${item.term_days} days` : "";
+  return `$${item.price_usdc}${term}`;
+}
+
+/**
+ * THE READY DOORS (2026-09-01): the other half of the seller loop.
+ * The queue above finds operators by what is BROKEN; this finds them
+ * by what was observed and READY — newly listed first, because a
+ * door that just appeared in discovery belongs to somebody who just
+ * launched and is looking for exactly the page we already made them.
+ * The note hands them their passport, its colophon, the free
+ * self-check, and one priced line. Nothing in it is a finding against
+ * them, so it needs no live re-probe before it goes; the wire stays
+ * out of it either way (rule 30: the send is the keeper's).
+ */
+export interface Welcome {
+  host: string;
+  url: string;
+  week: string;
+  observed_at: string;
+  newly_listed: boolean;
+  claim?: WardVolumeClaim;
+  reason: string;
+}
+
+export function deriveWelcomes(
+  latest: WardRound,
+  previous: WardRound | null,
+  ownHost?: string,
+): Welcome[] {
+  const seenBefore = new Set((previous?.hosts ?? []).map((entry) => entry.host));
+  const rows = latest.hosts
+    .filter((entry) => entry.verdict === "ready" && entry.host !== ownHost)
+    .map((entry): Welcome => {
+      const newlyListed = previous !== null && !seenBefore.has(entry.host);
+      const claim = entry.volume_claim;
+      const reason = newlyListed
+        ? claim
+          ? `newly listed and ready, with $${claim.usd} claimed (${claim.window})`
+          : "newly listed and ready — somebody just launched"
+        : claim
+          ? `ready, with $${claim.usd} claimed across ${claim.calls} calls (${claim.window})`
+          : "ready on this pass";
+      return {
+        host: entry.host,
+        url: entry.url,
+        week: latest.week,
+        observed_at: latest.at,
+        newly_listed: newlyListed,
+        ...(claim ? { claim } : {}),
+        reason,
+      };
+    });
+  const tier = (w: Welcome): number => (w.newly_listed ? 0 : w.claim ? 1 : 2);
+  return rows.sort((a, b) => {
+    const byTier = tier(a) - tier(b);
+    if (byTier !== 0) return byTier;
+    const byClaim = (b.claim?.usd ?? 0) - (a.claim?.usd ?? 0);
+    if (byClaim !== 0) return byClaim;
+    return a.host.localeCompare(b.host);
+  });
+}
+
+export function draftWelcome(welcome: Welcome, base: string): string {
+  const date = welcome.observed_at.slice(0, 10);
+  const freshLine = welcome.newly_listed
+    ? "\nIt was not in the listings on our previous pass, so this note is probably arriving in your first week. Congratulations on the door.\n"
+    : "";
+  return `Subject: there is a dated page for your x402 endpoint at ${welcome.host}
+
+Hello — I run ${base.replace("https://", "")}, an evidence observatory for agentic commerce and a small store on the same door.
+
+On ${date} our weekly pass of doors listed in public x402 discovery fetched
+  ${welcome.url}
+and it answered the way a buyer needs: a payable 402. That observation, dated, with the date after which to stop trusting it, is on a page that already exists:
+  ${base}/passport/${welcome.host}
+${freshLine}
+The page carries a colophon you can paste beside your door — who looked, when, and the date the reading goes stale. It is not a badge and it never says "passed"; it says you were observed, which is the thing a counterparty can check. Reading it is free forever, and it re-derives from each weekly pass on its own.
+
+Two free things, if you want them:
+- Re-check the door yourself any time: curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"${welcome.url}"}'
+- Say something in your own words beside our observation — a standing note, attached by proving control of the door: ${base}/api/standing-note
+
+And two paid ones, only if they are useful: a week of signed daily checks on the same door (${base}/menu/conformance_watch — ${sellLine("conformance_watch")}), or the whole opening day in one purchase — a real paid walk of your till, that week of checks, and the passport, under one certificate (${base}/menu/opening_day — ${sellLine("opening_day")}).
+
+This is a one-off note about one dated observation. You're not on a list and there is nothing to unsubscribe from.
+
+— the keeper, SCVD General Store (${base})`;
+}
+
 export function healedAfterOutreach(
   latest: WardRound,
   ledger: OutreachLedger,
@@ -260,7 +355,9 @@ You don't have to take my word for any of this:
     curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"${prospect.url}"}'
   Every check is named; the same battery this note is based on.
 
-If it's already fixed by the time you read this — great, ignore the rest. If you'd like it watched so a silent break never lasts a week again, that's a thing we sell (${base}/conformance — signed audits and standing watches), but the preflight above is free forever either way.
+What the census holds about your door, dated, with the date after which to stop trusting it: ${base}/passport/${prospect.host} — free, and it re-derives from the next weekly pass on its own.
+
+If it's already fixed by the time you read this — great, ignore the rest. If you'd like it watched so a silent break never lasts a week again, that's a thing we sell (${base}/menu/conformance_watch — ${sellLine("conformance_watch")}), but the preflight above is free forever either way.
 
 This is a one-off note about one dated observation. It isn't published anywhere, you're not on a list, and there's nothing to unsubscribe from.
 
