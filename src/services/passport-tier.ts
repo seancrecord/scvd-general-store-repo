@@ -4,6 +4,7 @@ import type { CorpusRecord } from "@/services/corpus";
 import { listCorpus } from "@/services/corpus";
 import type { RefreshObservation } from "@/services/passport-refresh";
 import type { SubjectHistory } from "@/services/subject-history";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 import type { Env } from "@/types";
 
 /**
@@ -276,6 +277,8 @@ export interface TierIndexEntry {
 export interface TierIndex {
   what_this_is: string;
   what_this_is_not: string;
+  /** Every evidence surface is one hop from the corrections desk. */
+  corrections: string;
   rule_url: string;
   derived_at: string;
   weeks_read: number;
@@ -426,6 +429,7 @@ export function foldTierIndex(
       "Every host the signed chain has carried, each with the tier derived from its own rounds by the rule on /criteria, printed with the fraction it came from. Derived at read from the signed records, never stored; the rows behind every line are at each host's rows_url.",
     what_this_is_not:
       "Not a ranking: the list is alphabetical by host, and nothing here orders one host against another. Not a score on any operator: a tier is a reading of a door's rounds. Never a verdict without its derivation and denominator beside it.",
+    corrections: CORRECTIONS_POINTER,
     rule_url: `${base}/criteria`,
     derived_at: now.toISOString(),
     weeks_read: records.length,
