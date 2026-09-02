@@ -31,9 +31,19 @@ build, it is on the roadmap.
   dispute court.
 - Two living queues, one job each: this desk, and
   `ROADMAP.md`. Nothing else is a queue.
-- `main` is at `2cbd80a` (through PR #385). `/coverage`
-  HTML and paid-page parity landed there today.
-- Rule 59 drafted this sitting, ⚑ ink. Ceilings live in
+- `main` is at `2ce6990` (through PR #397). Landed
+  2026-09-01/02: N2 first screen (your sixty words), the
+  watch end-of-term pointer, rule 59 inked, the audience
+  sentences, `/becoming` re-inked, S4 subtitles, S2
+  passport on the front with the colophon, S1 The Week's
+  Doors, S3 The Opening Day ($9), N4 The Company an
+  Address Keeps ($5, free self-audit), N3 specimens and
+  limits on the item pages, N5 our-doors freshness on
+  every round, the verify-time revert reading, the
+  all-time take by item, and the ready-door welcome on
+  `/admin/outreach`. Roadmap NOW is empty; SOON is done
+  except S5 (your recording).
+- Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.
   Waiting. Do not chase.
@@ -54,8 +64,24 @@ build, it is on the roadmap.
 - **Fund the field wallet** for the walkabout: Base USDC
   to the declared field wallet; Polygon if you want
   Polygon walks. Not a code task.
-- Next agent item after this merge: roadmap N2.
-  One branch at a time (#65). Do not merge parked remotes.
+- **Send the welcomes.** `/admin/outreach` now lists the
+  READY doors, newly listed first, each with a drafted
+  welcome (their passport page, the colophon, the free
+  checks, the two priced lines). Hand-deliver, stamp. The
+  wire stays paused. This is the seller loop; it is your
+  press.
+- **Re-register the missing doors.** After Sunday's round,
+  `/admin/ward` prints `our_doors` — which of our paid
+  doors the CDP search index still returns. `opening_day`
+  and `provenance_check` will be missing until you press.
+- **ClawHub republish at 3.9.0.** The bundle in the tree
+  names both new doors and the self-audit; the published
+  copy is 3.8.0.
+- **S5, the demo.** Script drafted:
+  `docs/DEMO_SCRIPT_2026-09.md`. You record; edit any line.
+- No agent item is queued. Next builds need a trigger
+  (roadmap LATER) or your yes (L7 is the candidate named).
+  One branch at a time (#65).
 
 ---
 
@@ -110,10 +136,6 @@ Do not relitigate without you.
 
 ### Decisions that unblock the roadmap
 
-- **Rule 59.** Drafted. Ink or leave drafted.
-- **`/becoming` SETTLED** still says "trust layer of the
-  x402 economy." RULE: second reversal, quoted and dated,
-  or re-ink that 08-07 stands. Do not silent-edit.
 - **Rail run-through** (eleven checks, drafted against
   `docs/PROTOCOL_EXPANSION_2026-08.md`) and the
   `PAYMENT_RAILS` vs cheap-door intake collision. ⚑ Both.
@@ -123,40 +145,36 @@ Do not relitigate without you.
   Sub-cent tier and mandate-desk price. One-liner goes
   cross-protocol before or after a second protocol runs
   (standards-boundary law says after).
-- **M5 shelf copy.** ⚑ Ink, then roadmap N4.
-- **Audience sentences** on the free MCP tools (WebMCP
-  note §12.2). Re-ink or leave.
 - **`/how-it-works`.** Send the rewrite.
-- **60-word value proposition.** INKED 2026-09-01
-  ("i agree with your suggested words"):
+- **60-word value proposition.** INKED 2026-09-01, then
+  the sharper draft the same evening ("i like the sharper
+  60 word draft"). Live as `VALUE_PROPOSITION`:
 
   > scvd.store is an evidence observatory for agentic
-  > commerce. Before an agent pays an unfamiliar door,
-  > we preflight it. After it pays, we check the signed
-  > offer or receipt. Over time we watch, and we publish
-  > a dated corpus. Every artifact is signed, expires,
-  > and names what we did not see. Not escrow, not a
-  > rating, not a guarantee.
+  > commerce. Before an agent pays an x402 endpoint, we
+  > check that it can be paid. After it pays, we check
+  > the signed receipt. Over time we watch endpoints and
+  > publish a dated, signed corpus. Sellers use it to
+  > prove a door works; buyers use it before spending.
+  > Every artifact is signed, expires, and names what we
+  > did not see. Not escrow, not a rating, not a
+  > guarantee.
 
-  N2 applies it. Same sentence everywhere (rule 44).
-  Do not write a second one-liner per marketplace.
-- **Weekly corpus brief — the name.** S1. Not "State
-  of x402 Checkout" unless you want that brand.
-- **Merchant-kit price** (S3) and **watch subtitle**
-  (S4: flavorful name + utilitarian pair).
-- **Passport / samples / criteria storefront slots.**
-  Those rooms exist and are held off the front. S2
-  waits on your nod. Same for `/trust`, `/profiles`.
+  N2 applied it on every first screen (rule 44 sweep in
+  `test/first-screen.spec.ts`). Do not write a second
+  one-liner per marketplace; the npm packages do not
+  list items and need no republish for it.
+- **`/trust`, `/profiles` storefront slots.** Still held
+  off the front; `/passport` went on 2026-09-01 by your
+  ruling. Nod or leave.
 
 ### Directory and listings (press is yours, rule 30)
 
-- **ClawHub republish.** Tree is 3.8.0; published copy had
-  stale `$19` / `$0.10` prices. After you read the voice,
-  and after roadmap N1 if that sitting moved criteria.
-- **x402-list owner update.** Retired `/api/buy/daily_fortune`
-  still degrades the listing. Domain proof, their form.
+- **ClawHub republish at 3.9.0.** 3.8.0 went out
+  2026-09-01 (done); the tree moved again the same night.
+- **x402-list owner update.** Followed up twice (done).
   Signability re-capture and FORTE probe ride the same
-  press (roadmap 0.14–0.16 — those rows are this desk).
+  press when they answer.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
@@ -168,16 +186,17 @@ Do not relitigate without you.
   hello@agentalmanac.org. Not worth a fight.
 - **W34 → `/registry`.** One press; may already be done.
 - **Directory PR sidecar** (08-19). Follow-through.
-- **LinkedIn for Record Creative Co.** RULE: only if a
-  real company page exists and you want it on `sameAs`.
-  ⚑ URL. Do not invent the page.
+- **LinkedIn for Record Creative Co.** Skipped
+  2026-09-01: the page exists but is positioned for
+  Little Wheels. No `sameAs`.
 - **Press / NAP.** Rule 58. Apex links, not a redirect
   chain. No Wikipedia.
 - **After the 60-word is inked:** paste it on npm
   package descriptions and marketplace profiles. Same
   sentence. Your press.
 - **60-second demo video + transcript.** `/try` is the
-  set. You record. We do not rebuild the counter.
+  set; the script is `docs/DEMO_SCRIPT_2026-09.md`. You
+  record. We do not rebuild the counter.
 
 ### Walks
 
