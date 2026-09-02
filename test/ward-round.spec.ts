@@ -201,6 +201,50 @@ describe("the round itself, with the outside world stubbed", () => {
     expect(stored?.our_doors?.missing).toEqual(round.our_doors?.missing);
   });
 
+  /**
+   * THE OTHER DIRECTION. Agent Economy Report, 2026-09-02: 33 catalog
+   * rows under this host, 11 of them doors retired on 08-05 and 08-20,
+   * every one answering 410 — scored as 66% available. The catalog
+   * admits on first settle and never delists, and N5 only looked for
+   * doors the index had DROPPED. This is the reading that would have
+   * told us first.
+   */
+  it("names the retired doors the index still returns, apart from found and missing", async () => {
+    const { MENU_ITEMS } = await import("@/store/menu");
+    const { RETIRED_ITEMS } = await import("@/store/retired");
+    const { listAlerts } = await import("@/lib/alerts");
+    const retired = RETIRED_ITEMS.find((item) => item.id === "dibs");
+    expect(retired).toBeDefined();
+    stubWorld({
+      listedUrls: ["https://shop-a.example/api/buy/x"],
+      searchBody: {
+        items: [
+          { resourceUrl: `${BASE}/api/buy/hello` },
+          { resourceUrl: `${BASE}/api/buy/dibs` },
+          { resourceUrl: `${BASE}/api/buy/phone_call/` },
+          { resourceUrl: `${BASE}/api/buy/never_stocked` },
+          // Somebody else's dibs is not ours.
+          { resourceUrl: "https://shop-b.example/api/buy/dibs" },
+        ],
+      },
+    });
+    const round = await runWardRound(testEnv);
+    expect(round.our_doors?.found).toEqual(["hello"]);
+    expect(round.our_doors?.missing.length).toBe(MENU_ITEMS.length - 1);
+    expect(round.our_doors?.stale).toEqual(["dibs", "phone_call"]);
+    expect(round.our_doors?.unknown).toEqual(["never_stocked"]);
+    // Neither bucket leaks into the claimed arithmetic.
+    expect(round.our_doors?.missing).not.toContain("dibs");
+    expect(round.our_doors?.found).not.toContain("dibs");
+    // Sealed on the round the corpus freezes, and the keeper is told once.
+    const stored = await latestWardRound(testEnv);
+    expect(stored?.our_doors?.stale).toEqual(["dibs", "phone_call"]);
+    const alerts = await listAlerts(testEnv, 20);
+    expect(
+      alerts.some((alert) => alert.detail.includes("retired door(s)") && alert.detail.includes("dibs, phone_call")),
+    ).toBe(true);
+  });
+
   it("an unreadable search is 'could not check', never 'absent', and no alarm fires", async () => {
     stubWorld({
       listedUrls: ["https://shop-c.example/api/buy/x"],
@@ -221,6 +265,8 @@ describe("the round itself, with the outside world stubbed", () => {
       claimed: (await import("@/store/menu")).MENU_ITEMS.length,
       found: [],
       missing: [],
+      stale: [],
+      unknown: [],
       could_not_check: true,
     });
   });

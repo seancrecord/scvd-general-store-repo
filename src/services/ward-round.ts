@@ -52,6 +52,7 @@ import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } 
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { MENU_ITEMS } from "@/store/menu";
+import { getRetiredItem } from "@/store/retired";
 import {
   catalogAgreementOf,
   catalogMeasured,
@@ -237,6 +238,25 @@ export interface OurDoors {
   claimed: number;
   found: string[];
   missing: string[];
+  /**
+   * THE OTHER DIRECTION (2026-09-02). N5 asked which claimed doors
+   * the index had dropped; this asks which doors the index still
+   * returns that the shelf no longer claims. `stale` is the retired
+   * shelf: every one answers 410 with Deprecation, Sunset and a
+   * successor Link, and every one is a row an outside prober scores
+   * as DOWN, because the catalog admits a door on its first settle
+   * and never delists it on its own. Agent Economy Report scored
+   * this store 66% available on exactly that arithmetic (21 of 33
+   * catalog rows answering 402; the other 11 were our own 410s),
+   * and x402-list had scored us DEGRADED on 2026-08-24 the same way.
+   * Two directories told us before our own instrument did; this is
+   * the instrument. `unknown` is a path under /api/buy/ the index
+   * carries that is neither on the menu nor retired — expected empty,
+   * recorded so that it stays so. Both absent on rounds sealed before
+   * the reading existed; a reader treats missing as "not measured".
+   */
+  stale?: string[];
+  unknown?: string[];
   /** The search could not be read: a gap in our vantage, never a miss. */
   could_not_check: boolean;
 }
@@ -891,6 +911,27 @@ async function ourSearchReading(
     const text = JSON.stringify(body).toLowerCase();
     const found = claimed.filter((door) => text.includes(door.url)).map((door) => door.id);
     const missing = claimed.filter((door) => !text.includes(door.url)).map((door) => door.id);
+    /**
+     * Every /api/buy/ path the index returns under our host, whatever
+     * the shelf thinks of it — read from the same lowercased body
+     * `found` reads, so the two readings cannot disagree about what
+     * the index said. An id ends at the first character a door id
+     * cannot contain; ids here are lowercase snake_case, so the
+     * lowercasing above loses nothing.
+     */
+    const ownDoorPrefix = `${env.STORE_BASE_URL}/api/buy/`.toLowerCase();
+    const ownDoorPattern = new RegExp(
+      `${ownDoorPrefix.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}([a-z0-9_-]+)`,
+      "g",
+    );
+    const claimedIds = new Set(claimed.map((door) => door.id));
+    const returned = new Set<string>();
+    for (const match of text.matchAll(ownDoorPattern)) {
+      const id = match[1];
+      if (id && !claimedIds.has(id)) returned.add(id);
+    }
+    const stale = [...returned].filter((id) => getRetiredItem(id) !== undefined).sort();
+    const unknown = [...returned].filter((id) => getRetiredItem(id) === undefined).sort();
     const catalogDiffers = ourCatalogDifferences(body, claimed);
     return {
       presence: text.includes(ownHost),
@@ -898,6 +939,8 @@ async function ourSearchReading(
         claimed: claimed.length,
         found,
         missing,
+        stale,
+        unknown,
         could_not_check: false,
         ...(catalogDiffers ? { catalog_differs: catalogDiffers } : {}),
       },
@@ -907,7 +950,14 @@ async function ourSearchReading(
     // the store and for every door alike.
     return {
       presence: null,
-      doors: { claimed: claimed.length, found: [], missing: [], could_not_check: true },
+      doors: {
+        claimed: claimed.length,
+        found: [],
+        missing: [],
+        stale: [],
+        unknown: [],
+        could_not_check: true,
+      },
     };
   }
 }
@@ -967,6 +1017,24 @@ async function sealRound(
       await sendAlert(env, {
         condition: "worker_health",
         detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims; missing: ${doors.missing.join(", ")}. A door the index no longer returns is invisible to every agent that shops by search. Re-register it (your press); the miss is on the signed round until it is found again.`,
+      }).catch(() => undefined);
+    }
+  }
+  /**
+   * The second alarm on the same reading (2026-09-02): the index is
+   * still selling doors we closed. Fires when the stale set CHANGES,
+   * not every week it persists — the keeper is told once per change,
+   * and the persistence is on the signed round for anyone to read.
+   * An empty set after a non-empty one is the catalog finally
+   * dropping them, which is news but not a page.
+   */
+  const stale = doors?.stale ?? [];
+  if (doors && !doors.could_not_check && stale.length > 0) {
+    const before = JSON.stringify(previous?.our_doors?.stale ?? []);
+    if (before !== JSON.stringify(stale)) {
+      await sendAlert(env, {
+        condition: "worker_health",
+        detail: `The CDP search index still returns ${stale.length} retired door(s) under this store: ${stale.join(", ")}. Each answers 410 with Sunset, and each is a row an outside prober scores as DOWN (Agent Economy Report read 21 of 33 this way on 2026-09-02). The catalog admits on first settle and never delists on its own, so removal is a letter to Coinbase (your hand; docs/AGENT_ECONOMY_ASK.md). The stale set stays on the signed round until the index drops it.`,
       }).catch(() => undefined);
     }
   }
