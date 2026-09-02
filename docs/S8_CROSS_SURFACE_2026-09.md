@@ -363,6 +363,26 @@ here: three tiers per rail, one offer per tier. That is the first
 named legitimate difference above, met on the first run, on our own
 door, before the check reached anyone else's.
 
+## PR 3, shipped 2026-09-02: the catalog column
+
+`src/services/catalog-agreement.ts`. The discovery read now keeps each
+row's terms (`accepts`, with the older `maxAmountRequired` spelling
+read as `amount`, and `lastUpdated`) beside the URL; the one-shot
+round hands them to `probeHost` with the live accepts still in scope,
+and the long walk freezes them onto its roster because its probes
+fire in later cron firings than its index read. Every probed row
+carries `catalog` (agrees, differs with field and rail, not_listed,
+not_comparable with the reason, and the catalog's own `lastUpdated`);
+the round carries `catalog_agreement` (compared, agrees, differs,
+not_listed, not_comparable); both ride the signed snapshot verbatim.
+The per-host read and the weekly brief surface it, the brief without
+naming a host. `our_doors` gains `catalog_differs`: our own doors
+whose cheapest cataloged amount is not the shelf minimum, amount
+only. The keeper is alerted once per change of the differing set,
+with hosts named to him alone. Three of the named differences are
+built into the comparison rather than bolted on: matched by rail, any
+tier on the rail agrees, silence is not disagreement.
+
 ## Sources read for this note
 
 - `src/services/preflight.ts` (the battery, `BATTERY_ADDS`,

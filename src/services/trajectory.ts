@@ -1,3 +1,4 @@
+import { catalogAgreementOf, catalogMeasured, type CatalogAgreement } from "@/services/catalog-agreement";
 import type { CorpusRecord } from "@/services/corpus";
 import type { WardHostResult } from "@/services/ward-round";
 
@@ -65,6 +66,14 @@ export interface WeekPoint {
   failure_classes: Record<string, number>;
   /** The round said its own coverage was suspect; carried, not hidden. */
   coverage_suspect: boolean;
+  /**
+   * The discovery catalog's copy against the doors (S8 Tier C),
+   * counted from the rows: compared is the denominator (agrees +
+   * differs); listed-bare and no-challenge rows sit under
+   * not_comparable. Absent on weeks before the column, so a reader
+   * treats missing as "not measured", never as full agreement.
+   */
+  catalog?: CatalogAgreement;
 }
 
 export interface Trajectory {
@@ -182,6 +191,9 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
       point.battery = [...batteries][0]!;
     } else if (batteries.size > 1) {
       point.battery = "mixed";
+    }
+    if (catalogMeasured(hosts)) {
+      point.catalog = catalogAgreementOf(hosts);
     }
     return point;
   });
