@@ -1034,7 +1034,7 @@ async function sealRound(
     if (before !== JSON.stringify(stale)) {
       await sendAlert(env, {
         condition: "worker_health",
-        detail: `The CDP search index still returns ${stale.length} retired door(s) under this store: ${stale.join(", ")}. Each answers 410 with Sunset, and each is a row an outside prober scores as DOWN (Agent Economy Report read 21 of 33 this way on 2026-09-02). The catalog admits on first settle and never delists on its own, so removal is a letter to Coinbase (your hand; docs/AGENT_ECONOMY_ASK.md). The stale set stays on the signed round until the index drops it.`,
+        detail: `The CDP search index still returns ${stale.length} retired door(s) under this store: ${stale.join(", ")}. Each answers 410 with Sunset, and each is a row an outside prober scores as DOWN (Agent Economy Report read 21 of 33 this way on 2026-09-02). The catalog admits on first settle and never delists on its own, so removal is a letter to Coinbase (your hand). The stale set stays on the signed round until the index drops it.`,
       }).catch(() => undefined);
     }
   }
