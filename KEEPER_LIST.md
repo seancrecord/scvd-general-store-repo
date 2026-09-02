@@ -48,6 +48,12 @@ build, it is on the roadmap.
   most of any door) and x402-list still listing it. Same
   id, same copy, same penny; skill bundle 3.10.0. Nothing
   to press — their prober sees a 402 again on its own.
+- The doctrine sentence changed 2026-09-02 on your ruling
+  (N7a) and the passport tier shipped behind it (N7b):
+  every passport, chip, profile and per-host read carries
+  a tier with its fraction and rows; `/corpus/tiers.json`
+  is alphabetical. Rule 43's amendment in HOUSE_RULES.md
+  is drafted around your sentence, ⚑ your ink.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.

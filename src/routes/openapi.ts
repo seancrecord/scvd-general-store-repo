@@ -5574,6 +5574,44 @@ openapiRoutes.get("/openapi.json", async (c) => {
           CORPUS_SCHEMA,
         ),
       },
+      "/corpus/tiers.json": {
+        get: returns(
+          freeOp(
+            "Every host's passport tier, with its fraction",
+            "Every host the signed chain has carried, each with the tier derived from its own rounds by the rule on /criteria (observed, established, standing, broken, indeterminate), printed with the fraction it came from and the weeks it spans. Alphabetical by host — ordered by tier would be a ranking. Derived at read, never stored; the rows behind every line are at each host's rows_url. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              what_this_is: { type: "string" },
+              what_this_is_not: { type: "string" },
+              rule_url: { type: "string", format: "uri" },
+              derived_at: { type: "string", format: "date-time" },
+              weeks_read: { type: "integer" },
+              latest_week: { type: "string", nullable: true },
+              total_hosts: { type: "integer" },
+              by_tier: { type: "object", additionalProperties: { type: "integer" } },
+              hosts: {
+                type: "array",
+                description: "Alphabetical by host. No rank, no position, no ordering by tier.",
+                items: {
+                  type: "object",
+                  properties: {
+                    host: { type: "string" },
+                    tier: { type: "string", enum: ["observed", "established", "standing", "broken", "indeterminate"] },
+                    line: { type: "string", description: "The tier with the fraction it came from, e.g. \"established — 4 of 4, W33–W36\". A tier never travels without this." },
+                    fraction: { type: "object", properties: { ready: { type: "integer" }, rounds: { type: "integer" }, weeks: { type: "string" } } },
+                    latest: { type: "object" },
+                    coverage_suspect: { type: "boolean" },
+                    rows_url: { type: "string", format: "uri" },
+                    passport_url: { type: "string", format: "uri" },
+                  },
+                },
+              },
+            },
+          },
+        ),
+      },
       "/corpus/trajectory.json": {
         get: returns(
           freeOp(

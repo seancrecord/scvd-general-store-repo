@@ -181,6 +181,12 @@ export interface PassportChipOptions {
    * reader comparing them deserves to know they are two instruments.
    */
   selfObserved?: boolean;
+  /**
+   * The passport's tier with its fraction (2026-09-02). The face carries
+   * the compact form (ESTABLISHED 4/4), the accessible label the whole
+   * line, and an indeterminate tier draws dark. Absent on SELF.
+   */
+  tier?: { tier: string; line: string; ready: number; rounds: number };
 }
 
 /**
@@ -202,11 +208,17 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const sub = options.selfObserved
     ? "self-read of our own catalogs at render, not a census probe"
     : state.sub;
-  const label = options.selfObserved ? "SCVD PASSPORT · SELF" : "SCVD PASSPORT";
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}">
+  const tier = options.selfObserved ? undefined : options.tier;
+  const label = options.selfObserved
+    ? "SCVD PASSPORT · SELF"
+    : tier
+      ? `SCVD PASSPORT · ${tier.tier.toUpperCase()} ${tier.ready}/${tier.rounds}`
+      : "SCVD PASSPORT";
+  const labelColor = tier?.tier === "indeterminate" || tier?.tier === "broken" ? INK : FADED;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}">
   <rect width="300" height="56" fill="${PAPER}" rx="6"/>
   <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
-  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">${label}</text>
+  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="${tier ? 1 : 2}" fill="${labelColor}">${escapeHtml(label)}</text>
   <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
   <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
   <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">

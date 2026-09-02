@@ -83,6 +83,16 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
       // observes this host, and the chip must not dress a catalog
       // self-read as a census observation (2026-08-28).
       selfObserved: host === ownHost,
+      ...(payload.tier
+        ? {
+            tier: {
+              tier: payload.tier.tier,
+              line: payload.tier.line,
+              ready: payload.tier.fraction.ready,
+              rounds: payload.tier.fraction.rounds,
+            },
+          }
+        : {}),
     }),
     200,
     { ...SVG_HEADERS, "Cache-Control": "public, max-age=21600" },
