@@ -250,7 +250,9 @@ describe("the practice door two-surfaces", () => {
 
 describe("the vocabulary carries the two classes under v8", () => {
   it("bumps the version with a dated row that names both classes and the tiers not yet named", () => {
-    expect(DEFECT_VOCABULARY_VERSION).toBe("8");
+    // v8 is the Tier A row; the version has moved on since (v9, Tier B),
+    // so the pin is the row itself, not the current number.
+    expect(Number(DEFECT_VOCABULARY_VERSION)).toBeGreaterThanOrEqual(8);
     const row = VOCABULARY_CHANGELOG.find((entry) => entry.version === "8");
     expect(row?.date).toBe("2026-09-02");
     expect(row?.what_changed).toContain("discovery-info-invalid");

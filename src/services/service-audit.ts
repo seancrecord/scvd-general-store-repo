@@ -1,3 +1,4 @@
+import { readSurfaces, surfacesSectionOf, type SurfacesSection } from "@/services/surface-reads";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
@@ -82,7 +83,7 @@ export function auditCriteriaNote(base: string): string {
  * point of a sample is that it shows what a buyer gets.
  */
 export const AUDIT_SCOPE =
-  "One GET at one moment, against the published criteria named above. This reports what the endpoint answered then: it is not an endorsement, not an uptime claim, and says nothing about whether anything is delivered after payment. An unreachable verdict is a fact about the network path between this store and that host at that moment — it does not prove the endpoint is down. Produced automatically; no human looked, and that is the point: a report commissioned by anyone reads the same.";
+  "One GET at one moment, against the published criteria named above, then two to four more GETs on the same origin for the surfaces section (llms.txt, the OpenAPI document, the challenge's resource URL, and the 402 read again), none of which move the verdict. This reports what the endpoint answered then: it is not an endorsement, not an uptime claim, and says nothing about whether anything is delivered after payment. An unreachable verdict is a fact about the network path between this store and that host at that moment — it does not prove the endpoint is down. Produced automatically; no human looked, and that is the point: a report commissioned by anyone reads the same.";
 
 export interface ServiceAuditObservation {
   audit_id: string;
@@ -114,6 +115,16 @@ export interface ServiceAuditObservation {
     verdict: "ready" | "not_ready";
     difference: string;
   };
+  /**
+   * THE DOOR'S OTHER SURFACES (roadmap S8 Tier B, 2026-09-02): the
+   * same origin's llms.txt, OpenAPI document and the challenge's
+   * resource URL, read once each after the battery and compared with
+   * the 402 it read, plus a bookend re-read of the 402. Four states
+   * per surface, counts with their denominators, never folded into
+   * the verdict. Present only when the battery ran; on the paid
+   * audit only, where the extra reads are paid for.
+   */
+  surfaces?: SurfacesSection;
   /** Stable digest of the observed facts above. */
   evidence_hash: string;
   scope: string;
@@ -158,6 +169,23 @@ async function auditEvidenceHash(
  * moment" is itself the observation the buyer paid for — framed on
  * the artifact as exactly that and no more.
  */
+/** The challenge's resource URL, header first then body, or null. */
+function resourceUrlOf(response: Response): string | null {
+  const header = response.headers.get("PAYMENT-REQUIRED");
+  if (!header) return null;
+  try {
+    const decoded = JSON.parse(atob(header)) as Record<string, unknown>;
+    const resource = decoded["resource"];
+    if (typeof resource === "string") return resource;
+    if (resource && typeof resource === "object" && typeof (resource as Record<string, unknown>)["url"] === "string") {
+      return (resource as Record<string, unknown>)["url"] as string;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export async function performServiceAudit(
   env: Env,
   url: string,
@@ -167,10 +195,23 @@ export async function performServiceAudit(
   let advisories: PreflightAdvisory[];
   let verdict: ServiceAuditObservation["verdict"];
   let alsoUnder: ServiceAuditObservation["also_under"];
+  let surfaces: SurfacesSection | undefined;
   try {
     const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
     const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, url);
     advisories = ran.advisories;
+    /*
+     * S8 TIER B: the door's other surfaces, on the paid audit only.
+     * The free preflight promised one request; the census promised
+     * the hosts one knock a week; the five dollars is the meter for
+     * the reads neither can afford, the same reasoning that put the
+     * EVM blacklist read here. Outside the verdict, always.
+     */
+    surfaces = surfacesSectionOf(
+      await readSurfaces(env, url, resourceUrlOf(outcome.response), options.fetch ?? fetch),
+      ran.accepts ?? null,
+      (options.now ?? new Date()).toISOString(),
+    );
     /*
      * The v2 score, from the free door's own recipe (preflightUrl):
      * fold the L3b trio and the rail read into the same observation.
@@ -274,6 +315,7 @@ export async function performServiceAudit(
     // Append-law: present only when a battery actually ran, after
     // advisories, inside evidence_hash and the signature alike.
     ...(alsoUnder ? { also_under: alsoUnder } : {}),
+    ...(surfaces ? { surfaces } : {}),
   };
   const observation: ServiceAuditObservation = {
     ...core,

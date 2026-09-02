@@ -383,6 +383,45 @@ with hosts named to him alone. Three of the named differences are
 built into the comparison rather than bolted on: matched by rail, any
 tier on the rail agrees, silence is not disagreement.
 
+## PR 4, shipped 2026-09-02: the door's other surfaces, on the paid audit
+
+`src/services/surface-reads.ts`, wired into `performServiceAudit`
+after the battery and inside the signed core, on the ruling that Tier
+B rides `service_audit` always at the same price. What is read, in
+order, each GET guarded by the probe law, bounded to four seconds and
+256 KiB: `/llms.txt`; `/openapi.json`, falling back to
+`/.well-known/openapi.json` on a 404; the challenge's own `resource`
+URL when it names one other than the door knocked on, read as a 402
+and compared accepts against accepts, rail by rail; and the probed
+402 again, the bookend. The four states hold as designed. The
+convention is read exactly as ruled — a code span holding the path
+with a dollar amount inside it or in parentheses right after it — and
+prose is never read for a number; the OpenAPI read takes
+`x-payment-info.price_usdc`, the smallest of
+`x-payment.price_usdc_options`, or `x-price` / `x-price-usdc`. The
+comparison is against the challenge's minimum on its first rail, in
+atomic units only: a door whose amount is typed in dollars gets no
+comparison and the reason on the row (`no_challenge_price`), because
+guessing a decimal is what the battery refuses to do. The summary is
+`named_a_price`, `agree`, `differ`, counts with their denominator;
+when the bookend differs from the first read the section is `moving`
+and both counts are zero. The section never moves the verdict, and
+`AUDIT_SCOPE` says so. Two departures from the sketch above, on
+purpose: the bazaar block is Tier A's already (inside the 402), so it
+is not a Tier B row; and MCP `tools/list` is **not read** — there is
+no standard place a door declares one — and `not_read` says so on the
+artifact rather than printing a silent row that would read as
+agreement. The specimen builds its section through the same
+`surfacesSectionOf` over constructed reads. Vocabulary v9 adds
+`surface-contradicts-challenge`, paid-detectable, pointing at this
+section. And the first door the reader was pointed at is ours: the
+guide now carries "Prices, by the convention", one derived line per
+paid door in the code-span shape, and `test/surface-reads.spec.ts`
+holds every line to the shelf's minimum.
+
+What remains of S8 is PR 2, the v3 fold, on the SOON row: not before
+2026-10-02, a month of advisory rows read by the keeper's hand.
+
 ## Sources read for this note
 
 - `src/services/preflight.ts` (the battery, `BATTERY_ADDS`,

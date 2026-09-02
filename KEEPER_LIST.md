@@ -120,7 +120,9 @@ Do not relitigate without you.
   The practice door is `two-surfaces`. The three Tier A
   advisories beyond the two that fold into v3 fold only
   after a month of rows, by your hand. Design:
-  `docs/S8_CROSS_SURFACE_2026-09.md`.
+  `docs/S8_CROSS_SURFACE_2026-09.md`. PRs 1, 3 and 4
+  shipped 2026-09-02; PR 2 (the v3 fold) waits on the
+  SOON row, not before 2026-10-02.
 - **The Aura Walk cap, 2026-09-02.** One a week; two after
   the first three ship inside the window.
 
