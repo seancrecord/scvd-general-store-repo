@@ -381,7 +381,7 @@ machine fields, the FAQ and the listings.
 
 | Finding | Evidence | Weight |
 | --- | --- | --- |
-| **The web carries three generations of us at once.** July: "a quirky, human-run digital general store … signed hellos, portraits, a phone call" (Glama, the top result for our own name; Smithery). August: "the trust layer of the x402 economy" (Glama's search snippet, cursor.directory, mcpvault, a Solana pay-skills PR that also says "accredited conformance lab"). September: "evidence observatory" (mcp.so, GitHub topics, AgentIndex). An entity resolver sees three stores. | Firecrawl and web search, 2026-09-02 | Highest |
+| **The web carries three generations of us at once.** July: "a quirky, human-run digital general store … signed hellos, portraits, a phone call" (Glama, the top result for our own name; Smithery). August: "the trust layer of the x402 economy" (Glama's search snippet, cursor.directory, mcpvault). September: "evidence observatory" (mcp.so, GitHub topics, AgentIndex). An entity resolver sees three stores. | Firecrawl and web search, 2026-09-02 | Highest |
 | **/what's first answer is July's shop.** "What is this?" on /what, the FAQPage every engine reads first, answers: "A small general store for autonomous AI agents: real goods and human labor, signed notes, luckies from the herd, memory anchors, a genuine phone call." The second answer leads with context anchors. The sixty words are not on the page. | `src/store/copy/what.ts:73`, live | Highest, and one line to fix |
 | **No page of ours is indexed for our own name.** `site:scvd.store` returns nothing from the domain; the name query returns Glama. Search Console and Bing status unknown. | web search, 2026-09-02 | High |
 | **Every AI crawler gets JSON from the menu pages.** Ten user agents probed, all `application/json`: no title, no description, no JSON-LD. | curl from outside, 2026-09-02 | High |
@@ -398,7 +398,6 @@ machine fields, the FAQ and the listings.
 | A1 | **The listing sweep.** Every surface in the homepage's `sameAs` (thirty-six) plus the ones found today (mcpvault, influzer, getdrio, zero.xyz, neura.market, agentcatalog, mcpbeat, verifymcp, agentage, m8ven, mcp-marketplace, x402-bazaar, mcpmarket, cursor.directory) gets the sixty words as its description and, where the form allows a second line, the nouns-and-price line: "x402 conformance audit, signed settlement attestation, endpoint watch and launch check, ed25519-signed, from $0.004; free preflight and receipt check on any issuer's artifact." Retired items (Certificate of Nomenclature on zero.xyz) come down. Where a listing derives from README or server.json, fix the source (B7) and trigger a re-sync; where it is a form, the form. | A search for the name returns the sixty words on the first three results. |
 | A2 | **Two awesome-list PRs**, recut from the sixty words, one line each in the list's exact format: xpaysh/awesome-x402 under Testing & Development (preflight, conformance desk, practice till) and Ecosystem Market Data (the corpus); Merit-Systems/awesome-agentic-commerce under Security & Ops and Benchmarks & Analysis. Replace the July entry in `registry/awesome-x402-submission.md`. | Merged, or a dated note on why not. |
 | A3 | **x402.org ecosystem page.** Unreachable from here; check whether we are on it and how a project is added. x402.org was the single most-cited domain for the conformance prompts. | A row, or a dated note. |
-| A4 | **The Solana pay-skills PR** (solana-foundation/pay-skills#219, by cv-scvd) says "trust layer of the x402 economy" and "positioning to be the accredited conformance lab". The second contradicts `NOT_AFFILIATED`. Read its status; amend or close. | Amended, closed, or ruled. |
 | A5 | **Vouch Protocol Agent Trust Index**: read what C, 60 measures and whether the row can be claimed or corrected. A third party's grade of us is a fact engines will quote. | Read; a corrections entry if they are wrong about us, a fix if they are right. |
 | A6 | **Search Console, Bing Webmaster Tools, IndexNow key.** Register both, submit the sitemap, take the key for B5. ChatGPT search reads Bing; nothing of ours is indexed under our own name today. | Both consoles show / and /what indexed. |
 | A7 | **Cloudflare URL Scanner and AI Crawl Control** on the zone: run the Agent Readiness scan, read which AI bots fetch us and what paths. Free, first-party, once a month. | The scan's checks and the crawl log, dated in this file. |
@@ -467,7 +466,7 @@ house-named page as the door.
    piece, a dev.to piece the keeper will link) get linked from the
    site as `subjectOf` on the Organization and on a "Written about
    this store" line in /what and llms.txt. The how is under A8.
-5. Solana PR: CV pastes the text above. Vouch: the keeper reads it.
+5. Vouch: the keeper reads it.
 6. IETF drafts: explained under A10 below; the cheap half is in the
    plan, the spec half is not.
 7. The openseo connector stays unauthorised; nothing depends on it.
@@ -563,36 +562,6 @@ asked in their words still lands here, and the mirrors all get the
 same paragraph (A1). One identity, one category clause, every phrase
 people use in the machine fields.
 
-### Text for the Solana pay-skills PR (for CV to paste)
-
-Replaces the body of solana-foundation/pay-skills#219. Drops "trust
-layer of the x402 economy" and "accredited conformance lab"; the
-second contradicts `NOT_AFFILIATED` and the first is retired.
-
-> **SCVD General Store** (`scvd/store`) — scvd.store is an evidence
-> observatory for agentic commerce: independent verification of x402
-> endpoints, payments and receipts, delivered as signed, dated
-> evidence anyone can check. Before an agent pays an x402 endpoint,
-> we check that it can be paid. After it pays, we check the signed
-> receipt. Over time we watch endpoints and publish a dated, signed
-> corpus. Not escrow, not a rating, not a guarantee.
->
-> Free, no account: preflight any x402 door
-> (`POST https://scvd.store/api/preflight/v1`); check any issuer's
-> signed offer or receipt, including ours and our competitors'
-> (`POST https://scvd.store/api/conformance/v1`); read the weekly
-> Bitcoin-anchored corpus (`https://scvd.store/corpus.json`). Paid,
-> from $0.004 in USDC over x402 v2 on Base, Polygon or Solana:
-> conformance audits, settlement attestations (Solana signatures read
-> natively), endpoint watches, launch checks. Every artifact is
-> ed25519-signed and verifies free, forever, at
-> `https://scvd.store/api/verify/{id}`. Independent: no affiliation
-> with the x402 Foundation or any facilitator. Operated by Record
-> Creative Co. LLC. Machine guide: `https://scvd.store/llms.txt`.
-
-If the sixty words change per the proposal above, paste the new ones
-in place of the first paragraph; the rest stands.
-
 ### The live awesome list
 
 `xpaysh/awesome-x402` is the fork network's source (268 stars, pushed
@@ -672,7 +641,6 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F18 | `npm run listings:check`: walk every sameAs URL, report which generation of text it carries. | mirrors | E1 |
 | F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
 | F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
-| F21 | ⚑ Solana pay-skills#219 body replaced with the text above. | mirrors | A4 |
 | F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
 
 ## Execution plan — 2026-09-02
@@ -725,7 +693,7 @@ descriptions, the manifests. One constant, many surfaces, one sweep.
 | Fix | Change | Test |
 | --- | --- | --- |
 | F18 | `npm run listings:check`: fetch every `sameAs` URL, classify the text it carries (July, August, September, or unknown) by matching the sixty words and the retired phrases, print a table, exit non-zero on a regression from a recorded baseline. | Unit test on the classifier with fixture pages. |
-| F20 | `registry/awesome-x402-submission.md` recut to the new entry; the Solana PR text filed beside it. | Docs only. |
+| F20 | `registry/awesome-x402-submission.md` recut to the new entry. | Docs only. |
 | F3/F22 | Sitemap pruned to the rooms the keeper keeps; those get a description block. | Sitemap test lists the kept set. |
 
 ### Keeper's hands, in parallel
@@ -735,7 +703,7 @@ In this order, because the first gates the rest:
 1. Rule on F19 (the category clause). Then the sixty words are final.
 2. A1 the mirror sweep with the final words; mcpvault, cursor,
    mcp.so, Glama re-sync after PR 2 lands.
-3. A4 hand CV the Solana PR text. A2 the two awesome-list PRs.
+3. A2 the two awesome-list PRs.
 4. A6 Search Console and Bing, the IndexNow key into the env for PR 1.
 5. A5 read the Vouch row. A3 x402.org.
 6. A7 the Cloudflare scan, once.
