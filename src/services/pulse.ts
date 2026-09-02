@@ -190,6 +190,16 @@ export interface Latency {
 
 export interface Pulse {
   computed_at: string;
+  /**
+   * When the hourly reclassification walk last COMPLETED — the walk
+   * whose figures ride each window as corrected_challenges. Null
+   * before the first walk. Published (2026-09-02) because the walk
+   * fails loud on a KV blip by design and the only way to see that
+   * the next pass recovered was the keeper's inbox staying quiet;
+   * now a reader can see the correction's own age beside the
+   * correction.
+   */
+  crawler_correction_computed_at: string | null;
   house_flag_policy: string;
   all_time: PulseWindow;
   /** Newest first. */
@@ -447,6 +457,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
   const base = env.STORE_BASE_URL;
   return {
     computed_at: new Date().toISOString(),
+    crawler_correction_computed_at: corrections?.computed_at ?? null,
     house_flag_policy: HOUSE_FLAG_POLICY,
     all_time: {
       organic_challenges: total.challenges,
