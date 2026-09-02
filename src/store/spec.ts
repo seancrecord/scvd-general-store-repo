@@ -191,7 +191,14 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * doors now. MINOR: a reader holding 3.13.0 has a shelf one door
  * short and a use_when list that does not name it.
  */
-export const SKILL_VERSION = "3.14.0";
+/*
+ * 3.15.0 (2026-09-02): The Operator's Statement. operator_statement
+ * ($21, a 30-day term) joins the operator shelf — the statement's
+ * engine on a receiving address, four signed reads a day, payers
+ * counted, never a renewal. MINOR: a reader holding 3.14.0 has a
+ * shelf one door short and a use_when list that does not name it.
+ */
+export const SKILL_VERSION = "3.15.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -291,6 +298,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Ask what the observatory already knows about an x402 host — signed, from its books, before I spend anything at that door",
   the_statement:
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
+  operator_statement:
+    "Have my receiving address read off the chain four times a day for a month by a party that is not me — who paid, how many, how much — signed pass by pass",
   passport_refresh:
     "Turn my endpoint passport fresh again right now — a new census observation of my door, without waiting for Sunday's walk",
   trust_profile:
@@ -370,6 +379,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "the merchant's opening day in one purchase: the launch check's real walk of your till, then seven daily signed conformance passes on the same door, then your passport page — one certificate, one URL a directory can read, all free to read forever, and cheaper than the parts bought apart.",
   provenance_check:
     "the named join the free tiers withhold: which doors advertised this receiving address in which signed weeks, with verdicts, term drift and the snapshot digest behind every line — delivered to the buyer in a signed artifact, never published, never a score. Free for an operator asking about their own address.",
+  operator_statement:
+    "revenue attestation from a party that is neither you nor your payers: your receiving address read off the chain four times a day for a month, each pass signed alone, distinct payers and the largest payer's transfers and USDC counted beside the totals. Your dashboard is your word; this is the chain's, signed.",
   the_statement:
     "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one Base wallet over a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
   the_mandate:
@@ -454,6 +465,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "The launch check's signed JSON walk record (verdict, every stage, what was paid, the settlement transaction where one came back), its evidence hash bound into the purchase certificate's attests field; a conformance watch opened on the same door for seven days, each daily pass signed alone at a history URL; the host's endpoint passport URL; and one bundle URL (/api/opening-day/{cert_id}) naming all three, free to read forever. Instant to open; the week fills in day by day and never renews itself.",
   provenance_check:
     "A signed JSON record — the subject address verbatim and its v1 digest, never_seen, one entry per signed week the address was advertised (week, sequence, snapshot digest, the doors with verdict and offered terms), dated drift between weeks, the subject's standing note verbatim when one exists, the shared-wallet caveat inline, the honest limits and how to rederive — its evidence hash bound into the purchase certificate's attests field, served to the buyer at a stable record URL. Instant; reads the signed chain only, never monitoring.",
+  operator_statement:
+    "A statement id and a permanent history URL, readable immediately and filling in four times a day for 30 days: one signed pass per read carrying its exact block range, chain head, inflows and outflows with counts and totals, and a per-pass tally of who paid (capped and saying so); a summary derived at read with distinct payers, the largest payer's transfers and USDC beside the totals, blocks covered against blocks since the term opened, and the passes we missed counted against us. Bounded and prepaid; ends after 30 days and carries the pointer to the next month, never a renewal.",
   the_statement:
     "A signed JSON transfer record for one EVM wallet — coverage (complete or window_unreadable), the exact block window and chain head at read, inflows and outflows each with count and total over the whole window plus up to 200 listed transfers (transaction hash, counterparty, amount, block; the list says how many it carries), dated, its evidence hash bound into the purchase certificate's attests field — plus a stable statement URL serving the record free forever. Instant; two bounded chain reads at one moment, never monitoring. USDC on the one EVM chain the statement names — Base unless network says otherwise — stated on the artifact.",
   the_mandate:
@@ -575,6 +588,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["the_statement"],
     example:
       "GET /api/buy/the_statement?wallet=0x843b544bf5f0AA6cbf13E94563874878C98cc4a7&hours=6",
+  },
+  {
+    when: "You run a door and want the month's money read off the chain by somebody who is not you: every transfer in, who paid and how concentrated they were, signed pass by pass, to show a partner, a lender or your own books.",
+    items: ["operator_statement"],
+    example:
+      "GET /api/buy/operator_statement?wallet=0x843b544bf5f0AA6cbf13E94563874878C98cc4a7",
   },
   {
     when: "Before an agent acts on someone's behalf, the authorization it claims should exist somewhere neither party can rewrite — recorded, dated, citable on every purchase that follows.",

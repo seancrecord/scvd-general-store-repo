@@ -656,6 +656,44 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * malformed address would buy a signed record of nothing. Hours are
  * clamped by the service; only presence and shape gate here.
  */
+/**
+ * The operator's statement needs a statable address and a recognized
+ * rail BEFORE money moves, same law as the_statement: a malformed
+ * address would buy a month of signed nothing.
+ */
+const operatorStatementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/operator_statement" || !isBuying(c)) {
+    return next();
+  }
+  const wallet = c.req.query("wallet") ?? "";
+  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
+        error:
+          "This needs a wallet query parameter — your receiving address, a 0x EVM address, 40 hex characters. USDC on Base by default, or Polygon with network=eip155:137. No address, no charge.",
+      },
+      400,
+    );
+  }
+  const { statementChain } = await import("@/services/wallet-statement");
+  if (statementChain(c.req.query("network")) === null) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
+        error:
+          'network must be "eip155:8453" (or "base", the default) or "eip155:137" (or "polygon"). An unrecognized network is refused rather than silently read as Base. Nothing charged.',
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/the_statement" || !isBuying(c)) {
     return next();
@@ -1337,6 +1375,7 @@ buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
 buyRoutes.use("/api/buy/*", statementCheck);
+buyRoutes.use("/api/buy/*", operatorStatementCheck);
 buyRoutes.use("/api/buy/*", mandateCheck);
 buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
@@ -1479,6 +1518,11 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // launchCheckCheck validated the URL, refused our own host, and
     // confirmed the field wallet and screen are provisioned.
     input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "operator_statement") {
+    // operatorStatementCheck validated the address shape and the rail.
+    input.statementWallet = c.req.query("wallet") ?? "";
+    input.statementNetwork = c.req.query("network");
   }
   if (item.id === "the_statement") {
     // statementCheck validated the address shape and hours range.

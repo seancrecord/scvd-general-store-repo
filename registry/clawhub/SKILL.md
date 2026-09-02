@@ -324,6 +324,10 @@ block.
 - You need your own x402 buy path walked by a real paying stranger, or
   an agent wallet's books audited against the chain.
   → `GET /api/buy/launch_check`, `GET /api/buy/the_statement`
+- You run a door and want a month of your receiving address read off
+  the chain by somebody who is not you, payers counted, signed pass by
+  pass, never a renewal.
+  → `GET /api/buy/operator_statement?wallet=0x...`
 - You are opening a door and want the whole opening day at once: that
   walk, a week of daily passes on the same door, and your passport.
   → `GET /api/buy/opening_day?url=https://...` (one certificate, one URL)
@@ -430,7 +434,8 @@ Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
 `address` on provenance_check · `url` on standing_watch, service_audit, good_buyer, onpage_audit,
 conformance_watch, launch_check, opening_day, trust_profile, aura_walk
-and signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
+and signature_agent_card · `wallet` on the_statement and
+operator_statement · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
 the_confession. Pay-what-it-deserves items offer several amounts in
 the 402; anything above the minimum records as a tip, and the keeper
@@ -642,6 +647,20 @@ appeared, every transcript attached verbatim with the model named.
 Give `url`; optional `detail` for a model preference (Claude Sonnet 5
 or Opus 5 by default; a weaker model on request, which is a fair ask).
 Counts and quotations, never a grade. We refuse our own hostname.
+
+### The Operator's Statement (3.15.0, 2026-09-02)
+
+`operator_statement` ($21) — a 30-day term on your receiving address:
+the store's rounds read every USDC transfer in and out of it off the
+chain four times a day, each pass signed alone over the exact block
+range it states, so the month stitches into one continuous range. The
+history at `https://scvd.store/api/operator-statement/{statement_id}`
+derives at read how many distinct addresses paid you and the largest
+payer's transfers and USDC beside the totals they are part of — counts
+with their denominators, never a share — and counts the passes we
+missed against us. Give `wallet` (Base by default; `network=eip155:137`
+for Polygon). Ends on its date; `the_next_month` on the history is a
+purchase, never a renewal.
 
 ### The passport tier (3.12.0, 2026-09-02)
 

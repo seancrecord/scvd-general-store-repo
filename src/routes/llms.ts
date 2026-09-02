@@ -275,6 +275,16 @@ trust signal appeared, and every transcript verbatim with the model
 named. Counts and quotations, never a grade. Ask in detail for a
 weaker model if that is who shops at your door.
 
+For an operator with real payers: operator_statement. Name your
+receiving address and for 30 days the rounds read every USDC transfer
+in and out of it off the chain, four times a day, each pass signed
+alone over the exact block range it states, so the month stitches into
+one continuous range. The history derives at read how many distinct
+addresses paid you and the largest payer's transfers and USDC beside
+the totals they are part of — counts with their denominators, never a
+share — and counts the passes we missed against us. It ends on its
+date and says how to buy another month; nothing here renews itself.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check

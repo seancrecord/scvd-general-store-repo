@@ -160,6 +160,10 @@ export const ROUTES: readonly Route[] = [
     items: ["the_statement"],
   },
   {
+    job: "I run a door and want a month of my receiving address read off the chain by somebody who is not me, payers counted, signed pass by pass.",
+    items: ["operator_statement"],
+  },
+  {
     job: "I need to prove a document existed at a time, without trusting anybody's clock.",
     items: ["bitcoin_anchor"],
   },

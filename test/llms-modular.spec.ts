@@ -498,12 +498,19 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "aura_walk" and "never a grade", no
  * longer carries "One door now", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-NINTH — by roadmap S10, The
+ * Operator's Statement: one paragraph on operator_statement after the
+ * aura walk's, and the use_when moment for an operator who wants the
+ * month read off the chain by somebody who is not them. Confirmed
+ * before this value was taken: the guide carries "operator_statement"
+ * and "never a share", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d67889f5cb29899ddef99c64095678bfde84b5f8413254ecbf0b5b6677d336a1";
+  "8b176da76902d0d6db747d688bdaf0135d92eaf839d1008153307ed28fb68718";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

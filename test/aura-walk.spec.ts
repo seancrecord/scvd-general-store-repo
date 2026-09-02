@@ -212,9 +212,16 @@ describe("the door", () => {
 
 describe("the ladder", () => {
   it("lists the walk by price among the shelf, between the certificate and the collab", () => {
-    const byPrice = [...MENU_ITEMS].sort((a, b) => a.price_usdc - b.price_usdc).map((i) => i.id);
-    const at = byPrice.indexOf(ID);
-    expect(byPrice[at - 1]).toBe("trust_profile");
-    expect(byPrice[at + 1]).toBe("the_collab");
+    const byPrice = [...MENU_ITEMS].sort((a, b) => a.price_usdc - b.price_usdc);
+    const at = byPrice.findIndex((item) => item.id === ID);
+    // The neighbour below is whatever the dearest instrument under the
+    // walk's price happens to be that week (the hosted profile and the
+    // operator's statement tie at $21 today); the neighbour above is
+    // the collab, the dearest thing on the shelf. Prices, not names.
+    expect(byPrice[at - 1]!.price_usdc).toBeLessThan(getMenuItem(ID)!.price_usdc);
+    expect(byPrice[at - 1]!.price_usdc).toBe(
+      Math.max(...MENU_ITEMS.filter((item) => item.price_usdc < getMenuItem(ID)!.price_usdc).map((item) => item.price_usdc)),
+    );
+    expect(byPrice[at + 1]!.id).toBe("the_collab");
   });
 });

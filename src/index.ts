@@ -91,6 +91,7 @@ import {
   privacyRoutes,
   mandateRoutes,
   statementRoutes,
+  operatorStatementRoutes,
   onpageRoutes,
   watchRoutes,
   anchorLogRoutes,
@@ -124,6 +125,7 @@ import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import { sweepStandingWatches } from "@/services/standing-watch";
+import { sweepOperatorStatements } from "@/services/operator-statement";
 import { sweepConformanceWatches } from "@/services/conformance-watch";
 import { recomputeCorrections } from "@/services/reclassify";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
@@ -289,6 +291,7 @@ app.route("/", railsRoutes);
 app.route("/", privacyRoutes);
 app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
+app.route("/", operatorStatementRoutes);
 app.route("/", onpageRoutes);
 app.route("/", watchRoutes);
 app.route("/", anchorLogRoutes);
@@ -750,6 +753,21 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Standing watch sweep failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /**
+     * THE OPERATOR'S STATEMENT (S10): every open month whose last pass
+     * is six hours old takes one bounded chain read, within the
+     * tick's named budget, on the shared sweep the watches use.
+     */
+    ctx.waitUntil(
+      sweepOperatorStatements(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Operator statement sweep failed: ${String(error)}`,
           }),
       ),
     );
