@@ -549,3 +549,160 @@ Paste verbatim. Numbers are slot order, not priority.
 Prompt 42 is the canary (already cites us, never names us). Prompts
 49 and 50 carry the phrases the store does not use for itself and
 should answer to anyway.
+
+## The noun, answered — 2026-09-02, late
+
+The keeper asked, before touching the mirrors: is "evidence
+observatory" still correct, given the store went "trust layer" and
+then pivoted to "evidence"?
+
+**Yes, and do not pivot again.** Three generations of text are in
+the wild because of two pivots in six weeks; a third would make four.
+The identity noun and the category noun are different jobs, and the
+mistake was expecting one word to do both.
+
+- **"Evidence observatory" is the identity.** It is true of the
+  product (observe, sign, publish, count the gaps), it fits the
+  doctrine (not escrow, not a rating, not a guarantee), and nobody
+  else uses it. Nobody searches for it either, and nobody ever will.
+  That is fine. Identities are not searched; they are resolved.
+- **"Independent verification" is the category.** It is the verb
+  people type (verify, verification, audit, attestation, monitoring),
+  and it does not collide with anything the store refuses. "Trust
+  layer" does: it is what the reputation-score and escrow players
+  call themselves, it reads as a claim of office next to the x402
+  Foundation, and it invites the reading "trust score", which the
+  store refuses on the record. N2 was right to retire it as a lead.
+- **The gap is that the sixty words carry no category noun.** Read
+  them again: check, check, watch, publish, prove. Not one of verify,
+  verification, audit, attestation or monitoring appears in the one
+  paragraph six surfaces inherit. A model asked "who verifies x402
+  endpoints" has to infer that "check" means "verify". Most will not.
+
+The proposed fix, ⚑ his ink because it is the sixty words: one
+clause, in the first sentence, joining the identity to the category.
+Something in this shape, and the shape matters more than the exact
+words:
+
+> scvd.store is an evidence observatory for agentic commerce:
+> independent verification of x402 endpoints, payments and receipts,
+> delivered as signed, dated evidence anyone can check. Before an
+> agent pays an x402 endpoint, we check that it can be paid …
+
+Then the retired phrases ride as `alternateName` (B3), so a question
+asked in their words still lands here, and the mirrors all get the
+same paragraph (A1). One identity, one category clause, every phrase
+people use in the machine fields.
+
+### Text for the Solana pay-skills PR (for CV to paste)
+
+Replaces the body of solana-foundation/pay-skills#219. Drops "trust
+layer of the x402 economy" and "accredited conformance lab"; the
+second contradicts `NOT_AFFILIATED` and the first is retired.
+
+> **SCVD General Store** (`scvd/store`) — scvd.store is an evidence
+> observatory for agentic commerce: independent verification of x402
+> endpoints, payments and receipts, delivered as signed, dated
+> evidence anyone can check. Before an agent pays an x402 endpoint,
+> we check that it can be paid. After it pays, we check the signed
+> receipt. Over time we watch endpoints and publish a dated, signed
+> corpus. Not escrow, not a rating, not a guarantee.
+>
+> Free, no account: preflight any x402 door
+> (`POST https://scvd.store/api/preflight/v1`); check any issuer's
+> signed offer or receipt, including ours and our competitors'
+> (`POST https://scvd.store/api/conformance/v1`); read the weekly
+> Bitcoin-anchored corpus (`https://scvd.store/corpus.json`). Paid,
+> from $0.004 in USDC over x402 v2 on Base, Polygon or Solana:
+> conformance audits, settlement attestations (Solana signatures read
+> natively), endpoint watches, launch checks. Every artifact is
+> ed25519-signed and verifies free, forever, at
+> `https://scvd.store/api/verify/{id}`. Independent: no affiliation
+> with the x402 Foundation or any facilitator. Operated by Record
+> Creative Co. LLC. Machine guide: `https://scvd.store/llms.txt`.
+
+If the sixty words change per the proposal above, paste the new ones
+in place of the first paragraph; the rest stands.
+
+### The live awesome list
+
+`xpaysh/awesome-x402` is the fork network's source (268 stars, pushed
+daily as of the 2026-07-27 note; the 2026-07-22 PR went to
+`brooks091/awesome-x402`, a dead fork). Sections that fit:
+"🧪 Testing & Development" (preflight, conformance desk, the practice
+till), "🔒 Security & Audits" (conformance audits, receipt
+verification), "📊 Ecosystem Market Data" (the corpus). One line,
+their exact format, no trailing whitespace. The second list is
+`Merit-Systems/awesome-agentic-commerce` ("Security & Ops",
+"Benchmarks & Analysis"). Neither lists us today. Entry, recut:
+
+> - [scvd.store](https://scvd.store) - Independent verification for
+>   x402: free preflight of any endpoint, free conformance check of
+>   any issuer's signed offer or receipt, a weekly Bitcoin-anchored
+>   corpus of endpoint readiness (CC BY 4.0), and paid ed25519-signed
+>   audits, settlement attestations and watches from $0.004. Every
+>   artifact verifies free at /api/verify/{id}.
+
+### On the mirrors the keeper checked
+
+Glama: what WebFetch returned from the server page was a
+Glama-generated summary paragraph ("a quirky, human-run digital
+general store …") and a nine-tool list with none of the free
+instruments; the search snippet for the same page reads "trust
+layer". If the visible description is current, the summary block and
+the tool list are what a model gets, and Glama regenerates those from
+the README and the MCP handshake. B6 and B7 are the fix there, then a
+re-sync. Cursor Directory and mcp.so: the keeper says the text is
+current; the search snippets still show "trust layer", which is the
+engines' cache, not the page. mcpvault: in hand.
+
+## GSC pre-read — 2026-09-02, before the issue list arrives
+
+Crawled every sitemap URL (79) from outside as Googlebot with a
+browser Accept header. No status, canonical, noindex, redirect or
+title defects on any of them. What Search Console is likely to be
+reporting, from what the crawl and the site's shape show:
+
+| Likely GSC row | Cause | Fix |
+| --- | --- | --- |
+| **Blocked due to other 4xx issue** on `/api/buy/*` | Every paid door answers 402 to a GET, and every one is linked from menu pages and menu.json, so Googlebot follows them and reports the 4xx. Correct behaviour, wrong report. | `Disallow: /api/buy/` for search crawlers only, or `X-Robots-Tag: noindex` on 402 responses. Agents never read robots for a 402. (Fixes register F1.) |
+| **Not found (404)** on trailing-slash URLs and old paths | `/what/` is 404 (JSON). Anything that ever linked with a slash reports. | Redirect trailing slash to canonical, 301. (F2) |
+| **Crawled, currently not indexed** on the small rooms | 22 sitemap pages have no JSON-LD and several are thin by Google's standard (the porch, the zodiac, the train). Google indexes what it finds worth indexing; a small new domain with dozens of thin, in-voice pages gets this row. | Not every room needs indexing. Either take the lore rooms out of the sitemap or give each an FAQ/Article block and a description that says what it is. (F3, ⚑ which rooms) |
+| **Alternate page with proper canonical tag** | `/index.md`, `/llms-full.txt`, markdown twins of every negotiated page. Expected, not a defect. | None. |
+| **Page with redirect** on `http://` and `www` | http redirects to https (301, correct). `www.scvd.store` resolves to Cloudflare; the redirect could not be verified from here. | Confirm www 301s to the apex in the zone. (F4) |
+| **Server error (5xx)** | None seen. | If GSC shows them, the dates matter: the suite has known timeout behaviour under load. |
+| **Excluded by noindex** | None found. | None. |
+
+Paste the actual rows and the counts and this table gets replaced by
+the real one.
+
+## Fixes register
+
+Everything found that needs a change, collected here as found. Not a
+PR until the execution plan is agreed. Owner: branch unless ⚑.
+
+| # | Fix | Found | Plan ref |
+| --- | --- | --- | --- |
+| F1 | `/api/buy/*` 402s get `X-Robots-Tag: noindex` (or a search-only robots disallow), so Search Console stops reporting every paid door as a 4xx error. | GSC pre-read | B |
+| F2 | Trailing-slash URLs 301 to the canonical instead of 404 JSON. | GSC pre-read | B |
+| F3 | ⚑ Decide which lore rooms stay in the sitemap; the rest get a description and an Article/FAQ block or come out. | GSC pre-read | B |
+| F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
+| F5 | HTML by default on every Accept-negotiated route; `*/*` and no Accept get HTML. | crawler probe | B1 |
+| F6 | /what's first two pairs: the sixty words and the three paths, not July's shelf. | live /what | B2 |
+| F7 | `ASKED_FOR_NOUNS` constant into alternateName, knowsAbout, llms.txt, agents.md, index.md, OpenAPI, MCP handshake. | export read | B3 |
+| F8 | Branded and category FAQ pairs; error-shaped pairs re-titled to the words people type. | bank review | B4 |
+| F9 | Menu pages: noun-first title, meta, Service alternateName; five-line spec block, derived. | export read | B5 |
+| F10 | MCP tool descriptions carry the nouns. | tools/list | B6 |
+| F11 | README, GitHub About, server.json, plugin.json, glama.json, mcp.json, npm descriptions, ClawHub bundle: sixty words or nouns line, sweep-tested. | mirrors | B7 |
+| F12 | Dataset JSON-LD on corpus, registry, inflows; SoftwareApplication on /mcp.md and /developers. | standards check | B8 |
+| F13 | IndexNow key file and deploy ping. | Bing | B9 |
+| F14 | HTML twin of `/corpus/host/{host}.json`, titled with the readiness fraction, in the sitemap. | no evidence pages | C1 |
+| F15 | Per-round corpus page with Dataset JSON-LD, stable URL. | no evidence pages | C2 |
+| F16 | Per-defect-class page. | no evidence pages | C3 |
+| F17 | JSON-LD on verify pages. | crawl | C4 |
+| F18 | `npm run listings:check`: walk every sameAs URL, report which generation of text it carries. | mirrors | E1 |
+| F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
+| F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
+| F21 | ⚑ Solana pay-skills#219 body replaced with the text above. | mirrors | A4 |
+| F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
+
