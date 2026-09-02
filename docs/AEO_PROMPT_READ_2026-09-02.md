@@ -608,6 +608,7 @@ reporting, from what the crawl and the site's shape show:
 | **Crawled, currently not indexed** on the small rooms | 22 sitemap pages have no JSON-LD and several are thin by Google's standard (the porch, the zodiac, the train). Google indexes what it finds worth indexing; a small new domain with dozens of thin, in-voice pages gets this row. | Not every room needs indexing. Either take the lore rooms out of the sitemap or give each an FAQ/Article block and a description that says what it is. (F3, ⚑ which rooms) |
 | **Alternate page with proper canonical tag** | `/index.md`, `/llms-full.txt`, markdown twins of every negotiated page. Expected, not a defect. | None. |
 | **Page with redirect** on `http://` and `www` | http redirects to https (301, correct). `www.scvd.store` resolves to Cloudflare; the redirect could not be verified from here. | Confirm www 301s to the apex in the zone. (F4) |
+| **Invalid value in priceCurrency / currency (merchant listings)**, confirmed by the keeper, 26+ pages | Every JSON-LD Offer, PriceSpecification and MonetaryAmount said "USDC" since the 2026-08-27 one-currency ruling. schema.org's docs accept tickers; Google's merchant-listing validator wants ISO 4217. | Done on the branch 2026-09-02: `JSONLD_PRICE_CURRENCY = "USD"` in `lib/jsonld.ts`, the asset in words in `acceptedPaymentMethod` on every priced Offer, nine sites switched, `test/jsonld-currency.spec.ts` walks the sitemap. menu.json, the 402 and STORE_METADATA still say USDC. (F23) |
 | **Server error (5xx)** | None seen. | If GSC shows them, the dates matter: the suite has known timeout behaviour under load. |
 | **Excluded by noindex** | None found. | None. |
 
@@ -642,6 +643,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
 | F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
 | F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
+| F23 | JSON-LD money fields say "USD" with the settlement asset in words; done on the branch, not yet a PR. The 2026-08-27 ruling stands everywhere a validator does not read. | GSC, keeper | PR 1 |
 
 ## Execution plan — 2026-09-02
 
@@ -709,9 +711,38 @@ In this order, because the first gates the rest:
 6. A7 the Cloudflare scan, once.
 7. A8 the dev.to link, and the first monthly piece.
 8. F3 which lore rooms stay in the sitemap.
+9. The Zenodo DOI for the corpus, the LinkedIn company page and the
+   Crunchbase profile (entity anchors, below).
 
 ### After
 
 Question-titled pages (D) once a hand check shows which families
 nobody wins. The listings check weekly. The hand check and the
 Cloudflare scan monthly. One byline piece a month.
+
+## Entity anchors: Wikipedia, Wikidata and what to do instead — 2026-09-02
+
+The keeper asked whether a Wikipedia or Wikidata entry is reachable.
+The claims register already holds a ruling ("a month-old company
+fails notability; a sameAs to a missing page is a false claim in
+machine form; revisit at real notability") and the second look
+agrees with it. What changes is the list of anchors that ARE
+reachable now.
+
+| Anchor | Reachable now? | Why | Action |
+| --- | --- | --- | --- |
+| Wikipedia article | No, and not for a long time. | The general notability guideline wants significant coverage in several independent, reliable sources. Directory listings, self-authored posts and a HackerNoon byline do not count. An article written by the subject is a conflict of interest and gets deleted, which leaves a deletion log under the name. | None. Revisit only when two or more independent publications have written about the store unprompted. |
+| Wikidata item | Not yet. | Wikidata's bar is lower (a clearly identifiable entity with at least one serious, public reference), but an item for one's own two-month-old company with only self-published references is routinely deleted as promotional, and a deleted item is worse than none. | Create it the week the first independent reference exists (a trade article, a paper citing the corpus, a standards document naming the store). Then `sameAs` points at it. |
+| Zenodo DOI for the corpus | Yes, today. | Zenodo accepts any dataset, mints a DOI per version, and Google Dataset Search indexes it. A DOI is the citation form researchers use, and arxiv.org was cited 53 times in the export: papers are part of the engines' diet and papers cite DOIs, not URLs. The corpus is already CC BY 4.0 and already versioned weekly. | ⚑ One Zenodo record, "scvd.store x402 endpoint readiness corpus", a new version per weekly round, uploaded by the anchor cron. The DOI goes in the Dataset JSON-LD (PR 3) and on /corpus. |
+| Google Dataset Search | Yes, after PR 3. | Reads Dataset JSON-LD from the sitemap. | Falls out of F12. |
+| Hugging Face dataset | Yes, today. | Second dataset index researchers and agents actually search; the readiness rows as parquet or JSONL, README with the denominators. | ⚑ Optional; Zenodo first. |
+| LinkedIn company page | Yes, today. | linkedin.com was cited 44 times in the export. The keeper's profile already mentions the store; a company page with the sixty words is an entity anchor engines read and one the keeper controls. | ⚑ Create; `sameAs` gains it. |
+| Crunchbase profile | Yes, today. | A standard entity anchor for "is there a company"; diligence scans and entity resolvers both read it. Self-created profiles are the norm there. | ⚑ Create with the legal name, founding date and the sixty words; `sameAs` gains it. |
+| GitHub organisation | Partly. | The repo sits under a personal account. An organisation named for the store is one more resolvable entity with the same name and URL. | ⚑ Low priority; only if the repo would move. |
+| `@id` on the Organization node | Yes, in PR 2. | Gives every JSON-LD block on the site the same stable identifier (`https://scvd.store/#organization`) so the WebSite, Dataset and Service nodes all point at one entity instead of repeating its name. | Falls into F7. |
+
+The honest summary: the encyclopaedic anchors are earned by
+coverage the store does not have yet, and trying to take them early
+costs more than waiting. The dataset anchors are earned by having a
+dataset, which the store does have, and nobody in the x402 space has
+a DOI. That is the one to take this week.
