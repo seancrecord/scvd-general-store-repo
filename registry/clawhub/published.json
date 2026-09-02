@@ -1,7 +1,7 @@
 {
-  "version": "3.8.0",
-  "bundle_sha256": "9a4fc57d3d8bced606dea6d9511b6fbdba83afba861def542d737c2173b60380",
-  "published_at": "2026-08-31T20:53:55.717Z",
-  "commit": "297500f1a6e3008394cfe63ac13fa6db68b8c277",
-  "changelog": "The browser door, the free desks as a table, and four price corrections. Adds WebMCP browser tools, both origin trials, the conformance desk's annotated form; names spot_check, good_buyer, onpage_audit and certificate_of_patronage, and the corpus rooms /doors, /fresh-set, /defects, /criteria, /inflows. Corrects service_audit ($0.10 to $5), trust_profile ($19 to $21), the shelf range and the entry price — all now guarded."
+  "version": "3.15.0",
+  "bundle_sha256": "c04c694da938696c17ccdb0d8993bf524dba04dc779e6cc6a75cc09193ffbae3",
+  "published_at": "2026-09-02T20:54:36.185Z",
+  "commit": "92bfeeca5213c902f2bba7f6c00aa2f7bb8e27fc",
+  "changelog": "3.15.0 — 2026-09-02  Three new doors on the shelf since 3.8.0, one sentence changed everywhere, and a fortune back where it belonged.  - operator_statement ($21): a 30-day term on your own receiving address. Four signed chain reads a day over the exact block range each one states, stitched into one continuous month; distinct payers and the largest payer counted beside the totals they are part of; the passes we missed counted against us. Ends on its date and never renews itself. - aura_walk ($150): your x402 door shopped cold by models of different strength, one entry point per pass, the way this store walks itself. Round trips to first success, avoidable 400s, where in the read order your strongest trust signal appeared, and every transcript verbatim with the model named. Counts and quotations, never a grade. - the_case_file ($0.25): one signed file over one purchase, everything a neutral party observed about it and everything it did not, stated. No verdict. - The passport now carries a derived tier, with its fraction and the rows it came from on the same line. Never a tier without its denominator. - The doctrine sentence, on every surface this skill points at: never a ranking, and never a verdict without its derivation and denominator beside it. - daily_fortune is back on the Penny Shelf.  Every price in this file is derived from the live shelf; if the file and https://scvd.store/menu.json ever disagree, the menu is right and we want to hear about it."
 }
