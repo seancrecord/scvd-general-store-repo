@@ -1,10 +1,12 @@
 import { Hono } from "hono";
+import { renderCardPng } from "@/lib/pixel-card";
 import { CATALOG_PATHS } from "@/discovery/self-module";
 import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   PASSPORT_CSS,
+  cardLines,
   colophonBlock,
   colophonText,
   decisionWord,
@@ -267,6 +269,35 @@ passportRoutes.get("/passport", async (c) => {
   );
 });
 
+/**
+ * THE SHARE CARD (2026-09-02): the passport's dates, drawn. Served per
+ * host at request time, cached a day; a host with no passport gets the
+ * same refusal the page gives — a card for an unobserved host would be
+ * a picture of nothing wearing our name.
+ */
+passportRoutes.get("/passport/card/:host{.+\\.png}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const rawHost = c.req.param("host").replace(/\.png$/, "").trim().toLowerCase();
+  const ownHost = new URL(base).host.toLowerCase();
+  const outcome =
+    rawHost === ownHost
+      ? {
+          issued: true as const,
+          passport: await issueSelfPassport(c.env, new Date(), loopbackCatalogFetcher(c)),
+        }
+      : await issuePassport(c.env, rawHost);
+  if (!outcome.issued) {
+    return c.json(
+      { issued: false, reason: outcome.reason, detail: outcome.detail },
+      outcome.reason === "never-observed" ? 404 : 403,
+    );
+  }
+  return c.body(renderCardPng(cardLines(outcome.passport)).buffer as ArrayBuffer, 200, {
+    "Content-Type": "image/png",
+    "Cache-Control": "public, max-age=86400",
+  });
+});
+
 passportRoutes.get("/passport/:host", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const rawHost = c.req.param("host").trim().toLowerCase();
@@ -329,6 +360,7 @@ passportRoutes.get("/passport/:host", async (c) => {
       description: `The endpoint passport for ${rawHost}: what this store observed, what it did not, how fresh the evidence is, and where to verify the signed record.`,
       path: `/passport/${rawHost}`,
       extraCss: PASSPORT_CSS,
+      ogImage: `${base}/passport/card/${rawHost}.png`,
       bodyHtml: `${passportCard(passportOrRefusal.passport)}
       ${colophonBlock(passportOrRefusal.passport, base)}
       <section><p class="menu-desc">What a passport is, the four decisions it
