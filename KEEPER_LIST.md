@@ -57,6 +57,9 @@ build, it is on the roadmap.
 - The Case File (N8) is on the shelf at $0.25, confirmed
   2026-09-02. It never says who was in the wrong; when we
   are a party it says so on its face.
+- S10 is named: The Operator's Statement (your ink,
+  2026-09-02); $21 a month and the 30-day cadence confirmed
+  the same day. Not built yet.
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.
@@ -186,6 +189,13 @@ Do not relitigate without you.
 - **`/trust`, `/profiles` storefront slots.** Still held
   off the front; `/passport` went on 2026-09-01 by your
   ruling. Nod or leave.
+- **S8, four rulings** (`docs/S8_CROSS_SURFACE_2026-09.md`,
+  the last section). ⚑ Tier B on `service_audit` always or
+  behind `surfaces=true`. ⚑ The `llms.txt` price convention
+  to publish. ⚑ The practice door's name. ⚑ Whether the three
+  Tier A advisories ever fold, after a month of rows. The
+  build starts with PR 1 (advisories, fixtures, vocabulary
+  v8) and needs none of the four to begin.
 - **The Aura Walk, two rulings.** ⚑ The weekly cap on
   `aura_walk` is drafted at one (the collab's is two, your
   2026-08-20 "2 is fine"); six passes with transcripts is
