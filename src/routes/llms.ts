@@ -1114,7 +1114,7 @@ derived live from the same corpus, honest in both directions. The
 index at ${base}/profiles lists in-term ready-side hosts only.
 The passport's share card, drawn from the same dates — who looked, when,
 which host, when it goes stale, never a verdict word — is
-${base}/passport/card/{host}.png; it is the page's own social image, so a
+\`${base}/passport/card/{host}.png\`; it is the page's own social image, so a
 pasted passport link unfurls into the observation.
 
 ## Verify anyone's receipt — signed verdicts, free
