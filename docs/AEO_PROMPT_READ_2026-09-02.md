@@ -72,8 +72,10 @@ straight into a table row: "Ed25519; browser-verifiable against
 published keys; no account/API key needed; records settlement
 evidence." We have every one of those properties. Our settlement
 attestation page describes them in a 150-word paragraph of hedges,
-titled "Settlement Attestation, scvd.store", with a Service JSON-LD
-that carries no Offer price. The hedges are right and stay. The
+titled "Settlement Attestation, scvd.store". (Correction, same day:
+the Service JSON-LD does carry an Offer with the USDC price and a
+`serviceType` from `CAPABILITY_QUERY`; what it lacks is an
+`alternateName` in the asked-for words.) The hedges are right and stay. The
 one-line spec-shaped summary is what is missing.
 
 ## The nouns
@@ -316,97 +318,64 @@ x402 payment client; whether an x402 service has real payers. Run
 the prompts through the tracker first, then build only the pages
 whose prompts came back with nobody winning.
 
-## What to do, in order
+## The plan
 
-Keeper's hands are marked ⚑. The rest is a branch.
+Ruled 2026-09-02 after three batches. The principle, keeper's words:
+it does not matter whether a phrase is close or overclaims, we should
+still be right there. So the store keeps its noun on its own
+surfaces, and every phrase people actually use rides in the machine
+fields, the FAQ, and the prompt set. The record is not contradicted;
+the retrieval hooks stop caring about it.
 
-1. ⚑ **Fix the tracker before trusting another export.** Tracked
-   brands are Target, Amazon, Etsy. Add scvd.store, SCVD,
-   "Sean-Claude Van Damme's General Store", and the competitors that
-   actually appear: DefaultVerifier, x402audit, vet402, Nevermined,
-   x402-list, Proveria, Paybond, RankShield, Ledge. Without this the
-   export cannot show share of voice.
-2. ⚑ **Cut the prompt set to the shelf.** Drop the 18 off-market
-   prompts. Replace "compliance" with "conformance". Add prompts the
-   store already answers on /what and that nobody is asking the
-   tracker: "check an x402 endpoint before paying", "is this x402
-   endpoint legit", "free x402 conformance check", "verify an x402
-   receipt signature", "prove an x402 payment settled on Base /
-   Solana", "which x402 endpoints are live right now", "signed
-   x402 uptime history", "cheapest Bitcoin timestamp for a hash",
-   "x402 ecosystem dataset". Twenty to twenty-five prompts, all in
-   buckets 2 and 3.
-3. ⚑ **Rewrite the directory rows** (x402-list, glama, mcpservers,
-   agentic.market, x402scan). Lead with the nouns and the price:
-   "x402 conformance audit and signed settlement attestation,
-   ed25519, from $0.004 per check; free preflight and conformance
-   check on any issuer's artifact." The x402-list row also still
-   carries the retired doctrine sentence ("Nothing here is a score, a
-   rating, or a ranking"), which N7 already has on the desk as a
-   press. Same press, one visit.
-4. **Put the asked-for noun in `<title>`, meta description, JSON-LD
-   `name` / `alternateName`, and the first sentence** of
-   /menu/settlement_attestation, /menu/service_audit,
-   /menu/conformance_watch and /conformance. H1s keep the house name.
-   Add an `Offer` with the USDC price to every menu Service JSON-LD;
-   the price is the thing ChatGPT's table needs and the one fact it
-   cannot get from the paragraph.
-5. **One spec-shaped block per paid instrument**, in the pattern the
-   attestation winners use: what it attests, the cryptography, how a
-   stranger verifies it, the price, what it does not attest. Five
-   lines, derived from `MENU_ITEMS` and the attestation spec so the
-   line is never typed twice. Above the existing description, not
-   replacing it.
-6. **Split /what.** Fifty-eight FAQ questions on one page, half of
-   them in-voice ("How can I be issued a charm from a herd the keeper
-   wrote"), bury the twelve that match real prompts. Keep /what as
-   it is. Add one question-shaped page per bucket, "x402 conformance
-   audit" and "signed settlement attestation", each with its own
-   FAQPage of six to eight questions phrased the way the prompts are,
-   answers derived from the same constants, dated.
-7. **Make the corpus the dataset the roundups cite.** /corpus/brief
-   exists. Give each weekly round a stable, dated URL with one
-   headline number in the title and the CC BY line beside it, the
-   way x402-list's dataset page does. Then ⚑ send it to the four
-   roundup authors that Google already cites (digitalapplied, wavect,
-   blocksec, fintechwrapup). One dated finding, the census figure of
-   34 of 35 hosts serving no signed offer, is exactly what those
-   posts quote.
-8. **Verify what a crawler with no Accept header gets.** /conformance
-   and every /menu/* serve JSON to a bare GET; the HTML with the
-   JSON-LD only arrives with `Accept: text/html`. Read the visitors
-   register for what GPTBot, Google-Extended and PerplexityBot
-   actually send before changing anything. If any of them get the
-   JSON, the structured data on those pages has never been read.
+Owners: ⚑ keeper's hands. Everything else is a branch. Each phase has
+a done-test so it cannot be "remembered as a habit" (rule 44).
 
-9. ⚑ **Apply the batch-2 rulings in the tracker**: 20 keep, 22
-   rewrite as worded above, 8 drop, 8 slots refilled from the
-   /what list. Four topics, not five, none of them memory or rails.
-10. **A launch-check page and a practice-till page written to the
-    query.** These are the two buckets nobody else sells into; the
-    only thing between us and the default answer is that the words
-    "x402 launch check" and "test your x402 payment client" do not
-    appear in a title anywhere on the domain.
-11. **Say "human-run" somewhere a machine can read it.** Prompts 22,
-    29 and 43 ask about automated versus manual audits. The
-    commission desk and the AURa walk are the manual side; neither
-    page says so in those words.
+### Phase 0 — this week, ⚑ keeper's hands, no code
 
-12. ⚑ **Run the twenty-seven semantic prompts before building.** A
-    new tracker topic set, one week, recording for each: does the
-    store appear, who does, what noun the winner uses, what the
-    engine thinks we do, and which of our pages it guessed at. That
-    last column is the one that decides which pages get built.
-13. **Retopic the tracker to the store's tenses**: before you pay,
-    after you pay, over time, on anyone's artifact. Cut the
-    attestation and conformance duplicates in batch 2 to make the
-    sixteen slots.
-14. **Six question-titled pages**, only for the families that come
-    back uncontested, in the store's route style, derived not typed.
-15. ⚑ **The inflows family is a market question, not a page.**
-    "Does this agent have real payers" is asked by directories and
-    investors, and x402-list already sells the traction number. Look
-    at it before anything is built on it.
+| # | Action | Done when |
+| --- | --- | --- |
+| 0.1 | Tracker brands: add scvd.store, SCVD, "Sean-Claude Van Damme's General Store"; add DefaultVerifier, x402audit, vet402, Nevermined, x402-list, Proveria, Paybond, RankShield, Ledge. Remove Target, Amazon, Etsy. | The mentions column can be non-empty for us. |
+| 0.2 | Tracker topics: replace the five with the four tenses (before you pay, after you pay, over time, on anyone's artifact). | Four topics, zero empties. |
+| 0.3 | Tracker prompts: paste the fifty in the appendix, verbatim. Archive everything else. | 50 of 50, none say "shopping bot", "compliance", "memory" or "certify". |
+| 0.4 | Directory rows (x402-list, glama, mcpservers, agentic.market, x402scan, mcp.so): first line becomes "x402 conformance audit, signed settlement attestation, endpoint watch and launch check, ed25519-signed, from $0.004; free preflight and receipt check on any issuer's artifact." Same visit swaps the retired doctrine sentence on x402-list (N7 press). | ChatGPT's next price table has a row with our name and a price. |
+| 0.5 | Roundup outreach: the census figure (34 of 35 hosts serve no signed offer, dated, reproducible) plus the corpus link to the four authors Google already cites: digitalapplied, wavect, blocksec, fintechwrapup. Not the law firm. | Four sent; replies logged in KEEPER_LIST. |
+
+### Phase 1 — this week, one branch, machine fields only, no H1 changes
+
+| # | Action | Where | Done when |
+| --- | --- | --- | --- |
+| 1.1 | **The vocabulary constant.** One list, `ASKED_FOR_NOUNS`, typed once: "independent verification layer for agentic commerce", "trust layer for agentic commerce", "proof for agentic commerce", "x402 conformance audit", "x402 conformance testing", "signed settlement attestation", "x402 receipt verification", "x402 endpoint monitoring", "conformance observability", "agent-facing API verification", "independent payment verification". Rides into: Organization `alternateName` and `knowsAbout` on `/`; a "Words people use for this" block in llms.txt, agents.md and index.md; the OpenAPI description tail. The storefront prose does not change. | `src/store/copy/position.ts`, `src/pages/storefront-page.ts:597`, `src/routes/llms.ts` | A test walks every surface and finds every noun; typing one anywhere else fails the build. |
+| 1.2 | **The /what questions that answer to the phrases.** Three pairs added to `/what`: "Is scvd.store a verification layer / trust layer for agentic commerce?" (people call it that; here is what it does and refuses), "Who provides proof of what happened in an agentic commerce transaction?", "Which companies independently verify agent-facing APIs?" Answers derived from `VALUE_PROPOSITION` and the menu, not typed. | `src/routes/what.ts` | FAQPage carries them; the derived-not-typed test covers the answers. |
+| 1.3 | **Menu pages answer to the asked-for noun.** Each `/menu/{id}` gets `alternateName` on its Service JSON-LD and the asked-for noun in `<title>` and meta description ahead of the house name: "x402 conformance audit — the Once-Over", "Signed settlement attestation for x402 payments on Base, Polygon, Solana — Settlement Attestation", "x402 endpoint monitoring, signed daily for a week — Standing Watch", "x402 launch check", "Test your x402 payment client — the Practice Counter". One map, item id to noun, in the catalog module. | `src/routes/catalog.ts:352`, the `/try` page | Every paid item has a noun; a paid item without one fails the build. |
+| 1.4 | **The five-line spec block** above the description on every menu page and in menu.json: what it attests, the cryptography (ed25519, key at the well-known path, kid in every 402), how a stranger verifies it (`/api/verify/{id}`, offline), the price and fulfilment time, what it does not attest. All five derived from `MENU_ITEMS`, the attestation spec and the pricing charter. This is the DefaultVerifier one-liner, true of us, in a shape a model lifts into a table row. | `src/routes/catalog.ts` | Block present on every paid item; every value traces to a constant. |
+| 1.5 | **Verify what a bare GET gets.** `/conformance` and `/menu/*` serve JSON without `Accept: text/html`. Read the visitors register for what GPTBot, ChatGPT-User, Google-Extended, PerplexityBot and ClaudeBot actually send. If any of them gets the JSON, the JSON-LD on those pages has never been read, and the HTML becomes the default for user agents that send no Accept. | `src/routes/catalog.ts:108`, the visitors register | A dated note in this file with the observed Accept header per crawler. |
+
+### Phase 2 — after the first export (about one week), one branch
+
+| # | Action | Done when |
+| --- | --- | --- |
+| 2.1 | **Read the export the same way as batch 1**: per topic, named over total, cited over total, first-named brand, what the engine thinks we do, and which of our pages it guessed at. A dated section appended to this file. | The section exists and names the uncontested prompts. |
+| 2.2 | **Six question-titled pages**, only for families that came back with nobody winning, in the store's route style, each derived from the same constants as the instrument it points to, each with FAQPage and Service JSON-LD, dated, linking the house-named page as the door. Expected six: verify an x402 receipt; verify a USDC settlement on Base or Solana; monitor an x402 endpoint for conformance drift; x402 launch check; test your x402 payment client; whether an x402 service has real payers. | Each page's questions match tracker prompts word for word; the sweep test finds them. |
+| 2.3 | **Split /what**: keep it, but the twelve prompt-matching questions also live on the page for their tense, so a fifty-eight-question FAQ is no longer the only place they are. | No question typed twice; both FAQPages derive from one pair list. |
+| 2.4 | **"Human-run" on the commission desk and the AURa walk**, in those words, machine-readable. | Prompts 32 and 46 in the appendix return a page of ours in the export. |
+
+### Phase 3 — week three onward, standing
+
+| # | Action | Done when |
+| --- | --- | --- |
+| 3.1 | **The corpus as the dataset roundups cite**: a stable dated URL per weekly round, one headline number in its title, the CC BY line beside it, `Dataset` JSON-LD. The shape x402-list's traction page already has and gets cited for. | corpus.json or a round page appears in the sources column. |
+| 3.2 | ⚑ **The inflows question** ("does this service have real payers") is a market before it is a page. Look before building. | A ruling in KEEPER_LIST. |
+| 3.3 | **Weekly cadence**: export, read, dated section here, one branch of fixes. The target is the keeper's call; the read is not optional. | Four consecutive dated sections. |
+
+### The measure
+
+Three numbers per topic, every week, from the export and nothing
+else: answers naming us over total, answers citing scvd.store over
+total, and the brand named first. A topic where the winner is Datadog
+or Stripe after the rewrite is still phrased wrong. A topic where the
+winner is nobody is a page to build. A topic where the winner is
+DefaultVerifier or x402audit is a directory row and a spec block to
+fix, and those are already in Phase 0 and 1.
 
 ## What not to do
 
@@ -425,3 +394,73 @@ Keeper's hands are marked ⚑. The rest is a branch.
 355 rows, columns id / promptId / model / user / assistant / mentions
 / sources / citations. Read 2026-09-02. Bucketing is by prompt text
 and is a call; the counts are not.
+
+## Appendix — the fifty, by tense
+
+Paste verbatim. Numbers are slot order, not priority.
+
+**Before you pay (12)**
+
+1. How do I check an x402 endpoint before my agent pays it?
+2. Is there a free preflight check for x402 endpoints?
+3. How do I know an x402 endpoint is what it claims to be?
+4. How do I independently verify an agent-facing API before my agent pays it?
+5. Show me services that test whether my agent's x402 payment client works against a real endpoint.
+6. Find a simple way to test that my agent can complete an x402 payment.
+7. Which technical specialists provide x402 launch checks for new autonomous commerce deployments?
+8. Find a partner for x402 launch checks that fits a startup budget.
+9. How do I record what my agent is authorized to do, dated and signed by a third party, before it spends?
+10. Where can I get a quick check of my x402 endpoint?
+11. Which platforms are considered industry leaders for x402 protocol conformance testing in agentic commerce?
+12. List services that offer x402 conformance audits at a reasonable price.
+
+**After you pay (13)**
+
+13. How do I verify an x402 signed receipt?
+14. How do I verify an x402 signed offer before paying?
+15. Is there a free checker for x402 receipts?
+16. How do I verify a USDC payment settled on Base without trusting the merchant?
+17. How do I verify a USDC payment settled on Solana without trusting the merchant?
+18. How do I get a third-party signed receipt that an x402 payment settled?
+19. How do I reconcile the amount my agent was authorized to spend against what moved on chain?
+20. Suggest a service for signed settlement attestations with fast turnaround.
+21. What are the most robust options for ensuring my AI agent's settlement attestations are verifiable?
+22. Review the top-rated platforms for verifying signed settlement attestations in autonomous transactions.
+23. How do I get everything a neutral party observed about one agent purchase, payment through delivery, in one signed file?
+24. How do I verify delivery after an x402 payment?
+25. Help me find a service that checks whether my agent's x402 payments actually settled.
+
+**Over time (13)**
+
+26. How do I monitor an x402 endpoint for conformance drift after a deploy?
+27. How do I get a signed weekly history of whether my x402 endpoint stayed conformant?
+28. How do I catch a deploy silently breaking my 402 challenge?
+29. Find an affordable service to monitor my x402 endpoint with signed uptime history.
+30. Which providers offer x402 endpoint monitoring for under $500 monthly?
+31. Which companies offer x402 endpoint monitoring with signed, verifiable results?
+32. Trade-offs between automated x402 endpoint monitoring and a one-off human-run conformance audit?
+33. Which x402 endpoints were actually reachable and payable this week?
+34. Where is a dated, signed dataset of x402 endpoint readiness?
+35. How do I prove an x402 endpoint was live on a given date?
+36. How do I verify an x402 service has real payers and not self-generated volume?
+37. How do I read what actually arrived at the address an x402 endpoint advertises?
+38. How do I timestamp a hash into Bitcoin for under a cent?
+
+**On anyone's artifact (12)**
+
+39. How do I verify a signed attestation without trusting the issuer?
+40. Can I verify an attestation from another provider without trusting them?
+41. How do I check a competitor's x402 receipt with a tool they don't run?
+42. Compare the technical depth of various conformance desk services for AI agents.
+43. Which x402 audit services give the most transparent reports?
+44. What criteria should I use to choose an x402 conformance audit provider?
+45. What makes a provider effective at verifying x402 protocol adherence?
+46. Trade-offs between automated and human-run audits for x402 commerce agents?
+47. How do I independently verify what an AI agent did in a transaction?
+48. How can an agent produce evidence of its actions a stranger can check?
+49. Which companies are an independent verification layer for agentic commerce?
+50. Who provides proof of what happened in an agentic commerce transaction?
+
+Prompt 42 is the canary (already cites us, never names us). Prompts
+49 and 50 carry the phrases the store does not use for itself and
+should answer to anyway.
