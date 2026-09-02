@@ -318,6 +318,57 @@ x402 payment client; whether an x402 service has real payers. Run
 the prompts through the tracker first, then build only the pages
 whose prompts came back with nobody winning.
 
+## Is the question bank complete? Checked 2026-09-02
+
+No. The fifty and the twelve families cover the shelf as the store
+describes it. Twelve families are missing, and several are the ones
+engines answer most often:
+
+| Missing family | Why it matters | Examples |
+| --- | --- | --- |
+| Branded and navigational | The cheapest to win and currently lost: Gemini expanded SCVD to "Sean Concord Record"; a web search for the name returns a third party describing July's shop. | "what is scvd.store", "is scvd.store legit", "scvd.store review", "SCVD general store x402", "who runs scvd.store" |
+| Alternatives and comparisons | Engines answer "X alternative" with a list; rule 5 keeps the page off our domain, but directories and roundups carry it and we should be the row. | "x402audit alternative", "DefaultVerifier vs scvd.store", "vet402 vs x402audit", "free alternative to a paid x402 audit" |
+| MCP-shaped | Agents pick tools from MCP registries; the store has a server with two free tools. | "MCP server to check an x402 endpoint", "MCP tool that verifies an x402 receipt", "is there an MCP server for x402 conformance" |
+| Developer how-to | Code answers cite docs, READMEs and npm; the store publishes x402-verify and the criteria. | "how do I parse an x402 402 response", "verify an ed25519 signature on an x402 receipt in TypeScript", "x402 v2 signed offer JWS format", "check an x402 payTo address can receive USDC" |
+| Error-shaped | Highest intent of all; /what already answers three of these and nobody is tracking them. | "x402 payment settled but nothing delivered", "my agent paid twice on retry", "402 challenge payTo does not match", "x402 receipt signature fails" |
+| Ecosystem data | x402-list wins these today with a dataset page; the corpus is the same shape and is uncited. | "how many x402 services are live", "state of x402 2026", "x402 endpoint uptime statistics", "which facilitators settle the most" |
+| Web Bot Auth | A free check nobody else offers; zero prompts anywhere. | "verify a Web Bot Auth key directory", "test my crawler's signature agent card", "Web Bot Auth checker" |
+| Agent-directed | The buyer is often the agent, asking in its own register. | "cheapest x402 endpoint to test a payment", "x402 sandbox or test endpoint", "make a real x402 payment for less than a cent" |
+| Rail-specific | Solana and Polygon x402 questions have thinner answers than Base. | "verify an x402 payment on Solana", "x402 on Polygon settlement check", "x402 USDC Solana signature lookup" |
+| Defect vocabulary | The named defect classes are a citable reference; nobody asks yet because nobody knows the names. | "x402 defect classes", "named x402 failure modes", "what does offer-contradicts-challenge mean" |
+| Timestamp alternatives | OpenTimestamps owns the generic form; the paid anchor is the priced form. | "OpenTimestamps alternative for API evidence", "timestamp a hash into Bitcoin cheaply" |
+| Provenance and identity | The keys page, the DID document, the house ledger. | "how do I check which key signed an x402 artifact", "x402 issuer key history", "DID document for an x402 store" |
+
+Each family gets two to four questions in the bank and, where the
+answer is already on a page, a FAQ pair derived from that page's
+constants. The branded family is a page of its own: "What is
+scvd.store?" answered in the first forty words with the name spelled
+out, because the one thing the engines got wrong first was our name.
+
+## Is the plan up to standard? Checked 2026-09-02 against current guidance
+
+Checked against what the current guides and studies say engines
+actually cite, and against the live site from outside. Four gaps,
+all now in the plan; the rest holds.
+
+| Standard | Where we stood | Now |
+| --- | --- | --- |
+| The page the crawler fetches must be the page with the structured data | Every AI crawler user agent received JSON from the menu pages and /conformance. The JSON-LD on those pages has plausibly never been read by ChatGPT's crawlers. | 1.5: HTML by default. |
+| ChatGPT search cites only what is in Bing's index | Nothing on the record says the domain is registered with Bing; no IndexNow. | 0.3 and 1.6. |
+| Third-party corroboration outweighs on-site markup | The export's citation diet: github 79, youtube 49, linkedin 44, medium 30, reddit 14. The store's own name search returns a directory describing July. | 0.2 rewrites every listing first. ⚑ The community surfaces are the keeper's own hands and own name, not the store's voice (rule 5 governs the store, not the person). |
+| Google AI Overviews: 38 percent of citations come from the top ten, down from 76 percent; pages ranking for the fan-out sub-queries are cited far more often | The store's pages do not rank for the sub-queries because they are titled by house name. | 1.3 and 2.2: query nouns in titles, question-titled pages. |
+| Freshness: 83 percent of commercial citations are from pages updated within twelve months, most within six | Every surface is dated by hand and by serve. Holds. | Keep. |
+| Lead with the answer; a statistic every 150 to 200 words with its source | FAQ answers lead with the capability since the 2026-08-28 rule. Menu pages lead with a paragraph. The corpus has the numbers and nobody cites it. | 1.4 spec block, 3.1 dataset page. |
+| Entity consistency: one name, one description, everywhere | Six surfaces derive from one constant. The eleven sameAs targets do not. | 0.2. |
+| Structured data engines lift for "dataset" and "tool" questions | Organization, WebSite, FAQPage, Service with Offer, TechArticle exist. No Dataset, no SoftwareApplication. | 1.7. |
+| llms.txt | Present, modular, dated. Google says it does not read it; others may. Costs nothing. Holds. | Keep. |
+| Crawler access | robots.txt allows every named agent; every one probed got 200 from the origin. Holds. | Keep. |
+
+Sources read for this check: HubSpot, Frase and AirOps AEO guides
+(2026); Search Engine Land on the fan-out study; ALM Corp on the
+Ahrefs top-ten citation figure; Checkly's February 2026 study of
+agent Accept headers; the Bing Webmaster and IndexNow guides.
+
 ## The plan
 
 Ruled 2026-09-02 after three batches. The principle, keeper's words:
@@ -334,9 +385,9 @@ a done-test so it cannot be "remembered as a habit" (rule 44).
 
 | # | Action | Done when |
 | --- | --- | --- |
-| 0.1 | Tracker brands: add scvd.store, SCVD, "Sean-Claude Van Damme's General Store"; add DefaultVerifier, x402audit, vet402, Nevermined, x402-list, Proveria, Paybond, RankShield, Ledge. Remove Target, Amazon, Etsy. | The mentions column can be non-empty for us. |
-| 0.2 | Tracker topics: replace the five with the four tenses (before you pay, after you pay, over time, on anyone's artifact). | Four topics, zero empties. |
-| 0.3 | Tracker prompts: paste the fifty in the appendix, verbatim. Archive everything else. | 50 of 50, none say "shopping bot", "compliance", "memory" or "certify". |
+| 0.1 | **No tracker.** (Keeper, 2026-09-02: the tracker was only a source of example queries.) The fifty in the appendix plus the families below are the question bank the site answers to; nothing is measured but whether we show up, checked by asking the engines by hand now and then. | The bank lives in this file and in the FAQ constants, nowhere else. |
+| 0.2 | **Fix what the engines already believe.** A web search for "scvd.store" on 2026-09-02 returned no page of ours; the first result was Glama, and the description the engine summarised was July's shop: signed hellos, portraits, a phone call, luckies. That is the store the models currently think we are. Every listing (Glama, mcpservers, mcpindex, x402-list, x402scan, agentic.market, agent-tools.cloud, mcp.so, the sameAs list on the homepage names eleven) gets the sixty words and the nouns-and-price line, this week, before anything on our own domain matters. | The eleven sameAs targets carry the sixty words; a search for the name returns them saying so. |
+| 0.3 | **Bing.** ChatGPT search reads Bing's index; a page not in Bing cannot be cited there. Register the domain in Bing Webmaster Tools (import from Search Console if that exists; create both if not), submit the sitemap, and take the IndexNow key so Phase 1 can ping on deploy. | Bing URL inspection shows /, /what, /conformance and the menu pages indexed. |
 | 0.4 | Directory rows (x402-list, glama, mcpservers, agentic.market, x402scan, mcp.so): first line becomes "x402 conformance audit, signed settlement attestation, endpoint watch and launch check, ed25519-signed, from $0.004; free preflight and receipt check on any issuer's artifact." Same visit swaps the retired doctrine sentence on x402-list (N7 press). | ChatGPT's next price table has a row with our name and a price. |
 | 0.5 | Roundup outreach: the census figure (34 of 35 hosts serve no signed offer, dated, reproducible) plus the corpus link to the four authors Google already cites: digitalapplied, wavect, blocksec, fintechwrapup. Not the law firm. | Four sent; replies logged in KEEPER_LIST. |
 
@@ -348,7 +399,9 @@ a done-test so it cannot be "remembered as a habit" (rule 44).
 | 1.2 | **The /what questions that answer to the phrases.** Three pairs added to `/what`: "Is scvd.store a verification layer / trust layer for agentic commerce?" (people call it that; here is what it does and refuses), "Who provides proof of what happened in an agentic commerce transaction?", "Which companies independently verify agent-facing APIs?" Answers derived from `VALUE_PROPOSITION` and the menu, not typed. | `src/routes/what.ts` | FAQPage carries them; the derived-not-typed test covers the answers. |
 | 1.3 | **Menu pages answer to the asked-for noun.** Each `/menu/{id}` gets `alternateName` on its Service JSON-LD and the asked-for noun in `<title>` and meta description ahead of the house name: "x402 conformance audit — the Once-Over", "Signed settlement attestation for x402 payments on Base, Polygon, Solana — Settlement Attestation", "x402 endpoint monitoring, signed daily for a week — Standing Watch", "x402 launch check", "Test your x402 payment client — the Practice Counter". One map, item id to noun, in the catalog module. | `src/routes/catalog.ts:352`, the `/try` page | Every paid item has a noun; a paid item without one fails the build. |
 | 1.4 | **The five-line spec block** above the description on every menu page and in menu.json: what it attests, the cryptography (ed25519, key at the well-known path, kid in every 402), how a stranger verifies it (`/api/verify/{id}`, offline), the price and fulfilment time, what it does not attest. All five derived from `MENU_ITEMS`, the attestation spec and the pricing charter. This is the DefaultVerifier one-liner, true of us, in a shape a model lifts into a table row. | `src/routes/catalog.ts` | Block present on every paid item; every value traces to a constant. |
-| 1.5 | **Verify what a bare GET gets.** `/conformance` and `/menu/*` serve JSON without `Accept: text/html`. Read the visitors register for what GPTBot, ChatGPT-User, Google-Extended, PerplexityBot and ClaudeBot actually send. If any of them gets the JSON, the JSON-LD on those pages has never been read, and the HTML becomes the default for user agents that send no Accept. | `src/routes/catalog.ts:108`, the visitors register | A dated note in this file with the observed Accept header per crawler. |
+| 1.5 | **HTML by default.** Probed 2026-09-02 from outside: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-SearchBot, PerplexityBot, Google-Extended, bingbot, Bytespider and meta-externalagent all received `application/json` from `/menu/settlement_attestation` and `/conformance` when sending `Accept: */*` or no Accept at all (a February 2026 field study found only Claude Code, Cursor and OpenCode ask for markdown by Accept; the rest send `*/*` or a browser string). The JSON has no title, no meta description and no JSON-LD. Invert the negotiation: HTML unless the caller explicitly prefers `application/json` or `text/markdown` over `text/html`. Agents that ask for JSON still get it. | `src/pages/simple-page.ts:200`, `src/routes/catalog.ts:108`, the visitors register | A test fetches every negotiated page with `*/*`, with no Accept, and with `application/json`, and gets HTML, HTML, JSON. |
+| 1.6 | **IndexNow on deploy.** The key file at the root, and a ping listing the sitemap's URLs after each deploy (the deploy script, not the Worker). Bing, and through it ChatGPT search, learns about a change in hours instead of weeks. | `scripts/`, `wrangler.jsonc` | The key file answers; a deploy logs the ping's response code. |
+| 1.7 | **Two more schema types**, derived: `Dataset` on `/corpus` and `/corpus.json` (name, dateModified, license CC BY, distribution pointing at the JSON), `SoftwareApplication` on `/mcp.md` and `/developers` for the MCP server, the CLI and the two npm packages. Those are the shapes engines lift for "dataset" and "tool" questions. | `src/routes/corpus-landing.ts`, `src/routes/developers.ts` | Both blocks parse; the sweep test finds them. |
 
 ### Phase 2 — after the first export (about one week), one branch
 
