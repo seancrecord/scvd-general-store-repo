@@ -169,7 +169,14 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * MINOR: a reader holding 3.10.0 quotes a refusal the store no longer
  * makes in those words.
  */
-export const SKILL_VERSION = "3.11.0";
+/*
+ * 3.12.0 (2026-09-02): the passport tier. Every passport, chip, hosted
+ * profile and per-host read carries a tier derived from the signed
+ * rounds by the rule on /criteria, with its fraction and its rows;
+ * /corpus/tiers.json lists every host's, alphabetical. MINOR: a reader
+ * holding 3.11.0 does not know summary.tier_line exists.
+ */
+export const SKILL_VERSION = "3.12.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

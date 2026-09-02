@@ -81,6 +81,7 @@ function notObservedCell(gaps: readonly string[]): string {
  */
 function summaryTable(passport: EndpointPassport): string {
   const s = passport.payload.summary;
+  const tier = passport.payload.tier;
   const price =
     s.min_usdc === undefined && s.max_usdc === undefined
       ? null
@@ -88,6 +89,14 @@ function summaryTable(passport: EndpointPassport): string {
   return `<table class="summary">
     <tbody>
       ${row("status", `<code>${escapeHtml(s.status)}</code>`)}
+      ${row(
+        "tier",
+        tier
+          ? `<span data-tier="${escapeHtml(tier.tier)}"><code>${escapeHtml(tier.tier)}</code> — ${escapeHtml(String(tier.fraction.ready))} of ${escapeHtml(String(tier.fraction.rounds))}, ${escapeHtml(tier.fraction.weeks)}</span> ·
+            <a href="${escapeHtml(s.history_url)}">the rows</a> ·
+            <a href="${escapeHtml(tier.criteria_url)}">the rule</a>${tier.coverage_suspect ? " · <em>our coverage was suspect in this window</em>" : ""}`
+          : null,
+      )}
       ${row("verdict", s.verdict ? `<code>${escapeHtml(s.verdict)}</code>` : "<em>none</em>")}
       ${row("observed_at", s.observed_at ? `<code>${escapeHtml(s.observed_at)}</code>` : "<em>never</em>")}
       ${row("valid_until", `<code>${escapeHtml(s.valid_until)}</code> — refuse this passport after it`)}

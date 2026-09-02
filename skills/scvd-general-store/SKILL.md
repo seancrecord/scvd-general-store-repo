@@ -610,6 +610,19 @@ wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
 
+### The passport tier (3.12.0, 2026-09-02)
+
+Every endpoint passport carries a tier — `observed`, `established`,
+`standing`, `broken` or `indeterminate` — derived at read from that
+host's signed rounds by the rule typed once at
+`https://scvd.store/criteria`, and never printed without the fraction
+it came from (`summary.tier_line`, e.g. "established — 4 of 4,
+W33–W36") and the rows behind it (`payload.tier.rows`). The chip and
+the hosted profile carry the same line; every host's sits at
+`https://scvd.store/corpus/tiers.json`, alphabetical by host, because
+ordered by tier would be a ranking. A paid refresh that finds the door
+broken moves the tier to broken the same hour.
+
 ### The doctrine sentence (3.11.0, 2026-09-02)
 
 The store's refusal changed on the keeper's ruling. It read "never a

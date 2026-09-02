@@ -466,12 +466,20 @@ const BASE = "https://scvd.store";
  * form (test/doctrine.spec.ts hunts them), and still every earlier
  * pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-FIFTH — by roadmap N7(b), the
+ * passport tier: the passport section says every passport carries a
+ * tier derived by the rule on /criteria and printed with its fraction
+ * and its rows, and the corpus section names /corpus/tiers.json,
+ * alphabetical because ordered by tier would be a ranking. Confirmed
+ * before this value was taken: the guide carries "summary.tier_line"
+ * and "/corpus/tiers.json", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "bb8f6f228c9080364ad02ed23daf66c136c090852e4e88413bce66bbf95c7a2f";
+  "8f2030d5e3164bb1351fc581b8f76f514cea66c7c4d1c13139d486d7c64b8fea";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -952,6 +952,11 @@ with the rule it came from, the denominator, and the rows, so a reader
 who disagrees with the rule can apply their own to the same rows. The
 rule and the dated note are at ${base}/criteria.
 
+The first such reading is the passport tier, and every host's sits at
+\`${base}/corpus/tiers.json\`: each host with its tier and the fraction
+it came from, alphabetical by host — ordered by tier would be a
+ranking. The per-host read above carries the same tier with its rows.
+
 ## Named defect classes, so two instruments can compare notes
 
 ${base}/defects (and ${base}/defects.json) publishes stable names for
@@ -1103,7 +1108,15 @@ disagree with the freshness rule), \`observed_at\`, \`valid_until\`,
 \`failed\`, and \`not_observed\` — what the cited modules declined to
 check, stated beside the verdict rather than left silent. A refusal
 answers \`decision: INDETERMINATE\` too, so an agent reading one field
-never has to special-case the status code. Landing and the store's own self-passport (labeled self-observed)
+never has to special-case the status code. Since 2026-09-02 every
+passport also carries a TIER — observed, established, standing, broken
+or indeterminate — derived at read from that host's signed rounds by
+the rule typed once at ${base}/criteria, and printed on every
+rendering with the fraction it came from (\`summary.tier_line\`, e.g.
+"established — 4 of 4, W33–W36") and the rows behind it
+(\`payload.tier.rows\`). Never a ranking; a tier is a reading of a
+door's rounds, not a score on whoever runs it, and a paid refresh that
+finds the door broken moves the tier to broken the same hour. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
 refusal, not a row: names appear only on the ready side here. Every
 passport carries a free embeddable chip (\`${base}/badges/passport/{host}.svg\`)

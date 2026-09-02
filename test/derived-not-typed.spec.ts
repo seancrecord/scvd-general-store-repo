@@ -205,6 +205,54 @@ describe("nothing served carries a tally nobody recomputes", () => {
   });
 });
 
+/**
+ * NO TIER WITHOUT ITS FRACTION (2026-09-02, roadmap N7b). The doctrine
+ * is "never a verdict without its derivation and denominator beside
+ * it", and the passport tier is the first derived verdict published
+ * under it. In JSON, an object carrying `tier` must carry the line
+ * with its fraction; in HTML, every element marked data-tier must
+ * print "N of M" inside it. A tier typed by hand anywhere fails here.
+ */
+const TIER_WORDS = new Set(["observed", "established", "standing", "broken", "indeterminate"]);
+
+function bareTiersIn(value: unknown, path: string, out: string[]): void {
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => bareTiersIn(entry, `${path}[${index}]`, out));
+    return;
+  }
+  if (value === null || typeof value !== "object") return;
+  const record = value as Record<string, unknown>;
+  if (typeof record.tier === "string" && TIER_WORDS.has(record.tier)) {
+    const line = typeof record.line === "string" ? record.line : typeof record.tier_line === "string" ? record.tier_line : "";
+    if (!/\b\d+ of \d+\b/.test(line)) out.push(`${path}: tier "${record.tier}" without its fraction`);
+  }
+  for (const [key, entry] of Object.entries(record)) bareTiersIn(entry, `${path}.${key}`, out);
+}
+
+describe("no tier without its fraction", () => {
+  it("holds across every public surface, JSON and HTML alike", async () => {
+    const offences: string[] = [];
+    for (const [path, body] of await surfaces()) {
+      let parsed: unknown = undefined;
+      try {
+        parsed = JSON.parse(body);
+      } catch {
+        parsed = undefined;
+      }
+      if (parsed !== undefined) {
+        bareTiersIn(parsed, path, offences);
+        continue;
+      }
+      for (const match of body.matchAll(/<[^>]*data-tier="([a-z]+)"[^>]*>([\s\S]*?)<\/[a-z]+>/g)) {
+        if (!/\b\d+ of \d+\b/.test(match[2] ?? "")) {
+          offences.push(`${path}: data-tier="${match[1]}" printed without its fraction`);
+        }
+      }
+    }
+    expect(offences, `a tier is typed rather than derived:\n${offences.join("\n")}`).toEqual([]);
+  }, WALK_TIMEOUT_MS);
+});
+
 describe("no surface quotes a price the menu does not charge", () => {
   /**
    * The storefront defect generalised. An item's name and a dollar

@@ -1,3 +1,4 @@
+import { roundCoverageSuspect } from "@/services/passport-tier";
 import { listCorpus } from "@/services/corpus";
 import {
   sharedWalletFactFor,
@@ -122,6 +123,15 @@ export interface SubjectRound {
   /** Which feed named it: discovery, leaderboard, or both. */
   source?: string;
   gap?: GapReason;
+  /**
+   * Our coverage that round was suspect FOR THIS HOST (2026-09-02, the
+   * passport tier): we did not observe it and the round itself
+   * recorded capped, suspect or collapsed coverage, or the instrument
+   * was degraded on this row. Chain-derived from the round's own flags,
+   * never from the register, so the per-host tier and the tier index
+   * read the same fact. False on every observed round.
+   */
+  coverage_suspect: boolean;
   /** Plain language, always present, including on observed rounds. */
   note: string;
 }
@@ -281,6 +291,7 @@ export async function subjectHistory(
           ? { listing_source: "round" as const }
           : {}),
         probed: true,
+        coverage_suspect: false,
         url: entry.url,
         verdict: entry.verdict,
         failed: entry.failed,
@@ -355,6 +366,7 @@ export async function subjectHistory(
         ? { listing_source: listedInRound ? ("round" as const) : ("register" as const) }
         : {}),
       probed: false,
+      coverage_suspect: roundCoverageSuspect(round) || degradedRow,
       ...(entry?.source ? { source: entry.source } : {}),
       gap,
       note,

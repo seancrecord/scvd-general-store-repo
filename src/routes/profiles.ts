@@ -1,3 +1,4 @@
+import { deriveTier, tierInputFromHistory, type TierReading } from "@/services/passport-tier";
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -37,6 +38,8 @@ interface ProfileView {
   decision: AgentDecision;
   latest_verdict: string | null;
   last_observed: string | null;
+  /** The same derivation the passport signs, on the same fold. */
+  tier: TierReading;
 }
 
 /**
@@ -74,6 +77,10 @@ async function viewOf(
     decision: decisionOf(freshness),
     latest_verdict: observation.verdict,
     last_observed: observation.observed_at,
+    tier: deriveTier(
+      tierInputFromHistory(observation.history, observation),
+      `${c.env.STORE_BASE_URL}/criteria`,
+    ),
   };
 }
 
@@ -97,6 +104,8 @@ profilesRoutes.get("/profiles", async (c) => {
         expires: v.profile.record.expires,
         decision: v.decision,
         freshness: v.freshness,
+        tier: v.tier.tier,
+        tier_line: v.tier.line,
         last_observed: v.last_observed,
       })),
     });
@@ -106,6 +115,7 @@ profilesRoutes.get("/profiles", async (c) => {
       (v) => `<tr><td><a href="/profiles/${escapeHtml(v.profile.record.host)}">${escapeHtml(v.profile.record.host)}</a></td>
       <td><code>${escapeHtml(v.decision)}</code></td>
       <td>${escapeHtml(v.freshness)}</td>
+      <td><span data-tier="${escapeHtml(v.tier.tier)}">${escapeHtml(v.tier.line)}</span></td>
       <td>${escapeHtml(v.last_observed?.slice(0, 10) ?? "—")}</td>
       <td>${escapeHtml(v.profile.record.expires.slice(0, 10))}</td></tr>`,
     )
@@ -125,7 +135,7 @@ profilesRoutes.get("/profiles", async (c) => {
     money moves.</p>
   </section>
   <section><h2>In-term profiles, ready side</h2>
-  ${listed.length === 0 ? `<p class="menu-meta">None yet. The first profile on this index will belong to whoever commissions it.</p>` : `<table><thead><tr><th>host</th><th>decision</th><th>freshness</th><th>last observed</th><th>term ends</th></tr></thead><tbody>${rows}</tbody></table>`}
+  ${listed.length === 0 ? `<p class="menu-meta">None yet. The first profile on this index will belong to whoever commissions it.</p>` : `<table><thead><tr><th>host</th><th>decision</th><th>freshness</th><th>tier</th><th>last observed</th><th>term ends</th></tr></thead><tbody>${rows}</tbody></table>`}
   </section>`;
   return c.html(
     renderSimplePage({
@@ -169,6 +179,7 @@ profilesRoutes.get("/profiles/:host", async (c) => {
       in_term: view.in_term,
       decision: view.decision,
       freshness: view.freshness,
+      tier: view.tier,
       latest_verdict: view.latest_verdict,
       last_observed: view.last_observed,
       profile,
@@ -209,6 +220,8 @@ profilesRoutes.get("/profiles/:host", async (c) => {
     <img src="/badges/passport/${escapeHtml(r.host)}.svg" alt="passport chip for ${escapeHtml(r.host)}" style="vertical-align:middle;max-height:2em"> ·
     <a href="/passport/${escapeHtml(r.host)}">this passport at its own URL</a> ·
     <a href="/corpus/host/${escapeHtml(r.host)}.json">full signed history</a></p>
+    <p class="menu-meta">tier <span data-tier="${escapeHtml(view.tier.tier)}">${escapeHtml(view.tier.line)}</span> ·
+    <a href="/corpus/host/${escapeHtml(r.host)}.json">the rows</a> · <a href="/criteria">the rule</a></p>
   </section>
   ${evidenceHtml}
   <section>

@@ -20,6 +20,7 @@ import {
   AUDIT_CRITERIA_VERSION,
 } from "@/services/service-audit";
 import { DOCTRINE_NOTE } from "@/store/copy/doctrine";
+import { ESTABLISHED_ROUNDS, STANDING_ROUNDS, TIER_RULE, TIER_RULE_NOTE } from "@/services/passport-tier";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -98,6 +99,20 @@ criteriaRoutes.get("/criteria", (c) => {
      * manner as the battery change note above it.
      */
     doctrine: DOCTRINE_NOTE,
+    /**
+     * THE TIER RULE (2026-09-02, roadmap N7b), typed once here and
+     * derived everywhere it renders. A tier is a function of the
+     * rounds in the window, the ready count, the latest observation
+     * and coverage_suspect; every rendering prints the fraction.
+     */
+    tier_rule: {
+      dated: DOCTRINE_NOTE.dated,
+      rules: TIER_RULE,
+      established_needs: ESTABLISHED_ROUNDS,
+      standing_needs: STANDING_ROUNDS,
+      note: TIER_RULE_NOTE,
+      index: `${base}/corpus/tiers.json`,
+    },
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
     criteria_battery: {
       version: AUDIT_CRITERIA_VERSION,
@@ -183,6 +198,15 @@ criteriaRoutes.get("/criteria", (c) => {
         <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.why)}</p>
         <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_did_not_change)}</p>
         <p class="menu-meta">${escapeHtml(DOCTRINE_NOTE.what_keeps_its_bytes)} ${escapeHtml(DOCTRINE_NOTE.rule)}</p>
+      </section>
+      <section>
+        <h2>The passport tier: the rule, typed once</h2>
+        <p class="menu-desc">Every endpoint passport carries a tier derived at read from that host's signed rounds. This is the only place the rule is typed; every rendering of a tier prints the fraction it came from and links the rows.</p>
+        <table border="1" cellpadding="6">
+          <tr><th>tier</th><th>rule</th></tr>
+          ${TIER_RULE.map((entry) => `<tr><td><strong><code>${escapeHtml(entry.tier)}</code></strong></td><td><small>${escapeHtml(entry.rule)}</small></td></tr>`).join("\n")}
+        </table>
+        <p class="menu-meta">${escapeHtml(TIER_RULE_NOTE)} Every host's tier, alphabetical: <a href="/corpus/tiers.json"><code>/corpus/tiers.json</code></a>.</p>
       </section>
       <section>
         <h2>What retires a badge</h2>

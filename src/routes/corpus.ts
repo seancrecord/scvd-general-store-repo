@@ -1,3 +1,5 @@
+import { effectiveObservation } from "@/services/passport";
+import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
 import {
   getCorpusEntry,
@@ -123,6 +125,11 @@ corpusRoutes.get("/corpus.json", async (c) => {
       what_it_will_not_answer:
         "A ranking, or any figure without its working. A derived reading of these rows — a tier, a fraction — appears only with the rule it came from, the denominator, and the rows, so you can redo the arithmetic or apply your own rule to the same rows. The dated observations are all there either way.",
     },
+    tiers: {
+      url: `${base}/corpus/tiers.json`,
+      what_it_answers:
+        "Every host's tier — observed, established, standing, broken or indeterminate — derived from its own rounds by the rule on /criteria and printed with the fraction it came from, alphabetical by host. The rows behind every line are the per-subject read above.",
+    },
     started: first,
     entries: records.length,
     chain,
@@ -186,7 +193,26 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
       400,
     );
   }
-  return c.json(await subjectHistory(c.env, host, c.env.STORE_BASE_URL));
+  /* The tier rides the newest-wins fold, so a paid refresh moves it
+   * here the same hour it moves the passport (2026-09-02). */
+  const observation = await effectiveObservation(c.env, host);
+  return c.json({
+    ...observation.history,
+    tier: deriveTier(
+      tierInputFromHistory(observation.history, observation),
+      `${c.env.STORE_BASE_URL}/criteria`,
+    ),
+  });
+});
+
+/**
+ * GET /corpus/tiers.json — every host's tier with its fraction,
+ * alphabetical by host. Ordered by tier would be a ranking, and this
+ * store does not publish one. One pass over the signed chain plus one
+ * bulk read of the paid refreshes; derived at read, never stored.
+ */
+corpusRoutes.get("/corpus/tiers.json", async (c) => {
+  return c.json(await tierIndex(c.env, c.env.STORE_BASE_URL));
 });
 
 /**

@@ -1,3 +1,9 @@
+import {
+  deriveTier,
+  tierInputFromHistory,
+  type PassportTier,
+  type TierReading,
+} from "@/services/passport-tier";
 import { citedModulesForHost } from "@/discovery/host-module";
 import {
   originCatalogFetcher,
@@ -140,6 +146,15 @@ export interface PassportSummary {
   valid_until: string;
   /** Whole days between the observation and this passport's issue. */
   evidence_age_days: number | null;
+  /**
+   * THE TIER (2026-09-02, roadmap N7b): derived from this host's rounds
+   * by the rule on /criteria, and never printed without `tier_line`,
+   * the fraction it came from. Absent on the self passport, which the
+   * census cannot observe. The full derivation, rows included, is
+   * `payload.tier`.
+   */
+  tier?: PassportTier;
+  tier_line?: string;
   /** The door's own declared terms, when the observation captured them. */
   networks?: string[];
   min_usdc?: number;
@@ -167,6 +182,8 @@ export interface PassportPayload {
   expires: string;
   freshness: FreshnessState;
   freshness_rule: string;
+  /** The tier with its derivation: rule, fraction, latest, rows. */
+  tier?: TierReading;
   /** Latest observed verdict and when. */
   latest: {
     verdict: string;
@@ -239,6 +256,7 @@ function summarize(parts: {
   observedAt: string | null;
   offer?: { networks: string[]; min_usdc?: number; max_usdc?: number };
   failed: string[];
+  tier?: TierReading;
   /** The same array the payload carries. `not_observed` is a view over
    * it, never a second list — which is why the modules are computed
    * before the summary in both issuers rather than after. */
@@ -260,6 +278,7 @@ function summarize(parts: {
     observed_at: parts.observedAt,
     valid_until: parts.expires,
     evidence_age_days: ageDays,
+    ...(parts.tier ? { tier: parts.tier.tier, tier_line: parts.tier.line } : {}),
     ...(parts.offer
       ? {
           networks: parts.offer.networks,
@@ -442,6 +461,14 @@ export async function issuePassport(
    * a view over this exact array, and a view cannot be computed after
    * the thing it views. */
   const modules = await citedModulesForHost(env, host);
+  /* The tier rides the same fold as everything else here: the history
+   * the passport already replayed and the newest-wins observation, so
+   * a paid refresh that finds the door broken moves the tier the same
+   * hour it moves the verdict. */
+  const tier = deriveTier(
+    tierInputFromHistory(history, observation),
+    `${base}/criteria`,
+  );
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
@@ -455,12 +482,14 @@ export async function issuePassport(
       observedAt: latest.observed_at ?? null,
       ...(offer ? { offer } : {}),
       failed: observation.failed,
+      tier,
       modules,
     }),
     issued_at: issuedAt,
     expires,
     freshness,
     freshness_rule: `fresh <= ${FRESH_DAYS} days since last observation, aging <= ${AGING_DAYS}, expired after; broken when the latest verdict is not ready; refuse expired passports.`,
+    tier,
     latest,
     history: {
       first_observed: history.first_observed,
