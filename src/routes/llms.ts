@@ -819,6 +819,14 @@ declined.
 
 ## Our own wallets, declared
 
+What the organic numbers subtract is published by name at
+\`${base}/corpus/wallet-facts.json\` under \`exclusions\`: every house
+wallet with who and since, the house's own agents, the user-agent
+strings of machinery that looks rather than buys, and a dated row for
+every time the list moved saying which published number changed and
+which way. The newest row pins the sizes of both tables, so an
+exclusion cannot change a number quietly.
+
 Every wallet this store controls is listed and signed at
 ${base}/house-ledger.json, with the house-against-organic settlement
 split beside it. Published because an outside risk scorer looked at

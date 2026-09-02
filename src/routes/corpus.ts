@@ -1,3 +1,4 @@
+import { namedExclusions } from "@/store/exclusions";
 import { effectiveObservation } from "@/services/passport";
 import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
@@ -403,6 +404,7 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
       corrections: CORRECTIONS_POINTER,
       explanation:
         "The corpus chain holds no signed week yet, so there is nothing to count over. This surface fills with the first ward round. The index is at /corpus.json.",
+      exclusions: namedExclusions(base),
     });
   }
   return c.json({
@@ -410,6 +412,13 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
     corrections: CORRECTIONS_POINTER,
     how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
     per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
+    /**
+     * S9 (2026-09-02): what the store's OWN demand numbers subtract,
+     * by name, with the dated register of every time the list moved.
+     * On this surface because it is the wallet-facts page: the house's
+     * wallets are wallet facts too, and the only ones it names.
+     */
+    exclusions: namedExclusions(base),
   });
 });
 

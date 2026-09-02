@@ -484,12 +484,19 @@ const BASE = "https://scvd.store";
  * the guide carries "/case/{case_id}" and "never says who was in the
  * wrong", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-SEVENTH — by roadmap S9, the named
+ * exclusions: the "Our own wallets, declared" section gains one
+ * paragraph naming the exclusions block on /corpus/wallet-facts.json
+ * and the dated register behind it. Confirmed before this value was
+ * taken: the guide carries "under \`exclusions\`" and "cannot change a
+ * number quietly", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6a474e7b3ba6fbbabf6d74ab227e751d2b439943a3af5d38cbfd6811902f2ced";
+  "7638048f9ec53ae8722c79bb8f0eda6550f71aae23d41e0b59d29c6303faf893";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
