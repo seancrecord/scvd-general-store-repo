@@ -55,6 +55,11 @@ jobs:
       # Node's own runner. Zero framework, same as zero dependencies.
       - name: The Tab (scvd-tab MCP server)
         run: npm run tab:test
+      # The preflight Action (roadmap L7): one file, no dependencies,
+      # tested against a store that is not the store — the exit code a
+      # deploy branches on is the whole product.
+      - name: The preflight Action
+        run: npm run action:test
       # THE SCALABILITY AUDIT — the same idea pointed forward instead of
       # backward. The tests catch a claim that is false NOW; this catches
       # a shape that will quietly become false as the store grows. Its

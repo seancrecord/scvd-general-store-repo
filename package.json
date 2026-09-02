@@ -35,6 +35,7 @@
     "tab:test": "node --test tab/tab.test.mjs",
     "till:test": "node --test till/till.test.mjs",
     "cli:test": "node --test cli/cli.test.mjs",
+    "action:test": "node --test action/preflight/preflight.test.mjs",
     "doors:check": "node scripts/doors-check.mjs",
     "doors:test": "node --test scripts/doors-check.test.mjs",
     "walkabout": "node scripts/walkabout.mjs",
