@@ -618,8 +618,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * THE CASE FILE (roadmap N8, 2026-09-02, the keeper's prompt): one
    * signed artifact over one purchase, assembled for the human who has
    * to decide what went wrong, from the observations this store already
-   * sells one at a time. Never a verdict. ⚑ price is his ($0.25: the
-   * parts are under a dime; the rest is the assembly).
+   * sells one at a time. Never a verdict. Price $0.25, keeper-confirmed
+   * 2026-09-02 (the parts are under a dime; the rest is the assembly).
    */
   {
     id: "the_case_file",

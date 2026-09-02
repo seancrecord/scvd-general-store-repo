@@ -356,7 +356,8 @@ LORE & TRADITION
     No badge ships before its criteria page exists.
 
     AMENDED 2026-09-02, the keeper's ruling (his sentence; the
-    surrounding wording drafted, ⚑ his ink): the refusal "never a
+    surrounding wording drafted and inked by him the same day, as
+    drafted): the refusal "never a
     score, a rating or a ranking" is replaced everywhere it appears
     by "never a ranking, and never a verdict without its derivation
     and denominator beside it." Rankings stay forbidden — nothing on
