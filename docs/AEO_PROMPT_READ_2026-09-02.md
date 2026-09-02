@@ -643,6 +643,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
 | F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
 | F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
+| F24 | One `@id` on the store's Organization node and every reference to it (32 nodes, two names before), under the display name; done on the branch with `test/organization-id.spec.ts`. | entity anchors | PR 1 |
 | F23 | JSON-LD money fields say "USD" with the settlement asset in words; done on the branch, not yet a PR. The 2026-08-27 ruling stands everywhere a validator does not read. | GSC, keeper | PR 1 |
 
 ## Execution plan — 2026-09-02
@@ -746,3 +747,74 @@ coverage the store does not have yet, and trying to take them early
 costs more than waiting. The dataset anchors are earned by having a
 dataset, which the store does have, and nobody in the x402 space has
 a DOI. That is the one to take this week.
+
+### How to take each anchor — 2026-09-02, keeper's questions answered
+
+**Zenodo DOI for the corpus.** Zenodo is CERN's open repository; any
+dataset, any size up to 50 GB, free, permanent, DOI per version.
+
+1. Sign in at zenodo.org with the GitHub account (one click; no new
+   password).
+2. New upload. Type: Dataset. Title: "scvd.store x402 endpoint
+   readiness corpus". Files: the latest `corpus.json` and the
+   week's brief as markdown. Description: the sixty words plus one
+   paragraph on what a row is, how it was observed, and the
+   denominator rule. Licence: CC BY 4.0 (already the corpus licence).
+   Creators: Record Creative Co. LLC, and the keeper by name.
+   Keywords: x402, agentic commerce, endpoint readiness, HTTP 402.
+   Related identifiers: `https://scvd.store/corpus` as "is
+   supplemented by", the GitHub repo as "is source of".
+3. Publish. Zenodo mints two DOIs: one for this version and a
+   *concept DOI* that always resolves to the latest version. The
+   concept DOI is the one to print on /corpus and in the Dataset
+   JSON-LD (PR 3).
+4. Each new weekly round: "New version" on the record, upload the
+   new files, publish. Zenodo's REST API does this with a personal
+   token, so the Sunday walk can do it unattended once the token is
+   in the Worker's secrets. That is a small addition to PR 3, not a
+   hand job forever.
+
+**LinkedIn, when the existing page is Little Wheels.** Do not
+re-frame that page; two products under one page confuses the
+resolver more than it helps either. Two clean options:
+
+- A *Showcase Page* under the existing company page, named
+  "scvd.store". LinkedIn built showcase pages for exactly this: one
+  brand of a company, its own followers and its own URL, listed
+  under the parent. The sixty words as the description, the domain
+  as the website, "Record Creative Co. LLC" as the parent.
+- Or a separate company page named "scvd.store" if the two
+  businesses are not meant to be read as siblings. Same fields.
+
+Either way the page URL goes in `sameAs`. The showcase route keeps
+one legal entity on LinkedIn, which matches the Organization block.
+
+**Crunchbase, same situation.** Crunchbase profiles are one per
+organisation and one organisation per legal entity is the norm.
+Since Record Creative Co. LLC is the entity behind both, the honest
+shape is one organisation profile for Record Creative Co. LLC with
+scvd.store listed as a product (Crunchbase has a Products section)
+and the website field pointing at whichever is primary. If the
+existing profile is named "Little Wheels" rather than the LLC,
+rename it to the LLC and list both products under it. A second
+organisation profile for scvd.store alone would claim a company that
+does not exist.
+
+**Hugging Face dataset.** A second index researchers and agents
+search, and one that agents read natively.
+
+1. Create the dataset repo `scvd/x402-endpoint-readiness` (or under
+   the keeper's account) at huggingface.co/new-dataset. Licence CC
+   BY 4.0, public.
+2. Upload the corpus rows as JSONL (one host observation per line)
+   or parquet, one file per weekly round, named by ISO week. The
+   README (the "dataset card") carries the sixty words, the row
+   schema, the denominator rule, the concept DOI from Zenodo, and
+   the corpus URL. The card's YAML header names the licence, the
+   language and the task, so the Hub indexes it.
+3. Each weekly round: push the new file with the `huggingface_hub`
+   client and a token, from the same Sunday walk. Same shape as the
+   Zenodo step; both can live in one script.
+
+Order: Zenodo first (the DOI is what the Hugging Face card cites),
+then Hugging Face, then the DOI onto /corpus in PR 3.

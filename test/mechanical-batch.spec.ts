@@ -373,9 +373,10 @@ describe("6. the item pages carry structured data, and never a rating", () => {
 
       const offer = service!["offers"] as Record<string, unknown>;
       expect(offer["@type"]).toBe("Offer");
-      // USDC, because that is the asset the till takes. "USD" would
-      // validate more cleanly and claim a currency we do not accept.
-      expect(offer["priceCurrency"]).toBe("USDC");
+      // ISO code for the validator, the asset in words beside it
+      // (JSONLD_PRICE_CURRENCY, 2026-09-02).
+      expect(offer["priceCurrency"]).toBe("USD");
+      expect(String(offer["acceptedPaymentMethod"])).toContain("USDC");
 
       if (item.pricing === "fixed") {
         expect(offer["price"]).toBe(String(item.price_usdc));

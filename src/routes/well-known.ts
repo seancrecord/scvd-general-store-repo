@@ -1,4 +1,5 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { organizationRef } from "@/lib/jsonld";
 import { mcpToolCatalog, specShapedTool } from "@/lib/mcp-tools";
 import { apiCatalog, API_CATALOG_MEDIA_TYPE } from "@/lib/api-catalog";
 import {
@@ -520,7 +521,7 @@ wellKnownRoutes.get(
       "@type": "Dataset",
       name: "x402 offer-receipt conformance vectors",
       url: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
-      creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+      creator: organizationRef(base),
       isAccessibleForFree: true,
       conditionsOfAccess: "Free to fetch. No account, no key.",
       distribution: {

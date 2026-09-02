@@ -7,7 +7,7 @@ import {
   SUGGESTED_KEY_BUCKET_SECONDS,
 } from "@/lib/idempotency";
 import { escapeHtml } from "@/lib/sanitize";
-import { jsonLdScript } from "@/lib/jsonld";
+import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
@@ -130,7 +130,7 @@ function practiceHowToJsonLd(
       ? {
           estimatedCost: {
             "@type": "MonetaryAmount",
-            currency: "USDC",
+            currency: JSONLD_PRICE_CURRENCY,
             value: cheapest.price_usdc,
           },
         }
@@ -151,7 +151,7 @@ function practiceHowToJsonLd(
       text,
       url: `${base}/try`,
     })),
-    provider: { "@type": "Organization", name: "scvd.store", url: base },
+    provider: organizationRef(base),
   });
 }
 

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { recoverMessageAddress } from "viem";
 import { escapeHtml } from "@/lib/sanitize";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { isRecord } from "@/types";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -95,7 +95,7 @@ function creditJsonLd(base: string): string {
     serviceType: "Closed-loop purchase rebate",
     description: `${CREDIT_RATE * 100}% of every organic purchase banks to the wallet that paid, with no account and no signup — the wallet is the loyalty card. Redeemable as USDC back to the earning wallet only: never transferable, never a token.`,
     url: `${base}/credit`,
-    provider: { "@type": "Organization", name: "scvd.store", url: base },
+    provider: organizationRef(base),
     isAccessibleForFree: true,
     termsOfService: `${base}/rights`,
     areaServed: "Worldwide",

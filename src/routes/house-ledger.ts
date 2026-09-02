@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { organizationRef } from "@/lib/jsonld";
 import { signMessage } from "@/lib/signing";
 import { computeStats } from "@/services/stats";
 import { STORE_SERVICE_NAME } from "@/store";
@@ -64,7 +65,7 @@ houseLedgerRoutes.get(HOUSE_LEDGER_PATH, async (c) => {
     "@type": "Dataset",
     name: "scvd.store house wallets and settlement split",
     url: `${base}${HOUSE_LEDGER_PATH}`,
-    creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    creator: organizationRef(base),
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to fetch. No account, no key.",
     distribution: {

@@ -13,7 +13,7 @@ import {
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { escapeHtml } from "@/lib/sanitize";
-import { jsonLdScript } from "@/lib/jsonld";
+import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -356,17 +356,16 @@ function itemServiceJsonLd(
       ? { serviceType: CAPABILITY_QUERY[item.id] }
       : {}),
     url: `${base}/menu/${item.id}`,
-    provider: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    provider: organizationRef(base),
     termsOfService: `${base}/rights`,
     offers: {
       "@type": "Offer",
       /*
-       * USDC, not USD. Every other Offer this store emits from the
-       * shelf says USDC too, because that is the asset the till takes
-       * — writing "USD" would be a validator-friendly claim to accept
-       * a currency we do not.
+       * "USD" for the validator, the asset in words beside it —
+       * JSONLD_PRICE_CURRENCY in lib/jsonld.ts has the 2026-09-02
+       * reversal. The 402 and menu.json still say USDC.
        */
-      priceCurrency: "USDC",
+      ...offerCurrencyFields(),
       ...(item.pricing === "fixed"
         ? { price: String(item.price_usdc) }
         : {
@@ -380,7 +379,7 @@ function itemServiceJsonLd(
             priceSpecification: {
               "@type": "PriceSpecification",
               minPrice: String(item.price_usdc),
-              priceCurrency: "USDC",
+              priceCurrency: JSONLD_PRICE_CURRENCY,
             },
           }),
       availability,

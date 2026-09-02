@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { readRailCountersByMonth, type RailMonth } from "@/services/rails";
@@ -185,7 +185,7 @@ railsRoutes.get("/rails", async (c) => {
         url: `${base}/rails`,
         license: "https://creativecommons.org/licenses/by/4.0/",
         isAccessibleForFree: true,
-        creator: { "@type": "Organization", name: "scvd.store", url: base },
+        creator: organizationRef(base),
         ...(rail
           ? {
               variableMeasured: [
