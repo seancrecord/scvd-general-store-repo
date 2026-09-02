@@ -8,6 +8,7 @@ mcp-name: store.scvd/general-store
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/seancrecord/scvd-general-store-repo)
 [![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=scvd.store%2Fapi%2Fbuy%2Fhello)](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
+[![VerifyMCP trust score for SCVD General Store](https://verifymcp.io/badge/store-scvd-general-store/scvd.svg)](https://verifymcp.io/servers/store-scvd-general-store/scvd)
 
 **scvd.store is an evidence observatory for agentic commerce. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
@@ -583,6 +584,11 @@ are not:
   and [the tab](https://catalog.agentage.io/mcp/store-scvd-tab),
   synced from the official registry and saying so: the page holds
   what the registry entry holds and nothing more.
+- **mcpbeat** — [the store](https://mcpbeat.com/mcp-servers/scvd/general-store/)
+  and [the tab](https://mcpbeat.com/mcp-servers/scvd/tab/), a directory
+  that pings every server it lists every fifteen minutes and shows the
+  live tool list it read. Its handshake name is `mcpbeat`, the second
+  most frequent visitor at the MCP door in September 2026.
 - **Seen, no page to link** — the
   [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
   servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)

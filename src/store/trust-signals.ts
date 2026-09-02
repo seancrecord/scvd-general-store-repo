@@ -346,6 +346,20 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That VerifyMCP carries the second server this repo publishes, scvd-tab, and scored it from the npm package and the repository — the first third-party number on the tab at all. Not an endorsement and not an audit: their instrument, their rows, read on their page.",
   },
   {
+    url: "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+    registry: "mcpbeat (mcpbeat.com)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That mcpbeat lists the server, pings the door on a fifteen-minute loop, and shows the tool list it read there. Not an endorsement and not an audit: a liveness directory proves the door answered its last knock, nothing about the goods. Its handshake name is mcpbeat.",
+  },
+  {
+    url: "https://mcpbeat.com/mcp-servers/scvd/tab/",
+    registry: "mcpbeat (mcpbeat.com) — the tab",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That mcpbeat carries scvd-tab too, from the same registry ingest. Not an endorsement and not an audit: a directory page proves indexing, nothing more.",
+  },
+  {
     url: "https://catalog.agentage.io/mcp/store-scvd-general-store",
     registry: "agentage MCP Catalog (catalog.agentage.io)",
     confirmed: "2026-09-02",
