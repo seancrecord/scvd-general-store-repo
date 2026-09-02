@@ -370,7 +370,11 @@ adminRoutes.get("/admin/take", async (c) => {
     import("@/services/books-summary").then(({ takeSummary }) =>
       takeSummary(c.env),
     ),
-    computeStats(c.env),
+    // Diagnosed, not summarised: the same walk, keeping the per-item
+    // till counters the take reconciles against below.
+    import("@/services/stats").then(({ computeStatsDiagnosed }) =>
+      computeStatsDiagnosed(c.env),
+    ),
     /**
      * The rail split rides the certificate walk again, which is where
      * it always belonged: this page is the one paying for that walk
@@ -379,12 +383,16 @@ adminRoutes.get("/admin/take", async (c) => {
      * a failure leaves the last snapshot standing.
      */
   ]);
-  const stats = shelf(allTimeStats, null, "all-time stats", notes);
+  const books = shelf(allTimeStats, null, "all-time stats", notes);
   const body = renderTakePage({
     take: shelf(take, null, "the take", notes),
-    allTime: stats
-      ? { organic: stats.organic_settlements, house: stats.house_settlements }
+    allTime: books
+      ? {
+          organic: books.stats.organic_settlements,
+          house: books.stats.house_settlements,
+        }
       : null,
+    till: books?.till_by_item ?? null,
     loadNotes: notes,
   });
   return c.html(body);

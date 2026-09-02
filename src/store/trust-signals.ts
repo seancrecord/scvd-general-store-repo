@@ -206,6 +206,87 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   },
   {
     /**
+     * FOUND, NOT CLAIMED, and their page says so in as many words:
+     * "The domain has not claimed it; each entry says what its own
+     * source said, no more." AgentMesh Catalog groups what it found
+     * published under scvd.store — the MCP server card among it,
+     * keyed by the Appendix C URN this store emits — and keeps the
+     * grouping unclaimed until the domain says otherwise. That
+     * restraint is the right shape for a directory and is worth
+     * recording as such.
+     */
+    url: "https://agentcatalog.com/publishers/scvd.store?q=",
+    registry: "AgentMesh Catalog (agentcatalog.com)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That AgentMesh Catalog groups what it found published under this domain — the MCP server card and the catalog entries — and says on the page that the domain has not claimed the grouping and that each entry repeats only what its source said. Not an endorsement and not an audit: a publisher page proves the sources were found and read, nothing about the goods.",
+  },
+  {
+    /**
+     * A SKILL DIRECTORY, NOT A STORE DIRECTORY: skills.sh indexes the
+     * SKILL.md files a GitHub repository publishes, keyed by owner and
+     * repo, and is the source `npx skills add` installs from. The row
+     * is here because the desk filed it on 2026-09-01 as "a listing,
+     * not a new skill" — the channel classifier already knew the host
+     * — and a listing somebody can install from is a record worth
+     * dating like the rest.
+     */
+    url: "https://skills.sh/seancrecord/scvd-general-store-repo",
+    registry: "skills.sh (open Agent Skills directory)",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That the open Agent Skills directory indexes this repository's skill bundle by owner and repo, which is the form an agent installs it in. Not an endorsement and not an audit: a skill index proves the SKILL.md was found under this repository, nothing about the store the skill walks into.",
+  },
+  {
+    /**
+     * THE COLD WALK, and the one row in this array that is neither a
+     * directory nor an instrument. Cairn (cairnwake.com) approached the
+     * store unannounced on 2026-08-25 under terms agreed in advance —
+     * both sides publish their half, unflattering parts included —
+     * bought with their own money, checked every claim against things
+     * this store does not control (the published key offline, a Base
+     * receipt, the free verify door, the public ledger moving), and
+     * published the transcript. They found one wrinkle: the store
+     * refused the X-PAYMENT header most of the ecosystem speaks. That
+     * is on /corrections, was fixed the next day, and they re-ran it
+     * with fresh authorizations rather than take the keeper's word.
+     *
+     * WHY THE ROW STILL SAYS "NOT AN ENDORSEMENT". Because they say
+     * so: one walk, one night, one wallet, offered at its true weight.
+     * A record is what happened at the door to a stranger with no
+     * notice. That is more than any listing here proves and less than
+     * a guarantee, and the line between those is the whole trust doc.
+     */
+    url: "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+    registry: "Cairn (cairnwake.com) — the cold walk, published by arrangement",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That an independent tester walked the store cold on 2026-08-25, paid with their own wallet, verified the certificate offline against the published key, read the settlement back from a Base RPC, watched the public ledger move, found one defect (the X-PAYMENT header refused) and re-tested the fix the next day with fresh authorizations. Not an endorsement and not an audit of anything beyond that night: one dated observation by one buyer, published with the unflattering part in it, and the defect it found is on /corrections under its own date.",
+  },
+  {
+    /**
+     * AN INSTRUMENT, NOT A DIRECTORY — the same care as the Circle
+     * entry below, and one more: probe402 is the nearest thing to this
+     * store's own house style anywhere in the field (named operator,
+     * corrections from day one, a structural inability to pay; see
+     * docs/VERIFICATION_LANDSCAPE_2026-08.md), and it signs nothing.
+     * Its page on a door is a DATED PROBE RECORD — latest reading,
+     * price, payTo, and how many observations it holds — with the
+     * line "that is a statement about our record, not about the
+     * endpoint" when the window is thin. The row here is a record
+     * that an independent prober reads one of this store's doors and
+     * publishes what it saw; whatever it saw is theirs to say, on
+     * their page, re-taken on their schedule, and no reading is
+     * quoted here for the same reason no Circle score is.
+     */
+    url: "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
+    registry: "probe402 — dated probe record",
+    confirmed: "2026-09-02",
+    what_it_proves:
+      "That an independent x402 prober reads the small_blessing door and publishes a dated record of what it saw — status, price, payTo, and how many observations stand behind the page. Not an endorsement and not an audit: it is their observation on their page, re-taken on their schedule, and it never buys anything, so it cannot speak to what comes through the door once money moves.",
+  },
+  {
+    /**
      * AN INSTRUMENT, NOT A DIRECTORY, and the wording below is careful
      * about the difference. Circle's readiness scanner fetches the
      * origin's OpenAPI document and the live 402 and scores what it
