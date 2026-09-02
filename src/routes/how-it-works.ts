@@ -138,6 +138,11 @@ const FREE_INSTRUMENTS = [
     method: "POST",
   },
   {
+    url: "/api/look/v1",
+    answers: "What does this store hold about this door — one live probe and the signed history of its host, in one call?",
+    method: "POST",
+  },
+  {
     url: "/doors.json",
     answers: "Which doors have you ever looked at, and what did the last look see?",
     method: "GET",

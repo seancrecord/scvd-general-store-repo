@@ -77,6 +77,11 @@ const TASKS: readonly AtlasTask[] = [
     note: "Free, no account. Checks the door's challenge shape and whether its payTo can actually be credited. It does NOT buy anything, so it cannot tell you the goods arrive — nothing that costs you nothing can.",
   },
   {
+    goal: "I have a URL and a wallet and want everything you hold about that door before I decide",
+    call: ["POST /api/look/v1"],
+    note: "Free, no account. One live probe (the preflight's own) folded with the signed history of the host: rounds probed out of rounds since first sighting, the tier with its fraction, the last round's failed checks, the catalog's agreement. It never says whether to pay; it puts both halves on the table with their denominators.",
+  },
+  {
     goal: "Somebody handed me a signed offer or receipt and I do not trust it",
     call: ["POST /api/conformance/v1"],
     note: "Free, and it checks anyone's artifacts including our competitors' and our own. Structure, signature and time — never whether the price is fair or the seller is honest.",
@@ -205,6 +210,19 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
       "Replay the stock x402 client's own selection logic over a door's challenge: which accept YOUR client would sign, or why it would refuse locally before signing anything.",
     caution:
       "A fact about your configuration, not about the door. It walks selection, never settlement — nothing is signed and no wallet is touched.",
+  },
+  {
+    /*
+     * ADDED 2026-09-02 (roadmap L6). The one door that answers the
+     * goal a reader arrives with when they hold a URL and a wallet:
+     * both halves — the live probe and the held history — in one call.
+     */
+    path: "/api/look/v1",
+    name: "The look",
+    access: "free",
+    method: "POST",
+    purpose: "What this store holds about one x402 door: one live probe folded with the signed chain's history of the host, counts with their denominators, the tier with its fraction.",
+    caution: "Not a score and not a safety threshold. Two kinds of fact kept apart; whether they add up to paying is the reader's line to draw.",
   },
   {
     path: "/api/conformance/v1",

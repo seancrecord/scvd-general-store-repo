@@ -80,8 +80,9 @@ one room. The honest state of the rest:
 - **57.3 is closed shelf-wide** — cadence is required and checked.
 - **57.1 was already held** by test/no-orphan-capability.spec.ts.
 - **57.2, 57.4 and 57.5: the sweep has STARTED, three doors deep.**
-  `/api/preflight/v1`, `/api/before-you-pay/v1` and
-  `/api/conformance/v1` are now under the contract and checked by a
+  `/api/preflight/v1`, `/api/before-you-pay/v1`,
+  `/api/conformance/v1` and, since 2026-09-02, `/api/look/v1` are
+  under the contract and checked by a
   registry walk in `test/surface-contract.spec.ts`. A door listed
   there is claimed; a door absent from it is not. Adding a row is how
   the sweep advances, and the row fails until the door answers.

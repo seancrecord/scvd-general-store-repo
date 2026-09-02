@@ -876,6 +876,49 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     /*
+     * THE LOOK (roadmap L6, named by the keeper 2026-09-02). The
+     * question an agent holds with a URL in one hand and a wallet in
+     * the other is not "is the door shaped right" and not "what does
+     * the chain say" but both at once, and until today it took two
+     * tools and a per-host fetch to ask. The handler calls the same
+     * lookAtDoor() the HTTP door calls, which calls the same
+     * preflightUrl() every preflight door calls: one probe, one
+     * limiter, one law, plus a read of our own signed chain.
+     */
+    name: "look_at_door",
+    reads: "subject_fetch",
+    description:
+      "For a buyer with a URL in one hand and a wallet in the other: what does this store hold about this x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, on the same budget) folded with everything the signed chain already holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and whether the catalog's copy agreed with the door, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. Never a score, a rank or a safety threshold; counts travel with their denominators and the line is the reader's to draw. A host the chain never met comes back as never met. For the signed, dated version of the live half, buy_observation with item_id service_audit; for a fresh census look folded into the passport, passport_refresh.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: str("The https x402 door you are asking about.", 2048),
+      },
+      required: ["url"],
+      additionalProperties: false,
+      examples: [{ url: "https://example.com/api/paid-answer" }],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        headline: str("One derived sentence: what the door answered now and what the chain holds."),
+        now: { type: "object", description: "The live half: the preflight verdict, failed checks, advisories, and the whole preflight report." },
+        held: { type: "object", description: "The held half: counts with denominators, the tier with its fraction and rows, the last probed round, the passport decision, when it was derived." },
+        now_against_held: { type: "object", description: "same | changed | no_prior | not_comparable, with both sides named." },
+        what_this_is_not: str("Not a score, a rank, or a safety threshold — the standing caveat."),
+      },
+      required: ["headline", "now", "held", "now_against_held"],
+    },
+    annotations: {
+      title: "Look at a Door — what we hold about it",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    /*
      * THE BUYER'S SIDE OF THE LADDER (#96, 2026-08-28), and it belongs
      * on MCP more than any other free tool here.
      *

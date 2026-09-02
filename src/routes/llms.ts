@@ -142,7 +142,7 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
@@ -284,6 +284,17 @@ addresses paid you and the largest payer's transfers and USDC beside
 the totals they are part of — counts with their denominators, never a
 share — and counts the passes we missed against us. It ends on its
 date and says how to buy another month; nothing here renews itself.
+
+For a buyer with a URL in one hand and a wallet in the other: the
+look. POST {"url": "..."} to ${base}/api/look/v1 (or call the
+look_at_door tool) and get, free, the preflight's one live probe
+folded with everything the signed chain holds about that host — rounds
+probed out of rounds since we first met it, the passport tier with its
+fraction and its rows, the last probed round with its failed checks and
+whether the catalog's copy agreed with the door, and whether the door
+answered now the way the last signed round saw it. Never a score, never
+a threshold: two kinds of fact with their denominators, and the line is
+yours to draw.
 
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed

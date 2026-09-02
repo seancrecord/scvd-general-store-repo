@@ -123,6 +123,12 @@ Do not relitigate without you.
   SOON row, not before 2026-10-02.
 - **The Aura Walk cap, 2026-09-02.** One a week; two after
   the first three ship inside the window.
+- **The next builds, 2026-09-02, "On do that then."** After
+  the SOON/LATER review: L6 (the look) first, then L7 (the
+  CI check for our fixtures). L6 shipped the same day. ⚑ The
+  look's copy — the door's own document at `/api/look/v1`,
+  the `look_at_door` tool description, the guide paragraph
+  and the atlas line — is drafted for your ink (rule 7).
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit

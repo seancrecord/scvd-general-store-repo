@@ -46,6 +46,7 @@ import {
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { preflightUrl } from "@/services/preflight";
 import { beforeYouPay, readProfile } from "@/services/before-you-pay";
+import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
@@ -545,6 +546,24 @@ async function callFreeTool(
     deferBookkeeping(
       c,
       recordPorchVisit(c.env, "preflight:mcp", mcpSignals(c)),
+    );
+    return outcome.body as unknown as Record<string, unknown>;
+  }
+  if (name === "look_at_door") {
+    /*
+     * The same lookAtDoor() the HTTP door serves, which is the same
+     * preflightUrl() every preflight door serves plus a read of our
+     * own chain: one probe, one limiter, one law. A non-200 is the
+     * preflight's own refusal text, free and uncharged.
+     */
+    const outcome = await lookAtDoor(args["url"], c.env);
+    if (outcome.status !== 200) {
+      const body = outcome.body as { error?: string };
+      return body.error ?? "The look could not run. Try again shortly.";
+    }
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, "look:mcp", mcpSignals(c)),
     );
     return outcome.body as unknown as Record<string, unknown>;
   }

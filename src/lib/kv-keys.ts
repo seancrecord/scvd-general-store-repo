@@ -125,6 +125,14 @@ export const KV_KEYS = {
    */
   archiveDepthPrefix: "archive_depth:",
   archiveDepth: (kind: string, subject: string) => `archive_depth:${kind}:${subject}`,
+  /**
+   * The look's held half (roadmap L6, 2026-09-02): what the signed
+   * chain holds about one host, derived once and held briefly so a
+   * free door that folds the whole corpus does not redo that fold on
+   * every knock — the S7 lesson, applied before it is relearned.
+   */
+  lookPrefix: "look:",
+  look: (host: string) => `look:${host}`,
   /** Latest buyer-commissioned passport-refresh observation per host. */
   passportRefresh: (host: string) => `passport_refresh:${host}`,
   /** The hosted trust profile's current term, latest-only per host. */

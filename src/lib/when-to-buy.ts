@@ -76,6 +76,13 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
     isTool: true,
   },
   {
+    name: "The look",
+    does:
+      "What this store holds about one x402 door, in one call: the preflight's single live probe folded with the signed chain's history of the host — rounds probed out of rounds since first sighting, the tier with its fraction and rows, the last probed round, the catalog's agreement — and whether the door answered now the way the last signed round saw it. Never a score.",
+    reach: (base) => `MCP tool \`look_at_door\`, or POST ${base}/api/look/v1 with {"url": "..."}`,
+    isTool: true,
+  },
+  {
     name: "Conformance desk",
     does:
       "Checks any issuer's signed x402 offers and receipts — structure, signature against the issuer's did:web key, liveness. Any issuer, including ours and our competitors'.",
@@ -111,7 +118,7 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
 export const ROUTES: readonly Route[] = [
   {
     job: "I am about to pay an endpoint I have never used. Is its door even shaped right?",
-    free: "Preflight — the preflight_endpoint tool, one probe, free, no account.",
+    free: "Preflight — the preflight_endpoint tool, one probe, free, no account. Or the look — look_at_door — the same probe folded with everything the signed chain holds about the host, free.",
     items: ["spot_check", "service_audit", "provenance_check"],
   },
   {

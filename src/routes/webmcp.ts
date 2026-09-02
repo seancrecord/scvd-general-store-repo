@@ -55,6 +55,8 @@ const TOOL_ENDPOINTS: Readonly<
    * one probe, nothing signed.
    */
   check_before_you_pay: { method: "POST", path: "/api/before-you-pay/v1" },
+  /* The look belongs in a browser for the same reason the dry run does: an agent in someone's browser is as likely to be holding a URL and a wallet as one in a tool loop. Free, read-only, one probe plus our own chain. */
+  look_at_door: { method: "POST", path: "/api/look/v1" },
   check_conformance: { method: "POST", path: "/api/conformance/v1" },
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
 };

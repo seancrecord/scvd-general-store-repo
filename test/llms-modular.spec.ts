@@ -515,12 +515,19 @@ const BASE = "https://scvd.store";
  * convention" and "never a number in prose", and still every earlier
  * pin.
  *
+ * Re-taken 2026-09-02 — the THIRTY-FIRST — by roadmap L6, the look:
+ * one paragraph for the buyer with a URL in one hand and a wallet in
+ * the other, naming /api/look/v1 and the look_at_door tool, and the
+ * door added to the every-door line. Confirmed before this value was
+ * taken: the guide carries "/api/look/v1", "look_at_door" and "the
+ * line is yours to draw", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "91b55d7cab55d06fae78bfbd91f01a0fe01cb8e46ad8d19a53f8f0a98eb462e7";
+  "07cbb9912e794a3412df7b017ba244eebdbfdf3d34f6d66e96511ac2f9a213eb";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
