@@ -482,6 +482,13 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "signature_agent_card") {
     example["url"] = "https://your-agent.example";
   }
+  if (item.id === "aura_walk") {
+    // The walk is of YOUR door, from a stranger's side: the example
+    // names a shop the buyer would own, with a model preference in
+    // the detail, which is where the row says it goes.
+    example["url"] = "https://your-shop.example/api/buy/thing";
+    example["detail"] = "send a small model too";
+  }
   if (item.id === "onpage_audit") {
     example["url"] = "https://your-site.example/pricing";
   }
