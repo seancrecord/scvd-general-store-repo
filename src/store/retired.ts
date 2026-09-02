@@ -20,8 +20,7 @@
  * the ward round names the doors the index still carries as `stale`;
  * neither removes the row. Retiring a door now means, in order: the
  * entry here, the tombstone it gets for free, and a letter to every
- * catalog carrying the door (the keeper's hand — docs/AGENT_ECONOMY_ASK.md
- * holds the first two).
+ * catalog carrying the door (the keeper's hand).
  */
 
 export interface RetiredItem {

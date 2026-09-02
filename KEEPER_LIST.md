@@ -294,13 +294,13 @@ Do not relitigate without you.
   re-register. The ward round now names these as
   `stale` on `/admin/ward` and alerts when the set
   changes. Three hands, in order:
-  1. SEND `docs/AGENT_ECONOMY_ASK.md` §1 to André: the
-     RFC 9745/8594 ask, and the request for the 33
-     URLs and which catalogs they read.
-  2. SEND §2 to Coinbase CDP support: drop the 11 URLs.
-     The only fix that lands on the catalog itself.
-  3. RULE on the 11 doors meanwhile. Options named in
-     §3; the shopkeeper recommends leaving them shut.
+  1. SEND the methodology ask to André (drafted in
+     chat, not in the tree): a 410 carrying RFC 8594
+     Sunset should read as retired, not down; and the
+     request for the 33 URLs and which catalogs they read.
+  2. SEND the removal ask to Coinbase CDP support: drop
+     the 11 URLs. The only fix that lands on the catalog.
+  3. RULED 09-02: the 11 doors stay shut.
   Separately: 9 menu doors have never settled and are
   not in the catalog at all (the next `our_doors`
   reading names them). One house buy each is their
