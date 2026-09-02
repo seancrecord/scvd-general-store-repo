@@ -1,3 +1,4 @@
+import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
@@ -90,6 +91,7 @@ import {
   privacyRoutes,
   mandateRoutes,
   statementRoutes,
+  operatorStatementRoutes,
   onpageRoutes,
   watchRoutes,
   anchorLogRoutes,
@@ -123,6 +125,7 @@ import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import { sweepStandingWatches } from "@/services/standing-watch";
+import { sweepOperatorStatements } from "@/services/operator-statement";
 import { sweepConformanceWatches } from "@/services/conformance-watch";
 import { recomputeCorrections } from "@/services/reclassify";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
@@ -288,6 +291,7 @@ app.route("/", railsRoutes);
 app.route("/", privacyRoutes);
 app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
+app.route("/", operatorStatementRoutes);
 app.route("/", onpageRoutes);
 app.route("/", watchRoutes);
 app.route("/", anchorLogRoutes);
@@ -585,7 +589,10 @@ app.onError((err, c) => {
 const worker: ExportedHandler<Env> = {
   fetch: app.fetch,
   // Hourly: phantom walk + the health rounds. Sundays 7am ET: the digest.
-  scheduled: async (event, env, ctx) => {
+  // Every KV call under a cron tick takes the patient retry budget
+  // (kv-retry.ts): nobody is waiting on a walk, so it can sit out the
+  // kind of blip that has now killed three of them.
+  scheduled: (event, env, ctx) => withPatientKv(async () => {
     if (event.cron === "0 11 * * SUN") {
       /**
        * THE COLD EXPORT rides the same press as the ward round
@@ -746,6 +753,21 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Standing watch sweep failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /**
+     * THE OPERATOR'S STATEMENT (S10): every open month whose last pass
+     * is six hours old takes one bounded chain read, within the
+     * tick's named budget, on the shared sweep the watches use.
+     */
+    ctx.waitUntil(
+      sweepOperatorStatements(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Operator statement sweep failed: ${String(error)}`,
           }),
       ),
     );
@@ -980,7 +1002,7 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
-  },
+  }),
 };
 
 // Cloudflare Workers requires a default export for its fetch/scheduled handlers.

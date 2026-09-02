@@ -91,7 +91,7 @@ const DELIBERATELY_QUIET: Record<string, string> = {
 
   // ---- pending removal, tracked ----
   "/.well-known/x402list.txt":
-    "pending removal (tracker #27, the token-route delisting); do not advertise a door being closed",
+    "an ownership challenge, not a capability: x402-list.com fetches this fixed path once per listing update to check we control the origin. Tokens carry their own last day (store/site-verification.ts) and the file serves only live ones, so nothing here is pending removal any more",
   "/.well-known/owners.json":
     "an ownership claim, not a capability: VerifyMCP reads this fixed path on its own schedule to check that the publisher named in it controls the origin serving the MCP endpoint (2026-09-02). No agent chooses to read a statement of who owns us, and the six surfaces are where agents read",
   "/.well-known/agentindex-verify.txt":

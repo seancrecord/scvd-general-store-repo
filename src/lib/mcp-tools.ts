@@ -197,6 +197,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // USDC transfer in and out, off the chain, signed by neither
       // the agent nor its operator.
       "the_statement",
+      // The same read kept up for a month on an operator's receiving
+      // address, four signed passes a day, payers counted (S10).
+      "operator_statement",
       // And pointed BEFORE the acting: the claimed authorization,
       // recorded and dated by a party that is neither the agent nor
       // its principal, citable on every later certificate.

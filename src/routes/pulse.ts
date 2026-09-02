@@ -135,7 +135,7 @@ pulseRoutes.get("/pulse", async (c) => {
         </table>
       </section>
       <section>
-        <p class="menu-meta">${escapeHtml(MACHINERY_NOTE)}</p>
+        <p class="menu-meta">${escapeHtml(MACHINERY_NOTE)} The correction walk last completed at ${escapeHtml(pulse.crawler_correction_computed_at ?? "never")}; it runs hourly and fails loud on a storage fault rather than publish a partial month, so this timestamp is how you see it recovered.</p>
         <p class="menu-meta">${escapeHtml(HONEST_LIMIT)}</p>
         <p class="menu-meta">${escapeHtml(pulse.house_flag_policy)} Every wallet this store controls is declared, signed, at <a href="/house-ledger.json">/house-ledger.json</a> — subtract them yourself rather than taking our word for the split.</p>
         <p class="menu-meta">Machine-readable at <a href="/pulse.json"><code>${escapeHtml(base)}/pulse.json</code></a>, computed live on every request from the same counters the keeper reads. Nothing here is collected for this page: the counters predate it, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is expected to have minted a signed artifact, and that expectation is checked rather than asserted: the counter is bumped before the handler that mints, so a sale that settled and never delivered would appear here with nothing behind it. A delivery audit and an hourly walk of the chain look for that case; a find goes on /corrections. Check any artifact at <code>${escapeHtml(base)}/api/verify/{id}</code> against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, without asking us.</p>

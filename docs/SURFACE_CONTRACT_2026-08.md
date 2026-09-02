@@ -321,6 +321,7 @@ amount to every agent that reads the tool list:
 | `conformance_watch` | $5 | 7 days |
 | `opening_day` | $9 | 7 days |
 | `trust_profile` | $21 | 30 days |
+| `operator_statement` | $21 | 30 days |
 
 > **❌ CORRECTED 2026-08-30, within the hour of publishing it.** This
 > table first said `standing_watch` sold **30 days**. It sells seven.

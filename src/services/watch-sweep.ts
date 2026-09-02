@@ -38,6 +38,14 @@ export interface WatchSweepOptions<
   scanCap: number;
   /** Floor between entries, so a doubled tick cannot double-bill. */
   minSpacingMs: number;
+  /**
+   * Records worked per sweep at most (2026-09-02, the operator's
+   * statement): a shelf that outgrows one tick's share of the
+   * invocation budget drops the rest to the next tick rather than
+   * exhausting the budget the reconciliation walk shares. Unset means
+   * every due record, which is what the watches have always done.
+   */
+  budget?: number;
   /** The record's live entry array; the sweep appends to it. */
   entriesOf: (record: T) => E[];
   /** One observation for this record, already signed by its caller. */
@@ -62,6 +70,7 @@ export async function sweepWatches<
   const now = options.now ?? Date.now();
   let worked = 0;
   for (const name of listed.names) {
+    if (options.budget !== undefined && worked >= options.budget) break;
     const record = rows.get(name) ?? null;
     if (!record || now > Date.parse(record.ends_at)) {
       continue;

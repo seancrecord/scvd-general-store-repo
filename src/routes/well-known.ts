@@ -58,6 +58,7 @@ import {
 } from "@/store/trust-signals";
 import type { Env, HonoEnv } from "@/types";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { x402listTokenFile } from "@/store/site-verification";
 
 /**
  * Origin-hosted x402 discovery. The core x402 spec doesn't define a
@@ -1155,14 +1156,18 @@ wellKnownRoutes.get("/.well-known/agentindex-verify.txt", (c) =>
   }),
 );
 
+/**
+ * THE FIFTH ROUND (2026-09-02), and the last one that needs a hand to
+ * end it. The 08-26 token above was still being served today, a week
+ * past its 72 hours — the fourth time "removed after verification"
+ * was written here and not done. The tokens now live in
+ * store/site-verification.ts with their own last day, and this route
+ * renders only the live ones; when none is live the file says so.
+ * Adding a token is one entry; removing one is nothing.
+ */
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
-  c.text(
-    [
-      "# x402-list.com domain-ownership token, 2026-08-26 listing update.",
-      "# One-time, expires 72h from issue, removed after verification.",
-      "x402list-verify-omm8dbFoih7_idrVxqTCR9gP5Odt0dQ1cH3r2G2g-mw",
-    ].join("\n"),
-    200,
-    { "content-type": "text/plain; charset=utf-8" },
-  ),
+  c.text(x402listTokenFile(new Date()), 200, {
+    "content-type": "text/plain; charset=utf-8",
+    "cache-control": "no-store",
+  }),
 );

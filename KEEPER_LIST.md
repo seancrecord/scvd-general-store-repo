@@ -58,9 +58,12 @@ build, it is on the roadmap.
 - The Case File (N8) is on the shelf at $0.25, confirmed
   2026-09-02. It never says who was in the wrong; when we
   are a party it says so on its face.
-- S10 is named: The Operator's Statement (your ink,
-  2026-09-02); $21 a month and the 30-day cadence confirmed
-  the same day. Not built yet.
+- The Operator's Statement (S10) is on the shelf at $21 a
+  month as `operator_statement`, your name, price and
+  cadence (2026-09-02): four signed chain reads a day on a
+  receiving address for 30 days, payers counted, never a
+  renewal. Skill bundle 3.15.0. ⚑ The copy on the row is
+  drafted for your ink, rule 7.
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.
@@ -268,14 +271,23 @@ Do not relitigate without you.
   2026-09-01 (done); the tree moved five bundle versions
   since (the fortune, the doctrine, the tier, the case
   file, the aura walk). One press covers all of them.
-- **x402-list description: the doctrine sentence.** The row
-  there still reads "never a score, a rating or a ranking";
-  swap in your sentence ("never a ranking, and never a
-  verdict without its derivation and denominator beside it").
-  Their domain-proof flow runs again on an edit. Your press.
-- **x402-list owner update.** Followed up twice (done).
-  Signability re-capture and FORTE probe ride the same
-  press when they answer.
+- **x402-list owner update, round five (09-02).** Submitted
+  by your hand: the five doors listed W35-W36 and the
+  description. Their token is served at
+  `/.well-known/x402list.txt` until 09-06 and then stops on
+  its own (the file now renders from a dated list; no
+  removal to remember). Request id is in
+  `src/store/site-verification.ts`. LOOK that the update
+  went through, then LOOK the description carries the
+  doctrine sentence ("never a ranking, and never a verdict
+  without its derivation and denominator beside it") and
+  not the old one. daily_fortune active, DEGRADED gone:
+  97, third of ~50. The last points, per the 08-24 read:
+  signability re-capture (their eip712_domain_extra check
+  read unknown from a pre-08-21 envelope; the live 402
+  passes) and the FORTE tier (they pay one real call;
+  `settlement_attestation` at $0.004 is the cheapest
+  target). Both are asks through the same owner flow.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
@@ -319,8 +331,33 @@ Do not relitigate without you.
 - **Maha Strategies observatory.** LOOK their surfaces
   the way we read Cairn. Do not write an arrangement
   until you say yes.
-- **`/stats` vs the Agent Economy card** ($0 settled).
-  Their grade is not ours. LOOK your books.
+- **Agent Economy card, read (09-02).** Their 66% is not
+  uptime: it is 21 of 33 CDP catalog rows answering 402.
+  The other 11 are the retired shelf, each a 410 we
+  serve on purpose (`a_secret`, `app_gutcheck`, `dibs`,
+  `grudge`, `human_witness`, `nomenclature`,
+  `phantom_check`, `phone_call`, `portrait`,
+  `quick_judgment`, `the_drawer`). Eight of them have
+  been 410 for the whole 17 days they have watched us,
+  so 66% was the ceiling from day one, not a decline.
+  The catalog admits on first settle and never delists;
+  we never registered, so there is nothing of ours to
+  re-register. The ward round now names these as
+  `stale` on `/admin/ward` and alerts when the set
+  changes. Three hands, in order:
+  1. SEND `docs/AGENT_ECONOMY_ASK.md` §1 to André: the
+     RFC 9745/8594 ask, and the request for the 33
+     URLs and which catalogs they read.
+  2. SEND §2 to Coinbase CDP support: drop the 11 URLs.
+     The only fix that lands on the catalog itself.
+  3. RULE on the 11 doors meanwhile. Options named in
+     §3; the shopkeeper recommends leaving them shut.
+  Separately: 9 menu doors have never settled and are
+  not in the catalog at all (the next `our_doors`
+  reading names them). One house buy each is their
+  registration fee; their adoption signals exclude
+  captive wallets, so the buys cannot flatter the
+  grade. Their grade is still not ours. LOOK your books.
 - **Receipt treaty.** Ask is drafted
   (`docs/RECEIPT_TREATY_ASK.md`). Send is your hand.
 - **Key succession.** Gate is physical: a second seed,

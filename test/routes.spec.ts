@@ -175,6 +175,10 @@ describe("the storefront", () => {
       // The hosted profile's $19 slots between the patronages by
       // price — the ladder's stable sort, nothing hand-picked.
       "trust_profile",
+      // The Operator's Statement ties the hosted profile at $21 and
+      // follows it in the utility shelf's file order — the stable
+      // ladder, nothing hand-picked.
+      "operator_statement",
       "certificate_of_patronage",
       // The aura walk ($150, 2026-09-02) sits between the certificate
       // and the collab by price — the same stable ladder.

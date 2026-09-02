@@ -59,6 +59,13 @@ export const KV_KEYS = {
   standingWatchPrefix: "watch:",
   conformanceWatch: (watchId: string): string => `cwatch:${watchId}`,
   conformanceWatchPrefix: "cwatch:",
+  /**
+   * The Operator's Statement (roadmap S10, 2026-09-02): one 30-day
+   * term per purchase, four signed chain reads a day appended by the
+   * hourly sweep, same shelf discipline as the watches.
+   */
+  operatorStatement: (statementId: string): string => `ostmt:${statementId}`,
+  operatorStatementPrefix: "ostmt:",
   wardRound: (week: string): string => `ward:${week}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",

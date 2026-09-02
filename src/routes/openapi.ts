@@ -5453,6 +5453,40 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/operator-statement/{statement_id}": {
+        get: {
+          ...returns(
+  freeOp(
+              "A purchased month on a receiving address",
+              "The history an operator_statement purchase opened: every signed pass (its exact block range, chain head, inflows and outflows with counts and totals, a capped per-pass payer tally), a summary derived at read with distinct payers and the largest payer's transfers and USDC beside the totals, the passes we missed counted against us, and the_next_month — a purchase, never a renewal. Free forever.",
+            ),
+            {
+              type: "object",
+              properties: {
+                what_this_is: { type: "string" },
+                statement_id: { type: "string" },
+                wallet: { type: "string" },
+                chain: { type: "string" },
+                started_at: { type: "string" },
+                ends_at: { type: "string" },
+                complete: { type: "boolean" },
+                summary: { type: "object" },
+                passes: { type: "array", items: { type: "object" } },
+                how_to_verify: { type: "string" },
+                what_this_is_not: { type: "string" },
+                certificate: { type: "string" },
+                the_next_month: { type: "object" },
+              },
+            },
+          ),
+          parameters: [
+            pathParam(
+              "statement_id",
+              "From the purchase response; starts ostmt_.",
+            ),
+          ],
+        },
+      },
       "/api/launch-check/{check_id}": {
         get: {
           ...returns(

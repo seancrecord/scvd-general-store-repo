@@ -443,3 +443,17 @@ describe("the rendered rate agrees with the row it is on", () => {
     }
   });
 });
+
+describe("the correction walk's own age rides the pulse (2026-09-02)", () => {
+  it("is null before the first walk and the walk's computed_at after it", async () => {
+    const { recomputeCorrections } = await import("@/services/reclassify");
+    await testEnv.COUNTERS.delete("metric:corrections");
+    const before = (await (await SELF.fetch(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
+    expect(before["crawler_correction_computed_at"]).toBeNull();
+    await recomputeCorrections(testEnv);
+    const after = (await (await SELF.fetch(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
+    expect(String(after["crawler_correction_computed_at"])).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    const page = await (await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("The correction walk last completed at");
+  });
+});

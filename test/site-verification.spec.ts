@@ -1,6 +1,10 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { VERIFICATION_TAGS } from "@/store/site-verification";
+import {
+  VERIFICATION_TAGS,
+  X402LIST_TOKENS,
+  x402listTokenFile,
+} from "@/store/site-verification";
 
 const BASE = "https://scvd.store";
 
@@ -27,5 +31,45 @@ describe("site verification tags", () => {
     // all, so deleting it later is a deliberate act with a diff.
     const base = VERIFICATION_TAGS.find((tag) => tag.name === "base:app_id");
     expect(base?.content).toBe("6a7a377832200665f69b0f4d");
+  });
+});
+
+/**
+ * THE TOKEN FILE THAT ENDS ITS OWN ROUND. Four rounds of x402-list
+ * verification hard-coded a nonce with a "remove after" note, and the
+ * 08-26 token was still served on 09-02. The file now renders from a
+ * dated list with an injected clock, so an expired token is proven
+ * absent here rather than remembered about later.
+ */
+describe("the x402-list token file", () => {
+  const live = X402LIST_TOKENS[0]!;
+  const dayBefore = new Date(`${live.serve_until}T00:00:00Z`);
+  dayBefore.setUTCDate(dayBefore.getUTCDate() - 1);
+
+  it("serves a token until its last day, and not from that day on", () => {
+    expect(x402listTokenFile(dayBefore)).toContain(`\n${live.token}\n`);
+    const onTheDay = x402listTokenFile(new Date(`${live.serve_until}T00:00:00Z`));
+    expect(onTheDay).not.toContain(live.token);
+    expect(onTheDay).not.toMatch(/^x402list-verify-/m);
+    expect(onTheDay).toContain("# No verification in progress.");
+  });
+
+  it("only ever prints comments and tokens, so their parser ignores everything but the nonce", () => {
+    for (const line of x402listTokenFile(dayBefore).split("\n")) {
+      expect(line === "" || line.startsWith("#") || line.startsWith("x402list-verify-")).toBe(true);
+    }
+  });
+
+  it("answers at the well-known path as plain text, uncached", async () => {
+    const response = await SELF.fetch(`${BASE}/.well-known/x402list.txt`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/plain");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.text()).toContain("# x402-list.com domain-ownership tokens");
+  });
+
+  it("pins today's token (issued 2026-09-02) so retiring it early is a diff", () => {
+    expect(live.token).toBe("x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco");
+    expect(live.request_id).toBe("d766c4a7-1918-4f4f-b0f3-2215ec15bb72");
   });
 });

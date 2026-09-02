@@ -1,3 +1,4 @@
+import { withKvRetry } from "@/lib/kv-retry";
 /**
  * EVERY KV LIST GOES THROUGH HERE, WITH A CAP IT HAD TO NAME.
  *
@@ -72,11 +73,16 @@ export async function listKeys(
   let cursor: string | undefined = options.cursor;
 
   while (names.length < options.cap) {
-    const page = await namespace.list({
-      prefix: options.prefix,
-      limit: Math.min(KV_PAGE, options.cap - names.length),
-      ...(cursor ? { cursor } : {}),
-    });
+    // Under the same retry policy as every other read (2026-09-02):
+    // a list page that dies on page three restarted the walk from
+    // nothing, and this helper was the one reader outside it.
+    const page = await withKvRetry(() =>
+      namespace.list({
+        prefix: options.prefix,
+        limit: Math.min(KV_PAGE, options.cap - names.length),
+        ...(cursor ? { cursor } : {}),
+      }),
+    );
     for (const key of page.keys) {
       names.push(key.name);
     }

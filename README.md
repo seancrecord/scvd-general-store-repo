@@ -77,6 +77,11 @@ What people arrive here to do, and where each door is:
 - **Audit an agent's books against the chain** — `the_statement`: every
   USDC transfer in and out of one Base wallet over a stated window,
   signed by a party that is neither the agent nor its operator.
+- **Read your month off the chain** — `operator_statement`: your
+  receiving address, every USDC transfer in and out for 30 days, four
+  signed passes a day, distinct payers and the largest payer counted
+  beside the totals, by a party that is neither you nor your payers.
+  Never a renewal.
 - **See your door the way a cold model sees it** — `aura_walk`: models
   of different strength shop your x402 endpoint by the keeper's hand,
   one entry point per pass, the method this store publishes on itself
