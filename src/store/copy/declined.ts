@@ -1,6 +1,7 @@
 import { webmcpTools } from "@/routes/webmcp";
 import { uiResourceCatalog } from "@/lib/mcp-apps";
 import { CONTENT_SIGNAL } from "@/routes/site-meta";
+import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 
 /**
  * THE DECLINED POSITIONS, PUBLISHED (P12, 2026-08-27). The store
@@ -68,7 +69,7 @@ export function declinedPositions(base: string): DeclinedPosition[] {
     },
     {
       heading: "No AggregateRating, and the refusal is the product",
-      body: `Structured-data checks award a point for AggregateRating or Review as social proof an answer engine can quote. This store publishes neither, for the first sentence of its own position: nothing here is a score, a rating, or a ranking. Every verdict it issues is one dated observation that expires and is re-taken, and a shop that would not put stars on somebody else's endpoint has no business wearing them. The structured data carries what is checkable instead — Organization, WebSite, Product, Offer, Service, ItemList — and the evidence a rating asks you to take on trust is at ${base}/corpus.json, signed, verifiable offline.`,
+      body: `Structured-data checks award a point for AggregateRating or Review as social proof an answer engine can quote. This store publishes neither, for its own house sentence: ${NEVER_A_RANKING}. Every verdict it issues is one dated observation that expires and is re-taken, or a derivation that prints its rule and its fraction, and a shop that would not put stars on somebody else's endpoint has no business wearing them. The structured data carries what is checkable instead — Organization, WebSite, Product, Offer, Service, ItemList — and the evidence a rating asks you to take on trust is at ${base}/corpus.json, signed, verifiable offline.`,
     },
     {
       heading: "The agent-auth rows this store cannot score honestly",

@@ -42,6 +42,7 @@ import {
   STORE_SERVICE_NAME,
 } from "@/store";
 import type { Env, HonoEnv, MenuItem } from "@/types";
+import { NEVER_A_RANKING, NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /openapi.json, an OpenAPI 3.1 contract for the whole store,
@@ -341,7 +342,7 @@ const CORPUS_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "The refusal, published beside the data: observations, never a score or a ranking.",
+        `The refusal, published beside the data: observations, ${NEVER_A_RANKING}.`,
     },
     per_subject: { type: "object" },
     started: {
@@ -535,7 +536,7 @@ const CONFORMANCE_SCHEMA: OpenApiObject = {
     version: { type: "string" },
     verdict: {
       type: "string",
-      description: "The dated observation, never a score.",
+      description: "The dated observation, never a ranking.",
     },
     kind: {
       type: ["string", "null"],
@@ -1666,7 +1667,7 @@ const DOOR_INDEX_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "Never a ranking or a score on whoever runs the door — a dated observation of what each answered.",
+        "Never a ranking of the doors, and no verdict on whoever runs one — a dated observation of what each answered.",
     },
     what_you_can_use_it_for: { type: "string" },
     hosts: {
@@ -3427,7 +3428,7 @@ const TRUST_SCHEMA: OpenApiObject = {
     what_this_is_not: {
       type: "string",
       description:
-        "The refusal. Never a score, never a rating, never a ranking.",
+        `The refusal. ${NEVER_A_RANKING_SENTENCE}`,
     },
   },
 };
@@ -4788,6 +4789,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [pathParam("reconciliation_id", "From the purchase response; starts srec_.")],
         },
       },
+      "/case/{case_id}": {
+        get: {
+          ...returns(
+  freeOp(
+                "A case file, served forever",
+                "The signed assembly a purchase minted: everything this store observed about one purchase, each section present or absent by name, the gaps counted against us, the buyer's declared inputs marked as such, and never a verdict. Read `case.gaps` first.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "case",
+              payloadDescription:
+                "The signed case file: settlement, reconciliation, mandate, door, delivery, declared, gaps, and the conflict line when this store is a party.",
+              timestampKey: "created_at",
+              extras: {
+                read_this_first: {
+                  type: "string",
+                  description: "Read the gaps, then the declared inputs, then the observed sections — in that order, because the absences and the claims are what a hurried reader gets wrong.",
+                },
+                no_verdict: { type: "string" },
+              },
+            }),
+          ),
+          parameters: [pathParam("case_id", "From the purchase response; starts case_.")],
+        },
+      },
       "/api/lucky/{lucky_id}": {
         get: {
           ...returns(
@@ -5571,6 +5596,44 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
           ),
           CORPUS_SCHEMA,
+        ),
+      },
+      "/corpus/tiers.json": {
+        get: returns(
+          freeOp(
+            "Every host's passport tier, with its fraction",
+            "Every host the signed chain has carried, each with the tier derived from its own rounds by the rule on /criteria (observed, established, standing, broken, indeterminate), printed with the fraction it came from and the weeks it spans. Alphabetical by host — ordered by tier would be a ranking. Derived at read, never stored; the rows behind every line are at each host's rows_url. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              what_this_is: { type: "string" },
+              what_this_is_not: { type: "string" },
+              rule_url: { type: "string", format: "uri" },
+              derived_at: { type: "string", format: "date-time" },
+              weeks_read: { type: "integer" },
+              latest_week: { type: "string", nullable: true },
+              total_hosts: { type: "integer" },
+              by_tier: { type: "object", additionalProperties: { type: "integer" } },
+              hosts: {
+                type: "array",
+                description: "Alphabetical by host. No rank, no position, no ordering by tier.",
+                items: {
+                  type: "object",
+                  properties: {
+                    host: { type: "string" },
+                    tier: { type: "string", enum: ["observed", "established", "standing", "broken", "indeterminate"] },
+                    line: { type: "string", description: "The tier with the fraction it came from, e.g. \"established — 4 of 4, W33–W36\". A tier never travels without this." },
+                    fraction: { type: "object", properties: { ready: { type: "integer" }, rounds: { type: "integer" }, weeks: { type: "string" } } },
+                    latest: { type: "object" },
+                    coverage_suspect: { type: "boolean" },
+                    rows_url: { type: "string", format: "uri" },
+                    passport_url: { type: "string", format: "uri" },
+                  },
+                },
+              },
+            },
+          },
         ),
       },
       "/corpus/trajectory.json": {

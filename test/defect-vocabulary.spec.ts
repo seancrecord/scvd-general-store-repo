@@ -158,7 +158,7 @@ describe("published where an instrument can actually fetch it", () => {
     });
     expect(res.status).toBe(200);
     const body = await res.text();
-    expect(body).toContain("Not a score, not a ranking");
+    expect(body).toContain("Not a ranking, not a list of anybody");
     expect(body).toContain("detectable");
   });
 

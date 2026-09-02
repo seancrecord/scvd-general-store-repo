@@ -63,14 +63,21 @@ describe("the criteria page", () => {
     expect(law.toLowerCase()).toContain("newer observation supersedes");
   });
 
-  it("says a badge is a dated observation and never a score on an actor", async () => {
+  it("says a badge is a dated observation, never a ranking, and carries the dated doctrine note", async () => {
     const body = await json("/criteria");
     expect(String(body.what_a_badge_is).toLowerCase()).toContain(
       "dated observation",
     );
-    expect(String(body.never_a_score_on_an_actor).toLowerCase()).toContain(
-      "no accumulating score",
+    // 2026-09-02: the key and the sentence changed on the keeper's
+    // ruling; the old sentence is hunted by test/doctrine.spec.ts.
+    expect(String(body.never_a_ranking).toLowerCase()).toContain(
+      "never a ranking, and never a verdict without its derivation and denominator beside it",
     );
+    const note = body.doctrine as Record<string, string>;
+    expect(note.dated).toBe("2026-09-02");
+    expect(String(note.was).toLowerCase()).toContain("never a score");
+    expect(String(note.now).toLowerCase()).toContain("never a ranking");
+    expect(String(note.what_keeps_its_bytes).toLowerCase()).toContain("nothing is resigned");
   });
 
   /**

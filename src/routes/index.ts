@@ -36,6 +36,7 @@ export { tabPoolRoutes } from "@/routes/tab-pool";
 export { anchorRoutes } from "@/routes/anchors";
 export { serviceAuditRoutes } from "@/routes/service-audit";
 export { reconciliationRoutes } from "@/routes/reconciliation";
+export { caseFileRoutes } from "@/routes/case-file";
 export { namespaceSpecRoutes } from "@/routes/namespace-spec";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";

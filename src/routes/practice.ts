@@ -33,6 +33,8 @@ interface Scenario {
   what_a_good_client_does: string;
   preflight_names_this: string;
   header: string | null;
+  /** A challenge carried in the 402 BODY as well, for the two-surface lesson. */
+  body_challenge?: Record<string, unknown>;
 }
 
 function b64(challenge: unknown): string {
@@ -112,6 +114,35 @@ function scenarios(base: string): Scenario[] {
       }),
     },
     {
+      id: "two-surfaces",
+      what_is_wrong:
+        "The PAYMENT-REQUIRED header and the 402 body both carry a challenge, and they disagree: the header asks 1000 atomic units, the body asks 2000 for the same rail and payTo. Two prices for one knock, served in one response.",
+      what_a_good_client_does:
+        "Signs against the header, which the spec makes the canonical placement, and treats a body that disagrees with it as a defect worth reporting rather than a second offer — never picks the cheaper of two surfaces as though the door had offered a choice.",
+      preflight_names_this: "placement-mismatch",
+      header: accepts({
+        scheme: "exact",
+        network: "eip155:8453",
+        asset: USDC_BASE,
+        amount: "1000",
+        payTo: DEAD_ADDRESS,
+        resource: `${base}/api/practice/two-surfaces`,
+      }),
+      body_challenge: {
+        x402Version: 2,
+        accepts: [
+          {
+            scheme: "exact",
+            network: "eip155:8453",
+            asset: USDC_BASE,
+            amount: "2000",
+            payTo: DEAD_ADDRESS,
+            resource: `${base}/api/practice/two-surfaces`,
+          },
+        ],
+      },
+    },
+    {
       id: "dust-correct",
       what_is_wrong:
         "NOTHING — this offer is well-formed, and that is the lesson: your parser should accept it. But paying it burns 0.000001 USDC to the dead address, so a good client also notices the payTo is 0x…dEaD. PRACTICE DOOR: DO NOT PAY IT.",
@@ -164,6 +195,7 @@ practiceRoutes.get("/api/practice/:scenario", (c) => {
     );
   }
   const body = {
+    ...(found.body_challenge ?? {}),
     practice: true,
     scenario: found.id,
     what_is_wrong: found.what_is_wrong,

@@ -2,7 +2,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
-import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -212,6 +212,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("host");
   }
+  if (item.id === "aura_walk") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 door: https, default port, on the public internet — the URL a buyer would GET expecting a 402. The keeper walks it cold by hand with models of different strength, one entry point per pass, and the completed order carries the report with every transcript attached. Put a model preference in detail if you want a weaker shopper. We refuse our own hostname; our own passes are published free in AGENT_UX.md.",
+    };
+    required.push("url");
+  }
   if (item.id === "trust_profile") {
     properties["url"] = {
       type: "string",
@@ -335,6 +344,18 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("tx_hash");
   }
+  if (item.id === "the_case_file") {
+    properties["tx_hash"] = {
+      type: "string",
+      description:
+        "The transaction to assemble the case around: 0x + 64 hex for Base or Polygon, a base58 signature for Solana. The shape picks the chain.",
+    };
+    properties["mandate_id"] = { type: "string", description: "Optional. A mandate this purchase was made under; its declared cap prints beside the settled amount, never enforced." };
+    properties["url"] = { type: "string", format: "uri", description: "Optional. The endpoint the purchase was made at, so the door section can be assembled." };
+    properties["claim"] = { type: "string", maxLength: 1000, description: "Optional. Your own account of what happened, stored verbatim and marked declared. Never checked." };
+    properties["launch_check_id"] = { type: "string", description: "Optional. A launch check you hold about the same door, for the delivery section." };
+    required.push("tx_hash");
+  }
   if (item.id === "settlement_reconciliation") {
     properties["tx_hash"] = {
       type: "string",
@@ -435,6 +456,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     // one needs no extra input at all.
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
   }
+  if (item.id === "the_case_file") {
+    example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+  }
   if (item.id === "attestation_bundle") {
     const first = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
     const second = `0x${"9b04e1c".repeat(9)}0`.slice(0, 66);
@@ -457,6 +481,13 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "signature_agent_card") {
     example["url"] = "https://your-agent.example";
+  }
+  if (item.id === "aura_walk") {
+    // The walk is of YOUR door, from a stranger's side: the example
+    // names a shop the buyer would own, with a model preference in
+    // the detail, which is where the row says it goes.
+    example["url"] = "https://your-shop.example/api/buy/thing";
+    example["detail"] = "send a small model too";
   }
   if (item.id === "onpage_audit") {
     example["url"] = "https://your-site.example/pricing";

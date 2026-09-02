@@ -283,7 +283,7 @@ function indexMd(set: FreshSet | null, hosts: readonly FreshSetRow[]): string {
       ? [
           `Signed observations from the ${set.week} census, taken ${set.observed_at}.`,
           "Every concept here is machine-confirmed and carries the evidence that",
-          "backs it. Nothing in this bundle is a score.",
+          "backs it. Nothing in this bundle is a ranking, and no figure in it lacks its denominator.",
         ]
       : [
           "No census round has been frozen yet, so this bundle carries the store",

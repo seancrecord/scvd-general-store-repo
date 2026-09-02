@@ -355,6 +355,23 @@ LORE & TRADITION
     worked into the build itself as a mechanism, not a sentiment.
     No badge ships before its criteria page exists.
 
+    AMENDED 2026-09-02, the keeper's ruling (his sentence; the
+    surrounding wording drafted and inked by him the same day, as
+    drafted): the refusal "never a
+    score, a rating or a ranking" is replaced everywhere it appears
+    by "never a ranking, and never a verdict without its derivation
+    and denominator beside it." Rankings stay forbidden — nothing on
+    this store ever orders one host against another. Derived verdicts
+    with published rules are now in scope: a tier on a passport that
+    comes from the signed per-host rounds by a rule typed once on
+    /criteria, printed on every rendering with the fraction it came
+    from and a link to the rows. No ratio without its denominator, no
+    tier without its rows, no numeric 0–100 anything. The first half
+    of this rule is unchanged: a verdict is on a THING at a date,
+    never a score on an actor. Signed rows and paid artifacts that
+    quote the old sentence keep their bytes; nothing is resigned.
+    Dated note on /criteria.
+
 44. THE SURFACE SWEEP (2026-08-07, keeper's directive): any change to
     what the store IS, SELLS, or CLAIMS ends with a sweep of the
     major surfaces before it ships — SEO, AEO, and agent-facing

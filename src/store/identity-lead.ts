@@ -1,4 +1,5 @@
 import { MENU_ITEMS } from "@/store/menu";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * WHAT THIS STORE SAYS IT IS, IN ONE PLACE, FOR EVERY MACHINE READER.
@@ -49,7 +50,7 @@ export const IDENTITY_SHORT = "scvd.store";
 
 /** The lead. Reused verbatim; never re-typed per surface. */
 export function identityLead(): string {
-  return `scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. Nothing here is a score, a rating, or a ranking: every verdict is one dated observation that expires and is re-taken, verifiable offline by anyone, without asking us. Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored history that appends daily. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks.`;
+  return `scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. ${NEVER_A_RANKING_SENTENCE} Every verdict is one dated observation that expires and is re-taken, or a derivation from those observations that prints its rule and its fraction — verifiable offline by anyone, without asking us. Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored history that appends daily. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks.`;
 }
 
 /** The store, second, intact. */

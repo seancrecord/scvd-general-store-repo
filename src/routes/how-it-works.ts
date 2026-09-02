@@ -6,6 +6,7 @@ import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { MENU_ITEMS } from "@/store/menu";
 import { priceLine } from "@/services/menu-markdown";
 import type { HonoEnv, MenuItem } from "@/types";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /how-it-works — the mechanism, in the machine's words as well as
@@ -48,7 +49,7 @@ const WHAT_IT_IS_FOR =
   "Deciding whether to rely on anything this store publishes, and on what terms. It is written for a caller who has never been here, needs to know what kind of thing an observation is before citing one, and wants the failure modes named before it spends. Nothing here narrows what you may do with the record: it is free, complete, and licensed for reuse, including by people building something that competes with us.";
 
 const WHAT_THIS_IS_NOT =
-  "Not a rating, a score, a ranking, or a certification, and not an escrow, a guarantor, or a dispute court. Those last three absorb the risk between payment and delivery and need a balance sheet; this store observes that gap, signs what it saw, and publishes it. A verdict here is one dated observation of one moment, which expires and is re-taken — never a standing judgement about an operator.";
+  `${NEVER_A_RANKING_SENTENCE} Not a certification, and not an escrow, a guarantor, or a dispute court. Those last three absorb the risk between payment and delivery and need a balance sheet; this store observes that gap, signs what it saw, and publishes it. A verdict here is one dated observation of one moment, which expires and is re-taken, or a derivation from those that prints its rule and its fraction — never a standing judgement about an operator.`;
 
 /**
  * THE CHAIN OF CUSTODY, which is the whole product. Each step names
@@ -187,6 +188,7 @@ export const PAID_EXAMPLES: { id: string; answers: string }[] = [
   { id: "launch_check", answers: "one real purchase attempt of your own door, from our field wallet, signed stage by stage" },
   { id: "opening_day", answers: "that walk, then a week of daily passes on the same door, then your passport page — one certificate, one URL" },
   { id: "provenance_check", answers: "which doors advertised a receiving address and when, read from the signed chain, delivered to you and never published" },
+  { id: "the_case_file", answers: "everything this store observed about one purchase in one signed file, each section present or absent by name, never a verdict" },
 ];
 
 function paidItems(): { item: MenuItem; answers: string }[] {

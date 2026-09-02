@@ -40,9 +40,10 @@ describe("the front counter is derived, not remembered", () => {
     // line rather than silently moving the door. If an item is added
     // or repriced into eligibility that is FINE — this test tells you
     // it happened, it does not forbid it.
-    // Cheapest first: $0.005, $0.50. The 2026-08-20 retirement took
-    // daily_fortune and dibs off this counter with them.
-    expect(eligible).toEqual(["small_blessing", "hello"]);
+    // Cheapest first: $0.005, $0.01, $0.50. The 2026-08-20 retirement
+    // took daily_fortune and dibs off this counter; the fortune came
+    // back on 2026-09-02 and passes every rule as it did before.
+    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello"]);
   });
 
   it("keeps recurring_patronage out for the reason that actually applies", () => {

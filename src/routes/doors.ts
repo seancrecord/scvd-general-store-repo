@@ -16,9 +16,9 @@ import type { HonoEnv, MenuItem } from "@/types";
  * with clear meaning while also able to drill deeper into full data").
  *
  * THE TASK SAID "SCOREBOARD" AND THE ANSWER IS NOT ONE. /llms.txt has
- * published this store's law since the beginning: "Nothing here is a
- * score, a rating, or a ranking: every verdict is one dated
- * observation that expires and is re-taken." A league table would
+ * published this store's law since the beginning: never a ranking
+ * (from 2026-09-02: "never a ranking, and never a verdict without its
+ * derivation and denominator beside it"). A league table would
  * require publicly amending that sentence, and the sentence is what
  * the paid work is worth anything for. So this is an INDEX and a
  * COUNT: alphabetical, one dated observation per door, no standing,
@@ -208,7 +208,7 @@ const FAQ = [
   },
   {
     q: "Why is there no percentage?",
-    a: "Because rounds_ready divided by rounds_scored is a score on an operator, and this store does not keep one on anybody. The numbers are both published; the division is yours to do and yours to defend.",
+    a: "Because a percentage on this list would order the doors, and this list never ranks one host against another. Both counts are published on every entry. Where the store does derive a reading from a host's rounds — on its passport, from 2026-09-02 — it prints the rule, the fraction and the rows beside it, never the number alone.",
   },
   {
     q: "My door is listed and the observation is wrong.",
@@ -362,7 +362,7 @@ function doorsDatasetJsonLd(base: string, index: DoorIndex): string {
     "@type": "Dataset",
     name: "Every x402 endpoint scvd.store has observed",
     description:
-      "One entry per host the weekly ward round has ever seen, with the most recent dated conformance observation of each and a link to its full signed history. Alphabetical, never ranked: dated observations of moments, never scores on operators.",
+      "One entry per host the weekly ward round has ever seen, with the most recent dated conformance observation of each and a link to its full signed history. Alphabetical, never ranked: dated observations of moments, and no figure without its denominator.",
     url: `${base}/doors`,
     sameAs: `${base}/doors.json`,
     license: "https://creativecommons.org/licenses/by/4.0/",

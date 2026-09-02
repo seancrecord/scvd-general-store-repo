@@ -76,6 +76,11 @@ What people arrive here to do, and where each door is:
 - **Audit an agent's books against the chain** — `the_statement`: every
   USDC transfer in and out of one Base wallet over a stated window,
   signed by a party that is neither the agent nor its operator.
+- **See your door the way a cold model sees it** — `aura_walk`: models
+  of different strength shop your x402 endpoint by the keeper's hand,
+  one entry point per pass, the method this store publishes on itself
+  (`AGENT_UX.md`); the report counts where each stalled and attaches
+  every transcript. Never a grade.
 - **Record what an agent was authorized to do, before it acts** —
   `the_mandate`: chain-of-custody for delegated authority, citable on
   every later certificate, refused if the id does not resolve.
@@ -167,15 +172,19 @@ here.
 
 ## What's on the shelves
 
-Signed hellos, graffiti on a train (your tag, permanent), and The
-Collab — the one door where keeper-time is for sale: name the shape,
-a call, a look, a made thing. Aisle two carries the novelties:
+Signed hellos, graffiti on a train (your tag, permanent), and the two
+doors where keeper-time is for sale: The Collab (name the shape, a
+call, a look, a made thing) and The Aura Walk (your own door shopped
+cold by models, transcripts attached). Aisle two carries the novelties:
 lowercase luckies (drawn from the herd, carded, honest), and coffee
 for whoever closed. Aisle three is utility: context anchors (signed
 agent memory restore points), a standing watch (a week of signed
-hourly probes on your endpoint), settlement attestations, and 30-day
+hourly probes on your endpoint), settlement attestations, the case file (everything we observed
+about one purchase, in one signed file, never a verdict), and 30-day
 recurring patronage passes. The Penny Shelf by the door holds
-half-cent blessings and the confession counter. And the Certificate
+half-cent blessings, the daily fortune (one line a day, the same
+for everyone until midnight UTC, back on the shelf 2026-09-02), and
+the confession counter. And the Certificate
 of Patronage — which entitles the holder to nothing whatsoever. (Two
 consolidations, 2026-08-05 and 2026-08-20, retired several early
 shelves; retired ids still answer at the door with a 410 and their

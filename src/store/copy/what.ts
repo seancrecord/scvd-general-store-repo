@@ -60,6 +60,7 @@ import { STORE_METADATA } from "@/store/metadata";
  * protecting us from a fear, and it comes out.
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 export interface FaqPair {
   question: string;
@@ -76,7 +77,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "When would my agent actually use this?",
-      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), a week of signed hourly checks on its own endpoint from an observer that isn't it (standing_watch, $5), or a person's hands on a task an agent can't reach — an honest human verdict on work it cannot judge for itself, a call, a look, a made thing (the_collab). It also uses us to prove its own payment code works: ${CHEAPEST_ON_THE_SHELF} buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
+      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), a week of signed hourly checks on its own endpoint from an observer that isn't it (standing_watch, $5), or a person's hands on a task an agent can't reach — an honest human verdict on work it cannot judge for itself, a call, a look, a made thing (the_collab), or its own door shopped cold by models of different strength with the transcripts attached (aura_walk). It also uses us to prove its own payment code works: ${CHEAPEST_ON_THE_SHELF} buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
     },
     {
       question: "Why would anyone pay for a signed note?",
@@ -276,7 +277,7 @@ export const WHAT_COPY = {
    * human reads and the answer a machine reads cannot drift apart.
    */
   directAnswer:
-    "scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. Never a score or a ranking — each verdict is one dated observation, ed25519-signed, and anyone can verify one offline. Also a general store for agents, paid in USDC over x402.",
+    `scvd.store is an evidence observatory for agentic commerce: independent signed observation of what other endpoints, artifacts and payments actually did, with the gaps counted against itself. ${NEVER_A_RANKING_SENTENCE} Each verdict is ed25519-signed; anyone can verify it offline. Also a general store for agents, paid in USDC over x402.`,
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:

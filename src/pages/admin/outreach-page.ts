@@ -4,8 +4,10 @@ import {
   OUTREACH_STATUSES,
   contactEmail,
   draftNote,
+  draftWelcome,
   type OutreachLedger,
   type Prospect,
+  type Welcome,
 } from "@/services/outreach";
 import type { WardRound } from "@/services/ward-round";
 
@@ -101,6 +103,29 @@ function prospectCard(
  * the point — the keeper works the top; the count says what's below.
  * The JSON twin still serves every row (data, not drafts).
  */
+function welcomeCard(welcome: Welcome, ledger: OutreachLedger, base: string): string {
+  const entry = ledger.hosts[welcome.host];
+  const status = entry?.status
+    ? `<strong>${escapeHtml(entry.status)}</strong> ${escapeHtml((entry.status_at ?? "").slice(0, 10))}`
+    : "fresh";
+  const buttons = OUTREACH_STATUSES.map(
+    (option) => `<form method="post" action="/admin/outreach/status" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(welcome.host)}">
+      <input type="hidden" name="status" value="${option}">
+      <button type="submit">${option === "sent" ? "mark sent — I delivered it myself" : option === "skip" ? "skip" : `mark ${option}`}</button>
+    </form>`,
+  ).join(" ");
+  return `<section>
+    <h3>${escapeHtml(welcome.host)}${welcome.newly_listed ? " <em>· newly listed</em>" : ""}</h3>
+    <p class="menu-desc">${escapeHtml(welcome.reason)} · <a href="/passport/${escapeHtml(welcome.host)}">their passport page</a></p>
+    <p class="menu-meta">status: ${status}</p>
+    <details><summary>the welcome (hand-delivered; the wire does not carry these)</summary>
+    <pre>${escapeHtml(draftWelcome(welcome, base))}</pre></details>
+    <p class="menu-meta"><strong>Stamps, not sends:</strong> ${buttons}</p>
+  </section>`;
+}
+
+const WELCOME_RENDER_CAP = 25;
 const FRESH_RENDER_CAP = 50;
 const WORKED_RENDER_CAP = 100;
 
@@ -111,6 +136,7 @@ export function renderOutreachPage(
   ledger: OutreachLedger,
   base: string,
   notice?: string,
+  welcomes: Welcome[] = [],
 ): string {
   const noticeBlock = notice
     ? `<section><p><strong>${escapeHtml(notice)}</strong></p></section>`
@@ -175,6 +201,14 @@ export function renderOutreachPage(
       ? `<p class="menu-meta">…and ${fresh.length - freshShown.length} more below these, in the same four-tier ranking. Work the top and stamp as you go — stamped cards leave this queue and the next ${FRESH_RENDER_CAP} rise. Every row (data, not drafts) is in the JSON twin: <code>Accept: application/json</code> on this URL.</p>`
       : ""
   }
+
+  ${(() => {
+    const freshWelcomes = welcomes.filter((w) => !ledger.hosts[w.host]?.status);
+    const shown = freshWelcomes.slice(0, WELCOME_RENDER_CAP);
+    return `<h2>Ready doors — a page to hand them (${freshWelcomes.length}${freshWelcomes.length > shown.length ? `, top ${shown.length} shown` : ""})</h2>
+  <p class="menu-desc">The other half of the seller loop: doors that answered READY this round, newly listed first. Nothing here is a finding against anyone, so the note is a welcome — their passport page, the colophon to paste, the free self-check, the standing-note offer, and one priced line. Hand-delivered and stamped; the wire never carries these.</p>
+  ${shown.map((w) => welcomeCard(w, ledger, base)).join("\n") || "<p class='empty'>No fresh ready doors — every one already has a stamp, or the round found none.</p>"}`;
+  })()}
 
   ${
     worked.length

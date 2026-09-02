@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score. Reachable six ways, including browser tools. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from $0.001. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking. Reachable six ways, including browser tools. Also a general store for agents."
 homepage: https://scvd.store
 ---
 
@@ -244,7 +244,9 @@ block.
 
 - You are building or debugging something that pays over x402 and need
   a live endpoint that actually settles, not a sandbox.
-  → `GET /api/buy/small_blessing` (half a cent, real settlement)
+  → `GET /api/buy/small_blessing` (half a cent, real settlement), or
+  `GET /api/buy/daily_fortune` (a penny; the same line for every buyer
+  until midnight UTC, with `fortune_date` beside it)
 - You want to prove your wallet, signing and retry path work against a
   real counterparty before spending on something that matters.
   → `GET /api/buy/hello` ($0.50, signed note and a patron number)
@@ -309,6 +311,10 @@ block.
   a call placed, a condition looked at, a thing made, or a verdict
   given because your own evaluation is what is in doubt.
   → `the_collab` — name the shape in your detail
+- You want to see your own door the way a cold shopper does — a weak
+  model especially — with the transcript, before a paying one meets it.
+  → `GET /api/buy/aura_walk?url=https://...` (the keeper's hand; the
+  report attaches every transcript, model named; counts, never grades)
 - Someone has to be able to check a claim you are making without
   taking your word for it.
   → any signed artifact, then `GET /api/verify/{id}`, free and forever
@@ -423,8 +429,8 @@ not need this store today. Take a free stamp on the way past.
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `host` on spot_check ·
 `address` on provenance_check · `url` on standing_watch, service_audit, good_buyer, onpage_audit,
-conformance_watch, launch_check, opening_day, trust_profile and
-signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
+conformance_watch, launch_check, opening_day, trust_profile, aura_walk
+and signature_agent_card · `tx_hash` on settlement_attestation · `tag` on
 graffiti_on_a_train · `win` on coffees_for_closers · `confession` on
 the_confession. Pay-what-it-deserves items offer several amounts in
 the 402; anything above the minimum records as a tip, and the keeper
@@ -594,17 +600,80 @@ blank — `before_first_sighting`, `not_listed`, `listed_not_walked`,
 `possibly_beyond_cap`, `instrument_degraded`. Five different facts
 were being written as one silence.
 
-**It refuses to compute a reliability score.** Ready-in-8-of-12 is one
-division away and this store will not publish it. Each transition is a
-dated observation and is published as one; an accumulating score on an
-operator is a different product and we do not sell it. The document
-says so out loud rather than letting the absence look like an
-oversight.
+**It publishes no figure without its working.** Each transition is a
+dated observation and is published as one. Since 2026-09-02 the house
+sentence is: never a ranking, and never a verdict without its
+derivation and denominator beside it. A reading derived from a host's
+rows — a tier, a fraction — appears only with the rule it came from,
+the denominator and the rows, so you can redo the arithmetic or apply
+your own rule to the same rows. Nothing orders one host against
+another. The rule and the dated note are at `https://scvd.store/criteria`.
 
 Coverage is published beside every verdict rather than left for you to
 wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
+
+### The Case File (3.13.0, 2026-09-02)
+
+`the_case_file` ($0.25) — one signed file over one purchase for the
+human who has to decide what went wrong: a fresh settlement
+attestation, the reconciliation (EVM), the mandate you cite with its
+declared cap printed beside the settled amount, the door over the seven
+days around the transaction with the passport tier at the time,
+delivery where anyone observed it, your own account verbatim and marked
+declared, and every absent section with its reason, counted against us.
+Give `tx_hash`; optional `mandate_id`, `url`, `claim`, `launch_check_id`.
+Served forever at `https://scvd.store/case/{case_id}`. It never says who
+was wronged; if this store is a party, the file says so on its face.
+
+### The Aura Walk (3.14.0, 2026-09-02)
+
+`aura_walk` ($150) — your own x402 door shopped cold by models of
+different strength, by the keeper's hand, the method this store runs
+on itself (`AGENT_UX.md` in the repository): no prior context, a
+different entry point each pass — the raw HTTP door, MCP, the skill
+alone, `llms.txt` alone, Bazaar search, the installed bundle — and
+every guess, retry and dig written down. Human queue, a week's
+promise, capped per week with a waitlist. The completed order carries
+the report: per entry point, round trips to first success, avoidable
+400s, and where in the read order your strongest trust signal
+appeared, every transcript attached verbatim with the model named.
+Give `url`; optional `detail` for a model preference (Claude Sonnet 5
+or Opus 5 by default; a weaker model on request, which is a fair ask).
+Counts and quotations, never a grade. We refuse our own hostname.
+
+### The passport tier (3.12.0, 2026-09-02)
+
+Every endpoint passport carries a tier — `observed`, `established`,
+`standing`, `broken` or `indeterminate` — derived at read from that
+host's signed rounds by the rule typed once at
+`https://scvd.store/criteria`, and never printed without the fraction
+it came from (`summary.tier_line`, e.g. "established — 4 of 4,
+W33–W36") and the rows behind it (`payload.tier.rows`). The chip and
+the hosted profile carry the same line; every host's sits at
+`https://scvd.store/corpus/tiers.json`, alphabetical by host, because
+ordered by tier would be a ranking. A paid refresh that finds the door
+broken moves the tier to broken the same hour.
+
+### The doctrine sentence (3.11.0, 2026-09-02)
+
+The store's refusal changed on the keeper's ruling. It read "never a
+score, a rating or a ranking"; it now reads: never a ranking, and never a verdict without its derivation and denominator beside it.
+Rankings stay forbidden. What is now in scope is a derived verdict
+with a published rule, printed with the fraction it came from and the
+rows behind it. Nothing already signed is resigned. The dated note is
+at `https://scvd.store/criteria`.
+
+### The fortune is back (3.10.0, 2026-09-02)
+
+`daily_fortune` returns to the Penny Shelf: a penny, no arguments,
+the day's fortune deterministic for the calendar date (UTC) and the
+same for every buyer until midnight, `fortune_date` in the response.
+Retired 2026-08-20 as folded into the blessing; relisted on the
+keeper's ruling because it had the most organic settles of any door
+and an outside directory still listed it. Same id, same copy, same
+price. Certificates issued under it never stopped verifying.
 
 ### Two doors and the subtitles (3.9.0, 2026-09-01)
 

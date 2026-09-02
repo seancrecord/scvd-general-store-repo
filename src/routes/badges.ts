@@ -61,6 +61,14 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
     );
   }
   const { payload } = outcome.passport;
+  /*
+   * KEEPER-RULED 2026-09-02: a host whose latest observation is not on
+   * the ready side gets no chip, even with tiers on the face. The
+   * passport refuses there, and this store names hosts only on the
+   * ready side; the broken tier shows on the hosted profile, the
+   * per-host read and tiers.json, which already name every observed
+   * host. Indeterminate draws dark.
+   */
   if (
     payload.freshness !== "fresh" &&
     payload.freshness !== "aging" &&
@@ -83,6 +91,16 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
       // observes this host, and the chip must not dress a catalog
       // self-read as a census observation (2026-08-28).
       selfObserved: host === ownHost,
+      ...(payload.tier
+        ? {
+            tier: {
+              tier: payload.tier.tier,
+              line: payload.tier.line,
+              ready: payload.tier.fraction.ready,
+              rounds: payload.tier.fraction.rounds,
+            },
+          }
+        : {}),
     }),
     200,
     { ...SVG_HEADERS, "Cache-Control": "public, max-age=21600" },

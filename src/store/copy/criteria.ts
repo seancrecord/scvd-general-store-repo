@@ -1,3 +1,5 @@
+import { DOCTRINE_DATED, NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
+
 /**
  * THE CRITERIA PAGE'S WORDS — rule 43's gate, and the keeper's ruling
  * on what retires a badge (2026-08-10: nothing does; it ages).
@@ -35,7 +37,7 @@ export const BADGE_RETIREMENT =
   "Nothing retires a badge. It ages. A badge is not a live status to revoke — it carries its own expiry by carrying its own date, and a reader weighs an old observation the way they weigh any old fact. If the thing changes, the badge does not change with it: a newer observation supersedes an older one by being newer, never by taking the old one down. Nobody is chased to remove anything, and nobody who relied on a dated observation is owed a retraction of it — the date was the disclosure. The question an aging badge cannot answer is 'is this still true', and this store sells the instrument that answers it: re-observation, on the record, at the same URL. A badge never answers it.";
 
 export const NEVER_AN_ACTOR_SCORE =
-  "No accumulating score on any operator, ours or anybody's, ever — that is rule 43's other half and it binds this page too. Individual dated observations may be published because each one is a fact; a ratio over them is withheld on purpose. Ready-in-eight-of-twelve is one division away from the data and it is a score on an actor wearing an observation's clothes, which is why the per-host history says out loud that it will not compute one.";
+  `${NEVER_A_RANKING_SENTENCE} That is rule 43's other half, amended ${DOCTRINE_DATED}, and it binds this page too. Individual dated observations are published because each one is a fact. A reading derived from them — ready in four of the last four rounds, say — is published only with the rule that made it (typed once, on this page), the fraction it came from, and the rows behind the fraction, so anyone can redo the arithmetic or apply a different rule to the same rows. A ratio printed alone is a verdict without its derivation, and the store does not print one. Nothing here is ever a ranking of one host against another, and nothing here is a score on an operator: a tier is a reading of a door's rounds, not a judgment of the person behind it.`;
 
 /**
  * The verdict words a criteria-governed check may return. Observation

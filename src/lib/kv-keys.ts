@@ -108,6 +108,16 @@ export const KV_KEYS = {
   outreachLedger: "outreach_ledger",
   /** The trust panel's hourly-recomputed half (corpus count + gallery). */
   trustPanelCache: "trust_panel_cache",
+  /**
+   * The archive depth (roadmap S7), derived from the chain and held
+   * briefly: one key per kind and subject, expiring on its own. The
+   * 2026-09-02 speed report caught the uncached version adding two to
+   * four hundred milliseconds to three free 402s the morning after it
+   * shipped; the derivation is the same, it just is not redone on
+   * every knock.
+   */
+  archiveDepthPrefix: "archive_depth:",
+  archiveDepth: (kind: string, subject: string) => `archive_depth:${kind}:${subject}`,
   /** Latest buyer-commissioned passport-refresh observation per host. */
   passportRefresh: (host: string) => `passport_refresh:${host}`,
   /** The hosted trust profile's current term, latest-only per host. */
@@ -351,6 +361,15 @@ export const KV_KEYS = {
    */
   settlementReconciliation: (reconciliationId: string): string =>
     `settlement_reconciliation:${reconciliationId}`,
+  /**
+   * A purchased case file (roadmap N8, 2026-09-02): the signed assembly
+   * and the certificate that bound its evidence hash. PATRONS beside
+   * the cert, terminal at write. The query key beside it is the
+   * idempotency index — same tx and same mandate inside a day is the
+   * same case — written with a one-day TTL so it expires on its own.
+   */
+  caseFile: (caseId: string): string => `case_file:${caseId}`,
+  caseFileQuery: (digest: string): string => `case_file_query:${digest}`,
   /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace

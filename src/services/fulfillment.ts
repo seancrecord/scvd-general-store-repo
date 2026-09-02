@@ -1,3 +1,4 @@
+import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { storeIdentity } from "@/lib/identity";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
@@ -122,6 +123,8 @@ export interface FulfillmentInput {
   /** settlement_attestation: what to look up on chain (Base, Polygon, or Solana). */
   attestationQuery?: AttestationQuery;
   reconciliationQuery?: ReconciliationQuery;
+  /** the_case_file: what to assemble, pre-validated at the buy door. */
+  caseFileInput?: CaseFileInput;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
   /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
@@ -452,6 +455,25 @@ export async function fulfillPurchase(
     mintOptions.attests = reconciliation.evidence_hash;
   }
   /**
+   * THE CASE FILE assembles first and mints second, like every
+   * observation above it, and is idempotent by tx and mandate inside a
+   * day: the same question inside the window binds the same case to a
+   * new certificate rather than assembling and charging twice.
+   */
+  let caseFile: SignedCaseFile | undefined;
+  let caseFileReused = false;
+  if (item.id === "the_case_file") {
+    const ask = input.caseFileInput ?? { txHash: "" };
+    const existing = await existingCaseFor(env, ask.txHash, ask.mandateId);
+    if (existing) {
+      caseFile = existing.case;
+      caseFileReused = true;
+    } else {
+      caseFile = await performCaseFile(env, ask);
+    }
+    mintOptions.attests = caseFile.evidence_hash;
+  }
+  /**
    * THE BITCOIN ANCHOR binds the buyer's digest the same way the
    * attestations bind their evidence hashes: through `attests`, so
    * /api/verify answers for "this store certified THIS digest at THIS
@@ -666,6 +688,11 @@ export async function fulfillPurchase(
     if (reconciliation) {
       goodsInput.reconciliation = reconciliation;
     }
+    if (caseFile && input.caseFileInput) {
+      goodsInput.caseFile = caseFile;
+      goodsInput.caseFileInput = input.caseFileInput;
+      goodsInput.caseFileReused = caseFileReused;
+    }
     if (goodBuyer) {
       goodsInput.goodBuyer = goodBuyer;
     }
@@ -738,6 +765,9 @@ export async function fulfillPurchase(
   }
   if (input.detail) {
     orderOptions.detail = input.detail;
+  }
+  if (input.targetUrl !== undefined && input.targetUrl !== "") {
+    orderOptions.targetUrl = input.targetUrl;
   }
   if (input.slaHours) {
     orderOptions.slaHours = input.slaHours;

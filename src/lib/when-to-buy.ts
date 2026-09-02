@@ -140,6 +140,10 @@ export const ROUTES: readonly Route[] = [
     items: ["settlement_attestation", "settlement_reconciliation"],
   },
   {
+    job: "A purchase went wrong and a person has to decide what happened; I want everything a neutral party observed about it in one file, with what it did not observe stated.",
+    items: ["the_case_file"],
+  },
+  {
     job: "I need to catch it if a door breaks midweek, not find out after it cost me.",
     items: ["conformance_watch", "standing_watch"],
   },
@@ -172,6 +176,10 @@ export const ROUTES: readonly Route[] = [
     items: ["the_collab"],
   },
   {
+    job: "I want to see my own door the way a cold model shopper sees it, with the transcripts, before a paying one arrives.",
+    items: ["aura_walk"],
+  },
+  {
     job: "I want to record that something happened, at a time, checkable by anyone later.",
     items: [
       "hello",
@@ -184,7 +192,7 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I want to test that my x402 client works against a real counterparty before it matters.",
-    items: ["small_blessing", "luckies"],
+    items: ["small_blessing", "daily_fortune", "luckies"],
   },
   {
     job: "I want a machine-readable checkup of what my page gives a machine reader.",

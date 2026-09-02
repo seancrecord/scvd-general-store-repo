@@ -153,7 +153,45 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * both doors and the self-audit challenge; nothing already published
  * is reworded.
  */
-export const SKILL_VERSION = "3.9.0";
+/*
+ * 3.10.0 (2026-09-02): the fortune is back. daily_fortune, retired
+ * 2026-08-20 as folded into the blessing, returns to the Penny Shelf
+ * on the keeper's ruling — it had the most organic settles of any
+ * door and an outside directory still listed it. Same id, same copy,
+ * same penny. MINOR because a reader holding 3.9.0 has a shelf that
+ * is one door short and a use_when list that does not name it.
+ */
+/*
+ * 3.11.0 (2026-09-02): the doctrine sentence. "Never a score, a rating
+ * or a ranking" became "never a ranking, and never a verdict without
+ * its derivation and denominator beside it" on the keeper's ruling;
+ * the bundle's description and its per-host-history paragraph say so.
+ * MINOR: a reader holding 3.10.0 quotes a refusal the store no longer
+ * makes in those words.
+ */
+/*
+ * 3.12.0 (2026-09-02): the passport tier. Every passport, chip, hosted
+ * profile and per-host read carries a tier derived from the signed
+ * rounds by the rule on /criteria, with its fraction and its rows;
+ * /corpus/tiers.json lists every host's, alphabetical. MINOR: a reader
+ * holding 3.11.0 does not know summary.tier_line exists.
+ */
+/*
+ * 3.13.0 (2026-09-02): the case file. the_case_file ($0.25) joins the
+ * observation shelf — one signed assembly over one purchase, every
+ * section present or absent by name, never a verdict — served at
+ * /case/{case_id}. MINOR: a reader holding 3.12.0 has a shelf one door
+ * short.
+ */
+/*
+ * 3.14.0 (2026-09-02): the aura walk. aura_walk ($150, human queue)
+ * joins the shelf — the cold-agent pass this store runs on itself,
+ * sold on a door the buyer names and run by the keeper's hand, the
+ * report with every transcript attached. Keeper-time answers to two
+ * doors now. MINOR: a reader holding 3.13.0 has a shelf one door
+ * short and a use_when list that does not name it.
+ */
+export const SKILL_VERSION = "3.14.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -265,6 +303,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Prove to a third party that a payment actually settled on chain",
   settlement_reconciliation:
     "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+  the_case_file:
+    "Hand the person deciding what went wrong with one agent purchase everything a neutral party observed about it, in one signed file, with what it did not observe stated",
   attestation_bundle:
     "Prove a whole run of payments settled, one signed receipt per transaction",
   graffiti_on_a_train: "Leave a mark that survives my context window",
@@ -273,6 +313,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   context_anchor: "Store a memory I can read back next session",
   hello: "Prove my payment code works end to end against a real store",
   small_blessing: "Settle a real x402 payment for the smallest amount possible",
+  daily_fortune: "Read the same line every other agent gets today",
   recurring_patronage:
     "Hold a standing pass a third party can check is current",
   certificate_of_patronage:
@@ -300,9 +341,13 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
+  aura_walk:
+    "Have models of different strength shop my x402 door cold and show me where each one stalled",
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  aura_walk:
+    "the buyer's side of your door as weaker and stronger models actually experience it — where each stalls, retries, misreads the accepts or pays the wrong rail — counted per entry point and quoted verbatim, by a person's hand. A preflight says the door is well-formed; this says whether a cold agent gets through it.",
   passport_refresh:
     "a new census observation of your endpoint, now instead of Sunday — folded into your endpoint passport wherever newest, moving the passport (and the chip that decays with it) back to fresh. The verdict lands whatever it says: a broken finding darkens the chip. The check is bought; the grade never is.",
   trust_profile:
@@ -353,6 +398,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "A real settlement on the shelf at half a cent, and the cheapest door that takes no arguments: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
   recurring_patronage:
     "A dated pass at a stable URL that anyone can check is current — a standing relationship as a verifiable artifact rather than a claim about one.",
+  the_case_file:
+    "one signed file over one purchase for the person deciding what went wrong: settlement, reconciliation, the cited mandate beside the settled amount, the door that week, and delivery where anyone observed it — each present or absent by name, the gaps counted against us. Never a verdict; neither party controls it.",
 };
 
 /**
@@ -367,16 +414,23 @@ export const SPEC_WHY_USE: Record<string, string> = {
  *   trust path and none should pretend to be. (a_secret, grudge and
  *   portrait were in this family until the 2026-08-05 retirement.)
  *
- *   HUMAN CRAFT — the_collab, the one door keeper-time answers to
- *   since the 2026-08-05 consolidation. Real labor by a named person,
- *   and the value is the made thing itself; there is no capability
- *   gap to state that would not be marketing. Flagged rather than
- *   filled: if it ever needs a why_use to sell, the honest reading is
- *   that it is priced as utility and isn't.
+ *   HUMAN CRAFT — the_collab, the door keeper-time answered to alone
+ *   from the 2026-08-05 consolidation until 2026-09-02. Real labor by
+ *   a named person, and the value is the made thing itself; there is
+ *   no capability gap to state that would not be marketing. Flagged
+ *   rather than filled: if it ever needs a why_use to sell, the honest
+ *   reading is that it is priced as utility and isn't.
+ *
+ *   The second labor door, aura_walk (2026-09-02), is NOT in this
+ *   list on purpose: it is priced as utility and is utility — the
+ *   cold-agent pass on somebody else's door — so it carries a why_use
+ *   like any instrument, and a person's hand is the method rather
+ *   than the product.
  */
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
   "luckies",
+  "daily_fortune",
   "the_confession",
   "coffees_for_closers",
   "certificate_of_patronage",
@@ -418,12 +472,16 @@ export const SPEC_RETURNS: Record<string, string> = {
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   the_collab:
     "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
+  aura_walk:
+    "An order id now; within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
     "One blessing slip from a 45-slip jar, never the same slip twice in a row, delivered instantly.",
+  daily_fortune:
+    "The day's fortune, deterministic for the calendar date (UTC) and delivered instantly with fortune_date beside it: every buyer today reads the same line, tomorrow's buyers read the next. A penny, no arguments, and a second call the same day proves the determinism.",
   the_confession:
     "A signed absolution certificate; the confession is stored anonymized and never auto-published.",
   context_anchor:
@@ -434,6 +492,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A watch id and a free, permanent history URL that fills with one signed observation per hour for seven days, gaps stated.",
   certificate_of_patronage:
     "A signed certificate of patronage and a gilt badge; entitles the holder to nothing whatsoever.",
+  the_case_file:
+    "A signed JSON case file — settlement, reconciliation (EVM), mandate with declared cap beside settled amount, the door over the seven days around the transaction with the passport tier at the time, delivery where observed, your declared claim verbatim, and every absent section with its reason — dated, its evidence hash bound into the purchase certificate's attests field, plus a stable /case/{id} URL serving the record free forever. Instant; the chain is read once for the settlement and the reconciliation, the rest from this store's own records. Never a verdict.",
 };
 
 /**
@@ -472,7 +532,7 @@ export interface UseWhen {
 export const USE_WHEN: readonly UseWhen[] = [
   {
     when: "You are building or debugging something that pays over x402 and need a live endpoint that actually settles, not a sandbox.",
-    items: ["small_blessing", "hello", "free:/try"],
+    items: ["small_blessing", "daily_fortune", "hello", "free:/try"],
     example: "GET /api/buy/small_blessing?src=try",
   },
   {
@@ -523,9 +583,15 @@ export const USE_WHEN: readonly UseWhen[] = [
       "GET /api/buy/the_mandate?mandate=Buy+verification+artifacts+as+needed,+max+$5+per+item&declared_cap_usdc=10",
   },
   {
-    when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
+    when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. Name the shape.",
     items: ["the_collab"],
     example: "GET /api/buy/the_collab?detail=the+shape+you+want",
+  },
+  {
+    when: "You want to know where a cold agent — a weak one especially — actually gets stuck at your own door, with the transcript, before a paying one does.",
+    items: ["aura_walk"],
+    example:
+      "GET /api/buy/aura_walk?url=https://your-door.example/api/thing&detail=send+a+small+model+too",
   },
   {
     when: "Someone has to be able to check a claim you are making without taking your word for it.",

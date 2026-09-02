@@ -1,3 +1,6 @@
+import { namedExclusions } from "@/store/exclusions";
+import { effectiveObservation } from "@/services/passport";
+import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
 import {
   getCorpusEntry,
@@ -19,6 +22,7 @@ import {
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
 /**
  * GET /corpus.json — the ecosystem's observed history, published.
@@ -108,7 +112,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     what_this_is:
       "The corpus: the public x402 ecosystem as this store's weekly ward round observed it, frozen one snapshot per round — hash-chained, ed25519-signed, and each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, kept because a continuous record cannot be backfilled later at any price.",
     what_this_is_not:
-      "Not a rating, not a ranking, not a score on any operator, and never becoming one. Each entry records what a probe saw at a moment. Judgments are a different product with its own published criteria, and accumulating scores on actors is the thing this store's rule 43 forbids by name.",
+      `${NEVER_A_RANKING_SENTENCE} Each entry records what a probe saw at a moment, and never becomes a ranking of one host against another. What may be derived from the entries — a tier, a fraction — is published only with its rule, its denominator and its rows (the 2026-09-02 amendment to rule 43, at /criteria).`,
     /**
      * The per-subject read, advertised where a crawler will find it.
      * A template rather than an enumeration: the corpus can hold
@@ -120,7 +124,12 @@ corpusRoutes.get("/corpus.json", async (c) => {
       what_it_answers:
         "Everything this store has observed about one host over time, replayed from the signed chain, with every round it was NOT observed carrying a reason: not listed by any feed, listed but not walked, possibly beyond the round's cap, or the instrument itself degraded. The gaps are the point — a timeline with misses omitted reads as continuous coverage.",
       what_it_will_not_answer:
-        "A reliability figure. Dividing rounds-ready by rounds-probed is one step away and it is a score on an operator, which this store does not keep on anyone. The dated observations are all there; the aggregate is deliberately withheld.",
+        "A ranking, or any figure without its working. A derived reading of these rows — a tier, a fraction — appears only with the rule it came from, the denominator, and the rows, so you can redo the arithmetic or apply your own rule to the same rows. The dated observations are all there either way.",
+    },
+    tiers: {
+      url: `${base}/corpus/tiers.json`,
+      what_it_answers:
+        "Every host's tier — observed, established, standing, broken or indeterminate — derived from its own rounds by the rule on /criteria and printed with the fraction it came from, alphabetical by host. The rows behind every line are the per-subject read above.",
     },
     started: first,
     entries: records.length,
@@ -185,7 +194,26 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
       400,
     );
   }
-  return c.json(await subjectHistory(c.env, host, c.env.STORE_BASE_URL));
+  /* The tier rides the newest-wins fold, so a paid refresh moves it
+   * here the same hour it moves the passport (2026-09-02). */
+  const observation = await effectiveObservation(c.env, host);
+  return c.json({
+    ...observation.history,
+    tier: deriveTier(
+      tierInputFromHistory(observation.history, observation),
+      `${c.env.STORE_BASE_URL}/criteria`,
+    ),
+  });
+});
+
+/**
+ * GET /corpus/tiers.json — every host's tier with its fraction,
+ * alphabetical by host. Ordered by tier would be a ranking, and this
+ * store does not publish one. One pass over the signed chain plus one
+ * bulk read of the paid refreshes; derived at read, never stored.
+ */
+corpusRoutes.get("/corpus/tiers.json", async (c) => {
+  return c.json(await tierIndex(c.env, c.env.STORE_BASE_URL));
 });
 
 /**
@@ -376,6 +404,7 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
       corrections: CORRECTIONS_POINTER,
       explanation:
         "The corpus chain holds no signed week yet, so there is nothing to count over. This surface fills with the first ward round. The index is at /corpus.json.",
+      exclusions: namedExclusions(base),
     });
   }
   return c.json({
@@ -383,6 +412,13 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
     corrections: CORRECTIONS_POINTER,
     how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
     per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
+    /**
+     * S9 (2026-09-02): what the store's OWN demand numbers subtract,
+     * by name, with the dated register of every time the list moved.
+     * On this surface because it is the wallet-facts page: the house's
+     * wallets are wallet facts too, and the only ones it names.
+     */
+    exclusions: namedExclusions(base),
   });
 });
 

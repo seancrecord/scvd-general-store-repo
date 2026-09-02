@@ -61,7 +61,7 @@ describe("the audit badge", () => {
     expect(svg).toContain("ANSWERED READY • 2026-08-20");
     expect(svg).toContain("door.example");
     expect(svg).toContain("criteria preflight-v1");
-    expect(svg).toContain("never a score");
+    expect(svg).toContain("never a ranking");
     expect(svg).toContain("/api/service-audit/saudit_badge01");
   });
 

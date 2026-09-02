@@ -1,3 +1,4 @@
+import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { Hono } from "hono";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
@@ -157,6 +158,7 @@ attestationRoutes.get("/attestation", (c) => {
   const base = c.env.STORE_BASE_URL;
   const payload = {
     standfirst: ATTESTATION_STANDFIRST,
+    house_sentence: NEVER_A_RANKING_SENTENCE,
     key_architecture: {
       ...KEY_ARCHITECTURE,
       public_key_url: `${base}${KEY_ARCHITECTURE.public_key_url}`,
@@ -246,6 +248,7 @@ attestationRoutes.get("/attestation", (c) => {
       </section>
       <section>
         <h2>Per artifact</h2>
+        <p class="menu-meta">${escapeHtml(NEVER_A_RANKING_SENTENCE)} What a signature covers is stated per class below; what a verdict is derived from is stated on the verdict.</p>
         <table border="1" cellpadding="6">
           <tr><th>artifact</th><th>trust model</th><th>what is signed</th><th>what it does not prove</th></tr>
           ${classes}

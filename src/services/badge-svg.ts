@@ -118,7 +118,7 @@ const VERDICT_LABEL: Record<AuditBadgeOptions["verdict"], { line: string; sub: s
  * THE AUDIT BADGE — the displayable half of the verification
  * marketplace, built 2026-08-20 under the /criteria ruling: a badge
  * is a DATED observation rendered small enough to embed, it ages
- * rather than retires, and it is never a score on an operator. So
+ * rather than retires, and it is never a ranking. So
  * the date shares the line with the verdict, the criteria version is
  * printed, and the whole label links to the signed report anyone can
  * verify without us. All four verdicts render — a store that badges
@@ -138,7 +138,7 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
   <text x="190" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${INK}">${escapeHtml(host)}</text>
   <text x="190" y="78" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${verdict.color}">${verdict.line} • ${date}</text>
   <text x="190" y="94" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="10" fill="${FADED}">${escapeHtml(verdict.sub)} • criteria ${escapeHtml(options.criteria)}</text>
-  <text x="190" y="107" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">a dated observation of one moment — it ages, it is never a score</text>
+  <text x="190" y="107" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">a dated observation of one moment — it ages, it is never a ranking</text>
   <a xlink:href="${escapeHtml(options.reportUrl)}" href="${escapeHtml(options.reportUrl)}">
     <text x="190" y="119" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">signed report: ${escapeHtml(options.reportUrl)}</text>
   </a>
@@ -181,6 +181,12 @@ export interface PassportChipOptions {
    * reader comparing them deserves to know they are two instruments.
    */
   selfObserved?: boolean;
+  /**
+   * The passport's tier with its fraction (2026-09-02). The face carries
+   * the compact form (ESTABLISHED 4/4), the accessible label the whole
+   * line, and an indeterminate tier draws dark. Absent on SELF.
+   */
+  tier?: { tier: string; line: string; ready: number; rounds: number };
 }
 
 /**
@@ -202,17 +208,23 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const sub = options.selfObserved
     ? "self-read of our own catalogs at render, not a census probe"
     : state.sub;
-  const label = options.selfObserved ? "SCVD PASSPORT · SELF" : "SCVD PASSPORT";
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}">
+  const tier = options.selfObserved ? undefined : options.tier;
+  const label = options.selfObserved
+    ? "SCVD PASSPORT · SELF"
+    : tier
+      ? `SCVD PASSPORT · ${tier.tier.toUpperCase()} ${tier.ready}/${tier.rounds}`
+      : "SCVD PASSPORT";
+  const labelColor = tier?.tier === "indeterminate" || tier?.tier === "broken" ? INK : FADED;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}">
   <rect width="300" height="56" fill="${PAPER}" rx="6"/>
   <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
-  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">${label}</text>
+  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="${tier ? 1 : 2}" fill="${labelColor}">${escapeHtml(label)}</text>
   <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
   <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
   <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
     <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
   </a>
-  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a score</text>
+  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a ranking</text>
 </svg>`;
 }
 

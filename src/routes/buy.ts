@@ -1,3 +1,5 @@
+import { isSolanaSignature } from "@/lib/solana-rpc";
+import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
@@ -369,6 +371,62 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * between the quote and the payment, and the verified-fact law says
  * the check runs when it matters, not when it was cheap.)
  */
+/**
+ * The aura walk needs a door BEFORE money moves, under the shared law
+ * (https, default port, public internet, never our own hostname).
+ * Our own hostname is refused for a reason that is not the platform's
+ * self-fetch limit — the keeper's machines could reach us fine — but
+ * the older one: the store's own cold passes are already published,
+ * free and dated, in AGENT_UX.md, and a walk of ourselves sold to a
+ * stranger would be the instrument vouching for itself. Nothing is
+ * charged for a refusal here.
+ */
+const auraWalkCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/aura_walk" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
+        error:
+          "The walk needs a url query parameter — your own x402 door, https, on the public internet, the URL a buyer would GET expecting a 402. No door, no charge.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        charged: false,
+        code: "target_refused",
+        error:
+          "That is this store's own hostname. Our own cold passes are published free and dated in AGENT_UX.md, and a walk of ourselves sold to you would be the instrument vouching for itself. Nothing charged.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/trust_profile" || !isBuying(c)) {
     return next();
@@ -1152,6 +1210,66 @@ const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * The case file needs a real hash BEFORE money moves, same as the
+ * attestation; the shape picks the chain. The declared claim is capped
+ * for free here rather than truncated after the coin drops.
+ */
+const caseFileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (buyRequestPath(c) !== "/api/buy/the_case_file" || !isBuying(c)) {
+    return next();
+  }
+  const txHash = c.req.query("tx_hash");
+  if (!txHash || (!TX_HASH.test(txHash) && !isSolanaSignature(txHash))) {
+    return c.json(
+      {
+        charged: false,
+        code: "bad_request",
+        error:
+          "Give a tx_hash query parameter — 0x followed by 64 hex characters for Base or Polygon, or a base58 Solana signature. The shape picks the chain. No hash, no charge.",
+      },
+      400,
+    );
+  }
+  const claim = c.req.query("claim");
+  if (claim !== undefined && claim.length > CASE_FILE_CLAIM_CAP) {
+    return c.json(
+      {
+        charged: false,
+        code: "bad_request",
+        error: `claim is ${claim.length} characters; the file stores up to ${CASE_FILE_CLAIM_CAP}, verbatim. Shorten it — nothing is truncated on your behalf and nothing was charged.`,
+      },
+      400,
+    );
+  }
+  const amountRaw = c.req.query("expected_amount_usdc");
+  if (amountRaw !== undefined && amountRaw !== "") {
+    const amount = Number.parseFloat(amountRaw);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000_000) {
+      return c.json(
+        {
+          charged: false,
+          code: "bad_request",
+          error: "expected_amount_usdc has to be a positive number of USDC below a billion, or left off. It is recorded as declared, never as observed. Nothing charged.",
+        },
+        400,
+      );
+    }
+  }
+  const url = c.req.query("url");
+  if (url !== undefined && url !== "" && !isValidHttpUrl(url)) {
+    return c.json(
+      {
+        charged: false,
+        code: "bad_request",
+        error: "url has to be an http(s) URL — the endpoint the purchase was made at — or left off. Nothing charged.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/settlement_attestation" || !isBuying(c)) {
     return next();
@@ -1214,6 +1332,7 @@ buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", trustProfileCheck);
+buyRoutes.use("/api/buy/*", auraWalkCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
@@ -1221,6 +1340,7 @@ buyRoutes.use("/api/buy/*", statementCheck);
 buyRoutes.use("/api/buy/*", mandateCheck);
 buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
+buyRoutes.use("/api/buy/*", caseFileCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", spotCheckGate);
 buyRoutes.use("/api/buy/*", provenanceGate);
@@ -1341,6 +1461,12 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // signatureCardCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
+  if (item.id === "aura_walk") {
+    // auraWalkCheck validated the URL (and refused our own host). The
+    // door rides the order record so the keeper's counter shows what
+    // to walk, separate from the buyer's free-text detail.
+    input.targetUrl = c.req.query("url") ?? "";
+  }
   if (item.id === "onpage_audit") {
     // onpageAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
@@ -1410,6 +1536,27 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     const cap = Number.parseFloat(c.req.query("declared_cap_usdc") ?? "");
     if (Number.isFinite(cap) && cap > 0) query.declaredCapUsdc = cap;
     input.reconciliationQuery = query;
+  }
+  if (item.id === "the_case_file") {
+    // caseFileCheck validated the hash, the claim length, the amount and the url before the gate.
+    const ask: Parameters<typeof fulfillPurchase>[3]["caseFileInput"] = {
+      txHash: c.req.query("tx_hash") ?? "",
+    };
+    const mandateId = sanitizeText(c.req.query("mandate_id"), 80);
+    if (mandateId) ask.mandateId = mandateId;
+    const url = c.req.query("url");
+    if (url) ask.endpointUrl = url;
+    const payer = sanitizeText(c.req.query("payer"), 60);
+    if (payer) ask.payer = payer;
+    const recipient = sanitizeText(c.req.query("recipient"), 60);
+    if (recipient) ask.recipient = recipient;
+    const amount = Number.parseFloat(c.req.query("expected_amount_usdc") ?? "");
+    if (Number.isFinite(amount) && amount > 0) ask.expectedAmountUsdc = amount;
+    const claim = (c.req.query("claim") ?? "").replace(/\0/g, "");
+    if (claim) ask.claim = claim;
+    const launchCheckId = sanitizeText(c.req.query("launch_check_id"), 80);
+    if (launchCheckId) ask.launchCheckId = launchCheckId;
+    input.caseFileInput = ask;
   }
   if (item.id === "bitcoin_anchor") {
     // anchorDigestCheck validated the digest shape before the gate.

@@ -178,6 +178,6 @@ describe("the chip renders freshness, ready-side only", () => {
     const svg = await response.text();
     expect(svg).toContain("chipped.example");
     expect(svg).toContain("/passport/chipped.example");
-    expect(svg).toContain("never a score");
+    expect(svg).toContain("never a ranking");
   });
 });

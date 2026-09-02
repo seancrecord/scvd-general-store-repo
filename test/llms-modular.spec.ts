@@ -420,6 +420,13 @@ const BASE = "https://scvd.store";
  * the guide carries "provenance_check, The Company an Address Keeps"
  * and "does not grade operators", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-FIRST — by the passport share card:
+ * the guide's passport section names ${base}/passport/card/{host}.png,
+ * the page's own social image, drawn from the same dates and never
+ * carrying a verdict word. Confirmed before this value was taken: the
+ * guide carries "/passport/card/{host}.png" and "never a verdict
+ * word", and still every earlier pin.
+ *
  * Re-taken 2026-09-01 — the TWENTY-FIRST — by derivation,
  * merged in behind the five re-takes above. The standing
  * watch learned to report the hour a door's payTo moved
@@ -430,12 +437,73 @@ const BASE = "https://scvd.store";
  * this value was taken: the served guide carries that clause and
  * does not carry the new /what answer, which lives on /what alone.
  *
+ * Re-taken 2026-09-02 — the TWENTY-SECOND — by CI on the share card:
+ * the card's URL template rode the guide as bare prose, and
+ * markdown-discoverability holds that a templated URL travels as
+ * code so a scanner never probes "{host}" verbatim. The one sentence
+ * now carries the template in backticks; no word changed. Confirmed
+ * before this value was taken: the guide carries
+ * "`${base}/passport/card/{host}.png`" and still every earlier pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-THIRD — by the keeper's ruling that
+ * reopened daily_fortune: the guide's Penny Shelf sentence names the
+ * fortune beside the blessing again ("the same line for every buyer
+ * until midnight UTC (fortune_date rides the response)"), and the
+ * MENU_ITEMS lines the guide prints gained the fortune's row, in the
+ * keeper's original ink. Confirmed before this value was taken: the
+ * guide carries "daily_fortune" and "fortune_date", and still every
+ * earlier pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-FOURTH — by the keeper's doctrine
+ * ruling (roadmap N7a): "never a score, a rating or a ranking" became
+ * "never a ranking, and never a verdict without its derivation and
+ * denominator beside it." The sentence rides the first screen (the
+ * opening paragraph the guide shares with the homepage, the MCP
+ * handshake and the skill), the per-host history paragraph no longer
+ * refuses the division but requires its working, and the defect
+ * vocabulary line drops "not a score". Confirmed before this value
+ * was taken: the guide carries the new sentence, carries no retired
+ * form (test/doctrine.spec.ts hunts them), and still every earlier
+ * pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-FIFTH — by roadmap N7(b), the
+ * passport tier: the passport section says every passport carries a
+ * tier derived by the rule on /criteria and printed with its fraction
+ * and its rows, and the corpus section names /corpus/tiers.json,
+ * alphabetical because ordered by tier would be a ranking. Confirmed
+ * before this value was taken: the guide carries "summary.tier_line"
+ * and "/corpus/tiers.json", and still every earlier pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-SIXTH — by roadmap N8, the case
+ * file: the guide gains one paragraph before the reading room naming
+ * the_case_file, what it binds, and its door at /case/{case_id}, and
+ * the MENU_ITEMS lines gained its row. Re-taken once more the same
+ * hour when the case file's drafted subtitle came off (under-a-dollar
+ * doors carry none), because the guide prints "name — subtitle" and
+ * CI caught the stale value. Confirmed before this value was taken:
+ * the guide carries "/case/{case_id}" and "never says who was in the
+ * wrong", and still every earlier pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-SEVENTH — by roadmap S9, the named
+ * exclusions: the "Our own wallets, declared" section gains one
+ * paragraph naming the exclusions block on /corpus/wallet-facts.json
+ * and the dated register behind it. Confirmed before this value was
+ * taken: the guide carries "under \`exclusions\`" and "cannot change a
+ * number quietly", and still every earlier pin.
+ *
+ * Re-taken 2026-09-02 — the TWENTY-EIGHTH — by roadmap S11, the aura
+ * walk: one paragraph after "a keeper who answers" naming aura_walk
+ * and its method, the use_when list gains the walk's moment, and the
+ * collab's moment drops "One door now". Confirmed before this value
+ * was taken: the guide carries "aura_walk" and "never a grade", no
+ * longer carries "One door now", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a471b6f4b8654330be1529169dc292ae5e6e566dcd2960c0c18e971f0018c413";
+  "d67889f5cb29899ddef99c64095678bfde84b5f8413254ecbf0b5b6677d336a1";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

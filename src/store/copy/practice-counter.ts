@@ -197,7 +197,15 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // about to make its first real purchases, which is exactly the
   // moment to record what it claims it was authorized to do.
   "the_mandate",
+  // A quarter (2026-09-02): the case file belongs on the practice
+  // counter for the same reason the attestation does — the buyer who
+  // just made a purchase holds the one input it needs, the settlement.
+  "the_case_file",
   "small_blessing",
+  // Back on the shelf 2026-09-02: a penny, no arguments, and the one
+  // door whose answer a practice buyer can check against another
+  // buyer's — same line for everyone until midnight UTC.
+  "daily_fortune",
   "the_confession",
   "hello",
   "context_anchor",

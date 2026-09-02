@@ -19,6 +19,8 @@ import {
   AUDIT_BATTERY_CHANGE_NOTE,
   AUDIT_CRITERIA_VERSION,
 } from "@/services/service-audit";
+import { DOCTRINE_NOTE } from "@/store/copy/doctrine";
+import { ESTABLISHED_ROUNDS, STANDING_ROUNDS, TIER_RULE, TIER_RULE_NOTE } from "@/services/passport-tier";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -72,7 +74,7 @@ function criteriaTermsJsonLd(base: string): string {
     name: "What 'verified' means at scvd.store — x402 verdict vocabulary and artifact classes",
     description:
       "The published meaning of every verdict this store's checks can return, and for each class of signed artifact, what the signature covers and what it still does not prove. Criteria version " +
-      `${AUDIT_CRITERIA_VERSION}. No verdict here is ever a score on an operator; each is a dated observation of one moment.`,
+      `${AUDIT_CRITERIA_VERSION}. Never a ranking, and never a verdict without its derivation and denominator beside it; each verdict is a dated observation of one moment, or a derivation that prints its rule and its fraction.`,
     url: `${base}/criteria`,
     inLanguage: "en",
     license: "https://creativecommons.org/licenses/by/4.0/",
@@ -89,7 +91,28 @@ criteriaRoutes.get("/criteria", (c) => {
     dated: CRITERIA_DATED,
     what_a_badge_is: BADGE_IS,
     what_retires_a_badge: BADGE_RETIREMENT,
-    never_a_score_on_an_actor: NEVER_AN_ACTOR_SCORE,
+    never_a_ranking: NEVER_AN_ACTOR_SCORE,
+    /**
+     * THE DOCTRINE NOTE (2026-09-02). The sentence changed on the
+     * keeper's ruling, and a sentence that governs every surface
+     * changes in public, dated, with the why beside it — the same
+     * manner as the battery change note above it.
+     */
+    doctrine: DOCTRINE_NOTE,
+    /**
+     * THE TIER RULE (2026-09-02, roadmap N7b), typed once here and
+     * derived everywhere it renders. A tier is a function of the
+     * rounds in the window, the ready count, the latest observation
+     * and coverage_suspect; every rendering prints the fraction.
+     */
+    tier_rule: {
+      dated: DOCTRINE_NOTE.dated,
+      rules: TIER_RULE,
+      established_needs: ESTABLISHED_ROUNDS,
+      standing_needs: STANDING_ROUNDS,
+      note: TIER_RULE_NOTE,
+      index: `${base}/corpus/tiers.json`,
+    },
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
     criteria_battery: {
       version: AUDIT_CRITERIA_VERSION,
@@ -167,6 +190,23 @@ criteriaRoutes.get("/criteria", (c) => {
         <h2>What a badge is</h2>
         <p class="menu-desc">${escapeHtml(BADGE_IS)}</p>
         <p class="menu-desc">${escapeHtml(NEVER_AN_ACTOR_SCORE)}</p>
+      </section>
+      <section>
+        <h2>The sentence changed on ${escapeHtml(DOCTRINE_NOTE.dated)}</h2>
+        <p class="menu-desc">It read: <em>${escapeHtml(DOCTRINE_NOTE.was)}</em> It now reads: <strong>${escapeHtml(DOCTRINE_NOTE.now)}</strong></p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_changed)}</p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.why)}</p>
+        <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_did_not_change)}</p>
+        <p class="menu-meta">${escapeHtml(DOCTRINE_NOTE.what_keeps_its_bytes)} ${escapeHtml(DOCTRINE_NOTE.rule)}</p>
+      </section>
+      <section>
+        <h2>The passport tier: the rule, typed once</h2>
+        <p class="menu-desc">Every endpoint passport carries a tier derived at read from that host's signed rounds. This is the only place the rule is typed; every rendering of a tier prints the fraction it came from and links the rows.</p>
+        <table border="1" cellpadding="6">
+          <tr><th>tier</th><th>rule</th></tr>
+          ${TIER_RULE.map((entry) => `<tr><td><strong><code>${escapeHtml(entry.tier)}</code></strong></td><td><small>${escapeHtml(entry.rule)}</small></td></tr>`).join("\n")}
+        </table>
+        <p class="menu-meta">${escapeHtml(TIER_RULE_NOTE)} Every host's tier, alphabetical: <a href="/corpus/tiers.json"><code>/corpus/tiers.json</code></a>.</p>
       </section>
       <section>
         <h2>What retires a badge</h2>

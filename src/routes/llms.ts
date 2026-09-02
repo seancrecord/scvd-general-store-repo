@@ -1,3 +1,4 @@
+import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -264,6 +265,16 @@ wallet — and that evaluation layer is a real part of what this store
 is for, not a free sample of the shop. The shop is still a shop:
 signed goods, human labor, and a keeper who answers.
 
+The one labor door that is also an instrument: aura_walk. Name your
+own x402 door and the keeper sends models of different strength
+through it cold, by hand, one entry point per pass, the way this store
+walks itself (the method is AGENT_UX.md in the repository); the
+completed order carries, per entry point, the round trips to first
+success, the avoidable 400s, where in the read order your strongest
+trust signal appeared, and every transcript verbatim with the model
+named. Counts and quotations, never a grade. Ask in detail for a
+weaker model if that is who shops at your door.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check
@@ -369,6 +380,18 @@ A2A agent card: ${base}/.well-known/a2a.json (also served at
 /.well-known/agent-card.json and /.well-known/agent.json). A discovery
 card, honestly labeled: skills derive live from the menu, and the
 transport field says MCP because that is what we actually speak.
+
+The case file (the_case_file, a quarter, since 2026-09-02) is the
+observation shelf assembled for the human who has to decide what went
+wrong with one purchase: give a tx_hash and the file binds, under one
+signature, the settlement attestation, the reconciliation, the mandate
+you cite with its declared cap beside the settled amount, the door over
+the seven days around the transaction with the passport tier at the
+time, and delivery where anyone observed it — each section present or
+absent by name, the gaps counted against us, your own account verbatim
+and marked declared. Served forever at \`${base}/case/{case_id}\`. It
+never says who was in the wrong; if this store is a party, the file
+says so on its face.
 
 ## The reading room
 
@@ -551,8 +574,10 @@ A few items do more than mint: context_anchor signs and stores a state
 summary you pass in the summary query parameter, readable forever at the
 returned anchor URL; recurring_patronage opens a 30-day standing pass
 (renew by buying again with your pass_id) whose pass URL serves the
-keeper's signed monthly note; the small_blessing sits on the Penny
-Shelf by the door, the cheapest real settlement in the store.
+keeper's signed monthly note; small_blessing and daily_fortune sit on
+the Penny Shelf by the door, the cheapest real settlements in the
+store, and the fortune is the same line for every buyer until
+midnight UTC (fortune_date rides the response).
 
 ## Standards, so you can check us without asking us
 
@@ -804,6 +829,14 @@ declined.
 
 ## Our own wallets, declared
 
+What the organic numbers subtract is published by name at
+\`${base}/corpus/wallet-facts.json\` under \`exclusions\`: every house
+wallet with who and since, the house's own agents, the user-agent
+strings of machinery that looks rather than buys, and a dated row for
+every time the list moved saying which published number changed and
+which way. The newest row pins the sizes of both tables, so an
+exclusion cannot change a number quietly.
+
 Every wallet this store controls is listed and signed at
 ${base}/house-ledger.json, with the house-against-organic settlement
 split beside it. Published because an outside risk scorer looked at
@@ -942,11 +975,17 @@ knock, the round hit its cap and it may have been in the tail, or the
 round recorded coverage trouble of its own. The gaps are the point —
 a timeline with the misses left out reads as continuous coverage.
 
-What that read will not give you is a reliability figure. Dividing
-rounds-ready by rounds-probed is one step away and it is an
-accumulating score on an operator, which is the thing this store does
-not keep on anyone. The dated observations are all there; the ratio is
-withheld deliberately, not forgotten.
+What that read will not give you is a ranking, or a figure without
+its working. The house sentence since 2026-09-02 is ${NEVER_A_RANKING}: a
+derived reading of those rows — a tier, a fraction — is published only
+with the rule it came from, the denominator, and the rows, so a reader
+who disagrees with the rule can apply their own to the same rows. The
+rule and the dated note are at ${base}/criteria.
+
+The first such reading is the passport tier, and every host's sits at
+\`${base}/corpus/tiers.json\`: each host with its tier and the fraction
+it came from, alphabetical by host — ordered by tier would be a
+ranking. The per-host read above carries the same tier with its rows.
 
 ## Named defect classes, so two instruments can compare notes
 
@@ -979,8 +1018,8 @@ the mapping is stated with the path to check it and what would show it
 wrong. Those mappings are our reading of somebody else's published
 definitions on a date, never their endorsement.
 
-Not a score, not a ranking, not a list of anybody: every class
-describes one endpoint at one moment. CC BY 4.0 — take the names, that
+Not a ranking, not a list of anybody: every class describes one
+endpoint at one moment. CC BY 4.0 — take the names, that
 is the point of publishing them.
 
 ## The same evidence as an OKF bundle
@@ -1099,7 +1138,15 @@ disagree with the freshness rule), \`observed_at\`, \`valid_until\`,
 \`failed\`, and \`not_observed\` — what the cited modules declined to
 check, stated beside the verdict rather than left silent. A refusal
 answers \`decision: INDETERMINATE\` too, so an agent reading one field
-never has to special-case the status code. Landing and the store's own self-passport (labeled self-observed)
+never has to special-case the status code. Since 2026-09-02 every
+passport also carries a TIER — observed, established, standing, broken
+or indeterminate — derived at read from that host's signed rounds by
+the rule typed once at ${base}/criteria, and printed on every
+rendering with the fraction it came from (\`summary.tier_line\`, e.g.
+"established — 4 of 4, W33–W36") and the rows behind it
+(\`payload.tier.rows\`). Never a ranking; a tier is a reading of a
+door's rounds, not a score on whoever runs it, and a paid refresh that
+finds the door broken moves the tier to broken the same hour. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
 refusal, not a row: names appear only on the ready side here. Every
 passport carries a free embeddable chip (\`${base}/badges/passport/{host}.svg\`)
@@ -1112,6 +1159,10 @@ address for their evidence can commission a hosted profile
 purchase, renewable): the passport, chip and history at one URL,
 derived live from the same corpus, honest in both directions. The
 index at ${base}/profiles lists in-term ready-side hosts only.
+The passport's share card, drawn from the same dates — who looked, when,
+which host, when it goes stale, never a verdict word — is
+\`${base}/passport/card/{host}.png\`; it is the page's own social image, so a
+pasted passport link unfurls into the observation.
 
 ## Verify anyone's receipt — signed verdicts, free
 

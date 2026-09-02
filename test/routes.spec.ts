@@ -91,12 +91,18 @@ describe("the storefront", () => {
       // question one turn deeper, and lands beside it for the same
       // persona that made the cheap-door reorder worth doing.
       "settlement_reconciliation",
+      // Two pennies, tied, in Penny Shelf file order: the fortune
+      // (relisted 2026-09-02) ahead of the confession.
+      "daily_fortune",
       "the_confession",
       "attestation_bundle",
       // A dime: the mandate rides the cheap-door region on purpose —
       // the thing you buy BEFORE anything goes wrong should be among
       // the first prices a scanning agent sees.
       "the_mandate",
+      // A quarter (2026-09-02): the case file, between the dime and the
+      // fifty-cent hello.
+      "the_case_file",
       "hello",
       /*
        * THE $0.99 BLOCK, new on 2026-08-28 and the shelf's own rule
@@ -170,6 +176,9 @@ describe("the storefront", () => {
       // price — the ladder's stable sort, nothing hand-picked.
       "trust_profile",
       "certificate_of_patronage",
+      // The aura walk ($150, 2026-09-02) sits between the certificate
+      // and the collab by price — the same stable ladder.
+      "aura_walk",
       // The collab closes the ladder as the dearest thing here, and
       // the novelty shelf that used to trail it moved to the $0.99
       // block.

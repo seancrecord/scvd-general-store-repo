@@ -1,3 +1,4 @@
+import { archiveDepthFor } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
 import type {
@@ -296,14 +297,26 @@ async function enrich402Body(
   mismatch?: MismatchReport,
   payloadProblems: PayloadFieldProblem[] = [],
   evmAccept?: Record<string, unknown> | null,
+  query: Record<string, string | undefined> = {},
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
   }
   const base = env.STORE_BASE_URL;
   const item = getMenuItem(itemKeyFromPath(path));
+  /*
+   * DEPTH BEFORE YOU BUY (roadmap S7, 2026-09-02): for the items that
+   * sell this store's own history, how much of it stands behind the
+   * subject named in the query — counted from the chain, before the
+   * money. Fail-soft: a chain read that fails leaves the 402 exactly
+   * as it was; no decoration is worth blocking the till.
+   */
+  const archiveDepth = item
+    ? await archiveDepthFor(env, base, item.id, query).catch(() => null)
+    : null;
   return {
     ...body,
+    ...(archiveDepth ? { archive_depth: archiveDepth } : {}),
     ...(decline
       ? {
           payment_declined: {
@@ -981,6 +994,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           refusal?.mismatch,
           payloadProblems,
           evmAcceptFrom(result.response.headers),
+          c.req.query(),
         );
         return respondWithInstructions(c, {
           ...result.response,
