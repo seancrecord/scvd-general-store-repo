@@ -371,6 +371,7 @@ describe("the coverage statement's term table matches the shelf", () => {
 const DOORS_UNDER_CONTRACT = [
   { path: "/api/preflight/v1", dials_out: true, paid_rung: true },
   { path: "/api/before-you-pay/v1", dials_out: true, paid_rung: true },
+  { path: "/api/look/v1", dials_out: true, paid_rung: true },
   /*
    * THE DESK HAS NO PAID RUNG ON PURPOSE, and the first draft of this
    * guard was wrong to demand one. It requires every door to point at

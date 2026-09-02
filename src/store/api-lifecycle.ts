@@ -97,6 +97,17 @@ export const API_VERSIONS: readonly ApiVersionRow[] = [
     note: "Folds the Solana rail-receivability read into the verdict rather than reporting it as an advisory. Call this one from a new integration.",
   },
   {
+    api: "The look — what this store holds about one door",
+    path: "/api/look/v1",
+    version: "v1",
+    status: "current",
+    since: "2026-09-02",
+    sunset: null,
+    deprecated: null,
+    successor: null,
+    note: "Composes the current preflight battery with the per-host history; the battery it rides moves with the preflight's own lifecycle, and the held half's shape only ever adds fields.",
+  },
+  {
     api: "The conformance desk — signed offers and receipts, any issuer",
     path: `/api/conformance/${CONFORMANCE_VERSION}`,
     version: CONFORMANCE_VERSION,

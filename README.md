@@ -619,7 +619,7 @@ are not:
   with its own quality scan: descriptions, parameter descriptions and
   output schemas at full marks. Its annotations reading (0 of 27)
   describes the 27-tool catalog this store retired on 2026-08-02 —
-  the live catalog is 13 tools, every one carrying all four MCP
+  the live catalog is 14 tools, every one carrying all four MCP
   behavior hints through `tools/list` — and refreshes on its next
   scan rather than being argued with.
 - **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)
