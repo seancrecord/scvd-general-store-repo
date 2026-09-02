@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { fitCell, type CardLine } from "@/lib/pixel-card";
 import {
   DECISION_MEANING,
   DECISION_RULE,
@@ -220,12 +221,34 @@ export function colophonText(passport: EndpointPassport, base: string): string {
   return `Observed by scvd.store on ${observed}. Gaps counted against the observer. Stale after ${s.valid_until.slice(0, 10)}. Read the dated page: ${base}/passport/${passport.payload.host}`;
 }
 
+/**
+ * THE SHARE CARD'S LINES (2026-09-02). What a pasted passport link
+ * unfurls into: who looked, when, at which host, and when the reading
+ * goes stale. No verdict word, ever — the card is a colophon drawn
+ * large, and a card that said READY would be the badge rules 43 and
+ * 54 forbid. The host line shrinks to fit; nothing is truncated.
+ */
+export function cardLines(passport: EndpointPassport): CardLine[] {
+  const s = passport.payload.summary;
+  const observed = s.observed_at ? s.observed_at.slice(0, 10) : "undated";
+  const host = passport.payload.host.toLowerCase();
+  return [
+    { text: "observed by scvd.store", cell: 8 },
+    { text: `on ${observed}`, cell: 6 },
+    { text: host, cell: fitCell(host, 9) },
+    { text: `stale after ${s.valid_until.slice(0, 10)}`, cell: 6 },
+    { text: "gaps counted against the observer", cell: 4 },
+  ];
+}
+
 export function colophonBlock(passport: EndpointPassport, base: string): string {
   const text = colophonText(passport, base);
   const url = `${base}/passport/${passport.payload.host}`;
   return `<section>
     <h2>To share</h2>
     <p class="menu-desc">A colophon, not a badge: it says who looked and when, and it links the dated page. Paste it beside your door as it stands — the words carry their own expiry.</p>
+    <p class="menu-meta">Pasting the page's link anywhere that unfurls previews shows this card, drawn from the same dates: <a href="${escapeHtml(base)}/passport/card/${escapeHtml(passport.payload.host)}.png"><code>${escapeHtml(base)}/passport/card/${escapeHtml(passport.payload.host)}.png</code></a></p>
+    <p><img src="${escapeHtml(base)}/passport/card/${escapeHtml(passport.payload.host)}.png" alt="Observed by scvd.store on ${escapeHtml(passport.payload.summary.observed_at ? passport.payload.summary.observed_at.slice(0, 10) : "an undated pass")}; ${escapeHtml(passport.payload.host)}; stale after ${escapeHtml(passport.payload.summary.valid_until.slice(0, 10))}; gaps counted against the observer" width="600" height="315" style="max-width:100%;height:auto;border:1px solid currentColor"></p>
     <pre class="menu-desc"><code>${escapeHtml(text)}</code></pre>
     <pre class="menu-desc"><code>${escapeHtml(`[${text.replace(/ Read the dated page: .*$/, "")}](${url})`)}</code></pre>
   </section>`;

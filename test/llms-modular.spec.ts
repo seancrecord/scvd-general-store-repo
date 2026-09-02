@@ -420,6 +420,13 @@ const BASE = "https://scvd.store";
  * the guide carries "provenance_check, The Company an Address Keeps"
  * and "does not grade operators", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the TWENTY-FIRST — by the passport share card:
+ * the guide's passport section names ${base}/passport/card/{host}.png,
+ * the page's own social image, drawn from the same dates and never
+ * carrying a verdict word. Confirmed before this value was taken: the
+ * guide carries "/passport/card/{host}.png" and "never a verdict
+ * word", and still every earlier pin.
+ *
  * Re-taken 2026-09-01 — the TWENTY-FIRST — by derivation,
  * merged in behind the five re-takes above. The standing
  * watch learned to report the hour a door's payTo moved
@@ -435,7 +442,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a471b6f4b8654330be1529169dc292ae5e6e566dcd2960c0c18e971f0018c413";
+  "545e4b4ef709e160e02a1a6ca2c13ceef3c136281f4abbdcd63945aec906ce90";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

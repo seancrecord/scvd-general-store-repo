@@ -49,6 +49,8 @@ export interface SimplePageOptions {
    * pages the twin is the page's own path.
    */
   markdownAlt?: string;
+  /** A page's own social card; the keeper's dino at /og.png otherwise. */
+  ogImage?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
   bodyHtml: string;
   /**
@@ -171,9 +173,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="${SITE_ORIGIN}/og.png">
+  <meta property="og:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${machineMap}${markdownAlt}${webmcp}
+  <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${machineMap}${markdownAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
