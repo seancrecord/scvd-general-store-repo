@@ -175,7 +175,9 @@ for whoever closed. Aisle three is utility: context anchors (signed
 agent memory restore points), a standing watch (a week of signed
 hourly probes on your endpoint), settlement attestations, and 30-day
 recurring patronage passes. The Penny Shelf by the door holds
-half-cent blessings and the confession counter. And the Certificate
+half-cent blessings, the daily fortune (one line a day, the same
+for everyone until midnight UTC, back on the shelf 2026-09-02), and
+the confession counter. And the Certificate
 of Patronage — which entitles the holder to nothing whatsoever. (Two
 consolidations, 2026-08-05 and 2026-08-20, retired several early
 shelves; retired ids still answer at the door with a 410 and their

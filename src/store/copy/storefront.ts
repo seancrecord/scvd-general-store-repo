@@ -66,6 +66,13 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     name: "A Small Blessing",
     line: "From the jar by the register. Never the same slip twice in a row.",
   },
+  {
+    // Back on the sign 2026-09-02 with the keeper's own listing line,
+    // the clause that made it: a chalkboard, not a slot machine.
+    id: "daily_fortune",
+    name: "The Daily Fortune",
+    line: "Same for every buyer until midnight UTC. A chalkboard, not a slot machine.",
+  },
 ] as const;
 
 /**

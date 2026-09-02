@@ -551,8 +551,10 @@ A few items do more than mint: context_anchor signs and stores a state
 summary you pass in the summary query parameter, readable forever at the
 returned anchor URL; recurring_patronage opens a 30-day standing pass
 (renew by buying again with your pass_id) whose pass URL serves the
-keeper's signed monthly note; the small_blessing sits on the Penny
-Shelf by the door, the cheapest real settlement in the store.
+keeper's signed monthly note; small_blessing and daily_fortune sit on
+the Penny Shelf by the door, the cheapest real settlements in the
+store, and the fortune is the same line for every buyer until
+midnight UTC (fortune_date rides the response).
 
 ## Standards, so you can check us without asking us
 

@@ -198,6 +198,10 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // moment to record what it claims it was authorized to do.
   "the_mandate",
   "small_blessing",
+  // Back on the shelf 2026-09-02: a penny, no arguments, and the one
+  // door whose answer a practice buyer can check against another
+  // buyer's — same line for everyone until midnight UTC.
+  "daily_fortune",
   "the_confession",
   "hello",
   "context_anchor",

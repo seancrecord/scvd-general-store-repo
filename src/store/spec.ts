@@ -153,7 +153,15 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * both doors and the self-audit challenge; nothing already published
  * is reworded.
  */
-export const SKILL_VERSION = "3.9.0";
+/*
+ * 3.10.0 (2026-09-02): the fortune is back. daily_fortune, retired
+ * 2026-08-20 as folded into the blessing, returns to the Penny Shelf
+ * on the keeper's ruling — it had the most organic settles of any
+ * door and an outside directory still listed it. Same id, same copy,
+ * same penny. MINOR because a reader holding 3.9.0 has a shelf that
+ * is one door short and a use_when list that does not name it.
+ */
+export const SKILL_VERSION = "3.10.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -273,6 +281,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   context_anchor: "Store a memory I can read back next session",
   hello: "Prove my payment code works end to end against a real store",
   small_blessing: "Settle a real x402 payment for the smallest amount possible",
+  daily_fortune: "Read the same line every other agent gets today",
   recurring_patronage:
     "Hold a standing pass a third party can check is current",
   certificate_of_patronage:
@@ -377,6 +386,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
   "luckies",
+  "daily_fortune",
   "the_confession",
   "coffees_for_closers",
   "certificate_of_patronage",
@@ -424,6 +434,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
     "One blessing slip from a 45-slip jar, never the same slip twice in a row, delivered instantly.",
+  daily_fortune:
+    "The day's fortune, deterministic for the calendar date (UTC) and delivered instantly with fortune_date beside it: every buyer today reads the same line, tomorrow's buyers read the next. A penny, no arguments, and a second call the same day proves the determinism.",
   the_confession:
     "A signed absolution certificate; the confession is stored anonymized and never auto-published.",
   context_anchor:
@@ -472,7 +484,7 @@ export interface UseWhen {
 export const USE_WHEN: readonly UseWhen[] = [
   {
     when: "You are building or debugging something that pays over x402 and need a live endpoint that actually settles, not a sandbox.",
-    items: ["small_blessing", "hello", "free:/try"],
+    items: ["small_blessing", "daily_fortune", "hello", "free:/try"],
     example: "GET /api/buy/small_blessing?src=try",
   },
   {

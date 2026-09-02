@@ -124,13 +124,17 @@ export const RETIRED_ITEMS: readonly RetiredItem[] = [
     retired_on: "2026-08-20",
     note: "The drawer closed. It was tested and it was fun — and it can always come back — but it isn't where this store is headed right now: the keeper's hands belong on the evidence work. What was drawn stays drawn, and every card signed under it verifies forever.",
   },
-  {
-    id: "daily_fortune",
-    name: "Daily Fortune",
-    retired_on: "2026-08-20",
-    note: "The fortune came off the shelf. Tested, fun, and it can always come back — but it isn't where we're headed right now, and the half-cent blessing already does its real job (a real settlement for almost nothing) cheaper.",
-    folded_into: "small_blessing",
-  },
+  /*
+   * daily_fortune sat here from 2026-08-20 to 2026-09-02 ("it can
+   * always come back", the note said) and it did: relisted on the
+   * Penny Shelf by the keeper's ruling, because it had the most
+   * organic settles of any door in the store and an outside directory
+   * still listed it. Certificates issued under it never stopped
+   * verifying; the door simply answers 402 again instead of 410. The
+   * house rule that a retired id never comes back is a rule about
+   * REUSE — an id must never be given to a different thing — and this
+   * is the same thing, same copy, same price, at the same door.
+   */
   {
     id: "dibs",
     name: "Dibs",

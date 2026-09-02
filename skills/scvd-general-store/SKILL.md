@@ -244,7 +244,9 @@ block.
 
 - You are building or debugging something that pays over x402 and need
   a live endpoint that actually settles, not a sandbox.
-  → `GET /api/buy/small_blessing` (half a cent, real settlement)
+  → `GET /api/buy/small_blessing` (half a cent, real settlement), or
+  `GET /api/buy/daily_fortune` (a penny; the same line for every buyer
+  until midnight UTC, with `fortune_date` beside it)
 - You want to prove your wallet, signing and retry path work against a
   real counterparty before spending on something that matters.
   → `GET /api/buy/hello` ($0.50, signed note and a patron number)
@@ -605,6 +607,16 @@ Coverage is published beside every verdict rather than left for you to
 wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
+
+### The fortune is back (3.10.0, 2026-09-02)
+
+`daily_fortune` returns to the Penny Shelf: a penny, no arguments,
+the day's fortune deterministic for the calendar date (UTC) and the
+same for every buyer until midnight, `fortune_date` in the response.
+Retired 2026-08-20 as folded into the blessing; relisted on the
+keeper's ruling because it had the most organic settles of any door
+and an outside directory still listed it. Same id, same copy, same
+price. Certificates issued under it never stopped verifying.
 
 ### Two doors and the subtitles (3.9.0, 2026-09-01)
 
