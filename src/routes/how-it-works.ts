@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -385,7 +385,7 @@ function howItWorksJsonLd(base: string): string {
     description: WHAT_THIS_IS,
     url: `${base}/how-it-works`,
     isAccessibleForFree: true,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     step: HOW_EVIDENCE_IS_MADE.map((entry) => ({
       "@type": "HowToStep",
       position: entry.step,

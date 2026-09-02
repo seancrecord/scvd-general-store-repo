@@ -1,4 +1,5 @@
 import { namedExclusions } from "@/store/exclusions";
+import { organizationRef } from "@/lib/jsonld";
 import { effectiveObservation } from "@/services/passport";
 import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
@@ -80,7 +81,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     description: CORPUS_DATASET_DESCRIPTION,
     license: CORPUS_DATASET_LICENSE,
     url: `${base}/corpus.json`,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to read. No account, no key, no rate limit.",
     ...(first ? { temporalCoverage: `${first}/${last ?? ".."}` } : {}),

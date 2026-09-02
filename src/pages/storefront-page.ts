@@ -1,6 +1,12 @@
 import { currentWeekKey } from "@/lib/kv-keys";
 import { catalogLastUpdated } from "@/lib/freshness";
-import { jsonLdBody } from "@/lib/jsonld";
+import {
+  JSONLD_PRICE_CURRENCY,
+  jsonLdBody,
+  offerCurrencyFields,
+  organizationId,
+  organizationRef,
+} from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { priceLabel } from "@/lib/price-label";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
@@ -267,10 +273,9 @@ function roomsFooterHtml(): string {
  * prices, and every offer's description is the item's capability line
  * rather than its charm.
  *
- * priceCurrency is "USDC", which is not an ISO 4217 code and may be
- * ignored by a strict reader. That is the correct trade: writing
- * "USD" would parse better and would not be true, and this store
- * loses more by being approximately right than by being unparsed.
+ * priceCurrency is "USD" with the settlement asset in words beside
+ * it — see JSONLD_PRICE_CURRENCY in lib/jsonld.ts for the 2026-09-02
+ * reversal and why "USDC" here was no claim at all.
  */
 /**
  * THE ONE ESCAPE AN INLINE <script> BLOCK NEEDS.
@@ -303,14 +308,12 @@ function jsonLdSafe(value: unknown): string {
  * push): every item the page already shows, as schema.org Products
  * with live prices — derived from MENU_ITEMS at render, so the
  * markup can no more go stale than the shelf can disagree with
- * itself. priceCurrency is "USDC" (settled 2026-08-27, the keeper's
- * call): the same shelf said "USD" here and "USDC" in makesOffer,
- * which was two currencies for one price list. The earlier reasoning
- * — "schema.org wants ISO-4217" — was simply out of date: schema.org's
- * own priceCurrency documentation accepts cryptocurrency ticker
- * symbols alongside ISO 4217, its examples being "USD" and "BTC". So
- * the literal truth costs nothing here, and the store's own comment
- * one node down had already made the argument.
+ * itself. priceCurrency was "USDC" from 2026-08-27 (the keeper's
+ * one-currency call, on schema.org's word that tickers are accepted)
+ * and is "USD" again from 2026-09-02, when Search Console's
+ * merchant-listing validator rejected the ticker on every priced
+ * page. The asset rides in acceptedPaymentMethod; the reasoning is
+ * on JSONLD_PRICE_CURRENCY in lib/jsonld.ts.
  *
  * FILLED OUT TO MERCHANT-LISTING SHAPE, 2026-08-18, after Search
  * Console read all 23 products and called every one invalid for a
@@ -353,7 +356,11 @@ function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
   const handlingDays = Math.ceil((item.sla_hours ?? 0) / 24);
   return {
     "@type": "OfferShippingDetails",
-    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USDC" },
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: 0,
+      currency: JSONLD_PRICE_CURRENCY,
+    },
     shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
@@ -410,7 +417,7 @@ function freeServicesJsonLd(base: string): string {
     serviceType: options.type,
     url: `${base}${options.path}`,
     isAccessibleForFree: true,
-    provider: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    provider: organizationRef(base),
     areaServed: "Worldwide",
     offers: {
       "@type": "Offer",
@@ -486,7 +493,7 @@ function productListJsonLd(base: string): string {
         offers: {
           "@type": "Offer",
           price: String(item.price_usdc),
-          priceCurrency: "USDC",
+          ...offerCurrencyFields(),
           /**
            * THE ITEM PAGE, NOT THE BUY DOOR. This read /api/buy/{id}
            * until 2026-08-18, which hands every crawler that honors
@@ -534,7 +541,7 @@ function corpusDatasetJsonLd(base: string): string {
     description: CORPUS_DATASET_DESCRIPTION,
     license: CORPUS_DATASET_LICENSE,
     url: `${base}/corpus.json`,
-    creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    creator: organizationRef(base),
     isAccessibleForFree: true,
     distribution: {
       "@type": "DataDownload",
@@ -598,7 +605,7 @@ function webSiteJsonLd(base: string): string {
     url: `${base}/`,
     inLanguage: "en",
     description: COPY.metaDescription,
-    publisher: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    publisher: organizationRef(base),
   });
 }
 
@@ -606,6 +613,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": organizationId(base),
     // THE NAMING LAW, tier 2: JSON-LD is named in the tier-2 list.
     // The full name moves to alternateName, where it stays discoverable
     // as lore without being the string entity resolvers file us under.
@@ -758,7 +766,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
       description:
         SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
       price: String(item.price_usdc),
-      priceCurrency: "USDC",
+      ...offerCurrencyFields(),
       availability: offerAvailability(item),
       url: `${base}/menu/${item.id}`,
     })),

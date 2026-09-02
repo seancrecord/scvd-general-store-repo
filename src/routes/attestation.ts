@@ -1,6 +1,6 @@
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -117,8 +117,8 @@ function attestationJsonLd(base: string): string {
     inLanguage: "en",
     isAccessibleForFree: true,
     license: "https://creativecommons.org/licenses/by/4.0/",
-    author: { "@type": "Organization", name: "scvd.store", url: base },
-    publisher: { "@type": "Organization", name: "scvd.store", url: base },
+    author: organizationRef(base),
+    publisher: organizationRef(base),
     about: ARTIFACT_CLASSES.map((entry) => ({
       "@type": "DefinedTerm",
       name: entry.name,

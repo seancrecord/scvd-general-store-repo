@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
@@ -69,7 +69,7 @@ function corpusDatasetJsonLd(base: string): string {
     sameAs: `${base}/corpus.json`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     distribution: {
       "@type": "DataDownload",
       encodingFormat: "application/json",

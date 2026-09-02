@@ -65,7 +65,7 @@ describe("the situation index", () => {
     expect(home).toContain("x402 goods for AI agents");
     // And the catalogue is in the structured data now, with prices.
     expect(home).toContain('"@type":"Offer"');
-    expect(home).toContain('"priceCurrency":"USDC"');
+    expect(home).toContain('"priceCurrency":"USD"');
   });
 
   it("reaches the catalog in machine-readable form", async () => {

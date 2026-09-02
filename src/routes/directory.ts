@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -112,7 +112,7 @@ function directoryJsonLd(base: string): string {
         url: `${base}/directory/${listing.slug}`,
         datePublished: listing.added,
         reviewBody: listing.review,
-        author: { "@type": "Organization", name: "scvd.store", url: base },
+        author: organizationRef(base),
         itemReviewed: {
           "@type": "Organization",
           name: listing.name,
@@ -137,7 +137,7 @@ function listingJsonLd(listing: DirectoryListing, base: string): string {
     url: `${base}/directory/${listing.slug}`,
     datePublished: listing.added,
     reviewBody: listing.review,
-    author: { "@type": "Organization", name: "scvd.store", url: base },
+    author: organizationRef(base),
     itemReviewed: {
       "@type": "Organization",
       name: listing.name,

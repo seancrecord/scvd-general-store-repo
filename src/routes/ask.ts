@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import type { Context } from "hono";
 import { askIndex, askRank, type AskEntry, type AskHit } from "@/store/ask-index";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
@@ -115,7 +116,7 @@ function schemaObject(base: string, entry: AskEntry) {
           offers: {
             "@type": "Offer",
             price: entry.priceUsdc,
-            priceCurrency: STORE_METADATA.currency,
+            ...offerCurrencyFields(),
             url: `${base}${entry.path}`,
           },
         }),
@@ -430,11 +431,7 @@ askRoutes.get("/ask/feed.json", (c) => {
       url: `${base}/ask/feed.json`,
       isAccessibleForFree: true,
       license: "https://creativecommons.org/licenses/by/4.0/",
-      publisher: {
-        "@type": "Organization",
-        name: STORE_SERVICE_NAME,
-        url: base,
-      },
+      publisher: organizationRef(base),
       dataFeedElement: entries.map((entry) => ({
         "@type": "DataFeedItem",
         item: schemaObject(base, entry),

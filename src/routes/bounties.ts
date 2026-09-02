@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
-import { jsonLdScript } from "@/lib/jsonld";
+import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   BOUNTY_MAX_REWARD_USD,
@@ -128,8 +128,9 @@ function bountyBoardJsonLd(base: string): string {
     inLanguage: "en",
     estimatedCost: {
       "@type": "MonetaryAmount",
-      // USDC, one currency storewide — and the payouts really are USDC.
-      currency: "USDC",
+      // ISO code for the validator (JSONLD_PRICE_CURRENCY); the payouts
+      // really are USDC and the description says so.
+      currency: JSONLD_PRICE_CURRENCY,
       value: 0,
       description:
         "The door's own price, refunded in full on a verified claim, plus a finder's fee.",
@@ -157,7 +158,7 @@ function bountyBoardJsonLd(base: string): string {
         text: "The reward is returned as a signed EIP-3009 transferWithAuthorization payable to the address you named; you submit it to the USDC contract on Base yourself. The store broadcasts nothing and holds no gas.",
       },
     ],
-    provider: { "@type": "Organization", name: "scvd.store", url: base },
+    provider: organizationRef(base),
     citation: `${base}/attestation`,
   });
 }

@@ -215,13 +215,11 @@ describe("/conformance publishes the desk as a free API", () => {
     const offer = api.offers as Record<string, unknown>;
     expect(offer.price).toBe("0");
     /*
-     * USDC since 2026-08-27 — the keeper's one-currency ruling.
-     * schema.org's priceCurrency accepts cryptocurrency tickers
-     * alongside ISO 4217, so the literal currency costs nothing, and
-     * the store's own storefront comment had already made the case:
-     * approximately right loses more than unparsed.
+     * "USD" since 2026-09-02: Search Console's merchant-listing
+     * validator rejected the "USDC" ticker on every priced page. The
+     * asset rides in words on the priced Offers (jsonld-currency.spec).
      */
-    expect(offer.priceCurrency).toBe("USDC");
+    expect(offer.priceCurrency).toBe("USD");
     expect(api.isAccessibleForFree).toBe(true);
   });
 });

@@ -37,6 +37,8 @@
  * already parsing `weeks` keeps working. The envelope is additive.
  */
 
+import { organizationRef } from "@/lib/jsonld";
+
 /**
  * The terms on everything this store publishes free — the datasets
  * and the free instruments' answers alike. Exported because the free
@@ -81,11 +83,7 @@ export function datasetEnvelope(
     description: input.description,
     url: input.url,
     license: PUBLISHED_LICENCE,
-    creator: {
-      "@type": "Organization",
-      name: "scvd.store",
-      url: "https://scvd.store",
-    },
+    creator: organizationRef("https://scvd.store"),
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to read. No account, no key, no rate limit.",
     /*

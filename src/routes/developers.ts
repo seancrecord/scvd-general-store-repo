@@ -4,7 +4,7 @@ import {
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
 import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { declinedPositions } from "@/store/copy/declined";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
@@ -330,7 +330,7 @@ function developersHtml(base: string): string {
       description:
         "API documentation for scvd.store: OpenAPI contract, free conformance and preflight endpoints, the MCP server, x402 payment flow, error model, rate limits and versioning policy.",
       url: `${base}/developers`,
-      author: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+      author: organizationRef(base),
     })}`;
 }
 

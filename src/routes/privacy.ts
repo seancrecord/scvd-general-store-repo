@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
@@ -120,7 +120,7 @@ privacyRoutes.get("/privacy", (c) => {
         url: `${base}/privacy`,
         datePublished: "2026-08-21",
         inLanguage: "en",
-        publisher: { "@type": "Organization", name: "scvd.store", url: base },
+        publisher: organizationRef(base),
       })}`,
     }),
   );

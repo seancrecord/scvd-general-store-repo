@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
@@ -42,7 +42,7 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
     url: `${base}/fresh-set`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     temporalCoverage: set.week,
     dateModified: set.observed_at,
     variableMeasured: [

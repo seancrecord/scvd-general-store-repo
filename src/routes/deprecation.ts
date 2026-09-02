@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
 import { escapeHtml } from "@/lib/sanitize";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage } from "@/pages/simple-page";
 import {
   API_VERSIONS,
@@ -161,7 +161,7 @@ deprecationRoutes.get("/deprecation", (c) => {
         headline: "API versioning and deprecation policy",
         description: DESCRIPTION,
         url: `${base}/deprecation`,
-        author: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+        author: organizationRef(base),
       })}`,
     }),
   );

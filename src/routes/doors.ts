@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -367,7 +367,7 @@ function doorsDatasetJsonLd(base: string, index: DoorIndex): string {
     sameAs: `${base}/doors.json`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     ...(index.total_hosts > 0 ? { size: `${index.total_hosts} endpoints` } : {}),
     distribution: {
       "@type": "DataDownload",

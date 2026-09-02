@@ -4,7 +4,7 @@ import {
   prefersMarkdown,
   VARY_ACCEPT,
 } from "@/lib/accept";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { jcsCanonicalize, signJcs } from "@/lib/jcs";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -64,8 +64,8 @@ function pricingJsonLd(base: string, floorUsd: number): string {
     inLanguage: "en",
     isAccessibleForFree: true,
     license: "https://creativecommons.org/licenses/by/4.0/",
-    author: { "@type": "Organization", name: "scvd.store", url: base },
-    publisher: { "@type": "Organization", name: "scvd.store", url: base },
+    author: organizationRef(base),
+    publisher: organizationRef(base),
     version: PRICING_CHARTER_VERSION,
     datePublished: PRICING_CHARTER_EFFECTIVE,
     about: PRICING_CHARTER.map((clause) => ({

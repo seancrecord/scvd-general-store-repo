@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jsonLdScript } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
   isPerRail,
   type LegacyMarketRails,
@@ -278,7 +278,7 @@ function registryDatasetJsonLd(
     url: `${base}/registry`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
-    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    creator: organizationRef(base),
     ...(latest
       ? {
           temporalCoverage: latest.week,

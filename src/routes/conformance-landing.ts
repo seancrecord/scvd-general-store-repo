@@ -8,7 +8,7 @@ import {
 } from "@/services/conformance";
 import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
-import { jsonLdScript } from "@/lib/jsonld";
+import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
@@ -237,20 +237,17 @@ function conformanceApiJsonLd(base: string): string {
     documentation: `${base}/api/conformance/${CONFORMANCE_VERSION}`,
     /* /terms is a keyword redirect; name the room itself. */
     termsOfService: `${base}/rights`,
-    provider: { "@type": "Organization", name: "scvd.store", url: base },
+    provider: organizationRef(base),
     isAccessibleForFree: true,
     offers: {
       "@type": "Offer",
       price: "0",
       /*
-       * USDC everywhere, including on a zero (2026-08-27, the
-       * keeper's one-currency ruling). The currency of a free thing
-       * is arbitrary, which is exactly why it should match the one
-       * currency everything paid here settles in — a document that
-       * prices its free instruments in one currency and its shelf in
-       * another invites a reader to wonder which one is the claim.
+       * The same ISO code every priced Offer carries, including on a
+       * zero, so the free desk and the paid shelf never name two
+       * currencies for one store (JSONLD_PRICE_CURRENCY, 2026-09-02).
        */
-      priceCurrency: "USDC",
+      priceCurrency: JSONLD_PRICE_CURRENCY,
       availability: "https://schema.org/InStock",
     },
     potentialAction: {
