@@ -60,10 +60,14 @@ import { isRecord, type HonoEnv, type MenuItem } from "@/types";
  * The MCP door: the store as a Model Context Protocol server.
  * Streamable HTTP transport, stateless — every POST /mcp gets one
  * application/json response, which the spec permits in place of an
- * SSE stream; there are no server-initiated messages here, so no GET
- * stream and no session ids. Speaks revision 2026-07-28 (per-request
- * `_meta`, `server/discover`) and the three handshake-era revisions
- * before it, on one endpoint; see PROTOCOL_VERSIONS. initialize,
+ * SSE stream; there are no server-initiated messages here and no
+ * session ids. A GET that asks for text/event-stream gets a real,
+ * bounded, empty stream (2026-09-02: OpenAI's plugin scanner opens
+ * one before it will list tools, and read the spec-permitted 405 as
+ * "no server"); a bare GET still gets the 405 that says where the
+ * door is. Speaks revision 2026-07-28 (per-request `_meta`,
+ * `server/discover`) and the three handshake-era revisions before
+ * it, on one endpoint; see PROTOCOL_VERSIONS. initialize,
  * server/discover and tools/list are free and unauthenticated. tools/call on a buy_* tool
  * runs the exact same x402 pipeline as the HTTP shelf (lib/mcp-payment)
  * and the same fulfillment (services/fulfillment); payment-required
@@ -1394,12 +1398,94 @@ mcpRoutes.post("/mcp", handleMcpPost);
  * 404. The manifest link is the other half: whatever the caller was
  * looking for, that document has it.
  */
+/**
+ * THE LISTENING CHANNEL, OPENED ON REQUEST (2026-09-02).
+ *
+ * Streamable HTTP lets a client GET the endpoint to open a stream for
+ * server-initiated messages, and lets a server answer 405 instead.
+ * This server answered 405 for a year because it has nothing to say
+ * unprompted — and the OpenAI plugin submission portal's tool scan
+ * failed on exactly that ("MCP SSE probe returned 404"), because its
+ * client opens the GET stream first and treats anything but
+ * text/event-stream as no server at all. The Responses API runtime
+ * behaves the same way (community reports, June 2025 onward).
+ *
+ * So a GET that asks for text/event-stream now gets one: a 200, the
+ * right content type, a comment frame at once so the client knows the
+ * pipe is live, a keepalive comment every twenty seconds, and a clean
+ * close after five minutes. No events ever ride it, because none
+ * exist; the stream is the transport's handshake, not a promise of
+ * notifications. A bare GET — a browser, a curl with no Accept — still
+ * gets the 405 below, which is the more useful answer for a reader.
+ */
+const MCP_STREAM_KEEPALIVE_MS = 20_000;
+const MCP_STREAM_LIFETIME_MS = 5 * 60_000;
+
+function acceptsEventStream(c: Context<HonoEnv>): boolean {
+  return (c.req.header("accept") ?? "").toLowerCase().includes("text/event-stream");
+}
+
+function openListeningStream(): Response {
+  const encoder = new TextEncoder();
+  let keepalive: ReturnType<typeof setInterval> | undefined;
+  let lifetime: ReturnType<typeof setTimeout> | undefined;
+  const stop = () => {
+    if (keepalive !== undefined) clearInterval(keepalive);
+    if (lifetime !== undefined) clearTimeout(lifetime);
+  };
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(
+        encoder.encode(": scvd.store MCP listening channel open; no server-initiated messages are sent here\n\n"),
+      );
+      keepalive = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(": keepalive\n\n"));
+        } catch {
+          stop();
+        }
+      }, MCP_STREAM_KEEPALIVE_MS);
+      lifetime = setTimeout(() => {
+        stop();
+        try {
+          controller.close();
+        } catch {
+          /* already closed by the client */
+        }
+      }, MCP_STREAM_LIFETIME_MS);
+    },
+    cancel() {
+      stop();
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-store",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
+/**
+ * A trailing slash is the commonest way to type this address wrong,
+ * and the router's strict matching made it a 404 — indistinguishable
+ * from no server. 308 keeps the method, so a POSTed initialize lands
+ * on the door as a POST.
+ */
+mcpRoutes.on(["GET", "POST", "DELETE"], "/mcp/", (c) =>
+  c.redirect(`${c.env.STORE_BASE_URL}/mcp`, 308),
+);
+
 mcpRoutes.get("/mcp", (c) => {
+  if (acceptsEventStream(c)) return openListeningStream();
   const base = c.env.STORE_BASE_URL;
   return c.json(
     {
       error:
-        "The MCP door opens on POST (streamable HTTP, JSON-RPC 2.0). No server-initiated streams here; the store speaks when spoken to.",
+        "The MCP door opens on POST (streamable HTTP, JSON-RPC 2.0). A GET with Accept: text/event-stream opens the listening channel, which carries no server-initiated messages; the store speaks when spoken to.",
       spec: LATEST_PROTOCOL,
       protocol_versions: [...PROTOCOL_VERSIONS],
       manifest: `${base}/.well-known/mcp`,

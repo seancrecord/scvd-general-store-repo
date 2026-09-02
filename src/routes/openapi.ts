@@ -5774,7 +5774,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
   postOp(
             "The MCP door",
-            "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
+            "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET with Accept: text/event-stream opens the listening channel (a keepalive-only stream; the server sends nothing unprompted); any other GET answers 405 with Allow: POST and the whole handshake in the body.",
             "One JSON-RPC 2.0 request. `initialize` is the handshake.",
             {
               type: "object",

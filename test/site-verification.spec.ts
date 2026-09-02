@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
+  OPENAI_APPS_CHALLENGE,
   VERIFICATION_TAGS,
   X402LIST_TOKENS,
   x402listTokenFile,
@@ -71,5 +72,29 @@ describe("the x402-list token file", () => {
   it("pins today's token (issued 2026-09-02) so retiring it early is a diff", () => {
     expect(live.token).toBe("x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco");
     expect(live.request_id).toBe("d766c4a7-1918-4f4f-b0f3-2215ec15bb72");
+  });
+});
+
+/**
+ * The OpenAI plugin directory's domain check reads one fixed path at
+ * the origin root and wants the bare token: no JSON, no comments, no
+ * trailing second line. When no token is set the path must not
+ * answer 200 — an empty body would be "the token is the empty
+ * string", which is a lie the checker would take at face value.
+ */
+describe("/.well-known/openai-apps-challenge", () => {
+  it("serves exactly the token as text/plain, or 404 when none is set", async () => {
+    const response = await SELF.fetch(
+      `${BASE}/.well-known/openai-apps-challenge`,
+    );
+    expect(response.headers.get("content-type")).toContain("text/plain");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    if (OPENAI_APPS_CHALLENGE) {
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(OPENAI_APPS_CHALLENGE);
+      expect(OPENAI_APPS_CHALLENGE).not.toMatch(/\s/);
+    } else {
+      expect(response.status).toBe(404);
+    }
   });
 });

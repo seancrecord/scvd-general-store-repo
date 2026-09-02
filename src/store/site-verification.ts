@@ -101,6 +101,30 @@ export function x402listTokenFile(now: Date): string {
   return `${lines.join("\n")}\n`;
 }
 
+/**
+ * OPENAI PLUGIN DIRECTORY DOMAIN CHALLENGE, served at
+ * /.well-known/openai-apps-challenge (2026-09-02).
+ *
+ * The plugin submission portal (platform.openai.com/plugins) proves
+ * control of the MCP host by fetching this fixed path at the ORIGIN
+ * ROOT — the /mcp subpath is stripped server-side, per OpenAI's own
+ * submission doc and a closed forum thread confirming it — and it
+ * must find the bare token and nothing else: no JSON, no comment
+ * lines, no second token. text/plain, because a verification served
+ * as octet-stream fails with "unsupported content type".
+ *
+ * Unlike the x402-list nonces above this one does NOT expire: OpenAI
+ * asks that a host's token stay in place while a plugin still uses
+ * it, and one host gets one token. So it is a single string, not a
+ * dated list. Empty means no submission in progress and the path
+ * answers 404, which is the honest state — an empty 200 would be a
+ * token that is the empty string.
+ *
+ * Proof-of-control nonce, not a secret: useless to anyone who does
+ * not already control scvd.store. Paste the portal's token here.
+ */
+export const OPENAI_APPS_CHALLENGE = "";
+
 /** The tags as head markup. Empty string when there are none. */
 export function verificationMetaTags(): string {
   return VERIFICATION_TAGS.map(
