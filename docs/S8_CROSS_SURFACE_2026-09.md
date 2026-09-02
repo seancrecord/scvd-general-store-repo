@@ -314,15 +314,74 @@ New classes in `src/store/defect-vocabulary.ts` under a **v8** row in
   percentage-agreement number. A door with one silent surface and one
   read surface that agrees is "1 of 1 agrees," not "100%."
 
-## Decisions for the keeper ⚑
+## Decisions, ruled 2026-09-02 ("agreed on all")
 
-1. Tier B rides `service_audit` always, or behind `surfaces=true`.
-2. The `llms.txt` price convention to publish (a code span with a
-   dollar amount beside an endpoint path is the draft).
-3. Whether the practice door's name is `two-surfaces` or something in
-   the house voice.
-4. Whether Tier A's other three advisories ever fold, decided after a
-   month of rows.
+1. Tier B rides `service_audit` always, at the same price, no flag.
+2. The `llms.txt` price convention: a dollar amount in a code span
+   beside an endpoint path, machine-read, never prose.
+3. The practice door is `two-surfaces`.
+4. Tier A's other three advisories fold only after a month of rows,
+   by the keeper's hand.
+
+## PR 1, shipped 2026-09-02: what landed and what the first run found
+
+Three advisories under v2, in `ADVISORY_NAMES`, none folded:
+
+- `discovery-info-fails-schema` — the bazaar info block against the
+  schema beside it, over type, const, enum, required, properties,
+  items and `additionalProperties: false`; formats, patterns, ranges
+  and composition keywords are named as not checked. The table's two
+  discovery rows above turned out to be one reading: in the bazaar
+  extension the info block *is* the worked example, so validating it
+  against the schema is the example check.
+- `resource-description-absent` — a bazaar block with no top-level
+  `resource.description`, the field the catalog indexes. Inference
+  labelled as such.
+- `offer-contradicts-challenge` — each decodable signed offer looked
+  up in the accepts by rail; absent rail, or no entry on the rail
+  carrying the offer's payTo and amount together, is named with what
+  the challenge does offer.
+
+`placement-mismatch` kept its name and now says which field moved on
+which rail (header 1000, body 2000). The table's separate
+`body-amount-matches-header` was not needed. Vocabulary v8 registers
+`discovery-info-invalid` and `offer-contradicts-challenge`; the Tier B
+and C classes wait for a signal to exist, because a class with no
+signal is a word with nothing behind it. The practice door
+`/api/practice/two-surfaces` serves the lesson live, and a recorded
+fixture replays it offline.
+
+**The first run found two things on our own doors, as the design said
+it would.** First, the reference helper's schema requires
+`input.method` while the raw declaration omits it; the SDK's server
+extension fills the method in at request time, so the served 402
+validates and the raw declaration does not. The test now reads the
+served 402, which is the surface a buyer reads. Second, the offer
+reader's first draft compared each signed offer against the first
+accepts entry on its rail and flagged every pay-what-it-deserves door
+here: three tiers per rail, one offer per tier. That is the first
+named legitimate difference above, met on the first run, on our own
+door, before the check reached anyone else's.
+
+## PR 3, shipped 2026-09-02: the catalog column
+
+`src/services/catalog-agreement.ts`. The discovery read now keeps each
+row's terms (`accepts`, with the older `maxAmountRequired` spelling
+read as `amount`, and `lastUpdated`) beside the URL; the one-shot
+round hands them to `probeHost` with the live accepts still in scope,
+and the long walk freezes them onto its roster because its probes
+fire in later cron firings than its index read. Every probed row
+carries `catalog` (agrees, differs with field and rail, not_listed,
+not_comparable with the reason, and the catalog's own `lastUpdated`);
+the round carries `catalog_agreement` (compared, agrees, differs,
+not_listed, not_comparable); both ride the signed snapshot verbatim.
+The per-host read and the weekly brief surface it, the brief without
+naming a host. `our_doors` gains `catalog_differs`: our own doors
+whose cheapest cataloged amount is not the shelf minimum, amount
+only. The keeper is alerted once per change of the differing set,
+with hosts named to him alone. Three of the named differences are
+built into the comparison rather than bolted on: matched by rail, any
+tier on the rail agrees, silence is not disagreement.
 
 ## Sources read for this note
 

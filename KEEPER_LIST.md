@@ -41,8 +41,9 @@ build, it is on the roadmap.
   limits on the item pages, N5 our-doors freshness on
   every round, the verify-time revert reading, the
   all-time take by item, and the ready-door welcome on
-  `/admin/outreach`. Roadmap NOW is empty; SOON is done
-  except S5 (your recording).
+  `/admin/outreach`. S5, the `/try` demo, recorded by you
+  2026-09-02. The roadmap's NOW section is the open queue
+  in order, done rows at the bottom (your ask, 2026-09-02).
 - `daily_fortune` is back on the Penny Shelf as of
   2026-09-02, your ruling: three organic settles (the
   most of any door) and x402-list still listing it. Same
@@ -99,8 +100,6 @@ build, it is on the roadmap.
 - **ClawHub republish at 3.9.0.** The bundle in the tree
   names both new doors and the self-audit; the published
   copy is 3.8.0.
-- **S5, the demo.** Script drafted:
-  `docs/DEMO_SCRIPT_2026-09.md`. You record; edit any line.
 - No agent item is queued. Next builds need a trigger
   (roadmap LATER) or your yes (L7 is the candidate named).
   One branch at a time (#65).
@@ -110,6 +109,17 @@ build, it is on the roadmap.
 ## RULINGS THIS SITTING (2026-09-01)
 
 Do not relitigate without you.
+
+- **S8, 2026-09-02, "agreed on all."** Tier B rides
+  `service_audit` always, same price, no flag. The
+  `llms.txt` price convention: a dollar amount in a code
+  span beside an endpoint path, machine-read, never prose.
+  The practice door is `two-surfaces`. The three Tier A
+  advisories beyond the two that fold into v3 fold only
+  after a month of rows, by your hand. Design:
+  `docs/S8_CROSS_SURFACE_2026-09.md`.
+- **The Aura Walk cap, 2026-09-02.** One a week; two after
+  the first three ship inside the window.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit
@@ -189,21 +199,12 @@ Do not relitigate without you.
 - **`/trust`, `/profiles` storefront slots.** Still held
   off the front; `/passport` went on 2026-09-01 by your
   ruling. Nod or leave.
-- **S8, four rulings** (`docs/S8_CROSS_SURFACE_2026-09.md`,
-  the last section). ⚑ Tier B on `service_audit` always or
-  behind `surfaces=true`. ⚑ The `llms.txt` price convention
-  to publish. ⚑ The practice door's name. ⚑ Whether the three
-  Tier A advisories ever fold, after a month of rows. The
-  build starts with PR 1 (advisories, fixtures, vocabulary
-  v8) and needs none of the four to begin.
-- **The Aura Walk, two rulings.** ⚑ The weekly cap on
-  `aura_walk` is drafted at one (the collab's is two, your
-  2026-08-20 "2 is fine"); six passes with transcripts is
-  more of a week than a made thing, but only you know your
-  throughput. ⚑ The copy on the row (`src/store/menu.ts`:
-  the description, the 402 line and the constraints) is
-  drafted; the price and the model rule are yours already.
-  Ink or edit, rule 7.
+- **The Aura Walk, one ruling left.** ⚑ The copy on the row
+  (`src/store/menu.ts`, the description, the 402 line and the
+  constraints) is drafted; the price, the model rule and the
+  cap of one a week are yours already (cap ruled 2026-09-02,
+  "agreed"; raise to two after the first three ship inside
+  the window). Ink or edit, rule 7.
 - **The Aura Walk, the first order.** TEST: when one lands,
   `/admin` prints the door under "Door to walk" and the
   buyer's detail under it. The passes are your machines and
@@ -252,9 +253,6 @@ Do not relitigate without you.
 - **After the 60-word is inked:** paste it on npm
   package descriptions and marketplace profiles. Same
   sentence. Your press.
-- **60-second demo video + transcript.** `/try` is the
-  set; the script is `docs/DEMO_SCRIPT_2026-09.md`. You
-  record. We do not rebuild the counter.
 
 ### Walks
 

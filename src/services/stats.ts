@@ -123,8 +123,29 @@ export { monthsSinceOpening };
  * the diagnostic can no more drift from the page than the page from
  * itself.
  */
+/** One item's settle count at the till, raw, before reclassification. */
+export interface TillItemCount {
+  organic: number;
+  house: number;
+}
+
 export interface BooksDiagnostics {
   stats: StoreStats;
+  /**
+   * THE TILL, BY ITEM (2026-09-02, the keeper: "why wouldn't we show
+   * both"). The same counters the organic figure is summed from,
+   * left un-summed: metric:<m>:paid:<item> per item, every month
+   * added. Keyed the way the till keys them — a shelf item by its id,
+   * a penny page by its path with the slashes turned to colons
+   * (almanac:<slug>), because the till counts settles and a settle on
+   * a page that mints no certificate is still a settle. RAW: the
+   * reclassification ledger moves family settles from organic to
+   * house in the totals only; it does not know which item they were
+   * on, so these rows cannot follow it and say so where they render.
+   * Not published on /stats — the public books are aggregates by
+   * rule; this is the back room's cross-check.
+   */
+  till_by_item: Record<string, TillItemCount>;
   /** Set when the rail records claim more sales than the counters know. */
   rail_overshoot: { rail_total: number; organic: number } | null;
 }
@@ -159,6 +180,7 @@ export async function computeStatsDiagnosed(
   );
   let organic = 0;
   let house = 0;
+  const tillByItem: Record<string, TillItemCount> = {};
   /** Organic settles from the months the store was single-rail. */
   let organicBeforeSecondRail = 0;
   const { monthsBeforeSecondRail } = await import("@/services/rails");
@@ -193,10 +215,18 @@ export async function computeStatsDiagnosed(
     for (const name of names) {
       const count = values.get(name) ?? 0;
       // metric:<m>:paid:<item> is organic; metric:<m>:paidh:<item> is house.
-      if (name.includes(":paidh:")) {
+      const isHouse = name.includes(":paidh:");
+      const item = name.slice(
+        name.indexOf(isHouse ? ":paidh:" : ":paid:") +
+          (isHouse ? ":paidh:" : ":paid:").length,
+      );
+      const row = (tillByItem[item] ??= { organic: 0, house: 0 });
+      if (isHouse) {
         house += count;
+        row.house += count;
       } else {
         organic += count;
+        row.organic += count;
         if (singleRailMonths.has(month)) {
           organicBeforeSecondRail += count;
         }
@@ -282,6 +312,7 @@ export async function computeStatsDiagnosed(
   };
   return {
     stats,
+    till_by_item: tillByItem,
     rail_overshoot: overshoot
       ? { rail_total: railTotal, organic: organicSettlements }
       : null,

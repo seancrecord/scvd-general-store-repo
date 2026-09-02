@@ -1,6 +1,7 @@
 import { renderAdminShell } from "@/pages/admin/layout";
 import { takeSectionHtml } from "@/pages/admin/office-page";
 import type { TakeSummary } from "@/services/books-summary";
+import type { TillItemCount } from "@/services/stats";
 
 /**
  * THE MONEY PAGE. Every figure here used to render on the desk, and
@@ -12,6 +13,8 @@ import type { TakeSummary } from "@/services/books-summary";
 export interface TakePageData {
   take: TakeSummary | null;
   allTime: { organic: number; house: number } | null;
+  /** The till's per-item counters, for the no-certificate table. */
+  till: Record<string, TillItemCount> | null;
   loadNotes: string[];
 }
 
@@ -23,7 +26,7 @@ export function renderTakePage(data: TakePageData): string {
     is the slow page on purpose: it walks every certificate and every
     month's counters, which is why <a href="/admin">the desk</a> no
     longer does it just to open.</small></p>
-    ${takeSectionHtml(data.take, data.allTime)}
+    ${takeSectionHtml(data.take, data.allTime, data.till)}
   </section>`;
   return renderAdminShell("take", body, data.loadNotes);
 }

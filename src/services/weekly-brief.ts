@@ -1,3 +1,4 @@
+import { CATALOG_COLUMN_WHAT_THIS_IS, type CatalogAgreement } from "@/services/catalog-agreement";
 import type { CorpusRecord } from "@/services/corpus";
 import { deriveTrajectory, type WeekPoint } from "@/services/trajectory";
 import { defectClass } from "@/store/defect-vocabulary";
@@ -60,6 +61,13 @@ export interface WeeklyBrief {
     /** The round itself said its coverage was suspect. */
     coverage_suspect: boolean;
   };
+  /**
+   * The discovery catalog's copy of the doors' terms against the
+   * doors themselves (S8 Tier C): counts with their denominator, and
+   * the sentence that says whose they are. Absent on weeks before
+   * the column was written.
+   */
+  catalog?: CatalogAgreement & { what_this_is: string };
   /** The week before, for a reader who wants the direction, never a trend line. */
   previous?: { week: string; payable: number; not_payable: number; probed: number };
   not_a_ranking: string;
@@ -97,6 +105,9 @@ function briefOf(point: WeekPoint, previous: WeekPoint | undefined, base: string
       observer_degraded: point.observer_degraded,
       coverage_suspect: point.coverage_suspect,
     },
+    ...(point.catalog
+      ? { catalog: { ...point.catalog, what_this_is: CATALOG_COLUMN_WHAT_THIS_IS } }
+      : {}),
     ...(previous
       ? {
           previous: {

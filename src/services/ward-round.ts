@@ -53,6 +53,16 @@ import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { MENU_ITEMS } from "@/store/menu";
 import { getRetiredItem } from "@/store/retired";
+import {
+  catalogAgreementOf,
+  catalogMeasured,
+  catalogTermsFromRow,
+  compareCatalogToDoor,
+  differingHosts,
+  type CatalogAgreement,
+  type CatalogReading,
+  type CatalogTerms,
+} from "@/services/catalog-agreement";
 
 /**
  * THE WARD ROUND — the weekly in-Worker census of the x402 discovery
@@ -202,9 +212,28 @@ export interface WardHostResult {
    * challenge did not parse.
    */
   offer?: OfferFacts;
+  /**
+   * THE CATALOG AGAINST THE DOOR (roadmap S8 Tier C, 2026-09-02): the
+   * discovery index's copy of this door's terms, compared with the
+   * challenge this same probe read — agrees, differs (which field, on
+   * which rail), not_listed, or not_comparable, with the catalog's
+   * own lastUpdated beside it. Zero extra contact: the index was
+   * already read for population and the 402 was already fetched.
+   * Attributed to the catalog on its face. Absent on rounds before
+   * the column and on rows that were never probed.
+   */
+  catalog?: CatalogReading;
 }
 
 export interface OurDoors {
+  /**
+   * S8 Tier C on ourselves: our doors the search index returned with
+   * a cheapest amount that is NOT this shelf's minimum for the item,
+   * by id. Amount only — the catalog's copy against menu.json's
+   * price; payTo is not compared here. Absent when the index's rows
+   * did not parse as rows (the substring presence test still ran).
+   */
+  catalog_differs?: string[];
   /** Every payable resource the shelf claims, by item id. */
   claimed: number;
   found: string[];
@@ -275,6 +304,14 @@ export interface WardRound {
    * before the check existed.
    */
   our_doors?: OurDoors;
+  /**
+   * THE CATALOG AGAINST THE DOORS (roadmap S8 Tier C, 2026-09-02): how
+   * many probed hosts the discovery index listed with comparable
+   * terms, and of those how many the live 402 agreed with — counts
+   * with their denominator, derived from this round's own rows so
+   * anyone can recount. Absent on rounds before the column.
+   */
+  catalog_agreement?: CatalogAgreement;
   /**
    * Leaderboard feed health, could-not-check kept distinct from
    * absent: sellers null = the FEED was unreachable this round (say
@@ -352,7 +389,13 @@ async function cdpGet(env: Env, path: string, query = ""): Promise<unknown> {
 }
 
 export interface DiscoveryRead {
-  hosts: { host: string; url: string }[];
+  /**
+   * One row per host, first-wins. `catalog` is the index's copy of the
+   * door's terms for the S8 column: null when the row carried nothing
+   * comparable (listed bare), which the census keeps distinct from
+   * "differs".
+   */
+  hosts: { host: string; url: string; catalog: CatalogTerms | null }[];
   listed: number;
   coverageSuspect: boolean;
   /** Set only when coverageSuspect: what the last page's body offered. */
@@ -506,7 +549,7 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   // The page cap binding is a coverage statement too.
   if (rows.length >= DISCOVERY_PAGE_CAP * 100) coverageSuspect = true;
   const seen = new Set<string>();
-  const hosts: { host: string; url: string }[] = [];
+  const hosts: { host: string; url: string; catalog: CatalogTerms | null }[] = [];
   for (const row of rows) {
     const url = (row["resourceUrl"] ?? row["resource_url"] ?? row["resource"] ?? row["url"]) as unknown;
     if (typeof url !== "string" || !url.startsWith("https://")) continue;
@@ -518,7 +561,7 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     }
     if (host === ownHost || seen.has(host)) continue;
     seen.add(host);
-    hosts.push({ host, url });
+    hosts.push({ host, url, catalog: catalogTermsFromRow(row) });
   }
   return {
     hosts,
@@ -587,6 +630,14 @@ export async function pooled<T, R>(
 export async function probeHost(
   env: Env,
   url: string,
+  /**
+   * The catalog's copy of this door's terms, when the caller holds
+   * one (S8 Tier C): `listed` false for a host no index row named
+   * this round; `terms` null for a row that carried nothing to
+   * compare. Omitted entirely by callers that hold no index at all,
+   * and then no reading is written.
+   */
+  catalog?: { listed: boolean; terms: CatalogTerms | null },
 ): Promise<Omit<WardHostResult, "host" | "url">> {
   try {
     /*
@@ -668,6 +719,9 @@ export async function probeHost(
       failed,
       advisories: advisoryNames,
       ...(offer ? { offer } : {}),
+      ...(catalog
+        ? { catalog: compareCatalogToDoor(catalog.terms, accepts ?? null, catalog.listed) }
+        : {}),
       evidence,
       signer_kids: signerKidsFromChallenge(evidence.challenge_bytes),
       latency_ms: latencyMs,
@@ -685,6 +739,9 @@ export async function probeHost(
       verdict: "unreachable",
       failed: [],
       advisories: [],
+      ...(catalog
+        ? { catalog: compareCatalogToDoor(catalog.terms, null, catalog.listed) }
+        : {}),
       observer_status: await readObserverStatus(env),
     };
   }
@@ -799,6 +856,44 @@ export async function readAgent402Leaderboard(
  * second is roadmap N5 — a listing decays door by door, and a store
  * that only watched its own name would not notice until the last one.
  */
+/**
+ * The catalog's copy of OUR terms against the shelf (S8 Tier C on
+ * ourselves): for each of our doors the search rows carry with
+ * accepts, the cheapest atomic amount across its rails against the
+ * item's minimum price in USDC atomic units. Returns null when the
+ * body has no parseable rows, so "not compared" never reads as
+ * "agrees".
+ */
+function ourCatalogDifferences(
+  body: Record<string, unknown>,
+  claimed: { id: string; url: string }[],
+): string[] | null {
+  const rows = body["items"] ?? body["resources"] ?? body["data"];
+  if (!Array.isArray(rows)) return null;
+  const differs: string[] = [];
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    const record = row as Record<string, unknown>;
+    const url = String(
+      record["resourceUrl"] ?? record["resource_url"] ?? record["resource"] ?? record["url"] ?? "",
+    ).toLowerCase();
+    const door = claimed.find((entry) => entry.url === url);
+    if (!door) continue;
+    const terms = catalogTermsFromRow(record);
+    if (!terms) continue;
+    const item = MENU_ITEMS.find((entry) => entry.id === door.id);
+    if (!item) continue;
+    const amounts = terms.accepts
+      .map((entry) => Number(entry.amount))
+      .filter((amount) => Number.isFinite(amount));
+    if (amounts.length === 0) continue;
+    const cheapest = Math.min(...amounts);
+    const minimum = Math.round(item.price_usdc * 1_000_000);
+    if (cheapest !== minimum) differs.push(door.id);
+  }
+  return differs.sort();
+}
+
 async function ourSearchReading(
   env: Env,
 ): Promise<{ presence: boolean | null; doors: OurDoors }> {
@@ -837,9 +932,18 @@ async function ourSearchReading(
     }
     const stale = [...returned].filter((id) => getRetiredItem(id) !== undefined).sort();
     const unknown = [...returned].filter((id) => getRetiredItem(id) === undefined).sort();
+    const catalogDiffers = ourCatalogDifferences(body, claimed);
     return {
       presence: text.includes(ownHost),
-      doors: { claimed: claimed.length, found, missing, stale, unknown, could_not_check: false },
+      doors: {
+        claimed: claimed.length,
+        found,
+        missing,
+        stale,
+        unknown,
+        could_not_check: false,
+        ...(catalogDiffers ? { catalog_differs: catalogDiffers } : {}),
+      },
     };
   } catch {
     // An unreadable search is "could not check", never "absent" — for
@@ -934,6 +1038,22 @@ async function sealRound(
       }).catch(() => undefined);
     }
   }
+  /*
+   * S8 Tier C: the catalog's copy drifting from the doors is a fact
+   * about the catalog, and the keeper hears about it once per change
+   * of the set, the way he hears about our own doors going missing.
+   * Named hosts go to him alone; the public round carries counts.
+   */
+  const differing = differingHosts(round.hosts);
+  if (round.catalog_agreement && differing.length > 0) {
+    const before = JSON.stringify(previous ? differingHosts(previous.hosts) : []);
+    if (before !== JSON.stringify(differing)) {
+      await sendAlert(env, {
+        condition: "worker_health",
+        detail: `The discovery catalog's copy of the terms differs from the live 402 on ${differing.length} of the ${round.catalog_agreement.compared} probed doors it lists with comparable terms: ${differing.slice(0, 12).join(", ")}${differing.length > 12 ? ", and more" : ""}. Attributed to the catalog on the round (its copy's age or the door's move since ingestion); each host row names the field and rail. Read it on /admin/ward; nothing to press unless one of them is ours.`,
+      }).catch(() => undefined);
+    }
+  }
   if (presence === false) {
     await sendAlert(env, {
       condition: "worker_health",
@@ -987,6 +1107,9 @@ async function assembleWalkRound(
     capped: walk.cursor < walk.roster.length,
     our_search_presence: presence,
     our_doors: doors,
+    ...(catalogMeasured(walk.results)
+      ? { catalog_agreement: catalogAgreementOf(walk.results) }
+      : {}),
     leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
     leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
     our_leaderboard_rank: walk.leaderboard ? walk.leaderboard.our_rank : null,
@@ -1038,11 +1161,15 @@ export async function runWardRound(env: Env): Promise<WardRound> {
    */
   const leaderboard = await readAgent402Leaderboard(ownHost);
   const discoveryHosts = new Set(hosts.map((entry) => entry.host));
-  const probeList: { host: string; url: string; source: "discovery" | "leaderboard" | "both" }[] =
-    hosts.map((entry) => ({
-      ...entry,
-      source: leaderboard?.byHost.has(entry.host) ? "both" : "discovery",
-    }));
+  const probeList: {
+    host: string;
+    url: string;
+    source: "discovery" | "leaderboard" | "both";
+    catalog?: CatalogTerms | null;
+  }[] = hosts.map((entry) => ({
+    ...entry,
+    source: leaderboard?.byHost.has(entry.host) ? "both" : "discovery",
+  }));
   if (leaderboard) {
     for (const [host, entry] of leaderboard.byHost) {
       if (!discoveryHosts.has(host)) {
@@ -1089,6 +1216,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     host: string;
     url: string;
     source: "discovery" | "leaderboard" | "both" | "revisit";
+    catalog?: CatalogTerms | null;
   }[] = [
     ...probeList.slice(0, WARD_CAP),
     ...revisits.map((entry) => ({ ...entry, source: "revisit" as const })),
@@ -1100,7 +1228,12 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     const probe =
       entry.source === "leaderboard"
         ? { verdict: "not_probed" as const, failed: [], advisories: [] }
-        : await probeHost(env, entry.url);
+        : await probeHost(env, entry.url, {
+            // A revisit is a door no index row named this round; the
+            // catalog column says so rather than comparing nothing.
+            listed: entry.source !== "revisit",
+            terms: entry.catalog ?? null,
+          });
     return {
       host: entry.host,
       url: entry.url,
@@ -1163,6 +1296,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     capped,
     our_search_presence: presence,
     our_doors: doors,
+    ...(catalogMeasured(results) ? { catalog_agreement: catalogAgreementOf(results) } : {}),
     leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
     leaderboard_window: leaderboard ? leaderboard.window : null,
     our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,

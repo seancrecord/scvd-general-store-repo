@@ -42,12 +42,12 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
      * or opus 5 or at request lower models"). ⚑ Keeper's pen on the
      * copy below; the numbers are his already.
      *
-     * ONE A WEEK ⚑ drafted: six passes with transcripts is more of a
-     * week than the collab's made thing, and the bench's own argument
-     * (queue-capacity.ts) is that a labor door with no per-item rate
-     * is a door that can be sold ten weeks of work in an afternoon.
-     * The number is a draft by the hand that does not do the work;
-     * KEEPER_LIST carries the ruling.
+     * ONE A WEEK, his ruling (2026-09-02, "agreed"): six passes with
+     * transcripts is more of a week than the collab's made thing, and
+     * the bench's own argument (queue-capacity.ts) is that a labor
+     * door with no per-item rate is a door that can be sold ten weeks
+     * of work in an afternoon. Raise it to two after the first three
+     * ship inside the window, and only by his hand.
      */
     id: "aura_walk",
     listed_week: "2026-W36",

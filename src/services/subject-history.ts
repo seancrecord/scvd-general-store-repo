@@ -1,3 +1,4 @@
+import type { CatalogReading } from "@/services/catalog-agreement";
 import { roundCoverageSuspect } from "@/services/passport-tier";
 import { listCorpus } from "@/services/corpus";
 import {
@@ -120,6 +121,14 @@ export interface SubjectRound {
    * surfaces; the address digest already has its own lane).
    */
   offer?: { networks: string[]; min_usdc?: number; max_usdc?: number };
+  /**
+   * The discovery catalog's copy of this door's terms against the
+   * challenge the same probe read (S8 Tier C): agrees, differs with
+   * the field and rail named, not_listed, or not_comparable with the
+   * reason, and the catalog's own lastUpdated. Attributed to the
+   * catalog. Absent on rounds before the column.
+   */
+  catalog?: CatalogReading;
   /** Which feed named it: discovery, leaderboard, or both. */
   source?: string;
   gap?: GapReason;
@@ -309,6 +318,7 @@ export async function subjectHistory(
               },
             }
           : {}),
+        ...(entry.catalog ? { catalog: entry.catalog } : {}),
         ...(entry.source ? { source: entry.source } : {}),
         note:
           entry.verdict === "ready"

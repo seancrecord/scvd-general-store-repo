@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
-import { DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
+import { DEPTH_HOLD_SECONDS, DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
@@ -53,9 +53,15 @@ beforeAll(() => {
   installFacilitatorMock();
 });
 
+async function forgetHeldDepth(): Promise<void> {
+  const held = await testEnv.COUNTERS.list({ prefix: KV_KEYS.archiveDepthPrefix });
+  await Promise.all(held.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
+}
+
 beforeEach(async () => {
   const listed = await testEnv.COUNTERS.list({ prefix: KV_KEYS.corpusPrefix });
   await Promise.all(listed.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
+  await forgetHeldDepth();
   await testEnv.COUNTERS.delete(KV_KEYS.wardRoundLatest);
   await testEnv.COUNTERS.delete(KV_KEYS.populationRegister);
 });
@@ -144,5 +150,42 @@ describe("the item page and menu.json carry the archive's depth on the history i
     expect(wide.weeks_in_chain).toBe(0);
     expect(wide.hosts_seen).toBe(0);
     expect(depthLine(wide)).toContain("0 signed weeks over 0 hosts");
+  });
+});
+
+describe("the depth is held, not redone on every knock (2026-09-02)", () => {
+  it("serves the same derivation inside the hold, and a fresh one once it is forgotten", async () => {
+    await chain([round("2026-W31", [host("door.example", "ready")])]);
+    const first = await archiveWideDepth(testEnv);
+    if (first.kind !== "archive") throw new Error("expected the archive's own depth");
+    expect(first.weeks_in_chain).toBe(1);
+    expect(Date.parse(first.derived_at)).toBeGreaterThan(0);
+    expect(String(first.what_this_is)).toContain(`${DEPTH_HOLD_SECONDS / 60} minutes`);
+
+    // The chain grows; inside the hold the 402 still says what it
+    // said, with the same derived_at, which is the honest reading of
+    // a held figure — and why derived_at is printed on it.
+    await chain([round("2026-W32", [host("door.example", "ready"), host("other.example", "ready")])]);
+    const heldStill = await archiveWideDepth(testEnv);
+    if (heldStill.kind !== "archive") throw new Error("expected the archive's own depth");
+    expect(heldStill.weeks_in_chain).toBe(1);
+    expect(heldStill.derived_at).toBe(first.derived_at);
+
+    await forgetHeldDepth();
+    const fresh = await archiveWideDepth(testEnv);
+    if (fresh.kind !== "archive") throw new Error("expected the archive's own depth");
+    expect(fresh.weeks_in_chain).toBe(2);
+    expect(fresh.derived_at >= first.derived_at).toBe(true);
+  });
+
+  it("holds per subject: one host's depth never answers for another", async () => {
+    await chain([round("2026-W31", [host("door.example", "ready")])]);
+    const known = await SELF.fetch(`${BASE}/api/buy/spot_check?host=door.example`);
+    const knownDepth = (await json(known))["archive_depth"] as Record<string, unknown>;
+    expect(knownDepth["never_observed"]).toBe(false);
+    const stranger = await SELF.fetch(`${BASE}/api/buy/spot_check?host=stranger.example`);
+    const strangerDepth = (await json(stranger))["archive_depth"] as Record<string, unknown>;
+    expect(strangerDepth["never_observed"]).toBe(true);
+    expect(strangerDepth["subject"]).toBe("stranger.example");
   });
 });

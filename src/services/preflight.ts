@@ -208,6 +208,19 @@ export const ADVISORY_NAMES = [
   "above-default-client-cap",
   "placement-mismatch",
   "resource-host-mismatch",
+  /*
+   * S8 Tier A, 2026-09-02 — the door disagreeing with itself inside
+   * the one response this battery already holds. Three readings over
+   * bytes every probe had: the discovery block against its own
+   * schema (the rule the catalog's own validator applies before
+   * listing), a signed offer against the challenge it rides, and the
+   * top-level resource description the catalog indexes. Advisories
+   * first, by the keeper's ruling; two of them fold under v3 after a
+   * month of rows, as L3b went into v2.
+   */
+  "discovery-info-fails-schema",
+  "resource-description-absent",
+  "offer-contradicts-challenge",
   "no-bazaar-extension",
   "inputs-declared",
   "no-input-contract",
@@ -292,6 +305,12 @@ export const BATTERY_CHANGELOG: readonly {
     battery: "v2",
     change:
       "v2 FOLDS a new check: transfer-method-signable. An accepts entry naming an authorization standard in extra.assetTransferMethod that no published client can build is unsignable in exactly the sense amount-atomic is unsignable, so it now costs a door its ready under v2 instead of riding as an advisory. THIS MOVES READY on doors this battery has already published rows about, which is why it took a keeper's ruling rather than a build decision — rows sealed before this date were scored under the battery as it stood and stand as history, and v1 is frozen and unaffected. The advisory `unrecognized-transfer-method` is retired from ADVISORY_NAMES the same day: one observation gets one voice, and carrying both would double-count it. What is NOT folded: a door asking for permit2 or erc7710 still passes and still draws only the advisory `nonstandard-transfer-method`. Those are real standards that real clients build, named in the place the spec provides, and counting them against a door would be scoring an operator for telling the truth about themselves. Absence passes too — the field is optional and eip3009 is the settled default.",
+  },
+  {
+    date: "2026-09-02",
+    battery: "v2",
+    change:
+      "S8 Tier A, advisory-side and outside every verdict: three readings of a door disagreeing with itself inside one 402. discovery-info-fails-schema applies the catalog's own listing rule (the bazaar info block must satisfy the schema beside it) over type, const, enum, required, properties and items; offer-contradicts-challenge decodes each signed offer's payload and looks for the accepts entry it commits to by network, asset, payTo and amount, so a signed promise of one price beside a challenge for another is named; resource-description-absent notes a bazaar block with no top-level resource description, the field the catalog indexes. placement-mismatch now names which fields differ between the header and body challenges. No verdict moved; the fold into v3 is the keeper's call after a month of rows.",
   },
 ];
 
@@ -648,6 +667,157 @@ export async function probeOnce(
  * the store's OWN 402 — the test that keeps this tool honest about
  * being the law we already live under, not a second opinion.
  */
+/** Problems listed on one advisory before "and N more" — enough to act on, never a wall. */
+const SCHEMA_PROBLEM_CAP = 6;
+
+/**
+ * A bounded JSON Schema reader for the discovery block: the keywords
+ * a catalog's validator would trip on first, and nothing it cannot
+ * hold to honestly. Returns problems as sentences naming the path.
+ */
+export function schemaProblems(
+  value: unknown,
+  schema: Record<string, unknown>,
+  path: string,
+  depth = 0,
+): string[] {
+  const problems: string[] = [];
+  if (depth > 12) return problems;
+  const typeOf = (v: unknown): string =>
+    v === null ? "null" : Array.isArray(v) ? "array" : typeof v;
+  const declared = schema["type"];
+  const declaredTypes = Array.isArray(declared)
+    ? declared.map(String)
+    : typeof declared === "string"
+      ? [declared]
+      : [];
+  if (declaredTypes.length > 0) {
+    const actual = typeOf(value);
+    const fits =
+      declaredTypes.includes(actual) ||
+      (actual === "number" && declaredTypes.includes("integer") && Number.isInteger(value));
+    if (!fits) {
+      problems.push(`${path} is ${actual}, schema says ${declaredTypes.join(" or ")}`);
+      return problems;
+    }
+  }
+  if ("const" in schema && JSON.stringify(value) !== JSON.stringify(schema["const"])) {
+    problems.push(`${path} is ${JSON.stringify(value)}, schema fixes it to ${JSON.stringify(schema["const"])}`);
+  }
+  if (Array.isArray(schema["enum"]) && !schema["enum"].some((option) => JSON.stringify(option) === JSON.stringify(value))) {
+    problems.push(`${path} is ${JSON.stringify(value)}, not one of the schema's ${schema["enum"].length} allowed values`);
+  }
+  if (isRecord(value)) {
+    const required = Array.isArray(schema["required"]) ? schema["required"].map(String) : [];
+    for (const name of required) {
+      if (!(name in value)) problems.push(`${path}.${name} is required by the schema and absent`);
+    }
+    const properties = isRecord(schema["properties"]) ? schema["properties"] : {};
+    for (const [name, sub] of Object.entries(properties)) {
+      if (name in value && isRecord(sub)) {
+        problems.push(...schemaProblems(value[name], sub, `${path}.${name}`, depth + 1));
+      }
+    }
+    if (schema["additionalProperties"] === false) {
+      for (const name of Object.keys(value)) {
+        if (!(name in properties)) problems.push(`${path}.${name} is not a property the schema allows`);
+      }
+    }
+  }
+  if (Array.isArray(value) && isRecord(schema["items"])) {
+    value.forEach((item, index) => {
+      problems.push(...schemaProblems(item, schema["items"] as Record<string, unknown>, `${path}[${index}]`, depth + 1));
+    });
+  }
+  return problems;
+}
+
+/** Which fields differ between two accepts lists, by rail, as a parenthetical. */
+function describeAcceptsDifference(header: Record<string, unknown>[], body: unknown[]): string {
+  const byRail = (list: unknown[]): Map<string, Record<string, unknown>> => {
+    const map = new Map<string, Record<string, unknown>>();
+    for (const entry of list) {
+      if (!isRecord(entry)) continue;
+      map.set(`${String(entry["network"] ?? "")}|${String(entry["asset"] ?? "").toLowerCase()}`, entry);
+    }
+    return map;
+  };
+  const a = byRail(header);
+  const b = byRail(body);
+  const differences: string[] = [];
+  for (const [rail, entry] of a) {
+    const other = b.get(rail);
+    if (!other) {
+      differences.push(`${rail.split("|")[0]} offered in the header only`);
+      continue;
+    }
+    for (const field of ["amount", "payTo"]) {
+      if (String(entry[field] ?? "") !== String(other[field] ?? "")) {
+        differences.push(`${field} on ${rail.split("|")[0]}: header ${String(entry[field] ?? "")}, body ${String(other[field] ?? "")}`);
+      }
+    }
+  }
+  for (const rail of b.keys()) {
+    if (!a.has(rail)) differences.push(`${rail.split("|")[0]} offered in the body only`);
+  }
+  return differences.length > 0 ? ` (${differences.slice(0, SCHEMA_PROBLEM_CAP).join("; ")})` : "";
+}
+
+/**
+ * Each decodable offer whose payload names terms the accepts do not
+ * carry. AN OFFER MATCHES IF ANY ENTRY ON ITS RAIL CARRIES ITS PAYTO
+ * AND AMOUNT — the first run of this reader compared against the first
+ * entry on the rail and flagged this store's own pay-what-it-deserves
+ * doors, which offer three tiers per rail and sign one offer per tier.
+ * That is the design note's first named legitimate difference, met on
+ * the first run, on our own door, which is the order the design asked
+ * for.
+ */
+function offerContradictions(
+  parsedOffers: { ok: boolean; payload?: unknown }[],
+  accepts: Record<string, unknown>[],
+): string[] {
+  const out: string[] = [];
+  parsedOffers.forEach((parsed, index) => {
+    if (!parsed.ok || !isRecord(parsed.payload)) return;
+    const payload = parsed.payload;
+    const network = String(payload["network"] ?? "");
+    const asset = String(payload["asset"] ?? "").toLowerCase();
+    if (!network || !asset) return;
+    const onRail = accepts.filter(
+      (entry) =>
+        String(entry["network"] ?? "") === network &&
+        String(entry["asset"] ?? "").toLowerCase() === asset,
+    );
+    if (onRail.length === 0) {
+      out.push(`offer ${index} commits to ${network} at an asset the accepts never offer`);
+      return;
+    }
+    const amount = String(payload["amount"] ?? "");
+    const payTo = String(payload["payTo"] ?? "").toLowerCase();
+    const matched = onRail.some(
+      (entry) =>
+        String(entry["amount"] ?? "") === amount &&
+        String(entry["payTo"] ?? "").toLowerCase() === payTo,
+    );
+    if (matched) return;
+    const amounts = [...new Set(onRail.map((entry) => String(entry["amount"] ?? "")))];
+    const payTos = [...new Set(onRail.map((entry) => String(entry["payTo"] ?? "")))];
+    const fields: string[] = [];
+    if (!amounts.includes(amount)) {
+      fields.push(`amount ${amount} where the challenge offers ${amounts.join(" or ")}`);
+    }
+    if (!payTos.some((candidate) => candidate.toLowerCase() === payTo)) {
+      fields.push(`payTo ${String(payload["payTo"] ?? "")} where the challenge names ${payTos.join(" or ")}`);
+    }
+    if (fields.length === 0) {
+      fields.push(`amount ${amount} and payTo ${String(payload["payTo"] ?? "")} appear on the rail, but on no single accepts entry together`);
+    }
+    out.push(`offer ${index} on ${network}: ${fields.join(", ")}`);
+  });
+  return out;
+}
+
 export function runChecks(
   response: Response,
   bodyOverLimit: boolean,
@@ -1038,8 +1208,7 @@ export function runChecks(
   ) {
     advisories.push({
       name: "placement-mismatch",
-      detail:
-        "the 402 body carries a challenge whose accepts differ from the PAYMENT-REQUIRED header's. Buyers read either placement (many read only the header; some read only the body), so the two must agree — a door showing different terms per placement is quoting two prices for one knock.",
+      detail: `the 402 body carries a challenge whose accepts differ from the PAYMENT-REQUIRED header's${describeAcceptsDifference(accepts, bodyChallenge["accepts"] as unknown[])}. Buyers read either placement (many read only the header; some read only the body), so the two must agree — a door showing different terms per placement is quoting two prices for one knock. The header is the canonical placement by spec; a body may only duplicate it.`,
     });
   }
 
@@ -1110,6 +1279,48 @@ export function runChecks(
               "extensions.bazaar is declared but carries no parseable info block — no name, no description, nothing an ingestion-based directory could render as a listing. THAT MISSING BLOCK IS WHAT WE OBSERVED. What follows from it — that an indexer drops or mangles the entry — is INFERENCE and not measurement: this store runs no directory ingester and has not tested one. Falsified by any directory that ingests this endpoint and renders a complete listing without an info block.",
           },
     );
+    /*
+     * S8 TIER A (2026-09-02): THE BLOCK AGAINST ITS OWN SCHEMA. The
+     * bazaar extension ships the info block beside the schema that
+     * describes it, and the catalog's own rule is that the facilitator
+     * validates one against the other before listing — a block that
+     * fails is a door that has dropped out of the catalog without
+     * knowing. Read here over the keywords a bounded validator can
+     * hold to (type, const, enum, required, properties, items,
+     * additionalProperties: false); formats, patterns, numeric ranges
+     * and composition keywords are NOT checked, and the detail says
+     * so, because a claim of full validation this battery cannot make
+     * would be the surface lying about itself.
+     */
+    const schema = bazaar && typeof bazaar === "object" ? bazaar["schema"] : undefined;
+    if (info && typeof info === "object" && isRecord(schema)) {
+      const problems = schemaProblems(info, schema, "info");
+      if (problems.length > 0) {
+        advisories.push({
+          name: "discovery-info-fails-schema",
+          detail: `extensions.bazaar.info does not satisfy extensions.bazaar.schema: ${problems.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}${problems.length > SCHEMA_PROBLEM_CAP ? ` (and ${problems.length - SCHEMA_PROBLEM_CAP} more)` : ""}. The catalog's own rule is that a facilitator validates info against schema before listing, so a block that fails is a listing that never appears — the door disagreeing with itself in one response. Checked: type, const, enum, required, properties, items, additionalProperties false. Not checked: formats, patterns, numeric ranges, composition keywords.`,
+        });
+      }
+    }
+    /*
+     * THE FIELD THE CATALOG INDEXES. A v2 challenge carries the
+     * description at the top level (resource.description), and the
+     * open issue on the foundation's tracker counts most v2 entries
+     * listing bare for want of it. Read only beside a bazaar block: a
+     * door that opted into discovery and left the description off is
+     * the door this is about.
+     */
+    const resourceDescription =
+      isRecord(resourceField) && typeof resourceField["description"] === "string"
+        ? (resourceField["description"] as string).trim()
+        : "";
+    if (info && typeof info === "object" && resourceDescription === "") {
+      advisories.push({
+        name: "resource-description-absent",
+        detail:
+          "the challenge carries a bazaar discovery block but no top-level resource.description. That field is what an ingestion-based catalog indexes and renders as the listing's text; without it a v2 entry lists bare (resource, type and version and nothing a buyer can search). Inference labelled as such: this store runs no catalog and reads the catalog's documented shape rather than watching it ingest. Falsified by this endpoint appearing in the catalog with a rendered description.",
+      });
+    }
   } else {
     advisories.push({
       name: "no-bazaar-extension",
@@ -1247,6 +1458,24 @@ export function runChecks(
         : { ok: false },
     );
     const broken = parsedOffers.filter((parsed) => !parsed.ok).length;
+    /*
+     * S8 TIER A (2026-09-02): THE OFFER AGAINST THE CHALLENGE IT
+     * RIDES. A signed offer commits to network, asset, payTo and
+     * amount; the spec tells verifiers to match on those fields, never
+     * on array position. So each decodable payload is looked up in
+     * the accepts by rail (network + asset): absent, it promises a
+     * rail the challenge does not offer; present with a different
+     * payTo or amount, it is a signed promise of one price beside a
+     * challenge for another. Signatures are still not verified here;
+     * this reads the payload's own words against the header's.
+     */
+    const contradictions = offerContradictions(parsedOffers, accepts);
+    if (contradictions.length > 0) {
+      advisories.push({
+        name: "offer-contradicts-challenge",
+        detail: `${contradictions.length} of ${offers.length} signed offers (in ${offerPlacement}) commit to terms the challenge's accepts do not carry: ${contradictions.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}. A verifier matches an offer to an accepts entry by network, asset, payTo and amount; an offer with no matching entry is a signed promise of one price beside a challenge for another, which is the door disagreeing with itself in a single response. The signature was not verified here (that needs the issuer's key, a second request); the payload's words were read against the header's.`,
+      });
+    }
     checks.push(
       broken === 0
         ? {

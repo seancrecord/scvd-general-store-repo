@@ -10,6 +10,8 @@ import { readWindowShopping } from "@/lib/window-shopping";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
 import type { TakeSummary } from "@/services/books-summary";
+import type { TillItemCount } from "@/services/stats";
+import { minimumUsdcForPath } from "@/lib/payments";
 import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
 
 /**
@@ -206,6 +208,7 @@ function trendHtml(ledger: MonthLedger): string {
 export function takeSectionHtml(
   take: TakeSummary | null,
   allTime: { organic: number; house: number } | null,
+  till: Record<string, TillItemCount> | null = null,
 ): string {
   if (!take) {
     return "<p>The take didn't load. Reload to retry.</p>";
@@ -225,7 +228,7 @@ export function takeSectionHtml(
       return `<p><small>The storefront's organic figure matches this table exactly right now (${allTime.organic}).</small></p>`;
     }
     if (diff > 0) {
-      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is the penny-page settle${diff === 1 ? "" : "s"} (Almanac), which take money but mint no certificate. Same books, two honest counts.</small></p>`;
+      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is settles that minted no certificate, listed by item under <a href="#no-certificate">settled at the till, no certificate</a> below. Same books, two honest counts, and now both on the page.</small></p>`;
     }
     return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}). Penny pages cannot explain a negative gap — this is worth chasing.</strong></small></p>`;
   })();
@@ -278,7 +281,104 @@ export function takeSectionHtml(
     <a href="/admin/files">the keeper's files</a>. Tips counted with their
     sales; ${take.refund_usdc > 0 ? `$${take.refund_usdc.toFixed(2)} of refunds netted out` : "no refunds to net"};
     ${take.unknown_wallet_sales > 0 ? `${take.unknown_wallet_sales} sale${take.unknown_wallet_sales === 1 ? "" : "s"} arrived without a wallet address and count as organic` : "every sale carries its wallet"}.
-    Penny pages (Almanac) mint no certificates and are not in this table.${take.truncated ? " <strong>Cert scan hit its cap; totals are a floor.</strong>" : ""}</small></p>`;
+    Penny pages (Almanac) mint no certificates and are not in this table.${take.truncated ? " <strong>Cert scan hit its cap; totals are a floor.</strong>" : ""}</small></p>
+    ${noCertificateHtml(take, allTime, till)}`;
+}
+
+/**
+ * SETTLED AT THE TILL, NO CERTIFICATE (2026-09-02; the keeper, on
+ * "the take says 21, organic says 23": "why wouldn't we show both").
+ * The till counts every settle by item; the take counts certificates
+ * by item. Subtract, per item, and what is left is the money the
+ * certificate walk cannot see: the penny pages by design, and — if it
+ * ever happens — a shelf item that settled and minted nothing, which
+ * is the one row here that should never be green. Then the two
+ * totals are added back together in front of the reader, so the
+ * storefront's number is arrived at on the page rather than explained
+ * in a footnote.
+ *
+ * Money for a no-certificate row is the LIST price times the count:
+ * the till records that a settle happened, not what was paid, and the
+ * chain on the receiving wallets is the amount's backstop, same as the
+ * tax drawer says. Counts are raw till counters; the reclassification
+ * ledger moves family settles to house in the totals only and cannot
+ * say which item they were on, so a remainder is printed rather than
+ * absorbed.
+ */
+function noCertificateHtml(
+  take: TakeSummary,
+  allTime: { organic: number; house: number } | null,
+  till: Record<string, TillItemCount> | null,
+): string {
+  if (!till) {
+    return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
+    <p><small>The till counters didn't load, so the no-certificate rows can't be derived this time.</small></p>`;
+  }
+  const certs = new Map(
+    take.items.map((line) => [
+      line.item,
+      { organic: line.organic_sales, house: line.house_sales },
+    ]),
+  );
+  const rows = Object.entries(till)
+    .map(([item, count]) => {
+      const cert = certs.get(item) ?? { organic: 0, house: 0 };
+      const organic = Math.max(0, count.organic - cert.organic);
+      const house = Math.max(0, count.house - cert.house);
+      // A penny page's till key is its path with colons for slashes.
+      const path = item.includes(":") ? `/${item.replace(/:/g, "/")}` : `/api/buy/${item}`;
+      const listPrice = minimumUsdcForPath(path);
+      const pennyPage = item.includes(":") && listPrice > 0;
+      return { item, organic, house, listPrice, pennyPage };
+    })
+    .filter((row) => row.organic + row.house > 0)
+    .sort((a, b) => b.organic - a.organic || a.item.localeCompare(b.item));
+  const money = (value: number): string => `$${value.toFixed(2)}`;
+  const noCertOrganic = rows.reduce((sum, row) => sum + row.organic, 0);
+  const noCertHouse = rows.reduce((sum, row) => sum + row.house, 0);
+  const table =
+    rows.length === 0
+      ? "<p>Every settle on the till has a certificate behind it.</p>"
+      : `<table border="1" cellpadding="4">
+      <tr><th>item</th><th>organic (sales)</th><th>house (sales)</th><th>why no certificate</th></tr>
+      ${rows
+        .map(
+          (row) => `<tr>
+        <td><code>${escapeHtml(row.item)}</code></td>
+        <td><strong>${money(row.organic * row.listPrice)}</strong> (${row.organic})</td>
+        <td>${money(row.house * row.listPrice)} (${row.house})</td>
+        <td>${
+          row.pennyPage
+            ? `penny page at ${money(row.listPrice)} list; delivers the page, mints nothing`
+            : `<strong style="color:#8c2f1b">a shelf item that settled without a certificate — money that bought nothing, or a mint that failed. Chase it.</strong>`
+        }</td>
+      </tr>`,
+        )
+        .join("\n")}
+      <tr>
+        <td><strong>No certificate, total</strong></td>
+        <td><strong>(${noCertOrganic})</strong></td>
+        <td>(${noCertHouse})</td>
+        <td></td>
+      </tr>
+    </table>`;
+  const reconcile = (() => {
+    if (!allTime) return "";
+    const explained = take.total.organic_sales + noCertOrganic;
+    const remainder = allTime.organic - explained;
+    const sum = `${take.total.organic_sales} on certificates + ${noCertOrganic} with no certificate = ${explained}`;
+    if (remainder === 0) {
+      return `<p><strong>${sum}</strong>, which is the storefront's ${allTime.organic}. The books reconcile.</p>`;
+    }
+    if (remainder > 0) {
+      return `<p><strong style="color:#8c2f1b">${sum}, but the storefront says ${allTime.organic}: ${remainder} organic settle${remainder === 1 ? "" : "s"} unaccounted for.</strong> Neither the certificates nor the till's per-item rows carry ${remainder === 1 ? "it" : "them"}; the chain on the receiving wallets is where to look.</p>`;
+    }
+    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${-remainder} more here than there. The per-item rows are raw till counters and the storefront's figure has the reclassification ledger applied (family settles moved to house at read, not by item), so a small overshoot here is that ledger, not extra money.</p>`;
+  })();
+  return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
+    <p><small>The till counts every settle by item; the table above counts certificates. This is the difference, per item. Amounts are list price × count — the till records that a settle happened, not what was paid; the chain on the receiving wallets is the backstop.</small></p>
+    ${table}
+    ${reconcile}`;
 }
 
 function glanceHtml(data: OfficePageData): string {

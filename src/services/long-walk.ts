@@ -1,3 +1,4 @@
+import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
 import {
@@ -42,6 +43,14 @@ interface WalkRosterEntry {
   host: string;
   url: string;
   source: "discovery" | "both";
+  /**
+   * The catalog's copy of the door's terms, frozen with the roster
+   * (S8 Tier C). The index is read once at walk start and the probes
+   * fire in later cron firings, so the terms must ride the roster or
+   * they are gone by the time the door is knocked on. Absent on
+   * rosters frozen before the column; null for a row listed bare.
+   */
+  catalog?: CatalogTerms | null;
 }
 
 export interface LongWalkState {
@@ -185,7 +194,13 @@ async function startWalk(env: Env, week: string): Promise<WalkPass> {
 async function walkBatch(env: Env, state: LongWalkState): Promise<WalkPass> {
   const slice = state.roster.slice(state.cursor, state.cursor + WALK_BATCH);
   const probed = await pooled(slice, WALK_CONCURRENCY, async (entry) => {
-    const probe = await probeHost(env, entry.url);
+    const probe = await probeHost(
+      env,
+      entry.url,
+      // A roster frozen before the column carries no terms; the
+      // reading is then absent rather than invented.
+      entry.catalog === undefined ? undefined : { listed: true, terms: entry.catalog },
+    );
     const claim = state.claims[entry.host];
     return {
       host: entry.host,
