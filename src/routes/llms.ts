@@ -315,10 +315,12 @@ by name, the month before beside it, and a stable address per month at
 ${base}/corpus/month/{YYYY-MM}. Two kinds of number, never a share.
 
 If you poll rather than read: ${base}/feeds lists four Atom feeds,
-each derived when fetched from the same record the pages read — the
-week's doors, the corpus chain, the corrections and the
-disagreements — and every entry links the page it came from, where
-the derivation and the denominator are.
+each derived when fetched from the same record the pages read —
+${base}/feeds/brief.xml (the week's doors, one entry per signed week),
+${base}/feeds/corpus.xml (one per signed snapshot),
+${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
+and every entry links the page it came from, where the derivation and
+the denominator are.
 
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed

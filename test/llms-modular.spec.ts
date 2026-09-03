@@ -604,12 +604,20 @@ const BASE = "https://scvd.store";
  * this value was taken: the guide carries "/corpus/month" and "Two
  * kinds of number, never a share", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-SECOND — by the feeds' four URLs
+ * named in the guide's feeds paragraph, because a route no agent
+ * surface names is an orphan capability (test/no-orphan-capability)
+ * and a poller wants the feed address, not the page that lists it.
+ * Confirmed before this value was taken: the guide carries
+ * "/feeds/brief.xml" and "/feeds/disagreements.xml", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f7272a89fa348fc14bd48779f832b3421d53e3e9ec3f6055281e5e6d7fdc1911";
+  "54cc3ddcbb6ffdbcb914c565aa9c84a4fe5195338a50ceaf1ade489d7bd22375";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
