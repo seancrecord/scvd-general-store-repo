@@ -1,5 +1,5 @@
 import { SELF } from "cloudflare:test";
-import { WRITTEN_ABOUT } from "@/store/copy/asked-for";
+import { INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -75,6 +75,8 @@ describe("/agents.md", () => {
     const ALLOWED_EXTERNAL = [
       "https://github.com/seancrecord/",
       ...WRITTEN_ABOUT.map((piece) => piece.url),
+      // And the independent reporting (2026-09-03), from its own list.
+      ...INDEPENDENT_REPORTING.map((piece) => piece.url),
     ];
     expect(text).not.toContain("http://");
     for (const line of text.split("\n")) {

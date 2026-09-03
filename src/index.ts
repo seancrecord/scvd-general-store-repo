@@ -184,23 +184,71 @@ app.use("*", async (c, next) => {
  * it, query string kept. `/api/` is left alone on purpose: a machine
  * caller gets its answer (or its 410) at the URL it used, never a
  * redirect it did not ask for.
+ *
+ * A TRAILING DOT IS THE SAME DEFECT WEARING PUNCTUATION (2026-09-03,
+ * the first Cloudflare crawl reading). The guide ends sentences with
+ * a URL and a full stop ("…at https://scvd.store/criteria."), and
+ * some crawlers keep the stop: the 4xx list carried `/criteria.`,
+ * `/api/preflight/v1.` and `/api/buy/spot_check.`. No door here ends
+ * in a dot, so a GET or HEAD for one is a 301 to the path without it,
+ * `/api/` included this time: a machine caller never sends a
+ * trailing dot, only a crawler reading prose does, and the redirect
+ * lands it on the door the sentence meant.
  */
+/**
+ * THE ISOLATE SAYS WHETHER IT WAS COLD (2026-09-03, the x402-list p95
+ * read). The directory's thirty-day p95 on our 402 sat at 1308ms
+ * against a median near 400, and nothing on the wire said which
+ * knocks were a cold isolate and which were a warm one doing slow
+ * work. Now every response carries a Server-Timing line: `isolate`
+ * with desc cold on the first request this isolate ever served and
+ * warm after, plus `age`, the seconds since it was born, and `req`,
+ * the wall time this request spent in the Worker. A curl -i on any
+ * door reads it; the Workers Logs (observability, wrangler.jsonc)
+ * keep the same per-invocation timing on the dashboard.
+ *
+ * Read `req` for what it is: Workers freeze the clock during pure
+ * compute and advance it at I/O, so the figure is the waits (KV, the
+ * facilitator, the chain), not the CPU. The cold marker is the exact
+ * fact; the number is the honest floor.
+ */
+/*
+ * Born on the FIRST REQUEST, not at the top of the script: the Workers
+ * clock reads zero during script initialisation, so a Date.now() taken
+ * here printed the epoch as the isolate's age (found on the live 402
+ * within minutes of deploying it, 2026-09-03). The age is therefore
+ * seconds since this isolate first answered, which is the figure
+ * anyone reading the header wanted anyway.
+ */
+let isolateBornAt: number | null = null;
+let requestsServedByThisIsolate = 0;
+
 app.use("*", async (c, next) => {
   const url = new URL(c.req.url);
   const method = c.req.method;
+  const readOnly = method === "GET" || method === "HEAD";
+  // The MCP door answers its own trailing slash with a 308 so a
+  // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
+  // same 308 for the same reason, and this middleware stays out.
+  const mcp = url.pathname.startsWith("/mcp");
+  if (readOnly && !mcp && url.pathname.length > 1 && url.pathname.endsWith(".")) {
+    url.pathname = url.pathname.replace(/[./]+$/, "") || "/";
+    return c.redirect(url.toString(), 301);
+  }
   if (
-    (method === "GET" || method === "HEAD") &&
+    readOnly &&
+    !mcp &&
     url.pathname.length > 1 &&
     url.pathname.endsWith("/") &&
-    !url.pathname.startsWith("/api/") &&
-    // The MCP door answers its own trailing slash with a 308 so a
-    // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
-    // same 308 for the same reason, and this middleware stays out.
-    !url.pathname.startsWith("/mcp")
+    !url.pathname.startsWith("/api/")
   ) {
     url.pathname = url.pathname.replace(/\/+$/, "") || "/";
     return c.redirect(url.toString(), 301);
   }
+  const coldIsolate = requestsServedByThisIsolate === 0;
+  requestsServedByThisIsolate += 1;
+  const startedAt = Date.now();
+  if (isolateBornAt === null) isolateBornAt = startedAt;
   await next();
   /*
    * A 402 IS NOT A PAGE. Every paid door answers 402 to a plain GET
@@ -212,7 +260,39 @@ app.use("*", async (c, next) => {
    */
   if (c.res.status === 402) {
     c.res.headers.set("X-Robots-Tag", "noindex");
+    /*
+     * AND IT LEAVES COMPRESSED (2026-09-03, the x402-list p95 read).
+     * Cloudflare brotli-compresses every other response this store
+     * sends, the 404 JSON included, and passes the 402 through as is:
+     * 12.6 KB of body behind 7.5 KB of headers, which spills past a
+     * fresh connection's first congestion window and costs every
+     * probe a second round trip for a document that packs to a
+     * quarter of that. So when the caller said it takes gzip, the
+     * runtime encodes the body on the way out: setting
+     * Content-Encoding under the default encodeBody "automatic" is
+     * the runtime's own instruction to compress, and the length is
+     * dropped because the encoded length is not ours to know. A
+     * caller that did not ask gets the same bytes it always got. The
+     * PAYMENT-REQUIRED header, the document an x402 client actually
+     * parses, is untouched either way.
+     */
+    const accepts = c.req.header("Accept-Encoding") ?? "";
+    const type = c.res.headers.get("Content-Type") ?? "";
+    if (
+      /\bgzip\b(?!\s*;\s*q=0(?:\.0+)?\b)/i.test(accepts) &&
+      !c.res.headers.has("Content-Encoding") &&
+      type.startsWith("application/json")
+    ) {
+      const headers = new Headers(c.res.headers);
+      headers.set("Content-Encoding", "gzip");
+      headers.delete("Content-Length");
+      c.res = new Response(c.res.body, { status: c.res.status, headers });
+    }
   }
+  c.res.headers.set(
+    "Server-Timing",
+    `isolate;desc=${coldIsolate ? "cold" : "warm"}, age;dur=${Math.round((startedAt - isolateBornAt) / 1000)}, req;dur=${Date.now() - startedAt}`,
+  );
   /*
    * AND THE CACHE IS TOLD. Every negotiated route reads the Accept
    * header and, since the same day, the User-Agent; forty-five of

@@ -22,6 +22,8 @@ import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
   CORPUS_DATASET_NAME,
+  corpusDatasetIdentityFields,
+  corpusDatasetRef,
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -82,6 +84,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     name: CORPUS_DATASET_NAME,
     description: CORPUS_DATASET_DESCRIPTION,
     license: CORPUS_DATASET_LICENSE,
+    ...corpusDatasetIdentityFields(),
     url: `${base}/corpus.json`,
     creator: organizationRef(base),
     isAccessibleForFree: true,
@@ -273,7 +276,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
     url: `${base}/corpus/host/${host}`,
     sameAs: `${base}/corpus/host/${host}.json`,
     about: { "@type": "WebSite", url: `https://${host}/` },
-    isPartOf: `${base}/corpus.json`,
+    isPartOf: corpusDatasetRef(base),
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
     creator: organizationRef(base),
@@ -370,7 +373,7 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
         name: `x402 endpoint readiness — ${brief.week}`,
         description,
         url: `${base}/corpus/round/${brief.week}`,
-        isPartOf: `${base}/corpus.json`,
+        isPartOf: corpusDatasetRef(base),
         temporalCoverage: brief.week,
         dateModified: brief.taken_at,
         license: "https://creativecommons.org/licenses/by/4.0/",

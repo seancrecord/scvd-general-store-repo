@@ -119,8 +119,11 @@ export function webPageJsonLd(page: {
   path: string;
   title: string;
   description: string;
+  dates?: { published?: string; modified?: string };
 }): Record<string, unknown> {
   return {
+    ...(page.dates?.published ? { datePublished: page.dates.published } : {}),
+    ...(page.dates?.modified ? { dateModified: page.dates.modified } : {}),
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${page.base}${page.path}`,

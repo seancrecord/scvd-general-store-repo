@@ -34,3 +34,63 @@ export const CORPUS_DATASET_DESCRIPTION =
  */
 export const CORPUS_DATASET_LICENSE =
   "https://creativecommons.org/licenses/by/4.0/";
+
+/**
+ * THE DOI (2026-09-03, the keeper's Zenodo record). A DOI is the
+ * citation form researchers and their tools use, and papers are part
+ * of the answer engines' diet: arxiv.org was cited 53 times in the
+ * prompt export that started the AEO plan, and nobody else in the x402
+ * space has one for their data. The record on Zenodo holds the same
+ * files this site serves (the index, one file per signed round, the
+ * tiers), CC BY 4.0, a new version per weekly round.
+ *
+ * Zenodo mints two DOIs per record: one for each version (the first
+ * is 10.5281/zenodo.22284888) and one for the concept that every
+ * version shares. This is the CONCEPT DOI, read by the keeper from the
+ * record's "Cite all versions" box on 2026-09-03, so the citation
+ * never goes stale as weekly rounds are added: it always resolves to
+ * the latest version.
+ */
+export const CORPUS_DATASET_DOI = "10.5281/zenodo.22284887";
+export const CORPUS_DATASET_DOI_URL = `https://doi.org/${CORPUS_DATASET_DOI}`;
+
+/**
+ * THE HUGGING FACE COPY (2026-09-03, the keeper's upload): the same
+ * files, under the keeper's account, on the second index researchers
+ * and agents actually search for datasets. Its card carries the DOI
+ * above; this side carries its URL as sameAs, so the two copies point
+ * at each other and at the live corpus.
+ */
+export const CORPUS_DATASET_HUGGINGFACE_URL =
+  "https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness";
+
+/**
+ * The fields that make a Dataset node citable, for every surface that
+ * declares the corpus (the storefront, /corpus, /corpus.json): the DOI
+ * as a PropertyValue identifier, which is how Google Dataset Search
+ * and schema.org consumers read it, and the doi.org URL as sameAs.
+ */
+/**
+ * A reference to the corpus as a whole, for the per-host and per-week
+ * Dataset nodes' isPartOf: the live index as @id, the name, and the
+ * concept DOI, so a round resolves to the dataset it belongs to and
+ * that dataset resolves to its citation.
+ */
+export function corpusDatasetRef(base: string): Record<string, unknown> {
+  return {
+    "@type": "Dataset",
+    "@id": `${base}/corpus.json`,
+    name: CORPUS_DATASET_NAME,
+    ...corpusDatasetIdentityFields(),
+  };
+}
+
+export function corpusDatasetIdentityFields(): {
+  identifier: { "@type": "PropertyValue"; propertyID: "DOI"; value: string };
+  sameAs: string[];
+} {
+  return {
+    identifier: { "@type": "PropertyValue", propertyID: "DOI", value: CORPUS_DATASET_DOI },
+    sameAs: [CORPUS_DATASET_DOI_URL, CORPUS_DATASET_HUGGINGFACE_URL],
+  };
+}

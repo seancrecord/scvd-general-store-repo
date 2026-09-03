@@ -47,6 +47,17 @@ export const CORRECTIONS: readonly Correction[] = [
   {
     date: "2026-09-03",
     what_was_wrong:
+      "The attestation spec page said, since 2026-08-20, that the draft-vauban-x402 family covered receipt-format negotiation, a claim algebra and delegation binding, and that this store's signature_jcs \"already verifies under\" the RFC 8785 discipline those drafts and draft-hopley-x402-canonicalisation-jcs-v1 pin. The first was stale: the consolidated draft defers the claim algebra, the lifecycle FSM and the delegation binding to companion documents with no normative content. The second was overstated: both draft families add pre-canonicalisation rules our artifacts do not meet (integer-millisecond timestamps only, NFC strings; our artifacts carry ISO 8601 dates, the spec's own test vector included), and neither assigns any verification role to an ed25519 signature. signature_jcs verifies under the raw RFC 8785 byte primitive, not under either draft's discipline.",
+    how_long:
+      "2026-08-20 to 2026-09-03, on the spec page every verifier is pointed at. No artifact was affected: the signatures were and are what the page's canonical-form section says they are. What was wrong was the claim of interoperability with drafts that would reject our preimages.",
+    found_by:
+      "A full read of the three drafts at their current revisions, our spec page and the signer, at the keeper's request, as the AEO plan's A10 (docs/bylines/CV_PROMPT_IETF_2026-09.md). The overstatement was in a paragraph written from a summary of the drafts, not from the drafts.",
+    what_changed:
+      "The paragraph is replaced by relation_to_other_x402_receipt_work on the spec page: per draft, at the revision read, what it defines, what we share, and where we are not aligned, ending with the plain statement that we have no post-quantum discipline and that the conformance desk parses neither format. jcs_dual_emit now says what signature_jcs verifies under, and what it does not. test/namespace-spec.spec.ts holds the block to naming all three drafts with a revision and a date, and holds the old sentence absent.",
+  },
+  {
+    date: "2026-09-03",
+    what_was_wrong:
       "The organic 402 count per item on /pulse and the books could drop increments under a burst of price-checks against one door. Every other hot counter had been spread over shards on 2026-08-27; the per-item challenge counter stayed one KV key per item, KV allows one write a second per key, and a write that outlived its retries was logged and dropped. The counts were presented as counts and were, under bursts, floors of unknown depth.",
     how_long:
       "From the day the meter went in until 2026-09-03, on any door polled faster than once a second — which the uptime monitors do. How many increments were lost is not recoverable: a dropped write leaves no row.",
@@ -396,6 +407,15 @@ export const CORRECTIONS_SCOPE =
  */
 export const CORRECTIONS_HAND_KEPT =
   "WHAT THIS RECORD CANNOT SHOW YOU: the entries below are written by hand. Detection is largely automatic — a delivery audit looks for settlements with no artifact behind them, an hourly walk compares our books against Base itself, and the build fails when a claim outruns the code — but every one of those raises an ALERT to a person, and a person then writes the entry. Nothing on this page is machine-generated, on purpose: a store that could auto-publish its own corrections could auto-phrase them. So read a quiet stretch carefully. It means nobody wrote anything down, which is usually because nothing happened and is not the same statement. The gap between the two is a human being, and if you want to check that human rather than trust him, the artifacts are signed and the chain is public: our books can be walked against Base by anyone, without asking us.";
+
+/**
+ * HOW TO READ THIS RECORD (F30, 2026-09-03, an outside reviewer's ask
+ * the keeper carried in): the one paragraph a stranger needs before
+ * the ledger, so a long list reads as what it is — a public,
+ * falsifiable quality system — rather than as a lot of errors.
+ */
+export const CORRECTIONS_HOW_TO_READ =
+  "HOW TO READ THIS RECORD: each entry is one thing this store said that was not true, dated the day it was found, with how long it stood, who found it, and the mechanism that changed so it cannot recur quietly. What qualifies is a published claim that was false or overstated, not a bug nobody could have read; a bug that never reached a claim is a commit, not an entry. Entries are never edited after publication; a correction to a correction is a new entry under a new date, and the old one stands. Outside reports are credited as outside reports. Nothing here is summarised anywhere kinder, and the count going up is the system working.";
 
 export const CORRECTIONS_INVITATION =
   "If you find another, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";

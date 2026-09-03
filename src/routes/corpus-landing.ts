@@ -7,6 +7,15 @@ import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
 import { listCorpus } from "@/services/corpus";
 import type { HonoEnv } from "@/types";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
+import {
+  CORPUS_DATASET_DESCRIPTION,
+  CORPUS_DATASET_DOI,
+  CORPUS_DATASET_DOI_URL,
+  CORPUS_DATASET_HUGGINGFACE_URL,
+  CORPUS_DATASET_LICENSE,
+  CORPUS_DATASET_NAME,
+  corpusDatasetIdentityFields,
+} from "@/store/corpus-dataset";
 
 /**
  * GET /corpus — the crawlable landing beside /corpus.json.
@@ -62,12 +71,14 @@ function corpusDatasetJsonLd(base: string): string {
   const dataset = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: "The scvd corpus — weekly observations of the public x402 ecosystem",
-    description:
-      "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.",
+    // The constants /corpus.json and the storefront already share; this
+    // page carried a third, hand-typed copy until 2026-09-03.
+    name: CORPUS_DATASET_NAME,
+    description: CORPUS_DATASET_DESCRIPTION,
     url: `${base}/corpus`,
-    sameAs: `${base}/corpus.json`,
-    license: "https://creativecommons.org/licenses/by/4.0/",
+    identifier: corpusDatasetIdentityFields().identifier,
+    sameAs: [`${base}/corpus.json`, ...corpusDatasetIdentityFields().sameAs],
+    license: CORPUS_DATASET_LICENSE,
     isAccessibleForFree: true,
     creator: organizationRef(base),
     distribution: {
@@ -124,6 +135,7 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
           : " The chain holds no signed week yet, so there is nothing to count over — this sentence fills with the first ward round rather than quoting a number we do not have."
       } Each door's own page carries its <code>payment_address</code> fact. Custodial and platform wallets make unrelated doors share one address; the observation is served, the inference is yours.</p>
       <p class="menu-desc">And the subject gets a voice: an operator who proves control of a door or a wallet can attach a standing note at <a href="/api/standing-note"><code>/api/standing-note</code></a> — their dated statement, riding beside our observation on every surface that shows it. Beside, never instead.</p>
+      <p class="menu-desc">Cite it as a dataset: DOI <a href="${CORPUS_DATASET_DOI_URL}"><code>${CORPUS_DATASET_DOI}</code></a> (Zenodo; the same files, a new version each signed round; CC BY 4.0). The same files are on <a href="${CORPUS_DATASET_HUGGINGFACE_URL}">Hugging Face</a>.</p>
       <p class="menu-desc">Verification needs nothing from us: recompute any snapshot's sha256, check the signature against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, walk the previous_digest chain back to the first entry, and run <code>ots verify</code> on the Bitcoin-anchored proof. The exact steps, field order included, ride on <a href="/corpus.json"><code>/corpus.json</code></a> itself.</p>
     </section>
     <section>

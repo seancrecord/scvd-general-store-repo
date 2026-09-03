@@ -397,7 +397,7 @@ machine fields, the FAQ and the listings.
 | --- | --- | --- |
 | A1 | **The listing sweep.** Every surface in the homepage's `sameAs` (thirty-six) plus the ones found today (mcpvault, influzer, getdrio, zero.xyz, neura.market, agentcatalog, mcpbeat, verifymcp, agentage, m8ven, mcp-marketplace, x402-bazaar, mcpmarket, cursor.directory) gets the sixty words as its description and, where the form allows a second line, the nouns-and-price line: "x402 conformance audit, signed settlement attestation, endpoint watch and launch check, ed25519-signed, from $0.004; free preflight and receipt check on any issuer's artifact." Retired items (Certificate of Nomenclature on zero.xyz) come down. Where a listing derives from README or server.json, fix the source (B7) and trigger a re-sync; where it is a form, the form. | A search for the name returns the sixty words on the first three results. |
 | A2 | **Two awesome-list PRs**, recut from the sixty words, one line each in the list's exact format: xpaysh/awesome-x402 under Testing & Development (preflight, conformance desk, practice till) and Ecosystem Market Data (the corpus); Merit-Systems/awesome-agentic-commerce under Security & Ops and Benchmarks & Analysis. Replace the July entry in `registry/awesome-x402-submission.md`. | Merged, or a dated note on why not. |
-| A3 | **x402.org ecosystem page.** Unreachable from here; check whether we are on it and how a project is added. x402.org was the single most-cited domain for the conformance prompts. | A row, or a dated note. |
+| A3 | **x402.org ecosystem page.** Struck 2026-09-03 by the keeper: the ecosystem directory in the coinbase/x402 repository is stale and no longer used, a finding made once before. x402.org stays the most-cited domain for the conformance prompts, but there is no listing to take there. | Struck. |
 | A5 | **Vouch Protocol Agent Trust Index**: read what C, 60 measures and whether the row can be claimed or corrected. A third party's grade of us is a fact engines will quote. | Read; a corrections entry if they are wrong about us, a fix if they are right. |
 | A6 | **Search Console, Bing Webmaster Tools, IndexNow key.** Register both, submit the sitemap, take the key for B5. ChatGPT search reads Bing; nothing of ours is indexed under our own name today. | Both consoles show / and /what indexed. |
 | A7 | **Cloudflare URL Scanner and AI Crawl Control** on the zone: run the Agent Readiness scan, read which AI bots fetch us and what paths. Free, first-party, once a month. | The scan's checks and the crawl log, dated in this file. |
@@ -625,7 +625,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F1 | Every 402 leaves with `X-Robots-Tag: noindex`, set once in the app's middleware so no door can forget. Built 2026-09-02 (PR 1); `test/noindex-on-402.spec.ts` walks the shelf. | GSC pre-read | B |
 | F2 | Trailing-slash GET or HEAD on a human path is one 301 to the canonical, query kept; `/api/` untouched so a machine caller gets its answer or its 410 where it asked. Built 2026-09-02 (PR 1); `test/one-url-per-page.spec.ts`. | GSC pre-read | B |
 | F3 | Ruled 2026-09-03 and built (PR 5): `/gazette` (retired), `/porch` ("not really for humans") and `/zodiac` ("idc either way", so out) carry `in_sitemap: false` in `store/rooms.ts`; they leave the sitemap and get a noindex meta, and every other surface still lists them. The train, the neighbours, the visitors' register, the pulse, the bounty board, credit, becoming and wind-down stay. `test/discoverable.spec.ts` names the three. | GSC pre-read | B |
-| F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
+| F4 | `www` 301s to the apex in the Cloudflare zone; the keeper had done this some time before the plan and said so 2026-09-03. The row stayed open because nobody closed it, not because anything was missing. | GSC pre-read | A6 |
 | F5 | Named crawlers get the page. Built 2026-09-02 (PR 1) as a narrower rule than first written: a User-Agent on the robots.txt list (now `lib/crawlers.ts`, one list for both readers) that states no Accept preference gets HTML; a crawler that asks for JSON or markdown still gets it; every other caller is unchanged, because an agent's `fetch(url)` sends the same bare wildcard and expects JSON, and the store's own CLI and the six-doors check depend on that. `Vary` gains `User-Agent` everywhere, merged in one place. `test/crawler-negotiation.spec.ts`. | crawler probe | B1 |
 | F6 | /what opens with "What is scvd.store?" (the name spelled, the sixty words, who runs it) and the three paths. Built 2026-09-02 (PR 2). | live /what | B2 |
 | F7 | `ASKED_FOR_NOUNS` in `store/copy/asked-for.ts`, typed once: Organization and WebSite `alternateName` (every name, then the phrases), `knowsAbout`, a "Words people use" section kept on the llms.txt index, agents.md and index.md, the OpenAPI description, the MCP handshake. Built 2026-09-02 (PR 2); `test/asked-for.spec.ts` sweeps every surface. | export read | B3 |
@@ -642,6 +642,8 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F18 | `npm run listings:check` (`scripts/listings-check.mjs`, `scripts/lib/listings.mjs`): reads the homepage's sameAs list, reads every mirror as a browser would, classifies each as current (the sixty words, read from the live og:description), september, august, july, unknown or unreachable; `--record` writes `docs/listings/observation.json`, later runs exit 1 on a mirror that moved backwards. `listings:test` is offline and in the gates. Built 2026-09-03 (PR 4). ⚑ First `--record` from the keeper's machine: from the build sandbox 31 of 35 mirrors are egress-blocked, so a baseline taken here would be a lie. | mirrors | E1 |
 | F19 | Ruled 2026-09-03 ("agreed on all") and built (PR 5): the first sentence reads "…evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts." The tail of the proposed clause was trimmed because the sixth sentence already says it and the paragraph has a ceiling (raised 80 → 90 words in `test/first-screen.spec.ts`). README, every first screen, the guide digest (thirty-seventh) and the keeper's desk file followed. | the noun, answered | A1, B |
 | F20 | `registry/awesome-x402-submission.md` recut 2026-09-03 (PR 4) with the new entry, the two live lists and the sections that fit; the July entry kept beneath for the record. The keeper submitted both PRs before 2026-09-03 and reports no movement ("too many prs for them"). Nothing to chase; the entry stands in the file for the day a maintainer merges. | awesome lists | A2 |
+| F27 | A trailing dot on any GET or HEAD path is one 301 to the path without it, `/api/` included, because the guide ends sentences with a URL and a full stop and some crawlers keep the stop (`/criteria.`, `/api/preflight/v1.`, `/api/buy/spot_check.` in the first 4xx list). Built 2026-09-03 (PR 6); `test/one-url-per-page.spec.ts`. | crawl 4xx | B |
+| F26 | The corpus DOI (Zenodo, the keeper's record 2026-09-03) on every corpus Dataset node as a DOI `identifier` and a doi.org `sameAs`, and a citation line on /corpus; the /corpus page's hand-typed third copy of the name and description replaced by the constants. The LinkedIn showcase in `KEEPER_SOCIAL`. Built 2026-09-03 (PR 6); `test/corpus-doi.spec.ts`. ⚑ Confirm the number is the concept DOI ("Cite all versions"), not the version DOI; one constant if it differs. | entity anchors | A |
 | F22 | Built 2026-09-03 (PR 5): 23 sitemap pages carried no JSON-LD (the census is in the PR). `renderSimplePage` now derives a WebPage node from the title and description it already prints, at the end of the body so a room's own richer node stays first, hung off the WebSite (`@id` added) and the Organization. Every listed room carries one; `test/discoverable.spec.ts` holds each to naming its own URL. | crawl | B, with F3 |
 | F25 | `subjectOf` on the Organization links the byline pieces, and the guides print them. Built 2026-09-02 (PR 2); the dev.to census piece added 2026-09-03 (PR 5) from the keeper's URL, title read from the slug for the keeper to correct. | rulings | B |
 | F24 | One `@id` on the store's Organization node and every reference to it (32 nodes, two names before), under the display name; done on the branch with `test/organization-id.spec.ts`. | entity anchors | PR 1 |
@@ -690,7 +692,7 @@ descriptions, the manifests. One constant, many surfaces, one sweep.
 | F16 | `/defects/{class}` one page each, derived from the vocabulary and the last round's counts with denominators. | Every class answers; adding a class without a page is impossible by construction. |
 | F12 | Dataset JSON-LD on /corpus, /corpus.json, /registry, /inflows; SoftwareApplication on /mcp.md and /developers. | Blocks parse; sweep finds them. |
 | F17 | JSON-LD on verify pages. | Parses. |
-| A10 | The dated paragraph on the spec page relating our format to the two draft families. ⚑ CV's, from the prompt in docs/bylines; not in PR 3. | Present, dated. |
+| A10 | The dated section on the spec page relating our format to the three drafts, per draft, at the revision read. CV's, 2026-09-03, from the prompt in docs/bylines; placed as `relation_to_other_x402_receipt_work`, replacing the 2026-08-20 paragraph, which CV's read showed overstated two things (now on /corrections). Built 2026-09-03 (PR 6). | Present, dated, tested. |
 
 ### PR 4 — the mirrors, watched
 
@@ -967,6 +969,13 @@ fetches its own key file first, the way Bing does, and says which side
 is wrong before it sends anything, and prints IndexNow's reply body on
 any 4xx, so the next refusal explains itself.
 
+After the move to the root (2026-09-03, 17:4x UTC) the ping came back
+`403 SiteVerificationNotCompleted`: IndexNow found the key file and
+verifies it on its own schedule. That is the normal first answer for
+a new key, not an error; the same command a little later returns
+200 or 202. The DOI badge from Zenodo is on the README beside the
+Vouch badge (the keeper pasted it, 2026-09-03).
+
 Bing Webmaster Tools (bing.com/webmasters): sign in, "Add a site",
 choose "Import from Google Search Console" (one click, no DNS record),
 submit `https://scvd.store/sitemap.xml` under Sitemaps. Under
@@ -1077,20 +1086,12 @@ missing header, a manifest field) it is a fix; if it is wrong about
 us it is a corrections entry; if it is neither, the doc records what
 it measures and we leave it.
 
-**x402.org ecosystem.** The page is generated from the
-`coinbase/x402` GitHub repository: the ecosystem entries live as
-folders under the site's `ecosystem/partners-data` directory (a
-`metadata.json` with name, description, logo and website, plus the
-logo file), and a project is added by pull request. Check the repo's
-CONTRIBUTING file for the current path and the fields, since the
-site has moved once. The entry: name `scvd.store`, category
-"Infrastructure" or "Services" (whichever the file offers),
-description the one-line entry from `registry/awesome-x402-submission.md`,
-website `https://scvd.store`, logo the og image or a square crop of
-it. Open the PR under your account; send me the PR URL for the
-record. x402.org was the single most-cited domain in the export for
-the conformance prompts, so this one is worth the PR even though it
-is one more queue.
+**x402.org ecosystem.** Struck 2026-09-03 (the keeper: "quite
+certain the x402 ecosystem git you have on the list is stale … i
+dont think its used anymore", and this had been found once before).
+No PR to open. The domain's weight in the export is real, but it is
+carried by the protocol docs and the facilitator, not by a directory
+anyone maintains.
 
 **Cloudflare, once.** In the dashboard, open the scvd.store zone.
 "AI Crawl Control" (left rail; it was "AI Audit" until 2025) shows
@@ -1111,8 +1112,8 @@ links. Paste what it says.
    import; Search Console resubmit; www check. (Section 4.)
 2. Zenodo record → send the concept DOI. Then LinkedIn showcase,
    Crunchbase rename, Hugging Face. Send each URL. (Section 5.)
-3. Vouch row read; x402.org PR; one Cloudflare crawl reading.
-   (Section 6.)
+3. Vouch row read (done, A 100/100); one Cloudflare crawl reading.
+   x402.org struck. (Section 6.)
 4. Correct the dev.to title in `WRITTEN_ABOUT` if the slug got it
    wrong.
 5. CV's IETF paragraph from `docs/bylines/CV_PROMPT_IETF_2026-09.md`.
@@ -1126,3 +1127,416 @@ Hugging Face upload from the Sunday walk; the IETF paragraph onto the
 spec page; the real GSC table; delist rows on request. The
 question-titled pages (D) wait on a hand check I can run once the
 crawler fixes have been live two weeks.
+
+## Anchors landed and the Vouch reading — 2026-09-03, evening
+
+- **Zenodo**: `10.5281/zenodo.22284888`, published by the keeper.
+  Built into every corpus Dataset node and onto /corpus (F26, PR 6).
+  ⚑ Concept versus version DOI still to be confirmed from the
+  record's "Cite all versions" box; if it differs, `CORPUS_DATASET_DOI`
+  is the one line.
+- **LinkedIn**: `https://www.linkedin.com/showcase/scvd-general-store/`
+  under Record Creative Co. LLC. The first attempt named the page
+  "scvd.store" and LinkedIn wrapped it in its suspicious-link redirect,
+  because it treats anything shaped like a domain as a link and did
+  not know this one; renamed to "SCVD General Store" and the URL
+  reissued. Rides sameAs from `ENTITY_PROFILES` (PR 6).
+- **Crunchbase**: `https://www.crunchbase.com/organization/scvd-general-store`,
+  created by the keeper 2026-09-03 as a profile for the store rather
+  than the LLC rename the plan suggested; the keeper's call, and a
+  store-named profile is what a resolver asking about scvd.store
+  finds first. In `ENTITY_PROFILES` (PR 6), so it rides sameAs.
+- **IndexNow**: live. The key file moved to the root in PR 5 and the
+  first accepted ping is the keeper's to run after `git pull`.
+- **Vouch Protocol, read 2026-09-03**: the Agent Trust Index grades
+  the did:web document. `scvd.store` grades **A, 100/100** today:
+  identity `did:web:scvd.store`, key did:web Ed25519 (JWK). The
+  "C, 60" in the search snippet the export surfaced was an older read
+  under the `scvd/general-store` name; nothing to correct. Its two
+  "to raise your grade" items are a post-quantum key (ML-DSA-44)
+  beside the Ed25519 key with hybrid signing, and a service or
+  revocation endpoint in the DID document. Both are signing-format
+  and key-management decisions, the same class as the IETF drafts'
+  canonical forms: recorded here, not built on the plan. The README
+  badge is on (the keeper: "dont skip the badge add the badge"):
+  `docs/badges/vouch-agent-trust.svg`, generated 2026-09-03 with
+  `vouch grade scvd.store --badge` from `vouch-protocol` 2.1.0, which
+  also printed A (100/100), post-quantum no, revocation no. Vouch
+  serves no hosted badge URL, so the file is a dated snapshot and
+  regenerating it is the same one command whenever the grade moves.
+
+Still the keeper's: Hugging Face (now unblocked by the DOI), the
+Cloudflare 4xx list, Search Console
+resubmit and the www check, the dev.to title check, CV's IETF
+paragraph, the mirror sweep last.
+
+## First crawl reading — Cloudflare AI Crawl Control, 2026-09-03
+
+Pasted by the keeper from the zone's AI Crawl Control panel. The
+window is the last 24 hours (the keeper, after the paste), so every
+count below is one day's traffic. The bots that moved bytes, in the
+panel's order:
+
+| Crawler | Operator | Kind | Bytes | Allowed | Unsuccessful |
+| --- | --- | --- | --- | --- | --- |
+| ClaudeBot | Anthropic | AI crawler | 13.59 MB | 2,420 | 14 |
+| Claude-User | Anthropic | AI crawler (on a user's behalf) | 6.54 MB | 252 | 0 |
+| Meta-ExternalAgent | Meta | AI crawler | 648 kB | 144 | 28 |
+| Googlebot | Google | search | 2.68 MB | 91 | 6 |
+| Applebot | Apple | AI search | 684 kB | 51 | 4 |
+| OAI-SearchBot | OpenAI | AI search | 1.32 MB | 54 | 0 |
+| GPTBot | OpenAI | AI crawler | 292 kB | 13 | 4 |
+| Amazonbot | Amazon | AI crawler | 158 kB | 13 | 2 |
+| ChatGPT-User | OpenAI | AI assistant | 322 kB | 12 | 0 |
+| PerplexityBot | Perplexity | AI search | 259 kB | 10 | 0 |
+| BingBot | Microsoft | search | 34 kB | 3 | 0 |
+| Baidu, Bytespider, Claude-SearchBot | | | ~13 kB each | 1 each | 0 |
+
+Zero requests: CCBot (Common Crawl), DuckAssistBot, Perplexity-User,
+Meta-ExternalFetcher, MistralAI-User, Google-CloudVertexBot, the
+Cloudflare crawler, the archivers, and the rest of the panel's list.
+
+Top paths by requests: `/mcp` (JSON, 250 requests, 6.5 MB), `/`
+(HTML, 48), `/sitemap.xml` (21), `/webmcp.js` (14), `/till.js` (13),
+`/menu/settlement_attestation` (JSON, 12), then the per-host corpus
+pages, both faces: `/corpus/host/{host}` as HTML (8–10 requests each)
+and `/corpus/host/{host}.json` (8–9 each). 911 distinct paths in the
+window.
+
+What it says:
+
+- **The crawler fix is working.** The per-host pages from PR 3 are
+  being fetched as HTML by the AI crawlers, eight to ten times each
+  in the window, beside their JSON twins. Before PR 1 a crawler with
+  a bare Accept got JSON everywhere.
+- **The engines that matter are all here.** OAI-SearchBot (what
+  ChatGPT search cites from, via Bing's index and its own fetches),
+  PerplexityBot, Applebot, Googlebot, and ChatGPT-User (a person's
+  ChatGPT session fetching a page it was going to cite). Every one
+  with zero or near-zero failures.
+- **Bing is the gap.** Three requests. Bing's own index is what
+  ChatGPT search falls back on, and it has barely walked the site.
+  IndexNow went live the same afternoon; the next reading should show
+  BingBot moving.
+- **ClaudeBot's 2,420 requests** are Anthropic's training crawl, and
+  the volume is the sitemap's 1,280 URLs walked in both faces.
+  Claude-User's 252 requests are almost all `/mcp`: an MCP client
+  session fetching tools/list, most likely this very session's
+  connector rather than a stranger. Discount it.
+- **Meta-ExternalAgent's 28 failures** are the largest failure count
+  on the panel. Not diagnosed: the panel's 4xx filter would say
+  whether they are 402s on paid doors (correct, and now noindex) or
+  404s on paths that should answer.
+
+Follow-ups, in order:
+
+1. ⚑ Keeper: click the panel's **4xx** filter and paste the Paths
+   table under it (path, content type, requests), not the host
+   column: every request is on scvd.store, so the host says nothing.
+   The paths tell us whether the 58 unsuccessful requests are the
+   paid doors' 402s (fine) or dead paths (a fix).
+2. Re-read the panel a week after the first IndexNow ping, for
+   BingBot alone.
+3. Monthly re-read, same table, so the doc carries a series.
+
+Nothing to block. Nothing to build from this reading until the 4xx
+list is in.
+
+### The 4xx paths, read — 2026-09-03
+
+The panel's 4xx filter, last 24 hours, every path on scvd.store:
+
+| Path | Type | Requests | What it is |
+| --- | --- | --- | --- |
+| `/menu/null`, `/null` | JSON | 3, 2 | A crawler that read a JSON field as a link and got a null. Every human and machine surface was grepped for a `null` URL and none emits one; the crawler's own parse. Left alone. |
+| `/api/buy/spot_check.`, `/criteria.`, `/api/preflight/v1.`, `/api/buy/good_buyer.` | JSON | 1 each | A sentence's full stop kept on the URL. Fixed: F27, one 301 to the door the sentence meant. |
+| `/okf/host/good.example.md`, `/okf/host` | Markdown | 1 each | The OKF page's own example host, followed as a link, and the directory above it. Correct 404s. |
+| `/profiles/other-door.example` | HTML | 1 | An example host from prose, followed. Correct 404. |
+| `/badges/passport` | JSON | 1 | The chip route with no chip named. Correct 404. |
+
+So the 58 unsuccessful requests were not the paid doors' 402s (those
+crawlers evidently do not follow the buy links from the menu pages,
+or the noindex header is doing its job) but crawlers reading our
+prose too literally. One of the five patterns was ours to fix and is.
+
+### Search Console, the real rows — exported 2026-09-03, data to 2026-08-27
+
+The keeper exported the Pages report (sitemap: all known pages). The
+pre-read table above stands corrected by it:
+
+| Row | Pages | Pre-read | What it means |
+| --- | --- | --- | --- |
+| Discovered, currently not indexed | 40 | Not predicted | Google knows the URL from the sitemap and has not crawled it yet. Not a quality verdict: a scheduling one. A domain this age gets a small crawl allowance and spends it on the pages it already knows. |
+| Blocked due to other 4xx issue | 2 | Predicted | The paid doors' 402s, now noindex (F1). |
+| Page with redirect | 1 | Predicted | http → https or www → apex. Expected. |
+| Alternate page with proper canonical tag | 1 | Predicted | A markdown twin. Expected. |
+| Crawled, currently not indexed | 0 | Predicted for the lore rooms | Did not appear. The three rooms left the sitemap anyway (F3). |
+
+The chart: indexed pages went 4 → 21 in the first days (2026-07-23
+to 24), held at 21–23 since, and sat at 22 on 2026-08-27; not-indexed
+rose in steps as the sitemap grew (0 → 19 → 24 → 30 → 32 → 44), each
+step a batch of new pages Google was told about and has not fetched.
+Impressions are single digits on any day. The export ends a week
+before every build PR, so none of the work of 2026-09-02/03 is in it.
+
+What moves "Discovered, not indexed" is crawl demand, and the levers
+are the ones already pulled or in the keeper's hands: fewer thin URLs
+in the sitemap (F3), every page with structured data (F22), the
+evidence pages (specific, dated, the kind Google fetches), the
+sitemap resubmitted 2026-09-03 (done), and links from outside (the
+DOI, the LinkedIn and Crunchbase profiles, the byline pieces).
+IndexNow does not reach Google. Nothing further to build from this
+export; re-export in two weeks and compare the two counts.
+
+## Evening, 2026-09-03: the concept DOI, the IETF section, the title, two answers
+
+- **Concept DOI confirmed**: `10.5281/zenodo.22284887` ("cite all
+  versions"). The constant, every Dataset node, the /corpus citation
+  line and the README badge now carry it; `22284888` is version 1.
+- **IETF section placed** (A10). CV read all three drafts at their
+  current revisions, our spec page and the signer, and returned the
+  section plus two findings against our own page: the vauban family's
+  scope as we described it was stale, and "signature_jcs already
+  verifies under it" was overstated, since both draft families add
+  pre-canonicalisation rules (integer-millisecond timestamps, NFC
+  strings) our ISO-8601-dated artifacts fail, and neither gives an
+  ed25519 signature any role. The new block replaces the old
+  paragraph rather than sitting beside it; `jcs_dual_emit` now says
+  what signature_jcs verifies under and what it does not; the
+  overstatement is a /corrections entry dated 2026-09-03.
+- **dev.to title confirmed** by the keeper, with its full stop; the
+  slug's "tocheck" is the URL as published and stays.
+- **LinkedIn Products, answered**: a showcase page is a page with its
+  own URL and followers; a Product on the company page is a typed
+  object (name, category, website) LinkedIn indexes under the
+  organisation. It is one more structured statement of "this
+  organisation makes this", read by LinkedIn search and by anything
+  that resolves the company page. A minor signal, ten minutes,
+  optional; the showcase is the one that matters.
+- **Cloudflare www**: done before the plan. Closed as F4.
+- **Hugging Face, done**: `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`,
+  uploaded by the keeper 2026-09-03 with the card from
+  `docs/huggingface/DATASET_CARD.md`. Its URL rides every corpus
+  Dataset node's sameAs beside the DOI, and /corpus names it (PR 6).
+  Weekly pushes join the Zenodo upload script once that is built
+  (needs a Zenodo token and a Hugging Face token from the keeper).
+- **agent-almanac** (pjt222): the keeper pointed at
+  `skills/test-x402-payment-client/SKILL.md` in that curated
+  repository, which names this store's $0.001 door as the mainnet
+  target for an end-to-end x402 client test, with the conformance
+  desk and the preflight beside it. Author field cv-scvd, so it is our
+  contribution accepted by their maintainer. Facts checked against
+  the menu (spot_check is $0.001; Base or Solana named, Polygon
+  omitted, not wrong). Added to `EXTERNAL_RECORDS` with that said
+  (PR 6), so it rides sameAs and the trust document.
+- **MCPpedia** (`https://mcppedia.org/s/store-scvd-general-store`,
+  the keeper's pointer, 2026-09-03): an algorithmic score, recomputed
+  daily from public data, no manual overrides, scoring code public.
+  Read 64/100: security 23/30 (no CVEs; the missing seven are the
+  authentication bonus, tool-safety marks the paid doors' side
+  effects cost, and the "MCPpedia verified" repository signal),
+  maintenance 17/25 (commit today; the missing eight are 5,000 stars,
+  10,000 weekly npm downloads and verification), efficiency **0/20,
+  "0 tools, grade F"**, documentation 14/15, compatibility 10/10.
+  The zero is the finding: their scanner extracts tool definitions
+  from the GitHub README, not the running server, and the README
+  described the MCP door in prose. The README now carries a tools
+  table (fourteen rows, name and one line), held to
+  `mcpToolCatalog()` by `test/readme-tools.spec.ts` so it cannot
+  drift (PR 6). Expect the efficiency grade to move at their next
+  daily scan; their token count will be taken from our full
+  descriptions, which are deliberately long, so C or D is the likely
+  landing, not A. Added to `EXTERNAL_RECORDS` with what it proves.
+  ⚑ Keeper: MCPpedia's "verified" flag is a manual review worth five
+  points across two rows; if there is a claim button on the page,
+  press it.
+
+## An outside review, ruled — 2026-09-03, night
+
+The keeper pasted four sections of an outside assessment (a
+benchmark plan, an "agent-action contract", tool-level
+discoverability, schema realism). Each against the record:
+
+**3. The controlled benchmark.** Adopted as the hand check's template,
+not as a tracker: eight families, four engines, seven questions, at
+2026-09-17 and 2026-10-15 and then monthly. The sheet is
+`docs/AEO_HAND_CHECK.md`. The eight are a good cut of the plan's
+fifty prompts and the seven questions are the ones that decide D.
+Keeper's or CV's hands; the sandbox cannot ask ChatGPT or Perplexity.
+
+**4. The agent-action contract.** Mostly built: the "At a glance"
+block (attests, cryptography, verify, price and fulfilment, does not
+attest) plus the required-inputs line on every item page and
+`at_a_glance` in menu.json (F9); the same nouns on the Service
+nodes, in OpenAPI and in the tool descriptions (F7, F10). What the
+reviewer names that is NOT uniform yet: an explicit "Checks" line
+(what the instrument examines) and an "Output" line (what comes back
+and in what shape) on every paid item, and one parity test that
+walks the eight surfaces (item HTML, menu.json, JSON-LD, OpenAPI,
+MCP tool, input schema, the 402 body, the receipt page) and holds
+them to one contract per item. ⚑ F28, the keeper's ruling: it is a
+medium build (the checks and output lines derive from the artifact
+class and the item's input contract, both of which exist) and it
+changes item-page copy, which is his.
+
+**5. Tool-level discoverability.** Built tonight, the small part:
+`buy_observation` now names x402 endpoint monitoring, the signed
+test of a payment client and the x402 launch check beside the
+attestation and the audit, and `check_conformance` says the receipt
+is checked against the issuer's published key. `test/asked-for.spec.ts`
+holds each phrase to its tool. Not done, on purpose: no tool is
+renamed (registries index the name as identity and a rename is a new
+tool to every mirror), and "x402 issuer key verification" is not
+offered as a phrase because no tool does that job as such; the
+conformance desk checks a signed offer or receipt against the
+issuer's key, which is what the description now says.
+
+**6. Schema realism.** Agreed, and it is what was built: Dataset only
+for the corpus and its derived sets; SoftwareApplication for the
+MCP server, the CLI and the two npm packages; Service and Offer only
+on items sold at the stated price; DigitalDocument on receipt pages;
+DefinedTerm for the defect vocabulary; WebPage for everything else.
+No Claim markup exists anywhere on the site (grepped), and every
+node is emitted by the same renderer that emits the HTML it
+describes.
+
+## The second half of the outside review, ruled — 2026-09-03, late
+
+- **Agent Plugins Directory** (`agentpluginsdirectory.com/plugins/scvd-general-store`):
+  was not on the records; is now (`EXTERNAL_RECORDS`, PR 6), as a
+  listing and nothing more. Unreachable from the sandbox; the listings
+  check reads which generation of text it carries.
+- **/becoming, the supersession note**: built, derived. The page now
+  opens with "Current terminology, 2026-09-03: the store does not
+  describe itself as a trust layer or a verification layer", the first
+  sentence of the sixty words from the constant, and one line saying
+  the rest is the dated record. `test/current-identity.spec.ts`. The
+  reviewer's three options were the right three and the third is the
+  one taken; the keeper may reword the sentence (rule 7).
+- **Bylines with a query-shaped job**: adopted as
+  `docs/bylines/STANDARD.md`. The two published pieces already fit it.
+- **Open-source assets the reviewer lists**: the offline verifier
+  exists (`x402-verify` on npm, verifies any scvd artifact without the
+  store), the CLI exists, malformed-402 and receipt fixtures exist in
+  `test/`, the corpus client is the four-line download in section 5.
+  Not built: the reproducible notebook over the DOI dataset
+  (readiness and defect rates by week) and a packaged
+  cross-surface-consistency reference. ⚑ The notebook is the one worth
+  doing: it lives in the Hugging Face repo beside the data, it is the
+  artifact a researcher forks, and it is a byline in itself. Roadmap
+  candidate, keeper's call on priority.
+- **The DOI and Hugging Face chain**, line by line: /corpus shows the
+  concept DOI in HTML (yes, PR 6); the Dataset nodes carry it (yes);
+  the Hugging Face card carries the DOI, method, schema, licence,
+  canonical URL (yes) and now cadence and limitations (added, ⚑
+  re-paste `docs/huggingface/DATASET_CARD.md`); the README links the
+  DOI and the dataset (yes, PR 6); every round and host page's
+  `isPartOf` is now the corpus by @id with its DOI (PR 6); the card's
+  title stays neutral and its first words are the category sentence
+  (yes). ⚑ Zenodo's own record should link back: add related
+  identifiers for `https://scvd.store/corpus` (done), the GitHub
+  repository and the Hugging Face URL, relation "is supplemented by"
+  or "is identical to".
+- **A "current identity" page**: /what already opens with "What is
+  scvd.store?" and the sixty words (F6). What the reviewer adds is
+  the page title and the not-list. ⚑ F29, the keeper's copy: title
+  /what "What is scvd.store? Independent x402 verification, signed
+  evidence, and endpoint-readiness data", and add to the first FAQ
+  answer one sentence: "Not a payment processor, an escrow provider,
+  a trust-score service, a compliance firm, a merchant-rating system
+  or a guarantee of delivery." One ruling; two lines to build.
+- **/corrections**: kept exactly as it is, which was the reviewer's
+  point too. Built tonight, derived: the page's WebPage node carries
+  datePublished (the first entry) and dateModified (the newest). The
+  process copy the reviewer asks for (what qualifies, how an outside
+  party reports, how entries are versioned) is already on the page in
+  the standfirst, the mechanism line and the invitation; a "how to
+  read this record" summary would be one more paragraph of the
+  keeper's (F30, optional).
+
+## Night, 2026-09-03: the ping, the directories, toll402, Cairn, the Action
+
+- **IndexNow accepted**: `200 for 1281 URLs` at about 19:00 UTC, once
+  Bing had verified the root key file. Every deploy pings from here.
+- **Eleven more listings** the keeper found (getmcp.es, lightnow.ai,
+  MCP Lookup, Ronin Forge's State of MCP, socketcat, Tracevero,
+  signal402, 402.ad, Decipher Ranker, Agent Plugins Directory, and
+  toll402) are on `EXTERNAL_RECORDS`, each as a listing and nothing
+  more; index.zbs.gg and VerifyMCP were already there. The
+  aiwithghost.com "news" post reuses the Tab's npm copy; it is about
+  the Tab, not this store, and is noted here rather than linked.
+- **toll402's three "unreachable" rows** (UND_ERR_HEADERS_OVERFLOW,
+  2026-08-24) are the tiered doors: three tiers times three networks
+  is nine accepts, each with a signed offer, and on that date the
+  header block passed Node's 16KB cliff. That defect is already on
+  /corrections and `test/challenge-header-budget.spec.ts` holds every
+  door under the cliff; measured from outside tonight the same three
+  doors are 13.7KB. Their row is a correct dated observation and is
+  kept as one. ⚑ If toll402 offers a re-check, press it; nothing to
+  build.
+- **Cairn** (the reviewer's strongest point, and right): the cold walk
+  was already an `EXTERNAL_RECORDS` row. Tonight it and the companion
+  piece are `INDEPENDENT_REPORTING` in `store/copy/asked-for.ts`, a
+  class apart from the keeper's bylines: on /what as the pair "Has
+  anyone independent checked scvd.store?", in the Organization's
+  `subjectOf` as Articles, in the guides' vocabulary block, and on the
+  README under "Independent reporting". Quoted narrowly, disclosed as
+  theirs, never as an endorsement.
+- **The repository's entity layer**, the reviewer's checklist against
+  the record: README title and first words (done, PR 5); server.json,
+  plugin.json (done, PR 2); package descriptions (x402-sign,
+  x402-verify, the CLI and the Tab each describe their own package
+  correctly and carry no retired noun); OpenAPI description (done, PR
+  2); DOI and Hugging Face links (done, PR 6). ⚑ The keeper's: the
+  GitHub About text (still the pre-clause sixty words), the topics
+  (`x402`, `agentic-commerce`, `mcp`, `usdc`, `base`, `solana`,
+  `receipt-verification`, `conformance-testing`,
+  `payment-verification`, `open-data`), the website field, release
+  notes, the pinned repository and the profile bio. Part of the
+  mirror sweep, last.
+- **Reference assets**: `examples/x402-preflight-on-deploy.yml`, a
+  GitHub Action that runs the free preflight after a deploy and
+  weekly, with the boundary stated in the file and in the README
+  section that introduces it. The offline verifier, the CLI and the
+  fixtures already exist as packages and tests. ⚑ The notebook over
+  the DOI dataset stays the one asset to add, in the Hugging Face
+  repo beside the data.
+
+## Afternoon of 2026-09-03 (the keeper's clock): F28, F29, F30 ruled go, and built
+
+- **F29**: /what is titled "What is scvd.store? Independent x402
+  verification, signed evidence, and endpoint-readiness data"; the
+  room's name is "What is scvd.store?" (the title contains it, the
+  test's rule); the meta description leads with the category clause;
+  the first answer gains the not-list: not a payment processor, an
+  escrow provider, a trust-score service, a compliance firm, a
+  merchant-rating system, or a guarantee of delivery.
+- **F30**: `CORRECTIONS_HOW_TO_READ` on /corrections, between the
+  standfirst and the mechanism line, and as `how_to_read` in the
+  JSON: what qualifies, that entries are never edited, that a
+  correction to a correction is a new entry, that outside reports are
+  credited as such.
+- **F28**: the glance gains `input` (the required query parameters,
+  from the same schema the 402 publishes) and `output` (the spec's
+  returns text plus the cert_id and the free verify door), on the
+  item page and in menu.json. `test/action-contract-parity.spec.ts`
+  holds every item to one contract across the page, menu.json, the
+  Offer in the JSON-LD and the 402's cheapest accept. Not built: a
+  "checks" line, because no per-item list of named checks exists as
+  data today; the audit items name theirs in the returns text, and a
+  typed list would be a second copy.
+- **MCPpedia**: the keeper filed the ownership claim (pending their
+  review) and declined the security badge for the README; recorded.
+- **The notebook**: `docs/huggingface/readiness_by_week.ipynb`,
+  standard library only, reads the Hugging Face copy (or the live
+  site), prints ready-of-probed per week with every denominator and
+  the named failing checks per week, plots if matplotlib is present,
+  and ends with what it does not show. Its arithmetic was run offline
+  against the five rounds before it was written. ⚑ Keeper: upload it
+  to the Hugging Face repo beside the data (Files → Add file).
+- **Zenodo related identifiers**, the steps: open the record, "Edit",
+  scroll to Related works, add `https://github.com/seancrecord/scvd-general-store-repo`
+  (relation "Is supplemented by", type Software) and
+  `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`
+  (relation "Is identical to", type Dataset), then "Publish".
+  Metadata edits publish in place; no new version, no new DOI.

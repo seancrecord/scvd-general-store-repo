@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { VALUE_PROPOSITION, VALUE_PROPOSITION_DATED } from "@/store/copy/position";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { BECOMING_CSS } from "@/pages/becoming-css";
@@ -81,6 +82,7 @@ becomingRoutes.get("/becoming", (c) => {
       bodyClass: "becoming",
       extraCss: BECOMING_CSS,
       bodyHtml: `<section>
+        <p class="menu-desc"><strong>Current terminology, ${escapeHtml(VALUE_PROPOSITION_DATED)}:</strong> the store does not describe itself as a "trust layer" or a "verification layer". ${escapeHtml(VALUE_PROPOSITION.split(". ")[0] ?? VALUE_PROPOSITION)}. Earlier language on this page is retained, dated, as the record of how the project got here; where it names a noun the store has since retired, the sentence above is the current definition.</p>
         <p class="lede">${escapeHtml(BECOMING_STANDFIRST)}</p>
         <p class="not-for-sale">${escapeHtml(BECOMING_LIMIT)}</p>
       </section>

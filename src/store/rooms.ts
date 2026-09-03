@@ -84,7 +84,9 @@ export interface Room {
  * are about, not one of them. HUMAN_SURFACES puts it back at the front.
  */
 export const ROOMS: readonly Room[] = [
-  { path: "/what", name: "What is this?" },
+  // "What is scvd.store?" since 2026-09-03 (F29): the branded question,
+  // the way people type it, as the room's name and the page's title.
+  { path: "/what", name: "What is scvd.store?" },
   /**
    * THE ADDRESS THE LIBRARY NEVER HAD (2026-08-21). Every fact on
    * this page was already published — the contract, the manual, the

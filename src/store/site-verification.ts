@@ -75,6 +75,14 @@ export const X402LIST_TOKENS: readonly DirectoryToken[] = [
     purpose:
       "listing update: the five doors listed W35-W36 (aura_walk, good_buyer, opening_day, provenance_check, the_case_file) and the sixty-word description",
   },
+  {
+    issuer: "x402-list.com",
+    issued: "2026-09-03",
+    serve_until: "2026-09-07",
+    token: "x402list-verify-Jw6U5W79yD9dD5SmQ6Z4_LgEnoN2cTcva-wav7VQ1Ow",
+    request_id: "56532116-de53-447b-aeac-b46d68d039ff",
+    purpose: "listing update request of 2026-09-03",
+  },
 ];
 
 /**

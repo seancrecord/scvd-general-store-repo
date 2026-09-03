@@ -577,7 +577,21 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "network=eip155:137" and "Ethereum,
  * Arbitrum, Optimism or Avalanche", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTIETH — by the keeper's greenlight on
+ * Re-taken 2026-09-03 — the FORTIETH — by the keeper confirming
+ * the dev.to piece's title against the page, full stop included: the
+ * byline line in "Words people use" carries WRITTEN_ABOUT titles
+ * verbatim, so one character in the constant is one new digest.
+ * Confirmed before this value was taken: the guide carries the title
+ * with its full stop, the second byline URL, and still every earlier
+ * pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-FIRST — by the independent
+ * reporting: the guides' vocabulary block now ends with Cairn's two
+ * pieces, named as theirs and not as endorsements. Confirmed before
+ * this value was taken: the guide carries "Reported on independently"
+ * and both cairnwake.com URLs, and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-SECOND — by the keeper's greenlight on
  * the Trade Counter ("lets build it out ... we sell as a product"):
  * a "For marketplaces reselling the shelf" line in "Every door, in
  * one list" naming /trade, /trade.json, /api/trade/contract,
@@ -586,7 +600,7 @@ const BASE = "https://scvd.store";
  * area. Confirmed before this value was taken: the guide carries
  * "settled_via: trade_account" and "never touches x402", and still
  * every earlier pin.
- * Re-taken 2026-09-03 — the FORTY-FIRST — by the keeper's "agreed
+ * Re-taken 2026-09-03 — the FORTY-THIRD — by the keeper's "agreed
  * lets do them all" on the counter's second pass: the sandbox check
  * desk and the listing feed join the door line, and the section now
  * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
@@ -600,7 +614,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "cdf30f677e0da223e5ece4092ae22de1e514299fa39ff15efaff1e2caf344b7e";
+  "1f733bfc7d785d53e6372035a9af714aaef7baafcd09f4efb59aa1bc02e546a5";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

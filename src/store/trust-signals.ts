@@ -107,6 +107,128 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That the code running this store is public and readable: the settlement path, the signing, the verifier, the CLI and every test that guards them. It proves nothing about the operator and it is not an endorsement or an audit — nobody has paid anyone to review it, which /trust says elsewhere in those words. What it does mean is that every claim made anywhere on this site has a file behind it somebody can go and read, which no directory entry can offer.",
   },
   {
+    /**
+     * A SKILL IN SOMEBODY ELSE'S ALMANAC (2026-09-03, the keeper's
+     * pointer). pjt222/agent-almanac is a curated repository of agent
+     * skills; its test-x402-payment-client skill walks an agent
+     * through the full 402 → sign → settle → verify loop and names
+     * this store's cheapest door as the mainnet target, with the
+     * conformance desk and the preflight beside it. The skill's author
+     * field reads cv-scvd, so this is OUR contribution accepted by
+     * THEIR maintainer: more than a filing (a person read it and
+     * merged it), less than an independent write-up (we wrote it),
+     * and said so here rather than flattened into either.
+     */
+    url: "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+    registry: "agent-almanac (pjt222), a curated skills repository on GitHub",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's cheapest door ($0.001 on 2026-09-03, the day this was recorded; the menu is the live price) and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded.",
+  },
+  {
+    /**
+     * SCORED BY AN ALGORITHM FROM PUBLIC DATA (2026-09-03, the keeper's
+     * pointer). MCPpedia computes a score daily from OSV, the GitHub
+     * API, npm, deps.dev and the official registry, with no manual
+     * overrides and the scoring code public. Its tool definitions come
+     * from the README, not the running server, which is why the
+     * README carries a tools table held to the catalogue by test.
+     */
+    url: "https://mcppedia.org/s/store-scvd-general-store",
+    registry: "MCPpedia",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to.",
+  },
+  {
+    url: "https://www.getmcp.es/servers/general-store",
+    registry: "getmcp.es",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://lightnow.ai/servers/store.scvd/general-store/versions",
+    registry: "lightnow.ai",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://mcplookup.com/server/store.scvd/general-store",
+    registry: "MCP Lookup",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+    registry: "Ronin Forge, State of MCP",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://socketcat.com/servers/store.scvd/general-store",
+    registry: "socketcat",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://tracevero.com/mcp/store-scvd-general-store",
+    registry: "Tracevero",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://signal402.com/services/scvd-store",
+    registry: "signal402",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+    registry: "402.ad",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+    registry: "Decipher Ranker",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    /**
+     * TOLL402'S THREE "UNREACHABLE" ROWS (2026-09-03, the keeper's
+     * pointer). Their probe of 2026-08-24 reports UND_ERR_HEADERS_OVERFLOW
+     * on the three tiered doors: a Node client refusing a 402 whose
+     * header block passed 16KB. That was true on that date and is the
+     * defect on /corrections that test/challenge-header-budget.spec.ts
+     * now holds under the cliff; the same doors measured 13.7KB from
+     * outside on 2026-09-03. Their row is a dated third-party
+     * observation of a real defect, kept here as one, not corrected
+     * from this side.
+     */
+    url: "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+    registry: "toll402",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That an independent prober fetched the store's tiered doors on 2026-08-24 and recorded what a stock Node client saw: a 402 whose headers overflowed Node's 16KB limit. Not an endorsement and not an audit; a dated observation of a defect this store has since fixed and holds under test, and the row stands as they wrote it until they probe again.",
+  },
+  {
+    url: "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+    registry: "Agent Plugins Directory",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more plugin directory indexed the store's MCP server under its own page. A listing, which is evidence of being indexed and nothing else: not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check, not assumed here.",
+  },
+  {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
     confirmed: "2026-07-27",
@@ -593,6 +715,22 @@ export const RECORDS_NOT_LISTED =
  */
 export const KEEPER_SOCIAL: readonly string[] = [
   "https://x.com/keeper_scvd",
+];
+
+/**
+ * THE ENTITY PROFILES (AEO plan, entity anchors, 2026-09-03): pages
+ * the keeper created on registries that resolve "is there an
+ * organisation behind this domain" — the LinkedIn showcase page under
+ * Record Creative Co. LLC's company page, and the Crunchbase profile.
+ * They are neither social accounts nor independent records: we wrote
+ * them, on somebody else's register, and a resolver reads them as
+ * identity claims we control. So they ride sameAs from their own
+ * constant, beside KEEPER_SOCIAL and apart from EXTERNAL_RECORDS,
+ * whose docblock promises records we did not write.
+ */
+export const ENTITY_PROFILES: readonly string[] = [
+  "https://www.linkedin.com/showcase/scvd-general-store/",
+  "https://www.crunchbase.com/organization/scvd-general-store",
 ];
 
 export const OPERATOR = {

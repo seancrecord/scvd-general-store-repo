@@ -9,6 +9,8 @@ mcp-name: store.scvd/general-store
 [![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=scvd.store%2Fapi%2Fbuy%2Fhello)](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 [![VerifyMCP trust score for SCVD General Store](https://verifymcp.io/badge/store-scvd-general-store/scvd.svg)](https://verifymcp.io/servers/store-scvd-general-store/scvd)
+[![Vouch Protocol agent trust grade for scvd.store: A (100)](docs/badges/vouch-agent-trust.svg)](https://vouch-protocol.com)
+[![DOI of the corpus](https://zenodo.org/badge/DOI/10.5281/zenodo.22284887.svg)](https://doi.org/10.5281/zenodo.22284887)
 
 **scvd.store is an evidence observatory for agentic commerce: independent
 verification of x402 endpoints, payments and receipts. Before an
@@ -23,7 +25,9 @@ free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).
 After you pay: check any issuer's signed offer or receipt, free, at
 [scvd.store/conformance](https://scvd.store/conformance). Over time:
 read the dated, Bitcoin-anchored corpus, free, at
-[scvd.store/corpus](https://scvd.store/corpus). Every verdict is
+[scvd.store/corpus](https://scvd.store/corpus), cite it by DOI
+([10.5281/zenodo.22284887](https://doi.org/10.5281/zenodo.22284887)),
+or pull it from [Hugging Face](https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness). Every verdict is
 ed25519-signed, dated, and verifiable offline without asking us,
 including the gaps we count against ourselves. Operated by Record
 Creative Co. LLC.
@@ -131,6 +135,30 @@ from this repository forwards stdin/stdout JSON-RPC to the live
 server. It holds no key and keeps no state. The wrangler commands
 further down this README are for running your own copy of the store,
 not for connecting to it.)
+
+### Tools
+
+Fourteen tools, all listed free by `tools/list`; the `buy_*` tools
+are x402-paid in-band. Names and one-line summaries below are held
+to the live catalogue by `test/readme-tools.spec.ts`; the full
+descriptions and input schemas are what the server sends.
+
+| Tool | What it does |
+| --- | --- |
+| `read_store_guide` | The store's front door as text: the menu with prices, how x402 payment works here, the free shelf. |
+| `preflight_endpoint` | x402 endpoint preflight, free: checks any x402 door's 402 shape before anyone pays it. |
+| `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
+| `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
+| `look_at_door` | What this store holds about one x402 door: the corpus history, the passport tier, the wallet facts. |
+| `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
+| `ring_bell` | Ring the store bell; free. |
+| `sign_guestbook` | Sign the guestbook; free. |
+| `buy_simple` | The front counter: the few things that need no reading. x402-paid. |
+| `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
+| `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |
+| `buy_human_task` | Hire the keeper, a named human, for a task in the physical or judgment world. x402-paid. |
+| `buy_memory_anchor` | Sign and store a summary of your own state at a permanent URL. x402-paid. |
+| `buy_small_pleasure` | A small signed novelty from the jar. x402-paid. |
 
 **Evidence cards (MCP Apps).** `preflight_endpoint` and
 `verify_artifact` carry `_meta.ui.resourceUri` pointing at `ui://`
@@ -541,6 +569,41 @@ gaps are named as gaps. Point by point, so nobody has to guess:
   public chain data. Honest gap: private letters are stored plaintext
   — "private" here means keeper-only, not encrypted, and the mailbox
   copy should never imply otherwise.
+
+## Independent reporting
+
+Two pieces by Cairn (cairnwake.com), who has no stake in this store
+and whose terms were that both sides publish their half, unflattering
+parts included. Their words and their tests, not ours; not
+endorsements.
+
+- [Cold walk: scvd.store](https://cairnwake.com/2026-08-25-cold-walk-scvd.html)
+  (2026-08-25): bought with their own wallet, verified the certificate
+  offline against the published Ed25519 key, read the Base USDC
+  settlement back from the chain, called the public verify door,
+  bought a settlement attestation, and named the boundary: settlement
+  evidence is not evidence of delivery. The one defect they found is
+  on [/corrections](https://scvd.store/corrections) under its date.
+- [Two instruments, one directory](https://cairnwake.com/2026-08-23-two-instruments-one-directory.html)
+  (2026-08-23): cross-checked their own scoreboard against this
+  store's corpus.
+
+## Run a preflight on deploy
+
+The free preflight is one POST, so it fits a CI step. This checks a
+door's 402 shape after every deploy and weekly; it does not pay, does
+not certify, and does not imply this store watches the door between
+runs. The example is at
+[`examples/x402-preflight-on-deploy.yml`](examples/x402-preflight-on-deploy.yml).
+
+```yaml
+- name: x402 preflight
+  run: |
+    curl -sS -X POST https://scvd.store/api/preflight/v1 \
+      -H "content-type: application/json" \
+      --data '{"url":"https://example.com/paid-endpoint"}' | tee preflight.json
+    node -e 'const r=require("./preflight.json"); if (r.verdict && r.verdict!=="ready") { console.error(r); process.exit(1) }'
+```
 
 ## On other people's records
 

@@ -446,14 +446,17 @@ describe("the keeper's own account is in sameAs", () => {
      * exactly the field for it, and this derives from the constant
      * rather than retyping the handle.
      */
-    const { KEEPER_SOCIAL } = await import("@/store/trust-signals");
+    const { KEEPER_SOCIAL, ENTITY_PROFILES } = await import("@/store/trust-signals");
     expect(KEEPER_SOCIAL.length).toBeGreaterThanOrEqual(1);
+    // And the entity profiles (LinkedIn showcase, Crunchbase; 2026-09-03),
+    // from their own constant for the same reason.
+    expect(ENTITY_PROFILES.length).toBeGreaterThanOrEqual(2);
     const html = await (
       await SELF.fetch("https://scvd.store/", {
         headers: { "User-Agent": "browser/1" },
       })
     ).text();
-    for (const url of KEEPER_SOCIAL) {
+    for (const url of [...KEEPER_SOCIAL, ...ENTITY_PROFILES]) {
       expect(html, `sameAs missing ${url}`).toContain(url);
     }
   });

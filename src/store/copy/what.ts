@@ -86,7 +86,7 @@ export function whatFaq(base: string): FaqPair[] {
        * that is not our name.
        */
       question: "What is scvd.store?",
-      answer: `${STORE_METADATA.name}, SCVD for short. ${VALUE_PROPOSITION} Kept by a named human out of ${STORE_METADATA.location}. The full guide reads at ${base}/llms.txt.`,
+      answer: `${STORE_METADATA.name}, SCVD for short. ${VALUE_PROPOSITION} Not a payment processor, an escrow provider, a trust-score service, a compliance firm, a merchant-rating system, or a guarantee of delivery. Kept by a named human out of ${STORE_METADATA.location}. The full guide reads at ${base}/llms.txt.`,
     },
     {
       question: "When would my agent actually use this?",
