@@ -123,7 +123,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     registry: "agent-almanac (pjt222), a curated skills repository on GitHub",
     confirmed: "2026-09-03",
     what_it_proves:
-      "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's $0.001 door and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded.",
+      "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's cheapest door ($0.001 on 2026-09-03, the day this was recorded; the menu is the live price) and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded.",
   },
   {
     /**
