@@ -35,6 +35,9 @@ import type { Channel, Env, PayerRecord } from "@/types";
  * Ten shards, chosen at random per write, is ~10x the headroom for
  * one line of arithmetic and no new service. The read sums them, so
  * NO SURFACE CHANGES: every caller still asks for the same totals.
+ * Sharded today: the day counter, the channel counter, and (since
+ * 2026-09-03) the per-item challenge counter, which was the one hot
+ * key left and the one the 2026-09-02 CI log caught losing a write.
  *
  * WHAT THIS COSTS, stated rather than discovered: each sharded bucket
  * now occupies up to ten keys. Against METRIC_KEY_CAP that is ~310 day
@@ -293,8 +296,17 @@ export async function recordChallengeIssued(
    * branch; test/quote-before-tally.spec.ts pins both halves.
    */
   const pending: Array<Promise<void>> = [];
+  /*
+   * THE ITEM COUNTER SHARDS TOO (2026-09-03). The day and channel
+   * counters spread their writes in task #87; this one — one key per
+   * item — did not, and it is the key a burst on ONE door contends
+   * for: every monitor polling /api/buy/hello lands on 402:hello.
+   * The 2026-09-02 CI run printed "challenge count lost: KV PUT
+   * failed: 429" from exactly this write. Same one-line shard, same
+   * reader summing back through unsharded(); no surface changes.
+   */
   pending.push(
-    bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item)),
+    bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, sharded(event.item))),
   );
 
   // THE INFRASTRUCTURE DIET, 2026-07-28. A crawler 402 used to cost
@@ -1240,20 +1252,24 @@ export async function readMonthLedger(
       row.tiers[tier] = value;
       continue;
     }
-    const row = (ledger.items[tail] ??= emptyRow());
-    if (kind === "402") row.challenges = value;
-    else if (kind === "402h") row.challengesHouse = value;
-    else if (kind === "402i") row.challengesInfra = value;
-    else if (kind === "paid") row.settled = value;
-    else if (kind === "paidh") row.settledHouse = value;
-    else if (kind === "verify") row.verifies = value;
-    else if (kind === "verifyh") row.verifiesHouse = value;
-    else if (kind === "verifyi") row.verifiesInfra = value;
+    // Summed, never assigned: the 402 kinds are spread over shards
+    // (2026-09-03) and may also carry a pre-sharding key; the other
+    // kinds are unsharded today and sum to themselves. An assignment
+    // here would quietly keep one shard's tenth and drop the rest.
+    const row = (ledger.items[unsharded(tail)] ??= emptyRow());
+    if (kind === "402") row.challenges += value;
+    else if (kind === "402h") row.challengesHouse += value;
+    else if (kind === "402i") row.challengesInfra += value;
+    else if (kind === "paid") row.settled += value;
+    else if (kind === "paidh") row.settledHouse += value;
+    else if (kind === "verify") row.verifies += value;
+    else if (kind === "verifyh") row.verifiesHouse += value;
+    else if (kind === "verifyi") row.verifiesInfra += value;
     // Declines never bucket as infrastructure (bucketSuffix is called
     // with allowInfra false at the write): a crawler that presents a
     // payment and is refused is a refused buyer.
-    else if (kind === "decl") row.declines = value;
-    else if (kind === "declh") row.declinesHouse = value;
+    else if (kind === "decl") row.declines += value;
+    else if (kind === "declh") row.declinesHouse += value;
   }
   if (month === FOUNDING_BACKFILL.month) {
     const row = (ledger.items[FOUNDING_BACKFILL.item] ??= emptyRow());
