@@ -144,6 +144,41 @@ export declare function verifyArtifact(
   options?: VerifyOptions,
 ): Promise<VerifyResult>;
 export declare function formatResult(result: VerifyResult): string;
+/** The bounded evidence the one-call front door returns (1.1.0). */
+export interface BoundedVerification {
+  kind: "offer" | "receipt";
+  valid: boolean;
+  /** What "valid" means here, in one sentence, naming the key it was checked against. */
+  scope: string;
+  /** What this result does NOT establish, always stated. */
+  doesNotEstablish: string[];
+  checks: VerifyCheck[];
+  issuer: { kid: string | null; keyUrl: string | null };
+  /** The free hosted desk that reproduces this check. */
+  verificationUrl: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface VerifyReceiptInput {
+  /** The compact JWS from the receipt. */
+  receipt: string;
+  /** Where the issuer publishes its key: a DID document URL or a bare JWK / { publicKeyHex } document. Never taken from the artifact. */
+  issuerKeyUrl?: string;
+  /** A key you already hold, hex or bytes; skips resolution. */
+  publicKey?: string | Uint8Array;
+}
+
+export interface VerifyOfferInput {
+  offer: string;
+  issuerKeyUrl?: string;
+  publicKey?: string | Uint8Array;
+}
+
+export declare const DOES_NOT_ESTABLISH: { receipt: readonly string[]; offer: readonly string[] };
+export declare const VERIFICATION_URL: string;
+export declare function verifyReceipt(input: VerifyReceiptInput, options?: VerifyOptions): Promise<BoundedVerification>;
+export declare function verifyOffer(input: VerifyOfferInput, options?: VerifyOptions): Promise<BoundedVerification>;
+
 export declare function canonicalizeAnchorSnapshot(snapshot: unknown): string;
 export declare function verifyAnchorChain(
   log: unknown,
