@@ -36,12 +36,31 @@ export const POLYGON_CHAIN = "eip155:137";
  * call site moved when Polygon arrived — the same shape as the
  * shopping run's rail map. USDC keeps six decimals on both.
  */
+export type EvmChainKey = "base" | "polygon" | "ethereum" | "arbitrum" | "optimism" | "avalanche";
+
 export interface EvmChain {
-  key: "base" | "polygon";
+  key: EvmChainKey;
   label: string;
   caip2: string;
   /** The chain's native USDC contract, lowercase. */
   usdc: string;
+  /**
+   * Roughly how many blocks an hour of this chain holds: the
+   * statement's window arithmetic and nothing else. Approximate on
+   * every chain and said to be — the artifact states from/to blocks,
+   * and the hours are what those blocks are worth at the cadence.
+   */
+  blocksPerHour: number;
+  /**
+   * The env-var stem the keeper configures this chain's endpoints
+   * under: `${envPrefix}_RPC_URL`, `_PRIMARY`, `_SECONDARY`, the
+   * same three slots on every chain (types.ts declares them).
+   */
+  envPrefix: string;
+  /** The public endpoint used when nothing is configured. */
+  defaultRpc: string;
+  /** Keyless public fallbacks, independent operators, tried last. */
+  fallbacks: readonly string[];
   /**
    * The widest `eth_getLogs` block range this chain's free endpoints
    * will actually answer.
@@ -64,6 +83,23 @@ export const BASE_EVM: EvmChain = {
   label: "Base",
   caip2: BASE_CHAIN,
   usdc: BASE_USDC,
+  blocksPerHour: 1800,
+  envPrefix: "BASE",
+  defaultRpc: "https://mainnet.base.org",
+  /*
+   * KEYLESS PUBLIC FALLBACKS, added 2026-08-20 on the keeper's word
+   * ("i dont care who manages as long as its free and works") — the
+   * same rotation the Solana reader has carried since its own
+   * one-endpoint bad afternoon (2026-08-05). The day's evidence: the
+   * authenticated primary's free tier refuses eth_getLogs at our
+   * 2,000-block span outright (HTTP 400, permanently, by plan
+   * design), which left the log-reading walk leaning on however many
+   * OTHER endpoints were configured. Free, no signup, independent
+   * operators; tried after every keeper-configured endpoint, and the
+   * 08-13 lesson — what protects a paid delivery is a DIFFERENT
+   * network path — is the whole selection criterion.
+   */
+  fallbacks: ["https://base-rpc.publicnode.com", "https://base.drpc.org"],
   // Unchanged: this span has been answered by Base's endpoints since
   // the walk was written, and narrowing a working walk buys nothing.
   logSpan: 2000,
@@ -74,6 +110,15 @@ export const POLYGON_EVM: EvmChain = {
   label: "Polygon",
   caip2: POLYGON_CHAIN,
   usdc: POLYGON_USDC,
+  blocksPerHour: 1800,
+  envPrefix: "POLYGON",
+  defaultRpc: "https://polygon-rpc.com",
+  /** Same posture as Base: keyless, independent operators. */
+  fallbacks: [
+    "https://polygon-rpc.com",
+    "https://polygon-bor-rpc.publicnode.com",
+    "https://polygon.drpc.org",
+  ],
   /*
    * 500, AND THE NUMBER IS CHOSEN CONSERVATIVELY BECAUSE NOBODY HERE
    * COULD MEASURE THE REAL CAP.
@@ -96,23 +141,128 @@ export const POLYGON_EVM: EvmChain = {
   logSpan: 500,
 };
 
-export const EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
+/**
+ * THE OTHER FOUR EVM CHAINS USDC SETTLES ON (2026-09-03, the ROI
+ * list's item 2: market size). Circle issues native USDC on each;
+ * x402 doors advertise them; a wallet statement or a receivability
+ * read on one of them was, until today, "not a chain this store
+ * reads" — an answer about our reader, not about the wallet.
+ *
+ * READERS, NOT RAILS. Nothing here changes what this store's own
+ * till accepts: PAYMENT_RAILS.md's intake rule still governs an
+ * accepted payment scheme, and it wants a named counterparty. These
+ * constants let the statement, the receivability check and the
+ * canonical-USDC test READ a chain a stranger's door names. The bank
+ * walk and the inflow census stay on WALKED_EVM_CHAINS below.
+ *
+ * SPANS, GUESSED CONSERVATIVELY AND SAID TO BE. Every RPC host is
+ * refused from the environment this was written in (the proxy
+ * answers 403 to all fourteen candidates, measured 2026-09-03), so no
+ * cap was observed — the same position the Polygon fix was in. 500
+ * is the number that survived there; a chain the bank walk does not
+ * walk cannot fall behind on it, so it only bounds the unknown-
+ * settlement read. The first operator who buys a statement on one of
+ * these chains measures what nobody here could; a refused window
+ * reads `window_unreadable` with the provider's reason, never a
+ * partial statement.
+ *
+ * Block cadences: Ethereum's 12 s slot is a protocol constant;
+ * Optimism and Avalanche run near 2 s; Arbitrum One sequences at
+ * about 250 ms, so an hour there is roughly eight times the blocks
+ * an hour on Base is, and the eleven-hour ceiling is eight times the
+ * span — which is the first thing to expect a public endpoint to
+ * refuse, and the artifact says so when it does.
+ */
+export const ETHEREUM_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+export const ETHEREUM_CHAIN = "eip155:1";
+export const ETHEREUM_EVM: EvmChain = {
+  key: "ethereum",
+  label: "Ethereum",
+  caip2: ETHEREUM_CHAIN,
+  usdc: ETHEREUM_USDC,
+  blocksPerHour: 300,
+  envPrefix: "ETHEREUM",
+  defaultRpc: "https://ethereum-rpc.publicnode.com",
+  fallbacks: ["https://ethereum-rpc.publicnode.com", "https://eth.drpc.org", "https://eth.llamarpc.com"],
+  logSpan: 500,
+};
+
+export const ARBITRUM_USDC = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
+export const ARBITRUM_CHAIN = "eip155:42161";
+export const ARBITRUM_EVM: EvmChain = {
+  key: "arbitrum",
+  label: "Arbitrum One",
+  caip2: ARBITRUM_CHAIN,
+  usdc: ARBITRUM_USDC,
+  blocksPerHour: 14_400,
+  envPrefix: "ARBITRUM",
+  defaultRpc: "https://arb1.arbitrum.io/rpc",
+  fallbacks: ["https://arb1.arbitrum.io/rpc", "https://arbitrum-one-rpc.publicnode.com", "https://arbitrum.drpc.org"],
+  logSpan: 500,
+};
+
+export const OPTIMISM_USDC = "0x0b2c639c533813f4aa9d7837caf62653d097ff85";
+export const OPTIMISM_CHAIN = "eip155:10";
+export const OPTIMISM_EVM: EvmChain = {
+  key: "optimism",
+  label: "OP Mainnet",
+  caip2: OPTIMISM_CHAIN,
+  usdc: OPTIMISM_USDC,
+  blocksPerHour: 1800,
+  envPrefix: "OPTIMISM",
+  defaultRpc: "https://mainnet.optimism.io",
+  fallbacks: ["https://mainnet.optimism.io", "https://optimism-rpc.publicnode.com", "https://optimism.drpc.org"],
+  logSpan: 500,
+};
+
+export const AVALANCHE_USDC = "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e";
+export const AVALANCHE_CHAIN = "eip155:43114";
+export const AVALANCHE_EVM: EvmChain = {
+  key: "avalanche",
+  label: "Avalanche C-Chain",
+  caip2: AVALANCHE_CHAIN,
+  usdc: AVALANCHE_USDC,
+  blocksPerHour: 1800,
+  envPrefix: "AVALANCHE",
+  defaultRpc: "https://api.avax.network/ext/bc/C/rpc",
+  fallbacks: [
+    "https://api.avax.network/ext/bc/C/rpc",
+    "https://avalanche-c-chain-rpc.publicnode.com",
+    "https://avalanche.drpc.org",
+  ],
+  logSpan: 500,
+};
+
+/** Every EVM chain this store can read USDC on. Base first, the default; Polygon second, the other accepted rail; then the readers. */
+export const EVM_CHAINS: readonly EvmChain[] = [
+  BASE_EVM,
+  POLYGON_EVM,
+  ETHEREUM_EVM,
+  ARBITRUM_EVM,
+  OPTIMISM_EVM,
+  AVALANCHE_EVM,
+];
 
 /**
- * The network vocabulary, resolved: CAIP-2 or the plain word, either
- * EVM rail, Base when unsaid. Null means unrecognized — callers
- * refuse rather than defaulting silently, because a chain the caller
- * did not name is a chain the answer must not be about.
+ * The chains this store's own money moves on, and therefore the ones
+ * the bank walk and the inflow census walk every hour. A reader chain
+ * is read when somebody names it; a walked chain is read whether or
+ * not anybody asks, on an invocation budget that six chains would
+ * exhaust. Widening this list is a cost decision, not a constant.
+ */
+export const WALKED_EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
+
+/**
+ * The network vocabulary, resolved: CAIP-2 or the plain word, any
+ * EVM chain this store reads, Base when unsaid. Null means
+ * unrecognized — callers refuse rather than defaulting silently,
+ * because a chain the caller did not name is a chain the answer must
+ * not be about.
  */
 export function evmChainOf(network: string | undefined): EvmChain | null {
   const value = (network ?? "").trim().toLowerCase();
-  if (value === "" || value === "base" || value === BASE_CHAIN) {
-    return BASE_EVM;
-  }
-  if (value === "polygon" || value === POLYGON_CHAIN) {
-    return POLYGON_EVM;
-  }
-  return null;
+  if (value === "") return BASE_EVM;
+  return EVM_CHAINS.find((chain) => value === chain.key || value === chain.caip2) ?? null;
 }
 
 /**
@@ -141,34 +291,6 @@ export const AUTHORIZATION_USED_TOPIC =
 export const APPROVAL_TOPIC =
   "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925";
 
-/** Public Base RPC unless the keeper points us somewhere better. */
-const DEFAULT_RPC = "https://mainnet.base.org";
-
-/**
- * KEYLESS PUBLIC FALLBACKS, added 2026-08-20 on the keeper's word ("i
- * dont care who manages as long as its free and works") — the same
- * rotation the Solana reader has carried since its own one-endpoint
- * bad afternoon (2026-08-05). The day's evidence: the authenticated
- * primary's free tier refuses eth_getLogs at our 2,000-block span
- * outright (HTTP 400, permanently, by plan design), which left the
- * log-reading walk leaning on however many OTHER endpoints were
- * configured. Free, no signup, independent operators; tried after
- * every keeper-configured endpoint, and the 08-13 lesson — what
- * protects a paid delivery is a DIFFERENT network path — is the whole
- * selection criterion.
- */
-const FALLBACK_RPCS = [
-  "https://base-rpc.publicnode.com",
-  "https://base.drpc.org",
-] as const;
-
-/** Same posture for Polygon: keyless, independent operators. */
-const POLYGON_FALLBACK_RPCS = [
-  "https://polygon-rpc.com",
-  "https://polygon-bor-rpc.publicnode.com",
-  "https://polygon.drpc.org",
-] as const;
-
 export interface RpcLog {
   address: string;
   topics: string[];
@@ -181,15 +303,14 @@ export interface RpcReceipt {
   logs: RpcLog[];
 }
 
+/** The keeper's configured endpoint for one of a chain's three slots, if set. */
+function configuredRpc(env: Env, chain: EvmChain, slot: "" | "_PRIMARY" | "_SECONDARY"): string | undefined {
+  const value = (env as unknown as Record<string, unknown>)[`${chain.envPrefix}_RPC_URL${slot}`];
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
 function rpcUrl(env: Env, chain: EvmChain = BASE_EVM): string {
-  if (chain.key === "polygon") {
-    return env.POLYGON_RPC_URL && env.POLYGON_RPC_URL.length > 0
-      ? env.POLYGON_RPC_URL
-      : POLYGON_FALLBACK_RPCS[0];
-  }
-  return env.BASE_RPC_URL && env.BASE_RPC_URL.length > 0
-    ? env.BASE_RPC_URL
-    : DEFAULT_RPC;
+  return configuredRpc(env, chain, "") ?? chain.defaultRpc;
 }
 
 /**
@@ -213,20 +334,12 @@ function rpcUrl(env: Env, chain: EvmChain = BASE_EVM): string {
  * second key that shares neither.
  */
 export function rpcEndpoints(env: Env, chain: EvmChain = BASE_EVM): string[] {
-  const candidates =
-    chain.key === "polygon"
-      ? [
-          env.POLYGON_RPC_URL_PRIMARY,
-          env.POLYGON_RPC_URL_SECONDARY,
-          rpcUrl(env, chain),
-          ...POLYGON_FALLBACK_RPCS,
-        ]
-      : [
-          env.BASE_RPC_URL_PRIMARY,
-          env.BASE_RPC_URL_SECONDARY,
-          rpcUrl(env, chain),
-          ...FALLBACK_RPCS,
-        ];
+  const candidates = [
+    configuredRpc(env, chain, "_PRIMARY"),
+    configuredRpc(env, chain, "_SECONDARY"),
+    rpcUrl(env, chain),
+    ...chain.fallbacks,
+  ];
   const endpoints: string[] = [];
   for (const candidate of candidates) {
     const url = candidate?.trim();

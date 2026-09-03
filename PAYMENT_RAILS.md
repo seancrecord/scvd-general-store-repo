@@ -276,3 +276,47 @@ scoring the keeper asked for, and the six rulings only he can make are
 all in the linked file. Nothing in this Part changes an accepted
 scheme; the intake rule at the top of this file still governs, and no
 rail moves without it.
+
+## Part F — the reader chains, 2026-09-03. NOT A RAIL CHANGE; THE INTAKE RULE IS UNTOUCHED.
+
+Four more EVM chains Circle issues native USDC on became READABLE
+on 2026-09-03, the ROI list's item 2 (market size): Ethereum
+mainnet (`eip155:1`), Arbitrum One (`eip155:42161`), OP Mainnet
+(`eip155:10`) and Avalanche C-Chain (`eip155:43114`), as
+`EvmChain` constants beside Base and Polygon in `src/lib/base-rpc.ts`.
+
+**What reads them.** The wallet statement and the operator's
+statement (`network=arbitrum`, or the CAIP-2), the preflight's
+receivability read on a stranger's door that advertises one of
+them, the canonical-USDC test every instrument asks, the
+challenge-price read on the paid audit, and the coverage matrix's
+claim for `the_statement`. Each is read when somebody names the
+chain, and not otherwise.
+
+**What does not.** The till: nothing this store sells settles on
+them, and the intake rule at the top of this file still wants a
+named counterparty before an accepted scheme grows. The bank walk
+and the inflow census stay on `WALKED_EVM_CHAINS` — Base and
+Polygon — because a walked chain is read every hour whether or not
+anybody asks, on an invocation budget six chains would exhaust.
+The settlement attestation's unnamed-hash fallback still asks Base
+then Polygon; a hash on a reader chain is `NOT_FOUND` with both
+reads named, as before.
+
+**What was not measured, said plainly.** Every RPC host is refused
+from the environment this was written in (the proxy answered 403 to
+all fourteen candidate endpoints, tried 2026-09-03), so no
+`eth_getLogs` cap was observed on any of the four — the same
+position the Polygon span fix was in on 2026-08-26. The span is
+Polygon's 500; the readers' endpoints are the chains' own public
+ones plus publicnode and drpc, keyless, independent, tried after
+the keeper's three configured slots (`ETHEREUM_RPC_URL`,
+`_PRIMARY`, `_SECONDARY`, and the same for `ARBITRUM`, `OPTIMISM`,
+`AVALANCHE`). A statement window a provider refuses reads
+`window_unreadable` with the provider's reason, never a partial
+statement; Arbitrum's quarter-second blocks make its eleven-hour
+ceiling roughly eight times Base's span and it is the first place
+to expect that. The first operator who buys a statement on one of
+these chains measures what nobody here could; `test/evm-rails.spec.ts`
+holds what can be held without the network.
+

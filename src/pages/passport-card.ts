@@ -250,10 +250,53 @@ export function cardLines(passport: EndpointPassport): CardLine[] {
   ];
 }
 
+/**
+ * THE CHIP, AS SOMETHING TO PASTE (2026-09-03, the badge loop). The
+ * chip has rendered at /badges/passport/{host}.svg since 2026-08-21
+ * and the passport page never offered it, so the one artifact an
+ * operator would put in a README had to be found by reading the
+ * guide. It re-renders on every read from the same dates the page
+ * carries (edge-cached six hours), wears the tier with its fraction
+ * on its face, links the dated page, and refuses to render at all
+ * when the door is not on the ready side — so a pasted chip can go
+ * dark but never stale-green. Two snippets, markdown and HTML, both
+ * pointing the image at the chip and the link at the passport.
+ */
+export interface PassportEmbed {
+  chip_svg: string;
+  markdown: string;
+  html: string;
+  note: string;
+}
+
+export function passportEmbed(passport: EndpointPassport, base: string): PassportEmbed {
+  const host = passport.payload.host.toLowerCase();
+  const chip = `${base}/badges/passport/${host}.svg`;
+  const url = `${base}/passport/${host}`;
+  const alt = `scvd.store passport for ${host}: observed, dated, gaps counted against the observer`;
+  return {
+    chip_svg: chip,
+    markdown: `[![${alt}](${chip})](${url})`,
+    html: `<a href="${url}"><img src="${chip}" alt="${alt}" width="300" height="56"></a>`,
+    note:
+      "The chip re-renders from the same dates this page carries, wears the tier with its fraction, and stops rendering when the door leaves the ready side — a pasted chip can go dark, never stale-green. Six-hour edge cache.",
+  };
+}
+
 export function colophonBlock(passport: EndpointPassport, base: string): string {
   const text = colophonText(passport, base);
   const url = `${base}/passport/${passport.payload.host}`;
+  const embed = passportEmbed(passport, base);
   return `<section>
+    <h2>To paste beside your door</h2>
+    <p class="menu-desc">The chip: the tier with its fraction on its face, the observation date, a link to this page. ${escapeHtml(embed.note)}</p>
+    <p><a href="${escapeHtml(url)}"><img src="${escapeHtml(embed.chip_svg)}" alt="${escapeHtml(`scvd.store passport chip for ${passport.payload.host}`)}" width="300" height="56"></a></p>
+    <p class="menu-meta">Markdown, for a README:</p>
+    <pre class="menu-desc"><code>${escapeHtml(embed.markdown)}</code></pre>
+    <p class="menu-meta">HTML, for a page:</p>
+    <pre class="menu-desc"><code>${escapeHtml(embed.html)}</code></pre>
+  </section>
+  <section>
     <h2>To share</h2>
     <p class="menu-desc">A colophon, not a badge: it says who looked and when, and it links the dated page. Paste it beside your door as it stands — the words carry their own expiry.</p>
     <p class="menu-meta">Pasting the page's link anywhere that unfurls previews shows this card, drawn from the same dates: <a href="${escapeHtml(base)}/passport/card/${escapeHtml(passport.payload.host)}.png"><code>${escapeHtml(base)}/passport/card/${escapeHtml(passport.payload.host)}.png</code></a></p>

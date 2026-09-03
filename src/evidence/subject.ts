@@ -131,6 +131,11 @@ export const KNOWN_CHAINS: readonly string[] = [
   SANDBOX_CHAIN, // Base Sepolia (sandbox walks only)
   "eip155:137", // Polygon mainnet
   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", // Solana mainnet (CAIP-2)
+  // The four reader chains (2026-09-03): read when named, never a till.
+  "eip155:1", // Ethereum mainnet
+  "eip155:42161", // Arbitrum One
+  "eip155:10", // OP Mainnet
+  "eip155:43114", // Avalanche C-Chain
 ] as const;
 
 /** Assets a rail may settle in. One entry today, and that is the

@@ -123,7 +123,7 @@ export function x402listTokenFile(now: Date): string {
  * Proof-of-control nonce, not a secret: useless to anyone who does
  * not already control scvd.store. Paste the portal's token here.
  */
-export const OPENAI_APPS_CHALLENGE = "";
+export const OPENAI_APPS_CHALLENGE = "5tiA_QR8XKA2_K2LD4p6pBPGP4cK0uZuUI9FG-mKZ7c";
 
 /** The tags as head markup. Empty string when there are none. */
 export function verificationMetaTags(): string {

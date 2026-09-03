@@ -552,7 +552,15 @@ const BASE = "https://scvd.store";
  * carries "/corpus/round/{week}" and "/defects/{id}", and still every
  * earlier pin.
  *
- * Re-taken 2026-09-03 — the THIRTY-SEVENTH — by the keeper's category
+ * Re-taken 2026-09-03 — the THIRTY-SEVENTH — by the operators' room:
+ * one paragraph after the look's, for anyone who runs a door, naming
+ * /operators as the shelf from the seller's side in the order a
+ * launch happens, free first at each moment. Confirmed before this
+ * value was taken: the guide carries "/operators" and "never a
+ * ranking, and nothing there certifies anyone", and still every
+ * earlier pin.
+ *
+ * Re-taken 2026-09-03 — the THIRTY-EIGHTH — by the keeper's category
  * clause (AEO fix F19, "agreed on all"): the sixty words' first
  * sentence now reads "evidence observatory for agentic commerce:
  * independent verification of x402 endpoints, payments and
@@ -566,7 +574,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5d552a13b6544823f23788d0c1013bcfdf3d0b7e4c785f3cc22ae958e3b66210";
+  "5ecc4c98c3d6eb9cd97b3abcf225a7e06eaa94aefe025b97815a2e036526cbb9";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

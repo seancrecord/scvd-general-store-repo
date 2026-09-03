@@ -208,6 +208,13 @@ export const ROOMS: readonly Room[] = [
    * on the same terms as the pulse until the keeper rules on a slot.
    */
   { path: "/observatory", name: "The observatory", on_storefront: false },
+  /*
+   * For operators, 2026-09-03: the shelf from the seller's side, in
+   * the order a launch happens, free instrument first in every stage
+   * and every price read off the shelf at request. Off the storefront
+   * on the same terms as its kin until the keeper rules on a slot.
+   */
+  { path: "/operators", name: "For operators", on_storefront: false },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

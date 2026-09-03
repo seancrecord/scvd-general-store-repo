@@ -1,4 +1,4 @@
-import { BASE_EVM, POLYGON_EVM, getBlockTimestamp } from "@/lib/base-rpc";
+import { BASE_EVM, EVM_CHAINS, getBlockTimestamp } from "@/lib/base-rpc";
 import { signJcs } from "@/lib/jcs";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -377,7 +377,7 @@ export async function performCaseFile(
         ? await getBlockTimestamp(
             env,
             attestation.block_height,
-            attestation.chain.toLowerCase().includes("polygon") ? POLYGON_EVM : BASE_EVM,
+            EVM_CHAINS.find((candidate) => candidate.caip2 === attestation.chain) ?? BASE_EVM,
           )
         : null;
     const centre = mined ?? now;

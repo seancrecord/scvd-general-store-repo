@@ -134,6 +134,26 @@ export interface Env {
   POLYGON_RPC_URL_PRIMARY?: string;
   POLYGON_RPC_URL_SECONDARY?: string;
   /**
+   * The four reader chains (2026-09-03): Ethereum, Arbitrum One, OP
+   * Mainnet, Avalanche C-Chain. Same three-slot posture, same
+   * secrecy rule (redactRpc applies), all optional — every reader
+   * falls back to keyless public endpoints. These are READ when a
+   * stranger's door or a statement names the chain; nothing this
+   * store sells settles on them (PAYMENT_RAILS.md, the intake rule).
+   */
+  ETHEREUM_RPC_URL?: string;
+  ETHEREUM_RPC_URL_PRIMARY?: string;
+  ETHEREUM_RPC_URL_SECONDARY?: string;
+  ARBITRUM_RPC_URL?: string;
+  ARBITRUM_RPC_URL_PRIMARY?: string;
+  ARBITRUM_RPC_URL_SECONDARY?: string;
+  OPTIMISM_RPC_URL?: string;
+  OPTIMISM_RPC_URL_PRIMARY?: string;
+  OPTIMISM_RPC_URL_SECONDARY?: string;
+  AVALANCHE_RPC_URL?: string;
+  AVALANCHE_RPC_URL_PRIMARY?: string;
+  AVALANCHE_RPC_URL_SECONDARY?: string;
+  /**
    * Solana JSON-RPC endpoint for the second rail's bank
    * reconciliation. Optional: falls back to the public mainnet
    * endpoint, fine at this volume, swappable the day it isn't.

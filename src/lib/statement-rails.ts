@@ -1,6 +1,7 @@
 import {
   BASE_EVM,
   EVM_CHAINS,
+  type EvmChainKey,
   evmChainOf,
   getBlockNumber,
   usdcTransfersFrom,
@@ -43,7 +44,7 @@ export interface RailTransfer {
 }
 
 export interface StatementRail {
-  key: "base" | "polygon" | "solana";
+  key: EvmChainKey | "solana";
   label: string;
   caip2: string;
   /** The USDC asset on this rail: the contract on EVM, the mint on Solana. */
@@ -63,8 +64,8 @@ export interface StatementRail {
   transfersFrom(env: Env, wallet: string, from: number, to: number): Promise<RailTransfer[]>;
 }
 
-/** Base's and Polygon's ~2s cadence: blocks per hour of chain. */
-export const EVM_BLOCKS_PER_HOUR = 1800;
+/** Base's and Polygon's ~2s cadence: blocks per hour of chain. Every other EVM rail carries its own figure on the chain constant. */
+export const EVM_BLOCKS_PER_HOUR = BASE_EVM.blocksPerHour;
 
 function evmRail(chain: EvmChain): StatementRail {
   return {
@@ -73,7 +74,7 @@ function evmRail(chain: EvmChain): StatementRail {
     caip2: chain.caip2,
     usdc: chain.usdc,
     unit: "block",
-    unitsPerHour: EVM_BLOCKS_PER_HOUR,
+    unitsPerHour: chain.blocksPerHour,
     readMethod: "indexed eth_getLogs over exactly the block window stated",
     cannotSee:
       "a wallet moving ETH, other tokens, or funds on other networks shows none of that here",
@@ -148,6 +149,7 @@ export function railOfCaip2(caip2: string): StatementRail {
   return STATEMENT_RAILS.find((rail) => rail.caip2 === caip2) ?? BASE_RAIL;
 }
 
-/** One sentence for the refusals: what `network` may be. */
-export const NETWORK_VOCABULARY =
-  'network must be "eip155:8453" (or "base", the default), "eip155:137" (or "polygon"), or "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp" (or "solana")';
+/** One sentence for the refusals: what `network` may be. Derived from the rails, so a chain added to EVM_CHAINS is in the sentence the same commit. */
+export const NETWORK_VOCABULARY = `network must be ${EVM_CHAINS.map(
+  (chain, index) => `"${chain.caip2}" (or "${chain.key}"${index === 0 ? ", the default" : ""})`,
+).join(", ")}, or "${SOLANA_CHAIN}" (or "solana")`;

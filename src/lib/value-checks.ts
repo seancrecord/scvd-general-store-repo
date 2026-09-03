@@ -1,4 +1,4 @@
-import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
+import { EVM_CHAINS } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 
 /**
@@ -21,8 +21,9 @@ import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
  * else.
  */
 export const CANONICAL_USDC: Record<string, string> = {
-  "eip155:8453": BASE_USDC,
-  "eip155:137": POLYGON_USDC,
+  // Every EVM chain the store reads, derived (2026-09-03): the two
+  // it settles on and the four it only reads.
+  ...Object.fromEntries(EVM_CHAINS.map((chain) => [chain.caip2, chain.usdc])),
   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": SOLANA_USDC_MINT,
 };
 

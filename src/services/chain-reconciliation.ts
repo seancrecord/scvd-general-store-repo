@@ -1,5 +1,6 @@
 import {
   BASE_EVM,
+  type EvmChainKey,
   getBlockNumber,
   getBlockTimestamp,
   POLYGON_EVM,
@@ -191,7 +192,7 @@ export function findLookalike(
  */
 async function bankInflow(
   env: Env,
-  chain: "base" | "polygon" | "solana",
+  chain: EvmChainKey | "solana",
   totals: { microUsdc: number; dustMicroUsdc: number },
 ): Promise<void> {
   if (totals.microUsdc <= 0) {
