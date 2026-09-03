@@ -1314,6 +1314,9 @@ export; re-export in two weeks and compare the two counts.
   that resolves the company page. A minor signal, ten minutes,
   optional; the showcase is the one that matters.
 - **Cloudflare www**: done before the plan. Closed as F4.
-- **Hugging Face, prepared**: the dataset card is
-  `docs/huggingface/DATASET_CARD.md`, ready to paste. The steps are in
-  the keeper's message of this evening.
+- **Hugging Face, done**: `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`,
+  uploaded by the keeper 2026-09-03 with the card from
+  `docs/huggingface/DATASET_CARD.md`. Its URL rides every corpus
+  Dataset node's sameAs beside the DOI, and /corpus names it (PR 6).
+  Weekly pushes join the Zenodo upload script once that is built
+  (needs a Zenodo token and a Hugging Face token from the keeper).

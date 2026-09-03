@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CORPUS_DATASET_DOI,
   CORPUS_DATASET_DOI_URL,
+  CORPUS_DATASET_HUGGINGFACE_URL,
   CORPUS_DATASET_NAME,
 } from "@/store/corpus-dataset";
 
@@ -37,6 +38,7 @@ function expectCitable(node: Record<string, unknown>, where: string): void {
   const sameAs = node["sameAs"];
   const list = Array.isArray(sameAs) ? sameAs : [sameAs];
   expect(list, `${where}: doi.org missing from sameAs`).toContain(CORPUS_DATASET_DOI_URL);
+  expect(list, `${where}: the Hugging Face copy missing from sameAs`).toContain(CORPUS_DATASET_HUGGINGFACE_URL);
 }
 
 describe("the corpus DOI", () => {
@@ -58,6 +60,7 @@ describe("the corpus DOI", () => {
     expect(nodes.length, "/corpus declares the corpus").toBeGreaterThan(0);
     for (const node of nodes) expectCitable(node, "/corpus");
     expect(html).toContain(`href="${CORPUS_DATASET_DOI_URL}"`);
+    expect(html).toContain(`href="${CORPUS_DATASET_HUGGINGFACE_URL}"`);
   });
 
   it("is on /corpus.json, which is the Dataset itself", async () => {

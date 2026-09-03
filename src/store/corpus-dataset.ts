@@ -55,6 +55,16 @@ export const CORPUS_DATASET_DOI = "10.5281/zenodo.22284887";
 export const CORPUS_DATASET_DOI_URL = `https://doi.org/${CORPUS_DATASET_DOI}`;
 
 /**
+ * THE HUGGING FACE COPY (2026-09-03, the keeper's upload): the same
+ * files, under the keeper's account, on the second index researchers
+ * and agents actually search for datasets. Its card carries the DOI
+ * above; this side carries its URL as sameAs, so the two copies point
+ * at each other and at the live corpus.
+ */
+export const CORPUS_DATASET_HUGGINGFACE_URL =
+  "https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness";
+
+/**
  * The fields that make a Dataset node citable, for every surface that
  * declares the corpus (the storefront, /corpus, /corpus.json): the DOI
  * as a PropertyValue identifier, which is how Google Dataset Search
@@ -66,6 +76,6 @@ export function corpusDatasetIdentityFields(): {
 } {
   return {
     identifier: { "@type": "PropertyValue", propertyID: "DOI", value: CORPUS_DATASET_DOI },
-    sameAs: [CORPUS_DATASET_DOI_URL],
+    sameAs: [CORPUS_DATASET_DOI_URL, CORPUS_DATASET_HUGGINGFACE_URL],
   };
 }
