@@ -590,21 +590,25 @@ const BASE = "https://scvd.store";
  * pieces, named as theirs and not as endorsements. Confirmed before
  * this value was taken: the guide carries "Reported on independently"
  * and both cairnwake.com URLs, and still every earlier pin.
- * Re-taken 2026-09-03 — the FORTIETH — by the feeds (roadmap V2):
+ * (The fortieth and forty-first above landed on main while the feeds
+ * were built; the notes below were renumbered at the rebase, and the
+ * value was re-taken once on the rebased head.)
+ *
+ * Re-taken 2026-09-03 — the FORTY-SECOND — by the feeds (roadmap V2):
  * one paragraph after the operators', for a reader who polls rather
  * than reads, naming /feeds and that every entry links the page the
  * derivation and the denominator are on. Confirmed before this value
  * was taken: the guide carries "/feeds" and "If you poll rather than
  * read", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-FIRST — by the state of x402 by
+ * Re-taken 2026-09-03 — the FORTY-THIRD — by the state of x402 by
  * month (roadmap V5): one paragraph between the operators' and the
  * feeds', naming /corpus/month, the closing week beside the
  * door-weeks, and the stable address per month. Confirmed before
  * this value was taken: the guide carries "/corpus/month" and "Two
  * kinds of number, never a share", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-SECOND — by the feeds' four URLs
+ * Re-taken 2026-09-03 — the FORTY-FOURTH — by the feeds' four URLs
  * named in the guide's feeds paragraph, because a route no agent
  * surface names is an orphan capability (test/no-orphan-capability)
  * and a poller wants the feed address, not the page that lists it.
@@ -612,20 +616,20 @@ const BASE = "https://scvd.store";
  * "/feeds/brief.xml" and "/feeds/disagreements.xml", and still every
  * earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-THIRD — by one pair of backticks:
+ * Re-taken 2026-09-03 — the FORTY-FIFTH — by one pair of backticks:
  * the month paragraph's stable address carries braces, and the
  * markdown-discoverability spec holds every templated URL in the
  * guide to a code span so a reader never lifts a bare one. Confirmed
  * before this value was taken: the guide carries the address inside
  * backticks, and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-FOURTH — by the evidence agent
+ * Re-taken 2026-09-03 — the FORTY-SIXTH — by the evidence agent
  * (roadmap A2): one paragraph before the feeds', for a reader who
  * delegates rather than calls, naming /a2a, the three tasks and the
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-FIFTH — by the verifier door
+ * Re-taken 2026-09-03 — the FORTY-SEVENTH — by the verifier door
  * (roadmap A3): one paragraph before the evidence agent's, for a
  * client that should never see a shelf, naming /mcp/verifier and its
  * five tools; and, in the same commit, the A2A card's sentence
@@ -639,7 +643,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a4664bbc6408e7b504dd08f05194169e2e6a727c5f91cdbcaedf7dbe9ce1fe87";
+  "c21ea5f11a8d26fb66ad681b5550a7ac8f660b86b3289ac3b02a826759dbe6da";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
