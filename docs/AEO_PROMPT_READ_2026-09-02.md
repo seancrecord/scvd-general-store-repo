@@ -1156,3 +1156,72 @@ Still the keeper's: Crunchbase rename, Hugging Face (now unblocked by
 the DOI), the Cloudflare crawl reading, Search Console
 resubmit and the www check, the dev.to title check, CV's IETF
 paragraph, the mirror sweep last.
+
+## First crawl reading — Cloudflare AI Crawl Control, 2026-09-03
+
+Pasted by the keeper from the zone's AI Crawl Control panel (the
+panel's default window; the next reading should note the range). The
+bots that moved bytes, in the panel's order:
+
+| Crawler | Operator | Kind | Bytes | Allowed | Unsuccessful |
+| --- | --- | --- | --- | --- | --- |
+| ClaudeBot | Anthropic | AI crawler | 13.59 MB | 2,420 | 14 |
+| Claude-User | Anthropic | AI crawler (on a user's behalf) | 6.54 MB | 252 | 0 |
+| Meta-ExternalAgent | Meta | AI crawler | 648 kB | 144 | 28 |
+| Googlebot | Google | search | 2.68 MB | 91 | 6 |
+| Applebot | Apple | AI search | 684 kB | 51 | 4 |
+| OAI-SearchBot | OpenAI | AI search | 1.32 MB | 54 | 0 |
+| GPTBot | OpenAI | AI crawler | 292 kB | 13 | 4 |
+| Amazonbot | Amazon | AI crawler | 158 kB | 13 | 2 |
+| ChatGPT-User | OpenAI | AI assistant | 322 kB | 12 | 0 |
+| PerplexityBot | Perplexity | AI search | 259 kB | 10 | 0 |
+| BingBot | Microsoft | search | 34 kB | 3 | 0 |
+| Baidu, Bytespider, Claude-SearchBot | | | ~13 kB each | 1 each | 0 |
+
+Zero requests: CCBot (Common Crawl), DuckAssistBot, Perplexity-User,
+Meta-ExternalFetcher, MistralAI-User, Google-CloudVertexBot, the
+Cloudflare crawler, the archivers, and the rest of the panel's list.
+
+Top paths by requests: `/mcp` (JSON, 250 requests, 6.5 MB), `/`
+(HTML, 48), `/sitemap.xml` (21), `/webmcp.js` (14), `/till.js` (13),
+`/menu/settlement_attestation` (JSON, 12), then the per-host corpus
+pages, both faces: `/corpus/host/{host}` as HTML (8–10 requests each)
+and `/corpus/host/{host}.json` (8–9 each). 911 distinct paths in the
+window.
+
+What it says:
+
+- **The crawler fix is working.** The per-host pages from PR 3 are
+  being fetched as HTML by the AI crawlers, eight to ten times each
+  in the window, beside their JSON twins. Before PR 1 a crawler with
+  a bare Accept got JSON everywhere.
+- **The engines that matter are all here.** OAI-SearchBot (what
+  ChatGPT search cites from, via Bing's index and its own fetches),
+  PerplexityBot, Applebot, Googlebot, and ChatGPT-User (a person's
+  ChatGPT session fetching a page it was going to cite). Every one
+  with zero or near-zero failures.
+- **Bing is the gap.** Three requests. Bing's own index is what
+  ChatGPT search falls back on, and it has barely walked the site.
+  IndexNow went live the same afternoon; the next reading should show
+  BingBot moving.
+- **ClaudeBot's 2,420 requests** are Anthropic's training crawl, and
+  the volume is the sitemap's 1,280 URLs walked in both faces.
+  Claude-User's 252 requests are almost all `/mcp`: an MCP client
+  session fetching tools/list, most likely this very session's
+  connector rather than a stranger. Discount it.
+- **Meta-ExternalAgent's 28 failures** are the largest failure count
+  on the panel. Not diagnosed: the panel's 4xx filter would say
+  whether they are 402s on paid doors (correct, and now noindex) or
+  404s on paths that should answer.
+
+Follow-ups, in order:
+
+1. ⚑ Keeper: click the panel's **4xx** filter and paste the paths.
+   That tells us whether the 58 unsuccessful requests are the paid
+   doors' 402s (fine) or dead paths (a fix).
+2. Re-read the panel a week after the first IndexNow ping, for
+   BingBot alone.
+3. Monthly re-read, same table, so the doc carries a series.
+
+Nothing to block. Nothing to build from this reading until the 4xx
+list is in.
