@@ -31,6 +31,17 @@
    * truth: raise the limit here, not in the dashboard.
    */
   "limits": { "cpu_ms": 100 },
+  /**
+   * MINIFIED, FOR THE COLD ISOLATE (2026-09-03, the x402-list p95
+   * read). The unminified script uploaded at 5.25 MiB, most of it the
+   * comments this repo writes on purpose; a directory probe every
+   * fifteen minutes lands on a cold isolate often, and a cold start
+   * parses the whole script before the first 402 can leave. Minify
+   * strips what the runtime never reads; keep_names stays at its
+   * default so nothing that reads a function's name changes. The
+   * source map is still written locally and never uploaded.
+   */
+  "minify": true,
   "routes": [
     { "pattern": "scvd.store", "custom_domain": true }
   ],

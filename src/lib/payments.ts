@@ -877,6 +877,17 @@ export const SUPPORTED_KINDS_KV_KEY = "facilitator:supported:v1";
 /** A week: long enough to survive quiet spells, short enough to shed a
  * kind the facilitator retires. */
 const SUPPORTED_KINDS_TTL_SECONDS = 7 * 86_400;
+/**
+ * THE COLD READ, KEPT AT THE EDGE (2026-09-03, the x402-list p95
+ * read). A KV get without cacheTtl is held at the colo for sixty
+ * seconds; a directory probe every fifteen minutes therefore paid a
+ * round trip to central storage on every cold isolate, in front of
+ * the very 402 the scoreboard times. An hour at the edge covers the
+ * gap between probes. The staleness it adds is bounded by the same
+ * week the KV copy already tolerates, and the detached refresh below
+ * still lands the fresh copy in central storage for the next colo.
+ */
+const SUPPORTED_KINDS_EDGE_CACHE_SECONDS = 3600;
 
 /**
  * THE COLD-START TAX, RETIRED (ledger #51; the keeper's directory-score
@@ -1010,7 +1021,10 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
       ReturnType<HTTPFacilitatorClient["getSupported"]>
     >;
     const cached = await this.kv
-      .get<Supported>(SUPPORTED_KINDS_KV_KEY, "json")
+      .get<Supported>(SUPPORTED_KINDS_KV_KEY, {
+        type: "json",
+        cacheTtl: SUPPORTED_KINDS_EDGE_CACHE_SECONDS,
+      })
       .catch(() => null);
     if (cached) {
       void this.supportedLane
