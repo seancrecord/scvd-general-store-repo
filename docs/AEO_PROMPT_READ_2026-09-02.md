@@ -956,6 +956,15 @@ INDEXNOW_KEY=<the key> npm run indexnow
 
 A 200 or 202 back means Bing accepted the sitemap's URLs.
 
+The first live run (2026-09-03, 1,284 URLs) came back 422 and nothing
+else. The sitemap was checked from outside: every URL on the host,
+nothing odd, so the failure is the key side. The script now fetches
+its own key file first, the way Bing does, and says which side is
+wrong (the Worker's secret or the shell's value) before it sends
+anything; and it prints IndexNow's reply body on any 4xx. If the key
+file answers 200 with the key and IndexNow still says 422, the reply
+body is the next clue.
+
 Bing Webmaster Tools (bing.com/webmasters): sign in, "Add a site",
 choose "Import from Google Search Console" (one click, no DNS record),
 submit `https://scvd.store/sitemap.xml` under Sitemaps. Under
