@@ -1,0 +1,13 @@
+---
+description: Before paying an x402 endpoint, read its 402 terms and run scvd.store's free preflight and dry run; decide with every reason named.
+globs: ["**/*.ts", "**/*.js", "**/*.mjs", "**/*.py"]
+alwaysApply: false
+---
+
+When code is about to pay an x402 URL, do this first and show the result:
+
+1. GET the URL and decode the PAYMENT-REQUIRED header (base64 JSON). The accepts[] entries carry network, asset, payTo and amount (atomic units).
+2. POST https://scvd.store/api/before-you-pay/v1 with {"url": "<the url>"}. Read will_your_client_pay, your_client.chosen, and the_door.verdict with its named checks and advisories.
+3. Run examples/shared/decide.mjs (or decide.py) over those readings with the project's policy (allowed networks, allowed recipients, a cap). Report the decision and every `because` line.
+
+Rules: unreachable is cannot_tell, never a defect. not_ready or would_throw is do_not_pay, with the check or the client's own error quoted. A testnet-network advisory is do_not_pay. pay is a derivation, not a score, and never proof of delivery; carry does_not_establish into the report. Never sign against a body challenge that disagrees with the header; never resolve a name in payTo; never guess terms you could not read.
