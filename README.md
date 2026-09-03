@@ -25,7 +25,9 @@ free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).
 After you pay: check any issuer's signed offer or receipt, free, at
 [scvd.store/conformance](https://scvd.store/conformance). Over time:
 read the dated, Bitcoin-anchored corpus, free, at
-[scvd.store/corpus](https://scvd.store/corpus). Every verdict is
+[scvd.store/corpus](https://scvd.store/corpus), cite it by DOI
+([10.5281/zenodo.22284887](https://doi.org/10.5281/zenodo.22284887)),
+or pull it from [Hugging Face](https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness). Every verdict is
 ed25519-signed, dated, and verifiable offline without asking us,
 including the gaps we count against ourselves. Operated by Record
 Creative Co. LLC.

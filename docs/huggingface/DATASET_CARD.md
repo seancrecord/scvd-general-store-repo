@@ -34,6 +34,17 @@ A new numbered file is added each signed round. The live copy is always at https
 
 Every fraction in this corpus is published with its rule, its denominator and its rows. Coverage caveats ride inside each round verbatim: which hosts were listed, which were walked, and the percentage between them. Nothing here is a ranking of one host against another.
 
+## Update cadence
+
+One round per week, taken on the Sunday walk, appended as a new numbered file and a new version on Zenodo. A week the walk did not run is a missing number, said so, never backfilled.
+
+## Limitations
+
+- One probe per host per round, at indexer cadence: a door that was down for the minute of the probe reads as unreachable for the week.
+- The population is the public x402 discovery list plus hosts the store has met; a door not listed anywhere is not here.
+- The probe reads the 402 challenge and the signed offer; it does not pay, so it says whether a door *can* be paid, not whether it delivers.
+- Tiers and fractions are derived and published with their rule, denominator and rows; they are not scores of operators and must not be read as rankings.
+
 ## Verification
 
 Recompute any snapshot's sha256, check the signature against the key at https://scvd.store/.well-known/scvd-signing-key, walk the `previous_digest` chain back to the first entry, and run `ots verify` on the Bitcoin-anchored proof. The exact steps, field order included, are printed on `corpus.json` itself.

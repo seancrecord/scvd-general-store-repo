@@ -141,6 +141,13 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to.",
   },
   {
+    url: "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+    registry: "Agent Plugins Directory",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more plugin directory indexed the store's MCP server under its own page. A listing, which is evidence of being indexed and nothing else: not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check, not assumed here.",
+  },
+  {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
     confirmed: "2026-07-27",
