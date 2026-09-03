@@ -267,6 +267,15 @@ Do not relitigate without you.
 - **LOOK** — `/admin/trade.json` on the Sunday grind, against the
   partner's statement; record each payout with `POST
   /admin/trade/hal/payout`.
+### Presses waiting (2026-09-03, evening)
+
+- **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
+  before-you-pay, month, feeds, the FIX lines (roadmap C5). The
+  Saturday listings read will say the registry differs from the
+  tree until you press.
+- **npm publish x402-verify 1.1.0** from `verifier/` on main (A1).
+- **The tab registry press** via the `tab` input on the publish
+  workflow (V4).
 
 ### Decisions that unblock the roadmap
 

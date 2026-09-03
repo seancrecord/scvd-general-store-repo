@@ -410,8 +410,11 @@ changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring
 version carries, and a live table of every version served. Nothing is
 deprecated today and the table says so.
 Official CLI, ${CLI_PACKAGE} (MIT, zero dependencies): one line per
-instrument — "scvd preflight <url>", "scvd conformance <file>", "scvd
-verify <id>", "scvd catalog", "scvd versions". It holds no key and
+instrument — "scvd preflight <url>", "scvd look <url>", "scvd
+before-you-pay <url>", "scvd conformance <file>", "scvd verify <id>",
+"scvd month", "scvd feeds", "scvd catalog", "scvd versions". Where a
+report names a defect, it prints the store's remediation rows, both
+halves. It holds no key and
 cannot spend money; --json prints this store's own response verbatim.
 ${
   CLI_PUBLISHED

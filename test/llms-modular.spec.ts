@@ -629,6 +629,12 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FIFTY-FIRST — by the CLI at 0.2.0
+ * (roadmap C5a): the one-line-per-instrument sentence now names look,
+ * before-you-pay, month and feeds, and says the tool prints the
+ * remediation rows. Confirmed before this value was taken: the guide
+ * carries "scvd look <url>" and still every earlier pin.
+ *
  * Re-taken 2026-09-03 — the FIFTIETH — by the function-calling
  * tools document (roadmap C4): one link in the contracts line and two
  * lines beside the OpenAPI contract, naming /openapi-tools.json.
@@ -685,7 +691,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "042dadf75e145e7fe412b5d04c3ae52b42ae9a39fb4ffa9a2ba85b6494a5614e";
+  "c3b2482c83bf639f0d7f3d617a93437408fa7dd5374211f8e3f6cd49c828ee00";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

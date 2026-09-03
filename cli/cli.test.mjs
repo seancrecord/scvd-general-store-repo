@@ -318,3 +318,101 @@ test("exits 1 when the check desk says the signature would not pass", async () =
   assert.equal(result.code, 1);
   assert.match(result.stdout, /first failure: stale_timestamp/);
 });
+
+test("looks at a door: both halves and the comparison, exit follows the live verdict", async () => {
+  let seen;
+  const result = await run(["look", "https://door.example/pay"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        headline: "Ready now; the chain holds 3 of 4 rounds.",
+        now: { battery: "v2", verdict: "ready", failed: [], advisories: [], the_door: { remediation: [] } },
+        held: { never_met: false, rounds_probed: 3, rounds_since_first_sighting: 4, last_probed_round: { verdict: "ready", week: "2026-W35" }, tier: { tier: "held", fraction: "3/4" } },
+        now_against_held: { line: "same", detail: "the live verdict matches the last signed round" },
+      },
+    };
+  });
+  assert.equal(seen.method, "POST");
+  assert.equal(seen.url, "/api/look/v1");
+  assert.deepEqual(seen.body, { url: "https://door.example/pay" });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /probed 3 of 4 rounds/);
+  assert.match(result.stdout, /now against held: same/);
+  const never = await run(["look", "https://door.example/pay"], () => ({
+    json: { url: "https://door.example/pay", headline: "h", now: { battery: "v2", verdict: "not_ready", failed: ["accepts"], advisories: [] }, held: { never_met: true }, now_against_held: { line: "no_prior", detail: "no round" } },
+  }));
+  assert.equal(never.code, 1);
+  assert.match(never.stdout, /never met/);
+  assert.match(never.stdout, /failed: accepts/);
+});
+
+test("the dry run: --cap rides as the client profile, and would_throw exits 1", async () => {
+  let seen;
+  const result = await run(["before-you-pay", "https://door.example/pay", "--cap", "0.5"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        will_your_client_pay: "would_throw",
+        your_client: { outcome: "would_throw", chosen: null, throws_with: "All payment requirements were filtered out by spendControls", dropped: [{ index: 0, network: "eip155:8453", stage: "amount-cap", why: "5 USD is above the cap" }], hazards: [], cap_applied: "$0.5" },
+        the_door: { verdict: "ready", checks: [{ name: "status-402", ok: true }], remediation: [] },
+      },
+    };
+  });
+  assert.equal(seen.url, "/api/before-you-pay/v1");
+  assert.deepEqual(seen.body, { url: "https://door.example/pay", client_profile: { max_amount_per_payment_usd: 0.5 } });
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /will your client pay: would_throw/);
+  assert.match(result.stdout, /DROP {2}accept 0 \(eip155:8453\) at amount-cap/);
+  const signs = await run(["before-you-pay", "https://door.example/pay"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        will_your_client_pay: "would_sign",
+        your_client: { outcome: "would_sign", chosen: { index: 0, network: "eip155:8453", asset: "0xusdc", amount_atomic: "1000", amount_usd: 0.001, signing_window_seconds: 300 }, throws_with: null, dropped: [], hazards: [], cap_applied: "$1" },
+        the_door: { verdict: "ready", checks: [], remediation: [] },
+      },
+    };
+  });
+  assert.deepEqual(seen.body, { url: "https://door.example/pay" });
+  assert.equal(signs.code, 0);
+  assert.match(signs.stdout, /would sign accept 0: eip155:8453 0xusdc 1000 atomic \(\$0\.001\), 300s to sign/);
+  const bad = await run(["before-you-pay", "https://door.example/pay", "--cap", "nope"], () => ({ json: {} }));
+  assert.equal(bad.code, 2);
+});
+
+test("a month and the feeds, from the store's own documents", async () => {
+  let seen;
+  const month = await run(["month", "2026-08"], (request) => {
+    seen = request;
+    return {
+      json: {
+        name: "The state of x402",
+        month: "2026-08",
+        weeks: [{ week: "2026-W33" }, { week: "2026-W34" }],
+        closing: { week: "2026-W34", listed: 40, probed: 38, payable: 20, not_payable: 15, unreachable: 3, offers_seen: 9 },
+        door_weeks: { rounds: 2, listed: 80, probed: 76, payable: 41, not_payable: 29, unreachable: 6, offers_seen: 18 },
+        defects: [{ id: "no-402", title: "Listed, but serves no payment challenge", door_weeks: 12 }],
+        months_held: ["2026-07", "2026-08"],
+        what_this_is_not: "Not a ranking.",
+      },
+    };
+  });
+  assert.equal(seen.url, "/corpus/month/2026-08");
+  assert.equal(seen.headers["accept"], "application/json");
+  assert.equal(month.code, 0);
+  assert.match(month.stdout, /closing 2026-W34 +listed 40 {2}probed 38/);
+  assert.match(month.stdout, /door-weeks \(2 rounds\)/);
+  assert.match(month.stdout, /DEFECT {2}no-402: 12 door-weeks/);
+  const badMonth = await run(["month", "august"], () => ({ json: {} }));
+  assert.equal(badMonth.code, 2);
+  const feeds = await run(["feeds"], (request) => {
+    seen = request;
+    return { json: { feeds: [{ path: "/feeds/brief.xml", title: "The week's doors", url: "https://scvd.store/feeds/brief.xml", summary: "One entry per signed week." }] } };
+  });
+  assert.equal(seen.url, "/feeds");
+  assert.match(feeds.stdout, /The week's doors +https:\/\/scvd\.store\/feeds\/brief\.xml/);
+  assert.match(feeds.stdout, /One entry per signed week/);
+});

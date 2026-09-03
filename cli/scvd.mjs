@@ -62,12 +62,23 @@ function usage() {
   scvd conformance <file|->     Read a signed offer or receipt (compact
                                 JWS) and say whether it holds up. Any
                                 issuer's, including ones we compete with.
+  scvd look <url>               What the store holds about that door: one
+                                live preflight beside the signed history,
+                                counts with denominators, never a score.
+  scvd before-you-pay <url>     Will a stock x402 client pay that door,
+      [--cap <usd>]             and which accept would it sign? A dry run;
+                                nothing is signed, nothing is paid.
   scvd verify <id>              Verify anything this store ever signed.
   scvd receipt <file|->         Verify any issuer's receipt JSON and get
                                 back a signed verdict.
   scvd onpage <url>             What that page serves a machine reader.
   scvd fresh-set                This week's working x402 doors.
   scvd corpus                   The weekly signed census, whole.
+  scvd month [YYYY-MM]          The state of x402 for one month: the
+                                closing week beside every round's door-
+                                weeks, defects by name, the month before.
+  scvd feeds                    The Atom feeds: the brief, the corpus,
+                                corrections, disagreements.
   scvd menu                     What is on the shelf, and for how much.
   scvd catalog                  Every developer resource, from the
                                 RFC 9727 API catalog.
@@ -305,6 +316,103 @@ const COMMANDS = {
     return report.verdict === "not_ready" ? EXIT.verdictNegative : EXIT.ok;
   },
 
+  /**
+   * THE LOOK (0.2.0): the free door that answers "what do you hold
+   * about this door?" — one live preflight folded with the signed
+   * chain. Rendered as the two halves and the one comparison the door
+   * adds; every number the store served travels with its denominator,
+   * and the tool prints nothing it did not receive.
+   */
+  async look(args, options) {
+    const url = args[0];
+    if (!url) fail("scvd look <url> — the x402 door to look at.");
+    const result = await call("/api/look/v1", { method: "POST", body: { url } });
+    if (options.json) return dump(result);
+    if (result.status === 429) {
+      process.stdout.write(`${result.json.error}\n`);
+      return EXIT.unreachable;
+    }
+    const report = result.json;
+    if (report.error) {
+      process.stdout.write(`${report.error}\n`);
+      if (report.next_action) process.stdout.write(`  next: ${report.next_action}\n`);
+      return EXIT.usage;
+    }
+    process.stdout.write(`${report.url}\n  ${report.headline}\n\n`);
+    const now = report.now ?? {};
+    process.stdout.write(`  now:   ${now.verdict} (${now.battery ?? "?"})`);
+    if ((now.failed ?? []).length > 0) process.stdout.write(` — failed: ${now.failed.join(", ")}`);
+    process.stdout.write("\n");
+    const held = report.held ?? {};
+    if (held.never_met) {
+      process.stdout.write("  held:  never met — the chain holds no round for this host\n");
+    } else {
+      process.stdout.write(
+        `  held:  probed ${held.rounds_probed} of ${held.rounds_since_first_sighting} rounds since first sighting; last signed verdict ${held.last_probed_round?.verdict ?? "?"} (${held.last_probed_round?.week ?? "?"}); tier ${held.tier?.tier ?? "?"} on ${held.tier?.fraction ?? "?"}\n`,
+      );
+    }
+    const against = report.now_against_held ?? {};
+    process.stdout.write(`  now against held: ${against.line ?? "?"} — ${against.detail ?? ""}\n`);
+    printRemediation(now.the_door?.remediation);
+    printBudget(result);
+    return now.verdict === "not_ready" ? EXIT.verdictNegative : EXIT.ok;
+  },
+
+  /**
+   * THE DRY RUN (0.2.0): will YOUR client pay this door. The verdict
+   * is about the buyer, not the door — a well-shaped 402 a stock
+   * client refuses on the buyer's own machine is the case that loses
+   * money quietly. --cap sets the client's per-payment ceiling in USD;
+   * without it the answer is for a client configured with nothing.
+   */
+  async "before-you-pay"(args, options) {
+    const url = args[0];
+    if (!url) fail("scvd before-you-pay <url> [--cap <usd>] — the door you are about to pay.");
+    const body = { url };
+    if (options.cap !== undefined) {
+      const cap = Number(options.cap);
+      if (!Number.isFinite(cap) || cap <= 0) fail("--cap wants a positive number of US dollars.");
+      body.client_profile = { max_amount_per_payment_usd: cap };
+    }
+    const result = await call("/api/before-you-pay/v1", { method: "POST", body });
+    if (options.json) return dump(result);
+    if (result.status === 429) {
+      process.stdout.write(`${result.json.error}\n`);
+      return EXIT.unreachable;
+    }
+    const report = result.json;
+    if (report.error) {
+      process.stdout.write(`${report.error}\n`);
+      if (report.next_action) process.stdout.write(`  next: ${report.next_action}\n`);
+      return EXIT.usage;
+    }
+    const client = report.your_client ?? {};
+    process.stdout.write(`${report.url}\n  will your client pay: ${report.will_your_client_pay}\n`);
+    if (client.chosen) {
+      const c = client.chosen;
+      process.stdout.write(`  would sign accept ${c.index}: ${c.network} ${c.asset} ${c.amount_atomic} atomic${c.amount_usd !== null && c.amount_usd !== undefined ? ` ($${c.amount_usd})` : ""}${c.signing_window_seconds ? `, ${c.signing_window_seconds}s to sign` : ""}\n`);
+    }
+    if (client.throws_with) process.stdout.write(`  throws: ${client.throws_with}\n`);
+    for (const dropped of client.dropped ?? []) {
+      process.stdout.write(`  DROP  accept ${dropped.index} (${dropped.network}) at ${dropped.stage}: ${dropped.why}\n`);
+    }
+    for (const hazard of client.hazards ?? []) {
+      process.stdout.write(`  NOTE  ${hazard.name}: ${hazard.detail}\n`);
+    }
+    if (client.cap_applied) process.stdout.write(`  cap applied: ${client.cap_applied}\n`);
+    const door = report.the_door ?? {};
+    process.stdout.write(`  the door: ${door.verdict ?? "?"}${(door.checks ?? []).some((check) => !check.ok) ? ` — failed: ${door.checks.filter((check) => !check.ok).map((check) => check.name).join(", ")}` : ""}\n`);
+    printRemediation(door.remediation);
+    printBudget(result);
+    /*
+     * The exit code follows the BUYER'S answer: would_throw means a
+     * payment attempt fails on this machine, which is what a script
+     * asks. cannot_simulate is a finding about the door, and the
+     * preflight is the instrument for it, so it exits 0 here.
+     */
+    return report.will_your_client_pay === "would_throw" ? EXIT.verdictNegative : EXIT.ok;
+  },
+
   async conformance(args, options) {
     const artifact = readInput(args[0]);
     const result = await call("/api/conformance/v1", {
@@ -406,6 +514,43 @@ const COMMANDS = {
     return dump(result);
   },
 
+  /** THE MONTH (0.2.0): one month of the corpus, closing week beside door-weeks, never divided. */
+  async month(args, options) {
+    const which = args[0];
+    if (which && !/^\d{4}-\d{2}$/.test(which)) fail("scvd month [YYYY-MM] — a calendar month, e.g. 2026-08.");
+    const result = await call(which ? `/corpus/month/${which}` : "/corpus/month");
+    if (options.json) return dump(result);
+    const state = result.json;
+    if (state.error) {
+      process.stdout.write(`${state.error}\n`);
+      return EXIT.usage;
+    }
+    const line = (label, reading) =>
+      process.stdout.write(`  ${label.padEnd(12)} listed ${reading.listed}  probed ${reading.probed}  payable ${reading.payable}  not payable ${reading.not_payable}  unreachable ${reading.unreachable}  offers seen ${reading.offers_seen}\n`);
+    process.stdout.write(`${state.name ?? "The state of x402"}, ${state.month}\n  weeks in the month: ${(state.weeks ?? []).length}\n`);
+    if (state.closing) line(`closing ${state.closing.week ?? ""}`.trim(), state.closing);
+    if (state.door_weeks) line(`door-weeks (${state.door_weeks.rounds} rounds)`, state.door_weeks);
+    for (const defect of state.defects ?? []) {
+      process.stdout.write(`  DEFECT  ${defect.id}: ${defect.door_weeks} door-weeks\n`);
+    }
+    if (Array.isArray(state.months_held) && state.months_held.length > 0) {
+      process.stdout.write(`  months held: ${state.months_held.join(", ")}\n`);
+    }
+    if (state.what_this_is_not) process.stdout.write(`\n  ${state.what_this_is_not}\n`);
+    return EXIT.ok;
+  },
+
+  /** THE FEEDS (0.2.0): the four Atom feeds, by address, from the store's own index. */
+  async feeds(_args, options) {
+    const result = await call("/feeds");
+    if (options.json) return dump(result);
+    for (const feed of result.json.feeds ?? []) {
+      process.stdout.write(`  ${String(feed.title ?? feed.path).padEnd(28)} ${feed.url ?? feed.path}\n`);
+      if (feed.summary) process.stdout.write(`      ${feed.summary}\n`);
+    }
+    return EXIT.ok;
+  },
+
   async menu(_args, options) {
     const result = await call("/menu.json");
     if (options.json) return dump(result);
@@ -458,6 +603,12 @@ async function main(argv) {
       const next = argv[(index += 1)];
       if (!next) fail("--base wants a URL after it.");
       BASE = next.replace(/\/+$/, "");
+      continue;
+    }
+    if (argument === "--cap") {
+      const next = argv[(index += 1)];
+      if (!next) fail("--cap wants a number of US dollars after it.");
+      options.cap = next;
     } else if (argument === "--help" || argument === "-h") {
       process.stdout.write(usage());
       return EXIT.ok;
