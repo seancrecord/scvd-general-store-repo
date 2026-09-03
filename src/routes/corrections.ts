@@ -48,6 +48,11 @@ correctionsRoutes.get("/corrections", (c) => {
         description:
           "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly.",
         path: "/corrections",
+        // The ledger's dates, derived: first entry and newest entry.
+        dates: {
+          published: [...CORRECTIONS].map((e) => e.date).sort()[0],
+          modified: [...CORRECTIONS].map((e) => e.date).sort().at(-1),
+        },
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_STANDFIRST)}</p>
           <p class="menu-desc"><strong>${escapeHtml(CORRECTIONS_MECHANISM)}</strong></p>

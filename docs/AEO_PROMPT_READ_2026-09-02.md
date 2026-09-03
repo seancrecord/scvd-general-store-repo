@@ -1399,3 +1399,57 @@ DefinedTerm for the defect vocabulary; WebPage for everything else.
 No Claim markup exists anywhere on the site (grepped), and every
 node is emitted by the same renderer that emits the HTML it
 describes.
+
+## The second half of the outside review, ruled — 2026-09-03, late
+
+- **Agent Plugins Directory** (`agentpluginsdirectory.com/plugins/scvd-general-store`):
+  was not on the records; is now (`EXTERNAL_RECORDS`, PR 6), as a
+  listing and nothing more. Unreachable from the sandbox; the listings
+  check reads which generation of text it carries.
+- **/becoming, the supersession note**: built, derived. The page now
+  opens with "Current terminology, 2026-09-03: the store does not
+  describe itself as a trust layer or a verification layer", the first
+  sentence of the sixty words from the constant, and one line saying
+  the rest is the dated record. `test/current-identity.spec.ts`. The
+  reviewer's three options were the right three and the third is the
+  one taken; the keeper may reword the sentence (rule 7).
+- **Bylines with a query-shaped job**: adopted as
+  `docs/bylines/STANDARD.md`. The two published pieces already fit it.
+- **Open-source assets the reviewer lists**: the offline verifier
+  exists (`x402-verify` on npm, verifies any scvd artifact without the
+  store), the CLI exists, malformed-402 and receipt fixtures exist in
+  `test/`, the corpus client is the four-line download in section 5.
+  Not built: the reproducible notebook over the DOI dataset
+  (readiness and defect rates by week) and a packaged
+  cross-surface-consistency reference. ⚑ The notebook is the one worth
+  doing: it lives in the Hugging Face repo beside the data, it is the
+  artifact a researcher forks, and it is a byline in itself. Roadmap
+  candidate, keeper's call on priority.
+- **The DOI and Hugging Face chain**, line by line: /corpus shows the
+  concept DOI in HTML (yes, PR 6); the Dataset nodes carry it (yes);
+  the Hugging Face card carries the DOI, method, schema, licence,
+  canonical URL (yes) and now cadence and limitations (added, ⚑
+  re-paste `docs/huggingface/DATASET_CARD.md`); the README links the
+  DOI and the dataset (yes, PR 6); every round and host page's
+  `isPartOf` is now the corpus by @id with its DOI (PR 6); the card's
+  title stays neutral and its first words are the category sentence
+  (yes). ⚑ Zenodo's own record should link back: add related
+  identifiers for `https://scvd.store/corpus` (done), the GitHub
+  repository and the Hugging Face URL, relation "is supplemented by"
+  or "is identical to".
+- **A "current identity" page**: /what already opens with "What is
+  scvd.store?" and the sixty words (F6). What the reviewer adds is
+  the page title and the not-list. ⚑ F29, the keeper's copy: title
+  /what "What is scvd.store? Independent x402 verification, signed
+  evidence, and endpoint-readiness data", and add to the first FAQ
+  answer one sentence: "Not a payment processor, an escrow provider,
+  a trust-score service, a compliance firm, a merchant-rating system
+  or a guarantee of delivery." One ruling; two lines to build.
+- **/corrections**: kept exactly as it is, which was the reviewer's
+  point too. Built tonight, derived: the page's WebPage node carries
+  datePublished (the first entry) and dateModified (the newest). The
+  process copy the reviewer asks for (what qualifies, how an outside
+  party reports, how entries are versioned) is already on the page in
+  the standfirst, the mechanism line and the invitation; a "how to
+  read this record" summary would be one more paragraph of the
+  keeper's (F30, optional).

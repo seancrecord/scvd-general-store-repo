@@ -70,6 +70,21 @@ export const CORPUS_DATASET_HUGGINGFACE_URL =
  * as a PropertyValue identifier, which is how Google Dataset Search
  * and schema.org consumers read it, and the doi.org URL as sameAs.
  */
+/**
+ * A reference to the corpus as a whole, for the per-host and per-week
+ * Dataset nodes' isPartOf: the live index as @id, the name, and the
+ * concept DOI, so a round resolves to the dataset it belongs to and
+ * that dataset resolves to its citation.
+ */
+export function corpusDatasetRef(base: string): Record<string, unknown> {
+  return {
+    "@type": "Dataset",
+    "@id": `${base}/corpus.json`,
+    name: CORPUS_DATASET_NAME,
+    ...corpusDatasetIdentityFields(),
+  };
+}
+
 export function corpusDatasetIdentityFields(): {
   identifier: { "@type": "PropertyValue"; propertyID: "DOI"; value: string };
   sameAs: string[];

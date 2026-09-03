@@ -52,6 +52,8 @@ export interface SimplePageOptions {
    * pages the twin is the page's own path.
    */
   markdownAlt?: string;
+  /** Dates for the WebPage node, where a page is a dated record (the corrections ledger). */
+  dates?: { published?: string; modified?: string };
   /** A page's own social card; the keeper's dino at /og.png otherwise. */
   ogImage?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
@@ -166,6 +168,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
           path: options.path,
           title: options.title,
           description: options.description,
+          dates: options.dates,
         }),
       )}`
     : "";
