@@ -42,8 +42,10 @@ jobs:
       # supply-chain event.
       - name: The battery's own tests
         run: npm run listings:test
+      # pipefail, so tee cannot swallow the exit code that IS the alert.
       - name: Read the mirrors, the versions and the shelf
-        run: npm run listings:check | tee listings-reading.txt
+        shell: bash
+        run: set -o pipefail && npm run listings:check | tee listings-reading.txt
       - name: Keep the reading
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

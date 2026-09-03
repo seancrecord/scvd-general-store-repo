@@ -64,7 +64,10 @@ export function readNpm(json) {
 
 /** x402-list's service page: the JSON-LD WebAPI node carries the description and the offer count. */
 export function readX402List(html) {
-  const blocks = [...(html ?? "").matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  // The end-tag pattern allows anything but `>` after the tag name, as
+  // browsers do (CodeQL js/bad-tag-filter: a `</script >` the pattern
+  // missed would leave script text in what we parse as JSON-LD).
+  const blocks = [...(html ?? "").matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)];
   for (const block of blocks) {
     let parsed;
     try {
@@ -86,12 +89,20 @@ export function readX402List(html) {
   return { state: "unknown", note: "no WebAPI node in the page's JSON-LD" };
 }
 
-/** ClawHub's skill page: the version is read off the page if it names one in the frontmatter shape; else unknown. */
+/**
+ * ClawHub's skill page: the version is read only where the page
+ * labels one ("version 3.15.0", "v3.15.0" beside the skill's name),
+ * never the first dotted number after the name — the first live read
+ * (2026-09-03) took a "65.5.5" from somewhere else on the page and
+ * called it a difference. Anything looser is unknown (rule 52).
+ */
 export function readClawHub(html, skillName) {
   const text = html ?? "";
-  if (!text.includes(skillName)) return { state: "unknown", note: `the page does not name ${skillName}` };
-  const match = /\b(?:v|version[:\s]+)?(\d+\.\d+\.\d+)\b/.exec(text.slice(text.indexOf(skillName)));
-  if (!match) return { state: "unknown", note: "no version string near the skill name" };
+  const at = text.indexOf(skillName);
+  if (at < 0) return { state: "unknown", note: `the page does not name ${skillName}` };
+  const near = text.slice(at, at + 2000);
+  const match = /(?:\bversion\b[^0-9]{0,24}|\bv)(\d+\.\d+\.\d+)\b/i.exec(near);
+  if (!match) return { state: "unknown", note: "no labelled version near the skill name" };
   return { state: "read", version: match[1] };
 }
 

@@ -131,6 +131,9 @@ test("x402-list is read off its JSON-LD WebAPI node: description, offer count, a
 
 test("ClawHub and agentic.market readers say unknown rather than guess when the shape is not one they read", () => {
   assert.equal(readClawHub("<html>scvd-general-store v3.15.0</html>", "scvd-general-store").version, "3.15.0");
+  assert.equal(readClawHub("<html>scvd-general-store — Version: 3.15.0</html>", "scvd-general-store").version, "3.15.0");
+  // An unlabelled dotted number near the name is not the skill's version.
+  assert.equal(readClawHub("<html>scvd-general-store · 65.5.5 downloads · node 22.1.0</html>", "scvd-general-store").state, "unknown");
   assert.equal(readClawHub("<html>something else</html>", "scvd-general-store").state, "unknown");
   assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store", endpoints: [1, 2, 3] }] }, "scvd.store").endpoint_count, 3);
   assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store" }] }, "scvd.store").state, "unknown");

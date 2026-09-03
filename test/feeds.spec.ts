@@ -26,10 +26,15 @@ const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
 function parseFeed(xml: string): { ids: string[]; updated: string[]; links: string[] } {
-  const ids = [...xml.matchAll(/<entry>[\s\S]*?<id>([^<]+)<\/id>/g)].map((m) => m[1]!);
-  const updated = [...xml.matchAll(/<entry>[\s\S]*?<updated>([^<]+)<\/updated>/g)].map((m) => m[1]!);
-  const links = [...xml.matchAll(/<entry>[\s\S]*?<link rel="alternate" href="([^"]+)"\/>/g)].map((m) => m[1]!);
-  return { ids, updated, links };
+  // Split on the entry elements first, then read each field once; no
+  // pattern here spans two entries.
+  const entries = xml.split("<entry>").slice(1);
+  const field = (entry: string, pattern: RegExp): string => pattern.exec(entry)?.[1] ?? "";
+  return {
+    ids: entries.map((entry) => field(entry, /<id>([^<]+)<\/id>/)),
+    updated: entries.map((entry) => field(entry, /<updated>([^<]+)<\/updated>/)),
+    links: entries.map((entry) => field(entry, /<link rel="alternate" href="([^"]+)"\/>/)),
+  };
 }
 
 describe("derived from the record", () => {
