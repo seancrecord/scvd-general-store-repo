@@ -325,3 +325,19 @@ safety, this is the strongest true sentence we have.
   submission draft all carry the two new doors. The submission
   draft's "settles before it mints" line — stale since 2026-08-10 —
   was corrected the same day it was found.
+
+## 7. The listings, read by machine (2026-09-03)
+
+`npm run listings:check` reads every mirror the homepage's sameAs
+list names and says which generation of the store's words it
+carries, then reads every registry the store is listed on — the MCP
+registry, npm, ClawHub, x402-list, agentic.market — and compares
+version, description and door count against this tree and the live
+shelf. One row per fact; never a score; nothing written to any
+index. `.github/workflows/listings-check.yml` runs it every Saturday
+08:30 UTC with no dependencies and goes red on drift, which is the
+alert. The first read (2026-09-03) found the MCP registry one version
+behind on both servers with the pre-bump description, and x402-list
+carrying thirty-one of thirty-two doors without the doctrine sentence
+— exactly the drift this file recorded by hand on 2026-08-29, found
+by a cron this time.

@@ -295,7 +295,17 @@ Do not relitigate without you.
   now speak MCP 2026-07-28 beside the handshake revisions
   (`server/discover`, per-request `_meta`, cache hints), every
   tool shows a worked call, the tab's parameters are all
-  described. Nothing outside reads it until you press:
+  described. READ BY MACHINE 2026-09-03 (`npm run
+  listings:check`, roadmap V4): the registry lists
+  `general-store` 0.2.2 with the old description against
+  0.2.3 in `server.json`, and `tab` 0.5.0 against 0.11.1 —
+  npm already carries 0.11.1 (you pressed it 15:04 UTC), so
+  step 1 below is done and step 2 is the one left. The same
+  read found x402-list's copy without the doctrine sentence
+  and counting 31 doors of 32 (their resubmit, below).
+  ClawHub and agentic.market refuse the agent's egress; the
+  Saturday job reads them from CI. Nothing outside reads it
+  until you press:
   1. Actions → "Publish npm package" → `scvd-tab`, version
      `0.11.0`, dry run then real. The `--provenance` flag is
      in the workflow; a hand publish from the laptop is why

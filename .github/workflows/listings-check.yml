@@ -1,0 +1,53 @@
+# The mirrors and the versions, read weekly (2026-09-03, roadmap V4).
+#
+# Two questions about every index this store is listed on, asked by
+# machine every Saturday so the answers are on the desk before the
+# Sunday Grind: which generation of the store's words does each
+# mirror carry (scripts/lib/listings.mjs), and do the versions and
+# the door counts on each registry still match this tree and the
+# live shelf (scripts/lib/listing-versions.mjs). Drift there is
+# invisible from every surface the store serves.
+#
+# READ-ONLY. Nothing here writes to any index; press is the keeper's
+# (rule 30). A red run is the alert: a mirror that moved backwards or
+# a registry that no longer matches the repository.
+name: The listings
+
+on:
+  schedule:
+    # Saturdays 08:30 UTC, half an hour after the six doors.
+    - cron: "30 8 * * 6"
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/listings-check.mjs"
+      - "scripts/listings-check.test.mjs"
+      - "scripts/lib/listings.mjs"
+      - "scripts/lib/listing-versions.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # NO `npm ci`, DELIBERATELY: the checker and its tests use Node
+      # builtins and global fetch and nothing else. A weekly job that
+      # pulls a thousand packages to read eight web pages is a weekly
+      # supply-chain event.
+      - name: The battery's own tests
+        run: npm run listings:test
+      - name: Read the mirrors, the versions and the shelf
+        run: npm run listings:check | tee listings-reading.txt
+      - name: Keep the reading
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: listings-reading
+          path: listings-reading.txt
+          retention-days: 90
