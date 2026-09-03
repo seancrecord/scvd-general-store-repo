@@ -62,13 +62,13 @@ build, it is on the roadmap.
   month as `operator_statement`, your name, price and
   cadence (2026-09-02): four signed chain reads a day on a
   receiving address for 30 days, payers counted, never a
-  renewal. Skill bundle 3.15.0. ⚑ The copy on the row is
-  drafted for your ink, rule 7.
+  renewal. Skill bundle 3.15.0. The copy on the row is
+  inked (2026-09-03, the ink sheet, "im good with these").
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.
-  Human queue, a week's promise, one a week ⚑ drafted.
-  Skill bundle 3.14.0.
+  Human queue, a week's promise, one a week. The row copy
+  is inked (2026-09-03, the ink sheet). Skill bundle 3.14.0.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01.
@@ -125,28 +125,31 @@ Do not relitigate without you.
   the first three ship inside the window.
 - **The next builds, 2026-09-02, "On do that then."** After
   the SOON/LATER review: L6 (the look) first, then L7 (the
-  CI check for our fixtures). L6 shipped the same day. ⚑ The
+  CI check for our fixtures). L6 shipped the same day. The
   look's copy — the door's own document at `/api/look/v1`,
   the `look_at_door` tool description, the guide paragraph
-  and the atlas line — is drafted for your ink (rule 7).
+  and the atlas line — is inked (2026-09-03, the ink sheet).
   L7 shipped the same day: `action/preflight/`, used by
   path from this repository; a Marketplace listing is your
   press (rule 30) and is not needed for `uses:` to work.
 - **The next three, 2026-09-02, "Agreed do em."** In order:
   the statement on Solana (parity gap 1), Cairn's
   disagreement surface (rule 51), the observatory page
-  reading the porch. The first shipped the same night; ⚑
-  the two statements' row copy now names three rails and is
-  drafted for your ink. The second shipped the same night:
-  `/disagreements`, seeded with the X-PAYMENT entry. ⚑ Its
-  prose is drafted for your ink, and PRIVATE-FIRST applies to
+  reading the porch. The first shipped the same night; the
+  two statements' row copy is inked (2026-09-03, the ink
+  sheet; widened to seven chains the same day, item 14). The
+  second shipped the same night: `/disagreements`, seeded
+  with the X-PAYMENT entry. Its prose is inked (2026-09-03,
+  the ink sheet), and PRIVATE-FIRST applies to
   the page itself: tell Cairn the record exists before it is
   named anywhere outside this repo. Every future entry is your
   hand, from a named trigger. The third shipped the same night
   too: `/observatory`, the porch's counts read per surface and
-  month. RULE: whether it and `/disagreements` get a storefront
-  slot (both are off it, like the pulse). ⚑ Both pages' prose is
-  drafted for your ink. TEST when a Solana statement is
+  month. Both pages' prose is inked (2026-09-03, the ink
+  sheet). The storefront slot for both: ON, ruled 2026-09-03
+  ("go ahead and do those", reversing the sheet's default of
+  leave the same afternoon) — roadmap V1. TEST when a Solana
+  statement is
   bought: the RPC endpoint order is Helius then the public
   fallbacks, and a wallet with hundreds of USDC transfers in
   eleven hours will read window_unreadable by design — read
@@ -159,20 +162,24 @@ Do not relitigate without you.
   a door, and the JSON carries it as `embed`; `/operators`
   is the shelf from the seller's side in the order a launch
   happens, free first at each moment, prices read off the
-  shelf. ⚑ The four stage questions, the standfirst and the
-  "what this is not" paragraph on `/operators` are drafted
-  for your ink; so is the one-line note beside the paste
-  snippets. RULE: whether `/operators` gets a storefront slot
-  (off it, like its kin). LOOK once merged: open
+  shelf. The four stage questions, the standfirst, the
+  "what this is not" paragraph on `/operators` and the
+  one-line note beside the paste snippets are inked
+  (2026-09-03, the ink sheet). Storefront slot for
+  `/operators`: ON, ruled 2026-09-03 with item 11 (roadmap
+  V1). LOOK once merged: open
   `/passport/{a ready host}`, paste the Markdown into any
   README preview, and see the chip render and link back. The
   third shipped as its own PR: Ethereum, Arbitrum One, OP
   Mainnet and Avalanche C-Chain as reader chains — the
   statements, the receivability read and the canonical-USDC
   test now answer on them; the till, the bank walk and the
-  census do not move (PAYMENT_RAILS.md Part F). ⚑ The two
-  statements' shelf copy now names seven chains, drafted for
-  your ink. TEST when you can: buy `the_statement` with
+  census do not move (PAYMENT_RAILS.md Part F). The two
+  statements' shelf copy names seven chains, inked
+  (2026-09-03, the ink sheet); the rows' descriptions and
+  constraints were widened to match the same day (item 14,
+  read as the ink requiring it — reverse it with a word).
+  TEST when you can: buy `the_statement` with
   `network=arbitrum` on any busy wallet — no RPC host answers
   from the agent's environment, so the span and the public
   endpoints on all four chains have never met the network;
@@ -183,8 +190,8 @@ Do not relitigate without you.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit
-  offer on the shelf. $5 / free for proved-own. ⚑ ink the
-  draft, then roadmap N4. Spec:
+  offer on the shelf. $5 / free for proved-own. Inked
+  2026-09-03 (the ink sheet); roadmap N4 is DONE. Spec:
   `docs/PROVENANCE_CHECK_SPEC_2026-08.md`. Drafts:
   `docs/archive/POST_ROADMAP_SWEEP_2026-08.md` §B7.
 - **#82.** Paid audit to battery v2 everywhere. Dated
@@ -230,9 +237,17 @@ Do not relitigate without you.
 
 - **Rail run-through** (eleven checks, drafted against
   `docs/PROTOCOL_EXPANSION_2026-08.md`) and the
-  `PAYMENT_RAILS` vs cheap-door intake collision. ⚑ Both.
-  Roadmap L3 does not start without them.
-- **PROTOCOL_EXPANSION §11.** MPP wait-and-see. Chargeback.
+  `PAYMENT_RAILS` vs cheap-door intake collision. The eleven
+  checks are APPROVED as the standing gate (2026-09-03, the
+  ink sheet, item 12, "im good with these"). The collision
+  is still yours: which intake wins when they disagree was
+  not named, and the counterparty rule stands until it is.
+  Roadmap L3 does not start without that word.
+- **PROTOCOL_EXPANSION §11.** MPP wait-and-see on the TILL
+  stands; the READ-ONLY battery is GO (2026-09-03, "go ahead
+  and do those", reversing the sheet's default of wait the
+  same afternoon): designed first as roadmap V3, and you rule
+  on the design before code. Chargeback. Circle deeper vs Chargeback.
   Circle deeper vs listing-only. Gateway receivable cap.
   Sub-cent tier and mandate-desk price. One-liner goes
   cross-protocol before or after a second protocol runs
@@ -259,15 +274,15 @@ Do not relitigate without you.
   `test/first-screen.spec.ts`). Do not write a second
   one-liner per marketplace; the npm packages do not
   list items and need no republish for it.
-- **`/trust`, `/profiles` storefront slots.** Still held
-  off the front; `/passport` went on 2026-09-01 by your
-  ruling. Nod or leave.
-- **The Aura Walk, one ruling left.** ⚑ The copy on the row
-  (`src/store/menu.ts`, the description, the 402 line and the
-  constraints) is drafted; the price, the model rule and the
-  cap of one a week are yours already (cap ruled 2026-09-02,
-  "agreed"; raise to two after the first three ship inside
-  the window). Ink or edit, rule 7.
+- **`/trust`, `/profiles` storefront slots.** ON, ruled
+  2026-09-03 ("go ahead and do those", roadmap V1);
+  `/passport` went on 2026-09-01 by your ruling.
+- **The Aura Walk, nothing left to rule.** The copy on the
+  row (`src/store/menu.ts`, the description, the 402 line and
+  the constraints) is inked (2026-09-03, the ink sheet); the
+  price, the model rule and the cap of one a week were yours
+  already (cap ruled 2026-09-02, "agreed"; raise to two after
+  the first three ship inside the window).
 - **The Aura Walk, the first order.** TEST: when one lands,
   `/admin` prints the door under "Door to walk" and the
   buyer's detail under it. The passes are your machines and

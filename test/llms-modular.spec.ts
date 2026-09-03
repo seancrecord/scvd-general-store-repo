@@ -569,7 +569,15 @@ const BASE = "https://scvd.store";
  * once in the opening, the second byline piece (dev.to) in "Words
  * people use", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the THIRTY-NINTH — by the keeper confirming
+ * Re-taken 2026-09-03 — the THIRTY-NINTH — by the keeper's ink on
+ * the ink sheet ("im good with these"): the two statements' row copy
+ * widened to the four reader chains in the constraints and the
+ * descriptions that ride the guide's menu section, keeping the
+ * network= vocabulary the door reads. Confirmed before this value
+ * was taken: the guide carries "network=eip155:137" and "Ethereum,
+ * Arbitrum, Optimism or Avalanche", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTIETH — by the keeper confirming
  * the dev.to piece's title against the page, full stop included: the
  * byline line in "Words people use" carries WRITTEN_ABOUT titles
  * verbatim, so one character in the constant is one new digest.
@@ -582,7 +590,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "eec14adc00b5ae261781f020d731edd76c234b79626f396ff1009c9517191d38";
+  "51b2b12b957a68ce15c3dd00e842bc15d09dd4f7c19e821865a742e28e432b65";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
