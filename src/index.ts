@@ -187,7 +187,11 @@ app.use("*", async (c, next) => {
     (method === "GET" || method === "HEAD") &&
     url.pathname.length > 1 &&
     url.pathname.endsWith("/") &&
-    !url.pathname.startsWith("/api/")
+    !url.pathname.startsWith("/api/") &&
+    // The MCP door answers its own trailing slash with a 308 so a
+    // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
+    // same 308 for the same reason, and this middleware stays out.
+    !url.pathname.startsWith("/mcp")
   ) {
     url.pathname = url.pathname.replace(/\/+$/, "") || "/";
     return c.redirect(url.toString(), 301);
