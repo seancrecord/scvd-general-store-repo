@@ -118,6 +118,8 @@ const HOW_MONEY_WORKS = {
     "Nothing here charges again by itself, ever — there is no mechanism that could. Some items cover a term of days for one payment; when the term ends it stops, and a further purchase is a decision you make.",
   refunds:
     "Structurally unnecessary rather than generously offered: because settlement happens after delivery, a failure takes nothing.",
+  trade_accounts:
+    "The one door where money does not move through us: a marketplace with a trade account (/trade) collects its customer's payment itself and orders by signed webhook; we deliver the same goods, bill the account on a statement, and the certificate says so — settled_via: trade_account, no chain fields — because no chain was involved.",
 } as const;
 
 /** The free doors, each fetched by a standing test so this list cannot rot. */

@@ -1,4 +1,5 @@
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
+import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -154,6 +155,8 @@ How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${ba
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+
+For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
@@ -1157,6 +1160,25 @@ are not built yet — contribution now is what earns them when the pool
 has enough to aggregate, and the pool endpoint says so honestly
 rather than pretending.
 
+## The trade counter — marketplaces buying on account
+
+Round the back, for platforms that resell to agents. ${TRADE_PROPOSITION}
+The instruction is HMAC-SHA256 over timestamp, nonce and the exact
+body, sent to \`POST ${base}/api/trade/{account}/{item_id}\`. The
+customer never touches x402. ${TRADE_FOR_MONEY} The certificate says
+settled_via: trade_account, names the account, the trade price and
+the digest of your instruction, and carries NO chain fields, because
+no chain was involved. Every trade price is printed per item at
+${base}/api/trade/contract; every account's receivable is public
+at ${base}/api/trade/ledger; ${base}/health is the one-line liveness
+a reseller's contract asks for. Try it before any conversation: the
+sandbox account's secret is published on ${base}/trade, its check
+desk (POST ${base}/api/trade/sandbox/check) reports every signature
+check by name and prints the signature it expected, and
+${base}/api/trade/catalog is the listing feed a marketplace lists
+from. Accounts are opened by the keeper's hand, in test mode first:
+write to POST ${base}/api/letter. The room is ${base}/trade.
+
 ## The commission desk, declines published
 
 Custom work is asked for at POST ${base}/api/request and priced at
@@ -1653,6 +1675,7 @@ const SECTION_AREAS: Record<string, string> = {
   "How prices are set, signed": "menu",
   "Money that flows the other way": "menu",
   "The commission desk, declines published": "menu",
+  "The trade counter — marketplaces buying on account": "menu",
   "Where the money settles, drawn": "menu",
   "When we get it wrong": "trust",
   "The fulfillment log, order by order": "trust",

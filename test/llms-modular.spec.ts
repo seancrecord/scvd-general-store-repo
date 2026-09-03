@@ -645,12 +645,30 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
  * and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-EIGHTH — by the keeper's greenlight on
+ * the Trade Counter ("lets build it out ... we sell as a product"):
+ * a "For marketplaces reselling the shelf" line in "Every door, in
+ * one list" naming /trade, /trade.json, /api/trade/contract,
+ * /api/trade/ledger and /health, and a new section "The trade
+ * counter — marketplaces buying on account" filed under the menu
+ * area. Confirmed before this value was taken: the guide carries
+ * "settled_via: trade_account" and "never touches x402", and still
+ * every earlier pin.
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's "agreed
+ * lets do them all" on the counter's second pass: the sandbox check
+ * desk and the listing feed join the door line, and the section now
+ * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
+ * TRADE_FOR_MONEY), which test/feature-surfaces.spec.ts holds
+ * identical across the page, the twin and this guide. Confirmed
+ * before this value was taken: the guide carries "bill your account
+ * on a statement" and "rounded up to the cent", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1b0a7b82c268ba341cb9dadd8a577cf1c5312f9cadb76d7572b4cab1bae687ec";
+  "50cf2a88f2106b7e3fbddc9d9eac353a13c693a436a8d231cae2965c718dc22b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -4,8 +4,41 @@
  */
 import type { MakerMark } from "@/store/provenance";
 
+/**
+ * WHAT A TRADE-ACCOUNT SALE SETTLED AS (services/trade-counter.ts).
+ * Carried on SettledPayment in place of a chain transaction, so the
+ * fulfillment path can mint the honest certificate without learning
+ * anything about marketplaces. `net_usd` is what the store is owed
+ * after the partner's share; `trade_price_usd` is the listed trade
+ * price the partner bills against. Both integer-cent exact.
+ */
+export interface TradeSettlement {
+  partner: string;
+  partner_name: string;
+  mode: "live" | "test";
+  trade_price_usd: number;
+  net_usd: number;
+  partner_share_bps: number;
+  instruction_digest: string;
+  order_ref?: string;
+}
+
 export interface Env {
   ORDERS: KVNamespace;
+  /**
+   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the one binding in
+   * this store that is neither KV nor R2, and the reason is stated in
+   * services/trade-nonces.ts: a replay guard with no on-chain backstop
+   * cannot live on an eventually consistent store. OPTIONAL and
+   * flag-gating: unbound, every trade door answers 503 and nothing
+   * else changes. The per-partner secrets are read by name —
+   * TRADE_SECRET_<PARTNER>, TRADE_SECRET_<PARTNER>_PREVIOUS,
+   * TRADE_PROVIDER_KEY_<PARTNER> — set with `wrangler secret put`,
+   * never in this file (store/trade-counter.ts names the rows).
+   */
+  TRADE_NONCES?: DurableObjectNamespace<
+    import("@/services/trade-nonces").TradeNonceStore
+  >;
   /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the
    * probes read when a target fails, to tell our outage from theirs.
@@ -423,6 +456,25 @@ export interface Certificate {
   network?: string;
   payer?: string;
   settlement_tx?: string;
+  /**
+   * THE TRADE COUNTER'S FOUR (2026-09-03, services/trade-counter.ts).
+   * A sale that came in through a marketplace's trade account was
+   * PAID TO THE MARKETPLACE, off-chain, in whatever they collect in;
+   * this store saw no payment and signs none. So none of the money
+   * fields above are written on such a certificate — a `network` on
+   * a sale no chain carried would be the exact false claim rules 45
+   * and 52 exist to catch — and these four say what actually
+   * happened instead: which account, at what listed trade price, on
+   * which signed instruction. `trade_instruction` is the sha256 of
+   * the partner's signed string (timestamp, nonce, body), so a
+   * dispute ties this receipt to ONE instruction they signed.
+   * `trade_account_test` marks a delivery made while the account was
+   * in test mode: real signature, real goods, no receivable booked.
+   */
+  settled_via?: "trade_account" | "trade_account_test";
+  trade_partner?: string;
+  trade_price_usd?: number;
+  trade_instruction?: string;
   /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so the existing /api/verify answers for the

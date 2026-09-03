@@ -15,8 +15,7 @@ import type {
   Certificate,
   CertificateRecord,
   Env,
-  PatronRecord,
-} from "@/types";
+  PatronRecord, TradeSettlement } from "@/types";
 
 /**
  * Every purchase mints: a sequential patron number, a signed certificate,
@@ -128,6 +127,14 @@ export interface MintOptions {
    * is what every such settle was.
    */
   network?: string;
+  /**
+   * A TRADE-ACCOUNT SALE (services/trade-counter.ts, 2026-09-03). When
+   * present, the four trade fields are written and the money fields
+   * above are NOT — the caller passes no paidUsdc, and the guard on
+   * paid_usdc below means no asset, network, payer or settlement_tx
+   * can appear on a certificate no chain carried.
+   */
+  trade?: TradeSettlement;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -181,6 +188,13 @@ export async function mintCertificate(
   }
   if (options.settlementTx) {
     certificate.settlement_tx = options.settlementTx;
+  }
+  if (options.trade) {
+    certificate.settled_via =
+      options.trade.mode === "test" ? "trade_account_test" : "trade_account";
+    certificate.trade_partner = options.trade.partner;
+    certificate.trade_price_usd = options.trade.trade_price_usd;
+    certificate.trade_instruction = options.trade.instruction_digest;
   }
   if (options.witness) {
     certificate.note = WITNESS_NOTE;

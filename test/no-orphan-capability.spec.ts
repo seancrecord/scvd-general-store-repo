@@ -114,6 +114,13 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/till.js":
     "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
 
+  // ---- the trade counter's per-account doors: the probe drops the
+  // account segment, so the listed paths never match it ----
+  "/api/trade/check":
+    "the check desk sits at /api/trade/{account}/check; openapi.json lists it under that template and llms.txt names the sandbox's at /api/trade/sandbox/check — the probe's derivation drops the account segment, so no listing can contain it",
+  "/api/trade/statement":
+    "the statement sits at /api/trade/{account}/statement, listed under that template in openapi.json and named in the trade section of llms.txt; same derivation, same reason as the check desk above",
+
   // ---- the porch toy ----
   "/api/treat":
     "free, unmetered, named in prose on /porch where its audience actually is; the paid surfaces list paid capabilities",

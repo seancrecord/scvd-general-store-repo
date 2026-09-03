@@ -318,7 +318,9 @@ function receiptPageHtml(
   const money =
     cert.paid_usdc !== undefined
       ? `$${cert.paid_usdc} ${cert.asset ?? "USDC"}${cert.tip_usdc ? ` (includes $${cert.tip_usdc} tip)` : ""}`
-      : "Free shelf — no payment moved";
+      : cert.settled_via
+        ? `Trade account — ${cert.trade_partner ?? "a marketplace"} collected its customer's payment; none reached this store`
+        : "Free shelf — no payment moved";
   const explorer = cert.settlement_tx
     ? cert.network && cert.network.startsWith("solana")
       ? `https://solscan.io/tx/${cert.settlement_tx}`
@@ -342,6 +344,7 @@ function receiptPageHtml(
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${explorer}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
+      ${cert.settled_via ? row("How it was paid for", `Trade account <strong>${escapeHtml(cert.trade_partner ?? "")}</strong>${cert.settled_via === "trade_account_test" ? " (test mode: nothing booked)" : ""}, listed trade price $${escapeHtml(String(cert.trade_price_usd ?? ""))}. <span class="menu-meta">The marketplace collected its customer's payment; this store saw none and names no chain. Refunds go through the account holder, who took the payment. Instruction digest <code>${escapeHtml(cert.trade_instruction ?? "")}</code>.</span>`) : ""}
       ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
     </section>
     ${cert.from_the_store ? `<section><p class="menu-desc"><em>${escapeHtml(cert.from_the_store)}</em> — the store</p></section>` : ""}

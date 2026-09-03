@@ -13,6 +13,7 @@ import {
   buyRoutes,
   commissionRoutes,
   tabPoolRoutes,
+  tradeCounterRoutes,
   catalogRoutes,
   directoryRoutes,
   trainRoutes,
@@ -451,6 +452,13 @@ app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);
 app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
+/*
+ * THE TRADE COUNTER (2026-09-03): the marketplaces' signed door, the
+ * room, the terms, the ledger and /health. Mounted here and NOT under
+ * /api/buy, so the payment gate never sees a trade order and there is
+ * no bypass to get wrong.
+ */
+app.route("/", tradeCounterRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
 app.route("/", practiceCounterRoutes);
@@ -833,6 +841,26 @@ const worker: ExportedHandler<Env> = {
             ),
         ),
       );
+      /**
+       * THE TRADE RECEIVABLE'S AGING WATCH rides the Sunday press too
+       * (rule 41's other side, 2026-09-03): a live trade account whose
+       * oldest unpaid delivery has stood past the statement window
+       * pages the keeper once a week, by name, with the figure. A
+       * receivable nobody is chasing is a liability with the sign
+       * flipped, and it rots the same way.
+       */
+      ctx.waitUntil(
+        import("@/services/trade-counter").then(({ tradeReceivableWatch }) =>
+          tradeReceivableWatch(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `Trade receivable watch failed: ${String(error)}`,
+              }),
+          ),
+        ),
+      );
       ctx.waitUntil(compileDigest(env));
       // Weekly Gazette self-drafting retired 2026-08-05 (keeper's
       // ruling: duplicative of the Almanac, standing maintenance the
@@ -1174,3 +1202,10 @@ export default worker;
  * this.
  */
 export { app };
+/*
+ * THE TRADE COUNTER'S NONCE STORE. A Durable Object class has to be a
+ * named export of the Worker's main module for the binding in
+ * wrangler.jsonc to find it; the class itself lives with the service
+ * it serves.
+ */
+export { TradeNonceStore } from "@/services/trade-nonces";

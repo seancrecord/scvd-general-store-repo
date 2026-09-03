@@ -356,6 +356,7 @@ facilitator and all current client libraries speak v2.
 | `/agents.md` | The scannable contract index for agents |
 | `/conformance` | The conformance desk's own room: what it checks, worked examples |
 | `/corpus` | The corpus in plain language: the census finding, how to verify a round |
+| `/trade` | The trade counter: marketplaces resell the shelf on account by signed webhook, billed on a statement — `TRADE_COUNTER.md` |
 | `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |

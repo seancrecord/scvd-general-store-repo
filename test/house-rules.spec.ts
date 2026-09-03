@@ -69,15 +69,17 @@ describe("the house rules stay citable", () => {
       expect(numbers[index]!).toBeGreaterThan(numbers[index - 1]!);
     }
 
-    // The highest number is the newest rule, and rule 59 is the newest
-    // (2026-09-01, the reader's limits as part of the contract; 57 and
+    // The highest number is the newest rule, and rule 60 is the newest
+    // (2026-09-03, every outward surface consumable, findable, one
+    // proposition — the feature register; 59 on 2026-09-01 was the
+    // reader's limits as part of the contract; 57 and
     // 58, findability for agents and for people, were adopted together
     // on 2026-08-29 from the same two sentences of the keeper's).
     // (24-28 and 47-49 never existed: the early numbering ran per
     // section, and rule 50 skipped ahead on the keeper's instruction.
     // A gap is history; the loop above still bans a duplicate or a
     // decrease, which are the ambiguities that matter.)
-    expect(Math.max(...numbers)).toBe(59);
+    expect(Math.max(...numbers)).toBe(60);
   });
 
   it("dates every rule added or amended since the practice began", () => {

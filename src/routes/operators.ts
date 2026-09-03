@@ -106,6 +106,7 @@ operatorsRoutes.get("/operators", (c) => {
       what_this_is_not: NOT,
       all_items: `${base}/menu.json`,
       how_paying_works: `${base}/how-it-works`,
+      if_you_resell_rather_than_run_a_door: `${base}/trade`,
     });
   }
   const sections = rows
@@ -135,7 +136,7 @@ operatorsRoutes.get("/operators", (c) => {
       ${sections}
       <section>
         <p class="menu-desc"><strong>${escapeHtml(NOT)}</strong></p>
-        <p class="menu-meta">The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
+        <p class="menu-meta">The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. If you resell to agents rather than run a door of your own, the same shelf sells on account at <a href="/trade">the trade counter</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),
   );

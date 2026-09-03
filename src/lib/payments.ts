@@ -33,7 +33,7 @@ import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
-import type { Env, MenuItem } from "@/types";
+import type { TradeSettlement, Env, MenuItem } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import { decodeBase64Json } from "@/lib/base64-json";
 
@@ -1419,6 +1419,13 @@ export interface SettledPayment {
   network?: string;
   /** PAYMENT-RESPONSE header to attach to the final response. */
   settleHeaders: Record<string, string>;
+  /**
+   * Present ONLY on a trade-account sale (services/trade-counter.ts):
+   * the marketplace collected the money, so there is no transaction
+   * to name and `transaction` is the empty string. Fulfillment reads
+   * this to mint the honest certificate instead of a chain receipt.
+   */
+  trade?: TradeSettlement;
 }
 
 /**

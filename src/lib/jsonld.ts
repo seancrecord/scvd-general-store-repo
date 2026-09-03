@@ -46,6 +46,17 @@ export const JSONLD_PRICE_CURRENCY = "USD";
 export const JSONLD_ACCEPTED_PAYMENT =
   "USDC over x402 v2 on Base, Polygon or Solana";
 
+/**
+ * THE ONE PRICED OFFER THAT IS NOT PAID OVER x402 (2026-09-03): the
+ * trade counter's. A marketplace is billed on a statement, in the
+ * store's own dollars, and a buyer reading that Offer must not be
+ * told USDC over x402 — that is the front door's truth, not this
+ * one's. The currency guard accepts exactly these two sentences and
+ * nothing in between.
+ */
+export const JSONLD_TRADE_ACCEPTED_PAYMENT =
+  "Billed to a marketplace trade account on a statement (scvd.store/trade); not paid over x402";
+
 /** The fields every priced Offer carries: an ISO code and the asset in words. */
 export function offerCurrencyFields(): {
   priceCurrency: string;

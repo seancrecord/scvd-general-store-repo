@@ -236,6 +236,25 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
        * the one it can.
        */
       apiEntry({
+        anchor: `${base}/api/trade/contract`,
+        title: `${STORE_SERVICE_NAME} — trade counter (marketplace reseller accounts)`,
+        desc: [
+          {
+            href: `${base}/api/trade/contract`,
+            type: "application/json",
+            title:
+              "The trade contract: the signed order door, the signing dialects, the pricing rule with every price derived, every account's row, every refusal by name",
+          },
+          {
+            href: `${base}/openapi.json`,
+            type: "application/openapi+json;version=3.1",
+            title: "OpenAPI 3.1 contract, the trade doors included",
+          },
+        ],
+        doc: [{ href: `${base}/trade`, type: "text/html", title: "The Trade Counter" }],
+        status: [{ href: `${base}/health`, type: "application/json", title: "Liveness, one line" }],
+      }),
+      apiEntry({
         anchor: `${base}/.well-known/a2a.json`,
         title: `${STORE_SERVICE_NAME} — A2A agent card`,
         desc: [
