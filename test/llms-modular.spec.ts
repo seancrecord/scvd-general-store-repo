@@ -525,16 +525,24 @@ const BASE = "https://scvd.store";
  * Re-taken 2026-09-02 — the THIRTY-SECOND — by the statement on
  * Solana (SOLANA_PARITY gap 1): the two statements' shelf copy names
  * three rails and the unit their window counts in, and the shelf copy
- * rides into the guide's menu section. Confirmed before this value was
- * taken: the guide carries "network=solana" and "slots on Solana", and
- * still every earlier pin.
+ * rides into the guide's menu section.
+ *
+ * Re-taken 2026-09-02 — the THIRTY-THIRD and THIRTY-FOURTH, one
+ * commit — by the disagreement record (house rule 51: one paragraph
+ * under "When we get it wrong" naming /disagreements, the four
+ * states, and that we do not put another instrument on a timer) and
+ * by the observatory (one sentence after the porch's, naming
+ * /observatory and that every number there is a floor). Confirmed
+ * before this value was taken: the guide carries "/disagreements",
+ * "never published as settled" and "/observatory", and still every
+ * earlier pin.
  *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "358ab24f83248423a0e511e23f66d61a66b70dfa0cd4db9211127bf8401d559e";
+  "ffc1ef49cfca79f6e5318ae24fdf50303927f6c4e1fca60720b49640e9ea3f52";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

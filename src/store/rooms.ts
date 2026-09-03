@@ -175,6 +175,20 @@ export const ROOMS: readonly Room[] = [
   { path: "/neighbours", name: "What we bought from the neighbours" },
   { path: "/stack", name: "What this store rests on" },
   { path: "/corrections", name: "Corrections" },
+  /*
+   * The disagreement record, 2026-09-02 (house rule 51): where this
+   * store's reading and another instrument's diverge, both stand with
+   * their derivations. Off the storefront on the same terms as its
+   * kin until the keeper rules on a slot; every agent-read surface
+   * carries it from day one.
+   */
+  { path: "/disagreements", name: "Disagreements", on_storefront: false },
+  /*
+   * The observatory, 2026-09-02: the porch's counts, read. Per month,
+   * per surface, in name order and never by count. Off the storefront
+   * on the same terms as the pulse until the keeper rules on a slot.
+   */
+  { path: "/observatory", name: "The observatory", on_storefront: false },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

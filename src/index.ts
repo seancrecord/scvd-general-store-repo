@@ -36,6 +36,8 @@ import {
   neighboursRoutes,
   stackRoutes,
   correctionsRoutes,
+  disagreementsRoutes,
+  observatoryRoutes,
   visitorsRoutes,
   trustListRoutes,
   refundRoutes,
@@ -375,6 +377,8 @@ app.route("/", houseLedgerRoutes);
 app.route("/", neighboursRoutes);
 app.route("/", stackRoutes);
 app.route("/", correctionsRoutes);
+app.route("/", disagreementsRoutes);
+app.route("/", observatoryRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);

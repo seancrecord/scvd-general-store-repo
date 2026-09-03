@@ -117,6 +117,9 @@ trustRoutes.get("/trust", async (c) => {
       stated; the surface indexers read beside the signing key.</li>
       <li><a href="/corrections">When we get it wrong</a> and
       <a href="/attestation">what we sign</a> — the standing terms.</li>
+      <li><a href="/disagreements">Disagreements</a> — where our reading
+      and another instrument's diverge, both readings with their
+      derivations; neither authoritative over the other (house rule 51).</li>
     </ul>
     <p class="menu-meta">Verification of any artifact:
     <code>${escapeHtml(base)}/api/verify/{id}</code> — free, no account,
