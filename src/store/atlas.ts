@@ -259,6 +259,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     caution: "A reading order, not a recommendation to buy. Nothing there scores or certifies a door.",
   },
   {
+    path: "/a2a",
+    name: "The evidence agent (A2A)",
+    access: "free",
+    method: "POST",
+    purpose: "Hand this store a task the A2A way: message/send with { task, …input } for preflight_endpoint, verify_receipt or get_endpoint_readiness; one bounded artifact back. The card is at /.well-known/agent-card.json.",
+    caution: "Evidence, never a judgment: it does not say whether to pay, which door to use, or whether a merchant can be trusted. Read-only and free; the paid instruments stay x402 doors.",
+  },
+  {
     path: "/corpus/month",
     name: "The state of x402, by month",
     access: "free",

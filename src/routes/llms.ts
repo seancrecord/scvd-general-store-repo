@@ -314,6 +314,14 @@ every round's counts summed as door-weeks and labelled apart, defects
 by name, the month before beside it, and a stable address per month at
 \`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
 
+If you delegate rather than call: the evidence agent at ${base}/a2a
+speaks A2A — POST JSON-RPC message/send with one data part holding
+{ task, ...input } — and answers three read-only tasks with one
+bounded artifact each: preflight_endpoint, verify_receipt,
+get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
+It never says whether to pay or whom to trust; it hands back evidence
+with what it does not establish stated.
+
 If you poll rather than read: ${base}/feeds lists four Atom feeds,
 each derived when fetched from the same record the pages read —
 ${base}/feeds/brief.xml (the week's doors, one entry per signed week),
