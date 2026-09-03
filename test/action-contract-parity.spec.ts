@@ -28,8 +28,9 @@ describe("the action contract is one contract on every surface", () => {
     expect(menu.items.length).toBe(MENU_ITEMS.length);
     for (const item of menu.items) {
       const page = await (await SELF.fetch(`${BASE}/menu/${item.id}`, { headers: { Accept: "text/html" } })).text();
-      const unescape = (s: string) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-      const text = unescape(page);
+      // One pass over the entities, so "&amp;lt;" decodes once, to "&lt;", never twice.
+      const ENTITIES: Record<string, string> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
+      const text = page.replace(/&(?:amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m] ?? m);
       for (const key of ["attests", "input", "output", "cryptography", "verify", "price_and_fulfilment", "does_not_attest"]) {
         const value = item.at_a_glance[key];
         expect(value, `${item.id}: menu.json at_a_glance lacks ${key}`).toBeTruthy();
