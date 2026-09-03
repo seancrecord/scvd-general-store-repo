@@ -395,6 +395,18 @@ export function redactRpc(url: string): string {
  */
 const RPC_ATTEMPTS = 3;
 const RPC_BACKOFF_MS = [150, 450];
+/**
+ * How long one provider gets to answer one call before it counts as
+ * not answering (2026-09-03, the keeper's question when the reader
+ * chains landed: "isnt going to make latency super slow is it").
+ * Until today a call had no ceiling of its own: a public endpoint
+ * that accepted the socket and never answered held the caller for
+ * as long as the platform allowed, and with six chains readable the
+ * paid audit could meet six such endpoints in a row. A stalled
+ * provider is now a transport failure at this many milliseconds,
+ * and the rotation moves on — the same rule a 5xx gets.
+ */
+export const RPC_TIMEOUT_MS = 8_000;
 
 /** An HTTP status from a provider, kept typed so the retry loop can
  * tell "the key/request is refused" from "the wire hiccuped". */
@@ -471,6 +483,7 @@ async function rpc<T>(
       method: "POST",
       headers: outboundHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      signal: AbortSignal.timeout(RPC_TIMEOUT_MS),
     });
     if (!response.ok) {
       throw new RpcHttpError(

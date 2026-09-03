@@ -78,16 +78,29 @@ export async function checkEvmReceivable(
   const blacklisted: string[] = [];
   const clear: string[] = [];
   const unread: string[] = [];
-  for (const { chain, payTo } of targets) {
-    try {
-      if (await usdcBlacklisted(env, chain, payTo)) {
-        blacklisted.push(`${payTo} (${chain.label})`);
-      } else {
-        clear.push(`${payTo} (${chain.label})`);
+  /*
+   * ONE READ PER CHAIN, ALL AT ONCE (2026-09-03). A door may advertise
+   * every EVM chain the reader knows; six serial reads against six
+   * public endpoints was six waits in a row. The reads are
+   * independent — a different contract on a different chain — so
+   * they run together and the audit waits for the slowest one, not
+   * the sum. Results keep the offer's order so the advisory text is
+   * stable across runs.
+   */
+  const reads = await Promise.all(
+    targets.map(async ({ chain, payTo }) => {
+      const label = `${payTo} (${chain.label})`;
+      try {
+        return { label, state: (await usdcBlacklisted(env, chain, payTo)) ? "blacklisted" : "clear" } as const;
+      } catch {
+        return { label, state: "unread" } as const;
       }
-    } catch {
-      unread.push(`${payTo} (${chain.label})`);
-    }
+    }),
+  );
+  for (const read of reads) {
+    if (read.state === "blacklisted") blacklisted.push(read.label);
+    else if (read.state === "clear") clear.push(read.label);
+    else unread.push(read.label);
   }
 
   const advisories: PreflightAdvisory[] = [];
