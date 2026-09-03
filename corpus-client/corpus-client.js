@@ -24,6 +24,13 @@ export const DOORS = Object.freeze({
 });
 
 const UA = "scvd-corpus-client (+https://scvd.store/corpus)";
+/** Trailing slashes off an origin, without a regular expression over caller input. */
+function trimSlashes(value) {
+  let end = String(value).length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return String(value).slice(0, end);
+}
+
 
 export class CorpusHttpError extends Error {
   constructor(path, status, body) {
@@ -35,7 +42,7 @@ export class CorpusHttpError extends Error {
 }
 
 async function getJson(base, path, fetchImpl, timeoutMs) {
-  const response = await fetchImpl(`${base.replace(/\/+$/, "")}${path}`, {
+  const response = await fetchImpl(`${trimSlashes(base)}${path}`, {
     headers: { accept: "application/json", "user-agent": UA },
     signal: AbortSignal.timeout(timeoutMs),
   });

@@ -16,8 +16,15 @@
  *   SCVD_MCP_UPSTREAM  the door to forward to (default https://scvd.store/mcp/verifier)
  */
 import { createInterface } from "node:readline";
+/** Trailing slashes off an origin, without a regular expression over caller input. */
+function trimSlashes(value) {
+  let end = String(value).length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return String(value).slice(0, end);
+}
 
-export const UPSTREAM = (process.env.SCVD_MCP_UPSTREAM ?? "https://scvd.store/mcp/verifier").replace(/\/+$/, "");
+
+export const UPSTREAM = trimSlashes(process.env.SCVD_MCP_UPSTREAM ?? "https://scvd.store/mcp/verifier");
 export const SERVER_INFO = { name: "scvd-mcp-starter", title: "scvd x402 verifier (starter)", version: "0.1.0" };
 const PROTOCOL = "2025-11-25";
 

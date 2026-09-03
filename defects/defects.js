@@ -16,6 +16,13 @@
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
+/** Trailing slashes off an origin, without a regular expression over caller input. */
+function trimSlashes(value) {
+  let end = String(value).length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return String(value).slice(0, end);
+}
+
 /** @type {{ version: string, classes: any[], evidence_labels: any[], changelog: any[], url: string }} */
 const SNAPSHOT = require("./defects.json");
 
@@ -51,7 +58,7 @@ export function byDetectability() {
 
 /** The live vocabulary. */
 export async function fetchLatest({ base = "https://scvd.store", fetch: fetchImpl = fetch, timeoutMs = 30_000 } = {}) {
-  const response = await fetchImpl(`${base.replace(/\/+$/, "")}/defects.json`, { headers: { accept: "application/json", "user-agent": "scvd-defects (+https://scvd.store/defects)" }, signal: AbortSignal.timeout(timeoutMs) });
+  const response = await fetchImpl(`${trimSlashes(base)}/defects.json`, { headers: { accept: "application/json", "user-agent": "scvd-defects (+https://scvd.store/defects)" }, signal: AbortSignal.timeout(timeoutMs) });
   if (!response.ok) throw new Error(`/defects.json answered ${response.status}`);
   return response.json();
 }

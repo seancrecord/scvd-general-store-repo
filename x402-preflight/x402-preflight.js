@@ -24,6 +24,13 @@ export const EXIT = Object.freeze({ ok: 0, verdictNegative: 1, usage: 2, unreach
 export const SEVERITY = Object.freeze(["ready", "refused", "unreachable", "not_ready"]);
 
 const USER_AGENT = "x402-preflight (+https://scvd.store/api/preflight/v2)";
+/** Trailing slashes off an origin, without a regular expression over caller input. */
+function trimSlashes(value) {
+  let end = String(value).length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return String(value).slice(0, end);
+}
+
 
 /**
  * One probe, through the store, with the response kept whole.
@@ -34,7 +41,7 @@ const USER_AGENT = "x402-preflight (+https://scvd.store/api/preflight/v2)";
 export async function preflightOne(url, { base = DEFAULT_BASE, fetch: fetchImpl = fetch, timeoutMs = 30_000 } = {}) {
   let response;
   try {
-    response = await fetchImpl(`${base.replace(/\/+$/, "")}/api/preflight/${BATTERY}`, {
+    response = await fetchImpl(`${trimSlashes(base)}/api/preflight/${BATTERY}`, {
       method: "POST",
       headers: { "content-type": "application/json", "user-agent": USER_AGENT, accept: "application/json" },
       body: JSON.stringify({ url }),
