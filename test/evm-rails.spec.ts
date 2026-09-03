@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ARBITRUM_EVM,
   AVALANCHE_EVM,
@@ -8,8 +8,10 @@ import {
   EVM_CHAINS,
   OPTIMISM_EVM,
   POLYGON_EVM,
+  RPC_TIMEOUT_MS,
   WALKED_EVM_CHAINS,
   evmChainOf,
+  getBlockNumber,
   rpcEndpoints,
 } from "@/lib/base-rpc";
 import { KNOWN_CHAINS } from "@/evidence/subject";
@@ -184,5 +186,28 @@ describe("the consumers derive", () => {
     // A chain the store does not read still yields nothing — no guess.
     expect(evmUsdcPayTos([{ ...accepts[0], network: "eip155:56" }] as never)).toEqual([]);
     expect(challengePriceOf([{ ...accepts[0], asset: "0x" + "1".repeat(40) }])).toBeNull();
+  });
+});
+
+describe("the ceiling on one call", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("every RPC call carries a timeout signal, on every chain, and the ceiling is a named number", async () => {
+    expect(RPC_TIMEOUT_MS).toBeGreaterThan(0);
+    const signals: unknown[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { signal?: unknown }) => {
+        signals.push(init?.signal);
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x10" }), {
+          headers: { "content-type": "application/json" },
+        });
+      }),
+    );
+    for (const chain of EVM_CHAINS) {
+      expect(await getBlockNumber({} as Env, chain)).toBe(16);
+    }
+    expect(signals).toHaveLength(EVM_CHAINS.length);
+    for (const signal of signals) expect(signal).toBeInstanceOf(AbortSignal);
   });
 });
