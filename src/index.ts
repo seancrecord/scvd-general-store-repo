@@ -211,7 +211,15 @@ app.use("*", async (c, next) => {
  * facilitator, the chain), not the CPU. The cold marker is the exact
  * fact; the number is the honest floor.
  */
-const isolateBornAt = Date.now();
+/*
+ * Born on the FIRST REQUEST, not at the top of the script: the Workers
+ * clock reads zero during script initialisation, so a Date.now() taken
+ * here printed the epoch as the isolate's age (found on the live 402
+ * within minutes of deploying it, 2026-09-03). The age is therefore
+ * seconds since this isolate first answered, which is the figure
+ * anyone reading the header wanted anyway.
+ */
+let isolateBornAt: number | null = null;
 let requestsServedByThisIsolate = 0;
 
 app.use("*", async (c, next) => {
@@ -239,6 +247,7 @@ app.use("*", async (c, next) => {
   const coldIsolate = requestsServedByThisIsolate === 0;
   requestsServedByThisIsolate += 1;
   const startedAt = Date.now();
+  if (isolateBornAt === null) isolateBornAt = startedAt;
   await next();
   /*
    * A 402 IS NOT A PAGE. Every paid door answers 402 to a plain GET
