@@ -260,10 +260,10 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
   },
   {
     path: "/mcp/verifier",
-    name: "The verifier (MCP, five tools)",
+    name: "The verifier (MCP, read-only tools only)",
     access: "free",
     method: "POST",
-    purpose: "A second MCP door serving five read-only tools and nothing paid: preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness, get_defect_definition, verify_scvd_artifact. The same handlers as /mcp under task-shaped names, for a client that should never see a shelf.",
+    purpose: "A second MCP door serving read-only tools and nothing paid, each named here: preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness, get_defect_definition, verify_scvd_artifact. The same handlers as /mcp under task-shaped names, for a client that should never see a shelf.",
     caution: "Evidence, never a judgment. Nothing here sells; the paid instruments are on /mcp and the x402 doors.",
   },
   {

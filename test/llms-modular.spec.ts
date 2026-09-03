@@ -629,6 +629,13 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-EIGHTH — by CI's derived-not-typed
+ * guard: the verifier paragraph said "five" read-only tools, a tally
+ * no code recomputes, so the count left the guide and the door's own
+ * catalogue is the count. Confirmed before this value was taken: the
+ * guide carries "/mcp/verifier" and no spelled-out tool count beside
+ * it, and still every earlier pin.
+ *
  * Re-taken 2026-09-03 — the FORTY-SEVENTH — by the verifier door
  * (roadmap A3): one paragraph before the evidence agent's, for a
  * client that should never see a shelf, naming /mcp/verifier and its
@@ -643,7 +650,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c21ea5f11a8d26fb66ad681b5550a7ac8f660b86b3289ac3b02a826759dbe6da";
+  "1b0a7b82c268ba341cb9dadd8a577cf1c5312f9cadb76d7572b4cab1bae687ec";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

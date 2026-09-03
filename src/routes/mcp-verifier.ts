@@ -69,7 +69,7 @@ export const VERIFIER_TOOLS: ReadonlyArray<{ name: string; base: string | null; 
   },
 ];
 
-const INSTRUCTIONS = `${POSITION_LINE} This door serves five read-only tools and sells nothing: preflight an x402 endpoint, verify an x402 receipt or signed offer, look up an endpoint's signed readiness history, read a defect definition, verify an artifact this store signed. Every answer names its checks and what it cannot tell you. ${NEVER_A_RANKING_SENTENCE} ${POSITION_NOT} The paid instruments live on the store's other doors and are not reachable here.`;
+const INSTRUCTIONS = `${POSITION_LINE} This door serves ${VERIFIER_TOOLS.length} read-only tools and sells nothing: preflight an x402 endpoint, verify an x402 receipt or signed offer, look up an endpoint's signed readiness history, read a defect definition, verify an artifact this store signed. Every answer names its checks and what it cannot tell you. ${NEVER_A_RANKING_SENTENCE} ${POSITION_NOT} The paid instruments live on the store's other doors and are not reachable here.`;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -179,7 +179,7 @@ mcpVerifierRoutes.get("/mcp/verifier", (c) => {
   return c.json({
     title: VERIFIER_TITLE,
     server: VERIFIER_SERVER_NAME,
-    summary: "A second MCP door serving five read-only tools and nothing paid, under task-shaped names, on the same handlers as /mcp. For a client that should never see a shelf.",
+    summary: `A second MCP door serving ${VERIFIER_TOOLS.length} read-only tools and nothing paid, under task-shaped names, on the same handlers as /mcp. For a client that should never see a shelf.`,
     tools: VERIFIER_TOOLS.map((tool) => ({ name: tool.name, title: tool.title })),
     handshake: `curl -sS -X POST ${base}/mcp/verifier -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`,
     the_full_door: `${base}/mcp`,

@@ -315,7 +315,7 @@ by name, the month before beside it, and a stable address per month at
 \`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
 
 If your client should never see a shelf: ${base}/mcp/verifier is a
-second MCP door serving five read-only tools and nothing paid —
+second MCP door serving read-only tools and nothing paid —
 preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness,
 get_defect_definition, verify_scvd_artifact — the same handlers as
 ${base}/mcp under task-shaped names.
