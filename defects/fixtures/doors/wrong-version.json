@@ -1,0 +1,13 @@
+{
+  "name": "wrong-version",
+  "recorded": "2026-08-26, hand-built: x402Version 1 in a v2-shaped envelope",
+  "why": "Version drift: the envelope announces a protocol version this battery does not test.",
+  "expect_failed": [
+    "x402-version"
+  ],
+  "status": 402,
+  "headers": {
+    "PAYMENT-REQUIRED": "eyJ4NDAyVmVyc2lvbiI6IDEsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAicGF5VG8iOiAiMHg0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0IiwgImFzc2V0IjogIjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsICJhbW91bnQiOiAiNTAwMCIsICJtYXhUaW1lb3V0U2Vjb25kcyI6IDMwMH1dfQ=="
+  },
+  "body": "{}"
+}

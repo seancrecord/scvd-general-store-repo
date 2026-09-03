@@ -1,0 +1,17 @@
+{
+  "name": "scvd-defects",
+  "version": "0.10.0",
+  "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation — plus recorded 402 door fixtures to test a client against. CC BY 4.0 names, MIT code.",
+  "type": "module",
+  "main": "./defects.js",
+  "types": "./defects.d.ts",
+  "exports": { ".": { "types": "./defects.d.ts", "default": "./defects.js" }, "./defects.json": "./defects.json" },
+  "files": ["defects.js", "defects.d.ts", "defects.json", "fixtures/", "example.mjs", "CHANGELOG.md", "README.md", "LICENSE"],
+  "engines": { "node": ">=18.17.0" },
+  "keywords": ["x402", "defects", "vocabulary", "conformance", "fixtures", "402", "agent-payments", "evidence"],
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/defects",
+  "repository": { "type": "git", "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git", "directory": "defects" },
+  "bugs": { "url": "https://github.com/seancrecord/scvd-general-store-repo/issues" }
+}

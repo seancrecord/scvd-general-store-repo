@@ -275,6 +275,12 @@ Do not relitigate without you.
   Saturday listings read will say the registry differs from the
   tree until you press.
 - **npm publish x402-verify 1.1.0** from `verifier/` on main (A1).
+- **npm publish the four new packages** from main (roadmap C5b):
+  `x402-preflight` 0.1.0 (`x402-preflight/`), `scvd-corpus-client`
+  0.1.0 (`corpus-client/`), `scvd-defects` 0.10.0 (`defects/`),
+  `scvd-mcp-starter` 0.1.0 (`mcp-starter/`). Until you press, the
+  Saturday listings read shows them unreachable on npm, never
+  differs.
 - **The tab registry press** via the `tab` input on the publish
   workflow (V4).
 
