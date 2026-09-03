@@ -60,6 +60,14 @@ jobs:
       # deploy branches on is the whole product.
       - name: The preflight Action
         run: npm run action:test
+      # THE EXAMPLES (roadmap C2): the shared decision logic, in
+      # JavaScript and in Python, held to one expectations file over
+      # readings recorded from the store's own battery. The framework
+      # files are syntax-checked, not executed — each needs its
+      # framework and a model key, and eight installs is a supply chain
+      # this job does not want.
+      - name: The examples
+        run: npm run examples:test
       # THE SCALABILITY AUDIT — the same idea pointed forward instead of
       # backward. The tests catch a claim that is false NOW; this catches
       # a shape that will quietly become false as the store grows. Its

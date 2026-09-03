@@ -1,0 +1,70 @@
+{
+  "what_this_is": "One expectations file for both decide implementations (decide.mjs, decide.py). Each case names a recorded reading in this directory — the store's own before-you-pay answer, which carries the preflight report as the_door — a policy, optional accepts as a client would read them, and the decision the shared logic must derive. Reasons are substrings each `because` list must contain.",
+  "recorded": "2026-09-03, cut offline from the store's battery and dry run over synthetic doors (test/zz-cut, not kept); test/examples.spec.ts holds these readings to the live battery's shape.",
+  "cases": [
+    {
+      "case": "a well-formed door a stock client would sign",
+      "fixture": "ready-would-sign.json",
+      "policy": {},
+      "decision": "pay",
+      "reasons": ["preflight verdict is ready", "a stock client would sign accept 0"]
+    },
+    {
+      "case": "the same door under a policy that allows only Solana",
+      "fixture": "ready-would-sign.json",
+      "policy": { "allowed_networks": ["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"] },
+      "decision": "do_not_pay",
+      "reasons": ["policy allowed_networks does not include eip155:8453"]
+    },
+    {
+      "case": "the same door under a recipient allowlist, with the recipient read from the challenge",
+      "fixture": "ready-would-sign.json",
+      "accepts": [{ "scheme": "exact", "network": "eip155:8453", "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "amount": "1000", "payTo": "0x1111111111111111111111111111111111111111" }],
+      "policy": { "allowed_recipients": ["0x2222222222222222222222222222222222222222"] },
+      "decision": "do_not_pay",
+      "reasons": ["policy allowed_recipients does not include 0x1111111111111111111111111111111111111111"]
+    },
+    {
+      "case": "the same allowlist without the challenge's accepts: the recipient is unknown, and unknown is never a difference",
+      "fixture": "ready-would-sign.json",
+      "policy": { "allowed_recipients": ["0x2222222222222222222222222222222222222222"] },
+      "decision": "cannot_tell",
+      "reasons": ["the recipient could not be read"]
+    },
+    {
+      "case": "the same door under a cap below its price",
+      "fixture": "ready-would-sign.json",
+      "policy": { "max_amount_usd": 0.0005 },
+      "decision": "do_not_pay",
+      "reasons": ["above policy max_amount_usd"]
+    },
+    {
+      "case": "a testnet offer: the battery passes the shape, the advisory names the trap, the dry run refuses",
+      "fixture": "testnet-network.json",
+      "policy": {},
+      "decision": "do_not_pay",
+      "reasons": ["a stock x402 client would refuse on your machine before signing"]
+    },
+    {
+      "case": "a door with no way to pay: not_ready, the failed check named",
+      "fixture": "accepts-empty.json",
+      "policy": {},
+      "decision": "do_not_pay",
+      "reasons": ["preflight verdict is not_ready", "accepts"]
+    },
+    {
+      "case": "a well-formed door priced above the client library's default cap: the refusal happens on the buyer's machine",
+      "fixture": "over-cap.json",
+      "policy": {},
+      "decision": "do_not_pay",
+      "reasons": ["a stock x402 client would refuse on your machine before signing", "spendControls"]
+    },
+    {
+      "case": "a door the probe could not reach: unknown, never a defect",
+      "fixture": "unreachable.json",
+      "policy": {},
+      "decision": "cannot_tell",
+      "reasons": ["preflight verdict is unreachable"]
+    }
+  ]
+}
