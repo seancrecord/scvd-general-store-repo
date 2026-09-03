@@ -585,12 +585,18 @@ const BASE = "https://scvd.store";
  * with its full stop, the second byline URL, and still every earlier
  * pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-FIRST — by the independent
+ * reporting: the guides' vocabulary block now ends with Cairn's two
+ * pieces, named as theirs and not as endorsements. Confirmed before
+ * this value was taken: the guide carries "Reported on independently"
+ * and both cairnwake.com URLs, and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "51b2b12b957a68ce15c3dd00e842bc15d09dd4f7c19e821865a742e28e432b65";
+  "2e0dfcd53a926dcc96bee3d6fa645766cce4f1f0757f22eb90c2a75ea15edb17";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

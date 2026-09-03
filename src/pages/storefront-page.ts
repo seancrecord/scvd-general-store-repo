@@ -1,5 +1,5 @@
 import { currentWeekKey } from "@/lib/kv-keys";
-import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, WRITTEN_ABOUT } from "@/store/copy/asked-for";
+import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { catalogLastUpdated } from "@/lib/freshness";
 import {
   JSONLD_PRICE_CURRENCY,
@@ -814,6 +814,14 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
        * and an engine sees one author, one store, one subject.
        */
       ...WRITTEN_ABOUT.map((piece) => ({
+        "@type": "Article",
+        headline: piece.title,
+        url: piece.url,
+        publisher: { "@type": "Organization", name: piece.where },
+      })),
+      // And the independent reporting (2026-09-03): same edge, written
+      // by someone with no stake in the store.
+      ...INDEPENDENT_REPORTING.map((piece) => ({
         "@type": "Article",
         headline: piece.title,
         url: piece.url,

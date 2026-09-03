@@ -4,6 +4,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   CORRECTIONS,
   CORRECTIONS_HAND_KEPT,
+  CORRECTIONS_HOW_TO_READ,
   CORRECTIONS_INVITATION,
   CORRECTIONS_MECHANISM,
   CORRECTIONS_OUTSIDE,
@@ -55,6 +56,7 @@ correctionsRoutes.get("/corrections", (c) => {
         },
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_STANDFIRST)}</p>
+          <p class="menu-desc">${escapeHtml(CORRECTIONS_HOW_TO_READ)}</p>
           <p class="menu-desc"><strong>${escapeHtml(CORRECTIONS_MECHANISM)}</strong></p>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_OUTSIDE)}</p>
         </section>
@@ -71,6 +73,7 @@ correctionsRoutes.get("/corrections", (c) => {
   return c.json({
     title: "Corrections",
     summary: CORRECTIONS_STANDFIRST,
+    how_to_read: CORRECTIONS_HOW_TO_READ,
     how_things_get_caught: CORRECTIONS_MECHANISM,
     what_we_cannot_do_ourselves: CORRECTIONS_OUTSIDE,
     scope: CORRECTIONS_SCOPE,

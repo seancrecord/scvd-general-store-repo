@@ -408,6 +408,15 @@ export const CORRECTIONS_SCOPE =
 export const CORRECTIONS_HAND_KEPT =
   "WHAT THIS RECORD CANNOT SHOW YOU: the entries below are written by hand. Detection is largely automatic — a delivery audit looks for settlements with no artifact behind them, an hourly walk compares our books against Base itself, and the build fails when a claim outruns the code — but every one of those raises an ALERT to a person, and a person then writes the entry. Nothing on this page is machine-generated, on purpose: a store that could auto-publish its own corrections could auto-phrase them. So read a quiet stretch carefully. It means nobody wrote anything down, which is usually because nothing happened and is not the same statement. The gap between the two is a human being, and if you want to check that human rather than trust him, the artifacts are signed and the chain is public: our books can be walked against Base by anyone, without asking us.";
 
+/**
+ * HOW TO READ THIS RECORD (F30, 2026-09-03, an outside reviewer's ask
+ * the keeper carried in): the one paragraph a stranger needs before
+ * the ledger, so a long list reads as what it is — a public,
+ * falsifiable quality system — rather than as a lot of errors.
+ */
+export const CORRECTIONS_HOW_TO_READ =
+  "HOW TO READ THIS RECORD: each entry is one thing this store said that was not true, dated the day it was found, with how long it stood, who found it, and the mechanism that changed so it cannot recur quietly. What qualifies is a published claim that was false or overstated, not a bug nobody could have read; a bug that never reached a claim is a commit, not an entry. Entries are never edited after publication; a correction to a correction is a new entry under a new date, and the old one stands. Outside reports are credited as outside reports. Nothing here is summarised anywhere kinder, and the count going up is the system working.";
+
 export const CORRECTIONS_INVITATION =
   "If you find another, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";
 

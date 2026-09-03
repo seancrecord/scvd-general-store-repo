@@ -1453,3 +1453,90 @@ describes.
   the standfirst, the mechanism line and the invitation; a "how to
   read this record" summary would be one more paragraph of the
   keeper's (F30, optional).
+
+## Night, 2026-09-03: the ping, the directories, toll402, Cairn, the Action
+
+- **IndexNow accepted**: `200 for 1281 URLs` at about 19:00 UTC, once
+  Bing had verified the root key file. Every deploy pings from here.
+- **Eleven more listings** the keeper found (getmcp.es, lightnow.ai,
+  MCP Lookup, Ronin Forge's State of MCP, socketcat, Tracevero,
+  signal402, 402.ad, Decipher Ranker, Agent Plugins Directory, and
+  toll402) are on `EXTERNAL_RECORDS`, each as a listing and nothing
+  more; index.zbs.gg and VerifyMCP were already there. The
+  aiwithghost.com "news" post reuses the Tab's npm copy; it is about
+  the Tab, not this store, and is noted here rather than linked.
+- **toll402's three "unreachable" rows** (UND_ERR_HEADERS_OVERFLOW,
+  2026-08-24) are the tiered doors: three tiers times three networks
+  is nine accepts, each with a signed offer, and on that date the
+  header block passed Node's 16KB cliff. That defect is already on
+  /corrections and `test/challenge-header-budget.spec.ts` holds every
+  door under the cliff; measured from outside tonight the same three
+  doors are 13.7KB. Their row is a correct dated observation and is
+  kept as one. ⚑ If toll402 offers a re-check, press it; nothing to
+  build.
+- **Cairn** (the reviewer's strongest point, and right): the cold walk
+  was already an `EXTERNAL_RECORDS` row. Tonight it and the companion
+  piece are `INDEPENDENT_REPORTING` in `store/copy/asked-for.ts`, a
+  class apart from the keeper's bylines: on /what as the pair "Has
+  anyone independent checked scvd.store?", in the Organization's
+  `subjectOf` as Articles, in the guides' vocabulary block, and on the
+  README under "Independent reporting". Quoted narrowly, disclosed as
+  theirs, never as an endorsement.
+- **The repository's entity layer**, the reviewer's checklist against
+  the record: README title and first words (done, PR 5); server.json,
+  plugin.json (done, PR 2); package descriptions (x402-sign,
+  x402-verify, the CLI and the Tab each describe their own package
+  correctly and carry no retired noun); OpenAPI description (done, PR
+  2); DOI and Hugging Face links (done, PR 6). ⚑ The keeper's: the
+  GitHub About text (still the pre-clause sixty words), the topics
+  (`x402`, `agentic-commerce`, `mcp`, `usdc`, `base`, `solana`,
+  `receipt-verification`, `conformance-testing`,
+  `payment-verification`, `open-data`), the website field, release
+  notes, the pinned repository and the profile bio. Part of the
+  mirror sweep, last.
+- **Reference assets**: `examples/x402-preflight-on-deploy.yml`, a
+  GitHub Action that runs the free preflight after a deploy and
+  weekly, with the boundary stated in the file and in the README
+  section that introduces it. The offline verifier, the CLI and the
+  fixtures already exist as packages and tests. ⚑ The notebook over
+  the DOI dataset stays the one asset to add, in the Hugging Face
+  repo beside the data.
+
+## Afternoon of 2026-09-03 (the keeper's clock): F28, F29, F30 ruled go, and built
+
+- **F29**: /what is titled "What is scvd.store? Independent x402
+  verification, signed evidence, and endpoint-readiness data"; the
+  room's name is "What is scvd.store?" (the title contains it, the
+  test's rule); the meta description leads with the category clause;
+  the first answer gains the not-list: not a payment processor, an
+  escrow provider, a trust-score service, a compliance firm, a
+  merchant-rating system, or a guarantee of delivery.
+- **F30**: `CORRECTIONS_HOW_TO_READ` on /corrections, between the
+  standfirst and the mechanism line, and as `how_to_read` in the
+  JSON: what qualifies, that entries are never edited, that a
+  correction to a correction is a new entry, that outside reports are
+  credited as such.
+- **F28**: the glance gains `input` (the required query parameters,
+  from the same schema the 402 publishes) and `output` (the spec's
+  returns text plus the cert_id and the free verify door), on the
+  item page and in menu.json. `test/action-contract-parity.spec.ts`
+  holds every item to one contract across the page, menu.json, the
+  Offer in the JSON-LD and the 402's cheapest accept. Not built: a
+  "checks" line, because no per-item list of named checks exists as
+  data today; the audit items name theirs in the returns text, and a
+  typed list would be a second copy.
+- **MCPpedia**: the keeper filed the ownership claim (pending their
+  review) and declined the security badge for the README; recorded.
+- **The notebook**: `docs/huggingface/readiness_by_week.ipynb`,
+  standard library only, reads the Hugging Face copy (or the live
+  site), prints ready-of-probed per week with every denominator and
+  the named failing checks per week, plots if matplotlib is present,
+  and ends with what it does not show. Its arithmetic was run offline
+  against the five rounds before it was written. ⚑ Keeper: upload it
+  to the Hugging Face repo beside the data (Files → Add file).
+- **Zenodo related identifiers**, the steps: open the record, "Edit",
+  scroll to Related works, add `https://github.com/seancrecord/scvd-general-store-repo`
+  (relation "Is supplemented by", type Software) and
+  `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`
+  (relation "Is identical to", type Dataset), then "Publish".
+  Metadata edits publish in place; no new version, no new DOI.
