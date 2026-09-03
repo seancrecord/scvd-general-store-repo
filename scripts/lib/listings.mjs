@@ -84,16 +84,17 @@ export function sameAsFrom(homepageHtml) {
 
 /**
  * Visible text, roughly: scripts and styles out, tags out, entities
- * decoded once. The end-tag pattern allows whitespace before `>`
- * (CodeQL: a `</script >` that the pattern misses leaves script text
- * in what we classify), and entities decode in ONE pass so a literal
+ * decoded once. The end-tag pattern allows anything but `>` after the
+ * tag name, as browsers do (CodeQL: a `</script >` or `</script foo>`
+ * that the pattern misses leaves script text in what we classify),
+ * and entities decode in ONE pass so a literal
  * `&amp;lt;` in a page cannot become `<` by being unescaped twice.
  */
 export function visibleText(html) {
   return decodeEntities(
     html
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " "),
   );
