@@ -135,6 +135,33 @@ test("exits 1 on a not_ready verdict, so CI can branch on it", async () => {
   assert.match(result.stdout, /payTo is a name/);
 });
 
+test("prints the store's remediation rows, both halves, and nothing when there are none", async () => {
+  const withRows = await run(["preflight", "https://door.example"], () => ({
+    json: {
+      verdict: "not_ready",
+      checks: [{ name: "accepts", ok: false, detail: "no asset" }],
+      advisories: [],
+      remediation: [
+        {
+          signal: "accepts",
+          kind: "check",
+          defect_class: "unsignable-offer",
+          definition_url: "https://scvd.store/defects/unsignable-offer",
+          operator: "Fill every accepts entry.",
+          buyer: "Do not sign.",
+        },
+      ],
+    },
+  }));
+  assert.match(withRows.stdout, /FIX {3}accepts → unsignable-offer \(https:\/\/scvd\.store\/defects\/unsignable-offer\)/);
+  assert.match(withRows.stdout, /operator: Fill every accepts entry\./);
+  assert.match(withRows.stdout, /buyer: {4}Do not sign\./);
+  const without = await run(["preflight", "https://door.example"], () => ({
+    json: { verdict: "ready", checks: [{ name: "status-402", ok: true, detail: "" }], advisories: [] },
+  }));
+  assert.doesNotMatch(without.stdout, /FIX/);
+});
+
 test("does NOT fail a build on unreachable, which says nothing about the door", async () => {
   const result = await run(["preflight", "https://door.example"], () => ({
     json: {

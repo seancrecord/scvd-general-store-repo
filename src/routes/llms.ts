@@ -1092,6 +1092,13 @@ never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
 
+Every class also carries both halves of the remediation: what the
+operator does to clear it and what the buyer does when a door shows
+it. The free preflight report joins them to its own findings as
+\`remediation\`, one row per failed check or raised advisory a class
+explains, with the definition URL, so the next step is in the same
+answer as the defect. Never part of the verdict.
+
 ## The notice desk, for an operator who found us in their log
 
 ${base}/notice explains the two calling cards this store sends —

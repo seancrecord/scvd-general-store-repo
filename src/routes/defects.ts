@@ -74,6 +74,7 @@ function classMarkdown(entry: DefectClass): string {
     "",
     `**Falsified by:** ${entry.falsified_by}`,
   ];
+  lines.push("", `**How an operator clears it:** ${entry.repair_hint}`, "", `**What a buyer does:** ${entry.buyer_hint}`);
   if (entry.our_signal) {
     lines.push("", `**Our signal:** \`${entry.our_signal}\``);
   }
@@ -225,6 +226,7 @@ defectRoutes.get("/defects/:id{[a-z0-9-]+}", (c) => {
         <p class="menu-desc"><strong>Detectable:</strong> ${entry.detectable === "unpaid" ? "by an unpaid probe — a GET nobody paid for can see it" : "only by a paid probe — a settled payment reveals it"}.</p>
         <p class="menu-desc"><strong>Falsified by:</strong> ${escapeHtml(entry.falsified_by)}</p>
         <p class="menu-desc"><strong>How an operator clears it:</strong> ${escapeHtml(entry.repair_hint)}</p>
+        <p class="menu-desc"><strong>What a buyer does:</strong> ${escapeHtml(entry.buyer_hint)}</p>
         ${entry.our_signal ? `<p class="menu-meta">Our signal: <code>${escapeHtml(entry.our_signal)}</code>.</p>` : `<p class="menu-meta">No instrument of ours reports this class today; the definition stands so another instrument's finding can be compared.</p>`}
         ${
           entry.also_known_as?.length

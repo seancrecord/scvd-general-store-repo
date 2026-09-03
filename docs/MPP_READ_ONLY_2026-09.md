@@ -242,7 +242,7 @@ WITH the battery is the point." PR 1 adds the family
 it reads, and nothing cites it before the battery exists.
 
 Vocabulary: the Tier 0 checks that fail are defect classes,
-unpaid-detectable, registered in `defect-vocabulary.ts` as v10 with
+unpaid-detectable, registered in `defect-vocabulary.ts` as the next vocabulary version (v11 as of 2026-09-03; v10 was C1's buyer_hint) with
 the registrar-not-author rule (the spec's own MUSTs are the
 `sourced_by`). Names as in the table. `x402-and-mpp` and the testnet
 default are advisories, not classes: a door speaking two protocols
@@ -277,7 +277,7 @@ fields on rows that already exist.
 ## Sequencing, one branch at a time
 
 1. **PR 1 — the parser, the checks, the fixtures, the practice door,
-   `protocols_spoken`, the family and vocabulary v10.** First act:
+   `protocols_spoken`, the family and the next vocabulary version.** First act:
    measure the misread — count existing signed rows whose captured
    headers carry a `Payment` challenge, and file the correction if
    the count is not zero. Free preflight and the look carry the `mpp`

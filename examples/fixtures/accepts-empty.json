@@ -72,6 +72,30 @@
       "verdict": "not_ready",
       "difference": "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks."
     },
+    "remediation": [
+      {
+        "signal": "accepts",
+        "kind": "check",
+        "defect_class": "unsignable-offer",
+        "title": "Offer a buyer cannot sign against",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/unsignable-offer",
+        "operator": "Fill every accepts entry with the v2-required fields, as strings, and regenerate the offer from your server's own config rather than hand-editing JSON. The free preflight names the missing field.",
+        "buyer": "Do not sign: a missing required field means your client has nothing to construct, and any library that proceeds anyway is filling the gap with a default you did not choose. Read the preflight's named missing field and wait for a challenge that carries it.",
+        "falsified_by": "Every accepts entry carrying the published required fields at the stated moment."
+      },
+      {
+        "signal": "accepts",
+        "kind": "check",
+        "defect_class": "unpayable-payto",
+        "title": "payTo is not the bytes a payment signs over",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/unpayable-payto",
+        "operator": "Give each accepts entry its own rail's address format: a 20-byte 0x address on EVM entries, a base58 pubkey on Solana entries. The commonest cause is one wallet string pasted across every rail's entry.",
+        "buyer": "Never resolve a name in payTo yourself and pay the result: your signature would bind to whatever the resolver said that second. Refuse until payTo is a concrete address in the format of its own entry's rail.",
+        "falsified_by": "The payTo parsing as a valid address for the rail its own entry names."
+      }
+    ],
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",

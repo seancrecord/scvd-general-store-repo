@@ -167,6 +167,23 @@ function printChecks(checks = []) {
   }
 }
 
+/**
+ * WHAT TO DO ABOUT IT, both sides — the server's own rows, printed,
+ * never derived here: the store joins each failed check or advisory to
+ * its defect class and carries the operator's half and the buyer's
+ * half with the definition URL. Absent on older servers and on a clean
+ * door, and then nothing prints.
+ */
+function printRemediation(rows = []) {
+  if (!Array.isArray(rows) || rows.length === 0) return;
+  process.stdout.write("\n");
+  for (const row of rows) {
+    process.stdout.write(`  FIX   ${row.signal} → ${row.defect_class} (${row.definition_url})\n`);
+    if (row.operator) process.stdout.write(`        operator: ${row.operator}\n`);
+    if (row.buyer) process.stdout.write(`        buyer:    ${row.buyer}\n`);
+  }
+}
+
 function printBudget({ remaining, reset }) {
   if (remaining === null || remaining === undefined) return;
   process.stdout.write(
@@ -277,6 +294,7 @@ const COMMANDS = {
     for (const advisory of report.advisories ?? []) {
       process.stdout.write(`  NOTE  ${advisory.name}: ${advisory.detail}\n`);
     }
+    printRemediation(report.remediation);
     printBudget(result);
     /*
      * `unreachable` is NOT a failure of the endpoint and does not

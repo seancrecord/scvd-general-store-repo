@@ -116,6 +116,19 @@ function summaryFor(results, failOn) {
   const caveat = failOn.has("unreachable")
     ? "This workflow chose to fail on `unreachable`. The store's own reading of that verdict: a fact about the network path from its vantage at one moment, not a finding about the endpoint."
     : "`unreachable` does not fail this job: it is a fact about the network path from the store's vantage at one moment, not a finding about the endpoint.";
+  /*
+   * WHAT TO DO ABOUT IT: the store's own remediation rows, one per
+   * failed check or advisory a vocabulary class explains, with the
+   * operator's half (this is a deploy gate; the operator is the
+   * reader) and the definition URL. Printed, never derived here.
+   */
+  const fixes = results.flatMap((result) =>
+    Array.isArray(result.body?.remediation)
+      ? result.body.remediation
+          .filter((row) => row.kind === "check")
+          .map((row) => `- ${result.url}: \`${row.signal}\` is [${row.defect_class}](${row.definition_url}). ${row.operator}`)
+      : [],
+  );
   return [
     "## scvd preflight",
     "",
@@ -125,6 +138,7 @@ function summaryFor(results, failOn) {
     "| --- | --- | --- |",
     ...rows,
     "",
+    ...(fixes.length > 0 ? ["### What to do", "", ...fixes, ""] : []),
     caveat,
     "",
     "Every check's name is in the store's [defect vocabulary](https://scvd.store/defects). The store's own JSON for each door is in the report file this step wrote.",

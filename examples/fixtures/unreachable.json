@@ -62,6 +62,7 @@
       }
     ],
     "advisories": [],
+    "remediation": [],
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",

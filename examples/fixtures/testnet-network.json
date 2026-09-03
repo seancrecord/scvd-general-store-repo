@@ -101,6 +101,30 @@
       "verdict": "not_ready",
       "difference": "v2 folds the L3b consistency checks (payto-payable, amount-atomic, network-mainnet, transfer-method-signable) into the verdict; v1 reports the same observations as advisories. On this probe the two batteries DISAGREED. The Solana rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read)."
     },
+    "remediation": [
+      {
+        "signal": "testnet-network",
+        "kind": "advisory",
+        "defect_class": "wrong-network",
+        "title": "Offered on a network the buyer is not on",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/wrong-network",
+        "operator": "Replace the testnet chain id in accepts with the mainnet rail you settle on, and keep test offers behind a separate listing. If you meant mainnet, look for a deploy-time environment default leaking into production.",
+        "buyer": "Do not let a mainnet wallet sign a testnet offer: the payment settles nowhere real and the goods never come. Check the CAIP-2 network id against the chains you actually hold funds on before signing anything, and prefer a door whose offer names one of them.",
+        "falsified_by": "The entry naming a mainnet chain id the buyer's client supports."
+      },
+      {
+        "signal": "no-input-contract",
+        "kind": "advisory",
+        "defect_class": "inputs-undeclared",
+        "title": "Required parameters a buyer discovers only by being refused",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/inputs-undeclared",
+        "operator": "Declare required parameters in the challenge itself, before payment, so a buyer learns them by reading rather than by being refused after signing. If the resource can serve a sensible default, accept a bare call too.",
+        "buyer": "Expect a refusal after payment if you call bare. Read the resource's documentation for its required parameters before paying, send them on the first call, and keep the settlement reference so a refused call can be retried as a paid retry rather than a second purchase.",
+        "falsified_by": "A declared input contract in the challenge, or the resource succeeding with no parameters."
+      }
+    ],
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",

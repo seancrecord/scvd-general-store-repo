@@ -629,6 +629,12 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the remediation (roadmap
+ * C1): one paragraph after the vocabulary's, saying every class carries
+ * both halves and the free report joins them to its findings as
+ * \`remediation\`. Confirmed before this value was taken: the guide
+ * carries "both halves of the remediation" and still every earlier pin.
+ *
  * Re-taken 2026-09-03 — the FORTY-EIGHTH — by CI's derived-not-typed
  * guard: the verifier paragraph said "five" read-only tools, a tally
  * no code recomputes, so the count left the guide and the door's own
@@ -673,7 +679,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d89de832f0b614c3a9b3bbf38f33356a490deb2a95ecf810b2d1ab869ba1716a";
+  "fc0708f5e5f04bcccf49024aee3753b3b0787d391b5e475313ba2d88baac67a1";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

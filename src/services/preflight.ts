@@ -1,5 +1,7 @@
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
+import { type RemediationRow, remediationRows } from "@/services/remediation";
+import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
@@ -557,6 +559,15 @@ export interface PreflightReport {
     verdict: PreflightReport["verdict"];
     difference: string;
   };
+  /**
+   * WHAT TO DO ABOUT IT, both sides (roadmap C1, 2026-09-03): one row
+   * per failed check or raised advisory that a vocabulary class
+   * explains — the class, its definition URL, what the operator does,
+   * what the buyer does. Derived from the vocabulary through the
+   * signal already reported; never part of the verdict; empty on a
+   * clean door.
+   */
+  remediation: RemediationRow[];
   next_steps: Record<string, string>;
 }
 
@@ -588,6 +599,7 @@ function report(
     checks,
     advisories,
     ...(options.alsoUnder ? { also_under: options.alsoUnder } : {}),
+    remediation: remediationRows(base, checks, advisories),
     single_probe_note:
       "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
     what_this_cannot_tell_you: [
@@ -1648,6 +1660,32 @@ export function triStateVector(checks: PreflightCheck[]): TriStateRow[] {
   return rows;
 }
 
+/**
+ * A REFUSAL THAT SAYS WHAT TO DO (roadmap C1, 2026-09-03). The error
+ * and the code were always here; `next_action` is the published
+ * contract's own what_to_do for that code, and `documentation_url` is
+ * the door's GET document, where the codes are listed. Only where this
+ * store is a legitimate remedy: a refusal is a statement about the
+ * request or about us, and the next action is to fix the request or
+ * read the contract, never to buy anything.
+ */
+export interface DoorRefusal {
+  error: string;
+  code: string;
+  next_action?: string;
+  documentation_url: string;
+}
+
+export function refusal(base: string, code: string, error: string, battery: PreflightBattery = PREFLIGHT_VERSION): DoorRefusal {
+  const known = PROBE_DOOR_ERRORS.find((entry) => entry.code === code);
+  return {
+    error,
+    code,
+    ...(known ? { next_action: known.what_to_do } : {}),
+    documentation_url: `${base}/api/preflight/${battery}`,
+  };
+}
+
 export async function preflightUrl(
   rawUrl: unknown,
   env: Env,
@@ -1683,11 +1721,12 @@ export async function preflightUrl(
   if (typeof rawUrl !== "string" || rawUrl.trim().length === 0) {
     return {
       status: 400,
-      body: {
-        error:
-          'Send {"url": "https://your-endpoint/..."} — the URL a buyer would GET, expecting your 402.',
-        code: "url_missing",
-      },
+      body: refusal(
+        base,
+        "url_missing",
+        'Send {"url": "https://your-endpoint/..."} — the URL a buyer would GET, expecting your 402.',
+        battery,
+      ),
     };
   }
   let url: URL;
@@ -1696,7 +1735,7 @@ export async function preflightUrl(
   } catch {
     return {
       status: 400,
-      body: { error: "That is not a parseable URL.", code: "url_unparseable" },
+      body: refusal(base, "url_unparseable", "That is not a parseable URL.", battery),
     };
   }
   /**
@@ -1709,7 +1748,7 @@ export async function preflightUrl(
   if (!target.ok) {
     return {
       status: 400,
-      body: { error: target.reason!, code: "target_refused" },
+      body: refusal(base, "target_refused", target.reason!, battery),
     };
   }
   /**
@@ -1725,11 +1764,12 @@ export async function preflightUrl(
   if (url.host.toLowerCase() === new URL(base).host.toLowerCase()) {
     return {
       status: 400,
-      body: {
-        error:
-          "That is this store's own hostname, which a Cloudflare Worker cannot fetch (the platform kills self-requests). Our own 402s pass these exact checks in CI on every build — and you should not take our word for that: GET any /api/buy/{item} yourself and look. The checks this tool runs are published, so your own probe is as good as ours.",
-        code: "own_host_refused",
-      },
+      body: refusal(
+        base,
+        "own_host_refused",
+        "That is this store's own hostname, which a Cloudflare Worker cannot fetch (the platform kills self-requests). Our own 402s pass these exact checks in CI on every build — and you should not take our word for that: GET any /api/buy/{item} yourself and look. The checks this tool runs are published, so your own probe is as good as ours.",
+        battery,
+      ),
     };
   }
   /**

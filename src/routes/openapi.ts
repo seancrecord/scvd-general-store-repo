@@ -826,6 +826,7 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     "checks_vector",
     "checks",
     "advisories",
+    "remediation",
     "single_probe_note",
     "what_this_cannot_tell_you",
     "our_conflict_of_interest",
@@ -903,6 +904,26 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         version: { type: "string" },
         verdict: { type: "string", enum: ["ready", "not_ready", "unreachable"] },
         difference: { type: "string" },
+      },
+    },
+    remediation: {
+      type: "array",
+      description:
+        "What to do about it, both sides: one row per failed check or raised advisory that a vocabulary class explains — the class, its definition URL, what the operator does, what the buyer does. Derived from /defects.json through the signal already reported; never part of the verdict; empty on a clean door.",
+      items: {
+        type: "object",
+        required: ["signal", "kind", "defect_class", "definition_url", "operator", "buyer"],
+        properties: {
+          signal: { type: "string" },
+          kind: { type: "string", enum: ["check", "advisory"] },
+          defect_class: { type: "string" },
+          title: { type: "string" },
+          detectable: { type: "string", enum: ["unpaid", "paid"] },
+          definition_url: { type: "string", format: "uri" },
+          operator: { type: "string" },
+          buyer: { type: "string" },
+          falsified_by: { type: "string" },
+        },
       },
     },
     single_probe_note: {

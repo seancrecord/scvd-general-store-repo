@@ -101,6 +101,19 @@
       "verdict": "ready",
       "difference": "v2 folds the L3b consistency checks (payto-payable, amount-atomic, network-mainnet, transfer-method-signable) into the verdict; v1 reports the same observations as advisories. On this probe the two batteries agreed. The Solana rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read)."
     },
+    "remediation": [
+      {
+        "signal": "no-input-contract",
+        "kind": "advisory",
+        "defect_class": "inputs-undeclared",
+        "title": "Required parameters a buyer discovers only by being refused",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/inputs-undeclared",
+        "operator": "Declare required parameters in the challenge itself, before payment, so a buyer learns them by reading rather than by being refused after signing. If the resource can serve a sensible default, accept a bare call too.",
+        "buyer": "Expect a refusal after payment if you call bare. Read the resource's documentation for its required parameters before paying, send them on the first call, and keep the settlement reference so a refused call can be retried as a paid retry rather than a second purchase.",
+        "falsified_by": "A declared input contract in the challenge, or the resource succeeding with no parameters."
+      }
+    ],
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",
