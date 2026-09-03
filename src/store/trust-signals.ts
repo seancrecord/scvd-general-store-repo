@@ -107,6 +107,25 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That the code running this store is public and readable: the settlement path, the signing, the verifier, the CLI and every test that guards them. It proves nothing about the operator and it is not an endorsement or an audit — nobody has paid anyone to review it, which /trust says elsewhere in those words. What it does mean is that every claim made anywhere on this site has a file behind it somebody can go and read, which no directory entry can offer.",
   },
   {
+    /**
+     * A SKILL IN SOMEBODY ELSE'S ALMANAC (2026-09-03, the keeper's
+     * pointer). pjt222/agent-almanac is a curated repository of agent
+     * skills; its test-x402-payment-client skill walks an agent
+     * through the full 402 → sign → settle → verify loop and names
+     * this store's cheapest door as the mainnet target, with the
+     * conformance desk and the preflight beside it. The skill's author
+     * field reads cv-scvd, so this is OUR contribution accepted by
+     * THEIR maintainer: more than a filing (a person read it and
+     * merged it), less than an independent write-up (we wrote it),
+     * and said so here rather than flattened into either.
+     */
+    url: "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+    registry: "agent-almanac (pjt222), a curated skills repository on GitHub",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's $0.001 door and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it, not that anyone independent vouches for the store. The prices and endpoints it names were checked against the menu on the day it was recorded.",
+  },
+  {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
     confirmed: "2026-07-27",

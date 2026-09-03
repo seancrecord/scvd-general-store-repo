@@ -1320,3 +1320,12 @@ export; re-export in two weeks and compare the two counts.
   Dataset node's sameAs beside the DOI, and /corpus names it (PR 6).
   Weekly pushes join the Zenodo upload script once that is built
   (needs a Zenodo token and a Hugging Face token from the keeper).
+- **agent-almanac** (pjt222): the keeper pointed at
+  `skills/test-x402-payment-client/SKILL.md` in that curated
+  repository, which names this store's $0.001 door as the mainnet
+  target for an end-to-end x402 client test, with the conformance
+  desk and the preflight beside it. Author field cv-scvd, so it is our
+  contribution accepted by their maintainer. Facts checked against
+  the menu (spot_check is $0.001; Base or Solana named, Polygon
+  omitted, not wrong). Added to `EXTERNAL_RECORDS` with that said
+  (PR 6), so it rides sameAs and the trust document.
