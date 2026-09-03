@@ -341,6 +341,16 @@ Do not relitigate without you.
   proofbench.dev, mcphq.ai, hultra.link, golemreach.com,
   mcpplaygroundonline.com/mcp-checker, factanker.com,
   orank.ai.
+- **endpoint.x402jp.com.** LOOK, five minutes, browser only
+  (the sandbox cannot reach it). An x402 host index that
+  found us on its own; we are row 50 of 1,031. Its row says
+  61 routes at a 2.5 USDC median; the well-known file the
+  same day says 39 at 0.99. Find whether it reads the Bazaar
+  or the well-known file and whether a listing can be
+  claimed or refreshed; nothing that wants a token. The
+  full read and the table live in
+  `registry/directory-blitz.md` §5 and
+  `research/x402-pulse.md` under 2026-09-03.
 
 - **ClawHub republish.** 3.15.0 went out 2026-09-02 by
   your hand (done), carrying everything since 3.8.0: the

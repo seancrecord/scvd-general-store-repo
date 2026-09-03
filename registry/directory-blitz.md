@@ -60,6 +60,50 @@ Aggregates x402scan, awesome-x402, CDP Bazaar + self-submissions;
 flows in from the Bazaar on its own; check their x402 directory for
 scvd.store, use the provider self-submission only if missing.
 
+### 5. endpoint.x402jp.com — already listed, row is stale; find the refresh path (read 2026-09-03)
+A crawler-built index of x402 hosts ranked by catalogued paid routes
+(`/hosts`; 19,366 routes across 1,031 hosts on the day it was read,
+median 5 routes a host, 282 hosts with one). Nobody submitted us; the
+store is row 50. Its own caption is our argument: "a host's route
+count reflects the granularity of its route expansion, not the
+operator's size" — the top rows are single wrappers slicing one
+dataset into a thousand per-query URLs.
+
+The row it shows for scvd.store does not match what we serve, and the
+gap is the reason to open it:
+
+| | x402jp row | `/.well-known/x402`, same day |
+|---|---|---|
+| routes | 61 | 39 |
+| median price | 2.5 USDC | 0.99 USDC |
+| category | Compute | (our tags say verification, evidence, x402) |
+
+Sixty-one is well past what the well-known file lists, so the
+likeliest source is the CDP Bazaar, which keeps every route that ever
+settled — retired doors (phantom_check and its kin) included — and
+may count method variants separately. Whatever feeds them feeds every
+other aggregator that reads the Bazaar, so this is one row of a wider
+picture: a buyer scanning the index sees a store bigger and roughly
+two and a half times dearer than the one at the counter.
+
+Keeper's hand, in order. The site is unreachable from the coding
+sandbox (egress-blocked), so all three are a browser job:
+1. LOOK for a claim, refresh, or "report a listing" path on the host
+   page, and for any methodology or about page that names the source
+   (Bazaar, x402scan, well-known crawl). Free listings only; nothing
+   that wants a token or credentials.
+2. If it re-reads `/.well-known/x402`, no press is needed beyond
+   asking; if it reads the Bazaar, the fix is upstream and the note
+   goes to PROBLEMS.md as a Bazaar-retention finding, not to them.
+3. Watch /admin window-shoppers for its prober UA afterwards, same as
+   every other venue, and add it to the infrastructure classifier.
+
+Sampling frame, separately: 1,031 hosts is a ready-made denominator
+for the weekly round, and an outside frame beats our own. The
+read-off is in `research/x402-pulse.md` under 2026-09-03 (duplicate
+hosts under two domains, a name-squat, a self-claimed count the
+crawler could not find).
+
 ## MCP registries — DONE (keeper, 2026-07-29)
 
 Submitted. Nothing below is an open action; it is kept as the record
