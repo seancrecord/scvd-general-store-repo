@@ -127,9 +127,8 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
     where: "HackerNoon",
   },
   {
-    // The keeper's URL, 2026-09-03. Title read from the slug; the
-    // keeper corrects it if the page says it differently.
-    title: "35 x402 hosts served no signed offer. Here is how to check yours in one request",
+    // The keeper's URL and title, 2026-09-03, confirmed against the page.
+    title: "35 x402 hosts served no signed offer. Here is how to check yours in one request.",
     url: "https://dev.to/seancrecord/35-x402-hosts-served-no-signed-offer-here-is-how-tocheck-yours-in-one-request-ceh",
     where: "dev.to",
   },

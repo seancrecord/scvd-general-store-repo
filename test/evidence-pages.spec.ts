@@ -110,7 +110,11 @@ describe("one page per signed week", () => {
     expect(/<title>(.*?)<\/title>/s.exec(html)![1]!).toMatch(/week 2026-W31: \d+ of \d+ probed doors payable/);
     const dataset = jsonLd.find((b) => b["@type"] === "Dataset")!;
     expect(dataset["temporalCoverage"]).toBe("2026-W31");
-    expect(dataset["isPartOf"]).toBe(`${BASE}/corpus.json`);
+    // The corpus by @id and by its concept DOI (2026-09-03), so a
+    // round resolves to the dataset and the dataset to its citation.
+    const parent = dataset["isPartOf"] as { "@id": string; identifier: { value: string } };
+    expect(parent["@id"]).toBe(`${BASE}/corpus.json`);
+    expect(parent.identifier.value).toMatch(/^10\.5281\/zenodo\./);
   });
 
   it("serves the brief as JSON to a caller that asks for JSON, and 404s a week it does not hold", async () => {

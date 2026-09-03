@@ -183,19 +183,35 @@ app.use("*", async (c, next) => {
  * it, query string kept. `/api/` is left alone on purpose: a machine
  * caller gets its answer (or its 410) at the URL it used, never a
  * redirect it did not ask for.
+ *
+ * A TRAILING DOT IS THE SAME DEFECT WEARING PUNCTUATION (2026-09-03,
+ * the first Cloudflare crawl reading). The guide ends sentences with
+ * a URL and a full stop ("…at https://scvd.store/criteria."), and
+ * some crawlers keep the stop: the 4xx list carried `/criteria.`,
+ * `/api/preflight/v1.` and `/api/buy/spot_check.`. No door here ends
+ * in a dot, so a GET or HEAD for one is a 301 to the path without it,
+ * `/api/` included this time: a machine caller never sends a
+ * trailing dot, only a crawler reading prose does, and the redirect
+ * lands it on the door the sentence meant.
  */
 app.use("*", async (c, next) => {
   const url = new URL(c.req.url);
   const method = c.req.method;
+  const readOnly = method === "GET" || method === "HEAD";
+  // The MCP door answers its own trailing slash with a 308 so a
+  // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
+  // same 308 for the same reason, and this middleware stays out.
+  const mcp = url.pathname.startsWith("/mcp");
+  if (readOnly && !mcp && url.pathname.length > 1 && url.pathname.endsWith(".")) {
+    url.pathname = url.pathname.replace(/[./]+$/, "") || "/";
+    return c.redirect(url.toString(), 301);
+  }
   if (
-    (method === "GET" || method === "HEAD") &&
+    readOnly &&
+    !mcp &&
     url.pathname.length > 1 &&
     url.pathname.endsWith("/") &&
-    !url.pathname.startsWith("/api/") &&
-    // The MCP door answers its own trailing slash with a 308 so a
-    // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
-    // same 308 for the same reason, and this middleware stays out.
-    !url.pathname.startsWith("/mcp")
+    !url.pathname.startsWith("/api/")
   ) {
     url.pathname = url.pathname.replace(/\/+$/, "") || "/";
     return c.redirect(url.toString(), 301);

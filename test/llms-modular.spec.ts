@@ -577,12 +577,20 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "network=eip155:137" and "Ethereum,
  * Arbitrum, Optimism or Avalanche", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTIETH — by the keeper confirming
+ * the dev.to piece's title against the page, full stop included: the
+ * byline line in "Words people use" carries WRITTEN_ABOUT titles
+ * verbatim, so one character in the constant is one new digest.
+ * Confirmed before this value was taken: the guide carries the title
+ * with its full stop, the second byline URL, and still every earlier
+ * pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a956f219cf6e7500531bbb8a87abf07150fac0ced7372cd65b8964c2684c8f37";
+  "51b2b12b957a68ce15c3dd00e842bc15d09dd4f7c19e821865a742e28e432b65";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -91,3 +91,42 @@ describe("the scvd-attestation/v1 spec", () => {
     expect(agents).toContain("/spec/scvd-attestation/v1");
   });
 });
+
+/**
+ * THE DRAFTS, NAMED PER DRAFT (2026-09-03, correction on /corrections).
+ * The relation block names all three IETF drafts with the revision
+ * read and a date, and the sentence that overstated signature_jcs's
+ * standing under them is gone.
+ */
+describe("relation to other x402 receipt work", () => {
+  it("names the three drafts, each at a revision, dated, and says what is not aligned", async () => {
+    const doc = (await (await SELF.fetch(`${BASE}/spec/scvd-attestation/v1`)).json()) as {
+      signing: {
+        jcs_dual_emit: string;
+        relation_to_receipt_drafts?: unknown;
+        relation_to_other_x402_receipt_work: {
+          as_of: string;
+          drafts: { draft: string; revision_read: string; url: string; not_aligned: string }[];
+          conformance_desk: string;
+        };
+      };
+    };
+    const block = doc.signing.relation_to_other_x402_receipt_work;
+    expect(block.as_of).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(block.drafts.map((d) => d.draft).sort()).toEqual([
+      "draft-hopley-x402-canonicalisation-jcs-v1",
+      "draft-hopley-x402-compliance-receipt",
+      "draft-vauban-x402-consolidated",
+    ]);
+    for (const d of block.drafts) {
+      expect(d.revision_read).toMatch(/^-\d{2}$/);
+      expect(d.url).toContain(`datatracker.ietf.org/doc/${d.draft}/`);
+      expect(d.not_aligned.toLowerCase()).toContain("post-quantum");
+    }
+    expect(block.conformance_desk).toContain("does not parse");
+    // The overstatement is gone, from both places it lived.
+    expect(doc.signing.relation_to_receipt_drafts).toBeUndefined();
+    expect(JSON.stringify(doc.signing)).not.toContain("already verifies under it");
+    expect(doc.signing.jcs_dual_emit).toContain("not under any draft");
+  });
+});
