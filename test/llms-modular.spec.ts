@@ -597,12 +597,19 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "/feeds" and "If you poll rather than
  * read", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-FIRST — by the state of x402 by
+ * month (roadmap V5): one paragraph between the operators' and the
+ * feeds', naming /corpus/month, the closing week beside the
+ * door-weeks, and the stable address per month. Confirmed before
+ * this value was taken: the guide carries "/corpus/month" and "Two
+ * kinds of number, never a share", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "334b8e85a8c319f60443890344507876f853d8672971321e3cd4880aad9ea128";
+  "f7272a89fa348fc14bd48779f832b3421d53e3e9ec3f6055281e5e6d7fdc1911";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

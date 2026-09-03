@@ -125,6 +125,16 @@ export const ROOMS: readonly Room[] = [
     name: "The Week's Doors",
     deeper: ["conformance_watch"],
   },
+  /*
+   * The state of x402 by month, 2026-09-03 (roadmap V5): the brief's
+   * question asked the way press and researchers ask it, derived from
+   * the same signed weeks. A stable address per month for a citation.
+   */
+  {
+    path: "/corpus/month",
+    name: "The state of x402, by month",
+    deeper: ["conformance_watch"],
+  },
   /**
    * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
    * indexes snapshots and /corpus/host/{host}.json needs a hostname

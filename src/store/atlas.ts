@@ -259,6 +259,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     caution: "A reading order, not a recommendation to buy. Nothing there scores or certifies a door.",
   },
   {
+    path: "/corpus/month",
+    name: "The state of x402, by month",
+    access: "free",
+    method: "GET",
+    purpose: "The corpus by calendar month: doors named, probed, payable and not at month end, door-weeks across the rounds, defects by name, the month before beside it. A stable address per month to cite.",
+    caution: "Closing-week counts and door-week totals are two kinds of number and are never divided into a share. No host is named; nothing is ranked.",
+  },
+  {
     path: "/feeds",
     name: "Feeds",
     access: "free",

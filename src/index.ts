@@ -40,6 +40,7 @@ import {
   observatoryRoutes,
   operatorsRoutes,
   feedsRoutes,
+  monthlyStateRoutes,
   visitorsRoutes,
   trustListRoutes,
   refundRoutes,
@@ -463,6 +464,7 @@ app.route("/", disagreementsRoutes);
 app.route("/", observatoryRoutes);
 app.route("/", operatorsRoutes);
 app.route("/", feedsRoutes);
+app.route("/", monthlyStateRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);

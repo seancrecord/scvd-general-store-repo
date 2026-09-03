@@ -30,6 +30,7 @@ export { disagreementsRoutes } from "@/routes/disagreements";
 export { observatoryRoutes } from "@/routes/observatory";
 export { operatorsRoutes } from "@/routes/operators";
 export { feedsRoutes } from "@/routes/feeds";
+export { monthlyStateRoutes } from "@/routes/monthly-state";
 export { visitorsRoutes } from "@/routes/visitors";
 export { stackRoutes } from "@/routes/stack";
 export { trustListRoutes } from "@/routes/trust-list";

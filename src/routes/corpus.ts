@@ -472,7 +472,7 @@ function briefHtml(brief: WeeklyBrief): string {
   <section>
     <h2>What this is not</h2>
     <p class="menu-desc">${escapeHtml(brief.not_a_ranking)}</p>
-    <p class="menu-meta">${escapeHtml(brief.how_to_rederive)} Every door, alphabetical: <a href="/doors">/doors</a>.</p>
+    <p class="menu-meta">${escapeHtml(brief.how_to_rederive)} Every door, alphabetical: <a href="/doors">/doors</a>. The same weeks by calendar month: <a href="/corpus/month">/corpus/month</a>.</p>
   </section>`;
 }
 
