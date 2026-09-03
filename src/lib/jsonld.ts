@@ -86,6 +86,42 @@ export function organizationRef(base: string): {
   };
 }
 
+/** The stable identifier of the store's WebSite node, for isPartOf. */
+export function websiteId(base: string): string {
+  return `${base}/#website`;
+}
+
+/**
+ * THE NODE EVERY ROOM CARRIES (AEO fix F22, 2026-09-03). Twenty-three
+ * sitemap pages had a title, a description and a canonical, and not
+ * one line of structured data, so a resolver saw a page and no entity.
+ * A WebPage node is the honest minimum: it names the page, says what
+ * it is in the sentence the meta description already says, and hangs
+ * it off the WebSite and the Organization by their @ids so every page
+ * on the domain points at the same two things. Derived from the page
+ * options the renderer already has, so no room types a second copy.
+ * A room with a richer node (a Service, a Dataset) keeps it beside
+ * this one; two true nodes are not a contradiction.
+ */
+export function webPageJsonLd(page: {
+  base: string;
+  path: string;
+  title: string;
+  description: string;
+}): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${page.base}${page.path}`,
+    url: `${page.base}${page.path}`,
+    name: page.title,
+    description: page.description,
+    inLanguage: "en",
+    isPartOf: { "@type": "WebSite", "@id": websiteId(page.base) },
+    publisher: organizationRef(page.base),
+  };
+}
+
 /** The escaped JSON body, for callers that own their own <script> tag. */
 export function jsonLdBody(node: unknown): string {
   return JSON.stringify(node).replace(/</g, "\\u003c");

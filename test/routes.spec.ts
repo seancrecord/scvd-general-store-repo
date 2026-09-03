@@ -43,7 +43,9 @@ describe("the storefront", () => {
     const xml = await sitemap.text();
     expect(xml).toContain(`<loc>${BASE}/</loc>`);
     expect(xml).toContain(`<loc>${BASE}/what</loc>`);
-    expect(xml).toContain(`<loc>${BASE}/gazette</loc>`);
+    // The Gazette left the map 2026-09-03 (retired; Room.in_sitemap).
+    expect(xml).not.toContain(`<loc>${BASE}/gazette</loc>`);
+    expect(xml).toContain(`<loc>${BASE}/corpus</loc>`);
     // The API stays off the sitemap; llms.txt is its map.
     expect(xml).not.toContain("/api/");
   });

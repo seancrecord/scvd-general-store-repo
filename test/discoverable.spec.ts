@@ -2,7 +2,7 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { HUMAN_SURFACES } from "@/routes/site-meta";
 import { MENU_ITEMS } from "@/store";
-import { ROOMS, STOREFRONT_ROOMS } from "@/store/rooms";
+import { ROOMS, STOREFRONT_ROOMS, UNLISTED_ROOMS } from "@/store/rooms";
 
 const BASE = "https://scvd.store";
 const HTML = { Accept: "text/html" };
@@ -79,6 +79,23 @@ describe("every room in the sitemap is a room", () => {
     }
   });
 
+  it("carries a WebPage node naming its own URL, so a resolver sees an entity and not a file", async () => {
+    // AEO fix F22 (2026-09-03): 23 sitemap pages had a description and
+    // no structured data. The renderer derives one from the same
+    // title and description now; this holds every listed room to it.
+    for (const { path, page } of await everyPage()) {
+      const blocks = [...page.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(
+        (m) => JSON.parse(m[1]!) as { "@type"?: string; "@id"?: string; "@graph"?: unknown[] },
+      );
+      expect(blocks.length, `${path} carries no structured data`).toBeGreaterThan(0);
+      const names = path === "/" ? [`${BASE}/`] : [`${BASE}${path}`];
+      const namesItself = blocks.some(
+        (b) => names.includes(b["@id"] ?? "") || JSON.stringify(b).includes(`"${names[0]}"`),
+      );
+      expect(namesItself, `${path}'s structured data never names ${names[0]}`).toBe(true);
+    }
+  });
+
   it("carries the four rooms that were built and never published", async () => {
     // The specific regression. Named rather than left to the loop
     // above, because the loop passes trivially if somebody deletes an
@@ -88,6 +105,37 @@ describe("every room in the sitemap is a room", () => {
         HUMAN_SURFACES as readonly string[],
         `${path} is still missing from the sitemap`,
       ).toContain(path);
+    }
+  });
+});
+
+describe("the rooms the keeper held off the index (F3, 2026-09-03)", () => {
+  it("names the three he ruled on, and no others", () => {
+    expect(UNLISTED_ROOMS.map((room) => room.path).sort()).toEqual(
+      ["/gazette", "/porch", "/zodiac"],
+    );
+  });
+
+  it("still answer, still say what they are, and tell search crawlers not to index them", async () => {
+    for (const room of UNLISTED_ROOMS) {
+      const response = await SELF.fetch(`${BASE}${room.path}`, { headers: HTML });
+      expect(response.status, `${room.path} is a room and does not answer`).toBe(200);
+      const page = await response.text();
+      expect(page, `${room.path} has no meta description`).toContain('<meta name="description"');
+      expect(page, `${room.path} does not say noindex`).toContain(
+        '<meta name="robots" content="noindex">',
+      );
+    }
+  });
+
+  it("are off the sitemap and still rooms", async () => {
+    // Off the map is not off the store: the flag removes a sitemap
+    // line and adds a noindex, and every surface that derives from
+    // ROOMS still carries them.
+    const xml = await (await SELF.fetch(`${BASE}/sitemap.xml`)).text();
+    for (const room of UNLISTED_ROOMS) {
+      expect(xml, `${room.path} is still on the sitemap`).not.toContain(`<loc>${BASE}${room.path}</loc>`);
+      expect(ROOMS, `${room.path} left ROOMS`).toContain(room);
     }
   });
 });

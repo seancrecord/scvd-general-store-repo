@@ -6,7 +6,8 @@ import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
 import { PAPER_CSS } from "@/pages/paper-css";
 import { STORE_METADATA } from "@/store";
-import { ROOMS } from "@/store/rooms";
+import { ROOMS, isUnlistedRoom } from "@/store/rooms";
+import { jsonLdScript, webPageJsonLd } from "@/lib/jsonld";
 import { verificationMetaTags } from "@/store/site-verification";
 
 /**
@@ -151,6 +152,26 @@ export function renderSimplePage(options: SimplePageOptions): string {
   const canonical = options.path
     ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`
     : "";
+  // Every room with a canonical carries a WebPage node (F22), derived
+  // from the same title and description the head already prints. It
+  // goes at the END of the body so a room's own richer node (the
+  // FAQPage on /what, a Service, a Dataset) stays the first block a
+  // reader meets. A room the keeper held off the index
+  // (Room.in_sitemap) says so to search crawlers here, in the one
+  // place the flag is read.
+  const structuredData = options.path
+    ? `\n  ${jsonLdScript(
+        webPageJsonLd({
+          base: SITE_ORIGIN,
+          path: options.path,
+          title: options.title,
+          description: options.description,
+        }),
+      )}`
+    : "";
+  const robots = isUnlistedRoom(options.path)
+    ? `\n  <meta name="robots" content="noindex">`
+    : "";
   /*
    * THE MACHINE MAP, ON EVERY ROOM (vetted 2026-08-29 by probing the
    * live site as an arriving agent would).
@@ -177,7 +198,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:type" content="website">
   <meta property="og:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${machineMap}${markdownAlt}${webmcp}
+  <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${robots}${machineMap}${markdownAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
@@ -193,7 +214,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
     <div class="fine-print">
       <p><a href="/">Back to the front of the store</a>. Agents: <a href="/llms.txt"><code>/llms.txt</code></a>, <a href="/skill.md"><code>/skill.md</code></a>, or <a href="/menu.json"><code>/menu.json</code></a>.</p>
     </div>
-  </main>${options.inertHtml ? `\n  ${options.inertHtml}` : ""}
+  </main>${options.inertHtml ? `\n  ${options.inertHtml}` : ""}${structuredData}
 </body>
 </html>`;
 }

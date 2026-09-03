@@ -84,10 +84,21 @@ export const POSITION_LINE =
  * It is not derived from anything because it is the thing the rest
  * derives from. Change it here and every surface follows; change it
  * anywhere else and the sweep test fails.
+ *
+ * THE CATEGORY CLAUSE, 2026-09-03, the keeper's ruling ("agreed on
+ * all"): the first sentence joins the identity noun (evidence
+ * observatory, which nobody searches for and nobody else uses) to the
+ * category noun (independent verification, which is the verb people
+ * type). The paragraph carried check, watch, publish and prove, and
+ * not one of verify, verification, audit or attestation, so a model
+ * asked "who verifies x402 endpoints" had to infer it. The clause is
+ * the docs/AEO_PROMPT_READ_2026-09-02.md shape with its tail trimmed
+ * ("delivered as signed, dated evidence anyone can check" said what
+ * the sixth sentence already says, and the paragraph has a ceiling).
  */
-export const VALUE_PROPOSITION_DATED = "2026-09-01";
+export const VALUE_PROPOSITION_DATED = "2026-09-03";
 export const VALUE_PROPOSITION =
-  "scvd.store is an evidence observatory for agentic commerce. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
+  "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
 
 /**
  * THE THREE PATHS, in the order the sixty words name them, each into

@@ -552,12 +552,21 @@ const BASE = "https://scvd.store";
  * carries "/corpus/round/{week}" and "/defects/{id}", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-SEVENTH — by the keeper's category
+ * clause (AEO fix F19, "agreed on all"): the sixty words' first
+ * sentence now reads "evidence observatory for agentic commerce:
+ * independent verification of x402 endpoints, payments and
+ * receipts", and the guide's opening blockquote inherits it. Confirmed
+ * before this value was taken: the guide carries the clause verbatim
+ * once in the opening, the second byline piece (dev.to) in "Words
+ * people use", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8a7d7878f1d5367dcf400a39d385f8f1815d81e2a531692176b13c4802fdaba4";
+  "5d552a13b6544823f23788d0c1013bcfdf3d0b7e4c785f3cc22ae958e3b66210";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

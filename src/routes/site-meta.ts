@@ -9,7 +9,7 @@ import { SCHEMA_MAP_PATH } from "@/routes/ask";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
 import { MENU_ITEMS, STORE_SERVICE_NAME } from "@/store";
-import { ROOMS } from "@/store/rooms";
+import { SITEMAP_ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
 import { NAMED_AI_CRAWLERS } from "@/lib/crawlers";
@@ -44,7 +44,9 @@ export const siteMetaRoutes = new Hono<HonoEnv>();
  */
 export const HUMAN_SURFACES: readonly string[] = [
   "/",
-  ...ROOMS.map((room) => room.path),
+  // SITEMAP_ROOMS, not ROOMS, since 2026-09-03: the keeper held three
+  // rooms off the index (Room.in_sitemap). They stay in llms.txt.
+  ...SITEMAP_ROOMS.map((room) => room.path),
 ];
 
 /**

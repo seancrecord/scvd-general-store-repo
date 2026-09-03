@@ -211,10 +211,13 @@ Do not relitigate without you.
 - **`/how-it-works`.** Send the rewrite.
 - **60-word value proposition.** INKED 2026-09-01, then
   the sharper draft the same evening ("i like the sharper
-  60 word draft"). Live as `VALUE_PROPOSITION`:
+  60 word draft"); the category clause in the first
+  sentence 2026-09-03 ("agreed on all", AEO F19). Live as
+  `VALUE_PROPOSITION`:
 
   > scvd.store is an evidence observatory for agentic
-  > commerce. Before an agent pays an x402 endpoint, we
+  > commerce: independent verification of x402 endpoints,
+  > payments and receipts. Before an agent pays an x402 endpoint, we
   > check that it can be paid. After it pays, we check
   > the signed receipt. Over time we watch endpoints and
   > publish a dated, signed corpus. Sellers use it to
