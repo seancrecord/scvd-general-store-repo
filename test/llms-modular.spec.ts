@@ -612,12 +612,19 @@ const BASE = "https://scvd.store";
  * "/feeds/brief.xml" and "/feeds/disagreements.xml", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-THIRD — by one pair of backticks:
+ * the month paragraph's stable address carries braces, and the
+ * markdown-discoverability spec holds every templated URL in the
+ * guide to a code span so a reader never lifts a bare one. Confirmed
+ * before this value was taken: the guide carries the address inside
+ * backticks, and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "54cc3ddcbb6ffdbcb914c565aa9c84a4fe5195338a50ceaf1ade489d7bd22375";
+  "2e073ae92bcfd5b5b80af698faf55bfc406b83c20fc91a6ac8ad30160202dfa1";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

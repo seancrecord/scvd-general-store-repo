@@ -312,7 +312,7 @@ The same weeks by calendar month, for a citation: ${base}/corpus/month
 — doors named, probed, payable and not at the month's closing week,
 every round's counts summed as door-weeks and labelled apart, defects
 by name, the month before beside it, and a stable address per month at
-${base}/corpus/month/{YYYY-MM}. Two kinds of number, never a share.
+\`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
 
 If you poll rather than read: ${base}/feeds lists four Atom feeds,
 each derived when fetched from the same record the pages read —
