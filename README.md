@@ -587,6 +587,17 @@ endorsements.
   (2026-08-23): cross-checked their own scoreboard against this
   store's corpus.
 
+## Examples for your framework
+
+`examples/` holds one operational workflow — an agent is about to pay
+an x402 door; it reads the 402, asks the free preflight and dry run,
+reads the terms and the named defects, decides with every reason named
+— written for OpenAI Agents, Vercel AI SDK, LangChain / LangGraph,
+CrewAI, PydanticAI, AutoGen, Claude Code / Cursor and GitHub Copilot,
+over one shared zero-dependency module in JavaScript and in Python.
+Nothing there signs or pays. See [`examples/README.md`](examples/README.md)
+for what CI runs and what it does not.
+
 ## Run a preflight on deploy
 
 The free preflight is one POST, so it fits a CI step. This checks a

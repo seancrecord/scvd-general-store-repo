@@ -101,8 +101,8 @@ build, it is on the roadmap.
   doors the CDP search index still returns. `opening_day`
   and `provenance_check` will be missing until you press.
 - No agent item is queued (2026-09-02, after S6). The
-  roadmap's NOW table is empty; S8-v3 waits on its date
-  (not before 2026-10-02); everything in LATER needs a
+  roadmap's NOW table is empty; S8-v3 waits on your yes /
+  no / later, not on a date; everything in LATER needs a
   trigger or your ruling. One branch at a time (#65).
 
 ---
@@ -120,7 +120,10 @@ Do not relitigate without you.
   after a month of rows, by your hand. Design:
   `docs/S8_CROSS_SURFACE_2026-09.md`. PRs 1, 3 and 4
   shipped 2026-09-02; PR 2 (the v3 fold) waits on the
-  SOON row, not before 2026-10-02.
+  SOON row: your yes / no / later. The "not before
+  2026-10-02" an agent wrote here was struck 2026-09-03
+  ("i dont wait i decide yes/no/later"); nothing on this
+  list waits on a calendar.
 - **The Aura Walk cap, 2026-09-02.** One a week; two after
   the first three ship inside the window.
 - **The next builds, 2026-09-02, "On do that then."** After
