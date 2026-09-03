@@ -228,9 +228,59 @@ only number this will ever produce.
 
 - Cursor: directory driven by docs.cursor.com MCP listings; community
   cursor.directory accepts submissions.
-- Perplexity connectors, ChatGPT apps: developer-program submissions;
-  both want the privacy policy and a remote MCP endpoint — the same
-  two gates as Claude's, both now met.
+- Perplexity connectors: developer-program submission; wants the
+  privacy policy and a remote MCP endpoint — the same two gates as
+  Claude's, both met.
+
+## 5b. ChatGPT Plugin Directory — SUBMITTED 2026-09-03, IN REVIEW
+
+Since 2026-07-09 OpenAI's unit of submission is a *plugin* (an MCP
+server plus optional skills); the App Directory folded into the
+Plugin Directory. One plugin, "With MCP", submitted from
+platform.openai.com/plugins under Record Creative Co. LLC. What it
+took, dated, so the next round does not rediscover it:
+
+- **Domain challenge (PR #423, #438).** The portal proves control of
+  the MCP host by fetching `/.well-known/openai-apps-challenge` at
+  the ORIGIN ROOT — the `/mcp` subpath is stripped server-side — and
+  wants the bare token as text/plain. Token lives in
+  `store/site-verification.ts` (`OPENAI_APPS_CHALLENGE`); unlike the
+  x402-list nonces it has no last day, because OpenAI asks that a
+  host's token stay up while a plugin uses it. Empty = 404, never an
+  empty 200.
+- **The GET listening channel (PR #423).** Their tool scan failed
+  "MCP SSE probe returned 404": the client opens a GET on the
+  endpoint expecting text/event-stream BEFORE it POSTs anything, and
+  read the spec-permitted 405 as no server. A GET asking for an
+  event stream now gets a bounded, empty one; a bare GET keeps the
+  405. `/mcp/` 308s to `/mcp`.
+- **Listing copy.** Name "SCVD General Store"; subtitle "Check x402
+  doors and receipts" (29 chars of 30); Developer Tools; support at
+  /what, terms at /rights, privacy at /privacy. All free tools only
+  in the three demo prompts and five test cases; three negative cases
+  (Stripe link, HS256 JWT, on-chain tx lookup) mark what the plugin
+  is NOT for.
+- **Tool annotations.** Every tool's readOnly/openWorld/destructive
+  hints were justified one by one from the handlers; the values are
+  the ones `lib/mcp-tools.ts` has always set.
+- **Skill.** The canonical SKILL.md, zipped one-folder-one-file, with
+  the single Claude model reference made provider-neutral for the
+  upload only; the repo copy is untouched because parity tests pin it.
+
+**THE OPEN RISK, stated before a reviewer finds it.** OpenAI's
+guideline: "plugins may conduct commerce only for physical goods;
+selling digital products or services … tokens, or credits — is not
+allowed, whether offered directly or indirectly." The submitted
+endpoint is `/mcp` unchanged, so the scan lists the six buy_* tools.
+Inside ChatGPT they can never complete — ChatGPT's client cannot
+present an x402 payment, so each returns the 402 terms and stops —
+and the crypto-transfers attestation was ticked on that basis. If
+review objects, the answer is a free-only surface (a second path or
+a query parameter that drops buy_* from tools/list), which is NOT
+built. Do not overclaim the cards or WebMCP here; §6 governs.
+
+Review time, community-reported: weeks to months. One version in
+review at a time.
 
 ## 6. What to say about the cards and the browser door (2026-08-28)
 
