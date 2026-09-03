@@ -9,6 +9,7 @@ import {
   cardLines,
   colophonBlock,
   colophonText,
+  passportEmbed,
   decisionWord,
   passportCard,
 } from "@/pages/passport-card";
@@ -352,6 +353,7 @@ passportRoutes.get("/passport/:host", async (c) => {
     return c.json({
       ...passportOrRefusal.passport,
       colophon: colophonText(passportOrRefusal.passport, base),
+      embed: passportEmbed(passportOrRefusal.passport, base),
     });
   }
   return c.html(

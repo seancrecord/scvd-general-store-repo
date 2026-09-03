@@ -107,6 +107,16 @@ const TASKS: readonly AtlasTask[] = [
     note: "The standing watch is paid, because it costs us a week of probes. One check is free at preflight; the watch is the thing a single check cannot be.",
   },
   {
+    /*
+     * ADDED 2026-09-03 with the operators' room. Every paid item on
+     * the shelf is bought by somebody who runs a door, and the atlas
+     * had no goal in their voice.
+     */
+    goal: "I run an x402 door and want to know what is free and what is for sale, in the order a launch happens",
+    call: ["GET /operators"],
+    note: "Free, no account. The shelf from the seller's side: four moments from before launch to when something goes wrong, the free instrument named first in each, every price read off the shelf when served. Nothing there ranks, scores or certifies a door.",
+  },
+  {
     goal: "I think this store published something wrong",
     call: ["GET /corrections"],
     note: "Every claim we got wrong, dated, with what changed. If yours is not there, the issue templates in the repo are the way in.",
@@ -239,6 +249,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     method: "GET",
     purpose: "Serves the exact bytes a signature covers, so you can check it offline with your own library.",
     caution: "Free whether or not you bought the thing. Do not trust this endpoint; run the file.",
+  },
+  {
+    path: "/operators",
+    name: "For operators",
+    access: "free",
+    method: "GET",
+    purpose: "The shelf from the seller's side, in the order a launch happens: free first in every stage, every price read off the shelf.",
+    caution: "A reading order, not a recommendation to buy. Nothing there scores or certifies a door.",
   },
   {
     path: "/try",

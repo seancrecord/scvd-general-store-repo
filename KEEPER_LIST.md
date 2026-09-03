@@ -151,6 +151,21 @@ Do not relitigate without you.
   fallbacks, and a wallet with hundreds of USDC transfers in
   eleven hours will read window_unreadable by design — read
   the reason on the artifact before treating it as a fault.
+- **The ROI three, 2026-09-03, "okay lets do it."** Visibility,
+  revenue and market size, demand and your notes set aside:
+  the badge loop, the operators' page, the EVM chains. The
+  first two shipped in one PR: the passport page now offers
+  the chip as a Markdown and an HTML snippet to paste beside
+  a door, and the JSON carries it as `embed`; `/operators`
+  is the shelf from the seller's side in the order a launch
+  happens, free first at each moment, prices read off the
+  shelf. ⚑ The four stage questions, the standfirst and the
+  "what this is not" paragraph on `/operators` are drafted
+  for your ink; so is the one-line note beside the paste
+  snippets. RULE: whether `/operators` gets a storefront slot
+  (off it, like its kin). LOOK once merged: open
+  `/passport/{a ready host}`, paste the Markdown into any
+  README preview, and see the chip render and link back.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit

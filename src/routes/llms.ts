@@ -301,6 +301,13 @@ answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
 
+For anyone who runs a door: ${base}/operators is the shelf from your
+side, in the order a launch happens — before you launch, the week you
+launch, standing, and when something goes wrong — with the free
+instrument named first at each moment and every price read off the
+shelf when the page is served. A reading order, never a ranking, and
+nothing there certifies anyone.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check

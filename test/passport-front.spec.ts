@@ -46,6 +46,28 @@ describe("a host's passport carries a share colophon", () => {
     }
   });
 
+  it("offers the chip as something to paste, on the page and in the JSON (2026-09-03)", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/passport/scvd.store`)).json()) as {
+      embed: { chip_svg: string; markdown: string; html: string; note: string };
+    };
+    expect(body.embed.chip_svg).toBe(`${BASE}/badges/passport/scvd.store.svg`);
+    expect(body.embed.markdown).toContain(`(${BASE}/badges/passport/scvd.store.svg)`);
+    expect(body.embed.markdown).toContain(`](${BASE}/passport/scvd.store)`);
+    expect(body.embed.html).toContain(`<img src="${BASE}/badges/passport/scvd.store.svg"`);
+    expect(body.embed.note).toContain("never stale-green");
+    for (const word of FORBIDDEN) {
+      expect(JSON.stringify(body.embed).toLowerCase()).not.toContain(word);
+    }
+    const page = await (await SELF.fetch(`${BASE}/passport/scvd.store`, HTML)).text();
+    expect(page).toContain("To paste beside your door");
+    expect(page).toContain(`/badges/passport/scvd.store.svg`);
+    expect(page.indexOf("To paste beside your door")).toBeLessThan(page.indexOf("To share"));
+    // The chip the snippet points at actually renders.
+    const chip = await SELF.fetch(`${BASE}/badges/passport/scvd.store.svg`);
+    expect(chip.status).toBe(200);
+    expect(chip.headers.get("content-type")).toContain("svg");
+  });
+
   it("on the page, as text to paste, with a markdown form", async () => {
     const page = await (await SELF.fetch(`${BASE}/passport/scvd.store`, HTML)).text();
     expect(page).toContain("To share");
