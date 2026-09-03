@@ -472,7 +472,7 @@ function briefHtml(brief: WeeklyBrief): string {
   <section>
     <h2>What this is not</h2>
     <p class="menu-desc">${escapeHtml(brief.not_a_ranking)}</p>
-    <p class="menu-meta">${escapeHtml(brief.how_to_rederive)} Every door, alphabetical: <a href="/doors">/doors</a>.</p>
+    <p class="menu-meta">${escapeHtml(brief.how_to_rederive)} Every door, alphabetical: <a href="/doors">/doors</a>. The same weeks by calendar month: <a href="/corpus/month">/corpus/month</a>.</p>
   </section>`;
 }
 
@@ -506,6 +506,7 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
             description: "The weekly brief of the x402 corpus: doors named, probed, payable and not, defects by name, and the gaps counted against the observer. Not a ranking.",
             path: "/corpus/brief",
             markdownAlt: "/corpus/brief",
+            feedAlt: { path: "/feeds/brief.xml", title: "The Week's Doors, as Atom" },
             bodyHtml: `<section><p class="menu-desc">${escapeHtml(note)}${known_weeks.length ? ` Weeks held: ${known_weeks.map((w) => `<a href="/corpus/brief?week=${escapeHtml(w)}">${escapeHtml(w)}</a>`).join(", ")}.` : ""}</p></section>`,
           }),
           status,
@@ -519,6 +520,7 @@ async function serveBrief(c: Context<HonoEnv>, html: boolean) {
         description: `The x402 corpus for ${brief.week} in one page: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Not a ranking.`,
         path: "/corpus/brief",
         markdownAlt: "/corpus/brief",
+        feedAlt: { path: "/feeds/brief.xml", title: "The Week's Doors, as Atom" },
         bodyHtml: briefHtml(brief),
       }),
     );

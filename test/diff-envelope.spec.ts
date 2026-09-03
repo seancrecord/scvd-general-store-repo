@@ -35,7 +35,6 @@ async function fetchLive(): Promise<{
     menu_json: "/menu.json",
     x402_catalog: "/.well-known/x402.json",
     openapi: "/openapi.json",
-    a2a_agent_card: "/.well-known/a2a.json",
     llms_txt: "/llms.txt",
     skill_md: "/skill.md",
   } as const;
@@ -56,7 +55,6 @@ async function fetchLive(): Promise<{
       menu: JSON.parse(texts["menu_json"] ?? "null"),
       x402: JSON.parse(texts["x402_catalog"] ?? "null"),
       openapi: JSON.parse(texts["openapi"] ?? "null"),
-      a2a: JSON.parse(texts["a2a_agent_card"] ?? "null"),
       llms: texts["llms_txt"] ?? "",
       skillMd: texts["skill_md"] ?? "",
       mcpItemIds,

@@ -458,7 +458,7 @@ function mcpSignals(c: Context<HonoEnv>): EventSignals {
   return signals;
 }
 
-function toolText(payload: Record<string, unknown>): unknown {
+export function toolText(payload: Record<string, unknown>): unknown {
   return {
     content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
     structuredContent: payload,
@@ -477,7 +477,7 @@ function flattenPurchase(
   return flat;
 }
 
-async function callFreeTool(
+export async function callFreeTool(
   c: Context<HonoEnv>,
   name: string,
   args: Record<string, unknown>,

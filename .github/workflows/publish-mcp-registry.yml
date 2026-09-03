@@ -30,8 +30,15 @@ name: Publish MCP registry listing
 on:
   workflow_dispatch:
     inputs:
+      server:
+        description: "Which listing: the store (server.json) or the tab (tab/server.json)"
+        type: choice
+        options:
+          - store
+          - tab
+        default: store
       version:
-        description: "Version to publish — must match server.json exactly"
+        description: "Version to publish — must match that manifest exactly"
         required: true
       dry_run:
         description: "Validate and check the registry, publish nothing"
@@ -44,6 +51,12 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # TWO LISTINGS, ONE BUTTON (2026-09-03, roadmap V4's first read):
+    # the tab sat at 0.5.0 on the registry against 0.11.1 on npm
+    # because only the store had a button. DIR is the directory whose
+    # server.json is published; every step below reads that one file.
+    env:
+      DIR: ${{ inputs.server == 'tab' && 'tab' || '.' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -52,15 +65,15 @@ jobs:
       # without this step the input is decoration — and decoration on a
       # publish button is how the wrong thing goes out believing it was
       # confirmed.
-      - name: The typed version must match server.json
+      - name: The typed version must match the manifest
         env:
           TYPED: ${{ inputs.version }}
         run: |
-          MANIFEST=$(node -p "require('./server.json').version")
-          NAME=$(node -p "require('./server.json').name")
-          echo "server.json: $NAME @ $MANIFEST"
+          MANIFEST=$(node -p "require('./$DIR/server.json').version")
+          NAME=$(node -p "require('./$DIR/server.json').name")
+          echo "$DIR/server.json: $NAME @ $MANIFEST"
           if [ "$MANIFEST" != "$TYPED" ]; then
-            echo "::error::You typed '$TYPED'; server.json says '$MANIFEST'. Bump the manifest or fix the input."
+            echo "::error::You typed '$TYPED'; $DIR/server.json says '$MANIFEST'. Bump the manifest or fix the input."
             exit 1
           fi
 
@@ -68,8 +81,8 @@ jobs:
       # authenticating rather than discovering it at the API.
       - name: Refuse a version the registry already holds
         run: |
-          NAME=$(node -p "require('./server.json').name")
-          VERSION=$(node -p "require('./server.json').version")
+          NAME=$(node -p "require('./$DIR/server.json').name")
+          VERSION=$(node -p "require('./$DIR/server.json').version")
           curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > registry.json
           ALREADY=$(node -e '
             const rows = require("./registry.json").servers ?? [];
@@ -80,7 +93,7 @@ jobs:
             );
           ' "$NAME" "$VERSION")
           if [ "$ALREADY" = "yes" ]; then
-            echo "::error::$NAME@$VERSION is already on the registry, and a published version is immutable. Bump server.json."
+            echo "::error::$NAME@$VERSION is already on the registry, and a published version is immutable. Bump $DIR/server.json."
             exit 1
           fi
           echo "$NAME@$VERSION is not on the registry yet."
@@ -95,12 +108,12 @@ jobs:
       # including the dry one — the check that costs nothing happens
       # before the step that cannot be undone.
       - name: Validate the manifest against the registry's schema
-        run: ./mcp-publisher validate
+        run: cd "$DIR" && "$GITHUB_WORKSPACE/mcp-publisher" validate
 
       - name: What would be published
         run: |
-          echo "--- server.json as it would be sent ---"
-          cat server.json
+          echo "--- $DIR/server.json as it would be sent ---"
+          cat "$DIR/server.json"
 
       - name: Stop here on a dry run
         if: ${{ inputs.dry_run }}
@@ -128,7 +141,7 @@ jobs:
 
       - name: Publish
         if: ${{ !inputs.dry_run }}
-        run: ./mcp-publisher publish
+        run: cd "$DIR" && "$GITHUB_WORKSPACE/mcp-publisher" publish
 
       # PROVE IT LANDED, rather than trusting the exit code. The same
       # question the weekly door battery asks: does the published entry
@@ -150,7 +163,7 @@ jobs:
             curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > after.json
             if node -e '
               const rows = require("./after.json").servers ?? [];
-              const mine = require("./server.json");
+              const mine = require(`./${process.env.DIR}/server.json`);
               const latest = rows
                 .filter((r) => r.server?.name === mine.name)
                 .find((r) => r._meta?.["io.modelcontextprotocol.registry/official"]?.isLatest);
@@ -167,5 +180,5 @@ jobs:
           echo "::error::Published, but the registry has not shown it as latest after 90s."
           echo "This may be propagation rather than failure. Check the listing by hand before re-running:"
           echo "  curl -s 'https://registry.modelcontextprotocol.io/v0/servers?search=scvd'"
-          echo "A version that IS published cannot be published again — bump server.json instead."
+          echo "A version that IS published cannot be published again — bump $DIR/server.json instead."
           exit 1

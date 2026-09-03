@@ -1,0 +1,18 @@
+{
+  "name": "receipt-valid",
+  "expect": {
+    "valid": true
+  },
+  "kid": "did:web:scvd.store#conformance-test-key",
+  "publicKeyHex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+  "receipt": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJwYXllciI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsImlzc3VlZEF0IjoxNzY3MjI1NjAwLCJ0cmFuc2FjdGlvbiI6IjB4YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9.ejuDi0c6vesOF34lLIZDZZ2oAKj_Bbfnm87SsyjDWJ_uw1BOLDVZ18vj08qWC7HsKGs-ZxxlrfZc6fVWeLNPBQ",
+  "payload": {
+    "version": 1,
+    "network": "eip155:8453",
+    "resourceUrl": "https://example.com/api/buy/widget",
+    "payer": "0x2222222222222222222222222222222222222222",
+    "issuedAt": 1767225600,
+    "transaction": "0xabababababababababababababababababababababababababababababababab"
+  },
+  "source": "conformance/offer-receipt-vectors.json receipt_valid"
+}

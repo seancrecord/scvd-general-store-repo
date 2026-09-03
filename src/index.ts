@@ -39,6 +39,10 @@ import {
   disagreementsRoutes,
   observatoryRoutes,
   operatorsRoutes,
+  feedsRoutes,
+  monthlyStateRoutes,
+  a2aRoutes,
+  mcpVerifierRoutes,
   visitorsRoutes,
   trustListRoutes,
   refundRoutes,
@@ -461,6 +465,10 @@ app.route("/", correctionsRoutes);
 app.route("/", disagreementsRoutes);
 app.route("/", observatoryRoutes);
 app.route("/", operatorsRoutes);
+app.route("/", feedsRoutes);
+app.route("/", monthlyStateRoutes);
+app.route("/", a2aRoutes);
+app.route("/", mcpVerifierRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);

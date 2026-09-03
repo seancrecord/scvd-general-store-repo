@@ -34,7 +34,6 @@ async function fetchLive(): Promise<{
     menu_json: "/menu.json",
     x402_catalog: "/.well-known/x402.json",
     openapi: "/openapi.json",
-    a2a_agent_card: "/.well-known/a2a.json",
     llms_txt: "/llms.txt",
     skill_md: "/skill.md",
   } as const;
@@ -49,7 +48,6 @@ async function fetchLive(): Promise<{
   const menu: unknown = JSON.parse(texts["menu_json"] ?? "null");
   const x402: unknown = JSON.parse(texts["x402_catalog"] ?? "null");
   const openapi: unknown = JSON.parse(texts["openapi"] ?? "null");
-  const a2a: unknown = JSON.parse(texts["a2a_agent_card"] ?? "null");
   const mcpItemIds = SHELF_CLUSTERS.flatMap((cluster) => [...cluster.itemIds]);
   texts["mcp_clusters"] = jcsCanonicalize(mcpItemIds);
   return {
@@ -59,7 +57,6 @@ async function fetchLive(): Promise<{
       menu,
       x402,
       openapi,
-      a2a,
       llms: texts["llms_txt"] ?? "",
       skillMd: texts["skill_md"] ?? "",
       mcpItemIds,
@@ -94,8 +91,11 @@ describe("a Diff Observation is the envelope's inner blocks", () => {
       surfaceUrls: live.urls,
     });
     expect(blocks.observation.class_id).toBe(DISCOVERY_COHERENCE_CLASS);
-    expect(blocks.observation.compared_surfaces).toHaveLength(7);
-    // Derived, not memorised: 21 is C(7,2), and typing both numbers
+    // Six since 2026-09-03: the A2A card became the evidence agent's
+    // (three tasks, no shelf) and left the join — it cannot disagree
+    // about what we sell.
+    expect(blocks.observation.compared_surfaces).toHaveLength(6);
+    // Derived, not memorised: 15 is C(6,2), and typing both numbers
     // means a surface added to one and not the other still reads as
     // correct on the line that was supposed to catch it.
     const n = blocks.observation.compared_surfaces.length;

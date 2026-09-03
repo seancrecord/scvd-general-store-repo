@@ -168,6 +168,7 @@ corpusLandingRoutes.get("/corpus", async (c) => {
         description:
           "Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed.",
         path: "/corpus",
+        feedAlt: { path: "/feeds/corpus.xml", title: "The corpus chain, as Atom" },
         bodyHtml: `${landingHtml(base, facts)}\n${corpusDatasetJsonLd(base)}`,
       }),
     );

@@ -54,6 +54,15 @@ export interface SimplePageOptions {
   markdownAlt?: string;
   /** Dates for the WebPage node, where a page is a dated record (the corrections ledger). */
   dates?: { published?: string; modified?: string };
+  /**
+   * The Atom feed that mirrors this page, when one does (2026-09-03,
+   * the feeds): emitted as <link rel="alternate"
+   * type="application/atom+xml"> so a feed reader pointed at the page
+   * finds it. Unset everywhere else, for the same reason as the
+   * markdown twin: a link to a feed that does not exist is worse than
+   * no link.
+   */
+  feedAlt?: { path: string; title: string };
   /** A page's own social card; the keeper's dino at /og.png otherwise. */
   ogImage?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
@@ -151,6 +160,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   const markdownAlt = options.markdownAlt
     ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
     : "";
+  const feedAlt = options.feedAlt
+    ? `\n  <link rel="alternate" type="application/atom+xml" href="${SITE_ORIGIN}${escapeHtml(options.feedAlt.path)}" title="${escapeHtml(options.feedAlt.title)}">`
+    : "";
   const canonical = options.path
     ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`
     : "";
@@ -201,7 +213,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:type" content="website">
   <meta property="og:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${robots}${machineMap}${markdownAlt}${webmcp}
+  <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${robots}${machineMap}${markdownAlt}${feedAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>

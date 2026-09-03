@@ -58,7 +58,10 @@ export const OWNED_DISCOVERY_SURFACES: readonly OwnedDiscoverySurface[] = [
     id: "a2a_agent_card",
     path: "/.well-known/a2a.json",
     kind: "a2a_agent_card",
-    carries_shelf: true,
+    // Since 2026-09-03 the card is the evidence agent's (roadmap A2):
+    // three read-only tasks at POST /a2a, no shelf. It cannot disagree
+    // about what we sell, so the self-join no longer reads it.
+    carries_shelf: false,
   },
   {
     id: "mcp_well_known",

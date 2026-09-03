@@ -1,0 +1,20 @@
+{
+  "name": "offer-valid",
+  "expect": {
+    "valid": true
+  },
+  "kid": "did:web:scvd.store#conformance-test-key",
+  "publicKeyHex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+  "offer": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjQxMDI0NDQ4MDB9.I3V9b8co0MqWfOrg9NyUfw3FEx_5JZf1l4sb23XKyyNlNXIf1GTl979S1SbGfoluAtK2evPqSanpA9QBI7InAA",
+  "payload": {
+    "version": 1,
+    "resourceUrl": "https://example.com/api/buy/widget",
+    "scheme": "exact",
+    "network": "eip155:8453",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "payTo": "0x1111111111111111111111111111111111111111",
+    "amount": "10000",
+    "validUntil": 4102444800
+  },
+  "source": "conformance/offer-receipt-vectors.json offer_valid"
+}

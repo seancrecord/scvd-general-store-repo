@@ -1,0 +1,12 @@
+{
+  "name": "offer-expired-but-wellformed",
+  "expect": {
+    "valid": true,
+    "advisory": "expiry"
+  },
+  "kid": "did:web:scvd.store#conformance-test-key",
+  "publicKeyHex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+  "offer": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3MzU2ODk2MDB9.2FIYFVeY5oen8Nd3R3cxqWujjvjaItVO77Xu3U62Q35YJONS7RfehMi-JXCKSFNGqWVFjboxW53Ji8Y7CNKkDQ",
+  "note": "Valid bytes; the expiry check is advisory and never folds into valid.",
+  "source": "conformance/offer-receipt-vectors.json offer_expired_but_wellformed"
+}
