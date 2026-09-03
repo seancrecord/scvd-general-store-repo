@@ -146,10 +146,10 @@ Do not relitigate without you.
   hand, from a named trigger. The third shipped the same night
   too: `/observatory`, the porch's counts read per surface and
   month. Both pages' prose is inked (2026-09-03, the ink
-  sheet). The storefront slot for both: LEAVE, ruled
-  2026-09-03 on the ink sheet's item 11 — they stay off it,
-  like the pulse, as a standing rule and not an open
-  question. TEST when a Solana statement is
+  sheet). The storefront slot for both: ON, ruled 2026-09-03
+  ("go ahead and do those", reversing the sheet's default of
+  leave the same afternoon) — roadmap V1. TEST when a Solana
+  statement is
   bought: the RPC endpoint order is Helius then the public
   fallbacks, and a wallet with hundreds of USDC transfers in
   eleven hours will read window_unreadable by design — read
@@ -166,8 +166,8 @@ Do not relitigate without you.
   "what this is not" paragraph on `/operators` and the
   one-line note beside the paste snippets are inked
   (2026-09-03, the ink sheet). Storefront slot for
-  `/operators`: LEAVE, ruled 2026-09-03 with item 11 — off
-  it, like its kin. LOOK once merged: open
+  `/operators`: ON, ruled 2026-09-03 with item 11 (roadmap
+  V1). LOOK once merged: open
   `/passport/{a ready host}`, paste the Markdown into any
   README preview, and see the chip render and link back. The
   third shipped as its own PR: Ethereum, Arbitrum One, OP
@@ -243,9 +243,11 @@ Do not relitigate without you.
   is still yours: which intake wins when they disagree was
   not named, and the counterparty rule stands until it is.
   Roadmap L3 does not start without that word.
-- **PROTOCOL_EXPANSION §11.** MPP wait-and-see (re-affirmed
-  2026-09-03, the ink sheet's item 13: the read-only battery
-  waits on Part B's two reopening conditions). Chargeback.
+- **PROTOCOL_EXPANSION §11.** MPP wait-and-see on the TILL
+  stands; the READ-ONLY battery is GO (2026-09-03, "go ahead
+  and do those", reversing the sheet's default of wait the
+  same afternoon): designed first as roadmap V3, and you rule
+  on the design before code. Chargeback. Circle deeper vs Chargeback.
   Circle deeper vs listing-only. Gateway receivable cap.
   Sub-cent tier and mandate-desk price. One-liner goes
   cross-protocol before or after a second protocol runs
@@ -272,10 +274,9 @@ Do not relitigate without you.
   `test/first-screen.spec.ts`). Do not write a second
   one-liner per marketplace; the npm packages do not
   list items and need no republish for it.
-- **`/trust`, `/profiles` storefront slots.** LEAVE, ruled
-  2026-09-03 (the ink sheet, item 11): held off the front as
-  a standing rule; `/passport` went on 2026-09-01 by your
-  ruling.
+- **`/trust`, `/profiles` storefront slots.** ON, ruled
+  2026-09-03 ("go ahead and do those", roadmap V1);
+  `/passport` went on 2026-09-01 by your ruling.
 - **The Aura Walk, nothing left to rule.** The copy on the
   row (`src/store/menu.ts`, the description, the 402 line and
   the constraints) is inked (2026-09-03, the ink sheet); the

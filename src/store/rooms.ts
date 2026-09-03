@@ -33,9 +33,11 @@ export interface Room {
    * no structured-data entry on the storefront, because whether a room
    * appears at the front is a copy decision and copy is his (rule 7).
    *
-   * Exactly one room sits here today and it is not an oversight: the
-   * pulse shipped under "do NOT wire this into the public storefront
-   * page yet," and a test has held that since. This flag is how the
+   * The pulse sits here and it is not an oversight: it shipped under
+   * "do NOT wire this into the public storefront page yet," and a test
+   * has held that since. Five rooms that waited here for a slot ruling
+   * (/trust, /profiles, /disagreements, /observatory, /operators) went
+   * on the front 2026-09-03 by his word ("go ahead and do those"). This flag is how the
    * derived footer honours that instruction instead of quietly
    * overruling it — which is what the first draft of this change did,
    * caught by his guard rather than by me.
@@ -201,20 +203,20 @@ export const ROOMS: readonly Room[] = [
    * kin until the keeper rules on a slot; every agent-read surface
    * carries it from day one.
    */
-  { path: "/disagreements", name: "Disagreements", on_storefront: false },
+  { path: "/disagreements", name: "Disagreements" },
   /*
    * The observatory, 2026-09-02: the porch's counts, read. Per month,
    * per surface, in name order and never by count. Off the storefront
    * on the same terms as the pulse until the keeper rules on a slot.
    */
-  { path: "/observatory", name: "The observatory", on_storefront: false },
+  { path: "/observatory", name: "The observatory" },
   /*
    * For operators, 2026-09-03: the shelf from the seller's side, in
    * the order a launch happens, free instrument first in every stage
    * and every price read off the shelf at request. Off the storefront
    * on the same terms as its kin until the keeper rules on a slot.
    */
-  { path: "/operators", name: "For operators", on_storefront: false },
+  { path: "/operators", name: "For operators" },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —
@@ -274,7 +276,6 @@ export const ROOMS: readonly Room[] = [
   {
     path: "/trust",
     name: "The trust panel",
-    on_storefront: false,
     deeper: ["trust_profile"],
   },
   /**
@@ -300,7 +301,6 @@ export const ROOMS: readonly Room[] = [
   {
     path: "/profiles",
     name: "Hosted trust profiles",
-    on_storefront: false,
     deeper: ["trust_profile"],
   },
   {

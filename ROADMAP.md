@@ -28,10 +28,16 @@ this section is always the queue and nothing else.
 
 | # | Task | Why now | Acceptance |
 | --- | --- | --- | --- |
+| V1 | **Storefront slots for the rooms off the front.** `/operators`, `/observatory`, `/disagreements`, `/trust`, `/profiles` get their link and structured-data entry on the storefront. | His ruling 2026-09-03 ("go ahead and do those"), reversing the sheet's default: value if the market takes off, and visibility of what already exists is the cheapest visibility there is. | Each room on the front with one link; the room-walking specs hold; the copy for the links drafted in chat. |
+| V2 | **Feeds.** Atom for the weekly brief, the corpus rounds, the corrections and the disagreements, derived from the same stores the pages read, linked from the pages and the site metadata. | Aggregators, newsletters and agents that poll feeds pick the store up without being told. | Every feed validates as Atom, carries dated entries with the page as the link, and a test holds each to its source. |
+| V3 | **The MPP read-only battery, designed first.** One design document like S8's: what an MPP challenge (Stripe, Tempo) looks like on the wire, what the preflight and the census can read without accepting the scheme, the vocabulary, the tiers, the costs. He rules on the design before code. | The second wire. Every door that speaks MPP becomes addressable by the corpus, the passport and the paid audit. His "go", 2026-09-03. | The document names the decisions he must make and nothing is built until he does. |
+| V4 | **Registry listings by machine.** A weekly check that the listing on every index the store is in (x402-list, CDP, MCP registry, ClawHub, npm) still matches the shelf, a diff on the admin page, an alert on drift. | Drift there is invisible revenue loss. | Each index read by its public surface; a mismatch names the field; nothing is written to any index (press is his, rule 30). |
+| V5 | **The state of x402, monthly.** A derived report page from the trajectory: doors listed, answering, payable, defects by name, the month against the last. | The citable artifact press and researchers link. | Every number derived, with its denominator, never a ranking. |
 
-The queue is empty as of 2026-09-02. What is next is dated
-(SOON) or waits on a keeper's ruling (LATER); a row moves up
-here when he names it.
+Ordered 2026-09-03 under his lens: value or potential value
+if the market takes off, not ROI now ("think of it as tech
+in 0% interest rate times"). One PR at a time; draft copy
+goes in chat, not on a flag.
 
 ---
 
