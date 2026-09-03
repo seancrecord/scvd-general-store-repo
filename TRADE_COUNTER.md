@@ -39,6 +39,14 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   nine item pages, agents.md, the RFC 9727 api-catalog, the
   storefront. The delivery and the receipt page say refunds go
   through the account holder.
+- **The markdown twin** — `/trade.md`, and `/trade` under
+  `Accept: text/markdown`, rendered from the same constants as the
+  page and the JSON twin; canonical points home.
+- **The statement desk as a page** — `/admin/trade`: every account's
+  summary, both sides of the rows, and a form per live account to
+  record a payout by hand. `/admin/trade.json` for a script.
+- **The letter to Hal** — `docs/TRADE_HAL_LETTER.md`, drafted for the
+  keeper's hand with the ten questions in plain words.
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money

@@ -664,3 +664,42 @@ describe("the surfaces, round two", () => {
     expect(catalog).toContain("/api/trade/contract");
   });
 });
+
+describe("the markdown twin and the statement desk", () => {
+  it("/trade.md is the room in markdown with the canonical pointing home, and /trade negotiates it", async () => {
+    const twin = await SELF.fetch(`${BASE}/trade.md`);
+    expect(twin.status).toBe(200);
+    expect(twin.headers.get("content-type")).toContain("text/markdown");
+    expect(twin.headers.get("link")).toContain(`<${BASE}/trade>; rel="canonical"`);
+    const text = await twin.text();
+    expect(text).toContain("# The Trade Counter");
+    expect(text).toContain(TRADE_SANDBOX_SECRET);
+    expect(text).toContain("/api/trade/contract");
+    const negotiated = await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/markdown" } });
+    expect(negotiated.headers.get("content-type")).toContain("text/markdown");
+    expect(await negotiated.text()).toBe(text);
+    const page = await (await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain('type="text/markdown" href="https://scvd.store/trade.md"');
+  });
+
+  it("/admin/trade renders every account behind the password, and the form records a payout", async () => {
+    const auth = { Authorization: `Basic ${btoa("keeper:test-admin-password")}` };
+    const page = await SELF.fetch(`${BASE}/admin/trade`, { headers: auth });
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain("The trade counter, account by account");
+    expect(html).toContain("<code>hal</code>");
+    expect(html).toContain("<code>sandbox</code>");
+    expect((await SELF.fetch(`${BASE}/admin/trade`)).status).toBe(401);
+    const form = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/x-www-form-urlencoded" },
+      body: "amount_usd=3.50&reference=form-test",
+      redirect: "manual",
+    });
+    expect(form.status).toBe(303);
+    expect(form.headers.get("location")).toBe("/admin/trade");
+    const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradePayoutPrefix("hal") });
+    expect(rows.keys.length).toBe(1);
+  });
+});

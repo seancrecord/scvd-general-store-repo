@@ -67,6 +67,7 @@ export const FEATURES: readonly Feature[] = [
     free_first:
       "The sandbox account and its check desk are free and need no conversation.",
     doors: [
+      "/trade.md",
       "/health",
       "/api/trade/contract",
       "/api/trade/catalog",
