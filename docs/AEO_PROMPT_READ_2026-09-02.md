@@ -1329,3 +1329,24 @@ export; re-export in two weeks and compare the two counts.
   the menu (spot_check is $0.001; Base or Solana named, Polygon
   omitted, not wrong). Added to `EXTERNAL_RECORDS` with that said
   (PR 6), so it rides sameAs and the trust document.
+- **MCPpedia** (`https://mcppedia.org/s/store-scvd-general-store`,
+  the keeper's pointer, 2026-09-03): an algorithmic score, recomputed
+  daily from public data, no manual overrides, scoring code public.
+  Read 64/100: security 23/30 (no CVEs; the missing seven are the
+  authentication bonus, tool-safety marks the paid doors' side
+  effects cost, and the "MCPpedia verified" repository signal),
+  maintenance 17/25 (commit today; the missing eight are 5,000 stars,
+  10,000 weekly npm downloads and verification), efficiency **0/20,
+  "0 tools, grade F"**, documentation 14/15, compatibility 10/10.
+  The zero is the finding: their scanner extracts tool definitions
+  from the GitHub README, not the running server, and the README
+  described the MCP door in prose. The README now carries a tools
+  table (fourteen rows, name and one line), held to
+  `mcpToolCatalog()` by `test/readme-tools.spec.ts` so it cannot
+  drift (PR 6). Expect the efficiency grade to move at their next
+  daily scan; their token count will be taken from our full
+  descriptions, which are deliberately long, so C or D is the likely
+  landing, not A. Added to `EXTERNAL_RECORDS` with what it proves.
+  ⚑ Keeper: MCPpedia's "verified" flag is a manual review worth five
+  points across two rows; if there is a claim button on the page,
+  press it.

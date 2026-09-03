@@ -126,6 +126,21 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's $0.001 door and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded.",
   },
   {
+    /**
+     * SCORED BY AN ALGORITHM FROM PUBLIC DATA (2026-09-03, the keeper's
+     * pointer). MCPpedia computes a score daily from OSV, the GitHub
+     * API, npm, deps.dev and the official registry, with no manual
+     * overrides and the scoring code public. Its tool definitions come
+     * from the README, not the running server, which is why the
+     * README carries a tools table held to the catalogue by test.
+     */
+    url: "https://mcppedia.org/s/store-scvd-general-store",
+    registry: "MCPpedia",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to.",
+  },
+  {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
     confirmed: "2026-07-27",

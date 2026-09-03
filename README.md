@@ -134,6 +134,30 @@ server. It holds no key and keeps no state. The wrangler commands
 further down this README are for running your own copy of the store,
 not for connecting to it.)
 
+### Tools
+
+Fourteen tools, all listed free by `tools/list`; the `buy_*` tools
+are x402-paid in-band. Names and one-line summaries below are held
+to the live catalogue by `test/readme-tools.spec.ts`; the full
+descriptions and input schemas are what the server sends.
+
+| Tool | What it does |
+| --- | --- |
+| `read_store_guide` | The store's front door as text: the menu with prices, how x402 payment works here, the free shelf. |
+| `preflight_endpoint` | x402 endpoint preflight, free: checks any x402 door's 402 shape before anyone pays it. |
+| `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
+| `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
+| `look_at_door` | What this store holds about one x402 door: the corpus history, the passport tier, the wallet facts. |
+| `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
+| `ring_bell` | Ring the store bell; free. |
+| `sign_guestbook` | Sign the guestbook; free. |
+| `buy_simple` | The front counter: the few things that need no reading. x402-paid. |
+| `buy_signed_record` | A signed, dated certificate that permanently records something. x402-paid. |
+| `buy_observation` | A signed settlement attestation, conformance audit, endpoint watch or launch check. x402-paid. |
+| `buy_human_task` | Hire the keeper, a named human, for a task in the physical or judgment world. x402-paid. |
+| `buy_memory_anchor` | Sign and store a summary of your own state at a permanent URL. x402-paid. |
+| `buy_small_pleasure` | A small signed novelty from the jar. x402-paid. |
+
 **Evidence cards (MCP Apps).** `preflight_endpoint` and
 `verify_artifact` carry `_meta.ui.resourceUri` pointing at `ui://`
 templates the server serves; a host that supports the MCP Apps
