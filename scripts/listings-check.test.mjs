@@ -176,9 +176,10 @@ test("the versions walk reads every index once, never throws on a dead one, and 
   const seen = [];
   const fetchImpl = async (url) => {
     seen.push(String(url));
-    if (String(url).endsWith("/menu.json")) return new Response(JSON.stringify({ items: [{ id: "a", price_usdc: 1 }] }), { status: 200 });
-    if (String(url).includes("registry.modelcontextprotocol.io")) return new Response(JSON.stringify(REGISTRY), { status: 200 });
-    if (String(url).includes("registry.npmjs.org")) return new Response(JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }), { status: 200 });
+    const { host, pathname } = new URL(String(url));
+    if (pathname === "/menu.json") return new Response(JSON.stringify({ items: [{ id: "a", price_usdc: 1 }] }), { status: 200 });
+    if (host === "registry.modelcontextprotocol.io") return new Response(JSON.stringify(REGISTRY), { status: 200 });
+    if (host === "registry.npmjs.org") return new Response(JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }), { status: 200 });
     throw new Error("ECONNREFUSED");
   };
   const local = {
@@ -193,5 +194,5 @@ test("the versions walk reads every index once, never throws on a dead one, and 
   assert.equal(walked.rows.find((r) => r.field === "scvd-tab version").state, "agrees");
   assert.equal(walked.rows.find((r) => r.index === "clawhub").state, "unreachable");
   assert.equal(walked.rows.find((r) => r.index === "x402-list").state, "unreachable");
-  assert.equal(seen.filter((u) => u.includes("registry.modelcontextprotocol.io")).length, 1);
+  assert.equal(seen.filter((u) => new URL(u).host === "registry.modelcontextprotocol.io").length, 1);
 });

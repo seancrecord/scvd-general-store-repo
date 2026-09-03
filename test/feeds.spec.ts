@@ -86,7 +86,7 @@ describe("the feeds on the wire", () => {
       expect(ids.length).toBe(updated.length);
       expect(ids.length).toBe(links.length);
       expect(new Set(ids).size).toBe(ids.length);
-      for (const link of links) expect(link.startsWith(BASE)).toBe(true);
+      for (const link of links) expect(new URL(link).origin).toBe(BASE);
       expect(updated).toEqual([...updated].sort().reverse());
       if (feed.path !== "/feeds/corpus.xml") expect(xml).toContain("/corrections");
     }
