@@ -55,12 +55,16 @@ function expectLeadsWith(surface: string, body: string): void {
 
 describe("the sixty words are one constant", () => {
   it("is the keeper's ink, dated, and opens the shared opening", () => {
-    expect(VALUE_PROPOSITION_DATED).toBe("2026-09-01");
+    expect(VALUE_PROPOSITION_DATED).toBe("2026-09-03");
     // Roughly sixty words: the name is a promise about length too.
     // The inked draft runs a little over; a paragraph is the ceiling.
+    // Raised from 80 on 2026-09-03 when the keeper ruled the category
+    // clause into the first sentence (eight words, every one a noun
+    // people type). Still one paragraph.
     const words = VALUE_PROPOSITION.split(/\s+/).length;
     expect(words).toBeGreaterThanOrEqual(50);
-    expect(words).toBeLessThanOrEqual(80);
+    expect(words).toBeLessThanOrEqual(90);
+    expect(VALUE_PROPOSITION).toContain("independent verification of x402 endpoints, payments and receipts");
     expect(POSITION_OPENING.startsWith(VALUE_PROPOSITION)).toBe(true);
     // What the sixty words leave out, the opening still carries.
     expect(POSITION_OPENING).toContain(OPERATED_BY);

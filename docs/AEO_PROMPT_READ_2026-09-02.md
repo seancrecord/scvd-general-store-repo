@@ -624,7 +624,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | --- | --- | --- | --- |
 | F1 | Every 402 leaves with `X-Robots-Tag: noindex`, set once in the app's middleware so no door can forget. Built 2026-09-02 (PR 1); `test/noindex-on-402.spec.ts` walks the shelf. | GSC pre-read | B |
 | F2 | Trailing-slash GET or HEAD on a human path is one 301 to the canonical, query kept; `/api/` untouched so a machine caller gets its answer or its 410 where it asked. Built 2026-09-02 (PR 1); `test/one-url-per-page.spec.ts`. | GSC pre-read | B |
-| F3 | ⚑ Decide which lore rooms stay in the sitemap; the rest get a description and an Article/FAQ block or come out. | GSC pre-read | B |
+| F3 | Ruled 2026-09-03 and built (PR 5): `/gazette` (retired), `/porch` ("not really for humans") and `/zodiac` ("idc either way", so out) carry `in_sitemap: false` in `store/rooms.ts`; they leave the sitemap and get a noindex meta, and every other surface still lists them. The train, the neighbours, the visitors' register, the pulse, the bounty board, credit, becoming and wind-down stay. `test/discoverable.spec.ts` names the three. | GSC pre-read | B |
 | F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
 | F5 | Named crawlers get the page. Built 2026-09-02 (PR 1) as a narrower rule than first written: a User-Agent on the robots.txt list (now `lib/crawlers.ts`, one list for both readers) that states no Accept preference gets HTML; a crawler that asks for JSON or markdown still gets it; every other caller is unchanged, because an agent's `fetch(url)` sends the same bare wildcard and expects JSON, and the store's own CLI and the six-doors check depend on that. `Vary` gains `User-Agent` everywhere, merged in one place. `test/crawler-negotiation.spec.ts`. | crawler probe | B1 |
 | F6 | /what opens with "What is scvd.store?" (the name spelled, the sixty words, who runs it) and the three paths. Built 2026-09-02 (PR 2). | live /what | B2 |
@@ -634,16 +634,16 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F10 | `buy_observation` opens with "signed settlement attestation … signed x402 conformance audit or endpoint watch"; `buy_signed_record` with "signed certificate"; `preflight_endpoint` with "x402 endpoint preflight"; `check_conformance` with "x402 receipt verification". Built 2026-09-02 (PR 2). | tools/list | B6 |
 | F11 | README H1 is the domain (ruled), the sixty words follow as before; server.json and plugin.json descriptions name preflight, receipt checks and settlement attestations inside the registry's 100 characters. Built 2026-09-02 (PR 2). ⚑ GitHub About text and the ClawHub bundle republish are the keeper's (the bundle goes out through `npm run skill:publish`). | mirrors | B7 |
 | F12 | Dataset already on /corpus, /corpus.json, /doors and /registry; added to /inflows. SoftwareApplication nodes on /developers for the MCP server, the CLI, x402-verify and x402-sign (/mcp.md is markdown and carries no JSON-LD). Built 2026-09-03 (PR 3). | standards check | B8 |
-| F13 | IndexNow: the key served at `/indexnow/{key}.txt` from `INDEXNOW_KEY`, and `npm run deploy` pings api.indexnow.org with the live sitemap's URLs afterwards (`scripts/indexnow-ping.mjs`; no key means skipped, exit 0). Built 2026-09-02 (PR 1). ⚑ The key goes in with `wrangler secret put INDEXNOW_KEY` (32 hex chars) and the same value in Bing Webmaster Tools. | Bing | B9 |
+| F13 | IndexNow: the key served at `/{key}.txt` from `INDEXNOW_KEY` (moved to the root 2026-09-03 after the first live ping was refused: a key vouches only for its own directory and below, so `/indexnow/{key}.txt` vouched for nothing), and `npm run deploy` pings api.indexnow.org with the live sitemap's URLs afterwards (`scripts/indexnow-ping.mjs`; no key means skipped, exit 0). Built 2026-09-02 (PR 1). ⚑ The key goes in with `wrangler secret put INDEXNOW_KEY` (32 hex chars) and the same value in Bing Webmaster Tools. | Bing | B9 |
 | F14 | `/corpus/host/{host}`: the same history as the JSON as a page, titled "x402 endpoint readiness: {host} — {tier line}", every round including the missed ones with their reasons, the payment-address fact, what it cannot see, the free preflight as the call to action, a Dataset node with `about` the host and `sameAs` the JSON. A host the chain never met is a 404. `store/delisted.ts` holds the keeper's delist decisions: the page comes down and says why and when, the record stands. Every observed host in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C1 |
 | F15 | `/corpus/round/{week}`: the weekly brief at a stable address, "x402 endpoint readiness, week W: n of m probed doors payable" in the title, Dataset node with temporalCoverage; JSON to a caller that asks for it; 404 for a week the chain does not hold. Every signed week in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C2 |
 | F16 | `/defects/{id}`: one page per class with the id in the title, asserts, costs, detectable, falsified by, how an operator clears it, and a DefinedTerm node in the vocabulary's DefinedTermSet. Every class in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C3 |
 | F17 | DigitalDocument node on every receipt page. Built 2026-09-03 (PR 3). | crawl | C4 |
 | F18 | `npm run listings:check` (`scripts/listings-check.mjs`, `scripts/lib/listings.mjs`): reads the homepage's sameAs list, reads every mirror as a browser would, classifies each as current (the sixty words, read from the live og:description), september, august, july, unknown or unreachable; `--record` writes `docs/listings/observation.json`, later runs exit 1 on a mirror that moved backwards. `listings:test` is offline and in the gates. Built 2026-09-03 (PR 4). ⚑ First `--record` from the keeper's machine: from the build sandbox 31 of 35 mirrors are egress-blocked, so a baseline taken here would be a lie. | mirrors | E1 |
-| F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
-| F20 | `registry/awesome-x402-submission.md` recut 2026-09-03 (PR 4) with the new entry, the two live lists and the sections that fit; the July entry kept beneath for the record. ⚑ The two PRs are the keeper's. | awesome lists | A2 |
-| F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
-| F25 | `subjectOf` on the Organization links the byline pieces (HackerNoon now; the dev.to URL when the keeper sends it), and the guides print them. Built 2026-09-02 (PR 2). | rulings | B |
+| F19 | Ruled 2026-09-03 ("agreed on all") and built (PR 5): the first sentence reads "…evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts." The tail of the proposed clause was trimmed because the sixth sentence already says it and the paragraph has a ceiling (raised 80 → 90 words in `test/first-screen.spec.ts`). README, every first screen, the guide digest (thirty-seventh) and the keeper's desk file followed. | the noun, answered | A1, B |
+| F20 | `registry/awesome-x402-submission.md` recut 2026-09-03 (PR 4) with the new entry, the two live lists and the sections that fit; the July entry kept beneath for the record. The keeper submitted both PRs before 2026-09-03 and reports no movement ("too many prs for them"). Nothing to chase; the entry stands in the file for the day a maintainer merges. | awesome lists | A2 |
+| F22 | Built 2026-09-03 (PR 5): 23 sitemap pages carried no JSON-LD (the census is in the PR). `renderSimplePage` now derives a WebPage node from the title and description it already prints, at the end of the body so a room's own richer node stays first, hung off the WebSite (`@id` added) and the Organization. Every listed room carries one; `test/discoverable.spec.ts` holds each to naming its own URL. | crawl | B, with F3 |
+| F25 | `subjectOf` on the Organization links the byline pieces, and the guides print them. Built 2026-09-02 (PR 2); the dev.to census piece added 2026-09-03 (PR 5) from the keeper's URL, title read from the slug for the keeper to correct. | rulings | B |
 | F24 | One `@id` on the store's Organization node and every reference to it (32 nodes, two names before), under the display name; done on the branch with `test/organization-id.spec.ts`. | entity anchors | PR 1 |
 | F23 | JSON-LD money fields say "USD" with the settlement asset in words; done on the branch, not yet a PR. The 2026-08-27 ruling stands everywhere a validator does not read. | GSC, keeper | PR 1 |
 
@@ -846,7 +846,7 @@ in the sixty words) waits on the keeper's ruling; the question-titled
 pages (D) wait on a hand check. The Solana PR text was removed on
 2026-09-02 at the keeper's word.
 
-### The keeper's list, as it stands
+### The keeper's list, as it stood (superseded the same afternoon; see below)
 
 Nothing on the branch moves until one of these lands. In the order
 the plan set, with what each unlocks:
@@ -884,3 +884,245 @@ the plan set, with what each unlocks:
 10. **Delistings**, if a host asks: one row in `src/store/delisted.ts`
     with host, date and reason; the page comes down, the record
     stands.
+
+## Rulings and the fifth build — 2026-09-03, afternoon
+
+The keeper answered the nine in one message. What each answer was,
+what it unblocked, and what is now in the keeper's hands with the
+steps written out.
+
+### The rulings
+
+1. **The category clause: "agreed on all."** Built as F19 (above).
+2. **Mirror sweep: "we will do this at very end so save it."** Saved.
+   The final words are now on main; the sweep is the last item.
+3. **Awesome lists: "already done, didn't move."** Both PRs are in
+   the maintainers' queues. Nothing to do; the entry stays in
+   `registry/awesome-x402-submission.md`.
+4. **IndexNow: willing now; asked how to make the key.** Steps below.
+5. **Entity anchors: asked for the download and the walk.** Below.
+6. **Vouch, x402.org, Cloudflare: asked for the walk.** Below.
+7. **dev.to URL sent.** Built into `WRITTEN_ABOUT` (F25).
+8. **Rooms:** gazette out (retired), porch out (not for humans),
+   train in, zodiac either way (taken as out), neighbours in,
+   visitors in, pulse in, bounties in, credit in, becoming in,
+   wind-down either way (taken as in: "if the lights go off" is a
+   question buyers ask). Built as F3 and F22.
+9. (blank)
+
+### PR 5 — what shipped on the rulings
+
+| Fix | Change |
+| --- | --- |
+| F19 | The first sentence of the sixty words carries the category clause; README, every first screen, the guide digest and `KEEPER_LIST.md` followed. |
+| F3 | `Room.in_sitemap` in `store/rooms.ts`; `SITEMAP_ROOMS`, `UNLISTED_ROOMS`, `isUnlistedRoom()`. `HUMAN_SURFACES` derives from `SITEMAP_ROOMS`. The three unlisted rooms get `<meta name="robots" content="noindex">` from the renderer (the porch, a hand-built page, by hand). |
+| F22 | `webPageJsonLd()` and `websiteId()` in `lib/jsonld.ts`; the renderer emits the node for every page with a canonical; the storefront's WebSite node carries `@id`. |
+| F25 | The dev.to census piece beside the HackerNoon one. |
+
+Tests: the first-screen pin moved to 2026-09-03 and the ceiling to
+90 words; `test/capability-query.spec.ts` widens the first screen
+from 1,400 to 1,500 characters because the opening grew by ninety;
+`test/routes.spec.ts` expects the Gazette off the map;
+`test/discoverable.spec.ts` gains the unlisted-rooms block and the
+structured-data sweep; the guide digest is the thirty-seventh.
+
+### 4. IndexNow, Bing and Search Console, step by step
+
+The key is any 32 lowercase hex characters. Make one:
+
+```
+openssl rand -hex 16
+```
+
+Keep it; you paste it twice. First into the Worker:
+
+```
+wrangler secret put INDEXNOW_KEY
+```
+
+(paste the key at the prompt.) The route at
+`https://scvd.store/{key}.txt` answers with the key as soon as the
+secret exists; open it in a browser to confirm. That is the
+whole protocol-side setup: IndexNow verifies ownership by fetching
+that file, and no registration is needed with Bing for the pings to
+count. Then, for the next deploy, put the same key in the shell that
+runs `npm run deploy` (in `.env` or exported), because the ping
+script runs on your machine after `wrangler deploy` and reads it from
+there. Run it once now, by hand:
+
+```
+INDEXNOW_KEY=<the key> npm run indexnow
+```
+
+A 200 or 202 back means Bing accepted the sitemap's URLs.
+
+The first live run (2026-09-03, 1,284 URLs) came back 422 and nothing
+else. The sitemap was clean from outside and the key file answered,
+and a one-URL ping by hand returned the reason: "One or more URLs are
+not related to your site verified through the keyLocation parameter."
+IndexNow scopes a key to the directory it is served from and below,
+so a key under `/indexnow/` vouched for `/indexnow/*` and nothing
+else. The route moved to the root the same hour. The script also now
+fetches its own key file first, the way Bing does, and says which side
+is wrong before it sends anything, and prints IndexNow's reply body on
+any 4xx, so the next refusal explains itself.
+
+Bing Webmaster Tools (bing.com/webmasters): sign in, "Add a site",
+choose "Import from Google Search Console" (one click, no DNS record),
+submit `https://scvd.store/sitemap.xml` under Sitemaps. Under
+"IndexNow" in the left rail you will see submissions arriving after
+the first ping. Bing's index is what ChatGPT search cites from.
+
+Search Console: Sitemaps → resubmit `https://scvd.store/sitemap.xml`
+so Google picks up the host, round and defect pages, and sees the
+three rooms leave. On the count: 22 indexed of ~79 submitted before
+PR 3 is low but not wrong for a domain this age. The three lore rooms
+leaving, the WebPage nodes, and the new evidence pages (which are the
+kind of page Google indexes: specific, dated, structured) should move
+it. Paste the Pages report in two weeks and the pre-read table gets
+replaced with what Google actually said.
+
+Also in the Cloudflare zone, once: confirm `www.scvd.store` 301s to
+the apex (F4). If it does not, a Redirect Rule "www → apex, 301,
+preserve path" is one rule.
+
+### 5. The entity anchors, step by step
+
+**What to download.** The corpus is an index plus one file per
+signed round. From any shell:
+
+```
+mkdir -p corpus && cd corpus
+curl -sS https://scvd.store/corpus.json -o corpus.json
+for u in $(jq -r '.distribution[].contentUrl' corpus.json | grep -E '/corpus/[0-9]+\.json$'); do
+  curl -sS "$u" -o "$(basename "$u")"
+done
+curl -sS https://scvd.store/corpus/tiers.json -o tiers.json
+```
+
+That leaves `corpus.json` (the index with the chain check),
+`1.json`, `2.json`, … (one per round, each signed) and `tiers.json`.
+Those files are the dataset.
+
+**Zenodo (first, because the DOI is what the others cite).**
+
+1. zenodo.org → Log in with GitHub.
+2. "New upload". Drag in every file from the folder above.
+3. Resource type: Dataset. Title: `scvd.store x402 endpoint readiness
+   corpus`. Publication date: today. Creators: Record Creative Co.
+   LLC, and your name as a second creator if you want it cited.
+4. Description: the sixty words (from main, with the clause), then
+   one paragraph: weekly signed observations of every host in the
+   x402 discovery document, hash-chained, ed25519-signed, digests
+   anchored to Bitcoin through OpenTimestamps; one file per round;
+   the row schema and the denominator rule are in `corpus.json`;
+   never a ranking. Licence: Creative Commons Attribution 4.0.
+   Related works: `https://scvd.store/corpus` (URL, "is identical
+   to") and `https://scvd.store/corpus.json`.
+5. Publish. Zenodo shows two DOIs: the version DOI and the concept
+   DOI ("Cite all versions"). Send me the concept DOI; it goes onto
+   /corpus and into the Dataset nodes, and the weekly upload script
+   uses it.
+6. Every later round: "New version" on the same record, add the new
+   round's file, publish. (After the DOI lands I write the script
+   that does this from the Sunday walk with a Zenodo token, so step
+   6 happens by itself.)
+
+**LinkedIn.** Do not reframe the Little Wheels page. On the Record
+Creative Co. LLC company page (create it if the existing page is
+Little Wheels' own: Work → Create a Company Page → Company, legal
+name, website `https://scvd.store`, industry "Software Development"),
+add a Showcase Page named `scvd.store` (Admin tools → Create a
+Showcase Page). Tagline: "Independent verification for agentic
+commerce." About: the sixty words. Website: `https://scvd.store`.
+Send me the showcase URL for `sameAs`.
+
+**Crunchbase.** Open the existing organisation profile → Edit. Rename
+to `Record Creative Co. LLC`, legal name the same, website
+`https://scvd.store` if the store is the primary product (or keep
+Little Wheels' site and add the store under Products). Add both
+products under "Products": `scvd.store` with the sixty words, and
+Little Wheels. One profile per legal entity; a second one for the
+store alone claims a company that does not exist. Send me the
+profile URL.
+
+**Hugging Face (after the DOI).** huggingface.co → New → Dataset,
+name `x402-endpoint-readiness`, public, licence cc-by-4.0. Upload the
+same files. The dataset card (README.md on the repo) needs a YAML
+header:
+
+```
+---
+license: cc-by-4.0
+language: en
+pretty_name: scvd.store x402 endpoint readiness corpus
+tags: [x402, agentic-commerce, payments, verification]
+---
+```
+
+then the sixty words, the row schema, the denominator rule, the
+concept DOI, and `https://scvd.store/corpus`. Send me the dataset
+URL. Weekly pushes join the same script as Zenodo.
+
+### 6. Vouch, x402.org, Cloudflare, step by step
+
+**Vouch Protocol.** The row the export surfaced lists
+`scvd/general-store` at "C, 60". Search "Vouch Protocol Agent Trust
+Index scvd" and open the row. Read three things: what the letter
+grades (a scan of the MCP server? of the site?), what the 60 counts
+(out of what), and whether there is a "claim this agent" or
+"request a correction" control. Send me the URL and those three
+answers. If the measure is something we can improve on our side (a
+missing header, a manifest field) it is a fix; if it is wrong about
+us it is a corrections entry; if it is neither, the doc records what
+it measures and we leave it.
+
+**x402.org ecosystem.** The page is generated from the
+`coinbase/x402` GitHub repository: the ecosystem entries live as
+folders under the site's `ecosystem/partners-data` directory (a
+`metadata.json` with name, description, logo and website, plus the
+logo file), and a project is added by pull request. Check the repo's
+CONTRIBUTING file for the current path and the fields, since the
+site has moved once. The entry: name `scvd.store`, category
+"Infrastructure" or "Services" (whichever the file offers),
+description the one-line entry from `registry/awesome-x402-submission.md`,
+website `https://scvd.store`, logo the og image or a square crop of
+it. Open the PR under your account; send me the PR URL for the
+record. x402.org was the single most-cited domain in the export for
+the conformance prompts, so this one is worth the PR even though it
+is one more queue.
+
+**Cloudflare, once.** In the dashboard, open the scvd.store zone.
+"AI Crawl Control" (left rail; it was "AI Audit" until 2025) shows
+which AI crawlers fetched the site in the last day, week and month,
+by bot, with the paths and the status codes they got. Read the table
+for the four that matter (GPTBot and OAI-SearchBot, ClaudeBot,
+PerplexityBot, Google-Extended) and note whether each is fetching
+HTML now (PR 1's job) and which paths. Screenshot or paste the table
+and it goes in this file, dated, as the first crawl reading.
+Separately, at radar.cloudflare.com/scan, scan `https://scvd.store`
+and read the "AI readiness" or "agent readiness" section if your
+account shows one; it checks robots.txt, llms.txt and the machine
+links. Paste what it says.
+
+### The keeper's list, as it stands now
+
+1. IndexNow key into the Worker and the deploy shell; Bing Webmaster
+   import; Search Console resubmit; www check. (Section 4.)
+2. Zenodo record → send the concept DOI. Then LinkedIn showcase,
+   Crunchbase rename, Hugging Face. Send each URL. (Section 5.)
+3. Vouch row read; x402.org PR; one Cloudflare crawl reading.
+   (Section 6.)
+4. Correct the dev.to title in `WRITTEN_ABOUT` if the slug got it
+   wrong.
+5. CV's IETF paragraph from `docs/bylines/CV_PROMPT_IETF_2026-09.md`.
+6. Search Console Pages report in two weeks.
+7. Last of all, the mirror sweep with the final words, then the
+   first `npm run listings:check -- --record` from your machine.
+
+What the branch builds as each arrives: the DOI onto /corpus and the
+Dataset nodes; each anchor URL into `sameAs`; the weekly Zenodo and
+Hugging Face upload from the Sunday walk; the IETF paragraph onto the
+spec page; the real GSC table; delist rows on request. The
+question-titled pages (D) wait on a hand check I can run once the
+crawler fixes have been live two weeks.

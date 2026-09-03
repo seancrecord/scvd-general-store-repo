@@ -38,18 +38,25 @@ describe("trailing slashes", () => {
 /**
  * THE INDEXNOW KEY FILE. Bing verifies a ping by fetching the key
  * back from the host; the test binding is a fixed key, and any other
- * thirty-two hex characters are a 404 rather than a hint.
+ * thirty-two hex characters are a 404 rather than a hint. At the root
+ * since 2026-09-03: IndexNow scopes a key to its directory and below,
+ * and the first live ping from /indexnow/ was refused for exactly that.
  */
 describe("the IndexNow key file", () => {
   it("serves the configured key as plain text", async () => {
-    const response = await SELF.fetch(`${BASE}/indexnow/0123456789abcdef0123456789abcdef.txt`);
+    const response = await SELF.fetch(`${BASE}/0123456789abcdef0123456789abcdef.txt`);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/plain");
     expect(await response.text()).toBe("0123456789abcdef0123456789abcdef");
   });
 
+  it("no longer answers under the folder it first lived in", async () => {
+    const response = await SELF.fetch(`${BASE}/indexnow/0123456789abcdef0123456789abcdef.txt`);
+    expect(response.status).toBe(404);
+  });
+
   it("answers 404 for any other key", async () => {
-    const response = await SELF.fetch(`${BASE}/indexnow/ffffffffffffffffffffffffffffffff.txt`);
+    const response = await SELF.fetch(`${BASE}/ffffffffffffffffffffffffffffffff.txt`);
     expect(response.status).toBe(404);
   });
 });

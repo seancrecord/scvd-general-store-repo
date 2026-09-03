@@ -96,8 +96,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "the same door as /mcp, which every surface lists, reached by the commonest typo: a trailing slash. It 308s to /mcp so a POSTed initialize lands as a POST (2026-09-02, after a scanner read the old 404 as no server); listing it would advertise two doors that are one door",
   "/.well-known/openai-apps-challenge":
     "an ownership challenge, not a capability: the OpenAI plugin submission portal fetches this fixed path at the origin root to check we control the MCP host, and it answers only while OPENAI_APPS_CHALLENGE is set (store/site-verification.ts). Unlike the two below it stays up for the life of the listing, because OpenAI asks that a host's token not be removed while a plugin uses it",
-  "/indexnow":
-    "an ownership challenge, not a capability: IndexNow (Bing's change-notification protocol, 2026-09-02) fetches /indexnow/{key}.txt to verify that a ping came from whoever controls the origin, and it answers only while INDEXNOW_KEY is set. No agent chooses to read a key that proves we are us; the six surfaces are where agents read, and the pages the ping announces are already on the sitemap",
+  "/:file{[a-f0-9]{32}\\.txt}":
+    "an ownership challenge, not a capability: IndexNow (Bing's change-notification protocol, 2026-09-02) fetches /{key}.txt at the root (the root since 2026-09-03: a key vouches only for its own directory and below) to verify that a ping came from whoever controls the origin, and it answers only while INDEXNOW_KEY is set. No agent chooses to read a key that proves we are us; the six surfaces are where agents read, and the pages the ping announces are already on the sitemap",
   "/.well-known/owners.json":
     "an ownership claim, not a capability: VerifyMCP reads this fixed path on its own schedule to check that the publisher named in it controls the origin serving the MCP endpoint (2026-09-02). No agent chooses to read a statement of who owns us, and the six surfaces are where agents read",
   "/.well-known/agentindex-verify.txt":

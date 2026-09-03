@@ -126,6 +126,13 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
     url: "https://hackernoon.com/ai-agents-are-customers-now-aura-is-how-i-take-notes-on-how-they-shop",
     where: "HackerNoon",
   },
+  {
+    // The keeper's URL, 2026-09-03. Title read from the slug; the
+    // keeper corrects it if the page says it differently.
+    title: "35 x402 hosts served no signed offer. Here is how to check yours in one request",
+    url: "https://dev.to/seancrecord/35-x402-hosts-served-no-signed-offer-here-is-how-tocheck-yours-in-one-request-ceh",
+    where: "dev.to",
+  },
 ];
 
 /** The vocabulary block, for the guides. Markdown-safe plain prose. */

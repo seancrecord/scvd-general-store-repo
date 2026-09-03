@@ -7,6 +7,7 @@ import {
   offerCurrencyFields,
   organizationId,
   organizationRef,
+  websiteId,
 } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { priceLabel } from "@/lib/price-label";
@@ -601,6 +602,7 @@ function webSiteJsonLd(base: string): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": websiteId(base),
     name: STORE_SERVICE_NAME,
     alternateName: ALTERNATE_NAMES,
     url: `${base}/`,

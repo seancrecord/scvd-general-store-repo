@@ -62,6 +62,19 @@ export interface Room {
    * voice and better.
    */
   writes_its_own_deeper?: true;
+  /**
+   * OFF THE SITEMAP, BY THE KEEPER'S RULING (2026-09-03, AEO fix F3).
+   * The room is still a room: it answers, llms.txt and the contract
+   * still name it, agents still walk in. What it does not get is a
+   * sitemap line or a search index, because Search Console was
+   * filing the in-voice rooms under "crawled, currently not indexed"
+   * and a small domain does not need to spend its crawl on a page
+   * that was never written for a search result. The page renderer
+   * reads this flag and adds the noindex meta, so the flag and the
+   * page cannot disagree. Which rooms sit here is copy (rule 7): the
+   * keeper named them, the reason rides on each entry.
+   */
+  in_sitemap?: false;
 }
 
 /**
@@ -166,12 +179,18 @@ export const ROOMS: readonly Room[] = [
    * slot on the one surface a person reads, now that weekly
    * self-drafting is retired and the Almanac carries the writing.
    */
-  { path: "/gazette", name: "The Gazette", on_storefront: false },
+  // Retired (the keeper, 2026-09-03: "the gazette is retired so that
+  // shouldnt be in there"). The founding edition stays a signed document.
+  { path: "/gazette", name: "The Gazette", on_storefront: false, in_sitemap: false },
   { path: "/almanac", name: "The Keeper's Almanac" },
   { path: "/directory", name: "Town Directory" },
   { path: "/train", name: "The train" },
-  { path: "/zodiac", name: "The Systems Almanac" },
-  { path: "/porch", name: "The Porch" },
+  // "idc either way" (2026-09-03): off, because a page nobody asked to
+  // index is one less thin page in the report.
+  { path: "/zodiac", name: "The Systems Almanac", in_sitemap: false },
+  // "not really for humans" (2026-09-03): the porch is where agents
+  // sit and ring; they find it through the guide, not a search box.
+  { path: "/porch", name: "The Porch", in_sitemap: false },
   { path: "/neighbours", name: "What we bought from the neighbours" },
   { path: "/stack", name: "What this store rests on" },
   { path: "/corrections", name: "Corrections" },
@@ -350,3 +369,18 @@ export const ROOMS: readonly Room[] = [
 export const STOREFRONT_ROOMS: readonly Room[] = ROOMS.filter(
   (room) => room.on_storefront !== false,
 );
+
+/** The rooms the sitemap lists; every other surface still lists ROOMS. */
+export const SITEMAP_ROOMS: readonly Room[] = ROOMS.filter(
+  (room) => room.in_sitemap !== false,
+);
+
+/** The rooms the keeper held off the sitemap and the index (F3). */
+export const UNLISTED_ROOMS: readonly Room[] = ROOMS.filter(
+  (room) => room.in_sitemap === false,
+);
+
+/** True when the page at `path` is a room the keeper held off the index. */
+export function isUnlistedRoom(path: string | undefined): boolean {
+  return path !== undefined && UNLISTED_ROOMS.some((room) => room.path === path);
+}

@@ -10,7 +10,8 @@ mcp-name: store.scvd/general-store
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 [![VerifyMCP trust score for SCVD General Store](https://verifymcp.io/badge/store-scvd-general-store/scvd.svg)](https://verifymcp.io/servers/store-scvd-general-store/scvd)
 
-**scvd.store is an evidence observatory for agentic commerce. Before an
+**scvd.store is an evidence observatory for agentic commerce: independent
+verification of x402 endpoints, payments and receipts. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
 pays, we check the signed receipt. Over time we watch endpoints and
 publish a dated, signed corpus. Sellers use it to prove a door works;

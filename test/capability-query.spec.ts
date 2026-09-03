@@ -45,7 +45,10 @@ describe("the capability query", () => {
 describe("the things DEMAND_SYNTHESIS called buried", () => {
   it("puts free forever verification on the first screen of llms.txt", async () => {
     const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
-    const firstScreen = text.slice(0, 1400);
+    // 1,400 until 2026-09-03; the keeper's category clause added
+    // ninety characters to the opening every surface inherits, and the
+    // verify line moved with it. Still the first screen.
+    const firstScreen = text.slice(0, 1500);
     expect(firstScreen).toContain("/api/verify/");
     expect(firstScreen.toLowerCase()).toContain("free, forever");
     // And the reason it matters, said once.
