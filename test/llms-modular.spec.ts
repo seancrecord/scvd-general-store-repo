@@ -569,12 +569,20 @@ const BASE = "https://scvd.store";
  * once in the opening, the second byline piece (dev.to) in "Words
  * people use", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-NINTH — by the keeper confirming
+ * the dev.to piece's title against the page, full stop included: the
+ * byline line in "Words people use" carries WRITTEN_ABOUT titles
+ * verbatim, so one character in the constant is one new digest.
+ * Confirmed before this value was taken: the guide carries the title
+ * with its full stop, the second byline URL, and still every earlier
+ * pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5ecc4c98c3d6eb9cd97b3abcf225a7e06eaa94aefe025b97815a2e036526cbb9";
+  "eec14adc00b5ae261781f020d731edd76c234b79626f396ff1009c9517191d38";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
