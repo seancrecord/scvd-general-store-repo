@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT, prefersMarkdown } from "@/lib/accept";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   DEFECT_CLASSES,
@@ -192,6 +193,64 @@ function html(base: string): string {
     `,
   });
 }
+
+/**
+ * ONE PAGE PER DEFECT CLASS (2026-09-03, PR 3). "What does
+ * offer-contradicts-challenge mean" has one answer on the web and it
+ * was a row in a table on a page whose title says "defect classes".
+ * Each class now has its own page, its id in the title, a DefinedTerm
+ * node in the set the vocabulary already is, and the same fields the
+ * JSON carries — derived from DEFECT_CLASSES, so a class added to the
+ * vocabulary has a page the same commit.
+ */
+defectRoutes.get("/defects/:id{[a-z0-9-]+}", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const id = c.req.param("id");
+  const entry = DEFECT_CLASSES.find((klass) => klass.id === id);
+  if (!entry) {
+    return c.json(
+      { error: `No defect class named ${id}. The vocabulary is at ${base}/defects.json.` },
+      404,
+    );
+  }
+  const description = `${entry.title} (${entry.id}), an x402 defect class: ${entry.asserts} Detectable by an ${entry.detectable} probe. ${entry.costs}`;
+  return c.html(
+    renderSimplePage({
+      title: `${entry.title} — x402 defect class ${entry.id}`,
+      description,
+      path: `/defects/${entry.id}`,
+      bodyHtml: `<section>
+        <p class="menu-desc"><strong>Asserts:</strong> ${escapeHtml(entry.asserts)}</p>
+        <p class="menu-desc"><strong>What a buyer loses when it is present:</strong> ${escapeHtml(entry.costs)}</p>
+        <p class="menu-desc"><strong>Detectable:</strong> ${entry.detectable === "unpaid" ? "by an unpaid probe — a GET nobody paid for can see it" : "only by a paid probe — a settled payment reveals it"}.</p>
+        <p class="menu-desc"><strong>Falsified by:</strong> ${escapeHtml(entry.falsified_by)}</p>
+        <p class="menu-desc"><strong>How an operator clears it:</strong> ${escapeHtml(entry.repair_hint)}</p>
+        ${entry.our_signal ? `<p class="menu-meta">Our signal: <code>${escapeHtml(entry.our_signal)}</code>.</p>` : `<p class="menu-meta">No instrument of ours reports this class today; the definition stands so another instrument's finding can be compared.</p>`}
+        ${
+          entry.also_known_as?.length
+            ? `<p class="menu-meta">As other instruments name it: ${entry.also_known_as.map((name) => escapeHtml(JSON.stringify(name))).join("; ")}.</p>`
+            : ""
+        }
+        ${entry.sourced_by ? `<p class="menu-meta">Named by ${escapeHtml(entry.sourced_by)}, registered ${escapeHtml(entry.registered ?? "")} — this store is the registrar, not the author.</p>` : ""}
+      </section>
+      <section>
+        <p class="menu-meta">Vocabulary v${escapeHtml(DEFECT_VOCABULARY_VERSION)}, CC BY 4.0. Every class: <a href="/defects">/defects</a>; machine-readable with falsifiers and cross-instrument mappings: <a href="/defects.json"><code>/defects.json</code></a>. A class describes a property of one endpoint at one moment and never accumulates into a judgment on an operator.</p>
+      </section>${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "DefinedTerm",
+        name: entry.title,
+        termCode: entry.id,
+        description,
+        url: `${base}/defects/${entry.id}`,
+        inDefinedTermSet: {
+          "@type": "DefinedTermSet",
+          name: "scvd.store x402 defect vocabulary",
+          url: `${base}/defects`,
+        },
+      })}`,
+    }),
+  );
+});
 
 defectRoutes.get("/defects.json", (c) =>
   c.json(document(c.env.STORE_BASE_URL)),

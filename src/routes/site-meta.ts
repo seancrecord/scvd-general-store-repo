@@ -1,4 +1,8 @@
 import { OG_IMAGE_PNG_BASE64 } from "@/store/og-image";
+import { listCorpus } from "@/services/corpus";
+import { deriveDoorIndex } from "@/services/door-index";
+import { delisting } from "@/store/delisted";
+import { DEFECT_CLASSES } from "@/store/defect-vocabulary";
 import { Hono } from "hono";
 import { ARD_WELL_KNOWN_PATH } from "@/lib/ard-catalog";
 import { SCHEMA_MAP_PATH } from "@/routes/ask";
@@ -201,6 +205,19 @@ async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
   if (await getFoundingEdition(env).catch(() => null)) {
     paths.push("/gazette/founding");
   }
+  /*
+   * THE EVIDENCE AS PAGES (2026-09-03, PR 3). One page per observed
+   * host, one per signed week, one per defect class — every one
+   * derived from the chain or the vocabulary, so the sitemap grows by
+   * exactly the count of things that exist. A delisted host keeps its
+   * record and leaves this list.
+   */
+  const records = await listCorpus(env).catch(() => []);
+  for (const entry of deriveDoorIndex(records).hosts) {
+    if (!delisting(entry.host)) paths.push(`/corpus/host/${entry.host}`);
+  }
+  for (const record of records) paths.push(`/corpus/round/${record.snapshot.week}`);
+  for (const klass of DEFECT_CLASSES) paths.push(`/defects/${klass.id}`);
   return paths;
 }
 

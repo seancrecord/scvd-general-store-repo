@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
   JCS_DUAL_EMIT_DATED,
   JCS_SIGNATURE_COVERS,
@@ -449,11 +450,24 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
           title: `Receipt ${record.certificate.cert_id}`,
           description:
             "A signed receipt from Sean-Claude Van Damme's General Store, re-verified on every load: what was bought, when, for how much, and the on-chain settlement where one exists. The machine-readable record is this same URL as JSON.",
-          bodyHtml: receiptPageHtml(
+          bodyHtml: `${receiptPageHtml(
             record.certificate,
             valid,
             form,
-          ),
+          )}${jsonLdScript({
+            "@context": "https://schema.org",
+            "@type": "DigitalDocument",
+            name: `Receipt ${record.certificate.cert_id}`,
+            identifier: record.certificate.cert_id,
+            url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}`,
+            description: valid
+              ? "An ed25519-signed receipt from scvd.store, re-verified against the published key on this load."
+              : "A receipt whose signature did not verify on this load.",
+            ...((record.certificate as { issued_at?: string }).issued_at
+              ? { dateCreated: (record.certificate as { issued_at?: string }).issued_at }
+              : {}),
+            publisher: organizationRef(c.env.STORE_BASE_URL),
+          })}`,
         }),
       );
     }

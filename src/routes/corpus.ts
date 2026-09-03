@@ -1,5 +1,7 @@
 import { namedExclusions } from "@/store/exclusions";
-import { organizationRef } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { delisting } from "@/store/delisted";
+import { deriveDoorIndex } from "@/services/door-index";
 import { effectiveObservation } from "@/services/passport";
 import { deriveTier, tierIndex, tierInputFromHistory } from "@/services/passport-tier";
 import { Hono, type Context } from "hono";
@@ -206,6 +208,190 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
       `${c.env.STORE_BASE_URL}/criteria`,
     ),
   });
+});
+
+/**
+ * GET /corpus/host/{host} — the same history as the JSON, as a page
+ * (2026-09-03, the AEO plan's PR 3).
+ *
+ * The store held hundreds of dated, signed observations per host and
+ * published every one of them as JSON only. A crawler does not read
+ * JSON. The instruments that get cited for "is this x402 endpoint
+ * working" publish one page per subject with the verdict in the
+ * title; this is ours, derived at read from the same rows as the
+ * .json twin, so the two cannot disagree. Title: the host, the tier
+ * and the fraction it came from — the N7 rule, which is the rule
+ * against a ranking: unordered, denominator beside every number.
+ *
+ * A host the chain never met is a 404, not an empty page: a page for
+ * any string somebody types would let anyone mint a URL on this
+ * domain. A host that asked to be delisted keeps its record and loses
+ * its page (store/delisted.ts).
+ */
+corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const host = c.req.param("host").toLowerCase();
+  if (host.endsWith(".json") || host.length > 253) {
+    return c.json({ error: `Ask for a host, e.g. ${base}/corpus/host/example.com` }, 400);
+  }
+  const observation = await effectiveObservation(c.env, host);
+  const history = observation.history;
+  if (history.rounds_since_first_sighting === 0 && !history.listing) {
+    return c.json(
+      {
+        error: `The chain has never carried ${host}. Every host it has is at ${base}/doors.`,
+        doors: `${base}/doors`,
+      },
+      404,
+    );
+  }
+  const tier = deriveTier(tierInputFromHistory(history, observation), `${base}/criteria`);
+  const gone = delisting(host);
+  const title = gone
+    ? `x402 endpoint readiness: ${host} — delisted`
+    : `x402 endpoint readiness: ${host} — ${tier.line}`;
+  const description = gone
+    ? `${host} asked for its page to come down on ${gone.on}. The signed corpus rows stand and the aggregates still count it; only this page is withdrawn.`
+    : `What scvd.store's weekly ward round observed about ${host}: ${tier.line}, derived from ${history.rounds_probed} probed round${history.rounds_probed === 1 ? "" : "s"} since first sighting, every missed week named with its reason. Dated observations of moments, never a ranking.`;
+  const rows = history.timeline
+    .map(
+      (round) => `<tr>
+        <td>${escapeHtml(round.week)}</td>
+        <td>${round.listed ? "listed" : "not listed"}</td>
+        <td>${round.probed ? "probed" : escapeHtml(round.gap ?? "not probed")}</td>
+        <td><code>${escapeHtml(round.verdict ?? "—")}</code></td>
+        <td>${escapeHtml((round.failed ?? []).join(", ") || "—")}</td>
+        <td><a href="${escapeHtml(round.entry_url)}"><code>${escapeHtml(String(round.sequence))}</code></a></td>
+      </tr>`,
+    )
+    .join("");
+  const jsonLd = jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: `x402 endpoint readiness — ${host}`,
+    description,
+    url: `${base}/corpus/host/${host}`,
+    sameAs: `${base}/corpus/host/${host}.json`,
+    about: { "@type": "WebSite", url: `https://${host}/` },
+    isPartOf: `${base}/corpus.json`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: organizationRef(base),
+    ...(history.last_observed ? { dateModified: history.last_observed } : {}),
+    ...(history.first_observed && history.last_observed
+      ? { temporalCoverage: `${history.first_observed}/${history.last_observed}` }
+      : {}),
+    variableMeasured: [
+      "conformance verdict per weekly round: ready, not_ready, unreachable or not_probed",
+      "named failing checks per probed round",
+      "rounds missed, each with its reason",
+      `passport tier under the published rule: ${tier.line}`,
+    ],
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/corpus/host/${host}.json`,
+    },
+  });
+  const bodyHtml = gone
+    ? `<section>
+        <p class="menu-desc">${escapeHtml(description)}</p>
+        <p class="menu-meta">Reason recorded: ${escapeHtml(gone.reason)}. The aggregates at <a href="/corpus">/corpus</a> and <a href="/doors">/doors</a> are unchanged; the signed rows are at <code>${escapeHtml(`${base}/corpus/host/${host}.json`)}</code>.</p>
+      </section>${jsonLd}`
+    : `<section>
+        <p class="menu-desc"><strong>${escapeHtml(tier.line)}</strong> — ${escapeHtml(tier.rule)}. The rule and every tier are at <a href="/criteria">/criteria</a>; the rows are below. ${escapeHtml(NEVER_A_RANKING_SENTENCE)}</p>
+        <p class="menu-meta">Latest observation: <code>${escapeHtml(String(tier.latest.verdict ?? "none"))}</code>${tier.latest.observed_at ? ` on ${escapeHtml(tier.latest.observed_at)}` : ""}. Rounds since first sighting: ${history.rounds_since_first_sighting}; probed: ${history.rounds_probed}; missed: ${history.rounds_gapped}${history.observation_coverage_pct !== null ? ` (our coverage of this host: ${history.observation_coverage_pct}%)` : ""}.${tier.coverage_suspect ? " Our own coverage was suspect somewhere in the window, which the tier already reflects." : ""}</p>
+      </section>
+      <section>
+        <h2>Every round, including the ones we missed</h2>
+        <table>
+          <thead><tr><th>Week</th><th>Listed</th><th>Probed</th><th>Verdict</th><th>Failed checks</th><th>Entry</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p class="menu-meta">A missed week is a fact about us, not about the door. Gaps by reason: ${escapeHtml(
+          Object.entries(history.gaps_by_reason)
+            .filter(([, count]) => count > 0)
+            .map(([reason, count]) => `${reason} ${count}`)
+            .join(", ") || "none",
+        )}.</p>
+      </section>
+      ${
+        history.payment_address
+          ? `<section><h2>Payment address</h2><p class="menu-desc">${escapeHtml(JSON.stringify(history.payment_address))}</p></section>`
+          : ""
+      }
+      <section>
+        <h2>What this cannot see</h2>
+        <ul class="menu-desc">${history.what_this_cannot_see.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
+      </section>
+      <section>
+        <h2>Check it yourself</h2>
+        <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The signed rows behind this page are at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
+      </section>${jsonLd}`;
+  return c.html(
+    renderSimplePage({
+      title,
+      description,
+      path: `/corpus/host/${host}`,
+      bodyHtml,
+    }),
+  );
+});
+
+/**
+ * GET /corpus/round/{week} — one stable page per signed week (PR 3).
+ * /corpus/brief stays the latest and takes ?week=; this is the same
+ * brief at an address that never changes, with the week's numbers in
+ * the title and a Dataset node, which is the shape a citing engine
+ * lifts a weekly figure from.
+ */
+corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const week = c.req.param("week");
+  const { brief, known_weeks } = deriveWeeklyBrief(await listCorpus(c.env), base, week);
+  if (!brief) {
+    return c.json(
+      { error: `The chain holds no signed week named ${week}.`, known_weeks, corrections: CORRECTIONS_POINTER },
+      404,
+    );
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER });
+  }
+  const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
+  return c.html(
+    renderSimplePage({
+      title: `x402 endpoint readiness, week ${brief.week}: ${brief.doors.payable} of ${brief.doors.probed} probed doors payable`,
+      description,
+      path: `/corpus/round/${brief.week}`,
+      bodyHtml: `${briefHtml(brief)}${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: `x402 endpoint readiness — ${brief.week}`,
+        description,
+        url: `${base}/corpus/round/${brief.week}`,
+        isPartOf: `${base}/corpus.json`,
+        temporalCoverage: brief.week,
+        dateModified: brief.taken_at,
+        license: "https://creativecommons.org/licenses/by/4.0/",
+        isAccessibleForFree: true,
+        creator: organizationRef(base),
+        variableMeasured: [
+          "doors named by the feeds",
+          "doors probed",
+          "doors payable as served",
+          "doors not payable as served",
+          "doors unreachable",
+          "defects by class",
+        ],
+        distribution: {
+          "@type": "DataDownload",
+          encodingFormat: "application/json",
+          contentUrl: `${base}/corpus/${brief.sequence}.json`,
+        },
+      })}`,
+    }),
+  );
 });
 
 /**

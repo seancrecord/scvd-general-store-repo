@@ -633,12 +633,12 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F9 | Every capability item has an asked-for noun (`ITEM_ASKED_FOR`, one without fails the build): the title and meta lead with it, the Service node carries it as `alternateName`, and a five-line "At a glance" block (attests, cryptography, verify, price and fulfilment, does not attest) derives from the artifact class and the price helpers, on the page and as `at_a_glance` in menu.json. Built 2026-09-02 (PR 2). | export read | B5 |
 | F10 | `buy_observation` opens with "signed settlement attestation … signed x402 conformance audit or endpoint watch"; `buy_signed_record` with "signed certificate"; `preflight_endpoint` with "x402 endpoint preflight"; `check_conformance` with "x402 receipt verification". Built 2026-09-02 (PR 2). | tools/list | B6 |
 | F11 | README H1 is the domain (ruled), the sixty words follow as before; server.json and plugin.json descriptions name preflight, receipt checks and settlement attestations inside the registry's 100 characters. Built 2026-09-02 (PR 2). ⚑ GitHub About text and the ClawHub bundle republish are the keeper's (the bundle goes out through `npm run skill:publish`). | mirrors | B7 |
-| F12 | Dataset JSON-LD on corpus, registry, inflows; SoftwareApplication on /mcp.md and /developers. | standards check | B8 |
+| F12 | Dataset already on /corpus, /corpus.json, /doors and /registry; added to /inflows. SoftwareApplication nodes on /developers for the MCP server, the CLI, x402-verify and x402-sign (/mcp.md is markdown and carries no JSON-LD). Built 2026-09-03 (PR 3). | standards check | B8 |
 | F13 | IndexNow: the key served at `/indexnow/{key}.txt` from `INDEXNOW_KEY`, and `npm run deploy` pings api.indexnow.org with the live sitemap's URLs afterwards (`scripts/indexnow-ping.mjs`; no key means skipped, exit 0). Built 2026-09-02 (PR 1). ⚑ The key goes in with `wrangler secret put INDEXNOW_KEY` (32 hex chars) and the same value in Bing Webmaster Tools. | Bing | B9 |
-| F14 | HTML twin of `/corpus/host/{host}.json`, titled with the readiness fraction, in the sitemap. | no evidence pages | C1 |
-| F15 | Per-round corpus page with Dataset JSON-LD, stable URL. | no evidence pages | C2 |
-| F16 | Per-defect-class page. | no evidence pages | C3 |
-| F17 | JSON-LD on verify pages. | crawl | C4 |
+| F14 | `/corpus/host/{host}`: the same history as the JSON as a page, titled "x402 endpoint readiness: {host} — {tier line}", every round including the missed ones with their reasons, the payment-address fact, what it cannot see, the free preflight as the call to action, a Dataset node with `about` the host and `sameAs` the JSON. A host the chain never met is a 404. `store/delisted.ts` holds the keeper's delist decisions: the page comes down and says why and when, the record stands. Every observed host in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C1 |
+| F15 | `/corpus/round/{week}`: the weekly brief at a stable address, "x402 endpoint readiness, week W: n of m probed doors payable" in the title, Dataset node with temporalCoverage; JSON to a caller that asks for it; 404 for a week the chain does not hold. Every signed week in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C2 |
+| F16 | `/defects/{id}`: one page per class with the id in the title, asserts, costs, detectable, falsified by, how an operator clears it, and a DefinedTerm node in the vocabulary's DefinedTermSet. Every class in the sitemap. Built 2026-09-03 (PR 3). | no evidence pages | C3 |
+| F17 | DigitalDocument node on every receipt page. Built 2026-09-03 (PR 3). | crawl | C4 |
 | F18 | `npm run listings:check`: walk every sameAs URL, report which generation of text it carries. | mirrors | E1 |
 | F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
 | F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
@@ -690,7 +690,7 @@ descriptions, the manifests. One constant, many surfaces, one sweep.
 | F16 | `/defects/{class}` one page each, derived from the vocabulary and the last round's counts with denominators. | Every class answers; adding a class without a page is impossible by construction. |
 | F12 | Dataset JSON-LD on /corpus, /corpus.json, /registry, /inflows; SoftwareApplication on /mcp.md and /developers. | Blocks parse; sweep finds them. |
 | F17 | JSON-LD on verify pages. | Parses. |
-| A10 | The dated paragraph on the spec page relating our format to the two draft families. | Present, dated. |
+| A10 | The dated paragraph on the spec page relating our format to the two draft families. ⚑ CV's, from the prompt in docs/bylines; not in PR 3. | Present, dated. |
 
 ### PR 4 — the mirrors, watched
 

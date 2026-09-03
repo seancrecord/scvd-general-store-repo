@@ -919,6 +919,12 @@ take that sentence on faith. The readable landing — what the corpus
 is, what it has found so far, and how to verify it — is
 ${base}/corpus.
 
+Every observed host has a page at \`${base}/corpus/host/{host}\` beside its
+JSON twin, titled with its tier and the fraction the tier came from;
+every signed week has one at \`${base}/corpus/round/{week}\`; every defect
+class has one at \`${base}/defects/{id}\`. All three are in the sitemap and
+derived from the same rows and vocabulary as the JSON.
+
 Beside the weekly record: ecosystem research reports, signed and
 free. The first, ${base}/api/report/x402-ecosystem-2026-08 — the
 August 2026 field run — was WITHDRAWN on 2026-08-20, one day after
