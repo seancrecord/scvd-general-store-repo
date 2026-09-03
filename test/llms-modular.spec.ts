@@ -629,24 +629,6 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FIFTY-FIRST — by the CLI at 0.2.0
- * (roadmap C5a): the one-line-per-instrument sentence now names look,
- * before-you-pay, month and feeds, and says the tool prints the
- * remediation rows. Confirmed before this value was taken: the guide
- * carries "scvd look <url>" and still every earlier pin.
- *
- * Re-taken 2026-09-03 — the FIFTIETH — by the function-calling
- * tools document (roadmap C4): one link in the contracts line and two
- * lines beside the OpenAPI contract, naming /openapi-tools.json.
- * Confirmed before this value was taken: the guide carries
- * "/openapi-tools.json" and still every earlier pin.
- *
- * Re-taken 2026-09-03 — the FORTY-NINTH — by the remediation (roadmap
- * C1): one paragraph after the vocabulary's, saying every class carries
- * both halves and the free report joins them to its findings as
- * \`remediation\`. Confirmed before this value was taken: the guide
- * carries "both halves of the remediation" and still every earlier pin.
- *
  * Re-taken 2026-09-03 — the FORTY-EIGHTH — by CI's derived-not-typed
  * guard: the verifier paragraph said "five" read-only tools, a tally
  * no code recomputes, so the count left the guide and the door's own
@@ -663,7 +645,7 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
  * and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-EIGHTH — by the keeper's greenlight on
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's greenlight on
  * the Trade Counter ("lets build it out ... we sell as a product"):
  * a "For marketplaces reselling the shelf" line in "Every door, in
  * one list" naming /trade, /trade.json, /api/trade/contract,
@@ -672,7 +654,8 @@ const BASE = "https://scvd.store";
  * area. Confirmed before this value was taken: the guide carries
  * "settled_via: trade_account" and "never touches x402", and still
  * every earlier pin.
- * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's "agreed
+ *
+ * Re-taken 2026-09-03 — the FIFTIETH — by the keeper's "agreed
  * lets do them all" on the counter's second pass: the sandbox check
  * desk and the listing feed join the door line, and the section now
  * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
@@ -686,12 +669,35 @@ const BASE = "https://scvd.store";
  * list", the way /pricing.md and /index.md are named beside their
  * rooms. Confirmed before this value was taken: the guide carries
  * "trade.md" and still every earlier pin.
+ *
+ * (The three below landed on main after the Trade Counter's two above
+ * and were renumbered at the rebase; the value was re-taken once on the
+ * rebased head.)
+ *
+ * Re-taken 2026-09-03 — the FIFTY-FIRST — by the remediation (roadmap
+ * C1): one paragraph after the vocabulary's, saying every class carries
+ * both halves and the free report joins them to its findings as
+ * \`remediation\`. Confirmed before this value was taken: the guide
+ * carries "both halves of the remediation" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-SECOND — by the function-calling
+ * tools document (roadmap C4): one link in the contracts line and two
+ * lines beside the OpenAPI contract, naming /openapi-tools.json.
+ * Confirmed before this value was taken: the guide carries
+ * "/openapi-tools.json" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-THIRD — by the CLI at 0.2.0
+ * (roadmap C5a): the one-line-per-instrument sentence now names look,
+ * before-you-pay, month and feeds, and says the tool prints the
+ * remediation rows. Confirmed before this value was taken: the guide
+ * carries "scvd look <url>" and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c3b2482c83bf639f0d7f3d617a93437408fa7dd5374211f8e3f6cd49c828ee00";
+  "57a0504e378f3224fa5926be637297c9ad3afb7f33855e7a2898a27a996d3495";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

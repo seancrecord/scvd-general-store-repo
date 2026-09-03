@@ -267,6 +267,7 @@ Do not relitigate without you.
 - **LOOK** — `/admin/trade.json` on the Sunday grind, against the
   partner's statement; record each payout with `POST
   /admin/trade/hal/payout`.
+
 ### Presses waiting (2026-09-03, evening)
 
 - **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
