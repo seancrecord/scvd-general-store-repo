@@ -1,3 +1,4 @@
+import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { readPayTo } from "@/lib/pay-to";
 import { isCanonicalUsdc } from "@/lib/value-checks";
@@ -314,9 +315,18 @@ export interface FieldSigner {
 }
 
 export async function fieldSignerFromKey(keyHex: string): Promise<FieldSigner> {
-  // Imported at call time: viem rides into the bundle, but only the
-  // account module, and only when a check actually runs.
-  const { privateKeyToAccount } = await import("viem/accounts");
+  /*
+   * A STATIC IMPORT, ON PURPOSE (2026-09-03, the x402-list p95 read).
+   * This used to be `await import("viem/accounts")`, with a note that
+   * only the account module rode into the bundle and only when a check
+   * ran. Wrangler emits one file, so nothing loads later; and a
+   * dynamic import of a barrel keeps EVERY export of that barrel alive,
+   * because the bundler cannot see which names the namespace will be
+   * asked for. That kept all nine BIP-39 wordlists in the script, 241
+   * KiB minified, parsed on every cold isolate for a function that
+   * signs with a raw key and never touches a mnemonic. A named static
+   * import lets the bundler keep privateKeyToAccount and drop the rest.
+   */
   const normalized = keyHex.startsWith("0x") ? keyHex : `0x${keyHex}`;
   const account = privateKeyToAccount(normalized as `0x${string}`);
   return {

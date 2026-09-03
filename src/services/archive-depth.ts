@@ -100,6 +100,33 @@ interface HeldDepth {
  * otherwise derive, hold, and serve. A held value that will not
  * parse or has no derived_at is treated as absent, never trusted.
  */
+/**
+ * HELD IN THE ISOLATE TOO (2026-09-03, the x402-list p95 read). The KV
+ * hold above stopped the chain being re-read on every knock, but every
+ * knock still paid the KV read itself: a directory probe every fifteen
+ * minutes, on three doors, each a round trip to a copy the edge had
+ * already let go of. The same row, under the same key and the same
+ * ten-minute rule, now also lives in this isolate's memory. A warm
+ * isolate answers from memory and never touches KV; a cold one reads
+ * KV once, banks the row, and is warm for the rest of the hold. The
+ * arithmetic, the derived_at printed on the figure, and the KV row
+ * other isolates read are all unchanged. forgetHeldDepths is for the
+ * suite, which forgets by deleting the KV rows and must forget here
+ * too.
+ */
+const heldInIsolate = new Map<string, HeldDepth>();
+
+/** Drop every depth this isolate holds; the KV rows are untouched. */
+export function forgetHeldDepths(): void {
+  heldInIsolate.clear();
+}
+
+function withinHold(row: HeldDepth | null | undefined): row is HeldDepth {
+  if (!row?.derived_at || !row.depth) return false;
+  const age = (Date.now() - Date.parse(row.derived_at)) / 1000;
+  return Number.isFinite(age) && age >= 0 && age < DEPTH_HOLD_SECONDS;
+}
+
 async function held(
   env: Env,
   kind: string,
@@ -107,10 +134,12 @@ async function held(
   derive: () => Promise<Omit<ArchiveDepth, "derived_at" | "what_this_is" | "what_this_is_not">>,
 ): Promise<ArchiveDepth> {
   const key = KV_KEYS.archiveDepth(kind, subject);
+  const inMemory = heldInIsolate.get(key);
+  if (withinHold(inMemory)) return inMemory.depth;
   const stored = await kvGetJson<HeldDepth>(env.COUNTERS, key, "json").catch(() => null);
-  if (stored?.derived_at && stored.depth) {
-    const age = (Date.now() - Date.parse(stored.derived_at)) / 1000;
-    if (Number.isFinite(age) && age >= 0 && age < DEPTH_HOLD_SECONDS) return stored.depth;
+  if (withinHold(stored)) {
+    heldInIsolate.set(key, stored);
+    return stored.depth;
   }
   const derived_at = new Date().toISOString();
   const depth = {
@@ -119,7 +148,9 @@ async function held(
     what_this_is_not: WHAT_THIS_IS_NOT,
     derived_at,
   } as ArchiveDepth;
-  await kvPut(env.COUNTERS, key, JSON.stringify({ derived_at, depth } satisfies HeldDepth), {
+  const row = { derived_at, depth } satisfies HeldDepth;
+  heldInIsolate.set(key, row);
+  await kvPut(env.COUNTERS, key, JSON.stringify(row), {
     expirationTtl: DEPTH_HOLD_SECONDS,
   }).catch(() => undefined);
   return depth;

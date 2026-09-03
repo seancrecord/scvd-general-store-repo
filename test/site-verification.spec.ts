@@ -43,14 +43,20 @@ describe("site verification tags", () => {
  * absent here rather than remembered about later.
  */
 describe("the x402-list token file", () => {
-  const live = X402LIST_TOKENS[0]!;
+  // The newest token: the file goes quiet on ITS last day, since every
+  // older one has already gone by then (2026-09-03: a second round).
+  const live = X402LIST_TOKENS[X402LIST_TOKENS.length - 1]!;
   const dayBefore = new Date(`${live.serve_until}T00:00:00Z`);
   dayBefore.setUTCDate(dayBefore.getUTCDate() - 1);
 
-  it("serves a token until its last day, and not from that day on", () => {
-    expect(x402listTokenFile(dayBefore)).toContain(`\n${live.token}\n`);
+  it("serves each token until its own last day, and not from that day on", () => {
+    for (const entry of X402LIST_TOKENS) {
+      const before = new Date(`${entry.serve_until}T00:00:00Z`);
+      before.setUTCDate(before.getUTCDate() - 1);
+      expect(x402listTokenFile(before)).toContain(`\n${entry.token}\n`);
+      expect(x402listTokenFile(new Date(`${entry.serve_until}T00:00:00Z`))).not.toContain(entry.token);
+    }
     const onTheDay = x402listTokenFile(new Date(`${live.serve_until}T00:00:00Z`));
-    expect(onTheDay).not.toContain(live.token);
     expect(onTheDay).not.toMatch(/^x402list-verify-/m);
     expect(onTheDay).toContain("# No verification in progress.");
   });
@@ -69,9 +75,12 @@ describe("the x402-list token file", () => {
     expect(await response.text()).toContain("# x402-list.com domain-ownership tokens");
   });
 
-  it("pins today's token (issued 2026-09-02) so retiring it early is a diff", () => {
-    expect(live.token).toBe("x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco");
-    expect(live.request_id).toBe("d766c4a7-1918-4f4f-b0f3-2215ec15bb72");
+  it("pins the tokens in flight (issued 2026-09-02 and 2026-09-03) so retiring one early is a diff", () => {
+    const first = X402LIST_TOKENS[0]!;
+    expect(first.token).toBe("x402list-verify-4CmBDdTm1wU4eq-Q6Artnjthyrn5-tz_6H5WoML3jco");
+    expect(first.request_id).toBe("d766c4a7-1918-4f4f-b0f3-2215ec15bb72");
+    expect(live.token).toBe("x402list-verify-Jw6U5W79yD9dD5SmQ6Z4_LgEnoN2cTcva-wav7VQ1Ow");
+    expect(live.request_id).toBe("56532116-de53-447b-aeac-b46d68d039ff");
   });
 });
 

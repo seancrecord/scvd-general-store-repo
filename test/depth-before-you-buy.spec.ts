@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
-import { DEPTH_HOLD_SECONDS, DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
+import { DEPTH_HOLD_SECONDS, DEPTH_ITEMS, archiveWideDepth, depthLine, forgetHeldDepths } from "@/services/archive-depth";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
@@ -54,6 +54,8 @@ beforeAll(() => {
 });
 
 async function forgetHeldDepth(): Promise<void> {
+  // Both copies of the hold: the KV rows, and the isolate's own (2026-09-03).
+  forgetHeldDepths();
   const held = await testEnv.COUNTERS.list({ prefix: KV_KEYS.archiveDepthPrefix });
   await Promise.all(held.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
 }
