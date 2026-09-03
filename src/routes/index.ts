@@ -26,6 +26,8 @@ export { mcpMdRoutes } from "@/routes/mcp-md";
 export { houseLedgerRoutes } from "@/routes/house-ledger";
 export { neighboursRoutes } from "@/routes/neighbours";
 export { correctionsRoutes } from "@/routes/corrections";
+export { disagreementsRoutes } from "@/routes/disagreements";
+export { observatoryRoutes } from "@/routes/observatory";
 export { visitorsRoutes } from "@/routes/visitors";
 export { stackRoutes } from "@/routes/stack";
 export { trustListRoutes } from "@/routes/trust-list";

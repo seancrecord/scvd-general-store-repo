@@ -121,13 +121,19 @@ guards: the registers stay disjoint, the outside author is named
 rather than absorbed, and no older version drops out of the
 changelog.
 
-**The gap.** Cross-instrument mappings carry a read date
-(`MAPPINGS_READ_ON`), which makes them dated observations of someone
-else's surface — correct, per rule 43. What does not yet exist is a
-published *disagreement* record: a place where a divergence between
-the two readings is stated as a divergence. Until one exists, §3's
-second bullet is a commitment rather than a shipped surface, and this
-sentence is how a reader tells the difference.
+**The gap, closed 2026-09-02.** Cross-instrument mappings carry a
+read date (`MAPPINGS_READ_ON`), which makes them dated observations
+of someone else's surface — correct, per rule 43. The published
+*disagreement* record now exists: `/disagreements`
+(`src/store/disagreements.ts`), where a divergence between the two
+readings is stated as a divergence — both readings with their
+derivations and sources, neither marked right, one of four states a
+reader can check (open, withdrawn by us with the correction, withdrawn
+by them, both stand), the trigger that produced the look, and the date
+it went to the other side before it went there. Its first entry is
+the X-PAYMENT header, withdrawn by us on 2026-08-26. §3's second
+bullet is a shipped surface from that date; `test/disagreements.spec.ts`
+refuses an entry published before it was sent.
 
 ---
 

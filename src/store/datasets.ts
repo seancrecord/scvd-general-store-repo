@@ -104,4 +104,19 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
       "Not a scoreboard and not a ranking. Each entry is ONE observation with the date it was taken; rounds_scored is published as a denominator so you can see the weight behind a row, and the division that would turn it into a score is deliberately not performed.",
     cadence: "weekly, with the ward round",
   },
+  {
+    /*
+     * ADDED 2026-09-02: the porch had counted every agent-read surface
+     * since 2026-08-21 and nothing public read the counters back. This
+     * is the reading — and it is a dataset about the observer, not
+     * about anyone else, which is why its caution is about floors.
+     */
+    path: "/observatory",
+    name: "The observatory — what gets read here, counted",
+    description:
+      "Per month and per surface, how many times each agent-read surface of this store was fetched: organic visits beside the house and infrastructure buckets kept out of them, and the channel split inside the organic count. In name order, never by count.",
+    caution:
+      "Every count is a floor — the porch drops writes past a per-minute budget and the ledger scans a capped number of keys, both stated on the page — and a visit is a fetch, not a visitor. Not a ranking of our own rooms; no rate is served.",
+    cadence: "live, in monthly buckets",
+  },
 ] as const;

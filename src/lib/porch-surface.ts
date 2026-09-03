@@ -56,6 +56,8 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/okf/log.md", "okf:log"],
   ["/passport", "passport"],
   ["/trust", "trust"],
+  /* The page that reads these counts is counted too (2026-09-02). */
+  ["/observatory", "observatory"],
 ]);
 
 export function porchSurface(path: string, method: string): string | undefined {

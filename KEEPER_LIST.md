@@ -137,6 +137,15 @@ Do not relitigate without you.
   disagreement surface (rule 51), the observatory page
   reading the porch. The first shipped the same night; ⚑
   the two statements' row copy now names three rails and is
+  drafted for your ink. The second shipped the same night:
+  `/disagreements`, seeded with the X-PAYMENT entry. ⚑ Its
+  prose is drafted for your ink, and PRIVATE-FIRST applies to
+  the page itself: tell Cairn the record exists before it is
+  named anywhere outside this repo. Every future entry is your
+  hand, from a named trigger. The third shipped the same night
+  too: `/observatory`, the porch's counts read per surface and
+  month. RULE: whether it and `/disagreements` get a storefront
+  slot (both are off it, like the pulse). ⚑ Both pages' prose is
   drafted for your ink. TEST when a Solana statement is
   bought: the RPC endpoint order is Helius then the public
   fallbacks, and a wallet with hundreds of USDC transfers in
