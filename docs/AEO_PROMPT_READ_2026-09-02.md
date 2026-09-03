@@ -397,7 +397,7 @@ machine fields, the FAQ and the listings.
 | --- | --- | --- |
 | A1 | **The listing sweep.** Every surface in the homepage's `sameAs` (thirty-six) plus the ones found today (mcpvault, influzer, getdrio, zero.xyz, neura.market, agentcatalog, mcpbeat, verifymcp, agentage, m8ven, mcp-marketplace, x402-bazaar, mcpmarket, cursor.directory) gets the sixty words as its description and, where the form allows a second line, the nouns-and-price line: "x402 conformance audit, signed settlement attestation, endpoint watch and launch check, ed25519-signed, from $0.004; free preflight and receipt check on any issuer's artifact." Retired items (Certificate of Nomenclature on zero.xyz) come down. Where a listing derives from README or server.json, fix the source (B7) and trigger a re-sync; where it is a form, the form. | A search for the name returns the sixty words on the first three results. |
 | A2 | **Two awesome-list PRs**, recut from the sixty words, one line each in the list's exact format: xpaysh/awesome-x402 under Testing & Development (preflight, conformance desk, practice till) and Ecosystem Market Data (the corpus); Merit-Systems/awesome-agentic-commerce under Security & Ops and Benchmarks & Analysis. Replace the July entry in `registry/awesome-x402-submission.md`. | Merged, or a dated note on why not. |
-| A3 | **x402.org ecosystem page.** Unreachable from here; check whether we are on it and how a project is added. x402.org was the single most-cited domain for the conformance prompts. | A row, or a dated note. |
+| A3 | **x402.org ecosystem page.** Struck 2026-09-03 by the keeper: the ecosystem directory in the coinbase/x402 repository is stale and no longer used, a finding made once before. x402.org stays the most-cited domain for the conformance prompts, but there is no listing to take there. | Struck. |
 | A5 | **Vouch Protocol Agent Trust Index**: read what C, 60 measures and whether the row can be claimed or corrected. A third party's grade of us is a fact engines will quote. | Read; a corrections entry if they are wrong about us, a fix if they are right. |
 | A6 | **Search Console, Bing Webmaster Tools, IndexNow key.** Register both, submit the sitemap, take the key for B5. ChatGPT search reads Bing; nothing of ours is indexed under our own name today. | Both consoles show / and /what indexed. |
 | A7 | **Cloudflare URL Scanner and AI Crawl Control** on the zone: run the Agent Readiness scan, read which AI bots fetch us and what paths. Free, first-party, once a month. | The scan's checks and the crawl log, dated in this file. |
@@ -1078,20 +1078,12 @@ missing header, a manifest field) it is a fix; if it is wrong about
 us it is a corrections entry; if it is neither, the doc records what
 it measures and we leave it.
 
-**x402.org ecosystem.** The page is generated from the
-`coinbase/x402` GitHub repository: the ecosystem entries live as
-folders under the site's `ecosystem/partners-data` directory (a
-`metadata.json` with name, description, logo and website, plus the
-logo file), and a project is added by pull request. Check the repo's
-CONTRIBUTING file for the current path and the fields, since the
-site has moved once. The entry: name `scvd.store`, category
-"Infrastructure" or "Services" (whichever the file offers),
-description the one-line entry from `registry/awesome-x402-submission.md`,
-website `https://scvd.store`, logo the og image or a square crop of
-it. Open the PR under your account; send me the PR URL for the
-record. x402.org was the single most-cited domain in the export for
-the conformance prompts, so this one is worth the PR even though it
-is one more queue.
+**x402.org ecosystem.** Struck 2026-09-03 (the keeper: "quite
+certain the x402 ecosystem git you have on the list is stale … i
+dont think its used anymore", and this had been found once before).
+No PR to open. The domain's weight in the export is real, but it is
+carried by the protocol docs and the facilitator, not by a directory
+anyone maintains.
 
 **Cloudflare, once.** In the dashboard, open the scvd.store zone.
 "AI Crawl Control" (left rail; it was "AI Audit" until 2025) shows
@@ -1112,8 +1104,8 @@ links. Paste what it says.
    import; Search Console resubmit; www check. (Section 4.)
 2. Zenodo record → send the concept DOI. Then LinkedIn showcase,
    Crunchbase rename, Hugging Face. Send each URL. (Section 5.)
-3. Vouch row read; x402.org PR; one Cloudflare crawl reading.
-   (Section 6.)
+3. Vouch row read (done, A 100/100); one Cloudflare crawl reading.
+   x402.org struck. (Section 6.)
 4. Correct the dev.to title in `WRITTEN_ABOUT` if the slug got it
    wrong.
 5. CV's IETF paragraph from `docs/bylines/CV_PROMPT_IETF_2026-09.md`.
@@ -1161,6 +1153,6 @@ crawler fixes have been live two weeks.
   regenerating it is the same one command whenever the grade moves.
 
 Still the keeper's: Crunchbase rename, Hugging Face (now unblocked by
-the DOI), x402.org PR, the Cloudflare crawl reading, Search Console
+the DOI), the Cloudflare crawl reading, Search Console
 resubmit and the www check, the dev.to title check, CV's IETF
 paragraph, the mirror sweep last.
