@@ -969,6 +969,13 @@ fetches its own key file first, the way Bing does, and says which side
 is wrong before it sends anything, and prints IndexNow's reply body on
 any 4xx, so the next refusal explains itself.
 
+After the move to the root (2026-09-03, 17:4x UTC) the ping came back
+`403 SiteVerificationNotCompleted`: IndexNow found the key file and
+verifies it on its own schedule. That is the normal first answer for
+a new key, not an error; the same command a little later returns
+200 or 202. The DOI badge from Zenodo is on the README beside the
+Vouch badge (the keeper pasted it, 2026-09-03).
+
 Bing Webmaster Tools (bing.com/webmasters): sign in, "Add a site",
 choose "Import from Google Search Console" (one click, no DNS record),
 submit `https://scvd.store/sitemap.xml` under Sitemaps. Under
