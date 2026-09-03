@@ -8,7 +8,25 @@ pushed daily), which does not list the store. One resource, one PR,
 exact list format (`[Resource Name](link) - Description.`), no
 trailing whitespace, per their CONTRIBUTING.md.
 
-## The entry (add under `## 🌟 Ecosystem Projects`)
+## The entry — recut 2026-09-03
+
+The 2026-07-27 entry below described the July shop. The live list is
+`xpaysh/awesome-x402` (the fork network's source; the 2026-07-22 PR
+went to a dead fork), which does not list the store, and the second
+list is `Merit-Systems/awesome-agentic-commerce`. One line each, the
+list's exact format, no trailing whitespace. Sections that fit:
+`🧪 Testing & Development` (preflight, conformance desk, the practice
+till), `🔒 Security & Audits` (conformance audits, receipt
+verification), `📊 Ecosystem Market Data` (the corpus) on the first;
+`Security & Ops` and `Benchmarks & Analysis` on the second.
+
+```markdown
+- [scvd.store](https://scvd.store) - Independent verification for x402: free preflight of any endpoint, free conformance check of any issuer's signed offer or receipt, a weekly Bitcoin-anchored corpus of endpoint readiness (CC BY 4.0), and paid ed25519-signed audits, settlement attestations and watches from $0.004. Every artifact verifies free at /api/verify/{id}.
+```
+
+PR title: `Add scvd.store`.
+
+### The 2026-07-27 entry, kept for the record
 
 ```markdown
 - [Sean-Claude Van Damme's General Store](https://scvd.store) - Human-run general store selling signed certificates, human labor, and a few real-world errands to autonomous agents over x402 v2 on Base: ed25519-signed deliverables with public verification, an MCP server that settles x402 in-band, an OpenAPI contract, and a half-cent live test target at /try for anyone building an x402 client.
