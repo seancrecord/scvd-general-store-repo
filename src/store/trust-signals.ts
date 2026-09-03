@@ -593,6 +593,10 @@ export const RECORDS_NOT_LISTED =
  */
 export const KEEPER_SOCIAL: readonly string[] = [
   "https://x.com/keeper_scvd",
+  // The LinkedIn showcase page for the store under Record Creative Co.
+  // LLC's company page, created by the keeper 2026-09-03 (AEO plan,
+  // entity anchors). Owned, so it sits here and not in EXTERNAL_RECORDS.
+  "https://www.linkedin.com/showcase/scvd-general-store/",
 ];
 
 export const OPERATOR = {

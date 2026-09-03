@@ -22,6 +22,7 @@ import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
   CORPUS_DATASET_NAME,
+  corpusDatasetIdentityFields,
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -82,6 +83,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     name: CORPUS_DATASET_NAME,
     description: CORPUS_DATASET_DESCRIPTION,
     license: CORPUS_DATASET_LICENSE,
+    ...corpusDatasetIdentityFields(),
     url: `${base}/corpus.json`,
     creator: organizationRef(base),
     isAccessibleForFree: true,

@@ -34,3 +34,37 @@ export const CORPUS_DATASET_DESCRIPTION =
  */
 export const CORPUS_DATASET_LICENSE =
   "https://creativecommons.org/licenses/by/4.0/";
+
+/**
+ * THE DOI (2026-09-03, the keeper's Zenodo record). A DOI is the
+ * citation form researchers and their tools use, and papers are part
+ * of the answer engines' diet: arxiv.org was cited 53 times in the
+ * prompt export that started the AEO plan, and nobody else in the x402
+ * space has one for their data. The record on Zenodo holds the same
+ * files this site serves (the index, one file per signed round, the
+ * tiers), CC BY 4.0, a new version per weekly round.
+ *
+ * ⚑ Zenodo mints two DOIs per record: one for the version, one for
+ * the concept that all versions share. This should be the CONCEPT DOI
+ * so the citation never goes stale; if the keeper reads a different
+ * number in the "Cite all versions" box, it changes here and every
+ * surface follows.
+ */
+export const CORPUS_DATASET_DOI = "10.5281/zenodo.22284888";
+export const CORPUS_DATASET_DOI_URL = `https://doi.org/${CORPUS_DATASET_DOI}`;
+
+/**
+ * The fields that make a Dataset node citable, for every surface that
+ * declares the corpus (the storefront, /corpus, /corpus.json): the DOI
+ * as a PropertyValue identifier, which is how Google Dataset Search
+ * and schema.org consumers read it, and the doi.org URL as sameAs.
+ */
+export function corpusDatasetIdentityFields(): {
+  identifier: { "@type": "PropertyValue"; propertyID: "DOI"; value: string };
+  sameAs: string[];
+} {
+  return {
+    identifier: { "@type": "PropertyValue", propertyID: "DOI", value: CORPUS_DATASET_DOI },
+    sameAs: [CORPUS_DATASET_DOI_URL],
+  };
+}

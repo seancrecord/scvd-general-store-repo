@@ -642,6 +642,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F18 | `npm run listings:check` (`scripts/listings-check.mjs`, `scripts/lib/listings.mjs`): reads the homepage's sameAs list, reads every mirror as a browser would, classifies each as current (the sixty words, read from the live og:description), september, august, july, unknown or unreachable; `--record` writes `docs/listings/observation.json`, later runs exit 1 on a mirror that moved backwards. `listings:test` is offline and in the gates. Built 2026-09-03 (PR 4). ⚑ First `--record` from the keeper's machine: from the build sandbox 31 of 35 mirrors are egress-blocked, so a baseline taken here would be a lie. | mirrors | E1 |
 | F19 | Ruled 2026-09-03 ("agreed on all") and built (PR 5): the first sentence reads "…evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts." The tail of the proposed clause was trimmed because the sixth sentence already says it and the paragraph has a ceiling (raised 80 → 90 words in `test/first-screen.spec.ts`). README, every first screen, the guide digest (thirty-seventh) and the keeper's desk file followed. | the noun, answered | A1, B |
 | F20 | `registry/awesome-x402-submission.md` recut 2026-09-03 (PR 4) with the new entry, the two live lists and the sections that fit; the July entry kept beneath for the record. The keeper submitted both PRs before 2026-09-03 and reports no movement ("too many prs for them"). Nothing to chase; the entry stands in the file for the day a maintainer merges. | awesome lists | A2 |
+| F26 | The corpus DOI (Zenodo, the keeper's record 2026-09-03) on every corpus Dataset node as a DOI `identifier` and a doi.org `sameAs`, and a citation line on /corpus; the /corpus page's hand-typed third copy of the name and description replaced by the constants. The LinkedIn showcase in `KEEPER_SOCIAL`. Built 2026-09-03 (PR 6); `test/corpus-doi.spec.ts`. ⚑ Confirm the number is the concept DOI ("Cite all versions"), not the version DOI; one constant if it differs. | entity anchors | A |
 | F22 | Built 2026-09-03 (PR 5): 23 sitemap pages carried no JSON-LD (the census is in the PR). `renderSimplePage` now derives a WebPage node from the title and description it already prints, at the end of the body so a room's own richer node stays first, hung off the WebSite (`@id` added) and the Organization. Every listed room carries one; `test/discoverable.spec.ts` holds each to naming its own URL. | crawl | B, with F3 |
 | F25 | `subjectOf` on the Organization links the byline pieces, and the guides print them. Built 2026-09-02 (PR 2); the dev.to census piece added 2026-09-03 (PR 5) from the keeper's URL, title read from the slug for the keeper to correct. | rulings | B |
 | F24 | One `@id` on the store's Organization node and every reference to it (32 nodes, two names before), under the display name; done on the branch with `test/organization-id.spec.ts`. | entity anchors | PR 1 |
@@ -1126,3 +1127,37 @@ Hugging Face upload from the Sunday walk; the IETF paragraph onto the
 spec page; the real GSC table; delist rows on request. The
 question-titled pages (D) wait on a hand check I can run once the
 crawler fixes have been live two weeks.
+
+## Anchors landed and the Vouch reading — 2026-09-03, evening
+
+- **Zenodo**: `10.5281/zenodo.22284888`, published by the keeper.
+  Built into every corpus Dataset node and onto /corpus (F26, PR 6).
+  ⚑ Concept versus version DOI still to be confirmed from the
+  record's "Cite all versions" box; if it differs, `CORPUS_DATASET_DOI`
+  is the one line.
+- **LinkedIn**: `https://www.linkedin.com/showcase/scvd-general-store/`
+  under Record Creative Co. LLC. The first attempt named the page
+  "scvd.store" and LinkedIn wrapped it in its suspicious-link redirect,
+  because it treats anything shaped like a domain as a link and did
+  not know this one; renamed to "SCVD General Store" and the URL
+  reissued. In `KEEPER_SOCIAL` (PR 6), so it rides sameAs.
+- **IndexNow**: live. The key file moved to the root in PR 5 and the
+  first accepted ping is the keeper's to run after `git pull`.
+- **Vouch Protocol, read 2026-09-03**: the Agent Trust Index grades
+  the did:web document. `scvd.store` grades **A, 100/100** today:
+  identity `did:web:scvd.store`, key did:web Ed25519 (JWK). The
+  "C, 60" in the search snippet the export surfaced was an older read
+  under the `scvd/general-store` name; nothing to correct. Its two
+  "to raise your grade" items are a post-quantum key (ML-DSA-44)
+  beside the Ed25519 key with hybrid signing, and a service or
+  revocation endpoint in the DID document. Both are signing-format
+  and key-management decisions, the same class as the IETF drafts'
+  canonical forms: recorded here, not built on the plan. The README
+  badge (`pip install vouch-protocol && vouch grade scvd.store
+  --badge trust-badge.svg`) is optional and the keeper's; the README
+  already carries probe402, Circle, OpenSSF, x402-list and VerifyMCP.
+
+Still the keeper's: Crunchbase rename, Hugging Face (now unblocked by
+the DOI), x402.org PR, the Cloudflare crawl reading, Search Console
+resubmit and the www check, the dev.to title check, CV's IETF
+paragraph, the mirror sweep last.

@@ -26,6 +26,7 @@ import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
   CORPUS_DATASET_NAME,
+  corpusDatasetIdentityFields,
 } from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 
@@ -542,6 +543,7 @@ function corpusDatasetJsonLd(base: string): string {
     name: CORPUS_DATASET_NAME,
     description: CORPUS_DATASET_DESCRIPTION,
     license: CORPUS_DATASET_LICENSE,
+    ...corpusDatasetIdentityFields(),
     url: `${base}/corpus.json`,
     creator: organizationRef(base),
     isAccessibleForFree: true,
