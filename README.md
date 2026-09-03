@@ -130,6 +130,23 @@ configuration:
 }
 ```
 
+Or, in Claude Code, one line:
+
+```
+claude mcp add --transport http scvd-store https://scvd.store/mcp
+```
+
+The door speaks MCP revisions 2026-07-28, 2025-11-25, 2025-06-18 and
+2025-03-26 over streamable HTTP, POST only (a bare GET is a 405, per
+spec, not a fault). Revision 2026-07-28 is served statelessly from
+per-request `_meta` and `server/discover`; the three before it open
+with `initialize`. The manifest at
+<https://scvd.store/.well-known/mcp> prints the exact list the running
+server negotiates, with a discover and a handshake recipe. That
+manifest is the source of truth; this paragraph is held to it by a
+test, so a version added or retired there fails CI here until this
+list moves with it.
+
 (If your host only speaks stdio, `node ./bin/scvd-mcp-bridge.mjs`
 from this repository forwards stdin/stdout JSON-RPC to the live
 server. It holds no key and keeps no state. The wrangler commands
