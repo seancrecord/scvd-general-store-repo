@@ -419,8 +419,10 @@ guide now carries "Prices, by the convention", one derived line per
 paid door in the code-span shape, and `test/surface-reads.spec.ts`
 holds every line to the shelf's minimum.
 
-What remains of S8 is PR 2, the v3 fold, on the SOON row: not before
-2026-10-02, a month of advisory rows read by the keeper's hand.
+What remains of S8 is PR 2, the v3 fold, on the SOON row: the keeper's
+yes, no or later, on the advisory rows the census has read by then. No
+calendar gate — the dated wait written here earlier was struck
+2026-09-03 by the keeper.
 
 ## Sources read for this note
 

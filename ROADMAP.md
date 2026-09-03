@@ -46,7 +46,7 @@ at a time; draft copy goes in chat, not on a flag.
 
 | # | Task | Why | Acceptance |
 | --- | --- | --- | --- |
-| S8-v3 | **The v3 fold (S8 PR 2).** `discovery-info-fails-schema` and `offer-contradicts-challenge` fold into a preflight v3 verdict; `AUDIT_CRITERIA_VERSION` and `CENSUS_BATTERY` move together; dated `/criteria` note; nothing resigned. Not before 2026-10-02: a month of advisory rows read first, by his hand (ruled 2026-09-02). | The fold is a battery decision made on evidence, the way L3b went into v2. | Version constants moved together; `test/battery-inside-the-bytes` holds all three producers equal; a v2 `ready` before the date keeps its meaning. |
+| S8-v3 | **The v3 fold (S8 PR 2).** `discovery-info-fails-schema` and `offer-contradicts-challenge` fold into a preflight v3 verdict; `AUDIT_CRITERIA_VERSION` and `CENSUS_BATTERY` move together; dated `/criteria` note; nothing resigned. His yes / no / later, on the advisory rows the census has read so far; no calendar gate (a dated wait an agent had written here was struck 2026-09-03: "i dont wait i decide yes/no/later"). | The fold is a battery decision made on evidence, the way L3b went into v2. | Version constants moved together; `test/battery-inside-the-bytes` holds all three producers equal; a v2 `ready` issued before the fold keeps its meaning. |
 
 ---
 
