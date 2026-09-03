@@ -141,6 +141,87 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to.",
   },
   {
+    url: "https://www.getmcp.es/servers/general-store",
+    registry: "getmcp.es",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://lightnow.ai/servers/store.scvd/general-store/versions",
+    registry: "lightnow.ai",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://mcplookup.com/server/store.scvd/general-store",
+    registry: "MCP Lookup",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+    registry: "Ronin Forge, State of MCP",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://socketcat.com/servers/store.scvd/general-store",
+    registry: "socketcat",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://tracevero.com/mcp/store-scvd-general-store",
+    registry: "Tracevero",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://signal402.com/services/scvd-store",
+    registry: "signal402",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+    registry: "402.ad",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    url: "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+    registry: "Decipher Ranker",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+  },
+  {
+    /**
+     * TOLL402'S THREE "UNREACHABLE" ROWS (2026-09-03, the keeper's
+     * pointer). Their probe of 2026-08-24 reports UND_ERR_HEADERS_OVERFLOW
+     * on the three tiered doors: a Node client refusing a 402 whose
+     * header block passed 16KB. That was true on that date and is the
+     * defect on /corrections that test/challenge-header-budget.spec.ts
+     * now holds under the cliff; the same doors measured 13.7KB from
+     * outside on 2026-09-03. Their row is a dated third-party
+     * observation of a real defect, kept here as one, not corrected
+     * from this side.
+     */
+    url: "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+    registry: "toll402",
+    confirmed: "2026-09-03",
+    what_it_proves:
+      "That an independent prober fetched the store's tiered doors on 2026-08-24 and recorded what a stock Node client saw: a 402 whose headers overflowed Node's 16KB limit. Not an endorsement and not an audit; a dated observation of a defect this store has since fixed and holds under test, and the row stands as they wrote it until they probe again.",
+  },
+  {
     url: "https://agentpluginsdirectory.com/plugins/scvd-general-store",
     registry: "Agent Plugins Directory",
     confirmed: "2026-09-03",

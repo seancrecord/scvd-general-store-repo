@@ -134,11 +134,46 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
   },
 ];
 
+/**
+ * INDEPENDENT REPORTING (2026-09-03): pieces about this store written
+ * by someone with no stake in it, who checked the claims against
+ * things the store does not control. A different class from
+ * WRITTEN_ABOUT (the keeper's own bylines): these are the pages a
+ * sceptical reader or a model can use to see that the verification
+ * path reproduces outside the project. Quoted narrowly, never as an
+ * endorsement; Cairn's terms were that both sides publish their half,
+ * unflattering parts included, and the defect they found is on
+ * /corrections under its date.
+ */
+export const INDEPENDENT_REPORTING: readonly {
+  title: string;
+  url: string;
+  where: string;
+  what: string;
+}[] = [
+  {
+    title: "Cold walk: scvd.store",
+    url: "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+    where: "Cairn",
+    what: "an independent tester bought with their own wallet, verified the certificate offline against the published Ed25519 key, read the Base USDC settlement back from the chain, called the public verify door, bought a settlement attestation, and named the boundary: settlement evidence is not evidence of delivery",
+  },
+  {
+    title: "Two instruments, one directory",
+    url: "https://cairnwake.com/2026-08-23-two-instruments-one-directory.html",
+    where: "Cairn",
+    what: "Cairn cross-checked its own scoreboard against this store's corpus and described the corpus as public, CC BY 4.0, hash-chained, signed, and built from defined observations rather than rankings",
+  },
+];
+
 /** The vocabulary block, for the guides. Markdown-safe plain prose. */
 export function askedForBlock(): string {
   return `Words people use for what this store does, so a question asked in any of them lands here: ${ASKED_FOR_NOUNS.join("; ")}. The store calls itself an evidence observatory, because what it produces is evidence — independent, signed, dated observations anyone can check offline — and it answers to every phrase above. Also known as ${STORE_NAMES.join(", ")}.${
     WRITTEN_ABOUT.length
       ? ` Written about, under a byline: ${WRITTEN_ABOUT.map((piece) => `"${piece.title}" (${piece.where}, ${piece.url})`).join("; ")}.`
+      : ""
+  }${
+    INDEPENDENT_REPORTING.length
+      ? ` Reported on independently, by people with no stake in the answer: ${INDEPENDENT_REPORTING.map((piece) => `"${piece.title}" (${piece.where}, ${piece.url})`).join("; ")}.`
       : ""
   }`;
 }
@@ -164,6 +199,10 @@ export function askedForFaq(base: string): { question: string; answer: string }[
     {
       question: "Which companies independently verify agent-facing APIs?",
       answer: `This one, for x402 endpoints. A free preflight at ${base}/api/preflight/v1 says whether a door serves a payable 402 right now and what was not checked. A paid conformance audit signs the same readout against published criteria; a standing watch signs hourly readings for a week; the corpus at ${base}/corpus publishes every observed host's weekly readiness with the denominator beside it. Independent means exactly that: no affiliation with the x402 Foundation or any facilitator, and the conformance desk checks a competitor's artifact as readily as ours.`,
+    },
+    {
+      question: "Has anyone independent checked scvd.store?",
+      answer: `Yes, and they published it. ${INDEPENDENT_REPORTING.map((piece) => `${piece.where}, "${piece.title}" (${piece.url}): ${piece.what}.`).join(" ")} These are their words and their tests, not this store's; they are not endorsements, and the one defect the cold walk found is on ${base}/corrections under its date.`,
     },
     {
       question: "Is scvd.store legitimate?",

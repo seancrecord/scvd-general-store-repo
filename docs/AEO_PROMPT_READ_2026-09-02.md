@@ -1453,3 +1453,51 @@ describes.
   the standfirst, the mechanism line and the invitation; a "how to
   read this record" summary would be one more paragraph of the
   keeper's (F30, optional).
+
+## Night, 2026-09-03: the ping, the directories, toll402, Cairn, the Action
+
+- **IndexNow accepted**: `200 for 1281 URLs` at about 19:00 UTC, once
+  Bing had verified the root key file. Every deploy pings from here.
+- **Eleven more listings** the keeper found (getmcp.es, lightnow.ai,
+  MCP Lookup, Ronin Forge's State of MCP, socketcat, Tracevero,
+  signal402, 402.ad, Decipher Ranker, Agent Plugins Directory, and
+  toll402) are on `EXTERNAL_RECORDS`, each as a listing and nothing
+  more; index.zbs.gg and VerifyMCP were already there. The
+  aiwithghost.com "news" post reuses the Tab's npm copy; it is about
+  the Tab, not this store, and is noted here rather than linked.
+- **toll402's three "unreachable" rows** (UND_ERR_HEADERS_OVERFLOW,
+  2026-08-24) are the tiered doors: three tiers times three networks
+  is nine accepts, each with a signed offer, and on that date the
+  header block passed Node's 16KB cliff. That defect is already on
+  /corrections and `test/challenge-header-budget.spec.ts` holds every
+  door under the cliff; measured from outside tonight the same three
+  doors are 13.7KB. Their row is a correct dated observation and is
+  kept as one. ⚑ If toll402 offers a re-check, press it; nothing to
+  build.
+- **Cairn** (the reviewer's strongest point, and right): the cold walk
+  was already an `EXTERNAL_RECORDS` row. Tonight it and the companion
+  piece are `INDEPENDENT_REPORTING` in `store/copy/asked-for.ts`, a
+  class apart from the keeper's bylines: on /what as the pair "Has
+  anyone independent checked scvd.store?", in the Organization's
+  `subjectOf` as Articles, in the guides' vocabulary block, and on the
+  README under "Independent reporting". Quoted narrowly, disclosed as
+  theirs, never as an endorsement.
+- **The repository's entity layer**, the reviewer's checklist against
+  the record: README title and first words (done, PR 5); server.json,
+  plugin.json (done, PR 2); package descriptions (x402-sign,
+  x402-verify, the CLI and the Tab each describe their own package
+  correctly and carry no retired noun); OpenAPI description (done, PR
+  2); DOI and Hugging Face links (done, PR 6). ⚑ The keeper's: the
+  GitHub About text (still the pre-clause sixty words), the topics
+  (`x402`, `agentic-commerce`, `mcp`, `usdc`, `base`, `solana`,
+  `receipt-verification`, `conformance-testing`,
+  `payment-verification`, `open-data`), the website field, release
+  notes, the pinned repository and the profile bio. Part of the
+  mirror sweep, last.
+- **Reference assets**: `examples/x402-preflight-on-deploy.yml`, a
+  GitHub Action that runs the free preflight after a deploy and
+  weekly, with the boundary stated in the file and in the README
+  section that introduces it. The offline verifier, the CLI and the
+  fixtures already exist as packages and tests. ⚑ The notebook over
+  the DOI dataset stays the one asset to add, in the Hugging Face
+  repo beside the data.

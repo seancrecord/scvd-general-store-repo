@@ -569,6 +569,41 @@ gaps are named as gaps. Point by point, so nobody has to guess:
   — "private" here means keeper-only, not encrypted, and the mailbox
   copy should never imply otherwise.
 
+## Independent reporting
+
+Two pieces by Cairn (cairnwake.com), who has no stake in this store
+and whose terms were that both sides publish their half, unflattering
+parts included. Their words and their tests, not ours; not
+endorsements.
+
+- [Cold walk: scvd.store](https://cairnwake.com/2026-08-25-cold-walk-scvd.html)
+  (2026-08-25): bought with their own wallet, verified the certificate
+  offline against the published Ed25519 key, read the Base USDC
+  settlement back from the chain, called the public verify door,
+  bought a settlement attestation, and named the boundary: settlement
+  evidence is not evidence of delivery. The one defect they found is
+  on [/corrections](https://scvd.store/corrections) under its date.
+- [Two instruments, one directory](https://cairnwake.com/2026-08-23-two-instruments-one-directory.html)
+  (2026-08-23): cross-checked their own scoreboard against this
+  store's corpus.
+
+## Run a preflight on deploy
+
+The free preflight is one POST, so it fits a CI step. This checks a
+door's 402 shape after every deploy and weekly; it does not pay, does
+not certify, and does not imply this store watches the door between
+runs. The example is at
+[`examples/x402-preflight-on-deploy.yml`](examples/x402-preflight-on-deploy.yml).
+
+```yaml
+- name: x402 preflight
+  run: |
+    curl -sS -X POST https://scvd.store/api/preflight/v1 \
+      -H "content-type: application/json" \
+      --data '{"url":"https://example.com/paid-endpoint"}' | tee preflight.json
+    node -e 'const r=require("./preflight.json"); if (r.verdict && r.verdict!=="ready") { console.error(r); process.exit(1) }'
+```
+
 ## On other people's records
 
 The store's own books are the store grading its own homework. These
