@@ -1,6 +1,5 @@
 import {
-  BASE_EVM,
-  POLYGON_EVM,
+  WALKED_EVM_CHAINS,
   evmChainOf,
   getBlockNumber,
   usdcTransfersToAny,
@@ -824,7 +823,7 @@ export async function readInflowCensus(
    * budget. Each chain gets what is left divided by the chains still
    * to walk, so an early finisher hands its slack to the next one.
    */
-  const chains = [BASE_EVM, POLYGON_EVM];
+  const chains = WALKED_EVM_CHAINS;
   for (const [index, chain] of chains.entries()) {
     const chainsLeft = chains.length - index;
     const remaining = Math.max(0, deadline - Date.now());

@@ -21,9 +21,13 @@ import type { Env } from "@/types";
  */
 
 describe("the canonical USDC registry", () => {
-  it("knows the three rails the store settles on, by CAIP-2 name", () => {
+  it("knows every chain the store reads USDC on, by CAIP-2 name: the three it settles on and the four it only reads", () => {
     expect(Object.keys(CANONICAL_USDC).sort()).toEqual([
+      "eip155:1",
+      "eip155:10",
       "eip155:137",
+      "eip155:42161",
+      "eip155:43114",
       "eip155:8453",
       "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     ]);

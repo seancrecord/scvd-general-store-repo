@@ -5,6 +5,7 @@ import {
   getReceipt,
   isSameAddress,
   POLYGON_EVM,
+  WALKED_EVM_CHAINS,
   usdcFromUnits,
   usdcTransfers,
 } from "@/lib/base-rpc";
@@ -596,7 +597,7 @@ export async function observeWithFacts(
     // Named only when more than one chain was actually read — the
     // NOT_FOUND that checked both EVM rails says so on the artifact.
     ...(options.checkedBothEvmChains
-      ? { chains_checked: [BASE_EVM.caip2, POLYGON_EVM.caip2] }
+      ? { chains_checked: WALKED_EVM_CHAINS.map((chain) => chain.caip2) }
       : {}),
     tx_hash: query.txHash ?? null,
     recipient: verdict.recipient,

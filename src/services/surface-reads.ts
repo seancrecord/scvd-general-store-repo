@@ -1,6 +1,6 @@
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
-import { BASE_EVM, POLYGON_EVM } from "@/lib/base-rpc";
+import { EVM_CHAINS } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 
 /**
@@ -96,7 +96,7 @@ const SURFACE_TIMEOUT_MS = 4000;
 export const SURFACE_BODY_CAP = 262_144;
 
 const USDC_ASSETS = new Set(
-  [BASE_EVM.usdc, POLYGON_EVM.usdc, SOLANA_USDC_MINT].map((asset) => asset.toLowerCase()),
+  [...EVM_CHAINS.map((chain) => chain.usdc), SOLANA_USDC_MINT].map((asset) => asset.toLowerCase()),
 );
 
 function usdcFromAtomic(amount: string): number | null {

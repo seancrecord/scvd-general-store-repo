@@ -282,7 +282,9 @@ describe("the statement's network parameter", () => {
     expect(statementChain("eip155:137")?.caip2).toBe("eip155:137");
     // Solana joined the vocabulary 2026-09-02 (SOLANA_PARITY gap 1).
     expect(statementChain("solana")?.caip2).toBe("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp");
-    expect(statementChain("eip155:1")).toBeNull();
+    // Ethereum is a reader chain since 2026-09-03; a chain this store does not read is the stranger.
+    expect(statementChain("eip155:1")?.key).toBe("ethereum");
+    expect(statementChain("eip155:56")).toBeNull();
     expect(statementChain("bitcoin")).toBeNull();
   });
 
@@ -306,7 +308,7 @@ describe("the statement's network parameter", () => {
 
   it("refuses an unrecognized network at the door, before money moves", async () => {
     const refused = await SELF.fetch(
-      `${BASE}/api/buy/the_statement?wallet=${WALLET}&network=eip155:1`,
+      `${BASE}/api/buy/the_statement?wallet=${WALLET}&network=eip155:56`,
       { headers: { "PAYMENT-SIGNATURE": "not-a-real-signature" } },
     );
     expect(refused.status).toBe(400);

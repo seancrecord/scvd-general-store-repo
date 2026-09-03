@@ -165,7 +165,21 @@ Do not relitigate without you.
   snippets. RULE: whether `/operators` gets a storefront slot
   (off it, like its kin). LOOK once merged: open
   `/passport/{a ready host}`, paste the Markdown into any
-  README preview, and see the chip render and link back.
+  README preview, and see the chip render and link back. The
+  third shipped as its own PR: Ethereum, Arbitrum One, OP
+  Mainnet and Avalanche C-Chain as reader chains — the
+  statements, the receivability read and the canonical-USDC
+  test now answer on them; the till, the bank walk and the
+  census do not move (PAYMENT_RAILS.md Part F). ⚑ The two
+  statements' shelf copy now names seven chains, drafted for
+  your ink. TEST when you can: buy `the_statement` with
+  `network=arbitrum` on any busy wallet — no RPC host answers
+  from the agent's environment, so the span and the public
+  endpoints on all four chains have never met the network;
+  read `coverage` on the artifact before treating a
+  `window_unreadable` as a fault. Optional: the three RPC
+  slots per chain (`ETHEREUM_RPC_URL` and kin) are yours to
+  set the day a public endpoint is not enough.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit

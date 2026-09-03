@@ -151,7 +151,7 @@ describe("the door", () => {
     const bare = await paid("/api/buy/operator_statement");
     expect(bare.status).toBe(400);
     expect(((await bare.json()) as Record<string, unknown>)["charged"]).toBe(false);
-    const rail = await paid(`/api/buy/operator_statement?wallet=${WALLET}&network=eip155:1`);
+    const rail = await paid(`/api/buy/operator_statement?wallet=${WALLET}&network=eip155:56`);
     expect(rail.status).toBe(400);
     expect(String(((await rail.json()) as Record<string, unknown>)["error"])).toContain("network");
   });
