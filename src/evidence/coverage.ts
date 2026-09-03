@@ -1,4 +1,4 @@
-import { BASE_EVM, POLYGON_EVM } from "@/lib/base-rpc";
+import { BASE_EVM, EVM_CHAINS, POLYGON_EVM } from "@/lib/base-rpc";
 import {
   BASE_NETWORK,
   POLYGON_NETWORK,
@@ -89,9 +89,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
   {
     class_id: "the_statement",
     does: "Wallet-window USDC in/out, observed from the chain walks, signed by neither party.",
+    /* Every EVM chain the reader knows, derived (2026-09-03): a
+     * chain added to EVM_CHAINS is readable by the statement the
+     * same commit, and claimed here the same commit. */
     depths: {
-      [BASE_EVM.caip2]: "read",
-      [POLYGON_EVM.caip2]: "read",
+      ...Object.fromEntries(EVM_CHAINS.map((chain) => [chain.caip2, "read" as const])),
       [SOLANA_CHAIN]: "read",
     },
   },

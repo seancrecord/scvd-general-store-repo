@@ -1,11 +1,4 @@
-import {
-  BASE_CHAIN,
-  BASE_EVM,
-  POLYGON_CHAIN,
-  POLYGON_EVM,
-  usdcBlacklisted,
-  type EvmChain,
-} from "@/lib/base-rpc";
+import { EVM_CHAINS, usdcBlacklisted, type EvmChain } from "@/lib/base-rpc";
 import { isCanonicalUsdc } from "@/lib/value-checks";
 import type { PreflightAdvisory } from "@/services/preflight";
 import type { AcceptEntry } from "@/services/rail-receivable";
@@ -40,10 +33,10 @@ import type { Env } from "@/types";
  * as the subject's defect.
  */
 
-const CHAIN_BY_CAIP2: Record<string, EvmChain> = {
-  [BASE_CHAIN]: BASE_EVM,
-  [POLYGON_CHAIN]: POLYGON_EVM,
-};
+/** Every EVM chain the reader knows, by CAIP-2 — derived, so a door on Arbitrum gets the same blacklist read a door on Base does. */
+const CHAIN_BY_CAIP2: Record<string, EvmChain> = Object.fromEntries(
+  EVM_CHAINS.map((chain) => [chain.caip2, chain]),
+);
 
 /** The EVM payTos an offer names on canonical-USDC entries, deduped
  * per chain. Empty when no such rail is offered — ordinary, not a
