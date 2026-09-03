@@ -310,6 +310,151 @@ export async function verifyTradeRequest(
 }
 
 /**
+ * THE CHECK DESK'S READING — every check, reported, nothing refused
+ * early (2026-09-03). The door refuses at the first failure and says
+ * only a code, because a door that explains itself is a door that
+ * teaches a stranger. This runs ALL the checks and says what each
+ * saw, because a partner's engineer holding a rejected request needs
+ * exactly that, and the desk is where it is safe to say: it delivers
+ * nothing, claims no nonce, and moves no money. What it still never
+ * prints is any secret; `expected_signature` is filled only when the
+ * caller passes `reveal`, which the route does for the sandbox alone.
+ */
+export interface TradeDiagnosis {
+  headers: {
+    present: string[];
+    missing: string[];
+  };
+  provider_key: "ok" | "wrong" | "missing" | "not_in_this_dialect";
+  timestamp: {
+    raw: string | null;
+    unit: TradeDialect["timestamp_unit"];
+    parsed_ms: number | null;
+    skew_seconds: number | null;
+    within_window: boolean;
+    window_seconds: number;
+  };
+  nonce: {
+    raw: string | null;
+    shape_ok: boolean | null;
+  };
+  signature: {
+    raw: string | null;
+    prefix_ok: boolean;
+    hex_ok: boolean;
+    verified_with: "current" | "previous" | "none";
+  };
+  signing_string: {
+    template: TradeSigningString;
+    length: number;
+    sha256: string;
+  };
+  expected_signature?: string;
+  would_pass: boolean;
+  first_failure: TradeAuthFailure | null;
+}
+
+export async function diagnoseTradeRequest(
+  input: VerifyTradeRequestInput & { reveal?: boolean },
+): Promise<TradeDiagnosis> {
+  const { dialect, header, rawBody, secrets } = input;
+  const wanted = [
+    dialect.timestamp_header,
+    ...(dialect.nonce_header && dialect.signing_string === "timestamp.nonce.body"
+      ? [dialect.nonce_header]
+      : []),
+    dialect.signature_header,
+    ...(dialect.provider_key_header ? [dialect.provider_key_header] : []),
+  ];
+  const present = wanted.filter((name) => header(name) !== undefined);
+  const missing = wanted.filter((name) => header(name) === undefined);
+
+  const timestampRaw = header(dialect.timestamp_header)?.trim() ?? null;
+  const nonceRaw = dialect.nonce_header ? (header(dialect.nonce_header)?.trim() ?? null) : null;
+  const signatureRaw = header(dialect.signature_header)?.trim() ?? null;
+  const providerKeyRaw = dialect.provider_key_header
+    ? (header(dialect.provider_key_header)?.trim() ?? null)
+    : null;
+
+  let providerKey: TradeDiagnosis["provider_key"] = "not_in_this_dialect";
+  if (dialect.provider_key_header) {
+    if (providerKeyRaw === null) providerKey = "missing";
+    else
+      providerKey =
+        (secrets.provider_key ?? "").length > 0 &&
+        timingSafeEqual(encoder.encode(providerKeyRaw), encoder.encode(secrets.provider_key ?? ""))
+          ? "ok"
+          : "wrong";
+  }
+
+  let parsedMs: number | null = null;
+  if (timestampRaw !== null && DIGITS.test(timestampRaw)) {
+    const value = Number(timestampRaw);
+    parsedMs = dialect.timestamp_unit === "seconds" ? value * 1000 : value;
+  }
+  const skewSeconds = parsedMs === null ? null : Math.round((input.now_ms - parsedMs) / 1000);
+  const withinWindow =
+    parsedMs !== null && Math.abs(input.now_ms - parsedMs) <= dialect.window_seconds * 1000;
+
+  const nonceShape =
+    dialect.signing_string === "timestamp.nonce.body"
+      ? nonceRaw !== null && (dialect.nonce_pattern ?? /^[0-9a-f]{32}$/i).test(nonceRaw)
+      : null;
+
+  const prefixOk = signatureRaw !== null && signatureRaw.startsWith(dialect.signature_prefix);
+  const signatureHex = prefixOk
+    ? (signatureRaw ?? "").slice(dialect.signature_prefix.length).toLowerCase()
+    : "";
+  const hexOk = HEX_64.test(signatureHex);
+
+  const message = tradeSigningString(dialect, timestampRaw ?? "", nonceRaw ?? undefined, rawBody);
+  let verifiedWith: TradeDiagnosis["signature"]["verified_with"] = "none";
+  if (hexOk) {
+    if (secrets.signing.length > 0 && (await hmacMatches(secrets.signing, message, signatureHex))) {
+      verifiedWith = "current";
+    } else if (
+      secrets.previous &&
+      secrets.previous.length > 0 &&
+      (await hmacMatches(secrets.previous, message, signatureHex))
+    ) {
+      verifiedWith = "previous";
+    }
+  }
+
+  const verdict = await verifyTradeRequest(input);
+  const diagnosis: TradeDiagnosis = {
+    headers: { present, missing },
+    provider_key: providerKey,
+    timestamp: {
+      raw: timestampRaw,
+      unit: dialect.timestamp_unit,
+      parsed_ms: parsedMs,
+      skew_seconds: skewSeconds,
+      within_window: withinWindow,
+      window_seconds: dialect.window_seconds,
+    },
+    nonce: { raw: nonceRaw, shape_ok: nonceShape },
+    signature: {
+      raw: signatureRaw,
+      prefix_ok: prefixOk,
+      hex_ok: hexOk,
+      verified_with: verifiedWith,
+    },
+    signing_string: {
+      template: dialect.signing_string,
+      length: message.length,
+      sha256: await sha256Hex(message),
+    },
+    would_pass: verdict.ok,
+    first_failure: verdict.ok ? null : verdict.code,
+  };
+  if (input.reveal && secrets.signing.length > 0) {
+    diagnosis.expected_signature = `${dialect.signature_prefix}${await hmacSha256Hex(secrets.signing, message)}`;
+  }
+  return diagnosis;
+}
+
+/**
  * THE REFERENCE CLIENT — what a partner's backend has to do, in code
  * rather than prose, and the same function the tests sign with. A
  * partner reading /trade can copy this line for line; a partner

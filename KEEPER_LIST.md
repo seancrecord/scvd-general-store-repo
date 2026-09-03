@@ -249,8 +249,13 @@ Do not relitigate without you.
   which wallet, whose custody, is yours to decide before the flip.
 - **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
   opening figure. Yours to move.
-- **RULE** — a storefront slot for `/trade`. It is on every agent
-  surface now and off the front until you say (rule 7).
+- **Done on your word ("agreed lets do them all")** — `/trade` is on
+  the storefront; the sandbox, check desk, statement API, catalog
+  feed and credit ceiling are live; rule 60 and the feature register
+  hold every future feature to the same surfaces. Your ink is still
+  owed on the copy at `/trade` (rule 7): the five "why a marketplace
+  would" bullets and the two rule-60 sentences in
+  `src/store/trade-counter.ts` (`TRADE_PROPOSITION`, `TRADE_FOR_MONEY`).
 - **LOOK** — `/admin/trade.json` on the Sunday grind, against the
   partner's statement; record each payout with `POST
   /admin/trade/hal/payout`.

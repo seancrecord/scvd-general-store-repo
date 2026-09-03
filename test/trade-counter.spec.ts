@@ -445,3 +445,222 @@ describe("the surfaces", () => {
     }
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* Round two: sandbox, check desk, statement, catalog, ceiling, books  */
+/* ------------------------------------------------------------------ */
+
+import {
+  TRADE_SANDBOX_ID,
+  TRADE_SANDBOX_PROVIDER_KEY,
+  TRADE_SANDBOX_SECRET,
+  TRADE_STATEMENT_DAYS,
+} from "@/store/trade-counter";
+import {
+  reseatOutstanding,
+  tradeOutstandingCents,
+  tradeReceivableWatch,
+} from "@/services/trade-counter";
+import { sweepBooksInvariants } from "@/services/books-invariants";
+
+async function sandboxSigned(
+  itemId: string,
+  body: unknown,
+  path: "order" | "check" = "order",
+  options: { now_ms?: number; secret?: string } = {},
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const raw = typeof body === "string" ? body : JSON.stringify(body);
+  const signInput: Parameters<typeof signTradeRequest>[0] = {
+    dialect: TRADE_DIALECTS.canonical,
+    secret: options.secret ?? TRADE_SANDBOX_SECRET,
+    provider_key: TRADE_SANDBOX_PROVIDER_KEY,
+    body: raw,
+  };
+  if (options.now_ms !== undefined) signInput.now_ms = options.now_ms;
+  const headers = await signTradeRequest(signInput);
+  const url =
+    path === "order"
+      ? `${BASE}/api/trade/${TRADE_SANDBOX_ID}/${itemId}`
+      : `${BASE}/api/trade/${TRADE_SANDBOX_ID}/check`;
+  const response = await SELF.fetch(url, { method: "POST", headers, body: raw });
+  return { status: response.status, body: await json(response) };
+}
+
+describe("the sandbox: integration before the conversation", () => {
+  it("delivers real goods on the published secret, marked test, booked nowhere", async () => {
+    const { status, body } = await sandboxSigned("certificate_of_patronage", {});
+    expect(status).toBe(200);
+    expect(body["settled_via"]).toBe("trade_account_test");
+    expect(certificateOf(body).trade_partner).toBe(TRADE_SANDBOX_ID);
+    const ledger = await json(await SELF.fetch(`${BASE}/api/trade/ledger`));
+    const row = (ledger["accounts"] as Record<string, unknown>[]).find((entry) => entry["account"] === TRADE_SANDBOX_ID)!;
+    expect(row["billed_usd"]).toBe(0);
+    expect(row["delivered_test"]).toBe(1);
+  });
+
+  it("is test-mode by construction: a published secret on a live account cannot exist", () => {
+    for (const partner of TRADE_PARTNERS) {
+      if (partner.sandbox) {
+        expect(partner.mode, `${partner.id} publishes a secret and is not test`).toBe("test");
+        expect(partner.credit_ceiling_usd).toBe(0);
+      }
+    }
+  });
+
+  it("prints its secret on the contract and the room, so nobody has to ask", async () => {
+    const contract = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+    const row = (contract["accounts"] as Record<string, unknown>[]).find((entry) => entry["account"] === TRADE_SANDBOX_ID)!;
+    expect(row["published_secret"]).toBe(TRADE_SANDBOX_SECRET);
+    const page = await (await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain(TRADE_SANDBOX_SECRET);
+    expect(page).toContain("/api/trade/sandbox/check");
+  });
+});
+
+describe("the check desk: every check reported, nothing delivered", () => {
+  it("passes a good request, names the first failure on a bad one, and consumes no nonce", async () => {
+    const good = await sandboxSigned("x", { summary: "s" }, "check");
+    expect(good.status).toBe(200);
+    expect(good.body["would_pass"]).toBe(true);
+    expect(good.body["first_failure"]).toBeNull();
+    const checks = good.body["checks"] as Record<string, unknown>;
+    expect(checks["replay"]).toBe("fresh");
+    expect((checks["signature"] as Record<string, unknown>)["verified_with"]).toBe("current");
+    expect(String(good.body["expected_signature"])).toMatch(/^sha256=[0-9a-f]{64}$/);
+    // Ask again with the same nonce: still fresh — the desk consumed nothing.
+    const again = await sandboxSigned("x", { summary: "s" }, "check");
+    expect((again.body["checks"] as Record<string, unknown>)["replay"]).toBe("fresh");
+
+    const bad = await sandboxSigned("x", { summary: "s" }, "check", { secret: "wrong" });
+    expect(bad.body["would_pass"]).toBe(false);
+    expect(bad.body["first_failure"]).toBe("bad_signature");
+    expect(((bad.body["checks"] as Record<string, unknown>)["signature"] as Record<string, unknown>)["verified_with"]).toBe("none");
+
+    const stale = await sandboxSigned("x", {}, "check", { now_ms: Date.now() - 20 * 60_000 });
+    expect(stale.body["first_failure"]).toBe("stale_timestamp");
+    const ts = (stale.body["checks"] as Record<string, unknown>)["timestamp"] as Record<string, unknown>;
+    expect(ts["within_window"]).toBe(false);
+    expect(Number(ts["skew_seconds"])).toBeGreaterThan(1000);
+    const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradeRowPrefix(TRADE_SANDBOX_ID) });
+    expect(rows.keys.length).toBe(0);
+  });
+
+  it("does not reveal the expected signature on a real account", async () => {
+    const raw = "{}";
+    const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: "guess", provider_key: PROVIDER_KEY, body: raw });
+    const response = await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", headers, body: raw });
+    const body = await json(response);
+    expect(body["expected_signature"]).toBeUndefined();
+    expect(body["first_failure"]).toBe("bad_signature");
+  });
+});
+
+describe("the account's own statement, signed", () => {
+  it("answers the account holder over the empty body, and refuses a replay", async () => {
+    await order("certificate_of_patronage", { order_ref: "stmt-1" });
+    const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: SECRET, provider_key: PROVIDER_KEY, body: "" });
+    const response = await SELF.fetch(`${BASE}/api/trade/hal/statement`, { headers });
+    expect(response.status).toBe(200);
+    const body = await json(response);
+    const deliveries = body["deliveries"] as Record<string, unknown>[];
+    expect(deliveries.length).toBe(1);
+    expect(deliveries[0]!["order_ref"]).toBe("stmt-1");
+    expect((body["summary"] as Record<string, unknown>)["account"]).toBe("hal");
+    const replay = await SELF.fetch(`${BASE}/api/trade/hal/statement`, { headers });
+    expect(replay.status).toBe(409);
+    const unsigned = await SELF.fetch(`${BASE}/api/trade/hal/statement`);
+    expect(unsigned.status).toBe(401);
+  });
+});
+
+describe("the catalog feed", () => {
+  it("lists every shelf item with copy, specimen where one exists, class and price at the share", async () => {
+    const feed = await json(await SELF.fetch(`${BASE}/api/trade/catalog`));
+    const items = feed["items"] as Record<string, unknown>[];
+    expect(items.length).toBe(tradeShelf().length);
+    for (const row of items) {
+      const item = getMenuItem(String(row["item_id"]))!;
+      expect(row["description"]).toBe(item.description);
+      expect(row["trade_price_usd"]).toBe(tradePriceUsd(item, 500));
+      expect(typeof row["does_not_prove"]).toBe("string");
+      expect(String(row["verify_url_template"])).toMatch(/^https:\/\/scvd\.store\/(api|case)\//);
+    }
+    const hal = await json(await SELF.fetch(`${BASE}/api/trade/catalog?account=hal`));
+    expect(hal["account"]).toBe("hal");
+    expect(hal["share_bps"]).toBe(HAL.partner_share_bps);
+    expect((hal["items"] as unknown[]).length).toBe(HAL.items.length);
+    expect((await SELF.fetch(`${BASE}/api/trade/catalog?account=nobody`)).status).toBe(404);
+  });
+});
+
+describe("the credit ceiling and the books", () => {
+  it("a live account at its ceiling is refused by name; a payout reopens it; the sweep agrees with the rows", async () => {
+    const live = { ...HAL, id: "spec_ceiling", name: "Spec Ceiling", mode: "live" as const, credit_ceiling_usd: 10 };
+    const item = getMenuItem("service_audit")!;
+    const settlement = tradeSettlementFor(live, item, "b".repeat(64));
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeAccount(live.id));
+    await recordTradeDelivery(testEnv, live, item, settlement, "cert_c1", {});
+    await recordTradeDelivery(testEnv, live, item, settlement, "cert_c2", {});
+    expect(await tradeOutstandingCents(testEnv, live)).toBe(Math.round(settlement.net_usd * 200));
+    const { creditCeilingReached } = await import("@/services/trade-counter");
+    expect(await creditCeilingReached(testEnv, live)).toBe(true);
+    await recordTradePayout(testEnv, live, settlement.net_usd * 2, "paid-in-full");
+    expect(await creditCeilingReached(testEnv, live)).toBe(false);
+    expect(await reseatOutstanding(testEnv, live)).toBe(0);
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradeRowPrefix(live.id));
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradePayoutPrefix(live.id));
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeAccount(live.id));
+    // Test-mode accounts are never refused on it.
+    expect(await creditCeilingReached(testEnv, HAL)).toBe(false);
+    const sweep = await sweepBooksInvariants(testEnv);
+    expect(sweep.checked).toBe(6);
+    expect(sweep.breaches.filter((line) => line.startsWith("trade-receivable"))).toEqual([]);
+  });
+
+  it("the aging watch names a live account whose oldest unpaid delivery has stood past the statement window", async () => {
+    // No live accounts in the register today: the watch finds nothing and pages nobody.
+    const aged = await tradeReceivableWatch(testEnv);
+    expect(aged).toEqual([]);
+    // And the summary's oldest_unpaid_at is the row the payouts do not reach.
+    const live = { ...HAL, id: "spec_aging", name: "Spec Aging", mode: "live" as const };
+    const item = getMenuItem("service_audit")!;
+    const settlement = tradeSettlementFor(live, item, "c".repeat(64));
+    const old = new Date(Date.now() - (TRADE_STATEMENT_DAYS + 5) * 86_400_000);
+    await recordTradeDelivery(testEnv, live, item, settlement, "cert_a1", {}, old);
+    await recordTradeDelivery(testEnv, live, item, settlement, "cert_a2", {});
+    await recordTradePayout(testEnv, live, settlement.net_usd, "one-line");
+    const summary = await tradeAccountSummary(testEnv, live);
+    // The payout covered the oldest line; the newer one is the oldest unpaid.
+    expect(summary.oldest_unpaid_at).not.toBe(old.toISOString());
+    expect(summary.outstanding_usd).toBe(settlement.net_usd);
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradeRowPrefix(live.id));
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradePayoutPrefix(live.id));
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeAccount(live.id));
+  });
+});
+
+describe("the surfaces, round two", () => {
+  it("the delivery and the receipt page say who handles refunds", async () => {
+    const { body } = await order("certificate_of_patronage", {});
+    expect(String((body["trade"] as Record<string, unknown>)["refunds"])).toContain("Hal");
+    const page = await (await SELF.fetch(`${BASE}/api/verify/${certificateOf(body).cert_id}`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("Refunds go through the account holder");
+  });
+
+  it("the pages an integrator opens first name the counter", async () => {
+    for (const path of ["/developers", "/operators", "/pricing"]) {
+      const page = await (await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "text/html" } })).text();
+      expect(page, path).toContain('href="/trade"');
+    }
+    const item = await (await SELF.fetch(`${BASE}/menu/service_audit`, { headers: { Accept: "text/html" } })).text();
+    expect(item).toContain("the trade counter");
+    const itemJson = await json(await SELF.fetch(`${BASE}/menu/service_audit`));
+    expect(isRecord(itemJson["trade_account"])).toBe(true);
+    const penny = await json(await SELF.fetch(`${BASE}/menu/small_blessing`));
+    expect(penny["trade_account"]).toBeUndefined();
+    const front = await (await SELF.fetch(BASE, { headers: { Accept: "text/html" } })).text();
+    expect(front).toContain('href="/trade"');
+    const catalog = await (await SELF.fetch(`${BASE}/.well-known/api-catalog`)).text();
+    expect(catalog).toContain("/api/trade/contract");
+  });
+});

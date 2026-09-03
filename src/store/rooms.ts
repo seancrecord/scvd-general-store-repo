@@ -98,11 +98,12 @@ export const ROOMS: readonly Room[] = [
   { path: "/developers", name: "developer documentation" },
   /**
    * THE TRADE COUNTER (2026-09-03): the shelf sold on account to
-   * marketplaces. Off the front of the store until the keeper rules
-   * on a slot (rule 7, the same wait /trust and its four siblings
-   * took); on every surface an agent reads from the day it opened.
+   * marketplaces. On the front of the store by the keeper's word the
+   * same evening ("agreed lets do them all", against a list that
+   * named the slot); on every surface an agent reads from the day it
+   * opened.
    */
-  { path: "/trade", name: "The Trade Counter", on_storefront: false },
+  { path: "/trade", name: "The Trade Counter" },
   { path: "/try", name: "The Practice Counter" },
   /**
    * The two differentiators, given crawlable rooms 2026-08-10. Both

@@ -1,4 +1,10 @@
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
+import {
+  TRADE_EXAMPLE_SHARE_BPS,
+  tradeEligible,
+  tradePriceUsd,
+  tradeShelfEntry,
+} from "@/store/trade-counter";
 import { DEPTH_ITEMS, archiveWideDepth, depthLine } from "@/services/archive-depth";
 import { Hono, type Context } from "hono";
 import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
@@ -162,6 +168,16 @@ catalogRoutes.get("/menu.json", async (c) => {
        * and a URL a reader has to guess is not.
        */
       listing_url: `${base}/menu/${item.id}`,
+      ...(tradeShelfEntry(item.id) && tradeEligible(item)
+        ? {
+            trade_account: {
+              what: "Also orderable on a marketplace's trade account: the partner collects the payment, sends a signed webhook, and this same item is delivered with a certificate that says so.",
+              trade_price_usd_at_example_share: tradePriceUsd(item, TRADE_EXAMPLE_SHARE_BPS),
+              contract: `${base}/api/trade/contract`,
+              room: `${base}/trade`,
+            },
+          }
+        : {}),
       ...(ITEM_ASKED_FOR[item.id] ? { asked_for: ITEM_ASKED_FOR[item.id] } : {}),
       at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
       spec: listingSpec(item, base),
@@ -545,6 +561,7 @@ function renderItemPage(
         <h2>The facts</h2>
         ${factsHtml}
         ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
+        ${tradeShelfEntry(item.id) && tradeEligible(item) ? `<p class="menu-meta">Also on account at <a href="/trade">the trade counter</a>, for marketplaces reselling this shelf: $${tradePriceUsd(item, TRADE_EXAMPLE_SHARE_BPS).toFixed(2)} at a ${TRADE_EXAMPLE_SHARE_BPS / 100}% partner share, by the published rule.</p>` : ""}
         <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
       </section>
       ${
@@ -704,6 +721,16 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     not_guaranteed: NOT_GUARANTEED,
     fulfillment_state: state,
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+    ...(tradeShelfEntry(item.id) && tradeEligible(item)
+      ? {
+          trade_account: {
+            what: "Also orderable on a marketplace's trade account: the partner collects the payment, sends a signed webhook, and this same item is delivered with a certificate that says so.",
+            trade_price_usd_at_example_share: tradePriceUsd(item, TRADE_EXAMPLE_SHARE_BPS),
+            contract: `${base}/api/trade/contract`,
+            room: `${base}/trade`,
+          },
+        }
+      : {}),
     // Only the anchor carries this: guidance derived from handing one
     // cold to a reader with no other context, and publishing what it
     // could not recover. Advice, never validation.

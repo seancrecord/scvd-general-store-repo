@@ -131,6 +131,25 @@ export interface TradePartner {
    */
   mode: "live" | "test";
   opened: string;
+  /**
+   * THE CREDIT CEILING, in dollars of unpaid net. The daily cap bounds
+   * UNITS a leaked secret can mint; this bounds DOLLARS a live account
+   * can owe before the counter refuses with a named code. Checked
+   * against a running counter (KV, so a race can overshoot by one
+   * delivery) and recomputed from the rows by every statement walk.
+   * Test-mode accounts book nothing and are never refused on it.
+   */
+  credit_ceiling_usd: number;
+  /**
+   * A PUBLISHED SECRET, for the one account that has one: the
+   * sandbox. Every other account's secrets live in Worker secrets
+   * and are read by name; this field exists so the sandbox can be
+   * used by a stranger in a minute, the way /try works for the till.
+   * An account with this field set is test-mode by construction —
+   * a test holds it, because a published secret on a live account
+   * would be everyone's money.
+   */
+  sandbox?: { signing_secret: string; provider_key: string };
 }
 
 /**
@@ -140,7 +159,52 @@ export interface TradePartner {
  * keeper's hand — rule 30, no agent holds keys — and the row is what
  * he adds once the secret is set.
  */
+/**
+ * THE SANDBOX ACCOUNT — integration before the conversation, not after
+ * it (2026-09-03, "how do we make this better for everyone").
+ *
+ * Anyone can sign with this secret and get a real delivery of real
+ * goods, marked test, booked nowhere. It is what /try is for the till:
+ * a marketplace's engineer proves their signer against ours in an
+ * afternoon and writes to the keeper already working. The daily cap
+ * is the whole abuse story — fifty deliveries a day of goods that
+ * cost nothing to make, on an account that owes nothing — and the
+ * probes it can order are the same probes the free preflight runs.
+ * The certificates it mints take patron numbers like any other test
+ * purchase; they say trade_account_test and never count as sales.
+ */
+export const TRADE_SANDBOX_ID = "sandbox";
+export const TRADE_SANDBOX_SECRET = "scvd-trade-sandbox-secret-anyone-may-use";
+export const TRADE_SANDBOX_PROVIDER_KEY = "scvd-trade-sandbox-key";
+
 export const TRADE_PARTNERS: readonly TradePartner[] = [
+  {
+    id: TRADE_SANDBOX_ID,
+    name: "The sandbox",
+    site: "https://scvd.store/trade",
+    dialect: "canonical",
+    partner_share_bps: 500,
+    settles_in: "nothing — a sandbox owes nothing and is owed nothing",
+    items: [
+      "certificate_of_patronage",
+      "context_anchor",
+      "bitcoin_anchor",
+      "signature_agent_card",
+      "onpage_audit",
+      "service_audit",
+      "passport_refresh",
+      "good_buyer",
+      "provenance_check",
+    ],
+    daily_cap: 50,
+    mode: "test",
+    opened: TRADE_COUNTER_OPENED,
+    credit_ceiling_usd: 0,
+    sandbox: {
+      signing_secret: TRADE_SANDBOX_SECRET,
+      provider_key: TRADE_SANDBOX_PROVIDER_KEY,
+    },
+  },
   {
     id: "hal",
     name: "Hal",
@@ -162,8 +226,13 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
     daily_cap: 200,
     mode: "test",
     opened: TRADE_COUNTER_OPENED,
+    /** ⚑ keeper dial: how much unpaid net the account may carry. */
+    credit_ceiling_usd: 250,
   },
 ];
+
+/** How long a live account's oldest unpaid delivery may stand before the keeper is paged. ⚑ dial. */
+export const TRADE_STATEMENT_DAYS = 30;
 
 export function getTradePartner(id: string): TradePartner | undefined {
   return TRADE_PARTNERS.find((partner) => partner.id === id);
@@ -342,8 +411,19 @@ export const TRADE_ORDER_REF_MAX = 120;
 /* Copy — the room, in the store's voice (rule 7: the keeper's to ink) */
 /* ------------------------------------------------------------------ */
 
-export const TRADE_STANDFIRST =
-  "Round the back, for marketplaces. Your customer pays you, however you take money. You send us one signed instruction. We deliver the same signed goods the front door sells and bill your account on a statement. Your customer never touches x402.";
+/**
+ * THE PROPOSITION AND THE MONEY SENTENCE — rule 60's two lines. Each
+ * is ONE sentence with no quotes, read identically on the room's
+ * page, its JSON twin and llms.txt; the feature register
+ * (store/features.ts) holds them there by test. Change one here and
+ * every surface moves together, which is the point.
+ */
+export const TRADE_PROPOSITION =
+  "Your customer pays you; you send us one signed instruction; we deliver the same signed goods the front door sells and bill your account on a statement.";
+export const TRADE_FOR_MONEY =
+  "Trade price is retail plus 20% net of your share, rounded up to the cent, billed per delivery and never for a delivery that did not happen.";
+
+export const TRADE_STANDFIRST = `Round the back, for marketplaces. ${TRADE_PROPOSITION} Your customer never touches x402.`;
 
 export const TRADE_WHAT_THIS_IS =
   "A trade account on this store's shelf: any platform that resells to agents — a marketplace, an aggregator, a payments layer that hides x402 from its own users — lists our instruments under its roof, collects its customer's money itself, and orders from us by signed webhook. One door, one JSON body, one signed instruction per sale, delivery in seconds, a certificate the end customer can verify against our public key without trusting either of us.";
@@ -363,12 +443,20 @@ export interface TradeStep {
 
 export const TRADE_HOW_IT_WORKS: readonly TradeStep[] = [
   {
+    step: 0,
+    name: "The sandbox, first",
+    what_happens:
+      "Before any conversation, sign against the sandbox account with the secret printed on this page. Real signatures, real goods, marked test, booked nowhere. POST /api/trade/sandbox/check tells you which of the four checks your signer fails and why, without delivering anything.",
+    what_you_can_check:
+      "The sandbox's secret, dialect and daily cap are on its account row at /api/trade/contract; its deliveries appear on /api/trade/ledger as test, never billed.",
+  },
+  {
     step: 1,
     name: "The account",
     what_happens:
-      "The keeper opens an account by hand: your platform, your signing dialect, the items you may order, a daily cap. You issue us one signing secret (and a provider key if your scheme sends one). We hold them as Worker secrets; nothing of ours is ever asked of you.",
+      "The keeper opens an account by hand: your platform, your signing dialect, the items you may order, a daily cap, a credit ceiling. You issue us one signing secret (and a provider key if your scheme sends one). We hold them as Worker secrets; nothing of ours is ever asked of you.",
     what_you_can_check:
-      "Your account's row — items, share, cap, mode — is printed at /api/trade/contract the moment it exists, and its receivable is on /api/trade/ledger.",
+      "Your account's row — items, share, cap, ceiling, mode — is printed at /api/trade/contract the moment it exists, and its receivable is on /api/trade/ledger.",
   },
   {
     step: 2,
@@ -400,7 +488,7 @@ export const TRADE_HOW_IT_WORKS: readonly TradeStep[] = [
     what_happens:
       "Each delivery on a live account adds one line to your statement: item, trade price, your share, our net. Outstanding net is the receivable, published per account. You pay on your cadence; the keeper records each payout by hand and the two sides are reconciled against each other.",
     what_you_can_check:
-      "/api/trade/ledger prints every account's delivered count, billed and outstanding figures, with the truncation flag any bounded read here carries.",
+      "/api/trade/ledger prints every account's delivered count, billed and outstanding figures, with the truncation flag any bounded read here carries. Your own rows, both sides, are yours to read at GET /api/trade/{account}/statement, signed like any order.",
   },
 ];
 
@@ -425,6 +513,11 @@ export const TRADE_WHY: readonly { point: string; because: string }[] = [
     point: "Delivery first, always.",
     because:
       "The goods are produced before anything is booked. A failed delivery leaves no line on your statement, so you never owe for something your customer did not get.",
+  },
+  {
+    point: "You can be integrated before you have talked to anyone.",
+    because:
+      "A sandbox account with a published secret, a check desk that names which of the four signature checks failed, and a catalog feed with every item's copy, specimen and price at your share. Write to the keeper already working.",
   },
   {
     point: "Everything you would want to audit is already public.",
@@ -531,6 +624,13 @@ export const TRADE_ERRORS: readonly TradeError[] = [
   },
   {
     status: 429,
+    code: "credit_ceiling_reached",
+    meaning: "Your live account's unpaid net has reached its credit ceiling.",
+    what_to_do:
+      "Settle the statement; the ceiling is printed on your account row and the outstanding figure on /api/trade/ledger. The keeper can raise it.",
+  },
+  {
+    status: 429,
     code: "cap_reached",
     meaning: "Your account has ordered its daily cap.",
     what_to_do:
@@ -560,8 +660,16 @@ export const TRADE_FAQ: readonly { q: string; a: string }[] = [
     a: "Yes. Tell the keeper the new secret; for the handover window both verify and the response says which one signed. Then the old one is unset.",
   },
   {
+    q: "My signature is rejected and I cannot see why.",
+    a: "POST the same headers and body to /api/trade/{account}/check. It runs the four checks and reports each — headers present, provider key, clock skew in seconds, nonce shape, and whether the HMAC verified under the secret in service, the previous one, or neither — and prints the sha256 of the signing string we computed so you can compare it with yours. It delivers nothing and consumes no nonce. On the sandbox it also prints the signature we expected.",
+  },
+  {
+    q: "Who handles refunds for my customer?",
+    a: "You do. You collected the payment; this store took none and cannot return any. A refund on your side does not reverse a statement line here — the goods were delivered — unless the keeper agrees one by hand.",
+  },
+  {
     q: "How do I open an account?",
-    a: "Write to the store — POST /api/letter — with your platform, the dialect you sign in (or that you will use ours), the items you want, and expected daily volume. A human reads it. Accounts open in test mode, so you can run real calls against real goods before anyone owes anyone anything.",
+    a: "Prove your signer on the sandbox first, then write to the store — POST /api/letter — with your platform, the dialect you sign in (or that you will use ours), the items you want, and expected daily volume. A human reads it. Accounts open in test mode, so you can run real calls against real goods before anyone owes anyone anything.",
   },
 ];
 

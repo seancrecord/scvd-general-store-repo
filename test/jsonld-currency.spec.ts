@@ -1,6 +1,10 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { JSONLD_ACCEPTED_PAYMENT, JSONLD_PRICE_CURRENCY } from "@/lib/jsonld";
+import {
+  JSONLD_ACCEPTED_PAYMENT,
+  JSONLD_PRICE_CURRENCY,
+  JSONLD_TRADE_ACCEPTED_PAYMENT,
+} from "@/lib/jsonld";
 
 const BASE = "https://scvd.store";
 
@@ -61,9 +65,13 @@ describe("JSON-LD money fields", { timeout: 120_000 }, () => {
           }
           if (node["@type"] === "Offer" && Number(node["price"] ?? 0) > 0) {
             pricedOffers += 1;
-            expect(node["acceptedPaymentMethod"], `${url}: priced Offer without the asset in words`).toBe(
-              JSONLD_ACCEPTED_PAYMENT,
-            );
+            // Two sentences and no third: the front door's asset, or the
+            // trade counter's statement (2026-09-03) — the one priced
+            // Offer here that is not paid over x402 and must not say so.
+            expect(
+              [JSONLD_ACCEPTED_PAYMENT, JSONLD_TRADE_ACCEPTED_PAYMENT],
+              `${url}: priced Offer without the asset in words`,
+            ).toContain(node["acceptedPaymentMethod"]);
           }
         }
       }

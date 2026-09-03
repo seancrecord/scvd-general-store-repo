@@ -850,6 +850,59 @@ LORE & TRADITION
 
 
 =====================================================================
+
+60. EVERY OUTWARD SURFACE IS CONSUMABLE, FINDABLE, AND SAYS ONE
+    PROPOSITION. (Adopted 2026-09-03, the keeper's two rulings the
+    evening the trade counter opened, made general because they are
+    not about the counter.)
+
+    THE KEEPER'S WORDS, VERBATIM: "we need a check in place for any
+    new feature to have proper aeo/seo, json ld, schemas and to be
+    reflected across each page it needs to be". And: "every piece of
+    marketable/forward facing/human facing/agent readable code needs
+    to be consumable and needs to have our value proposition
+    consistent and clear of what they can do with it/get with their
+    money and they need to be able to find it".
+
+    WHAT IT ADDS TO 57 AND 58. Those two say what a surface owes a
+    caller and a reader. This says a FEATURE owes the same on every
+    surface at once, in the same words, and that the set of surfaces
+    is named per feature rather than remembered. The trade counter
+    shipped on every surface a guard reads and on none of the pages
+    an integrator opens first; the guards checked whether a door was
+    named somewhere and nothing checked where.
+
+    60.1 A FEATURE IS A ROW. src/store/features.ts carries one row
+    per feature: its room, its doors, the pages that must link it,
+    ONE proposition sentence (what a caller can do or get) and ONE
+    money sentence (what money buys, by what rule). No new room and
+    no new API path ships without a row; the register freezes what
+    stood before this rule and refuses anything newer without one.
+
+    60.2 THE SAME SENTENCE EVERYWHERE. The proposition and the money
+    sentence read byte-identically on the room's page, its JSON twin
+    and llms.txt. Two phrasings of a value proposition are two
+    propositions, and the reader who meets both trusts neither.
+
+    60.3 THE ROOM EARNS ITS PAGE AND ITS SCHEMA. Title, description,
+    one h1, a canonical, a WebPage node, AND a typed schema.org node
+    for what the thing is (a Service, a HowTo, a Dataset, an
+    OfferCatalog) so an answer engine files it as a thing that can
+    be used, not a page that can be read.
+
+    60.4 THE FIVE ANSWERS RIDE THE TWIN. what_this_is, price,
+    how_to_call, errors, security on the JSON the room serves an
+    agent — rule 57, held per feature rather than assumed.
+
+    60.5 NAMED WHERE ITS READER LOOKS. Every page on the row's list
+    links the room; every door is in openapi.json; the room is on
+    the sitemap and in llms.txt. Findable from any door, not from
+    the one we happened to build.
+
+    HELD BY test/feature-surfaces.spec.ts, which walks the register
+    against the served surfaces. Rule 46 applies: the guard was
+    watched red before it was trusted.
+
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the
 audit was archived; rule 44 points here. Each string is TRUE today

@@ -1,21 +1,30 @@
 import { Hono } from "hono";
+import {
+  JSONLD_PRICE_CURRENCY,
+  JSONLD_TRADE_ACCEPTED_PAYMENT,
+  jsonLdScript,
+  organizationRef,
+} from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
-import { verifyTradeRequest } from "@/lib/trade-auth";
+import { diagnoseTradeRequest, verifyTradeRequest } from "@/lib/trade-auth";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { fulfillPurchase } from "@/services/fulfillment";
 import {
   alertCapReached,
+  creditCeilingReached,
   recallOrder,
   recordTradeDelivery,
+  tradeCatalog,
   tradeDayCount,
   tradeLedger,
   tradePending,
   tradeSecrets,
   tradeSettlementFor,
+  tradeStatement,
   utcDay,
   validateTradeInputs,
 } from "@/services/trade-counter";
-import { claimTradeNonce } from "@/services/trade-nonces";
+import { claimTradeNonce, peekTradeNonce } from "@/services/trade-nonces";
 import { STORE_SERVICE_NAME, getMenuItem } from "@/store";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { securityBlock } from "@/store/surface-contract";
@@ -28,6 +37,7 @@ import {
   TRADE_ERRORS,
   TRADE_EXAMPLE_SHARE_BPS,
   TRADE_FAQ,
+  TRADE_FOR_MONEY,
   TRADE_HONEST_LIMITS,
   TRADE_HOW_IT_WORKS,
   TRADE_MIN_RETAIL_USD,
@@ -35,6 +45,7 @@ import {
   TRADE_ORDER_REF_MAX,
   TRADE_ORDER_TTL_SECONDS,
   TRADE_PARTNERS,
+  TRADE_SANDBOX_ID,
   TRADE_SECURITY_DOES,
   TRADE_SECURITY_STORES,
   TRADE_STANDFIRST,
@@ -62,7 +73,11 @@ import type { HonoEnv } from "@/types";
  *   GET  /trade                           — the room: HTML to a person,
  *                                           the five answers to an agent
  *   GET  /api/trade/contract              — the contract, derived
+ *   GET  /api/trade/catalog               — the shelf, as a listing feed
  *   GET  /api/trade/ledger                — every account's receivable
+ *   POST /api/trade/{account}/check       — the check desk: every check
+ *                                           reported, nothing delivered
+ *   GET  /api/trade/{account}/statement   — the account's own rows, signed
  *   POST /api/trade/{account}/{item_id}   — the paid door, signed
  *
  * THE PAID DOOR IS NOT UNDER /api/buy AND THAT IS THE DESIGN. The
@@ -171,7 +186,17 @@ function accountRows(base: string) {
     partner_share_bps: partner.partner_share_bps,
     settles_in: partner.settles_in,
     daily_cap: partner.daily_cap,
+    credit_ceiling_usd: partner.credit_ceiling_usd,
     door: `${base}/api/trade/${partner.id}/{item_id}`,
+    check_desk: `${base}/api/trade/${partner.id}/check`,
+    statement: `${base}/api/trade/${partner.id}/statement`,
+    ...(partner.sandbox
+      ? {
+          published_secret: partner.sandbox.signing_secret,
+          published_provider_key: partner.sandbox.provider_key,
+          note: "A sandbox: anyone may sign with this secret. Real goods, marked test, booked nowhere, fifty a day.",
+        }
+      : {}),
     items: partner.items.flatMap((itemId) => {
       const item = getMenuItem(itemId);
       const entry = tradeShelfEntry(itemId);
@@ -239,7 +264,9 @@ function termsJson(base: string) {
     accounts: accountRows(base),
     expected_outcome: EXPECTED_OUTCOME,
     errors: TRADE_ERRORS,
+    catalog: `${base}/api/trade/catalog`,
     ledger: `${base}/api/trade/ledger`,
+    sandbox: `${base}/api/trade/${TRADE_SANDBOX_ID}/check`,
     room: `${base}/trade`,
     honest_limits: TRADE_HONEST_LIMITS,
     security: securityBlock(base, {
@@ -248,6 +275,138 @@ function termsJson(base: string) {
     }),
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* The catalog feed                                                   */
+/* ------------------------------------------------------------------ */
+
+tradeCounterRoutes.get("/api/trade/catalog", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const accountId = c.req.query("account");
+  const partner = accountId ? getTradePartner(accountId) : undefined;
+  if (accountId && !partner) {
+    return c.json({ error: "No trade account by that name.", code: "unknown_account" }, 404);
+  }
+  const share = partner ? partner.partner_share_bps : TRADE_EXAMPLE_SHARE_BPS;
+  const rows = tradeCatalog(base, share).filter(
+    (row) => !partner || partner.items.includes(row.item_id),
+  );
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json({
+    what_this_is:
+      "Every item at the trade counter as a listing feed: the copy the item page prints, what it reads, its constraints, the free specimen, the artifact class and what it does not prove, and the price at the account's share. Derived from the same rows the shelf renders, so a listing built from this cannot say something our own shelf does not.",
+    ...(partner ? { account: partner.id, share_bps: share } : { share_bps: share, note: "Printed at the example share; pass ?account={id} for an account's own prices and items." }),
+    items: rows,
+    pricing_rule: pricingBlock().rule,
+    contract: `${base}/api/trade/contract`,
+    verify_note:
+      "Every artifact an item delivers verifies free, forever, at the verify_url_template — a listing may promise that to its customers because it is not our word, it is a check they can run.",
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* The check desk                                                     */
+/* ------------------------------------------------------------------ */
+
+tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
+  c.header("Cache-Control", "no-store");
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    const error = errorByCode("unknown_account");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const rawBody = await c.req.text();
+  const secrets = tradeSecrets(c.env, partner);
+  if (!secrets) {
+    const error = errorByCode("counter_closed");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  const dialect = TRADE_DIALECTS[partner.dialect];
+  const diagnosis = await diagnoseTradeRequest({
+    dialect,
+    header: (name) => c.req.header(name),
+    rawBody,
+    secrets,
+    now_ms: Date.now(),
+    reveal: partner.sandbox !== undefined,
+  });
+  const replayKey =
+    dialect.signing_string === "timestamp.nonce.body"
+      ? diagnosis.nonce.raw
+      : diagnosis.signing_string.sha256;
+  const seen = replayKey ? await peekTradeNonce(c.env, partner.id, replayKey) : "unavailable";
+  return c.json({
+    what_this_is:
+      "The check desk: the same four checks the order door runs, every one reported rather than the first refused. Nothing is delivered, no nonce is consumed, no money moves. Send exactly the headers and body you would send to the order door.",
+    account: partner.id,
+    dialect: dialectRow(dialect),
+    would_pass: diagnosis.would_pass,
+    first_failure: diagnosis.first_failure,
+    checks: {
+      headers: diagnosis.headers,
+      provider_key: diagnosis.provider_key,
+      timestamp: diagnosis.timestamp,
+      nonce: diagnosis.nonce,
+      signature: diagnosis.signature,
+      replay: seen === "unavailable" ? "store_unavailable" : seen ? "already_presented" : "fresh",
+    },
+    signing_string: {
+      ...diagnosis.signing_string,
+      how_to_compare:
+        "Compute sha256 over the exact string your signer fed to HMAC. If it differs from ours, the bytes differ — usually a re-serialised body, a trailing newline, or the wrong field order in the string — and no secret will make the signature match.",
+    },
+    ...(diagnosis.expected_signature ? { expected_signature: diagnosis.expected_signature } : {}),
+    body_bytes: new TextEncoder().encode(rawBody).byteLength,
+    errors: TRADE_ERRORS,
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* The account's own statement, signed                                */
+/* ------------------------------------------------------------------ */
+
+tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
+  c.header("Cache-Control", "no-store");
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    const error = errorByCode("unknown_account");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const secrets = tradeSecrets(c.env, partner);
+  if (!secrets || !c.env.TRADE_NONCES) {
+    const error = errorByCode("counter_closed");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  // A GET signs the empty body: timestamp.nonce."" under the account's dialect.
+  const verdict = await verifyTradeRequest({
+    dialect: TRADE_DIALECTS[partner.dialect],
+    header: (name) => c.req.header(name),
+    rawBody: "",
+    secrets,
+    now_ms: Date.now(),
+  });
+  if (!verdict.ok) {
+    const error = errorByCode(verdict.code);
+    return c.json(refusal(error, error.meaning), 401);
+  }
+  const claim = await claimTradeNonce(c.env, partner.id, verdict.replay_key, TRADE_NONCE_TTL_SECONDS);
+  if (claim === "unavailable") {
+    const error = errorByCode("counter_closed");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  if (claim === "seen") {
+    const error = errorByCode("replayed");
+    return c.json(refusal(error, error.meaning), 409);
+  }
+  const statement = await tradeStatement(c.env, partner);
+  return c.json({
+    what_this_is:
+      "Your account's statement, both sides: every delivery row (item, certificate, trade price, your share, our net, your order_ref) and every payout the keeper has recorded, newest first, with the summary the public ledger prints. Reconcile it against your own; a line you dispute is a letter to the store.",
+    read_at: new Date().toISOString(),
+    signed_with: verdict.signed_with,
+    ...statement,
+  });
+});
 
 tradeCounterRoutes.get("/api/trade/contract", (c) => {
   c.header("Cache-Control", "public, max-age=300");
@@ -287,6 +446,7 @@ function roomJson(base: string) {
     price: {
       this_surface: "free",
       cadence: "not applicable — nothing is charged for reading this",
+      for_money: TRADE_FOR_MONEY,
       the_counter: pricingBlock(),
       shelf: shelfRows(base),
       accounts_today: TRADE_PARTNERS.map((partner) => ({
@@ -300,11 +460,13 @@ function roomJson(base: string) {
     expected_outcome: EXPECTED_OUTCOME,
     errors: TRADE_ERRORS,
     faq: TRADE_FAQ,
+    try_it_now: sandboxBlock(base),
     open_an_account: {
-      how: `POST ${base}/api/letter with {"letter": "..."} naming your platform, the dialect you sign in (or that you will use ours), the items you want, and expected daily volume. A human reads it; accounts open in test mode.`,
+      how: `Prove your signer on the sandbox, then POST ${base}/api/letter with {"letter": "..."} naming your platform, the dialect you sign in (or that you will use ours), the items you want, and expected daily volume. A human reads it; accounts open in test mode.`,
       what_you_issue_us: "One HMAC signing secret, and a provider key if your scheme sends one. Nothing of ours is ever asked of you.",
     },
     terms: `${base}/api/trade/contract`,
+    catalog: `${base}/api/trade/catalog`,
     ledger: `${base}/api/trade/ledger`,
     security: securityBlock(base, {
       does_in_your_name: TRADE_SECURITY_DOES,
@@ -313,6 +475,62 @@ function roomJson(base: string) {
     corrections: CORRECTIONS_POINTER,
     honest_limits: TRADE_HONEST_LIMITS,
   };
+}
+
+function sandboxBlock(base: string) {
+  const sandbox = getTradePartner(TRADE_SANDBOX_ID);
+  if (!sandbox?.sandbox) {
+    return undefined;
+  }
+  const dialect = TRADE_DIALECTS[sandbox.dialect];
+  return {
+    account: sandbox.id,
+    secret: sandbox.sandbox.signing_secret,
+    provider_key: sandbox.sandbox.provider_key,
+    dialect: dialect.id,
+    order_door: `${base}/api/trade/${sandbox.id}/{item_id}`,
+    check_desk: `${base}/api/trade/${sandbox.id}/check`,
+    statement: `${base}/api/trade/${sandbox.id}/statement`,
+    daily_cap: sandbox.daily_cap,
+    what_you_get:
+      "Real signatures checked, real goods delivered and marked test, a certificate that verifies at /api/verify, and nothing booked to anyone. The check desk on this account prints the signature we expected, since the secret is public anyway.",
+  };
+}
+
+/**
+ * THE ROOM'S OWN NODE: a Service with one Offer per shelf item at the
+ * example share, so an answer engine reading /trade sees a thing that
+ * can be bought, by whom, for how much — not only a WebPage. Prices
+ * are derived from the same rule the page prints.
+ */
+function tradeJsonLd(base: string): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${TRADE_COUNTER_NAME}, scvd.store`,
+    serviceType: "Wholesale trade account for marketplaces reselling signed x402 evidence instruments",
+    description: ROOM_DESCRIPTION,
+    url: `${base}/trade`,
+    provider: organizationRef(base),
+    audience: {
+      "@type": "Audience",
+      audienceType: "Marketplaces, aggregators and payment layers that resell to AI agents",
+    },
+    termsOfService: `${base}/api/trade/contract`,
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "The shelf at the trade counter",
+      itemListElement: shelfRows(base).map((row) => ({
+        "@type": "Offer",
+        name: row.name,
+        url: row.item_page,
+        price: row.trade_price_usd_at_example_share.toFixed(2),
+        priceCurrency: JSONLD_PRICE_CURRENCY,
+        acceptedPaymentMethod: JSONLD_TRADE_ACCEPTED_PAYMENT,
+        description: `Trade price at a ${TRADE_EXAMPLE_SHARE_BPS / 100}% partner share; retail $${row.retail_usd} at the front door.`,
+      })),
+    },
+  });
 }
 
 function roomHtml(base: string): string {
@@ -346,7 +564,16 @@ function roomHtml(base: string): string {
   return `<section>
   <p class="menu-desc"><strong>${escapeHtml(TRADE_STANDFIRST)}</strong></p>
   <p class="menu-desc">${escapeHtml(TRADE_WHAT_THIS_IS)}</p>
-  <p class="menu-desc"><strong>The numbers first.</strong> ${tradeShelf().length} instruments at the counter, from $${Math.min(...tradeShelf().map((row) => row.item.price_usdc))} retail. Trade price is retail plus ${TRADE_UPLIFT_BPS / 100}% net of your share, rounded up to the cent. ${TRADE_PARTNERS.length} account${TRADE_PARTNERS.length === 1 ? "" : "s"} open today. Every account's receivable is public at <a href="/api/trade/ledger"><code>/api/trade/ledger</code></a>.</p>
+  <p class="menu-desc"><strong>The numbers first.</strong> ${tradeShelf().length} instruments at the counter, from $${Math.min(...tradeShelf().map((row) => row.item.price_usdc))} retail. ${escapeHtml(TRADE_FOR_MONEY)} ${TRADE_PARTNERS.length} account${TRADE_PARTNERS.length === 1 ? "" : "s"} open today. Every account's receivable is public at <a href="/api/trade/ledger"><code>/api/trade/ledger</code></a>.</p>
+</section>
+<section>
+  <h2>Try it now, no account</h2>
+  ${(() => {
+    const sandbox = sandboxBlock(base);
+    return sandbox
+      ? `<p class="menu-desc">The sandbox account signs with a <strong>published</strong> secret: <code>${escapeHtml(sandbox.secret)}</code> (provider key <code>${escapeHtml(sandbox.provider_key)}</code>, dialect <code>${escapeHtml(sandbox.dialect)}</code>). ${escapeHtml(sandbox.what_you_get)} ${sandbox.daily_cap} deliveries a day. Start at the check desk: <code>POST ${escapeHtml(sandbox.check_desk)}</code> with the headers and body you would send to <code>${escapeHtml(sandbox.order_door)}</code>, and it reports each of the four checks by name.</p>`
+      : "";
+  })()}
 </section>
 <section>
   <h2>Why a marketplace would</h2>
@@ -364,11 +591,13 @@ function roomHtml(base: string): string {
     <tbody>${shelf}</tbody>
   </table>
   <p class="menu-desc">Not at the counter: the penny shelf (under $${TRADE_MIN_RETAIL_USD} retail cannot be split in sats), the human-queue shelf, stocked units, and the term watches. The front door sells all of them.</p>
+  <p class="menu-meta">List from it by machine: <a href="/api/trade/catalog"><code>/api/trade/catalog</code></a> carries every item's copy, specimen, artifact class and price at your share (<code>?account=</code>).</p>
 </section>
 <section>
   <h2>The call</h2>
   <p class="menu-desc"><code>POST ${escapeHtml(base)}/api/trade/{account}/{item_id}</code> with one JSON object. Sign HMAC-SHA256 over <code>${escapeHtml(dialect.signing_string_in_words)}</code> with the secret you issued us and send it as <code>${escapeHtml(dialect.headers.signature)}: sha256=&lt;hex&gt;</code>, beside <code>${escapeHtml(dialect.headers.timestamp)}</code> (unix seconds) and <code>${escapeHtml(dialect.headers.nonce ?? "")}</code> (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send <code>order_ref</code> on every call so a retry after a timeout returns the original delivery instead of a second one. A partner that already signs in another dialect keeps it; the account row names which.</p>
   <p class="menu-desc">The reference signer is public: <a href="${REPO_SIGNER}"><code>src/lib/trade-auth.ts</code></a>. Sign a body with it and compare bytes with yours before the account goes live.</p>
+  <p class="menu-desc">Your own statement, both sides, is yours to read: <code>GET /api/trade/{account}/statement</code>, signed over the empty body like any order. Refunds to your customer are yours; this store took no payment and can return none.</p>
   <h3>Every refusal, by name</h3>
   <ul>${errors}</ul>
 </section>
@@ -402,7 +631,7 @@ tradeCounterRoutes.get("/trade", (c) => {
         title: ROOM_TITLE,
         description: ROOM_DESCRIPTION,
         path: "/trade",
-        bodyHtml: roomHtml(base),
+        bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}`,
       }),
     );
   }
@@ -517,6 +746,11 @@ tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
   if ((await tradeDayCount(c.env, partner, day)) >= partner.daily_cap) {
     await alertCapReached(c.env, partner, day);
     const error = errorByCode("cap_reached");
+    return c.json(refusal(error, error.meaning), 429);
+  }
+
+  if (await creditCeilingReached(c.env, partner)) {
+    const error = errorByCode("credit_ceiling_reached");
     return c.json(refusal(error, error.meaning), 429);
   }
 

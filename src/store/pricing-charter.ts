@@ -71,6 +71,22 @@ export const PRICING_CHARTER: readonly CharterClause[] = [
     check:
       "Every /api/buy door answers a first-time wallet with the same 402 it answers a pass-holder.",
   },
+  /**
+   * THE TRADE CHANNEL (2026-09-03). The trade counter sells the same
+   * shelf on account to marketplaces at prices ABOVE the front door's,
+   * and a charter whose first clause says "every wallet sees the same
+   * price" owes its reader the sentence that says why that is not a
+   * contradiction: the 402 terms are untouched, the trade price is a
+   * different channel priced by a rule as public as the menu, and a
+   * marketplace's customer who would rather pay the front-door price
+   * can walk to the front door.
+   */
+  {
+    id: "trade_channel",
+    rule: "The trade counter (/trade) sells this shelf on account to marketplaces at a trade price ABOVE the front door's, set by one published formula — retail plus an uplift, divided by one minus the partner's share, rounded up to the cent — never by who the partner is. The 402 terms at every /api/buy door are unchanged by it, and nothing a marketplace's customer pays them is seen, set or verified here.",
+    check:
+      "/api/trade/contract prints the formula, the uplift and every trade price beside its retail; menu.json prints the retail. Compute one yourself.",
+  },
 ] as const;
 
 /** The current floor, computed from the shelf — never typed. */

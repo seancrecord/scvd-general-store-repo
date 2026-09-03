@@ -1591,6 +1591,7 @@ const TRADE_LEDGER_SCHEMA: OpenApiObject = {
           opened: { type: "string" },
           partner_share_bps: { type: "integer" },
           daily_cap: { type: "integer" },
+          credit_ceiling_usd: { type: "number" },
           items: { type: "array", items: { type: "string" } },
           delivered_live: { type: "integer" },
           delivered_test: { type: "integer" },
@@ -1600,6 +1601,7 @@ const TRADE_LEDGER_SCHEMA: OpenApiObject = {
           outstanding_usd: { type: "number" },
           last_delivery_at: { type: "string", nullable: true },
           last_payout_at: { type: "string", nullable: true },
+          oldest_unpaid_at: { type: "string", nullable: true },
           truncated: { type: "boolean" },
         },
       },
@@ -1663,6 +1665,119 @@ const TRADE_DELIVERY_SCHEMA: OpenApiObject = {
     verify_url: { type: "string", format: "uri" },
     signed_with: { type: "string", enum: ["current", "previous"] },
     replayed_order_ref: { type: "boolean" },
+  },
+};
+
+const TRADE_CATALOG_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "share_bps", "items", "pricing_rule", "contract"],
+  properties: {
+    what_this_is: { type: "string" },
+    account: { type: "string" },
+    share_bps: { type: "integer" },
+    note: { type: "string" },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          item_id: { type: "string" },
+          name: { type: "string" },
+          subtitle: { type: "string" },
+          description: { type: "string" },
+          what_it_reads: { type: "string" },
+          constraints: { type: "array", items: { type: "string" } },
+          cadence: { type: "string" },
+          retail_usd: { type: "number" },
+          share_bps: { type: "integer" },
+          trade_price_usd: { type: "number" },
+          store_net_usd: { type: "number" },
+          input_kind: { type: "string" },
+          fields: { type: "array", items: { type: "string" } },
+          specimen: { type: "string", format: "uri" },
+          artifact_class: { type: "string" },
+          signs: { type: "string" },
+          does_not_prove: { type: "string" },
+          verify_url_template: { type: "string" },
+          item_page: { type: "string", format: "uri" },
+          front_door: { type: "string", format: "uri" },
+        },
+      },
+    },
+    pricing_rule: { type: "string" },
+    contract: { type: "string", format: "uri" },
+    verify_note: { type: "string" },
+  },
+};
+
+const TRADE_CHECK_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "account", "would_pass", "first_failure", "checks", "signing_string"],
+  properties: {
+    what_this_is: { type: "string" },
+    account: { type: "string" },
+    dialect: { type: "object" },
+    would_pass: { type: "boolean" },
+    first_failure: { type: "string", nullable: true },
+    checks: {
+      type: "object",
+      properties: {
+        headers: { type: "object", properties: { present: { type: "array", items: { type: "string" } }, missing: { type: "array", items: { type: "string" } } } },
+        provider_key: { type: "string", enum: ["ok", "wrong", "missing", "not_in_this_dialect"] },
+        timestamp: { type: "object", properties: { raw: { type: "string", nullable: true }, unit: { type: "string" }, parsed_ms: { type: "integer", nullable: true }, skew_seconds: { type: "integer", nullable: true }, within_window: { type: "boolean" }, window_seconds: { type: "integer" } } },
+        nonce: { type: "object", properties: { raw: { type: "string", nullable: true }, shape_ok: { type: "boolean", nullable: true } } },
+        signature: { type: "object", properties: { raw: { type: "string", nullable: true }, prefix_ok: { type: "boolean" }, hex_ok: { type: "boolean" }, verified_with: { type: "string", enum: ["current", "previous", "none"] } } },
+        replay: { type: "string", enum: ["fresh", "already_presented", "store_unavailable"] },
+      },
+    },
+    signing_string: { type: "object", properties: { template: { type: "string" }, length: { type: "integer" }, sha256: { type: "string" }, how_to_compare: { type: "string" } } },
+    expected_signature: { type: "string" },
+    body_bytes: { type: "integer" },
+    errors: { type: "array", items: TRADE_ERROR_SCHEMA },
+  },
+};
+
+const TRADE_STATEMENT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "read_at", "summary", "deliveries", "payouts", "deliveries_truncated", "payouts_truncated"],
+  properties: {
+    what_this_is: { type: "string" },
+    read_at: { type: "string", format: "date-time" },
+    signed_with: { type: "string", enum: ["current", "previous"] },
+    summary: { type: "object" },
+    deliveries: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          partner: { type: "string" },
+          item: { type: "string" },
+          cert_id: { type: "string" },
+          mode: { type: "string", enum: ["live", "test"] },
+          trade_price_usd: { type: "number" },
+          partner_share_bps: { type: "integer" },
+          net_usd: { type: "number" },
+          instruction_digest: { type: "string" },
+          order_ref: { type: "string" },
+          delivered_at: { type: "string", format: "date-time" },
+        },
+      },
+    },
+    payouts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          partner: { type: "string" },
+          payout_id: { type: "string" },
+          amount_usd: { type: "number" },
+          reference: { type: "string" },
+          recorded_at: { type: "string", format: "date-time" },
+        },
+      },
+    },
+    deliveries_truncated: { type: "boolean" },
+    payouts_truncated: { type: "boolean" },
   },
 };
 
@@ -5125,6 +5240,75 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Delivered, billed, net, paid and outstanding per account, derived from the delivery rows at request time, with the truncation flag any bounded read here carries. The receivable is public because a liability off the books is how stores rot.",
           ),
           TRADE_LEDGER_SCHEMA,
+        ),
+      },
+      "/api/trade/catalog": {
+        get: returns(
+          {
+            ...freeOp(
+              "The trade counter's listing feed",
+              "Every item at the counter with the copy the item page prints, what it reads, its constraints, the free specimen, the artifact class and what it does not prove, and the price at the caller's share — derived from the rows our own shelf renders. Pass ?account={id} for an account's own items and prices.",
+            ),
+            parameters: [
+              {
+                name: "account",
+                in: "query",
+                required: false,
+                schema: { type: "string" },
+                description: "A trade account id; prices print at its share and the list narrows to its items.",
+              },
+            ],
+          },
+          TRADE_CATALOG_SCHEMA,
+        ),
+      },
+      "/api/trade/{partner}/check": {
+        post: tradeOrderOperation(
+          returns(
+            postOp(
+              "The check desk: every signature check reported, nothing delivered",
+              "Send exactly the headers and body you would send to the order door. All four checks run and each is reported — headers present, provider key, clock skew, nonce shape, whether the HMAC verified under the secret in service or the previous one — with the sha256 of the signing string we computed so you can compare bytes. No nonce is consumed, nothing is delivered, no money moves. On the sandbox account the expected signature is printed, since that secret is public.",
+              "The body you would send to the order door, byte for byte.",
+              TRADE_ORDER_BODY,
+            ),
+            TRADE_CHECK_SCHEMA,
+          ),
+          [
+            pathParam("partner", "The account id; use sandbox to test against the published secret."),
+            tradeHeader("X-Trade-Timestamp", "As you would send it to the order door."),
+            tradeHeader("X-Trade-Nonce", "As you would send it.", false),
+            tradeHeader("X-Trade-Signature", "As you would send it.", false),
+            tradeHeader("X-Trade-Key", "As you would send it, where the dialect has one.", false),
+          ],
+          {},
+        ),
+      },
+      "/api/trade/{partner}/statement": {
+        get: tradeOrderOperation(
+          returns(
+            freeOp(
+              "Your trade account's statement, both sides (signed)",
+              "Every delivery row and every recorded payout on the account, newest first, with the summary the public ledger prints. Authenticated like an order: sign the EMPTY body under the account's dialect. Not free in the sense of open — only the account holder can read it — and free in the sense that nothing is charged for reading.",
+            ),
+            TRADE_STATEMENT_SCHEMA,
+          ),
+          [
+            pathParam("partner", "The account id."),
+            tradeHeader("X-Trade-Timestamp", "Unix seconds at signing."),
+            tradeHeader("X-Trade-Nonce", "32 hex characters, fresh per request."),
+            tradeHeader("X-Trade-Signature", "sha256=<hex of HMAC-SHA256(secret, timestamp.nonce.)> — the body is empty."),
+            tradeHeader("X-Trade-Key", "The provider key, where the account's dialect sends one.", false),
+          ],
+          {
+            "401": {
+              description: "The signature did not verify. delivered:false, billed:false, and the code names which check.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+            "409": {
+              description: "Replayed nonce.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+          },
         ),
       },
       "/api/trade/{partner}/{item_id}": {

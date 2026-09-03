@@ -191,6 +191,7 @@ ${spendCapParagraph()}
 - What a signature does and does not prove: ${base}/attestation
 - Signed-artifact format spec (scvd-attestation/v1) — canonical forms, encodings, the certificate binding convention, offline verification steps: ${base}/spec/scvd-attestation/v1
 - What is and is NOT claimed: ${base}/.well-known/trust.json
+- Reselling this shelf on account (marketplaces, signed webhook, no x402 for your customer): ${base}/trade — contract at ${base}/api/trade/contract
 
 ## Sitemap
 

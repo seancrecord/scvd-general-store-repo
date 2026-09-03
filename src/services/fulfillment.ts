@@ -785,6 +785,7 @@ export async function fulfillPurchase(
               ...(payment.trade.order_ref ? { order_ref: payment.trade.order_ref } : {}),
               what_this_settles:
                 "The marketplace named here collected its customer's payment; this store saw no payment and signs none. The certificate binds the account, the trade price and the sha256 of the signed instruction, and carries no chain fields.",
+              refunds: `Through ${payment.trade.partner_name}, who collected the payment. This store took none and cannot return any.`,
             },
           }
         : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),

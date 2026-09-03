@@ -48,6 +48,12 @@ export class TradeNonceStore extends DurableObject<Env> {
     return "fresh";
   }
 
+  /** Has this key been presented? Read-only: the check desk asks, and consumes nothing. */
+  async peek(key: string): Promise<boolean> {
+    const expiresAt = await this.ctx.storage.get<number>(key);
+    return expiresAt !== undefined && expiresAt > Date.now();
+  }
+
   /** How many keys are held right now. For tests and the admin desk. */
   async size(): Promise<number> {
     const rows = await this.ctx.storage.list<number>();
@@ -77,6 +83,23 @@ export class TradeNonceStore extends DurableObject<Env> {
 }
 
 export type NonceClaim = "fresh" | "seen" | "unavailable";
+
+export async function peekTradeNonce(
+  env: Env,
+  partnerId: string,
+  key: string,
+): Promise<boolean | "unavailable"> {
+  const namespace = env.TRADE_NONCES;
+  if (!namespace) {
+    return "unavailable";
+  }
+  try {
+    const stub = namespace.get(namespace.idFromName(partnerId));
+    return await stub.peek(key);
+  } catch {
+    return "unavailable";
+  }
+}
 
 /**
  * Ask the partner's object whether this key has been presented before,

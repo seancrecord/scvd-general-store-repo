@@ -586,12 +586,21 @@ const BASE = "https://scvd.store";
  * area. Confirmed before this value was taken: the guide carries
  * "settled_via: trade_account" and "never touches x402", and still
  * every earlier pin.
+ * Re-taken 2026-09-03 — the FORTY-FIRST — by the keeper's "agreed
+ * lets do them all" on the counter's second pass: the sandbox check
+ * desk and the listing feed join the door line, and the section now
+ * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
+ * TRADE_FOR_MONEY), which test/feature-surfaces.spec.ts holds
+ * identical across the page, the twin and this guide. Confirmed
+ * before this value was taken: the guide carries "bill your account
+ * on a statement" and "rounded up to the cent", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f17d3b74a81d904bebe44a488795d641a1326ec9ef49bbf1b3bf0ac41be9a5d6";
+  "cdf30f677e0da223e5ece4092ae22de1e514299fa39ff15efaff1e2caf344b7e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

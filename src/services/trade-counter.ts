@@ -10,15 +10,20 @@ import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import type { FulfillmentInput } from "@/services/fulfillment";
 import { validSubjectAddress } from "@/services/provenance-check";
 import {
+  TRADE_EXAMPLE_SHARE_BPS,
   TRADE_ORDER_REF_MAX,
   TRADE_ORDER_TTL_SECONDS,
   TRADE_PARTNERS,
+  TRADE_STATEMENT_DAYS,
+  tradeShelf,
   tradeNetUsd,
   tradePriceUsd,
   tradeSecretNames,
   type TradePartner,
   type TradeShelfEntry,
 } from "@/store/trade-counter";
+import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec";
+import { READS_SENTENCE } from "@/store/surface-contract";
 import { isRecord, type Env, type MenuItem, type TradeSettlement } from "@/types";
 
 /**
@@ -42,6 +47,13 @@ import { isRecord, type Env, type MenuItem, type TradeSettlement } from "@/types
  * derived, never a caller's string.
  */
 export function tradeSecrets(env: Env, partner: TradePartner): TradeSecrets | null {
+  if (partner.sandbox) {
+    // The published secret. Test-mode by construction; a guard holds it.
+    return {
+      signing: partner.sandbox.signing_secret,
+      provider_key: partner.sandbox.provider_key,
+    };
+  }
   const names = tradeSecretNames(partner);
   const bag = env as unknown as Record<string, unknown>;
   const read = (name: string): string | undefined => {
@@ -347,6 +359,45 @@ export async function alertCapReached(
 }
 
 /* ------------------------------------------------------------------ */
+/* The credit ceiling — a running counter, recomputed by every walk   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Unpaid net on a live account, in cents, kept as one KV number: up on
+ * every live delivery, down on every payout. A race can miss a step,
+ * so the statement walk (tradeAccountSummary) is the truth and this is
+ * the cheap read the door makes before delivering. The books
+ * invariant sweep compares the two and pages the keeper when they
+ * drift by more than a cent.
+ */
+export async function tradeOutstandingCents(env: Env, partner: TradePartner): Promise<number> {
+  const raw = await kvGet(env.COUNTERS, KV_KEYS.tradeAccount(partner.id));
+  const value = Number(raw ?? "0");
+  return Number.isFinite(value) ? Math.round(value) : 0;
+}
+
+async function adjustOutstanding(env: Env, partner: TradePartner, deltaCents: number): Promise<void> {
+  const next = (await tradeOutstandingCents(env, partner)) + deltaCents;
+  await kvPut(env.COUNTERS, KV_KEYS.tradeAccount(partner.id), String(next));
+}
+
+/** Re-seat the counter from the rows; the sweep and the statement desk call this. */
+export async function reseatOutstanding(env: Env, partner: TradePartner): Promise<number> {
+  const summary = await tradeAccountSummary(env, partner);
+  const cents = Math.round(summary.outstanding_usd * 100);
+  await kvPut(env.COUNTERS, KV_KEYS.tradeAccount(partner.id), String(cents));
+  return cents;
+}
+
+export async function creditCeilingReached(env: Env, partner: TradePartner): Promise<boolean> {
+  if (partner.mode !== "live") {
+    return false;
+  }
+  const outstanding = await tradeOutstandingCents(env, partner);
+  return outstanding >= Math.round(partner.credit_ceiling_usd * 100);
+}
+
+/* ------------------------------------------------------------------ */
 /* order_ref idempotency                                              */
 /* ------------------------------------------------------------------ */
 
@@ -432,6 +483,9 @@ export async function recordTradeDelivery(
     JSON.stringify(row),
   );
   await bumpTradeDay(env, partner, utcDay(now));
+  if (settlement.mode === "live") {
+    await adjustOutstanding(env, partner, cents(settlement.net_usd));
+  }
   if (settlement.order_ref) {
     await kvPut(
       env.COUNTERS,
@@ -463,6 +517,7 @@ export async function recordTradePayout(
     KV_KEYS.tradePayout(partner.id, invertedTimestamp(now.getTime()), payoutId),
     JSON.stringify(row),
   );
+  await adjustOutstanding(env, partner, -cents(row.amount_usd));
   return row;
 }
 
@@ -516,6 +571,7 @@ export interface TradeAccountSummary {
   opened: string;
   partner_share_bps: number;
   daily_cap: number;
+  credit_ceiling_usd: number;
   items: readonly string[];
   delivered_live: number;
   delivered_test: number;
@@ -525,6 +581,12 @@ export interface TradeAccountSummary {
   outstanding_usd: number;
   last_delivery_at: string | null;
   last_payout_at: string | null;
+  /**
+   * The oldest live delivery not yet covered by payouts, walking the
+   * rows oldest-first against the paid total. Null when nothing is
+   * outstanding. The aging watch reads this.
+   */
+  oldest_unpaid_at: string | null;
   /** True when a capped read stopped early; every figure above is then a floor. */
   truncated: boolean;
 }
@@ -554,6 +616,18 @@ export async function tradeAccountSummary(
   for (const row of payouts.rows) {
     paidCents += cents(row.amount_usd);
   }
+  // Oldest-first: payouts cover the oldest lines first; the first line
+  // the paid total does not reach is the one that has waited longest.
+  let covered = paidCents;
+  let oldestUnpaid: string | null = null;
+  for (const row of [...deliveries.rows].reverse()) {
+    if (row.mode !== "live") continue;
+    covered -= cents(row.net_usd);
+    if (covered < 0) {
+      oldestUnpaid = row.delivered_at;
+      break;
+    }
+  }
   return {
     account: partner.id,
     name: partner.name,
@@ -562,6 +636,7 @@ export async function tradeAccountSummary(
     opened: partner.opened,
     partner_share_bps: partner.partner_share_bps,
     daily_cap: partner.daily_cap,
+    credit_ceiling_usd: partner.credit_ceiling_usd,
     items: partner.items,
     delivered_live: live,
     delivered_test: test,
@@ -571,8 +646,99 @@ export async function tradeAccountSummary(
     outstanding_usd: (netCents - paidCents) / 100,
     last_delivery_at: deliveries.rows[0]?.delivered_at ?? null,
     last_payout_at: payouts.rows[0]?.recorded_at ?? null,
+    oldest_unpaid_at: oldestUnpaid,
     truncated: deliveries.truncated || payouts.truncated,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* The aging watch — rule 41's other side                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A receivable is a liability's mirror and is watched the same way:
+ * every Sunday press, any live account whose oldest unpaid delivery
+ * is older than TRADE_STATEMENT_DAYS pages the keeper once, keyed by
+ * account and ISO week so a standing debt says so weekly rather than
+ * hourly. Returns what it found so the sweep and a test can read it.
+ */
+export async function tradeReceivableWatch(
+  env: Env,
+  now: Date = new Date(),
+): Promise<Array<{ account: string; outstanding_usd: number; oldest_unpaid_at: string; days: number }>> {
+  const aged: Array<{ account: string; outstanding_usd: number; oldest_unpaid_at: string; days: number }> = [];
+  for (const partner of TRADE_PARTNERS) {
+    if (partner.mode !== "live") continue;
+    const summary = await tradeAccountSummary(env, partner);
+    if (summary.outstanding_usd <= 0 || !summary.oldest_unpaid_at) continue;
+    const days = Math.floor(
+      (now.getTime() - new Date(summary.oldest_unpaid_at).getTime()) / 86_400_000,
+    );
+    if (days < TRADE_STATEMENT_DAYS) continue;
+    aged.push({
+      account: partner.id,
+      outstanding_usd: summary.outstanding_usd,
+      oldest_unpaid_at: summary.oldest_unpaid_at,
+      days,
+    });
+    const week = now.toISOString().slice(0, 10);
+    await sendAlert(env, {
+      condition: "books_invariant",
+      key: `trade-aging-${partner.id}-${week}`,
+      detail: `${partner.name}'s trade account has $${summary.outstanding_usd} unpaid, and its oldest unpaid delivery (${summary.oldest_unpaid_at}) is ${days} days old against a ${TRADE_STATEMENT_DAYS}-day statement. Reconcile against their statement (/admin/trade.json) and record the payout, or chase it; the counter keeps delivering until the credit ceiling ($${partner.credit_ceiling_usd}).`,
+    }).catch(() => undefined);
+  }
+  return aged;
+}
+
+/* ------------------------------------------------------------------ */
+/* The catalog feed — what a marketplace lists from                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One row per shelf item with everything a listing needs: the copy
+ * the item page prints, what it reads, its constraints, the free
+ * specimen, the artifact class and what it does not prove, and the
+ * price at the caller's share. DERIVED from the same rows the item
+ * pages render, so a marketplace's listing cannot say something our
+ * own shelf does not.
+ */
+export function tradeCatalog(base: string, shareBps: number = TRADE_EXAMPLE_SHARE_BPS) {
+  return tradeShelf().map(({ item, input, fields }) => {
+    const price = tradePriceUsd(item, shareBps);
+    // An item with no class of its own mints the certificate class
+    // (attestation-spec.ts says so); a listing never lacks the sentence
+    // saying what the signature does not prove.
+    const cls =
+      artifactClassForItem(item.id) ?? ARTIFACT_CLASSES.find((entry) => entry.id === "certificate");
+    return {
+      item_id: item.id,
+      name: item.name,
+      ...(item.subtitle ? { subtitle: item.subtitle } : {}),
+      description: item.description,
+      what_it_reads: READS_SENTENCE[item.reads],
+      ...(item.constraints ? { constraints: item.constraints } : {}),
+      cadence: item.cadence,
+      ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),
+      retail_usd: item.price_usdc,
+      share_bps: shareBps,
+      trade_price_usd: price,
+      store_net_usd: tradeNetUsd(price, shareBps),
+      input_kind: input,
+      fields,
+      ...(item.sample_url ? { specimen: `${base}${item.sample_url}` } : {}),
+      ...(cls
+        ? {
+            artifact_class: cls.id,
+            signs: cls.signs,
+            does_not_prove: cls.does_not_prove,
+            verify_url_template: `${base}${cls.verify_url}`,
+          }
+        : {}),
+      item_page: `${base}/menu/${item.id}`,
+      front_door: `${base}/api/buy/${item.id}`,
+    };
+  });
 }
 
 export async function tradeLedger(env: Env): Promise<TradeAccountSummary[]> {

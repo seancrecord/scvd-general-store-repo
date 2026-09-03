@@ -6,8 +6,45 @@ out, make sure we have good marketable copy, we sell as a product,
 nothing to do with hal we just take his need or problem and build it
 then scale it out."
 
-Room: `/trade`. Terms: `/api/trade/contract`. Ledger: `/api/trade/ledger`.
-Liveness: `/health`. The door: `POST /api/trade/{account}/{item_id}`.
+Room: `/trade`. Contract: `/api/trade/contract`. Catalog feed:
+`/api/trade/catalog`. Ledger: `/api/trade/ledger`. Liveness: `/health`.
+The door: `POST /api/trade/{account}/{item_id}`. The check desk:
+`POST /api/trade/{account}/check`. The account's own statement:
+`GET /api/trade/{account}/statement` (signed over the empty body).
+
+## Round two (2026-09-03, "how do we make this better for everyone")
+
+- **The sandbox** — account `sandbox`, dialect `canonical`, secret
+  PUBLISHED on `/trade` and the contract. Real signatures, real goods
+  marked test, booked nowhere, fifty a day. Test-mode by construction
+  (a guard refuses a published secret on a live account).
+- **The check desk** — every one of the four signature checks
+  reported by name, the sha256 of the signing string we computed, and
+  on the sandbox the signature we expected. Delivers nothing, consumes
+  no nonce.
+- **The statement API** — an account reads its own rows, both sides,
+  signed like an order. Reconciliation is mechanical on both sides.
+- **The catalog feed** — every shelf item with its copy, specimen,
+  artifact class and price at the caller's share, derived from the
+  rows our own shelf renders.
+- **The credit ceiling** — `credit_ceiling_usd` per account, a running
+  counter of unpaid net checked before delivery on live accounts,
+  refused as `credit_ceiling_reached`, re-seated from the rows by the
+  statement desk and compared by the books sweep (invariant six).
+- **The aging watch** — Sunday press: any live account whose oldest
+  unpaid delivery is older than `TRADE_STATEMENT_DAYS` pages the
+  keeper by name (rule 41's other side).
+- **Named where its reader looks** — `/developers`, `/operators`,
+  `/pricing` (charter clause `trade_channel`), `/how-it-works`, the
+  nine item pages, agents.md, the RFC 9727 api-catalog, the
+  storefront. The delivery and the receipt page say refunds go
+  through the account holder.
+- **House rule 60 and the feature register** — `src/store/features.ts`
+  and `test/feature-surfaces.spec.ts`: one row per feature (room,
+  doors, pages that must link it, one proposition sentence, one money
+  sentence), held identical across the page, the JSON twin and
+  llms.txt, with a typed schema.org node on the room and a ratchet
+  that refuses any newer room or API path without a row.
 
 ## What it is
 
