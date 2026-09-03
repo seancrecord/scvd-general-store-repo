@@ -1164,9 +1164,10 @@ paragraph, the mirror sweep last.
 
 ## First crawl reading — Cloudflare AI Crawl Control, 2026-09-03
 
-Pasted by the keeper from the zone's AI Crawl Control panel (the
-panel's default window; the next reading should note the range). The
-bots that moved bytes, in the panel's order:
+Pasted by the keeper from the zone's AI Crawl Control panel. The
+window is the last 24 hours (the keeper, after the paste), so every
+count below is one day's traffic. The bots that moved bytes, in the
+panel's order:
 
 | Crawler | Operator | Kind | Bytes | Allowed | Unsuccessful |
 | --- | --- | --- | --- | --- | --- |
@@ -1221,9 +1222,11 @@ What it says:
 
 Follow-ups, in order:
 
-1. ⚑ Keeper: click the panel's **4xx** filter and paste the paths.
-   That tells us whether the 58 unsuccessful requests are the paid
-   doors' 402s (fine) or dead paths (a fix).
+1. ⚑ Keeper: click the panel's **4xx** filter and paste the Paths
+   table under it (path, content type, requests), not the host
+   column: every request is on scvd.store, so the host says nothing.
+   The paths tell us whether the 58 unsuccessful requests are the
+   paid doors' 402s (fine) or dead paths (a fix).
 2. Re-read the panel a week after the first IndexNow ping, for
    BingBot alone.
 3. Monthly re-read, same table, so the doc carries a series.
