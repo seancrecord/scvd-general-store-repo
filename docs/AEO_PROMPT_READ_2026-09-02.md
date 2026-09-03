@@ -642,6 +642,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F18 | `npm run listings:check` (`scripts/listings-check.mjs`, `scripts/lib/listings.mjs`): reads the homepage's sameAs list, reads every mirror as a browser would, classifies each as current (the sixty words, read from the live og:description), september, august, july, unknown or unreachable; `--record` writes `docs/listings/observation.json`, later runs exit 1 on a mirror that moved backwards. `listings:test` is offline and in the gates. Built 2026-09-03 (PR 4). ⚑ First `--record` from the keeper's machine: from the build sandbox 31 of 35 mirrors are egress-blocked, so a baseline taken here would be a lie. | mirrors | E1 |
 | F19 | Ruled 2026-09-03 ("agreed on all") and built (PR 5): the first sentence reads "…evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts." The tail of the proposed clause was trimmed because the sixth sentence already says it and the paragraph has a ceiling (raised 80 → 90 words in `test/first-screen.spec.ts`). README, every first screen, the guide digest (thirty-seventh) and the keeper's desk file followed. | the noun, answered | A1, B |
 | F20 | `registry/awesome-x402-submission.md` recut 2026-09-03 (PR 4) with the new entry, the two live lists and the sections that fit; the July entry kept beneath for the record. The keeper submitted both PRs before 2026-09-03 and reports no movement ("too many prs for them"). Nothing to chase; the entry stands in the file for the day a maintainer merges. | awesome lists | A2 |
+| F27 | A trailing dot on any GET or HEAD path is one 301 to the path without it, `/api/` included, because the guide ends sentences with a URL and a full stop and some crawlers keep the stop (`/criteria.`, `/api/preflight/v1.`, `/api/buy/spot_check.` in the first 4xx list). Built 2026-09-03 (PR 6); `test/one-url-per-page.spec.ts`. | crawl 4xx | B |
 | F26 | The corpus DOI (Zenodo, the keeper's record 2026-09-03) on every corpus Dataset node as a DOI `identifier` and a doi.org `sameAs`, and a citation line on /corpus; the /corpus page's hand-typed third copy of the name and description replaced by the constants. The LinkedIn showcase in `KEEPER_SOCIAL`. Built 2026-09-03 (PR 6); `test/corpus-doi.spec.ts`. ⚑ Confirm the number is the concept DOI ("Cite all versions"), not the version DOI; one constant if it differs. | entity anchors | A |
 | F22 | Built 2026-09-03 (PR 5): 23 sitemap pages carried no JSON-LD (the census is in the PR). `renderSimplePage` now derives a WebPage node from the title and description it already prints, at the end of the body so a room's own richer node stays first, hung off the WebSite (`@id` added) and the Organization. Every listed room carries one; `test/discoverable.spec.ts` holds each to naming its own URL. | crawl | B, with F3 |
 | F25 | `subjectOf` on the Organization links the byline pieces, and the guides print them. Built 2026-09-02 (PR 2); the dev.to census piece added 2026-09-03 (PR 5) from the keeper's URL, title read from the slug for the keeper to correct. | rulings | B |
@@ -1233,3 +1234,49 @@ Follow-ups, in order:
 
 Nothing to block. Nothing to build from this reading until the 4xx
 list is in.
+
+### The 4xx paths, read — 2026-09-03
+
+The panel's 4xx filter, last 24 hours, every path on scvd.store:
+
+| Path | Type | Requests | What it is |
+| --- | --- | --- | --- |
+| `/menu/null`, `/null` | JSON | 3, 2 | A crawler that read a JSON field as a link and got a null. Every human and machine surface was grepped for a `null` URL and none emits one; the crawler's own parse. Left alone. |
+| `/api/buy/spot_check.`, `/criteria.`, `/api/preflight/v1.`, `/api/buy/good_buyer.` | JSON | 1 each | A sentence's full stop kept on the URL. Fixed: F27, one 301 to the door the sentence meant. |
+| `/okf/host/good.example.md`, `/okf/host` | Markdown | 1 each | The OKF page's own example host, followed as a link, and the directory above it. Correct 404s. |
+| `/profiles/other-door.example` | HTML | 1 | An example host from prose, followed. Correct 404. |
+| `/badges/passport` | JSON | 1 | The chip route with no chip named. Correct 404. |
+
+So the 58 unsuccessful requests were not the paid doors' 402s (those
+crawlers evidently do not follow the buy links from the menu pages,
+or the noindex header is doing its job) but crawlers reading our
+prose too literally. One of the five patterns was ours to fix and is.
+
+### Search Console, the real rows — exported 2026-09-03, data to 2026-08-27
+
+The keeper exported the Pages report (sitemap: all known pages). The
+pre-read table above stands corrected by it:
+
+| Row | Pages | Pre-read | What it means |
+| --- | --- | --- | --- |
+| Discovered, currently not indexed | 40 | Not predicted | Google knows the URL from the sitemap and has not crawled it yet. Not a quality verdict: a scheduling one. A domain this age gets a small crawl allowance and spends it on the pages it already knows. |
+| Blocked due to other 4xx issue | 2 | Predicted | The paid doors' 402s, now noindex (F1). |
+| Page with redirect | 1 | Predicted | http → https or www → apex. Expected. |
+| Alternate page with proper canonical tag | 1 | Predicted | A markdown twin. Expected. |
+| Crawled, currently not indexed | 0 | Predicted for the lore rooms | Did not appear. The three rooms left the sitemap anyway (F3). |
+
+The chart: indexed pages went 4 → 21 in the first days (2026-07-23
+to 24), held at 21–23 since, and sat at 22 on 2026-08-27; not-indexed
+rose in steps as the sitemap grew (0 → 19 → 24 → 30 → 32 → 44), each
+step a batch of new pages Google was told about and has not fetched.
+Impressions are single digits on any day. The export ends a week
+before every build PR, so none of the work of 2026-09-02/03 is in it.
+
+What moves "Discovered, not indexed" is crawl demand, and the levers
+are the ones already pulled or in the keeper's hands: fewer thin URLs
+in the sitemap (F3), every page with structured data (F22), the
+evidence pages (specific, dated, the kind Google fetches), the
+sitemap resubmitted 2026-09-03 (done), and links from outside (the
+DOI, the LinkedIn and Crunchbase profiles, the byline pieces).
+IndexNow does not reach Google. Nothing further to build from this
+export; re-export in two weeks and compare the two counts.

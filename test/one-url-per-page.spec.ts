@@ -36,6 +36,41 @@ describe("trailing slashes", () => {
 });
 
 /**
+ * A TRAILING DOT (2026-09-03, the first crawl reading): the guide ends
+ * sentences with a URL and a full stop, and some crawlers keep the
+ * stop. No door ends in a dot, so the dot goes, /api/ included.
+ */
+describe("trailing dots", () => {
+  it("redirects a human path, keeping the query", async () => {
+    const response = await SELF.fetch(`${BASE}/criteria.?src=test`, { redirect: "manual" });
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe(`${BASE}/criteria?src=test`);
+  });
+
+  it("redirects an API path too, because only a crawler reading prose sends one", async () => {
+    const response = await SELF.fetch(`${BASE}/api/preflight/v1.`, { redirect: "manual" });
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe(`${BASE}/api/preflight/v1`);
+  });
+
+  it("strips a dot after a slash in one hop", async () => {
+    const response = await SELF.fetch(`${BASE}/what/.`, { redirect: "manual" });
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe(`${BASE}/what`);
+  });
+
+  it("leaves a dot inside the path alone", async () => {
+    const response = await SELF.fetch(`${BASE}/menu.json`, { redirect: "manual" });
+    expect(response.status).toBe(200);
+  });
+
+  it("leaves the MCP door to its own rule", async () => {
+    const response = await SELF.fetch(`${BASE}/mcp.`, { redirect: "manual" });
+    expect(response.status).not.toBe(301);
+  });
+});
+
+/**
  * THE INDEXNOW KEY FILE. Bing verifies a ping by fetching the key
  * back from the host; the test binding is a fixed key, and any other
  * thirty-two hex characters are a 404 rather than a hint. At the root
