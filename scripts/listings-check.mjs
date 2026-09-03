@@ -28,7 +28,9 @@
  *
  * EXIT CODES: 0 no regression and no drift; 1 a mirror regressed or a
  * registry differs from the tree; 2 the homepage could not be read at
- * all.
+ * all. --report-only prints everything and exits 0 unless the
+ * homepage was unreadable: the shape a pull request's push runs in,
+ * because drift on an index is press, never a fact about the commit.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -102,5 +104,9 @@ if (flag("json")) {
   }
   const tally = versions.rows.reduce((acc, r) => ({ ...acc, [r.state]: (acc[r.state] ?? 0) + 1 }), {});
   console.log(`\n${versions.rows.length} facts: ${Object.entries(tally).map(([k, v]) => `${k} ${v}`).join(", ")}. Nothing here was written to any index; press is the keeper's.`);
+}
+if (flag("report-only")) {
+  if (regressions.length > 0 || drift.length > 0) console.log("(report only: the drift above is press, not a fact about this commit)");
+  process.exit(0);
 }
 process.exit(regressions.length > 0 || drift.length > 0 ? 1 : 0);

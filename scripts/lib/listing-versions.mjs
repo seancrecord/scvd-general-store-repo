@@ -62,16 +62,41 @@ export function readNpm(json) {
   };
 }
 
+/**
+ * The bodies of every <script type="application/ld+json"> on a page,
+ * found by walking the text rather than by a regular expression: a
+ * pattern with two open-ended tag classes around an attribute is the
+ * shape CodeQL flags as polynomial, and a bare `</script>` end tag is
+ * the one it flags as a bad filter. This reads the way a browser
+ * tokenises: the tag ends at the first `>`, the block at the next
+ * `</script` in any casing followed by anything but a name character.
+ */
+export function jsonLdBlocks(html) {
+  const bodies = [];
+  const lower = html.toLowerCase();
+  let at = 0;
+  for (;;) {
+    const open = lower.indexOf("<script", at);
+    if (open < 0) break;
+    const tagEnd = lower.indexOf(">", open);
+    if (tagEnd < 0) break;
+    const tag = lower.slice(open, tagEnd + 1);
+    const close = lower.indexOf("</script", tagEnd + 1);
+    if (close < 0) break;
+    const after = lower.charAt(close + "</script".length);
+    const bodyEnd = /[a-z0-9-]/.test(after) ? -1 : close;
+    if (bodyEnd >= 0 && tag.includes("application/ld+json")) bodies.push(html.slice(tagEnd + 1, bodyEnd));
+    at = tagEnd + 1;
+  }
+  return bodies;
+}
+
 /** x402-list's service page: the JSON-LD WebAPI node carries the description and the offer count. */
 export function readX402List(html) {
-  // The end-tag pattern allows anything but `>` after the tag name, as
-  // browsers do (CodeQL js/bad-tag-filter: a `</script >` the pattern
-  // missed would leave script text in what we parse as JSON-LD).
-  const blocks = [...(html ?? "").matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)];
-  for (const block of blocks) {
+  for (const body of jsonLdBlocks(html ?? "")) {
     let parsed;
     try {
-      parsed = JSON.parse(block[1]);
+      parsed = JSON.parse(body);
     } catch {
       continue;
     }

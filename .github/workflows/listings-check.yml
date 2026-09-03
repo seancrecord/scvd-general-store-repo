@@ -43,9 +43,14 @@ jobs:
       - name: The battery's own tests
         run: npm run listings:test
       # pipefail, so tee cannot swallow the exit code that IS the alert.
+      # On a push the reading is a report: drift on an index is press
+      # (rule 30), never a fact about the commit, so it must not redden
+      # a pull request. The Saturday run and the button go red on it.
       - name: Read the mirrors, the versions and the shelf
         shell: bash
-        run: set -o pipefail && npm run listings:check | tee listings-reading.txt
+        env:
+          REPORT_ONLY: ${{ github.event_name == 'push' && '--report-only' || '' }}
+        run: set -o pipefail && npm run listings:check -- $REPORT_ONLY | tee listings-reading.txt
       - name: Keep the reading
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
