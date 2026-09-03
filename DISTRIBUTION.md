@@ -275,9 +275,15 @@ endpoint is `/mcp` unchanged, so the scan lists the six buy_* tools.
 Inside ChatGPT they can never complete — ChatGPT's client cannot
 present an x402 payment, so each returns the 402 terms and stops —
 and the crypto-transfers attestation was ticked on that basis. If
-review objects, the answer is a free-only surface (a second path or
-a query parameter that drops buy_* from tools/list), which is NOT
-built. Do not overclaim the cards or WebMCP here; §6 governs.
+review objects, the answer is a free-only surface, and since
+2026-09-03 evening it IS built: `POST /mcp/verifier` serves five
+read-only tools and nothing paid — `preflight_x402_endpoint`,
+`verify_x402_receipt`, `lookup_endpoint_readiness`,
+`get_defect_definition`, `verify_scvd_artifact` — the same handlers
+as `/mcp` under task-shaped names, server name `scvd-x402-verifier`,
+title "SCVD x402 Verifier" (roadmap A3, the memo's third move). Which
+submission carries it is the keeper's ruling on KEEPER_LIST. Do not
+overclaim the cards or WebMCP here; §6 governs.
 
 Review time, community-reported: weeks to months. One version in
 review at a time.

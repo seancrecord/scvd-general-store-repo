@@ -84,7 +84,6 @@ describe("owned discovery surfaces stay reachable", () => {
       "skill_md",
       "openapi",
       "x402_catalog",
-      "a2a_agent_card",
     ] as const) {
       expect(kinds.has(kind), `${kind} dropped from the inventory`).toBe(true);
     }
@@ -92,7 +91,7 @@ describe("owned discovery surfaces stay reachable", () => {
 });
 
 describe("the live shelf is the same set on every catalog surface", () => {
-  it("menu, x402, openapi, a2a, llms, skill, and MCP clusters name the same ids", async () => {
+  it("menu, x402, openapi, llms, skill, and MCP clusters name the same ids", async () => {
     const menu = await fetchJson("/menu.json");
     const items = Array.isArray(menu["items"]) ? menu["items"] : [];
     const menuIds = items.flatMap((item) =>
@@ -116,16 +115,6 @@ describe("the live shelf is the same set on every catalog surface", () => {
       return id ? [id] : [];
     });
 
-    const a2a = await fetchJson("/.well-known/a2a.json");
-    const skills = Array.isArray(a2a["skills"]) ? a2a["skills"] : [];
-    const a2aIds = skills.flatMap((skill) =>
-      isRecord(skill) &&
-      typeof skill["id"] === "string" &&
-      skill["id"] !== "verify"
-        ? [skill["id"]]
-        : [],
-    );
-
     const llms = await (await fetchOk("/llms-full.txt")).text();
     const skillMd = await (await fetchOk("/skill.md")).text();
     const llmsIds = SHELF.filter((id) => llms.includes(`  ${id},`));
@@ -137,7 +126,6 @@ describe("the live shelf is the same set on every catalog surface", () => {
       menu_json: menuIds,
       x402_json: x402Ids,
       openapi: openapiIds,
-      a2a: a2aIds,
       llms_txt: llmsIds,
       skill_md: skillIds,
       mcp_clusters: mcpIds,
@@ -175,7 +163,7 @@ describe("the live shelf is the same set on every catalog surface", () => {
 });
 
 describe("per-item facts agree across the catalogs that quote them", () => {
-  it("min price and buy URL match the shelf on menu, x402, openapi, and a2a", async () => {
+  it("min price and buy URL match the shelf on menu, x402, and openapi", async () => {
     const menu = await fetchJson("/menu.json");
     const items = Array.isArray(menu["items"]) ? menu["items"] : [];
     const menuById = new Map<
@@ -223,24 +211,11 @@ describe("per-item facts agree across the catalogs that quote them", () => {
       openapiById.set(id, { tiers: asNumberArray(payment["price_usdc_options"]) });
     }
 
-    const a2a = await fetchJson("/.well-known/a2a.json");
-    const skills = Array.isArray(a2a["skills"]) ? a2a["skills"] : [];
-    const a2aById = new Map<string, string>();
-    for (const skill of skills) {
-      if (isRecord(skill) && typeof skill["id"] === "string") {
-        a2aById.set(
-          skill["id"],
-          typeof skill["description"] === "string" ? skill["description"] : "",
-        );
-      }
-    }
-
     const disagreements: string[] = [];
     for (const item of MENU_ITEMS) {
       const catalog = menuById.get(item.id);
       const x402Row = x402ById.get(item.id);
       const openapiRow = openapiById.get(item.id);
-      const a2aDescription = a2aById.get(item.id);
       const expectedUrl = `${BASE}/api/buy/${item.id}`;
 
       if (!catalog) {
@@ -272,11 +247,6 @@ describe("per-item facts agree across the catalogs that quote them", () => {
         disagreements.push(`${item.id}: missing from openapi.json`);
       } else if (Math.min(...openapiRow.tiers) !== item.price_usdc) {
         disagreements.push(`${item.id}: openapi min price drifted`);
-      }
-      if (a2aDescription === undefined) {
-        disagreements.push(`${item.id}: missing from a2a skills`);
-      } else if (!a2aDescription.includes(`$${item.price_usdc}`)) {
-        disagreements.push(`${item.id}: a2a skill does not quote $${item.price_usdc}`);
       }
     }
     expect(disagreements).toEqual([]);

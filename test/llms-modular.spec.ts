@@ -625,12 +625,21 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTY-FIFTH — by the verifier door
+ * (roadmap A3): one paragraph before the evidence agent's, for a
+ * client that should never see a shelf, naming /mcp/verifier and its
+ * five tools; and, in the same commit, the A2A card's sentence
+ * rewritten, since the card is the evidence agent's now and no longer
+ * derives skills from the menu. Confirmed before this value was
+ * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
+ * and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "132d08fb1aa4d7991801b5446a773cf1c05653acfde2e414142551f512a1f754";
+  "a4664bbc6408e7b504dd08f05194169e2e6a727c5f91cdbcaedf7dbe9ce1fe87";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

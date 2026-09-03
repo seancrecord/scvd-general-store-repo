@@ -1,6 +1,7 @@
 import { checkConformance, type ConformanceRequest } from "@/services/conformance";
 import { heldHalfOf } from "@/services/look";
 import { PREFLIGHT_VERSION_NEXT, preflightUrl } from "@/services/preflight";
+import { LATEST_PROTOCOL } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { OPERATOR } from "@/store/trust-signals";
@@ -238,10 +239,30 @@ export function evidenceAgentCard(base: string): Record<string, unknown> {
     name: "SCVD Evidence Agent",
     description: `${POSITION_LINE} This agent is the observatory's delegated face: it independently checks x402 endpoints, signed offers and receipts, and signed readiness history, and returns dated, bounded, machine-verifiable evidence. Three read-only tasks, free, no account, no conversation. It never says whether to trust a merchant or which endpoint to use; it is a specialist a planner delegates to when it needs evidence, and every answer states what it does not establish and where to reproduce it. ${POSITION_NOT}`,
     url: `${base}/a2a`,
+    /**
+     * BOTH DIALECTS ON ONE CARD (scanner finding C5, 2026-08-27,
+     * kept through the A2 rewrite). The 0.3 fields — preferredTransport
+     * and additionalInterfaces — stay for older readers; v1.0's
+     * supportedInterfaces rides beside them, first entry preferred.
+     *
+     * Until 2026-09-03 the card led with "MCP" because the store did
+     * not speak the A2A message protocol and a canonical binding would
+     * have been a false claim in machine form. It speaks it now:
+     * message/send at /a2a is answered, so "JSONRPC" is the truth, and
+     * it is the only canonical binding claimed — GRPC and HTTP+JSON are
+     * not served and are not named. The other doors are named by their
+     * protocols' URIs (§5.8), each with that protocol's own version.
+     */
     preferredTransport: "JSONRPC",
     additionalInterfaces: [
       { url: `${base}/a2a`, transport: "JSONRPC" },
       { url: `${base}/mcp`, transport: "MCP" },
+      { url: `${base}/llms.txt`, transport: "HTTP+x402" },
+    ],
+    supportedInterfaces: [
+      { url: `${base}/a2a`, protocolBinding: "JSONRPC", protocolVersion: A2A_PROTOCOL_VERSION },
+      { url: `${base}/mcp`, protocolBinding: "https://modelcontextprotocol.io", protocolVersion: LATEST_PROTOCOL },
+      { url: `${base}/llms.txt`, protocolBinding: "https://www.x402.org", protocolVersion: "2" },
     ],
     provider: { organization: OPERATOR.legal_entity, url: base },
     version: A2A_AGENT_VERSION,
