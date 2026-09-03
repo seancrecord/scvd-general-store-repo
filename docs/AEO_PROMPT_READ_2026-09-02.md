@@ -1153,9 +1153,12 @@ crawler fixes have been live two weeks.
   revocation endpoint in the DID document. Both are signing-format
   and key-management decisions, the same class as the IETF drafts'
   canonical forms: recorded here, not built on the plan. The README
-  badge (`pip install vouch-protocol && vouch grade scvd.store
-  --badge trust-badge.svg`) is optional and the keeper's; the README
-  already carries probe402, Circle, OpenSSF, x402-list and VerifyMCP.
+  badge is on (the keeper: "dont skip the badge add the badge"):
+  `docs/badges/vouch-agent-trust.svg`, generated 2026-09-03 with
+  `vouch grade scvd.store --badge` from `vouch-protocol` 2.1.0, which
+  also printed A (100/100), post-quantum no, revocation no. Vouch
+  serves no hosted badge URL, so the file is a dated snapshot and
+  regenerating it is the same one command whenever the grade moves.
 
 Still the keeper's: Crunchbase rename, Hugging Face (now unblocked by
 the DOI), x402.org PR, the Cloudflare crawl reading, Search Console

@@ -9,6 +9,7 @@ mcp-name: store.scvd/general-store
 [![Accepts Agent Payments](https://agents.circle.com/sell/score/badge?url=scvd.store%2Fapi%2Fbuy%2Fhello)](https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello)
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 [![VerifyMCP trust score for SCVD General Store](https://verifymcp.io/badge/store-scvd-general-store/scvd.svg)](https://verifymcp.io/servers/store-scvd-general-store/scvd)
+[![Vouch Protocol agent trust grade for scvd.store: A (100)](docs/badges/vouch-agent-trust.svg)](https://vouch-protocol.com)
 
 **scvd.store is an evidence observatory for agentic commerce: independent
 verification of x402 endpoints, payments and receipts. Before an
