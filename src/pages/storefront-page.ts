@@ -78,7 +78,7 @@ export function webmcpOriginTrialTags(indent = "  "): string {
     (entry) => `${indent}<meta http-equiv="origin-trial" content="${entry.token}">`,
   ).join("\n");
 }
-import { EXTERNAL_RECORDS, KEEPER_SOCIAL, OPERATOR } from "@/store/trust-signals";
+import { ENTITY_PROFILES, EXTERNAL_RECORDS, KEEPER_SOCIAL, OPERATOR } from "@/store/trust-signals";
 import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
@@ -717,11 +717,14 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
     // KEEPER_SOCIAL rides along: the keeper's own account is textbook
     // sameAs material, kept apart from EXTERNAL_RECORDS because those
     // promise independent records and an owned account is not one.
-    ...(EXTERNAL_RECORDS.length > 0 || KEEPER_SOCIAL.length > 0
+    // ENTITY_PROFILES too (2026-09-03): the registry pages the keeper
+    // wrote for the organisation, kept apart for the same reason.
+    ...(EXTERNAL_RECORDS.length > 0 || KEEPER_SOCIAL.length > 0 || ENTITY_PROFILES.length > 0
       ? {
           sameAs: [
             ...EXTERNAL_RECORDS.map((record) => record.url),
             ...KEEPER_SOCIAL,
+            ...ENTITY_PROFILES,
           ],
         }
       : {}),

@@ -1132,7 +1132,12 @@ crawler fixes have been live two weeks.
   "scvd.store" and LinkedIn wrapped it in its suspicious-link redirect,
   because it treats anything shaped like a domain as a link and did
   not know this one; renamed to "SCVD General Store" and the URL
-  reissued. In `KEEPER_SOCIAL` (PR 6), so it rides sameAs.
+  reissued. Rides sameAs from `ENTITY_PROFILES` (PR 6).
+- **Crunchbase**: `https://www.crunchbase.com/organization/scvd-general-store`,
+  created by the keeper 2026-09-03 as a profile for the store rather
+  than the LLC rename the plan suggested; the keeper's call, and a
+  store-named profile is what a resolver asking about scvd.store
+  finds first. In `ENTITY_PROFILES` (PR 6), so it rides sameAs.
 - **IndexNow**: live. The key file moved to the root in PR 5 and the
   first accepted ping is the keeper's to run after `git pull`.
 - **Vouch Protocol, read 2026-09-03**: the Agent Trust Index grades
@@ -1152,8 +1157,8 @@ crawler fixes have been live two weeks.
   serves no hosted badge URL, so the file is a dated snapshot and
   regenerating it is the same one command whenever the grade moves.
 
-Still the keeper's: Crunchbase rename, Hugging Face (now unblocked by
-the DOI), the Cloudflare crawl reading, Search Console
+Still the keeper's: Hugging Face (now unblocked by the DOI), the
+Cloudflare 4xx list, Search Console
 resubmit and the www check, the dev.to title check, CV's IETF
 paragraph, the mirror sweep last.
 

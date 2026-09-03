@@ -593,10 +593,22 @@ export const RECORDS_NOT_LISTED =
  */
 export const KEEPER_SOCIAL: readonly string[] = [
   "https://x.com/keeper_scvd",
-  // The LinkedIn showcase page for the store under Record Creative Co.
-  // LLC's company page, created by the keeper 2026-09-03 (AEO plan,
-  // entity anchors). Owned, so it sits here and not in EXTERNAL_RECORDS.
+];
+
+/**
+ * THE ENTITY PROFILES (AEO plan, entity anchors, 2026-09-03): pages
+ * the keeper created on registries that resolve "is there an
+ * organisation behind this domain" — the LinkedIn showcase page under
+ * Record Creative Co. LLC's company page, and the Crunchbase profile.
+ * They are neither social accounts nor independent records: we wrote
+ * them, on somebody else's register, and a resolver reads them as
+ * identity claims we control. So they ride sameAs from their own
+ * constant, beside KEEPER_SOCIAL and apart from EXTERNAL_RECORDS,
+ * whose docblock promises records we did not write.
+ */
+export const ENTITY_PROFILES: readonly string[] = [
   "https://www.linkedin.com/showcase/scvd-general-store/",
+  "https://www.crunchbase.com/organization/scvd-general-store",
 ];
 
 export const OPERATOR = {
