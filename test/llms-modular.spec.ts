@@ -569,12 +569,20 @@ const BASE = "https://scvd.store";
  * once in the opening, the second byline piece (dev.to) in "Words
  * people use", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-NINTH — by the keeper's ink on
+ * the ink sheet ("im good with these"): the two statements' row copy
+ * widened to the four reader chains in the constraints and the
+ * descriptions that ride the guide's menu section, keeping the
+ * network= vocabulary the door reads. Confirmed before this value
+ * was taken: the guide carries "network=eip155:137" and "Ethereum,
+ * Arbitrum, Optimism or Avalanche", and still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5ecc4c98c3d6eb9cd97b3abcf225a7e06eaa94aefe025b97815a2e036526cbb9";
+  "a956f219cf6e7500531bbb8a87abf07150fac0ced7372cd65b8964c2684c8f37";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
