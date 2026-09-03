@@ -301,8 +301,16 @@ ${lines}
  * ping by fetching the key back from the host; keyLocation in the
  * ping names this path. Thirty-two hex characters or it is not our
  * key and the answer is a 404, same as when no key is configured.
+ *
+ * AT THE ROOT, NOT UNDER /indexnow/ (2026-09-03). The first cut put
+ * the file in a folder to keep the root tidy, and the first live ping
+ * came back 422: "One or more URLs are not related to your site
+ * verified through the keyLocation parameter." IndexNow scopes a key
+ * to the directory it is served from and everything below it, so a
+ * key under /indexnow/ vouched for /indexnow/* and nothing else. The
+ * protocol's own page says as much; the doc missed it. Root it is.
  */
-siteMetaRoutes.get("/indexnow/:file{[a-f0-9]{32}\\.txt}", (c) => {
+siteMetaRoutes.get("/:file{[a-f0-9]{32}\\.txt}", (c) => {
   const key = c.env.INDEXNOW_KEY;
   const file = c.req.param("file");
   if (!key || file !== `${key}.txt`) {

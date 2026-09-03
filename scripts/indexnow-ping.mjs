@@ -4,7 +4,8 @@
  *
  * IndexNow (indexnow.org) is one POST: host, key, where the key file
  * lives on the host, and a list of URLs. Bing verifies the key by
- * fetching it back from /indexnow/{key}.txt (routes/site-meta.ts),
+ * fetching it back from /{key}.txt (routes/site-meta.ts; at the root,
+ * because a key vouches only for its own directory and below),
  * then crawls the URLs within hours rather than whenever Bingbot
  * next wanders by. Bing's index is what ChatGPT search cites from,
  * which is the whole reason this exists (docs/AEO_PROMPT_READ_2026-09-02.md).
@@ -40,7 +41,7 @@ const host = new URL(base).host;
 // secret and the shell's INDEXNOW_KEY differ looks exactly like that
 // from the outside. So: fetch our own key file first, the way Bing will,
 // and say plainly which side is wrong before sending anything.
-const keyLocation = `${base}/indexnow/${key}.txt`;
+const keyLocation = `${base}/${key}.txt`;
 const keyFile = await fetch(keyLocation).then(async (r) => ({ status: r.status, text: (await r.text()).trim() }));
 if (keyFile.status !== 200 || keyFile.text !== key) {
   console.error(
