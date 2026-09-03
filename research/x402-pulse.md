@@ -71,3 +71,75 @@ ecosystem (many more buyers than sellers, by a wide margin). Single
 source, self-reported, not corroborated anywhere else found this week.
 Worth remembering, not worth building on yet — the honest caveat stays
 loud specifically *because* it would be a nice thing to be true.
+
+## 2026-09-03
+
+**An outside index found the store, and its row is wrong in a
+teaching way.** endpoint.x402jp.com/hosts is a crawler-built index of
+x402 hosts ranked by catalogued paid routes: 19,366 routes across
+1,031 hosts, median 5 routes a host, 282 hosts with exactly one. Its
+own caption says what this house has said about rankings since the
+first week: a route count measures how finely a host slices its
+catalog, not how big or good the operator is. The top rows prove it
+— each is a single wrapper turning one dataset into hundreds or
+thousands of per-query URLs. Rows 1 and 2 hold five percent of all
+routes each; the top ten hold a third.
+
+The store is row 50, and the row does not match the counter:
+
+| | x402jp | `/.well-known/x402`, read the same day |
+|---|---|---|
+| routes | 61 | 39 |
+| median price | 2.5 USDC | 0.99 USDC |
+| top category | Compute | — |
+
+Sixty-one is well past the 39 the well-known file lists, so the
+index is most likely reading the CDP Bazaar, which retains every
+route that ever settled, retired ones included, and may count method
+variants as separate routes. The price median follows from the same
+retention: the retired doors skewed dear. The lesson is not about
+x402jp. It is that the Bazaar is a ledger of everything a host has
+ever sold, not a catalog of what it sells now, and every aggregator
+that reads it inherits that drift. A buyer who reads any of them
+sees a store bigger and two and a half times dearer than the one
+that answers the door. Filed in `registry/directory-blitz.md` §5
+with the keeper's steps.
+
+**What the rest of the table says, read as a directory-quality
+sample.** Denominator: the top 100 rows of 1,031 hosts, one read, no
+probe made to any of them, so every line below is about the index's
+own bookkeeping and nothing about whether the doors work.
+
+- *No de-duplication by operator.* Rows 48 and 49 are one service
+  under two domains ("Financial Data x402" at a Vercel host and at
+  its own domain), 62 routes each; rows 53 and 54 are the same
+  ("RadhikaChain", 55 each); rows 16 and 64 are BlockRun twice under
+  different names. A route count that sums across mirrors counts the
+  same catalog twice.
+- *A name-squat, self-labelled.* Row 27 is "Agent402 UK — x402 utils
+  for agents (not agent402.tools)", disclaiming row 7 in its own
+  title. The index carries both without comment.
+- *A self-claimed count the crawler could not find.* Row 1 titles
+  itself "1,069 Monetized Remote MCP Nodes"; the crawler found 1,005
+  routes. The 64 missing are exactly the kind of gap the observatory
+  publishes against itself; the index publishes the title and the
+  count side by side and lets the reader notice.
+- *A zero-price host and a priceless one.* Row 66 (a zrok share)
+  lists a median of 0 USDC; row 19 (Execution Market) lists no
+  median at all. Both are rows, both are counted, neither is a door
+  a buyer can price before knocking.
+- *Category is a heuristic, not a declaration.* Ours reads
+  "Compute". The well-known file says verification and evidence, so
+  the label is theirs, not ours; treat every category column in every
+  aggregator the same way until one says where it comes from.
+
+**Why it matters for the corpus.** 1,031 hosts is a sampling frame
+nobody here built, which is the best kind. The long tail (a median of
+5 routes, 282 hosts with one) is where spot_check and launch_check
+are aimed, not the thousand-route wrappers at the top. When the
+weekly round wants an outside denominator, this is one; when it
+wants a list of mirrors and squats to preflight, this is that too.
+The site is egress-blocked from the coding sandbox, so the read-off
+above came from a pasted copy of the page and cannot be refreshed
+from here; the keeper's browser can.
+
