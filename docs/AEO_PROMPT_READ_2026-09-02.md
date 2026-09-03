@@ -819,3 +819,68 @@ search, and one that agents read natively.
 
 Order: Zenodo first (the DOI is what the Hugging Face card cites),
 then Hugging Face, then the DOI onto /corpus in PR 3.
+
+## Built — 2026-09-03, morning
+
+The four build PRs of the execution plan merged into main overnight
+(times are UTC; #426 is the plan PR that carried the currency and
+`@id` fixes ahead of PR 1).
+
+| PR | Merged | Shipped |
+| --- | --- | --- |
+| #426 | 2026-09-02 22:32 | This document; F23 (`JSONLD_PRICE_CURRENCY = "USD"`, `offerCurrencyFields()`, the settlement asset in words); F24 (one `@id` on the Organization, `organizationRef()` everywhere it is referenced). |
+| #429 (PR 1) | 2026-09-03 00:50 | F5 (named crawlers with a bare Accept get HTML, `lib/crawlers.ts` is the one list, `Vary` gains `User-Agent`); F2 (trailing slash 301, `/api` and `/mcp` untouched); F1 (`X-Robots-Tag: noindex` on every 402); F13 (`/indexnow/{key}.txt`, `scripts/indexnow-ping.mjs` after `npm run deploy`). |
+| #433 (PR 2) | 2026-09-03 02:05 | F7 (`store/copy/asked-for.ts`: names, phrases, `knowsAbout`, "Words people use" on llms.txt, agents.md, OpenAPI, MCP handshake); F6 and F8 (/what opens with "What is scvd.store?", the three paths, five asked-for pairs); F9 (noun-first titles, Service `alternateName`, "At a glance" block, `at_a_glance` in menu.json); F10 (tool descriptions); F11 (README H1, server.json, plugin.json); F25 (`subjectOf` links the HackerNoon piece). |
+| #435 (PR 3) | 2026-09-03 02:30 | F14 (`/corpus/host/{host}` pages, `store/delisted.ts`); F15 (`/corpus/round/{week}`); F16 (`/defects/{id}` with DefinedTerm); F12 (Dataset on /inflows, SoftwareApplication graph on /developers); F17 (DigitalDocument on receipt pages); all three families in the sitemap. |
+| #436 (PR 4) | 2026-09-03 02:59 | F18 (`npm run listings:check`, `--record`, offline `listings:test` in the gates); F20 (`registry/awesome-x402-submission.md` recut for xpaysh/awesome-x402 and Merit-Systems/awesome-agentic-commerce). |
+
+New tests on main from these PRs: `jsonld-currency`, `organization-id`,
+`crawler-negotiation`, `one-url-per-page`, `noindex-on-402`,
+`asked-for`, `evidence-pages`, `scripts/listings-check.test.mjs`.
+The guide digest in `test/llms-modular.spec.ts` was re-taken three
+times (thirty-fourth to thirty-sixth) as the sections changed.
+
+Not built, by design: F3 and F22 (sitemap pruning and blocks for the
+lore rooms) wait on the keeper's room list; F19 (the category clause
+in the sixty words) waits on the keeper's ruling; the question-titled
+pages (D) wait on a hand check. The Solana PR text was removed on
+2026-09-02 at the keeper's word.
+
+### The keeper's list, as it stands
+
+Nothing on the branch moves until one of these lands. In the order
+the plan set, with what each unlocks:
+
+1. **Rule on F19**, the category clause in the sixty words. Unlocks
+   the mirror sweep (2) and closes the vocabulary. One line in
+   `VALUE_PROPOSITION`; every surface inherits; the first-screen
+   sweep and the guide digest re-take with it.
+2. **Mirror sweep** with the final words: Glama, Cursor, mcp.so,
+   mcpvault, the GitHub About text, `npm run skill:publish` for the
+   ClawHub bundle. Then the first `npm run listings:check -- --record`
+   from the keeper's machine (the sandbox cannot reach 31 of 35
+   mirrors, so the baseline must be taken outside it).
+3. **The two awesome-list PRs** from
+   `registry/awesome-x402-submission.md`.
+4. **IndexNow and the consoles**: `wrangler secret put INDEXNOW_KEY`
+   with 32 hex characters, the same value in Bing Webmaster Tools,
+   the sitemap resubmitted in Search Console. The next
+   `npm run deploy` pings on its own after that.
+5. **Entity anchors**: the Zenodo concept DOI for the corpus (then it
+   goes onto /corpus in a one-line PR), the LinkedIn showcase page
+   under Record Creative Co. LLC, the Crunchbase rename to the LLC
+   with scvd.store as a product, the Hugging Face dataset after the
+   DOI exists.
+6. **Read the Vouch row**; the x402.org ecosystem listing; the
+   Cloudflare Agent Readiness scan, once.
+7. **The dev.to URL** for `WRITTEN_ABOUT`; the census byline
+   (`docs/bylines/2026-09_census_draft.md`) posted; CV's IETF
+   paragraph from `docs/bylines/CV_PROMPT_IETF_2026-09.md` onto the
+   spec page.
+8. **F3**: which lore rooms stay in the sitemap. Unlocks F22 and the
+   sitemap prune.
+9. **Real GSC rows** once the console has re-crawled, so the
+   pre-read can be checked against what Google actually says.
+10. **Delistings**, if a host asks: one row in `src/store/delisted.ts`
+    with host, date and reason; the page comes down, the record
+    stands.
