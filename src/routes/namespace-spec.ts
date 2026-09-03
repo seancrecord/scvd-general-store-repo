@@ -80,20 +80,64 @@ function doc(base: string) {
       relation_to_jcs_rfc8785:
         "This namespace's PRIMARY canonical form is DECLARED-FIELD-ORDER serialization, not RFC 8785 (JCS). JCS derives byte order by sorting keys; this spec derives it from the field lists published on this page, which are part of the contract. The two disciplines are equally deterministic and NOT byte-compatible: re-canonicalizing an scvd artifact's primary signature through JCS produces different bytes and a failed verification. This is deliberate and permanent for artifacts already issued — this store's signatures are forever, and migrating a preimage discipline would orphan every one of them (the frozen_prefix rule below is the same commitment at field level).",
       jcs_dual_emit:
-        "SINCE 2026-08-18 every artifact minted here ALSO carries `signature_jcs`: a second ed25519 signature, same key, same field subset, over the RFC 8785 (JCS) canonicalization — sorted keys, ECMAScript number and string serialization, no whitespace. Verify it with any RFC 8785 implementation: jcs(signed_fields_as_object) -> utf8 bytes -> ed25519_verify against the same public_key. The primary signature remains the authoritative one; signature_jcs is interop, so tooling built around the JCS receipts discipline (draft-hopley-x402-canonicalisation-jcs-v1 and kin) can verify scvd artifacts without knowing our field lists. Artifacts minted before 2026-08-18 carry no signature_jcs, exactly the way certificates minted before 2026-07-30 lack later fields: history, not a defect. Where served, signature_jcs_covers states this in place, and /api/verify reports the JCS signature's own validity separately from the primary's — never collapsed into one boolean.",
+        "SINCE 2026-08-18 every artifact minted here ALSO carries `signature_jcs`: a second ed25519 signature, same key, same field subset, over the RFC 8785 (JCS) canonicalization — sorted keys, ECMAScript number and string serialization, no whitespace. Verify it with any RFC 8785 implementation: jcs(signed_fields_as_object) -> utf8 bytes -> ed25519_verify against the same public_key. The primary signature remains the authoritative one; signature_jcs is interop, so any tool that verifies raw RFC 8785 bytes can check scvd artifacts without knowing our field lists. That is the JCS byte primitive only: the IETF receipt drafts that build on RFC 8785 add pre-canonicalisation rules our artifacts do not meet (integer-millisecond timestamps, NFC strings), and none of them assigns a role to an ed25519 signature, so signature_jcs verifies under RFC 8785, not under any draft — see relation_to_other_x402_receipt_work. Artifacts minted before 2026-08-18 carry no signature_jcs, exactly the way certificates minted before 2026-07-30 lack later fields: history, not a defect. Where served, signature_jcs_covers states this in place, and /api/verify reports the JCS signature's own validity separately from the primary's — never collapsed into one boolean.",
       /**
-       * THE VAUBAN READ (2026-08-20), closing the align-vs-diverge
-       * question this note carried since 08-18. The family
-       * (draft-vauban-x402-consolidated / -stark-receipts /
-       * -vpsf-algebra / -delegation-binding, Independent Submission
-       * stream) pins the same RFC 8785 preimage discipline hopley
-       * does, so signature_jcs already speaks it — align by prior
-       * work, no migration. The rest is vocabulary mapping, stated
-       * here so a reader arriving from those drafts can place us
-       * without a decoder ring.
+       * THE THREE DRAFTS, READ IN FULL (2026-09-03, CV at the keeper's
+       * request; the prompt is docs/bylines/CV_PROMPT_IETF_2026-09.md).
+       * This replaces the 2026-08-20 paragraph, which overstated two
+       * things and is on /corrections for it: it described the vauban
+       * family by a scope its consolidated draft has since deferred
+       * to companion documents, and it said signature_jcs "already
+       * verifies under" the drafts' discipline, when both drafts add
+       * pre-canonicalisation rules (integer-millisecond timestamps,
+       * NFC strings) our ISO-8601-dated artifacts do not meet and
+       * neither assigns any role to an ed25519 signature. Stated per
+       * draft now, at the revision read, so staleness is visible.
        */
-      relation_to_receipt_drafts:
-        "The draft-vauban-x402-* family (Independent Submission; receipt-format negotiation, a claim algebra, delegation binding) pins the same RFC 8785 preimage discipline as draft-hopley-x402-canonicalisation-jcs-v1, so `signature_jcs` above already verifies under it. Vocabulary mapping for readers arriving from those drafts: this store's certificate plays the SettlementReceipt role (self-contained, offline-verifiable, seller-issued); the `attests` binding is the same idea as their 32-byte `action_ref` — a digest inside the signed fields tying the payment artifact to a work-layer artifact — differing in name and in that ours states WHAT was digested per item class. We implement no STARK or post-quantum variant and no claim-algebra operators; if the receipt_format negotiation in those drafts stabilizes, this namespace's formats would be offered as tokens under it rather than replaced by it. Drafts, not standards: nothing here is bound by them, and this paragraph is dated so its staleness is visible.",
+      relation_to_other_x402_receipt_work: {
+        as_of: "2026-09-03",
+        standing:
+          "Three Internet-Drafts on the IETF datatracker overlap this namespace's territory. What each defines, what this store's format shares with it, and where the two do not align, stated per draft at the revision read. All three are drafts, not standards; nothing on this page is bound by any of them.",
+        drafts: [
+          {
+            draft: "draft-hopley-x402-canonicalisation-jcs-v1",
+            revision_read: "-04",
+            url: "https://datatracker.ietf.org/doc/draft-hopley-x402-canonicalisation-jcs-v1/",
+            defines:
+              "A canonicalisation discipline for agentic-payment receipts: JCS (RFC 8785) as the canonical preimage form, plus pre-canonicalisation schema-normalisation rules (integer-millisecond timestamps, pinned field names, preserved array order, type validation before canonicalisation) and an in-band canon_version pin, identified as urn:x402:canonicalisation:jcs-rfc8785-v1.",
+            shared:
+              "The RFC 8785 byte discipline itself, carried here by signature_jcs (dual-emitted on every artifact minted since 2026-08-18); SHA-256 over canonical JSON with lowercase-hex digests; field names and ordering treated as load-bearing.",
+            not_aligned:
+              "Our primary canonical form is declared-field-order serialisation, not JCS, and that is permanent for artifacts already issued; our artifacts carry ISO 8601 date strings, which this draft's Substrate Rule 2 (section 4.1) forbids in canonical preimages; our artifacts carry no canon_version field. The draft defines no receipt fields of its own (what a receipt binds is left to the formats that reference it) and specifies no anchoring and no post-quantum discipline; we have no post-quantum discipline either, and our anchoring is OpenTimestamps into Bitcoin for the records that anchor at all.",
+          },
+          {
+            draft: "draft-hopley-x402-compliance-receipt",
+            revision_read: "-02",
+            url: "https://datatracker.ietf.org/doc/draft-hopley-x402-compliance-receipt/",
+            defines:
+              "A categorical compliance-screening receipt for agentic payments: ALLOW, REFER or DENY recorded at admission time under named statutory retention obligations, with six required fields (payer_ref, screen_result, screen_timestamp_ms, screen_provider_did, jurisdiction_flags, canon_version) and a hash-linked audit chain, canonicalised under the same jcs-rfc8785-v1 discipline.",
+            shared:
+              "The RFC 8785 layer via our signature_jcs; SHA-256 content hashing of canonical bytes; the issuer named by a resolvable key reference (their screen_provider_did; our published key and did:web document).",
+            not_aligned:
+              "A different artifact class. Theirs records a screening decision about a payer before money moves and binds payer_ref, outcome, provider, jurisdictions and time: no recipient, no amount, no resource, no settlement. Our certificate binds payer, recipient (asset, network, payTo), amount (paid_usdc), resource (item), time (date) and the settlement transaction. We emit no screening receipt, our canonical forms differ as above, anchoring is out of scope there (ours is OpenTimestamps into Bitcoin), and neither format carries any post-quantum discipline; we have none.",
+          },
+          {
+            draft: "draft-vauban-x402-consolidated",
+            revision_read: "-00",
+            url: "https://datatracker.ietf.org/doc/draft-vauban-x402-consolidated/",
+            defines:
+              "A negotiable receipt-format extension with three variants (a Stwo Circle STARK proof; a hybrid ES256K + ML-DSA-65 dual signature; a classical ES256K JWS fallback) over a JCS preimage discipline, a two-axis post-quantum discipline mapped to the NIST PQC migration roadmap, and a Starknet on-chain anchor format with a canonical anchor tuple and Cairo event layout. The claim algebra, the payment-lifecycle FSM and the delegation binding are deferred to companion documents with no normative content in this draft (section 1.3).",
+            shared:
+              "The RFC 8785 preimage discipline under the same jcs-rfc8785-v1 marker (our signature_jcs layer); the same design goal, a self-contained receipt a stranger verifies offline; and their 32-byte action_ref, binding a payment artifact to a work-layer artifact, is the same construction as our attests digest, differing in name and in that ours states what was digested per item class.",
+            not_aligned:
+              "Signature scheme: theirs is ES256K, ML-DSA-65 or a STARK proof; ours is one ed25519 signature. Canonical form: as above, our primary form is declared-field-order, and our ISO date strings fail their integer-timestamp_ms and NFC rules (sections 3.4, 3.6, 3.7). Anchoring: theirs is a Starknet on-chain tuple verified over the Starknet JSON-RPC; ours is OpenTimestamps proofs committed into Bitcoin (the key-state log on each state change, the corpus weekly). Post-quantum: they specify a full two-axis discipline with a 2025 to 2030 migration window; we have none: one classical ed25519 key at a time, no STARK, no ML-DSA, no migration plan, said here rather than implied.",
+          },
+        ],
+        conformance_desk:
+          "The conformance desk does not parse either draft family's receipt format today; it checks artifacts under the x402 offer-receipt extension, not these drafts. Whether it should is a separate decision, not made on this page.",
+        corrected:
+          "2026-09-03: this block replaces a 2026-08-20 paragraph that described the vauban family by a scope its consolidated draft defers, and said signature_jcs already verified under the drafts' discipline. Neither was right; the entry is on /corrections.",
+      },
     },
     /**
      * THE AUTHORITY PACK (P6, 2026-08-21 — three outside reads asked

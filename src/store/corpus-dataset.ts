@@ -44,13 +44,14 @@ export const CORPUS_DATASET_LICENSE =
  * files this site serves (the index, one file per signed round, the
  * tiers), CC BY 4.0, a new version per weekly round.
  *
- * ⚑ Zenodo mints two DOIs per record: one for the version, one for
- * the concept that all versions share. This should be the CONCEPT DOI
- * so the citation never goes stale; if the keeper reads a different
- * number in the "Cite all versions" box, it changes here and every
- * surface follows.
+ * Zenodo mints two DOIs per record: one for each version (the first
+ * is 10.5281/zenodo.22284888) and one for the concept that every
+ * version shares. This is the CONCEPT DOI, read by the keeper from the
+ * record's "Cite all versions" box on 2026-09-03, so the citation
+ * never goes stale as weekly rounds are added: it always resolves to
+ * the latest version.
  */
-export const CORPUS_DATASET_DOI = "10.5281/zenodo.22284888";
+export const CORPUS_DATASET_DOI = "10.5281/zenodo.22284887";
 export const CORPUS_DATASET_DOI_URL = `https://doi.org/${CORPUS_DATASET_DOI}`;
 
 /**

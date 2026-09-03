@@ -625,7 +625,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F1 | Every 402 leaves with `X-Robots-Tag: noindex`, set once in the app's middleware so no door can forget. Built 2026-09-02 (PR 1); `test/noindex-on-402.spec.ts` walks the shelf. | GSC pre-read | B |
 | F2 | Trailing-slash GET or HEAD on a human path is one 301 to the canonical, query kept; `/api/` untouched so a machine caller gets its answer or its 410 where it asked. Built 2026-09-02 (PR 1); `test/one-url-per-page.spec.ts`. | GSC pre-read | B |
 | F3 | Ruled 2026-09-03 and built (PR 5): `/gazette` (retired), `/porch` ("not really for humans") and `/zodiac` ("idc either way", so out) carry `in_sitemap: false` in `store/rooms.ts`; they leave the sitemap and get a noindex meta, and every other surface still lists them. The train, the neighbours, the visitors' register, the pulse, the bounty board, credit, becoming and wind-down stay. `test/discoverable.spec.ts` names the three. | GSC pre-read | B |
-| F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
+| F4 | `www` 301s to the apex in the Cloudflare zone; the keeper had done this some time before the plan and said so 2026-09-03. The row stayed open because nobody closed it, not because anything was missing. | GSC pre-read | A6 |
 | F5 | Named crawlers get the page. Built 2026-09-02 (PR 1) as a narrower rule than first written: a User-Agent on the robots.txt list (now `lib/crawlers.ts`, one list for both readers) that states no Accept preference gets HTML; a crawler that asks for JSON or markdown still gets it; every other caller is unchanged, because an agent's `fetch(url)` sends the same bare wildcard and expects JSON, and the store's own CLI and the six-doors check depend on that. `Vary` gains `User-Agent` everywhere, merged in one place. `test/crawler-negotiation.spec.ts`. | crawler probe | B1 |
 | F6 | /what opens with "What is scvd.store?" (the name spelled, the sixty words, who runs it) and the three paths. Built 2026-09-02 (PR 2). | live /what | B2 |
 | F7 | `ASKED_FOR_NOUNS` in `store/copy/asked-for.ts`, typed once: Organization and WebSite `alternateName` (every name, then the phrases), `knowsAbout`, a "Words people use" section kept on the llms.txt index, agents.md and index.md, the OpenAPI description, the MCP handshake. Built 2026-09-02 (PR 2); `test/asked-for.spec.ts` sweeps every surface. | export read | B3 |
@@ -692,7 +692,7 @@ descriptions, the manifests. One constant, many surfaces, one sweep.
 | F16 | `/defects/{class}` one page each, derived from the vocabulary and the last round's counts with denominators. | Every class answers; adding a class without a page is impossible by construction. |
 | F12 | Dataset JSON-LD on /corpus, /corpus.json, /registry, /inflows; SoftwareApplication on /mcp.md and /developers. | Blocks parse; sweep finds them. |
 | F17 | JSON-LD on verify pages. | Parses. |
-| A10 | The dated paragraph on the spec page relating our format to the two draft families. ⚑ CV's, from the prompt in docs/bylines; not in PR 3. | Present, dated. |
+| A10 | The dated section on the spec page relating our format to the three drafts, per draft, at the revision read. CV's, 2026-09-03, from the prompt in docs/bylines; placed as `relation_to_other_x402_receipt_work`, replacing the 2026-08-20 paragraph, which CV's read showed overstated two things (now on /corrections). Built 2026-09-03 (PR 6). | Present, dated, tested. |
 
 ### PR 4 — the mirrors, watched
 
@@ -1287,3 +1287,33 @@ sitemap resubmitted 2026-09-03 (done), and links from outside (the
 DOI, the LinkedIn and Crunchbase profiles, the byline pieces).
 IndexNow does not reach Google. Nothing further to build from this
 export; re-export in two weeks and compare the two counts.
+
+## Evening, 2026-09-03: the concept DOI, the IETF section, the title, two answers
+
+- **Concept DOI confirmed**: `10.5281/zenodo.22284887` ("cite all
+  versions"). The constant, every Dataset node, the /corpus citation
+  line and the README badge now carry it; `22284888` is version 1.
+- **IETF section placed** (A10). CV read all three drafts at their
+  current revisions, our spec page and the signer, and returned the
+  section plus two findings against our own page: the vauban family's
+  scope as we described it was stale, and "signature_jcs already
+  verifies under it" was overstated, since both draft families add
+  pre-canonicalisation rules (integer-millisecond timestamps, NFC
+  strings) our ISO-8601-dated artifacts fail, and neither gives an
+  ed25519 signature any role. The new block replaces the old
+  paragraph rather than sitting beside it; `jcs_dual_emit` now says
+  what signature_jcs verifies under and what it does not; the
+  overstatement is a /corrections entry dated 2026-09-03.
+- **dev.to title confirmed** by the keeper, with its full stop; the
+  slug's "tocheck" is the URL as published and stays.
+- **LinkedIn Products, answered**: a showcase page is a page with its
+  own URL and followers; a Product on the company page is a typed
+  object (name, category, website) LinkedIn indexes under the
+  organisation. It is one more structured statement of "this
+  organisation makes this", read by LinkedIn search and by anything
+  that resolves the company page. A minor signal, ten minutes,
+  optional; the showcase is the one that matters.
+- **Cloudflare www**: done before the plan. Closed as F4.
+- **Hugging Face, prepared**: the dataset card is
+  `docs/huggingface/DATASET_CARD.md`, ready to paste. The steps are in
+  the keeper's message of this evening.
