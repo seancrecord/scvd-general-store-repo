@@ -154,7 +154,7 @@ How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${ba
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
@@ -392,6 +392,8 @@ A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
+The free instruments as function-calling tools, one worked call each,
+derived from the MCP catalog: ${base}/openapi-tools.json
 Developer documentation, one index of all of it: ${base}/developers
 (also at /docs and /api). No account and no API key exists to obtain:
 free shelves are open, paid ones take a signed x402 payment per

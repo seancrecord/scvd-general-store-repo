@@ -75,6 +75,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           label: "/openapi.json",
           what: "OpenAPI 3.1 for every endpoint: unique operationIds, typed parameters, typed error responses, and the x402 terms on every paid operation.",
         },
+        {
+          href: `${base}/openapi-tools.json`,
+          label: "/openapi-tools.json",
+          what: "The free, read-only instruments as function-calling tool definitions, one worked call each, derived from the same catalog the MCP door serves. For wrapping them in your own agent without reading the whole contract.",
+        },
       ],
     },
     {

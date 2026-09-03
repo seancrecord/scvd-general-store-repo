@@ -162,6 +162,11 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
             type: "application/openapi+json;version=3.1",
             title: "OpenAPI 3.1 contract, every endpoint",
           },
+          {
+            href: `${base}/openapi-tools.json`,
+            type: "application/json",
+            title: "The free instruments as function-calling tools, one worked call each",
+          },
         ],
         doc: [
           {

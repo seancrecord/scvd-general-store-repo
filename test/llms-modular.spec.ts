@@ -629,6 +629,12 @@ const BASE = "https://scvd.store";
  * card. Confirmed before this value was taken: the guide carries
  * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FIFTIETH — by the function-calling
+ * tools document (roadmap C4): one link in the contracts line and two
+ * lines beside the OpenAPI contract, naming /openapi-tools.json.
+ * Confirmed before this value was taken: the guide carries
+ * "/openapi-tools.json" and still every earlier pin.
+ *
  * Re-taken 2026-09-03 — the FORTY-NINTH — by the remediation (roadmap
  * C1): one paragraph after the vocabulary's, saying every class carries
  * both halves and the free report joins them to its findings as
@@ -679,7 +685,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "fc0708f5e5f04bcccf49024aee3753b3b0787d391b5e475313ba2d88baac67a1";
+  "042dadf75e145e7fe412b5d04c3ae52b42ae9a39fb4ffa9a2ba85b6494a5614e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
