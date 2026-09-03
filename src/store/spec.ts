@@ -382,7 +382,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
   operator_statement:
     "revenue attestation from a party that is neither you nor your payers: your receiving address read off the chain four times a day for a month, each pass signed alone, distinct payers and the largest payer's transfers and USDC counted beside the totals. Your dashboard is your word; this is the chain's, signed.",
   the_statement:
-    "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one wallet on Base, Polygon or Solana over a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
+    "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one wallet on Base, Polygon or Solana in a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
   the_mandate:
     "the missing first link of agent-payment evidence: what was authorized, recorded before the acting, held by neither party. Later purchases cite it and the citation rides the certificate, signed. Chain-of-custody, never truth-of-intent — it proves the claim was made and dated, which today has no home at all.",
   bitcoin_anchor:

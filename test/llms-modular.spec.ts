@@ -522,12 +522,19 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/api/look/v1", "look_at_door" and "the
  * line is yours to draw", and still every earlier pin.
  *
+ * Re-taken 2026-09-02 — the THIRTY-SECOND — by the statement on
+ * Solana (SOLANA_PARITY gap 1): the two statements' shelf copy names
+ * three rails and the unit their window counts in, and the shelf copy
+ * rides into the guide's menu section. Confirmed before this value was
+ * taken: the guide carries "network=solana" and "slots on Solana", and
+ * still every earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "07cbb9912e794a3412df7b017ba244eebdbfdf3d34f6d66e96511ac2f9a213eb";
+  "358ab24f83248423a0e511e23f66d61a66b70dfa0cd4db9211127bf8401d559e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
