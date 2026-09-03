@@ -22,11 +22,10 @@ const SHELF = MENU_ITEMS.map((item) => item.id).sort();
  */
 
 async function fetchLiveRow(): Promise<FetchedSelfRow> {
-  const [menu, x402, openapi, a2a, llms, skillMd] = await Promise.all([
+  const [menu, x402, openapi, llms, skillMd] = await Promise.all([
     SELF.fetch(`${ABOUT}/menu.json`).then((r) => r.json()),
     SELF.fetch(`${ABOUT}/.well-known/x402.json`).then((r) => r.json()),
     SELF.fetch(`${ABOUT}/openapi.json`).then((r) => r.json()),
-    SELF.fetch(`${ABOUT}/.well-known/a2a.json`).then((r) => r.json()),
     SELF.fetch(`${ABOUT}/llms-full.txt`).then((r) => r.text()),
     SELF.fetch(`${ABOUT}/skill.md`).then((r) => r.text()),
   ]);
@@ -36,7 +35,6 @@ async function fetchLiveRow(): Promise<FetchedSelfRow> {
     menu,
     x402,
     openapi,
-    a2a,
     llms,
     skillMd,
     mcpItemIds: SHELF_CLUSTERS.flatMap((cluster) => [...cluster.itemIds]),
@@ -73,7 +71,7 @@ describe("claim extractors read the live catalogs", () => {
       side.claims.some((claim) => claim.kind === "service_identity"),
     );
     expect(named.map((side) => side.surface).sort()).toEqual(
-      ["a2a_agent_card", "menu_json", "openapi", "x402_catalog"].sort(),
+      ["menu_json", "openapi", "x402_catalog"].sort(),
     );
     for (const side of named) {
       expect(serviceNames(side.claims), `${side.surface} service drifted`).toEqual([

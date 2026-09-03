@@ -133,6 +133,16 @@ export const ROOMS: readonly Room[] = [
     name: "The Week's Doors",
     deeper: ["conformance_watch"],
   },
+  /*
+   * The state of x402 by month, 2026-09-03 (roadmap V5): the brief's
+   * question asked the way press and researchers ask it, derived from
+   * the same signed weeks. A stable address per month for a citation.
+   */
+  {
+    path: "/corpus/month",
+    name: "The state of x402, by month",
+    deeper: ["conformance_watch"],
+  },
   /**
    * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
    * indexes snapshots and /corpus/host/{host}.json needs a hostname
@@ -227,6 +237,11 @@ export const ROOMS: readonly Room[] = [
    * on the same terms as its kin until the keeper rules on a slot.
    */
   { path: "/operators", name: "For operators" },
+  /*
+   * The feeds, 2026-09-03 (roadmap V2): four Atom feeds derived from
+   * the record the pages read, and the page that lists them.
+   */
+  { path: "/feeds", name: "Feeds" },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

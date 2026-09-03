@@ -590,8 +590,62 @@ const BASE = "https://scvd.store";
  * pieces, named as theirs and not as endorsements. Confirmed before
  * this value was taken: the guide carries "Reported on independently"
  * and both cairnwake.com URLs, and still every earlier pin.
+ * (The fortieth and forty-first above landed on main while the feeds
+ * were built; the notes below were renumbered at the rebase, and the
+ * value was re-taken once on the rebased head.)
  *
- * Re-taken 2026-09-03 — the FORTY-SECOND — by the keeper's greenlight on
+ * Re-taken 2026-09-03 — the FORTY-SECOND — by the feeds (roadmap V2):
+ * one paragraph after the operators', for a reader who polls rather
+ * than reads, naming /feeds and that every entry links the page the
+ * derivation and the denominator are on. Confirmed before this value
+ * was taken: the guide carries "/feeds" and "If you poll rather than
+ * read", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-THIRD — by the state of x402 by
+ * month (roadmap V5): one paragraph between the operators' and the
+ * feeds', naming /corpus/month, the closing week beside the
+ * door-weeks, and the stable address per month. Confirmed before
+ * this value was taken: the guide carries "/corpus/month" and "Two
+ * kinds of number, never a share", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-FOURTH — by the feeds' four URLs
+ * named in the guide's feeds paragraph, because a route no agent
+ * surface names is an orphan capability (test/no-orphan-capability)
+ * and a poller wants the feed address, not the page that lists it.
+ * Confirmed before this value was taken: the guide carries
+ * "/feeds/brief.xml" and "/feeds/disagreements.xml", and still every
+ * earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-FIFTH — by one pair of backticks:
+ * the month paragraph's stable address carries braces, and the
+ * markdown-discoverability spec holds every templated URL in the
+ * guide to a code span so a reader never lifts a bare one. Confirmed
+ * before this value was taken: the guide carries the address inside
+ * backticks, and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-SIXTH — by the evidence agent
+ * (roadmap A2): one paragraph before the feeds', for a reader who
+ * delegates rather than calls, naming /a2a, the three tasks and the
+ * card. Confirmed before this value was taken: the guide carries
+ * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-EIGHTH — by CI's derived-not-typed
+ * guard: the verifier paragraph said "five" read-only tools, a tally
+ * no code recomputes, so the count left the guide and the door's own
+ * catalogue is the count. Confirmed before this value was taken: the
+ * guide carries "/mcp/verifier" and no spelled-out tool count beside
+ * it, and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-SEVENTH — by the verifier door
+ * (roadmap A3): one paragraph before the evidence agent's, for a
+ * client that should never see a shelf, naming /mcp/verifier and its
+ * five tools; and, in the same commit, the A2A card's sentence
+ * rewritten, since the card is the evidence agent's now and no longer
+ * derives skills from the menu. Confirmed before this value was
+ * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
+ * and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-EIGHTH — by the keeper's greenlight on
  * the Trade Counter ("lets build it out ... we sell as a product"):
  * a "For marketplaces reselling the shelf" line in "Every door, in
  * one list" naming /trade, /trade.json, /api/trade/contract,
@@ -600,7 +654,7 @@ const BASE = "https://scvd.store";
  * area. Confirmed before this value was taken: the guide carries
  * "settled_via: trade_account" and "never touches x402", and still
  * every earlier pin.
- * Re-taken 2026-09-03 — the FORTY-THIRD — by the keeper's "agreed
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's "agreed
  * lets do them all" on the counter's second pass: the sandbox check
  * desk and the listing feed join the door line, and the section now
  * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
@@ -614,7 +668,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1f733bfc7d785d53e6372035a9af714aaef7baafcd09f4efb59aa1bc02e546a5";
+  "50cf2a88f2106b7e3fbddc9d9eac353a13c693a436a8d231cae2965c718dc22b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

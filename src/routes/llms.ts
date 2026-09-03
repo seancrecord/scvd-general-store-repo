@@ -311,6 +311,34 @@ instrument named first at each moment and every price read off the
 shelf when the page is served. A reading order, never a ranking, and
 nothing there certifies anyone.
 
+The same weeks by calendar month, for a citation: ${base}/corpus/month
+— doors named, probed, payable and not at the month's closing week,
+every round's counts summed as door-weeks and labelled apart, defects
+by name, the month before beside it, and a stable address per month at
+\`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
+
+If your client should never see a shelf: ${base}/mcp/verifier is a
+second MCP door serving read-only tools and nothing paid —
+preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness,
+get_defect_definition, verify_scvd_artifact — the same handlers as
+${base}/mcp under task-shaped names.
+
+If you delegate rather than call: the evidence agent at ${base}/a2a
+speaks A2A — POST JSON-RPC message/send with one data part holding
+{ task, ...input } — and answers three read-only tasks with one
+bounded artifact each: preflight_endpoint, verify_receipt,
+get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
+It never says whether to pay or whom to trust; it hands back evidence
+with what it does not establish stated.
+
+If you poll rather than read: ${base}/feeds lists four Atom feeds,
+each derived when fetched from the same record the pages read —
+${base}/feeds/brief.xml (the week's doors, one entry per signed week),
+${base}/feeds/corpus.xml (one per signed snapshot),
+${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
+and every entry links the page it came from, where the derivation and
+the denominator are.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check
@@ -413,9 +441,10 @@ ${base}/ registers the same free evidence instruments on
 document.modelContext (script at ${base}/webmcp.js, read-only by
 derivation — nothing registered can act or spend on your behalf).
 A2A agent card: ${base}/.well-known/a2a.json (also served at
-/.well-known/agent-card.json and /.well-known/agent.json). A discovery
-card, honestly labeled: skills derive live from the menu, and the
-transport field says MCP because that is what we actually speak.
+/.well-known/agent-card.json and /.well-known/agent.json). Since
+2026-09-03 it is the evidence agent's card, not a catalog: three
+read-only tasks at POST ${base}/a2a and no shelf, so the self-join
+no longer reads it as a surface that could disagree about what we sell.
 
 The case file (the_case_file, a quarter, since 2026-09-02) is the
 observation shelf assembled for the human who has to decide what went

@@ -94,6 +94,11 @@ export const ROOMS_BEFORE_RULE_60: readonly string[] = [
   "/passport", "/profiles", "/attestation", "/criteria", "/pricing", "/rails",
   "/bounties", "/credit", "/rights", "/privacy", "/deprecation", "/wind-down",
   "/becoming",
+  // Built the same day as the rule, in a parallel session that had not
+  // read it: the feeds and the month's state of x402. Frozen with the
+  // rest rather than back-registered by the hand that did not write
+  // their copy; a row each is the keeper's ink to add.
+  "/feeds", "/corpus/month",
 ];
 
 /**
