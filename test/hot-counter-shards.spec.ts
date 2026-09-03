@@ -72,6 +72,13 @@ describe("the hot counters spread their writes", () => {
     ).toBeGreaterThan(1);
     const channelKeys = await keysOfKind("src402");
     expect(channelKeys.length).toBeGreaterThan(1);
+    // The per-item counter, sharded 2026-09-03: the key a burst on one
+    // door contends for, and the one the CI log caught losing a write.
+    const itemKeys = await keysOfKind("402");
+    expect(
+      itemKeys.length,
+      "the item counter is still one key — every 402 at one door contends for the same write",
+    ).toBeGreaterThan(1);
   }, 30_000);
 });
 
@@ -111,6 +118,10 @@ describe("the totals do not move", () => {
       0,
     );
     expect(channelTotal).toBe(challenges);
+    // And the item row: ONE item named as it always was, the shards
+    // summed, never ten rows of a tenth each.
+    expect(Object.keys(ledger.items).filter((item) => item.includes("#s"))).toEqual([]);
+    expect(ledger.items["hello"]?.challenges).toBe(challenges);
   }, 30_000);
 
   it("still counts keys written before sharding existed", async () => {

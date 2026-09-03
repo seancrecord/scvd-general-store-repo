@@ -35,8 +35,16 @@ beforeAll(() => {
  */
 describe("the quote leaves first, the tally lands within the request", () => {
   it("a bare price-check's challenge count lands, without the response having waited for it", async () => {
-    const key = KV_KEYS.metric(metricsMonth(), "402", "hello");
-    const before = Number((await testEnv.COUNTERS.get(key)) ?? "0");
+    // The item counter is spread over shards (2026-09-03), so the
+    // count is the sum of every key under the item's prefix.
+    const prefix = KV_KEYS.metric(metricsMonth(), "402", "hello");
+    const count = async (): Promise<number> => {
+      const listed = await testEnv.COUNTERS.list({ prefix });
+      let total = 0;
+      for (const entry of listed.keys) total += Number((await testEnv.COUNTERS.get(entry.name)) ?? "0");
+      return total;
+    };
+    const before = await count();
     const response = await SELF.fetch("https://scvd.store/api/buy/hello", {
       headers: { "User-Agent": "quote-tally-spec/1.0" },
     });
@@ -45,8 +53,7 @@ describe("the quote leaves first, the tally lands within the request", () => {
     // The contract: lands within the request lifetime. The waitFor IS
     // that contract — a tally that never lands times out here.
     await vi.waitFor(async () => {
-      const after = Number((await testEnv.COUNTERS.get(key)) ?? "0");
-      expect(after).toBeGreaterThan(before);
+      expect(await count()).toBeGreaterThan(before);
     });
   });
 
