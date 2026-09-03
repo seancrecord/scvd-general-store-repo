@@ -1350,3 +1350,52 @@ export; re-export in two weeks and compare the two counts.
   ⚑ Keeper: MCPpedia's "verified" flag is a manual review worth five
   points across two rows; if there is a claim button on the page,
   press it.
+
+## An outside review, ruled — 2026-09-03, night
+
+The keeper pasted four sections of an outside assessment (a
+benchmark plan, an "agent-action contract", tool-level
+discoverability, schema realism). Each against the record:
+
+**3. The controlled benchmark.** Adopted as the hand check's template,
+not as a tracker: eight families, four engines, seven questions, at
+2026-09-17 and 2026-10-15 and then monthly. The sheet is
+`docs/AEO_HAND_CHECK.md`. The eight are a good cut of the plan's
+fifty prompts and the seven questions are the ones that decide D.
+Keeper's or CV's hands; the sandbox cannot ask ChatGPT or Perplexity.
+
+**4. The agent-action contract.** Mostly built: the "At a glance"
+block (attests, cryptography, verify, price and fulfilment, does not
+attest) plus the required-inputs line on every item page and
+`at_a_glance` in menu.json (F9); the same nouns on the Service
+nodes, in OpenAPI and in the tool descriptions (F7, F10). What the
+reviewer names that is NOT uniform yet: an explicit "Checks" line
+(what the instrument examines) and an "Output" line (what comes back
+and in what shape) on every paid item, and one parity test that
+walks the eight surfaces (item HTML, menu.json, JSON-LD, OpenAPI,
+MCP tool, input schema, the 402 body, the receipt page) and holds
+them to one contract per item. ⚑ F28, the keeper's ruling: it is a
+medium build (the checks and output lines derive from the artifact
+class and the item's input contract, both of which exist) and it
+changes item-page copy, which is his.
+
+**5. Tool-level discoverability.** Built tonight, the small part:
+`buy_observation` now names x402 endpoint monitoring, the signed
+test of a payment client and the x402 launch check beside the
+attestation and the audit, and `check_conformance` says the receipt
+is checked against the issuer's published key. `test/asked-for.spec.ts`
+holds each phrase to its tool. Not done, on purpose: no tool is
+renamed (registries index the name as identity and a rename is a new
+tool to every mirror), and "x402 issuer key verification" is not
+offered as a phrase because no tool does that job as such; the
+conformance desk checks a signed offer or receipt against the
+issuer's key, which is what the description now says.
+
+**6. Schema realism.** Agreed, and it is what was built: Dataset only
+for the corpus and its derived sets; SoftwareApplication for the
+MCP server, the CLI and the two npm packages; Service and Offer only
+on items sold at the stated price; DigitalDocument on receipt pages;
+DefinedTerm for the defect vocabulary; WebPage for everything else.
+No Claim markup exists anywhere on the site (grepped), and every
+node is emitted by the same renderer that emits the HTML it
+describes.

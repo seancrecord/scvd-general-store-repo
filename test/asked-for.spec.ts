@@ -36,6 +36,20 @@ function jsonLd(html: string): Record<string, unknown>[] {
   );
 }
 
+describe("the intents an agent types are in the tool descriptions (2026-09-03)", () => {
+  it("names monitoring, the client test, the launch check and the issuer key where each is sold or done", async () => {
+    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
+    const tools = mcpToolCatalog("https://scvd.store");
+    const text = (name: string) => tools.find((t) => t.name === name)?.description ?? "";
+    expect(text("buy_observation")).toContain("x402 endpoint monitoring");
+    expect(text("buy_observation")).toContain("x402 payment client");
+    expect(text("buy_observation")).toContain("x402 launch check");
+    expect(text("check_conformance")).toContain("issuer's published key");
+    expect(text("preflight_endpoint")).toContain("x402 endpoint preflight");
+    expect(text("check_conformance")).toContain("x402 receipt verification");
+  });
+});
+
 describe("the asked-for vocabulary", () => {
   it("names a noun for every capability item", () => {
     expect(ITEMS_WITHOUT_A_NOUN).toEqual([]);
