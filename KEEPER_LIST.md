@@ -291,6 +291,18 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **The ChatGPT plugin in review is the wrong shape by your own
+  memo (2026-09-03 evening).** "SCVD General Store" was submitted
+  that morning; the memo says submit "SCVD x402 Verifier" with five
+  read-only tools. RULE: withdraw and resubmit, submit the verifier
+  as a second plugin, or keep the one in review. The tool subset
+  is roadmap A3 and builds the day you choose. Two more rulings
+  from the same memo sit in
+  `docs/DELEGATED_AGENT_PLAN_2026-09.md`: the package name for the
+  verification front door (`x402-verify` 1.1, recommended, or a
+  scoped `@scvd/...`), and the A2A task endpoint's shape (the
+  spec's `message/send`, recommended).
+
 - **Publish the two MCP servers at their new versions.** Both
   now speak MCP 2026-07-28 beside the handshake revisions
   (`server/discover`, per-request `_meta`, cache hints), every

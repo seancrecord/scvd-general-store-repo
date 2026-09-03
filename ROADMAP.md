@@ -29,11 +29,17 @@ this section is always the queue and nothing else.
 | # | Task | Why now | Acceptance |
 | --- | --- | --- | --- |
 | V3 | **The MPP read-only battery, designed first.** DESIGNED 2026-09-03: `docs/MPP_READ_ONLY_2026-09.md` — the wire from the spec repository (the only host that answered), what one unpaid GET can say, the live misread of MPP doors as broken x402 doors, three tiers by what the truth costs, twelve checks and four advisories, the family and vocabulary v10, four PRs in order, and six decisions only he can make. Waiting on those rulings; nothing built. | The second wire. Every door that speaks MPP becomes addressable by the corpus, the passport and the paid audit. His "go", 2026-09-03. | The document names the decisions he must make and nothing is built until he does. |
+| A1 | **A dependency-quality verification package.** `x402-verify` gains the one-call front door his memo shows — `verifyReceipt({ receipt, issuerKeyUrl })` → `{ valid, scope, doesNotEstablish, verificationUrl }` — on the primitives it already exports; fixtures for valid and invalid inputs in the package; a dated CHANGELOG; a versioning line in the README. Name per his decision 2 (`docs/DELEGATED_AGENT_PLAN_2026-09.md`). | The memo's first move: the most durable way to appear in codebases and coding-agent contexts is to be installed. | The example in the README runs as written against the fixtures; the package's own tests hold the bounded shape; publish is his button. |
+| A2 | **An A2A evidence agent: three read-only tasks and a card.** `/.well-known/agent-card.json` in task language (x402 endpoint preflight, x402 receipt verification, x402 endpoint-readiness dataset) and one task endpoint at `/a2a` accepting `preflight_endpoint`, `verify_receipt`, `get_endpoint_readiness`, each run on the existing services and returned as the bounded artifact: task, observed_at, result, scope, does_not_establish, verification_url, artifact_url, key_url. Deterministic, free, no conversation; shape per his decision 3. | The memo's second move: a specialist a planner can delegate to when it needs evidence, never a storefront another agent must interpret. | Three tasks answer with the artifact shape and nothing else; the card names no house name; a framework's A2A client reaches it without an adapter; every route findable. |
+| A3 | **A focused ChatGPT app: "SCVD x402 Verifier".** Five read-only tools — `preflight_x402_endpoint`, `verify_x402_receipt`, `lookup_endpoint_readiness`, `get_defect_definition`, `verify_scvd_artifact` — as a tool subset served for the submission; no paid action in version one. | The memo's third move; a plugin named for the whole store is in review today and the memo says that is the wrong shape (his decision 1). | The subset serves exactly five tools with worked calls; the submission itself is his press (rule 30). |
 
 Ordered 2026-09-03 under his lens: value or potential value
 if the market takes off, not ROI now ("think of it as tech
-in 0% interest rate times"). One PR at a time; draft copy
-goes in chat, not on a flag.
+in 0% interest rate times"). A1–A3 are the next three moves
+of his delegated-agent memo of the same evening
+(`docs/DELEGATED_AGENT_PLAN_2026-09.md`); the rest of the
+memo and his channel list sit under LATER as C1–C7. One PR
+at a time; draft copy goes in chat, not on a flag.
 
 ---
 
@@ -79,6 +85,30 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L11 | Cross-protocol evidence desk | Same as L3, grown up. "First attestation authority" is not the goal; cheap readers are. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
+
+### The channels — how an agent or a developer meets the store (his list and his memo, 2026-09-03)
+
+Seven ways a stranger arrives, each with what already stands and
+what is missing, ordered under the takeoff lens. The memo's parts
+are mapped onto them in `docs/DELEGATED_AGENT_PLAN_2026-09.md`.
+After A1–A3 the recommended order is C2, C1, C4; none is queued
+until he names it.
+
+| # | Channel | How they arrive | What stands today | What is missing | Order |
+| --- | --- | --- | --- | --- | --- |
+| C2 | Framework templates | Developers copy examples from OpenAI Agents, Vercel AI SDK, LangChain/LangGraph, CrewAI, PydanticAI, AutoGen, Claude Code / Cursor, Copilot | Nothing: no `examples/` directory, no framework named in the tree. | One `examples/` directory, one operational workflow per framework (an agent is about to pay; it calls preflight; it reads network, asset, recipient and the defect state; it decides), each runnable against the live free doors and tested in CI against fixtures. | 1 |
+| C1 | Runtime workflow | An agent hits an x402 failure, a payment ambiguity, or a receipt-verification task | Rule 57 on every probe door; the defect vocabulary with `detectable`; the look's `now_against_held`; the CLI's exit law; the Action's named checks. | A `remediation` per defect class (what the operator does, what the buyer does) on the vocabulary, the preflight report and the audit; error bodies carrying `documentation_url`, `verification_url` and `next_action` on the doors, the CLI and the Action — only where SCVD is a legitimate remedy. Small. | 2 |
+| C4 | OpenAPI / API tool calling | Developers wrap the API in their own agents or frameworks | `/openapi.json`, `/.well-known/api-catalog`, WebMCP on the free tools. | `/openapi-tools.json`: only the free deterministic doors with function-calling-shaped schemas and one worked call each, derived from the contract, never a second typed list. Small. | 3 |
+| C5 | Code dependencies | Developers install packages, examples, CLIs, GitHub Actions | `x402-verify`, `x402-sign`, `scvd-cli`, `scvd-tab`, the preflight Action, the ClawHub skill. | After A1: `x402-preflight` (the Action's file as a package), `scvd-corpus-client` as the CLI's library half, `scvd-defects` (vocabulary and fixtures), an MCP starter template; the CLI at 0.2.0 with the look, before-you-pay, the month and the feeds. Each with README, one example, fixtures, licence, a versioning line and a dated CHANGELOG. Publish is his button. | 4 |
+| C6 | Retrieval / data, and the corpus as a feed | Agents discover the research during a factual task, or subscribe | Signed JSON at stable addresses; per-week, per-month; `/corpus/diff.json`; the four Atom feeds (V2); the DOI and the Hugging Face copy in the AEO plan, his hands. | `/corpus/latest.json`; `/corpus/changes/{week}.json` with additions, removals, recoveries, changed payment routes and changed defect state as plain fields plus a plain-English changelog; `ETag`, `Last-Modified` and conditional GET on the corpus routes; a "subscribe" example; one reproducible notebook linked from `/corpus`. Small–medium. | 5 |
+| C7 | Other agents | Agents link to, invoke, reproduce and discuss useful tools | Verify URLs free forever; per-week and per-month stable addresses; fixtures in the tree; the practice doors. | Fixtures served as public URLs (`/fixtures/{name}.json`, derived from the test fixtures directory) so another instrument can cite the exact bytes; a `cite` line on every signed page. Small. | 6 |
+| C3 | Agent-resource catalogs | Agent platforms discover MCP, A2A, API, skill and nested catalog records | `/.well-known/x402.json`, `/.well-known/api-catalog`, `/.well-known/agent-instructions`, `/.well-known/a2a.json`, the MCP registry entries, the ClawHub skill, the mirrors watched weekly (V4). | After A2: `/.well-known/ai-catalog.json` naming every record from one document; an AWS Agent Registry entry (his press). Small, once the card exists. | 7 |
+
+What not to chase, per the memo, recorded so the next intake does
+not reopen them: more generic directories; a marketplace identity;
+"trust layer" positioning; an A2A chat agent that duplicates the
+site; paid mentions; awesome-list follow-ups; a giant overlapping
+tool catalog.
 
 ---
 
