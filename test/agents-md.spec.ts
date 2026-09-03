@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -69,7 +70,12 @@ describe("/agents.md", () => {
     // links (the open-source verifier's repo) are named here rather
     // than allowed by pattern, so a new external URL has to be a
     // decision instead of an accident.
-    const ALLOWED_EXTERNAL = ["https://github.com/seancrecord/"];
+    // The byline pieces (2026-09-02) are a decision too: they are the
+    // WRITTEN_ABOUT list in store/copy/asked-for.ts, and only that list.
+    const ALLOWED_EXTERNAL = [
+      "https://github.com/seancrecord/",
+      ...WRITTEN_ABOUT.map((piece) => piece.url),
+    ];
     expect(text).not.toContain("http://");
     for (const line of text.split("\n")) {
       const urls = line.match(/https:\/\/[^\s)]+/g) ?? [];

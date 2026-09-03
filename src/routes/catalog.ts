@@ -29,10 +29,11 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
-import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
+import { GUARANTEED, NOT_GUARANTEED, SPEC_RETURNS } from "@/store/spec";
 import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
 import { TRUST_MODELS, artifactClassForItem, type ArtifactClass } from "@/store/attestation-spec";
+import { ITEM_ASKED_FOR, askedForTitle } from "@/store/copy/asked-for";
 import { sampleForItem, type SampleEnvelope } from "@/services/sample-artifacts";
 import { getRetiredItem } from "@/store/retired";
 
@@ -161,6 +162,8 @@ catalogRoutes.get("/menu.json", async (c) => {
        * and a URL a reader has to guess is not.
        */
       listing_url: `${base}/menu/${item.id}`,
+      ...(ITEM_ASKED_FOR[item.id] ? { asked_for: ITEM_ASKED_FOR[item.id] } : {}),
+      at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
       spec: listingSpec(item, base),
       guaranteed: GUARANTEED,
       not_guaranteed: NOT_GUARANTEED,
@@ -363,6 +366,7 @@ function itemServiceJsonLd(
     "@context": "https://schema.org",
     "@type": "Service",
     name: item.name,
+    ...(ITEM_ASKED_FOR[item.id] ? { alternateName: ITEM_ASKED_FOR[item.id] } : {}),
     description: item.description,
     ...(CAPABILITY_QUERY[item.id]
       ? { serviceType: CAPABILITY_QUERY[item.id] }
@@ -399,6 +403,39 @@ function itemServiceJsonLd(
     },
   });
 }
+
+/**
+ * AT A GLANCE (2026-09-02). The five lines an engine lifts into a
+ * comparison row, in the shape the services that win the
+ * settlement-attestation questions use ("Ed25519; verifiable against
+ * published keys; no account needed"): what it attests, the
+ * cryptography, how a stranger verifies it, price and fulfilment,
+ * and what it does not attest. Every line derives from the artifact
+ * class, the spec and the price helpers; nothing here is typed twice.
+ * Printed above the description on the page and as `at_a_glance` in
+ * menu.json, the same five values.
+ */
+export function atAGlance(
+  item: MenuItem,
+  base: string,
+  artifactClass: ArtifactClass | undefined,
+): Record<string, string> {
+  return {
+    attests: artifactClass?.signs ?? SPEC_RETURNS[item.id] ?? item.description,
+    cryptography: `ed25519 signature by this store's key, published at ${base}/.well-known/scvd-signing-key and carried inside every 402`,
+    verify: `GET ${base}/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key`,
+    price_and_fulfilment: `${priceLine(item)} USDC; ${fulfillmentLine(item)}`,
+    does_not_attest: artifactClass?.does_not_prove ?? NOT_GUARANTEED.join("; "),
+  };
+}
+
+const GLANCE_LABELS: Record<string, string> = {
+  attests: "Attests",
+  cryptography: "Cryptography",
+  verify: "Verify",
+  price_and_fulfilment: "Price and fulfilment",
+  does_not_attest: "Does not attest",
+};
 
 function renderItemPage(
   item: MenuItem,
@@ -452,9 +489,21 @@ function renderItemPage(
       .map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`)
       .join("\n");
 
+  /*
+   * THE ASKED-FOR NOUN LEADS THE TITLE (2026-09-02): the title is what
+   * an engine matches a question against, and nobody asks for "the
+   * Once-Over". The house name stays the H1 and follows in the title.
+   */
+  const noun = askedForTitle(item.id);
+  const glance = atAGlance(item, base, artifactClass);
+  const glanceHtml = Object.entries(glance)
+    .map(
+      ([key, value]) => `<p class="menu-desc"><strong>${escapeHtml(GLANCE_LABELS[key] ?? key)}:</strong> ${escapeHtml(value)}</p>`,
+    )
+    .join("\n");
   return renderSimplePage({
-    title: item.name,
-    description: item.description,
+    title: noun ? `${noun} — ${item.name}` : item.name,
+    description: noun ? `${noun}. ${item.description}` : item.description,
     path: `/menu/${item.id}`,
     /**
      * The till is offered on the item page whether or not the shutter
@@ -480,7 +529,12 @@ function renderItemPage(
     }),
     bodyHtml: `<section>
         ${item.subtitle ? `<p class="menu-meta"><strong>${escapeHtml(item.subtitle)}</strong></p>` : ""}
+        ${noun ? `<p class="menu-meta">${escapeHtml(noun)}.</p>` : ""}
         <p class="menu-desc">${escapeHtml(item.description)}</p>
+      </section>
+      <section>
+        <h2>At a glance</h2>
+        ${glanceHtml}
         ${
           state.shutter === "closed"
             ? `<p class="menu-meta"><strong>The shutter is down right now.</strong> Purchases needing the keeper's hands are refused at the door until it opens; nothing is taken and nothing is queued.</p>`

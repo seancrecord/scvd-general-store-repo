@@ -537,12 +537,20 @@ const BASE = "https://scvd.store";
  * "never published as settled" and "/observatory", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-FIFTH — by the AEO plan's PR 2:
+ * one section, "Words people use for what this store does", kept on
+ * the index, carrying the asked-for vocabulary from
+ * store/copy/asked-for.ts and the byline pieces. Confirmed before this
+ * value was taken: the guide carries "Words people use" and
+ * "independent verification for agentic commerce", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "ffc1ef49cfca79f6e5318ae24fdf50303927f6c4e1fca60720b49640e9ea3f52";
+  "2a94e36f11239ecfbe42b009613cccde92060a175d41c3ffb3b50eae801b7f3b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

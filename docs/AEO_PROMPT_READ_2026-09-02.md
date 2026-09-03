@@ -627,12 +627,12 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F3 | ⚑ Decide which lore rooms stay in the sitemap; the rest get a description and an Article/FAQ block or come out. | GSC pre-read | B |
 | F4 | ⚑ Confirm `www` 301s to apex in the Cloudflare zone. | GSC pre-read | A6 |
 | F5 | Named crawlers get the page. Built 2026-09-02 (PR 1) as a narrower rule than first written: a User-Agent on the robots.txt list (now `lib/crawlers.ts`, one list for both readers) that states no Accept preference gets HTML; a crawler that asks for JSON or markdown still gets it; every other caller is unchanged, because an agent's `fetch(url)` sends the same bare wildcard and expects JSON, and the store's own CLI and the six-doors check depend on that. `Vary` gains `User-Agent` everywhere, merged in one place. `test/crawler-negotiation.spec.ts`. | crawler probe | B1 |
-| F6 | /what's first two pairs: the sixty words and the three paths, not July's shelf. | live /what | B2 |
-| F7 | `ASKED_FOR_NOUNS` constant into alternateName, knowsAbout, llms.txt, agents.md, index.md, OpenAPI, MCP handshake. | export read | B3 |
-| F8 | Branded and category FAQ pairs; error-shaped pairs re-titled to the words people type. | bank review | B4 |
-| F9 | Menu pages: noun-first title, meta, Service alternateName; five-line spec block, derived. | export read | B5 |
-| F10 | MCP tool descriptions carry the nouns. | tools/list | B6 |
-| F11 | README, GitHub About, server.json, plugin.json, glama.json, mcp.json, npm descriptions, ClawHub bundle: sixty words or nouns line, sweep-tested. | mirrors | B7 |
+| F6 | /what opens with "What is scvd.store?" (the name spelled, the sixty words, who runs it) and the three paths. Built 2026-09-02 (PR 2). | live /what | B2 |
+| F7 | `ASKED_FOR_NOUNS` in `store/copy/asked-for.ts`, typed once: Organization and WebSite `alternateName` (every name, then the phrases), `knowsAbout`, a "Words people use" section kept on the llms.txt index, agents.md and index.md, the OpenAPI description, the MCP handshake. Built 2026-09-02 (PR 2); `test/asked-for.spec.ts` sweeps every surface. | export read | B3 |
+| F8 | Five pairs on /what: what SCVD is short for, verification layer or trust layer, who provides proof, which companies verify agent-facing APIs, is scvd.store legitimate. Built 2026-09-02 (PR 2). The error-shaped pairs already read the way people type them and were left alone. | bank review | B4 |
+| F9 | Every capability item has an asked-for noun (`ITEM_ASKED_FOR`, one without fails the build): the title and meta lead with it, the Service node carries it as `alternateName`, and a five-line "At a glance" block (attests, cryptography, verify, price and fulfilment, does not attest) derives from the artifact class and the price helpers, on the page and as `at_a_glance` in menu.json. Built 2026-09-02 (PR 2). | export read | B5 |
+| F10 | `buy_observation` opens with "signed settlement attestation … signed x402 conformance audit or endpoint watch"; `buy_signed_record` with "signed certificate"; `preflight_endpoint` with "x402 endpoint preflight"; `check_conformance` with "x402 receipt verification". Built 2026-09-02 (PR 2). | tools/list | B6 |
+| F11 | README H1 is the domain (ruled), the sixty words follow as before; server.json and plugin.json descriptions name preflight, receipt checks and settlement attestations inside the registry's 100 characters. Built 2026-09-02 (PR 2). ⚑ GitHub About text and the ClawHub bundle republish are the keeper's (the bundle goes out through `npm run skill:publish`). | mirrors | B7 |
 | F12 | Dataset JSON-LD on corpus, registry, inflows; SoftwareApplication on /mcp.md and /developers. | standards check | B8 |
 | F13 | IndexNow: the key served at `/indexnow/{key}.txt` from `INDEXNOW_KEY`, and `npm run deploy` pings api.indexnow.org with the live sitemap's URLs afterwards (`scripts/indexnow-ping.mjs`; no key means skipped, exit 0). Built 2026-09-02 (PR 1). ⚑ The key goes in with `wrangler secret put INDEXNOW_KEY` (32 hex chars) and the same value in Bing Webmaster Tools. | Bing | B9 |
 | F14 | HTML twin of `/corpus/host/{host}.json`, titled with the readiness fraction, in the sitemap. | no evidence pages | C1 |
@@ -643,6 +643,7 @@ PR until the execution plan is agreed. Owner: branch unless ⚑.
 | F19 | ⚑ The sixty words gain a category clause (verification) in the first sentence; every surface inherits. | the noun, answered | A1, B |
 | F20 | ⚑ `registry/awesome-x402-submission.md` recut to the entry above; two PRs. | awesome lists | A2 |
 | F22 | 22 sitemap pages carry no JSON-LD; the ones that stay indexed get a block. | crawl | B, with F3 |
+| F25 | `subjectOf` on the Organization links the byline pieces (HackerNoon now; the dev.to URL when the keeper sends it), and the guides print them. Built 2026-09-02 (PR 2). | rulings | B |
 | F24 | One `@id` on the store's Organization node and every reference to it (32 nodes, two names before), under the display name; done on the branch with `test/organization-id.spec.ts`. | entity anchors | PR 1 |
 | F23 | JSON-LD money fields say "USD" with the settlement asset in words; done on the branch, not yet a PR. The 2026-08-27 ruling stands everywhere a validator does not read. | GSC, keeper | PR 1 |
 
