@@ -82,25 +82,34 @@ export function sameAsFrom(homepageHtml) {
   return [];
 }
 
-/** Visible text, roughly: scripts and styles out, tags out, entities decoded. */
+/**
+ * Visible text, roughly: scripts and styles out, tags out, entities
+ * decoded once. The end-tag pattern allows whitespace before `>`
+ * (CodeQL: a `</script >` that the pattern misses leaves script text
+ * in what we classify), and entities decode in ONE pass so a literal
+ * `&amp;lt;` in a page cannot become `<` by being unescaped twice.
+ */
 export function visibleText(html) {
   return decodeEntities(
     html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " "),
   );
 }
 
+const ENTITIES = Object.freeze({
+  "&#39;": "'",
+  "&#x27;": "'",
+  "&quot;": '"',
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+});
+
 function decodeEntities(text) {
-  return text
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&#x27;/g, "'");
+  return text.replace(/&(?:#39|#x27|quot|amp|lt|gt);/g, (entity) => ENTITIES[entity] ?? entity);
 }
 
 /**

@@ -35,8 +35,10 @@ test("the homepage yields the sixty words and the sameAs list", () => {
   assert.deepEqual(sameAsFrom(html), ["https://a.example/x", "https://b.example/y"]);
 });
 
-test("visible text drops scripts, styles and tags", () => {
-  assert.equal(visibleText("<style>x{}</style><p>Hello &amp; <b>there</b></p><script>1</script>"), " Hello & there ".replace(/\s+/g, " "));
+test("visible text drops scripts, styles and tags, and decodes entities exactly once", () => {
+  assert.equal(visibleText("<style>x{}</style><p>Hello &amp; <b>there</b></p><script>1</script>"), " Hello & there ");
+  // A sloppy end tag still ends the script; a double-encoded entity stays one level decoded.
+  assert.equal(visibleText("<script type='x'>secret()</script ><p>a &amp;lt; b</p>"), "  a &lt; b ");
 });
 
 test("a mirror that moved backwards is a regression; forwards is news; unreachable both times is silence", () => {
