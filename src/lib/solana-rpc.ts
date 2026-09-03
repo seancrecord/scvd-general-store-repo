@@ -67,6 +67,11 @@ function rpcUrls(env: Env): string[] {
   return [...configured, ...FALLBACK_RPCS.filter((url) => url !== env.SOLANA_RPC_URL)];
 }
 
+/** The endpoint order, for the one paged read that lives outside this file (solana-usdc.ts). */
+export function rpcUrlsOf(env: Env): string[] {
+  return rpcUrls(env);
+}
+
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
   let lastError = "no endpoint tried";
   for (const url of rpcUrls(env)) {

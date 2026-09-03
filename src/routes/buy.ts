@@ -665,28 +665,30 @@ const operatorStatementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/operator_statement" || !isBuying(c)) {
     return next();
   }
-  const wallet = c.req.query("wallet") ?? "";
-  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) {
+  const { statementRailOf, NETWORK_VOCABULARY } = await import("@/lib/statement-rails");
+  const rail = statementRailOf(c.req.query("network"));
+  if (rail === null) {
     return c.json(
       {
         /* 57.4: the fact an agent needs first, machine-readable. */
         charged: false,
         code: "bad_request",
-        error:
-          "This needs a wallet query parameter — your receiving address, a 0x EVM address, 40 hex characters. USDC on Base by default, or Polygon with network=eip155:137. No address, no charge.",
+        error: `${NETWORK_VOCABULARY}. An unrecognized network is refused rather than silently read as Base. Nothing charged.`,
       },
       400,
     );
   }
-  const { statementChain } = await import("@/services/wallet-statement");
-  if (statementChain(c.req.query("network")) === null) {
+  const wallet = c.req.query("wallet") ?? "";
+  if (!rail.isAddress(wallet)) {
     return c.json(
       {
         /* 57.4: the fact an agent needs first, machine-readable. */
         charged: false,
         code: "bad_request",
         error:
-          'network must be "eip155:8453" (or "base", the default) or "eip155:137" (or "polygon"). An unrecognized network is refused rather than silently read as Base. Nothing charged.',
+          rail.key === "solana"
+            ? "This needs a wallet query parameter — your receiving address, a Solana pubkey (base58, 32 bytes), because network=solana was asked for. No address, no charge."
+            : `This needs a wallet query parameter — your receiving address, a 0x EVM address, 40 hex characters, on ${rail.label}. USDC on Base by default, Polygon with network=eip155:137, or Solana with network=solana and a base58 pubkey. No address, no charge.`,
       },
       400,
     );
@@ -698,28 +700,30 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (buyRequestPath(c) !== "/api/buy/the_statement" || !isBuying(c)) {
     return next();
   }
-  const wallet = c.req.query("wallet") ?? "";
-  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) {
+  const { statementRailOf, NETWORK_VOCABULARY } = await import("@/lib/statement-rails");
+  const rail = statementRailOf(c.req.query("network"));
+  if (rail === null) {
     return c.json(
       {
         /* 57.4: the fact an agent needs first, machine-readable. */
         charged: false,
         code: "bad_request",
-        error:
-          "This needs a wallet query parameter — a 0x EVM address, 40 hex characters. This statement reads USDC on Base by default, or Polygon with network=eip155:137 (a Solana address has no history on either). No wallet, no charge.",
+        error: `${NETWORK_VOCABULARY}. An unrecognized network is refused rather than silently read as Base — the statement must be about the chain you asked about. Nothing charged.`,
       },
       400,
     );
   }
-  const { statementChain } = await import("@/services/wallet-statement");
-  if (statementChain(c.req.query("network")) === null) {
+  const wallet = c.req.query("wallet") ?? "";
+  if (!rail.isAddress(wallet)) {
     return c.json(
       {
         /* 57.4: the fact an agent needs first, machine-readable. */
         charged: false,
         code: "bad_request",
         error:
-          'network must be "eip155:8453" (or "base", the default) or "eip155:137" (or "polygon"). An unrecognized network is refused rather than silently read as Base — the statement must be about the chain you asked about. Nothing charged.',
+          rail.key === "solana"
+            ? "This needs a wallet query parameter — a Solana pubkey (base58, 32 bytes), because network=solana was asked for; an EVM address has no history there. No wallet, no charge."
+            : `This needs a wallet query parameter — a 0x EVM address, 40 hex characters, on ${rail.label}. This statement reads USDC on Base by default, Polygon with network=eip155:137, or Solana with network=solana and a base58 pubkey (an EVM address has no history there). No wallet, no charge.`,
       },
       400,
     );

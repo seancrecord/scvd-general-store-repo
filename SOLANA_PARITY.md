@@ -39,8 +39,15 @@ that don't require becoming a custodian.**
 agent wallet lives on Solana, and "audit this agent wallet against the
 chain" is exactly the product. This is the first gap to close.
 
-- [ ] Build `solana-statement`: every USDC transfer in/out of one
-  Solana wallet over a stated window, signed.
+- [x] DONE 2026-09-02: `src/lib/solana-usdc.ts` (the walk) and
+  `src/lib/statement-rails.ts` (one artifact shape, three readers).
+  `the_statement` and `operator_statement` take `network=solana` and
+  a base58 pubkey; the artifact keeps its from/to fields and says
+  `unit: "slot"`. The walk reads every USDC token account the wallet
+  owns at read time (wider than the ATA floor below) and says what it
+  cannot see; a window past the page or signature cap is
+  window_unreadable with the reason, never a partial read. Same cert
+  classes, same coverage words. `test/solana-statement.spec.ts`.
 - **Nuance, recorded so the build starts smart:**
   - EVM walks `eth_getLogs` for Transfer events; Solana has no logs —
     the walk is `getSignaturesForAddress` over the wallet's **USDC
