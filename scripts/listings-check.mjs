@@ -53,9 +53,7 @@ if (fresh.mirrors.length === 0) {
 const baseline = existsSync(RECORD) ? JSON.parse(readFileSync(RECORD, "utf8")) : null;
 const { regressions, advances } = compare(baseline, fresh);
 
-if (flag("json")) {
-  console.log(JSON.stringify({ ...fresh, regressions, advances }, null, 2));
-} else {
+if (!flag("json")) {
   const width = Math.max(...fresh.mirrors.map((m) => m.url.length));
   for (const mirror of fresh.mirrors) {
     console.log(`${mirror.generation.padEnd(12)} ${String(mirror.status).padStart(3)}  ${mirror.url.padEnd(width)}`);
@@ -87,7 +85,8 @@ const local = {
 const versions = await walkVersions(base, local);
 const drift = versions.rows.filter((r) => r.state === "differs");
 if (flag("json")) {
-  console.log(JSON.stringify(versions, null, 2));
+  // One document for a pipe: the mirrors and the versions together.
+  console.log(JSON.stringify({ mirrors: { ...fresh, regressions, advances }, versions }, null, 2));
 } else {
   console.log(`\nTHE VERSIONS AND THE SHELF — read ${versions.read_at.slice(0, 10)}`);
   const width = Math.max(...versions.rows.map((r) => `${r.index} ${r.field}`.length));
