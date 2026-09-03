@@ -219,6 +219,11 @@ export const ROOMS: readonly Room[] = [
    * on the same terms as its kin until the keeper rules on a slot.
    */
   { path: "/operators", name: "For operators" },
+  /*
+   * The feeds, 2026-09-03 (roadmap V2): four Atom feeds derived from
+   * the record the pages read, and the page that lists them.
+   */
+  { path: "/feeds", name: "Feeds" },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

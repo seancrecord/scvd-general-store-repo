@@ -119,4 +119,19 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
       "Every count is a floor — the porch drops writes past a per-minute budget and the ledger scans a capped number of keys, both stated on the page — and a visit is a fetch, not a visitor. Not a ranking of our own rooms; no rate is served.",
     cadence: "live, in monthly buckets",
   },
+  {
+    /*
+     * The feeds index, 2026-09-03: the four Atom feeds are XML and
+     * cannot answer JSON by Accept, so the page that lists them is
+     * the dataset, and each feed carries the corrections pointer in
+     * its subtitle.
+     */
+    path: "/feeds",
+    name: "Feeds — the record, as Atom",
+    description:
+      "Four Atom feeds derived at fetch from the same record the pages read: the week's doors (one entry per signed week), the corpus chain (one per signed snapshot), the corrections and the disagreements. Every entry links the page it came from.",
+    caution:
+      "A feed entry is a pointer with a summary, never the record itself: the derivation and the denominator are on the linked page. Entries are in date order because feed readers expect it, not because any door is ranked.",
+    cadence: "weekly for the two corpus feeds; the other two when something happens",
+  },
 ] as const;

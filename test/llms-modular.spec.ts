@@ -590,13 +590,19 @@ const BASE = "https://scvd.store";
  * pieces, named as theirs and not as endorsements. Confirmed before
  * this value was taken: the guide carries "Reported on independently"
  * and both cairnwake.com URLs, and still every earlier pin.
+ * Re-taken 2026-09-03 — the FORTIETH — by the feeds (roadmap V2):
+ * one paragraph after the operators', for a reader who polls rather
+ * than reads, naming /feeds and that every entry links the page the
+ * derivation and the denominator are on. Confirmed before this value
+ * was taken: the guide carries "/feeds" and "If you poll rather than
+ * read", and still every earlier pin.
  *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2e0dfcd53a926dcc96bee3d6fa645766cce4f1f0757f22eb90c2a75ea15edb17";
+  "334b8e85a8c319f60443890344507876f853d8672971321e3cd4880aad9ea128";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

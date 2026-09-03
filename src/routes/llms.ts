@@ -308,6 +308,12 @@ instrument named first at each moment and every price read off the
 shelf when the page is served. A reading order, never a ranking, and
 nothing there certifies anyone.
 
+If you poll rather than read: ${base}/feeds lists four Atom feeds,
+each derived when fetched from the same record the pages read — the
+week's doors, the corpus chain, the corrections and the
+disagreements — and every entry links the page it came from, where
+the derivation and the denominator are.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check

@@ -259,6 +259,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     caution: "A reading order, not a recommendation to buy. Nothing there scores or certifies a door.",
   },
   {
+    path: "/feeds",
+    name: "Feeds",
+    access: "free",
+    method: "GET",
+    purpose: "Four Atom feeds derived from the record: the week's doors, the corpus chain, the corrections, the disagreements. Poll them instead of the pages.",
+    caution: "Entries are pointers with summaries; the derivation and the denominator are on the linked page. Never a ranking.",
+  },
+  {
     path: "/try",
     name: "The practice till",
     access: "free",

@@ -39,6 +39,7 @@ import {
   disagreementsRoutes,
   observatoryRoutes,
   operatorsRoutes,
+  feedsRoutes,
   visitorsRoutes,
   trustListRoutes,
   refundRoutes,
@@ -461,6 +462,7 @@ app.route("/", correctionsRoutes);
 app.route("/", disagreementsRoutes);
 app.route("/", observatoryRoutes);
 app.route("/", operatorsRoutes);
+app.route("/", feedsRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);

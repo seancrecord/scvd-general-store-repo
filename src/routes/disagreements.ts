@@ -62,6 +62,7 @@ disagreementsRoutes.get("/disagreements", (c) => {
         description:
           "Where this store's reading and another instrument's diverge: both readings with their derivations, a state a reader can check, never a joint statement and never settled while it is not.",
         path: "/disagreements",
+        feedAlt: { path: "/feeds/disagreements.xml", title: "Disagreements, as Atom" },
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(DISAGREEMENTS_STANDFIRST)}</p>
           <p class="menu-desc"><strong>${escapeHtml(DISAGREEMENTS_STATES)}</strong></p>
