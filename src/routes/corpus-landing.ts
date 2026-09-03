@@ -138,7 +138,7 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
 
 corpusLandingRoutes.get("/corpus", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     /*
      * The same derivation /corpus/wallet-facts.json runs, so the page
      * and the JSON can never quote different numbers. It fails soft:

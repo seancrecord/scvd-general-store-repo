@@ -56,7 +56,7 @@ openingDayRoutes.get("/api/opening-day/:cert_id", async (c) => {
       "3. The passport derives from the public corpus and names the date after which to refuse it. Nothing on this page outlives the records it links.",
     ],
   };
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(body, 200, { "Cache-Control": "public, max-age=300" });
   }
   const row = (label: string, href: string) =>

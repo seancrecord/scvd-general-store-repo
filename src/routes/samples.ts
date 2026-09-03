@@ -102,7 +102,7 @@ samplesRoutes.get("/samples/:slug{[a-z-]+\\.json}", async (c) => {
 samplesRoutes.get("/samples", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const artifact = await sampleOnceOver(c.env, onceOverPrice());
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: "What a purchase hands back",

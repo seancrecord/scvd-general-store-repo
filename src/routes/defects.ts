@@ -203,7 +203,7 @@ defectRoutes.get("/defects", (c) => {
       headers: { "Content-Type": MARKDOWN_MEDIA_TYPE, Vary: VARY_ACCEPT },
     });
   }
-  if (wantsHtml(accept)) {
+  if (wantsHtml(accept, c.req.header("User-Agent"))) {
     return c.html(html(base), 200, { Vary: VARY_ACCEPT });
   }
   c.header("Vary", VARY_ACCEPT);

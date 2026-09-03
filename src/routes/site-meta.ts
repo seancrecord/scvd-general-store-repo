@@ -8,6 +8,7 @@ import { MENU_ITEMS, STORE_SERVICE_NAME } from "@/store";
 import { ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
+import { NAMED_AI_CRAWLERS } from "@/lib/crawlers";
 
 /**
  * robots.txt and sitemap.xml. The store has no pages to hide:
@@ -84,39 +85,13 @@ export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
  * yes to all three, and the third is the one it most wants: being
  * CITED is the whole business.
  */
-export const NAMED_AI_CRAWLERS: readonly string[] = [
-  // Anthropic: training, user-initiated fetch, search indexing.
-  "ClaudeBot",
-  "Claude-User",
-  "Claude-SearchBot",
-  "anthropic-ai",
-  // OpenAI: training, user-initiated fetch, search indexing.
-  "GPTBot",
-  "ChatGPT-User",
-  "OAI-SearchBot",
-  // Google's AI-training opt-out token (Googlebot proper is covered
-  // by the wildcard and has never been an AI-policy question).
-  "Google-Extended",
-  // Answer engines that cite their sources, which is the traffic this
-  // store is actually built to receive.
-  "PerplexityBot",
-  "Perplexity-User",
-  // Apple's AI-training token, same shape as Google-Extended.
-  "Applebot-Extended",
-  // Meta, Amazon, ByteDance, Mistral, Cohere, Common Crawl — the
-  // corpora that end up inside models we will never be told about.
-  "Meta-ExternalAgent",
-  "meta-externalagent",
-  "Amazonbot",
-  "Bytespider",
-  "MistralAI-User",
-  "cohere-ai",
-  "CCBot",
-  // Diffbot and Timpi build structured indexes that other agents buy
-  // from; a store that sells evidence wants to be inside those.
-  "Diffbot",
-  "Timpibot",
-];
+/*
+ * The list itself lives in lib/crawlers.ts since 2026-09-02, because
+ * content negotiation reads it too: a crawler robots.txt welcomes by
+ * name gets the HTML page, with its structured data, rather than the
+ * JSON a bare Accept wildcard otherwise earns.
+ */
+export { NAMED_AI_CRAWLERS } from "@/lib/crawlers";
 
 /**
  * The social card: the keeper's dino, pixel-drawn by
@@ -298,4 +273,21 @@ ${lines}
       Link: `<${base}/sitemap.xml>; rel="alternate"; type="application/xml"`,
     },
   );
+});
+
+/**
+ * THE INDEXNOW KEY FILE (2026-09-02). IndexNow is how a site tells
+ * Bing (and Yandex, Seznam, Naver) that a URL changed, and Bing's
+ * index is what ChatGPT search cites from. The protocol verifies a
+ * ping by fetching the key back from the host; keyLocation in the
+ * ping names this path. Thirty-two hex characters or it is not our
+ * key and the answer is a 404, same as when no key is configured.
+ */
+siteMetaRoutes.get("/indexnow/:file{[a-f0-9]{32}\\.txt}", (c) => {
+  const key = c.env.INDEXNOW_KEY;
+  const file = c.req.param("file");
+  if (!key || file !== `${key}.txt`) {
+    return c.text("No such key.", 404);
+  }
+  return c.text(key, 200, { "Content-Type": "text/plain; charset=utf-8" });
 });

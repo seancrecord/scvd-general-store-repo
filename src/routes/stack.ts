@@ -65,7 +65,7 @@ stackRoutes.get(STACK_PATH, async (c) => {
       "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
   };
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const rows = STACK_DEPENDENCIES.map(
       (entry) => `<div class="menu-item">
         <div class="menu-line">

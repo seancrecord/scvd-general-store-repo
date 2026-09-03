@@ -76,7 +76,7 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
 freshSetRoutes.get("/fresh-set", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const set = await buildFreshSet(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     if (!set) {
       return c.json(
         {

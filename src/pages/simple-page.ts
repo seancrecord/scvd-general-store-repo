@@ -1,4 +1,6 @@
 import { goDeeperSection } from "@/store/go-deeper";
+import { isKnownCrawler } from "@/lib/crawlers";
+import { negotiate } from "@/lib/accept";
 import { webmcpOriginTrialTags } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
@@ -197,6 +199,27 @@ export function renderSimplePage(options: SimplePageOptions): string {
 }
 
 /** True when the caller is a person with a browser, not an agent. */
-export function wantsHtml(acceptHeader: string | undefined): boolean {
-  return (acceptHeader ?? "").includes("text/html");
+/**
+ * WHO GETS THE PAGE (2026-09-02). A caller whose Accept names HTML
+ * gets HTML, as always. A caller that states no preference (`*​/*`,
+ * or no header) gets JSON, as always — that is every agent's
+ * `fetch(url)` and the store's own CLI. The one change: a crawler
+ * the store names in robots.txt (lib/crawlers.ts) that states no
+ * preference gets the page too, because the page is where the
+ * title, the description and the JSON-LD live, and probed from
+ * outside every one of them was receiving the JSON. A crawler that
+ * explicitly ranks JSON or markdown above HTML still gets that.
+ *
+ * Responses that read the User-Agent say so in Vary (VARY_ACCEPT).
+ */
+export function wantsHtml(
+  acceptHeader: string | undefined,
+  userAgent?: string | undefined,
+): boolean {
+  if ((acceptHeader ?? "").includes("text/html")) return true;
+  if (!isKnownCrawler(userAgent)) return false;
+  return (
+    negotiate(acceptHeader, ["text/html", "application/json", "text/markdown"]) ===
+    "text/html"
+  );
 }

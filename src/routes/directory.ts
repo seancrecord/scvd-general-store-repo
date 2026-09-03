@@ -149,7 +149,7 @@ function listingJsonLd(listing: DirectoryListing, base: string): string {
 
 directoryRoutes.get("/directory", (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const listingsHtml =
       DIRECTORY.listings.length > 0
         ? DIRECTORY.listings
@@ -186,7 +186,7 @@ directoryRoutes.get("/directory/:slug", (c) => {
   const slug = c.req.param("slug");
   const listing = DIRECTORY.listings.find((entry) => entry.slug === slug);
   if (!listing) {
-    if (wantsHtml(c.req.header("Accept"))) {
+    if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       return c.html(
         renderSimplePage({
           title: "No such listing",
@@ -202,7 +202,7 @@ directoryRoutes.get("/directory/:slug", (c) => {
       404,
     );
   }
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: `${listing.name} in the Town Directory`,

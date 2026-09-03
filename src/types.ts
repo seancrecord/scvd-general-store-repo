@@ -143,6 +143,13 @@ export interface Env {
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */
   STORE_BASE_URL: string;
+  /**
+   * IndexNow key (2026-09-02). Served at /indexnow/{key}.txt so Bing,
+   * and through Bing's index ChatGPT search, can verify the pings
+   * scripts/indexnow-ping.mjs sends after a deploy. Optional: unset,
+   * the route is a 404 and the script says so and exits clean.
+   */
+  INDEXNOW_KEY?: string;
   /** House-traffic flag secret (X-House header / house query param). Optional. */
   HOUSE_SECRET?: string;
   /** Comma-separated house wallet addresses beyond the founding burner. Optional. */

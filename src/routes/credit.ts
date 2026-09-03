@@ -141,7 +141,7 @@ function creditJsonLd(base: string): string {
 creditRoutes.get("/credit", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const outstanding = usd(await creditOutstandingAtomic(c.env));
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of every organic purchase banks to the wallet that paid. A closed-loop rebate — the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token.`,
       rate_pct: CREDIT_RATE * 100,

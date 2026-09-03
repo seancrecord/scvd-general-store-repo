@@ -443,7 +443,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       record.public_key,
     );
     const valid = form !== "invalid";
-    if (wantsHtml(c.req.header("Accept"))) {
+    if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       return c.html(
         renderSimplePage({
           title: `Receipt ${record.certificate.cert_id}`,

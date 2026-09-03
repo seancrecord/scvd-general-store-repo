@@ -166,7 +166,7 @@ function bountyBoardJsonLd(base: string): string {
 bountyRoutes.get("/bounties", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const board = await bountyBoard(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       what_this_is: BOARD_WHAT_THIS_IS,
       how_to_claim: BOARD_HOW_TO_CLAIM,

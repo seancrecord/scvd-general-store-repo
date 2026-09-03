@@ -275,7 +275,7 @@ const DESK_DESCRIPTION =
 
 conformanceLandingRoutes.get("/conformance", (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     // Shipping a script means shipping a fence — the P7 ruling's
     // condition, the same constant the storefront and the till pages
     // send. The declarative form needs no script; /webmcp.js rides

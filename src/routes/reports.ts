@@ -92,7 +92,7 @@ reportRoutes.get("/api/report/:report_id", async (c) => {
     );
   }
   const withdrawn = withdrawalOf(id);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const report = getReport(id)!;
     return c.html(
       renderSimplePage({

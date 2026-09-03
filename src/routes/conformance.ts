@@ -150,7 +150,7 @@ function docHtml(base: string): string {
 
 conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
         title: "The conformance desk",

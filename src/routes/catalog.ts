@@ -607,7 +607,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
    */
   const state = await fulfillmentState(c.env, item, shutter);
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     c.header("Link", canonical.Link);
     // P8: the page carries /webmcp.js, so the P7 script fence rides too.
     c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
@@ -728,7 +728,7 @@ function renderMenuIndex(base: string): string {
 
 function serveMenuIndex(c: Context<HonoEnv>) {
   varyOnAccept(c);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(renderMenuIndex(c.env.STORE_BASE_URL));
   }
   return c.redirect(`${c.env.STORE_BASE_URL}/menu.json`, 301);

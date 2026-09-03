@@ -170,6 +170,68 @@ app.use("*", async (c, next) => {
   );
 });
 
+/**
+ * ONE URL PER PAGE (2026-09-02, from the Search Console pre-read).
+ * `/what/` answered a JSON 404 while `/what` answered the page, and
+ * the catalog router's `strict: false` served `/menu/x/` and `/menu/x`
+ * as two URLs with one body. A crawler that meets either reports a
+ * duplicate or a dead link under our name. So a GET or HEAD for a
+ * human path with a trailing slash is one 301 to the path without
+ * it, query string kept. `/api/` is left alone on purpose: a machine
+ * caller gets its answer (or its 410) at the URL it used, never a
+ * redirect it did not ask for.
+ */
+app.use("*", async (c, next) => {
+  const url = new URL(c.req.url);
+  const method = c.req.method;
+  if (
+    (method === "GET" || method === "HEAD") &&
+    url.pathname.length > 1 &&
+    url.pathname.endsWith("/") &&
+    !url.pathname.startsWith("/api/") &&
+    // The MCP door answers its own trailing slash with a 308 so a
+    // POSTed initialize stays a POST (routes/mcp.ts); a GET gets the
+    // same 308 for the same reason, and this middleware stays out.
+    !url.pathname.startsWith("/mcp")
+  ) {
+    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+    return c.redirect(url.toString(), 301);
+  }
+  await next();
+  /*
+   * A 402 IS NOT A PAGE. Every paid door answers 402 to a plain GET
+   * and every one is linked from the menu, so Search Console filed
+   * them all under "blocked due to other 4xx" (pre-read, 2026-09-02).
+   * The challenge is correct; indexing it is not. One header on every
+   * 402, wherever it was minted, and the crawler moves on. Agents
+   * never read it.
+   */
+  if (c.res.status === 402) {
+    c.res.headers.set("X-Robots-Tag", "noindex");
+  }
+  /*
+   * AND THE CACHE IS TOLD. Every negotiated route reads the Accept
+   * header and, since the same day, the User-Agent; forty-five of
+   * them set Vary themselves and the rest did not. A CDN that is not
+   * told a response varied on the User-Agent hands a crawler the
+   * agent's JSON, which is the exact defect this fixes. So any
+   * text or JSON response leaves with the full Vary, merged into
+   * whatever the route already said (a payment route's PAYMENT_VARY
+   * stays), and a route that forgets is covered.
+   */
+  const type = c.res.headers.get("Content-Type") ?? "";
+  if (/^(text\/|application\/json)/.test(type)) {
+    const have = new Set(
+      (c.res.headers.get("Vary") ?? "")
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean),
+    );
+    for (const field of VARY_ACCEPT.split(",")) have.add(field.trim());
+    c.res.headers.set("Vary", [...have].join(", "));
+  }
+});
+
 // One middleware, one explicit boundary: CORS on the public
 // discovery surface and the MCP door, nothing stateful, nothing
 // paid. The list and its reasoning live in lib/cors.ts.

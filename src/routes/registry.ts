@@ -331,7 +331,7 @@ registryRoutes.get("/atlas.json", async (c) => {
 registryRoutes.get("/inflows", async (c) => {
   const { readInflowPulse } = await import("@/services/inflow-pulse");
   const pulse = await readInflowPulse(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       ...datasetEnvelope({
         name: "Inflows to advertised x402 payment addresses",
@@ -425,7 +425,7 @@ registryRoutes.get("/inflows", async (c) => {
 registryRoutes.get("/registry", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const pulse = await readRegistryPulse(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     /*
      * THE JSON HALF GETS THE CAVEATS THE HTML HALF ALREADY HAD.
      * This page has carried careful JSON-LD in its markup since the

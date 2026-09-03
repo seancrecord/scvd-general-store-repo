@@ -62,6 +62,8 @@ export default defineConfig({
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
+          // A test-only IndexNow key; the route serves it back, nothing pings.
+          INDEXNOW_KEY: "0123456789abcdef0123456789abcdef",
           // Empty = no CDP JWT generation; tests mock the facilitator.
           CDP_API_KEY_ID: "",
           CDP_API_KEY_SECRET: "",

@@ -1608,7 +1608,7 @@ adminRoutes.get("/admin/funnel", async (c) => {
   const { auditFunnel } = await import("@/services/funnel");
   const { renderFunnelPage } = await import("@/pages/admin/funnel-page");
   const report = await auditFunnel(c.env);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(report);
   }
   return c.html(renderFunnelPage(report));
@@ -1626,7 +1626,7 @@ adminRoutes.get("/admin/market", async (c) => {
   const { marketAggregates } = await import("@/services/market");
   const round = await latestWardRound(c.env);
   if (!round) {
-    return wantsHtml(c.req.header("Accept"))
+    return wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
@@ -1637,7 +1637,7 @@ adminRoutes.get("/admin/market", async (c) => {
   }
   const market =
     round.market ?? marketAggregates(round.hosts, undefined);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ week: round.week, at: round.at, market });
   }
   const { renderMarketPage } = await import("@/pages/admin/market-page");
@@ -1668,7 +1668,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
     await import("@/services/outreach");
   const round = await latestWardRound(c.env);
   if (!round) {
-    return wantsHtml(c.req.header("Accept"))
+    return wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "outreach",
@@ -1686,7 +1686,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
     new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
   );
   const healed = healedAfterOutreach(round, ledger);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ week: round.week, at: round.at, prospects, welcomes, healed, ledger });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
@@ -1768,7 +1768,7 @@ adminRoutes.post("/admin/outreach/send-all", async (c) => {
       ? `${report.remaining} more eligible below the cap — press again for the next batch.`
       : "Queue's eligible hosts are exhausted; scout more to widen it.",
   ].filter(Boolean);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(report);
   }
   return c.redirect(
@@ -1798,7 +1798,7 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
     prospects,
     await readOutreachLedger(c.env),
   );
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(report);
   }
   return c.redirect("/admin/outreach");
@@ -1835,7 +1835,7 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
   }
   ledger.hosts[host] = entry;
   await writeOutreachLedger(c.env, ledger);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ host, status: status ?? "fresh" });
   }
   return c.redirect("/admin/outreach");
@@ -1854,7 +1854,7 @@ adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
   const ledger = await readOutreachLedger(c.env);
   const cleared = clearStatuses(ledger);
   await writeOutreachLedger(c.env, ledger);
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ cleared, contacts_kept: true });
   }
   return c.redirect("/admin/outreach");
@@ -1886,7 +1886,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
   const { readInflowCensus } = await import("@/services/inflow-census");
   const census = await readInflowCensus(c.env);
   if (!census) {
-    return wantsHtml(c.req.header("Accept"))
+    return wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
@@ -1915,7 +1915,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
   const alreadyPublished = (await readInflowPulse(c.env)).weeks.find(
     (row) => row.week === census.week,
   );
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(census);
   }
   const { renderAdminShell } = await import("@/pages/admin/layout");
@@ -2076,7 +2076,7 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
   );
   const walked = await readOfferAuthenticityDetail(c.env);
   if (!walked) {
-    return wantsHtml(c.req.header("Accept"))
+    return wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
       ? c.html(
           (await import("@/pages/admin/layout")).renderAdminShell(
             "market",
@@ -2086,7 +2086,7 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
       : c.json({ error: "no ward round yet" }, 404);
   }
   const { reading, rows } = walked;
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ reading, rows });
   }
   const { renderAdminShell } = await import("@/pages/admin/layout");
@@ -2190,7 +2190,7 @@ adminRoutes.post("/admin/market/publish-registry", async (c) => {
   if (!result.ok) {
     return c.json({ refused: result.refusal }, 404);
   }
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       published: result.entry.week,
       weeks_on_tally: result.weeks,
@@ -2453,7 +2453,7 @@ adminRoutes.get("/admin/digest", async (c) => {
   // scripted may be reading it. Only a browser, which asks for HTML
   // by name, gets the shell. Same wantsHtml rule as the front of the
   // store, and it keeps the existing contract intact.
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(digest);
   }
   return c.html(

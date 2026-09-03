@@ -27,7 +27,7 @@ correctionsRoutes.get("/corrections", (c) => {
     b.date.localeCompare(a.date),
   );
 
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const rows = newestFirst
       .map(
         (entry) => `<div class="menu-item">

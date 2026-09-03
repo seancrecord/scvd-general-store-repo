@@ -93,7 +93,7 @@ privacyRoutes.get("/privacy", (c) => {
     effective: "2026-08-21",
     contact: `${base}/api/letter`,
   };
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
   const sections = SECTIONS.map(

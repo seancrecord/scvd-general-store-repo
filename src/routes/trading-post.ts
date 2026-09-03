@@ -79,7 +79,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
     listIssues(c.env),
     getFoundingEdition(c.env).catch(() => null),
   ]);
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const foundingHtml = founding
       ? `<div class="menu-item">
           <div class="menu-line">
@@ -152,7 +152,7 @@ tradingPostRoutes.get("/gazette/founding", async (c) => {
       404,
     );
   }
-  if (wantsHtml(c.req.header("Accept"))) {
+  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     // Reading copy for humans; the signed original stays the markdown.
     return c.html(renderFoundingHtml(founding.markdown));
   }

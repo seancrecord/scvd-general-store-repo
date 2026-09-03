@@ -186,7 +186,7 @@ attestationRoutes.get("/attestation", (c) => {
     criteria_page: `${base}/criteria`,
     honest_limit: ATTESTATION_HONEST_LIMIT,
   };
-  if (!wantsHtml(c.req.header("Accept"))) {
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
   }
 

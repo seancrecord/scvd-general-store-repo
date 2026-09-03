@@ -271,14 +271,14 @@ pricingRoutes.get("/pricing", async (c) => {
    * the mistake lib/accept.ts exists to stop.
    */
   const accept = c.req.header("Accept");
-  const defaultMedia = wantsHtml(accept) ? "text/html" : "application/json";
+  const defaultMedia = wantsHtml(accept, c.req.header("User-Agent")) ? "text/html" : "application/json";
   if (prefersMarkdown(accept, defaultMedia)) {
     return c.text(pricingMarkdown(base, floorUsd, signature), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
     });
   }
-  if (!wantsHtml(accept)) {
+  if (!wantsHtml(accept, c.req.header("User-Agent"))) {
     c.header("Vary", VARY_ACCEPT);
     return c.json(payload);
   }
