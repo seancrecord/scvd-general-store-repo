@@ -1,5 +1,10 @@
 import { MENU_ITEMS } from "@/store/menu";
-import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
+import {
+  CHEAPEST_ON_THE_SHELF,
+  FIRST_SCREEN_PATHS,
+  VALUE_PROPOSITION,
+} from "@/store/copy/position";
+import { askedForFaq } from "@/store/copy/asked-for";
 import { STORE_METADATA } from "@/store/metadata";
 
 /**
@@ -72,13 +77,22 @@ export function whatFaq(base: string): FaqPair[] {
   const dearest = Math.max(...MENU_ITEMS.map((item) => item.price_usdc));
   return [
     {
-      question: "What is this?",
-      answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, luckies from the herd, memory anchors, a genuine phone call, paid in USDC over the x402 protocol, on Base, Polygon, or Solana. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
+      /**
+       * OPENS WITH THE SIXTY WORDS (2026-09-02, the keeper's ruling).
+       * Until this day the first answer on the one FAQ every engine
+       * reads described July's shelf — real goods, luckies, a phone
+       * call — and the engines summarised the store that way. The name
+       * is spelled out because one engine expanded SCVD to something
+       * that is not our name.
+       */
+      question: "What is scvd.store?",
+      answer: `${STORE_METADATA.name}, SCVD for short. ${VALUE_PROPOSITION} Kept by a named human out of ${STORE_METADATA.location}. The full guide reads at ${base}/llms.txt.`,
     },
     {
       question: "When would my agent actually use this?",
-      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), a week of signed hourly checks on its own endpoint from an observer that isn't it (standing_watch, $5), or a person's hands on a task an agent can't reach — an honest human verdict on work it cannot judge for itself, a call, a look, a made thing (the_collab), or its own door shopped cold by models of different strength with the transcripts attached (aura_walk). It also uses us to prove its own payment code works: ${CHEAPEST_ON_THE_SHELF} buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
+      answer: `${FIRST_SCREEN_PATHS.map((path) => `${path.when}: ${path.what}, at ${base}${path.path}.`).join(" ")} And to prove its own payment code works: ${CHEAPEST_ON_THE_SHELF} buys a real settlement against a live store, no sandbox. When it needs something it cannot produce for itself — a signed observation from a party with no stake in the answer, a memory restore point a later session can read back (context_anchor), a week of signed checks on its own endpoint (standing_watch), or a named human's hands (the_collab, aura_walk) — the full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
     },
+    ...askedForFaq(base),
     {
       question: "Why would anyone pay for a signed note?",
       answer: `Because almost everything an agent produces is self-attested. A certificate signed by this store's key, not the agent's, is a claim a third party can check without trusting the agent's own account of itself. That's the whole product; the rest is a general store built around it. What that signature does and does not prove is stated per artifact class at ${base}/attestation, including the classes where the honest answer is that it proves only that we said this, on this date.`,

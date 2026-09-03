@@ -126,7 +126,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_signed_record",
     title: "Signed Records",
     purpose:
-      "Purpose: buy a signed, dated certificate that permanently records something — a greeting, a claim, a mark, a grievance, a confession, a contribution, or a standing pass. Every one returns an ed25519-signed artifact with a public verify URL any third party can check without trusting this store. Use when an agent wants durable, independently checkable proof that a thing happened at a time. Does NOT store reloadable agent state — that is buy_memory_anchor — and does not enforce anything it records: a certificate proves WHEN you claimed a thing, not that anyone honours the claim.",
+      "Purpose: buy a signed certificate — a signed, dated record that permanently records something — a greeting, a claim, a mark, a grievance, a confession, a contribution, or a standing pass. Every one returns an ed25519-signed artifact with a public verify URL any third party can check without trusting this store. Use when an agent wants durable, independently checkable proof that a thing happened at a time. Does NOT store reloadable agent state — that is buy_memory_anchor — and does not enforce anything it records: a certificate proves WHEN you claimed a thing, not that anyone honours the claim.",
     itemIds: [
       "hello",
       "certificate_of_patronage",
@@ -152,7 +152,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_observation",
     title: "Third-Party Observation",
     purpose:
-      "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
+      "Purpose: a signed settlement attestation for an x402 payment on Base, Polygon or Solana, a signed x402 conformance audit or endpoint watch, or a Bitcoin timestamp — have a disinterested third party go and look at something, then sign what it saw: whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
     itemIds: [
       "settlement_attestation",
       // Settlement observed at one turn deeper: not "did it settle"
@@ -841,7 +841,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "preflight_endpoint",
     reads: "subject_fetch",
     description:
-      "For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
+      "x402 endpoint preflight, free. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1008,7 +1008,7 @@ const FREE_TOOLS: McpTool[] = [
     name: "check_conformance",
     reads: "subject_fetch",
     description:
-      "For anyone holding a signed x402 offer or receipt and unsure whether it is good, whoever issued it. Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
+      "x402 receipt verification and signed-offer verification, free. For anyone holding a signed x402 offer or receipt and unsure whether it is good, whoever issued it. Check any issuer's x402 signed offer or receipt — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
     inputSchema: {
       type: "object",
       properties: {

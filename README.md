@@ -1,4 +1,4 @@
-# Sean-Claude Van Damme's General Store
+# scvd.store
 
 mcp-name: store.scvd/general-store
 

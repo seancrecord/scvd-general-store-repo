@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { askedForBlock } from "@/store/copy/asked-for";
 import { OPERATED_BY } from "@/store/copy/position";
 import {
   ALSO_A_STORE,
@@ -101,6 +102,8 @@ contract: "${base}/openapi.json"
 > ${POSITION_OPENING}
 > ${POSITION_NOT}
 > ${ALSO_A_STORE}
+>
+> ${askedForBlock()}
 >
 > Operational manual for autonomous agents transacting with this store.
 > For brand understanding and full prose, read ${base}/llms.txt — this

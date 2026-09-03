@@ -1,4 +1,5 @@
 import { currentWeekKey } from "@/lib/kv-keys";
+import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { catalogLastUpdated } from "@/lib/freshness";
 import {
   JSONLD_PRICE_CURRENCY,
@@ -601,7 +602,7 @@ function webSiteJsonLd(base: string): string {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: STORE_SERVICE_NAME,
-    alternateName: [STORE_METADATA.name, "scvd.store", "SCVD"],
+    alternateName: ALTERNATE_NAMES,
     url: `${base}/`,
     inLanguage: "en",
     description: COPY.metaDescription,
@@ -618,7 +619,17 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
     // The full name moves to alternateName, where it stays discoverable
     // as lore without being the string entity resolvers file us under.
     name: STORE_SERVICE_NAME,
-    alternateName: [STORE_METADATA.name, "scvd.store", "SCVD"],
+    alternateName: ALTERNATE_NAMES,
+    /**
+     * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
+     * carries the phrases people type; knowsAbout carries them as
+     * topics; subjectOf links what has been written about the store
+     * under a byline. The storefront prose does not change: the
+     * identity noun stays on every sentence a person reads, and these
+     * are the machine fields a question in anyone's words resolves
+     * through. store/copy/asked-for.ts has the reasoning.
+     */
+    knowsAbout: ASKED_FOR_NOUNS,
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",
@@ -783,11 +794,25 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      * here would be a second copy free to drift from the first, which
      * is the defect this store keeps finding in its own work.
      */
-    subjectOf: STOREFRONT_ROOMS.map((room) => ({
-      "@type": "WebPage",
-      name: room.name,
-      url: `${base}${room.path}`,
-    })),
+    subjectOf: [
+      ...STOREFRONT_ROOMS.map((room) => ({
+        "@type": "WebPage",
+        name: room.name,
+        url: `${base}${room.path}`,
+      })),
+      /*
+       * And what has been written ABOUT the store under a byline, on
+       * domains the engines already cite (2026-09-02). Same edge, the
+       * other direction: the piece links here, this links the piece,
+       * and an engine sees one author, one store, one subject.
+       */
+      ...WRITTEN_ABOUT.map((piece) => ({
+        "@type": "Article",
+        headline: piece.title,
+        url: piece.url,
+        publisher: { "@type": "Organization", name: piece.where },
+      })),
+    ],
   });
 }
 

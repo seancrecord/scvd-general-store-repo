@@ -15,6 +15,7 @@ import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
+import { askedForBlock } from "@/store/copy/asked-for";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -120,6 +121,10 @@ the reasons are in "What this store is trying to prove" below.
 That is the short answer. The long one — ${USE_WHEN.length} concrete moments,
 each naming the door that answers it — is under "When you'd use this
 store" further down.
+
+## Words people use for what this store does
+
+${askedForBlock()}
 
 ## Start here, by what you came to do
 
@@ -1621,6 +1626,12 @@ const SECTION_AREAS: Record<string, string> = {
  */
 const INDEX_SECTIONS = [
   "When to use this store, and when not to",
+  /*
+   * The vocabulary stays on the index (2026-09-02): it is the shortest
+   * section in the file and the one that lets a question asked in
+   * somebody else's words resolve to this store at all.
+   */
+  "Words people use for what this store does",
   "Every door, in one list",
   /*
    * The multilingual summary stays on the index rather than filing

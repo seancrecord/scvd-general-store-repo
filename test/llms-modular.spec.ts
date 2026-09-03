@@ -522,12 +522,20 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/api/look/v1", "look_at_door" and "the
  * line is yours to draw", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-SECOND — by the AEO plan's PR 2:
+ * one section, "Words people use for what this store does", kept on
+ * the index, carrying the asked-for vocabulary from
+ * store/copy/asked-for.ts and the byline pieces. Confirmed before this
+ * value was taken: the guide carries "Words people use" and
+ * "independent verification for agentic commerce", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "07cbb9912e794a3412df7b017ba244eebdbfdf3d34f6d66e96511ac2f9a213eb";
+  "d20a6797d5d34d3dcc1114c12e46417832f33af367bc4a4b51f084b3c4ca0eb5";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

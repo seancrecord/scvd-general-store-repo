@@ -1,4 +1,5 @@
 import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
+import { ASKED_FOR_SENTENCE } from "@/store/copy/asked-for";
 import {
   MCP_APPS_EXTENSION,
   UI_MIME,
@@ -380,7 +381,7 @@ function serverCapabilities(): Record<string, unknown> {
 // sentence an MCP client caches about us, so it carries the entity
 // and both differentiators, then the operating facts. Served on
 // `initialize` (legacy) and `server/discover` (modern) alike.
-const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
+const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
 
 /** Methods whose results the modern revision marks cacheable. */
 const CACHEABLE_METHODS = new Set([
