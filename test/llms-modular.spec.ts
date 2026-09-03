@@ -663,12 +663,17 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "bill your account
  * on a statement" and "rounded up to the cent", and still every
  * earlier pin.
+ * Re-taken 2026-09-03 — the FIFTIETH — the trade counter's markdown
+ * twin (/trade.md) joins the marketplaces line in "Every door, in one
+ * list", the way /pricing.md and /index.md are named beside their
+ * rooms. Confirmed before this value was taken: the guide carries
+ * "trade.md" and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "50cf2a88f2106b7e3fbddc9d9eac353a13c693a436a8d231cae2965c718dc22b";
+  "d89de832f0b614c3a9b3bbf38f33356a490deb2a95ecf810b2d1ab869ba1716a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

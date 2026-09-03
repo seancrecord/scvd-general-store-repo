@@ -5224,6 +5224,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
           HEALTH_SCHEMA,
         ),
       },
+      "/trade.md": {
+        get: returnsMarkdown(
+          freeOp(
+            "The trade counter, in markdown",
+            "The same room /trade serves, rendered from the same constants, at the address a checklist guesses. The canonical link points back at /trade: one document, two addresses.",
+          ),
+        ),
+      },
       "/api/trade/contract": {
         get: returns(
           freeOp(

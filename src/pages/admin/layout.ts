@@ -69,7 +69,8 @@ export type AdminTab =
   | "take"
   | "funnel"
   | "market"
-  | "outreach";
+  | "outreach"
+  | "trade";
 
 /** The three rooms. Always first, always in this order. */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
@@ -91,6 +92,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "ward", href: "/admin/ward", label: "The ward" },
   { tab: "market", href: "/admin/market", label: "The market" },
   { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
+  { tab: "trade", href: "/admin/trade", label: "The trade counter" },
   { tab: "files", href: "/admin/files", label: "Keeper's files" },
 ];
 

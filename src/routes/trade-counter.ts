@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT, prefersMarkdown } from "@/lib/accept";
 import {
   JSONLD_PRICE_CURRENCY,
   JSONLD_TRADE_ACCEPTED_PAYMENT,
@@ -621,20 +622,109 @@ function roomHtml(base: string): string {
 </section>`;
 }
 
+/**
+ * THE SAME ROOM IN MARKDOWN — for the agent that prefers it, and at the
+ * address a checklist guesses (/trade.md), exactly as /pricing.md
+ * relates to /pricing: one document, two addresses, the canonical
+ * pointing home. Rendered from the same constants the page and the
+ * JSON twin read, so rule 60's sentences cannot drift here either.
+ */
+function tradeMarkdown(base: string): string {
+  const shelf = shelfRows(base)
+    .map(
+      (row) =>
+        `| ${row.name} | $${row.retail_usd} | $${row.trade_price_usd_at_example_share.toFixed(2)} | $${row.store_net_usd_at_example_share.toFixed(2)} | ${row.fields.join(", ")} |`,
+    )
+    .join("\n");
+  const errors = TRADE_ERRORS.map(
+    (entry) => `- \`${entry.status} ${entry.code}\` — ${entry.meaning} ${entry.what_to_do}`,
+  ).join("\n");
+  const faq = TRADE_FAQ.map((entry) => `**${entry.q}**\n\n${entry.a}`).join("\n\n");
+  const steps = TRADE_HOW_IT_WORKS.map(
+    (entry) => `${entry.step}. **${entry.name}.** ${entry.what_happens} _Check it yourself: ${entry.what_you_can_check}_`,
+  ).join("\n");
+  const why = TRADE_WHY.map((entry) => `- **${entry.point}** ${entry.because}`).join("\n");
+  const sandbox = sandboxBlock(base);
+  const dialect = dialectRow(TRADE_DIALECTS.canonical);
+  return `# ${TRADE_COUNTER_NAME}
+
+${TRADE_STANDFIRST}
+
+${TRADE_WHAT_THIS_IS}
+
+${TRADE_FOR_MONEY}
+
+## Try it now, no account
+${
+  sandbox
+    ? `The sandbox account signs with a published secret: \`${sandbox.secret}\` (provider key \`${sandbox.provider_key}\`, dialect \`${sandbox.dialect}\`). ${sandbox.what_you_get} ${sandbox.daily_cap} deliveries a day. Start at the check desk: \`POST ${sandbox.check_desk}\` with the headers and body you would send to \`${sandbox.order_door}\`.`
+    : ""
+}
+
+## Why a marketplace would
+${why}
+
+## How it works
+${steps}
+
+## The shelf at the counter
+Prices at a ${TRADE_EXAMPLE_SHARE_BPS / 100}% partner share; your account's row at ${base}/api/trade/contract prints them at yours. List by machine from ${base}/api/trade/catalog.
+
+| Item | Retail | Trade price | Store nets | Fields |
+|---|---|---|---|---|
+${shelf}
+
+## The call
+\`POST ${base}/api/trade/{account}/{item_id}\` with one JSON object. Sign HMAC-SHA256 over \`${dialect.signing_string_in_words}\` with the secret you issued us; send it as \`${dialect.headers.signature}: sha256=<hex>\` beside \`${dialect.headers.timestamp}\` (unix seconds) and \`${dialect.headers.nonce ?? ""}\` (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send \`order_ref\` on every call. Your own statement: \`GET ${base}/api/trade/{account}/statement\`, signed over the empty body. Reference signer: ${REPO_SIGNER}
+
+### Every refusal, by name
+${errors}
+
+## Questions people ask
+${faq}
+
+## What this is not
+${TRADE_WHAT_THIS_IS_NOT}
+
+**Honest limits.** ${TRADE_HONEST_LIMITS}
+
+The contract: ${base}/api/trade/contract · the ledger: ${base}/api/trade/ledger · this room as JSON: ${base}/trade.json · corrections: ${base}/corrections
+`;
+}
+
 tradeCounterRoutes.get("/trade.json", (c) => c.json(roomJson(c.env.STORE_BASE_URL)));
+
+tradeCounterRoutes.get("/trade.md", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.text(tradeMarkdown(base), 200, {
+    "content-type": MARKDOWN_MEDIA_TYPE,
+    Vary: VARY_ACCEPT,
+    Link: `<${base}/trade>; rel="canonical"`,
+  });
+});
 
 tradeCounterRoutes.get("/trade", (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+  const accept = c.req.header("Accept");
+  const html = wantsHtml(accept, c.req.header("User-Agent"));
+  if (prefersMarkdown(accept, html ? "text/html" : "application/json")) {
+    return c.text(tradeMarkdown(base), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+    });
+  }
+  if (html) {
     return c.html(
       renderSimplePage({
         title: ROOM_TITLE,
         description: ROOM_DESCRIPTION,
         path: "/trade",
+        markdownAlt: "/trade.md",
         bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}`,
       }),
     );
   }
+  c.header("Vary", VARY_ACCEPT);
   return c.json(roomJson(base));
 });
 

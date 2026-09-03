@@ -306,6 +306,17 @@ adminRoutes.use("/admin/*", adminGate);
  * write only a person makes — recording that a payout arrived.
  * Nothing here moves money; it records that money moved elsewhere.
  */
+adminRoutes.get("/admin/trade", async (c) => {
+  const { TRADE_PARTNERS } = await import("@/store/trade-counter");
+  const { tradeStatement } = await import("@/services/trade-counter");
+  const { renderTradePage } = await import("@/pages/admin/trade-page");
+  const statements = await Promise.all(
+    TRADE_PARTNERS.map((partner) => tradeStatement(c.env, partner)),
+  );
+  c.header("Cache-Control", "no-store");
+  return c.html(renderTradePage(statements));
+});
+
 adminRoutes.get("/admin/trade.json", async (c) => {
   const { TRADE_PARTNERS } = await import("@/store/trade-counter");
   const { tradeStatement } = await import("@/services/trade-counter");
@@ -327,7 +338,12 @@ adminRoutes.post("/admin/trade/:partner/payout", async (c) => {
   if (!partner) {
     return c.json({ error: "No trade account by that name." }, 404);
   }
-  const body: unknown = await c.req.json().catch(() => null);
+  // JSON from a script, a form from the page: same two fields either way.
+  const contentType = c.req.header("content-type") ?? "";
+  const fromForm = contentType.includes("application/x-www-form-urlencoded");
+  const body: unknown = fromForm
+    ? Object.fromEntries((await c.req.formData()).entries())
+    : await c.req.json().catch(() => null);
   const amount =
     body && typeof body === "object" && "amount_usd" in body
       ? Number((body as { amount_usd: unknown }).amount_usd)
@@ -347,6 +363,9 @@ adminRoutes.post("/admin/trade/:partner/payout", async (c) => {
   }
   const row = await recordTradePayout(c.env, partner, amount, reference);
   c.header("Cache-Control", "no-store");
+  if (fromForm) {
+    return c.redirect("/admin/trade", 303);
+  }
   return c.json({ recorded: true, payout: row });
 });
 
