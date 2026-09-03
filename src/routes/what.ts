@@ -78,7 +78,7 @@ whatRoutes.get("/what", (c) => {
       .join("\n");
     return c.html(
       renderSimplePage({
-        title: "What is this?",
+        title: "What is scvd.store? Independent x402 verification, signed evidence, and endpoint-readiness data",
         /**
          * RE-CUT 2026-08-18: this description still read "an x402
          * general store selling small signed goods" — the
@@ -89,7 +89,7 @@ whatRoutes.get("/what", (c) => {
          * stopped existing in August.
          */
         description:
-          "What scvd.store is, what it costs, and how to check the signatures: an evidence observatory for agentic commerce — free conformance checks, signed observations.",
+          "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. What it is, what it is not, what it costs, and how to check the signatures.",
         path: "/what",
         bodyHtml: `<section>
           <p class="menu-desc">${WHAT_COPY.directAnswer}</p>

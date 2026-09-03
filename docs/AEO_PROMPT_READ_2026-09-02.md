@@ -1501,3 +1501,42 @@ describes.
   fixtures already exist as packages and tests. ⚑ The notebook over
   the DOI dataset stays the one asset to add, in the Hugging Face
   repo beside the data.
+
+## Afternoon of 2026-09-03 (the keeper's clock): F28, F29, F30 ruled go, and built
+
+- **F29**: /what is titled "What is scvd.store? Independent x402
+  verification, signed evidence, and endpoint-readiness data"; the
+  room's name is "What is scvd.store?" (the title contains it, the
+  test's rule); the meta description leads with the category clause;
+  the first answer gains the not-list: not a payment processor, an
+  escrow provider, a trust-score service, a compliance firm, a
+  merchant-rating system, or a guarantee of delivery.
+- **F30**: `CORRECTIONS_HOW_TO_READ` on /corrections, between the
+  standfirst and the mechanism line, and as `how_to_read` in the
+  JSON: what qualifies, that entries are never edited, that a
+  correction to a correction is a new entry, that outside reports are
+  credited as such.
+- **F28**: the glance gains `input` (the required query parameters,
+  from the same schema the 402 publishes) and `output` (the spec's
+  returns text plus the cert_id and the free verify door), on the
+  item page and in menu.json. `test/action-contract-parity.spec.ts`
+  holds every item to one contract across the page, menu.json, the
+  Offer in the JSON-LD and the 402's cheapest accept. Not built: a
+  "checks" line, because no per-item list of named checks exists as
+  data today; the audit items name theirs in the returns text, and a
+  typed list would be a second copy.
+- **MCPpedia**: the keeper filed the ownership claim (pending their
+  review) and declined the security badge for the README; recorded.
+- **The notebook**: `docs/huggingface/readiness_by_week.ipynb`,
+  standard library only, reads the Hugging Face copy (or the live
+  site), prints ready-of-probed per week with every denominator and
+  the named failing checks per week, plots if matplotlib is present,
+  and ends with what it does not show. Its arithmetic was run offline
+  against the five rounds before it was written. ⚑ Keeper: upload it
+  to the Hugging Face repo beside the data (Files → Add file).
+- **Zenodo related identifiers**, the steps: open the record, "Edit",
+  scroll to Related works, add `https://github.com/seancrecord/scvd-general-store-repo`
+  (relation "Is supplemented by", type Software) and
+  `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`
+  (relation "Is identical to", type Dataset), then "Publish".
+  Metadata edits publish in place; no new version, no new DOI.

@@ -137,18 +137,12 @@ describe("the asked-for vocabulary", () => {
     }
   });
 
-  it("puts the five at-a-glance lines in menu.json, derived", async () => {
+  it("puts the seven at-a-glance lines in menu.json, derived", async () => {
     const menu = (await (await SELF.fetch(`${BASE}/menu.json`)).json()) as {
       items: { id: string; at_a_glance: Record<string, string>; asked_for?: string }[];
     };
     for (const item of menu.items) {
-      expect(Object.keys(item.at_a_glance), item.id).toEqual([
-        "attests",
-        "cryptography",
-        "verify",
-        "price_and_fulfilment",
-        "does_not_attest",
-      ]);
+      expect(Object.keys(item.at_a_glance), item.id).toEqual(["attests", "input", "output", "cryptography", "verify", "price_and_fulfilment", "does_not_attest"]);
       expect(item.at_a_glance.verify).toContain("/api/verify/");
       if (item.id in ITEM_ASKED_FOR) expect(item.asked_for).toBe(ITEM_ASKED_FOR[item.id]);
     }

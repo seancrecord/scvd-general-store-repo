@@ -420,8 +420,17 @@ export function atAGlance(
   base: string,
   artifactClass: ArtifactClass | undefined,
 ): Record<string, string> {
+  const required = (buyInputSchema(item).required ?? []).filter((name) => name !== "agent_name");
   return {
     attests: artifactClass?.signs ?? SPEC_RETURNS[item.id] ?? item.description,
+    // F28 (2026-09-03): the two lines an agent needs to act without
+    // reading prose — what to send, what comes back — derived from the
+    // input schema the 402 already publishes and the returns text the
+    // spec page already carries.
+    input: required.length
+      ? `${required.join(", ")} (query parameters; the full schema rides the 402 body as payload_template)`
+      : "nothing beyond agent_name; the 402 body carries the exact payload_template",
+    output: `${SPEC_RETURNS[item.id] ?? `The deliverable as JSON, plus a signed ${artifactClass?.name ?? "certificate"}`} Every artifact carries a cert_id and verifies free at ${base}/api/verify/{cert_id}.`,
     cryptography: `ed25519 signature by this store's key, published at ${base}/.well-known/scvd-signing-key and carried inside every 402`,
     verify: `GET ${base}/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key`,
     price_and_fulfilment: `${priceLine(item)} USDC; ${fulfillmentLine(item)}`,
@@ -431,6 +440,8 @@ export function atAGlance(
 
 const GLANCE_LABELS: Record<string, string> = {
   attests: "Attests",
+  input: "Input",
+  output: "Output",
   cryptography: "Cryptography",
   verify: "Verify",
   price_and_fulfilment: "Price and fulfilment",
