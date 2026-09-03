@@ -132,6 +132,25 @@ Do not relitigate without you.
   L7 shipped the same day: `action/preflight/`, used by
   path from this repository; a Marketplace listing is your
   press (rule 30) and is not needed for `uses:` to work.
+- **The next three, 2026-09-02, "Agreed do em."** In order:
+  the statement on Solana (parity gap 1), Cairn's
+  disagreement surface (rule 51), the observatory page
+  reading the porch. The first shipped the same night; ⚑
+  the two statements' row copy now names three rails and is
+  drafted for your ink. The second shipped the same night:
+  `/disagreements`, seeded with the X-PAYMENT entry. ⚑ Its
+  prose is drafted for your ink, and PRIVATE-FIRST applies to
+  the page itself: tell Cairn the record exists before it is
+  named anywhere outside this repo. Every future entry is your
+  hand, from a named trigger. The third shipped the same night
+  too: `/observatory`, the porch's counts read per surface and
+  month. RULE: whether it and `/disagreements` get a storefront
+  slot (both are off it, like the pulse). ⚑ Both pages' prose is
+  drafted for your ink. TEST when a Solana statement is
+  bought: the RPC endpoint order is Helius then the public
+  fallbacks, and a wallet with hundreds of USDC transfers in
+  eleven hours will read window_unreadable by design — read
+  the reason on the artifact before treating it as a fault.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit

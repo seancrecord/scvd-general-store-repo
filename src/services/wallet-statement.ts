@@ -1,12 +1,11 @@
+import { usdcFromUnits } from "@/lib/base-rpc";
 import {
-  BASE_EVM,
-  evmChainOf,
-  getBlockNumber,
-  usdcFromUnits,
-  usdcTransfersFrom,
-  usdcTransfersTo,
-  type EvmChain,
-} from "@/lib/base-rpc";
+  BASE_RAIL,
+  statementRailOf,
+  type RailTransfer,
+  type RailUnit,
+  type StatementRail,
+} from "@/lib/statement-rails";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
@@ -42,8 +41,6 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * shrink.
  */
 
-/** Base's ~2s cadence: blocks per hour of chain. */
-const BLOCKS_PER_HOUR = 1800;
 
 /** The window ceiling, in hours. ~20k blocks — the same order the
  * bank walk's clamp treats as one safe getLogs neighborhood. */
@@ -88,6 +85,13 @@ export interface WalletStatementObservation {
     to_block: number;
     hours_requested: number;
     chain_head_at_read: number;
+    /**
+     * What from_block and to_block count on this rail: a block on an
+     * EVM chain, a slot on Solana (SOLANA_PARITY gap 1, 2026-09-02).
+     * The field names stay so one artifact shape serves every rail;
+     * this says what the numbers are.
+     */
+    unit: RailUnit;
   };
   inflows: StatementSide;
   outflows: StatementSide;
@@ -114,8 +118,8 @@ export interface WalletStatementRecord {
  * The scope names its own chain — the parity ruling's wording rule:
  * one template, a chain parameter, no second constant to drift.
  */
-export function statementScope(chain: EvmChain): string {
-  return `USDC transfers on ${chain.label} (${chain.caip2}), read from the chain by indexed eth_getLogs over exactly the block window stated — nothing outside it was read, and no other asset or chain was seen: a wallet moving ETH, other tokens, or funds on other networks shows none of that here. Counts and totals cover the whole window; the transfer lists are capped at list_cap rows per direction and say how many they carry. A statement, never a judgment: no comparison to anyone's ledger was made or possible — we never see one — and nothing here says what any transfer was for. window_unreadable is a fact about our read at this moment, not about the wallet. Produced automatically; a statement commissioned by anyone about any wallet reads the same.`;
+export function statementScope(chain: StatementRail): string {
+  return `USDC transfers on ${chain.label} (${chain.caip2}), read from the chain by ${chain.readMethod} — nothing outside it was read, and no other asset or chain was seen: ${chain.cannotSee}. Counts and totals cover the whole window; the transfer lists are capped at list_cap rows per direction and say how many they carry. A statement, never a judgment: no comparison to anyone's ledger was made or possible — we never see one — and nothing here says what any transfer was for. window_unreadable is a fact about our read at this moment, not about the wallet. Produced automatically; a statement commissioned by anyone about any wallet reads the same.`;
 }
 
 /**
@@ -124,13 +128,13 @@ export function statementScope(chain: EvmChain): string {
  * unrecognized network must bounce before money moves, never default
  * silently to a chain the buyer did not ask about.
  */
-export function statementChain(raw: string | undefined): EvmChain | null {
-  return evmChainOf(raw);
+export function statementChain(raw: string | undefined): StatementRail | null {
+  return statementRailOf(raw);
 }
 
 function side(
-  rows: Array<{ txHash: string; amount: bigint; block: number }>,
-  counterpartyOf: (row: { txHash: string; amount: bigint; block: number }) => string,
+  rows: RailTransfer[],
+  counterpartyOf: (row: RailTransfer) => string,
 ): StatementSide {
   const sorted = [...rows].sort((a, b) => a.block - b.block);
   const total = sorted.reduce((sum, row) => sum + row.amount, 0n);
@@ -180,9 +184,9 @@ export async function performWalletStatement(
   env: Env,
   wallet: string,
   hoursRequested: number = STATEMENT_DEFAULT_HOURS,
-  chain: EvmChain = BASE_EVM,
+  chain: StatementRail = BASE_RAIL,
 ): Promise<SignedWalletStatement> {
-  const address = wallet.toLowerCase();
+  const address = chain.normalize(wallet);
   const hours = Math.min(Math.max(hoursRequested, 1), STATEMENT_MAX_HOURS);
   const now = new Date();
 
@@ -193,19 +197,17 @@ export async function performWalletStatement(
   let outflows = EMPTY_SIDE;
   let fromBlock = 0;
   try {
-    head = await getBlockNumber(env, chain);
-    fromBlock = Math.max(head - hours * BLOCKS_PER_HOUR, 0);
+    head = await chain.head(env);
+    fromBlock = Math.max(head - hours * chain.unitsPerHour, 0);
     // An array literal evaluates left to right, so the old shape here —
     // [await a, await b] — READ as parallel and was two serial
     // eth_getLogs calls over an 11-hour window, on a paid door.
     const [inbound, outbound] = await Promise.all([
-      usdcTransfersTo(env, address, fromBlock, head, chain),
-      usdcTransfersFrom(env, address, fromBlock, head, chain),
+      chain.transfersTo(env, address, fromBlock, head),
+      chain.transfersFrom(env, address, fromBlock, head),
     ]);
-    inflows = side(inbound, (row) =>
-      (row as { from?: string }).from ?? "",
-    );
-    outflows = side(outbound, (row) => (row as { to?: string }).to ?? "");
+    inflows = side(inbound, (row) => row.from ?? "");
+    outflows = side(outbound, (row) => row.to ?? "");
   } catch (error) {
     // The read failed after base-rpc's own endpoint retries. The
     // statement still ships, saying exactly that — a dated fact about
@@ -229,6 +231,7 @@ export async function performWalletStatement(
       to_block: head,
       hours_requested: hours,
       chain_head_at_read: head,
+      unit: chain.unit,
     },
     inflows,
     outflows,

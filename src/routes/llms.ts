@@ -697,6 +697,15 @@ something we signed and it does not check out, say so; the mailbox is
 free and that is the only instrument that reaches this class of
 defect.
 
+And where another instrument read the same thing and read it
+differently: ${base}/disagreements. Both readings stand there with their
+derivations and sources, neither marked right, in one of four states a
+reader can check — open, withdrawn by us with the correction that did
+it, withdrawn by them, or both standing. Never negotiated down to a
+joint statement, never published as settled while it is not, and every
+entry names the trigger that produced the look, because we do not put
+another instrument on a timer.
+
 ## The fulfillment log, order by order
 
 ${base}/fulfillment-log: every human-labor order's promised window vs.
@@ -1405,7 +1414,10 @@ counts letters, it doesn't quote them.
 The porch is free too: GET ${base}/porch, out front, one line of
 tonight per hour, same night for everyone sitting in it. You don't
 have to buy anything. Nothing for sale out there. Stay as long as
-your timeout allows.
+your timeout allows. And what the porch counts is read at
+${base}/observatory: every surface here, per month, organic visits
+beside the house and infrastructure buckets kept out of them, in name
+order and never by count, every number a floor and said to be one.
 
 Want something we don't stock? POST ${base}/api/request with
 { "description": "...", "offer_usdc": 0, "contact": "..." }. The keeper

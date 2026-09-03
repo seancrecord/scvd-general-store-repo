@@ -522,7 +522,22 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/api/look/v1", "look_at_door" and "the
  * line is yours to draw", and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the THIRTY-SECOND — by the AEO plan's PR 2:
+ * Re-taken 2026-09-02 — the THIRTY-SECOND — by the statement on
+ * Solana (SOLANA_PARITY gap 1): the two statements' shelf copy names
+ * three rails and the unit their window counts in, and the shelf copy
+ * rides into the guide's menu section.
+ *
+ * Re-taken 2026-09-02 — the THIRTY-THIRD and THIRTY-FOURTH, one
+ * commit — by the disagreement record (house rule 51: one paragraph
+ * under "When we get it wrong" naming /disagreements, the four
+ * states, and that we do not put another instrument on a timer) and
+ * by the observatory (one sentence after the porch's, naming
+ * /observatory and that every number there is a floor). Confirmed
+ * before this value was taken: the guide carries "/disagreements",
+ * "never published as settled" and "/observatory", and still every
+ * earlier pin.
+ *
+ * Re-taken 2026-09-03 — the THIRTY-FIFTH — by the AEO plan's PR 2:
  * one section, "Words people use for what this store does", kept on
  * the index, carrying the asked-for vocabulary from
  * store/copy/asked-for.ts and the byline pieces. Confirmed before this
@@ -535,7 +550,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d20a6797d5d34d3dcc1114c12e46417832f33af367bc4a4b51f084b3c4ca0eb5";
+  "2a94e36f11239ecfbe42b009613cccde92060a175d41c3ffb3b50eae801b7f3b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

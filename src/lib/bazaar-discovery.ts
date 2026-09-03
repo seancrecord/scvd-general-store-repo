@@ -234,17 +234,17 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["wallet"] = {
       type: "string",
       description:
-        "The wallet to state: a 0x EVM address. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
+        "The wallet to state: a 0x EVM address on Base or Polygon, a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
     };
     properties["network"] = {
       type: "string",
       description:
-        'Which rail to read: "eip155:8453" (Base, the default) or "eip155:137" (Polygon). One chain per statement.',
+        'Which rail to read: "eip155:8453" (Base, the default), "eip155:137" (Polygon), or "solana" (Solana mainnet, USDC). One chain per statement.',
     };
     properties["hours"] = {
       type: "string",
       description:
-        "Optional window in hours back from the chain head: 1 to 11, default 6. The block range on the artifact is the entire coverage claim.",
+        "Optional window in hours back from the chain head: 1 to 11, default 6. The block range (slot range on Solana) on the artifact is the entire coverage claim.",
     };
     required.push("wallet");
   }
@@ -252,12 +252,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["wallet"] = {
       type: "string",
       description:
-        "Your receiving address: a 0x EVM address. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
+        "Your receiving address: a 0x EVM address on Base or Polygon, a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
     };
     properties["network"] = {
       type: "string",
       description:
-        'Which rail to read: "eip155:8453" (Base, the default) or "eip155:137" (Polygon). One chain per statement.',
+        'Which rail to read: "eip155:8453" (Base, the default), "eip155:137" (Polygon), or "solana" (Solana mainnet, USDC). One chain per statement.',
     };
     required.push("wallet");
   }

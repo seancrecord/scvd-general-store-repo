@@ -94,6 +94,8 @@ function markdown(base: string): string {
     "",
     `**What this is not.** ${doc.what_this_is_not}`,
     "",
+    `**Where readings diverge.** A cross-instrument mapping below is a dated read of somebody else's surface. Where their reading and ours diverge on a door, a term, or a claim, both stand with their derivations at ${base}/disagreements — neither authoritative over the other.`,
+    "",
     `**The method line.** ${doc.the_method_line}`,
     "",
     `Cross-instrument mappings read on ${doc.cross_instrument_mappings_read_on}. ${doc.mapping_caveat}`,
