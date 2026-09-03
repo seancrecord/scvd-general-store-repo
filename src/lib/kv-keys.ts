@@ -498,6 +498,29 @@ export const KV_KEYS = {
   patronagePass: (passId: string): string => `pass:${passId}`,
   lucky: (luckyId: string): string => `lucky:${luckyId}`,
   luckyPrefix: "lucky:",
+  /**
+   * THE TRADE COUNTER'S BOOKS (2026-09-03, services/trade-counter.ts).
+   * One row per delivery, in ORDERS beside the orders, newest first —
+   * the receivable is DERIVED from these rows by the statement walk,
+   * never from the account summary, which is a cache a KV race can
+   * undercount. `tradeOrder` is the partner's own order reference,
+   * hashed, so a marketplace retrying after a timeout gets the
+   * original delivery back instead of a second one. `tradeDay` is
+   * the blast-radius cap's counter: a bound on how much a leaked
+   * secret can mint in a day, and nothing about money.
+   */
+  tradeRow: (partner: string, invertedTs: string, certId: string): string =>
+    `trade:${partner}:${invertedTs}:${certId}`,
+  tradeRowPrefix: (partner: string): string => `trade:${partner}:`,
+  tradeAllPrefix: "trade:",
+  tradeAccount: (partner: string): string => `trade_account:${partner}`,
+  tradeDay: (partner: string, isoDay: string): string =>
+    `trade_day:${partner}:${isoDay}`,
+  tradeOrder: (partner: string, refHash: string): string =>
+    `trade_order:${partner}:${refHash}`,
+  tradePayout: (partner: string, invertedTs: string, id: string): string =>
+    `trade_payout:${partner}:${invertedTs}:${id}`,
+  tradePayoutPrefix: (partner: string): string => `trade_payout:${partner}:`,
 } as const;
 
 /**

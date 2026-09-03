@@ -36,6 +36,7 @@ export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
 export { commissionRoutes } from "@/routes/commission";
 export { tabPoolRoutes } from "@/routes/tab-pool";
+export { tradeCounterRoutes } from "@/routes/trade-counter";
 export { anchorRoutes } from "@/routes/anchors";
 export { serviceAuditRoutes } from "@/routes/service-audit";
 export { reconciliationRoutes } from "@/routes/reconciliation";

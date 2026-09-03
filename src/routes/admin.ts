@@ -299,6 +299,57 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 
+/**
+ * THE TRADE COUNTER'S STATEMENT DESK (2026-09-03). Two doors behind
+ * the keeper's password: every account's rows, both sides, for
+ * reconciling against the partner's payouts by hand; and the one
+ * write only a person makes — recording that a payout arrived.
+ * Nothing here moves money; it records that money moved elsewhere.
+ */
+adminRoutes.get("/admin/trade.json", async (c) => {
+  const { TRADE_PARTNERS } = await import("@/store/trade-counter");
+  const { tradeStatement } = await import("@/services/trade-counter");
+  const statements = await Promise.all(
+    TRADE_PARTNERS.map((partner) => tradeStatement(c.env, partner)),
+  );
+  c.header("Cache-Control", "no-store");
+  return c.json({
+    what_this_is:
+      "Every trade account's statement: delivery rows and payout rows, newest first, with the summary the public ledger prints. Reconcile against the partner's own statement; record each payout with POST /admin/trade/{account}/payout.",
+    statements,
+  });
+});
+
+adminRoutes.post("/admin/trade/:partner/payout", async (c) => {
+  const { getTradePartner } = await import("@/store/trade-counter");
+  const { recordTradePayout } = await import("@/services/trade-counter");
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    return c.json({ error: "No trade account by that name." }, 404);
+  }
+  const body: unknown = await c.req.json().catch(() => null);
+  const amount =
+    body && typeof body === "object" && "amount_usd" in body
+      ? Number((body as { amount_usd: unknown }).amount_usd)
+      : NaN;
+  const reference =
+    body && typeof body === "object" && "reference" in body
+      ? String((body as { reference: unknown }).reference).slice(0, 200)
+      : "";
+  if (!Number.isFinite(amount) || amount <= 0 || reference.length === 0) {
+    return c.json(
+      {
+        error:
+          "A payout needs a positive amount_usd and a reference (the partner's statement id, a Lightning payment hash, a bank line — whatever ties it to their side).",
+      },
+      400,
+    );
+  }
+  const row = await recordTradePayout(c.env, partner, amount, reference);
+  c.header("Cache-Control", "no-store");
+  return c.json({ recorded: true, payout: row });
+});
+
 /** One shelf failing to load never takes the room down. */
 function shelf<T>(
   result: PromiseSettledResult<T>,

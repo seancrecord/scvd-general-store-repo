@@ -155,6 +155,8 @@ Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.js
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
+For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [the trade contract](${base}/api/trade/contract) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
+
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
 Every one of those is described in its own section below. This list is
@@ -1128,6 +1130,24 @@ are not built yet — contribution now is what earns them when the pool
 has enough to aggregate, and the pool endpoint says so honestly
 rather than pretending.
 
+## The trade counter — marketplaces buying on account
+
+Round the back, for platforms that resell to agents. Your customer
+pays you, however you take money; your backend sends ONE signed
+instruction — HMAC-SHA256 over timestamp, nonce and the exact body —
+to \`POST ${base}/api/trade/{account}/{item_id}\`; we deliver the same
+signed goods the front door sells and bill your account on a
+statement. The customer never touches x402. The certificate says
+settled_via: trade_account, names the account, the trade price and
+the digest of your instruction, and carries NO chain fields, because
+no chain was involved. Trade prices are a published rule (retail plus
+an uplift, net of your share, rounded up to the cent) printed per
+item at ${base}/api/trade/contract; every account's receivable is public
+at ${base}/api/trade/ledger; ${base}/health is the one-line liveness
+a reseller's contract asks for. Accounts are opened by the keeper's
+hand, in test mode first: write to POST ${base}/api/letter. The room
+is ${base}/trade.
+
 ## The commission desk, declines published
 
 Custom work is asked for at POST ${base}/api/request and priced at
@@ -1624,6 +1644,7 @@ const SECTION_AREAS: Record<string, string> = {
   "How prices are set, signed": "menu",
   "Money that flows the other way": "menu",
   "The commission desk, declines published": "menu",
+  "The trade counter — marketplaces buying on account": "menu",
   "Where the money settles, drawn": "menu",
   "When we get it wrong": "trust",
   "The fulfillment log, order by order": "trust",

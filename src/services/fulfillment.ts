@@ -509,6 +509,17 @@ export async function fulfillPurchase(
   if (payment.network) {
     mintOptions.network = payment.network;
   }
+  /**
+   * A TRADE-ACCOUNT SALE carries no transaction, payer or network —
+   * the marketplace collected the money and this store saw none of
+   * it — and the certificate says exactly that (services/trade-
+   * counter.ts). paidUsdc is zero on such a settle, which the mint
+   * already reads as "no money fields", so nothing above this line
+   * can write a chain onto a sale no chain carried.
+   */
+  if (payment.trade) {
+    mintOptions.trade = payment.trade;
+  }
   let minted: Awaited<ReturnType<typeof mintCertificate>>;
   try {
     minted = await mintCertificate(env, mintOptions);
@@ -543,6 +554,17 @@ export async function fulfillPurchase(
    * other without guessing the canonicalization. Found from outside
    * 2026-07-30.
    */
+  /**
+   * HOW IT WAS PAID FOR, in the human's receipt. A trade-account sale
+   * names the account and the listed trade price rather than a USDC
+   * figure the buyer never paid us.
+   */
+  const paidPhrase = payment.trade
+    ? `through ${payment.trade.partner_name}'s trade account (listed trade price $${payment.trade.trade_price_usd})`
+    : `for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
+  const receiptAmount = payment.trade
+    ? `via ${payment.trade.partner_name}`
+    : `$${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
   const patronBlock = {
     patron_number: minted.patronNumber,
     badge_url: minted.badgeUrl,
@@ -623,7 +645,7 @@ export async function fulfillPurchase(
      * would have to fake points at a check it cannot fake.
      */
     ...(storeCredit ? { store_credit: storeCredit } : {}),
-    show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
+    show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
     /**
      * THE FORWARDABLE COPY (the receipt chain, 2026-08-19). The line
      * above is for pasting into a chat; this block is for the agent
@@ -636,8 +658,8 @@ export async function fulfillPurchase(
      * machines — same URL, both registers.
      */
     receipt_for_your_human: {
-      subject: `Receipt: ${item.name} — $${minted.certificate.paid_usdc ?? item.price_usdc} USDC (scvd.store)`,
-      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""}${minted.certificate.mandate_id ? ` It cited a recorded mandate — the authorization it claims to be acting under: ${env.STORE_BASE_URL}/api/mandate/${minted.certificate.mandate_id}` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
+      subject: `Receipt: ${item.name} — ${receiptAmount} (scvd.store)`,
+      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""}${minted.certificate.mandate_id ? ` It cited a recorded mandate — the authorization it claims to be acting under: ${env.STORE_BASE_URL}/api/mandate/${minted.certificate.mandate_id}` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
       deliver:
         "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person.",
     },
@@ -744,8 +766,28 @@ export async function fulfillPurchase(
       message: VOICE.instantThanks,
       item_id: item.id,
       deliverable: goods.deliverable,
-      paid_usdc: payment.paidUsdc,
-      tip_usdc: payment.tipUsdc,
+      /*
+       * THE MONEY LINE, OR THE ACCOUNT LINE. A trade-account sale
+       * says what it is instead of printing paid_usdc: 0, which would
+       * read as "free" to a machine and as a lie to a person.
+       */
+      ...(payment.trade
+        ? {
+            settled_via:
+              payment.trade.mode === "test" ? "trade_account_test" : "trade_account",
+            trade: {
+              account: payment.trade.partner,
+              partner_name: payment.trade.partner_name,
+              trade_price_usd: payment.trade.trade_price_usd,
+              partner_share_bps: payment.trade.partner_share_bps,
+              net_usd: payment.trade.net_usd,
+              instruction_digest: payment.trade.instruction_digest,
+              ...(payment.trade.order_ref ? { order_ref: payment.trade.order_ref } : {}),
+              what_this_settles:
+                "The marketplace named here collected its customer's payment; this store saw no payment and signs none. The certificate binds the account, the trade price and the sha256 of the signed instruction, and carries no chain fields.",
+            },
+          }
+        : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
       ...(goods.extras ?? {}),
       ...patronBlock,
     };

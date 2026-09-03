@@ -577,12 +577,21 @@ const BASE = "https://scvd.store";
  * was taken: the guide carries "network=eip155:137" and "Ethereum,
  * Arbitrum, Optimism or Avalanche", and still every earlier pin.
  *
+ * Re-taken 2026-09-03 — the FORTIETH — by the keeper's greenlight on
+ * the Trade Counter ("lets build it out ... we sell as a product"):
+ * a "For marketplaces reselling the shelf" line in "Every door, in
+ * one list" naming /trade, /trade.json, /api/trade/contract,
+ * /api/trade/ledger and /health, and a new section "The trade
+ * counter — marketplaces buying on account" filed under the menu
+ * area. Confirmed before this value was taken: the guide carries
+ * "settled_via: trade_account" and "never touches x402", and still
+ * every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a956f219cf6e7500531bbb8a87abf07150fac0ced7372cd65b8964c2684c8f37";
+  "f17d3b74a81d904bebe44a488795d641a1326ec9ef49bbf1b3bf0ac41be9a5d6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

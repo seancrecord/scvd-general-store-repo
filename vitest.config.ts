@@ -78,6 +78,12 @@ export default defineConfig({
           ADMIN_PASSWORD: "test-admin-password",
           STORE_BASE_URL: "https://scvd.store",
           HOUSE_SECRET: "test-house-secret",
+          // The trade counter's first account, in test. Neither value
+          // is a real secret; both exist so the signed-instruction door
+          // can be exercised end to end (test/trade-counter.spec.ts).
+          TRADE_SECRET_HAL: "test-trade-secret-hal",
+          TRADE_SECRET_HAL_PREVIOUS: "test-trade-secret-hal-previous",
+          TRADE_PROVIDER_KEY_HAL: "test-trade-provider-key-hal",
         },
       },
     }),

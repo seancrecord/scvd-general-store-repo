@@ -94,6 +94,25 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
       "That the goods were delivered, that they were any good, or that the buyer was who they said. It proves this store issued this certificate, with these fields, on this date.",
     verify_url: "/api/verify/{cert_id}",
   },
+  /**
+   * THE TRADE COUNTER'S CERTIFICATE (2026-09-03) is the certificate
+   * class with four fields present and five ABSENT, and it gets its
+   * own entry because the absence is the claim: a marketplace
+   * collected the money, the store saw none, and a receipt that named
+   * a chain here would be the false claim rules 45 and 52 exist to
+   * catch. store/trade-counter.ts is the counter; this is what its
+   * receipt is worth.
+   */
+  {
+    id: "trade_certificate",
+    name: "Certificates of purchase settled on a trade account",
+    trust_model: "self_signed",
+    signs:
+      "The same canonical fields as a certificate of purchase, with settled_via (trade_account, or trade_account_test while the account is in test), trade_partner, trade_price_usd and trade_instruction present — and paid_usdc, asset, network, payer and settlement_tx absent, because no payment reached this store. trade_instruction is the sha256 of the exact string the marketplace signed (timestamp, nonce, body), so the receipt ties to one signed instruction from one named account.",
+    does_not_prove:
+      "That any money moved anywhere: not that the marketplace's customer paid, not that the marketplace paid us, not that either ever will. It proves this store delivered this item on a signed instruction from the named account, on this date, at the listed trade price. The receivable behind it is a statement reconciled by hand, and the daily cap on the account is the shape of the trust involved.",
+    verify_url: "/api/verify/{cert_id}",
+  },
   {
     id: "settlement_attestation",
     name: "Settlement attestations (single, or each member of a sheaf)",

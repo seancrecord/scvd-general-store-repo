@@ -233,6 +233,28 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
+
+- **TEST** — send Hal the ten questions in `TRADE_COUNTER.md`.
+  Two of the answers are dialect fields (`timestamp_unit`; whether
+  the provider key is a separate secret) and both fail closed if
+  guessed wrong. Nothing goes live until they answer.
+- **Hands** — `wrangler secret put TRADE_SECRET_HAL` and
+  `TRADE_PROVIDER_KEY_HAL` with the values Hal issues. The account
+  answers 503 `counter_closed` until then. Verify with one signed
+  call from their side and read `/api/trade/ledger`.
+- **RULE** — flip `hal` from `test` to `live` in
+  `src/store/trade-counter.ts` when payout rail, cadence and
+  statement API are agreed. Receiving sats is a new treasury rail:
+  which wallet, whose custody, is yours to decide before the flip.
+- **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
+  opening figure. Yours to move.
+- **RULE** — a storefront slot for `/trade`. It is on every agent
+  surface now and off the front until you say (rule 7).
+- **LOOK** — `/admin/trade.json` on the Sunday grind, against the
+  partner's statement; record each payout with `POST
+  /admin/trade/hal/payout`.
+
 ### Decisions that unblock the roadmap
 
 - **Rail run-through** (eleven checks, drafted against
