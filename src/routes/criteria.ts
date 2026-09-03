@@ -19,7 +19,7 @@ import {
   AUDIT_BATTERY_CHANGE_NOTE,
   AUDIT_CRITERIA_VERSION,
 } from "@/services/service-audit";
-import { DOCTRINE_NOTE } from "@/store/copy/doctrine";
+import { DOCTRINE_NOTE, MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { ESTABLISHED_ROUNDS, STANDING_ROUNDS, TIER_RULE, TIER_RULE_NOTE } from "@/services/passport-tier";
 import type { HonoEnv } from "@/types";
 
@@ -99,6 +99,17 @@ criteriaRoutes.get("/criteria", (c) => {
      * manner as the battery change note above it.
      */
     doctrine: DOCTRINE_NOTE,
+    /**
+     * THE TWO SEATS (2026-09-03). Record and reproducible dispute
+     * artifact; interpretation left to others. The page for the
+     * readers who do the interpreting is /scorers.
+     */
+    seats: {
+      dated: TWO_SEATS_DATED,
+      sentence: TWO_SEATS_SENTENCE,
+      misuse: MISUSE_CLAUSE,
+      page: `${base}/scorers`,
+    },
     /**
      * THE TIER RULE (2026-09-02, roadmap N7b), typed once here and
      * derived everywhere it renders. A tier is a function of the
@@ -198,6 +209,11 @@ criteriaRoutes.get("/criteria", (c) => {
         <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.why)}</p>
         <p class="menu-desc">${escapeHtml(DOCTRINE_NOTE.what_did_not_change)}</p>
         <p class="menu-meta">${escapeHtml(DOCTRINE_NOTE.what_keeps_its_bytes)} ${escapeHtml(DOCTRINE_NOTE.rule)}</p>
+      </section>
+      <section>
+        <h2>Two seats, dated ${escapeHtml(TWO_SEATS_DATED)}</h2>
+        <p class="menu-desc"><strong>${escapeHtml(TWO_SEATS_SENTENCE)}</strong></p>
+        <p class="menu-desc">${escapeHtml(MISUSE_CLAUSE)} How a scorer or a marketplace consumes the evidence without inheriting an opinion: <a href="/scorers">/scorers</a>.</p>
       </section>
       <section>
         <h2>The passport tier: the rule, typed once</h2>

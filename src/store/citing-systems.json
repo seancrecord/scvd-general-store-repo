@@ -1,0 +1,5 @@
+{
+  "what_this_is": "Systems that consume this store's corpus and cite it by verify URL. Empty until one does. An entry is added only with a dated citation URL, and scripts/citations-check.mjs fetches that URL and fails when the citation is gone. The page at /scorers renders this file; nothing is typed there.",
+  "how_a_system_gets_listed": "Its public page cites a row of this corpus by verify URL (https://scvd.store/api/verify/{id}) or by corpus URL (https://scvd.store/corpus/...). Name, the citing URL, and the date it was first seen; nothing else, and no endorsement in either direction.",
+  "systems": []
+}

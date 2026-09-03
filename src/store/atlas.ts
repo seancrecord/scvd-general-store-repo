@@ -117,6 +117,16 @@ const TASKS: readonly AtlasTask[] = [
     note: "Free, no account. The shelf from the seller's side: four moments from before launch to when something goes wrong, the free instrument named first in each, every price read off the shelf when served. Nothing there ranks, scores or certifies a door.",
   },
   {
+    /*
+     * ADDED 2026-09-03 with the scorers' room. A scorer or a
+     * marketplace consumes the evidence and owns the interpretation;
+     * the atlas had no goal in that voice.
+     */
+    goal: "I run a scorer or a marketplace and want to consume this store's evidence without inheriting its opinions",
+    call: ["GET /scorers", "GET /corpus.json"],
+    note: "Free, no account. Two seats — the record, and the reproducible dispute artifact — and how to pull, verify, cite, reproduce and re-observe. Interpretation is yours; a score derived from the corpus is your claim, not ours.",
+  },
+  {
     goal: "I think this store published something wrong",
     call: ["GET /corrections"],
     note: "Every claim we got wrong, dated, with what changed. If yours is not there, the issue templates in the repo are the way in.",
@@ -289,6 +299,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     method: "GET",
     purpose: "Four Atom feeds derived from the record: the week's doors, the corpus chain, the corrections, the disagreements. Poll them instead of the pages.",
     caution: "Entries are pointers with summaries; the derivation and the denominator are on the linked page. Never a ranking.",
+  },
+  {
+    path: "/scorers",
+    name: "For scorers and marketplaces",
+    access: "free",
+    method: "GET",
+    purpose: "The two seats this store occupies and how to consume its evidence: pull, verify, cite, reproduce, re-observe. Names seats, not occupants.",
+    caution: "A score, ranking or certification derived from the corpus is its publisher's interpretation; this store does not endorse derived conclusions.",
   },
   {
     path: "/try",

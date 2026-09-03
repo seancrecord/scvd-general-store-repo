@@ -33,6 +33,7 @@ export { feedsRoutes } from "@/routes/feeds";
 export { monthlyStateRoutes } from "@/routes/monthly-state";
 export { a2aRoutes } from "@/routes/a2a";
 export { mcpVerifierRoutes } from "@/routes/mcp-verifier";
+export { scorersRoutes } from "@/routes/scorers";
 export { visitorsRoutes } from "@/routes/visitors";
 export { stackRoutes } from "@/routes/stack";
 export { trustListRoutes } from "@/routes/trust-list";

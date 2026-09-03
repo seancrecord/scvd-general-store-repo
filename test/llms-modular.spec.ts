@@ -668,6 +668,15 @@ const BASE = "https://scvd.store";
  * list", the way /pricing.md and /index.md are named beside their
  * rooms. Confirmed before this value was taken: the guide carries
  * "trade.md" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-FIRST — by the scorers' room:
+ * one paragraph after the operators', for a scorer or a marketplace,
+ * naming /scorers as the two seats the store occupies and the way to
+ * pull, verify, cite, reproduce and re-observe the corpus; seats, not
+ * occupants; a derived score is its publisher's interpretation.
+ * Confirmed before this value was taken: the guide carries
+ * "/scorers", "names seats, not occupants" and "its publisher's
+ * interpretation, not ours", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.

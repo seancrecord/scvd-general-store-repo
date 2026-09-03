@@ -26,6 +26,20 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **For scorers and marketplaces, 2026-09-03, "build it."**
+  `/scorers` names the two seats — the record, and the
+  reproducible dispute artifact — and how to pull, verify,
+  cite, reproduce and re-observe the evidence. It names
+  seats, not occupants: the named-integrations block renders
+  `src/store/citing-systems.json`, empty today, and
+  `npm run citations:check` fails when a listed citation
+  disappears. ⚑ The seats sentence and the misuse clause
+  (`src/store/copy/doctrine.ts`) are drafted for your ink.
+  RULE: whether `/scorers` gets a storefront slot (off it,
+  like `/operators`). PRESS: when a scorer or a marketplace
+  actually cites a row, add it to the register with the
+  citing URL and the date, and nothing else.
+
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a
   dispute court.
