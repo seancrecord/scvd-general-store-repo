@@ -1,7 +1,8 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { signMessage } from "@/lib/signing";
-import { BASE_EVM, getBlockNumber, usdcFromUnits, usdcTransfersFrom, usdcTransfersTo, type EvmChain } from "@/lib/base-rpc";
+import { usdcFromUnits } from "@/lib/base-rpc";
+import { BASE_RAIL, EVM_BLOCKS_PER_HOUR, railOfCaip2, type RailUnit, type StatementRail } from "@/lib/statement-rails";
 import { ladderRung } from "@/services/menu-markdown";
 import { sweepWatches } from "@/services/watch-sweep";
 import { newEntryId } from "@/lib/ids";
@@ -48,10 +49,12 @@ export const OPERATOR_STATEMENT_TERM_DAYS = 30;
 export const OPERATOR_PASS_HOURS = 6;
 /** Floor between passes, so a doubled tick cannot double-read. */
 const MIN_PASS_SPACING_MS = (OPERATOR_PASS_HOURS - 0.25) * 3600_000;
-/** Base's ~2s cadence: blocks per hour of chain. Polygon is faster; the ceiling below still bounds one read. */
-const BLOCKS_PER_HOUR = 1800;
-/** One read never spans more than this: the statement engine's ceiling, in blocks. */
-export const MAX_BLOCKS_PER_PASS = 11 * BLOCKS_PER_HOUR;
+/** Units (blocks or slots) read in one pass: the statement engine's eleven-hour ceiling, in the rail's own cadence. */
+export function maxUnitsPerPass(rail: StatementRail): number {
+  return 11 * rail.unitsPerHour;
+}
+/** The EVM figure in blocks, kept for the readers that quote it. */
+export const MAX_BLOCKS_PER_PASS = 11 * EVM_BLOCKS_PER_HOUR;
 /** Distinct payers tallied per pass before the tally says it stopped counting names. */
 export const PAYER_TALLY_CAP = 500;
 /** Open terms scanned per sweep — kv-list's law: an unnamed cap is a silent one. */
@@ -74,6 +77,8 @@ export interface OperatorStatementPass {
   from_block: number;
   to_block: number;
   chain_head_at_read: number;
+  /** What the block fields count on this rail: block on EVM, slot on Solana. Absent on passes taken before 2026-09-02, which were all blocks. */
+  unit?: RailUnit;
   coverage: "complete" | "window_unreadable";
   read_error?: string;
   inflows: { count: number; total_atomic: string; total_usdc: number };
@@ -147,13 +152,13 @@ export function newOperatorStatementId(): string {
 export async function startOperatorStatement(
   env: Env,
   wallet: string,
-  chain: EvmChain = BASE_EVM,
+  chain: StatementRail = BASE_RAIL,
   payer?: string,
 ): Promise<{ record: OperatorStatementRecord; historyUrl: string }> {
   const now = new Date();
   let head = 0;
   try {
-    head = await getBlockNumber(env, chain);
+    head = await chain.head(env);
   } catch {
     // An unreadable head at purchase opens the term from block 0's
     // successor of "whatever the first pass reads": the first pass
@@ -164,7 +169,7 @@ export async function startOperatorStatement(
   }
   const record: OperatorStatementRecord = {
     statement_id: newOperatorStatementId(),
-    wallet: wallet.toLowerCase(),
+    wallet: chain.normalize(wallet),
     chain: chain.caip2,
     asset: chain.usdc,
     started_at: now.toISOString(),
@@ -199,9 +204,8 @@ export async function readOperatorStatement(
 }
 
 /** The chain constant for a stored record; Base unless the record says otherwise. */
-export async function chainOfRecord(record: OperatorStatementRecord): Promise<EvmChain> {
-  const { evmChainOf } = await import("@/lib/base-rpc");
-  return evmChainOf(record.chain) ?? BASE_EVM;
+export async function chainOfRecord(record: OperatorStatementRecord): Promise<StatementRail> {
+  return railOfCaip2(record.chain);
 }
 
 /**
@@ -228,8 +232,8 @@ export async function passOnce(
   let payers: Record<string, PayerTally> = {};
   let payersCapped = false;
   try {
-    head = await getBlockNumber(env, chain);
-    toBlock = Math.min(head, fromBlock + MAX_BLOCKS_PER_PASS - 1);
+    head = await chain.head(env);
+    toBlock = Math.min(head, fromBlock + maxUnitsPerPass(chain) - 1);
     if (toBlock < fromBlock) {
       // The chain has not moved past the last pass; nothing to read
       // and nothing to claim. Recorded as an empty complete pass over
@@ -237,8 +241,8 @@ export async function passOnce(
       toBlock = fromBlock - 1;
     } else {
       const [inbound, outbound] = await Promise.all([
-        usdcTransfersTo(env, record.wallet, fromBlock, toBlock, chain),
-        usdcTransfersFrom(env, record.wallet, fromBlock, toBlock, chain),
+        chain.transfersTo(env, record.wallet, fromBlock, toBlock),
+        chain.transfersFrom(env, record.wallet, fromBlock, toBlock),
       ]);
       const inTotal = inbound.reduce((sum, row) => sum + row.amount, 0n);
       const outTotal = outbound.reduce((sum, row) => sum + row.amount, 0n);
@@ -246,7 +250,7 @@ export async function passOnce(
       outflows = { count: outbound.length, total_atomic: outTotal.toString(), total_usdc: usdcFromUnits(outTotal) };
       const tally = new Map<string, { transfers: number; atomic: bigint }>();
       for (const row of inbound) {
-        const from = String((row as { from?: string }).from ?? "").toLowerCase();
+        const from = row.from ? chain.normalize(row.from) : "";
         if (!from) continue;
         const existing = tally.get(from);
         if (existing) {
@@ -282,6 +286,7 @@ export async function passOnce(
     from_block: fromBlock,
     to_block: toBlock,
     chain_head_at_read: head,
+    unit: chain.unit,
     coverage,
     ...(readError ? { read_error: readError } : {}),
     inflows,
@@ -296,6 +301,7 @@ export async function passOnce(
     from_block: fromBlock,
     to_block: toBlock,
     chain_head_at_read: head,
+    unit: chain.unit,
     coverage,
     ...(readError ? { read_error: readError } : {}),
     inflows,
@@ -409,7 +415,7 @@ export function theNextMonth(base: string, wallet: string, chain: string, endsAt
     "the same address read for another month, four signed passes a day, as a new history",
   );
   if (!rung) return null;
-  const buyUrl = `${base}/api/buy/operator_statement?wallet=${encodeURIComponent(wallet)}${chain === BASE_EVM.caip2 ? "" : `&network=${encodeURIComponent(chain)}`}`;
+  const buyUrl = `${base}/api/buy/operator_statement?wallet=${encodeURIComponent(wallet)}${chain === BASE_RAIL.caip2 ? "" : `&network=${encodeURIComponent(chain)}`}`;
   return {
     ended: complete,
     the_rule:

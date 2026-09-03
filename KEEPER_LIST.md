@@ -132,6 +132,16 @@ Do not relitigate without you.
   L7 shipped the same day: `action/preflight/`, used by
   path from this repository; a Marketplace listing is your
   press (rule 30) and is not needed for `uses:` to work.
+- **The next three, 2026-09-02, "Agreed do em."** In order:
+  the statement on Solana (parity gap 1), Cairn's
+  disagreement surface (rule 51), the observatory page
+  reading the porch. The first shipped the same night; ⚑
+  the two statements' row copy now names three rails and is
+  drafted for your ink. TEST when a Solana statement is
+  bought: the RPC endpoint order is Helius then the public
+  fallbacks, and a wallet with hundreds of USDC transfers in
+  eleven hours will read window_unreadable by design — read
+  the reason on the artifact before treating it as a fault.
 
 - **Provenance (M5).** Name: "The Company an Address Keeps"
   (B7c). Body takes B7b's refusal. State the free self-audit

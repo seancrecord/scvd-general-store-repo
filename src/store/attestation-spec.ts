@@ -119,7 +119,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Operator statement passes (the Operator's Statement)",
     trust_model: "third_party_observation",
     signs:
-      "Each pass on its own: the statement id, the address, the chain and asset, the moment, the exact block range read and the chain head at read, the coverage word, inflows and outflows with counts and totals, the per-pass payer tally with its cap stated, and the pass's evidence hash — in the declared canonical order, so any one pass can be quoted alone.",
+      "Each pass on its own: the statement id, the address, the chain and asset, the moment, the exact block range (slot range on Solana, and the pass says which) read and the chain head at read, the coverage word, inflows and outflows with counts and totals, the per-pass payer tally with its cap stated, and the pass's evidence hash — in the declared canonical order, so any one pass can be quoted alone.",
     does_not_prove:
       "What any transfer was for, who the paying addresses are, or anything outside the block range, asset and chain the pass names. The summary on the history is arithmetic over the passes and is not itself signed; recount it. Blocks not yet read and passes we missed are our gaps, counted against us on the same page, never a fact about the address.",
     verify_url: "/api/operator-statement/{statement_id}",

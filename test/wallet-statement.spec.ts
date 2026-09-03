@@ -280,8 +280,10 @@ describe("the statement's network parameter", () => {
     expect(statementChain("eip155:8453")?.caip2).toBe("eip155:8453");
     expect(statementChain("polygon")?.caip2).toBe("eip155:137");
     expect(statementChain("eip155:137")?.caip2).toBe("eip155:137");
-    expect(statementChain("solana")).toBeNull();
+    // Solana joined the vocabulary 2026-09-02 (SOLANA_PARITY gap 1).
+    expect(statementChain("solana")?.caip2).toBe("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp");
     expect(statementChain("eip155:1")).toBeNull();
+    expect(statementChain("bitcoin")).toBeNull();
   });
 
   it("stamps the chain it actually read on the artifact", async () => {
