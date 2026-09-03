@@ -552,12 +552,20 @@ const BASE = "https://scvd.store";
  * carries "/corpus/round/{week}" and "/defects/{id}", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-SEVENTH — by the operators' room:
+ * one paragraph after the look's, for anyone who runs a door, naming
+ * /operators as the shelf from the seller's side in the order a
+ * launch happens, free first at each moment. Confirmed before this
+ * value was taken: the guide carries "/operators" and "never a
+ * ranking, and nothing there certifies anyone", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8a7d7878f1d5367dcf400a39d385f8f1815d81e2a531692176b13c4802fdaba4";
+  "c342c696675fdad5f091c0b6acd2c3fbd3aaba484d9817c7465fcffad0c75f2c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
