@@ -417,7 +417,23 @@ registryRoutes.get("/inflows", async (c) => {
       description:
         "What actually arrived at the payment addresses public x402 doors advertise. Counts only, no names; not sales and not revenue.",
       path: "/inflows",
-      bodyHtml,
+      bodyHtml: `${bodyHtml}${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: "Inflows to advertised x402 payment addresses",
+        description:
+          "What actually arrived, on chain, at the payment addresses public x402 doors advertise: how many advertised addresses received anything in the window, per rail, over how many blocks. Counts only, no names; not sales and not revenue. Read by hand from public chain state and published weekly.",
+        url: `${c.env.STORE_BASE_URL}/inflows`,
+        license: "https://creativecommons.org/licenses/by/4.0/",
+        isAccessibleForFree: true,
+        creator: organizationRef(c.env.STORE_BASE_URL),
+        ...(latest ? { dateModified: latest.published_at, temporalCoverage: latest.week } : {}),
+        distribution: {
+          "@type": "DataDownload",
+          encodingFormat: "application/json",
+          contentUrl: `${c.env.STORE_BASE_URL}/inflows`,
+        },
+      })}`,
     }),
   );
 });

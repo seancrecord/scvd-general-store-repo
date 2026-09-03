@@ -331,6 +331,64 @@ function developersHtml(base: string): string {
         "API documentation for scvd.store: OpenAPI contract, free conformance and preflight endpoints, the MCP server, x402 payment flow, error model, rate limits and versioning policy.",
       url: `${base}/developers`,
       author: organizationRef(base),
+    })}
+    ${jsonLdScript({
+      /*
+       * THE TOOLS, AS THE TYPE ENGINES LIFT FOR "is there a tool that"
+       * (2026-09-03, PR 3): the MCP server, the CLI and the two npm
+       * packages, each a SoftwareApplication with where to get it and
+       * what it costs. The names come from the same constants the
+       * guides print.
+       */
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          name: `${STORE_SERVICE_NAME} MCP server`,
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Any",
+          url: `${base}/mcp`,
+          description:
+            "A Model Context Protocol server with free x402 instruments (preflight any endpoint, check any issuer's signed offer or receipt, verify anything this store signed) and paid signed observations settled over x402.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          author: organizationRef(base),
+        },
+        {
+          "@type": "SoftwareApplication",
+          name: CLI_PACKAGE,
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Any",
+          downloadUrl: CLI_REGISTRY_URL,
+          installUrl: CLI_REGISTRY_URL,
+          codeRepository: CLI_SOURCE_URL,
+          description:
+            "The command line for scvd.store: preflight any x402 door, verify any issuer's signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          author: organizationRef(base),
+        },
+        {
+          "@type": "SoftwareApplication",
+          name: "x402-verify",
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Any",
+          downloadUrl: "https://www.npmjs.com/package/x402-verify",
+          description:
+            "Zero-dependency verifier for x402 Signed Offers and Receipts: JWS (EdDSA/Ed25519), did:web resolution, schema conformance, and externally anchored key history. Works on any issuer's artifacts.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          author: organizationRef(base),
+        },
+        {
+          "@type": "SoftwareApplication",
+          name: "x402-sign",
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Any",
+          downloadUrl: "https://www.npmjs.com/package/x402-sign",
+          description:
+            "Zero-dependency signer for x402 Signed Offers and Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s and generate your did:web document. The issuing half of x402-verify.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          author: organizationRef(base),
+        },
+      ],
     })}`;
 }
 

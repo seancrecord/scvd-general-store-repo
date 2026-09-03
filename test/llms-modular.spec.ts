@@ -545,12 +545,19 @@ const BASE = "https://scvd.store";
  * "independent verification for agentic commerce", and still every
  * earlier pin.
  *
+ * Re-taken 2026-09-03 — the THIRTY-THIRD — by the AEO plan's PR 3:
+ * one paragraph under "The corpus" naming the page per observed host,
+ * the page per signed week and the page per defect class, beside
+ * their JSON twins. Confirmed before this value was taken: the guide
+ * carries "/corpus/round/{week}" and "/defects/{id}", and still every
+ * earlier pin.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2a94e36f11239ecfbe42b009613cccde92060a175d41c3ffb3b50eae801b7f3b";
+  "8a7d7878f1d5367dcf400a39d385f8f1815d81e2a531692176b13c4802fdaba4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
