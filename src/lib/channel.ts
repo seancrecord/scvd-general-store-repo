@@ -81,6 +81,10 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
   // column. A directory's own liveness probe is the noise floor by
   // definition — we submitted to it.
   "probe", "qos", "liveness", "nohumans.directory",
+  // 2026-09-04, off the census: x402watch/1 (+https://x402watch.vercel.app)
+  // walked 21 of 32 doors inside a minute, 45 asks in a day, and sat in
+  // the organic column. It names its own job.
+  "x402watch",
   /**
    * Third pass, 2026-08-19: the census's walkers-still-organic table,
    * read by the keeper's own hand off the live page. Eleven clients

@@ -1,4 +1,4 @@
-import { renderAdminShell } from "@/pages/admin/layout";
+import { renderAdminShell, EVERY_ROOM } from "@/pages/admin/layout";
 import { escapeHtml } from "@/lib/sanitize";
 import type { ShutterState } from "@/services/shutter";
 
@@ -257,8 +257,10 @@ export function renderToolsPage(data: ToolsPageData): string {
   </section>
 
   <section>
-    <h2>Odds and ends</h2>
-    <p><a href="/admin/digest">Latest weekly digest (JSON)</a></p>
+    <h2>Every room</h2>
+    <p><small>The readings the 08-05 consolidation took off the top nav. Nothing here is on a
+    tab, so this is the one place all of it is reachable — held by test/admin-reach.spec.ts.</small></p>
+    <ul>${EVERY_ROOM.map((room) => `<li><a href="${room.href}">${escapeHtml(room.label)}</a></li>`).join("")}</ul>
   </section>`;
   return renderAdminShell("tools", body);
 }

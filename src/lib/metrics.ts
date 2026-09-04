@@ -859,6 +859,16 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
   // real wallet. Fold that history into the canonical row and
   // delete the corrupted one, so one wallet never shows as two.
   const legacyKey = `${KV_KEYS.payerPrefix}${address.trim().toLowerCase()}`;
+  /*
+   * WRITE, THEN DELETE (2026-09-04). This fold used to delete the
+   * legacy row and then write the merged one. A KV failure between the
+   * two — the write ceiling this store already documents, where writes
+   * fail silently — loses the legacy row's purchases for good, and the
+   * settle counter it once matched then reads as "moved a counter
+   * without writing a payer row" on the books check. The merged row
+   * goes down first now; the legacy key is deleted only once it has.
+   */
+  let foldedLegacyKey: string | undefined;
   if (legacyKey !== key) {
     const legacy = await kvGetJson<PayerRecord>(env.COUNTERS, legacyKey, "json");
     if (legacy) {
@@ -872,7 +882,7 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
                 : existing.first_seen,
           }
         : legacy;
-      await env.COUNTERS.delete(legacyKey);
+      foldedLegacyKey = legacyKey;
     }
   }
   const record: PayerRecord = existing
@@ -889,6 +899,9 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
         purchases: 1,
       };
   await kvPut(env.COUNTERS, key, JSON.stringify(record));
+  if (foldedLegacyKey) {
+    await env.COUNTERS.delete(foldedLegacyKey);
+  }
 }
 
 export interface LedgerRow {
