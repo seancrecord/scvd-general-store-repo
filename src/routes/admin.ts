@@ -1854,7 +1854,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
     new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
   );
   const healed = healedAfterOutreach(round, ledger);
-  const { readCitationWatch, citationProspects } = await import("@/services/citation-watch");
+  const { readCitationWatch, watchedProspects } = await import("@/services/citation-watch");
   const citations = await readCitationWatch(c.env);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
@@ -1865,7 +1865,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       healed,
       ledger,
       citations,
-      citation_prospects: citationProspects(),
+      citation_prospects: watchedProspects(),
     });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");

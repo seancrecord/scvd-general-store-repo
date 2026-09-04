@@ -22,7 +22,7 @@ the date the keeper says he sent it, and only then. `cites since` stays empty un
 | [Agent Identity Registry](https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR) | https://agentidentityregistry.org/contact | — | — | — |
 | [Agent Plugins Directory](https://agentpluginsdirectory.com/plugins/scvd-general-store) | info@ellelion.com | — | — | — |
 | [agent-tools.cloud](https://agent-tools.cloud/services/scvd-store-bazaar) | https://agent-tools.cloud/about | — | — | — |
-| [AgentAge Catalog](https://catalog.agentage.io/mcp/store-scvd-general-store) | support@agentage.io | — | — | 2026-09-04 |
+| [AgentAge Catalog](https://catalog.agentage.io/mcp/store-scvd-general-store) | support@agentage.io | — | — | — |
 | [AgentBiz](https://agentbiz.mysterio.cloud) | — | — | — | — |
 | [agentic.market](https://agentic.market/services/scvd-store) | https://agentic.market/about | — | — | — |
 | [Audit Tools](https://audit-tools.ai) | — | — | — | — |
@@ -44,7 +44,7 @@ the date the keeper says he sent it, and only then. `cites since` stays empty un
 | [FractalAI � Post-Quantum Proofs for AI Agents](https://fractalai.net.co) | — | — | — | — |
 | [getdrio](https://www.getdrio.com/mcp/store-scvd-general-store) | https://www.getdrio.com/contact | — | — | — |
 | [getmcp.es](https://www.getmcp.es/servers/general-store) | — | — | — | — |
-| [Glama](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo) | https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/blob/17ece1c95c5e4f0eb9b58ac58467409a37b186ec/WALKABOUT.md | — | — | 2026-09-04 |
+| [Glama](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo) | https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/blob/17ece1c95c5e4f0eb9b58ac58467409a37b186ec/WALKABOUT.md | — | — | — |
 | [Hermes Plant](https://hermesplant.com/agent-services/action-safety-workflow) | contact@hermesplant.com | — | — | — |
 | [Herramientas Cobrables](https://herramientas-cobrables.consultoressasic.chatgpt.site) | — | — | — | — |
 | [HexScan](https://hexscan.xyz) | glm-5.2@basecradle.com | — | — | — |
@@ -61,13 +61,13 @@ the date the keeper says he sent it, and only then. `cites since` stays empty un
 | [m8ven.ai](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v) | https://m8ven.ai/mcp/tydung26-websupport-mcp-1i3pwi | — | — | — |
 | [MCP Lookup](https://mcplookup.com/server/store.scvd/general-store) | hello@mcplookup.com | — | — | — |
 | [MCP Registry (official)](https://registry.modelcontextprotocol.io) | — | — | — | — |
-| [mcp-marketplace.io](https://mcp-marketplace.io/server/store-scvd-general-store) | support@mcp-marketplace.io | — | — | 2026-09-04 |
+| [mcp-marketplace.io](https://mcp-marketplace.io/server/store-scvd-general-store) | support@mcp-marketplace.io | — | — | — |
 | [mcp.so](https://mcp.so/servers/scvd-store) | — | — | — | — |
 | [MCPBeat](https://mcpbeat.com/mcp-servers/scvd/general-store/) | — | — | — | — |
 | [mcpindex.ai](https://mcpindex.ai/server/store-scvd-general-store) | hello@mcpindex.ai | — | — | — |
 | [MCPmarket](https://mcpmarket.com/server/sean-claude-van-damme-s-general-store) | — | — | — | — |
 | [mcppedia](https://mcppedia.org/s/store-scvd-general-store) | https://mcppedia.org/about | — | — | — |
-| [mcpservers.org](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo) | https://github.com/seancrecord/scvd-general-store-repo/blob/HEAD/WALKABOUT.md | — | — | 2026-09-04 |
+| [mcpservers.org](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo) | https://github.com/seancrecord/scvd-general-store-repo/blob/HEAD/WALKABOUT.md | — | — | — |
 | [Nishvault x402 Pre-Send Guard](https://api.nishvault.com/elizaos-action) | — | — | — | — |
 | [nsgoods Sanctions Screening Oracle](https://x402.nsgoods.org) | #about | — | — | — |
 | [Payan Catalog Health Checker](https://payanagent.com) | payanagent@agentmail.to | — | — | — |
@@ -86,7 +86,7 @@ the date the keeper says he sent it, and only then. `cites since` stays empty un
 | [signal402](https://signal402.com/services/scvd-store) | — | — | — | — |
 | [skills.sh](https://skills.sh/seancrecord/scvd-general-store-repo) | — | — | — | — |
 | [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store) | support@smithery.ai | — | — | — |
-| [socketcat](https://socketcat.com/servers/store.scvd/general-store) | https://socketcat.com/blueprints?category=support | — | — | 2026-09-04 |
+| [socketcat](https://socketcat.com/servers/store.scvd/general-store) | https://socketcat.com/blueprints?category=support | — | — | — |
 | [Sourcey Startup Review](https://sourcey.com) | https://sourcey.com/catalog/creatorsuite/offers/annual-plan-discount-and-support | — | — | — |
 | [Spoolis](https://spoolis.com) | — | — | — | — |
 | [StillOS Notary](https://nolawealthfinancial.com) | https://nolawealthfinancial.com/about/ | — | — | — |
@@ -104,11 +104,11 @@ the date the keeper says he sent it, and only then. `cites since` stays empty un
 | [VirtualSMS](https://virtualsms.io) | — | — | — | — |
 | [Watchtower](https://watchtower-api.com) | — | — | — | — |
 | [x402 Trust Prober](https://x402.fuchss.app) | — | — | — | — |
-| [x402-bazaar](https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7) | — | — | — | 2026-09-04 |
+| [x402-bazaar](https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7) | — | — | — | — |
 | [x402-list](https://x402-list.com) | info@x402-list.com | — | — | — |
 | [x402-tools / OpenClaw Productions diagnostics](https://openclawproductions.com) | — | — | — | — |
 | [x402-trust-mcp](https://github.com/JonasFuchss/x402-trust-mcp) | https://github.com/contact/report-content?content_url=https%3A%2F%2Fgithub.com%2FJonasFuchss%2Fx402-trust-mcp&amp;report=JonasFuchss+%28user%29 | — | — | — |
 | [x402audit.dev](https://x402audit.dev) | — | — | — | — |
-| [x402scan](https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597) | — | — | — | 2026-09-04 |
+| [x402scan](https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597) | — | — | — | — |
 | [Xingchen SentriScan ASP](https://asp.xhdym.sbs) | — | — | — | — |
 | [zbs.gg index](https://index.zbs.gg/en/mcp/store-scvd-general-store/) | — | — | — | — |

@@ -4,28 +4,37 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import {
   judgePage,
   type CitationJudgement,
-  type CitationProspect,
   type CitingSystem,
   type Fetched,
+  type OutreachEntry,
 } from "@/lib/citations";
 import CITING_SYSTEMS_FILE from "@/store/citing-systems.json";
-import PROSPECTS_FILE from "@/store/citation-prospects.json";
+import OUTREACH_REGISTER from "../../registry/scorers-outreach.json";
 import type { Env } from "@/types";
 
 /**
  * THE CITATION WATCH ON THE SUNDAY PRESS (2026-09-04; the keeper:
  * "can we not just automate this weekly check in admin?").
  *
- * Two lists, one check. The REGISTER (src/store/citing-systems.json)
- * is what /scorers renders, and an entry whose page stops citing us
- * is `gone` — the page would then be making a claim its check no
- * longer supports. The PROSPECTS (src/store/citation-prospects.json)
- * are the pages the scorers note went to, and a prospect whose page
- * starts carrying a row is the news the keeper was waiting on: it
+ * Two lists, one check, and since 2026-09-04 neither is typed twice.
+ * The CITED REGISTER (src/store/citing-systems.json) is what /scorers
+ * renders, and an entry whose page stops citing us is `gone` — the
+ * page would then be making a claim its check no longer supports.
+ * The OUTREACH REGISTER (registry/scorers-outreach.json, the keeper's
+ * own sheet, rendered to a table by `npm run outreach:build`) holds
+ * every system that scores or lists x402 doors; the watch reads the
+ * ones we WROTE TO, plus any already carrying a row. One of those
+ * starting to carry a row is the news the keeper was waiting on: it
  * pages, and it is printed on /admin/outreach beside the queue it
- * came from. Until then a prospect is `silent`, which is not a
- * finding. A page that could not be read is `unreadable` and neither
- * pages nor counts.
+ * came from. Until then it is `silent`, which is not a finding. A
+ * page that could not be read is `unreadable` and neither pages nor
+ * counts.
+ *
+ * WHY THE WRITTEN-TO SET and not all 101: the cron watches who we
+ * spoke to, which is the set where an answer is expected and which
+ * costs one subrequest each. `npm run outreach:check` sweeps the
+ * whole register from the keeper's machine, where no subrequest
+ * budget applies. Same file, same matcher, two reaches.
  *
  * Nothing here edits either file: the watch reads, judges, stores
  * one report, and pages. Moving a prospect into the register is the
@@ -59,9 +68,20 @@ function listedSystems(): CitingSystem[] {
   return Array.isArray(systems) ? (systems as CitingSystem[]) : [];
 }
 
-export function citationProspects(): CitationProspect[] {
-  const prospects = (PROSPECTS_FILE as { prospects?: unknown }).prospects;
-  return Array.isArray(prospects) ? (prospects as CitationProspect[]) : [];
+/** Every row of the outreach register, as written. */
+export function outreachRegister(): OutreachEntry[] {
+  const systems = (OUTREACH_REGISTER as { systems?: unknown }).systems;
+  return Array.isArray(systems) ? (systems as OutreachEntry[]) : [];
+}
+
+/**
+ * The rows the Sunday watch actually fetches: the ones the keeper has
+ * sent the note to, plus any already carrying a row (so a citation
+ * going away is caught too). A page nobody wrote to and that has
+ * never cited is the CLI sweep's business, not the cron's.
+ */
+export function watchedProspects(): OutreachEntry[] {
+  return outreachRegister().filter((entry) => entry.note_sent !== null || entry.cites_since !== null);
 }
 
 async function readPage(url: string, base: string): Promise<Fetched> {
@@ -90,7 +110,7 @@ export async function readCitationWatch(env: Env): Promise<CitationWatchReport |
  * page as new, because nobody had been told.
  */
 export function judgeWatch(
-  pages: { listed: { system: CitingSystem; fetched: Fetched }[]; prospects: { prospect: CitationProspect; fetched: Fetched }[] },
+  pages: { listed: { system: CitingSystem; fetched: Fetched }[]; prospects: { prospect: OutreachEntry; fetched: Fetched }[] },
   previous: CitationWatchReport | null,
   base: string,
   now: Date,
@@ -103,7 +123,7 @@ export function judgeWatch(
     })),
     ...pages.prospects.map(({ prospect, fetched }) => ({
       kind: "prospect" as const,
-      dated: prospect.noted,
+      dated: prospect.note_sent ?? prospect.cites_since ?? "",
       ...judgePage(prospect.name, prospect.url, fetched, base, "silent"),
     })),
   ];
@@ -120,7 +140,7 @@ export async function runCitationWatch(env: Env, now: Date = new Date()): Promis
     listedSystems().map(async (system) => ({ system, fetched: await readPage(system.cites_at, base) })),
   );
   const prospects = await Promise.all(
-    citationProspects().map(async (prospect) => ({ prospect, fetched: await readPage(prospect.url, base) })),
+    watchedProspects().map(async (prospect) => ({ prospect, fetched: await readPage(prospect.url, base) })),
   );
   const report = judgeWatch({ listed, prospects }, previous, base, now);
   await kvPut(env.COUNTERS, KV_KEYS.citationWatch, JSON.stringify(report));
@@ -133,7 +153,7 @@ export async function runCitationWatch(env: Env, now: Date = new Date()): Promis
       key: url,
       detail:
         row.kind === "prospect"
-          ? `${row.name} started carrying a row: ${url} cites ${row.citations.slice(0, 3).join(", ")}. If it meets the five listing facts, add it to src/store/citing-systems.json with this URL and today's date; nothing else is typed.`
+          ? `${row.name} started carrying a row: ${url} cites ${row.citations.slice(0, 3).join(", ")}. Set cites_since on their row in registry/scorers-outreach.json, and if it meets the five listing facts add them to src/store/citing-systems.json with this URL and today's date; nothing else is typed.`
           : `${row.name} cites again at ${url}: ${row.citations.slice(0, 3).join(", ")}.`,
     });
   }

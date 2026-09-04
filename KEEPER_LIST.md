@@ -60,15 +60,29 @@ build, it is on the roadmap.
   citing URL and the date first seen, and nothing else.
   AUTOMATED 2026-09-04 ("can we not just automate this
   weekly check in admin?"): the citation watch rides the
-  Sunday press with the ward round. It reads every page the
-  register and `src/store/citation-prospects.json` name,
-  pages `citation_seen` when a prospect starts carrying a
-  row or a listed page stops, and prints the rows on
-  `/admin/outreach` under "Citations — who carries a row"
-  with a Check-now button. Your hand: put each page the
-  scorers note goes to in the prospects file (name, URL,
-  date noted) and keep pushing; move a prospect into the
-  register only when the five facts hold.
+  Sunday press with the ward round, and since CV's register
+  landed it reads ONE hand-kept list —
+  `registry/scorers-outreach.json`. The cron fetches the
+  rows you have written to (plus any already citing) and
+  pages `citation_seen` when one starts carrying a row or a
+  listed page stops; `npm run outreach:check` sweeps all
+  101 from your machine. The rows print on `/admin/outreach`
+  under "Citations — who carries a row" with a Check-now
+  button. Your hand: set `note_sent` on a row the day you
+  send, run `npm run outreach:build`, and move a system into
+  `src/store/citing-systems.json` only when the five facts
+  hold.
+  ⚑ CORRECTED 2026-09-04, and worth knowing: the first
+  sweep reported SEVEN directories as citing us. Six carried
+  this store's own README sentence ("read the dated,
+  Bitcoin-anchored corpus, free, at scvd.store/corpus") and
+  one our own sample certificate — our words on their page,
+  which listing fact 4 excludes by name. The matcher now
+  counts only a page pointing at ONE ROW: a verify URL, a
+  numbered entry, a host history, a round, or the cite
+  shape. The seven `cites_since` dates were cleared; the
+  check re-establishes any that are real. Nobody has cited
+  us yet, which is the true reading.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a
