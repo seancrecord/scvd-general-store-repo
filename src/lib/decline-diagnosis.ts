@@ -182,7 +182,11 @@ export function bookedReason(
     return reason;
   }
   const opaque =
+    // `verify_error` and its classes alike: knowing the CALL timed out
+    // still says nothing about the payload, so our reading of the
+    // payload is still worth appending.
     reason === "verify_error" ||
+    reason.startsWith("verify_error:") ||
     reason === "verification_declined" ||
     reason.startsWith("unspecified");
   return opaque ? `${reason}+payload:${first.field}` : reason;
@@ -251,3 +255,87 @@ export function diagnoseDecline(
   }
   return diagnosis;
 }
+
+/**
+ * A REFUSAL THAT WAS NEVER A JUDGEMENT (2026-09-04).
+ *
+ * `verify_error` means the verify CALL failed — our pipe to the
+ * facilitator, its latency, or its own error — so the payload was
+ * never examined. The buyer did nothing wrong, their signature is
+ * still good, their nonce is unspent, and no money moved.
+ *
+ * What we sent them said the opposite. The 402 carried "The signed
+ * payment was not accepted", the whole hand-rolling signing guide,
+ * and a machine code that looks exactly like the ones that ARE their
+ * fault. An agent reading that concludes its payment was rejected and
+ * does one of two wrong things: re-signs a fresh authorization
+ * (burning a nonce and a round trip on a payload that was already
+ * fine), or marks the door broken and leaves. The correct move —
+ * resend the byte-identical header in a moment — is the one thing the
+ * response never said.
+ *
+ * The `+payload:` suffix is the exception: bookedReason appends it
+ * when our own pre-flight DID find something wrong with what they
+ * sent, and then the payload really is worth another look.
+ */
+export function isNeverJudged(decline: DeclineReason | undefined): boolean {
+  const reason = decline?.reason;
+  if (reason === undefined) {
+    return false;
+  }
+  return (
+    (reason === "verify_error" || reason.startsWith("verify_error:")) &&
+    !reason.includes("+payload:")
+  );
+}
+
+/** How long the authorization they already signed stays good. */
+export function signedValidBefore(header: string | undefined): number | undefined {
+  if (!header) {
+    return undefined;
+  }
+  try {
+    const payload = JSON.parse(atob(header)) as unknown;
+    const auth = isRecord(payload) && isRecord(payload["payload"])
+      ? payload["payload"]["authorization"]
+      : undefined;
+    const value = isRecord(auth) ? auth["validBefore"] : undefined;
+    const seconds = typeof value === "string" ? Number(value) : NaN;
+    return Number.isFinite(seconds) ? seconds : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The seconds we ask an agent to wait before resending the same payload. */
+export const RESEND_AFTER_SECONDS = 2;
+
+/**
+ * The words BOTH doors say when the payload was never judged. Shared
+ * for the same reason the reading itself is: on 2026-07-29 the HTTP
+ * door had the whole decline instrument and the MCP door had none of
+ * it, and one door getting the good answer is the bug, not the fix.
+ * The MCP door is the one an agent reads as JSON with no human in the
+ * loop, so it is the last place that should get the vaguer wording.
+ */
+export function neverJudgedBlock(
+  signedUntil?: number,
+): Record<string, unknown> {
+  return {
+    fault: "upstream",
+    note: "Your payment was NEVER JUDGED. The call from this store to the payment facilitator failed, so nothing looked at your signature, your authorization or your wallet. No money moved, your nonce is unspent, and nothing is wrong with what you sent.",
+    retry: {
+      resend_identical_payload: true,
+      after_seconds: RESEND_AFTER_SECONDS,
+      ...(signedUntil ? { payload_valid_until: signedUntil } : {}),
+      how: `Wait ${RESEND_AFTER_SECONDS} seconds and send the SAME payment payload again, byte for byte, to this same resource. Do not re-sign and do not generate a new nonce${signedUntil ? ` — the authorization you already hold is good until unix ${signedUntil}` : ""}. Re-signing is not unsafe, it is just wasted work on a payload that was never the problem.`,
+      if_it_repeats:
+        "Two or three of these in a row is an outage on the payment rail rather than anything you can fix. Back off and come back later; the price and the goods will be here.",
+    },
+  };
+}
+
+/** The note for a refusal that WAS a judgement. */
+export const JUDGED_NOTE =
+  "The signed payment was not accepted; no money moved and nothing left the shelf.";
+

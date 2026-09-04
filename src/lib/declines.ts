@@ -257,11 +257,46 @@ export function readReason(raw: string): {
         "The x402 SDK refused this before the facilitator saw it, and its own words are in the message beside this reading. No hook fires on that path, so this line exists to keep the reason from vanishing.",
     };
   }
+  /**
+   * WHICH WAY THE VERIFY CALL DIED (2026-09-04). The class is booked
+   * now (payments.ts classifyVerifyFailure), and these are not one
+   * incident with one reading — the 4xx is an emergency of ours and
+   * the 5xx is not ours at all. Bare `verify_error` below is the
+   * historical row, from before the classes existed.
+   */
+  if (reason === "verify_error:upstream_4xx") {
+    return {
+      fault: "ours",
+      reading:
+        "EMERGENCY, AND IT IS OURS. The facilitator ANSWERED the verify call and refused US, not the buyer — a 4xx on this endpoint is our API key, our account or our quota, and it never looked at the payload. The buyer did nothing wrong and neither did their wallet. This is the shape that kills every sale at every door simultaneously while each row looks like one unlucky buyer, so treat a single one as live: check the CDP credentials in the worker's secrets first, then the account's standing.",
+    };
+  }
+  if (reason === "verify_error:upstream_5xx") {
+    return {
+      fault: "facilitator",
+      reading:
+        "The facilitator answered the verify call with its own 5xx: it was up enough to reply and broken enough not to judge. Nothing to fix on either side — not the buyer's payload, not our credentials, not our egress. No money moved; what was lost is the sale. The same doctrine as a settle 5xx, on the read-only end of the pipe where a retry is free.",
+    };
+  }
+  if (reason === "verify_error:timeout") {
+    return {
+      fault: "unknown",
+      reading:
+        "Both verify attempts ran out the 10s leash — roughly 20 seconds of asking, twice, with nothing coming back. Their latency or our egress; from inside the worker the two are indistinguishable, which is why this stays UNCLEAR rather than guessing. A cluster is an outage window (the 2026-08-27 00:53 incident booked three in four minutes); a steady trickle of singles is our own egress lane and is worth a look at the worker's outbound path before anyone blames CDP.",
+    };
+  }
+  if (reason === "verify_error:transport") {
+    return {
+      fault: "unknown",
+      reading:
+        "The verify call never got an answer at all — no status, no body, the connection failed before the facilitator could judge anything (DNS, connect, or a reset mid-flight). Not a timeout: this one died faster than the leash. Our egress lane is the first suspect precisely because the far end never spoke; check that before the facilitator's status page.",
+    };
+  }
   if (reason === "verify_error") {
     return {
       fault: "unknown",
       reading:
-        "The verify CALL failed — timeout or transport between us and the facilitator, or its own 5xx — so the payload was never judged at all. Bare like this (no +payload suffix), our own preflight found nothing wrong with what the buyer sent: suspicion points at the pipe, not the payer. No money moved; what was lost is the sale. Since 2026-08-27 verify runs on a 10s leash with one fast retry, so a row here means BOTH attempts failed — a cluster of these is an outage window (the 2026-08-27 00:53 incident booked three in four minutes), a steady trickle of singles is worth checking our own egress lane.",
+        "The verify CALL failed — timeout or transport between us and the facilitator, or its own 5xx — so the payload was never judged at all. Bare like this (no +payload suffix), our own preflight found nothing wrong with what the buyer sent: suspicion points at the pipe, not the payer. No money moved; what was lost is the sale. Since 2026-08-27 verify runs on a 10s leash with one fast retry, so a row here means BOTH attempts failed — a cluster of these is an outage window (the 2026-08-27 00:53 incident booked three in four minutes), a steady trickle of singles is worth checking our own egress lane. A row carrying this BARE code was booked before 2026-09-04, when the class (timeout, transport, upstream_4xx, upstream_5xx) began riding the code — for one of these the way it died is not recoverable.",
     };
   }
   /**
