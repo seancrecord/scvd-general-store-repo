@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createHmac, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 /**
@@ -71,6 +72,12 @@ function usage() {
   scvd catalog                  Every developer resource, from the
                                 RFC 9727 API catalog.
   scvd versions                 Every API version served, and any sunset.
+  scvd trade check <item> [f|-] Sign a trade order against the SANDBOX
+                                account with its published secret and
+                                ask the check desk which of the four
+                                signature checks pass. Nothing delivered.
+  scvd trade order <item> [f|-] The same, delivered: real goods, marked
+                                test, booked to nobody.
 
 Flags
   --json                        Print the server's response verbatim.
@@ -167,7 +174,87 @@ function printBudget({ remaining, reset }) {
   );
 }
 
+/**
+ * THE SANDBOX SIGNER (2026-09-03). Signs with the sandbox's PUBLISHED
+ * secret, read off /api/trade/contract rather than typed here, so this
+ * command never holds a credential of anyone's: a marketplace proving
+ * its integration copies the same four headers with its own secret in
+ * its own code (the snippets on /trade.md). The promise below the help
+ * — this tool never asks for a credential — stays true by construction.
+ */
+async function signedTradeRequest(itemId, bodyArgument, door) {
+  const contract = await call("/api/trade/contract");
+  const sandbox = (contract.json.accounts ?? []).find((row) => row.published_secret);
+  if (!sandbox) fail("The store's contract lists no sandbox account to sign against.", EXIT.unreachable);
+  const body = bodyArgument
+    ? readInput(bodyArgument)
+    : JSON.stringify({ summary: "a sandbox order from scvd-cli", order_ref: `cli-${Date.now()}` });
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const nonce = randomBytes(16).toString("hex");
+  const signature = createHmac("sha256", sandbox.published_secret)
+    .update(`${timestamp}.${nonce}.${body}`)
+    .digest("hex");
+  const path = door === "check"
+    ? `/api/trade/${sandbox.account}/check`
+    : `/api/trade/${sandbox.account}/${itemId}`;
+  const url = `${BASE}${path}`;
+  let response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "User-Agent": `scvd-cli/${VERSION} (+${BASE}/developers)`,
+        "X-Trade-Key": sandbox.published_provider_key,
+        "X-Trade-Timestamp": timestamp,
+        "X-Trade-Nonce": nonce,
+        "X-Trade-Signature": `sha256=${signature}`,
+      },
+      body,
+    });
+  } catch (error) {
+    fail(`Could not reach ${url}: ${error.message}`, EXIT.unreachable);
+  }
+  const text = await response.text();
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    fail(`${url} answered ${response.status} with something that is not JSON.`, EXIT.unreachable);
+  }
+  return { status: response.status, json, remaining: null, reset: null };
+}
+
 const COMMANDS = {
+  async trade(args, options) {
+    const [door, itemId, bodyArgument] = args;
+    if (door !== "check" && door !== "order") {
+      fail("scvd trade check|order <item_id> [file|-] — check reports the signature checks; order delivers on the sandbox.");
+    }
+    if (!itemId) fail("scvd trade check|order <item_id> — a menu id at the counter, e.g. context_anchor.");
+    const result = await signedTradeRequest(itemId, bodyArgument, door);
+    if (options.json) return dump(result);
+    if (door === "check") {
+      const report = result.json;
+      process.stdout.write(`  would pass: ${report.would_pass}${report.first_failure ? ` (first failure: ${report.first_failure})` : ""}\n`);
+      const checks = report.checks ?? {};
+      process.stdout.write(`  ${mark(checks.headers?.missing?.length === 0)}  headers present\n`);
+      process.stdout.write(`  ${mark(checks.provider_key === "ok" || checks.provider_key === "not_in_this_dialect")}  provider key\n`);
+      process.stdout.write(`  ${mark(checks.timestamp?.within_window === true)}  timestamp within window (skew ${checks.timestamp?.skew_seconds ?? "?"}s)\n`);
+      process.stdout.write(`  ${mark(checks.nonce?.shape_ok !== false)}  nonce shape\n`);
+      process.stdout.write(`  ${mark(checks.signature?.verified_with !== "none")}  signature (${checks.signature?.verified_with ?? "?"})\n`);
+      process.stdout.write(`  ${mark(checks.replay === "fresh")}  replay (${checks.replay ?? "?"})\n`);
+      return report.would_pass ? EXIT.ok : EXIT.verdictNegative;
+    }
+    if (result.status !== 200) {
+      process.stdout.write(`${result.json.code ?? result.status}: ${result.json.error ?? ""}\n`);
+      return EXIT.verdictNegative;
+    }
+    process.stdout.write(`  delivered: ${result.json.item_id} (${result.json.settled_via})\n  certificate: ${result.json.certificate?.cert_id}\n  verify: ${result.json.verify_url}\n`);
+    return EXIT.ok;
+  },
+
   async preflight(args, options) {
     const url = args[0];
     if (!url) fail("scvd preflight <url> — the URL a buyer would GET.");

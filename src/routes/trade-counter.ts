@@ -13,8 +13,10 @@ import { fulfillPurchase } from "@/services/fulfillment";
 import {
   alertCapReached,
   creditCeilingReached,
+  notifyTradeCallback,
   recallOrder,
   recordTradeDelivery,
+  signedStatement,
   tradeCatalog,
   tradeDayCount,
   tradeLedger,
@@ -49,6 +51,7 @@ import {
   TRADE_SANDBOX_ID,
   TRADE_SECURITY_DOES,
   TRADE_SECURITY_STORES,
+  TRADE_SNIPPETS,
   TRADE_STANDFIRST,
   TRADE_UPLIFT_BPS,
   TRADE_WHAT_IT_IS_FOR,
@@ -233,7 +236,8 @@ function howToCall(base: string) {
   return {
     request: `POST ${base}/api/trade/{account}/{item_id}`,
     content_type: "application/json",
-    body: "One JSON object carrying the item's fields (see shelf[].fields) at the top level or under `inputs`, plus optional order_ref (idempotency, up to 120 chars), agent_name and purpose.",
+    body: "One JSON object carrying the item's fields (see shelf[].fields) at the top level or under `inputs`, plus optional order_ref (idempotency, up to 120 chars), agent_name, purpose, and callback_url (an https URL we POST the signed delivery receipt to, once, after the response).",
+    signers: TRADE_SNIPPETS,
     headers_in_our_dialect: dialectRow(dialect).headers,
     sign: `HMAC-SHA256 with the secret you issued us, over ${dialectRow(dialect).signing_string_in_words}; send as ${dialect.signature_header}: ${dialect.signature_prefix}<hex>. Timestamp is unix seconds; nonce is 32 hex characters, fresh per request.`,
     then: "Expect 200 and one JSON object inside 30 seconds. Anything else is a named refusal with delivered:false and billed:false; see errors.",
@@ -399,13 +403,20 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
     const error = errorByCode("replayed");
     return c.json(refusal(error, error.meaning), 409);
   }
-  const statement = await tradeStatement(c.env, partner);
+  const readAt = new Date().toISOString();
+  const signed = await signedStatement(c.env, partner, readAt);
   return c.json({
     what_this_is:
-      "Your account's statement, both sides: every delivery row (item, certificate, trade price, your share, our net, your order_ref) and every payout the keeper has recorded, newest first, with the summary the public ledger prints. Reconcile it against your own; a line you dispute is a letter to the store.",
-    read_at: new Date().toISOString(),
+      "Your account's statement, both sides: every delivery row (item, certificate, trade price, your share, our net, your order_ref) and every payout the keeper has recorded, newest first, with the summary the public ledger prints — signed with the store's published key, so your own tooling can check it offline. Reconcile it against your own; a line you dispute is a letter to the store.",
+    read_at: readAt,
     signed_with: verdict.signed_with,
-    ...statement,
+    ...signed.signed_payload,
+    signed_payload: signed.signed_payload,
+    signature_jcs: signed.signature_jcs,
+    public_key: signed.public_key,
+    algorithm: "ed25519",
+    signature_covers: signed.signature_covers,
+    canonical_form: signed.canonical_form,
   });
 });
 
@@ -597,7 +608,9 @@ function roomHtml(base: string): string {
 <section>
   <h2>The call</h2>
   <p class="menu-desc"><code>POST ${escapeHtml(base)}/api/trade/{account}/{item_id}</code> with one JSON object. Sign HMAC-SHA256 over <code>${escapeHtml(dialect.signing_string_in_words)}</code> with the secret you issued us and send it as <code>${escapeHtml(dialect.headers.signature)}: sha256=&lt;hex&gt;</code>, beside <code>${escapeHtml(dialect.headers.timestamp)}</code> (unix seconds) and <code>${escapeHtml(dialect.headers.nonce ?? "")}</code> (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send <code>order_ref</code> on every call so a retry after a timeout returns the original delivery instead of a second one. A partner that already signs in another dialect keeps it; the account row names which.</p>
-  <p class="menu-desc">The reference signer is public: <a href="${REPO_SIGNER}"><code>src/lib/trade-auth.ts</code></a>. Sign a body with it and compare bytes with yours before the account goes live.</p>
+  <p class="menu-desc">The reference signer is public: <a href="${REPO_SIGNER}"><code>src/lib/trade-auth.ts</code></a>. Sign a body with it and compare bytes with yours before the account goes live. Or paste one of these: each runs as written against the sandbox.</p>
+  ${TRADE_SNIPPETS.map((snippet) => `<details><summary>${escapeHtml(snippet.label)}</summary><pre class="menu-desc"><code>${escapeHtml(snippet.code)}</code></pre></details>`).join("")}
+  <p class="menu-meta">From a shell: <code>npx scvd trade check context_anchor</code> signs a sandbox order with the published secret and asks the check desk; <code>npx scvd trade order</code> delivers.</p>
   <p class="menu-desc">Your own statement, both sides, is yours to read: <code>GET /api/trade/{account}/statement</code>, signed over the empty body like any order. Refunds to your customer are yours; this store took no payment and can return none.</p>
   <h3>Every refusal, by name</h3>
   <ul>${errors}</ul>
@@ -676,6 +689,11 @@ ${shelf}
 
 ## The call
 \`POST ${base}/api/trade/{account}/{item_id}\` with one JSON object. Sign HMAC-SHA256 over \`${dialect.signing_string_in_words}\` with the secret you issued us; send it as \`${dialect.headers.signature}: sha256=<hex>\` beside \`${dialect.headers.timestamp}\` (unix seconds) and \`${dialect.headers.nonce ?? ""}\` (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send \`order_ref\` on every call. Your own statement: \`GET ${base}/api/trade/{account}/statement\`, signed over the empty body. Reference signer: ${REPO_SIGNER}
+
+### A signer to paste
+${TRADE_SNIPPETS.map((snippet) => `**${snippet.label}**\n\n\`\`\`${snippet.language}\n${snippet.code}\n\`\`\``).join("\n\n")}
+
+From a shell: \`npx scvd trade check context_anchor\` signs a sandbox order with the published secret and asks the check desk; \`npx scvd trade order\` delivers. Add \`callback_url\` to any order and the signed delivery receipt is POSTed there once, after the response.
 
 ### Every refusal, by name
 ${errors}
@@ -859,7 +877,30 @@ tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
       ? String((certificate as { cert_id: unknown }).cert_id)
       : "unknown";
   try {
-    await recordTradeDelivery(c.env, partner, item, settlement, certId, response);
+    const booked = await recordTradeDelivery(c.env, partner, item, settlement, certId, response);
+    /*
+     * THE DELIVERY RECEIPT, AFTER THE RESPONSE. A partner that gave a
+     * callback_url is told in our own name once the goods are theirs;
+     * it rides waitUntil so their synchronous clock never pays for
+     * their own endpoint's latency. Outcome on the ledger row either
+     * way. No execution context (a direct call in a test) means no
+     * receipt and no failure — the certificate still verifies.
+     */
+    if (checked.callback_url) {
+      const receipt = notifyTradeCallback(
+        c.env,
+        partner,
+        booked.key,
+        booked.row,
+        checked.callback_url,
+        response,
+      ).catch(() => undefined);
+      try {
+        c.executionCtx.waitUntil(receipt);
+      } catch {
+        await receipt;
+      }
+    }
   } catch (error) {
     const { sendAlert } = await import("@/lib/alerts");
     await sendAlert(c.env, {

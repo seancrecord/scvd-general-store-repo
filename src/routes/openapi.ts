@@ -1625,6 +1625,12 @@ const TRADE_ORDER_BODY: OpenApiObject = {
     },
     agent_name: { type: "string", maxLength: 80 },
     purpose: { type: "string", maxLength: 280 },
+    callback_url: {
+      type: "string",
+      format: "uri",
+      description:
+        "Optional. A public https URL; after the response, the signed delivery receipt (certificate, signature, verify_url) is POSTed there once, with Web Bot Auth headers on the request. The outcome is written on your statement row.",
+    },
     url: { type: "string", format: "uri", description: "For the probe items: a public https door." },
     summary: { type: "string", description: "context_anchor: the state to remember." },
     digest: { type: "string", pattern: "^[0-9a-fA-F]{64}$", description: "bitcoin_anchor: a sha256 you computed." },
@@ -1778,6 +1784,12 @@ const TRADE_STATEMENT_SCHEMA: OpenApiObject = {
     },
     deliveries_truncated: { type: "boolean" },
     payouts_truncated: { type: "boolean" },
+    signed_payload: { type: "object" },
+    signature_jcs: { type: "string" },
+    public_key: { type: "string" },
+    algorithm: { type: "string", enum: ["ed25519"] },
+    signature_covers: { type: "string" },
+    canonical_form: { type: "string" },
   },
 };
 

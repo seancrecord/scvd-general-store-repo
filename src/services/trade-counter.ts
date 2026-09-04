@@ -5,11 +5,15 @@ import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
+import { jcsCanonicalize, signJcs } from "@/lib/jcs";
+import { cachedPublicKeyHex } from "@/lib/signing";
 import { sha256Hex, type TradeSecrets } from "@/lib/trade-auth";
+import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import type { FulfillmentInput } from "@/services/fulfillment";
 import { validSubjectAddress } from "@/services/provenance-check";
 import {
+  TRADE_CALLBACK_TIMEOUT_MS,
   TRADE_EXAMPLE_SHARE_BPS,
   TRADE_ORDER_REF_MAX,
   TRADE_ORDER_TTL_SECONDS,
@@ -91,6 +95,8 @@ export interface TradeInputOk {
   ok: true;
   input: FulfillmentInput;
   order_ref?: string;
+  /** Where to POST the delivery receipt, validated like any probe target. */
+  callback_url?: string;
 }
 
 const SHA256_HEX = /^[0-9a-fA-F]{64}$/;
@@ -255,6 +261,40 @@ export function validateTradeInputs(
   const orderRef = sanitizeText(fields["order_ref"], TRADE_ORDER_REF_MAX);
   if (orderRef) {
     result.order_ref = orderRef;
+  }
+  const callback = fields["callback_url"];
+  if (callback !== undefined) {
+    // Same law as a probe target: https, public, never our own host.
+    // A bad callback refuses the ORDER rather than being dropped
+    // quietly, because a partner who asked to be told and was not
+    // would rather learn it before the sale than after.
+    if (!isValidHttpUrl(callback)) {
+      return {
+        ok: false,
+        status: 400,
+        code: "bad_request",
+        error: "callback_url must be an https URL on a public host, or absent.",
+      };
+    }
+    const callbackTarget = new URL(callback);
+    const callbackVerdict = checkProbeTarget(callbackTarget, "");
+    if (!callbackVerdict.ok) {
+      return {
+        ok: false,
+        status: 400,
+        code: "target_refused",
+        error: `callback_url: ${callbackVerdict.reason} Nothing delivered.`,
+      };
+    }
+    if (callbackTarget.host.toLowerCase() === new URL(env.STORE_BASE_URL).host.toLowerCase()) {
+      return {
+        ok: false,
+        status: 400,
+        code: "target_refused",
+        error: "callback_url: that is this store's own hostname.",
+      };
+    }
+    result.callback_url = callback;
   }
   return result;
 }
@@ -437,6 +477,8 @@ export interface TradeRow {
   instruction_digest: string;
   order_ref?: string;
   delivered_at: string;
+  /** What happened at the partner's callback_url, in words. Absent when none was given. */
+  callback?: string;
 }
 
 export interface TradePayoutRow {
@@ -462,7 +504,7 @@ export async function recordTradeDelivery(
   certId: string,
   response: Record<string, unknown>,
   now: Date = new Date(),
-): Promise<TradeRow> {
+): Promise<{ row: TradeRow; key: string }> {
   const row: TradeRow = {
     partner: partner.id,
     item: item.id,
@@ -477,11 +519,8 @@ export async function recordTradeDelivery(
   if (settlement.order_ref) {
     row.order_ref = settlement.order_ref;
   }
-  await kvPut(
-    env.ORDERS,
-    KV_KEYS.tradeRow(partner.id, invertedTimestamp(now.getTime()), certId),
-    JSON.stringify(row),
-  );
+  const key = KV_KEYS.tradeRow(partner.id, invertedTimestamp(now.getTime()), certId);
+  await kvPut(env.ORDERS, key, JSON.stringify(row));
   await bumpTradeDay(env, partner, utcDay(now));
   if (settlement.mode === "live") {
     await adjustOutstanding(env, partner, cents(settlement.net_usd));
@@ -494,7 +533,114 @@ export async function recordTradeDelivery(
       { expirationTtl: TRADE_ORDER_TTL_SECONDS },
     );
   }
-  return row;
+  return { row, key };
+}
+
+/* ------------------------------------------------------------------ */
+/* Delivery receipts — the partner is told, once, in our own name      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ONE POST TO THE PARTNER'S callback_url, AFTER THE RESPONSE HAS GONE
+ * (2026-09-03, pass four). A marketplace under its own 30-second
+ * clock should not have to parse a synchronous body to learn a sale
+ * landed; this carries the certificate, its signature and the verify
+ * URL to wherever they asked, signed on the wire with the store's
+ * Web Bot Auth key so their log can trace it back to us. Best effort
+ * and once — the same discipline as the human-queue order callback:
+ * the OUTCOME is written on the ledger row either way, so "asked to
+ * be told and was not" is never invisible. The goods are already
+ * theirs at the order URL and /api/verify regardless.
+ */
+export async function notifyTradeCallback(
+  env: Env,
+  partner: TradePartner,
+  rowKey: string,
+  row: TradeRow,
+  callbackUrl: string,
+  delivery: Record<string, unknown>,
+  timeoutMs: number = TRADE_CALLBACK_TIMEOUT_MS,
+): Promise<string> {
+  const body = JSON.stringify({
+    what_this_is:
+      "A delivery receipt from scvd.store's trade counter: the order you signed was delivered and this is the certificate. Sent once; the same artifact verifies at verify_url forever.",
+    account: partner.id,
+    item_id: row.item,
+    ...(row.order_ref ? { order_ref: row.order_ref } : {}),
+    cert_id: row.cert_id,
+    settled_via: delivery["settled_via"],
+    trade: delivery["trade"],
+    certificate: delivery["certificate"],
+    signature: delivery["signature"],
+    signature_jcs: delivery["signature_jcs"],
+    public_key: delivery["public_key"],
+    verify_url: delivery["verify_url"],
+    deliverable: delivery["deliverable"],
+  });
+  let outcome: string;
+  try {
+    const response = await fetch(callbackUrl, {
+      method: "POST",
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: await webBotAuthHeaders(env, callbackUrl, { "Content-Type": "application/json" }),
+      body,
+    });
+    outcome = response.ok
+      ? `delivered (HTTP ${response.status})`
+      : `attempted once, your endpoint answered HTTP ${response.status} — not retried; the certificate verifies at /api/verify regardless`;
+  } catch {
+    outcome =
+      "attempted once, your endpoint was unreachable — not retried; the certificate verifies at /api/verify regardless";
+  }
+  await kvPut(env.ORDERS, rowKey, JSON.stringify({ ...row, callback: outcome })).catch(() => undefined);
+  return outcome;
+}
+
+/* ------------------------------------------------------------------ */
+/* The statement, signed                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A STATEMENT A FINANCE DESK CAN CHECK WITHOUT TRUSTING THE WIRE. The
+ * rows are signed the way every artifact here is: ed25519 over the
+ * JCS (RFC 8785) canonical form of signed_payload, against the
+ * published key. It costs one signature and it is the whole point of
+ * this store — what we say a partner owes should be checkable by the
+ * partner's own tooling, offline, later.
+ */
+export async function signedStatement(
+  env: Env,
+  partner: TradePartner,
+  readAt: string,
+): Promise<{
+  signed_payload: Record<string, unknown>;
+  signature_jcs: string;
+  public_key: string;
+  signature_covers: string;
+  canonical_form: string;
+}> {
+  const statement = await tradeStatement(env, partner);
+  const signedPayload: Record<string, unknown> = {
+    account: partner.id,
+    read_at: readAt,
+    summary: statement.summary,
+    deliveries: statement.deliveries,
+    payouts: statement.payouts,
+    deliveries_truncated: statement.deliveries_truncated,
+    payouts_truncated: statement.payouts_truncated,
+  };
+  const [signatureJcs, publicKey] = await Promise.all([
+    signJcs(signedPayload, env.SIGNING_KEY),
+    cachedPublicKeyHex(env.SIGNING_KEY),
+  ]);
+  return {
+    signed_payload: signedPayload,
+    signature_jcs: signatureJcs,
+    public_key: publicKey,
+    signature_covers:
+      "The JCS (RFC 8785) canonical form of signed_payload, signed ed25519 with the store's published artifact key: ed25519_verify(utf8(canonical_form), hex_to_bytes(signature_jcs), hex_to_bytes(public_key)). Any library, no request to us.",
+    canonical_form: jcsCanonicalize(signedPayload),
+  };
 }
 
 export async function recordTradePayout(
