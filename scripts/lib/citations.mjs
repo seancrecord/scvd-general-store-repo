@@ -55,6 +55,22 @@ export function judge(system, fetched) {
   };
 }
 
+/**
+ * One verdict per prospect (2026-09-04): a page the scorers note went
+ * to. `silent` is the expected state and never a failure; `cited` is
+ * the news. Same reading as judge(), different word for absence.
+ */
+export function judgeProspect(prospect, fetched) {
+  if (!fetched || fetched.error) {
+    return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: "unreadable", reason: String(fetched?.error ?? "no response"), citations: [] };
+  }
+  if (fetched.status !== 200) {
+    return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: "unreadable", reason: `HTTP ${fetched.status}`, citations: [] };
+  }
+  const citations = citationsOn(fetched.text, prospect.base ?? "https://scvd.store");
+  return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: citations.length > 0 ? "cited" : "silent", citations };
+}
+
 /** The exit code the CLI should use: any `gone` is a failure. */
 export function exitCodeFor(verdicts) {
   return verdicts.some((entry) => entry.verdict === "gone") ? 1 : 0;

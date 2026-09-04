@@ -1854,8 +1854,19 @@ adminRoutes.get("/admin/outreach", async (c) => {
     new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
   );
   const healed = healedAfterOutreach(round, ledger);
+  const { readCitationWatch, citationProspects } = await import("@/services/citation-watch");
+  const citations = await readCitationWatch(c.env);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ week: round.week, at: round.at, prospects, welcomes, healed, ledger });
+    return c.json({
+      week: round.week,
+      at: round.at,
+      prospects,
+      welcomes,
+      healed,
+      ledger,
+      citations,
+      citation_prospects: citationProspects(),
+    });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
   return c.html(
@@ -1867,8 +1878,25 @@ adminRoutes.get("/admin/outreach", async (c) => {
       c.env.STORE_BASE_URL,
       c.req.query("notice"),
       welcomes,
+      citations,
     ),
   );
+});
+
+/**
+ * THE CITATION WATCH, by hand (2026-09-04). The Sunday press runs the
+ * same function; this is the keeper pressing it after sending a note
+ * or editing a list, so the desk never waits a week to say what a
+ * page carries now. The outcome rides back as the notice.
+ */
+adminRoutes.post("/admin/citations/run", async (c) => {
+  const { runCitationWatch } = await import("@/services/citation-watch");
+  const report = await runCitationWatch(c.env);
+  const cited = report.rows.filter((row) => row.verdict === "cited").length;
+  const notice =
+    `Citation watch read ${report.rows.length} page${report.rows.length === 1 ? "" : "s"}: ` +
+    `${cited} cited, ${report.newly_cited.length} newly, ${report.newly_gone.length} gone.`;
+  return c.redirect(`/admin/outreach?notice=${encodeURIComponent(notice)}`);
 });
 
 /**

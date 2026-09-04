@@ -71,6 +71,14 @@ describe("the page", () => {
     expect(html).toContain("Before you launch");
     expect(html.indexOf("Free first")).toBeLessThan(html.indexOf("/menu/launch_check"));
     expect(html).toContain("Nothing here ranks you, scores you, or certifies you");
+    // 2026-09-04: the launch-week stage hands the chip out ready to
+    // paste, the way a directory hands out its badge, no claim step.
+    const launchWeek = body.stages.find((stage) => stage.moment === "The week you launch")!;
+    expect(launchWeek.free_first?.how).toContain("nothing to claim");
+    expect(launchWeek.free_first?.how).toContain(
+      `[![scvd.store passport for {your-host}](${BASE}/badges/passport/{your-host}.svg)](${BASE}/passport/{your-host})`,
+    );
+    expect(html).toContain("/badges/passport/{your-host}.svg");
     for (const word of ["certified", "approved by", "top rated"]) {
       expect(html.toLowerCase()).not.toContain(word);
     }

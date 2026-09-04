@@ -406,6 +406,12 @@ describe("the ready doors — the welcome with the passport page (2026-09-01)", 
     expect(note).toContain(`${BASE}/passport/new.example`);
     expect(note).toContain("colophon");
     expect(note).toContain("never says \"passed\"");
+    // 2026-09-04: the chip handed out the way a directory hands out
+    // its badge — markdown and HTML, ready to paste, no claim step.
+    expect(note).toContain("nothing to claim");
+    expect(note).toContain(`[![scvd.store passport for new.example`);
+    expect(note).toContain(`](${BASE}/badges/passport/new.example.svg)](${BASE}/passport/new.example)`);
+    expect(note).toContain(`<img src="${BASE}/badges/passport/new.example.svg"`);
     expect(note).toContain(`${BASE}/api/preflight`);
     expect(note).toContain(`${BASE}/api/standing-note`);
     expect(note).toContain(`$${getMenuItem("conformance_watch")!.price_usdc}`);

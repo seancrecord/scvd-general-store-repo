@@ -270,7 +270,19 @@ export interface PassportEmbed {
 }
 
 export function passportEmbed(passport: EndpointPassport, base: string): PassportEmbed {
-  const host = passport.payload.host.toLowerCase();
+  return passportEmbedFor(passport.payload.host, base);
+}
+
+/**
+ * The same two snippets from a host name alone (2026-09-04). The
+ * welcome letter and the operators page hand the chip out the way a
+ * directory hands out its badge — markdown and HTML, ready to paste —
+ * and neither has a passport object in hand, only the host. There is
+ * no claim step: the chip is earned by the observation, and a chip
+ * pasted for a host that is not on the ready side renders nothing.
+ */
+export function passportEmbedFor(rawHost: string, base: string): PassportEmbed {
+  const host = rawHost.toLowerCase();
   const chip = `${base}/badges/passport/${host}.svg`;
   const url = `${base}/passport/${host}`;
   const alt = `scvd.store passport for ${host}: observed, dated, gaps counted against the observer`;
