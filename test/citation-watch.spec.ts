@@ -50,12 +50,15 @@ function stubPages(pages: Record<string, { status?: number; text?: string; throw
 }
 
 describe("one reading, two runtimes", () => {
-  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
+  // The id here must be one WE never published: a page quoting our own
+  // specimen or a retired placeholder is our words coming back, not a
+  // citation, and SELF_PUBLISHED_IDS discounts both.
+  const fixture = `<p><a href="${BASE}/api/verify/cert_theirs_not_ours">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
 
   it("finds the same citations in the same order", () => {
     expect(citationsOn(fixture, BASE)).toEqual(citationsOnNode(fixture, BASE));
     expect(citationsOn(fixture, BASE)).toEqual([
-      `${BASE}/api/verify/cert_k2m9v4xwqp`,
+      `${BASE}/api/verify/cert_theirs_not_ours`,
       `${BASE}/corpus/3.json`,
       `${BASE}/corpus/host/door.example.json`,
       `${BASE}/corpus/round/2026-W36`,
@@ -308,5 +311,64 @@ describe("the desk", () => {
     };
     expect(json.citations.newly_gone).toEqual(["https://scores.example/m"]);
     expect(json.citation_prospects.length).toBe(watchedProspects().length);
+  });
+});
+
+/**
+ * THE PAGE THAT ACTUALLY PRODUCED THE FALSE POSITIVE (2026-09-04).
+ *
+ * SELF_PUBLISHED_IDS discounted the CURRENT specimen, which is right
+ * and was not enough: a directory's copy of our listing does not
+ * refresh when ours does. x402-list.com renders `cert_k2m9v4xwqp` —
+ * the placeholder buyOutputExample carried until that day — 62 times
+ * on its page for this store, against zero occurrences of the live
+ * specimen. So the keeper's row still read `cited` and still clicked
+ * through to "No certificate by that name on the wall."
+ *
+ * The bytes below are theirs, trimmed: the bazaar discovery extension
+ * we broadcast on every 402, harvested and rendered. Note the shape —
+ * escaped inside markup, never a clickable link, which is why nobody
+ * caught it by browsing.
+ */
+describe("a retired example id is still our own words", () => {
+  const theirPage = `{ "extensions": { "bazaar": { "info": { "output": { "type": "json", "example": {
+    "item_id": "the_statement",
+    "badge_url": "${BASE}/badges/41.svg",
+    "signature": "&lt;128 hex chars, ed25519&gt;",
+    "verify_url": "${BASE}/api/verify/cert_k2m9v4xwqp"
+  } } } } } }`;
+
+  it("reads the live x402-list page as silent, not cited", () => {
+    expect(citationsOn(theirPage, BASE)).toEqual([]);
+    expect(
+      judgePage("x402-list", "https://x402-list.com/services/x", { status: 200, text: theirPage }, BASE, "silent")
+        .verdict,
+    ).toBe("silent");
+  });
+
+  it("keeps the retired ids in both runtimes, so the CLI agrees with the cron", () => {
+    expect(SELF_PUBLISHED_IDS).toContain("cert_k2m9v4xwqp");
+    expect([...SELF_PUBLISHED_IDS_NODE]).toEqual([...SELF_PUBLISHED_IDS]);
+  });
+
+  /**
+   * The line this must not cross. Discounting our own placeholders
+   * must never discount an artifact somebody actually holds — that is
+   * the news the whole watch exists for.
+   */
+  it("still calls any other artifact id a citation", () => {
+    const theirs = `<a href="${BASE}/api/verify/cert_theirs_not_ours">receipt</a>`;
+    expect(citationsOn(theirs, BASE)).toEqual([`${BASE}/api/verify/cert_theirs_not_ours`]);
+    expect(
+      judgePage("P", "https://p.example/us", { status: 200, text: theirs }, BASE, "silent").verdict,
+    ).toBe("cited");
+  });
+
+  it("does not mask a real corpus row sitting beside our boilerplate", () => {
+    const both = `${theirPage} and ${BASE}/corpus/3.json`;
+    expect(citationsOn(both, BASE)).toContain(`${BASE}/corpus/3.json`);
+    expect(
+      judgePage("P", "https://p.example/us", { status: 200, text: both }, BASE, "silent").verdict,
+    ).toBe("cited");
   });
 });

@@ -6,9 +6,9 @@ import { SELF_PUBLISHED_IDS, citationsOn, exitCodeFor, judge } from "./lib/citat
 const BASE = "https://scvd.store";
 
 test("a verify URL or a corpus ROW on the page is a citation; the store's other pages are not", () => {
-  const page = `<p>Row: <a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> and ${BASE}/corpus/host/door.example.json and ${BASE}/corpus/3.json and ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
+  const page = `<p>Row: <a href="${BASE}/api/verify/cert_theirs_not_ours">verify</a> and ${BASE}/corpus/host/door.example.json and ${BASE}/corpus/3.json and ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
   assert.deepEqual(citationsOn(page, BASE), [
-    `${BASE}/api/verify/cert_k2m9v4xwqp`,
+    `${BASE}/api/verify/cert_theirs_not_ours`,
     `${BASE}/corpus/3.json`,
     `${BASE}/corpus/host/door.example.json`,
     `${BASE}/corpus/round/2026-W36`,
