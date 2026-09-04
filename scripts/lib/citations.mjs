@@ -16,6 +16,8 @@ export function citationPatterns(base) {
   return [
     new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
     new RegExp(`${root}/corpus(?:/[A-Za-z0-9._:~-]+)*(?:\\.json)?`, "g"),
+    // The cite box's own shape, as a machine writes it (services/cite.ts).
+    new RegExp(`"cites"\\s*:\\s*"${root}/corpus/[0-9]+\\.json"`, "g"),
   ];
 }
 

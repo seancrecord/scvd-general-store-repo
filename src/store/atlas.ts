@@ -124,7 +124,7 @@ const TASKS: readonly AtlasTask[] = [
      */
     goal: "I run a scorer or a marketplace and want to consume this store's evidence without inheriting its opinions",
     call: ["GET /scorers", "GET /corpus.json"],
-    note: "Free, no account. Two seats — the record, and the reproducible dispute artifact — and how to pull, verify, cite, reproduce and re-observe. Interpretation is yours; a score derived from the corpus is your claim, not ours.",
+    note: "Free, no account. Two seats — the record, and the reproducible dispute artifact — and how to pull, verify, cite, reproduce and re-observe, each as a shell line, a CLI verb and an MCP call. Reproduce is one call: look_at_door with since. Interpretation is yours; a score derived from the corpus is your claim, not ours.",
   },
   {
     goal: "I think this store published something wrong",

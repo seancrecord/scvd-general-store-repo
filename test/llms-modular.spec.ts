@@ -677,6 +677,13 @@ const BASE = "https://scvd.store";
  * Confirmed before this value was taken: the guide carries
  * "/scorers", "names seats, not occupants" and "its publisher's
  * interpretation, not ours", and still every earlier pin.
+ * Re-taken 2026-09-04 — the FORTY-SECOND — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved", "/criteria#result-class" and "prints the
+ * citation", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.

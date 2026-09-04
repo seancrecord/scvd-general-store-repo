@@ -50,6 +50,10 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
 | `scvd receipt <file\|->` | Verify any issuer's receipt JSON and get back a signed verdict. |
 | `scvd verify <id>` | Verify anything this store ever signed. Free, forever, including artifacts you did not buy. |
+| `scvd corpus [--since <week>]` | The weekly signed census index; with `--since`, what moved since that week. |
+| `scvd host <host>` | Every signed round that met a host, the gaps by reason, the tier with its fraction, and the citation for the latest row. |
+| `scvd cite <host> [--week <week>]` | The citation for a host's row, as one line, as Markdown and as the JSON shape the store's citation watch reads. |
+| `scvd reproduce <url> [--since <week>]` | Probe the door now and set the answer against the signed row: `same`, `moved`, `instrument_moved`, `not_comparable` or `no_such_round`, by the rule at `/criteria#result-class`. Exit 0 on same, 1 on moved, 3 when nothing was compared. |
 | `scvd onpage <url>` | What that page serves a machine reader: title, description, canonical, headings, JSON-LD. |
 | `scvd fresh-set` | This week's x402 doors that answered a conformant challenge. |
 | `scvd corpus` | The weekly signed, Bitcoin-anchored census, whole. |

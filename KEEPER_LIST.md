@@ -26,6 +26,20 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Reproduce, cite, seats, three grips, 2026-09-04, "do it
+  all."** The look takes `since` and answers the class of
+  result by the rule at `/criteria#result-class`; every row
+  surface prints its citation; the seats ride
+  `/.well-known/trust.json` and `/corpus.json` as data;
+  `/scorers` opens with the same five steps as shell, CLI
+  and MCP; the CLI is 0.2.0 with `corpus --since`, `host`,
+  `cite`, `reproduce`. ⚑ The five class rules and the note
+  (`src/services/reproduce.ts`) are drafted for your ink.
+  PRESS: `npm run skill:publish` / the npm publish workflow
+  for scvd 0.2.0 when you are ready for the verbs to be
+  `npx`-able. LOOK once merged: `npx scvd reproduce
+  https://lionx402.com/api/x402/wallet-screen-json --since
+  2026-W36` and read the class.
 - **For scorers and marketplaces, 2026-09-03, "build it."**
   `/scorers` names the two seats — the record, and the
   reproducible dispute artifact — and how to pull, verify,

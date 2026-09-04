@@ -75,6 +75,9 @@ test("names every command in the help, so nothing ships unfindable", async () =>
     "onpage",
     "fresh-set",
     "corpus",
+    "host",
+    "cite",
+    "reproduce",
     "menu",
     "catalog",
     "versions",
@@ -262,6 +265,19 @@ test("signs a sandbox order with the published secret it read off the contract, 
           nonce: { shape_ok: true },
           signature: { verified_with: "current" },
           replay: "fresh",
+test("reproduce posts the URL and the week to the look and branches on the class", async () => {
+  let seen;
+  const result = await run(["reproduce", "https://door.example/pay", "--since", "2026-W34"], (request) => {
+    seen = request;
+    return {
+      json: {
+        reproduce: {
+          rule_url: "https://scvd.store/criteria#result-class",
+          class: "moved",
+          detail: "under preflight-v2, the row in 2026-W34 read ready and the door answered not_ready now",
+          compared_with: { week: "2026-W34", verdict: "ready", failed: [], entry_url: "https://scvd.store/corpus/3.json" },
+          live: { battery: "preflight-v2", verdict: "not_ready", failed: ["signable-accepts"] },
+          cite: { text: "scvd.store corpus, door.example, week 2026-W34, snapshot 3 taken t, sha256 d. https://scvd.store/corpus/3.json" },
         },
       },
     };
@@ -290,4 +306,75 @@ test("exits 1 when the check desk says the signature would not pass", async () =
   });
   assert.equal(result.code, 1);
   assert.match(result.stdout, /first failure: stale_timestamp/);
+  assert.equal(seen.method, "POST");
+  assert.equal(seen.url, "/api/look/v1");
+  assert.deepEqual(seen.body, { url: "https://door.example/pay", since: "2026-W34" });
+  assert.match(result.stdout, /class: moved/);
+  assert.match(result.stdout, /cite: scvd.store corpus/);
+  assert.equal(result.code, 1);
+});
+
+test("reproduce exits 0 on same and 3 when nothing was compared", async () => {
+  const same = await run(["reproduce", "https://door.example/pay"], (request) => {
+    assert.deepEqual(request.body, { url: "https://door.example/pay" });
+    return { json: { reproduce: { class: "same", detail: "same", rule_url: "r" } } };
+  });
+  assert.equal(same.code, 0);
+  const none = await run(["reproduce", "https://door.example/pay", "--since", "2026-W01"], () => ({
+    json: { reproduce: { class: "no_such_round", detail: "no row", rule_url: "r" } },
+  }));
+  assert.equal(none.code, 3);
+});
+
+test("--since refuses a week that is not spelled the corpus's way", async () => {
+  const result = await run(["reproduce", "https://door.example/pay", "--since", "last-tuesday"], () => ({ json: {} }));
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /2026-W34/);
+});
+
+test("cite prints the store's own cite box for the last probed row, or builds the same shape for a named week", async () => {
+  const history = {
+    rounds_probed: 2,
+    rounds_since_first_sighting: 2,
+    rounds_gapped: 0,
+    tier: { line: "observed — 2 of 2, W34–W35" },
+    timeline: [
+      { week: "2026-W34", sequence: 1, taken_at: "2026-08-19T17:00:00.000Z", digest: "a".repeat(64), entry_url: "https://scvd.store/corpus/1.json", probed: true, verdict: "ready", failed: [] },
+      { week: "2026-W35", sequence: 2, taken_at: "2026-08-26T17:00:00.000Z", digest: "b".repeat(64), entry_url: "https://scvd.store/corpus/2.json", probed: true, verdict: "ready", failed: [] },
+    ],
+    cite: {
+      latest_probed_row: {
+        text: "scvd.store corpus, door.example, week 2026-W35, snapshot 2 taken 2026-08-26T17:00:00.000Z, sha256 " + "b".repeat(64) + ". https://scvd.store/corpus/2.json",
+        markdown: "[scvd.store corpus, door.example, week 2026-W35, snapshot 2](https://scvd.store/corpus/2.json) — sha256 `" + "b".repeat(64) + "`",
+        json: { cites: "https://scvd.store/corpus/2.json", host: "door.example", week: "2026-W35", sequence: 2, observed_at: "2026-08-26T17:00:00.000Z", digest: "b".repeat(64), rows: "https://scvd.store/corpus/host/door.example.json", index: "https://scvd.store/corpus.json", license: "CC-BY-4.0", how: "https://scvd.store/scorers" },
+      },
+    },
+  };
+  const latest = await run(["cite", "door.example"], (request) => {
+    assert.equal(request.url, "/corpus/host/door.example.json");
+    return { json: history };
+  });
+  assert.equal(latest.code, 0);
+  assert.match(latest.stdout, /week 2026-W35, snapshot 2/);
+  assert.match(latest.stdout, /"cites": "https:\/\/scvd.store\/corpus\/2.json"/);
+  const named = await run(["cite", "door.example", "--week", "2026-W34", "--json"], () => ({ json: history }));
+  assert.equal(named.code, 0);
+  const shape = JSON.parse(named.stdout);
+  assert.equal(shape.cites, "https://scvd.store/corpus/1.json");
+  assert.equal(shape.digest, "a".repeat(64));
+  assert.equal(shape.license, "CC-BY-4.0");
+  assert.deepEqual(Object.keys(shape).sort(), Object.keys(history.cite.latest_probed_row.json).sort());
+});
+
+test("corpus --since asks for the diff against that week; host prints the rows", async () => {
+  const diff = await run(["corpus", "--since", "2026-W34"], (request) => {
+    assert.equal(request.url, "/corpus/diff.json?since=2026-W34");
+    return { json: { since: "2026-W34", changed: [] } };
+  });
+  assert.equal(diff.code, 0);
+  const host = await run(["host", "door.example"], () => ({
+    json: { rounds_probed: 1, rounds_since_first_sighting: 2, rounds_gapped: 1, tier: { line: "observed — 1 of 2" }, timeline: [{ week: "2026-W34", probed: true, verdict: "ready", failed: [] }, { week: "2026-W35", probed: false, gap: "listed_not_walked" }] },
+  }));
+  assert.match(host.stdout, /2026-W34\s+ready/);
+  assert.match(host.stdout, /gap: listed_not_walked/);
 });

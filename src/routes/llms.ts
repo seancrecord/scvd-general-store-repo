@@ -341,11 +341,15 @@ the denominator are.
 For a scorer or a marketplace: ${base}/scorers says which two seats
 this store occupies — the record, and the reproducible dispute
 artifact — and how to pull the corpus, verify it, cite a row by its
-verify URL, reproduce a probe and re-observe. It names seats, not
-occupants: a system that consumes the corpus is listed there only
-with a dated citation and a check that fails when the citation
-disappears. A score, ranking or certification derived from the
-corpus is its publisher's interpretation, not ours.
+entry URL and digest (every row surface prints the citation for
+you), reproduce a probe and re-observe. Reproduce is one call: the
+look with "since" names a signed week, and the answer is classed
+same, moved, instrument_moved, not_comparable or no_such_round by
+the rule typed once at ${base}/criteria#result-class, the row cited.
+It names seats, not occupants: a system that consumes the corpus is
+listed there only with a dated citation and a check that fails when
+the citation disappears. A score, ranking or certification derived
+from the corpus is its publisher's interpretation, not ours.
 
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed

@@ -8,6 +8,8 @@ import {
   TWO_SEATS_SENTENCE,
 } from "@/store/copy/doctrine";
 import CITING_SYSTEMS_FILE from "@/store/citing-systems.json";
+import { CITE_HOW } from "@/services/cite";
+import { RESULT_CLASS_RULE } from "@/services/reproduce";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -142,6 +144,12 @@ const verify = (base: string): ScorerSurface[] => [
 
 const reproduce = (base: string): ScorerSurface[] => [
   {
+    surface: "Reproduce, as one call",
+    url: `${base}/api/look/v1`,
+    what: `POST {"url": "...", "since": "2026-W34"}: the live probe set against that week's signed row (or the last probed row without since), classed ${RESULT_CLASS_RULE.map((entry) => entry.class).join(" | ")} by the rule typed once at /criteria#result-class, both sides printed, the failed checks added and cleared named, the row cited by entry URL and digest.`,
+    check: "The class is a pure function of the two probes and the battery; the spec fixes a door that moved, a battery that moved, and one that did neither.",
+  },
+  {
     surface: "The same probe, now",
     url: `${base}/api/preflight/v1`,
     what: "POST {\"url\": \"...\"}: the published battery the weekly round runs, every check by name, free. Compare the class of result — verdict and failed checks — with the signed row.",
@@ -171,7 +179,7 @@ const reObserve = (base: string): ScorerSurface[] => [
 ];
 
 const CITE = {
-  how: "Cite a row by its verify URL, or by the snapshot's entry_url and digest. Do not restate the observation; link it. A restated row is a claim of yours, and the reader cannot check it.",
+  how: `${CITE_HOW} Every row surface prints the citation for you: \`cite\` on /corpus/host/{host}.json and /corpus/{n}.json, and on the look's reproduce block. Do not restate the observation; link it. A restated row is a claim of yours, and the reader cannot check it.`,
   attribution: "CC BY 4.0: attribution is the row's URL. Nothing more is asked.",
   check: "Every verify URL and corpus URL this page names is fetched by the suite and must answer; a citation that does not resolve is a broken citation, not a broken corpus.",
 };
@@ -180,6 +188,30 @@ const RE_OBSERVE = {
   how: "If a door behaves differently from a signed row, run a fresh observation and keep both. The difference is time, not error: each row is one dated moment, and the cadence between rounds is weekly.",
   ours: "When the store itself was wrong, the correction is appended at /corrections beside the row, and the row keeps its bytes.",
 };
+
+/**
+ * START HERE (2026-09-04): the five steps as three commands each, for
+ * a shell, for the CLI, and for an agent holding the MCP server. The
+ * same doors, three grips; nothing here needs an account or a key.
+ */
+const START_HERE = (base: string) => ({
+  shell: [
+    `curl -s ${base}/corpus.json | jq '.distribution'`,
+    `curl -s ${base}/corpus/host/example.com.json | jq '.cite'`,
+    `curl -s -X POST ${base}/api/look/v1 -H 'content-type: application/json' -d '{"url":"https://example.com/api/thing","since":"2026-W34"}' | jq '.reproduce'`,
+  ],
+  cli: [
+    "npx scvd corpus --since 2026-W34",
+    "npx scvd cite example.com",
+    "npx scvd reproduce https://example.com/api/thing --since 2026-W34",
+  ],
+  mcp: [
+    `read_store_guide, then look_at_door {"url": "https://example.com/api/thing", "since": "2026-W34"}`,
+    `the corpus is plain GET: ${base}/corpus.json, ${base}/corpus/host/{host}.json`,
+    `verify anything cited: ${base}/api/verify/{id}, or npx x402-verify`,
+  ],
+  note: "Three grips on the same doors. No account, no key, no wallet; nothing here can spend.",
+});
 
 const ENABLES = [
   "A scorer maps observations to scores by a rule of its own, and cites the rows it read.",
@@ -207,6 +239,7 @@ scorersRoutes.get("/scorers", (c) => {
       title: "For scorers and marketplaces",
       seats: { dated: TWO_SEATS_DATED, sentence: TWO_SEATS_SENTENCE },
       summary: STANDFIRST,
+      start_here: START_HERE(base),
       pull: pull(base),
       verify: verify(base),
       cite: CITE,
@@ -238,6 +271,16 @@ scorersRoutes.get("/scorers", (c) => {
         <p class="menu-desc"><strong>${escapeHtml(TWO_SEATS_SENTENCE)}</strong></p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-meta">Dated ${escapeHtml(TWO_SEATS_DATED)}. The doctrine and its dates: <a href="/criteria">/criteria</a>.</p>
+      </section>
+      <section>
+        <h2>Start here</h2>
+        <p class="menu-desc">${escapeHtml(START_HERE(base).note)}</p>
+        <p class="menu-desc"><strong>A shell</strong></p>
+        <pre class="menu-meta">${START_HERE(base).shell.map((line) => escapeHtml(line)).join("\n")}</pre>
+        <p class="menu-desc"><strong>The command line</strong> (<a href="/developers">npm: scvd</a>)</p>
+        <pre class="menu-meta">${START_HERE(base).cli.map((line) => escapeHtml(line)).join("\n")}</pre>
+        <p class="menu-desc"><strong>An agent on the MCP server</strong> (<code>${escapeHtml(base)}/mcp</code>)</p>
+        <pre class="menu-meta">${START_HERE(base).mcp.map((line) => escapeHtml(line)).join("\n")}</pre>
       </section>
       <section>
         <h2>Pull</h2>

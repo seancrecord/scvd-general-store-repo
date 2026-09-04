@@ -20,6 +20,7 @@ import {
   AUDIT_CRITERIA_VERSION,
 } from "@/services/service-audit";
 import { DOCTRINE_NOTE, MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
+import { RESULT_CLASS_DATED, RESULT_CLASS_NOTE, RESULT_CLASS_RULE } from "@/services/reproduce";
 import { ESTABLISHED_ROUNDS, STANDING_ROUNDS, TIER_RULE, TIER_RULE_NOTE } from "@/services/passport-tier";
 import type { HonoEnv } from "@/types";
 
@@ -116,6 +117,17 @@ criteriaRoutes.get("/criteria", (c) => {
      * rounds in the window, the ready count, the latest observation
      * and coverage_suspect; every rendering prints the fraction.
      */
+    /**
+     * THE CLASS OF RESULT (2026-09-04), typed once in
+     * services/reproduce.ts and rendered here: what "the same result"
+     * means when a live probe is set against a signed row.
+     */
+    result_class: {
+      dated: RESULT_CLASS_DATED,
+      rules: RESULT_CLASS_RULE,
+      note: RESULT_CLASS_NOTE,
+      call: `POST ${base}/api/look/v1 with {"url": "...", "since": "2026-W34"}`,
+    },
     tier_rule: {
       dated: DOCTRINE_NOTE.dated,
       rules: TIER_RULE,
@@ -223,6 +235,15 @@ criteriaRoutes.get("/criteria", (c) => {
           ${TIER_RULE.map((entry) => `<tr><td><strong><code>${escapeHtml(entry.tier)}</code></strong></td><td><small>${escapeHtml(entry.rule)}</small></td></tr>`).join("\n")}
         </table>
         <p class="menu-meta">${escapeHtml(TIER_RULE_NOTE)} Every host's tier, alphabetical: <a href="/corpus/tiers.json"><code>/corpus/tiers.json</code></a>.</p>
+      </section>
+      <section id="result-class">
+        <h2>The class of result: the rule, typed once</h2>
+        <p class="menu-desc">When a live probe is set against a signed row — the look's <code>reproduce</code> block, <code>POST /api/look/v1</code> with <code>{"url": "...", "since": "2026-W34"}</code> — this is the only place the classes are typed. Dated ${escapeHtml(RESULT_CLASS_DATED)}.</p>
+        <table border="1" cellpadding="6">
+          <tr><th>class</th><th>rule</th></tr>
+          ${RESULT_CLASS_RULE.map((entry) => `<tr><td><strong><code>${escapeHtml(entry.class)}</code></strong></td><td><small>${escapeHtml(entry.rule)}</small></td></tr>`).join("\n")}
+        </table>
+        <p class="menu-meta">${escapeHtml(RESULT_CLASS_NOTE)}</p>
       </section>
       <section>
         <h2>What retires a badge</h2>

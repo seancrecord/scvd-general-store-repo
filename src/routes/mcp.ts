@@ -561,7 +561,7 @@ export async function callFreeTool(
      * own chain: one probe, one limiter, one law. A non-200 is the
      * preflight's own refusal text, free and uncharged.
      */
-    const outcome = await lookAtDoor(args["url"], c.env);
+    const outcome = await lookAtDoor(args["url"], c.env, new Date(), args["since"]);
     if (outcome.status !== 200) {
       const body = outcome.body as { error?: string };
       return body.error ?? "The look could not run. Try again shortly.";
