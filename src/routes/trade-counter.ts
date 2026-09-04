@@ -46,6 +46,8 @@ import {
   TRADE_FAQ,
   TRADE_FOR_MONEY,
   TRADE_HONEST_LIMITS,
+  TRADE_RESPONSE_INVARIANTS,
+  TRADE_SETTLEMENT_CURRENCY,
   TRADE_HOW_IT_WORKS,
   TRADE_MIN_RETAIL_USD,
   TRADE_NONCE_TTL_SECONDS,
@@ -70,8 +72,9 @@ import {
   tradeShelf,
   tradeShelfEntry,
   type TradeError,
+  type TradePartner,
 } from "@/store/trade-counter";
-import type { HonoEnv } from "@/types";
+import type { Env, HonoEnv } from "@/types";
 
 /**
  * THE TRADE COUNTER'S DOORS (2026-09-03).
@@ -184,13 +187,52 @@ function shelfRows(base: string) {
   });
 }
 
-function accountRows(base: string) {
+/**
+ * THE FIXTURE (pass seven): one deterministic order per account for a
+ * partner's paused listing — the item with no input of its own, a body
+ * of one field, and what the 200 must say. The invariants are the
+ * same rows the suite holds against a real delivery.
+ */
+function fixtureRow(base: string, partner: TradePartner) {
+  const itemId = partner.items.includes("certificate_of_patronage")
+    ? "certificate_of_patronage"
+    : partner.items[0];
+  const item = itemId ? getMenuItem(itemId) : undefined;
+  if (!itemId || !item) return undefined;
+  const entry = tradeShelfEntry(itemId);
+  const body: Record<string, unknown> = { order_ref: `${partner.id}-fixture-0001` };
+  if (entry?.input === "summary") body["summary"] = "The agent was halfway through a migration.";
+  if (entry?.input === "digest") body["digest"] = "a".repeat(64);
+  const price = tradePriceUsd(item, partner.partner_share_bps);
+  return {
+    what_this_is:
+      "One deterministic order for this account: send this body to this door, signed in the account's dialect, and assert the invariants. In test mode it delivers real goods and bills nothing; a second send with the same order_ref inside a day returns the first delivery.",
+    door: `${base}/api/trade/${partner.id}/${itemId}`,
+    item_id: itemId,
+    body: JSON.stringify(body),
+    expected_status: 200,
+    expected: {
+      settled_via: partner.mode === "test" ? "trade_account_test" : "trade_account",
+      "trade.account": partner.id,
+      "trade.trade_price_usd": price,
+      "trade.net_usd": tradeNetUsd(price, partner.partner_share_bps),
+      "trade.order_ref": body["order_ref"],
+    },
+    invariants: TRADE_RESPONSE_INVARIANTS,
+    before_the_secret_exists:
+      "The order door answers 503 account_not_provisioned and the check desk still reports every check that needs no secret. An unsigned call to a provisioned account answers 401 missing_headers.",
+  };
+}
+
+function accountRows(base: string, env: Env) {
   return TRADE_PARTNERS.map((partner) => ({
     account: partner.id,
     name: partner.name,
     site: partner.site,
     dialect: partner.dialect,
     mode: partner.mode,
+    provisioned: tradeSecrets(env, partner) !== null,
+    door_status: tradeSecrets(env, partner) !== null ? "open" : "awaiting_secret",
     opened: partner.opened,
     partner_share_bps: partner.partner_share_bps,
     settles_in: partner.settles_in,
@@ -201,6 +243,7 @@ function accountRows(base: string) {
     claim: `${base}/api/trade/${partner.id}/claim?order_ref=`,
     check_desk: `${base}/api/trade/${partner.id}/check`,
     statement: `${base}/api/trade/${partner.id}/statement`,
+    fixture: fixtureRow(base, partner),
     ...(partner.sandbox
       ? {
           published_secret: partner.sandbox.signing_secret,
@@ -263,7 +306,7 @@ function howToCall(base: string) {
 const EXPECTED_OUTCOME =
   "200 with the same delivery object the front door returns for that item — deliverable, any item extras, the signed certificate with signature, public key and verify_url — plus a `trade` block naming the account, the trade price, the store's net and the sha256 of your signed instruction, and settled_via saying trade_account (or trade_account_test while the account is in test). No paid_usdc, no network, no payer: none applied.";
 
-async function termsJson(base: string) {
+async function termsJson(base: string, env: Env) {
   const sandbox = getTradePartner(TRADE_SANDBOX_ID);
   return {
     what_this_is: TRADE_WHAT_THIS_IS,
@@ -274,14 +317,16 @@ async function termsJson(base: string) {
     ...(sandbox ? { worked_example: await workedExample(base, sandbox) } : {}),
     pricing: {
       ...pricingBlock(),
+      settlement_currency: TRADE_SETTLEMENT_CURRENCY,
       share_ladder_offered: STANDARD_SHARE_LADDER,
       share_ladder_note:
         "The standard offer for a new account: the partner's share rises with live deliveries in the calendar month, highest tier reached wins, and the trade price is derived from the share so the store's net stays retail plus the uplift at every tier. An account with its own contract keeps its flat share.",
     },
     shelf: shelfRows(base),
     eligible_but_not_yet_shelved: tradeEligibleButUnshelved(),
-    accounts: accountRows(base),
+    accounts: accountRows(base, env),
     expected_outcome: EXPECTED_OUTCOME,
+    response_invariants: TRADE_RESPONSE_INVARIANTS,
     errors: TRADE_ERRORS,
     catalog: `${base}/api/trade/catalog`,
     ledger: `${base}/api/trade/ledger`,
@@ -335,11 +380,13 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
     return c.json(refusal(error, error.meaning), 404);
   }
   const rawBody = await c.req.text();
-  const secrets = tradeSecrets(c.env, partner);
-  if (!secrets) {
-    const error = errorByCode("counter_closed");
-    return c.json(refusal(error, error.meaning), 503);
-  }
+  /*
+   * NO SECRET YET IS NOT A CLOSED DESK (pass seven). A partner proves
+   * its bytes in its own dialect before either side has issued
+   * anything: every check that needs no secret runs and is reported,
+   * and the two that do are reported as unverifiable, by name.
+   */
+  const secrets = tradeSecrets(c.env, partner) ?? { signing: "" };
   if (await checkDeskBudgetSpent(c.env, partner)) {
     const error = errorByCode("desk_rate_limited");
     return c.json(refusal(error, error.meaning), 429);
@@ -363,6 +410,12 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
       "The check desk: the same four checks the order door runs, every one reported rather than the first refused. Nothing is delivered, no nonce is consumed, no money moves. Send exactly the headers and body you would send to the order door.",
     account: partner.id,
     dialect: dialectRow(dialect),
+    account_provisioned: diagnosis.account_provisioned,
+    ...(diagnosis.account_provisioned
+      ? {}
+      : {
+          note: "This account has no signing secret on this side yet. Every check that needs none ran and is reported; the provider key and the HMAC are unverifiable until the keeper sets the secret, and the order door answers 503 account_not_provisioned. The sha256 of your signing string is what to compare meanwhile.",
+        }),
     would_pass: diagnosis.would_pass,
     first_failure: diagnosis.first_failure,
     checks: {
@@ -396,7 +449,11 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
     return c.json(refusal(error, error.meaning), 404);
   }
   const secrets = tradeSecrets(c.env, partner);
-  if (!secrets || !c.env.TRADE_NONCES) {
+  if (!secrets) {
+    const error = errorByCode("account_not_provisioned");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  if (!c.env.TRADE_NONCES) {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
   }
@@ -440,7 +497,7 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
 
 tradeCounterRoutes.get("/api/trade/contract", async (c) => {
   c.header("Cache-Control", "public, max-age=300");
-  return c.json(await termsJson(c.env.STORE_BASE_URL));
+  return c.json(await termsJson(c.env.STORE_BASE_URL, c.env));
 });
 
 tradeCounterRoutes.get("/api/trade/ledger", async (c) => {
@@ -812,7 +869,11 @@ tradeCounterRoutes.get("/api/trade/:partner/claim", async (c) => {
     return c.json(refusal(error, error.meaning), 404);
   }
   const secrets = tradeSecrets(c.env, partner);
-  if (!secrets || !c.env.TRADE_NONCES) {
+  if (!secrets) {
+    const error = errorByCode("account_not_provisioned");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  if (!c.env.TRADE_NONCES) {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
   }
@@ -891,7 +952,11 @@ tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
   }
 
   const secrets = tradeSecrets(c.env, partner);
-  if (!secrets || !c.env.TRADE_NONCES) {
+  if (!secrets) {
+    const error = errorByCode("account_not_provisioned");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  if (!c.env.TRADE_NONCES) {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
   }

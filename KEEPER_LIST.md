@@ -276,9 +276,15 @@ Do not relitigate without you.
   the provider key is a separate secret) and both fail closed if
   guessed wrong. Nothing goes live until they answer.
 - **Hands** — `wrangler secret put TRADE_SECRET_HAL` and
-  `TRADE_PROVIDER_KEY_HAL` with the values Hal issues. The account
-  answers 503 `counter_closed` until then. Verify with one signed
-  call from their side and read `/api/trade/ledger`.
+  `TRADE_PROVIDER_KEY_HAL`. Hal's side will not issue a credential
+  while the door answers 503, and the door answers 503
+  `account_not_provisioned` until a secret is set: one side moves
+  first, and it can be you — mint both values (`openssl rand -hex
+  32`, twice), put them, hand them to Hal's human over a private
+  channel, never through a chat with an agent. Their check desk
+  works before that (every check but the HMAC), and the contract
+  prints `provisioned: false` on the row until you do. Verify with
+  one signed call from their side and read `/api/trade/ledger`.
 - **RULE** — flip `hal` from `test` to `live` in
   `src/store/trade-counter.ts` when payout rail, cadence and
   statement API are agreed. Receiving sats is a new treasury rail:
