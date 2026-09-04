@@ -70,6 +70,17 @@ const HISTORY_CAP = 52;
 export type SourceStatus =
   /** Answered on the most recent round the register can see. */
   | "live"
+  /**
+   * ANSWERED, AND THE CENSUS REFUSED TO COUNT IT. A page-capped listing
+   * cannot tell "delisted" from "on page two", so the population law
+   * records it as unreadable — while the round still walked every
+   * door it named. Found on the register's first live read
+   * (2026-09-04): the CDP discovery feed, the store's primary source,
+   * showed never_answered with five failed rounds beside a heartbeat
+   * saying the round probed a thousand hosts off that same feed. Both
+   * were true and the word was wrong. This is the word.
+   */
+  | "partial"
   /** Has answered before, but not on the most recent round. */
   | "stale"
   /** A reader exists and has been called; no round ever got an answer. */
@@ -98,6 +109,14 @@ export interface SourceLiveness {
   consecutive_failures: number;
   /** Rounds in which this source appears at all, answered or not. */
   rounds_seen: number;
+  /**
+   * Rounds where the source answered but the census would not count
+   * it (see `partial`). Published beside the failures so a reader can
+   * tell a dark feed from a feed we refuse to count on principle.
+   */
+  partial_rounds: number;
+  /** The newest week the source answered in ANY way, countable or not. */
+  last_answered_week: string | null;
   /**
    * Set when the roster and the history contradict each other: a
    * source declared readable that no round has ever read. The reader
@@ -204,6 +223,23 @@ export async function readRoundHistory(
  * down for a question that was never put to it would be the same
  * error as counting an unprobed host as dead.
  */
+/**
+ * Did the round itself show this source answered, even though the
+ * census row is null? Evidence is per source and only where the round
+ * carries some: the discovery feed's resource count is written on
+ * every round, and a round that declared resources off a feed and then
+ * walked them was not fed by silence. No other source leaves such a
+ * mark, so for every other source a null row is what it says.
+ */
+function answeredUncountably(source: string, round: WardRound): boolean {
+  return (
+    source === "discovery" &&
+    round.coverage_suspect === true &&
+    typeof round.listed_resources === "number" &&
+    round.listed_resources > 0
+  );
+}
+
 function livenessOf(entry: RosterEntry, rounds: WardRound[]): SourceLiveness {
   let lastAt: string | null = null;
   let lastWeek: string | null = null;
@@ -211,6 +247,9 @@ function livenessOf(entry: RosterEntry, rounds: WardRound[]): SourceLiveness {
   let roundsSince: number | null = null;
   let consecutiveFailures = 0;
   let roundsSeen = 0;
+  let partialRounds = 0;
+  let lastAnsweredWeek: string | null = null;
+  let newestWasPartial: boolean | null = null;
   let stillCountingFailures = true;
   let asked = 0;
 
@@ -222,10 +261,22 @@ function livenessOf(entry: RosterEntry, rounds: WardRound[]): SourceLiveness {
     roundsSeen += 1;
 
     if (row.hosts === null || row.hosts === undefined) {
+      if (answeredUncountably(entry.source, round)) {
+        // Answered; uncountable. Not a failure, and it ends the streak.
+        partialRounds += 1;
+        if (lastAnsweredWeek === null) lastAnsweredWeek = round.week;
+        if (newestWasPartial === null) newestWasPartial = true;
+        stillCountingFailures = false;
+        asked += 1;
+        continue;
+      }
       if (stillCountingFailures) consecutiveFailures += 1;
+      if (newestWasPartial === null) newestWasPartial = false;
       asked += 1;
       continue;
     }
+    if (lastAnsweredWeek === null) lastAnsweredWeek = round.week;
+    if (newestWasPartial === null) newestWasPartial = false;
     // The first answer we meet walking newest-first is the last one taken.
     if (lastAt === null) {
       lastAt = round.at;
@@ -241,8 +292,13 @@ function livenessOf(entry: RosterEntry, rounds: WardRound[]): SourceLiveness {
   let status: SourceStatus;
   if (!declaredRead) {
     status = "unread";
-  } else if (lastAt === null) {
+  } else if (newestWasPartial === true) {
+    status = "partial";
+  } else if (lastAt === null && lastAnsweredWeek === null) {
     status = "never_answered";
+  } else if (lastAt === null) {
+    // Answered uncountably before, and not at all on the newest round.
+    status = "stale";
   } else {
     status = roundsSince === 0 ? "live" : "stale";
   }
@@ -258,12 +314,17 @@ function livenessOf(entry: RosterEntry, rounds: WardRound[]): SourceLiveness {
     rounds_since_answer: roundsSince,
     consecutive_failures: consecutiveFailures,
     rounds_seen: roundsSeen,
+    partial_rounds: partialRounds,
+    last_answered_week: lastAnsweredWeek,
     /*
-     * Only claimed once a round has actually run and asked. A store
-     * with no history yet has no evidence against its own roster, and
-     * saying otherwise would make every fresh deploy accuse itself.
+     * Only claimed once a round has actually run and asked, and never
+     * for a source the rounds show answering: a feed we decline to
+     * count is not a reader that got nothing. A store with no history
+     * yet has no evidence against its own roster, and saying otherwise
+     * would make every fresh deploy accuse itself.
      */
-    roster_disagrees: declaredRead && lastAt === null && roundsSeen > 0,
+    roster_disagrees:
+      declaredRead && lastAt === null && lastAnsweredWeek === null && roundsSeen > 0,
   };
   if (entry.readiness.state === "unread") {
     row.why_unread = entry.readiness.why;
@@ -303,6 +364,10 @@ export function registerFindings(register: SourceRegister): string[] {
     if (row.roster_disagrees) {
       findings.push(
         `${row.source} is on the roster as readable and no round has ever read it (${row.rounds_seen} round${row.rounds_seen === 1 ? "" : "s"} asked). The reader, the shape, or the reach is wrong.`,
+      );
+    } else if (row.status === "partial") {
+      findings.push(
+        `${row.source} answered on ${row.last_answered_week} and the census would not count it: the listing is page-capped, and a partial enumeration cannot tell a delisting from a page we never reached. The round still walked every door it named; only the denominator leaves it out.`,
       );
     } else if (row.status === "stale") {
       findings.push(

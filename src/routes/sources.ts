@@ -44,6 +44,7 @@ export const sourceRoutes = new Hono<HonoEnv>();
 const SOURCES_CSS = `
 table.sources td:first-child { white-space: nowrap; }
 .st-live { color: var(--night-good, inherit); }
+.st-partial { font-style: italic; }
 .st-stale, .st-never_answered { font-weight: 600; }
 .st-unread { color: var(--night-faded); }
 .finding { border: 1px dashed var(--line); padding: 0.75rem 1rem; margin: 1rem 0; }
@@ -54,6 +55,8 @@ table.sources td:first-child { white-space: nowrap; }
 /** What each status word means, said once, on the page that uses it. */
 const STATUS_MEANS: Record<SourceLiveness["status"], string> = {
   live: "Answered on the most recent round.",
+  partial:
+    "Answered on the most recent round, and the census would not count it: the listing is page-capped, and a partial enumeration cannot tell a delisting from a page we never reached. The round still walked every door it named; only the denominator leaves it out.",
   stale: "Has answered before, but not on the most recent round. Its hosts are on the register by carry-forward, not by observation.",
   never_answered:
     "A reader exists and the round calls it. No round has ever got an answer back.",

@@ -1158,9 +1158,13 @@ which have always recorded what each source returned and have always
 distinguished "answered with nothing" from "could not be read".
 Nobody had ever asked that field a question across rounds.
 
-Four words carry it. \`live\`: answered on the most recent round.
-\`stale\`: has answered before, not this time, so its hosts are on the
-register by carry-forward rather than by observation. \`unread\`: we
+Five words carry it. \`live\`: answered on the most recent round.
+\`partial\`: answered, and the census would not count it — the
+listing is page-capped, and a partial enumeration cannot tell a
+delisting from a page we never reached; the round still walked every
+door it named, and only the denominator leaves it out. \`stale\`: has
+answered before, not this time, so its hosts are on the register by
+carry-forward rather than by observation. \`unread\`: we
 name the directory and have no reader for it, with the reason and the
 condition that would dissolve it. And \`never_answered\`, which is the
 one to stare at: we built a reader, the round calls it every week,

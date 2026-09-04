@@ -22,12 +22,16 @@ import type { WardRound } from "@/services/ward-round";
  * roster would be the hand-maintained list again, wearing a table.
  */
 
-function round(week: string, per_source: { source: string; hosts: number | null }[]): WardRound {
+function round(
+  week: string,
+  per_source: { source: string; hosts: number | null }[],
+  shape: { listed_resources?: number; coverage_suspect?: boolean } = {},
+): WardRound {
   return {
     week,
     at: `${week}-taken`,
-    listed_resources: 1,
-    coverage_suspect: false,
+    listed_resources: shape.listed_resources ?? 1,
+    coverage_suspect: shape.coverage_suspect ?? false,
     capped: false,
     our_search_presence: true,
     population: {
@@ -53,6 +57,72 @@ function rowFor(sources: SourceLiveness[], id: string): SourceLiveness {
   if (!row) throw new Error(`no row for ${id}`);
   return row;
 }
+
+/**
+ * THE REGISTER'S FIRST LIVE FINDING WAS HALF WRONG (2026-09-04). On
+ * production the CDP discovery feed read never_answered with five
+ * failed rounds and a roster disagreement, beside a heartbeat saying
+ * the round had probed a thousand hosts off that same feed. The census
+ * records a page-capped listing as null on principle — a partial
+ * enumeration cannot tell a delisting from a page never reached — and
+ * the first cut of this file read that null as a feed that never
+ * spoke. Both readings were true and the word was wrong.
+ */
+describe("a feed the census refuses to count is partial, not dead", () => {
+  const capped = { listed_resources: 6000, coverage_suspect: true };
+
+  it("reads a page-capped discovery round as partial, never as a failure", () => {
+    const register = deriveRegister(
+      [
+        round("2026-W36", [{ source: "discovery", hosts: null }], capped),
+        round("2026-W35", [{ source: "discovery", hosts: null }], capped),
+      ],
+      false,
+    );
+    const row = rowFor(register.sources, "discovery");
+    expect(row.status).toBe("partial");
+    expect(row.consecutive_failures).toBe(0);
+    expect(row.partial_rounds).toBe(2);
+    expect(row.last_answered_week).toBe("2026-W36");
+    // A feed we decline to count is not a reader that got nothing.
+    expect(row.roster_disagrees).toBe(false);
+    expect(registerFindings(register).join(" ")).toContain("would not count it");
+  });
+
+  it("keeps last_successful_read for countable reads only", () => {
+    const register = deriveRegister(
+      [round("2026-W36", [{ source: "discovery", hosts: null }], capped)],
+      false,
+    );
+    const row = rowFor(register.sources, "discovery");
+    expect(row.last_successful_read).toBeNull();
+    expect(row.hosts_on_last_read).toBeNull();
+  });
+
+  it("is stale, not partial, when it answered uncountably before and not now", () => {
+    const register = deriveRegister(
+      [
+        round("2026-W36", [{ source: "discovery", hosts: null }], { listed_resources: 0, coverage_suspect: false }),
+        round("2026-W35", [{ source: "discovery", hosts: null }], capped),
+      ],
+      false,
+    );
+    const row = rowFor(register.sources, "discovery");
+    expect(row.status).toBe("stale");
+    expect(row.consecutive_failures).toBe(1);
+    expect(row.roster_disagrees).toBe(false);
+  });
+
+  it("does not extend the grace to a source the round carries no evidence for", () => {
+    const register = deriveRegister(
+      [round("2026-W36", [{ source: "fuchss", hosts: null }], capped)],
+      false,
+    );
+    const row = rowFor(register.sources, "fuchss");
+    expect(row.status).toBe("never_answered");
+    expect(row.consecutive_failures).toBe(1);
+  });
+});
 
 describe("the register reads history, not prose", () => {
   it("dates the last successful pull off the round that actually answered", () => {

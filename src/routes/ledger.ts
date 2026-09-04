@@ -265,6 +265,7 @@ function renderLedger(ledger: WeekLedger, base: string): string {
 
   <section><h2>Were the feeds answering?</h2>
   <p class="menu-desc">${num(ledger.sources.live)} live,
+  ${num(ledger.sources.partial)} answered but uncountable,
   ${num(ledger.sources.stale)} stale, ${num(ledger.sources.never_answered)}
   never answered, ${num(ledger.sources.unread)} named but not read.
   ${

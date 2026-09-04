@@ -777,12 +777,21 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "/sources",
  * "/ledger", "/mcp-ward", exactly one "KEEPER'S PEN", and still every
  * earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SEVENTH — for the source register's
+ * fifth word. Its first live read showed the CDP discovery feed as
+ * never_answered beside a heartbeat crediting it with a thousand
+ * probes: the census records a page-capped listing as null on
+ * principle, and the register had read that null as a feed that never
+ * spoke. \`partial\` is the word for answered-but-uncountable, and the
+ * guide's "Four words carry it" became five. Confirmed before this
+ * value was taken: the guide carries "Five words carry it" and
+ * "partial", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a6a8aa796f7b3b77712833136925acb6846476db3ab024509b04b8bda86b75a4";
+  "df86eb6df8d6fafcb1fe03440fcaf632f727124d1e86f68e371c54fa1b60592a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
