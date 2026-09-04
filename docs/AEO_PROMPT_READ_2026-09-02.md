@@ -1576,6 +1576,39 @@ Settings → Secrets and variables → Actions → New repository secret):
 
 Then Actions → "corpus publish" → Run workflow, once, and read the
 log: it should say Zenodo already holds 5.json and Hugging Face
-already holds 5.json, and send only the index and tiers. The next
-Monday sends round 6 on its own. The same script runs from a laptop
-with the two variables exported.
+already holds 5.json. The next Monday sends round 6 on its own. The
+same script runs from a laptop with the two variables exported.
+
+## The mirror's first live run — 2026-09-04, 14:03 UTC
+
+The keeper set both repository secrets and the workflow ran once by
+hand on main, green in eight seconds. Three lines, and each says
+something:
+
+```
+corpus:publish: latest round 5 (2026-W36); DOI 10.5281/zenodo.22284887; Hugging Face keeper-scvd/x402-endpoint-readiness
+zenodo: version 2026-W36, round 5 already holds 5.json; nothing to send.
+huggingface: keeper-scvd/x402-endpoint-readiness already holds 5.json; nothing to send.
+```
+
+The first line is the index read live from the site: the round, the
+concept DOI taken from the index's own `identifier`, and the dataset
+repo taken from its `sameAs`. Neither string is typed in the script,
+so that line is also a check that the site still carries its own
+identity. The second and third are the idempotent path. Both are
+authenticated reads — a wrong token gives 401 there, and an unset one
+gives "skipped (no ZENODO_TOKEN)" — so a run that reaches them proves
+both tokens work. What is still untested is the writing half: the new
+Zenodo version and the Hugging Face commit. Round 6 on Monday
+2026-09-07 at 09:00 UTC is that test.
+
+Correction to the section above, which said the run would "send only
+the index and tiers". It sent nothing. `plan()` calls a round
+`nothingNew` when the mirror already holds the newest round file, and
+short-circuits before the index and the tiers file. On the weekly
+cadence this never bites: a new round is always missing, so the index
+and tiers ride along with it. It bites only when a round was put on a
+mirror by hand, as round 5 was — those two mirrors may hold an index
+and a tiers file from before the round landed, until Monday refreshes
+them. Left as it is: the round file is the thing being anchored, and
+Monday corrects the rest.
