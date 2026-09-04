@@ -92,19 +92,66 @@ export const NAME_SERVICES: readonly NameService[] = [
 export const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 /** Base58, 32-44 — the only shape a Solana pubkey comes in. */
 export const SOLANA_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+/**
+ * THE THREE RAILS THIS DESK USED TO CALL BROKEN (2026-09-04).
+ *
+ * XRPL classic addresses are base58 too, in a 25-35 character band
+ * that sits INSIDE the Solana window — so `rsnHPZjBSastxz1BE38WqKBR3s
+ * gpATvreL`, a correct XRPL address, matched SOLANA_ADDRESS and this
+ * desk told its operator "payTo is a base58 Solana address ... no
+ * buyer on this rail can pay this offer." Stellar and Algorand use
+ * base32 and matched nothing at all, so they came out as "neither an
+ * address ... nor a name service this desk recognizes."
+ *
+ * XRPL uses its own base58 alphabet (rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ
+ * 2bcdeCg65jkm8oFqi1tuvAxyz), which is why the pattern is written out
+ * rather than borrowed from the Solana one.
+ */
+export const XRPL_ADDRESS = /^r[rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz]{24,34}$/;
+/** Stellar ed25519 public key: 'G', then 55 base32 characters. */
+export const STELLAR_ADDRESS = /^G[A-Z2-7]{55}$/;
+/** Algorand: 58 base32 characters, no prefix. */
+export const ALGORAND_ADDRESS = /^[A-Z2-7]{58}$/;
 
 export type PayToVerdict =
   | { kind: "address"; payable: true }
   | { kind: "wrong-rail"; payable: false; detail: string }
   | { kind: "name"; payable: false; service: NameService; detail: string }
-  | { kind: "unresolvable"; payable: false; detail: string };
+  | { kind: "unresolvable"; payable: false; detail: string }
+  /**
+   * A CHAIN THIS DESK CANNOT READ. `payable: null` is "not judged",
+   * and it is the whole correction of 2026-09-04: an unknown address
+   * FORMAT is a gap in the observer, never a defect in the door. The
+   * old code defaulted every unrecognised CAIP-2 namespace to the EVM
+   * branch and then failed it, which is how 63 hosts in one weekly
+   * round were published `not_ready` on rails this store does not
+   * speak. Silence about what we cannot see; never a verdict.
+   */
+  | { kind: "unknown-network"; payable: null; detail: string };
 
-/** Which family a CAIP-2 network belongs to; unknown chains read evm. */
-function familyOf(network: string): "solana" | "base" | "evm" {
+/**
+ * Which family a CAIP-2 network belongs to. An unrecognised namespace
+ * returns "unknown" and is NOT judged — it used to fall through to
+ * "evm", which is the defect this function's shape now prevents.
+ */
+export function familyOf(
+  network: string,
+): "solana" | "base" | "evm" | "xrpl" | "stellar" | "algorand" | "unknown" {
   if (network.startsWith("solana:")) return "solana";
   if (network === "eip155:8453") return "base";
-  return "evm";
+  if (network.startsWith("eip155:")) return "evm";
+  if (network.startsWith("xrpl:")) return "xrpl";
+  if (network.startsWith("stellar:")) return "stellar";
+  if (network.startsWith("algorand:")) return "algorand";
+  return "unknown";
 }
+
+/** The address shape each rail this desk can read actually takes. */
+const SHAPES: Partial<Record<ReturnType<typeof familyOf>, { pattern: RegExp; what: string }>> = {
+  xrpl: { pattern: XRPL_ADDRESS, what: "an XRPL classic address (base58, leading r)" },
+  stellar: { pattern: STELLAR_ADDRESS, what: "a Stellar public key (base32, leading G)" },
+  algorand: { pattern: ALGORAND_ADDRESS, what: "an Algorand address (58 base32 characters)" },
+};
 
 /**
  * Read one accepts entry's payTo against its own network. Pure, so
@@ -120,6 +167,28 @@ export function readPayTo(payTo: string, network: string): PayToVerdict {
       payable: false,
       detail:
         "accepts carries no payTo at all. There is nothing for a buyer to pay; a client cannot construct an authorization without a recipient.",
+    };
+  }
+
+  // A rail this desk does not speak is not judged at all. Naming it
+  // is the finding; calling it unpayable would be inventing one.
+  if (family === "unknown") {
+    return {
+      kind: "unknown-network",
+      payable: null,
+      detail: `accepts offers ${network}, a chain this desk does not read addresses for. The payTo is not judged: we cannot say it is payable and we will not say it is not. This is a gap in the observer, not a finding about the door.`,
+    };
+  }
+
+  // The rails whose address shape this desk knows but whose signing
+  // it does not: read the shape, say so plainly, judge nothing else.
+  const shape = SHAPES[family];
+  if (shape) {
+    if (shape.pattern.test(value)) return { kind: "address", payable: true };
+    return {
+      kind: "unknown-network",
+      payable: null,
+      detail: `accepts offers ${network} and payTo is "${value}", which is not ${shape.what}. This desk reads the shape on this rail but does not sign on it, so the entry is not judged — check it against your own wallet before trusting either reading.`,
     };
   }
 
