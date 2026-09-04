@@ -126,6 +126,8 @@ export interface FreshSet {
   /** Doors a stranger paid this week, settlement chain-verified. May be empty. */
   crowd_walks: FreshSetCrowdRow[];
   crowd_walks_note: string;
+  /** True when the round's crowd-walk reading hit a bound: a floor, not the week. */
+  crowd_walks_truncated: boolean;
   /** The round's verdict arithmetic, failures counted but never named. */
   aggregates: {
     listed_resources: number;
@@ -232,6 +234,7 @@ export async function buildFreshSet(env: Env): Promise<FreshSet | null> {
     rows: rows.slice(0, FRESH_SET_ROW_CAP),
     truncated: rows.length > FRESH_SET_ROW_CAP,
     crowd_walks: crowdRows(round, base),
+    crowd_walks_truncated: round.crowd_walks_truncated === true,
     crowd_walks_note:
       "Doors a stranger paid this week with their own wallet, the settlement verified on chain by this store when it paid the bounty — the one fact no probe can see. Their own tier, below the house's walks, never blended into the rows above. What the walker said about the door is their claim, kept on the bounty record and not repeated here.",
     aggregates: {

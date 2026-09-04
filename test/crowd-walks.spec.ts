@@ -89,9 +89,12 @@ describe("a paid claim becomes a corpus row, born sealed", () => {
     await put(paidBounty("bty_w36_b", "2026-09-02T09:00:00.000Z"));
     await put(paidBounty("bty_w35", "2026-08-28T09:00:00.000Z"));
     try {
-      const rows = await crowdWalksForWeek(testEnv, "2026-W36");
-      expect(rows.map((row) => row.bounty_id)).toEqual(["bty_w36_b", "bty_w36_a"]);
-      expect(await crowdWalksForWeek(testEnv, "2026-W30")).toEqual([]);
+      const pass = await crowdWalksForWeek(testEnv, "2026-W36");
+      expect(pass.rows.map((row) => row.bounty_id)).toEqual(["bty_w36_b", "bty_w36_a"]);
+      // A reading that saw the whole board says so, rather than
+      // leaving a caller to assume it (bounded-read honesty).
+      expect(pass.truncated).toBe(false);
+      expect((await crowdWalksForWeek(testEnv, "2026-W30")).rows).toEqual([]);
     } finally {
       for (const id of ["bty_w36_a", "bty_w36_b", "bty_w35"]) {
         await testEnv.COUNTERS.delete(KV_KEYS.bounty(id));
@@ -149,6 +152,8 @@ describe("the rows reach the record and the routing surface at their own tier", 
       history_url: `${BASE}/corpus/host/glim.sh.json`,
     });
     expect(set!.crowd_walks_note).toContain("their claim");
+    // The published set states whether it is the week or a floor.
+    expect(set!.crowd_walks_truncated).toBe(false);
     const glim = set!.rows.find((r) => r.host === "glim.sh");
     const other = set!.rows.find((r) => r.host === "other.example");
     expect(glim?.settled_by_a_stranger_this_week).toBe(true);

@@ -116,11 +116,27 @@ export async function crowdWalkRow(bounty: BountyRecord): Promise<CrowdWalk | nu
   return row;
 }
 
-/** The paid claims of one ISO week, as rows, oldest first. */
+/**
+ * The paid claims of one ISO week, as rows, oldest first — with
+ * whether this reading could see all of them.
+ *
+ * A LOOKUP THAT CANNOT SEE EVERYTHING MUST NOT ANSWER "NO", and this
+ * one feeds a SIGNED record: a row set that quietly stopped at a cap
+ * would put "these are the week's crowd walks" into the corpus chain
+ * with a walk missing and no way to unsign it. So both bounds are
+ * read and reported — the KV listing's own `truncated`, and this
+ * module's row cap — and the round records the flag beside the rows.
+ */
+export interface CrowdWalkPass {
+  rows: CrowdWalk[];
+  /** True when a paid claim of this week may not be in `rows`. */
+  truncated: boolean;
+}
+
 export async function crowdWalksForWeek(
   env: Env,
   week: string,
-): Promise<CrowdWalk[]> {
+): Promise<CrowdWalkPass> {
   const listed = await listKeys(env.COUNTERS, {
     prefix: KV_KEYS.bountyPrefix,
     cap: 200,
@@ -141,5 +157,10 @@ export async function crowdWalksForWeek(
     const row = await crowdWalkRow(bounty);
     if (row) rows.push(row);
   }
-  return rows;
+  return {
+    rows,
+    // The board's key space ran past the listing cap, or this week's
+    // paid claims ran past the row cap. Either way the set is a floor.
+    truncated: listed.truncated || paid.length > CROWD_WALK_CAP,
+  };
 }

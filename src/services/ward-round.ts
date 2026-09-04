@@ -371,6 +371,15 @@ export interface WardRound {
    * weeks with no paid claim.
    */
   crowd_walks?: import("@/services/crowd-walks").CrowdWalk[];
+  /**
+   * Set when the crowd-walk reading hit a bound, so `crowd_walks` is a
+   * FLOOR under the week rather than the week. Absent means the
+   * reading saw every paid claim; a reader must never treat a missing
+   * flag on a round sealed before this existed as a guarantee, which
+   * is why the flag rides beside rows that only exist from the same
+   * deploy.
+   */
+  crowd_walks_truncated?: true;
 }
 
 export interface WardDelta {
@@ -997,9 +1006,14 @@ async function sealRound(
    */
   const crowd = await import("@/services/crowd-walks")
     .then(({ crowdWalksForWeek }) => crowdWalksForWeek(env, round.week))
-    .catch(() => []);
-  if (crowd.length > 0) {
-    round.crowd_walks = crowd;
+    .catch(() => ({ rows: [], truncated: false }));
+  if (crowd.rows.length > 0) {
+    round.crowd_walks = crowd.rows;
+    // A signed row set that stopped at a cap says so, or it is a
+    // claim about a week that quietly left a walk out.
+    if (crowd.truncated) {
+      round.crowd_walks_truncated = true;
+    }
   }
   const previous = await latestWardRound(env);
   /**
