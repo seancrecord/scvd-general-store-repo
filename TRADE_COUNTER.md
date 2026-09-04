@@ -57,6 +57,16 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   over its JCS form with the published key; `docs/TRADE_OUTREACH.md`
   carries the target list and the letter. Rule 7 waived for the
   counter's copy by the keeper the same evening; the copy is inked.
+- **Pass five (2026-09-04)** — recovery by `order_ref`
+  (`GET /api/trade/{account}/claim`, signed) for the marketplace's
+  customer who lost the receipt; the standard share ladder
+  (`STANDARD_SHARE_LADDER`, printed on the contract; an account row may
+  carry its own, the first account keeps its flat share) fed by a
+  monthly live-delivery counter, with the trade price derived from
+  the tier so the store nets the same at every step; the worked
+  example with fixed inputs and every byte shown (`worked_example` on
+  the contract, a section on `/trade.md`); the counter beside the
+  rails on `/rails`, never inside them.
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money

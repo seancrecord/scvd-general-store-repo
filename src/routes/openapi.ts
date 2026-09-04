@@ -1793,6 +1793,21 @@ const TRADE_STATEMENT_SCHEMA: OpenApiObject = {
   },
 };
 
+const TRADE_CLAIM_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "row"],
+  properties: {
+    what_this_is: { type: "string" },
+    row: { type: "object" },
+    certificate: { type: "object", nullable: true },
+    signature: { type: "string" },
+    signature_jcs: { type: "string" },
+    public_key: { type: "string" },
+    verify_url: { type: "string", format: "uri" },
+    note: { type: "string" },
+  },
+};
+
 const TRADE_REFUSAL_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["delivered", "billed", "code", "error"],
@@ -5301,6 +5316,41 @@ openapiRoutes.get("/openapi.json", async (c) => {
             tradeHeader("X-Trade-Key", "As you would send it, where the dialect has one.", false),
           ],
           {},
+        ),
+      },
+      "/api/trade/{partner}/claim": {
+        get: tradeOrderOperation(
+          returns(
+            freeOp(
+              "Recover a delivery by order_ref (signed)",
+              "For the marketplace's customer who lost the receipt: the account asks, signed over the empty body like a statement read, with ?order_ref= naming the order, and gets the ledger row and the signed certificate back. A bounded, newest-first search of the account's rows.",
+            ),
+            TRADE_CLAIM_SCHEMA,
+          ),
+          [
+            pathParam("partner", "The account id."),
+            {
+              name: "order_ref",
+              in: "query",
+              required: true,
+              schema: { type: "string", maxLength: 120 },
+              description: "The order_ref the delivery was ordered with.",
+            },
+            tradeHeader("X-Trade-Timestamp", "Unix seconds at signing."),
+            tradeHeader("X-Trade-Nonce", "32 hex characters, fresh per request."),
+            tradeHeader("X-Trade-Signature", "sha256=<hex of HMAC-SHA256(secret, timestamp.nonce.)> — the body is empty."),
+            tradeHeader("X-Trade-Key", "The provider key, where the account's dialect sends one.", false),
+          ],
+          {
+            "401": {
+              description: "The signature did not verify.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+            "409": {
+              description: "Replayed nonce.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+          },
         ),
       },
       "/api/trade/{partner}/statement": {

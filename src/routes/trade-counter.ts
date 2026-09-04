@@ -13,10 +13,13 @@ import { fulfillPurchase } from "@/services/fulfillment";
 import {
   alertCapReached,
   creditCeilingReached,
+  findTradeDelivery,
   notifyTradeCallback,
   recallOrder,
   recordTradeDelivery,
+  shareForNextDelivery,
   signedStatement,
+  workedExample,
   tradeCatalog,
   tradeDayCount,
   tradeLedger,
@@ -53,6 +56,7 @@ import {
   TRADE_SECURITY_STORES,
   TRADE_SNIPPETS,
   TRADE_STANDFIRST,
+  STANDARD_SHARE_LADDER,
   TRADE_UPLIFT_BPS,
   TRADE_WHAT_IT_IS_FOR,
   TRADE_WHAT_THIS_IS,
@@ -191,7 +195,9 @@ function accountRows(base: string) {
     settles_in: partner.settles_in,
     daily_cap: partner.daily_cap,
     credit_ceiling_usd: partner.credit_ceiling_usd,
+    ...(partner.share_ladder ? { share_ladder: partner.share_ladder } : {}),
     door: `${base}/api/trade/${partner.id}/{item_id}`,
+    claim: `${base}/api/trade/${partner.id}/claim?order_ref=`,
     check_desk: `${base}/api/trade/${partner.id}/check`,
     statement: `${base}/api/trade/${partner.id}/statement`,
     ...(partner.sandbox
@@ -256,14 +262,21 @@ function howToCall(base: string) {
 const EXPECTED_OUTCOME =
   "200 with the same delivery object the front door returns for that item — deliverable, any item extras, the signed certificate with signature, public key and verify_url — plus a `trade` block naming the account, the trade price, the store's net and the sha256 of your signed instruction, and settled_via saying trade_account (or trade_account_test while the account is in test). No paid_usdc, no network, no payer: none applied.";
 
-function termsJson(base: string) {
+async function termsJson(base: string) {
+  const sandbox = getTradePartner(TRADE_SANDBOX_ID);
   return {
     what_this_is: TRADE_WHAT_THIS_IS,
     opened: TRADE_COUNTER_OPENED,
     door: `${base}/api/trade/{account}/{item_id}`,
     how_to_call: howToCall(base),
     dialects: Object.values(TRADE_DIALECTS).map(dialectRow),
-    pricing: pricingBlock(),
+    ...(sandbox ? { worked_example: await workedExample(base, sandbox) } : {}),
+    pricing: {
+      ...pricingBlock(),
+      share_ladder_offered: STANDARD_SHARE_LADDER,
+      share_ladder_note:
+        "The standard offer for a new account: the partner's share rises with live deliveries in the calendar month, highest tier reached wins, and the trade price is derived from the share so the store's net stays retail plus the uplift at every tier. An account with its own contract keeps its flat share.",
+    },
     shelf: shelfRows(base),
     eligible_but_not_yet_shelved: tradeEligibleButUnshelved(),
     accounts: accountRows(base),
@@ -420,9 +433,9 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
   });
 });
 
-tradeCounterRoutes.get("/api/trade/contract", (c) => {
+tradeCounterRoutes.get("/api/trade/contract", async (c) => {
   c.header("Cache-Control", "public, max-age=300");
-  return c.json(termsJson(c.env.STORE_BASE_URL));
+  return c.json(await termsJson(c.env.STORE_BASE_URL));
 });
 
 tradeCounterRoutes.get("/api/trade/ledger", async (c) => {
@@ -610,7 +623,8 @@ function roomHtml(base: string): string {
   <p class="menu-desc"><code>POST ${escapeHtml(base)}/api/trade/{account}/{item_id}</code> with one JSON object. Sign HMAC-SHA256 over <code>${escapeHtml(dialect.signing_string_in_words)}</code> with the secret you issued us and send it as <code>${escapeHtml(dialect.headers.signature)}: sha256=&lt;hex&gt;</code>, beside <code>${escapeHtml(dialect.headers.timestamp)}</code> (unix seconds) and <code>${escapeHtml(dialect.headers.nonce ?? "")}</code> (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send <code>order_ref</code> on every call so a retry after a timeout returns the original delivery instead of a second one. A partner that already signs in another dialect keeps it; the account row names which.</p>
   <p class="menu-desc">The reference signer is public: <a href="${REPO_SIGNER}"><code>src/lib/trade-auth.ts</code></a>. Sign a body with it and compare bytes with yours before the account goes live. Or paste one of these: each runs as written against the sandbox.</p>
   ${TRADE_SNIPPETS.map((snippet) => `<details><summary>${escapeHtml(snippet.label)}</summary><pre class="menu-desc"><code>${escapeHtml(snippet.code)}</code></pre></details>`).join("")}
-  <p class="menu-meta">From a shell: <code>npx scvd trade check context_anchor</code> signs a sandbox order with the published secret and asks the check desk; <code>npx scvd trade order</code> delivers.</p>
+  <p class="menu-meta">From a shell: <code>npx scvd trade check context_anchor</code> signs a sandbox order with the published secret and asks the check desk; <code>npx scvd trade order</code> delivers. A worked example with fixed inputs and every byte shown is on <a href="/trade.md"><code>/trade.md</code></a> and at <code>worked_example</code> on the contract.</p>
+  <p class="menu-desc">Lost receipts: <code>GET /api/trade/{account}/claim?order_ref=</code>, signed over the empty body, returns the delivery your account ordered under that reference, for the customer who lost it. Volume: the standard offer raises your share with live deliveries in the month — ${STANDARD_SHARE_LADDER.map((tier) => `${tier.partner_share_bps / 100}% from ${tier.from_monthly_deliveries.toLocaleString("en-US")}`).join(", ")} — and the trade price is derived from the share, so the store nets the same at every tier.</p>
   <p class="menu-desc">Your own statement, both sides, is yours to read: <code>GET /api/trade/{account}/statement</code>, signed over the empty body like any order. Refunds to your customer are yours; this store took no payment and can return none.</p>
   <h3>Every refusal, by name</h3>
   <ul>${errors}</ul>
@@ -642,7 +656,41 @@ function roomHtml(base: string): string {
  * pointing home. Rendered from the same constants the page and the
  * JSON twin read, so rule 60's sentences cannot drift here either.
  */
-function tradeMarkdown(base: string): string {
+async function tradeMarkdown(base: string): Promise<string> {
+  const sandboxAccount = getTradePartner(TRADE_SANDBOX_ID);
+  const example = sandboxAccount ? await workedExample(base, sandboxAccount) : null;
+  const walkthrough = example
+    ? `## The worked example, every byte
+${example.what_this_is}
+
+Door: \`POST ${example.door}\`
+
+Body (${example.body_bytes} bytes, sent exactly as shown):
+
+\`\`\`json
+${example.body}
+\`\`\`
+
+Signing string (\`timestamp.nonce.body\`):
+
+\`\`\`
+${example.signing_string}
+\`\`\`
+
+sha256 of the signing string: \`${example.signing_string_sha256}\`
+
+Headers:
+
+\`\`\`
+X-Trade-Key: ${example.headers["X-Trade-Key"]}
+X-Trade-Timestamp: ${example.headers["X-Trade-Timestamp"]}
+X-Trade-Nonce: ${example.headers["X-Trade-Nonce"]}
+X-Trade-Signature: ${example.headers["X-Trade-Signature"]}
+\`\`\`
+
+${example.how_to_compare}
+`
+    : "";
   const shelf = shelfRows(base)
     .map(
       (row) =>
@@ -690,6 +738,7 @@ ${shelf}
 ## The call
 \`POST ${base}/api/trade/{account}/{item_id}\` with one JSON object. Sign HMAC-SHA256 over \`${dialect.signing_string_in_words}\` with the secret you issued us; send it as \`${dialect.headers.signature}: sha256=<hex>\` beside \`${dialect.headers.timestamp}\` (unix seconds) and \`${dialect.headers.nonce ?? ""}\` (32 hex, fresh each call). Timestamps outside five minutes and nonces seen before are refused. Send \`order_ref\` on every call. Your own statement: \`GET ${base}/api/trade/{account}/statement\`, signed over the empty body. Reference signer: ${REPO_SIGNER}
 
+${walkthrough}
 ### A signer to paste
 ${TRADE_SNIPPETS.map((snippet) => `**${snippet.label}**\n\n\`\`\`${snippet.language}\n${snippet.code}\n\`\`\``).join("\n\n")}
 
@@ -712,21 +761,21 @@ The contract: ${base}/api/trade/contract · the ledger: ${base}/api/trade/ledger
 
 tradeCounterRoutes.get("/trade.json", (c) => c.json(roomJson(c.env.STORE_BASE_URL)));
 
-tradeCounterRoutes.get("/trade.md", (c) => {
+tradeCounterRoutes.get("/trade.md", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  return c.text(tradeMarkdown(base), 200, {
+  return c.text(await tradeMarkdown(base), 200, {
     "content-type": MARKDOWN_MEDIA_TYPE,
     Vary: VARY_ACCEPT,
     Link: `<${base}/trade>; rel="canonical"`,
   });
 });
 
-tradeCounterRoutes.get("/trade", (c) => {
+tradeCounterRoutes.get("/trade", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const accept = c.req.header("Accept");
   const html = wantsHtml(accept, c.req.header("User-Agent"));
   if (prefersMarkdown(accept, html ? "text/html" : "application/json")) {
-    return c.text(tradeMarkdown(base), 200, {
+    return c.text(await tradeMarkdown(base), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
     });
@@ -744,6 +793,68 @@ tradeCounterRoutes.get("/trade", (c) => {
   }
   c.header("Vary", VARY_ACCEPT);
   return c.json(roomJson(base));
+});
+
+/* ------------------------------------------------------------------ */
+/* Recovery by order_ref, signed                                       */
+/* ------------------------------------------------------------------ */
+
+tradeCounterRoutes.get("/api/trade/:partner/claim", async (c) => {
+  c.header("Cache-Control", "no-store");
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    const error = errorByCode("unknown_account");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const secrets = tradeSecrets(c.env, partner);
+  if (!secrets || !c.env.TRADE_NONCES) {
+    const error = errorByCode("counter_closed");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  const verdict = await verifyTradeRequest({
+    dialect: TRADE_DIALECTS[partner.dialect],
+    header: (name) => c.req.header(name),
+    rawBody: "",
+    secrets,
+    now_ms: Date.now(),
+  });
+  if (!verdict.ok) {
+    const error = errorByCode(verdict.code);
+    return c.json(refusal(error, error.meaning), 401);
+  }
+  const claim = await claimTradeNonce(c.env, partner.id, verdict.replay_key, TRADE_NONCE_TTL_SECONDS);
+  if (claim === "unavailable") {
+    const error = errorByCode("counter_closed");
+    return c.json(refusal(error, error.meaning), 503);
+  }
+  if (claim === "seen") {
+    const error = errorByCode("replayed");
+    return c.json(refusal(error, error.meaning), 409);
+  }
+  const orderRef = (c.req.query("order_ref") ?? "").trim();
+  if (!orderRef || orderRef.length > TRADE_ORDER_REF_MAX) {
+    const error = errorByCode("bad_request");
+    return c.json(refusal(error, "Give the order_ref the delivery was ordered with."), 400);
+  }
+  const found = await findTradeDelivery(c.env, partner, orderRef);
+  if (!found) {
+    const error = errorByCode("not_found");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  return c.json({
+    what_this_is:
+      "The delivery your account ordered under this order_ref, recovered for the customer who lost it: the ledger row and the signed certificate, which still verifies at verify_url.",
+    row: found.row,
+    ...(found.certificate
+      ? {
+          certificate: found.certificate.certificate,
+          signature: found.certificate.signature,
+          signature_jcs: found.certificate.signature_jcs,
+          public_key: found.certificate.public_key,
+          verify_url: `${c.env.STORE_BASE_URL}/api/verify/${found.row.cert_id}`,
+        }
+      : { certificate: null, note: "The row stands but the certificate record is missing; write to the store." }),
+  });
 });
 
 /* ------------------------------------------------------------------ */
@@ -862,7 +973,8 @@ tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
     return c.json(refusal(error, error.meaning), 429);
   }
 
-  const settlement = tradeSettlementFor(partner, item, verdict.instruction_digest, checked.order_ref);
+  const shareBps = await shareForNextDelivery(c.env, partner);
+  const settlement = tradeSettlementFor(partner, item, verdict.instruction_digest, checked.order_ref, shareBps);
   const response = await fulfillPurchase(c.env, item, tradePending(settlement), checked.input);
 
   /*
