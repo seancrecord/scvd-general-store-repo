@@ -109,9 +109,54 @@ const UNDECODED_HEADER_READINGS: ReadonlyArray<readonly [string, string]> = [
   ],
   [
     "local:payload_not_an_object",
-    "it was base64 of a JSON value that is not an object — a string (an envelope encoded twice), an array, or a number.",
+    "it was base64 of a JSON value that is not an object — a string (an envelope encoded twice), an array, or a number. One caveat the books cannot state for themselves: rows booked BEFORE 2026-09-04 carry this code as the catch-all for every undecodable header, because the codes that name the cause are newer than the rows. For one of those the cause is not known, and the curl wrap (local:payload_truncated_envelope) is the likeliest of them.",
   ],
 ];
+
+/**
+ * OUR OWN REFUSAL, READ AS SOMEBODY ELSE'S (2026-09-04, the
+ * settlement_attestation funnel: two of five refusals were
+ * `local:preflight:payload.authorization.nonce` and
+ * `local:preflight:payload.signature`, and the desk read both as
+ * "the x402 SDK refused this ... fault: unknown").
+ *
+ * Three things wrong with that, all the same mistake the header
+ * codes had made an hour earlier. It was not the SDK: the store
+ * refused, on its own authority, on purpose, in preflightRefusalBody
+ * — which writes "caught here on purpose" into the very body the
+ * buyer got. The fault was not unknown: a blocking preflight problem
+ * is a field that is wrong against the published v2 schema, full
+ * stop. And the field is IN THE CODE, so a reading that says
+ * "unknown" is throwing away a field name it is holding.
+ *
+ * Worse than a bad page: readReason also writes the phone alert, so
+ * every one of these paged the keeper as "UNCLEAR, needs a read"
+ * when the read was already done and the answer was "theirs".
+ *
+ * The clause per field is a READING of the rule, not the rule — the
+ * rule and what actually arrived rode out on the 402 in
+ * payload_problems. A test pins every field describeExactEvmPayload
+ * can block on to a clause here, so a new blocking check cannot land
+ * without one.
+ */
+const PREFLIGHT_FIELD_READINGS: Readonly<Record<string, string>> = {
+  "payload.signature":
+    "the signature is not a hex string beginning 0x. (Length alone is never refused here: a smart-account signature under ERC-1271 is not 65 bytes, and that one is reported and let through.)",
+  "payload.authorization":
+    "the authorization object was absent or was not an object — from, to, value, validAfter, validBefore and nonce all live inside it.",
+  "payload.authorization.from":
+    "the from address is not a 20-byte hex address (0x and exactly 40 hex characters).",
+  "payload.authorization.to":
+    "the to address is either not a 20-byte hex address (0x and exactly 40 hex characters) or is not the payTo of the requirement they accepted. Signing to any other address pays somebody else, which is why this one is refused here rather than discovered on-chain.",
+  "payload.authorization.value":
+    "the value is either not a DECIMAL STRING of digits or does not equal the amount of the requirement they accepted. The usual cause is JSON.stringify of a JavaScript number — 5000 arriving where the schema wants \"5000\".",
+  "payload.authorization.validafter":
+    "validAfter is not a DECIMAL STRING of digits — a number or a hex string, most likely, where the schema wants the digits quoted.",
+  "payload.authorization.validbefore":
+    "validBefore is not a DECIMAL STRING of digits — a number or a hex string, most likely, where the schema wants the digits quoted.",
+  "payload.authorization.nonce":
+    "the nonce is not a 32-byte hex string (0x and exactly 64 hex characters, random per authorization). A 16-byte nonce, a decimal counter and a UUID all land here.",
+};
 
 export function readReason(raw: string): {
   fault: DeclineFault;
@@ -184,6 +229,18 @@ export function readReason(raw: string): {
       fault: "buyer",
       reading:
         "The payment envelope was the wrong SHAPE — a field the protocol requires was absent, so there was nothing to compare and the signature was never examined. Not a signing problem and not a funds problem. The code names the field; the 402 the buyer received lists what did arrive (the books keep the code, not that message).",
+    };
+  }
+  if (reason.startsWith("local:preflight:")) {
+    // The field keeps the case it was minted with; the lookup does not.
+    const field = raw.slice("local:preflight:".length);
+    const clause = PREFLIGHT_FIELD_READINGS[field.toLowerCase()];
+    return {
+      fault: "buyer",
+      reading: `WE refused this, before the facilitator was ever called: ${
+        clause ??
+        `\`${field}\` is not in the one legal form that field has.`
+      } Nothing was spent and no money moved — the round trip was not worth making for a field that is wrong against the published v2 schema. This is deliberate rather than strict: the facilitator's answer to a bad payload is a union-type error truncated at 200 characters that names no field at all, so we check what we can check and say which one. The 402 the buyer received carried the rule and what actually arrived, under payload_problems.`,
     };
   }
   if (reason === "local:sdk_threw") {
