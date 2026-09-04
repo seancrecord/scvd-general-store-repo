@@ -7,6 +7,7 @@ import {
   draftNote,
   draftWelcome,
   healedAfterOutreach,
+  mailtoFor,
   parseSecurityContacts,
   type OutreachLedger,
 } from "@/services/outreach";
@@ -353,6 +354,156 @@ describe("the desk and its doors", () => {
     expect(body.prospects).toHaveLength(120);
   });
 
+  it("names, at the top, every scouted door with an email and no note yet", async () => {
+    /**
+     * 2026-09-04, the keeper: "i can't see the names that have emails
+     * that i havent sent to". The summary must be the SAME list the
+     * wire would reach — an address published, no note ever sent —
+     * named before the drafts, with the addresses pullable in one
+     * copy. A sent host must never appear; a skip-stamped one must,
+     * flagged, because no note has actually left.
+     */
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(
+        round("2026-W34", [
+          host("waiting.example", "not_ready", { failed: ["status-402"] }),
+          host("skipped.example", "not_ready", { failed: ["status-402"] }),
+          host("done.example", "not_ready", { failed: ["status-402"] }),
+          host("noaddress.example", "not_ready", { failed: ["status-402"] }),
+          host("unscouted.example", "not_ready", { failed: ["status-402"] }),
+        ]),
+      ),
+    );
+    await testEnv.COUNTERS.put(
+      KV_KEYS.outreachLedger,
+      JSON.stringify({
+        version: 1,
+        hosts: {
+          "waiting.example": {
+            contacts: ["mailto:ops@waiting.example"],
+            scouted_at: "2026-09-01T00:00:00.000Z",
+          },
+          "skipped.example": {
+            contacts: ["security@skipped.example"],
+            scouted_at: "2026-09-01T00:00:00.000Z",
+            status: "skip",
+            status_at: "2026-09-02T00:00:00.000Z",
+          },
+          "done.example": {
+            contacts: ["mailto:ops@done.example"],
+            scouted_at: "2026-09-01T00:00:00.000Z",
+            status: "sent",
+            status_at: "2026-09-02T00:00:00.000Z",
+            wired: true,
+            sent_to: "ops@done.example",
+          },
+          "noaddress.example": {
+            scouted_at: "2026-09-01T00:00:00.000Z",
+            scout_note: "none published",
+          },
+        },
+      }),
+    );
+
+    const page = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "text/html" },
+    });
+    const text = await page.text();
+    const summary = text.slice(
+      text.indexOf('<section id="unsent">'),
+      text.indexOf('action="/admin/outreach/scout"'),
+    );
+
+    // It is at the top: before the cards, before the batch buttons.
+    expect(summary).toContain("Scouted, with an email, not yet sent (2)");
+    expect(summary).toContain("ops@waiting.example");
+    // A stamp is not a send — it stays on the list, flagged.
+    expect(summary).toContain("security@skipped.example");
+    expect(summary).toContain("stamped skip");
+    // A host the wire already reached is spent, and never listed.
+    expect(summary).not.toContain("ops@done.example");
+    // One copy pulls every address on the list.
+    expect(summary).toContain(
+      "security@skipped.example, ops@waiting.example",
+    );
+    // The doors that cannot be wired are counted, not hidden.
+    expect(summary).toContain("1 scouted door that published no email");
+    expect(summary).toContain("1 not scouted yet");
+    // And each row can be sent from where it is read.
+    expect(summary).toContain('action="/admin/outreach/send"');
+    expect(summary).toContain('href="#card-waiting.example"');
+    expect(text).toContain('<section id="card-waiting.example">');
+  });
+
+  it("finds contacts for the ready doors too, and hands each a one-press mail", async () => {
+    /**
+     * 2026-09-04, the keeper: "how do i find contacts for both" and
+     * "you make it easy for me please". The scout walks both queues;
+     * a ready door with an address gets its own list at the top and
+     * an open-in-mail link with the welcome already written. Nothing
+     * transmits: the link is the keeper's own client, and the stamp
+     * is still his.
+     */
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(
+        round("2026-W34", [
+          host("broken.example", "not_ready", { failed: ["status-402"] }),
+          host("ready.example", "ready"),
+          host("quiet-ready.example", "ready"),
+        ]),
+      ),
+    );
+    await testEnv.COUNTERS.delete(KV_KEYS.outreachLedger);
+
+    // The scout knocks on every host in both queues. Nothing here
+    // resolves, so every knock records "none published" — the point
+    // is who was knocked on, not what answered.
+    const scout = await SELF.fetch(`${BASE}/admin/outreach/scout`, {
+      method: "POST",
+      headers: { ...auth, Accept: "application/json" },
+    });
+    expect(await scout.json()).toEqual({ looked: 3, found: 0, remaining: 0 });
+    const ledger = (await testEnv.COUNTERS.get(
+      KV_KEYS.outreachLedger,
+      "json",
+    )) as OutreachLedger;
+    expect(ledger.hosts["ready.example"]?.scouted_at).toBeTruthy();
+    expect(ledger.hosts["quiet-ready.example"]?.scout_note).toBe("none published");
+
+    // Give the ready door an address, as the scout would have.
+    ledger.hosts["ready.example"] = {
+      ...ledger.hosts["ready.example"],
+      contacts: ["mailto:hello@ready.example"],
+    };
+    delete ledger.hosts["ready.example"]?.scout_note;
+    await testEnv.COUNTERS.put(KV_KEYS.outreachLedger, JSON.stringify(ledger));
+
+    const page = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "text/html" },
+    });
+    const text = await page.text();
+    const summary = text.slice(
+      text.indexOf('<section id="unsent">'),
+      text.indexOf('action="/admin/outreach/scout"'),
+    );
+    expect(summary).toContain("Ready doors — the welcome (1)");
+    expect(summary).toContain("hello@ready.example");
+    // The welcome list never offers the wire; the note list does.
+    const readyList = summary.slice(summary.indexOf("Ready doors — the welcome"));
+    expect(readyList).not.toContain('action="/admin/outreach/send"');
+    expect(readyList).toContain("open in mail — the welcome written");
+    expect(readyList).toContain('href="mailto:hello%40ready.example?subject=there%20is%20a%20dated%20page');
+    expect(readyList).toContain('href="#card-ready.example"');
+    // The card carries the contact and the same link.
+    const card = text.slice(text.indexOf('<section id="card-ready.example">'));
+    expect(card).toContain("contact: <code>mailto:hello@ready.example</code>");
+    expect(card).toContain("open in mail — the welcome already written");
+    // And the scout button counts both queues as scouted now.
+    expect(text).toContain("Scout contacts (0 unscouted");
+  });
+
   it("refuses a status it does not know", async () => {
     const flip = await SELF.fetch(`${BASE}/admin/outreach/status`, {
       method: "POST",
@@ -425,5 +576,33 @@ describe("the ready doors — the welcome with the passport page (2026-09-01)", 
     const note = draftNote(deriveProspects(latest, null)[0]!, BASE);
     expect(note).toContain(`${BASE}/passport/broke.example`);
     expect(note).toContain("/menu/conformance_watch");
+  });
+});
+
+describe("hand delivery in one press", () => {
+  it("turns a draft into a mailto with the subject split off and the body intact", () => {
+    const link = mailtoFor(
+      "ops@door.example",
+      "Subject: your x402 endpoint at door.example is turning buyers away\n\nHello — line one.\n  curl -X POST https://scvd.store/api/preflight -d '{\"url\":\"https://door.example/x\"}'\n",
+    );
+    const url = new URL(link);
+    expect(url.protocol).toBe("mailto:");
+    expect(url.pathname).toBe("ops%40door.example");
+    const params = url.searchParams;
+    expect(params.get("subject")).toBe(
+      "your x402 endpoint at door.example is turning buyers away",
+    );
+    const body = params.get("body") ?? "";
+    expect(body.startsWith("Hello — line one.")).toBe(true);
+    // Quotes, braces and newlines survive the round trip.
+    expect(body).toContain('{"url":"https://door.example/x"}');
+    expect(body).not.toContain("Subject:");
+  });
+
+  it("keeps a draft with no subject line whole", () => {
+    const link = mailtoFor("a@b.example", "just a body");
+    const params = new URL(link).searchParams;
+    expect(params.get("subject")).toBe("");
+    expect(params.get("body")).toBe("just a body");
   });
 });

@@ -44,6 +44,7 @@ import {
   headersRecord,
   hostOf,
   isoWeek,
+  ledgerWeek,
   parseChallenge,
   paymentHeader,
   reconcile,
@@ -182,22 +183,26 @@ async function derive(flags) {
 
 /* ---------- walk ---------- */
 
+/**
+ * Rule 1's one-run-a-week guard, over every walk ledger under
+ * research/ — not only the ones this runner named.
+ *
+ * It used to ask two narrower questions than the rule it enforces:
+ * only `field-run-*` directories, and only ledgers opening with a
+ * `run` line. Both holes were live on 2026-09-04, and together: the
+ * walk of 2026-09-02 sat in `research/x402-walk-ledger/` with no run
+ * line, in the same ISO week, and a second run would have passed the
+ * guard silently. A guard that answers "no prior run" because it did
+ * not look is worse than no guard, because it reports as though it
+ * did. ledgerWeek() reads the week out of whatever the file carries.
+ */
 function priorRunThisWeek(week) {
   const researchDir = new URL("research/", REPO_ROOT);
   if (!existsSync(researchDir)) return null;
   for (const name of readdirSync(researchDir)) {
-    if (!name.startsWith("field-run-")) continue;
     const ledger = join(researchDir.pathname, name, "ledger.jsonl");
     if (!existsSync(ledger)) continue;
-    const first = readFileSync(ledger, "utf8").split("\n")[0] ?? "";
-    try {
-      const head = JSON.parse(first);
-      if (head.kind === "run" && isoWeek(new Date(head.started)) === week) {
-        return name;
-      }
-    } catch {
-      // A ledger without a run line predates this runner (run zero).
-    }
+    if (ledgerWeek(readFileSync(ledger, "utf8")) === week) return name;
   }
   return null;
 }

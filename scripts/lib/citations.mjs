@@ -17,7 +17,8 @@
  * that is our words on their page, not a citation (listing fact 4).
  * test/citation-watch.spec.ts holds this to src/store/spec.ts.
  */
-export const SELF_PUBLISHED_IDS = ["cert_4dww28dx5j"];
+export const RETIRED_EXAMPLE_IDS = ["cert_k2m9v4xwqp"];
+export const SELF_PUBLISHED_IDS = ["cert_4dww28dx5j", ...RETIRED_EXAMPLE_IDS];
 
 /**
  * Every URL shape that counts as citing a ROW of the corpus — a verify

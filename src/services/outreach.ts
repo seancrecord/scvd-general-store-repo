@@ -430,22 +430,30 @@ export interface ScoutReport {
  * to say "your thing is broken". Results land in the ledger; hosts
  * with nothing published are recorded as such so the scout never
  * re-knocks them on the next press.
+ *
+ * SINCE 2026-09-04 it walks BOTH queues. The ready doors got their
+ * welcome on 2026-09-01 and no way to find who to hand it to — the
+ * keeper: "how do i find contacts for both". Same file, same knock,
+ * same ledger; the scout takes anything with a host on it.
  */
 export async function scoutContacts(
   env: Env,
-  prospects: Prospect[],
+  rows: ReadonlyArray<{ host: string }>,
   ledger: OutreachLedger,
 ): Promise<ScoutReport> {
-  const pending = prospects.filter(
-    (prospect) => !ledger.hosts[prospect.host]?.scouted_at,
-  );
+  const seen = new Set<string>();
+  const pending = rows.filter((row) => {
+    if (seen.has(row.host)) return false;
+    seen.add(row.host);
+    return !ledger.hosts[row.host]?.scouted_at;
+  });
   const slice = pending.slice(0, SCOUT_CAP);
   const { pooled } = await import("@/services/ward-round");
-  const read = await pooled(slice, 10, async (prospect) => {
+  const read = await pooled(slice, 10, async (row) => {
     const text =
-      (await fetchSecurityTxt(env, prospect.host, "/.well-known/security.txt")) ??
-      (await fetchSecurityTxt(env, prospect.host, "/security.txt"));
-    return { host: prospect.host, contacts: text ? parseSecurityContacts(text) : [] };
+      (await fetchSecurityTxt(env, row.host, "/.well-known/security.txt")) ??
+      (await fetchSecurityTxt(env, row.host, "/security.txt"));
+    return { host: row.host, contacts: text ? parseSecurityContacts(text) : [] };
   });
   let found = 0;
   const scoutedAt = new Date().toISOString();
@@ -466,6 +474,27 @@ export async function scoutContacts(
     found,
     remaining: pending.length - slice.length,
   };
+}
+
+/**
+ * HAND DELIVERY IN ONE PRESS (2026-09-04, the keeper: "you make it
+ * easy for me please"). A mailto: link carrying the draft's subject
+ * and body, so the old flow — copy the draft, open the mail client,
+ * paste, address it — collapses to a click and a send. Nothing is
+ * transmitted by the link itself; the keeper's own client sends, and
+ * the stamp is still his to press afterwards (rule 30).
+ *
+ * Both drafts open with a "Subject:" line; that becomes the subject
+ * and the rest the body. Mail clients cap what a mailto: may carry
+ * (a few thousand characters, client-dependent), and both drafts sit
+ * under that; if one ever grows past it the client opens blank, and
+ * the draft is still on the card to copy.
+ */
+export function mailtoFor(email: string, draft: string): string {
+  const match = /^Subject:\s*(.*)\r?\n\r?\n?([\s\S]*)$/.exec(draft);
+  const subject = match?.[1] ?? "";
+  const body = match?.[2] ?? draft;
+  return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 /** The first email-shaped contact the operator published, or null.

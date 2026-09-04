@@ -66,6 +66,15 @@ correctionsRoutes.get("/corrections", (c) => {
           <p class="menu-desc">${escapeHtml(CORRECTIONS_SCOPE)}</p>
           <p class="menu-desc"><strong>${escapeHtml(CORRECTIONS_HAND_KEPT)}</strong></p>
           <p class="menu-meta">${escapeHtml(CORRECTIONS_INVITATION)}</p>
+        </section>
+        <section>
+          <p class="menu-desc">Some of what would once have ended up on this
+          page is now caught before it can: <a href="/sources">/sources</a>
+          derives each directory liveness from the stored rounds rather than
+          from prose, so the roster can no longer quietly go out of date, and
+          it carries the heartbeat that says whether the weekly round ran at
+          all. A correction is what we publish when a claim was wrong; that
+          register is what we built so fewer of them have to be written.</p>
         </section>`,
       }),
     );

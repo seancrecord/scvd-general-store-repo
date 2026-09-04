@@ -1714,6 +1714,7 @@ const TRADE_TERMS_SCHEMA: OpenApiObject = {
           daily_cap: { type: "integer" },
           door: { type: "string" },
           fixture: { type: "object", description: "One deterministic order for the account: door, body, expected values on the 200, and the response invariants." },
+          partner_terms: { type: "array", items: { type: "string" }, description: "The partner's own terms as they answered them: retries, refunds, rotation, price unit." },
           items: { type: "array", items: { type: "object" } },
         },
       },
@@ -6493,6 +6494,95 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
           ),
           SAMPLE_ARTIFACT_SCHEMA,
+        ),
+      },
+      "/sources.json": {
+        get: returns(
+          freeOp(
+            "Where our numbers come from",
+            "Every public directory this store's ecosystem figures rest on, each with the last time it actually answered us — derived from the stored weekly rounds rather than maintained by hand, so the roster cannot quietly go out of date. Four states: live, stale, never_answered (a reader exists and has never got an answer, which is the one to stare at), and unread (no reader, with the reason and the condition that would dissolve it). Carries the ward heartbeat: whether the weekly round is still running, and whether the newest one WROTE anything rather than merely finishing. Rates nobody — a directory we cannot read is a fact about our reach, counted against us. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string" },
+              at: { type: "string", format: "date-time" },
+              rounds_read: { type: "integer" },
+              history_truncated: { type: "boolean" },
+              sources: { type: "array", items: { type: "object" } },
+              heartbeat: { type: "object" },
+              what_this_is_not: { type: "string" },
+              how_to_rederive: { type: "string" },
+            },
+          },
+        ),
+      },
+      "/ledger": {
+        get: returns(
+          freeOp(
+            "The Week's Ledger, every week the chain holds",
+            "The index of weekly readings: one per signed week, newest named. Serves HTML to a browser and JSON to everything else. A week absent from the list was never sealed — the round did not run, or ran and could not be sealed — and gaps are named rather than left for a reader's arithmetic to read as continuous coverage. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string" },
+              weeks_held: { type: "array", items: { type: "string" } },
+              latest: { type: "string", nullable: true },
+              what_this_is: { type: "string" },
+            },
+          },
+        ),
+      },
+      "/ledger/{week}.json": {
+        get: {
+          ...returns(
+          freeOp(
+            "One signed week, read",
+            "One week of the observed x402 neighbourhood as a reading rather than a table: the doors reached and answered with their denominators, the movement against the week before, the defects by their registered names, whether the feeds were answering, the corrections dated into that week, and the gaps counted against the observer. Its `findings` are machine-derived — each names in `derived_from` the fields it was computed from, and no rule fires without its numbers. Derived at read from the signed snapshot it cites, never stored. A week the chain does not hold answers 404 naming the weeks it does. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string" },
+              week: { type: "string" },
+              sequence: { type: "integer" },
+              digest: { type: "string" },
+              brief: { type: "object" },
+              changes: { type: "object", nullable: true },
+              sources: { type: "object" },
+              weeks_missing: { type: "array", items: { type: "string" } },
+              findings: { type: "array", items: { type: "object" } },
+              how_to_rederive: { type: "string" },
+            },
+          },
+          ),
+          parameters: [
+            pathParam(
+              "week",
+              "An ISO week the chain holds, e.g. 2026-W36. A week the chain does not hold answers 404 naming the weeks it does.",
+            ),
+          ],
+        },
+      },
+      "/mcp-ward.json": {
+        get: returns(
+          freeOp(
+            "The MCP ward",
+            "The second ward: a walk of the official MCP registry kept as its own population, with its own denominators and NO total shared with the x402 side — adding the two gives a number that is about nothing. It counts registrations and does not knock: no session is opened and no MCP verdict is issued, because this store has no MCP battery to cite and will not invent one. Rows and hosts are separate figures, since a registration can be an npm or stdio server with no network address. Mortality is recorded only from a pass that ran to the registry's own end of cursor; a truncated pass records its hosts and refuses every disappearance. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string" },
+              latest_pass: { type: "object", nullable: true },
+              hosts_on_register: { type: "integer" },
+              last_completed_pass: { type: "string", nullable: true },
+              walk_in_progress: { type: "object", nullable: true },
+              separate_from_x402: { type: "string" },
+              what_this_is_not: { type: "string" },
+            },
+          },
         ),
       },
       "/doors": {

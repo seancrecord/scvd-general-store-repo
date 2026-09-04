@@ -55,6 +55,7 @@ import {
 } from "@/services/delivery-audit";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
+  letterNeedsReply,
   listLetters,
   replyToLetter,
   setLetterStatus,
@@ -597,6 +598,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     closers,
     drawerStock,
     grudges,
+    alarmsSeen,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -613,6 +615,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
     listGrudges(c.env, 30),
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
@@ -631,6 +634,24 @@ adminRoutes.get("/admin/counter", async (c) => {
   const seenAt = new Date().toISOString();
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
+  }
+  /*
+   * THE ALARM WATERMARK, on the same rule as the orders above: standing
+   * at the counter IS seeing what the counter is showing (keeper's
+   * order 2026-07-24 — "the button was ceremony"), so the top line
+   * stops shouting about alarms he has already met while the alarms
+   * themselves stay listed below, and on the reconciliation trail with
+   * what came of each one.
+   *
+   * Marked only when BOTH reads landed: on a KV blip we would rather
+   * shout twice than mark an alarm seen that never rendered.
+   */
+  const alarmsSeenAt = shelf(alarmsSeen, null, "alarm watermark", notes);
+  const listedAlerts = shelf(alerts, [], "alerts", notes);
+  if (alerts.status === "fulfilled" && alarmsSeen.status === "fulfilled") {
+    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter, seenAt).catch(
+      () => undefined,
+    );
   }
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
@@ -652,7 +673,8 @@ adminRoutes.get("/admin/counter", async (c) => {
       letters: shelf(letters, [], "letters", notes).map(
         (entry) => entry.record,
       ),
-      alerts: shelf(alerts, [], "alerts", notes),
+      alerts: listedAlerts,
+      alertsSeenAt: alarmsSeenAt,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
@@ -685,7 +707,11 @@ adminRoutes.get("/admin", async (c) => {
     mcpClients,
     fieldWallet,
     bountyState,
+    // Order matters: these two must sit in the same order as the
+    // promises below — the ward round first, then the counter's
+    // alarm watermark.
     wardLatest,
+    officeAlarmsSeenRead,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -740,6 +766,13 @@ adminRoutes.get("/admin", async (c) => {
       latestWardRound(c.env),
     ),
     /*
+     * The counter's alarm watermark, READ ONLY here. The strip points
+     * at the counter, so it should say what is still waiting there —
+     * but the office is not the counter, and looking at a pointer is
+     * not meeting the alarm, so this page never moves the mark.
+     */
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
+    /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
      *
      * computeStats scans the metric keys for every month the store has
@@ -761,6 +794,12 @@ adminRoutes.get("/admin", async (c) => {
      */
   ]);
   const emptyLedger = emptyMonthLedger();
+  const officeAlarmsSeen = shelf(
+    officeAlarmsSeenRead,
+    null,
+    "alarm watermark",
+    notes,
+  );
   const pendingReviews =
     shelf(tips, [], "tips", notes).filter(
       (tip) => tip.record.status === "pending_review",
@@ -856,11 +895,15 @@ adminRoutes.get("/admin", async (c) => {
         orders: shelf(orders, [], "orders", notes).filter(
           (order) => order.status === "queued",
         ).length,
-        letters: shelf(letters, [], "letters", notes).filter(
-          (entry) => entry.record.status !== "archived",
+        // Answered is done, filed or not (2026-09-04), and an alarm
+        // already met at the counter is not still waiting there.
+        letters: shelf(letters, [], "letters", notes).filter((entry) =>
+          letterNeedsReply(entry.record),
         ).length,
         reviews: pendingReviews,
-        alerts: shelf(alerts, [], "alerts", notes).length,
+        alerts: shelf(alerts, [], "alerts", notes).filter(
+          (alert) => officeAlarmsSeen === null || alert.at > officeAlarmsSeen,
+        ).length,
       },
       loadNotes: notes,
     }),
@@ -1110,10 +1153,30 @@ adminRoutes.get("/admin/ward", async (c) => {
     "@/services/ward-round"
   );
   const { renderWardPage } = await import("@/pages/admin/ward-page");
+  const { sourceRegister } = await import("@/services/source-liveness");
+  const { readHeartbeat } = await import("@/services/ward-heartbeat");
   const round = await latestWardRound(c.env);
   const previous = await previousWardRound(c.env);
+  /*
+   * Both readings are OPTIONAL on this page: they are what the keeper
+   * reaches for when something looks wrong, so a failed derive must
+   * never take down the round's own numbers. Null renders as an absent
+   * block, never as a confident all-clear — "unknown" and "healthy"
+   * cannot be allowed to look alike on a page about whether the
+   * instrument is running.
+   */
+  const [register, beat] = await Promise.all([
+    sourceRegister(c.env).catch(() => null),
+    readHeartbeat(c.env).catch(() => null),
+  ]);
   return c.html(
-    renderWardPage(round, previous, round ? wardDelta(round, previous) : null),
+    renderWardPage(
+      round,
+      previous,
+      round ? wardDelta(round, previous) : null,
+      register,
+      beat,
+    ),
   );
 });
 
@@ -1283,6 +1346,49 @@ adminRoutes.post("/admin/ward/run", async (c) => {
   const { takeCorpusSnapshot } = await import("@/services/corpus");
   await takeCorpusSnapshot(c.env).catch(() => undefined);
   return c.redirect("/admin/ward");
+});
+
+/**
+ * THE SECOND WARD'S ROOM AND ITS CRANK (2026-09-04, the keeper's ask
+ * for a way to run the MCP ward separately from the other).
+ *
+ * The crank advances ONE batch rather than running a whole pass: the
+ * registry is 909 pages (90,845 rows on 2026-09-04), so a pass is
+ * hundreds of page fetches and cannot fit in one request
+ * without blowing the invocation budget. One press does exactly what
+ * one hourly firing does, and the page says how far along the pass
+ * is, so finishing one by hand is legible rather than mysterious.
+ */
+adminRoutes.get("/admin/mcp-ward", async (c) => {
+  const { latestMcpPass, readMcpRegister, readMcpWalk } = await import(
+    "@/services/mcp-ward"
+  );
+  const { renderMcpWardPage } = await import("@/pages/admin/mcp-ward-page");
+  const [walk, register, pass] = await Promise.all([
+    readMcpWalk(c.env),
+    readMcpRegister(c.env),
+    latestMcpPass(c.env),
+  ]);
+  return c.html(renderMcpWardPage(walk, register, pass));
+});
+
+adminRoutes.post("/admin/mcp-ward/run", async (c) => {
+  const { walkMcpRegistry } = await import("@/services/mcp-ward");
+  await walkMcpRegistry(c.env);
+  return c.redirect("/admin/mcp-ward");
+});
+
+/**
+ * Start a fresh pass. Blunt and safe: it drops the in-flight walk's
+ * cursor and accumulated hosts and touches the REGISTER not at all,
+ * so every host's first_seen and last_seen survive. A discarded
+ * partial pass could never have recorded a delisting anyway, which is
+ * why this needs no confirmation step.
+ */
+adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
+  const { KV_KEYS } = await import("@/lib/kv-keys");
+  await c.env.COUNTERS.delete(KV_KEYS.mcpWalkState);
+  return c.redirect("/admin/mcp-ward");
 });
 
 /**
@@ -2003,17 +2109,24 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
   const { latestWardRound, previousWardRound } = await import(
     "@/services/ward-round"
   );
-  const { deriveProspects, readOutreachLedger, scoutContacts } = await import(
-    "@/services/outreach"
-  );
+  const { deriveProspects, deriveWelcomes, readOutreachLedger, scoutContacts } =
+    await import("@/services/outreach");
   const round = await latestWardRound(c.env);
   if (!round) {
     return c.json({ refused: "no ward round yet" }, 404);
   }
-  const prospects = deriveProspects(round, await previousWardRound(c.env));
+  const previous = await previousWardRound(c.env);
+  const prospects = deriveProspects(round, previous);
+  // Both queues (2026-09-04): the broken doors in their ranking, then
+  // the ready doors in theirs, so a press reaches the top of each.
+  const welcomes = deriveWelcomes(
+    round,
+    previous,
+    new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+  );
   const report = await scoutContacts(
     c.env,
-    prospects,
+    [...prospects, ...welcomes],
     await readOutreachLedger(c.env),
   );
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
