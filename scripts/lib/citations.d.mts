@@ -14,6 +14,7 @@ export interface Verdict {
   reason?: string;
   citations: string[];
 }
+export const RETIRED_EXAMPLE_IDS: string[];
 export const SELF_PUBLISHED_IDS: string[];
 export function citationPatterns(base: string): RegExp[];
 export function citationsOn(text: string, base: string): string[];
