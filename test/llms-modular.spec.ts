@@ -684,12 +684,26 @@ const BASE = "https://scvd.store";
  * row. Confirmed before this value was taken: the guide carries
  * "instrument_moved", "/criteria#result-class" and "prints the
  * citation", and still every earlier pin.
+ * Re-taken 2026-09-04 — the FIFTY-SECOND — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved" and "/criteria#result-class".
+ *
+ * Re-taken 2026-09-04 — the FIFTY-THIRD — at the rebase of the
+ * scorers' branch onto main after the trade counter, the verifier
+ * door, the evidence agent, the feeds and the month landed: the
+ * scorers' paragraph sits after the feeds', and the value was taken
+ * once on the rebased head. Confirmed before this value was taken:
+ * the guide carries "/scorers", "/feeds/disagreements.xml",
+ * "/mcp/verifier" and "trade.md", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d89de832f0b614c3a9b3bbf38f33356a490deb2a95ecf810b2d1ab869ba1716a";
+  "e26327f3f7dd6b8ee5586d9d14a8c5e77d680fe920ae03702175b3b9d2c10903";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

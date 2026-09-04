@@ -265,19 +265,6 @@ test("signs a sandbox order with the published secret it read off the contract, 
           nonce: { shape_ok: true },
           signature: { verified_with: "current" },
           replay: "fresh",
-test("reproduce posts the URL and the week to the look and branches on the class", async () => {
-  let seen;
-  const result = await run(["reproduce", "https://door.example/pay", "--since", "2026-W34"], (request) => {
-    seen = request;
-    return {
-      json: {
-        reproduce: {
-          rule_url: "https://scvd.store/criteria#result-class",
-          class: "moved",
-          detail: "under preflight-v2, the row in 2026-W34 read ready and the door answered not_ready now",
-          compared_with: { week: "2026-W34", verdict: "ready", failed: [], entry_url: "https://scvd.store/corpus/3.json" },
-          live: { battery: "preflight-v2", verdict: "not_ready", failed: ["signable-accepts"] },
-          cite: { text: "scvd.store corpus, door.example, week 2026-W34, snapshot 3 taken t, sha256 d. https://scvd.store/corpus/3.json" },
         },
       },
     };
@@ -306,6 +293,25 @@ test("exits 1 when the check desk says the signature would not pass", async () =
   });
   assert.equal(result.code, 1);
   assert.match(result.stdout, /first failure: stale_timestamp/);
+});
+
+test("reproduce posts the URL and the week to the look and branches on the class", async () => {
+  let seen;
+  const result = await run(["reproduce", "https://door.example/pay", "--since", "2026-W34"], (request) => {
+    seen = request;
+    return {
+      json: {
+        reproduce: {
+          rule_url: "https://scvd.store/criteria#result-class",
+          class: "moved",
+          detail: "under preflight-v2, the row in 2026-W34 read ready and the door answered not_ready now",
+          compared_with: { week: "2026-W34", verdict: "ready", failed: [], entry_url: "https://scvd.store/corpus/3.json" },
+          live: { battery: "preflight-v2", verdict: "not_ready", failed: ["signable-accepts"] },
+          cite: { text: "scvd.store corpus, door.example, week 2026-W34, snapshot 3 taken t, sha256 d. https://scvd.store/corpus/3.json" },
+        },
+      },
+    };
+  });
   assert.equal(seen.method, "POST");
   assert.equal(seen.url, "/api/look/v1");
   assert.deepEqual(seen.body, { url: "https://door.example/pay", since: "2026-W34" });

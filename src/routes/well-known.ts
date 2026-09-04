@@ -135,10 +135,6 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * with /auth.md.
      */
     agent_auth: agentAuthBlock(base),
-    /**
-     * Absolute, so a reader following this document never has to
-     * resolve a relative path against a base it had to guess.
-     */
     /*
      * THE SEATS (2026-09-04): record and reproducible dispute
      * artifact, and never interpretation. Stated where diligence
@@ -153,6 +149,10 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
       misuse: MISUSE_CLAUSE,
       how_to_consume: `${base}/scorers`,
     },
+    /**
+     * Absolute, so a reader following this document never has to
+     * resolve a relative path against a base it had to guess.
+     */
     where_it_is_written_out: Object.fromEntries(
       Object.entries(TRUST_ANSWERS).map(([question, path]) => [
         question,
