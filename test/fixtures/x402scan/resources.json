@@ -1,0 +1,213 @@
+{
+ "data": [
+  {
+   "id": "ad231e25-ae23-458f-80d4-a1697acc42f9",
+   "resource": "https://x402-secure-api.t54.ai/x402/tools/get_overall_score",
+   "method": "",
+   "type": "http",
+   "x402Version": 1,
+   "lastUpdated": "2025-10-29T01:20:08.134Z",
+   "metadata": null,
+   "deprecatedAt": null,
+   "originId": "655c6f59-88df-4bf2-99c5-42e392322c84",
+   "accepts": [
+    {
+     "id": "2e98b2db-c109-4735-800e-970ca7cddcb4",
+     "resourceId": "ad231e25-ae23-458f-80d4-a1697acc42f9",
+     "scheme": "exact",
+     "description": "Payment for overall security score evaluation ($0.01)",
+     "network": "base",
+     "maxAmountRequired": 0.01,
+     "resource": "https://x402-secure-api.t54.ai/x402/tools/get_overall_score",
+     "mimeType": "application/json",
+     "payTo": "0x0495d60c927b97d67d5018c6aa65c9b2bebaeed9",
+     "maxTimeoutSeconds": 300,
+     "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+     "outputSchema": {
+      "input": {
+       "type": "http",
+       "method": "POST",
+       "bodyType": "json",
+       "bodyFields": {
+        "url": {
+         "type": "string",
+         "required": true,
+         "description": "The resource URL to evaluate"
+        }
+       },
+       "headerFields": {
+        "X-PAYMENT": {
+         "type": "string",
+         "required": false,
+         "description": "Base64-encoded JSON PaymentPayload; automatically filled by x402scan"
+        }
+       }
+      },
+      "output": {
+       "url": "string",
+       "is_scam": "boolean",
+       "risk_level": {
+        "enum": [
+         "low",
+         "medium",
+         "high",
+         "critical",
+         "unknown"
+        ],
+        "type": "string"
+       },
+       "sub_scores": {
+        "type": "object",
+        "properties": {
+         "reachability": "number|null",
+         "onchain_trust": "number|null",
+         "webpage_quality": "number|null",
+         "social_sentiment": "number|null"
+        }
+       },
+       "server_name": "string",
+       "last_updated": "string|null",
+       "overall_score": "number|null",
+       "scam_indicators": "array",
+       "scoring_details": "object|null"
+      }
+     },
+     "extra": {
+      "name": "USD Coin",
+      "version": "2"
+     },
+     "verified": false,
+     "verifiedAddress": null,
+     "verificationProof": null,
+     "verifiedAt": null
+    }
+   ],
+   "origin": {
+    "id": "655c6f59-88df-4bf2-99c5-42e392322c84",
+    "origin": "https://x402-secure-api.t54.ai",
+    "title": "x402-secure - t54.ai",
+    "description": "x402-secure is the trust layer for x402 ecosystem. Powered by t54.ai.",
+    "favicon": "https://x402-secure-api.t54.ai/favicon.ico",
+    "createdAt": "2025-10-28T21:30:43.285Z",
+    "updatedAt": "2026-03-11T14:37:09.397Z"
+   },
+   "tags": [
+    {
+     "id": "38325adc-3fe1-4986-b843-e98e87cf17db",
+     "resourceId": "ad231e25-ae23-458f-80d4-a1697acc42f9",
+     "tagId": "3ca3b556-856e-4b50-9300-a698ce1f09dc",
+     "assignedAt": "2025-10-28T21:40:03.101Z",
+     "tag": {
+      "id": "3ca3b556-856e-4b50-9300-a698ce1f09dc",
+      "name": "Utility",
+      "color": "#33e7b1",
+      "createdAt": "2025-10-24T19:12:36.466Z",
+      "updatedAt": "2025-10-24T19:12:36.466Z"
+     }
+    }
+   ],
+   "_count": {
+    "tags": 1,
+    "toolCalls": 3540
+   }
+  },
+  {
+   "id": "603feb6b-d43f-4dc1-86ee-27641f8eb720",
+   "resource": "https://x402-secure-api.t54.ai/x402/tools/get_social_trust",
+   "method": "",
+   "type": "http",
+   "x402Version": 1,
+   "lastUpdated": "2026-01-11T22:54:51.734Z",
+   "metadata": null,
+   "deprecatedAt": null,
+   "originId": "655c6f59-88df-4bf2-99c5-42e392322c84",
+   "accepts": [
+    {
+     "id": "7e8f28a4-5c5a-4c1e-a3e5-50e63f23945b",
+     "resourceId": "603feb6b-d43f-4dc1-86ee-27641f8eb720",
+     "scheme": "exact",
+     "description": "Social media reputation analysis from Twitter/X and community feedback with sentiment scoring. Detect fake engagement patterns and measure trust indicators for reputation-based decisions. Price: $0.01 USDC",
+     "network": "base",
+     "maxAmountRequired": 0.01,
+     "resource": "https://x402-secure-api.t54.ai/x402/tools/get_social_trust",
+     "mimeType": "application/json",
+     "payTo": "0x0495d60c927b97d67d5018c6aa65c9b2bebaeed9",
+     "maxTimeoutSeconds": 300,
+     "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+     "outputSchema": {
+      "input": {
+       "type": "http",
+       "method": "POST",
+       "bodyType": "json",
+       "bodyFields": {
+        "url": {
+         "type": "string",
+         "required": true,
+         "description": "The URL of the x402 server to analyze social presence (e.g., https://mesh.heurist.xyz). If unsure what to input, first call get_available_resources to discover valid servers."
+        }
+       },
+       "headerFields": {
+        "X-PAYMENT": {
+         "type": "string",
+         "required": false,
+         "description": "Base64-encoded JSON PaymentPayload; automatically filled by x402scan"
+        }
+       }
+      },
+      "output": {
+       "url": "string",
+       "status": {
+        "type": "string"
+       },
+       "result_data": "object|null",
+       "server_name": "string",
+       "last_validated": "string|null",
+       "social_sentiment_score": "number|null"
+      }
+     },
+     "extra": {
+      "name": "USD Coin",
+      "version": "2"
+     },
+     "verified": false,
+     "verifiedAddress": null,
+     "verificationProof": null,
+     "verifiedAt": null
+    }
+   ],
+   "origin": {
+    "id": "655c6f59-88df-4bf2-99c5-42e392322c84",
+    "origin": "https://x402-secure-api.t54.ai",
+    "title": "x402-secure - t54.ai",
+    "description": "x402-secure is the trust layer for x402 ecosystem. Powered by t54.ai.",
+    "favicon": "https://x402-secure-api.t54.ai/favicon.ico",
+    "createdAt": "2025-10-28T21:30:43.285Z",
+    "updatedAt": "2026-03-11T14:37:09.397Z"
+   },
+   "tags": [
+    {
+     "id": "8a83869b-8d61-4f36-8991-727505e758dd",
+     "resourceId": "603feb6b-d43f-4dc1-86ee-27641f8eb720",
+     "tagId": "3ca3b556-856e-4b50-9300-a698ce1f09dc",
+     "assignedAt": "2025-10-28T21:40:03.128Z",
+     "tag": {
+      "id": "3ca3b556-856e-4b50-9300-a698ce1f09dc",
+      "name": "Utility",
+      "color": "#33e7b1",
+      "createdAt": "2025-10-24T19:12:36.466Z",
+      "updatedAt": "2025-10-24T19:12:36.466Z"
+     }
+    }
+   ],
+   "_count": {
+    "tags": 1,
+    "toolCalls": 2991
+   }
+  }
+ ],
+ "pagination": {
+  "page": 0,
+  "page_size": 2,
+  "has_next_page": true
+ }
+}
