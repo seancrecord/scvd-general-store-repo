@@ -235,10 +235,12 @@ describe("the roster keeps the corpus's wire shape", () => {
     }
   });
 
-  it("still names both paid directories the widening ruling named", () => {
-    const named = UNREAD_DIRECTORIES.map((entry) => entry.source);
-    expect(named).toContain("402index.io");
-    expect(named).toContain("x402scan.com");
+  it("reads both directories the widening ruling once named unread", () => {
+    const unread = UNREAD_DIRECTORIES.map((entry) => entry.source);
+    expect(unread).not.toContain("402index.io");
+    expect(unread).not.toContain("x402scan.com");
+    expect(READ_SOURCES).toContain("402index.io");
+    expect(READ_SOURCES).toContain("x402scan.com");
   });
 
   it("never lists a source as both read and unread", () => {

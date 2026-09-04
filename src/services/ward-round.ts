@@ -12,6 +12,7 @@ import {
   UNREAD_DIRECTORIES,
 } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
+import { passForCensus } from "@/services/directory-walk";
 import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 
 /**
@@ -1142,17 +1143,30 @@ async function sealRound(
  * having a bad Sunday cannot write a mass extinction into a chain that
  * does not rewrite.
  */
-async function readWidenedSources(ownHost: string): Promise<{
+async function readWidenedSources(env: Env, ownHost: string): Promise<{
   fuchss: string[] | null;
   x402List: string[] | null;
   agenticMarket: string[] | null;
+  index402: string[] | null;
+  x402scan: string[] | null;
 }> {
-  const [fuchss, x402List, agenticMarket] = await Promise.all([
+  /*
+   * TWO OF THESE ARE NOT FETCHED HERE (2026-09-04). 402index is
+   * 104,106 rows and x402scan is a cent a page; both are walked on the
+   * hourly press and the round reads the LAST COMPLETED PASS from KV —
+   * a pass that ran to the directory's own end within the freshness
+   * window, or null, which is the census's word for "could not read"
+   * and is exactly what a truncated or stale pass is to a weekly
+   * population.
+   */
+  const [fuchss, x402List, agenticMarket, index402, x402scan] = await Promise.all([
     readFuchssProviders(ownHost),
     readX402List(ownHost),
     readAgenticMarket(ownHost),
+    passForCensus(env, "402index.io"),
+    passForCensus(env, "x402scan.com"),
   ]);
-  return { fuchss, x402List, agenticMarket };
+  return { fuchss, x402List, agenticMarket, index402, x402scan };
 }
 
 /**
@@ -1172,7 +1186,7 @@ async function assembleWalkRound(
   const walked = walk.results.filter(
     (entry) => entry.verdict !== "not_probed",
   ).length;
-  const widened = await readWidenedSources(ownHost);
+  const widened = await readWidenedSources(env, ownHost);
   const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
     {
@@ -1187,6 +1201,8 @@ async function assembleWalkRound(
     { source: "fuchss", hosts: widened.fuchss },
     { source: "x402_list", hosts: widened.x402List },
     { source: "agentic_market", hosts: widened.agenticMarket },
+    { source: "402index.io", hosts: widened.index402 },
+    { source: "x402scan.com", hosts: widened.x402scan },
     /*
      * Hosts that declared a door for themselves (the sweep). A host
      * here is one whose own file the census could read and which
@@ -1400,7 +1416,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
    * WORKS is not asserted here and never will be: that is the source
    * register's question, derived from what the rounds got back.
    */
-  const widened = await readWidenedSources(ownHost);
+  const widened = await readWidenedSources(env, ownHost);
   const sources: SourceResult[] = [
     {
       source: "discovery",
@@ -1413,6 +1429,8 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     { source: "fuchss", hosts: widened.fuchss },
     { source: "x402_list", hosts: widened.x402List },
     { source: "agentic_market", hosts: widened.agenticMarket },
+    { source: "402index.io", hosts: widened.index402 },
+    { source: "x402scan.com", hosts: widened.x402scan },
   ];
   // The probe results are the expensive part of this round; a census
   // that cannot write must not take them down with it.

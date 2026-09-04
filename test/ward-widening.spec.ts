@@ -214,9 +214,15 @@ describe("the round carries the widening whole", () => {
         /wallet law|hand-run|hand-captured|capture/i.test(entry.why);
       expect(dissolvable).toBe(true);
     }
+    /*
+     * The two paid directories the widening ruling named left this
+     * list on 2026-09-04, the day the keeper priced them by hand and
+     * the walks were built. They are read now; the census row says
+     * whether the last pass stood.
+     */
     for (const paid of ["402index.io", "x402scan.com"]) {
-      const entry = round.directories_unread?.find((row) => row.source === paid);
-      expect(entry?.why.toLowerCase()).toContain("wallet law");
+      expect(round.directories_unread?.some((row) => row.source === paid)).toBe(false);
+      expect(round.population?.per_source.some((row) => row.source === paid)).toBe(true);
     }
   });
 
@@ -274,7 +280,14 @@ describe("the readout shows the widening", () => {
     );
     // The count is the truth, not the capped list's length.
     expect(html).toContain("8990 newly listed");
-    expect(html).toContain("402index.io");
-    expect(html).toContain("x402scan.com");
+    /*
+     * The unread line names what the round could not read. The two
+     * paid directories left it on 2026-09-04 when their walks were
+     * built; the hand-capture-pending ones remain, and the line must
+     * name those and not the read ones.
+     */
+    expect(html).toContain("endpoint.x402jp.com");
+    expect(html).toContain("agent-tools.cloud");
+    expect(html).not.toContain("cannot read: <strong>402index.io");
   });
 });

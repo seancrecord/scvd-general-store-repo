@@ -117,24 +117,14 @@ export const SOURCE_ROSTER: readonly RosterEntry[] = [
   {
     source: "402index.io",
     home: "https://402index.io",
-    what: "A directory of paid endpoints across L402, x402 and MPP — self-described as 15,000+, which would make it the largest single frame available to us.",
-    readiness: {
-      state: "unread",
-      why: "Priced by the keeper's hand on 2026-09-04, and the roster had it wrong: the JSON API is FREE at 100 requests a minute per IP, and 140 cache-bypassing requests in twenty seconds sailed through, so its documented limiter overstates itself. The only paid product is the full CSV export at /api/v1/export.csv — 500 sats (about $0.40) over L402 Lightning, a rail this store has no wallet on. Unread today because no list-endpoint response has been captured, not because it costs anything.",
-      unblock:
-        "One saved response from the free JSON list endpoint, from the keeper's machine, to build the reader against — the same afternoon the x402-list reader took. The wallet law does not bind here: nothing on the path we would read is paid. The CSV needs a Lightning wallet and is a separate ruling.",
-    },
+    what: "A directory of paid endpoints across L402, x402 and MPP — 104,106 rows on 2026-09-04, the largest frame this ward reads. The free JSON list at 100 requests a minute, walked on the hourly press; only its x402 rows enter the census. The roster once said its free API rate-limited into 402s; the keeper's hand showed it does not.",
+    readiness: { state: "read" },
   },
   {
     source: "x402scan.com",
     home: "https://www.x402scan.com",
-    what: "A settlement indexer with a resource directory; the only one of these that watches money move rather than doors exist. Its /facilitators/stats read 225.4M transactions, $54.18M lifetime, 860K buyers and 275K sellers on 2026-09-03.",
-    readiness: {
-      state: "unread",
-      why: "Priced and shape-captured by the keeper's hand on 2026-09-04, $0.03 spent: every one of its fourteen endpoints costs $0.01 a call in USDC on Base (exact scheme, x402 v2, one payTo, 300s timeout), and the price exists nowhere but in the 402 challenge itself. /resources is the door this ward wants — paginated rows of id, url, x402Version and lastUpdated. Unread today only because the three captured bodies are on the keeper's machine and not yet in test/fixtures.",
-      unblock:
-        "The three captured responses committed as fixtures, and a reader that pays from the field wallet under the wallet law ($0.01 a page is far under the $1-per-action line; the page count decides the round's cost and is what the fixture will tell us). Until then x402-list carries rows it imported from x402scan, tagged `imported:x402scan` — 3 rows of 630 on 2026-09-04, a slice and not a substitute.",
-    },
+    what: "A settlement indexer with a resource directory — the only source here that watches money move rather than doors exist. A cent a page in USDC on Base, priced by the keeper's hand on 2026-09-04 ($0.03 spent), the price living nowhere but the 402 itself. Walked on the hourly press from the field wallet under the wallet law: a dollar a pass, and a pass that reaches it is truncated, not continued.",
+    readiness: { state: "read" },
   },
   {
     source: "endpoint.x402jp.com",

@@ -69,11 +69,16 @@ bought to capture price and shape together:
   $54.18M lifetime, 860K buyers, 275K sellers, current to 2026-09-03
   23:55Z.
 
-The three bodies are on the keeper's machine
-(`research/test-matrix-2026-09-04/out/`) and are not yet in this
-repository; the reader waits on them landing in `test/fixtures/`. At
-$0.01 a page the wallet law's $1-per-action line is nowhere near; the
-page count, which the fixture will show, is what sets a round's cost.
+The three bodies landed in `test/fixtures/x402scan/` (PR #482, each
+beside its decoded challenge), and the reader was built against them
+the same night: `src/services/directory-walk.ts`, walked hourly from
+the field wallet through `src/lib/pay-fetch.ts`, which carries every
+refusal the launch check makes — never our own wallet, never an
+unscreened payTo (rule 3 fails closed), never over the five-cent house
+cap, never a redirect followed with an authorization in hand, never a
+retry. A pass is capped at a dollar — the wallet law's line before
+asking — and a pass that reaches it is truncated, which the census
+reads as unread. Raising it is the keeper's ruling.
 
 **402index.io — free, and the roster had it wrong.** The JSON API is
 free at 100 requests a minute per IP, and 140 cache-bypassing unique
@@ -86,8 +91,11 @@ Lightning. Challenge contract captured; settlement needs a Lightning
 wallet, which nothing here has, so the CSV's shape is out of reach
 unless LN capability is stood up. The raw bolt11 invoice stayed
 uncaptured because the limiter finally 429'd on export retries —
-recoverable once it forgets the IP. The free list endpoint's shape is
-still uncaptured and is the whole unblock.
+recoverable once it forgets the IP. The free list's shape landed as
+`test/fixtures/402index/services-page1.json` (PR #482) and the reader
+was built against it: free, fifty pages an hour, only the `x402` rows
+taken, the page stride trusted as the directory echoes it. At 104,106
+rows a pass is about a day.
 
 **A side finding on the keeper's buyer, checked against ours.** His
 hand-rolled buyer did a case-sensitive lookup of the 402 header and

@@ -84,6 +84,15 @@ export const KV_KEYS = {
   mcpRegister: "mcp_register",
   mcpPassPrefix: "mcp_pass:",
   mcpPass: (week: string): string => `mcp_pass:${week}`,
+  /**
+   * THE DIRECTORY WALKS (2026-09-04): the two x402 directories too
+   * large or too dear to read inside the Sunday round — 402index at
+   * 104,106 rows, x402scan at a cent a page — walked in hourly
+   * batches on a stored cursor, one state and one completed pass per
+   * source. The round reads the pass, never the directory.
+   */
+  directoryWalk: (source: string): string => `dirwalk:${source}`,
+  directoryPass: (source: string): string => `dirpass:${source}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
   /**
