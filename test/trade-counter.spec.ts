@@ -769,3 +769,128 @@ async function expectRefusalShape(
   expect(result.body["billed"]).toBe(false);
   expect(result.body["code"]).toBe(code);
 }
+
+describe("pass five: recovery by order_ref, the share ladder, the worked example, the rails line", () => {
+  it("recovers a delivery by order_ref for the account that ordered it, signed, and says not_found otherwise", async () => {
+    const first = await order("certificate_of_patronage", { order_ref: "lost-receipt-9" });
+    const certId = certificateOf(first.body).cert_id;
+    const sign = () => signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: SECRET, provider_key: PROVIDER_KEY, body: "" });
+    const found = await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=lost-receipt-9`, { headers: await sign() });
+    expect(found.status).toBe(200);
+    const body = await json(found);
+    expect((body["row"] as Record<string, unknown>)["cert_id"]).toBe(certId);
+    expect((body["certificate"] as Record<string, unknown>)["cert_id"]).toBe(certId);
+    expect(String(body["verify_url"])).toContain(certId);
+    const missing = await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=never-ordered`, { headers: await sign() });
+    expect(missing.status).toBe(404);
+    expect((await json(missing))["code"]).toBe("not_found");
+    expect((await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=lost-receipt-9`)).status).toBe(401);
+  });
+
+  it("the ladder raises the share with the month's live deliveries, and the store nets the same at every tier", async () => {
+    const { STANDARD_SHARE_LADDER, effectiveShareBps } = await import("@/store/trade-counter");
+    const laddered = { ...HAL, id: "spec_ladder", mode: "live" as const, share_ladder: STANDARD_SHARE_LADDER };
+    expect(effectiveShareBps(laddered, 0)).toBe(500);
+    expect(effectiveShareBps(laddered, 999)).toBe(500);
+    expect(effectiveShareBps(laddered, 1000)).toBe(800);
+    expect(effectiveShareBps(laddered, 25_000)).toBe(1200);
+    expect(effectiveShareBps(HAL, 25_000)).toBe(HAL.partner_share_bps);
+    const item = getMenuItem("service_audit")!;
+    const netAt = (share: number) => tradeNetUsd(tradePriceUsd(item, share), share);
+    for (const tier of STANDARD_SHARE_LADDER) {
+      expect(netAt(tier.partner_share_bps)).toBeGreaterThanOrEqual(Math.round(item.price_usdc * 1.2 * 100) / 100 - 0.005);
+    }
+    // The month counter feeds the ladder: two live deliveries, then the share for the next.
+    const { shareForNextDelivery, tradeMonthCount, utcMonth } = await import("@/services/trade-counter");
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeMonth(laddered.id, utcMonth()));
+    const settlement = tradeSettlementFor(laddered, item, "d".repeat(64));
+    await recordTradeDelivery(testEnv, laddered, item, settlement, "cert_l1", {});
+    await recordTradeDelivery(testEnv, laddered, item, settlement, "cert_l2", {});
+    expect(await tradeMonthCount(testEnv, laddered, utcMonth())).toBe(2);
+    expect(await shareForNextDelivery(testEnv, laddered)).toBe(500);
+    await testEnv.COUNTERS.put(KV_KEYS.tradeMonth(laddered.id, utcMonth()), "1000");
+    expect(await shareForNextDelivery(testEnv, laddered)).toBe(800);
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradeRowPrefix(laddered.id));
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeMonth(laddered.id, utcMonth()));
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeAccount(laddered.id));
+  });
+
+  it("the worked example's bytes are the sandbox secret's HMAC, and the door refuses them as stale", async () => {
+    const contract = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+    const example = contract["worked_example"] as Record<string, unknown>;
+    const headers = example["headers"] as Record<string, string>;
+    const { hmacSha256Hex } = await import("@/lib/trade-auth");
+    const expected = await hmacSha256Hex(TRADE_SANDBOX_SECRET, String(example["signing_string"]));
+    expect(headers["X-Trade-Signature"]).toBe(`sha256=${expected}`);
+    expect(String(example["signing_string"])).toBe(`${headers["X-Trade-Timestamp"]}.${headers["X-Trade-Nonce"]}.${example["body"]}`);
+    const sent = await SELF.fetch(String(example["door"]), {
+      method: "POST",
+      headers: { "content-type": "application/json", ...headers },
+      body: String(example["body"]),
+    });
+    expect(sent.status).toBe(401);
+    expect((await json(sent))["code"]).toBe("stale_timestamp");
+    const md = await (await SELF.fetch(`${BASE}/trade.md`)).text();
+    expect(md).toContain("## The worked example, every byte");
+    expect(md).toContain(headers["X-Trade-Signature"]);
+  });
+
+  it("/rails carries the counter beside the rails, never inside them", async () => {
+    const rails = await json(await SELF.fetch(`${BASE}/rails`));
+    const counter = rails["trade_counter"] as Record<string, unknown>;
+    expect(String(counter["what_this_is"])).toContain("Not a rail");
+    const accounts = counter["accounts"] as Record<string, unknown>[];
+    expect(accounts.map((row) => row["account"])).toContain("hal");
+    const page = await (await SELF.fetch(`${BASE}/rails`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("Not a rail: the trade counter");
+  });
+});
+
+describe("pass six: tightening", () => {
+  it("the check desk answers an account's hourly budget and then refuses by name", async () => {
+    const { TRADE_CHECK_DESK_HOURLY_BUDGET } = await import("@/store/trade-counter");
+    const hour = new Date().toISOString().slice(0, 13);
+    await testEnv.COUNTERS.put(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour), String(TRADE_CHECK_DESK_HOURLY_BUDGET));
+    const refused = await sandboxSigned("x", {}, "check");
+    expect(refused.status).toBe(429);
+    expect(refused.body["code"]).toBe("desk_rate_limited");
+    expect(refused.body["delivered"]).toBe(false);
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour));
+    const answered = await sandboxSigned("x", {}, "check");
+    expect(answered.status).toBe(200);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour))).toBe("1");
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour));
+  });
+
+  it("the payout form refuses a cross-site submission and accepts the store's own page", async () => {
+    const auth = { Authorization: `Basic ${btoa("keeper:test-admin-password")}` };
+    const crossSite = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: {
+        ...auth,
+        "content-type": "application/x-www-form-urlencoded",
+        "sec-fetch-site": "cross-site",
+        origin: "https://elsewhere.example",
+      },
+      body: "amount_usd=1&reference=csrf",
+      redirect: "manual",
+    });
+    expect(crossSite.status).toBe(403);
+    expect((await json(crossSite))["code"]).toBe("cross_site_refused");
+    const own = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/x-www-form-urlencoded", "sec-fetch-site": "same-origin" },
+      body: "amount_usd=1&reference=own-page",
+      redirect: "manual",
+    });
+    expect(own.status).toBe(303);
+    // A script with JSON is not a browser form and is not guarded by it.
+    const script = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/json", origin: "https://elsewhere.example" },
+      body: JSON.stringify({ amount_usd: 1, reference: "script" }),
+    });
+    expect(script.status).toBe(200);
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradePayoutPrefix("hal"));
+  });
+});

@@ -7,6 +7,8 @@
  * scripts/lib/citations.mjs recognises it. Typed once, rendered
  * everywhere, never restated by hand.
  */
+import { citeLine } from "@/lib/cite";
+
 export interface CitationSource {
   host?: string;
   week: string;
@@ -38,7 +40,18 @@ export interface Citation {
 
 export function citeRow(base: string, source: CitationSource): Citation {
   const subject = source.host ? `${source.host}, ` : "";
-  const text = `scvd.store corpus, ${subject}week ${source.week}, snapshot ${source.sequence} taken ${source.taken_at}, sha256 ${source.digest}. ${source.entry_url}`;
+  /*
+   * ONE LINE FORMAT (2026-09-04, merged): the sentence is lib/cite's
+   * citeLine, the same line every signed document on the store
+   * carries; the digest rides the JSON shape beside it.
+   */
+  const text = citeLine({
+    base,
+    what: source.host ? "host row" : "corpus snapshot",
+    which: `${subject}week ${source.week}, snapshot ${source.sequence}, sha256 ${source.digest}`,
+    observed_at: source.taken_at,
+    url: source.entry_url,
+  });
   const markdown = `[scvd.store corpus, ${subject}week ${source.week}, snapshot ${source.sequence}](${source.entry_url}) — sha256 \`${source.digest}\``;
   return {
     text,

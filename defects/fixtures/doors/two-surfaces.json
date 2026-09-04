@@ -1,0 +1,11 @@
+{
+ "name": "two-surfaces",
+ "recorded": "2026-09-02, hand-built for S8 Tier A: the header asks 1000, the body asks 2000, same rail and payTo",
+ "why": "The door disagreeing with itself in one response. Every structural check passes; the battery names placement-mismatch with the field that moved (amount on eip155:8453: header 1000, body 2000). Nothing folds: advisory-side by the keeper's ruling until a month of rows is read.",
+ "expect_failed": [],
+ "status": 402,
+ "headers": {
+  "PAYMENT-REQUIRED": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAicGF5VG8iOiAiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBkRWFEIiwgImFzc2V0IjogIjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsICJhbW91bnQiOiAiMTAwMCIsICJtYXhUaW1lb3V0U2Vjb25kcyI6IDMwMH1dfQ=="
+ },
+ "body": "{\"x402Version\": 2, \"accepts\": [{\"scheme\": \"exact\", \"network\": \"eip155:8453\", \"payTo\": \"0x000000000000000000000000000000000000dEaD\", \"asset\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\", \"amount\": \"2000\", \"maxTimeoutSeconds\": 300}]}"
+}

@@ -45,6 +45,8 @@ import {
   a2aRoutes,
   mcpVerifierRoutes,
   scorersRoutes,
+  openapiToolsRoutes,
+  fixturesRoutes,
   visitorsRoutes,
   trustListRoutes,
   refundRoutes,
@@ -479,6 +481,8 @@ app.route("/", monthlyStateRoutes);
 app.route("/", a2aRoutes);
 app.route("/", mcpVerifierRoutes);
 app.route("/", scorersRoutes);
+app.route("/", openapiToolsRoutes);
+app.route("/", fixturesRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);

@@ -35,6 +35,8 @@ interface Scenario {
   header: string | null;
   /** A challenge carried in the 402 BODY as well, for the two-surface lesson. */
   body_challenge?: Record<string, unknown>;
+  /** An MPP challenge on WWW-Authenticate, for the second-wire lesson (V3 PR 1). */
+  mpp_challenge?: string;
 }
 
 function b64(challenge: unknown): string {
@@ -143,6 +145,17 @@ function scenarios(base: string): Scenario[] {
       },
     },
     {
+      id: "mpp-shape",
+      what_is_wrong:
+        "NOTHING, on the other wire: this door speaks the Machine Payments Protocol, not x402. The 402 carries WWW-Authenticate: Payment and no PAYMENT-REQUIRED header, so the x402 battery reads not_ready — which is a fact about which wire the door speaks, never a defect. No payment path stands behind it (the door opened 2026-09-04): the challenge is a shape to read, not an offer to pay.",
+      what_a_good_client_does:
+        "Reads protocols_spoken before reading the verdict. An x402 client cannot pay this door and should say so plainly (no PAYMENT-REQUIRED), never report it as broken; an MPP client reads the Payment challenge's id, method, intent and request and decides from those.",
+      preflight_names_this:
+        "(x402 battery: not_ready on payment-required-header; MPP battery: every check passes, protocols_spoken is [\"mpp\"] — read the mpp block)",
+      header: null,
+      mpp_challenge: `Payment id="prac_mpp_shape_0001", realm="scvd.store", method="evm", intent="charge", request="${btoa(JSON.stringify({ amount: "1000", currency: USDC_BASE, methodDetails: { chainId: 8453, credentialTypes: ["authorization"] }, recipient: DEAD_ADDRESS })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}", description="practice door: read the shape, do not pay"`,
+    },
+    {
       id: "dust-correct",
       what_is_wrong:
         "NOTHING — this offer is well-formed, and that is the lesson: your parser should accept it. But paying it burns 0.000001 USDC to the dead address, so a good client also notices the payTo is 0x…dEaD. PRACTICE DOOR: DO NOT PAY IT.",
@@ -203,6 +216,14 @@ practiceRoutes.get("/api/practice/:scenario", (c) => {
     preflight_names_this: found.preflight_names_this,
     the_course: `${base}/api/practice`,
   };
+  if (found.mpp_challenge) {
+    // Problem Details, as the MPP draft serves its 402 body.
+    return c.json(
+      { type: "https://paymentauth.org/problems/payment-required", title: "Payment Required", status: 402, ...body },
+      402,
+      { "Content-Type": "application/problem+json", "WWW-Authenticate": found.mpp_challenge },
+    );
+  }
   return c.json(body, 402, {
     ...(found.header ? { "PAYMENT-REQUIRED": found.header } : {}),
   });

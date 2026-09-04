@@ -1,6 +1,7 @@
 import { Hono, type Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { citeBlock, citeHtml } from "@/lib/cite";
 import { listCorpus } from "@/services/corpus";
 import { deriveMonthlyState, type MonthReading, type MonthState } from "@/services/monthly-state";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
@@ -96,8 +97,9 @@ async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable
         )
       : c.json(body, status);
   }
+  const monthCite = { base, what: "state of x402, month", which: state.month, observed_at: state.closing.week, url: `${base}/corpus/month/${state.month}` };
   if (!html) {
-    return c.json({ ...state, months_held: known_months, corrections: CORRECTIONS_POINTER });
+    return c.json({ ...state, months_held: known_months, corrections: CORRECTIONS_POINTER, ...citeBlock(monthCite) });
   }
   const path = stable ? `/corpus/month/${state.month}` : "/corpus/month";
   return c.html(
@@ -106,6 +108,7 @@ async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable
       description: `The x402 corpus for ${state.month}: ${state.closing.listed} doors named, ${state.closing.probed} probed, ${state.closing.payable} payable and ${state.closing.not_payable} not at month end, over ${state.weeks.length} signed week${state.weeks.length === 1 ? "" : "s"}; defects by name; the month before beside it. Not a ranking.`,
       path,
       bodyHtml: `${stateHtml(state)}
+      ${citeHtml(monthCite, escapeHtml)}
       <section>
         <p class="menu-meta">Months held: ${known_months.map((m) => (m === state.month ? `<strong>${escapeHtml(m)}</strong>` : `<a href="/corpus/month/${escapeHtml(m)}">${escapeHtml(m)}</a>`)).join(", ")}. This month at an address that never changes: <a href="/corpus/month/${escapeHtml(state.month)}">/corpus/month/${escapeHtml(state.month)}</a>. JSON at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,

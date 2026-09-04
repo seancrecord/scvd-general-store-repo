@@ -10,7 +10,8 @@
   "files": [
     "scvd.mjs",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18.17.0"

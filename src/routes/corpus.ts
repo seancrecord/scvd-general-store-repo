@@ -19,6 +19,8 @@ import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { citeBlock, citeHtml } from "@/lib/cite";
+import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
 import { escapeHtml } from "@/lib/sanitize";
 import {
   CORPUS_DATASET_DESCRIPTION,
@@ -47,6 +49,25 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
  * the only kind this store publishes.
  */
 export const corpusRoutes = new Hono<HonoEnv>();
+
+/**
+ * Last-Modified on the index and the round pages (roadmap C6): the
+ * latest snapshot's own taken_at, so a subscriber's If-Modified-Since
+ * gets a 304 until the next signed week. The ETag middleware already
+ * hashes the bytes; this adds the date a feed reader expects.
+ */
+corpusRoutes.use("/corpus.json", async (c, next) => {
+  await next();
+  if (c.res.status !== 200 || c.res.headers.has("Last-Modified")) return;
+  const records = await listCorpus(c.env);
+  const latest = records[records.length - 1];
+  const header = lastModifiedOf(latest?.snapshot.taken_at);
+  if (header["Last-Modified"]) {
+    const headers = new Headers(c.res.headers);
+    headers.set("Last-Modified", header["Last-Modified"]);
+    c.res = new Response(c.res.body, { status: 200, headers });
+  }
+});
 
 corpusRoutes.get("/corpus.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -239,9 +260,18 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
      * the watch reads; every timeline entry carries entry_url and
      * digest, so any row cites the same way.
      */
-    cite: latestProbed
-      ? { latest_probed_row: citeRow(base, { host, ...latestProbed }), how: CITE_HOW, any_row: "each timeline entry carries entry_url and digest; cite it in the same shape" }
-      : { latest_probed_row: null, how: CITE_HOW, any_row: "no probed row yet; a gap is cited as a gap, never as a zero" },
+    ...citeBlock({
+      base,
+      what: "host history",
+      which: host,
+      observed_at: observation.history.last_observed,
+      url: `${base}/corpus/host/${host}.json`,
+      verify_url: latestProbed?.entry_url,
+    }),
+    cite_json: latestProbed ? citeRow(base, { host, ...latestProbed }).json : null,
+    cite_how: latestProbed
+      ? `${CITE_HOW} cite_json is the latest probed row in the shape the citation watch reads; each timeline entry carries entry_url and digest, so any row cites the same way.`
+      : `${CITE_HOW} No probed row yet; a gap is cited as a gap, never as a zero.`,
   });
 });
 
@@ -365,6 +395,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
         const cite = citeRow(base, { host, ...latestProbed });
         return `<section>
         <h2>Cite this row</h2>
+        ${citeHtml({ base, what: "host history", which: host, observed_at: history.last_observed, url: `${base}/corpus/host/${host}.json`, verify_url: latestProbed.entry_url }, escapeHtml)}
         <p class="menu-desc">${escapeHtml(cite.text)}</p>
         <pre class="menu-meta">${escapeHtml(JSON.stringify(cite.json, null, 2))}</pre>
         <p class="menu-meta">${escapeHtml(CITE_HOW)} Any earlier row cites the same way from its entry link above. How a scorer consumes this: <a href="/scorers">/scorers</a>.</p>
@@ -401,13 +432,19 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
       404,
     );
   }
+  const roundCite = { base, what: "corpus round", which: `${brief.week} (snapshot ${brief.sequence})`, observed_at: brief.taken_at, url: `${base}/corpus/${brief.sequence}.json`, verify_url: `${base}/corpus/round/${brief.week}` };
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({
-      ...brief,
-      weeks_held: known_weeks,
-      corrections: CORRECTIONS_POINTER,
-      cite: citeRow(base, { week: brief.week, sequence: brief.sequence, taken_at: brief.taken_at, digest: brief.digest, entry_url: `${base}/corpus/${brief.sequence}.json` }),
-    });
+    return c.json(
+      {
+        ...brief,
+        weeks_held: known_weeks,
+        corrections: CORRECTIONS_POINTER,
+        ...citeBlock(roundCite),
+        cite_json: citeRow(base, { week: brief.week, sequence: brief.sequence, taken_at: brief.taken_at, digest: brief.digest, entry_url: `${base}/corpus/${brief.sequence}.json` }).json,
+      },
+      200,
+      lastModifiedOf(brief.taken_at),
+    );
   }
   const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
   return c.html(
@@ -415,7 +452,7 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
       title: `x402 endpoint readiness, week ${brief.week}: ${brief.doors.payable} of ${brief.doors.probed} probed doors payable`,
       description,
       path: `/corpus/round/${brief.week}`,
-      bodyHtml: `${briefHtml(brief)}${jsonLdScript({
+      bodyHtml: `${briefHtml(brief)}${citeHtml(roundCite, escapeHtml)}${jsonLdScript({
         "@context": "https://schema.org",
         "@type": "Dataset",
         name: `x402 endpoint readiness — ${brief.week}`,
@@ -712,22 +749,79 @@ corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
       404,
     );
   }
-  /*
-   * THE SIGNED RECORD, VERBATIM, PLUS ITS CITE (2026-09-04). The
-   * signature covers the snapshot's canonical form and the digest is
-   * the one the chain commits to; a sibling key beside them changes
-   * neither, and the verifier reads `snapshot`, `digest`, `signature`
-   * and `public_key` by name.
-   */
   const base = c.env.STORE_BASE_URL;
-  return c.json({
-    ...record,
-    cite: citeRow(base, {
-      week: record.snapshot.week,
-      sequence: record.snapshot.sequence,
-      taken_at: record.snapshot.taken_at,
-      digest: record.digest,
-      entry_url: `${base}/corpus/${record.snapshot.sequence}.json`,
-    }),
-  });
+  return c.json(
+    {
+      ...record,
+      ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week})`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+      /*
+       * THE MACHINE SHAPE BESIDE THE LINE (2026-09-04, merged from the
+       * scorers' branch): the line above is the sentence to quote; this
+       * is the object a scorer writes and the citation watch reads.
+       * The digest is the one the chain commits to.
+       */
+      cite_json: citeRow(base, {
+        week: record.snapshot.week,
+        sequence: record.snapshot.sequence,
+        taken_at: record.snapshot.taken_at,
+        digest: record.digest,
+        entry_url: `${base}/corpus/${record.snapshot.sequence}.json`,
+      }).json,
+    },
+    200,
+    lastModifiedOf(record.snapshot.taken_at),
+  );
+});
+
+/**
+ * GET /corpus/latest.json — the latest signed snapshot at an address
+ * that never changes (roadmap C6, 2026-09-04): the subscriber's door.
+ * Poll it with If-None-Match or If-Modified-Since; a 304 costs nothing
+ * and a 200 is a new week. The same bytes as /corpus/{sequence}.json
+ * for that sequence, plus the cite line.
+ */
+corpusRoutes.get("/corpus/latest.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const records = await listCorpus(c.env);
+  const record = records[records.length - 1];
+  if (!record) {
+    return c.json({ error: "The chain holds no signed snapshot yet; the first Sunday round writes the first.", index: `${base}/corpus.json` }, 404);
+  }
+  return c.json(
+    {
+      ...record,
+      stable_address: `${base}/corpus/${record.snapshot.sequence}.json`,
+      changes_this_week: `${base}/corpus/changes/${record.snapshot.week}.json`,
+      ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week}), the latest`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+      cite_json: citeRow(base, {
+        week: record.snapshot.week,
+        sequence: record.snapshot.sequence,
+        taken_at: record.snapshot.taken_at,
+        digest: record.digest,
+        entry_url: `${base}/corpus/${record.snapshot.sequence}.json`,
+      }).json,
+    },
+    200,
+    lastModifiedOf(record.snapshot.taken_at),
+  );
+});
+
+/**
+ * GET /corpus/changes/{week}.json — one signed week against the one
+ * before it, as plain fields and a plain-English changelog (roadmap
+ * C6). A week the chain does not hold gets a 404 naming the weeks it
+ * does; the first week says it has nothing to compare with.
+ */
+corpusRoutes.get("/corpus/changes/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const week = c.req.param("file").replace(/\.json$/, "");
+  const records = await listCorpus(c.env);
+  const changes = deriveChanges(records, week, base);
+  if (!changes) {
+    return c.json(
+      { error: `The chain holds no signed week named ${week}.`, known_weeks: records.map((record) => record.snapshot.week), latest: `${base}/corpus/latest.json` },
+      404,
+    );
+  }
+  return c.json(changes, 200, lastModifiedOf(changes.taken_at));
 });

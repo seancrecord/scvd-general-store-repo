@@ -257,21 +257,25 @@ describe("the cite box is one shape on every row surface", () => {
   it("host JSON, host page, snapshot and round all print it, with the row's own digest", async () => {
     await seedRound([{ host: "looked.example", verdict: "ready", battery: "preflight-v2" }], 1, "2026-W34");
     const host = (await (await SELF.fetch(`${BASE}/corpus/host/looked.example.json`)).json()) as Record<string, any>;
-    expect(host.cite.latest_probed_row.json.cites).toBe(`${BASE}/corpus/1.json`);
-    expect(host.cite.latest_probed_row.json.digest).toBe("1".repeat(64));
-    expect(host.cite.latest_probed_row.json.license).toBe("CC-BY-4.0");
+    expect(typeof host.cite).toBe("string");
+    expect(host.cite).toContain("host history looked.example");
+    expect(host.cite_json.cites).toBe(`${BASE}/corpus/1.json`);
+    expect(host.cite_json.digest).toBe("1".repeat(64));
+    expect(host.cite_json.license).toBe("CC-BY-4.0");
     expect(host.timeline[0].battery).toBe("preflight-v2");
     const page = await (await SELF.fetch(`${BASE}/corpus/host/looked.example`, { headers: { Accept: "text/html" } })).text();
     expect(page).toContain("Cite this row");
     expect(page).toContain(`&quot;cites&quot;: &quot;${BASE}/corpus/1.json&quot;`);
     const snapshot = (await (await SELF.fetch(`${BASE}/corpus/1.json`)).json()) as Record<string, any>;
-    expect(snapshot.cite.json.cites).toBe(`${BASE}/corpus/1.json`);
-    expect(snapshot.cite.json.digest).toBe(snapshot.digest);
+    expect(typeof snapshot.cite).toBe("string");
+    expect(snapshot.cite_json.cites).toBe(`${BASE}/corpus/1.json`);
+    expect(snapshot.cite_json.digest).toBe(snapshot.digest);
     expect(snapshot.snapshot.week).toBe("2026-W34");
     const round = (await (await SELF.fetch(`${BASE}/corpus/round/2026-W34`, { headers: { Accept: "application/json" } })).json()) as Record<string, any>;
-    expect(round.cite.json.cites).toBe(`${BASE}/corpus/1.json`);
+    expect(typeof round.cite).toBe("string");
+    expect(round.cite_json.cites).toBe(`${BASE}/corpus/1.json`);
     const expected = citeRow(BASE, { host: "looked.example", week: "2026-W34", sequence: 1, taken_at: host.timeline[0].taken_at, digest: "1".repeat(64), entry_url: `${BASE}/corpus/1.json` });
-    expect(host.cite.latest_probed_row).toEqual(expected);
+    expect(host.cite_json).toEqual(expected.json);
   });
 });
 

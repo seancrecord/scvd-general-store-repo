@@ -78,7 +78,7 @@ const readJson = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url
 const local = {
   server: readJson("../server.json"),
   tabServer: readJson("../tab/server.json"),
-  packages: ["../cli/package.json", "../tab/package.json", "../verifier/package.json", "../signer/package.json"].map((path) => {
+  packages: ["../cli/package.json", "../tab/package.json", "../verifier/package.json", "../signer/package.json", "../x402-preflight/package.json", "../corpus-client/package.json", "../defects/package.json", "../mcp-starter/package.json"].map((path) => {
     const manifest = readJson(path);
     return { name: manifest.name, version: manifest.version };
   }),

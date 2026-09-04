@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "9";
+export const DEFECT_VOCABULARY_VERSION = "11";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -131,6 +131,22 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     what_changed:
       "Added surface-contradicts-challenge: a machine-readable surface on the same origin — the llms.txt read by the published code-span convention, or the OpenAPI document's payment fields — names a different price for the probed path than the 402's minimum on its first rail; or the challenge's own resource URL serves a 402 whose accepts differ from the probed door's. Paid-detectable only: the reads cost two to four requests the free preflight and the census have promised not to make, so the signal is the surfaces section of the paid single-door audit and nothing else. The class is never present when the 402 moved between the audit's first read and its bookend, when a surface is absent or silent, or when the surface's number sits in prose — silence is not disagreement and prose is not read. The catalog's copy differing from the door is a fact about the catalog and stays out of the vocabulary.",
   },
+  {
+    version: "10",
+    date: "2026-09-03",
+    at_the_instigation_of:
+      "this store, roadmap C1 (the runtime workflow), on the keeper's word to take the channels in order",
+    what_changed:
+      "Every defect class gains buyer_hint: what the buyer does when a door shows the class — refuse, keep the settlement reference, pay on another rail, wait — the other half of the remediation repair_hint has carried since v4. Additive only: no id, assertion, detectable line or falsified_by changed. The same rows now ride the free preflight report and the paid audit as remediation, derived from each failed check or raised advisory through our_signal, so an agent that has just read a named defect gets both halves without a second fetch. A hint is advice about a door, never a judgment about its operator.",
+  },
+  {
+    version: "11",
+    date: "2026-09-04",
+    at_the_instigation_of:
+      "this store, roadmap V3 PR 1 (the second wire, read only), on the keeper's rulings of 2026-09-04: the x402 verdict keeps its meaning permanently, protocols_spoken carries the union, and implementation gets bolder",
+    what_changed:
+      "Added the Machine Payments Protocol's challenge classes, one per Tier 0 check of the MPP battery that can fail (mpp-challenge-id through mpp-challenge-over-http), each unpaid-detectable and each sourced to the specification's own MUSTs in github.com/tempoxyz/mpp-specs at draft-00 — this store is the registrar, not the author. mpp-challenge-present is a check and not a class: a door with no Payment challenge is not defective, it speaks another wire. The MPP advisories (testnet default, unregistered intent, body not problem+json, x402-and-mpp) are advisories, not classes: none is a defect. Additive only; no x402 class moved.",
+  },
 ];
 
 /** The date this file's cross-instrument mappings were last verified. */
@@ -174,6 +190,16 @@ export interface DefectClass {
    * only authority on whether the defect is present.
    */
   repair_hint: string;
+  /**
+   * What the BUYER does when a door shows this class (v10, roadmap C1):
+   * the other half of the same remediation. An agent that has just
+   * read a named defect needs the next step on its own side — refuse,
+   * keep a reference, pay on another rail, wait — stated once here and
+   * carried onto the preflight report and the audit beside the
+   * operator's half. Advice about a door, never a judgment about its
+   * operator.
+   */
+  buyer_hint: string;
   /** The same property, as other published instruments name it. */
   also_known_as?: ForeignName[];
   /**
@@ -258,6 +284,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The same URL answering 402 with a parseable challenge to an unauthenticated GET at the stated moment. A 402 that appears only for some callers is a different finding, not this one.",
     repair_hint:
       "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing.",
+    buyer_hint:
+      "Do not pay, and do not retry with money: there is no challenge to sign against. Treat the listing as pointing somewhere other than the paid resource; if you hold a different URL for the same service, preflight that one instead.",
   },
   {
     id: "unparseable-challenge",
@@ -272,6 +300,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The header decoding to valid JSON by any conforming base64 + JSON reader at the stated moment.",
     repair_hint:
       "Emit PAYMENT-REQUIRED as base64 over UTF-8 JSON, unwrapped and untruncated — check for a proxy that rewrites or size-caps headers, and for double encoding. Decode your own header with an independent client before relisting; the free preflight does exactly that.",
+    buyer_hint:
+      "Do not guess the terms. A challenge you could not decode is a door you cannot sign for; report the parse failure by name and move on, or hand the operator the free preflight's reading so they can see what your client saw.",
   },
   {
     id: "unsignable-offer",
@@ -286,6 +316,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "Every accepts entry carrying the published required fields at the stated moment.",
     repair_hint:
       "Fill every accepts entry with the v2-required fields, as strings, and regenerate the offer from your server's own config rather than hand-editing JSON. The free preflight names the missing field.",
+    buyer_hint:
+      "Do not sign: a missing required field means your client has nothing to construct, and any library that proceeds anyway is filling the gap with a default you did not choose. Read the preflight's named missing field and wait for a challenge that carries it.",
   },
   {
     id: "transfer-method-unrecognized",
@@ -300,6 +332,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The same entry naming one of the published methods at the stated moment, or a client implementation that builds an authorization from the named method — the second retires the finding by making the method recognized, and the register is the thing that should move.",
     repair_hint:
       "Name the method your facilitator actually verifies — for USDC on an EVM rail that is almost always eip3009 — or omit the field, which reads as eip3009 by default. If the value names a standard your own stack defines, publishing what a client must build for it turns a door only your clients can walk into one anybody can.",
+    buyer_hint:
+      "Do not sign blind. If the named method is one your client can build, build it; if not, refuse, because a signature over the wrong authorization standard is money sent under terms neither side agreed to. Absence of the field is not this class and reads as eip3009.",
   },
   {
     id: "unpayable-payto",
@@ -314,6 +348,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The payTo parsing as a valid address for the rail its own entry names.",
     repair_hint:
       "Give each accepts entry its own rail's address format: a 20-byte 0x address on EVM entries, a base58 pubkey on Solana entries. The commonest cause is one wallet string pasted across every rail's entry.",
+    buyer_hint:
+      "Never resolve a name in payTo yourself and pay the result: your signature would bind to whatever the resolver said that second. Refuse until payTo is a concrete address in the format of its own entry's rail.",
   },
   {
     id: "rail-cannot-receive",
@@ -337,6 +373,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     ],
     repair_hint:
       "Create the associated token account for the offered mint on the payTo address — one transaction from any wallet tooling — or point payTo at an address that already holds one. Re-run getTokenAccountsByOwner yourself to confirm before relisting.",
+    buyer_hint:
+      "Do not broadcast on Solana against this payTo: the transfer has no token account to land in and will fail in simulation, or worse. Pay on another rail the door offers, or wait until getTokenAccountsByOwner shows an account for that mint.",
   },
   {
     id: "wrong-network",
@@ -351,6 +389,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The entry naming a mainnet chain id the buyer's client supports.",
     repair_hint:
       "Replace the testnet chain id in accepts with the mainnet rail you settle on, and keep test offers behind a separate listing. If you meant mainnet, look for a deploy-time environment default leaking into production.",
+    buyer_hint:
+      "Do not let a mainnet wallet sign a testnet offer: the payment settles nowhere real and the goods never come. Check the CAIP-2 network id against the chains you actually hold funds on before signing anything, and prefer a door whose offer names one of them.",
   },
   {
     id: "amount-not-atomic",
@@ -364,6 +404,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     falsified_by: "The amount parsing as an integer string.",
     repair_hint:
       "Write amount as an integer string of atomic units — for USDC, dollars times ten to the sixth — and derive it from one constant so the menu and the challenge cannot disagree.",
+    buyer_hint:
+      "Do not pay a decimal amount: the true price is off by a factor of a million in a direction you cannot know. Refuse, and if you must proceed, get the atomic integer from the operator in writing first.",
   },
   {
     id: "inputs-undeclared",
@@ -378,6 +420,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "A declared input contract in the challenge, or the resource succeeding with no parameters.",
     repair_hint:
       "Declare required parameters in the challenge itself, before payment, so a buyer learns them by reading rather than by being refused after signing. If the resource can serve a sensible default, accept a bare call too.",
+    buyer_hint:
+      "Expect a refusal after payment if you call bare. Read the resource's documentation for its required parameters before paying, send them on the first call, and keep the settlement reference so a refused call can be retried as a paid retry rather than a second purchase.",
   },
   {
     id: "replay-accepted",
@@ -401,6 +445,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     ],
     repair_hint:
       "Record each settled authorization nonce at settle time and refuse a byte-identical presentation BEFORE fulfillment runs — one keyed read at the till. Refusing with a reference to the original settlement also keeps you clear of the nonce-unbound class below.",
+    buyer_hint:
+      "This costs the seller, not you, but it tells you the till keeps no settlement ledger: keep your own record of what you paid and the response you got, because the door cannot help you reconstruct it later.",
   },
   {
     id: "nonce-unbound-from-settlement",
@@ -419,6 +465,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     registered: "2026-08-27",
     repair_hint:
       "Store the settlement transaction hash beside the nonce when you mark it spent, and return it on the replay refusal — one extra column, and a buyer's honest recovery becomes distinguishable from fraud.",
+    buyer_hint:
+      "Keep the settlement transaction hash yourself, from your wallet or the facilitator's response, before you need it: this door cannot tell you what spent your nonce, so your honest recovery of a lost response rests on your own record.",
   },
   {
     id: "settlement-error",
@@ -442,6 +490,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     ],
     repair_hint:
       "Read your settle-path logs: the failure sits after payment verification, most often a facilitator timeout, an unhandled fulfillment exception, or a dead upstream. Fail BEFORE money moves or deliver after it — never answer a settled payment with a 500.",
+    buyer_hint:
+      "Do not retry with a fresh nonce: money may already have moved once. Check the chain for your settlement first; if it settled, present the same payment again or ask for a paid retry against that settlement, and if it did not, only then pay again.",
   },
   {
     id: "delivered-nothing",
@@ -455,6 +505,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     falsified_by: "A non-empty response body accompanying the 2xx.",
     repair_hint:
       "Produce the goods before presenting the settlement, and treat an empty body as a failed delivery that aborts the charge — deliver-first ordering makes this class impossible by construction.",
+    buyer_hint:
+      "Treat an empty 2xx after settlement as a failed delivery and keep the settlement reference: it is the only evidence that you paid. Ask for a paid retry against that settlement before paying a second time.",
   },
   {
     id: "payto-moved",
@@ -470,6 +522,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "Two signed rows from the same watch, bracketing the claimed change, whose challenge_bytes decode to the same (network, payTo) set; or a dated notice of the rotation, published where the door's buyers read, that predates the first row showing it.",
     repair_hint:
       "Rotate deliberately: publish the new payTo and its date where your buyers read — your llms.txt, your directory listings, a signed offer under a key they already hold — BEFORE the door presents it, and keep the old address listed as retired. A silent move is indistinguishable from a hijack to anyone watching, because from outside it is the same observation.",
+    buyer_hint:
+      "Before paying a door you have paid before, compare the payTo against the one you last saw for that network; if it moved and no dated notice explains it where the door's buyers read, treat the door as unverified today, whatever the preflight says about its shape.",
     sourced_by:
       "x402 Trust (x402.fuchss.app), whose pitch of 2026-09-01 named the failure shape — a payTo moved to a fresh wallet a week ago, invisible to a one-off check — before this register did. Source, not author: the class text is ours, the observation was theirs to name first.",
     registered: "2026-09-01",
@@ -487,6 +541,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The info block validating against the schema block under a standard JSON Schema validator; or the endpoint appearing in an ingestion-built catalog with a complete listing despite the block failing.",
     repair_hint:
       "Generate info and schema from one declaration rather than typing them twice (the reference helpers do this), and run a JSON Schema validator over the pair in your own tests, which is how this store found the same shape in its own listings.",
+    buyer_hint:
+      "Nothing to do at the till: the door may still be payable. It means you will not find this door in a catalog built by ingestion, so hold the URL yourself rather than expecting a directory to carry it.",
     registered: "2026-09-02",
   },
   {
@@ -502,6 +558,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The offer's decoded payload matching an accepts entry of the same response on network, asset, payTo and amount; the spec tells verifiers to match on those fields, never on array position.",
     repair_hint:
       "Sign offers from the accepts entries themselves at the moment the challenge is built, one offer per entry, so the two cannot drift; never sign a cached offer beside a freshly priced challenge.",
+    buyer_hint:
+      "Sign against the challenge's accepts, which is what your client will actually pay, and keep the signed offer beside it: two prices from one door in one breath is a dispute waiting to happen, and the copy you hold is your evidence of which terms you were shown.",
     registered: "2026-09-02",
   },
   {
@@ -517,7 +575,225 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "The surface, re-read, naming the 402's minimum on the same rail; or the 402 read again on either side of the surface read carrying a different price, which makes the reading moving rather than contradicting; or the surface's number sitting only in prose, which the convention does not read.",
     repair_hint:
       "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
+    buyer_hint:
+      "Budget from the 402, not from the surface you read first: an installed skill, a fetched llms.txt or a generated client can carry a stale number. Before paying, read the challenge's amount and refuse if it is not what you were told, rather than reporting the door as broken.",
     registered: "2026-09-02",
+  },
+  /*
+   * THE SECOND WIRE (v11, 2026-09-04, roadmap V3 PR 1): one class per
+   * Tier 0 check of the MPP battery that can fail, each sourced to the
+   * specification's own MUSTs. mpp-challenge-present is a check and
+   * not a class (a door with no Payment challenge speaks another
+   * wire); the four MPP advisories are advisories, not classes.
+   */
+  {
+    id: "mpp-challenge-id",
+    title: "MPP challenge with no id",
+    asserts:
+      "Every WWW-Authenticate: Payment challenge carries a non-empty id.",
+    costs:
+      "Clients and parsers MUST reject a challenge whose id is missing or empty, so a stock MPP client refuses before any payment; the seller sees a request for a price followed by silence.",
+    detectable: "unpaid",
+    our_signal: "mpp-challenge-id",
+    falsified_by:
+      "The same challenge carrying a non-empty id at the stated moment.",
+    repair_hint:
+      "Mint an id per challenge — any non-empty opaque string your server can recognise on the credential's return — and never leave the parameter out to save bytes.",
+    buyer_hint:
+      "Do not construct a credential against a challenge with no id: the door cannot bind your payment to its own request, and a client that proceeds pays into a challenge the server may not recognise. Refuse, and say which parameter was missing.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-challenge-realm",
+    title: "MPP challenge with no realm",
+    asserts:
+      "Every Payment challenge names its realm, the RFC 9110 protection space.",
+    costs:
+      "A client cannot scope a credential to the door that asked for it; some clients refuse, others send credentials where they were not asked for.",
+    detectable: "unpaid",
+    our_signal: "mpp-challenge-realm",
+    falsified_by:
+      "The same challenge carrying a realm at the stated moment.",
+    repair_hint:
+      "Set realm to your door's protection space — usually your host — on every challenge; the auth-scheme grammar requires it.",
+    buyer_hint:
+      "Treat a challenge with no realm as unscoped: do not reuse a credential across doors, and prefer a door whose challenge names where the credential belongs.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-method-unregistered",
+    title: "MPP challenge naming a method no client can build",
+    asserts:
+      "The method parameter names a payment method the specification repository holds a draft for (card, evm, hedera, lightning, nearintents, solana, stellar, stripe, tempo, usdc).",
+    costs:
+      "A buyer holding the registry has no credential shape to construct; the refusal lands on the buyer's machine and the seller never learns a buyer came.",
+    detectable: "unpaid",
+    our_signal: "mpp-method-registered",
+    falsified_by:
+      "The method appearing as a draft under specs/methods at the stated read date, or a published client building a credential for it.",
+    repair_hint:
+      "Name a method the drafts define, spelled lowercase exactly; if your method is your own, publish its credential shape where clients read and expect the registry to move before buyers do.",
+    buyer_hint:
+      "Do not guess a credential shape for a method you do not recognise: a signature over the wrong payload is money sent under terms neither side agreed to. Refuse, and name the method you could not build.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-intent-unregistered-or-missing",
+    title: "MPP challenge with no usable intent",
+    asserts:
+      "The intent parameter is present and is either a drafted intent (charge, subscription) or one implementers advertise (session).",
+    costs:
+      "Without an intent a client cannot tell a one-off charge from a recurring commitment; a client that guesses charge on a subscription challenge signs for more than it meant to.",
+    detectable: "unpaid",
+    our_signal: "mpp-intent-registered",
+    falsified_by:
+      "The challenge naming a drafted or widely advertised intent at the stated moment.",
+    repair_hint:
+      "Name the intent on every challenge; charge for a one-off, subscription for recurring; if you advertise session, know that it has no draft and a registry-only client cannot pay it.",
+    buyer_hint:
+      "Do not sign against a challenge whose intent you do not recognise: you cannot know whether you are committing once or repeatedly. Refuse, and say which intent you could not read.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-request-undecodable",
+    title: "MPP request that does not decode",
+    asserts:
+      "The request parameter is base64url of a JSON object.",
+    costs:
+      "The price, currency and recipient are inside the request; a client that cannot decode it has nothing to sign and nothing to show its human. The seller sees nothing.",
+    detectable: "unpaid",
+    our_signal: "mpp-request-decodes",
+    falsified_by:
+      "The request decoding, by any conforming base64url and JSON reader, to a JSON object at the stated moment.",
+    repair_hint:
+      "Encode the request as base64url (no padding, URL-safe alphabet) of UTF-8 JSON, and decode your own header with an independent client before shipping; a proxy that rewrites or size-caps headers is the usual cause.",
+    buyer_hint:
+      "Do not guess the terms: a request you could not decode is a door you cannot sign for. Report the decode failure by name and move on.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-request-not-canonical",
+    title: "MPP request whose bytes are not their canonical form",
+    asserts:
+      "Re-canonicalizing the decoded request by RFC 8785 (JCS) reproduces the served bytes exactly.",
+    costs:
+      "A client that hashes the request for challenge binding gets a different hash from the one the server computed, so a correct payment is refused as mismatched, or a careless server accepts a rebound one.",
+    detectable: "unpaid",
+    our_signal: "mpp-request-canonical",
+    falsified_by:
+      "The served request bytes equalling the RFC 8785 canonicalization of their own decoded JSON at the stated moment.",
+    repair_hint:
+      "Serialise the request with a JCS canonicalizer — sorted keys, no whitespace, ECMAScript number and string forms — rather than a pretty-printer or a hand-written template; the draft says MUST.",
+    buyer_hint:
+      "Bind your credential to the bytes you were served, never to a re-serialisation of them, and expect a mismatch refusal from a server that hashes its own canonical form; if the door's own bytes are not canonical, tell the operator rather than retrying.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-amount-not-integer",
+    title: "MPP amount not an integer string in the smallest unit",
+    asserts:
+      "The request's amount is a base-10 integer string with no sign, point or exponent.",
+    costs:
+      "A decimal or a number usually means the price is off by a factor of the unit's decimals in one direction or the other — the amount-not-atomic mistake on the second wire.",
+    detectable: "unpaid",
+    our_signal: "mpp-amount-shape",
+    falsified_by:
+      "The amount parsing as a digit string at the stated moment.",
+    repair_hint:
+      "Write amount as an integer string of the smallest unit — cents for fiat, the token's smallest unit for chains — derived from one constant so the discovery document and the challenge cannot disagree.",
+    buyer_hint:
+      "Do not pay a decimal amount: the true price is unknowable from it. Refuse, and if you must proceed, get the integer amount and its unit from the operator in writing first.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-currency-unnamed",
+    title: "MPP request with no currency",
+    asserts:
+      "The request names its currency: ISO 4217 lowercase for fiat, a token contract address for chains, or the method's own convention.",
+    costs:
+      "A client cannot resolve what the amount is denominated in; a wallet that assumes settles in the wrong asset or refuses.",
+    detectable: "unpaid",
+    our_signal: "mpp-currency-named",
+    falsified_by:
+      "The request carrying a non-empty currency at the stated moment.",
+    repair_hint:
+      "Name the currency on every request in the form the method draft specifies, and keep it beside the amount in one object so they cannot drift.",
+    buyer_hint:
+      "Do not sign for an amount with no currency: you cannot know what you are paying in. Refuse, and say which field was missing.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-recipient-missing",
+    title: "MPP request with no recipient on a chain method",
+    asserts:
+      "On the evm, tempo and solana methods the request names a recipient the credential's to MUST match.",
+    costs:
+      "There is nowhere for the payment to land; a client that fills in a recipient from elsewhere pays a wallet the challenge never named.",
+    detectable: "unpaid",
+    our_signal: "mpp-recipient-present",
+    falsified_by:
+      "The request carrying a recipient in the method's native format at the stated moment.",
+    repair_hint:
+      "Put the receiving address on every chain-method request in that chain's native format, and generate it from your server's config rather than a template.",
+    buyer_hint:
+      "Never supply a recipient the challenge did not: the credential's to must match the challenge, and a payment to any other address is unrecoverable. Refuse until the door names one.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-challenge-expired-at-issue",
+    title: "MPP challenge already expired, or with an unreadable expires",
+    asserts:
+      "Where the challenge carries expires, it is RFC 3339 and later than the moment the challenge was served.",
+    costs:
+      "A challenge expired at issue cannot be paid: the server refuses the credential as payment-expired and the buyer's ledger records a failed purchase at a door that never offered a live one.",
+    detectable: "unpaid",
+    our_signal: "mpp-expires-rfc3339",
+    falsified_by:
+      "The same door serving a challenge whose expires parses and lies in the future at the stated moment.",
+    repair_hint:
+      "Set expires from the server's clock at issue time plus a window a client can act in, in RFC 3339 with a timezone, or omit it; a fixed or stale timestamp is the usual cause.",
+    buyer_hint:
+      "Do not pay a challenge that is already expired: the credential will be refused and the attempt may still be logged against you. Re-request the door for a fresh challenge, and if it is expired again, tell the operator.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
+  },
+  {
+    id: "mpp-challenge-over-http",
+    title: "MPP challenge issued over unencrypted HTTP",
+    asserts:
+      "Payment challenges are issued only over TLS.",
+    costs:
+      "Servers MUST NOT issue Payment challenges over unencrypted HTTP; a credential sent in reply travels in the clear, and a client that honours the MUST refuses the door outright.",
+    detectable: "unpaid",
+    our_signal: "mpp-tls-only",
+    falsified_by:
+      "The same door serving its challenge over https at the stated moment.",
+    repair_hint:
+      "Serve the door over https only and redirect or refuse plain http before the 402 is built; a challenge over http is a challenge no conforming client will answer.",
+    buyer_hint:
+      "Never send a Payment credential over plain http, whatever the door asks: the credential travels in the clear. Refuse, and use the door's https address if it has one.",
+    sourced_by:
+      "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+    registered: "2026-09-04",
   },
 ];
 
@@ -525,6 +801,19 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
 /** An evidence label by id. Separate register, separate lookup. */
 export function evidenceLabel(id: string): EvidenceLabel | undefined {
   return EVIDENCE_LABELS.find((entry) => entry.id === id);
+}
+
+/**
+ * Every class a raw signal name explains. A MAP, not a map-to-one:
+ * `accepts` is the signal of two classes (an offer nobody can sign
+ * against, a payTo that is not bytes), and a reader handed one of them
+ * would be handed half the vocabulary. Advisory signals are registered
+ * with an "(advisory)" suffix; both spellings resolve.
+ */
+export function defectsBySignal(signal: string): DefectClass[] {
+  return DEFECT_CLASSES.filter(
+    (entry) => entry.our_signal === signal || entry.our_signal === `${signal} (advisory)`,
+  );
 }
 
 export function defectClass(id: string): DefectClass | undefined {

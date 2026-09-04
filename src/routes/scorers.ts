@@ -182,7 +182,7 @@ const reObserve = (base: string): ScorerSurface[] => [
 ];
 
 const CITE = {
-  how: `${CITE_HOW} Every row surface prints the citation for you: \`cite\` on /corpus/host/{host}.json and /corpus/{n}.json, and on the look's reproduce block. Do not restate the observation; link it. A restated row is a claim of yours, and the reader cannot check it.`,
+  how: `${CITE_HOW} Every row surface prints the citation for you: \`cite\`, the one line to quote, and \`cite_json\`, the shape a machine writes, on /corpus/host/{host}.json, /corpus/{n}.json, /corpus/latest.json and the round; the look's reproduce block cites the row it compared with. Do not restate the observation; link it. A restated row is a claim of yours, and the reader cannot check it.`,
   attribution: "CC BY 4.0: attribution is the row's URL. Nothing more is asked.",
   check: "Every verify URL and corpus URL this page names is fetched by the suite and must answer; a citation that does not resolve is a broken citation, not a broken corpus.",
 };

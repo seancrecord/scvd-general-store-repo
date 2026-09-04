@@ -155,7 +155,7 @@ How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${ba
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
@@ -404,6 +404,8 @@ A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
+The free instruments as function-calling tools, one worked call each,
+derived from the MCP catalog: ${base}/openapi-tools.json
 Developer documentation, one index of all of it: ${base}/developers
 (also at /docs and /api). No account and no API key exists to obtain:
 free shelves are open, paid ones take a signed x402 payment per
@@ -420,8 +422,11 @@ changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring
 version carries, and a live table of every version served. Nothing is
 deprecated today and the table says so.
 Official CLI, ${CLI_PACKAGE} (MIT, zero dependencies): one line per
-instrument — "scvd preflight <url>", "scvd conformance <file>", "scvd
-verify <id>", "scvd catalog", "scvd versions". It holds no key and
+instrument — "scvd preflight <url>", "scvd look <url>", "scvd
+before-you-pay <url>", "scvd conformance <file>", "scvd verify <id>",
+"scvd month", "scvd feeds", "scvd catalog", "scvd versions". Where a
+report names a defect, it prints the store's remediation rows, both
+halves. It holds no key and
 cannot spend money; --json prints this store's own response verbatim.
 ${
   CLI_PUBLISHED
@@ -1004,7 +1009,13 @@ answers "what changed since a week I already saw": doors appeared and
 disappeared, verdict transitions, and drift in a door's own declared
 terms (price bounds, rails, schemes) between two signed weeks — the
 cheapest honest agent loop is polling that diff. A week the chain does
-not hold gets a 404 naming the weeks it does.
+not hold gets a 404 naming the weeks it does. To subscribe (since
+2026-09-04): ${base}/corpus/latest.json is the latest signed snapshot
+at an address that never changes, with ETag and Last-Modified for a
+conditional GET, and \`${base}/corpus/changes/{week}.json\` is one
+week against the one before it — additions, removals, recoveries,
+regressions, changed payment routes and prices, changed defect state —
+as fields and as a plain changelog.
 
 Wallet facts, under the operator-linking ruling of 2026-08-27: the
 store provides the wallet fact and the receiver makes the call.
@@ -1103,6 +1114,32 @@ GET; a paid walk settles real money and sees things a free probe
 never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
+
+Every signed document and page carries a cite line (since 2026-09-04),
+derived from its own fields: the issuer, what and which, when it was
+observed, how it is signed and where the key is, and the URL whose
+bytes are the thing cited. Quote it verbatim. The recorded doors, MPP
+challenges and signed-artifact vectors this store tests itself against
+are served at stable URLs with the sha256 of the bytes, unsigned and
+said so: ${base}/fixtures.json, then \`${base}/fixtures/{set}/{name}.json\`.
+
+The second wire, read only (since 2026-09-04): a door that speaks the
+Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
+and no PAYMENT-REQUIRED header. The free preflight reads that from the
+same one GET: protocols_spoken says which wires the door speaks (x402,
+mpp, both, neither), and the mpp block carries the MPP battery's own
+named checks and advisories. The verdict keeps meaning x402-ready,
+permanently — a door on the other wire reads not_ready there and that
+is a fact about the wire, never a defect. This store's till does not
+speak MPP; nothing here pays, verifies a credential or reads a
+receipt. Rehearse the shape at ${base}/api/practice/mpp-shape.
+
+Every class also carries both halves of the remediation: what the
+operator does to clear it and what the buyer does when a door shows
+it. The free preflight report joins them to its own findings as
+\`remediation\`, one row per failed check or raised advisory a class
+explains, with the definition URL, so the next step is in the same
+answer as the defect. Never part of the verdict.
 
 ## The notice desk, for an operator who found us in their log
 

@@ -68,6 +68,12 @@ jobs:
       # this job does not want.
       - name: The examples
         run: npm run examples:test
+      # THE PACKAGES (roadmap C5): x402-preflight, scvd-corpus-client,
+      # scvd-defects and scvd-mcp-starter, each zero-dependency, each
+      # tested on Node's own runner against a server that is not the
+      # store. Publish is the keeper's press; the tree is the source.
+      - name: The packages
+        run: npm run packages:test
       # THE SCALABILITY AUDIT — the same idea pointed forward instead of
       # backward. The tests catch a claim that is false NOW; this catches
       # a shape that will quietly become false as the store grows. Its

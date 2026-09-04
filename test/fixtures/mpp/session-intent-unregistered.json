@@ -1,0 +1,19 @@
+{
+  "name": "session-intent-unregistered",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "intent=session, advertised by implementers with no draft: the check passes (seen in the wild), the advisory says a buyer holding only the registry cannot pay it.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [],
+  "expect_advisories": [
+    "mpp-intent-unregistered"
+  ],
+  "status": 402,
+  "headers": {
+    "content-type": "application/problem+json",
+    "www-authenticate": "Payment id=\"ch_11\", realm=\"door.example\", method=\"tempo\", intent=\"session\", request=\"eyJhbW91bnQiOiIyNTAwIiwiY3VycmVuY3kiOiIweDIwYzAwMDAwMDAwMDAwMDAwMDAwMDAwMGI5NTM3ZDExYzYwZThiNTAiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjQyMTd9LCJyZWNpcGllbnQiOiIweDIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIifQ\""
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

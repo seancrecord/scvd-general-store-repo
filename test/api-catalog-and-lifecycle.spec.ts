@@ -4,6 +4,8 @@ import { API_VERSIONS, headersForRow, isRetiring } from "@/store/api-lifecycle";
 import { LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
 import { PROTOCOL_VERSIONS } from "@/routes/mcp";
 import { isRecord } from "@/types";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { FEEDS } from "@/routes/feeds";
 
 const BASE = "https://scvd.store";
 const HTML = { Accept: "text/html" };
@@ -76,6 +78,30 @@ describe("the API catalog, at the path RFC 9727 fixes", () => {
         `${BASE}${row.path}`,
       );
     }
+  });
+
+  it("lists the verifier door, every published dataset and every feed (2026-09-04, roadmap C3)", async () => {
+    /*
+     * The ARD manifest names every record and its cross-check requires
+     * this catalog to know each URL first, so the two cannot drift:
+     * a dataset in the roster is a row here and an entry there.
+     */
+    const body = (await (
+      await SELF.fetch(`${BASE}/.well-known/api-catalog`)
+    ).json()) as { linkset: Array<Record<string, unknown>> };
+    const anchors = new Set(body.linkset.map((entry) => entry["anchor"]));
+    expect(anchors).toContain(`${BASE}/mcp/verifier`);
+    for (const dataset of PUBLISHED_DATASETS) {
+      expect(anchors, `${dataset.path} is a published dataset and absent from the catalog`).toContain(`${BASE}${dataset.path}`);
+    }
+    const feeds = body.linkset.find((entry) => entry["anchor"] === `${BASE}/feeds`);
+    const alternates = (feeds?.["alternate"] as Array<{ href: string; type: string }>) ?? [];
+    expect(alternates.map((link) => link.href).sort()).toEqual(FEEDS.map((feed) => `${BASE}${feed.path}`).sort());
+    for (const link of alternates) expect(link.type).toBe("application/atom+xml");
+    // The index context lists each of them as an item, derived.
+    const items = (body.linkset[0]?.["item"] as Array<{ href: string }>).map((item) => item.href);
+    expect(items).toContain(`${BASE}/mcp/verifier`);
+    expect(items).toContain(`${BASE}/feeds`);
   });
 
   it("every href it publishes is a URL, never a bare path", async () => {

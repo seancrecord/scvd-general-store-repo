@@ -138,6 +138,33 @@ test("exits 1 on a not_ready verdict, so CI can branch on it", async () => {
   assert.match(result.stdout, /payTo is a name/);
 });
 
+test("prints the store's remediation rows, both halves, and nothing when there are none", async () => {
+  const withRows = await run(["preflight", "https://door.example"], () => ({
+    json: {
+      verdict: "not_ready",
+      checks: [{ name: "accepts", ok: false, detail: "no asset" }],
+      advisories: [],
+      remediation: [
+        {
+          signal: "accepts",
+          kind: "check",
+          defect_class: "unsignable-offer",
+          definition_url: "https://scvd.store/defects/unsignable-offer",
+          operator: "Fill every accepts entry.",
+          buyer: "Do not sign.",
+        },
+      ],
+    },
+  }));
+  assert.match(withRows.stdout, /FIX {3}accepts → unsignable-offer \(https:\/\/scvd\.store\/defects\/unsignable-offer\)/);
+  assert.match(withRows.stdout, /operator: Fill every accepts entry\./);
+  assert.match(withRows.stdout, /buyer: {4}Do not sign\./);
+  const without = await run(["preflight", "https://door.example"], () => ({
+    json: { verdict: "ready", checks: [{ name: "status-402", ok: true, detail: "" }], advisories: [] },
+  }));
+  assert.doesNotMatch(without.stdout, /FIX/);
+});
+
 test("does NOT fail a build on unreachable, which says nothing about the door", async () => {
   const result = await run(["preflight", "https://door.example"], () => ({
     json: {
@@ -295,6 +322,104 @@ test("exits 1 when the check desk says the signature would not pass", async () =
   assert.match(result.stdout, /first failure: stale_timestamp/);
 });
 
+test("looks at a door: both halves and the comparison, exit follows the live verdict", async () => {
+  let seen;
+  const result = await run(["look", "https://door.example/pay"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        headline: "Ready now; the chain holds 3 of 4 rounds.",
+        now: { battery: "v2", verdict: "ready", failed: [], advisories: [], the_door: { remediation: [] } },
+        held: { never_met: false, rounds_probed: 3, rounds_since_first_sighting: 4, last_probed_round: { verdict: "ready", week: "2026-W35" }, tier: { tier: "held", fraction: "3/4" } },
+        now_against_held: { line: "same", detail: "the live verdict matches the last signed round" },
+      },
+    };
+  });
+  assert.equal(seen.method, "POST");
+  assert.equal(seen.url, "/api/look/v1");
+  assert.deepEqual(seen.body, { url: "https://door.example/pay" });
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /probed 3 of 4 rounds/);
+  assert.match(result.stdout, /now against held: same/);
+  const never = await run(["look", "https://door.example/pay"], () => ({
+    json: { url: "https://door.example/pay", headline: "h", now: { battery: "v2", verdict: "not_ready", failed: ["accepts"], advisories: [] }, held: { never_met: true }, now_against_held: { line: "no_prior", detail: "no round" } },
+  }));
+  assert.equal(never.code, 1);
+  assert.match(never.stdout, /never met/);
+  assert.match(never.stdout, /failed: accepts/);
+});
+
+test("the dry run: --cap rides as the client profile, and would_throw exits 1", async () => {
+  let seen;
+  const result = await run(["before-you-pay", "https://door.example/pay", "--cap", "0.5"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        will_your_client_pay: "would_throw",
+        your_client: { outcome: "would_throw", chosen: null, throws_with: "All payment requirements were filtered out by spendControls", dropped: [{ index: 0, network: "eip155:8453", stage: "amount-cap", why: "5 USD is above the cap" }], hazards: [], cap_applied: "$0.5" },
+        the_door: { verdict: "ready", checks: [{ name: "status-402", ok: true }], remediation: [] },
+      },
+    };
+  });
+  assert.equal(seen.url, "/api/before-you-pay/v1");
+  assert.deepEqual(seen.body, { url: "https://door.example/pay", client_profile: { max_amount_per_payment_usd: 0.5 } });
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /will your client pay: would_throw/);
+  assert.match(result.stdout, /DROP {2}accept 0 \(eip155:8453\) at amount-cap/);
+  const signs = await run(["before-you-pay", "https://door.example/pay"], (request) => {
+    seen = request;
+    return {
+      json: {
+        url: "https://door.example/pay",
+        will_your_client_pay: "would_sign",
+        your_client: { outcome: "would_sign", chosen: { index: 0, network: "eip155:8453", asset: "0xusdc", amount_atomic: "1000", amount_usd: 0.001, signing_window_seconds: 300 }, throws_with: null, dropped: [], hazards: [], cap_applied: "$1" },
+        the_door: { verdict: "ready", checks: [], remediation: [] },
+      },
+    };
+  });
+  assert.deepEqual(seen.body, { url: "https://door.example/pay" });
+  assert.equal(signs.code, 0);
+  assert.match(signs.stdout, /would sign accept 0: eip155:8453 0xusdc 1000 atomic \(\$0\.001\), 300s to sign/);
+  const bad = await run(["before-you-pay", "https://door.example/pay", "--cap", "nope"], () => ({ json: {} }));
+  assert.equal(bad.code, 2);
+});
+
+test("a month and the feeds, from the store's own documents", async () => {
+  let seen;
+  const month = await run(["month", "2026-08"], (request) => {
+    seen = request;
+    return {
+      json: {
+        name: "The state of x402",
+        month: "2026-08",
+        weeks: [{ week: "2026-W33" }, { week: "2026-W34" }],
+        closing: { week: "2026-W34", listed: 40, probed: 38, payable: 20, not_payable: 15, unreachable: 3, offers_seen: 9 },
+        door_weeks: { rounds: 2, listed: 80, probed: 76, payable: 41, not_payable: 29, unreachable: 6, offers_seen: 18 },
+        defects: [{ id: "no-402", title: "Listed, but serves no payment challenge", door_weeks: 12 }],
+        months_held: ["2026-07", "2026-08"],
+        what_this_is_not: "Not a ranking.",
+      },
+    };
+  });
+  assert.equal(seen.url, "/corpus/month/2026-08");
+  assert.equal(seen.headers["accept"], "application/json");
+  assert.equal(month.code, 0);
+  assert.match(month.stdout, /closing 2026-W34 +listed 40 {2}probed 38/);
+  assert.match(month.stdout, /door-weeks \(2 rounds\)/);
+  assert.match(month.stdout, /DEFECT {2}no-402: 12 door-weeks/);
+  const badMonth = await run(["month", "august"], () => ({ json: {} }));
+  assert.equal(badMonth.code, 2);
+  const feeds = await run(["feeds"], (request) => {
+    seen = request;
+    return { json: { feeds: [{ path: "/feeds/brief.xml", title: "The week's doors", url: "https://scvd.store/feeds/brief.xml", summary: "One entry per signed week." }] } };
+  });
+  assert.equal(seen.url, "/feeds");
+  assert.match(feeds.stdout, /The week's doors +https:\/\/scvd\.store\/feeds\/brief\.xml/);
+  assert.match(feeds.stdout, /One entry per signed week/);
+});
+
 test("reproduce posts the URL and the week to the look and branches on the class", async () => {
   let seen;
   const result = await run(["reproduce", "https://door.example/pay", "--since", "2026-W34"], (request) => {
@@ -348,19 +473,15 @@ test("cite prints the store's own cite box for the last probed row, or builds th
       { week: "2026-W34", sequence: 1, taken_at: "2026-08-19T17:00:00.000Z", digest: "a".repeat(64), entry_url: "https://scvd.store/corpus/1.json", probed: true, verdict: "ready", failed: [] },
       { week: "2026-W35", sequence: 2, taken_at: "2026-08-26T17:00:00.000Z", digest: "b".repeat(64), entry_url: "https://scvd.store/corpus/2.json", probed: true, verdict: "ready", failed: [] },
     ],
-    cite: {
-      latest_probed_row: {
-        text: "scvd.store corpus, door.example, week 2026-W35, snapshot 2 taken 2026-08-26T17:00:00.000Z, sha256 " + "b".repeat(64) + ". https://scvd.store/corpus/2.json",
-        markdown: "[scvd.store corpus, door.example, week 2026-W35, snapshot 2](https://scvd.store/corpus/2.json) — sha256 `" + "b".repeat(64) + "`",
-        json: { cites: "https://scvd.store/corpus/2.json", host: "door.example", week: "2026-W35", sequence: 2, observed_at: "2026-08-26T17:00:00.000Z", digest: "b".repeat(64), rows: "https://scvd.store/corpus/host/door.example.json", index: "https://scvd.store/corpus.json", license: "CC-BY-4.0", how: "https://scvd.store/scorers" },
-      },
-    },
+    cite: "scvd.store, host history door.example, observed 2026-08-26T17:00:00.000Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/corpus/host/door.example.json; verify at https://scvd.store/corpus/2.json.",
+    cite_json: { cites: "https://scvd.store/corpus/2.json", host: "door.example", week: "2026-W35", sequence: 2, observed_at: "2026-08-26T17:00:00.000Z", digest: "b".repeat(64), rows: "https://scvd.store/corpus/host/door.example.json", index: "https://scvd.store/corpus.json", license: "CC-BY-4.0", how: "https://scvd.store/scorers" },
   };
   const latest = await run(["cite", "door.example"], (request) => {
     assert.equal(request.url, "/corpus/host/door.example.json");
     return { json: history };
   });
   assert.equal(latest.code, 0);
+  assert.match(latest.stdout, /host history door.example/);
   assert.match(latest.stdout, /week 2026-W35, snapshot 2/);
   assert.match(latest.stdout, /"cites": "https:\/\/scvd.store\/corpus\/2.json"/);
   const named = await run(["cite", "door.example", "--week", "2026-W34", "--json"], () => ({ json: history }));
@@ -369,7 +490,7 @@ test("cite prints the store's own cite box for the last probed row, or builds th
   assert.equal(shape.cites, "https://scvd.store/corpus/1.json");
   assert.equal(shape.digest, "a".repeat(64));
   assert.equal(shape.license, "CC-BY-4.0");
-  assert.deepEqual(Object.keys(shape).sort(), Object.keys(history.cite.latest_probed_row.json).sort());
+  assert.deepEqual(Object.keys(shape).sort(), Object.keys(history.cite_json).sort());
 });
 
 test("corpus --since asks for the diff against that week; host prints the rows", async () => {
@@ -383,4 +504,11 @@ test("corpus --since asks for the diff against that week; host prints the rows",
   }));
   assert.match(host.stdout, /2026-W34\s+ready/);
   assert.match(host.stdout, /gap: listed_not_walked/);
+});
+
+test("host prints the store's cite line when the row carries one", async () => {
+  const host = await run(["host", "door.example"], () => ({
+    json: { rounds_probed: 1, rounds_since_first_sighting: 1, rounds_gapped: 0, tier: { line: "observed — 1 of 1" }, timeline: [], cite: "scvd.store, host history door.example, observed t; ed25519-signed, key at k; bytes at u." },
+  }));
+  assert.match(host.stdout, /cite: scvd.store, host history door.example/);
 });

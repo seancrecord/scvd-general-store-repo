@@ -37,6 +37,7 @@ x402 client and your wallet; these examples say whether to reach it.
 | `claude-code/SKILL.md`, `claude-code/x402-before-you-pay.mdc` | A Claude Code skill and the same rule for Cursor. |
 | `copilot/copilot-instructions.md` | Repository instructions for GitHub Copilot. |
 | `x402-preflight-on-deploy.yml` | The preflight as a CI step after every deploy (older; see the README). |
+| `corpus-recompute.ipynb` | A notebook that fetches the signed corpus, recomputes every digest and the chain, checks the signatures, and counts doors per week with their denominators. Runnable top to bottom. |
 
 ## Run one
 

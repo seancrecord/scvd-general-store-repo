@@ -45,6 +45,9 @@ describe("the vocabulary is stable enough to cite", () => {
        * an opinion with a name.
        */
       expect(entry.falsified_by, `${entry.id} cannot be falsified`).toBeTruthy();
+      // v4 and v10: the remediation, both halves, on every class.
+      expect(entry.repair_hint, `${entry.id} tells the operator nothing`).toBeTruthy();
+      expect(entry.buyer_hint, `${entry.id} tells the buyer nothing`).toBeTruthy();
     }
   });
 
