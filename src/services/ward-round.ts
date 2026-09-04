@@ -5,7 +5,12 @@ import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
-import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
+import {
+  readAgenticMarket,
+  readFuchssProviders,
+  readX402List,
+  UNREAD_DIRECTORIES,
+} from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 
@@ -1126,6 +1131,31 @@ async function sealRound(
 }
 
 /**
+ * THE WIDENED READ (2026-09-04). Three free directories, fetched
+ * together because they are independent of each other and of us: one
+ * slow source must not serialize behind another.
+ *
+ * EACH ONE'S FAILURE IS ITS OWN. `Promise.all` over readers that each
+ * already return null on any trouble means a dead directory lands as
+ * one null row in the census, never as a thrown round. The census
+ * carries hosts forward for a source that went dark, so a directory
+ * having a bad Sunday cannot write a mass extinction into a chain that
+ * does not rewrite.
+ */
+async function readWidenedSources(ownHost: string): Promise<{
+  fuchss: string[] | null;
+  x402List: string[] | null;
+  agenticMarket: string[] | null;
+}> {
+  const [fuchss, x402List, agenticMarket] = await Promise.all([
+    readFuchssProviders(ownHost),
+    readX402List(ownHost),
+    readAgenticMarket(ownHost),
+  ]);
+  return { fuchss, x402List, agenticMarket };
+}
+
+/**
  * ASSEMBLE FROM THE LONG WALK: the week's hourly batches already
  * knocked on every door the roster froze; this collects their
  * verdicts into a round, takes the census and the presence check
@@ -1142,7 +1172,7 @@ async function assembleWalkRound(
   const walked = walk.results.filter(
     (entry) => entry.verdict !== "not_probed",
   ).length;
-  const fuchssHosts = await readFuchssProviders(ownHost);
+  const widened = await readWidenedSources(ownHost);
   const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
     {
@@ -1154,7 +1184,9 @@ async function assembleWalkRound(
         : walk.roster.map((entry) => entry.host),
     },
     { source: "leaderboard", hosts: walk.leaderboard?.hosts ?? null },
-    { source: "fuchss", hosts: fuchssHosts },
+    { source: "fuchss", hosts: widened.fuchss },
+    { source: "x402_list", hosts: widened.x402List },
+    { source: "agentic_market", hosts: widened.agenticMarket },
     /*
      * Hosts that declared a door for themselves (the sweep). A host
      * here is one whose own file the census could read and which
@@ -1356,8 +1388,19 @@ export async function runWardRound(env: Env): Promise<WardRound> {
    * denominator; the probe list is untouched. The directories that
    * cannot be read ride the round beside it, with reasons — see
    * UNREAD_DIRECTORIES for why each one is named instead of read.
+   *
+   * TWO MORE JOINED 2026-09-04, both population-only on the same
+   * terms. x402-list is free, unauthenticated and publishes per-row
+   * PROVENANCE, so its rows can be decomposed against the frames we
+   * already hold rather than poured in as a lump; it is also the only
+   * free relief available for x402scan, whose own enumeration is
+   * paid. agentic.market joined on the keeper's word — it lists this
+   * store, so a mirror we are inside of was a strange thing to be
+   * measuring the ecosystem without. Whether either reader actually
+   * WORKS is not asserted here and never will be: that is the source
+   * register's question, derived from what the rounds got back.
    */
-  const fuchssHosts = await readFuchssProviders(ownHost);
+  const widened = await readWidenedSources(ownHost);
   const sources: SourceResult[] = [
     {
       source: "discovery",
@@ -1367,7 +1410,9 @@ export async function runWardRound(env: Env): Promise<WardRound> {
       source: "leaderboard",
       hosts: leaderboard ? [...leaderboard.byHost.keys()] : null,
     },
-    { source: "fuchss", hosts: fuchssHosts },
+    { source: "fuchss", hosts: widened.fuchss },
+    { source: "x402_list", hosts: widened.x402List },
+    { source: "agentic_market", hosts: widened.agenticMarket },
   ];
   // The probe results are the expensive part of this round; a census
   // that cannot write must not take them down with it.

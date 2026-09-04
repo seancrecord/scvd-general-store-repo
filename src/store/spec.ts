@@ -203,16 +203,6 @@ export const SKILL_VERSION = "3.15.0";
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
 
-/**
- * The certificate id in the EXAMPLE PURCHASE OUTPUT this store
- * publishes into bazaar discovery (lib/bazaar-discovery.ts). It names
- * no real purchase — its signature is the literal string
- * "<128 hex chars, ed25519>" — but it is a well-formed verify URL, and
- * every directory that mirrors our listing shows it. On 2026-09-04 two
- * of them, x402-bazaar and x402scan, were read as CITING this store
- * because of it. They were showing our own example back to us.
- */
-export const BAZAAR_EXAMPLE_ARTIFACT_ID = "cert_k2m9v4xwqp";
 
 /**
  * S2: the identity policy, one line, published wherever the key is.

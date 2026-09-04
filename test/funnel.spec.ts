@@ -77,6 +77,162 @@ describe("the two opposite silences", () => {
     expect(row.verdict).toContain("fault:");
   });
 
+  /**
+   * ONE WALL OR A SCATTER, 2026-09-04. Both live rows below were on
+   * the same page and the verdict said the same thing about them:
+   * small_blessing, 8 refusals, 7 of them one code — a brick with one
+   * fix. settlement_attestation, 5 refusals, 4 distinct codes, the
+   * largest ×2 — four problems, and the top row named a transport
+   * failure while three buyer-side shape errors went unmentioned.
+   */
+  it("calls a concentrated pile ONE WALL and stands behind the one fix", async () => {
+    for (let i = 0; i < 20; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    }
+    for (let i = 0; i < 7; i += 1) {
+      await recordPaymentDecline(
+        testEnv,
+        "/api/buy/small_blessing",
+        "local:payload_not_an_object",
+        organic,
+      );
+    }
+    await recordPaymentDecline(
+      testEnv,
+      "/api/buy/small_blessing",
+      "verify_error",
+      organic,
+    );
+    const report = await auditFunnel(testEnv);
+    const row = report.items.find((r) => r.item === "small_blessing")!;
+    expect(row.declines_organic).toBe(8);
+    expect(row.verdict).toContain("ONE WALL");
+    expect(row.verdict).toContain("the pitch");
+    expect(row.verdict).not.toContain("NO SINGLE WALL");
+  });
+
+  it("refuses to call a scatter a wall, and lists every reason it found", async () => {
+    for (let i = 0; i < 20; i += 1) {
+      await recordChallengeIssued(
+        testEnv,
+        "/api/buy/settlement_attestation",
+        organic,
+      );
+    }
+    const reasons = [
+      "verify_error",
+      "verify_error",
+      "local:preflight:payload.authorization.nonce",
+      "local:preflight:payload.signature",
+      "local:payload_missing_accepted",
+    ];
+    for (const reason of reasons) {
+      await recordPaymentDecline(
+        testEnv,
+        "/api/buy/settlement_attestation",
+        reason,
+        organic,
+      );
+    }
+    const report = await auditFunnel(testEnv);
+    const row = report.items.find(
+      (r) => r.item === "settlement_attestation",
+    )!;
+    expect(row.declines_organic).toBe(5);
+    expect(row.verdict).toContain("NO SINGLE WALL");
+    // The claim that one fix clears it is exactly what must not appear.
+    expect(row.verdict).not.toContain("one fix clears most of it");
+    // Every reason, not just the top one — the three that used to vanish.
+    for (const reason of new Set(reasons)) {
+      expect(row.verdict, reason).toContain(reason);
+    }
+  });
+
+  it("names the asks that never presented a signature, not just the refusals", async () => {
+    for (let i = 0; i < 20; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/standing_watch", organic);
+    }
+    await recordPaymentDecline(
+      testEnv,
+      "/api/buy/standing_watch",
+      "settle:insufficient_funds",
+      organic,
+    );
+    const report = await auditFunnel(testEnv);
+    const row = report.items.find((r) => r.item === "standing_watch")!;
+    // 20 asked, 1 opened a wallet: the refusal is the smaller half.
+    expect(row.verdict).toContain("19 of 20");
+    expect(row.verdict).toContain("never presented a signature");
+  });
+
+  it("states whose problem ALL of them were, not only the top row's", async () => {
+    for (let i = 0; i < 10; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/launch_check", organic);
+    }
+    for (const reason of [
+      "verify_error",
+      "local:preflight:payload.authorization.nonce",
+      "local:preflight:payload.signature",
+    ]) {
+      await recordPaymentDecline(
+        testEnv,
+        "/api/buy/launch_check",
+        reason,
+        organic,
+      );
+    }
+    const report = await auditFunnel(testEnv);
+    const row = report.items.find((r) => r.item === "launch_check")!;
+    // Two preflight refusals are the buyer's; the verify_error is not
+    // classifiable from here. Both counts ride the verdict.
+    expect(row.verdict).toContain("Fault mix:");
+    expect(row.verdict).toContain("2 buyer");
+    expect(row.verdict).toContain("1 unknown");
+  });
+
+  /**
+   * THE LOCKED DOOR (2026-09-04). settlement_attestation needs
+   * ?tx_hash=; a scanner arriving without one could not have bought at
+   * any price. The verdict used to fold those into "window-shopping".
+   */
+  it("separates the asks that could not have bought from the ones that walked", async () => {
+    for (let i = 0; i < 6; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+        ...organic,
+        missingRequired: ["tx_hash"],
+      });
+    }
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.asks_organic).toBe(7);
+    expect(row.asks_locked).toBe(6);
+    expect(row.locked_inputs).toEqual({ tx_hash: 6 });
+    expect(row.verdict).toContain("LOCKED DOOR: 6 of the 7 asks");
+    expect(row.verdict).toContain("could not have bought at any price");
+    // And the one who could is the one to read the silence against.
+    expect(row.verdict).toContain("against the 1 who could have");
+  });
+
+  it("says nothing about locks on a row with none", async () => {
+    for (let i = 0; i < 5; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    }
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "small_blessing")!;
+    expect(row.asks_locked).toBe(0);
+    expect(row.verdict).not.toContain("LOCKED DOOR");
+  });
+
+  it("carries the locked clause on a REAL INTENT row too", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+      ...organic,
+      missingRequired: ["tx_hash"],
+    });
+    await recordPaymentDecline(testEnv, "/api/buy/settlement_attestation", "verify_error:timeout", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.verdict).toContain("REAL INTENT HIT A WALL");
+    expect(row.verdict).toContain("LOCKED DOOR");
+  });
+
   it("calls settles-with-no-declines converting, which is the quiet good news", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     await recordSettlement(testEnv, "/api/buy/small_blessing", {

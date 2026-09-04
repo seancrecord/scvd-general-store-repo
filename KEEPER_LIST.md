@@ -166,8 +166,9 @@ build, it is on the roadmap.
   is inked (2026-09-03, the ink sheet). Skill bundle 3.14.0.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
-- Circle Agent Marketplace: submitted 2026-09-01.
-  Waiting. Do not chase.
+- Circle Agent Marketplace: submitted 2026-09-01, listed
+  2026-09-04 at partners.circle.com/partner/scvdstore. On the
+  trust record, the storefront sameAs and the README.
 
 ---
 
@@ -388,19 +389,26 @@ Do not relitigate without you.
   Two of the answers are dialect fields (`timestamp_unit`; whether
   the provider key is a separate secret) and both fail closed if
   guessed wrong. Nothing goes live until they answer.
-- **Hands** — `wrangler secret put TRADE_SECRET_HAL` and
-  `TRADE_PROVIDER_KEY_HAL`. Hal's side will not issue a credential
-  while the door answers 503, and the door answers 503
-  `account_not_provisioned` until a secret is set: one side moves
-  first, and it can be you — mint both values (`openssl rand -hex
-  32`, twice), put them, hand them to Hal's human over a private
-  channel, never through a chat with an agent. Their check desk
-  works before that (every check but the HMAC), and the contract
-  prints `provisioned: false` on the row until you do. Verify with
-  one signed call from their side and read `/api/trade/ledger`.
+- **Hands (Hal answered 2026-09-04; nothing is minted here)** —
+  create ONE PAUSED LISTING PER ITEM at
+  `https://sell.halmarket.dev/services/new`: endpoint URL = the
+  item's `door` on the hal row of `/api/trade/contract` (nine of
+  them), price = a fixed integer in sats at or above that item's
+  `trade_price_usd` at the day's rate, rounded up. Hal shows a
+  provider key and a signing secret; put them with `wrangler secret
+  put TRADE_PROVIDER_KEY_HAL` and `TRADE_SECRET_HAL`, never through
+  a chat with an agent. If Hal issues a pair PER LISTING rather than
+  per account, tell me before putting anything: secrets keyed per
+  item is a small change on this side. Confirm to Hal only the
+  listing id and `is_paused: true`. The contract row flips to
+  `provisioned: true` on its own. No paid canary without your word
+  and theirs; the fixture on the row is the no-spend check.
 - **RULE** — flip `hal` from `test` to `live` in
-  `src/store/trade-counter.ts` when payout rail, cadence and
-  statement API are agreed. Receiving sats is a new treasury rail:
+  `src/store/trade-counter.ts` when the listings resume. Hal pays
+  sats over Lightning (OpenNode, mainnet) at 95% of each listing's
+  fixed sats price; there is no bilateral statement API, so the
+  weekly reconciliation is their seller dashboard against
+  `/api/trade/hal/statement`. Receiving sats is a new treasury rail:
   which wallet, whose custody, is yours to decide before the flip.
 - **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
   opening figure. Yours to move.
@@ -720,7 +728,6 @@ Do not relitigate without you.
 
 ## WAITING
 
-- Circle Agent Marketplace review. No SLA. Do not chase.
 
 ---
 

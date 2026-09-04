@@ -2,7 +2,6 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
-import { BAZAAR_EXAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 
 /**
@@ -540,18 +539,49 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   return example;
 }
 
+/**
+ * AN EXAMPLE URL THAT ANSWERS NOTHING IS A BROKEN PROMISE, AND THIS
+ * ONE WAS PUBLISHED EVERYWHERE (2026-09-04).
+ *
+ * These examples ride the x402 v2 bazaar discovery extension on every
+ * 402 the store issues, the facilitator catalogs them, and directories
+ * ingest the catalog. So `verify_url:
+ * "https://scvd.store/api/verify/cert_k2m9v4xwqp"` — a placeholder id
+ * that was never minted — went out on every challenge, got picked up
+ * by x402-list.com as this store's citation, and handed every prospect
+ * who clicked it `{"valid":false,"error":"No certificate by that name
+ * on the wall. Check the spelling on your receipt."}`.
+ *
+ * For a store whose entire product is verifiable evidence there is no
+ * worse link to publish, and the 404 blamed the reader for the
+ * store's own example.
+ *
+ * The rule this block now keeps: an example may carry a fully-
+ * qualified scvd.store URL only if that URL actually answers. Ids
+ * minted per purchase are TEMPLATED instead — the same
+ * angle-bracket convention `signature` uses two lines down and every
+ * input example in this file already uses. `badge_url` stays literal
+ * because patron 41's badge is real and serves.
+ *
+ * A prospect wanting a live artifact to check is not left with
+ * nothing: every 402 carries `sample_verify_url` in
+ * `check_these_before_you_pay`, pointing at SAMPLE_ARTIFACT_ID, which
+ * health.ts pages the keeper about if it ever stops resolving or
+ * verifying. That is the link a directory should be quoting, and it
+ * is the one that was always true.
+ */
 function buyOutputExample(item: MenuItem): Record<string, unknown> {
   const patronBlock = {
     patron_number: 41,
     badge_url: "https://scvd.store/badges/41.svg",
     certificate: {
-      cert_id: BAZAAR_EXAMPLE_ARTIFACT_ID,
+      cert_id: "<cert_ + 12 chars, minted when this purchase settles>",
       item: item.id,
       patron_number: 41,
       date: "2026-07-22T15:04:05.000Z",
     },
     signature: "<128 hex chars, ed25519>",
-    verify_url: `https://scvd.store/api/verify/${BAZAAR_EXAMPLE_ARTIFACT_ID}`,
+    verify_url: "https://scvd.store/api/verify/<your cert_id>",
   };
   if (item.fulfillment === "instant") {
     return {
@@ -567,10 +597,10 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
   return {
     message:
       "Order's on the keeper's bench. A human does this part, give him the week.",
-    order_id: "ord_h7n3k9wmxq",
+    order_id: "<ord_ + 12 chars, minted when this purchase settles>",
     status: "queued",
     sla_hours: item.sla_hours ?? 168,
-    order_url: "https://scvd.store/api/order/ord_h7n3k9wmxq",
+    order_url: "https://scvd.store/api/order/<your order_id>",
     paid_usdc: item.price_usdc,
     tip_usdc: 0,
     ...patronBlock,
@@ -587,6 +617,31 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * challenge has to say what to send. Learning the requirement by
  * being refused is worse manners than we keep.
  */
+/**
+ * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
+ *
+ * The funnel read settlement_attestation as 77 asks, 5 wallets, 0
+ * sales, and called the 72 who never signed "window-shopping". But
+ * that door needs ?tx_hash= — a transaction the buyer already owns —
+ * and a scanner arriving without one is not a price-check that walked;
+ * it is a visitor at a locked door. Nothing on the ask row said which,
+ * so the 77 was uninterpretable by construction.
+ *
+ * One reading, three doors: the HTTP gate stamps it on the ask row,
+ * the MCP door does the same from its arguments, and the pre-gate
+ * refusal uses it to name the input a SIGNED request forgot.
+ */
+export function missingRequiredInputs(
+  item: MenuItem,
+  present: Record<string, unknown>,
+): string[] {
+  const required = buyInputSchema(item).required ?? [];
+  return required.filter((name) => {
+    const value = present[name];
+    return value === undefined || value === null || String(value).trim() === "";
+  });
+}
+
 export function requiredParamsNote(item: MenuItem): {
   required_params?: string[];
   required_params_note?: string;

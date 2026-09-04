@@ -12,6 +12,18 @@ import {
   OPERATORS_PROPOSITION,
 } from "@/store/copy/operators";
 import {
+  INSTRUMENTS_OPENED,
+  LEDGER_FOR_MONEY,
+  LEDGER_FREE_FIRST,
+  LEDGER_PROPOSITION,
+  MCP_WARD_FOR_MONEY,
+  MCP_WARD_FREE_FIRST,
+  MCP_WARD_PROPOSITION,
+  SOURCES_FOR_MONEY,
+  SOURCES_FREE_FIRST,
+  SOURCES_PROPOSITION,
+} from "@/store/copy/instruments";
+import {
   TRADE_COUNTER_NAME,
   TRADE_COUNTER_OPENED,
   TRADE_FOR_MONEY,
@@ -109,6 +121,53 @@ export const FEATURES: readonly Feature[] = [
     doors: [],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,
+  },
+  /*
+   * THE THREE INSTRUMENT ROOMS (2026-09-04). None of them sells
+   * anything, and rule 60 covers them anyway — the rule is about a
+   * reader being able to find a thing and understand what it is for,
+   * which is exactly as true of a room that reports our own limits as
+   * of a room that takes money. Each names the pages a reader of THAT
+   * subject actually opens first.
+   */
+  {
+    id: "source_register",
+    name: "Where our numbers come from",
+    room: "/sources",
+    proposition: SOURCES_PROPOSITION,
+    for_money: SOURCES_FOR_MONEY,
+    free_first: SOURCES_FREE_FIRST,
+    doors: ["/sources.json"],
+    /* Coverage says where our looking stops and corrections says what
+     * we got wrong; a reader on either page is owed this one. */
+    named_on: ["/coverage", "/corrections"],
+    opened: INSTRUMENTS_OPENED,
+  },
+  {
+    id: "week_ledger",
+    name: "The Week's Ledger",
+    room: "/ledger",
+    proposition: LEDGER_PROPOSITION,
+    for_money: LEDGER_FOR_MONEY,
+    free_first: LEDGER_FREE_FIRST,
+    doors: ["/ledger", "/ledger/{week}.json"],
+    /* The corpus is where its numbers come from and /doors is the
+     * list it points at; both are where a reader meets this need. */
+    named_on: ["/corpus", "/doors"],
+    opened: INSTRUMENTS_OPENED,
+  },
+  {
+    id: "mcp_ward",
+    name: "The MCP ward",
+    room: "/mcp-ward",
+    proposition: MCP_WARD_PROPOSITION,
+    for_money: MCP_WARD_FOR_MONEY,
+    free_first: MCP_WARD_FREE_FIRST,
+    doors: ["/mcp-ward.json"],
+    /* Named where somebody already reading about our instruments or
+     * about MCP is standing. */
+    named_on: ["/coverage", "/sources"],
+    opened: INSTRUMENTS_OPENED,
   },
   {
     /**

@@ -27,10 +27,15 @@ import type { EventSignals } from "@/lib/metrics";
 import {
   bookedReason,
   decodePaymentHeader,
+  isNeverJudged,
+  JUDGED_NOTE,
+  neverJudgedBlock,
   payerFromPaymentHeader,
   payloadProblemsFor,
   preflightBlockers,
   refusalBeforeVerify,
+  RESEND_AFTER_SECONDS,
+  signedValidBefore,
 } from "@/lib/decline-diagnosis";
 import {
   idempotencyScope,
@@ -73,6 +78,7 @@ import {
 } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
+import { missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import {
   GUARANTEE_BLOCK_TEXT,
@@ -298,6 +304,7 @@ async function enrich402Body(
   payloadProblems: PayloadFieldProblem[] = [],
   evmAccept?: Record<string, unknown> | null,
   query: Record<string, string | undefined> = {},
+  signedUntil?: number,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -322,7 +329,16 @@ async function enrich402Body(
           payment_declined: {
             reason: decline.reason,
             ...(decline.message ? { message: decline.message } : {}),
-            note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+            /*
+             * WHOSE PROBLEM, IN A FIELD RATHER THAN IN PROSE. An agent
+             * should not have to parse English to learn that the thing
+             * it did was fine. `upstream` is the only value that means
+             * "do not touch your payload"; everything else keeps the
+             * old wording and the old advice.
+             */
+            ...(isNeverJudged(decline)
+              ? neverJudgedBlock(signedUntil)
+              : { note: JUDGED_NOTE }),
             /*
              * THE FIRST SUSPECT, NAMED (2026-09-01). A verify-time revert
              * arrives as invalid_payload with "execution reverted" and no
@@ -365,12 +381,23 @@ async function enrich402Body(
            * to read as an instruction. A weak model acts on "do this
            * now"; it does not reliably act on "this facility exists."
            */
-          before_you_retry:
-            "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. It cannot refuse your purchase and costs nothing.",
-          // A signature that did not clear is the exact moment the
-          // domain trap costs somebody a night, so the whole block
-          // rides in the response rather than a link to it.
-          hand_rolling: HAND_ROLLING,
+          before_you_retry: isNeverJudged(decline)
+            ? `You are about to retry, and on this path that is exactly right: resend the same signed payload after ${RESEND_AFTER_SECONDS} seconds. Nothing settled, so there is nothing to double-charge — but sending idempotency.suggested_key as the Idempotency-Key header costs nothing and closes the one case this store cannot see from here.`
+            : "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. It cannot refuse your purchase and costs nothing.",
+          /*
+           * A signature that did not clear is the exact moment the
+           * domain trap costs somebody a night, so the whole block
+           * rides in the response rather than a link to it.
+           *
+           * NOT when the payload was never judged, though. Handing a
+           * correct signer a signing guide is an accusation, and the
+           * agent that acts on it re-signs a payload that was already
+           * right. The retry block above is the entire instruction on
+           * that path.
+           */
+          ...(isNeverJudged(decline)
+            ? {}
+            : { hand_rolling: HAND_ROLLING }),
         }
       : {
           // Weightless on the common path: the values are already in
@@ -526,8 +553,18 @@ async function recordReferralFor(
 }
 
 /** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
-function gateSignals(c: Context<HonoEnv>): EventSignals {
+export function gateSignals(c: Context<HonoEnv>): EventSignals {
   const signals: EventSignals = {};
+  // Which required inputs this request lacks, for the ask row: a 402
+  // to a request that could not have bought is a locked door, not a
+  // price-check. Computed here so every event this gate books gets it.
+  const item = getMenuItem(itemKeyFromPath(c.req.path));
+  if (item) {
+    const missing = missingRequiredInputs(item, c.req.query());
+    if (missing.length > 0) {
+      signals.missingRequired = missing;
+    }
+  }
   const userAgent = c.req.header("User-Agent");
   if (userAgent) {
     signals.userAgent = userAgent;
@@ -995,12 +1032,26 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           payloadProblems,
           evmAcceptFrom(result.response.headers),
           c.req.query(),
+          signedValidBefore(paymentHeader),
         );
+        /*
+         * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store
+         * sells on the shelf (zodiac-season-one/rate-limit) and did
+         * not practise at its own till. When the payload was never
+         * judged, the buyer's next move is to come back, and every
+         * generic HTTP client already knows how to read this header.
+         */
+        const retryAfter: Record<string, string> = isNeverJudged(decline)
+          ? { "Retry-After": String(RESEND_AFTER_SECONDS) }
+          : {};
         return respondWithInstructions(c, {
           ...result.response,
-          headers: offers
-            ? withOfferHeader(result.response.headers, offers)
-            : result.response.headers,
+          headers: {
+            ...(offers
+              ? withOfferHeader(result.response.headers, offers)
+              : result.response.headers),
+            ...retryAfter,
+          },
           body:
             offers && isRecord(enriched)
               ? {

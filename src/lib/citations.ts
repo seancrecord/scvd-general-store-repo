@@ -1,4 +1,4 @@
-import { BAZAAR_EXAMPLE_ARTIFACT_ID, SAMPLE_ARTIFACT_ID } from "@/store/spec";
+import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 
 /**
  * THE CITATION WATCH, as pure functions (2026-09-04, in the Worker).
@@ -62,7 +62,30 @@ export interface CitationJudgement {
  * (listing fact 4 on /scorers: not this store, a mirror of its text,
  * or a page it operates). Derived from the spec, never retyped.
  */
-export const SELF_PUBLISHED_IDS: readonly string[] = [SAMPLE_ARTIFACT_ID, BAZAAR_EXAMPLE_ARTIFACT_ID];
+/**
+ * Ids we published as examples and have since RETIRED. They belong on
+ * the list above for one reason: a directory's copy of our listing
+ * does not refresh when ours does.
+ *
+ * `cert_k2m9v4xwqp` was the placeholder in buyOutputExample until
+ * 2026-09-04. It rode the bazaar discovery extension on every 402,
+ * the facilitator catalogued it, and x402-list.com renders it 62
+ * times on its page for this store right now — against zero
+ * occurrences of the live specimen. Discounting only the CURRENT
+ * specimen therefore leaves the false positive alive on exactly the
+ * page that produced it, for as long as their cache lasts, which is
+ * not a length we control.
+ *
+ * Nothing is lost by discounting a retired one: it was never minted,
+ * so a page "citing" it is citing nothing. There is no artifact
+ * behind it for anybody to have consumed.
+ */
+export const RETIRED_EXAMPLE_IDS: readonly string[] = ["cert_k2m9v4xwqp"];
+
+export const SELF_PUBLISHED_IDS: readonly string[] = [
+  SAMPLE_ARTIFACT_ID,
+  ...RETIRED_EXAMPLE_IDS,
+];
 
 /**
  * Every URL shape that counts as citing a ROW of the corpus — a verify

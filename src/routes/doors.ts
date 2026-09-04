@@ -348,6 +348,11 @@ function landingHtml(base: string, index: DoorIndex): string {
       <h2>How safe this is, and what we hold ourselves to</h2>
       <p class="menu-desc">${escapeHtml(SECURITY.what_this_surface_reads)} ${escapeHtml(SECURITY.what_it_stores_about_you)}</p>
       <p class="menu-desc">${escapeHtml(SECURITY.what_the_data_is)}</p>
+      <p class="menu-desc">This list is one week wide and alphabetical. The
+      same week read as a whole &mdash; what we reached, what moved, which
+      defects by name, and what we could not see &mdash; is
+      <a href="/ledger">The Week&rsquo;s Ledger</a>, one page per signed
+      week.</p>
       <p class="menu-desc">${escapeHtml(SECURITY.integrity)}</p>
       <p class="menu-desc">${escapeHtml(SECURITY.standards)} Report anything at <a href="/.well-known/security.txt"><code>/.well-known/security.txt</code></a> or the <a href="/corrections">corrections desk</a>.</p>
     </section>

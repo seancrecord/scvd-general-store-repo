@@ -109,9 +109,54 @@ const UNDECODED_HEADER_READINGS: ReadonlyArray<readonly [string, string]> = [
   ],
   [
     "local:payload_not_an_object",
-    "it was base64 of a JSON value that is not an object — a string (an envelope encoded twice), an array, or a number.",
+    "it was base64 of a JSON value that is not an object — a string (an envelope encoded twice), an array, or a number. One caveat the books cannot state for themselves: rows booked BEFORE 2026-09-04 carry this code as the catch-all for every undecodable header, because the codes that name the cause are newer than the rows. For one of those the cause is not known, and the curl wrap (local:payload_truncated_envelope) is the likeliest of them.",
   ],
 ];
+
+/**
+ * OUR OWN REFUSAL, READ AS SOMEBODY ELSE'S (2026-09-04, the
+ * settlement_attestation funnel: two of five refusals were
+ * `local:preflight:payload.authorization.nonce` and
+ * `local:preflight:payload.signature`, and the desk read both as
+ * "the x402 SDK refused this ... fault: unknown").
+ *
+ * Three things wrong with that, all the same mistake the header
+ * codes had made an hour earlier. It was not the SDK: the store
+ * refused, on its own authority, on purpose, in preflightRefusalBody
+ * — which writes "caught here on purpose" into the very body the
+ * buyer got. The fault was not unknown: a blocking preflight problem
+ * is a field that is wrong against the published v2 schema, full
+ * stop. And the field is IN THE CODE, so a reading that says
+ * "unknown" is throwing away a field name it is holding.
+ *
+ * Worse than a bad page: readReason also writes the phone alert, so
+ * every one of these paged the keeper as "UNCLEAR, needs a read"
+ * when the read was already done and the answer was "theirs".
+ *
+ * The clause per field is a READING of the rule, not the rule — the
+ * rule and what actually arrived rode out on the 402 in
+ * payload_problems. A test pins every field describeExactEvmPayload
+ * can block on to a clause here, so a new blocking check cannot land
+ * without one.
+ */
+const PREFLIGHT_FIELD_READINGS: Readonly<Record<string, string>> = {
+  "payload.signature":
+    "the signature is not a hex string beginning 0x. (Length alone is never refused here: a smart-account signature under ERC-1271 is not 65 bytes, and that one is reported and let through.)",
+  "payload.authorization":
+    "the authorization object was absent or was not an object — from, to, value, validAfter, validBefore and nonce all live inside it.",
+  "payload.authorization.from":
+    "the from address is not a 20-byte hex address (0x and exactly 40 hex characters).",
+  "payload.authorization.to":
+    "the to address is either not a 20-byte hex address (0x and exactly 40 hex characters) or is not the payTo of the requirement they accepted. Signing to any other address pays somebody else, which is why this one is refused here rather than discovered on-chain.",
+  "payload.authorization.value":
+    "the value is either not a DECIMAL STRING of digits or does not equal the amount of the requirement they accepted. The usual cause is JSON.stringify of a JavaScript number — 5000 arriving where the schema wants \"5000\".",
+  "payload.authorization.validafter":
+    "validAfter is not a DECIMAL STRING of digits — a number or a hex string, most likely, where the schema wants the digits quoted.",
+  "payload.authorization.validbefore":
+    "validBefore is not a DECIMAL STRING of digits — a number or a hex string, most likely, where the schema wants the digits quoted.",
+  "payload.authorization.nonce":
+    "the nonce is not a 32-byte hex string (0x and exactly 64 hex characters, random per authorization). A 16-byte nonce, a decimal counter and a UUID all land here.",
+};
 
 export function readReason(raw: string): {
   fault: DeclineFault;
@@ -186,6 +231,45 @@ export function readReason(raw: string): {
         "The payment envelope was the wrong SHAPE — a field the protocol requires was absent, so there was nothing to compare and the signature was never examined. Not a signing problem and not a funds problem. The code names the field; the 402 the buyer received lists what did arrive (the books keep the code, not that message).",
     };
   }
+  if (reason.startsWith("local:preflight:")) {
+    // The field keeps the case it was minted with; the lookup does not.
+    const field = raw.slice("local:preflight:".length);
+    const clause = PREFLIGHT_FIELD_READINGS[field.toLowerCase()];
+    return {
+      fault: "buyer",
+      reading: `WE refused this, before the facilitator was ever called: ${
+        clause ??
+        `\`${field}\` is not in the one legal form that field has.`
+      } Nothing was spent and no money moved — the round trip was not worth making for a field that is wrong against the published v2 schema. This is deliberate rather than strict: the facilitator's answer to a bad payload is a union-type error truncated at 200 characters that names no field at all, so we check what we can check and say which one. The 402 the buyer received carried the rule and what actually arrived, under payload_problems.`,
+    };
+  }
+  /**
+   * REFUSED AT THE DOOR FOR A MISSING INPUT (2026-09-04). These were
+   * 400s before the payment gate and booked nothing, so a buyer who
+   * signed and forgot ?tx_hash= vanished from the funnel as somebody
+   * who never tried. They tried.
+   */
+  if (reason.startsWith("local:input_missing:")) {
+    const param = raw.slice("local:input_missing:".length);
+    return {
+      fault: "buyer",
+      reading: `A SIGNED request arrived without \`${param}\`, the input this door cannot work without, and was refused before the gate — no money moved. The buyer read the PAYMENT-REQUIRED header and signed off it without reading the input schema beside it; the 402 named the parameter in required_params. One client doing this is theirs. The same thing from DIFFERENT clients means the requirement is not discoverable from the header alone, and that would be ours to fix in the challenge, not theirs to fix in their client.`,
+    };
+  }
+  if (reason.startsWith("local:input_invalid:")) {
+    const param = raw.slice("local:input_invalid:".length);
+    return {
+      fault: "buyer",
+      reading: `A SIGNED request carried a \`${param}\` the door could not use — wrong shape, out of range, or refused by a rule the listing states — and was refused before the gate, no money moved. The 400 they received says which rule in plain words. Not a signing problem and not a funds problem; the input is the whole story.`,
+    };
+  }
+  if (reason === "local:refused_before_gate") {
+    return {
+      fault: "buyer",
+      reading:
+        "A SIGNED request was refused by a pre-gate check on an item that declares no required input, so the check was about something else — a closed shelf, a sold-out item, a rule the listing states — and no money moved. Read the item's own 400 for the rule; if the rule is one the 402 never mentioned, that is the fix.",
+    };
+  }
   if (reason === "local:sdk_threw") {
     return {
       fault: "buyer",
@@ -200,11 +284,46 @@ export function readReason(raw: string): {
         "The x402 SDK refused this before the facilitator saw it, and its own words are in the message beside this reading. No hook fires on that path, so this line exists to keep the reason from vanishing.",
     };
   }
+  /**
+   * WHICH WAY THE VERIFY CALL DIED (2026-09-04). The class is booked
+   * now (payments.ts classifyVerifyFailure), and these are not one
+   * incident with one reading — the 4xx is an emergency of ours and
+   * the 5xx is not ours at all. Bare `verify_error` below is the
+   * historical row, from before the classes existed.
+   */
+  if (reason === "verify_error:upstream_4xx") {
+    return {
+      fault: "ours",
+      reading:
+        "EMERGENCY, AND IT IS OURS. The facilitator ANSWERED the verify call and refused US, not the buyer — a 4xx on this endpoint is our API key, our account or our quota, and it never looked at the payload. The buyer did nothing wrong and neither did their wallet. This is the shape that kills every sale at every door simultaneously while each row looks like one unlucky buyer, so treat a single one as live: check the CDP credentials in the worker's secrets first, then the account's standing.",
+    };
+  }
+  if (reason === "verify_error:upstream_5xx") {
+    return {
+      fault: "facilitator",
+      reading:
+        "The facilitator answered the verify call with its own 5xx: it was up enough to reply and broken enough not to judge. Nothing to fix on either side — not the buyer's payload, not our credentials, not our egress. No money moved; what was lost is the sale. The same doctrine as a settle 5xx, on the read-only end of the pipe where a retry is free.",
+    };
+  }
+  if (reason === "verify_error:timeout") {
+    return {
+      fault: "unknown",
+      reading:
+        "Both verify attempts ran out the 10s leash — roughly 20 seconds of asking, twice, with nothing coming back. Their latency or our egress; from inside the worker the two are indistinguishable, which is why this stays UNCLEAR rather than guessing. A cluster is an outage window (the 2026-08-27 00:53 incident booked three in four minutes); a steady trickle of singles is our own egress lane and is worth a look at the worker's outbound path before anyone blames CDP.",
+    };
+  }
+  if (reason === "verify_error:transport") {
+    return {
+      fault: "unknown",
+      reading:
+        "The verify call never got an answer at all — no status, no body, the connection failed before the facilitator could judge anything (DNS, connect, or a reset mid-flight). Not a timeout: this one died faster than the leash. Our egress lane is the first suspect precisely because the far end never spoke; check that before the facilitator's status page.",
+    };
+  }
   if (reason === "verify_error") {
     return {
       fault: "unknown",
       reading:
-        "The verify CALL failed — timeout or transport between us and the facilitator, or its own 5xx — so the payload was never judged at all. Bare like this (no +payload suffix), our own preflight found nothing wrong with what the buyer sent: suspicion points at the pipe, not the payer. No money moved; what was lost is the sale. Since 2026-08-27 verify runs on a 10s leash with one fast retry, so a row here means BOTH attempts failed — a cluster of these is an outage window (the 2026-08-27 00:53 incident booked three in four minutes), a steady trickle of singles is worth checking our own egress lane.",
+        "The verify CALL failed — timeout or transport between us and the facilitator, or its own 5xx — so the payload was never judged at all. Bare like this (no +payload suffix), our own preflight found nothing wrong with what the buyer sent: suspicion points at the pipe, not the payer. No money moved; what was lost is the sale. Since 2026-08-27 verify runs on a 10s leash with one fast retry, so a row here means BOTH attempts failed — a cluster of these is an outage window (the 2026-08-27 00:53 incident booked three in four minutes), a steady trickle of singles is worth checking our own egress lane. A row carrying this BARE code was booked before 2026-09-04, when the class (timeout, transport, upstream_4xx, upstream_5xx) began riding the code — for one of these the way it died is not recoverable.",
     };
   }
   /**

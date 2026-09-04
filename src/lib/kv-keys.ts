@@ -67,6 +67,23 @@ export const KV_KEYS = {
   operatorStatement: (statementId: string): string => `ostmt:${statementId}`,
   operatorStatementPrefix: "ostmt:",
   wardRound: (week: string): string => `ward:${week}`,
+  /**
+   * The rounds' shared prefix, so the source register can walk the
+   * history the same way the corpus walks its own. Deliberately NOT
+   * matched by `ward_latest` / `ward_previous`, which are pointers
+   * rather than rounds and would be counted twice by a listing.
+   */
+  wardRoundPrefix: "ward:",
+  /**
+   * THE MCP WARD, kept in its own keys on purpose (2026-09-04). Its
+   * population is MCP servers, not x402 doors, and folding the two
+   * would silently change what `coverage_pct` and every corpus
+   * denominator mean. Two wards, two registers, no shared totals.
+   */
+  mcpWalkState: "mcp_walk_state",
+  mcpRegister: "mcp_register",
+  mcpPassPrefix: "mcp_pass:",
+  mcpPass: (week: string): string => `mcp_pass:${week}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
   /**
@@ -203,6 +220,15 @@ export const KV_KEYS = {
    * answered by memory and eyeballing.
    */
   alarmsLastRead: "alarms_last_read",
+  /**
+   * When the keeper last STOOD AT THE COUNTER while alarms were
+   * showing. Separate from alarmsLastRead on purpose: that one is the
+   * reconciliation trail's own watermark, and a glance at the counter
+   * is not a read of the trail — clearing one with the other would
+   * hide rows he never opened. This one only decides whether the
+   * counter's top line shouts.
+   */
+  alarmsSeenAtCounter: "alarms_seen_counter",
   /**
    * Failed /admin logins from ONE address. Per-address on purpose:
    * see the throttle in routes/admin.ts — a global counter would hand

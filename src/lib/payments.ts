@@ -975,6 +975,58 @@ function verifyDeliveredAVerdict(error: unknown): boolean {
   );
 }
 
+/**
+ * WHY VERIFY FAILED, KEPT (2026-09-04). `onVerifyFailure` has always
+ * held the error and passed its message to rememberDecline — which
+ * puts it in the 402 for the buyer and then drops it, because the
+ * books take one string and that string was the flat code
+ * `verify_error`. So the desk could say a verify call died and never
+ * which way, and the one question a keeper asks of these — is this my
+ * egress or their endpoint — had no answer short of the logs.
+ *
+ * The classes are the discriminators the verify lane already sorts on
+ * (see verifyDeliveredAVerdict), and they are not the same incident:
+ *
+ *   upstream_4xx  the facilitator ANSWERED and refused US. Our API
+ *                 key, our quota, our account — never the buyer's
+ *                 payload, which it did not judge. Every sale at
+ *                 every door dies on this one, so it books as OURS
+ *                 and pages accordingly.
+ *   upstream_5xx  it answered, and its own side was broken. Theirs.
+ *   timeout       both attempts ran out the 10s leash. Their latency
+ *                 or our egress; from here the two look identical.
+ *   transport     it never answered at all — DNS, connect, reset.
+ *
+ * The codes are sub-classed with `:` like every other family here
+ * (`local:preflight:<field>`, `local:payload_not_base64:raw_json`),
+ * so a reader who knows one knows all of them.
+ */
+export type VerifyFailureClass =
+  | "upstream_4xx"
+  | "upstream_5xx"
+  | "timeout"
+  | "transport";
+
+export function classifyVerifyFailure(error: unknown): VerifyFailureClass {
+  const status = (error as { statusCode?: unknown } | null)?.statusCode;
+  if (typeof status === "number") {
+    return status >= 500 ? "upstream_5xx" : "upstream_4xx";
+  }
+  // The library's timeout shape. Belt and braces on the message too:
+  // an AbortSignal.timeout rejection reaches here as a DOMException
+  // whose name is TimeoutError and which carries neither field.
+  const timeoutish =
+    typeof (error as { timeoutMs?: unknown } | null)?.timeoutMs === "number" ||
+    (error instanceof Error &&
+      /timeout|timed out|aborted/i.test(`${error.name} ${error.message}`));
+  return timeoutish ? "timeout" : "transport";
+}
+
+/** The books' code for a verify call that never produced a verdict. */
+export function verifyFailureReason(error: unknown): string {
+  return `verify_error:${classifyVerifyFailure(error)}`;
+}
+
 export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
   /** Same facilitator, same auth — shorter deadline, verify only. */
   private readonly verifyLane: HTTPFacilitatorClient;
@@ -1239,7 +1291,9 @@ export function getPaymentStack(env: Env): PaymentStack {
       rememberDecline(
         context.paymentPayload,
         context.transportContext,
-        "verify_error",
+        // Which way it died, not just that it did. The message still
+        // rides the 402 for the buyer; the class is what the books keep.
+        verifyFailureReason(context.error),
         context.error instanceof Error ? context.error.message : undefined,
       );
       return undefined;

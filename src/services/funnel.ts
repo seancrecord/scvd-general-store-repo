@@ -67,6 +67,16 @@ export interface ItemFunnel {
   /** 402s issued to non-house, non-infrastructure traffic. */
   asks_organic: number;
   /**
+   * Of those, the asks that COULD NOT have bought: the request lacked
+   * a required input (settlement_attestation with no tx_hash). A
+   * scanner at a locked door, not a price-check with intent — and on
+   * a door with a prerequisite, most of the silence. Rows booked
+   * before 2026-09-04 carry no such mark and count as unlocked.
+   */
+  asks_locked: number;
+  /** Which required input was absent, and how often. */
+  locked_inputs: Record<string, number>;
+  /**
    * Signed payments PRESENTED by outside buyers: settles + declines.
    * The line between window-shopping and blocked intent.
    */
@@ -87,19 +97,92 @@ export interface FunnelReport {
   what_this_cannot_see: string[];
 }
 
+/**
+ * THE LOCKED DOOR (2026-09-04). settlement_attestation: 77 asks, 5
+ * wallets, 0 sales, and the verdict called the 72 who never signed
+ * "window-shopping — the pitch, the price, or a required input
+ * reading as work". At $0.004 it was never the price. That door needs
+ * ?tx_hash=, a transaction the buyer already owns; a scanner arriving
+ * without one is not a shopper who walked, it is a visitor who could
+ * not buy. The ask rows now say which, and this says it back.
+ */
+function lockedClause(row: Omit<ItemFunnel, "verdict">): string {
+  if (row.asks_locked === 0) {
+    return "";
+  }
+  const inputs = Object.entries(row.locked_inputs)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, n]) => `${name} ×${n}`)
+    .join(", ");
+  return ` LOCKED DOOR: ${row.asks_locked} of the ${row.asks_organic} ask${row.asks_organic === 1 ? "" : "s"} arrived without a required input (${inputs}) and could not have bought at any price — a scanner meeting a prerequisite, not a shopper who walked. Read the rest of the silence against the ${row.asks_organic - row.asks_locked} who could have.`;
+}
+
 function verdictFor(row: Omit<ItemFunnel, "verdict">): string {
   if (row.settles_organic > 0 && row.declines_organic === 0) {
     return `Converting: ${row.settles_organic} organic settle${row.settles_organic === 1 ? "" : "s"} and no refused attempts on record.`;
   }
   if (row.declines_organic > 0) {
-    const top = Object.entries(row.decline_reasons).sort(
+    const ranked = Object.entries(row.decline_reasons).sort(
       (a, b) => b[1] - a[1],
-    )[0];
+    );
+    const top = ranked[0];
     const reading = top ? readReason(top[0].replace(/^settle:/, "")) : null;
-    return `REAL INTENT HIT A WALL: ${row.declines_organic} signed payment${row.declines_organic === 1 ? " was" : "s were"} presented and refused${row.settles_organic > 0 ? ` (${row.settles_organic} got through)` : ""}. The flow is the problem, not the pitch. Top reason: "${top?.[0] ?? "unspecified"}" ×${top?.[1] ?? 0}${reading ? ` — fault: ${reading.fault}. ${reading.reading}` : ""}`;
+    const topCount = top?.[1] ?? 0;
+
+    /**
+     * ONE WALL OR A SCATTER (2026-09-04). The verdict used to name the
+     * top reason and say "the flow is the problem, not the pitch" —
+     * the same sentence for every shape of decline. Two live rows on
+     * the same page showed why that will not do: small_blessing had 8
+     * refusals and 7 of them one code, which is a brick and has one
+     * fix; settlement_attestation had 5 refusals across 4 distinct
+     * codes with the largest ×2, which is not a brick and has four.
+     * Reporting only the top row made the second look like the first,
+     * and it named a transport failure as the wall while three
+     * buyer-side shape errors went unmentioned.
+     *
+     * Half is the line, and the arithmetic is stated rather than
+     * implied: a reader who disagrees with the threshold can see the
+     * counts it was drawn from.
+     */
+    const concentrated = topCount * 2 >= row.declines_organic;
+    const shape = concentrated
+      ? `ONE WALL: "${top?.[0] ?? "unspecified"}" ×${topCount} of ${row.declines_organic}. The flow is the problem, not the pitch, and one fix clears most of it.`
+      : `NO SINGLE WALL: ${row.declines_organic} refusals across ${ranked.length} distinct reasons, the largest only ×${topCount}. A scatter is not a brick — there is no one fix here, and the top row is the wrong thing to read alone. All of them: ${ranked.map(([reason, n]) => `"${reason}" ×${n}`).join(", ")}.`;
+
+    /**
+     * WHOSE PROBLEM, ACROSS ALL OF THEM — not just the top one. The
+     * fault classes are readReason's, the same ones the phone alert
+     * uses, so the funnel and the page can never disagree.
+     */
+    const faults = new Map<string, number>();
+    for (const [reason, n] of ranked) {
+      const { fault } = readReason(reason.replace(/^settle:/, ""));
+      faults.set(fault, (faults.get(fault) ?? 0) + n);
+    }
+    const mix = [...faults.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([fault, n]) => `${n} ${fault}`)
+      .join(", ");
+
+    /**
+     * THE OTHER HALF OF THE SILENCE. This branch answered "where did
+     * the buyers who signed get stuck" and dropped the ones who never
+     * signed, which on a row like 77 asks / 5 wallets is 94% of the
+     * item. Both diagnoses in this file's header can be true at once;
+     * reporting only the one that fired reads as though the payment
+     * flow were the whole story.
+     */
+    const walked = row.asks_organic - row.wallets_opened;
+    const upstream =
+      walked > 0
+        ? ` Upstream of all of it: ${walked} of ${row.asks_organic} organic ask${row.asks_organic === 1 ? "" : "s"} never presented a signature at all, so the refusals are the smaller half of this item's silence.`
+        : "";
+
+    return `REAL INTENT HIT A WALL: ${row.declines_organic} signed payment${row.declines_organic === 1 ? " was" : "s were"} presented and refused${row.settles_organic > 0 ? ` (${row.settles_organic} got through)` : ""}. ${shape} Fault mix: ${mix}.${upstream}${lockedClause(row)} Top reason: "${top?.[0] ?? "unspecified"}" ×${topCount}${reading ? ` — fault: ${reading.fault}. ${reading.reading}` : ""}`;
   }
   if (row.asks_organic > 0) {
-    return `WINDOW-SHOPPING: ${row.asks_organic} price-ask${row.asks_organic === 1 ? "" : "s"} and not one presented signature. Nobody was blocked — nobody tried. The wall is upstream of the payment (the pitch, the price framing, or a required input reading as work); fixing the payment flow would fix nothing. Caveat the number honestly: an ask is a 402 issued, and crawlers the infrastructure filter does not know yet sit in this count.`;
+    return `WINDOW-SHOPPING: ${row.asks_organic} price-ask${row.asks_organic === 1 ? "" : "s"} and not one presented signature. Nobody was blocked — nobody tried. The wall is upstream of the payment (the pitch, the price framing, or a required input reading as work); fixing the payment flow would fix nothing.${lockedClause(row)} Caveat the number honestly: an ask is a 402 issued, and crawlers the infrastructure filter does not know yet sit in this count.`;
   }
   return "Quiet: no organic asks in the scanned window.";
 }
@@ -149,12 +232,22 @@ export async function auditFunnel(
 
       const tally = tallies.get(event.item) ?? {
         asks_organic: 0,
+        asks_locked: 0,
+        locked_inputs: {},
         wallets_opened: 0,
         settles_organic: 0,
         declines_organic: 0,
         decline_reasons: {},
       };
-      if (event.kind === "challenge") tally.asks_organic += 1;
+      if (event.kind === "challenge") {
+        tally.asks_organic += 1;
+        if (event.missing_required && event.missing_required.length > 0) {
+          tally.asks_locked += 1;
+          for (const name of event.missing_required) {
+            tally.locked_inputs[name] = (tally.locked_inputs[name] ?? 0) + 1;
+          }
+        }
+      }
       if (event.kind === "settle") {
         tally.settles_organic += 1;
         tally.wallets_opened += 1;
