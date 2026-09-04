@@ -46,12 +46,12 @@ function stubPages(pages: Record<string, { status?: number; text?: string; throw
 }
 
 describe("one reading, two runtimes", () => {
-  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"}</p><a href="${BASE}/menu/hello">shop</a>`;
+  const fixture = `<p><a href="${BASE}/api/verify/cert_4dww28dx5j">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"}</p><a href="${BASE}/menu/hello">shop</a>`;
 
   it("finds the same citations in the same order", () => {
     expect(citationsOn(fixture, BASE)).toEqual(citationsOnNode(fixture, BASE));
     expect(citationsOn(fixture, BASE)).toEqual([
-      `${BASE}/api/verify/cert_k2m9v4xwqp`,
+      `${BASE}/api/verify/cert_4dww28dx5j`,
       `${BASE}/corpus/host/door.example.json`,
       `${BASE}/corpus/3.json`,
       `"cites": "${BASE}/corpus/3.json"`,
@@ -149,7 +149,7 @@ describe("the run: reads the two files, stores one report, pages on a change", (
       Object.fromEntries(
         prospects.map((entry) => [
           entry.url,
-          { text: entry.url === target.url ? `see ${BASE}/api/verify/cert_k2m9v4xwqp` : "no row" },
+          { text: entry.url === target.url ? `see ${BASE}/api/verify/cert_4dww28dx5j` : "no row" },
         ]),
       ),
     );
