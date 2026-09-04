@@ -190,6 +190,49 @@ describe("the two opposite silences", () => {
     expect(row.verdict).toContain("1 unknown");
   });
 
+  /**
+   * THE LOCKED DOOR (2026-09-04). settlement_attestation needs
+   * ?tx_hash=; a scanner arriving without one could not have bought at
+   * any price. The verdict used to fold those into "window-shopping".
+   */
+  it("separates the asks that could not have bought from the ones that walked", async () => {
+    for (let i = 0; i < 6; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+        ...organic,
+        missingRequired: ["tx_hash"],
+      });
+    }
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.asks_organic).toBe(7);
+    expect(row.asks_locked).toBe(6);
+    expect(row.locked_inputs).toEqual({ tx_hash: 6 });
+    expect(row.verdict).toContain("LOCKED DOOR: 6 of the 7 asks");
+    expect(row.verdict).toContain("could not have bought at any price");
+    // And the one who could is the one to read the silence against.
+    expect(row.verdict).toContain("against the 1 who could have");
+  });
+
+  it("says nothing about locks on a row with none", async () => {
+    for (let i = 0; i < 5; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    }
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "small_blessing")!;
+    expect(row.asks_locked).toBe(0);
+    expect(row.verdict).not.toContain("LOCKED DOOR");
+  });
+
+  it("carries the locked clause on a REAL INTENT row too", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+      ...organic,
+      missingRequired: ["tx_hash"],
+    });
+    await recordPaymentDecline(testEnv, "/api/buy/settlement_attestation", "verify_error:timeout", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.verdict).toContain("REAL INTENT HIT A WALL");
+    expect(row.verdict).toContain("LOCKED DOOR");
+  });
+
   it("calls settles-with-no-declines converting, which is the quiet good news", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     await recordSettlement(testEnv, "/api/buy/small_blessing", {

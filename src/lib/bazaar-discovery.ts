@@ -617,6 +617,31 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * challenge has to say what to send. Learning the requirement by
  * being refused is worse manners than we keep.
  */
+/**
+ * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
+ *
+ * The funnel read settlement_attestation as 77 asks, 5 wallets, 0
+ * sales, and called the 72 who never signed "window-shopping". But
+ * that door needs ?tx_hash= — a transaction the buyer already owns —
+ * and a scanner arriving without one is not a price-check that walked;
+ * it is a visitor at a locked door. Nothing on the ask row said which,
+ * so the 77 was uninterpretable by construction.
+ *
+ * One reading, three doors: the HTTP gate stamps it on the ask row,
+ * the MCP door does the same from its arguments, and the pre-gate
+ * refusal uses it to name the input a SIGNED request forgot.
+ */
+export function missingRequiredInputs(
+  item: MenuItem,
+  present: Record<string, unknown>,
+): string[] {
+  const required = buyInputSchema(item).required ?? [];
+  return required.filter((name) => {
+    const value = present[name];
+    return value === undefined || value === null || String(value).trim() === "";
+  });
+}
+
 export function requiredParamsNote(item: MenuItem): {
   required_params?: string[];
   required_params_note?: string;

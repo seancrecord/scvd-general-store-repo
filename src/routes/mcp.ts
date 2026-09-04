@@ -22,7 +22,8 @@ import {
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
-import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
+import { recordPaymentDecline, recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
+import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { factBlockText } from "@/lib/listing-spec";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
@@ -755,7 +756,27 @@ async function callPurchaseTool(
   rawIdempotencyKey?: string,
 ): Promise<Response> {
   const invalid = validatePurchaseArgs(item, args);
+  const missing = missingRequiredInputs(item, args);
   if (invalid) {
+    // Same books as the HTTP door's pre-gate refusal: a caller that
+    // attached a payment and forgot the input opened a wallet and was
+    // refused, and the funnel must see it. A bare ask books nothing
+    // here — it never reached a 402 — exactly as on the HTTP side.
+    if (paymentMeta !== undefined && paymentMeta !== null) {
+      const required = buyInputSchema(item).required ?? [];
+      const reason =
+        missing.length > 0
+          ? `local:input_missing:${missing[0]}`
+          : required.length > 0
+            ? `local:input_invalid:${required[0]}`
+            : "local:refused_before_gate";
+      await recordPaymentDecline(
+        c.env,
+        `/api/buy/${item.id}`,
+        reason,
+        mcpSignals(c),
+      ).catch(() => undefined);
+    }
     return rpcRefusal(id, -32602, "bad_request", invalid);
   }
   /**
@@ -841,7 +862,9 @@ async function callPurchaseTool(
     c.env,
     item.id,
     paymentMeta,
-    mcpSignals(c),
+    // The ask row says which required inputs were absent, so a 402 to
+    // a caller that could not have bought reads as a locked door.
+    { ...mcpSignals(c), ...(missing.length > 0 ? { missingRequired: missing } : {}) },
     replayCheck,
     // What the buyer asked for, for the delivery intent: same purpose
     // as the HTTP gate recording its query string, so a mint that dies

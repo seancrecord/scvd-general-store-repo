@@ -2,7 +2,9 @@ import { isSolanaSignature } from "@/lib/solana-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { paymentGate } from "@/lib/payment-gate";
+import { gateSignals, paymentGate } from "@/lib/payment-gate";
+import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
 import { SettlementDeclined,
   PAYMENT_VARY,
 } from "@/lib/payments";
@@ -1367,6 +1369,46 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
+/**
+ * THE WALLET THAT OPENED AND WAS NEVER COUNTED (2026-09-04).
+ *
+ * Every pre-gate check below refuses a SIGNED request that lacks its
+ * input with a 400 — before the payment gate, so no money moves,
+ * which is right. But that path booked nothing. A buyer who read the
+ * PAYMENT-REQUIRED header, signed, and retried without ?tx_hash= —
+ * exactly what a library-driven client does, since it never reads the
+ * body — opened its wallet, was refused, and was recorded as somebody
+ * who "never presented a signature". The funnel's one signal worth
+ * having, a wallet opened at the door, was invisible on every door
+ * with a required input: three of the four cheapest on the shelf.
+ *
+ * So: one wrapper, ahead of every check, that books the refusal as
+ * the decline it is. The check's own body still goes out unchanged.
+ */
+const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  await next();
+  if (c.res.status !== 400 || !isBuying(c)) {
+    return;
+  }
+  // From the path, not c.req.param(): this runs on the "/api/buy/*"
+  // wildcard, ahead of the named route that would bind item_id.
+  const item = getMenuItem(itemKeyFromPath(c.req.path));
+  if (!item) {
+    return;
+  }
+  const missing = missingRequiredInputs(item, c.req.query());
+  const required = buyInputSchema(item).required ?? [];
+  const reason =
+    missing.length > 0
+      ? `local:input_missing:${missing[0]}`
+      : required.length > 0
+        ? `local:input_invalid:${required[0]}`
+        : "local:refused_before_gate";
+  await recordPaymentDecline(c.env, c.req.path, reason, gateSignals(c)).catch(
+    () => undefined,
+  );
+};
+buyRoutes.use("/api/buy/*", bookRefusalBeforeGate);
 buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", capacityCheck);
