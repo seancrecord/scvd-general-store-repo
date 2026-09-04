@@ -44,6 +44,11 @@ current row's identifier is an authorization nonce, not a transaction hash, and
 `settlement_tx_hash` is `null` on all seven. That is a stated hole, not an
 oversight left to be discovered — see the next section.
 
+`npm run walk-ledger:verify` asks a node whether each row's identifier is what
+the row says it is, and prints the RPC, chain, head block, moment and control
+hash it used. A nonce that resolves, or a settlement hash that does not, exits
+non-zero. Run it against your own endpoint with `--rpc`.
+
 **Honesty note on signing:** these rows are captured and digested but not yet
 carrying the store's ed25519 signature — that key lives only in the production
 Worker and is not reachable from the field-walk tooling that produced this file.
@@ -104,15 +109,19 @@ So the rows now carry:
   did not capture one. `null` on every current row, and the absence is now in
   the bytes instead of hidden behind a union.
 - `identifier_kind` + `identifier_kind_basis` — which kind the row names, and
-  on what basis. This ledger cannot reach a node, so for rows 1–7 the basis is
-  not a chain read: the walk tooling keeps the settlement hash under a
-  different key than the authorization's nonce and only the nonce reached this
-  file, the union key never asserted a transaction, and row 1 is the one an
-  outside instrument independently found unaddressable on Base. Any node, on
-  any chain, answering one of these values falsifies the kind, and the basis
-  field says so.
+  on what basis. For rows 1–7 the basis is a chain read: both lookups returned
+  null for every one of them on Base mainnet at head block 50879438 on
+  2026-09-04, with a control hash from that block resolving through the same
+  endpoint, which replicates the read 0200project made independently and first.
+  Shape decides nothing — the two kinds are the same 32 bytes — and the kind
+  also rests on the walk tooling keeping the settlement hash under a different
+  key than the nonce, with only the nonce reaching this file. Any node, on any
+  chain, answering one of these values falsifies the kind, and the basis field
+  says so.
 
-`test/walk-ledger-identifiers.spec.ts` fails the build if any row reintroduces a
+The identifiers are checked from two sides. `npm run walk-ledger:verify` asks a
+node, live, and needs an RPC; `test/walk-ledger-identifiers.spec.ts` needs
+nothing and runs in CI, failing the build if any row reintroduces a
 union identifier key, omits `identifier_kind` or its basis, leaves
 `settlement_tx_hash` out instead of saying `null`, publishes one value as both,
 or names a settlement hash without a `settlement_tx_hash_basis` carrying a dated
