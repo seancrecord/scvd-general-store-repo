@@ -1,7 +1,19 @@
-import { currentWeekKey } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { listKeys } from "@/lib/kv-list";
 import { payToDigest } from "@/lib/pay-to-digest";
 import type { BountyRecord } from "@/services/bounty-board";
 import type { Env } from "@/types";
+
+/*
+ * THE COLLECTOR CANNOT PAY, and this module is on the collector's side
+ * of that line. The ward round seals rows from here, so nothing here
+ * may reach a signing-capable module even dynamically —
+ * test/collector-cannot-pay.spec.ts walks the import graph and CI
+ * refused the first draft, which borrowed the board's own reader and
+ * with it the board's path to the field signer. The records are read
+ * straight off KV instead; the type import above erases.
+ */
 
 /**
  * CROWD-WALKED ROWS, INTO THE RECORD (2026-09-04).
@@ -109,13 +121,17 @@ export async function crowdWalksForWeek(
   env: Env,
   week: string,
 ): Promise<CrowdWalk[]> {
-  const { bountyBoard } = await import("@/services/bounty-board");
-  const board = await bountyBoard(env);
-  const paid = board.bounties.filter(
-    (bounty) =>
-      bounty.status === "paid" &&
-      bounty.claim &&
-      currentWeekKey(new Date(bounty.claim.claimed_at)) === week,
+  const listed = await listKeys(env.COUNTERS, {
+    prefix: KV_KEYS.bountyPrefix,
+    cap: 200,
+  });
+  const records = await bulkGetJson<BountyRecord>(env.COUNTERS, listed.names);
+  const paid = [...records.values()].filter(
+    (bounty): bounty is BountyRecord =>
+      Boolean(bounty) &&
+      bounty!.status === "paid" &&
+      Boolean(bounty!.claim) &&
+      currentWeekKey(new Date(bounty!.claim!.claimed_at)) === week,
   );
   paid.sort((a, b) =>
     (a.claim?.claimed_at ?? "").localeCompare(b.claim?.claimed_at ?? ""),
