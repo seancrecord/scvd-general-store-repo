@@ -4,6 +4,7 @@ import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import BUY_ROUTE_SOURCE from "../src/routes/buy.ts?raw";
 import DOOR_LAW_SOURCE from "../src/lib/purchase-door.ts?raw";
+import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 
 /**
  * The money path's refusals live in two files since 2026-09-04: the
@@ -11,7 +12,7 @@ import DOOR_LAW_SOURCE from "../src/lib/purchase-door.ts?raw";
  * (shared with the MCP door). Both are walked, or the codes the law
  * sends would read as invented.
  */
-const BUY_SOURCE = `${BUY_ROUTE_SOURCE}\n${DOOR_LAW_SOURCE}`;
+const BUY_SOURCE = `${BUY_ROUTE_SOURCE}\n${DOOR_LAW_SOURCE}\n${DELIVERY_FAILED_SOURCE}`;
 
 const BASE = "https://scvd.store";
 

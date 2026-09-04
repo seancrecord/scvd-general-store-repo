@@ -12,6 +12,7 @@ import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementDeclined } from "@/lib/payments";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
+import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
 import {
   ALSO_A_STORE,
@@ -917,6 +918,27 @@ async function callPurchaseTool(
         .json()
         .catch(() => ({ error: "payment declined at settlement" }));
       return rpcResult(id, toolText(isRecord(body) ? body : { error: body }));
+    }
+    /**
+     * MONEY MOVED AND THE GOODS DID NOT (2026-09-04, CV's second
+     * round: attestation_bundle settled on-chain, this door answered
+     * an internal error, the deliverable was lost in-band, and only a
+     * buyer who knew /trust found the certificate). The delivery
+     * intent row stays open for the keeper exactly as before; what
+     * changes is that the buyer is told, with the transaction, in
+     * fields — lib/delivery-failed.ts, the same words as the HTTP
+     * door. Not a refusal: charged is TRUE here, which is the whole
+     * point of saying it.
+     */
+    const failedAfterSettle = outcome.settledSoFar();
+    if (failedAfterSettle) {
+      await pageDeliveryFailed(c.env, item, failedAfterSettle, "mcp", error);
+      const { error: message, ...data } = deliveryFailedBody(
+        c.env.STORE_BASE_URL,
+        item,
+        failedAfterSettle,
+      );
+      return rpcError(id, -32000, message, data);
     }
     throw error;
   }

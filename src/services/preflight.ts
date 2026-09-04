@@ -4,7 +4,7 @@ import { type RemediationRow, remediationRows } from "@/services/remediation";
 import { type MppBlock, runMppChecks } from "@/services/mpp-battery";
 import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 import { storeIdentity } from "@/lib/identity";
-import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
+import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
@@ -665,7 +665,7 @@ export async function probeOnce(
    * hand-rolling a fourth copy of it, which is exactly how the
    * private-address hole got in.
    */
-  const verdict = checkProbeTarget(new URL(url), ownHost);
+  const verdict = checkProbeTarget(parseProbeTarget(url), ownHost);
   if (!verdict.ok) {
     throw new ProbeTargetRefused(verdict.reason ?? "refused target");
   }

@@ -2,13 +2,14 @@ import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
 import { sendAlert } from "@/lib/alerts";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import {
+  JUDGED_NOTE,
   bookedReason,
   decodePaymentHeader,
   diagnoseDecline,
   isNeverJudged,
-  JUDGED_NOTE,
   neverJudgedBlock,
   payerFromPaymentHeader,
+  paymentNetwork,
   preflightBlockers,
   preflightRefusalBody,
   signedValidBefore,
@@ -302,7 +303,10 @@ export async function runMcpPayment(
              * that was already right.
              */
             ...(isNeverJudged(diagnosis.decline)
-              ? neverJudgedBlock(signedValidBefore(paymentHeader))
+              ? neverJudgedBlock(
+                  signedValidBefore(paymentHeader),
+                  paymentNetwork(paymentHeader),
+                )
               : { note: JUDGED_NOTE }),
             ...(diagnosis.mismatch
               ? { requirement_mismatch: diagnosis.mismatch }

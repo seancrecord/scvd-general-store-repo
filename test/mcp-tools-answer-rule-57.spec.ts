@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MCP_REFUSAL_CODES } from "@/store/surface-contract";
+import { DELIVERY_FAILED_CODE } from "@/lib/delivery-failed";
 import { MENU_ITEMS } from "@/store";
 import MCP_SOURCE from "../src/routes/mcp.ts?raw";
 import DOOR_LAW_SOURCE from "../src/lib/purchase-door.ts?raw";
@@ -158,6 +159,12 @@ describe("a refusal on the wire carries the code and the charge", () => {
         emitted.add(match[1]!);
       }
     }
+    // And the owned post-settlement failure (2026-09-04): the door
+    // relays lib/delivery-failed.ts's body, whose code is charged: TRUE
+    // and so never rides rpcRefusal.
+    if (/deliveryFailedBody\(/.test(MCP_SOURCE)) {
+      emitted.add(DELIVERY_FAILED_CODE);
+    }
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
     expect(
@@ -201,6 +208,9 @@ describe("a refusal on the wire carries the code and the charge", () => {
       .filter((call) => {
         if (call.code === "-32700") return false; // parse error, same class as -32601
         if (call.code === "-32602" && /prompts/i.test(call.tail)) return false;
+        // Money moved and delivery failed: not a refusal, charged is
+        // TRUE, and the body is the shared one (lib/delivery-failed.ts).
+        if (call.code === "-32000" && /message, data/.test(call.tail)) return false;
         return NOT_REFUSALS[call.code] === undefined;
       });
     expect(

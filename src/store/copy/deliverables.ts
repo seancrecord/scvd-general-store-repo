@@ -119,12 +119,26 @@ export function bitcoinAnchorNote(otsStatus: string): string {
       : "Anchored. It's in Bitcoin's memory now, which runs longer than yours, ours, and this store's put together.";
 }
 
+/**
+ * THE REFUSED BRANCH, on every probing note (2026-09-04, CV's second
+ * round). Each of these notes had three endings — ready, not ready,
+ * and "We knocked. Nobody came." — and a target the law refused, or
+ * that was never a URL, fell to the third: a signed sentence about a
+ * knock that never happened. The wording is the good-buyer note's own
+ * refused sentence, widened by one clause, so the three probing notes
+ * and the good buyer say the same thing about the same state.
+ *
+ * ⚑ Keeper's pen on the wording under rule 7; what it has to DO is
+ * fixed — never describe a knock we did not make.
+ */
 /** signature_agent_card. */
 export function signatureCardNote(verdict: string): string {
   return verdict === "directory_ready"
     ? "Fetched your directory once, checked every brick, signed the readout: the document serves, the keys are shaped right, and the proof-of-possession holds. Show the card to anyone who wants more than your word — the URL serves it free forever, and it never claims more than the moment it covers."
     : verdict === "not_ready"
       ? "Fetched your directory once and wrote down what we saw, signed: at least one check failed, and the card names which and why. Not a verdict on you — a dated readout with the fix list in it. The free desk at POST /api/bot-auth/check will tell you where you stand before you buy another word from us."
+      : verdict === "refused"
+        ? "We did not knock. That target failed this store's published probe-target law — or was not a URL at all — and the record says so as a fact about OUR rule and OUR input handling rather than about that endpoint: we did not look, so we report nothing about what is there. The buy door refuses these before money moves, so if you are reading this something got past it, and the honest artifact is the one that admits it."
       : "We knocked. Nobody came. From where we stood, at that minute, the directory didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
@@ -134,6 +148,8 @@ export function onpageAuditNote(verdict: string): string {
     ? "Read your page once, the way a machine passerby does, and signed what it served: every check passed at that moment. The report is yours to show around — the URL serves it free forever, blind spots printed on it, and it never claims more than the HTML it was handed."
     : verdict === "not_ready"
       ? "Read your page once and wrote down what it served, signed: at least one check failed, and the report names which and why. Not a grade on you or your site — a dated readout with the fix list in it. The free desk at POST /api/onpage/v1 will tell you where you stand before you buy another word from us."
+      : verdict === "refused"
+        ? "We did not knock. That target failed this store's published probe-target law — or was not a URL at all — and the record says so as a fact about OUR rule and OUR input handling rather than about that endpoint: we did not look, so we report nothing about what is there. The buy door refuses these before money moves, so if you are reading this something got past it, and the honest artifact is the one that admits it."
       : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
@@ -229,6 +245,8 @@ export function serviceAuditNote(verdict: string): string {
     ? "Looked once, wrote down what we saw, signed it: every check passed at that moment. The report is yours to show around — the URL serves it free forever, and it never claims more than the moment it covers."
     : verdict === "not_ready"
       ? "Looked once, wrote down what we saw, signed it: at least one check failed, and the report names which and why. That's not a verdict on you — it's a dated readout, and the fix list is in it. Come back after and the free preflight will tell you where you stand before you buy another word from us."
+      : verdict === "refused"
+        ? "We did not knock. That target failed this store's published probe-target law — or was not a URL at all — and the record says so as a fact about OUR rule and OUR input handling rather than about that endpoint: we did not look, so we report nothing about what is there. The buy door refuses these before money moves, so if you are reading this something got past it, and the honest artifact is the one that admits it."
       : "We knocked. Nobody came. That's the whole finding, and we're not dressing it up into something about your uptime — from where we stood, at that minute, the door didn't open. Signed and dated all the same. That was the purchase.";
 }
 

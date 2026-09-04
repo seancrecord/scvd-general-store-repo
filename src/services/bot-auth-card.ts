@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
-import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
+import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, DIRECTORY_PATH, DIRECTORY_CONTENT_TYPE } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -334,7 +334,7 @@ export async function performSignatureAgentCard(
   let outcome: Awaited<ReturnType<typeof checkDirectory>>;
   try {
     directoryUrl = directoryUrlFor(subject);
-    const verdict = checkProbeTarget(new URL(directoryUrl), "");
+    const verdict = checkProbeTarget(parseProbeTarget(directoryUrl), "");
     if (!verdict.ok) {
       throw new ProbeTargetRefused(verdict.reason ?? "refused target");
     }

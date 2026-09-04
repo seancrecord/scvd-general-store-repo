@@ -31,6 +31,7 @@ import {
   JUDGED_NOTE,
   neverJudgedBlock,
   payerFromPaymentHeader,
+  paymentNetwork,
   payloadProblemsFor,
   preflightBlockers,
   refusalBeforeVerify,
@@ -304,6 +305,7 @@ async function enrich402Body(
   evmAccept?: Record<string, unknown> | null,
   query: Record<string, string | undefined> = {},
   signedUntil?: number,
+  network?: string,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -336,7 +338,7 @@ async function enrich402Body(
              * old wording and the old advice.
              */
             ...(isNeverJudged(decline)
-              ? neverJudgedBlock(signedUntil)
+              ? neverJudgedBlock(signedUntil, network)
               : { note: JUDGED_NOTE }),
             /*
              * THE FIRST SUSPECT, NAMED (2026-09-01). A verify-time revert
@@ -1022,6 +1024,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           evmAcceptFrom(result.response.headers),
           c.req.query(),
           signedValidBefore(paymentHeader),
+          paymentNetwork(paymentHeader),
         );
         /*
          * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store

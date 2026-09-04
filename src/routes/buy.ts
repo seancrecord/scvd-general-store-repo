@@ -3,7 +3,9 @@ import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { SettlementDeclined,
   PAYMENT_VARY,
+  type SettledPayment,
 } from "@/lib/payments";
+import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import {
   readFulfillmentInput,
   refusePurchaseInput,
@@ -345,10 +347,40 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
    * backstop for the same error, but the honest answer is built here,
    * where we still know what happened.
    */
+  /**
+   * The settle, watched from here: `pending.settle` is memoized inside
+   * the gate, so wrapping it costs nothing and tells this frame
+   * whether money moved before a throw arrived.
+   */
+  let settled: SettledPayment | null = null;
+  const watched: typeof pending = {
+    ...pending,
+    settle: async () => {
+      settled = await pending.settle();
+      return settled;
+    },
+  };
   try {
-    return c.json(await fulfillPurchase(c.env, item, pending, input));
+    return c.json(await fulfillPurchase(c.env, item, watched, input));
   } catch (error) {
     if (error instanceof SettlementDeclined) return error.response;
+    /**
+     * MONEY MOVED AND THE GOODS DID NOT (2026-09-04). The global
+     * onError served this as a 500 whose copy promised "no charge for
+     * the noise" — false, the one time it mattered. The buyer now gets
+     * the truth in fields (lib/delivery-failed.ts, shared with the MCP
+     * door): charged, the transaction, the rail, the recovery path.
+     * Still a 500, because it is still our failure; the delivery
+     * intent row and the keeper's page are exactly as before.
+     */
+    const failedAfterSettle: SettledPayment | null = settled;
+    if (failedAfterSettle) {
+      await pageDeliveryFailed(c.env, item, failedAfterSettle, "http", error);
+      return c.json(
+        deliveryFailedBody(c.env.STORE_BASE_URL, item, failedAfterSettle),
+        500,
+      );
+    }
     throw error;
   }
 });

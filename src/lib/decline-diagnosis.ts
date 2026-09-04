@@ -307,8 +307,34 @@ export function signedValidBefore(header: string | undefined): number | undefine
   }
 }
 
+/** The rail the buyer signed for, off the payload's accepted terms. */
+export function paymentNetwork(header: string | undefined): string | undefined {
+  if (!header) {
+    return undefined;
+  }
+  try {
+    const payload = JSON.parse(atob(header)) as unknown;
+    const accepted = isRecord(payload) ? payload["accepted"] : undefined;
+    const network = isRecord(accepted) ? accepted["network"] : undefined;
+    return typeof network === "string" ? network : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The seconds we ask an agent to wait before resending the same payload. */
 export const RESEND_AFTER_SECONDS = 2;
+
+/**
+ * A SOLANA PAYLOAD DOES NOT KEEP (2026-09-04, CV's second round). The
+ * resend advice below was written for the EVM rails, where the signed
+ * authorization is good until its own validBefore. A Solana payment is
+ * a transaction built on a recent blockhash, and the chain stops
+ * accepting it roughly a minute later — BlockhashNotFound. "Send the
+ * same payload again" is right for the first few seconds and wrong
+ * after that, and the advice said nothing about the difference.
+ */
+export const SOLANA_BLOCKHASH_KEEPS_SECONDS = 60;
 
 /**
  * The words BOTH doors say when the payload was never judged. Shared
@@ -320,7 +346,9 @@ export const RESEND_AFTER_SECONDS = 2;
  */
 export function neverJudgedBlock(
   signedUntil?: number,
+  network?: string,
 ): Record<string, unknown> {
+  const solana = network?.startsWith("solana:") ?? false;
   return {
     fault: "upstream",
     note: "Your payment was NEVER JUDGED. The call from this store to the payment facilitator failed, so nothing looked at your signature, your authorization or your wallet. No money moved, your nonce is unspent, and nothing is wrong with what you sent.",
@@ -331,6 +359,11 @@ export function neverJudgedBlock(
       how: `Wait ${RESEND_AFTER_SECONDS} seconds and send the SAME payment payload again, byte for byte, to this same resource. Do not re-sign and do not generate a new nonce${signedUntil ? ` — the authorization you already hold is good until unix ${signedUntil}` : ""}. Re-signing is not unsafe, it is just wasted work on a payload that was never the problem.`,
       if_it_repeats:
         "Two or three of these in a row is an outage on the payment rail rather than anything you can fix. Back off and come back later; the price and the goods will be here.",
+      ...(solana
+        ? {
+            solana_blockhash: `Solana is the exception to "byte for byte": your transaction carries a recent blockhash that the chain stops accepting after roughly ${SOLANA_BLOCKHASH_KEEPS_SECONDS} seconds. Resend the identical payload inside that window; past it, expect BlockhashNotFound and build a fresh transaction on a new blockhash instead. Nothing was spent either way.`,
+          }
+        : {}),
     },
   };
 }

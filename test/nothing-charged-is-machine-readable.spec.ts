@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import buyRouteSource from "../src/routes/buy.ts?raw";
 import doorLawSource from "../src/lib/purchase-door.ts?raw";
+import deliveryFailedSource from "../src/lib/delivery-failed.ts?raw";
 
 /**
  * THE GROUND TRUTH IS TWO FILES NOW (2026-09-04). The per-item
@@ -12,7 +13,7 @@ import doorLawSource from "../src/lib/purchase-door.ts?raw";
  * a walk that only knew the old one would pass over the new file and
  * guard nothing, which is rule 46's own failure mode.
  */
-const buySource = `${buyRouteSource}\n${doorLawSource}`;
+const buySource = `${buyRouteSource}\n${doorLawSource}\n${deliveryFailedSource}`;
 
 /**
  * "NOTHING CHARGED" WAS A SENTENCE, NOT A FIELD (rule 57.4, the sweep's
@@ -58,6 +59,13 @@ const CODES = [
   "retired",
   "unknown_item",
   "sold_out",
+  /*
+   * THE ONE THAT MEANS MONEY MOVED (2026-09-04): served when delivery
+   * threw after settlement. It carries charged: TRUE and never says
+   * "no charge", so the walk above never meets it; it is listed here
+   * because the code walk below does.
+   */
+  "delivery_failed",
 ] as const;
 
 /**
