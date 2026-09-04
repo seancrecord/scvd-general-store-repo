@@ -105,6 +105,18 @@ export const ALERT_CONDITIONS = [
    * with a glance.
    */
   "till_outflow",
+  /**
+   * THE SCREEN THAT FAILED CLOSED IN SILENCE (2026-09-04). Every
+   * payout this store makes sits behind the sanctions screen, and the
+   * screen fails closed when it cannot answer — correctly. On
+   * 2026-09-03 it could not answer for ninety minutes, every bounty
+   * claim was refused by rule, and nothing paged: the keeper learned
+   * it from a walker's letter. This is the one failure the store
+   * cannot discover by being told, because the people turned away are
+   * strangers with no address to write to. Keyed by door, so a run of
+   * refusals at one door pages once and backs off.
+   */
+  "payout_screen_unavailable",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];

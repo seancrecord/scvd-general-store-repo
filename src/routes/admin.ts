@@ -2378,23 +2378,46 @@ adminRoutes.post("/admin/market/publish-registry", async (c) => {
  */
 adminRoutes.get("/admin/bounties", async (c) => {
   const notes: string[] = [];
-  const [board, wallet, ledger, attempts] = await Promise.allSettled([
-    import("@/services/bounty-board").then(({ bountyBoard }) =>
-      bountyBoard(c.env),
-    ),
-    import("@/services/field-wallet").then(({ readFieldWallet }) =>
-      readFieldWallet(c.env),
-    ),
-    readBountyLedger(c.env),
-    listRecentBountyEvents(c.env, 40),
-  ]);
-  const { renderBountiesPage } = await import("@/pages/admin/bounties-page");
+  const [board, wallet, ledger, attempts, porch, creditOwed] =
+    await Promise.allSettled([
+      import("@/services/bounty-board").then(({ bountyBoard }) =>
+        bountyBoard(c.env),
+      ),
+      import("@/services/field-wallet").then(({ readFieldWallet }) =>
+        readFieldWallet(c.env),
+      ),
+      readBountyLedger(c.env),
+      listRecentBountyEvents(c.env, 40),
+      readPorchLedger(c.env),
+      import("@/services/store-credit").then(({ creditOutstandingAtomic }) =>
+        creditOutstandingAtomic(c.env),
+      ),
+    ]);
+  const { renderBountiesPage, moneyOutAllTime } = await import(
+    "@/pages/admin/bounties-page"
+  );
+  const porchLedger = shelf(porch, null, "the porch", notes);
+  const organic = (surface: string): number =>
+    porchLedger?.surfaces[surface]?.["organic"] ?? 0;
+  const boardState = shelf(board, null, "the board", notes);
   return c.html(
     renderBountiesPage({
-      board: shelf(board, null, "the board", notes),
+      board: boardState,
       wallet: shelf(wallet, null, "the paying wallet", notes),
       ledger: shelf(ledger, null, "the bounty ledger", notes),
       attempts: shelf(attempts, [], "claim attempts", notes),
+      funnel: porchLedger
+        ? {
+            room: organic("bounties"),
+            board_json: organic("bounties.json"),
+            claim_read: organic("bounty-claim:read"),
+            claims_presented: organic("bounty-claim"),
+          }
+        : null,
+      allTime: moneyOutAllTime(
+        boardState,
+        shelf(creditOwed, null, "the credit liability", notes),
+      ),
       now: new Date().toISOString(),
       loadNotes: notes,
     }),

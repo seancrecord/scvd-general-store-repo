@@ -4,6 +4,7 @@ import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   oracleScreen,
+  raiseScreenUnavailable,
   fieldSignerFromKey,
   type FieldSigner,
   type SanctionsScreen,
@@ -306,6 +307,10 @@ export async function redeemCredit(
     oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
   const screened = await screen(record.wallet);
   if (screened.listed !== false) {
+    if (screened.listed === null) {
+      // Silence pages; a listing is the screen working and does not.
+      await raiseScreenUnavailable(env, "the credit cash-out", screened.source);
+    }
     throw new CreditRefused(
       screened.listed === true
         ? `the wallet is identified on the sanctions screen (${screened.source}); nothing pays out and the refusal is recorded`

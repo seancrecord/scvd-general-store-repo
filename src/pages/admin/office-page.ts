@@ -7,6 +7,7 @@ import type {
 import { escapeHtml } from "@/lib/sanitize";
 import { registeredMarkers, UNREGISTERED_VENUE } from "@/store/venues";
 import { readWindowShopping } from "@/lib/window-shopping";
+import { porchSurfaceKind, type PorchSurfaceKind } from "@/lib/porch-surface";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
 import type { TakeSummary } from "@/services/books-summary";
@@ -660,11 +661,39 @@ function mcpClientHtml(clients: Record<string, number> | undefined): string {
     </table>`;
 }
 
+const KIND_MEANING: Record<PorchSurfaceKind, string> = {
+  instrument: "free checks somebody actually ran",
+  door: "interactive counters: something handed in, claimed, or read back",
+  evidence: "the record itself: corpus, passports, registry, chip",
+  storefront: "the shop's own pages and catalogs",
+  room: "human pages past the storefront",
+};
+
+/** Organic visits summed by kind, busiest kind first. */
+export function porchByKind(porch: PorchLedger): Array<[PorchSurfaceKind, number]> {
+  const sums = new Map<PorchSurfaceKind, number>();
+  for (const [surface, buckets] of Object.entries(porch.surfaces)) {
+    const kind = porchSurfaceKind(surface);
+    sums.set(kind, (sums.get(kind) ?? 0) + (buckets["organic"] ?? 0));
+  }
+  return [...sums.entries()].sort((a, b) => b[1] - a[1]);
+}
+
 function porchHtml(porch: PorchLedger): string {
   const surfaces = Object.entries(porch.surfaces);
+  const byKind = porchByKind(porch);
+  const kindLine =
+    byKind.length === 0
+      ? ""
+      : `<p><strong>By kind, organic:</strong> ${byKind
+          .map(
+            ([kind, count]) =>
+              `<strong>${count}</strong> ${escapeHtml(kind)} <small>(${escapeHtml(KIND_MEANING[kind])})</small>`,
+          )
+          .join(" \u00B7 ")}</p>`;
   const rows =
     surfaces.length === 0
-      ? '<tr><td colspan="4">Nobody on the porch yet this month.</td></tr>'
+      ? '<tr><td colspan="5">Nobody on the porch yet this month.</td></tr>'
       : surfaces
           .sort((a, b) => (b[1]["organic"] ?? 0) - (a[1]["organic"] ?? 0))
           .map(([surface, buckets]) => {
@@ -673,14 +702,16 @@ function porchHtml(porch: PorchLedger): string {
               .map(([key, count]) => `${escapeHtml(key.slice(8))}: ${count}`)
               .join(" \u00B7 ");
             return `<tr><td>${escapeHtml(surfaceLabel(surface))}</td>
+              <td>${escapeHtml(porchSurfaceKind(surface))}</td>
               <td>${buckets["organic"] ?? 0}${channels ? ` <small>(${channels})</small>` : ""}</td>
               <td>${buckets["house"] ?? 0}</td>
               <td>${buckets["infrastructure"] ?? 0}</td></tr>`;
           })
           .join("\n");
   return `
+    ${kindLine}
     <table border="1" cellpadding="4">
-      <tr><th>surface</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
+      <tr><th>surface</th><th>kind</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
     <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;

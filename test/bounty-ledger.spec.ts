@@ -5,8 +5,13 @@ import {
   readBountyLedger,
   readMonthLedger,
 } from "@/lib/metrics";
-import { porchSurface } from "@/lib/porch-surface";
-import { outstandingPayouts, renderBountiesPage } from "@/pages/admin/bounties-page";
+import { PORCH_EXACT, porchSurface, porchSurfaceKind } from "@/lib/porch-surface";
+import { porchByKind } from "@/pages/admin/office-page";
+import {
+  moneyOutAllTime,
+  outstandingPayouts,
+  renderBountiesPage,
+} from "@/pages/admin/bounties-page";
 import { readFieldWallet } from "@/services/field-wallet";
 import type { Env } from "@/types";
 
@@ -181,6 +186,15 @@ describe("the bounty page's arithmetic and the desk's line", () => {
       payouts_enabled: true,
     };
     expect(outstandingPayouts(board, now)).toEqual({ count: 1, usd: 0.25 });
+    // All-time: both paid bounties count, to the same wallet, credit owed read.
+    expect(moneyOutAllTime(board, 1_500_000n)).toEqual({
+      paid_bounties: 2,
+      paid_usd: 0.5,
+      walkers: 1,
+      walker_payers: 1,
+      credit_owed_usd: 1.5,
+    });
+    expect(moneyOutAllTime(null, 0n)).toBeNull();
 
     const html = renderBountiesPage({
       board,
@@ -193,12 +207,18 @@ describe("the bounty page's arithmetic and the desk's line", () => {
       },
       ledger: null,
       attempts: [],
+      funnel: { room: 10, board_json: 40, claim_read: 4, claims_presented: 2 },
+      allTime: moneyOutAllTime(board, 1_500_000n),
       now,
       loadNotes: [],
     });
     // Promised more than it holds: said in red, not hidden in a sum.
     expect(html).toContain("Short.");
     expect(html).toContain("$0.10 USDC");
+    // The funnel and the all-time mirror are on the page.
+    expect(html).toContain("presented a claim");
+    expect(html).toContain("$0.50");
+    expect(html).toContain("$1.50");
   });
 
   it("puts money out on the desk without waiting on the chain", async () => {
@@ -236,6 +256,41 @@ describe("the interactive doors and free resources have a porch line", () => {
     for (const [path, method, surface] of cases) {
       expect(porchSurface(path, method), `${method} ${path}`).toBe(surface);
     }
+  });
+
+  it("sorts every surface into a kind, so instruments and doors read apart", () => {
+    // Every listed surface, and the dynamic ones, land somewhere named.
+    for (const surface of PORCH_EXACT.values()) {
+      expect(["storefront", "instrument", "door", "evidence", "room"]).toContain(
+        porchSurfaceKind(surface),
+      );
+    }
+    expect(porchSurfaceKind("preflight")).toBe("instrument");
+    expect(porchSurfaceKind("preflight:batch")).toBe("instrument");
+    expect(porchSurfaceKind("conformance:mcp")).toBe("instrument");
+    expect(porchSurfaceKind("mcp:tool:preflight_endpoint")).toBe("instrument");
+    expect(porchSurfaceKind("bounty-claim")).toBe("door");
+    expect(porchSurfaceKind("letter:write")).toBe("door");
+    expect(porchSurfaceKind("credit:redeem")).toBe("door");
+    expect(porchSurfaceKind("corpus:host")).toBe("evidence");
+    expect(porchSurfaceKind("artifact:read")).toBe("evidence");
+    expect(porchSurfaceKind("item:small_blessing")).toBe("storefront");
+    expect(porchSurfaceKind("try")).toBe("room");
+
+    const sums = porchByKind({
+      surfaces: {
+        preflight: { organic: 4 },
+        look: { organic: 2, house: 9 },
+        "bounty-claim": { organic: 1 },
+        privacy: { organic: 3 },
+      },
+      organicVisits: 10,
+      porchToPurchase: null,
+      truncated: false,
+    });
+    expect(sums[0]).toEqual(["instrument", 6]);
+    expect(sums).toContainEqual(["door", 1]);
+    expect(sums).toContainEqual(["room", 3]);
   });
 
   it("still leaves the verify door and the noise to their own instruments", () => {

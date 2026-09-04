@@ -17,6 +17,7 @@ import { newEntryId } from "@/lib/ids";
 import {
   LAUNCH_CHECK_UA,
   oracleScreen,
+  raiseScreenUnavailable,
   fieldSignerFromKey,
   type SanctionsScreen,
   type FieldSigner,
@@ -579,6 +580,14 @@ export async function claimBounty(
       oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
     const screened = await screen(input.payoutTo);
     if (screened.listed !== false) {
+      if (screened.listed === null) {
+        // Silence pages; a listing is the screen working and does not.
+        await raiseScreenUnavailable(
+          env,
+          `bounty claim ${bounty.bounty_id}`,
+          screened.source,
+        );
+      }
       throw new BountyRefused(
         screened.listed === true
           ? `the payout address is identified on the sanctions screen (${screened.source}); the claim stands unpaid and the refusal is recorded`
