@@ -1714,6 +1714,7 @@ const TRADE_TERMS_SCHEMA: OpenApiObject = {
           daily_cap: { type: "integer" },
           door: { type: "string" },
           fixture: { type: "object", description: "One deterministic order for the account: door, body, expected values on the 200, and the response invariants." },
+          partner_terms: { type: "array", items: { type: "string" }, description: "The partner's own terms as they answered them: retries, refunds, rotation, price unit." },
           items: { type: "array", items: { type: "object" } },
         },
       },

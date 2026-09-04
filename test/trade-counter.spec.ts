@@ -443,6 +443,12 @@ describe("the surfaces", () => {
     }
     expect(Array.isArray(terms["response_invariants"])).toBe(true);
     expect(String((terms["pricing"] as Record<string, unknown>)["settlement_currency"])).toContain("US dollars");
+    // Pass eight: the first account's own terms are on its row, and every item has a concrete door.
+    const hal = accounts.find((row) => row["account"] === "hal")!;
+    expect((hal["partner_terms"] as string[]).length).toBe(HAL.partner_terms!.length);
+    for (const row of hal["items"] as Record<string, unknown>[]) {
+      expect(row["door"]).toBe(`${BASE}/api/trade/hal/${String(row["item_id"])}`);
+    }
   });
 
   it("the account's fixture delivers exactly what it promises, and every printed invariant holds on the body", async () => {
