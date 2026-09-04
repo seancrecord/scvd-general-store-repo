@@ -29,6 +29,7 @@ export { correctionsRoutes } from "@/routes/corrections";
 export { disagreementsRoutes } from "@/routes/disagreements";
 export { observatoryRoutes } from "@/routes/observatory";
 export { operatorsRoutes } from "@/routes/operators";
+export { declareDoorRoutes } from "@/routes/declare-door";
 export { feedsRoutes } from "@/routes/feeds";
 export { monthlyStateRoutes } from "@/routes/monthly-state";
 export { a2aRoutes } from "@/routes/a2a";

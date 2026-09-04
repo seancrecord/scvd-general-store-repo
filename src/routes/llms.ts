@@ -1,6 +1,7 @@
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
 import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
+import { OPERATORS_FOR_MONEY, OPERATORS_PROPOSITION } from "@/store/copy/operators";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -339,6 +340,14 @@ ${base}/feeds/corpus.xml (one per signed snapshot),
 ${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
 and every entry links the page it came from, where the derivation and
 the denominator are.
+For an operator: ${base}/operators. ${OPERATORS_PROPOSITION}
+${OPERATORS_FOR_MONEY} The census walks doors, not homepages, and its
+roster comes from the discovery feed; a host the feed does not name
+can serve its own /.well-known/x402 listing its doors and the weekly
+sweep reads it, or POST ${base}/api/declare-door with its host to be
+read now. The store reads only that host's own file, never what anyone
+else says about it, and a file may only declare doors on the host that
+serves it.
 For a scorer or a marketplace: ${base}/scorers. ${SCORERS_PROPOSITION}
 ${SCORERS_FOR_MONEY} The page says how to pull the corpus, verify it,
 cite a row by its entry URL and digest (every row surface prints the

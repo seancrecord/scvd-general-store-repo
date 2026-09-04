@@ -103,6 +103,14 @@ export const KV_KEYS = {
    */
   longWalkState: "long_walk_state",
   /**
+   * WHAT HOSTS DECLARE ABOUT THEMSELVES (2026-09-04): the doors each
+   * host's own /.well-known/x402 (or agent-card pointer) named, keyed
+   * by the host the sweep asked. Separate from the door bank on
+   * purpose — the bank holds only what the discovery DIRECTORY
+   * declared, and its own comment says so.
+   */
+  wellKnownDoors: "well_known_doors",
+  /**
    * THE OUTREACH LEDGER (2026-08-19): the keeper's private work queue
    * state for telling operators their own door is broken. One key,
    * host → {workflow status, published contact strings}. It records

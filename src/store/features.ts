@@ -6,6 +6,12 @@ import {
   SCORERS_PROPOSITION,
 } from "@/store/copy/scorers";
 import {
+  OPERATORS_FOR_MONEY,
+  OPERATORS_FREE_FIRST,
+  OPERATORS_OPENED,
+  OPERATORS_PROPOSITION,
+} from "@/store/copy/operators";
+import {
   TRADE_COUNTER_NAME,
   TRADE_COUNTER_OPENED,
   TRADE_FOR_MONEY,
@@ -104,6 +110,25 @@ export const FEATURES: readonly Feature[] = [
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,
   },
+  {
+    /**
+     * FOR OPERATORS (2026-09-04). The room stood since 2026-09-03 on the
+     * pre-rule list; today it gained a door of its own — POST
+     * /api/declare-door, the way a host not on the discovery feed asks
+     * to be read now — and a door needs a feature row (60.1). So the
+     * room earns its page in full: the three sentences, the five
+     * answers, a typed node, and the door in openapi.json.
+     */
+    id: "operators",
+    name: "For operators",
+    room: "/operators",
+    proposition: OPERATORS_PROPOSITION,
+    for_money: OPERATORS_FOR_MONEY,
+    free_first: OPERATORS_FREE_FIRST,
+    doors: ["/api/declare-door"],
+    named_on: ["/scorers"],
+    opened: OPERATORS_OPENED,
+  },
 ];
 
 export function featureForRoom(path: string): Feature | undefined {
@@ -115,7 +140,7 @@ export const ROOMS_BEFORE_RULE_60: readonly string[] = [
   "/what", "/developers", "/try", "/conformance", "/corpus", "/corpus/brief",
   "/doors", "/how-it-works", "/samples", "/bot-auth", "/gazette", "/almanac",
   "/directory", "/train", "/zodiac", "/porch", "/neighbours", "/stack",
-  "/corrections", "/disagreements", "/observatory", "/operators", "/coverage",
+  "/corrections", "/disagreements", "/observatory", "/coverage",
   "/visitors", "/pulse", "/registry", "/inflows", "/fresh-set", "/trust",
   "/passport", "/profiles", "/attestation", "/criteria", "/pricing", "/rails",
   "/bounties", "/credit", "/rights", "/privacy", "/deprecation", "/wind-down",

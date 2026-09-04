@@ -173,6 +173,35 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **THE CENSUS NOW READS WHAT A HOST DECLARES ABOUT ITSELF
+  (2026-09-04, "could we add a way to add apis to walk or
+  somehow pick up doors that arent on bazaar?").** The register
+  knew 6,367 hosts by name and the walk knew 1,088 doors by
+  URL; the 5,279 between were "listed, not walked" every week
+  and the long walk's own comment claimed it finished the
+  universe by midweek. It finished the feed. Two lanes now,
+  one consent line — a door enters the walk only from a feed
+  or from the host's OWN `/.well-known/x402`, and a file may
+  only declare doors on the host that serves it:
+  Lane A, THE SWEEP: once the roster is walked, the idle
+  hourly firings read every name-only host's own file (and an
+  agent-card pointer, one hop); a door a host declares for
+  itself joins the roster's tail, source `well-known`, and is
+  knocked on by a later firing. One file read and one knock per
+  host per week; the round's `walk.sweep` and
+  `population.per_source` say what it read, found, and could
+  not read. Well-known rows sit out the listed/gone delta and
+  never enter the door bank (the directory's word only).
+  Lane B, `POST /api/declare-door {"host"}`: the same read by
+  hand today; a door found joins THIS week's roster. One per
+  host per day. `/operators` gained the "Be found" stage and,
+  because it now has a door, a rule-60 feature row.
+  YOUR PRESS: none — the sweep starts on the next hourly
+  firing after deploy and finishes within the week. LOOK next
+  Sunday: `walk.sweep` on `/corpus/latest.json` (found / none /
+  unreadable, and `capped`), and `coverage_pct` against 17.1.
+  Then tell Saymon: serve the file, or POST the host.
+
 - ⚑ **THE WALK CALLED 61 WORKING DOORS BROKEN (2026-09-04).**
   Two preflight checks read every chain as Ethereum or
   Solana. An XRPL address is base58 inside the Solana window,

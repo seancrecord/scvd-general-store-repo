@@ -759,12 +759,20 @@ const BASE = "https://scvd.store";
  * merged head. Confirmed before this value was taken: the guide
  * carries "/scorers", "/corpus/latest.json", "/fixtures.json" and
  * "scvd look <url>", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FIFTH — by the operators' paragraph:
+ * the room gained a door (POST /api/declare-door) and so a feature row,
+ * and the guide now carries its proposition and money sentence and
+ * says how a host the discovery feed does not name gets into the
+ * census — its own /.well-known/x402, read by the weekly sweep or by
+ * hand. Confirmed before this value was taken: the guide carries
+ * "/operators", "/api/declare-door", "/.well-known/x402" and "only
+ * that host's own file", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "66d531dd171f5cfe82e4c16776e7450e6fa21ca2b685c27871b94417e1c75208";
+  "643e9637f813882f2560991424e8b838e00dd339b36f335e88a6468d4778172a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

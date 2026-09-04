@@ -6449,6 +6449,71 @@ openapiRoutes.get("/openapi.json", async (c) => {
           TRAJECTORY_SCHEMA,
         ),
       },
+      "/api/declare-door": {
+        get: returns(
+          freeOp(
+            "Declare a door, explained",
+            "How a host the discovery feed does not name gets into the census: serve your own /.well-known/x402 listing your doors, then name your host here and the store reads that file today. The store reads only the file at the host you name, a file may only declare doors on the host that serves it, and a door elsewhere is counted as foreign and never walked. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              what_this_is: { type: "string" },
+              the_consent_line: { type: "string" },
+              the_file: { type: "object" },
+              how_to_call: { type: "string" },
+              the_words_that_come_back: { type: "object" },
+              errors: { type: "object" },
+              one_per_day: { type: "string" },
+              what_happens_next: { type: "string" },
+              example: { type: "string" },
+            },
+          },
+        ),
+        post: returns(
+          postOp(
+            "Declare a door: read this host's own well-known file now",
+            "Name a bare hostname. The store reads https://{host}/.well-known/x402 (and, one hop, an agent card's x402Discovery pointer), and a door the file declares for its own host joins this week's roster to be knocked on by the next hourly firing. Answers with one of three words: doors, none, unreadable. One read by hand per host per day; 400 for a host it will not read; 429 within the day.",
+            "host: the bare hostname, no scheme, path or port.",
+            {
+              type: "object",
+              required: ["host"],
+              additionalProperties: false,
+              properties: { host: { type: "string", example: "payforapi.com" } },
+            },
+          ),
+          {
+            type: "object",
+            required: ["host", "read"],
+            properties: {
+              host: { type: "string" },
+              read: {
+                type: "object",
+                required: ["kind"],
+                properties: {
+                  kind: { type: "string", enum: ["doors", "none", "unreadable"] },
+                  declaring_host: { type: "string" },
+                  doors: { type: "array", items: { type: "string", format: "uri" } },
+                  foreign: { type: "integer" },
+                  refused: { type: "integer" },
+                  capped: { type: "boolean" },
+                  via: { type: "string", enum: ["x402", "agent-card", "neither"] },
+                  reason: { type: "string" },
+                },
+              },
+              walk: {
+                type: "object",
+                properties: {
+                  this_week: { type: "string", enum: ["appended", "already-on-roster", "no-walk-this-week", "no-door-on-own-host"] },
+                  door_the_census_will_knock_on: { type: "string", nullable: true },
+                  then: { type: "string" },
+                },
+              },
+              next_read_by_hand_after: { type: "string", format: "date-time" },
+            },
+          },
+        ),
+      },
       "/api/standing-note": {
         get: returns(
   freeOp(
