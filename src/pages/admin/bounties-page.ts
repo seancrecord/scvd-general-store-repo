@@ -281,8 +281,12 @@ function boardHtml(
            to <code>${escapeHtml(claim.payout_to)}</code><br>
            their settlement <code>${escapeHtml(claim.tx_hash.slice(0, 18))}…</code><br>
            ${redemptionHtml(bounty, redemptions, nowIso)}${
+             claim.house_probe
+               ? `<br><small>our own knock at claim time: <strong>${escapeHtml(claim.house_probe.verdict)}</strong>${claim.house_probe.failed.length ? ` (${escapeHtml(claim.house_probe.failed.join(", "))})` : ""}</small>`
+               : ""
+           }${
              claim.observation
-               ? `<br><small>observation (their claim, unverified): ${escapeHtml(claim.observation.slice(0, 160))}${claim.observation.length > 160 ? "…" : ""}</small>`
+               ? `<br><details><summary><small>their observation, ${claim.observation.length} characters — a claim, unverified</small></summary><pre style="white-space:pre-wrap;max-width:60ch">${escapeHtml(claim.observation)}</pre></details>`
                : ""
            }`
         : "—";

@@ -360,6 +360,17 @@ export interface WardRound {
     started_at: string;
   };
   hosts: WardHostResult[];
+  /**
+   * THE CROWD'S WALKS (2026-09-04): every bounty claim this store paid
+   * inside this week — a stranger's real settlement at a listed door,
+   * verified on chain when it was paid — at its own tier, beside the
+   * house's unpaid probes and never blended into them. The row's
+   * shape and its hygiene (digests, never wallets; a hash of the
+   * walker's text, never the text) are services/crowd-walks.ts's.
+   * Absent on rounds sealed before the board's rows existed and on
+   * weeks with no paid claim.
+   */
+  crowd_walks?: import("@/services/crowd-walks").CrowdWalk[];
 }
 
 export interface WardDelta {
@@ -978,6 +989,18 @@ async function sealRound(
   // The market desk's block rides every sealed round: plain
   // arithmetic over the round's own rows, recomputable by anyone.
   round.market = marketAggregates(round.hosts, discoveryFieldsSeen);
+  /*
+   * The crowd's walks ride the same seal (2026-09-04): the week's paid
+   * bounty claims, at their own tier. Fail-soft and dynamically
+   * imported — the board must never be able to stop a round sealing,
+   * and the board's module depends on this one.
+   */
+  const crowd = await import("@/services/crowd-walks")
+    .then(({ crowdWalksForWeek }) => crowdWalksForWeek(env, round.week))
+    .catch(() => []);
+  if (crowd.length > 0) {
+    round.crowd_walks = crowd;
+  }
   const previous = await latestWardRound(env);
   /**
    * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a

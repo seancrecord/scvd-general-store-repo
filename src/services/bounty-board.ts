@@ -91,6 +91,31 @@ export interface BountyRecord {
     observation?: string;
     authorization_nonce: string;
     authorization_valid_before: string;
+    /**
+     * THE CHAIN'S PART, KEPT (2026-09-04): the block the settlement
+     * landed in, read off the receipt this store verified. The corpus
+     * row cites it. Absent on claims paid before it was written down.
+     */
+    settled_block?: number;
+    /**
+     * OUR OWN KNOCK AT THE MOMENT OF THE CLAIM (2026-09-04, the keeper:
+     * "what if they type nonsense?"). The walker's observation is a
+     * claim and stays one. What this store CAN verify about the door
+     * it verifies itself: one unpaid GET at claim time, the same
+     * battery the census runs, verdict and named failures kept. So a
+     * crowd-walked row carries two facts of ours — the settlement on
+     * chain and the door's shape as we saw it — around one claim of
+     * theirs. Absent when the knock could not be taken; never a
+     * refusal, the claim pays on the chain's part alone.
+     */
+    house_probe?: {
+      verdict: "ready" | "not_ready" | "unreachable";
+      failed: string[];
+      advisories: string[];
+      battery?: string;
+      latency_ms?: number;
+      at: string;
+    };
   };
 }
 
@@ -571,6 +596,29 @@ export async function claimBounty(
       );
     }
 
+    /*
+     * OUR OWN KNOCK, beside their claim. The settlement above is
+     * proven; what the door looks like is something this store can
+     * see for itself, so it looks — one unpaid GET, the census's
+     * battery, fail-soft: a knock that cannot be taken changes
+     * nothing about the payout. Dynamic import: ward-round must not
+     * be a static dependency of the board (it imports nothing from
+     * here today, and a cycle here is the kind that deadlocks a
+     * worker on a bad day).
+     */
+    const houseProbe = await import("@/services/ward-round")
+      .then(({ probeHost }) => probeHost(env, bounty.target_url))
+      .then((probe) => ({
+        verdict:
+          probe.verdict === "not_probed" ? ("unreachable" as const) : probe.verdict,
+        failed: probe.failed,
+        advisories: probe.advisories,
+        ...(probe.battery ? { battery: probe.battery } : {}),
+        ...(probe.latency_ms !== undefined ? { latency_ms: probe.latency_ms } : {}),
+        at: new Date().toISOString(),
+      }))
+      .catch(() => undefined);
+
     // Rule 3, outbound: the address OUR money goes to, screened, fail
     // closed. The oracle needs no key; an unanswered screen pays nobody.
     // Read over the same endpoint ladder as the receipt above — a 429
@@ -656,6 +704,8 @@ export async function claimBounty(
         payer: input.payer.toLowerCase(),
         payout_to: input.payoutTo.toLowerCase(),
         claimed_at: now.toISOString(),
+        settled_block: receiptBlock,
+        ...(houseProbe ? { house_probe: houseProbe } : {}),
         ...(input.observation
           ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
           : {}),

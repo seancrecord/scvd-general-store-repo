@@ -72,6 +72,34 @@ export interface FreshSetRow {
   observed_at: string;
   conditions: string[];
   not_checked: string[];
+  /**
+   * A stranger paid this door this week and the settlement was
+   * verified on chain (2026-09-04). The one thing `not_checked` says
+   * no probe can see — that a purchase completes — somebody else saw,
+   * with their own money. Stated on the row because it is the fact a
+   * routing decision most wants; the row in `crowd_walks` carries it.
+   */
+  settled_by_a_stranger_this_week?: true;
+}
+
+/**
+ * THE CROWD'S ROWS on the routing surface: doors a stranger actually
+ * paid this week, settlement verified on chain by this store when the
+ * bounty was paid. Its own list, its own tier name, never merged into
+ * the probe rows above — a settlement is a stronger fact than a
+ * conformant 402 and a different one.
+ */
+export interface FreshSetCrowdRow {
+  tier: "crowd-walked";
+  host: string;
+  url: string;
+  network: string;
+  settled_at: string;
+  tx_hash: string;
+  amount_usd: number;
+  /** This store's own unpaid knock at claim time, when one was taken. */
+  house_probe_verdict?: "ready" | "not_ready" | "unreachable";
+  history_url: string;
 }
 
 /**
@@ -95,6 +123,9 @@ export interface FreshSet {
   rows: FreshSetRow[];
   /** True when the round held more ready doors than the cap serves. */
   truncated: boolean;
+  /** Doors a stranger paid this week, settlement chain-verified. May be empty. */
+  crowd_walks: FreshSetCrowdRow[];
+  crowd_walks_note: string;
   /** The round's verdict arithmetic, failures counted but never named. */
   aggregates: {
     listed_resources: number;
@@ -125,9 +156,25 @@ export interface FreshSet {
  * empty set until a round exists, and a loop over no rows proves
  * nothing. The builder is where the law binds.
  */
+/** The crowd's rows for the routing surface, from the round's own crowd_walks. */
+export function crowdRows(round: WardRound, base: string): FreshSetCrowdRow[] {
+  return (round.crowd_walks ?? []).map((walk) => ({
+    tier: "crowd-walked" as const,
+    host: walk.host,
+    url: walk.url,
+    network: walk.network,
+    settled_at: walk.claimed_at,
+    tx_hash: walk.settlement.tx_hash,
+    amount_usd: walk.settlement.amount_usd,
+    ...(walk.house_probe ? { house_probe_verdict: walk.house_probe.verdict } : {}),
+    history_url: `${base}/corpus/host/${walk.host}.json`,
+  }));
+}
+
 export function freshRows(round: WardRound, base: string): FreshSetRow[] {
   const seen = new Set<string>();
   const rows: FreshSetRow[] = [];
+  const settledHosts = new Set((round.crowd_walks ?? []).map((walk) => walk.host));
   for (const host of round.hosts) {
     if (host.verdict !== "ready") continue;
     if (seen.has(host.host)) continue;
@@ -135,6 +182,7 @@ export function freshRows(round: WardRound, base: string): FreshSetRow[] {
     rows.push({
       host: host.host,
       url: host.url,
+      ...(settledHosts.has(host.host) ? { settled_by_a_stranger_this_week: true as const } : {}),
       ...(host.offer
         ? {
             rails: host.offer.networks,
@@ -183,6 +231,9 @@ export async function buildFreshSet(env: Env): Promise<FreshSet | null> {
       "Not a ranking, not an endorsement, and no figure without its denominator. A row is a fact about one dated moment; nothing accumulates across weeks into a judgment on an operator. Doors that failed this round are counted in aggregates and never named here.",
     rows: rows.slice(0, FRESH_SET_ROW_CAP),
     truncated: rows.length > FRESH_SET_ROW_CAP,
+    crowd_walks: crowdRows(round, base),
+    crowd_walks_note:
+      "Doors a stranger paid this week with their own wallet, the settlement verified on chain by this store when it paid the bounty — the one fact no probe can see. Their own tier, below the house's walks, never blended into the rows above. What the walker said about the door is their claim, kept on the bounty record and not repeated here.",
     aggregates: {
       listed_resources: round.listed_resources,
       probed: probed.length,
