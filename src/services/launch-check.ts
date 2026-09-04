@@ -19,6 +19,7 @@ import {
 } from "@/lib/base-rpc";
 import { DEFAULT_TRANSFER_METHOD } from "@/services/preflight";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { sendAlert } from "@/lib/alerts";
 
 /**
  * THE LAUNCH CHECK — the walkabout productized for one endpoint
@@ -443,6 +444,30 @@ export function oracleScreen(
       source: `${source} — no answer from ${failures.length} endpoint${failures.length === 1 ? "" : "s"}: ${failures.join(", ")}`,
     };
   };
+}
+
+/**
+ * THE SCREEN DID NOT ANSWER, SAID OUT LOUD (2026-09-04).
+ *
+ * Failing closed is the rule and it stands. Failing closed QUIETLY
+ * was the defect: on 2026-09-03 every bounty claim was refused for
+ * ninety minutes and the keeper learned it from a stranger's letter.
+ * A listing is the screen WORKING and never comes here; only silence
+ * does. Every door that pays calls this beside its refusal — the
+ * bounty claim, the credit cash-out, the launch check — keyed by door
+ * so a run at one door pages once and then backs off, while the
+ * refusals themselves keep landing on /admin/bounties.
+ */
+export async function raiseScreenUnavailable(
+  env: Env,
+  door: string,
+  source: string,
+): Promise<void> {
+  await sendAlert(env, {
+    condition: "payout_screen_unavailable",
+    detail: `OURS to check, no money moved — the sanctions screen did not answer at ${door}, so the rule failed closed and the payout was refused. The screen said: ${source}. Every payout this store makes (bounty rewards, credit cash-outs, the launch check) waits behind this screen, so while it stays silent the board turns every walker away. It reads the on-chain oracle over the RPC ladder, so silence means every provider on it refused or timed out: check the RPC keys and their quotas first. The claims turned away are on /admin/bounties; nothing is owed and nothing needs refunding.`,
+    key: door,
+  }).catch(() => undefined);
 }
 
 export function chainalysisScreen(
@@ -914,6 +939,9 @@ export async function performLaunchCheck(
     }
     const screened = await screen(chosen.payTo);
     if (screened.listed !== false) {
+      if (screened.listed === null) {
+        await raiseScreenUnavailable(env, "the launch check", screened.source);
+      }
       stages.push({
         stage: "screen",
         ok: false,
