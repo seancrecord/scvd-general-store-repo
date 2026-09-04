@@ -174,7 +174,16 @@ export type MetricEventKind =
   | "settle"
   | "verify"
   | "porch"
-  | "decline";
+  | "decline"
+  /**
+   * A bounty claim presented at POST /api/bounty-claim, paid or
+   * refused (2026-09-04). Money OUT had no row in the books at all:
+   * a claim that paid updated the bounty record and a claim that
+   * bounced left nothing, so the keeper learned the board had been
+   * refusing for ninety minutes from a stranger's letter. Same
+   * instrument as declines, pointed the other way.
+   */
+  | "bounty";
 
 export interface MetricEvent {
   kind: MetricEventKind;
@@ -1187,6 +1196,12 @@ export async function readMonthLedger(
     if (kind?.startsWith("porch")) {
       continue; // The porch table reads these; the ledger doesn't.
     }
+    if (kind === "bounty" || kind === "bountyh") {
+      // Money out. readBountyLedger reads these; left here they would
+      // fall through to the item rows below and mint a shelf item
+      // called "refused".
+      continue;
+    }
     if (kind === "d402" || kind === "dpaid") {
       // Summed, not assigned: one bucket may be spread over shards
       // (task #87) and may also carry a pre-sharding key.
@@ -1520,6 +1535,123 @@ export async function listRecentPorchEvents(
       }
       const event = values.get(name);
       if (event?.kind === "porch" && event.item === surface) {
+        events.push(event);
+      }
+    }
+    if (listed.list_complete) {
+      break;
+    }
+    cursor = listed.cursor;
+  }
+  return events;
+}
+
+/**
+ * MONEY OUT, BOOKED LIKE MONEY IN (2026-09-04).
+ *
+ * The purchase side of the till writes a row for every 402, settle
+ * and decline, and the desk reads them. The bounty board — the one
+ * door where the store PAYS — wrote nothing: a claim that paid changed
+ * the bounty record, a claim that was refused vanished with its 400.
+ * So the sanctions screen could refuse every claim for ninety minutes
+ * and the first the keeper heard of it was a visitor's letter.
+ *
+ * One event row per claim presented, outcome and reason in the note,
+ * and a monthly counter per outcome (house-suffixed like every other
+ * counter, so the keeper's own test claims never read as demand).
+ */
+export type BountyClaimOutcome = "paid" | "refused" | "error";
+
+export async function recordBountyClaim(
+  env: Env,
+  bountyId: string,
+  outcome: BountyClaimOutcome,
+  reason: string,
+  signals: EventSignals = {},
+): Promise<void> {
+  const event = buildEvent(
+    env,
+    "bounty",
+    `bounty:${bountyId.slice(0, 60) || "(no id)"}`,
+    signals,
+  );
+  event.note = `${outcome}: ${reason}`.slice(0, 200);
+  await bump(
+    env,
+    KV_KEYS.metric(
+      metricsMonth(),
+      `bounty${bucketSuffix(event, false)}`,
+      outcome,
+    ),
+  );
+  await writeEvent(env, event);
+}
+
+export interface BountyLedger {
+  month: string;
+  /** Organic claims this month by outcome. */
+  paid: number;
+  refused: number;
+  errors: number;
+  /** The keeper's own, kept apart like every house column. */
+  paidHouse: number;
+  refusedHouse: number;
+  errorsHouse: number;
+}
+
+/** The month's bounty counters, one bounded prefix read. */
+export async function readBountyLedger(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<BountyLedger> {
+  const ledger: BountyLedger = {
+    month,
+    paid: 0,
+    refused: 0,
+    errors: 0,
+    paidHouse: 0,
+    refusedHouse: 0,
+    errorsHouse: 0,
+  };
+  const prefix = `${KV_KEYS.metricMonthPrefix(month)}bounty`;
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: 50 });
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  for (const name of listed.names) {
+    const value = parseInt(values.get(name) ?? "0", 10);
+    const [kind, outcome] = name.slice(KV_KEYS.metricMonthPrefix(month).length).split(":");
+    const house = kind === "bountyh";
+    if (kind !== "bounty" && !house) continue;
+    if (outcome === "paid") house ? (ledger.paidHouse += value) : (ledger.paid += value);
+    else if (outcome === "refused") house ? (ledger.refusedHouse += value) : (ledger.refused += value);
+    else if (outcome === "error") house ? (ledger.errorsHouse += value) : (ledger.errors += value);
+  }
+  return ledger;
+}
+
+/** Every claim presented, newest first, from the raw 90-day rows. */
+export async function listRecentBountyEvents(
+  env: Env,
+  limit = 30,
+): Promise<MetricEvent[]> {
+  const events: MetricEvent[] = [];
+  let cursor: string | undefined;
+  let scanned = 0;
+  const SCAN_CAP = 3000;
+  while (events.length < limit && scanned < SCAN_CAP) {
+    const listed = await kvList(env.COUNTERS, {
+      prefix: "evt:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    const names = listed.keys.map((key) => key.name);
+    scanned += names.length;
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    for (const name of names) {
+      if (events.length >= limit) {
+        break;
+      }
+      const event = values.get(name);
+      if (event?.kind === "bounty") {
         events.push(event);
       }
     }

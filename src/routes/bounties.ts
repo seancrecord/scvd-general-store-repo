@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
+import { recordBountyClaim, type EventSignals } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -218,19 +220,56 @@ bountyRoutes.get("/api/bounty-claim", (c) => {
   });
 });
 
+/**
+ * Attribution for the claim's row in the books — the same signals
+ * the till reads, so a claim from the keeper's own test script books
+ * house and a stranger's books organic.
+ */
+function claimSignals(c: Context<HonoEnv>): EventSignals {
+  const signals: EventSignals = {};
+  const userAgent = c.req.header("User-Agent");
+  if (userAgent) signals.userAgent = userAgent;
+  const referrer = c.req.header("Referer");
+  if (referrer) signals.referrer = referrer;
+  const declared = c.req.query("src") ?? c.req.query("source");
+  if (declared) signals.declaredSource = declared;
+  const houseHeader = c.req.header("X-House");
+  if (houseHeader) signals.houseHeader = houseHeader;
+  const houseParam = c.req.query("house");
+  if (houseParam) signals.houseParam = houseParam;
+  return signals;
+}
+
 bountyRoutes.post("/api/bounty-claim", async (c) => {
+  /*
+   * EVERY CLAIM PRESENTED LEAVES A ROW (2026-09-04). A refused claim
+   * used to leave nothing but its 400, so the sanctions screen could
+   * refuse every walker for ninety minutes and the desk showed a
+   * quiet board. The row is written whichever way the claim goes,
+   * and never delays or changes the answer.
+   */
+  const book = (
+    bountyId: string,
+    outcome: "paid" | "refused" | "error",
+    reason: string,
+  ): Promise<void> =>
+    recordBountyClaim(c.env, bountyId, outcome, reason, claimSignals(c)).catch(
+      () => undefined,
+    );
   let body: Record<string, unknown>;
   try {
     body = (await c.req.json()) as Record<string, unknown>;
   } catch {
+    await book("", "refused", "the claim body was not JSON");
     return c.json(
       { error: "The claim body must be JSON — the shape is on GET /api/bounties." },
       400,
     );
   }
+  const bountyId = String(body["bounty_id"] ?? "");
   try {
     const result = await claimBounty(c.env, {
-      bountyId: String(body["bounty_id"] ?? ""),
+      bountyId,
       txHash: String(body["tx_hash"] ?? ""),
       payer: String(body["payer"] ?? ""),
       payoutTo: String(body["payout_to"] ?? ""),
@@ -238,11 +277,22 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
         ? { observation: body["observation"] }
         : {}),
     });
+    await book(
+      bountyId,
+      "paid",
+      `$${result.reward_usd} authorized to ${result.payout.authorization.to}`,
+    );
     return c.json(result, 200);
   } catch (error) {
     if (error instanceof BountyRefused) {
+      await book(bountyId, "refused", error.message);
       return c.json({ error: error.message }, 400);
     }
+    await book(
+      bountyId,
+      "error",
+      String(error instanceof Error ? error.message : error),
+    );
     throw error;
   }
 });

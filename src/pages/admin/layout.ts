@@ -39,6 +39,11 @@ export type AdminTab =
   | "reconciliation"
   | "files"
   | "declines"
+  /**
+   * Money out (2026-09-04): the paying wallet's balance off the chain,
+   * every claim presented at the bounty board, and where each went.
+   */
+  | "bounties"
   | "referrals"
   | "ward"
   | "cv"
@@ -87,6 +92,7 @@ const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
 const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
   { tab: "declines", href: "/admin/declines", label: "Declines" },
+  { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
   { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },

@@ -507,6 +507,32 @@ async function rpc<T>(
   }, chain);
 }
 
+/**
+ * THE PAYING WALLET'S BALANCE (2026-09-04, the keeper: "make visible
+ * in admin how many funds are in our paying wallet"). One eth_call to
+ * the chain's USDC contract, balanceOf(address), over the same
+ * endpoint ladder as every other read. The selector is the first four
+ * bytes of keccak256("balanceOf(address)").
+ */
+const BALANCE_OF_SELECTOR = "0x70a08231";
+
+export async function usdcBalanceOf(
+  env: Env,
+  address: string,
+  chain: EvmChain = BASE_EVM,
+): Promise<bigint> {
+  const data =
+    BALANCE_OF_SELECTOR +
+    address.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+  const result = await rpc<string>(
+    env,
+    "eth_call",
+    [{ to: chain.usdc, data }, "latest"],
+    chain,
+  );
+  return BigInt(result && result !== "0x" ? result : "0x0");
+}
+
 /** null when the chain has never heard of the hash. */
 export async function getReceipt(
   env: Env,

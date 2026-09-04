@@ -9,9 +9,11 @@ import { readDeclines, traceClient } from "@/lib/declines";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
+  listRecentBountyEvents,
   listRecentPricedEvents,
   listEventsForItem,
   listRecentPorchEvents,
+  readBountyLedger,
   readMonthLedger,
   readPorchLedger,
   emptyMonthLedger,
@@ -384,6 +386,33 @@ function shelf<T>(
 }
 
 /**
+ * A read the desk will not wait long for. The desk deliberately pays
+ * for no chain walk on open (2026-08-28); the wallet balance is one
+ * eth_call, but one call through a ladder of providers that are all
+ * down is many seconds, and the desk must open anyway. Past the
+ * deadline the shelf reads "not read here" and the bounty board page
+ * takes the full wait.
+ */
+function withDeadline<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} took longer than ${ms}ms`)),
+      ms,
+    );
+    work.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+/**
  * What the last stocking form actually did. A redirect in silence
  * reads exactly like a form that did nothing, which is how the
  * keeper lost a name to doubt on 2026-07-27.
@@ -625,6 +654,8 @@ adminRoutes.get("/admin", async (c) => {
     monthReclass,
     glance,
     mcpClients,
+    fieldWallet,
+    bountyState,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -658,6 +689,21 @@ adminRoutes.get("/admin", async (c) => {
     // One key. The census the MCP door started keeping 2026-08-29.
     import("@/services/mcp-clients").then(({ readMcpClients }) =>
       readMcpClients(c.env),
+    ),
+    /*
+     * MONEY OUT (2026-09-04): the paying wallet's balance, one
+     * eth_call on a three-second leash so a provider outage cannot
+     * hold the desk shut, and the bounty board's own state (KV only).
+     */
+    withDeadline(
+      import("@/services/field-wallet").then(({ readFieldWallet }) =>
+        readFieldWallet(c.env),
+      ),
+      3000,
+      "the paying wallet read",
+    ),
+    import("@/services/bounty-board").then(({ bountyBoard }) =>
+      bountyBoard(c.env),
     ),
     /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
@@ -727,6 +773,30 @@ adminRoutes.get("/admin", async (c) => {
       allTime: shelf(glance, null, "the glance", notes)?.all_time ?? null,
       takeReadAt: shelf(glance, null, "the glance", notes)?.computed_at ?? null,
       mcpClients: shelf(mcpClients, {}, "the mcp census", notes),
+      moneyOut: (() => {
+        const wallet = shelf(fieldWallet, null, "the paying wallet", notes);
+        const board = shelf(bountyState, null, "the bounty board", notes);
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        const outstandingUsd = board
+          ? Math.round(
+              board.bounties
+                .filter(
+                  (bounty) =>
+                    bounty.status === "paid" &&
+                    Number(bounty.claim?.authorization_valid_before ?? "0") >
+                      nowSeconds,
+                )
+                .reduce((sum, bounty) => sum + bounty.reward_usd, 0) * 100,
+            ) / 100
+          : null;
+        return {
+          wallet,
+          openBounties: board?.open_count ?? null,
+          spentThisWeekUsd: board?.spent_this_week_usd ?? null,
+          weeklyBudgetUsd: board?.weekly_budget_usd ?? null,
+          outstandingUsd,
+        };
+      })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
@@ -2269,6 +2339,38 @@ adminRoutes.post("/admin/market/publish-registry", async (c) => {
     });
   }
   return c.redirect("/registry");
+});
+
+/**
+ * MONEY OUT, ON ITS OWN PAGE (2026-09-04): the paying wallet read off
+ * the chain (the full wait, no leash — this is the page that exists
+ * to answer), the week's budget, every bounty and its claim, and
+ * every claim presented with its outcome. Reads only; the board's
+ * levers stay on the market page.
+ */
+adminRoutes.get("/admin/bounties", async (c) => {
+  const notes: string[] = [];
+  const [board, wallet, ledger, attempts] = await Promise.allSettled([
+    import("@/services/bounty-board").then(({ bountyBoard }) =>
+      bountyBoard(c.env),
+    ),
+    import("@/services/field-wallet").then(({ readFieldWallet }) =>
+      readFieldWallet(c.env),
+    ),
+    readBountyLedger(c.env),
+    listRecentBountyEvents(c.env, 40),
+  ]);
+  const { renderBountiesPage } = await import("@/pages/admin/bounties-page");
+  return c.html(
+    renderBountiesPage({
+      board: shelf(board, null, "the board", notes),
+      wallet: shelf(wallet, null, "the paying wallet", notes),
+      ledger: shelf(ledger, null, "the bounty ledger", notes),
+      attempts: shelf(attempts, [], "claim attempts", notes),
+      now: new Date().toISOString(),
+      loadNotes: notes,
+    }),
+  );
 });
 
 adminRoutes.get("/admin/declines", async (c) => {
