@@ -199,6 +199,16 @@ describe("the round itself, with the outside world stubbed", () => {
     // The miss is on the signed round, dated: what the corpus freezes.
     const stored = await latestWardRound(testEnv);
     expect(stored?.our_doors?.missing).toEqual(round.our_doors?.missing);
+    // And the keeper is told what to run and what it costs — every
+    // week the miss stands, not once (2026-09-04).
+    const { listAlerts } = await import("@/lib/alerts");
+    const alerts = await listAlerts(testEnv, 20);
+    const page = alerts.find((alert) => alert.detail.includes("payable doors this store claims"));
+    expect(page, "a missing door did not page").toBeTruthy();
+    expect(page!.detail).toContain("ITEMS=");
+    expect(page!.detail).toContain("npm run shop");
+    expect(page!.detail).toContain("conformance_watch");
+    expect(page!.detail).toContain("every Sunday the miss stands");
   });
 
   /**

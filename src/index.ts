@@ -1214,6 +1214,25 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    /**
+     * THE PAYING WALLET'S COVER rides the same hourly press
+     * (2026-09-04): the balance off the chain against what the store
+     * has signed for. The desk shows "short" when opened; this says
+     * so whether or not anybody opens it. Its own failure is a
+     * worker_health line, never a shortfall.
+     */
+    ctx.waitUntil(
+      import("@/services/field-wallet").then(({ sweepFieldWallet }) =>
+        sweepFieldWallet(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Field wallet cover check failed to run: ${String(error)}`,
+            }),
+        ),
+      ),
+    );
   }),
 };
 

@@ -55,20 +55,59 @@ build, it is on the roadmap.
   disappears. INKED 2026-09-04: the seats sentence and the
   misuse clause (`src/store/copy/doctrine.ts`), wording as
   drafted. RULED 2026-09-04: `/scorers` stays off the
-  storefront, like `/operators`. PRESS: when a system meets
+  storefront, like `/operators`. ⚑ SUPERSEDED the same day
+  ("how do we broadcast scorers so its used? how do we make
+  it incredibly obvious?"): the room is ON the front now.
+  The ruling rested on a comparison that was not true —
+  `/operators` was never held back, it has had a storefront
+  slot all along — so the rule it invoked did not exist.
+  Also: every `/corpus` door now answers with
+  `Link: <…/scorers>; rel="help"` and the licence, so a
+  client reading only headers (or sending HEAD) learns where
+  the terms are; and the README names the room. PRESS: when a system meets
   the five listing facts, add it to the register with the
   citing URL and the date first seen, and nothing else.
   AUTOMATED 2026-09-04 ("can we not just automate this
   weekly check in admin?"): the citation watch rides the
-  Sunday press with the ward round. It reads every page the
-  register and `src/store/citation-prospects.json` name,
-  pages `citation_seen` when a prospect starts carrying a
-  row or a listed page stops, and prints the rows on
-  `/admin/outreach` under "Citations — who carries a row"
-  with a Check-now button. Your hand: put each page the
-  scorers note goes to in the prospects file (name, URL,
-  date noted) and keep pushing; move a prospect into the
-  register only when the five facts hold.
+  Sunday press with the ward round, and since CV's register
+  landed it reads ONE hand-kept list —
+  `registry/scorers-outreach.json`. The cron fetches the
+  rows you have written to (plus any already citing) and
+  pages `citation_seen` when one starts carrying a row or a
+  listed page stops; `npm run outreach:check` sweeps all
+  101 from your machine. The rows print on `/admin/outreach`
+  under "Citations — who carries a row" with a Check-now
+  button. Your hand: set `note_sent` on a row the day you
+  send, run `npm run outreach:build`, and move a system into
+  `src/store/citing-systems.json` only when the five facts
+  hold. ⚑ STAMP THE 20+ ALREADY SENT (2026-09-04, the
+  keeper: "weve sent 20+ notes"). The register recorded
+  none of them, so the Sunday watch was reading zero pages
+  while the work was done — the automation idle beside a
+  finished job. One command now, no JSON by hand:
+  `npm run outreach:sent -- "Glama" x402scan --date
+  2026-09-02`, which stamps, re-renders the table and the
+  edge's watched file, and prints how many pages the watch
+  will read. It refuses an argument that matches nothing or
+  matches two rows rather than guessing, because a wrong
+  stamp claims a note went somewhere it did not.
+  `npm run outreach:sent -- --list` shows who is stamped.
+  Stamping a send is a one-field edit that breaks
+  nothing: the derived table carries WHO EXISTS only, and
+  the status columns moved into the JSON alone (2026-09-04),
+  because a table that carried them failed the build every
+  time you did the one thing the whole loop is for.
+  ⚑ CORRECTED 2026-09-04, and worth knowing: the first
+  sweep reported SEVEN directories as citing us. Six carried
+  this store's own README sentence ("read the dated,
+  Bitcoin-anchored corpus, free, at scvd.store/corpus") and
+  one our own sample certificate — our words on their page,
+  which listing fact 4 excludes by name. The matcher now
+  counts only a page pointing at ONE ROW: a verify URL, a
+  numbered entry, a host history, a round, or the cite
+  shape. The seven `cites_since` dates were cleared; the
+  check re-establishes any that are real. Nobody has cited
+  us yet, which is the true reading.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a

@@ -10,15 +10,39 @@
  * the CLI fetches and this stays testable.
  */
 
-/** Every URL shape that counts as citing a row of the corpus. */
+/**
+ * The artifact ids the store itself publishes in its own listings and
+ * descriptions (the sample certificate every discovery entry and the
+ * MCP server card carry). A directory that mirrors our text shows it;
+ * that is our words on their page, not a citation (listing fact 4).
+ * test/citation-watch.spec.ts holds this to src/store/spec.ts.
+ */
+export const SELF_PUBLISHED_IDS = ["cert_4dww28dx5j"];
+
+/**
+ * Every URL shape that counts as citing a ROW of the corpus — a verify
+ * URL, a numbered entry, a host history, a round — or the cite shape.
+ * Tightened 2026-09-04: the bare index (/corpus, /corpus.json) and the
+ * moving views (latest, diff, tiers) no longer count, because a page
+ * that says "read the corpus at scvd.store/corpus" is quoting our own
+ * README, and the first pass over the outreach register found seven
+ * such echoes and called them citations.
+ */
 export function citationPatterns(base) {
   const root = base.replace(/\/$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return [
     new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
-    new RegExp(`${root}/corpus(?:/[A-Za-z0-9._:~-]+)*(?:\\.json)?`, "g"),
+    new RegExp(`${root}/corpus/[0-9]+\\.json`, "g"),
+    new RegExp(`${root}/corpus/host/[A-Za-z0-9.-]+\\.json`, "g"),
+    new RegExp(`${root}/corpus/round/[0-9]{4}-W[0-9]{2}(?:\\.json)?`, "g"),
     // The cite box's own shape, as a machine writes it (services/cite.ts).
     new RegExp(`"cites"\\s*:\\s*"${root}/corpus/[0-9]+\\.json"`, "g"),
   ];
+}
+
+/** True when a matched URL is one the store itself prints everywhere. */
+function selfPublished(url) {
+  return SELF_PUBLISHED_IDS.some((id) => url.endsWith(`/api/verify/${id}`));
 }
 
 /** The distinct citing URLs found in a page, in order of first sight. */
@@ -26,7 +50,7 @@ export function citationsOn(text, base) {
   const seen = new Set();
   for (const pattern of citationPatterns(base)) {
     for (const match of String(text).matchAll(pattern)) {
-      seen.add(match[0]);
+      if (!selfPublished(match[0])) seen.add(match[0]);
     }
   }
   return [...seen];
@@ -53,22 +77,6 @@ export function judge(system, fetched) {
     verdict: citations.length > 0 ? "cited" : "gone",
     citations,
   };
-}
-
-/**
- * One verdict per prospect (2026-09-04): a page the scorers note went
- * to. `silent` is the expected state and never a failure; `cited` is
- * the news. Same reading as judge(), different word for absence.
- */
-export function judgeProspect(prospect, fetched) {
-  if (!fetched || fetched.error) {
-    return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: "unreadable", reason: String(fetched?.error ?? "no response"), citations: [] };
-  }
-  if (fetched.status !== 200) {
-    return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: "unreadable", reason: `HTTP ${fetched.status}`, citations: [] };
-  }
-  const citations = citationsOn(fetched.text, prospect.base ?? "https://scvd.store");
-  return { name: prospect.name, url: prospect.url, noted: prospect.noted, verdict: citations.length > 0 ? "cited" : "silent", citations };
 }
 
 /** The exit code the CLI should use: any `gone` is a failure. */

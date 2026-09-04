@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { entryProblems, renderMarkdown } from "./lib/scorers-outreach.mjs";
+import { entryProblems, renderMarkdown, renderWatched, watchedRows } from "./lib/scorers-outreach.mjs";
 
 const register = JSON.parse(readFileSync(new URL("../registry/scorers-outreach.json", import.meta.url), "utf8"));
 
@@ -31,4 +31,17 @@ test("the seeded date is a date", () => {
 test("the table and the JSON agree", () => {
   const table = readFileSync(new URL("../registry/scorers-outreach.md", import.meta.url), "utf8");
   assert.equal(table, renderMarkdown(register));
+});
+
+test("the edge's watched file agrees with the register, and carries only written-to rows", () => {
+  const watched = readFileSync(new URL("../src/store/watched-pages.json", import.meta.url), "utf8");
+  assert.equal(watched, renderWatched(register));
+  const rows = watchedRows(register);
+  for (const row of rows) {
+    const source = register.systems.find((entry) => entry.url === row.url);
+    assert.ok(source.note_sent !== null || source.cites_since !== null, `${row.name} is watched but was never written to`);
+    assert.deepEqual(Object.keys(row), ["name", "url", "note_sent", "cites_since"]);
+  }
+  // The whole point: the research does not ride to the edge.
+  assert.ok(watched.length < 4000, "the watched file is small by construction; if it is not, the filter broke");
 });
