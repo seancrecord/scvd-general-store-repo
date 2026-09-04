@@ -120,20 +120,20 @@ export const SOURCE_ROSTER: readonly RosterEntry[] = [
     what: "A directory of paid endpoints across L402, x402 and MPP — self-described as 15,000+, which would make it the largest single frame available to us.",
     readiness: {
       state: "unread",
-      why: "Full enumeration is paid (L402-gated CSV export); the free API rate-limits into 402s well before its rows are exhausted. A partial read is unread by the population layer's own law, so it is named instead of half-read.",
+      why: "Priced by the keeper's hand on 2026-09-04, and the roster had it wrong: the JSON API is FREE at 100 requests a minute per IP, and 140 cache-bypassing requests in twenty seconds sailed through, so its documented limiter overstates itself. The only paid product is the full CSV export at /api/v1/export.csv — 500 sats (about $0.40) over L402 Lightning, a rail this store has no wallet on. Unread today because no list-endpoint response has been captured, not because it costs anything.",
       unblock:
-        "The wallet law was ruled 2026-08-18 ($25/month funding discipline). What remains is a funded wallet, one hand-captured paid response to build the reader against, and a price the keeper has seen — none of the three is done, and the price is not published anywhere we could reach.",
+        "One saved response from the free JSON list endpoint, from the keeper's machine, to build the reader against — the same afternoon the x402-list reader took. The wallet law does not bind here: nothing on the path we would read is paid. The CSV needs a Lightning wallet and is a separate ruling.",
     },
   },
   {
     source: "x402scan.com",
     home: "https://www.x402scan.com",
-    what: "A settlement indexer with a resource directory; the only one of these that watches money move rather than doors exist.",
+    what: "A settlement indexer with a resource directory; the only one of these that watches money move rather than doors exist. Its /facilitators/stats read 225.4M transactions, $54.18M lifetime, 860K buyers and 275K sellers on 2026-09-03.",
     readiness: {
       state: "unread",
-      why: "Resource enumeration is a paid endpoint. Paying is a wallet decision.",
+      why: "Priced and shape-captured by the keeper's hand on 2026-09-04, $0.03 spent: every one of its fourteen endpoints costs $0.01 a call in USDC on Base (exact scheme, x402 v2, one payTo, 300s timeout), and the price exists nowhere but in the 402 challenge itself. /resources is the door this ward wants — paginated rows of id, url, x402Version and lastUpdated. Unread today only because the three captured bodies are on the keeper's machine and not yet in test/fixtures.",
       unblock:
-        "The wallet law was ruled 2026-08-18; a funded wallet and one hand-captured paid response remain. Partial relief already landed: x402-list carries rows it imported from x402scan, tagged `imported:x402scan`, so a slice of this population now arrives free — 3 rows of 630 on 2026-09-04, which is a slice and not a substitute.",
+        "The three captured responses committed as fixtures, and a reader that pays from the field wallet under the wallet law ($0.01 a page is far under the $1-per-action line; the page count decides the round's cost and is what the fixture will tell us). Until then x402-list carries rows it imported from x402scan, tagged `imported:x402scan` — 3 rows of 630 on 2026-09-04, a slice and not a substitute.",
     },
   },
   {

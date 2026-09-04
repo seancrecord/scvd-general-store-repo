@@ -51,33 +51,52 @@ and hosts as separate figures for exactly this reason: reporting only
 hosts would inflate the share of the registry that is remotely
 reachable.
 
-## The paid two: still unpriced, and that is the finding
+## The paid two: priced by the keeper's hand, later the same day
 
-The keeper offered to fund these. **Neither price could be
-determined**, and not for want of trying.
+The keeper ran the captures himself. Total spent: **$0.03**.
 
-**402index.io** — self-describes as 15,000+ paid endpoints across
-L402, x402 and MPP, which would make it the largest single frame
-available to us, larger than fuchss. Its API docs at `/api-docs`
-describe a free tier with L402 payments for higher limits, and it ships
-an MCP server (`ryanthegentry/402index-mcp-server`) that would let a
-paid read be captured by hand without writing a client first. The docs
-page is egress-blocked from here and the price is not quoted in any
-search result, on any mirror, or in the MCP server's published
-description.
+**x402scan.com — $0.01 a call, USDC on Base.** All fourteen endpoints
+in its openapi.json carry identical terms (exact scheme, x402 v2, one
+payTo, 300s timeout), and the price is published nowhere but the 402
+challenge — which is why nothing above could find it. Three endpoints
+bought to capture price and shape together:
 
-**x402scan.com** — a settlement indexer, the only candidate that
-watches money move rather than doors exist. Resource enumeration is
-paid; no figure is published anywhere reachable.
+- `/resources` — paginated rows: `id`, `url`, `x402Version`,
+  `lastUpdated`. This is the door the ward wants.
+- `/merchants` — `recipient`, `facilitator_ids`, `tx_count`,
+  `total_amount`; the top merchant at 12.37M transactions.
+- `/facilitators/stats` — ecosystem totals: 225.4M transactions,
+  $54.18M lifetime, 860K buyers, 275K sellers, current to 2026-09-03
+  23:55Z.
 
-**What that means for funding.** The honest answer to "is it cheap?"
-is that nobody outside these two companies appears to know, and the
-wallet law's own $1-per-action threshold cannot be applied to a price
-we have not seen. The unblock for both is unchanged and is a browser
-job, not a build job: one hand-run read from the keeper's machine that
-captures the price and the response shape in the same sitting. Until
-then both stay named-and-unread on `/sources` with that stated, which
-is at least now a page rather than a comment in a TypeScript file.
+The three bodies are on the keeper's machine
+(`research/test-matrix-2026-09-04/out/`) and are not yet in this
+repository; the reader waits on them landing in `test/fixtures/`. At
+$0.01 a page the wallet law's $1-per-action line is nowhere near; the
+page count, which the fixture will show, is what sets a round's cost.
+
+**402index.io — free, and the roster had it wrong.** The JSON API is
+free at 100 requests a minute per IP, and 140 cache-bypassing unique
+requests in twenty seconds sailed through: the documented limiter
+overstates itself. The L402 Lightning tier (1,000 a minute) prices
+itself only on breach and could not be tripped politely. The one
+concrete paid product, self-listed in its own directory, is the full
+CSV export at `/api/v1/export.csv` — **500 sats (~$0.40)** over L402
+Lightning. Challenge contract captured; settlement needs a Lightning
+wallet, which nothing here has, so the CSV's shape is out of reach
+unless LN capability is stood up. The raw bolt11 invoice stayed
+uncaptured because the limiter finally 429'd on export retries —
+recoverable once it forgets the IP. The free list endpoint's shape is
+still uncaptured and is the whole unblock.
+
+**A side finding on the keeper's buyer, checked against ours.** His
+hand-rolled buyer did a case-sensitive lookup of the 402 header and
+x402scan's title-case `Payment-Required` crashed it. Every buyer this
+repository ships was audited the same hour: `scripts/lib/walkabout.mjs`
+lowercases both sides of its hand-rolled lookup, and the CLI, the
+till, the tab, the Action and the preflight package all use
+`headers.get()`, which the Fetch spec makes case-insensitive. Nothing
+to patch here.
 
 ## x402 candidates, named on the roster, unread
 
