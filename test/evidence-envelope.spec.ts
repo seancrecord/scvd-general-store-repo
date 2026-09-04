@@ -127,7 +127,8 @@ describe("the validator rejects each malformed fixture", () => {
 
   it("unregistered protocol family", () => {
     const payload = validPayload();
-    payload.subject.protocol = "mpp";
+    // mpp is registered since 2026-09-04 (its battery exists); ap2 has no reader yet and stays unregistered.
+    payload.subject.protocol = "ap2";
     expectDefect(payload, "subject.protocol.unregistered");
   });
 
