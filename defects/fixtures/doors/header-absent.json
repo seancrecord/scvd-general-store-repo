@@ -1,0 +1,11 @@
+{
+  "name": "header-absent",
+  "recorded": "2026-08-26, hand-built: body-only challenge, the v1-shaped mistake",
+  "why": "402 with the challenge in the body and no PAYMENT-REQUIRED header \u2014 fine in a browser, fails every standard v2 client.",
+  "expect_failed": [
+    "payment-required-header"
+  ],
+  "status": 402,
+  "headers": {},
+  "body": "{\"x402Version\":2,\"accepts\":[]}"
+}

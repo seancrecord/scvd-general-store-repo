@@ -1,0 +1,17 @@
+{
+  "name": "scvd-corpus-client",
+  "version": "0.1.0",
+  "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half.",
+  "type": "module",
+  "main": "./corpus-client.js",
+  "types": "./corpus-client.d.ts",
+  "exports": { ".": { "types": "./corpus-client.d.ts", "default": "./corpus-client.js" } },
+  "files": ["corpus-client.js", "corpus-client.d.ts", "example.mjs", "CHANGELOG.md", "README.md", "LICENSE"],
+  "engines": { "node": ">=18.17.0" },
+  "keywords": ["x402", "corpus", "census", "dataset", "readiness", "agent-payments", "evidence", "atom"],
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/corpus",
+  "repository": { "type": "git", "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git", "directory": "corpus-client" },
+  "bugs": { "url": "https://github.com/seancrecord/scvd-general-store-repo/issues" }
+}

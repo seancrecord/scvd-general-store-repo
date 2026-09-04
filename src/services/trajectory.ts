@@ -223,6 +223,16 @@ export function deriveDiff(
   const from = records.find((record) => record.snapshot.week === sinceWeek);
   if (!from) return null;
   const to = records[records.length - 1]!;
+  return diffRecords(from, to);
+}
+
+/**
+ * Two signed snapshots, compared: the same instrument deriveDiff uses
+ * against the latest week, exported (roadmap C6, 2026-09-04) so
+ * /corpus/changes/{week}.json can compare a week with the one before
+ * it. One rule, two doors.
+ */
+export function diffRecords(from: CorpusRecord, to: CorpusRecord): WeekDiff {
   if (from.snapshot.sequence === to.snapshot.sequence) {
     // Diffing the latest week against itself: a week we CAN see gets
     // an answer (rule 52 cuts both ways), and the honest answer is

@@ -817,6 +817,113 @@ function signedArtifactSchema(options: {
  * verdict as an uptime claim, and a generated client that dropped them
  * would be a client that had lost the only part a buyer needs.
  */
+/**
+ * THE DRY RUN AND THE LOOK, floors not censuses (2026-09-03): the keys
+ * a caller must be able to rely on, with the honesty fields required
+ * for the same reason the preflight's are.
+ */
+const URL_WITH_PROFILE_BODY: OpenApiObject = {
+  type: "object",
+  required: ["url"],
+  properties: {
+    url: { type: "string", format: "uri", description: "The https URL you are about to pay." },
+    client_profile: {
+      type: "object",
+      description:
+        'What your client is configured with. Leave it off for the answer for a client configured with NOTHING, which is the case that loses money quietly.',
+      properties: {
+        max_amount_per_payment_usd: {
+          oneOf: [{ type: "number", exclusiveMinimum: 0 }, { type: "boolean", enum: [false] }],
+          description: "A cap in USD, or false for no cap.",
+        },
+        spend_controls_disabled: { type: "boolean" },
+      },
+    },
+  },
+};
+
+const BEFORE_YOU_PAY_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["title", "version", "method", "url", "request", "what_it_cannot_tell_you"],
+  properties: {
+    title: { type: "string" },
+    version: { type: "string" },
+    method: { type: "string", enum: ["POST"] },
+    url: { type: "string", format: "uri" },
+    request: { type: "object" },
+    common_failures_this_catches: { type: "object" },
+    what_it_cannot_tell_you: { type: "array", items: { type: "string" } },
+    the_ladder: { type: "object" },
+    errors: { type: "array" },
+  },
+};
+
+const BEFORE_YOU_PAY_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["version", "url", "will_your_client_pay", "your_client", "the_door", "these_are_different_questions", "what_this_is_not"],
+  properties: {
+    version: { type: "string" },
+    url: { type: "string", format: "uri" },
+    will_your_client_pay: {
+      type: "string",
+      enum: ["would_sign", "would_throw", "cannot_simulate"],
+      description:
+        "would_sign = a stock client reaches a signature at the named accept. would_throw = it refuses on your own machine before any signature exists. cannot_simulate = the challenge did not parse into accepts to walk, which is the preflight's finding.",
+    },
+    your_client: {
+      type: "object",
+      required: ["outcome", "chosen", "dropped", "hazards", "cap_applied"],
+      properties: {
+        outcome: { type: "string", enum: ["would_sign", "would_throw", "cannot_simulate"] },
+        chosen: { type: ["object", "null"] },
+        throws_with: { type: ["string", "null"] },
+        dropped: { type: "array" },
+        hazards: { type: "array" },
+        cap_applied: { type: "string" },
+        what_this_cannot_see: { type: "array", items: { type: "string" } },
+      },
+    },
+    the_door: { type: "object", description: "The free preflight report, whole, from the same probe." },
+    these_are_different_questions: { type: "string" },
+    what_this_is_not: { type: "string" },
+    next_steps: { type: "object" },
+  },
+};
+
+const LOOK_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["title", "version", "method", "url", "what_this_is_not"],
+  properties: {
+    title: { type: "string" },
+    version: { type: "string" },
+    method: { type: "string", enum: ["POST"] },
+    url: { type: "string", format: "uri" },
+    request: { type: "object" },
+    what_this_is_not: { type: "string" },
+    the_ladder: { type: "object" },
+    errors: { type: "array" },
+  },
+};
+
+const LOOK_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["version", "url", "host", "asked_at", "headline", "now", "held", "now_against_held", "counts_travel_with_denominators", "what_this_is_not"],
+  properties: {
+    version: { type: "string" },
+    url: { type: "string", format: "uri" },
+    host: { type: "string" },
+    asked_at: { type: "string", format: "date-time" },
+    headline: { type: "string" },
+    now: { type: "object", description: "The live half: the preflight verdict, failed checks, advisories, and the whole preflight report." },
+    held: { type: "object", description: "The held half: counts with denominators, the tier with its fraction and rows, the last probed round, the passport decision, when it was derived." },
+    now_against_held: { type: "object", description: "same | changed | no_prior | not_comparable, with both sides named." },
+    counts_travel_with_denominators: { type: "string" },
+    what_this_is_not: { type: "string" },
+    the_ladder: { type: "object" },
+    next_steps: { type: "object" },
+  },
+};
+
 const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
   type: "object",
   required: [
@@ -826,6 +933,9 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     "checks_vector",
     "checks",
     "advisories",
+    "remediation",
+    "protocols_spoken",
+    "mpp",
     "single_probe_note",
     "what_this_cannot_tell_you",
     "our_conflict_of_interest",
@@ -903,6 +1013,48 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         version: { type: "string" },
         verdict: { type: "string", enum: ["ready", "not_ready", "unreachable"] },
         difference: { type: "string" },
+      },
+    },
+    protocols_spoken: {
+      type: "array",
+      items: { type: "string", enum: ["x402", "mpp"] },
+      description:
+        "Which protocols the 402 speaks, derived from its headers: x402 when PAYMENT-REQUIRED is present, mpp when a WWW-Authenticate: Payment challenge parses. The verdict keeps meaning x402-ready, permanently; read this for the union.",
+    },
+    mpp: {
+      type: "object",
+      required: ["battery", "spec", "spoken", "challenges", "checks", "advisories", "what_this_cannot_tell_you"],
+      description:
+        "The MPP battery's reading of the same bytes (mpp-v1, draft-00): whether the door speaks it, its challenges summarised, its named checks when it does (none when it does not — a check against no challenge is not an observation), its advisories outside any verdict, and what one unpaid GET cannot tell you.",
+      properties: {
+        battery: { type: "string" },
+        spec: { type: "string" },
+        spoken: { type: "boolean" },
+        challenges: { type: "array", items: { type: "object" } },
+        checks: { type: "array", items: { type: "object", required: ["name", "ok", "detail"], properties: { name: { type: "string" }, ok: { type: "boolean" }, detail: { type: "string" } } } },
+        advisories: { type: "array", items: { type: "object", required: ["name", "detail"], properties: { name: { type: "string" }, detail: { type: "string" } } } },
+        the_x402_verdict_above: { type: "string" },
+        what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
+      },
+    },
+    remediation: {
+      type: "array",
+      description:
+        "What to do about it, both sides: one row per failed check or raised advisory that a vocabulary class explains — the class, its definition URL, what the operator does, what the buyer does. Derived from /defects.json through the signal already reported; never part of the verdict; empty on a clean door.",
+      items: {
+        type: "object",
+        required: ["signal", "kind", "defect_class", "definition_url", "operator", "buyer"],
+        properties: {
+          signal: { type: "string" },
+          kind: { type: "string", enum: ["check", "advisory"] },
+          defect_class: { type: "string" },
+          title: { type: "string" },
+          detectable: { type: "string", enum: ["unpaid", "paid"] },
+          definition_url: { type: "string", format: "uri" },
+          operator: { type: "string" },
+          buyer: { type: "string" },
+          falsified_by: { type: "string" },
+        },
       },
     },
     single_probe_note: {
@@ -4930,6 +5082,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
        */
       limited_paths: [
         ...PREFLIGHT_VERSIONS.map((battery) => `/api/preflight/${battery}`),
+        /*
+         * The dry run and the look inherit the preflight's limiter
+         * unchanged — one probe, one bucket, the same RateLimit
+         * fields on every answer — so they are metered paths too
+         * (declared here 2026-09-03, with their operations).
+         */
+        "/api/before-you-pay/v1",
+        "/api/look/v1",
         "/api/preflight/batch",
       ],
       headers_returned: Object.keys(RATE_LIMIT_HEADER_SPEC),
@@ -5858,6 +6018,44 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         ]),
       ),
+      /**
+       * THE DRY RUN AND THE LOOK, IN THE CONTRACT (2026-09-03). Both
+       * free doors had shipped — 2026-08-28 and 2026-09-02 — without a
+       * path here, which the developers page's "every endpoint" line
+       * made a false claim in prose. Found by the function-calling
+       * tools document's own guard (roadmap C4): every tool it lists
+       * must name an operation the contract carries, and two did not.
+       */
+      "/api/before-you-pay/v1": {
+        get: returns(
+          freeOp(
+            "The payment dry run, described",
+            "What the dry run answers — will YOUR client pay this door, and which accept would it sign — the request shape with the optional client profile, the failures it catches, and what it cannot tell you. Free.",
+          ),
+          BEFORE_YOU_PAY_DOC_SCHEMA,
+        ),
+        post: withRateLimitHeaders(returns(postOp(
+          "Will my client pay this x402 door?",
+          "One probe, then the stock x402 client's own selection logic replayed over what came back: which accept it would sign, or that it would refuse on your machine before signing anything, and why. Carries the free preflight whole as the_door, from the same bytes. Nothing is signed and no payment is made. Free, and metered like the preflight.",
+          "The x402 door you are about to pay, and optionally what your client is configured with.",
+          URL_WITH_PROFILE_BODY,
+        ), BEFORE_YOU_PAY_VERDICT_SCHEMA)),
+      },
+      "/api/look/v1": {
+        get: returns(
+          freeOp(
+            "The look, described",
+            "What the look answers — one live preflight beside everything the signed chain holds about the host — the request shape, the ladder, and what it is not. Free.",
+          ),
+          LOOK_DOC_SCHEMA,
+        ),
+        post: withRateLimitHeaders(returns(postOp(
+          "Look at a door: what this store holds about it",
+          "One live preflight (the same single probe and limiter as /api/preflight/v2) folded with the held half: rounds probed of rounds since first sighting, the tier with its fraction, the last signed verdict, the passport decision, and now against held. Counts with denominators, never a score. Refuses this store's own host like the audit does. Free.",
+          "The x402 door to look at.",
+          URL_BODY,
+        ), LOOK_VERDICT_SCHEMA)),
+      },
       "/api/onpage/v1": {
         get: returns(
           freeOp(

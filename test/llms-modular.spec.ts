@@ -645,7 +645,7 @@ const BASE = "https://scvd.store";
  * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
  * and still every earlier pin.
  *
- * Re-taken 2026-09-03 — the FORTY-EIGHTH — by the keeper's greenlight on
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's greenlight on
  * the Trade Counter ("lets build it out ... we sell as a product"):
  * a "For marketplaces reselling the shelf" line in "Every door, in
  * one list" naming /trade, /trade.json, /api/trade/contract,
@@ -654,7 +654,8 @@ const BASE = "https://scvd.store";
  * area. Confirmed before this value was taken: the guide carries
  * "settled_via: trade_account" and "never touches x402", and still
  * every earlier pin.
- * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's "agreed
+ *
+ * Re-taken 2026-09-03 — the FIFTIETH — by the keeper's "agreed
  * lets do them all" on the counter's second pass: the sandbox check
  * desk and the listing feed join the door line, and the section now
  * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
@@ -663,17 +664,64 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "bill your account
  * on a statement" and "rounded up to the cent", and still every
  * earlier pin.
- * Re-taken 2026-09-03 — the FIFTIETH — the trade counter's markdown
+ * Re-taken 2026-09-03 — the FIFTY-FIRST — the trade counter's markdown
  * twin (/trade.md) joins the marketplaces line in "Every door, in one
  * list", the way /pricing.md and /index.md are named beside their
  * rooms. Confirmed before this value was taken: the guide carries
  * "trade.md" and still every earlier pin.
+ *
+ * (The six below landed on main after the Trade Counter's three above
+ * and were renumbered at each rebase; the value was re-taken once on
+ * the rebased head, the FIFTY-EIGHTH, 2026-09-04, with the trade
+ * counter's fourth pass beneath it. Confirmed before that value was
+ * taken: the guide carries "trade.md", "/corpus/latest.json",
+ * "/fixtures.json", "protocols_spoken", "scvd look <url>",
+ * "/openapi-tools.json", "both halves of the remediation", and still
+ * every earlier pin.)
+ *
+ * Re-taken 2026-09-03 — the FIFTY-SECOND — by the remediation (roadmap
+ * C1): one paragraph after the vocabulary's, saying every class carries
+ * both halves and the free report joins them to its findings as
+ * \`remediation\`. Confirmed before this value was taken: the guide
+ * carries "both halves of the remediation" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-THIRD — by the function-calling
+ * tools document (roadmap C4): one link in the contracts line and two
+ * lines beside the OpenAPI contract, naming /openapi-tools.json.
+ * Confirmed before this value was taken: the guide carries
+ * "/openapi-tools.json" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-FOURTH — by the CLI at 0.2.0
+ * (roadmap C5a): the one-line-per-instrument sentence now names look,
+ * before-you-pay, month and feeds, and says the tool prints the
+ * remediation rows. Confirmed before this value was taken: the guide
+ * carries "scvd look <url>" and still every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-FIFTH — by the second wire (roadmap
+ * V3 PR 1): one paragraph before the remediation's, saying what the
+ * preflight now says about a door that speaks MPP — protocols_spoken,
+ * the mpp block, the verdict's meaning kept, the till untouched, the
+ * practice door. Confirmed before this value was taken: the guide
+ * carries "protocols_spoken" and "/api/practice/mpp-shape", and still
+ * every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-SIXTH — by the cite line and the
+ * fixtures (roadmap C7): one paragraph before the second wire's,
+ * naming the cite line every signed document carries and
+ * /fixtures.json. Confirmed before this value was taken: the guide
+ * carries "/fixtures.json" and "cite line", and still every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-SEVENTH — by the corpus as a feed
+ * (roadmap C6): the trajectory paragraph gains the subscriber's two
+ * doors, /corpus/latest.json and the per-week changes. Confirmed
+ * before this value was taken: the guide carries "/corpus/latest.json"
+ * and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d89de832f0b614c3a9b3bbf38f33356a490deb2a95ecf810b2d1ab869ba1716a";
+  "edce0074c0ea9c40a2514f4b077c192fa7404a27d2208f87ba5356fb974b3ce5";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

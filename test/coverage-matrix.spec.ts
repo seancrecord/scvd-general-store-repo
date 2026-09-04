@@ -100,7 +100,12 @@ describe("the coverage matrix is derived, not typed", () => {
     expect(protocolFamily("receipt_coherence")).toBeDefined();
     expect(protocolFamily("capability_coherence")).toBeDefined();
     expect(protocolFamily("freshness_coherence")).toBeDefined();
-    expect(PROTOCOL_FAMILIES.some((family) => family.id === "mpp")).toBe(false);
+    // The row arrives WITH the battery (spec §12): mpp joined on
+    // 2026-09-04 with roadmap V3 PR 1, versioned by the draft it read.
+    // A family with no battery behind it is still refused: AP2-class
+    // readers land here the day theirs exists, not before.
+    expect(PROTOCOL_FAMILIES.some((family) => family.id === "mpp")).toBe(true);
+    expect(PROTOCOL_FAMILIES.some((family) => family.id === "ap2")).toBe(false);
   });
 });
 

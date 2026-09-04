@@ -1,0 +1,13 @@
+{
+  "name": "accepts-empty",
+  "recorded": "2026-08-26, hand-built",
+  "why": "The challenge offers a buyer nothing to sign against.",
+  "expect_failed": [
+    "accepts"
+  ],
+  "status": 402,
+  "headers": {
+    "PAYMENT-REQUIRED": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW119"
+  },
+  "body": "{}"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "scvd-mcp-starter",
+  "version": "0.1.0",
+  "description": "A zero-dependency MCP server over stdio that serves scvd.store's five read-only x402 verifier tools — preflight, receipt verification, readiness lookup, defect definitions, artifact verification — to any MCP client. Copy it, keep it, or point it at your own door.",
+  "type": "module",
+  "main": "./server.mjs",
+  "bin": { "scvd-mcp-starter": "./server.mjs" },
+  "files": ["server.mjs", "example.mjs", "CHANGELOG.md", "README.md", "LICENSE"],
+  "engines": { "node": ">=18.17.0" },
+  "keywords": ["mcp", "model-context-protocol", "x402", "verifier", "preflight", "receipts", "stdio", "starter"],
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/mcp/verifier",
+  "repository": { "type": "git", "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git", "directory": "mcp-starter" },
+  "bugs": { "url": "https://github.com/seancrecord/scvd-general-store-repo/issues" }
+}

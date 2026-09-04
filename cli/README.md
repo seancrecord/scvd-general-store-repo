@@ -50,9 +50,13 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
 | `scvd receipt <file\|->` | Verify any issuer's receipt JSON and get back a signed verdict. |
 | `scvd verify <id>` | Verify anything this store ever signed. Free, forever, including artifacts you did not buy. |
+| `scvd look <url>` | What the store holds about that door: one live preflight beside the signed history, rounds probed of rounds since first sighting, the tier with its fraction, now against held. Counts with denominators, never a score. |
+| `scvd before-you-pay <url> [--cap <usd>]` | Will a stock x402 client pay that door, and which accept would it sign? A dry run: nothing is signed, nothing is paid. `--cap` sets the client's per-payment ceiling; without it, the answer is for a client configured with nothing. |
 | `scvd onpage <url>` | What that page serves a machine reader: title, description, canonical, headings, JSON-LD. |
 | `scvd fresh-set` | This week's x402 doors that answered a conformant challenge. |
 | `scvd corpus` | The weekly signed, Bitcoin-anchored census, whole. |
+| `scvd month [YYYY-MM]` | The state of x402 for one month: the closing week beside every round's door-weeks, defects by name, the months held. |
+| `scvd feeds` | The four Atom feeds — the brief, the corpus, corrections, disagreements — by address. |
 | `scvd menu` | What is on the shelf, and for how much. |
 | `scvd catalog` | Every developer resource, from the RFC 9727 API catalog. |
 | `scvd versions` | Every API version served, its status, and any announced sunset. |
@@ -77,6 +81,15 @@ belong in an x402 client you already trust, or in the MCP server at
 `https://scvd.store/mcp`.
 
 **It stores nothing.** No config file, no cache, no telemetry.
+
+## What to do about it
+
+Where a report names a failed check or an advisory that the store's
+[defect vocabulary](https://scvd.store/defects) explains, the store
+sends `remediation` rows and the tool prints them as `FIX` lines: the
+defect class, its definition URL, what the operator does, what the
+buyer does. Printed, never derived here. A refusal that says what to
+do next prints that too.
 
 ## Exit codes
 
