@@ -1035,13 +1035,23 @@ async function sealRound(
    */
   const doors = round.our_doors;
   if (doors && !doors.could_not_check && doors.missing.length > 0) {
-    const before = JSON.stringify(previous?.our_doors?.missing ?? []);
-    if (before !== JSON.stringify(doors.missing)) {
-      await sendAlert(env, {
-        condition: "worker_health",
-        detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims; missing: ${doors.missing.join(", ")}. A door the index no longer returns is invisible to every agent that shops by search. Re-register it (your press); the miss is on the signed round until it is found again.`,
-      }).catch(() => undefined);
-    }
+    /*
+     * EVERY WEEK THE MISS STANDS, not once when the list changes
+     * (2026-09-04, the keeper's ask). A door that fell out of the
+     * index and stayed out used to page once and then sit on the
+     * signed round in silence; the page now carries the exact run and
+     * its cost, keyed by the round's week so each Sunday is its own
+     * page and the six-hour dedupe never swallows a standing miss.
+     */
+    const { reRegistration } = await import("@/services/visibility");
+    const press = reRegistration(doors.missing);
+    await sendAlert(env, {
+      condition: "worker_health",
+      key: `search-missing:${round.week}`,
+      // The command leads, because the page is cut at a thousand
+      // characters and thirty door names would push it off the end.
+      detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims. The press, one house purchase per missing door from a listed house wallet on a machine with the key, about $${press.cost_usd.toFixed(3)} for one copy of each: ${press.command || "(nothing on today's shelf is missing)"}. A door the index no longer returns is invisible to every agent that shops by search; the index lists a door when the facilitator settles one real payment for it. This pages every Sunday the miss stands; the desk carries the same line and the full list. Missing: ${doors.missing.join(", ")}.`,
+    }).catch(() => undefined);
   }
   /**
    * The second alarm on the same reading (2026-09-02): the index is

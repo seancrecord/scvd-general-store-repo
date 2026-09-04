@@ -33,6 +33,7 @@ import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
+import { reRegistration } from "@/services/visibility";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import {
   listAlmanacEntries,
@@ -684,6 +685,7 @@ adminRoutes.get("/admin", async (c) => {
     mcpClients,
     fieldWallet,
     bountyState,
+    wardLatest,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -732,6 +734,10 @@ adminRoutes.get("/admin", async (c) => {
     ),
     import("@/services/bounty-board").then(({ bountyBoard }) =>
       bountyBoard(c.env),
+    ),
+    // One KV read: the latest Sunday round, for the visibility line.
+    import("@/services/ward-round").then(({ latestWardRound }) =>
+      latestWardRound(c.env),
     ),
     /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
@@ -823,6 +829,22 @@ adminRoutes.get("/admin", async (c) => {
           spentThisWeekUsd: board?.spent_this_week_usd ?? null,
           weeklyBudgetUsd: board?.weekly_budget_usd ?? null,
           outstandingUsd,
+        };
+      })(),
+      visibility: (() => {
+        const round = shelf(wardLatest, null, "the latest round", notes);
+        const doors = round?.our_doors;
+        if (!round || !doors) return null;
+        const press = reRegistration(doors.missing);
+        return {
+          week: round.week,
+          at: round.at,
+          claimed: doors.claimed,
+          found: doors.found.length,
+          missing: doors.missing,
+          could_not_check: doors.could_not_check,
+          command: press.command,
+          cost_usd: press.cost_usd,
         };
       })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
