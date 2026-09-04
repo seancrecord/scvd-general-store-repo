@@ -2,6 +2,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import {
   OUTREACH_STATUSES,
+  WIRE_PAUSED_SINCE,
   contactEmail,
   draftNote,
   draftWelcome,
@@ -85,7 +86,9 @@ function prospectCard(
       : entry?.wired
         ? `<span class="menu-meta">wired to ${escapeHtml(entry.sent_to ?? "")} ${escapeHtml((entry.status_at ?? "").slice(0, 16))} (live-verified first)</span>`
         : "";
-  return `<section>
+  // Anchored so the unsent summary at the top can send you straight
+  // to this card's draft.
+  return `<section id="card-${escapeHtml(prospect.host)}">
     <h3>${escapeHtml(prospect.host)}${prospect.newly_failing ? " <em>· newly failing</em>" : ""}</h3>
     <p class="menu-desc">${escapeHtml(prospect.reason)}</p>
     <p class="menu-meta">contact: ${contacts} · status: ${status}</p>
@@ -167,6 +170,101 @@ function citationBlock(report: CitationWatchReport | null): string {
   </section>`;
 }
 
+/**
+ * THE UNSENT LIST (2026-09-04, the keeper's ask: "i can't see the
+ * names that have emails that i havent sent to... i just really need
+ * a summary of anyone scouted that i havent sent to that i can pull
+ * from or send to at the top").
+ *
+ * Eligibility is exactly what the wire itself enforces and the batch
+ * button counts — an email the operator published, and no note ever
+ * sent to that host — so the list you read at the top IS the list one
+ * press would reach, in the same four-tier order. Nothing here is a
+ * new fact: it is the same ledger the cards below carry, named where
+ * a scan can find it. The addresses are repeated comma-joined for a
+ * hand delivery, because "pull from" and "send to" are the same list.
+ */
+const SUMMARY_CAP = 50;
+
+function unsentSummary(
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+  renderedHosts: Set<string>,
+): string {
+  const rows = prospects
+    .map((prospect) => ({ prospect, entry: ledger.hosts[prospect.host] }))
+    .filter(({ entry }) => {
+      // A wired or hand-stamped send is the one-note-per-host promise
+      // spent; everything else with an address is still reachable.
+      if (entry?.status === "sent" || entry?.status === "replied") return false;
+      return contactEmail(entry) !== null;
+    })
+    .map(({ prospect, entry }) => ({
+      prospect,
+      entry,
+      email: contactEmail(entry) as string,
+    }));
+  const scoutedNoEmail = prospects.filter((p) => {
+    const entry = ledger.hosts[p.host];
+    return Boolean(entry?.scouted_at) && contactEmail(entry) === null;
+  }).length;
+  const unscouted = prospects.filter(
+    (p) => !ledger.hosts[p.host]?.scouted_at,
+  ).length;
+  // One line, not wrapped: the counts are read at a glance, and a
+  // phrase broken across source lines is a phrase nothing can find.
+  const tail = `<p class="menu-meta">Also on the round: ${scoutedNoEmail} scouted door${scoutedNoEmail === 1 ? "" : "s"} that published no email (hand delivery only — copy the draft from the card), and ${unscouted} not scouted yet (press <em>Scout contacts</em> and they land here if they publish one).</p>`;
+  if (!rows.length) {
+    return `<section id="unsent">
+    <h2>Scouted, with an email, not yet sent (0)</h2>
+    <p class="menu-desc">Nobody is waiting: every scouted door with a published
+    address has had its one note, or published no address at all.</p>
+    ${tail}</section>`;
+  }
+  // The pause is a fact of the wire, read from the wire itself, so
+  // this line cannot outlive it: while it stands, the send buttons
+  // below decline and this list is a hand-delivery list.
+  const paused = WIRE_PAUSED_SINCE
+    ? `<p class="menu-meta"><strong>The wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)}</strong> — every send button on this page declines while it stands (the domain sits in a spam category and outbound notes deepen it). Until it lifts, these are addresses to deliver by hand, then stamp.</p>`
+    : "";
+  const shown = rows.slice(0, SUMMARY_CAP);
+  const addresses = [...new Set(shown.map((r) => r.email))];
+  const paste = addresses.join(", ");
+  const items = shown
+    .map(({ prospect, entry, email }) => {
+      const stamp = entry?.status
+        ? ` · <em>stamped ${escapeHtml(entry.status)} ${escapeHtml(
+            (entry.status_at ?? "").slice(0, 10),
+          )} — no note has gone out</em>`
+        : "";
+      const draft = renderedHosts.has(prospect.host)
+        ? ` · <a href="#card-${escapeHtml(prospect.host)}">the draft</a>`
+        : ` · <span class="menu-meta">draft below the render cap — JSON twin carries it</span>`;
+      const send = `<form method="post" action="/admin/outreach/send" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
+      <button type="submit">verify live &amp; send</button>
+    </form>`;
+      return `<li><strong>${escapeHtml(prospect.host)}</strong> — <a href="mailto:${escapeHtml(email)}"><code>${escapeHtml(email)}</code></a> · ${escapeHtml(prospect.reason)}${stamp}${draft} ${send}</li>`;
+    })
+    .join("\n");
+  return `<section id="unsent">
+  <h2>Scouted, with an email, not yet sent (${rows.length}${rows.length > shown.length ? `, top ${shown.length} named` : ""})</h2>
+  <p class="menu-desc">Every host here published an address and has never had a
+  note from this desk — the same eligibility the wire enforces, in the same
+  four-tier order as the queue below. This is exactly who <em>Verify &amp; send
+  to all scouted</em> reaches, ten per press.</p>
+  ${paused}
+  <p class="menu-meta">The ${addresses.length} address${addresses.length === 1 ? "" : "es"}, comma-joined, to pull into a hand delivery:</p>
+  <p><code>${escapeHtml(paste)}</code></p>
+  <ol>${items}</ol>
+  ${
+    rows.length > shown.length
+      ? `<p class="menu-meta">…and ${rows.length - shown.length} more with addresses, in the same ranking; they rise as those above are sent or stamped.</p>`
+      : ""
+  }
+  ${tail}</section>`;
+}
+
 const WELCOME_RENDER_CAP = 25;
 const FRESH_RENDER_CAP = 50;
 const WORKED_RENDER_CAP = 100;
@@ -203,9 +301,14 @@ export function renderOutreachPage(
     if (entry?.status === "sent" || entry?.status === "replied") return false;
     return contactEmail(entry) !== null;
   }).length;
+  const renderedHosts = new Set([
+    ...freshShown.map((p) => p.host),
+    ...workedShown.map((p) => p.host),
+  ]);
   const body = `
   <h1>Outreach — the queue, drafted; the send, one press</h1>
   ${noticeBlock}
+  ${unsentSummary(prospects, ledger, renderedHosts)}
   <p class="menu-desc">Derived from round <strong>${escapeHtml(round.week)}</strong>:
   ${prospects.length} broken doors ranked by four named tiers (newly failing with a
   revenue claim, any claim by size, newly failing, the rest). Rows here are the

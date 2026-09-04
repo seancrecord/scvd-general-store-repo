@@ -55,6 +55,7 @@ import {
 } from "@/services/delivery-audit";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
+  letterNeedsReply,
   listLetters,
   replyToLetter,
   setLetterStatus,
@@ -597,6 +598,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     closers,
     drawerStock,
     grudges,
+    alarmsSeen,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -613,6 +615,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
     listGrudges(c.env, 30),
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
@@ -631,6 +634,24 @@ adminRoutes.get("/admin/counter", async (c) => {
   const seenAt = new Date().toISOString();
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
+  }
+  /*
+   * THE ALARM WATERMARK, on the same rule as the orders above: standing
+   * at the counter IS seeing what the counter is showing (keeper's
+   * order 2026-07-24 — "the button was ceremony"), so the top line
+   * stops shouting about alarms he has already met while the alarms
+   * themselves stay listed below, and on the reconciliation trail with
+   * what came of each one.
+   *
+   * Marked only when BOTH reads landed: on a KV blip we would rather
+   * shout twice than mark an alarm seen that never rendered.
+   */
+  const alarmsSeenAt = shelf(alarmsSeen, null, "alarm watermark", notes);
+  const listedAlerts = shelf(alerts, [], "alerts", notes);
+  if (alerts.status === "fulfilled" && alarmsSeen.status === "fulfilled") {
+    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter, seenAt).catch(
+      () => undefined,
+    );
   }
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
@@ -652,7 +673,8 @@ adminRoutes.get("/admin/counter", async (c) => {
       letters: shelf(letters, [], "letters", notes).map(
         (entry) => entry.record,
       ),
-      alerts: shelf(alerts, [], "alerts", notes),
+      alerts: listedAlerts,
+      alertsSeenAt: alarmsSeenAt,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
@@ -685,7 +707,11 @@ adminRoutes.get("/admin", async (c) => {
     mcpClients,
     fieldWallet,
     bountyState,
+    // Order matters: these two must sit in the same order as the
+    // promises below — the ward round first, then the counter's
+    // alarm watermark.
     wardLatest,
+    officeAlarmsSeenRead,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -740,6 +766,13 @@ adminRoutes.get("/admin", async (c) => {
       latestWardRound(c.env),
     ),
     /*
+     * The counter's alarm watermark, READ ONLY here. The strip points
+     * at the counter, so it should say what is still waiting there —
+     * but the office is not the counter, and looking at a pointer is
+     * not meeting the alarm, so this page never moves the mark.
+     */
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
+    /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
      *
      * computeStats scans the metric keys for every month the store has
@@ -761,6 +794,12 @@ adminRoutes.get("/admin", async (c) => {
      */
   ]);
   const emptyLedger = emptyMonthLedger();
+  const officeAlarmsSeen = shelf(
+    officeAlarmsSeenRead,
+    null,
+    "alarm watermark",
+    notes,
+  );
   const pendingReviews =
     shelf(tips, [], "tips", notes).filter(
       (tip) => tip.record.status === "pending_review",
@@ -856,11 +895,15 @@ adminRoutes.get("/admin", async (c) => {
         orders: shelf(orders, [], "orders", notes).filter(
           (order) => order.status === "queued",
         ).length,
-        letters: shelf(letters, [], "letters", notes).filter(
-          (entry) => entry.record.status !== "archived",
+        // Answered is done, filed or not (2026-09-04), and an alarm
+        // already met at the counter is not still waiting there.
+        letters: shelf(letters, [], "letters", notes).filter((entry) =>
+          letterNeedsReply(entry.record),
         ).length,
         reviews: pendingReviews,
-        alerts: shelf(alerts, [], "alerts", notes).length,
+        alerts: shelf(alerts, [], "alerts", notes).filter(
+          (alert) => officeAlarmsSeen === null || alert.at > officeAlarmsSeen,
+        ).length,
       },
       loadNotes: notes,
     }),
