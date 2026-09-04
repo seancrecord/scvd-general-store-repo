@@ -115,17 +115,19 @@ export interface FieldWalletSweep {
 }
 
 export async function sweepFieldWallet(env: Env): Promise<FieldWalletSweep> {
-  const { bountyBoard } = await import("@/services/bounty-board");
+  const { bountyBoard, livePayouts, payoutRedemptions } = await import(
+    "@/services/bounty-board"
+  );
   const { creditOutstandingAtomic } = await import("@/services/store-credit");
   const wallet = await readFieldWallet(env);
   const now = new Date();
-  const nowSeconds = Math.floor(now.getTime() / 1000);
   const board = await bountyBoard(env, now);
-  const live = board.bounties.filter(
-    (bounty) =>
-      bounty.status === "paid" &&
-      Number(bounty.claim?.authorization_valid_before ?? "0") > nowSeconds,
+  // A payout the chain has seen burn is money gone, not money promised.
+  // A chain that cannot be asked leaves every payout counted.
+  const redemptions = await payoutRedemptions(env, board.bounties).catch(
+    () => ({}),
   );
+  const live = livePayouts(board.bounties, redemptions, now);
   const liveUsd = live.reduce((sum, bounty) => sum + bounty.reward_usd, 0);
   const creditOwedUsd = Number(await creditOutstandingAtomic(env)) / 1e6;
   const promised = Math.round((liveUsd + creditOwedUsd) * 100) / 100;

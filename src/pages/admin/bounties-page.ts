@@ -1,6 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import type { BountyLedger, MetricEvent } from "@/lib/metrics";
-import type { bountyBoard } from "@/services/bounty-board";
+import type { bountyBoard, PayoutRedemption } from "@/services/bounty-board";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import { renderAdminShell } from "@/pages/admin/layout";
 
@@ -23,6 +23,7 @@ import { renderAdminShell } from "@/pages/admin/layout";
  */
 
 type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
+type Redemptions = Readonly<Record<string, PayoutRedemption>>;
 
 /**
  * THE BOARD'S OWN FUNNEL, this month, organic: the room read, the JSON
@@ -72,6 +73,8 @@ export interface BountiesPageData {
   allTime?: MoneyOutAllTime | null;
   /** Who holds store credit, largest balance first; null when unread. */
   creditHolders?: CreditHolder[] | null;
+  /** Per paid bounty: whether the chain has seen the payout burn. */
+  redemptions?: Redemptions | null;
   /** ISO, the moment the page was read; outstanding payouts are judged against it. */
   now: string;
   loadNotes: string[];
@@ -162,13 +165,19 @@ function allTimeHtml(allTime: MoneyOutAllTime | null | undefined): string {
     <strong>${allTime.walkers}</strong> distinct payout wallet${allTime.walkers === 1 ? "" : "s"}
     <small>(${allTime.walker_payers} distinct paying wallet${allTime.walker_payers === 1 ? "" : "s"} walked the doors)</small> ·
     ${credit}.
-    <small>Paid means a signed authorization went out; whether it was redeemed is the chain's to say, and the outstanding line above counts the ones still live.</small></p>`;
+    <small>Paid means a signed authorization went out. Whether each was redeemed is read off the chain in the board table below, and the wallet line above counts only the ones not yet redeemed.</small></p>`;
 }
 
-/** Signed payouts a recipient can still redeem: paid, and not yet past validBefore. */
+/**
+ * Signed payouts a recipient can still turn into money: paid, inside
+ * validBefore, and not seen burning on chain. A redemption the chain
+ * confirmed is money gone, not money promised; one the chain could
+ * not be asked about stays counted, the cautious direction.
+ */
 export function outstandingPayouts(
   board: BoardState | null,
   nowIso: string,
+  redemptions: Redemptions | null | undefined = null,
 ): { count: number; usd: number } {
   if (!board) return { count: 0, usd: 0 };
   const nowSeconds = Math.floor(new Date(nowIso).getTime() / 1000);
@@ -176,12 +185,39 @@ export function outstandingPayouts(
   let usd = 0;
   for (const bounty of board.bounties) {
     const validBefore = Number(bounty.claim?.authorization_valid_before ?? "0");
-    if (bounty.status === "paid" && validBefore > nowSeconds) {
+    if (
+      bounty.status === "paid" &&
+      validBefore > nowSeconds &&
+      redemptions?.[bounty.bounty_id]?.state !== "redeemed"
+    ) {
       count += 1;
       usd += bounty.reward_usd;
     }
   }
   return { count, usd: Math.round(usd * 100) / 100 };
+}
+
+/** The claim's fate on chain, in words, for the board table. */
+function redemptionHtml(
+  bounty: BoardState["bounties"][number],
+  redemptions: Redemptions | null | undefined,
+  nowIso: string,
+): string {
+  const reading = redemptions?.[bounty.bounty_id];
+  const validBefore = Number(bounty.claim?.authorization_valid_before ?? "0");
+  const expired = validBefore <= Math.floor(new Date(nowIso).getTime() / 1000);
+  if (!reading) {
+    return "<small>redemption not checked</small>";
+  }
+  if (reading.state === "redeemed") {
+    return `<strong style="color:#2f6b2f">redeemed on chain</strong> <small>tx <code>${escapeHtml(reading.tx_hash.slice(0, 18))}…</code></small>`;
+  }
+  if (reading.state === "unknown") {
+    return `<small>redemption unknown (${escapeHtml(reading.problem)})</small>`;
+  }
+  return expired
+    ? `<strong>expired unredeemed</strong> <small>— the budget takes it back; nothing is owed</small>`
+    : `<strong style="color:#8c2f1b">not yet redeemed</strong> <small>— the walker has not submitted it; valid until unix ${escapeHtml(String(validBefore))}</small>`;
 }
 
 function bucket(event: MetricEvent): string {
@@ -205,8 +241,8 @@ function walletHtml(wallet: FieldWalletReading | null, outstanding: { count: num
     wallet.usdc === null
       ? ""
       : outstanding.usd > wallet.usdc
-        ? `<p><strong style="color:#8c2f1b">Short.</strong> $${outstanding.usd.toFixed(2)} in signed payouts is still redeemable against a $${wallet.usdc.toFixed(2)} balance. An authorization is only worth what the wallet holds when it is redeemed; the USDC contract, not this store, refuses the rest.</p>`
-        : `<p>Covers the $${outstanding.usd.toFixed(2)} in signed payouts still redeemable (${outstanding.count}).</p>`;
+        ? `<p><strong style="color:#8c2f1b">Short.</strong> $${outstanding.usd.toFixed(2)} in signed payouts is not yet redeemed against a $${wallet.usdc.toFixed(2)} balance. An authorization is only worth what the wallet holds when it is redeemed; the USDC contract, not this store, refuses the rest.</p>`
+        : `<p>Covers the $${outstanding.usd.toFixed(2)} in signed payouts not yet redeemed (${outstanding.count}). Redeemed ones are money gone and are not counted here.</p>`;
   return `
     <p><code>${escapeHtml(wallet.address)}</code> holds ${balance}
     <small>(read ${escapeHtml(wallet.read_at)}, straight off the chain — nothing cached).
@@ -225,7 +261,11 @@ function budgetHtml(board: BoardState | null): string {
     <small>Post a bounty from <a href="/admin/market">the market</a>; the public board is <a href="/bounties">/bounties</a>.</small></p>`;
 }
 
-function boardHtml(board: BoardState | null): string {
+function boardHtml(
+  board: BoardState | null,
+  redemptions: Redemptions | null | undefined,
+  nowIso: string,
+): string {
   if (!board) {
     return "<p>The board did not load.</p>";
   }
@@ -236,11 +276,11 @@ function boardHtml(board: BoardState | null): string {
     .map((bounty) => {
       const claim = bounty.claim;
       const claimCell = claim
-        ? `paid ${escapeHtml(claim.claimed_at.slice(0, 16))}<br>
+        ? `signed ${escapeHtml(claim.claimed_at.slice(0, 16))}<br>
            payer <code>${escapeHtml(claim.payer)}</code><br>
            to <code>${escapeHtml(claim.payout_to)}</code><br>
-           tx <code>${escapeHtml(claim.tx_hash.slice(0, 18))}…</code><br>
-           redeemable until unix ${escapeHtml(claim.authorization_valid_before)}${
+           their settlement <code>${escapeHtml(claim.tx_hash.slice(0, 18))}…</code><br>
+           ${redemptionHtml(bounty, redemptions, nowIso)}${
              claim.observation
                ? `<br><small>observation (their claim, unverified): ${escapeHtml(claim.observation.slice(0, 160))}${claim.observation.length > 160 ? "…" : ""}</small>`
                : ""
@@ -303,7 +343,7 @@ function attemptsHtml(attempts: MetricEvent[]): string {
 }
 
 export function renderBountiesPage(data: BountiesPageData): string {
-  const outstanding = outstandingPayouts(data.board, data.now);
+  const outstanding = outstandingPayouts(data.board, data.now, data.redemptions);
   const body = `
   <section>
     <h2>The paying wallet</h2>
@@ -350,8 +390,9 @@ export function renderBountiesPage(data: BountiesPageData): string {
   <section>
     <h2>The board, every bounty</h2>
     <p><small>A shopper's observation is their claim, recorded verbatim
-    and never verified by this store.</small></p>
-    ${boardHtml(data.board)}
+    and never verified by this store. "Signed" is what this store did;
+    "redeemed" is what the chain says the walker did with it.</small></p>
+    ${boardHtml(data.board, data.redemptions, data.now)}
   </section>`;
   return renderAdminShell("bounties", body, data.loadNotes);
 }

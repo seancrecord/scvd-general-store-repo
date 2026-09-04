@@ -2435,6 +2435,21 @@ adminRoutes.get("/admin/bounties", async (c) => {
   const organic = (surface: string): number =>
     porchLedger?.surfaces[surface]?.["organic"] ?? 0;
   const boardState = shelf(board, null, "the board", notes);
+  /*
+   * Whether each payout burned on chain — one bounded read per paid
+   * bounty, after the board is known. Fail-soft: an unreadable chain
+   * leaves the column saying "unknown", never "not redeemed".
+   */
+  const redemptions = boardState
+    ? await import("@/services/bounty-board")
+        .then(({ payoutRedemptions }) =>
+          payoutRedemptions(c.env, boardState.bounties),
+        )
+        .catch(() => {
+          notes.push("the redemption check");
+          return null;
+        })
+    : null;
   return c.html(
     renderBountiesPage({
       board: boardState,
@@ -2454,6 +2469,7 @@ adminRoutes.get("/admin/bounties", async (c) => {
         shelf(creditOwed, null, "the credit liability", notes),
       ),
       creditHolders: shelf(creditHolders, null, "the credit ledger", notes),
+      redemptions,
       now: new Date().toISOString(),
       loadNotes: notes,
     }),
