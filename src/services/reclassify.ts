@@ -1,4 +1,5 @@
 import { inferChannel } from "@/lib/channel";
+import { isWalkedAsk, walkerKey, walkersAmong } from "@/lib/walkers";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
@@ -59,6 +60,18 @@ export interface MonthCorrection {
   moved_to_infrastructure: number;
   /** The user-agents behind the move, commonest first. */
   movers: { user_agent: string; rows: number }[];
+  /**
+   * THE SECOND MOVE (2026-09-04): rows the table still calls organic
+   * whose CLIENT walked the catalog — WALK_MIN_ITEMS distinct doors
+   * inside WALK_WINDOW_MS — in this month. Published apart from
+   * moved_to_infrastructure so a reader can see which half of the
+   * correction is a name the machine gave itself and which half is
+   * what it did. Absent on corrections stored before the rule joined
+   * the walk; pulse treats absent as zero.
+   */
+  moved_by_behaviour?: number;
+  /** The walking user-agents, most rows first. */
+  behaviour_movers?: { user_agent: string; rows: number }[];
   /** Rows read for this month. */
   rows_read: number;
   /** ISO timestamp of the walk that produced this. */
@@ -120,6 +133,8 @@ export async function recomputeCorrections(
       corrected: number;
       rows: number;
       movers: Map<string, number>;
+      /** Outside rows still organic by name, kept for the behaviour pass. */
+      candidates: Pick<MetricEvent, "kind" | "house" | "user_agent" | "item" | "at">[];
     }
   >();
 
@@ -146,6 +161,7 @@ export async function recomputeCorrections(
         corrected: 0,
         rows: 0,
         movers: new Map<string, number>(),
+        candidates: [],
       };
       bucket.rows += 1;
       // Only rows the books CALLED organic are in scope: this measures
@@ -163,6 +179,13 @@ export async function recomputeCorrections(
           bucket.movers.set(ua, (bucket.movers.get(ua) ?? 0) + 1);
         } else {
           bucket.corrected += 1;
+          bucket.candidates.push({
+            kind: event.kind,
+            house: event.house,
+            user_agent: event.user_agent,
+            item: event.item,
+            at: event.at,
+          });
         }
       }
       months.set(month, bucket);
@@ -178,12 +201,32 @@ export async function recomputeCorrections(
   const written: MonthCorrection[] = [];
   const set: CorrectionSet = { computed_at: computedAt, months: {} };
   for (const [month, bucket] of months) {
+    /**
+     * THE BEHAVIOUR PASS. Over the rows the table left organic, find
+     * the clients that walked the catalog this month, and move their
+     * asks too. Same rule as the census, imported, so the two pages
+     * name the same walkers.
+     */
+    const walkers = walkersAmong(bucket.candidates);
+    const byWalker = new Map<string, number>();
+    for (const row of bucket.candidates) {
+      if (!isWalkedAsk(row, walkers)) continue;
+      const ua = walkerKey(row);
+      byWalker.set(ua, (byWalker.get(ua) ?? 0) + 1);
+    }
+    const movedByBehaviour = [...byWalker.values()].reduce((a, b) => a + b, 0);
+    const byName = bucket.recorded - bucket.corrected;
     const correction: MonthCorrection = {
       month,
       recorded_organic: bucket.recorded,
-      corrected_organic: bucket.corrected,
-      moved_to_infrastructure: bucket.recorded - bucket.corrected,
+      corrected_organic: bucket.corrected - movedByBehaviour,
+      moved_to_infrastructure: byName,
       movers: [...bucket.movers.entries()]
+        .map(([user_agent, rows]) => ({ user_agent, rows }))
+        .sort((a, b) => b.rows - a.rows)
+        .slice(0, 10),
+      moved_by_behaviour: movedByBehaviour,
+      behaviour_movers: [...byWalker.entries()]
         .map(([user_agent, rows]) => ({ user_agent, rows }))
         .sort((a, b) => b.rows - a.rows)
         .slice(0, 10),

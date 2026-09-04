@@ -3,6 +3,7 @@ import { readReason } from "@/lib/declines";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { isWalkedAsk, WALK_MIN_ITEMS, WALK_RULE, walkersAmong } from "@/lib/walkers";
 
 /**
  * THE FUNNEL — the instrument for the sharpest number the ledger has
@@ -77,6 +78,15 @@ export interface ItemFunnel {
   /** Which required input was absent, and how often. */
   locked_inputs: Record<string, number>;
   /**
+   * Asks from clients that WALKED THE CATALOG inside this window —
+   * WALK_MIN_ITEMS distinct doors in WALK_WINDOW_MS, whatever the
+   * user-agent said (lib/walkers.ts, the census's own rule). Counted
+   * here and EXCLUDED from asks_organic, because a machine indexing
+   * the shelf is not a shopper who walked; the payments a walker
+   * presents still count, since a crawler that pays is a customer.
+   */
+  asks_walked: number;
+  /**
    * Signed payments PRESENTED by outside buyers: settles + declines.
    * The line between window-shopping and blocked intent.
    */
@@ -95,6 +105,8 @@ export interface FunnelReport {
   window_note: string;
   items: ItemFunnel[];
   what_this_cannot_see: string[];
+  /** The behaviour rule the walked column was drawn by. */
+  walk_rule: typeof WALK_RULE;
 }
 
 /**
@@ -115,6 +127,13 @@ function lockedClause(row: Omit<ItemFunnel, "verdict">): string {
     .map(([name, n]) => `${name} ×${n}`)
     .join(", ");
   return ` LOCKED DOOR: ${row.asks_locked} of the ${row.asks_organic} ask${row.asks_organic === 1 ? "" : "s"} arrived without a required input (${inputs}) and could not have bought at any price — a scanner meeting a prerequisite, not a shopper who walked. Read the rest of the silence against the ${row.asks_organic - row.asks_locked} who could have.`;
+}
+
+function walkedClause(row: Omit<ItemFunnel, "verdict">): string {
+  if (row.asks_walked === 0) {
+    return "";
+  }
+  return ` WALKED: ${row.asks_walked} more ask${row.asks_walked === 1 ? "" : "s"} came from clients that touched ${WALK_MIN_ITEMS}+ doors inside a minute — catalog walks, not shoppers — and are left out of every organic figure above.`;
 }
 
 function verdictFor(row: Omit<ItemFunnel, "verdict">): string {
@@ -179,10 +198,13 @@ function verdictFor(row: Omit<ItemFunnel, "verdict">): string {
         ? ` Upstream of all of it: ${walked} of ${row.asks_organic} organic ask${row.asks_organic === 1 ? "" : "s"} never presented a signature at all, so the refusals are the smaller half of this item's silence.`
         : "";
 
-    return `REAL INTENT HIT A WALL: ${row.declines_organic} signed payment${row.declines_organic === 1 ? " was" : "s were"} presented and refused${row.settles_organic > 0 ? ` (${row.settles_organic} got through)` : ""}. ${shape} Fault mix: ${mix}.${upstream}${lockedClause(row)} Top reason: "${top?.[0] ?? "unspecified"}" ×${topCount}${reading ? ` — fault: ${reading.fault}. ${reading.reading}` : ""}`;
+    return `REAL INTENT HIT A WALL: ${row.declines_organic} signed payment${row.declines_organic === 1 ? " was" : "s were"} presented and refused${row.settles_organic > 0 ? ` (${row.settles_organic} got through)` : ""}. ${shape} Fault mix: ${mix}.${upstream}${lockedClause(row)}${walkedClause(row)} Top reason: "${top?.[0] ?? "unspecified"}" ×${topCount}${reading ? ` — fault: ${reading.fault}. ${reading.reading}` : ""}`;
+  }
+  if (row.asks_organic === 0 && row.asks_walked > 0) {
+    return `WALKED ONLY: every ask on this door in the window (${row.asks_walked}) came from a client that touched ${WALK_MIN_ITEMS}+ doors inside a minute — the shelf was indexed, not shopped. Nothing here is a lost sale.`;
   }
   if (row.asks_organic > 0) {
-    return `WINDOW-SHOPPING: ${row.asks_organic} price-ask${row.asks_organic === 1 ? "" : "s"} and not one presented signature. Nobody was blocked — nobody tried. The wall is upstream of the payment (the pitch, the price framing, or a required input reading as work); fixing the payment flow would fix nothing.${lockedClause(row)} Caveat the number honestly: an ask is a 402 issued, and crawlers the infrastructure filter does not know yet sit in this count.`;
+    return `WINDOW-SHOPPING: ${row.asks_organic} price-ask${row.asks_organic === 1 ? "" : "s"} and not one presented signature. Nobody was blocked — nobody tried. The wall is upstream of the payment (the pitch, the price framing, or a required input reading as work); fixing the payment flow would fix nothing.${lockedClause(row)}${walkedClause(row)} Caveat the number honestly: an ask is a 402 issued, and crawlers the infrastructure filter does not know yet sit in this count.`;
   }
   return "Quiet: no organic asks in the scanned window.";
 }
@@ -206,6 +228,7 @@ export async function auditFunnel(
   let sawEnd = false;
   let oldest: string | undefined;
   let cursor: string | undefined;
+  const kept: MetricEvent[] = [];
 
   while (scanned < scanCap) {
     const listed = await kvList(env.COUNTERS, {
@@ -229,16 +252,39 @@ export async function auditFunnel(
       // House traffic is the keeper testing; infrastructure is the
       // known crawler floor. Neither is a lost sale.
       if (event.house || event.channel === "infrastructure") continue;
+      kept.push(event);
+    }
+    if (listed.list_complete || !listed.keys.length) {
+      sawEnd = true;
+      break;
+    }
+    cursor = listed.cursor;
+  }
 
+  /**
+   * THE SECOND PASS (2026-09-04). A walker is a client, not a row, and
+   * a client is only visible across rows — so the window is read once
+   * for who walked and once for what happened. Same rule as the
+   * census and the reclassification walk, imported.
+   */
+  const walkers = walkersAmong(kept);
+  for (const event of kept) {
+    {
       const tally = tallies.get(event.item) ?? {
         asks_organic: 0,
         asks_locked: 0,
         locked_inputs: {},
+        asks_walked: 0,
         wallets_opened: 0,
         settles_organic: 0,
         declines_organic: 0,
         decline_reasons: {},
       };
+      if (isWalkedAsk(event, walkers)) {
+        tally.asks_walked += 1;
+        tallies.set(event.item, tally);
+        continue;
+      }
       if (event.kind === "challenge") {
         tally.asks_organic += 1;
         if (event.missing_required && event.missing_required.length > 0) {
@@ -261,11 +307,6 @@ export async function auditFunnel(
       }
       tallies.set(event.item, tally);
     }
-    if (listed.list_complete || !listed.keys.length) {
-      sawEnd = true;
-      break;
-    }
-    cursor = listed.cursor;
   }
   /*
    * THE EXACT-BOUNDARY LIE, caught by the keeper's first real load:
@@ -304,6 +345,7 @@ export async function auditFunnel(
       ? `Newest ${scanned} event rows only (cap ${scanCap}); oldest row read ${oldest ?? "unknown"}. All-time totals live on the item-events desk — this instrument answers WHERE the recent asks leave, not how many there have ever been.`
       : `Every event row on record (${scanned}), oldest ${oldest ?? "none"}.`,
     items,
+    walk_rule: WALK_RULE,
     what_this_cannot_see: [
       "Intent. An ask is a 402 issued; a crawler the infrastructure filter does not recognize yet counts as organic, so treat small ask-counts as noise and large ones as signal.",
       "Walkers in the organic column. If MOST items show similar ask-counts with zero wallets — the flat profile this page showed on its first real load — that is the fingerprint of catalog walkers not yet in the infrastructure list, not of demand. The census page names them (undeclared_walkers); promote them to channel.ts and this page's denominators deflate to the truth.",

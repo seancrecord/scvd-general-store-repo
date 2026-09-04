@@ -233,6 +233,42 @@ describe("the two opposite silences", () => {
     expect(row.verdict).toContain("LOCKED DOOR");
   });
 
+  /**
+   * THE WALKERS (2026-09-04). A client touching four doors inside a
+   * minute is indexing the shelf. Its asks were the bulk of every
+   * denominator; they are counted apart now and left out.
+   */
+  it("leaves a catalog walker's asks out of the organic count, and says so", async () => {
+    const doors = ["settlement_attestation", "small_blessing", "hello", "luckies", "daily_fortune"];
+    for (const door of doors) {
+      await recordChallengeIssued(testEnv, `/api/buy/${door}`, { userAgent: "node" });
+    }
+    await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    const report = await auditFunnel(testEnv);
+    const blessing = report.items.find((r) => r.item === "small_blessing")!;
+    expect(blessing.asks_walked).toBe(1);
+    expect(blessing.asks_organic).toBe(1);
+    expect(blessing.verdict).toContain("WALKED: 1 more ask");
+    const hello = report.items.find((r) => r.item === "hello")!;
+    expect(hello.asks_organic).toBe(0);
+    expect(hello.asks_walked).toBe(1);
+    expect(hello.verdict).toContain("WALKED ONLY");
+    expect(hello.verdict).toContain("Nothing here is a lost sale");
+    expect(report.walk_rule.min_items).toBe(4);
+  });
+
+  it("still counts a walker's payment as a wallet, because a crawler that pays is a customer", async () => {
+    const doors = ["settlement_attestation", "small_blessing", "hello", "luckies"];
+    for (const door of doors) {
+      await recordChallengeIssued(testEnv, `/api/buy/${door}`, { userAgent: "node" });
+    }
+    await recordPaymentDecline(testEnv, "/api/buy/hello", "settle:insufficient_funds", { userAgent: "node" });
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "hello")!;
+    expect(row.asks_walked).toBe(1);
+    expect(row.wallets_opened).toBe(1);
+    expect(row.declines_organic).toBe(1);
+  });
+
   it("calls settles-with-no-declines converting, which is the quiet good news", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     await recordSettlement(testEnv, "/api/buy/small_blessing", {
