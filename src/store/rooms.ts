@@ -269,6 +269,15 @@ export const ROOMS: readonly Room[] = [
    * agent-read surface carries it from day one.
    */
   { path: "/sources", name: "Where our numbers come from", on_storefront: false },
+  /**
+   * The week's ledger, 2026-09-04, on the keeper's ask for a
+   * summarised, human-readable snapshot "almost as publishing
+   * research". Everything on it was already published and already
+   * signed; what was missing was a page that joined the five
+   * surfaces a reader had to hold open at once and said what the
+   * week amounted to. Off the storefront pending his slot ruling.
+   */
+  { path: "/ledger", name: "The Week's Ledger", on_storefront: false },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   /**

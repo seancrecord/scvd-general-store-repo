@@ -119,6 +119,7 @@ import {
   wellKnownRoutes,
   coverageRoutes,
   sourceRoutes,
+  ledgerRoutes,
   botAuthRoutes,
   botAuthLandingRoutes,
   whatRoutes,
@@ -494,6 +495,7 @@ app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", coverageRoutes);
 app.route("/", sourceRoutes);
+app.route("/", ledgerRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
 app.route("/", buyRoutes);
