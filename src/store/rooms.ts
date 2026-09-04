@@ -278,6 +278,14 @@ export const ROOMS: readonly Room[] = [
    * week amounted to. Off the storefront pending his slot ruling.
    */
   { path: "/ledger", name: "The Week's Ledger", on_storefront: false },
+  /**
+   * The MCP ward, 2026-09-04, on the keeper's ask to "carve out an
+   * mcp ward and do another list similarly". Its own room rather
+   * than a section of the x402 one, because the two share no
+   * denominator and a reader who adds their totals has been misled
+   * by us. Off the storefront pending his slot ruling.
+   */
+  { path: "/mcp-ward", name: "The MCP ward", on_storefront: false },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   /**

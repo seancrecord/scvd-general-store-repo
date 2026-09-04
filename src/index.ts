@@ -120,6 +120,7 @@ import {
   coverageRoutes,
   sourceRoutes,
   ledgerRoutes,
+  mcpWardRoutes,
   botAuthRoutes,
   botAuthLandingRoutes,
   whatRoutes,
@@ -496,6 +497,7 @@ app.route("/", wellKnownRoutes);
 app.route("/", coverageRoutes);
 app.route("/", sourceRoutes);
 app.route("/", ledgerRoutes);
+app.route("/", mcpWardRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
 app.route("/", buyRoutes);
@@ -1007,6 +1009,28 @@ const worker: ExportedHandler<Env> = {
               condition: "worker_health",
               key: "ward-heartbeat-failed",
               detail: `The ward heartbeat itself failed: ${String(error)}. The watchdog is down, which says nothing about the round — check /sources and /admin/ward by hand until this clears.`,
+            }),
+        ),
+      ),
+    );
+    /**
+     * THE MCP WARD'S WALK rides the hourly press for the same reason
+     * the x402 long walk does: the registry answered past 20,000 rows
+     * and was still paginating, which is many times what one
+     * invocation can read. Twenty pages a tick finishes a pass in
+     * about half a day and then idles until the next one. A failed
+     * tick keeps its cursor and resumes next hour — a slow registry
+     * must not cost a pass that is most of the way done.
+     */
+    ctx.waitUntil(
+      import("@/services/mcp-ward").then(({ walkMcpRegistry }) =>
+        walkMcpRegistry(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "mcp-walk-failed",
+              detail: `The MCP ward's registry walk failed: ${String(error)}. The x402 ward is unaffected — the two share no state — and the walk resumes from its stored cursor on the next firing.`,
             }),
         ),
       ),

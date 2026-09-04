@@ -11,6 +11,7 @@ export { wellKnownRoutes } from "@/routes/well-known";
 export { coverageRoutes } from "@/routes/coverage";
 export { sourceRoutes } from "@/routes/sources";
 export { ledgerRoutes } from "@/routes/ledger";
+export { mcpWardRoutes } from "@/routes/mcp-ward";
 export { agentAuthRoutes } from "@/routes/agent-auth";
 export { askRoutes } from "@/routes/ask";
 export { botAuthRoutes } from "@/routes/bot-auth";
