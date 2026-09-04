@@ -33,6 +33,7 @@ import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
+import { reRegistration } from "@/services/visibility";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import {
   listAlmanacEntries,
@@ -54,6 +55,7 @@ import {
 } from "@/services/delivery-audit";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
+  letterNeedsReply,
   listLetters,
   replyToLetter,
   setLetterStatus,
@@ -596,6 +598,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     closers,
     drawerStock,
     grudges,
+    alarmsSeen,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -612,6 +615,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
     listGrudges(c.env, 30),
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
@@ -630,6 +634,24 @@ adminRoutes.get("/admin/counter", async (c) => {
   const seenAt = new Date().toISOString();
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
+  }
+  /*
+   * THE ALARM WATERMARK, on the same rule as the orders above: standing
+   * at the counter IS seeing what the counter is showing (keeper's
+   * order 2026-07-24 — "the button was ceremony"), so the top line
+   * stops shouting about alarms he has already met while the alarms
+   * themselves stay listed below, and on the reconciliation trail with
+   * what came of each one.
+   *
+   * Marked only when BOTH reads landed: on a KV blip we would rather
+   * shout twice than mark an alarm seen that never rendered.
+   */
+  const alarmsSeenAt = shelf(alarmsSeen, null, "alarm watermark", notes);
+  const listedAlerts = shelf(alerts, [], "alerts", notes);
+  if (alerts.status === "fulfilled" && alarmsSeen.status === "fulfilled") {
+    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter, seenAt).catch(
+      () => undefined,
+    );
   }
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
@@ -651,7 +673,8 @@ adminRoutes.get("/admin/counter", async (c) => {
       letters: shelf(letters, [], "letters", notes).map(
         (entry) => entry.record,
       ),
-      alerts: shelf(alerts, [], "alerts", notes),
+      alerts: listedAlerts,
+      alertsSeenAt: alarmsSeenAt,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
@@ -684,6 +707,11 @@ adminRoutes.get("/admin", async (c) => {
     mcpClients,
     fieldWallet,
     bountyState,
+    // Order matters: these two must sit in the same order as the
+    // promises below — the ward round first, then the counter's
+    // alarm watermark.
+    wardLatest,
+    officeAlarmsSeenRead,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -733,6 +761,17 @@ adminRoutes.get("/admin", async (c) => {
     import("@/services/bounty-board").then(({ bountyBoard }) =>
       bountyBoard(c.env),
     ),
+    // One KV read: the latest Sunday round, for the visibility line.
+    import("@/services/ward-round").then(({ latestWardRound }) =>
+      latestWardRound(c.env),
+    ),
+    /*
+     * The counter's alarm watermark, READ ONLY here. The strip points
+     * at the counter, so it should say what is still waiting there —
+     * but the office is not the counter, and looking at a pointer is
+     * not meeting the alarm, so this page never moves the mark.
+     */
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsSeenAtCounter),
     /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
      *
@@ -755,6 +794,12 @@ adminRoutes.get("/admin", async (c) => {
      */
   ]);
   const emptyLedger = emptyMonthLedger();
+  const officeAlarmsSeen = shelf(
+    officeAlarmsSeenRead,
+    null,
+    "alarm watermark",
+    notes,
+  );
   const pendingReviews =
     shelf(tips, [], "tips", notes).filter(
       (tip) => tip.record.status === "pending_review",
@@ -825,6 +870,22 @@ adminRoutes.get("/admin", async (c) => {
           outstandingUsd,
         };
       })(),
+      visibility: (() => {
+        const round = shelf(wardLatest, null, "the latest round", notes);
+        const doors = round?.our_doors;
+        if (!round || !doors) return null;
+        const press = reRegistration(doors.missing);
+        return {
+          week: round.week,
+          at: round.at,
+          claimed: doors.claimed,
+          found: doors.found.length,
+          missing: doors.missing,
+          could_not_check: doors.could_not_check,
+          command: press.command,
+          cost_usd: press.cost_usd,
+        };
+      })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
@@ -834,11 +895,15 @@ adminRoutes.get("/admin", async (c) => {
         orders: shelf(orders, [], "orders", notes).filter(
           (order) => order.status === "queued",
         ).length,
-        letters: shelf(letters, [], "letters", notes).filter(
-          (entry) => entry.record.status !== "archived",
+        // Answered is done, filed or not (2026-09-04), and an alarm
+        // already met at the counter is not still waiting there.
+        letters: shelf(letters, [], "letters", notes).filter((entry) =>
+          letterNeedsReply(entry.record),
         ).length,
         reviews: pendingReviews,
-        alerts: shelf(alerts, [], "alerts", notes).length,
+        alerts: shelf(alerts, [], "alerts", notes).filter(
+          (alert) => officeAlarmsSeen === null || alert.at > officeAlarmsSeen,
+        ).length,
       },
       loadNotes: notes,
     }),
@@ -1917,7 +1982,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
     new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
   );
   const healed = healedAfterOutreach(round, ledger);
-  const { readCitationWatch, citationProspects } = await import("@/services/citation-watch");
+  const { readCitationWatch, watchedProspects } = await import("@/services/citation-watch");
   const citations = await readCitationWatch(c.env);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
@@ -1928,7 +1993,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       healed,
       ledger,
       citations,
-      citation_prospects: citationProspects(),
+      citation_prospects: watchedProspects(),
     });
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
@@ -2469,7 +2534,7 @@ adminRoutes.post("/admin/market/publish-registry", async (c) => {
  */
 adminRoutes.get("/admin/bounties", async (c) => {
   const notes: string[] = [];
-  const [board, wallet, ledger, attempts, porch, creditOwed] =
+  const [board, wallet, ledger, attempts, porch, creditOwed, creditHolders] =
     await Promise.allSettled([
       import("@/services/bounty-board").then(({ bountyBoard }) =>
         bountyBoard(c.env),
@@ -2483,6 +2548,41 @@ adminRoutes.get("/admin/bounties", async (c) => {
       import("@/services/store-credit").then(({ creditOutstandingAtomic }) =>
         creditOutstandingAtomic(c.env),
       ),
+      /*
+       * Who is owed, off the credit rows (bounded; the sweep's own
+       * cap). "credit_" keys are the challenge and aggregate keys under
+       * the same prefix and are not records.
+       */
+      (async () => {
+        const listed = await listKeys(c.env.COUNTERS, {
+          prefix: KV_KEYS.creditPrefix,
+          cap: 200,
+        });
+        const names = listed.names.filter((name) => !name.startsWith("credit_"));
+        const rows = await import("@/lib/kv-bulk").then(({ bulkGetJson }) =>
+          bulkGetJson<{
+            wallet: string;
+            balance_atomic: string;
+            earned_total_atomic: string;
+            redeemed_total_atomic: string;
+            expired_total_atomic: string;
+            updated_at: string;
+          }>(c.env.COUNTERS, names),
+        );
+        const usd = (atomic: string | undefined): number =>
+          Number(BigInt(atomic ?? "0")) / 1e6;
+        return [...rows.values()]
+          .filter((row): row is NonNullable<typeof row> => Boolean(row))
+          .map((row) => ({
+            wallet: row.wallet,
+            balance_usd: usd(row.balance_atomic),
+            earned_usd: usd(row.earned_total_atomic),
+            redeemed_usd: usd(row.redeemed_total_atomic),
+            expired_usd: usd(row.expired_total_atomic),
+            updated_at: row.updated_at,
+          }))
+          .sort((a, b) => b.balance_usd - a.balance_usd);
+      })(),
     ]);
   const { renderBountiesPage, moneyOutAllTime } = await import(
     "@/pages/admin/bounties-page"
@@ -2491,6 +2591,21 @@ adminRoutes.get("/admin/bounties", async (c) => {
   const organic = (surface: string): number =>
     porchLedger?.surfaces[surface]?.["organic"] ?? 0;
   const boardState = shelf(board, null, "the board", notes);
+  /*
+   * Whether each payout burned on chain — one bounded read per paid
+   * bounty, after the board is known. Fail-soft: an unreadable chain
+   * leaves the column saying "unknown", never "not redeemed".
+   */
+  const redemptions = boardState
+    ? await import("@/services/bounty-board")
+        .then(({ payoutRedemptions }) =>
+          payoutRedemptions(c.env, boardState.bounties),
+        )
+        .catch(() => {
+          notes.push("the redemption check");
+          return null;
+        })
+    : null;
   return c.html(
     renderBountiesPage({
       board: boardState,
@@ -2509,6 +2624,8 @@ adminRoutes.get("/admin/bounties", async (c) => {
         boardState,
         shelf(creditOwed, null, "the credit liability", notes),
       ),
+      creditHolders: shelf(creditHolders, null, "the credit ledger", notes),
+      redemptions,
       now: new Date().toISOString(),
       loadNotes: notes,
     }),

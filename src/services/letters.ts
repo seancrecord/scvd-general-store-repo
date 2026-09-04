@@ -162,6 +162,22 @@ export async function letterCounts(env: Env): Promise<LetterCounts> {
   };
 }
 
+/**
+ * IS THIS LETTER STILL ON HIM? (2026-09-04, the keeper: "on the letter,
+ * i responded but it still says it needs my hands... i dont want it to
+ * go away, but i dont have anything to do".)
+ *
+ * A letter is work until it is ANSWERED, not until it is filed.
+ * "Not archived" was standing in for "unanswered", and the two part
+ * company the moment he replies: the reply is the work, archiving is
+ * housekeeping, and a desk that demands housekeeping before it stops
+ * asking is a desk that trains you to ignore it. Replied letters stay
+ * in the box, visible, out of the count.
+ */
+export function letterNeedsReply(record: LetterRecord): boolean {
+  return record.status === "received" || record.status === "read";
+}
+
 /** For the Sunday digest: letters the keeper hasn't read yet. */
 export async function unreadLetterCount(env: Env): Promise<number> {
   const letters = await listLetters(env);

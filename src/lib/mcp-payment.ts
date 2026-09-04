@@ -5,9 +5,13 @@ import {
   bookedReason,
   decodePaymentHeader,
   diagnoseDecline,
+  isNeverJudged,
+  JUDGED_NOTE,
+  neverJudgedBlock,
   payerFromPaymentHeader,
   preflightBlockers,
   preflightRefusalBody,
+  signedValidBefore,
 } from "@/lib/decline-diagnosis";
 import type { EventSignals } from "@/lib/metrics";
 import {
@@ -288,7 +292,18 @@ export async function runMcpPayment(
             ...(diagnosis.decline.message
               ? { message: diagnosis.decline.message }
               : {}),
-            note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+            /*
+             * NEVER JUDGED, SAID IN THE SAME WORDS AS THE HTTP DOOR
+             * (2026-09-04). A verify_error is our pipe failing, not a
+             * verdict on the buyer — and this door is the one an agent
+             * reads as JSON with nobody watching, so "the signed
+             * payment was not accepted" here is the version most
+             * likely to send a correct client off to re-sign a payload
+             * that was already right.
+             */
+            ...(isNeverJudged(diagnosis.decline)
+              ? neverJudgedBlock(signedValidBefore(paymentHeader))
+              : { note: JUDGED_NOTE }),
             ...(diagnosis.mismatch
               ? { requirement_mismatch: diagnosis.mismatch }
               : {}),

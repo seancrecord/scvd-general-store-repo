@@ -1,10 +1,14 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { citationsOn, judgePage } from "@/lib/citations";
-import { citationsOn as citationsOnNode, judge as judgeNode, judgeProspect as judgeProspectNode } from "../scripts/lib/citations.mjs";
+import { SELF_PUBLISHED_IDS, citationsOn, judgePage } from "@/lib/citations";
+import WATCHED_PAGES from "@/store/watched-pages.json";
+import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
+import { SELF_PUBLISHED_IDS as SELF_PUBLISHED_IDS_NODE, citationsOn as citationsOnNode, judge as judgeNode } from "../scripts/lib/citations.mjs";
 import {
-  citationProspects,
+  WATCH_CAP,
+  watchThisPass,
+  watchedProspects,
   judgeWatch,
   readCitationWatch,
   runCitationWatch,
@@ -46,31 +50,59 @@ function stubPages(pages: Record<string, { status?: number; text?: string; throw
 }
 
 describe("one reading, two runtimes", () => {
-  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"}</p><a href="${BASE}/menu/hello">shop</a>`;
+  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
 
   it("finds the same citations in the same order", () => {
     expect(citationsOn(fixture, BASE)).toEqual(citationsOnNode(fixture, BASE));
     expect(citationsOn(fixture, BASE)).toEqual([
       `${BASE}/api/verify/cert_k2m9v4xwqp`,
-      `${BASE}/corpus/host/door.example.json`,
       `${BASE}/corpus/3.json`,
+      `${BASE}/corpus/host/door.example.json`,
+      `${BASE}/corpus/round/2026-W36`,
       `"cites": "${BASE}/corpus/3.json"`,
     ]);
   });
 
-  it("gives the same verdict words for listed systems and prospects", () => {
+  /**
+   * THE DEFECT THAT SEEDED SEVEN FALSE CITATIONS (2026-09-04). The
+   * first sweep of the outreach register reported seven directories
+   * as citing this store. Six carried the sentence from this store's
+   * OWN README — "read the dated, Bitcoin-anchored corpus, free, at
+   * scvd.store/corpus" — and one carried the sample certificate that
+   * every discovery listing publishes. Both are our words on their
+   * page, which listing fact 4 excludes by name. A citation points at
+   * ONE ROW; an index link points at the front door.
+   */
+  it("does not count this store's own words quoted back at it", () => {
+    const mirroredReadme = `read the dated, Bitcoin-anchored corpus, free, at <a href="${BASE}/corpus">scvd.store/corpus</a>, cite it by DOI`;
+    expect(citationsOn(mirroredReadme, BASE)).toEqual([]);
+    expect(citationsOnNode(mirroredReadme, BASE)).toEqual([]);
+    for (const moving of [`${BASE}/corpus.json`, `${BASE}/corpus/latest.json`, `${BASE}/corpus/tiers.json`, `${BASE}/corpus/diff.json?since=2026-W30`]) {
+      expect(citationsOn(moving, BASE), moving).toEqual([]);
+    }
+    // The sample certificate every listing and the MCP card publish.
+    expect(SELF_PUBLISHED_IDS).toContain(SAMPLE_ARTIFACT_ID);
+    expect([...SELF_PUBLISHED_IDS_NODE]).toEqual([...SELF_PUBLISHED_IDS]);
+    expect(citationsOn(`sample_verify_url: ${BASE}/api/verify/${SAMPLE_ARTIFACT_ID}`, BASE)).toEqual([]);
+    // A real certificate on the same page still counts.
+    expect(citationsOn(`${BASE}/api/verify/${SAMPLE_ARTIFACT_ID} and ${BASE}/api/verify/cert_real9`, BASE)).toEqual([
+      `${BASE}/api/verify/cert_real9`,
+    ]);
+  });
+
+  it("gives the same verdict words for listed systems and register rows", () => {
     const system = { name: "S", cites_at: "https://s.example/m", since: "2026-09-03" };
-    const prospect = { name: "P", url: "https://p.example/us", noted: "2026-09-04" };
     for (const fetched of [{ status: 200, text: fixture }, { status: 200, text: "nothing" }, { status: 503, text: "" }, { error: "ECONNRESET" }] as const) {
       expect(judgePage("S", system.cites_at, fetched, BASE, "gone").verdict).toBe(judgeNode(system, fetched).verdict);
-      expect(judgePage("P", prospect.url, fetched, BASE, "silent").verdict).toBe(judgeProspectNode(prospect, fetched).verdict);
     }
+    expect(judgePage("P", "https://p.example/us", { status: 200, text: "nothing" }, BASE, "silent").verdict).toBe("silent");
+    expect(judgePage("P", "https://p.example/us", { status: 200, text: fixture }, BASE, "silent").verdict).toBe("cited");
   });
 });
 
 describe("the news is the delta", () => {
   const listed = { name: "Example Scores", cites_at: "https://scores.example/method", since: "2026-09-03" };
-  const prospect = { name: "Example List", url: "https://list.example/us", noted: "2026-09-04" };
+  const prospect = { name: "Example List", url: "https://list.example/us", note_sent: "2026-09-04", cites_since: null };
   const now = new Date("2026-09-06T11:00:00Z");
 
   it("a first report counts every cited page as new, and silence as nothing", () => {
@@ -127,44 +159,104 @@ describe("the news is the delta", () => {
   });
 });
 
-describe("the run: reads the two files, stores one report, pages on a change", () => {
-  it("watches the noted prospects, stays silent on silence, and pages when one starts carrying a row", async () => {
-    const prospects = citationProspects();
-    expect(prospects.length).toBeGreaterThan(0);
-    for (const entry of prospects) {
+describe("the run: reads the register, stores one report, pages on a change", () => {
+  /**
+   * THE ONE HAND-KEPT LIST (2026-09-04). The Worker watch and
+   * `npm run outreach:check` read the SAME file — the keeper's
+   * outreach register — so a page added for one is watched by both.
+   * The cron fetches only the rows we wrote to, plus any already
+   * carrying a row; the CLI sweeps all of them from a machine with no
+   * subrequest budget.
+   */
+  it("carries only the written-to rows to the edge, and no research", () => {
+    const watched = watchedProspects();
+    for (const entry of watched) {
       expect(new URL(entry.url).host.endsWith("scvd.store")).toBe(false);
-      expect(entry.noted).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(entry.note_sent !== null || entry.cites_since !== null).toBe(true);
     }
+    // THE REGRESSION THIS PINS: the 101-row register used to ride to
+    // every isolate to fetch, on the day it landed, zero pages.
+    const shipped = JSON.stringify(WATCHED_PAGES);
+    expect(shipped.length).toBeLessThan(4000);
+    expect(shipped).not.toContain("category");
+    expect(shipped).not.toContain("why");
+  });
+
+  /**
+   * THE HEADROOM. A hundred sends must not mean a hundred subrequests
+   * on one tick, and a pass that could not read everything must never
+   * imply it did.
+   */
+  it("reads everything under the cap, and walks a window over the weeks above it", () => {
+    const few = Array.from({ length: 5 }, (_, i) => ({ name: `n${i}`, url: `https://e${i}.example/`, note_sent: "2026-09-04", cites_since: null }));
+    const under = watchThisPass(new Date("2026-09-06T11:00:00Z"), few);
+    expect(under.slice).toEqual(few);
+    expect(under.capped).toBe(false);
+    expect(under.not_read).toBe(0);
+
+    const many = Array.from({ length: WATCH_CAP * 3 }, (_, i) => ({ name: `n${i}`, url: `https://e${i}.example/`, note_sent: "2026-09-04", cites_since: null }));
+    const seen = new Set<string>();
+    let capped = false;
+    for (let week = 0; week < 4; week += 1) {
+      const pass = watchThisPass(new Date(Date.UTC(2026, 8, 6 + week * 7, 11)), many);
+      expect(pass.slice.length).toBe(WATCH_CAP);
+      expect(pass.not_read).toBe(many.length - WATCH_CAP);
+      capped = capped || pass.capped;
+      for (const row of pass.slice) seen.add(row.url);
+    }
+    expect(capped).toBe(true);
+    // The window walks, so a long list is swept rather than starved.
+    expect(seen.size).toBe(many.length);
+  });
+
+  it("stays silent on silence, and pages when a written-to page starts carrying a row", async () => {
+    const prospects = [
+      { name: "Example List", url: "https://list.example/us", note_sent: "2026-09-04", cites_since: null },
+      { name: "Other List", url: "https://other.example/us", note_sent: "2026-09-04", cites_since: null },
+    ];
     await testEnv.COUNTERS.delete(KV_KEYS.citationWatch);
     const alertsBefore = (await listAlerts(testEnv, 50)).filter((row) => row.condition === "citation_seen").length;
 
-    stubPages(Object.fromEntries(prospects.map((entry) => [entry.url, { text: "a page about the store, no row" }])));
-    const quiet = await runCitationWatch(testEnv, new Date("2026-09-06T11:00:00Z"));
-    expect(quiet.rows.every((row) => row.kind === "prospect" && row.verdict === "silent")).toBe(true);
-    expect(quiet.newly_cited).toEqual([]);
-    expect((await listAlerts(testEnv, 50)).filter((row) => row.condition === "citation_seen").length).toBe(alertsBefore);
-
-    const target = prospects[0]!;
-    stubPages(
-      Object.fromEntries(
-        prospects.map((entry) => [
-          entry.url,
-          { text: entry.url === target.url ? `see ${BASE}/api/verify/cert_k2m9v4xwqp` : "no row" },
-        ]),
-      ),
+    const quiet = judgeWatch(
+      { listed: [], prospects: prospects.map((prospect) => ({ prospect, fetched: { status: 200, text: `a page quoting ${BASE}/corpus, no row` } })) },
+      null,
+      BASE,
+      new Date("2026-09-06T11:00:00Z"),
     );
-    const news = await runCitationWatch(testEnv, new Date("2026-09-13T11:00:00Z"));
-    expect(news.newly_cited).toEqual([target.url]);
-    const stored = (await readCitationWatch(testEnv)) as CitationWatchReport;
-    expect(stored.checked_at).toBe("2026-09-13T11:00:00.000Z");
-    const paged = (await listAlerts(testEnv, 50)).filter((row) => row.condition === "citation_seen");
-    expect(paged.length).toBe(alertsBefore + 1);
-    expect(paged[0]!.detail).toContain(target.url);
-    expect(paged[0]!.detail).toContain("five listing facts");
+    expect(quiet.rows.every((row) => row.verdict === "silent")).toBe(true);
+    expect(quiet.newly_cited).toEqual([]);
 
-    // The same page, still citing: not news twice.
-    const again = await runCitationWatch(testEnv, new Date("2026-09-20T11:00:00Z"));
-    expect(again.newly_cited).toEqual([]);
+    // The live path, against the real register's watched set.
+    stubPages(Object.fromEntries(watchedProspects().map((entry) => [entry.url, { text: "no row" }])));
+    const ran = await runCitationWatch(testEnv, new Date("2026-09-06T11:00:00Z"));
+    expect(ran.newly_cited).toEqual([]);
+    expect((await listAlerts(testEnv, 50)).filter((row) => row.condition === "citation_seen").length).toBe(alertsBefore);
+    const stored = (await readCitationWatch(testEnv)) as CitationWatchReport;
+    expect(stored.checked_at).toBe("2026-09-06T11:00:00.000Z");
+  });
+
+  it("pages once, naming the register row to set, when a row appears", async () => {
+    const prospect = { name: "Example List", url: "https://list.example/us", note_sent: "2026-09-04", cites_since: null };
+    const first = judgeWatch(
+      { listed: [], prospects: [{ prospect, fetched: { status: 200, text: "no row" } }] },
+      null,
+      BASE,
+      new Date("2026-09-06T11:00:00Z"),
+    );
+    const second = judgeWatch(
+      { listed: [], prospects: [{ prospect, fetched: { status: 200, text: `row: ${BASE}/corpus/host/door.example.json` } }] },
+      first,
+      BASE,
+      new Date("2026-09-13T11:00:00Z"),
+    );
+    expect(second.newly_cited).toEqual([prospect.url]);
+    const third = judgeWatch(
+      { listed: [], prospects: [{ prospect, fetched: { status: 200, text: `row: ${BASE}/corpus/host/door.example.json` } }] },
+      second,
+      BASE,
+      new Date("2026-09-20T11:00:00Z"),
+    );
+    expect(third.newly_cited).toEqual([]);
   });
 });
 
@@ -215,6 +307,6 @@ describe("the desk", () => {
       citation_prospects: unknown[];
     };
     expect(json.citations.newly_gone).toEqual(["https://scores.example/m"]);
-    expect(json.citation_prospects.length).toBe(citationProspects().length);
+    expect(json.citation_prospects.length).toBe(watchedProspects().length);
   });
 });

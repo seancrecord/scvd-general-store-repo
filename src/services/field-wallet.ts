@@ -1,3 +1,4 @@
+import { sendAlert } from "@/lib/alerts";
 import { usdcBalanceOf } from "@/lib/base-rpc";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import type { Env } from "@/types";
@@ -76,4 +77,104 @@ export async function readFieldWallet(env: Env): Promise<FieldWalletReading> {
       problem: `the balance could not be read just now: ${String(error instanceof Error ? error.message : error).slice(0, 200)}`,
     };
   }
+}
+
+/**
+ * THE HOURLY COVER CHECK (2026-09-04, the keeper: "where would I see
+ * money short — or a constant check if possible").
+ *
+ * Every payout this store makes is a signed authorization the
+ * recipient redeems LATER, against whatever the wallet holds at that
+ * moment. So the number that matters is not the balance; it is the
+ * balance against what has been promised: bounty authorizations still
+ * inside their validBefore, plus the store credit regulars can cash
+ * out at any time. The desk shows "short" when somebody opens it.
+ * This runs on the hourly press whether or not anybody does.
+ *
+ * TWO FINDINGS, SEPARATELY KEYED so each pages once and backs off:
+ *
+ *   short   — promised more than held. A walker or a regular will be
+ *             refused by the USDC contract when they redeem, which is
+ *             the store breaking its word with somebody else's error
+ *             message. Page.
+ *   thin    — held less than the open board could still promise this
+ *             week. Nothing is broken yet; the next claim that pays
+ *             makes it short. Page once, quieter wording.
+ *
+ * A balance that could not be read is neither: it is reported as its
+ * own line, never as zero, and the check says so rather than guess.
+ */
+export interface FieldWalletSweep {
+  at: string;
+  wallet: FieldWalletReading;
+  promised_usd: number;
+  live_bounty_authorizations: number;
+  credit_owed_usd: number;
+  board_remaining_usd: number;
+  findings: string[];
+}
+
+export async function sweepFieldWallet(env: Env): Promise<FieldWalletSweep> {
+  const { bountyBoard, livePayouts, payoutRedemptions } = await import(
+    "@/services/bounty-board"
+  );
+  const { creditOutstandingAtomic } = await import("@/services/store-credit");
+  const wallet = await readFieldWallet(env);
+  const now = new Date();
+  const board = await bountyBoard(env, now);
+  // A payout the chain has seen burn is money gone, not money promised.
+  // A chain that cannot be asked leaves every payout counted.
+  const redemptions = await payoutRedemptions(env, board.bounties).catch(
+    () => ({}),
+  );
+  const live = livePayouts(board.bounties, redemptions, now);
+  const liveUsd = live.reduce((sum, bounty) => sum + bounty.reward_usd, 0);
+  const creditOwedUsd = Number(await creditOutstandingAtomic(env)) / 1e6;
+  const promised = Math.round((liveUsd + creditOwedUsd) * 100) / 100;
+  const boardRemaining =
+    Math.round(
+      Math.max(0, board.weekly_budget_usd - board.spent_this_week_usd) * 100,
+    ) / 100;
+  const sweep: FieldWalletSweep = {
+    at: now.toISOString(),
+    wallet,
+    promised_usd: promised,
+    live_bounty_authorizations: live.length,
+    credit_owed_usd: Math.round(creditOwedUsd * 100) / 100,
+    board_remaining_usd: boardRemaining,
+    findings: [],
+  };
+  if (!wallet.provisioned || wallet.address === null) {
+    return sweep; // A read-only deployment promises nothing it cannot keep.
+  }
+  if (wallet.usdc === null) {
+    sweep.findings.push(`unread: ${wallet.problem ?? "the balance was not read"}`);
+    await sendAlert(env, {
+      condition: "field_wallet_short",
+      key: "unread",
+      detail: `UNCLEAR — the paying wallet ${wallet.address} could not be read this hour (${wallet.problem ?? "no reason recorded"}), so nothing can say whether it covers the $${promised.toFixed(2)} it has signed for (${live.length} live bounty authorization${live.length === 1 ? "" : "s"}, $${sweep.credit_owed_usd.toFixed(2)} credit owed). Not a shortfall; a blind spot. If it repeats, the RPC ladder is the suspect.`,
+    }).catch(() => undefined);
+    return sweep;
+  }
+  const held = wallet.usdc;
+  if (promised > held + 0.005) {
+    sweep.findings.push(`short: promised $${promised.toFixed(2)}, holds $${held.toFixed(2)}`);
+    await sendAlert(env, {
+      condition: "field_wallet_short",
+      key: "short",
+      detail: `OURS, money promised — the paying wallet ${wallet.address} holds $${held.toFixed(2)} USDC on Base and has signed for $${promised.toFixed(2)}: ${live.length} live bounty authorization${live.length === 1 ? "" : "s"} worth $${(Math.round(liveUsd * 100) / 100).toFixed(2)} plus $${sweep.credit_owed_usd.toFixed(2)} in store credit regulars can cash out. The next redemption past the balance is refused by the USDC contract, in somebody else's error message. Top the wallet up by at least $${(promised - held).toFixed(2)}. The board and every claim: /admin/bounties.`,
+    }).catch(() => undefined);
+    return sweep;
+  }
+  if (board.open_count > 0 && held - promised < boardRemaining) {
+    sweep.findings.push(
+      `thin: $${(held - promised).toFixed(2)} free against $${boardRemaining.toFixed(2)} the open board could still promise this week`,
+    );
+    await sendAlert(env, {
+      condition: "field_wallet_short",
+      key: "thin",
+      detail: `THIN, nothing broken yet — the paying wallet ${wallet.address} holds $${held.toFixed(2)} USDC on Base, of which $${promised.toFixed(2)} is already signed for, leaving $${(held - promised).toFixed(2)} against the $${boardRemaining.toFixed(2)} the ${board.open_count} open bount${board.open_count === 1 ? "y" : "ies"} could still pay this week. Enough claims and the wallet is short. Top up, or let the board run down. /admin/bounties has the wallet and the board.`,
+    }).catch(() => undefined);
+  }
+  return sweep;
 }

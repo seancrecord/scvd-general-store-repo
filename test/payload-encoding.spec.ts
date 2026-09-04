@@ -184,3 +184,86 @@ describe("the hand-rolling notes warn about the wrap before it costs a night", (
     expect(String(body.payload_template_note)).toContain("-w0");
   });
 });
+
+/**
+ * OUR OWN REFUSAL, READ AS SOMEBODY ELSE'S (2026-09-04). The
+ * settlement_attestation funnel booked
+ * `local:preflight:payload.authorization.nonce` and
+ * `local:preflight:payload.signature`, and both fell through to the
+ * generic `local:` line: "the x402 SDK refused this ... fault:
+ * unknown". It was not the SDK — preflightRefusalBody writes "caught
+ * here on purpose" into the body the buyer gets — the fault was not
+ * unknown, and the field was sitting in the code the whole time.
+ * Since readReason also writes the phone alert, each of these paged
+ * the keeper as "UNCLEAR, needs a read" for a row already read.
+ */
+describe("the refusals the store makes on its own authority", () => {
+  const codes = [
+    "local:preflight:payload.signature",
+    "local:preflight:payload.authorization",
+    "local:preflight:payload.authorization.from",
+    "local:preflight:payload.authorization.to",
+    "local:preflight:payload.authorization.value",
+    "local:preflight:payload.authorization.validAfter",
+    "local:preflight:payload.authorization.validBefore",
+    "local:preflight:payload.authorization.nonce",
+  ];
+
+  it("never blames the SDK for a refusal the store made itself", () => {
+    for (const code of codes) {
+      const { reading } = readReason(code);
+      expect(reading, code).not.toContain("x402 SDK refused");
+      expect(reading, code).toContain("WE refused this");
+    }
+  });
+
+  it("reads every one as THEIRS, so the phone stops saying UNCLEAR", () => {
+    for (const code of codes) {
+      expect(readReason(code).fault, code).toBe("buyer");
+    }
+  });
+
+  it("says which field, in words, for every field it can block on", () => {
+    const readings = new Set(codes.map((code) => readReason(code).reading));
+    // A shared clause would mean the code's field name went unused.
+    expect(readings.size).toBe(codes.length);
+    expect(readReason(codes[7]!).reading).toContain("64 hex characters");
+    expect(readReason(codes[0]!).reading).toContain("beginning 0x");
+  });
+
+  it("covers every field the pre-flight is actually willing to refuse", async () => {
+    // Drift guard: a new blocking check in describeExactEvmPayload
+    // must arrive with a clause here, or its code reads as a bare
+    // field name again.
+    const { describeExactEvmPayload, blockingProblems } = await import(
+      "@/lib/requirement-match"
+    );
+    const problems = blockingProblems(
+      describeExactEvmPayload(
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+          payTo: "0x" + "a".repeat(40),
+          amount: "5000",
+        },
+        { signature: 65, authorization: { nonce: 1 } },
+      ),
+    );
+    expect(problems.length).toBeGreaterThan(0);
+    for (const problem of problems) {
+      const { reading } = readReason(`local:preflight:${problem.field}`);
+      expect(reading, problem.field).not.toContain(
+        "is not in the one legal form that field has",
+      );
+    }
+  });
+
+  it("keeps the historical bucket honest about what it cannot say", () => {
+    // Rows booked before the split carry payload_not_an_object as the
+    // catch-all, so the reading must not assert the narrow cause for
+    // them as though it always meant that.
+    const { reading } = readReason("local:payload_not_an_object");
+    expect(reading).toContain("2026-09-04");
+    expect(reading).toContain("local:payload_truncated_envelope");
+  });
+});

@@ -10,6 +10,7 @@ import {
   OPEN_LABOR_CAP,
 } from "@/services/queue-capacity";
 import { deskStatusOf } from "@/services/commission-desk";
+import { letterNeedsReply } from "@/services/letters";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import type { StockUnit } from "@/services/stock";
 import type {
@@ -35,6 +36,12 @@ export interface CounterPageData {
   notice?: string;
   weekNote: string;
   alerts: Array<{ condition: string; detail: string; at: string }>;
+  /**
+   * When the keeper last stood here with alarms showing (null on a
+   * first look). Rows that fired after it are the ones the top line
+   * is allowed to shout about; the rest are reference below.
+   */
+  alertsSeenAt?: string | null;
   orders: OrderRecord[];
   closers: CloserEntry[];
   stockShelves: Record<string, StockUnit[]>;
@@ -430,22 +437,52 @@ export function renderCounterPage(data: CounterPageData): string {
   const openOrders = data.orders.filter(
     (order) => order.status === "queued",
   ).length;
-  const activeLetters = data.letters.filter(
+  const lettersInBox = data.letters.filter(
     (letter) => letter.status !== "archived",
   ).length;
+  // Work is what is UNANSWERED; the box holds more than that, and
+  // holding it is not a job (2026-09-04 — see letterNeedsReply).
+  const lettersWaiting = data.letters.filter(letterNeedsReply).length;
+  /**
+   * THE ALARMS: still here, no longer shouting after they are seen
+   * (2026-09-04, the keeper: "the 5 recent alarms is helpful but
+   * persistent and shouldnt stay up after ive seen it").
+   *
+   * The section itself never moves — a trail you can only read while
+   * it is fresh is not a trail. What stands down is the top line: a
+   * row is NEW until the counter has been stood at once with it
+   * showing, exactly like the orders this page already acknowledges
+   * on sight. Nothing is deleted and nothing is hidden.
+   */
+  const seenAt = data.alertsSeenAt ?? null;
+  /*
+   * FIRST LOOK MARKS NOTHING NEW, the same honesty the alarm trail
+   * already keeps: before there is a watermark the store has no idea
+   * what he has read, and flagging everything would be a lie the size
+   * of the list. The line says so once, then goes quiet for good.
+   */
+  const alarmsFirstLook = seenAt === null;
+  const newAlerts = alarmsFirstLook
+    ? []
+    : data.alerts.filter((alert) => alert.at > (seenAt as string));
   const alertsLine =
     data.alerts.length === 0
       ? "<p>Quiet. The alarms have had nothing to say.</p>"
-      : `<details>
-          <summary>${data.alerts.length} recent — newest: <strong>${escapeHtml(data.alerts[0]?.condition ?? "")}</strong> ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}</summary>
+      : `<details${newAlerts.length ? " open" : ""}>
+          <summary>${data.alerts.length} recent${alarmsFirstLook ? "" : newAlerts.length ? `, ${newAlerts.length} new` : ", all seen"} — newest: <strong>${escapeHtml(data.alerts[0]?.condition ?? "")}</strong> ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}</summary>
           <ul>${data.alerts
             .slice(0, 3)
             .map(
               (alert) =>
-                `<li><strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
+                `<li>${seenAt !== null && alert.at > seenAt ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}<strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
             )
             .join("\n")}</ul>
-          <p><small>Details clipped for the counter; the alert emails carry the full text.</small></p>
+          <p><small>Details clipped for the counter; the alert emails carry the full text.
+          ${
+            seenAt === null
+              ? "First look: nothing is marked new, because the store has no idea what you have already read."
+              : `Standing here marks these seen, so the line at the top stays quiet until an alarm fires that you have not met. The full trail, with what came of each one, is on <a href="/admin/reconciliation">the reconciliation page</a>.`
+          }</small></p>
         </details>`;
   /**
    * Stocking a shelf used to redirect in silence, which reads exactly
@@ -466,7 +503,7 @@ export function renderCounterPage(data: CounterPageData): string {
     pendingTrainTags +
     pendingConfessions +
     pendingRefunds +
-    activeLetters;
+    lettersWaiting;
   const body = `
   ${noticeHtml}
   <section>
@@ -479,10 +516,26 @@ export function renderCounterPage(data: CounterPageData): string {
           ${pendingTrainTags ? ` <a href="#queues">${pendingTrainTags} tag${pendingTrainTags === 1 ? "" : "s"} waiting</a> ·` : ""}
           ${pendingConfessions ? ` <a href="#queues">${pendingConfessions} confession${pendingConfessions === 1 ? "" : "s"}</a> ·` : ""}
           ${pendingRefunds ? ` <a href="#queues">${pendingRefunds} refund${pendingRefunds === 1 ? "" : "s"} to pay</a> ·` : ""}
-          ${activeLetters ? ` <a href="#mailbox">${activeLetters} letter${activeLetters === 1 ? "" : "s"}</a>` : ""}`
+          ${lettersWaiting ? ` <a href="#mailbox">${lettersWaiting} letter${lettersWaiting === 1 ? "" : "s"} to answer</a>` : ""}`
     }</p>
-    ${heldTrainTags ? `<p><small><a href="#queues">${heldTrainTags} tag${heldTrainTags === 1 ? "" : "s"} held off the wall</a> — reversible any time.</small></p>` : ""}
-    ${data.alerts.length ? `<p><small><a href="#alarms">${data.alerts.length} recent alarm${data.alerts.length === 1 ? "" : "s"}</a>, newest ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}.</small></p>` : ""}
+    ${
+      /*
+       * NO LINE FOR TAGS HELD OFF THE WALL (2026-09-04, the keeper:
+       * "once i made the decsiion i can just check the train at the
+       * bottom i dont need that persisting"). A decision already made
+       * is not a thing needing hands, and a glance that lists settled
+       * decisions teaches you to stop reading the glance. The count
+       * still stands on the train's own drawer below, where a
+       * reversal is one press away.
+       */ ""
+    }
+    ${
+      alarmsFirstLook && data.alerts.length
+        ? `<p><small><a href="#alarms">${data.alerts.length} recent alarm${data.alerts.length === 1 ? "" : "s"}</a>, newest ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))} — first look, so none are marked new. From here this line only appears for alarms you have not met.</small></p>`
+        : newAlerts.length
+          ? `<p><small><a href="#alarms">${newAlerts.length} new alarm${newAlerts.length === 1 ? "" : "s"}</a> since you last stood here, newest ${escapeHtml((newAlerts[0]?.at ?? "").slice(0, 16))}.</small></p>`
+          : ""
+    }
   </section>
 
   <section>
@@ -546,8 +599,10 @@ export function renderCounterPage(data: CounterPageData): string {
   </section>
 
   <section id="mailbox">
-    <h2>The Mailbox (${activeLetters} in the box)</h2>
-    <p>Private correspondence. Read here, replied here, published nowhere.</p>
+    <h2>The Mailbox (${lettersInBox} in the box${lettersWaiting ? `, ${lettersWaiting} to answer` : ", all answered"})</h2>
+    <p>Private correspondence. Read here, replied here, published nowhere.
+    An answered letter stays in the box until you archive it, and asks
+    nothing of you while it waits.</p>
     <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
@@ -557,11 +612,9 @@ export function renderCounterPage(data: CounterPageData): string {
       <summary>The confession drawer (${pendingConfessions} awaiting review)</summary>
       <ul>${confessionsHtml(data.confessions)}</ul>
     </details>
-    <details ${data.trainTags.some((tag) => tag.status !== "approved") ? "open" : ""}>
-      <summary>The train (${data.trainTags.filter((tag) => tag.status === "pending_review").length} waiting to go up${
-        data.trainTags.some((tag) => tag.status === "declined")
-          ? `, ${data.trainTags.filter((tag) => tag.status === "declined").length} held off the wall`
-          : ""
+    <details ${pendingTrainTags > 0 ? "open" : ""}>
+      <summary>The train (${pendingTrainTags} waiting to go up${
+        heldTrainTags ? `, ${heldTrainTags} held off the wall — reversible here` : ""
       })</summary>
       ${trainHtml(data.trainTags)}
     </details>

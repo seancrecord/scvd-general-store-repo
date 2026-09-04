@@ -18,6 +18,18 @@ export interface WebhookCall {
 export interface FacilitatorMockState {
   settleShouldFail: boolean;
   verifyShouldFail: boolean;
+  /**
+   * Consecutive verify calls where the CALL ITSELF dies — fetch
+   * throws, the way a Worker's fetch throws on a connection failure —
+   * rather than the facilitator answering "no". These are opposite
+   * events: an answer is a verdict on the payload, a throw means the
+   * payload was never judged at all. The verify lane retries once on
+   * this shape, so `1` models a blip the retry saves and `2` the
+   * decline that actually books.
+   */
+  verifyNetworkFailures: number;
+  /** Every verify call, answers and throws alike. */
+  verifyCalls: number;
   /** The facilitator's own words for a failed verify; the default is the funds case. */
   verifyInvalidReason?: string;
   /**
@@ -126,6 +138,8 @@ export function installFacilitatorMock(): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
+    verifyNetworkFailures: 0,
+    verifyCalls: 0,
     settleTransient502s: 0,
     settleDuplicateAnswers: 0,
     settleCalls: 0,
@@ -164,6 +178,13 @@ export function installFacilitatorMock(): FacilitatorMockState {
       });
     }
     if (url.endsWith("/x402/verify")) {
+      state.verifyCalls += 1;
+      if (state.verifyNetworkFailures > 0) {
+        state.verifyNetworkFailures -= 1;
+        // No status, no body: the far end never spoke. This is what
+        // the runtime raises for DNS, connect and reset failures.
+        throw new TypeError("Network connection lost.");
+      }
       if (state.verifyShouldFail) {
         return Response.json({
           isValid: false,

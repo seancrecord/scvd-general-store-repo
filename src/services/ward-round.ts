@@ -365,6 +365,26 @@ export interface WardRound {
     started_at: string;
   };
   hosts: WardHostResult[];
+  /**
+   * THE CROWD'S WALKS (2026-09-04): every bounty claim this store paid
+   * inside this week — a stranger's real settlement at a listed door,
+   * verified on chain when it was paid — at its own tier, beside the
+   * house's unpaid probes and never blended into them. The row's
+   * shape and its hygiene (digests, never wallets; a hash of the
+   * walker's text, never the text) are services/crowd-walks.ts's.
+   * Absent on rounds sealed before the board's rows existed and on
+   * weeks with no paid claim.
+   */
+  crowd_walks?: import("@/services/crowd-walks").CrowdWalk[];
+  /**
+   * Set when the crowd-walk reading hit a bound, so `crowd_walks` is a
+   * FLOOR under the week rather than the week. Absent means the
+   * reading saw every paid claim; a reader must never treat a missing
+   * flag on a round sealed before this existed as a guarantee, which
+   * is why the flag rides beside rows that only exist from the same
+   * deploy.
+   */
+  crowd_walks_truncated?: true;
 }
 
 export interface WardDelta {
@@ -983,6 +1003,23 @@ async function sealRound(
   // The market desk's block rides every sealed round: plain
   // arithmetic over the round's own rows, recomputable by anyone.
   round.market = marketAggregates(round.hosts, discoveryFieldsSeen);
+  /*
+   * The crowd's walks ride the same seal (2026-09-04): the week's paid
+   * bounty claims, at their own tier. Fail-soft and dynamically
+   * imported — the board must never be able to stop a round sealing,
+   * and the board's module depends on this one.
+   */
+  const crowd = await import("@/services/crowd-walks")
+    .then(({ crowdWalksForWeek }) => crowdWalksForWeek(env, round.week))
+    .catch(() => ({ rows: [], truncated: false }));
+  if (crowd.rows.length > 0) {
+    round.crowd_walks = crowd.rows;
+    // A signed row set that stopped at a cap says so, or it is a
+    // claim about a week that quietly left a walk out.
+    if (crowd.truncated) {
+      round.crowd_walks_truncated = true;
+    }
+  }
   const previous = await latestWardRound(env);
   /**
    * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a
@@ -1017,13 +1054,23 @@ async function sealRound(
    */
   const doors = round.our_doors;
   if (doors && !doors.could_not_check && doors.missing.length > 0) {
-    const before = JSON.stringify(previous?.our_doors?.missing ?? []);
-    if (before !== JSON.stringify(doors.missing)) {
-      await sendAlert(env, {
-        condition: "worker_health",
-        detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims; missing: ${doors.missing.join(", ")}. A door the index no longer returns is invisible to every agent that shops by search. Re-register it (your press); the miss is on the signed round until it is found again.`,
-      }).catch(() => undefined);
-    }
+    /*
+     * EVERY WEEK THE MISS STANDS, not once when the list changes
+     * (2026-09-04, the keeper's ask). A door that fell out of the
+     * index and stayed out used to page once and then sit on the
+     * signed round in silence; the page now carries the exact run and
+     * its cost, keyed by the round's week so each Sunday is its own
+     * page and the six-hour dedupe never swallows a standing miss.
+     */
+    const { reRegistration } = await import("@/services/visibility");
+    const press = reRegistration(doors.missing);
+    await sendAlert(env, {
+      condition: "worker_health",
+      key: `search-missing:${round.week}`,
+      // The command leads, because the page is cut at a thousand
+      // characters and thirty door names would push it off the end.
+      detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims. The press, one house purchase per missing door from a listed house wallet on a machine with the key, about $${press.cost_usd.toFixed(3)} for one copy of each: ${press.command || "(nothing on today's shelf is missing)"}. A door the index no longer returns is invisible to every agent that shops by search; the index lists a door when the facilitator settles one real payment for it. This pages every Sunday the miss stands; the desk carries the same line and the full list. Missing: ${doors.missing.join(", ")}.`,
+    }).catch(() => undefined);
   }
   /**
    * The second alarm on the same reading (2026-09-02): the index is

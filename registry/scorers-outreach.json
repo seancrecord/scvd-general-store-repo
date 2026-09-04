@@ -1,7 +1,7 @@
 {
   "what_this_is": "One entry per system that scores, ranks, lists, or monitors x402 endpoints or MCP servers - the outreach register for the note on the desk. Facts only, and nothing here is typed twice: registry/scorers-outreach.md is rendered from this file by npm run outreach:build, the test fails when the two disagree, and npm run outreach:check reads every url here for one of our row URLs or the cite_json shape. Alphabetical by name, never a priority order.",
   "the_note": "The note to send is the one on the desk under 'For scorers and marketplaces'; it is never rewritten here or anywhere else in this tree. note_sent records the date the keeper says he sent it, and only then - the register never marks a note sent on its own.",
-  "the_fields": "name, url, what_it_scores (one sentence), contact (the address or form their own site gives, or null), found_on (where we learned of them), note_sent (date or null), reply (null, or one sentence with a date), cites_since (null until their page carries one of our row URLs or the cite_json shape).",
+  "the_fields": "name, url, what_it_scores (one sentence), contact (the address or form their own site gives, or null), found_on (where we learned of them), note_sent (date or null), reply (null, or one sentence with a date), cites_since (null until their page carries one of our ROW URLs - a verify URL, a numbered corpus entry, a host history, a round - or the cite_json shape).",
   "seeded": "2026-09-04",
   "systems": [
     {
@@ -122,7 +122,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "AgentBiz",
@@ -342,7 +342,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "Hermes Plant",
@@ -512,7 +512,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "mcp.so",
@@ -572,7 +572,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "Nishvault x402 Pre-Send Guard",
@@ -762,7 +762,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "Sourcey Startup Review",
@@ -942,7 +942,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "x402-list",
@@ -992,7 +992,7 @@
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
       "note_sent": null,
       "reply": null,
-      "cites_since": "2026-09-04"
+      "cites_since": null
     },
     {
       "name": "Xingchen SentriScan ASP",
@@ -1014,5 +1014,6 @@
       "reply": null,
       "cites_since": null
     }
-  ]
+  ],
+  "corrected": "2026-09-04: the seven cites_since seeded on the first pass were cleared. The matcher then counted the bare index (scvd.store/corpus) and our own sample certificate, so a directory that merely mirrors this store's listing text read as a citation - Glama's page was this store's own README sentence, quoted. A citation is a page pointing at ONE ROW, the thing a reader can reproduce. npm run outreach:check re-establishes any that are real; nothing here asserts a citation the current check cannot reproduce (rule 10)."
 }

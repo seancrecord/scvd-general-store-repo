@@ -213,6 +213,15 @@ export const KV_KEYS = {
    */
   alarmsLastRead: "alarms_last_read",
   /**
+   * When the keeper last STOOD AT THE COUNTER while alarms were
+   * showing. Separate from alarmsLastRead on purpose: that one is the
+   * reconciliation trail's own watermark, and a glance at the counter
+   * is not a read of the trail — clearing one with the other would
+   * hide rows he never opened. This one only decides whether the
+   * counter's top line shouts.
+   */
+  alarmsSeenAtCounter: "alarms_seen_counter",
+  /**
    * Failed /admin logins from ONE address. Per-address on purpose:
    * see the throttle in routes/admin.ts — a global counter would hand
    * a stranger the keeper's own front door.

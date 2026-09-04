@@ -31,6 +31,7 @@ import {
   corpusDatasetRef,
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
+import type { MiddlewareHandler } from "hono";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
@@ -50,6 +51,36 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
  * the only kind this store publishes.
  */
 export const corpusRoutes = new Hono<HonoEnv>();
+
+const citingPathHeaders: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  await next();
+  const base = c.env.STORE_BASE_URL.replace(/\/$/, "");
+  const links = [`<${base}/scorers>; rel="help"`, `<${CORPUS_DATASET_LICENSE}>; rel="license"`];
+  const existing = c.res.headers.get("Link");
+  c.res.headers.set("Link", existing ? `${existing}, ${links.join(", ")}` : links.join(", "));
+};
+
+/**
+ * THE CITING PATH, IN THE HEADERS (2026-09-04; the keeper: "how do we
+ * make it incredibly obvious?").
+ *
+ * Everything the corpus already said about how to cite it lived in
+ * the BODY — `how_to_consume`, the cite box on every row, the line on
+ * the HTML page. A client that fetched a row and read only its
+ * headers learned nothing, and a client that fetched with HEAD
+ * learned nothing at all. These two say it before the body is
+ * parsed: where the terms are, and what the licence is. rel="help"
+ * and rel="license" are both registered relations, so a crawler that
+ * understands nothing about this store still understands these.
+ *
+ * Appended, never overwritten: a door that already set its own Link
+ * (the catalog's canonical, the lifecycle's sunset) keeps it, and
+ * these ride after it in the same comma-separated field.
+ */
+corpusRoutes.use("/corpus/*", citingPathHeaders);
+corpusRoutes.use("/corpus.json", citingPathHeaders);
+corpusRoutes.use("/corpus", citingPathHeaders);
+
 
 /**
  * Last-Modified on the index and the round pages (roadmap C6): the
