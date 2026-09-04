@@ -130,6 +130,23 @@ configuration:
 }
 ```
 
+Or, in Claude Code, one line:
+
+```
+claude mcp add --transport http scvd-store https://scvd.store/mcp
+```
+
+The door speaks MCP revisions 2026-07-28, 2025-11-25, 2025-06-18 and
+2025-03-26 over streamable HTTP, POST only (a bare GET is a 405, per
+spec, not a fault). Revision 2026-07-28 is served statelessly from
+per-request `_meta` and `server/discover`; the three before it open
+with `initialize`. The manifest at
+<https://scvd.store/.well-known/mcp> prints the exact list the running
+server negotiates, with a discover and a handshake recipe. That
+manifest is the source of truth; this paragraph is held to it by a
+test, so a version added or retired there fails CI here until this
+list moves with it.
+
 (If your host only speaks stdio, `node ./bin/scvd-mcp-bridge.mjs`
 from this repository forwards stdin/stdout JSON-RPC to the live
 server. It holds no key and keeps no state. The wrangler commands
@@ -356,6 +373,7 @@ facilitator and all current client libraries speak v2.
 | `/agents.md` | The scannable contract index for agents |
 | `/conformance` | The conformance desk's own room: what it checks, worked examples |
 | `/corpus` | The corpus in plain language: the census finding, how to verify a round |
+| `/trade` | The trade counter: marketplaces resell the shelf on account by signed webhook, billed on a statement — `TRADE_COUNTER.md` |
 | `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
@@ -414,6 +432,13 @@ src/
 verifier/         # x402-verify: MIT, zero deps, any issuer's artifacts
 signer/           # x402-sign: the issuing half — mints spec-conformant
                   # signed offers & receipts that x402-verify passes
+x402-preflight/   # x402-preflight: the free door check as a library and
+                  # a command, with the deploy gate's exit law
+corpus-client/    # scvd-corpus-client: the signed corpus, read as served
+defects/          # scvd-defects: the vocabulary as data, both halves of
+                  # the remediation, recorded 402 doors as fixtures
+mcp-starter/      # scvd-mcp-starter: a stdio MCP server, one file, that
+                  # serves the read-only verifier door to any client
 tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # builder's running account of every tool they sign
                   # up for — trial warnings, burn, price drift, signup
@@ -586,6 +611,17 @@ endorsements.
 - [Two instruments, one directory](https://cairnwake.com/2026-08-23-two-instruments-one-directory.html)
   (2026-08-23): cross-checked their own scoreboard against this
   store's corpus.
+
+## Examples for your framework
+
+`examples/` holds one operational workflow — an agent is about to pay
+an x402 door; it reads the 402, asks the free preflight and dry run,
+reads the terms and the named defects, decides with every reason named
+— written for OpenAI Agents, Vercel AI SDK, LangChain / LangGraph,
+CrewAI, PydanticAI, AutoGen, Claude Code / Cursor and GitHub Copilot,
+over one shared zero-dependency module in JavaScript and in Python.
+Nothing there signs or pays. See [`examples/README.md`](examples/README.md)
+for what CI runs and what it does not.
 
 ## Run a preflight on deploy
 

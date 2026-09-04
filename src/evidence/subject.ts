@@ -85,6 +85,12 @@ export const FRESHNESS_COHERENCE_FAMILY = {
  */
 export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   { id: "x402", versions: ["v1", "v2"] },
+  /**
+   * THE SECOND WIRE (roadmap V3 PR 1, 2026-09-04): the Machine
+   * Payments Protocol, read only, versioned by the spec drafts the
+   * battery read. The row arrives WITH the battery.
+   */
+  { id: "mpp", versions: ["draft-00"] },
   /** The signed offer/receipt extension battery (offer-receipt rev 1). */
   { id: "x402-offer-receipt", versions: ["rev1"] },
   /**

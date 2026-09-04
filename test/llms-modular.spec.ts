@@ -590,13 +590,181 @@ const BASE = "https://scvd.store";
  * pieces, named as theirs and not as endorsements. Confirmed before
  * this value was taken: the guide carries "Reported on independently"
  * and both cairnwake.com URLs, and still every earlier pin.
+ * (The fortieth and forty-first above landed on main while the feeds
+ * were built; the notes below were renumbered at the rebase, and the
+ * value was re-taken once on the rebased head.)
  *
+ * Re-taken 2026-09-03 — the FORTY-SECOND — by the feeds (roadmap V2):
+ * one paragraph after the operators', for a reader who polls rather
+ * than reads, naming /feeds and that every entry links the page the
+ * derivation and the denominator are on. Confirmed before this value
+ * was taken: the guide carries "/feeds" and "If you poll rather than
+ * read", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-THIRD — by the state of x402 by
+ * month (roadmap V5): one paragraph between the operators' and the
+ * feeds', naming /corpus/month, the closing week beside the
+ * door-weeks, and the stable address per month. Confirmed before
+ * this value was taken: the guide carries "/corpus/month" and "Two
+ * kinds of number, never a share", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-FOURTH — by the feeds' four URLs
+ * named in the guide's feeds paragraph, because a route no agent
+ * surface names is an orphan capability (test/no-orphan-capability)
+ * and a poller wants the feed address, not the page that lists it.
+ * Confirmed before this value was taken: the guide carries
+ * "/feeds/brief.xml" and "/feeds/disagreements.xml", and still every
+ * earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-FIFTH — by one pair of backticks:
+ * the month paragraph's stable address carries braces, and the
+ * markdown-discoverability spec holds every templated URL in the
+ * guide to a code span so a reader never lifts a bare one. Confirmed
+ * before this value was taken: the guide carries the address inside
+ * backticks, and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-SIXTH — by the evidence agent
+ * (roadmap A2): one paragraph before the feeds', for a reader who
+ * delegates rather than calls, naming /a2a, the three tasks and the
+ * card. Confirmed before this value was taken: the guide carries
+ * "/a2a" and "get_endpoint_readiness", and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-EIGHTH — by CI's derived-not-typed
+ * guard: the verifier paragraph said "five" read-only tools, a tally
+ * no code recomputes, so the count left the guide and the door's own
+ * catalogue is the count. Confirmed before this value was taken: the
+ * guide carries "/mcp/verifier" and no spelled-out tool count beside
+ * it, and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-SEVENTH — by the verifier door
+ * (roadmap A3): one paragraph before the evidence agent's, for a
+ * client that should never see a shelf, naming /mcp/verifier and its
+ * five tools; and, in the same commit, the A2A card's sentence
+ * rewritten, since the card is the evidence agent's now and no longer
+ * derives skills from the menu. Confirmed before this value was
+ * taken: the guide carries "/mcp/verifier" and "verify_x402_receipt",
+ * and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FORTY-NINTH — by the keeper's greenlight on
+ * the Trade Counter ("lets build it out ... we sell as a product"):
+ * a "For marketplaces reselling the shelf" line in "Every door, in
+ * one list" naming /trade, /trade.json, /api/trade/contract,
+ * /api/trade/ledger and /health, and a new section "The trade
+ * counter — marketplaces buying on account" filed under the menu
+ * area. Confirmed before this value was taken: the guide carries
+ * "settled_via: trade_account" and "never touches x402", and still
+ * every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTIETH — by the keeper's "agreed
+ * lets do them all" on the counter's second pass: the sandbox check
+ * desk and the listing feed join the door line, and the section now
+ * carries rule 60's two sentences verbatim (TRADE_PROPOSITION,
+ * TRADE_FOR_MONEY), which test/feature-surfaces.spec.ts holds
+ * identical across the page, the twin and this guide. Confirmed
+ * before this value was taken: the guide carries "bill your account
+ * on a statement" and "rounded up to the cent", and still every
+ * earlier pin.
+ * Re-taken 2026-09-03 — the FIFTY-FIRST — the trade counter's markdown
+ * twin (/trade.md) joins the marketplaces line in "Every door, in one
+ * list", the way /pricing.md and /index.md are named beside their
+ * rooms. Confirmed before this value was taken: the guide carries
+ * "trade.md" and still every earlier pin.
+ *
+ * (The six below landed on main after the Trade Counter's three above
+ * and were renumbered at each rebase; the value was re-taken once on
+ * the rebased head, the FIFTY-EIGHTH, 2026-09-04, with the trade
+ * counter's fourth pass beneath it. Confirmed before that value was
+ * taken: the guide carries "trade.md", "/corpus/latest.json",
+ * "/fixtures.json", "protocols_spoken", "scvd look <url>",
+ * "/openapi-tools.json", "both halves of the remediation", and still
+ * every earlier pin.)
+ *
+ * Re-taken 2026-09-03 — the FIFTY-SECOND — by the remediation (roadmap
+ * C1): one paragraph after the vocabulary's, saying every class carries
+ * both halves and the free report joins them to its findings as
+ * \`remediation\`. Confirmed before this value was taken: the guide
+ * carries "both halves of the remediation" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-THIRD — by the function-calling
+ * tools document (roadmap C4): one link in the contracts line and two
+ * lines beside the OpenAPI contract, naming /openapi-tools.json.
+ * Confirmed before this value was taken: the guide carries
+ * "/openapi-tools.json" and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-FOURTH — by the CLI at 0.2.0
+ * (roadmap C5a): the one-line-per-instrument sentence now names look,
+ * before-you-pay, month and feeds, and says the tool prints the
+ * remediation rows. Confirmed before this value was taken: the guide
+ * carries "scvd look <url>" and still every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-FIFTH — by the second wire (roadmap
+ * V3 PR 1): one paragraph before the remediation's, saying what the
+ * preflight now says about a door that speaks MPP — protocols_spoken,
+ * the mpp block, the verdict's meaning kept, the till untouched, the
+ * practice door. Confirmed before this value was taken: the guide
+ * carries "protocols_spoken" and "/api/practice/mpp-shape", and still
+ * every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-SIXTH — by the cite line and the
+ * fixtures (roadmap C7): one paragraph before the second wire's,
+ * naming the cite line every signed document carries and
+ * /fixtures.json. Confirmed before this value was taken: the guide
+ * carries "/fixtures.json" and "cite line", and still every earlier pin.
+ *
+ * Re-taken 2026-09-04 — the FIFTY-SEVENTH — by the corpus as a feed
+ * (roadmap C6): the trajectory paragraph gains the subscriber's two
+ * doors, /corpus/latest.json and the per-week changes. Confirmed
+ * before this value was taken: the guide carries "/corpus/latest.json"
+ * and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-NINTH — by the scorers' room:
+ * one paragraph after the operators', for a scorer or a marketplace,
+ * naming /scorers as the two seats the store occupies and the way to
+ * pull, verify, cite, reproduce and re-observe the corpus; seats, not
+ * occupants; a derived score is its publisher's interpretation.
+ * Confirmed before this value was taken: the guide carries
+ * "/scorers", "names seats, not occupants" and "its publisher's
+ * interpretation, not ours", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTIETH — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved", "/criteria#result-class" and "prints the
+ * citation", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FIRST — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved" and "/criteria#result-class".
+ *
+ * Re-taken 2026-09-04 — the SIXTY-SECOND — at the rebase of the
+ * scorers' branch onto main after the trade counter, the verifier
+ * door, the evidence agent, the feeds and the month landed: the
+ * scorers' paragraph sits after the feeds', and the value was taken
+ * once on the rebased head. Confirmed before this value was taken:
+ * the guide carries "/scorers", "/feeds/disagreements.xml",
+ * "/mcp/verifier" and "trade.md", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-THIRD — by house rule 60 reaching
+ * the scorers' room: its proposition and its money sentence now ride
+ * the guide's paragraph verbatim, as test/feature-surfaces holds them
+ * identical across the page, the twin and here. Confirmed before this
+ * value was taken: the guide carries "Nothing here costs money" and
+ * "leaves interpretation to others", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FOURTH — at the merge of main into
+ * the scorers' branch after the corpus feed, the fixtures, the cite
+ * line and the CLI verbs landed: the scorers' paragraph and main's
+ * new paragraphs both stand, and the value was taken once on the
+ * merged head. Confirmed before this value was taken: the guide
+ * carries "/scorers", "/corpus/latest.json", "/fixtures.json" and
+ * "scvd look <url>", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2e0dfcd53a926dcc96bee3d6fa645766cce4f1f0757f22eb90c2a75ea15edb17";
+  "66d531dd171f5cfe82e4c16776e7450e6fa21ca2b685c27871b94417e1c75208";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

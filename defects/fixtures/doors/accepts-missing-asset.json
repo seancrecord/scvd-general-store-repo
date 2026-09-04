@@ -1,0 +1,13 @@
+{
+  "name": "accepts-missing-asset",
+  "recorded": "2026-08-26, hand-built: an entry with a hole where the asset goes",
+  "why": "A client cannot construct a payment from a hole.",
+  "expect_failed": [
+    "accepts"
+  ],
+  "status": 402,
+  "headers": {
+    "PAYMENT-REQUIRED": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAicGF5VG8iOiAiMHg0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0IiwgImFzc2V0IjogbnVsbCwgImFtb3VudCI6ICI1MDAwIiwgIm1heFRpbWVvdXRTZWNvbmRzIjogMzAwfV19"
+  },
+  "body": "{}"
+}

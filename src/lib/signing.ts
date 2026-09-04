@@ -131,6 +131,20 @@ export const CERT_FIELDS = [
    * different catalog moment under our signature.
    */
   "saw",
+  /**
+   * THE TRADE COUNTER'S FOUR, added 2026-09-03. Appended, never
+   * inserted, and OUT of LEGACY_FIELDS_ADDED_SINCE by the same law as
+   * the mandate link: no legacy certificate can honestly carry a
+   * trade-account settlement (the counter did not exist), so
+   * stapling one onto an old certificate must break BOTH forms. All
+   * four are claims about how a sale settled, and an unsigned
+   * settlement claim is the one thing this receipt exists to make
+   * unforgeable.
+   */
+  "settled_via",
+  "trade_partner",
+  "trade_price_usd",
+  "trade_instruction",
 ] as const;
 
 /**

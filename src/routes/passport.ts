@@ -4,6 +4,7 @@ import { CATALOG_PATHS } from "@/discovery/self-module";
 import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { citeBlock, citeHtml } from "@/lib/cite";
 import {
   PASSPORT_CSS,
   cardLines,
@@ -299,6 +300,17 @@ passportRoutes.get("/passport/card/:host{.+\\.png}", async (c) => {
   });
 });
 
+/** The cite line's inputs, from the passport's own payload. */
+function passportCite(passport: EndpointPassport, base: string) {
+  return {
+    base,
+    what: "endpoint passport",
+    which: passport.payload.host,
+    observed_at: passport.payload.latest?.observed_at ?? passport.payload.issued_at,
+    url: `${base}/passport/${passport.payload.host}`,
+  };
+}
+
 passportRoutes.get("/passport/:host", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const rawHost = c.req.param("host").trim().toLowerCase();
@@ -354,6 +366,7 @@ passportRoutes.get("/passport/:host", async (c) => {
       ...passportOrRefusal.passport,
       colophon: colophonText(passportOrRefusal.passport, base),
       embed: passportEmbed(passportOrRefusal.passport, base),
+      ...citeBlock(passportCite(passportOrRefusal.passport, base)),
     });
   }
   return c.html(
@@ -365,6 +378,7 @@ passportRoutes.get("/passport/:host", async (c) => {
       ogImage: `${base}/passport/card/${rawHost}.png`,
       bodyHtml: `${passportCard(passportOrRefusal.passport)}
       ${colophonBlock(passportOrRefusal.passport, base)}
+      ${citeHtml(passportCite(passportOrRefusal.passport, base), escapeHtml)}
       <section><p class="menu-desc">What a passport is, the four decisions it
       can return, and the expiry rule that governs this one:
       <a href="/passport">the passport landing</a>. Reading is free forever.</p></section>`,

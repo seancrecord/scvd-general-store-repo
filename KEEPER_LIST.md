@@ -26,6 +26,39 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Reproduce, cite, seats, three grips, 2026-09-04, "do it
+  all."** The look takes `since` and answers the class of
+  result by the rule at `/criteria#result-class`; every row
+  surface prints its citation; the seats ride
+  `/.well-known/trust.json` and `/corpus.json` as data;
+  `/scorers` opens with the same five steps as shell, CLI
+  and MCP; the CLI is 0.2.0 with `corpus --since`, `host`,
+  `cite`, `reproduce`. INKED 2026-09-04: the five class
+  rules and the note, wording as drafted. RULED 2026-09-04:
+  the CLI exit codes stay as built (0 same, 1 moved or
+  instrument_moved, 3 nothing compared); deploy cadence
+  unchanged for now; the register's five listing facts
+  (`src/store/citing-systems.json`, and on `/scorers`).
+  PRESS, once the branch is green and merged: the npm
+  publish workflow for scvd 0.2.0, so the `npx scvd` lines
+  on `/scorers` work for a stranger. LOOK once merged:
+  `npx scvd reproduce
+  https://lionx402.com/api/x402/wallet-screen-json --since
+  2026-W36` and read the class.
+- **For scorers and marketplaces, 2026-09-03, "build it."**
+  `/scorers` names the two seats — the record, and the
+  reproducible dispute artifact — and how to pull, verify,
+  cite, reproduce and re-observe the evidence. It names
+  seats, not occupants: the named-integrations block renders
+  `src/store/citing-systems.json`, empty today, and
+  `npm run citations:check` fails when a listed citation
+  disappears. INKED 2026-09-04: the seats sentence and the
+  misuse clause (`src/store/copy/doctrine.ts`), wording as
+  drafted. RULED 2026-09-04: `/scorers` stays off the
+  storefront, like `/operators`. PRESS: when a system meets
+  the five listing facts, add it to the register with the
+  citing URL and the date first seen, and nothing else.
+
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a
   dispute court.
@@ -101,8 +134,8 @@ build, it is on the roadmap.
   doors the CDP search index still returns. `opening_day`
   and `provenance_check` will be missing until you press.
 - No agent item is queued (2026-09-02, after S6). The
-  roadmap's NOW table is empty; S8-v3 waits on its date
-  (not before 2026-10-02); everything in LATER needs a
+  roadmap's NOW table is empty; S8-v3 waits on your yes /
+  no / later, not on a date; everything in LATER needs a
   trigger or your ruling. One branch at a time (#65).
 
 ---
@@ -120,7 +153,10 @@ Do not relitigate without you.
   after a month of rows, by your hand. Design:
   `docs/S8_CROSS_SURFACE_2026-09.md`. PRs 1, 3 and 4
   shipped 2026-09-02; PR 2 (the v3 fold) waits on the
-  SOON row, not before 2026-10-02.
+  SOON row: your yes / no / later. The "not before
+  2026-10-02" an agent wrote here was struck 2026-09-03
+  ("i dont wait i decide yes/no/later"); nothing on this
+  list waits on a calendar.
 - **The Aura Walk cap, 2026-09-02.** One a week; two after
   the first three ship inside the window.
 - **The next builds, 2026-09-02, "On do that then."** After
@@ -233,6 +269,54 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
+
+- **TEST** — send Hal the ten questions in `TRADE_COUNTER.md`.
+  Two of the answers are dialect fields (`timestamp_unit`; whether
+  the provider key is a separate secret) and both fail closed if
+  guessed wrong. Nothing goes live until they answer.
+- **Hands** — `wrangler secret put TRADE_SECRET_HAL` and
+  `TRADE_PROVIDER_KEY_HAL` with the values Hal issues. The account
+  answers 503 `counter_closed` until then. Verify with one signed
+  call from their side and read `/api/trade/ledger`.
+- **RULE** — flip `hal` from `test` to `live` in
+  `src/store/trade-counter.ts` when payout rail, cadence and
+  statement API are agreed. Receiving sats is a new treasury rail:
+  which wallet, whose custody, is yours to decide before the flip.
+- **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
+  opening figure. Yours to move.
+- **Your press (rule 30), nothing else pending on the counter** —
+  `docs/TRADE_OUTREACH.md` is the letter and the four platforms CV
+  named; `docs/TRADE_HAL_LETTER.md` is Hal's. Check each paragraph
+  against their site, then send. The copy on `/trade` is inked on your
+  waiver ("I'm gonna let you ink this one"); move any line you like.
+- **Done on your word ("agreed lets do them all")** — `/trade` is on
+  the storefront; the sandbox, check desk, statement API, catalog
+  feed and credit ceiling are live; rule 60 and the feature register
+  hold every future feature to the same surfaces. Your ink is still
+  owed on the copy at `/trade` (rule 7): the five "why a marketplace
+  would" bullets and the two rule-60 sentences in
+  `src/store/trade-counter.ts` (`TRADE_PROPOSITION`, `TRADE_FOR_MONEY`).
+- **LOOK** — `/admin/trade.json` on the Sunday grind, against the
+  partner's statement; record each payout with `POST
+  /admin/trade/hal/payout`.
+
+### Presses waiting (2026-09-03, evening)
+
+- **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
+  before-you-pay, month, feeds, the FIX lines (roadmap C5). The
+  Saturday listings read will say the registry differs from the
+  tree until you press.
+- **npm publish x402-verify 1.1.0** from `verifier/` on main (A1).
+- **npm publish the four new packages** from main (roadmap C5b):
+  `x402-preflight` 0.1.0 (`x402-preflight/`), `scvd-corpus-client`
+  0.1.0 (`corpus-client/`), `scvd-defects` 0.10.0 (`defects/`),
+  `scvd-mcp-starter` 0.1.0 (`mcp-starter/`). Until you press, the
+  Saturday listings read shows them unreachable on npm, never
+  differs.
+- **The tab registry press** via the `tab` input on the publish
+  workflow (V4).
+
 ### Decisions that unblock the roadmap
 
 - **Rail run-through** (eleven checks, drafted against
@@ -243,6 +327,17 @@ Do not relitigate without you.
   is still yours: which intake wins when they disagree was
   not named, and the counterparty rule stands until it is.
   Roadmap L3 does not start without that word.
+- **MPP, 2026-09-04, your read of the design.** Decision 3 is
+  FIRM: the top-level preflight `verdict` keeps meaning x402-ready,
+  permanently, and `protocols_spoken` is the union field — never to
+  be relitigated, because a field that changes meaning breaks every
+  historical row's comparability. Decision 2 (a passport for an
+  MPP-only door) waits on an actual mockup of the passport copy,
+  now in the design note's rulings section: read it, then yes / no
+  / later. Framing, sourcing, zero added cost, versioning and the
+  risk section approved as-is. "Get bolder on actual
+  implementation": PR 1 is built the same day. Decisions 1, 4, 5
+  and 6 stand as recommended until you say otherwise.
 - **PROTOCOL_EXPANSION §11.** MPP wait-and-see on the TILL
   stands; the READ-ONLY battery is GO (2026-09-03, "go ahead
   and do those", reversing the sheet's default of wait the
@@ -291,11 +386,33 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **The ChatGPT plugin in review is the wrong shape by your own
+  memo (2026-09-03 evening).** "SCVD General Store" was submitted
+  that morning; the memo says submit "SCVD x402 Verifier" with five
+  read-only tools. RULE: withdraw and resubmit, submit the verifier
+  as a second plugin, or keep the one in review. The tool subset
+  is roadmap A3 and builds the day you choose. Two more rulings
+  from the same memo sit in
+  `docs/DELEGATED_AGENT_PLAN_2026-09.md`: the package name for the
+  verification front door (`x402-verify` 1.1, recommended, or a
+  scoped `@scvd/...`), and the A2A task endpoint's shape (the
+  spec's `message/send`, recommended).
+
 - **Publish the two MCP servers at their new versions.** Both
   now speak MCP 2026-07-28 beside the handshake revisions
   (`server/discover`, per-request `_meta`, cache hints), every
   tool shows a worked call, the tab's parameters are all
-  described. Nothing outside reads it until you press:
+  described. READ BY MACHINE 2026-09-03 (`npm run
+  listings:check`, roadmap V4): the registry lists
+  `general-store` 0.2.2 with the old description against
+  0.2.3 in `server.json`, and `tab` 0.5.0 against 0.11.1 —
+  npm already carries 0.11.1 (you pressed it 15:04 UTC), so
+  step 1 below is done and step 2 is the one left. The same
+  read found x402-list's copy without the doctrine sentence
+  and counting 31 doors of 32 (their resubmit, below).
+  ClawHub and agentic.market refuse the agent's egress; the
+  Saturday job reads them from CI. Nothing outside reads it
+  until you press:
   1. Actions → "Publish npm package" → `scvd-tab`, version
      `0.11.0`, dry run then real. The `--provenance` flag is
      in the workflow; a hand publish from the laptop is why

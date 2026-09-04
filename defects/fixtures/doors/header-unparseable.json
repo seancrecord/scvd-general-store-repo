@@ -1,0 +1,13 @@
+{
+  "name": "header-unparseable",
+  "recorded": "2026-08-26, hand-built: header present, not base64 JSON",
+  "why": "The exact failure a client reports as an unparseable challenge.",
+  "expect_failed": [
+    "payment-required-header"
+  ],
+  "status": 402,
+  "headers": {
+    "PAYMENT-REQUIRED": "not-base64-json!!"
+  },
+  "body": "{}"
+}

@@ -1,0 +1,115 @@
+{
+  "version": "v1",
+  "url": "https://door.example/api/paid-answer",
+  "will_your_client_pay": "cannot_simulate",
+  "your_client": {
+    "outcome": "cannot_simulate",
+    "chosen": null,
+    "throws_with": null,
+    "cap_applied": "none \u2014 there was nothing to apply it to",
+    "dropped": [],
+    "hazards": [],
+    "what_this_cannot_see": [
+      "This models @x402/core as THIS STORE has it installed, and the ceiling it reports is that package's own exported $1. If your client is on a different version, its ceiling and its filter order are its own, and this reading is about ours.",
+      "Whether your wallet actually holds the funds, or the gas. This walks the client's selection logic; it never touches a balance.",
+      "A custom paymentRequirementsSelector, an added policy, or a scheme you registered that we did not assume. Any of those changes which accept survives, and none of them is visible from here.",
+      "Your actual client configuration \u2014 you did not send one, so this is the reading for a client that has configured NOTHING, which is the case that loses money quietly.",
+      "Whether the door delivers after it is paid. No probe and no simulation can; that is a fact about the world, not about bytes."
+    ]
+  },
+  "the_door": {
+    "version": "v1",
+    "verdict": "unreachable",
+    "reached_level": "none",
+    "reached_level_meaning": "How far this one unpaid probe got, on the L0-L6 evidence ladder: none = the probe never completed (network failure, sub-class unlocalized \u2014 this platform cannot tell DNS from TCP from TLS from timeout, so we refuse to guess); L1 = HTTP answered; L2 = 402 with a parseable PAYMENT-REQUIRED header (a header present but unparseable scores L1 \u2014 this battery cannot split presence from parseability); L3a = challenge well-formed (version and accepts). This battery does not measure L3b internal consistency, L3c authenticity, L3d cross-probe consistency, or L4-L6 purchasability through delivery \u2014 those rungs are absent because they were not climbed, not because they passed.",
+    "network_failure": "unlocalized",
+    "checks_vector": [
+      {
+        "name": "status-402",
+        "state": "not_reached",
+        "blocked_by": "reachable",
+        "detail": "never ran: the reachable check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "payment-required-header",
+        "state": "not_reached",
+        "blocked_by": "reachable",
+        "detail": "never ran: the reachable check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "x402-version",
+        "state": "not_reached",
+        "blocked_by": "reachable",
+        "detail": "never ran: the reachable check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "accepts",
+        "state": "not_reached",
+        "blocked_by": "reachable",
+        "detail": "never ran: the reachable check stopped the battery before this one. No observation about the door exists for this row."
+      },
+      {
+        "name": "reachable",
+        "state": "fail",
+        "detail": "the probe could not complete: TypeError: fetch failed: connection refused. This is a fact about the network path between us and that host at this moment \u2014 it does not prove the endpoint is down, and a buyer elsewhere may reach it fine."
+      }
+    ],
+    "checks": [
+      {
+        "name": "reachable",
+        "ok": false,
+        "detail": "the probe could not complete: TypeError: fetch failed: connection refused. This is a fact about the network path between us and that host at this moment \u2014 it does not prove the endpoint is down, and a buyer elsewhere may reach it fine."
+      }
+    ],
+    "advisories": [],
+    "remediation": [],
+    "protocols_spoken": [],
+    "mpp": {
+      "battery": "mpp-v1",
+      "spec": "draft-00",
+      "spoken": false,
+      "challenges": [],
+      "checks": [],
+      "advisories": [],
+      "the_x402_verdict_above": "The top-level verdict keeps meaning x402-ready, permanently (the keeper's ruling, 2026-09-04): an existing ready must not change meaning under anyone's feet. A door that speaks only MPP reads not_ready on the x402 battery and that is a fact about which wire it speaks, not a defect; read protocols_spoken for the union and this block for the MPP battery's own checks.",
+      "what_this_cannot_tell_you": [
+        "Whether the door verifies a credential, delivers, or issues a Payment-Receipt: those exist only after money moves, and this store's till does not speak MPP.",
+        "Whether the price advertised in the door's /openapi.json (x-payment-info) agrees with this challenge: the free preflight makes one request, and that read is the paid audit's.",
+        "Whether the door stays up, or whether the same challenge is served to a paying client. One request, one moment."
+      ],
+      "protocols_spoken": []
+    },
+    "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
+    "what_this_cannot_tell_you": [
+      "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",
+      "Whether the endpoint stays up. This was one request at one moment.",
+      "Whether the signed offers verify \u2014 this probe deliberately makes no second request, so the offers' did:web was not resolved. POST one to the conformance desk for that."
+    ],
+    "our_conflict_of_interest": "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods; a verdict about a rival's artifact from us is worth exactly as much as the method behind it. That method is MIT-licensed, zero-dependency and identical to the file this endpoint runs \u2014 so the correct amount of trust to place in this response is none, and the correct thing to do with a verdict that matters is reproduce it offline.",
+    "rate_limit": {
+      "per_isolate_per_minute": 30,
+      "global_per_minute": 60,
+      "note": "Two ceilings, both approximate. The per-isolate bucket is exact within one isolate and Cloudflare may hold several, so it is not an abuse ceiling on its own; the global backstop is a read-modify-write on eventually consistent storage, which makes it slightly GENEROUS under load and never tighter than stated. Neither uses an IP, a cookie or any identifier \u2014 it bounds our cost rather than allocating fairly between callers, and that trade is deliberate. Past the ceiling you get 429 and nothing else is denied to you. Reading many doors at once? Take the weekly census whole from https://scvd.store/corpus.json or https://scvd.store/fresh-set instead \u2014 it costs you no probes and us no outbound requests."
+    },
+    "store_identity": {
+      "name": "SCVD General Store",
+      "what": "A human-run general store selling small signed goods to autonomous agents, paid over x402 in USDC on Base, Polygon, or Solana. Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+      "homepage": "https://scvd.store",
+      "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 \u2014 send any issuer's x402 signed offer or receipt, ours or not.",
+      "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required \u2014 see /rights."
+    },
+    "next_steps": {
+      "conformance_desk": "POST https://scvd.store/api/conformance/v1 \u2014 full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.",
+      "signed_report": "https://scvd.store/api/buy/service_audit \u2014 this exact readout, signed, bound into a certificate and served at a permanent URL, for when you need to hand it to somebody rather than run it yourself.",
+      "across_a_week": "https://scvd.store/api/buy/conformance_watch \u2014 this exact battery once a day for seven days, each day signed alone, for catching a deploy that breaks the challenge mid-week. Our missed days are published against us.",
+      "behavioral_check": "https://scvd.store/api/buy/standing_watch \u2014 the paid rung of the same ladder: a week of signed, out-of-band hourly probes on your endpoint, for when you need evidence rather than a readout."
+    }
+  },
+  "these_are_different_questions": "The preflight asks whether this DOOR serves a well-formed x402 challenge. This asks whether YOUR CLIENT will pay it. They are different questions with different answers: a door can be perfectly shaped and still unpayable by an unconfigured buyer, because the refusal happens on your machine before a signature exists \u2014 which means the operator never learns you tried, and sees only a request for a price followed by silence.",
+  "what_this_is_not": "Not a guarantee that the purchase succeeds. This walks your client's selection logic over the bytes that door served at one moment; it never touches a wallet, signs nothing, and cannot know whether the resource behind the 402 delivers. A would_sign quoted as 'this endpoint works' is a misquote, exactly as a passing preflight quoted as uptime is.",
+  "next_steps": {
+    "signed_version": "https://scvd.store/api/buy/good_buyer \u2014 this exact reading, signed and bound into a certificate at a permanent URL, for handing to the human who asked why their agent spent the money.",
+    "the_door_alone": "https://scvd.store/api/preflight/v1 \u2014 the shape check on its own, free, if the client half is not what you need.",
+    "the_ceiling_explained": "https://scvd.store/pricing \u2014 why the stock client's $1 ceiling exists, what this store does about its own over-cap doors, and the three legitimate answers to it."
+  }
+}

@@ -49,6 +49,30 @@ against those vectors and asserts it fails for the right reason.
 
 ## Use
 
+One call, bounded evidence back. The key comes from the URL you pass
+or the key you hold — never from the artifact, which would be the
+artifact vouching for itself.
+
+```ts
+import { verifyReceipt } from "x402-verify";
+
+const result = await verifyReceipt({
+  receipt,                                        // the compact JWS
+  issuerKeyUrl: "https://scvd.store/.well-known/did.json",
+});
+console.log(result.valid);             // true
+console.log(result.scope);             // "Signature valid over the receipt's bytes against the issuer key at …"
+console.log(result.doesNotEstablish);  // ["merchant identity …", "payment settlement …", "delivery …"]
+console.log(result.verificationUrl);   // the free hosted desk that reproduces this check
+```
+
+`verifyOffer({ offer, issuerKeyUrl })` is the same shape for offers.
+`fixtures/` in the package holds valid and invalid receipts and
+offers cut from the published conformance vectors, and an issuer key
+document, so your tests can run against real bytes with no network.
+
+The report underneath, when you want every check by name:
+
 ```js
 import { verifyArtifact, formatResult } from "x402-verify";
 

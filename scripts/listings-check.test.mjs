@@ -77,3 +77,122 @@ test("the walk reads every mirror once and never throws on a dead one", async ()
     ["https://dead.test/", "unreachable"],
   ]);
 });
+
+// ---------- the second half: the versions and the shelf ----------
+import {
+  compareListings,
+  readAgenticMarket,
+  readClawHub,
+  readMcpRegistry,
+  readNpm,
+  readShelf,
+  readX402List,
+  walkVersions,
+} from "./lib/listing-versions.mjs";
+
+const REGISTRY = {
+  servers: [
+    { server: { name: "store.scvd/general-store", version: "0.2.1", description: "The trust layer of the x402 economy" }, _meta: { "io.modelcontextprotocol.registry/official": { isLatest: false, status: "active" } } },
+    { server: { name: "store.scvd/general-store", version: "0.2.2", description: "Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store." }, _meta: { "io.modelcontextprotocol.registry/official": { isLatest: true, status: "active" } } },
+    { server: { name: "store.scvd/tab", version: "0.5.0", description: "Every tool a builder signs up for, on one tab." }, _meta: { "io.modelcontextprotocol.registry/official": { isLatest: true, status: "active" } } },
+  ],
+  metadata: { count: 3 },
+};
+
+test("the MCP registry reader takes the isLatest entry for one name, and says unknown for a name it has never seen", () => {
+  const store = readMcpRegistry(REGISTRY, "store.scvd/general-store");
+  assert.equal(store.state, "read");
+  assert.equal(store.version, "0.2.2");
+  assert.equal(store.versions_listed, 2);
+  assert.equal(readMcpRegistry(REGISTRY, "store.scvd/nothing").state, "unknown");
+  assert.equal(readMcpRegistry({ nope: true }, "x").state, "unknown");
+});
+
+test("the npm reader takes dist-tags.latest and that version's description", () => {
+  const read = readNpm({ "dist-tags": { latest: "0.11.1" }, versions: { "0.11.1": { description: "the tab" } }, time: { "0.11.1": "2026-09-03T15:04:34.830Z" } });
+  assert.deepEqual(read, { state: "read", version: "0.11.1", description: "the tab", published_at: "2026-09-03T15:04:34.830Z" });
+  assert.equal(readNpm({}).state, "unknown");
+});
+
+test("x402-list is read off its JSON-LD WebAPI node: description, offer count, and whether the doctrine sentence survived", () => {
+  const html = `<html><script type="application/ld+json">${JSON.stringify([
+    { "@type": "WebPage" },
+    { "@type": "WebAPI", description: "An observatory. Not escrow, not a rating, not a guarantee.", offers: { "@type": "AggregateOffer", offerCount: 31 } },
+  ])}</script></html>`;
+  const read = readX402List(html);
+  assert.equal(read.state, "read");
+  assert.equal(read.offer_count, 31);
+  assert.equal(read.doctrine_present, false);
+  assert.equal(readX402List("<html>no ld</html>").state, "unknown");
+  const withDoctrine = readX402List(`<script type="application/ld+json">${JSON.stringify({ "@type": "WebAPI", description: "Never a ranking, and never a verdict without its derivation.", offers: { offerCount: "32" } })}</script>`);
+  assert.equal(withDoctrine.doctrine_present, true);
+  assert.equal(withDoctrine.offer_count, 32);
+});
+
+test("ClawHub and agentic.market readers say unknown rather than guess when the shape is not one they read", () => {
+  assert.equal(readClawHub("<html>scvd-general-store v3.15.0</html>", "scvd-general-store").version, "3.15.0");
+  assert.equal(readClawHub("<html>scvd-general-store — Version: 3.15.0</html>", "scvd-general-store").version, "3.15.0");
+  // An unlabelled dotted number near the name is not the skill's version.
+  assert.equal(readClawHub("<html>scvd-general-store · 65.5.5 downloads · node 22.1.0</html>", "scvd-general-store").state, "unknown");
+  assert.equal(readClawHub("<html>something else</html>", "scvd-general-store").state, "unknown");
+  assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store", endpoints: [1, 2, 3] }] }, "scvd.store").endpoint_count, 3);
+  assert.equal(readAgenticMarket({ services: [{ name: "scvd", url: "https://scvd.store" }] }, "scvd.store").state, "unknown");
+  assert.equal(readAgenticMarket({}, "scvd.store").state, "unknown");
+  assert.equal(readShelf({ items: [{ id: "a", price_usdc: 0.001 }, { id: "b", price_usdc: 0 }] }).paid_count, 1);
+});
+
+test("the comparison names ours and theirs on every differing fact, and never marks an unread index as differing", () => {
+  const local = {
+    server: { name: "store.scvd/general-store", version: "0.2.3", description: "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations." },
+    tabServer: { name: "store.scvd/tab", version: "0.11.1" },
+    packages: [{ name: "scvd-tab", version: "0.11.1" }, { name: "scvd-cli", version: "0.1.1" }],
+    clawhub: { name: "scvd-general-store", version: "3.15.0" },
+    shelf: { state: "read", paid_count: 32, ids: [] },
+  };
+  const rows = compareListings(local, {
+    mcp_registry_store: readMcpRegistry(REGISTRY, "store.scvd/general-store"),
+    mcp_registry_tab: readMcpRegistry(REGISTRY, "store.scvd/tab"),
+    npm: { "scvd-tab": { state: "read", version: "0.11.1" }, "scvd-cli": { state: "unreachable", error: "HTTP 503" } },
+    clawhub: { state: "unknown", note: "no version string near the skill name" },
+    x402_list: { state: "read", description: "…", offer_count: 31, doctrine_present: false },
+    agentic_market: { state: "unreachable", error: "blocked" },
+  });
+  const by = (index, field) => rows.find((r) => r.index === index && r.field === field);
+  assert.equal(by("mcp-registry", "general-store version").state, "differs");
+  assert.equal(by("mcp-registry", "general-store version").ours, "0.2.3");
+  assert.equal(by("mcp-registry", "general-store version").theirs, "0.2.2");
+  assert.equal(by("mcp-registry", "general-store description").state, "differs");
+  assert.equal(by("mcp-registry", "tab version").state, "differs");
+  assert.equal(by("npm", "scvd-tab version").state, "agrees");
+  assert.equal(by("npm", "scvd-cli version").state, "unreachable");
+  assert.equal(by("clawhub", "skill version").state, "unknown");
+  assert.equal(by("x402-list", "doctrine sentence present").state, "differs");
+  assert.equal(by("x402-list", "doors listed").theirs, 31);
+  assert.equal(by("agentic-market", "doors listed").state, "unreachable");
+  for (const r of rows) assert.ok(["agrees", "differs", "unknown", "unreachable"].includes(r.state));
+});
+
+test("the versions walk reads every index once, never throws on a dead one, and carries the shelf", async () => {
+  const seen = [];
+  const fetchImpl = async (url) => {
+    seen.push(String(url));
+    const { host, pathname } = new URL(String(url));
+    if (pathname === "/menu.json") return new Response(JSON.stringify({ items: [{ id: "a", price_usdc: 1 }] }), { status: 200 });
+    if (host === "registry.modelcontextprotocol.io") return new Response(JSON.stringify(REGISTRY), { status: 200 });
+    if (host === "registry.npmjs.org") return new Response(JSON.stringify({ "dist-tags": { latest: "9.9.9" }, versions: { "9.9.9": {} } }), { status: 200 });
+    throw new Error("ECONNREFUSED");
+  };
+  const local = {
+    server: { name: "store.scvd/general-store", version: "0.2.2", description: "Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store." },
+    tabServer: { name: "store.scvd/tab", version: "0.5.0" },
+    packages: [{ name: "scvd-tab", version: "9.9.9" }],
+    clawhub: { name: "scvd-general-store", version: "3.15.0" },
+  };
+  const walked = await walkVersions("https://store.test", local, fetchImpl);
+  assert.equal(walked.shelf.paid_count, 1);
+  assert.equal(walked.rows.find((r) => r.field === "general-store version").state, "agrees");
+  assert.equal(walked.rows.find((r) => r.field === "scvd-tab version").state, "agrees");
+  assert.equal(walked.rows.find((r) => r.index === "clawhub").state, "unreachable");
+  assert.equal(walked.rows.find((r) => r.index === "x402-list").state, "unreachable");
+  assert.equal(seen.filter((u) => new URL(u).host === "registry.modelcontextprotocol.io").length, 1);
+});

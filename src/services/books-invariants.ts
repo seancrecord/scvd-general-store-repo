@@ -154,8 +154,34 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
     // books breach. It reruns next hour.
   }
 
+  // 6. The trade receivable: the running counter the order door reads
+  // for its credit ceiling against a recount of every live delivery
+  // and payout row (2026-09-03, the trade counter). Same discipline as
+  // the credit liability above, sign flipped: a receivable the books
+  // disagree with themselves about is money nobody is chasing.
+  try {
+    const { TRADE_PARTNERS } = await import("@/store/trade-counter");
+    const { tradeAccountSummary, tradeOutstandingCents } = await import(
+      "@/services/trade-counter"
+    );
+    for (const partner of TRADE_PARTNERS) {
+      if (partner.mode !== "live") continue;
+      const summary = await tradeAccountSummary(env, partner);
+      if (summary.truncated) continue;
+      const counter = await tradeOutstandingCents(env, partner);
+      const recount = Math.round(summary.outstanding_usd * 100);
+      if (Math.abs(counter - recount) > 1) {
+        breaches.push(
+          `trade-receivable (${partner.id}): the credit-ceiling counter says $${counter / 100} outstanding but the delivery and payout rows say $${recount / 100}. A delivery or a payout moved without its counter step, or a race got unlucky; the rows are the truth and the counter is re-seated from them by the statement desk.`,
+        );
+      }
+    }
+  } catch {
+    // A watchdog; its own failure must not page as a books breach.
+  }
+
   const sweep: InvariantSweep = {
-    checked: 5,
+    checked: 6,
     breaches,
     at: new Date().toISOString(),
   };

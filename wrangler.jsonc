@@ -91,6 +91,27 @@
   "r2_buckets": [
     { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
   ],
+  /**
+   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the first binding
+   * here that is neither KV nor R2, and the reason is in
+   * src/services/trade-nonces.ts: a replay guard that has no on-chain
+   * nonce behind it cannot live on an eventually consistent store,
+   * because a captured request replayed at a second edge inside KV's
+   * propagation window is two deliveries for one signed instruction.
+   * A Durable Object is one writer per partner and answers the same
+   * everywhere. SQLite-backed (new_sqlite_classes) so it runs on the
+   * plan this Worker is on; nothing here needs a dashboard step — the
+   * migration creates the class, which is why it is safe for a
+   * git-connected build (compare the R2 bucket above).
+   */
+  "durable_objects": {
+    "bindings": [
+      { "name": "TRADE_NONCES", "class_name": "TradeNonceStore" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1-trade-nonces", "new_sqlite_classes": ["TradeNonceStore"] }
+  ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",
     // Settlement attestation reads Base once per purchase. The public
@@ -122,7 +143,17 @@
   //   SANCTIONS_API_KEY   Chainalysis screening API key — OPTIONAL OVERRIDE
   //                       only (their open signup has closed); the default
   //                       rule-3 screen is the keyless Chainalysis on-chain
-  //                       oracle on Base, read over BASE_RPC_URL, failing
-  //                       closed whenever it does not answer
+  //                       oracle on Base, read over the same endpoint
+  //                       ladder as every chain read (BASE_RPC_URL_PRIMARY,
+  //                       then _SECONDARY, then BASE_RPC_URL), failing
+  //                       closed only when none of them answers
   //   ADMIN_PASSWORD      Basic Auth password for /admin
+  //   TRADE_SECRET_<PARTNER>            HMAC signing secret a marketplace
+  //                                     issued us for its trade account
+  //                                     (store/trade-counter.ts names the
+  //                                     partners, e.g. TRADE_SECRET_HAL)
+  //   TRADE_SECRET_<PARTNER>_PREVIOUS   the outgoing secret during a
+  //                                     rotation window — optional
+  //   TRADE_PROVIDER_KEY_<PARTNER>      the partner's provider key, where
+  //                                     their dialect sends one — optional
 }

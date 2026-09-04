@@ -222,13 +222,134 @@ function acceptedNetworkOf(paymentPayload: Record<string, unknown>): string {
     : "";
 }
 
+/**
+ * THE HEADER THAT NEVER BECAME AN ENVELOPE (2026-09-04, three emails
+ * about small_blessing from client curl/8.5.0, all
+ * `local:payload_not_an_object`).
+ *
+ * That code was one bucket for every way a header can fail to decode,
+ * and the desk's reading for the whole `local:payload_` family said
+ * "the message beside this names the field and lists what arrived" —
+ * which for this bucket was false twice over: no field was absent,
+ * because there was no object to be missing one, and the books keep
+ * the CODE, not the message, so nothing beside it said anything. The
+ * keeper got the same non-answer three times.
+ *
+ * We hold the raw header, so we can say HOW it failed, in the code
+ * itself, where the books and the email carry it. The SDK's own gate
+ * is reproduced here (its Base64EncodedRegex, then atob, then
+ * JSON.parse) so that what we call broken is exactly what it refused
+ * — a header this passes is one the SDK parsed.
+ *
+ * The one that turned out to be common enough to earn its own code:
+ * GNU `base64` wraps its output at 76 columns unless told `-w0`, and
+ * curl sends only a header value's FIRST LINE. 76 is divisible by 4,
+ * so what arrives is clean base64 of the first 57 bytes of the
+ * envelope — `{"x402Version":2,"accepted":{"scheme":"exact","network":"`
+ * and then nothing. A curl client at this store hits that exact wall.
+ */
+const SDK_BASE64 = /^[A-Za-z0-9+/]*={0,2}$/;
+const URL_SAFE_BASE64 = /^[A-Za-z0-9\-_]*={0,2}$/;
+/** GNU coreutils' default wrap width; curl keeps only the first line. */
+const GNU_BASE64_WRAP_COLUMNS = 76;
+
+const ONE_LINE =
+  "The header must be the envelope base64-encoded with the STANDARD alphabet (A-Z a-z 0-9 + / and = padding) as ONE unbroken line: base64(JSON.stringify(envelope)) in JavaScript, or `base64 -w0` from a shell.";
+
+/** Somebody else's bytes, bounded and printable, for the 402 only. */
+function excerpt(text: string): string {
+  return text
+    .slice(0, 40)
+    .replace(/[^\x20-\x7e]/g, "·");
+}
+
+/**
+ * Why the raw PAYMENT-SIGNATURE header did not decode. Undefined when
+ * it decodes to JSON of any type — the shape check below takes over.
+ */
+export function describeHeaderEncoding(
+  header: string,
+): PayloadShapeProblem | undefined {
+  const trimmed = header.trim();
+  if (trimmed.startsWith("{")) {
+    return {
+      code: "local:payload_not_base64:raw_json",
+      says: `The PAYMENT-SIGNATURE header carried the JSON envelope itself, not its base64 encoding, so the x402 library read it as no payment at all. ${ONE_LINE} (Over MCP, _meta['x402/payment'] accepts the raw object; the HTTP header does not.) ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  if (/\s/.test(trimmed)) {
+    return {
+      code: "local:payload_not_base64:whitespace",
+      says: `The PAYMENT-SIGNATURE header contained whitespace, which the x402 library's base64 check refuses before decoding. ${ONE_LINE} ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  if (!SDK_BASE64.test(trimmed)) {
+    if (/[-_]/.test(trimmed) && URL_SAFE_BASE64.test(trimmed)) {
+      return {
+        code: "local:payload_not_base64:url_safe",
+        says: `The PAYMENT-SIGNATURE header used the URL-safe base64 alphabet (- and _), which the x402 library refuses. ${ONE_LINE} ${ENVELOPE}`,
+        keys_seen: [],
+      };
+    }
+    return {
+      code: "local:payload_not_base64",
+      says: `The PAYMENT-SIGNATURE header is not base64: it carries characters outside A-Z a-z 0-9 + / =. ${ONE_LINE} ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  let text: string;
+  try {
+    text = atob(trimmed);
+  } catch {
+    return {
+      code: "local:payload_not_base64",
+      says: `The PAYMENT-SIGNATURE header looks like base64 but does not decode (its length is wrong for base64). ${ONE_LINE} ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  try {
+    JSON.parse(text);
+    return undefined;
+  } catch {
+    // Fall through: base64 was fine, the bytes inside were not JSON.
+  }
+  if (text.trimStart().startsWith("{")) {
+    const wrapped =
+      trimmed.length === GNU_BASE64_WRAP_COLUMNS
+        ? ` This header is exactly ${GNU_BASE64_WRAP_COLUMNS} characters, which is that wrap width.`
+        : "";
+    return {
+      code: "local:payload_truncated_envelope",
+      says: `The PAYMENT-SIGNATURE header was valid base64 of the FIRST ${text.length} bytes of a JSON object and then stopped: the envelope arrived cut off. The usual cause is a base64 tool that wraps its output into lines (GNU \`base64\` does, at ${GNU_BASE64_WRAP_COLUMNS} columns, unless you pass -w0) and an HTTP client that sends only a header's first line (curl does).${wrapped} Nothing is wrong with your signature or your wallet; the store never saw them. ${ONE_LINE} ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  return {
+    code: "local:payload_not_json",
+    says: `The PAYMENT-SIGNATURE header was base64, but what it decoded to is not JSON. It begins: "${excerpt(text)}". Base64-encode the JSON envelope, not a signature or a transaction on its own. ${ONE_LINE} ${ENVELOPE}`,
+    keys_seen: [],
+  };
+}
+
 export function describePayloadShape(
   paymentPayload: unknown,
 ): PayloadShapeProblem | undefined {
   if (!isRecord(paymentPayload)) {
+    // A header that failed to decode at all is described by
+    // describeHeaderEncoding, which runs first. What reaches this
+    // branch is JSON of the wrong type: a string (an envelope
+    // encoded twice), an array, a number, or null.
+    const type =
+      paymentPayload === null
+        ? "null"
+        : Array.isArray(paymentPayload)
+          ? "an array"
+          : `a ${typeof paymentPayload}`;
     return {
       code: "local:payload_not_an_object",
-      says: `The PAYMENT-SIGNATURE header did not base64-decode to a JSON object. ${ENVELOPE}`,
+      says: `The PAYMENT-SIGNATURE header decoded to JSON, but to ${type} rather than an object${typeof paymentPayload === "string" ? " — usually an envelope that was base64-encoded twice, or JSON.stringify applied to an already-serialized string" : ""}. Base64-encode the envelope object itself, once. ${ENVELOPE}`,
       keys_seen: [],
     };
   }

@@ -137,6 +137,31 @@ describe("primary transport on agent cards", () => {
   });
 });
 
+describe("an A2A card that leads with its own binding", () => {
+  it("states nothing about the MCP door: not_observed, never a conflict", () => {
+    const verdict = capabilityRowVerdict([
+      {
+        surface: "a2a_agent_card",
+        claim: capabilityFromA2a(
+          {
+            preferredTransport: "JSONRPC",
+            additionalInterfaces: [{ url: `${ABOUT}/mcp`, transport: "MCP" }],
+          },
+          ABOUT,
+          ABOUT,
+        )!,
+      },
+      {
+        surface: "mcp_card",
+        claim: capabilityFromMcp({ transport: "streamable-http" }, ABOUT, ABOUT)!,
+      },
+    ]);
+    expect(verdict.derived).toBe("agree");
+    expect(verdict.disagreements).toEqual([]);
+    expect(verdict.not_observed.map((row) => row.field)).toContain("primary_transport");
+  });
+});
+
 describe("our own catalogs agree on the dimensions they both state", () => {
   it("the two x402 documents publish the same networks", async () => {
     const rich = await fetchJson("/.well-known/x402.json");
@@ -157,7 +182,7 @@ describe("our own catalogs agree on the dimensions they both state", () => {
     expect(verdict.disagreements.map((row) => row.field)).not.toContain("chains");
   });
 
-  it("A2A preferredTransport and the MCP card name the same door", async () => {
+  it("the A2A card, leading with its own door since 2026-09-03, does not contradict the MCP card", async () => {
     const a2a = await fetchJson("/.well-known/a2a.json");
     const mcp = await fetchJson("/.well-known/mcp");
     const verdict = capabilityRowVerdict([

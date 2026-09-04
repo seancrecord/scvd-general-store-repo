@@ -1,0 +1,19 @@
+{
+  "name": "tempo-default-testnet",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "method tempo with chainId absent: the draft's default is 42431, Tempo Moderato, the testnet. Every check passes; the advisory names the trap.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [],
+  "expect_advisories": [
+    "mpp-testnet-default"
+  ],
+  "status": 402,
+  "headers": {
+    "content-type": "application/problem+json",
+    "www-authenticate": "Payment id=\"ch_02\", realm=\"door.example\", method=\"tempo\", intent=\"charge\", request=\"eyJhbW91bnQiOiIyNTAwIiwiY3VycmVuY3kiOiIweDIwYzAwMDAwMDAwMDAwMDAwMDAwMDAwMGI5NTM3ZDExYzYwZThiNTAiLCJtZXRob2REZXRhaWxzIjp7ImZlZVBheWVyIjp0cnVlfSwicmVjaXBpZW50IjoiMHgyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyIn0\""
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

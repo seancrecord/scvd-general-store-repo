@@ -14,6 +14,7 @@ import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
+import { remediationRows } from "@/services/remediation";
 import { storeSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { storeLaunchCheck } from "@/services/launch-check";
@@ -615,6 +616,14 @@ export async function deliverInstantGoods(
           audit_id: audit.audit_id,
           verdict: audit.verdict,
           audit,
+          /**
+           * WHAT TO DO ABOUT IT, both halves (roadmap C1, 2026-09-03):
+           * the vocabulary's rows for each failed check and raised
+           * advisory in the signed report, derived here at delivery and
+           * carried BESIDE the report, not inside it — advice is not
+           * evidence, and the signature covers only what was observed.
+           */
+          remediation: remediationRows(env.STORE_BASE_URL, audit.checks, audit.advisories),
           report_url: `/api/service-audit/${audit.audit_id}`,
           // The displayable half (2026-08-20): an embeddable dated
           // label linking back to this signed report. Free forever,

@@ -11,7 +11,12 @@ import {
 import type { Env } from "@/types";
 import { readTransferClaim } from "@/services/attestation";
 import type { AttestationQuery, TransferClaimRead } from "@/services/attestation";
-import { evmChainOf } from "@/lib/base-rpc";
+import {
+  evmChainOf,
+  redactRpc,
+  RPC_TIMEOUT_MS,
+  rpcEndpoints,
+} from "@/lib/base-rpc";
 import { DEFAULT_TRANSFER_METHOD } from "@/services/preflight";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
@@ -369,40 +374,74 @@ const IS_SANCTIONED_SELECTOR = "0xdf592f7d";
 const BOOL_TRUE = `0x${"0".repeat(63)}1`;
 const BOOL_FALSE = `0x${"0".repeat(64)}`;
 
+/**
+ * EVERY ENDPOINT, NOT ONE (2026-09-04, from a bounty walker's letter:
+ * POST /api/bounty-claim refused for an hour and a half with "the
+ * sanctions screen did not answer (… HTTP 429)", while their own
+ * eth_call to the same oracle answered false at once).
+ *
+ * The screen read the chain through ONE url — the public BASE_RPC_URL
+ * — with one attempt and no ceiling, while every other chain read in
+ * this store rotates through rpcEndpoints(): the authenticated primary,
+ * a second key on another provider, then the public one. base-rpc.ts
+ * records why: the public endpoint 429s from the Worker's shared
+ * egress under load, and a quota is a per-key outage. So the one read
+ * that gates every outbound dollar was the one read still standing on
+ * the endpoint most likely to refuse it, and a 429 there paid nobody
+ * for as long as it lasted. Nothing paged; a stranger's letter did.
+ *
+ * WHAT DOES NOT CHANGE: the screen still fails closed. The one answer
+ * that moves money is the oracle saying false, byte for byte, from
+ * some endpoint; a listing from ANY endpoint is final and no later
+ * endpoint can overrule it; an endpoint that does not answer is
+ * skipped, and when none answers the result is still null. The only
+ * new behaviour is asking the next provider before giving up.
+ */
 export function oracleScreen(
-  rpcUrl: string,
+  rpcUrls: string | readonly string[],
   fetchImpl: typeof fetch = fetch,
 ): SanctionsScreen {
+  const endpoints = typeof rpcUrls === "string" ? [rpcUrls] : [...rpcUrls];
   return async (address: string) => {
     const source = `Chainalysis on-chain sanctions oracle (${SANCTIONS_ORACLE_BASE} on eip155:8453)`;
     if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
       // Not a 20-byte EVM address; the oracle cannot answer for it.
       return { listed: null, source: `${source} — address shape unscreenable` };
     }
-    try {
-      const data =
-        IS_SANCTIONED_SELECTOR +
-        address.slice(2).toLowerCase().padStart(64, "0");
-      const response = await fetchImpl(rpcUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "eth_call",
-          params: [{ to: SANCTIONS_ORACLE_BASE, data }, "latest"],
-        }),
-      });
-      if (!response.ok) {
-        return { listed: null, source: `${source} (HTTP ${response.status})` };
+    const data =
+      IS_SANCTIONED_SELECTOR +
+      address.slice(2).toLowerCase().padStart(64, "0");
+    const failures: string[] = [];
+    for (const rpcUrl of endpoints) {
+      const host = redactRpc(rpcUrl);
+      try {
+        const response = await fetchImpl(rpcUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "eth_call",
+            params: [{ to: SANCTIONS_ORACLE_BASE, data }, "latest"],
+          }),
+          signal: AbortSignal.timeout(RPC_TIMEOUT_MS),
+        });
+        if (!response.ok) {
+          failures.push(`${host} (HTTP ${response.status})`);
+          continue;
+        }
+        const body = (await response.json()) as { result?: string };
+        if (body.result === BOOL_TRUE) return { listed: true, source };
+        if (body.result === BOOL_FALSE) return { listed: false, source };
+        failures.push(`${host} (unexpected result)`);
+      } catch {
+        failures.push(`${host} (unreachable)`);
       }
-      const body = (await response.json()) as { result?: string };
-      if (body.result === BOOL_TRUE) return { listed: true, source };
-      if (body.result === BOOL_FALSE) return { listed: false, source };
-      return { listed: null, source: `${source} (unexpected result)` };
-    } catch {
-      return { listed: null, source: `${source} (unreachable)` };
     }
+    return {
+      listed: null,
+      source: `${source} — no answer from ${failures.length} endpoint${failures.length === 1 ? "" : "s"}: ${failures.join(", ")}`,
+    };
   };
 }
 
@@ -569,7 +608,7 @@ export async function performLaunchCheck(
     options.screen ??
     (env.SANCTIONS_API_KEY
       ? chainalysisScreen(env.SANCTIONS_API_KEY, fetchImpl)
-      : oracleScreen(env.BASE_RPC_URL ?? "https://mainnet.base.org", fetchImpl));
+      : oracleScreen(rpcEndpoints(env), fetchImpl));
 
   let challengeEvidence: WatchEvidenceCapture | undefined;
   walk: {

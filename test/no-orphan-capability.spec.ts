@@ -92,8 +92,6 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   // ---- pending removal, tracked ----
   "/.well-known/x402list.txt":
     "an ownership challenge, not a capability: x402-list.com fetches this fixed path once per listing update to check we control the origin. Tokens carry their own last day (store/site-verification.ts) and the file serves only live ones, so nothing here is pending removal any more",
-  "/mcp/":
-    "the same door as /mcp, which every surface lists, reached by the commonest typo: a trailing slash. It 308s to /mcp so a POSTed initialize lands as a POST (2026-09-02, after a scanner read the old 404 as no server); listing it would advertise two doors that are one door",
   "/.well-known/openai-apps-challenge":
     "an ownership challenge, not a capability: the OpenAI plugin submission portal fetches this fixed path at the origin root to check we control the MCP host, and it answers only while OPENAI_APPS_CHALLENGE is set (store/site-verification.ts). Unlike the two below it stays up for the life of the listing, because OpenAI asks that a host's token not be removed while a plugin uses it",
   "/:file{[a-f0-9]{32}\\.txt}":
@@ -115,6 +113,15 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   // ---- a browser asset, not a capability ----
   "/till.js":
     "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
+
+  // ---- the trade counter's per-account doors: the probe drops the
+  // account segment, so the listed paths never match it ----
+  "/api/trade/check":
+    "the check desk sits at /api/trade/{account}/check; openapi.json lists it under that template and llms.txt names the sandbox's at /api/trade/sandbox/check — the probe's derivation drops the account segment, so no listing can contain it",
+  "/api/trade/statement":
+    "the statement sits at /api/trade/{account}/statement, listed under that template in openapi.json and named in the trade section of llms.txt; same derivation, same reason as the check desk above",
+  "/api/trade/claim":
+    "recovery by order_ref sits at /api/trade/{account}/claim, listed under that template in openapi.json and named on /trade; same derivation, same reason as the check desk above",
 
   // ---- the porch toy ----
   "/api/treat":

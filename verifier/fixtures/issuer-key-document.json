@@ -1,0 +1,15 @@
+{
+  "id": "did:web:scvd.store",
+  "verificationMethod": [
+    {
+      "id": "did:web:scvd.store#conformance-test-key",
+      "type": "JsonWebKey2020",
+      "controller": "did:web:scvd.store",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "IVL40Zt5HSRFMkLhXy6rbLfP-ntqXtMAl5YOBpiB2xI"
+      }
+    }
+  ]
+}

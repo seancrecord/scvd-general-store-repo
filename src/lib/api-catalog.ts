@@ -5,6 +5,10 @@ import {
 import { CONFORMANCE_VERSION } from "@/services/conformance";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import { STORE_SERVICE_NAME } from "@/store";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { FEEDS } from "@/routes/feeds";
+import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
+import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 import {
   CLI_PACKAGE,
   CLI_PUBLISHED,
@@ -47,6 +51,9 @@ export const LINKSET_MEDIA_TYPE = "application/linkset+json";
  */
 export const API_CATALOG_MEDIA_TYPE = `${LINKSET_MEDIA_TYPE}; profile="https://www.rfc-editor.org/info/rfc9727"`;
 
+/** The feeds index, a published dataset whose row also lists each feed. */
+const FEEDS_INDEX_PATH = "/feeds";
+
 /** RFC 9727's fixed path. The catalog anchors its own index here. */
 export const API_CATALOG_PATH = "/.well-known/api-catalog";
 
@@ -79,9 +86,12 @@ function apiEntry(options: {
   status?: LinkTarget[];
   sunset?: LinkTarget[];
   successor?: LinkTarget[];
+  /** RFC 4287 §4.2.7.2's relation for a feed of the same resource. */
+  alternate?: LinkTarget[];
 }): LinkContext {
   const entry: LinkContext = { anchor: options.anchor };
   entry["title"] = options.title;
+  if (options.alternate) entry["alternate"] = options.alternate;
   if (options.desc) entry["service-desc"] = options.desc;
   if (options.doc) entry["service-doc"] = options.doc;
   if (options.meta) entry["service-meta"] = options.meta;
@@ -162,6 +172,11 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
             type: "application/openapi+json;version=3.1",
             title: "OpenAPI 3.1 contract, every endpoint",
           },
+          {
+            href: `${base}/openapi-tools.json`,
+            type: "application/json",
+            title: "The free instruments as function-calling tools, one worked call each",
+          },
         ],
         doc: [
           {
@@ -236,14 +251,32 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
        * the one it can.
        */
       apiEntry({
+        anchor: `${base}/api/trade/contract`,
+        title: `${STORE_SERVICE_NAME} — trade counter (marketplace reseller accounts)`,
+        desc: [
+          {
+            href: `${base}/api/trade/contract`,
+            type: "application/json",
+            title:
+              "The trade contract: the signed order door, the signing dialects, the pricing rule with every price derived, every account's row, every refusal by name",
+          },
+          {
+            href: `${base}/openapi.json`,
+            type: "application/openapi+json;version=3.1",
+            title: "OpenAPI 3.1 contract, the trade doors included",
+          },
+        ],
+        doc: [{ href: `${base}/trade`, type: "text/html", title: "The Trade Counter" }],
+        status: [{ href: `${base}/health`, type: "application/json", title: "Liveness, one line" }],
+      }),
+      apiEntry({
         anchor: `${base}/.well-known/a2a.json`,
-        title: `${STORE_SERVICE_NAME} — A2A agent card`,
+        title: "SCVD Evidence Agent — A2A agent card",
         desc: [
           {
             href: `${base}/.well-known/a2a.json`,
             type: "application/json",
-            title:
-              "A2A agent card: skills, input modes, and the x402 terms each paid skill answers with",
+            title: `A2A agent card: ${EVIDENCE_TASKS.length} read-only evidence tasks over message/send at /a2a, nothing paid`,
           },
         ],
         doc: [
@@ -254,7 +287,71 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
           },
         ],
       }),
+      /**
+       * THE VERIFIER DOOR (2026-09-04, roadmap C3): the second MCP
+       * server, listed as its own API because a host that should
+       * never see a shelf is told here which door to open.
+       */
+      apiEntry({
+        anchor: `${base}/mcp/verifier`,
+        title: `${VERIFIER_TITLE} — MCP server (${VERIFIER_SERVER_NAME}, read-only tools only)`,
+        desc: [
+          {
+            href: `${base}/mcp/verifier`,
+            type: "application/json",
+            title: `The door's own document: ${VERIFIER_TOOLS.length} read-only tools by name, the handshake, and the full door beside it`,
+          },
+        ],
+        doc: [
+          {
+            href: `${base}/mcp.md`,
+            type: "text/markdown",
+            title: "Which MCP door to use",
+          },
+        ],
+      }),
       ...versionedEntries(base),
+      /**
+       * THE DATASETS AND THE FEEDS (2026-09-04, roadmap C3). A store
+       * whose argument is its evidence listed its APIs here and none
+       * of its findings; the ARD manifest names every record, and its
+       * cross-check requires this catalog to know each URL first. One
+       * row per published dataset, anchored where it lives (JSON on
+       * the same URL by Accept, a self-describing envelope held by the
+       * machine-readability guard); the feeds index is one of those
+       * datasets, and its row carries each feed as an `alternate` in
+       * Atom. Both derived from the rosters the guards already walk,
+       * so a dataset or a feed added tomorrow is in a row tomorrow.
+       */
+      ...PUBLISHED_DATASETS.map((dataset) =>
+        apiEntry({
+          anchor: `${base}${dataset.path}`,
+          title: `${dataset.name} — dataset (${dataset.cadence})`,
+          desc: [
+            {
+              href: `${base}${dataset.path}`,
+              type: "application/json",
+              title: dataset.description,
+            },
+          ],
+          doc: [
+            {
+              href: `${base}/.well-known/x402.json`,
+              type: "application/json",
+              title: "The datasets, catalogued with what each must not be read as",
+            },
+          ],
+          ...(dataset.path === FEEDS_INDEX_PATH
+            ? {
+                alternate: FEEDS.map((feed) => ({
+                  href: `${base}${feed.path}`,
+                  type: "application/atom+xml",
+                  title: `${feed.name}: ${feed.what}`,
+                })),
+              }
+            : {}),
+        }),
+      ),
       /**
        * The command line, listed as an API surface because that is
        * what it is to anything deciding how to talk to this store.

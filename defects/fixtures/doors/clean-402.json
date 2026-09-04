@@ -1,0 +1,11 @@
+{
+  "name": "clean-402",
+  "recorded": "2026-08-26, this store's own hello door, terms replaced with a neutral payTo",
+  "why": "The good case. Every core check passes; nothing is red.",
+  "expect_failed": [],
+  "status": 402,
+  "headers": {
+    "PAYMENT-REQUIRED": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW3sic2NoZW1lIjogImV4YWN0IiwgIm5ldHdvcmsiOiAiZWlwMTU1Ojg0NTMiLCAicGF5VG8iOiAiMHg0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0IiwgImFzc2V0IjogIjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsICJhbW91bnQiOiAiNTAwMCIsICJtYXhUaW1lb3V0U2Vjb25kcyI6IDMwMH1dfQ=="
+  },
+  "body": "{}"
+}

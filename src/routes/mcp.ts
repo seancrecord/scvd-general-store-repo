@@ -458,7 +458,7 @@ function mcpSignals(c: Context<HonoEnv>): EventSignals {
   return signals;
 }
 
-function toolText(payload: Record<string, unknown>): unknown {
+export function toolText(payload: Record<string, unknown>): unknown {
   return {
     content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
     structuredContent: payload,
@@ -477,7 +477,7 @@ function flattenPurchase(
   return flat;
 }
 
-async function callFreeTool(
+export async function callFreeTool(
   c: Context<HonoEnv>,
   name: string,
   args: Record<string, unknown>,
@@ -561,7 +561,7 @@ async function callFreeTool(
      * own chain: one probe, one limiter, one law. A non-200 is the
      * preflight's own refusal text, free and uncharged.
      */
-    const outcome = await lookAtDoor(args["url"], c.env);
+    const outcome = await lookAtDoor(args["url"], c.env, new Date(), args["since"]);
     if (outcome.status !== 200) {
       const body = outcome.body as { error?: string };
       return body.error ?? "The look could not run. Try again shortly.";

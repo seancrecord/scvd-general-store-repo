@@ -1,0 +1,12 @@
+{
+  "name": "receipt-wrong-key",
+  "expect": {
+    "valid": false,
+    "failing": "signature"
+  },
+  "kid": "did:web:scvd.store#conformance-test-key",
+  "publicKeyHex": "1111111111111111111111111111111111111111111111111111111111111111",
+  "receipt": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJwYXllciI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsImlzc3VlZEF0IjoxNzY3MjI1NjAwLCJ0cmFuc2FjdGlvbiI6IjB4YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9.ejuDi0c6vesOF34lLIZDZZ2oAKj_Bbfnm87SsyjDWJ_uw1BOLDVZ18vj08qWC7HsKGs-ZxxlrfZc6fVWeLNPBQ",
+  "note": "The valid receipt checked against a key that did not sign it: the signature check fails and nothing else does.",
+  "source": "conformance/offer-receipt-vectors.json receipt_valid, key replaced"
+}

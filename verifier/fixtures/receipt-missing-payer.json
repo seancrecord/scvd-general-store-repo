@@ -1,0 +1,11 @@
+{
+  "name": "receipt-missing-payer",
+  "expect": {
+    "valid": false,
+    "failing": "schema"
+  },
+  "kid": "did:web:scvd.store#conformance-test-key",
+  "publicKeyHex": "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+  "receipt": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNjb25mb3JtYW5jZS10ZXN0LWtleSJ9.eyJ2ZXJzaW9uIjoxLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXBpL2J1eS93aWRnZXQiLCJpc3N1ZWRBdCI6MTc2NzIyNTYwMCwidHJhbnNhY3Rpb24iOiIweGFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWIifQ.sT59O1pjWkfYlHROWNgCVPbsuYNGLt1u-25qOsz0iJKmjBKTJyF3iTPXc0X9IbZcuhXJSh7gtno6y-UUZ7zfBQ",
+  "source": "conformance/offer-receipt-vectors.json receipt_missing_payer"
+}

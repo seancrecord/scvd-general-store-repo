@@ -98,6 +98,14 @@ export const ROOMS: readonly Room[] = [
    * path, three doors.
    */
   { path: "/developers", name: "developer documentation" },
+  /**
+   * THE TRADE COUNTER (2026-09-03): the shelf sold on account to
+   * marketplaces. On the front of the store by the keeper's word the
+   * same evening ("agreed lets do them all", against a list that
+   * named the slot); on every surface an agent reads from the day it
+   * opened.
+   */
+  { path: "/trade", name: "The Trade Counter" },
   { path: "/try", name: "The Practice Counter" },
   /**
    * The two differentiators, given crawlable rooms 2026-08-10. Both
@@ -123,6 +131,16 @@ export const ROOMS: readonly Room[] = [
   {
     path: "/corpus/brief",
     name: "The Week's Doors",
+    deeper: ["conformance_watch"],
+  },
+  /*
+   * The state of x402 by month, 2026-09-03 (roadmap V5): the brief's
+   * question asked the way press and researchers ask it, derived from
+   * the same signed weeks. A stable address per month for a citation.
+   */
+  {
+    path: "/corpus/month",
+    name: "The state of x402, by month",
     deeper: ["conformance_watch"],
   },
   /**
@@ -219,6 +237,19 @@ export const ROOMS: readonly Room[] = [
    * on the same terms as its kin until the keeper rules on a slot.
    */
   { path: "/operators", name: "For operators" },
+  /*
+   * The feeds, 2026-09-03 (roadmap V2): four Atom feeds derived from
+   * the record the pages read, and the page that lists them.
+   */
+  { path: "/feeds", name: "Feeds" },
+  /*
+   * For scorers and marketplaces, 2026-09-03: the two seats the store
+   * occupies — the record and the reproducible dispute artifact — and
+   * how to pull, verify, cite, reproduce and re-observe the evidence
+   * without inheriting an opinion. Names seats, not occupants. Off the
+   * storefront by the keeper's ruling of 2026-09-04.
+   */
+  { path: "/scorers", name: "For scorers and marketplaces", on_storefront: false },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

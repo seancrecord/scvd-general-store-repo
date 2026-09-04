@@ -32,6 +32,9 @@ import {
  */
 export const corpusLandingRoutes = new Hono<HonoEnv>();
 
+/** The reproducible notebook (roadmap C6): fetch the chain, recompute every digest, count with denominators. In the tree, not served. */
+export const NOTEBOOK_URL = "https://github.com/seancrecord/scvd-general-store-repo/blob/main/examples/corpus-recompute.ipynb";
+
 function landingJson(base: string) {
   return {
     what_this_is:
@@ -43,6 +46,13 @@ function landingJson(base: string) {
     weekly_brief: `${base}/corpus/brief`,
     as_time: `${base}/corpus/trajectory.json`,
     since_diff: `${base}/corpus/diff.json?since={week}`,
+    latest: `${base}/corpus/latest.json`,
+    changes_by_week: `${base}/corpus/changes/{week}.json`,
+    subscribe: {
+      how: `Poll ${base}/corpus/latest.json with If-None-Match (the ETag is the sha256 of the bytes) or If-Modified-Since (Last-Modified is the snapshot's taken_at): a 304 costs nothing, a 200 is a new signed week. Then read ${base}/corpus/changes/{week}.json for what moved, as fields and as a changelog. Or subscribe to the Atom feed at ${base}/feeds/corpus.xml, one entry per signed snapshot.`,
+      example: `curl -sS -i ${base}/corpus/latest.json -H 'If-None-Match: \"<etag you last saw>\"'`,
+      notebook: NOTEBOOK_URL,
+    },
     wallet_facts: `${base}/corpus/wallet-facts.json`,
     battery_delta: `${base}/corpus/battery-delta.json`,
     standing_notes: `${base}/api/standing-note`,
@@ -128,6 +138,7 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
       <p class="menu-desc">One host's history, replayed from the signed chain: <code>/corpus/host/{host}.json</code>. Every round we have no verdict for carries a reason — no feed named the host, a feed named it but the round did not reach it, or the instrument itself was degraded that week. The gaps are the point: a timeline with the misses left out reads as continuous coverage, and this one refuses to.</p>
       <p class="menu-desc">The week, on one page: <a href="/corpus/brief">The Week's Doors</a> &mdash; doors named, probed, payable and not, defects by name, and the gaps counted against us, read from the latest signed snapshot. Quotable, dated, never a ranking; <code>?week=</code> names an earlier one.</p>
       <p class="menu-desc">The chain read as time: <a href="/corpus/trajectory.json"><code>/corpus/trajectory.json</code></a> serves one point per signed week — counts with their denominators, never a ratio, every point naming the digest it derives from. What changed since a week you already saw: <code>/corpus/diff.json?since={week}</code> — doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms. A week the chain does not hold gets a 404 naming the weeks it does.</p>
+      <p class="menu-desc"><strong>Subscribe.</strong> The latest signed snapshot at an address that never changes: <a href="/corpus/latest.json"><code>/corpus/latest.json</code></a>. Poll it with <code>If-None-Match</code> (the ETag is the sha256 of the bytes) or <code>If-Modified-Since</code> (Last-Modified is the snapshot's own date); a 304 costs nothing and a 200 is a new week. Then <code>/corpus/changes/{week}.json</code> says what moved — doors added and removed, recoveries and regressions, changed payment routes and prices, changed defect state — as fields and as a plain changelog. The same weeks as Atom: <a href="/feeds/corpus.xml"><code>/feeds/corpus.xml</code></a>. A notebook that fetches the chain, recomputes every digest and counts with denominators, runnable top to bottom: <a href="${NOTEBOOK_URL}">examples/corpus-recompute.ipynb</a>.</p>
       <p class="menu-desc">What our own stricter battery catches that the frozen one misses: <a href="/corpus/battery-delta.json"><code>/corpus/battery-delta.json</code></a> counts, per signed week and overall, how many doors <code>v1</code> would have called ready that <code>v2</code> caught. It is a scorecard for our own instrument and it is published on the same terms as the gaps we count against ourselves &mdash; including when the number is zero. Whether <code>v2</code> should become the headline battery everywhere is a separate question the count does not settle, because that change renames the criteria on every artifact this store has already signed.</p>
       <p class="menu-desc">Wallet facts, counted and never judged: <a href="/corpus/wallet-facts.json"><code>/corpus/wallet-facts.json</code></a> says how many receiving addresses the week's doors advertised and how many receive at more than one door — counts only, no names, no addresses, and never an operator claim.${
         facts
@@ -168,6 +179,7 @@ corpusLandingRoutes.get("/corpus", async (c) => {
         description:
           "Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed.",
         path: "/corpus",
+        feedAlt: { path: "/feeds/corpus.xml", title: "The corpus chain, as Atom" },
         bodyHtml: `${landingHtml(base, facts)}\n${corpusDatasetJsonLd(base)}`,
       }),
     );

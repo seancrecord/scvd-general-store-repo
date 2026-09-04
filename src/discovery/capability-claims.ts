@@ -111,6 +111,8 @@ export function capabilityFromX402(
   );
 }
 
+const A2A_NATIVE_BINDINGS: ReadonlySet<string> = new Set(["jsonrpc", "grpc", "http+json"]);
+
 export function capabilityFromA2a(
   body: unknown,
   about: string,
@@ -139,9 +141,23 @@ export function capabilityFromA2a(
   const schemes = Object.keys(
     isRecord(body["securitySchemes"]) ? body["securitySchemes"] : {},
   );
-  const primary =
+  /**
+   * The primary transport is compared against the MCP card's, so it
+   * is a claim about which non-A2A door the host leads with — true
+   * when a card delegates ("MCP", "HTTP+x402"). A card that leads
+   * with one of A2A's own bindings (JSONRPC, GRPC, HTTP+JSON) is
+   * speaking for its own door and states nothing about the MCP one:
+   * not_observed on that dimension, never a conflict (rule 52; our
+   * own card since 2026-09-03). The binding still rides in
+   * `transports`, so the claim records it.
+   */
+  const preferred =
     typeof body["preferredTransport"] === "string"
       ? body["preferredTransport"]
+      : null;
+  const primary =
+    preferred && !A2A_NATIVE_BINDINGS.has(normalizeTransport(preferred))
+      ? preferred
       : null;
   return claim(
     "a2a_agent_card",

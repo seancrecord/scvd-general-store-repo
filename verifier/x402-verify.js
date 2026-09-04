@@ -421,6 +421,135 @@ export async function verifyArtifact(jws, options = {}) {
  * committed, never WHO SHOULD HAVE held it. A thief with the key could
  * anchor too. This bounds a compromise window; it does not prevent one.
  */
+/**
+ * THE ONE-CALL FRONT DOOR (1.1.0, 2026-09-03). verifyArtifact returns
+ * the report; this returns the bounded evidence an agent can act on:
+ * valid or not, the scope of what "valid" means, what it does NOT
+ * establish, and where to reproduce it. The key comes from
+ * `issuerKeyUrl` or `publicKey` — never from the artifact — because a
+ * signature checked against a key the artifact supplied is the
+ * artifact vouching for itself.
+ *
+ * `issuerKeyUrl` may serve a DID document (verificationMethod with
+ * Ed25519 publicKeyJwk entries, the kid matched by id) or a bare key
+ * (`{ "kty": "OKP", "crv": "Ed25519", "x": "…" }` or
+ * `{ "publicKeyHex": "…" }`). Absent both, the kid's did:web is
+ * resolved over the network, as verifyArtifact does.
+ */
+export const DOES_NOT_ESTABLISH = Object.freeze({
+  receipt: Object.freeze([
+    "merchant identity beyond the key the receipt was checked against",
+    "payment settlement on any chain",
+    "delivery of the purchased service",
+  ]),
+  offer: Object.freeze([
+    "merchant identity beyond the key the offer was checked against",
+    "that the door still serves these terms now",
+    "that paying these terms delivers anything",
+  ]),
+});
+
+export const VERIFICATION_URL = "https://scvd.store/api/conformance/v1";
+
+async function resolveKeysFromUrl(url, options = {}) {
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  if (!fetchImpl) return { ok: false, problem: "no fetch available; pass options.fetch" };
+  let document;
+  try {
+    const response = await fetchImpl(url);
+    if (!response.ok) return { ok: false, problem: `issuer key document HTTP ${response.status}`, url };
+    document = await response.json();
+  } catch (error) {
+    return { ok: false, problem: `issuer key document unreachable: ${String(error)}`, url };
+  }
+  const keys = new Map();
+  for (const method of document?.verificationMethod ?? []) {
+    const jwk = method?.publicKeyJwk;
+    if (jwk?.kty === "OKP" && jwk?.crv === "Ed25519" && typeof jwk.x === "string") {
+      const bytes = decodeBase64Url(jwk.x);
+      if (bytes) keys.set(String(method.id), bytes);
+    }
+  }
+  let bare = null;
+  if (document?.kty === "OKP" && document?.crv === "Ed25519" && typeof document.x === "string") {
+    bare = decodeBase64Url(document.x);
+  } else if (typeof document?.publicKeyHex === "string") {
+    bare = hexToBytes(document.publicKeyHex);
+  }
+  return { ok: true, keys, bare, url };
+}
+
+async function verifyBounded(kind, jws, input, options) {
+  const scopeOf = (checked) =>
+    kind === "receipt"
+      ? `Signature valid over the receipt's bytes against ${checked}; the receipt's fields conform to the offer-receipt schema (rev 1).`
+      : `Signature valid over the offer's bytes against ${checked}; the offer's fields conform to the offer-receipt schema (rev 1). Expiry is reported, not folded in.`;
+  const base = {
+    kind,
+    doesNotEstablish: [...DOES_NOT_ESTABLISH[kind]],
+    verificationUrl: VERIFICATION_URL,
+  };
+  let publicKey = input.publicKey ?? options.publicKey ?? null;
+  let checkedAgainst = publicKey ? "the key supplied by the caller" : null;
+  let keyUrl = input.issuerKeyUrl ?? null;
+  const parsed = parseJws(jws);
+  const kid = parsed.ok ? parsed.header?.kid : undefined;
+  if (!publicKey && keyUrl) {
+    const resolved = await resolveKeysFromUrl(keyUrl, options);
+    if (!resolved.ok) {
+      return {
+        ...base,
+        valid: false,
+        scope: `Not verified: ${resolved.problem}.`,
+        checks: [{ name: "key-resolution", ok: false, detail: resolved.problem }],
+        issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
+      };
+    }
+    publicKey = (typeof kid === "string" ? resolved.keys.get(kid) : undefined) ?? resolved.bare ?? null;
+    if (!publicKey) {
+      return {
+        ...base,
+        valid: false,
+        scope: `Not verified: the issuer key document at ${keyUrl} carries no Ed25519 key for kid ${String(kid)}.`,
+        checks: [{ name: "key-resolution", ok: false, detail: `kid not found in ${keyUrl}` }],
+        issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
+      };
+    }
+    checkedAgainst = `the issuer key at ${keyUrl}`;
+  }
+  const report = await verifyArtifact(jws, { ...options, kind, ...(publicKey ? { publicKey } : {}) });
+  if (!checkedAgainst) {
+    const resolution = report.checks.find((check) => check.name === "key-resolution");
+    checkedAgainst = resolution?.ok ? `the key resolved from the artifact's did:web kid (${resolution.detail})` : "no key";
+    keyUrl = keyUrl ?? (resolution?.ok ? resolution.detail.replace(/^kid found in /, "") : null);
+  }
+  const failed = report.checks.filter((check) => !check.advisory && !check.ok).map((check) => `${check.name}: ${check.detail}`);
+  return {
+    ...base,
+    valid: report.ok,
+    scope: report.ok ? scopeOf(checkedAgainst) : `Not verified: ${failed.join("; ")}.`,
+    checks: report.checks,
+    issuer: { kid: typeof kid === "string" ? kid : null, keyUrl },
+    ...(report.payload ? { payload: report.payload } : {}),
+  };
+}
+
+/** Verify one signed receipt and get bounded evidence back. */
+export async function verifyReceipt(input, options = {}) {
+  if (!input || typeof input.receipt !== "string") {
+    return { kind: "receipt", valid: false, scope: "Not verified: input.receipt must be the compact JWS string.", doesNotEstablish: [...DOES_NOT_ESTABLISH.receipt], checks: [], issuer: { kid: null, keyUrl: input?.issuerKeyUrl ?? null }, verificationUrl: VERIFICATION_URL };
+  }
+  return verifyBounded("receipt", input.receipt, input, options);
+}
+
+/** Verify one signed offer and get bounded evidence back. */
+export async function verifyOffer(input, options = {}) {
+  if (!input || typeof input.offer !== "string") {
+    return { kind: "offer", valid: false, scope: "Not verified: input.offer must be the compact JWS string.", doesNotEstablish: [...DOES_NOT_ESTABLISH.offer], checks: [], issuer: { kid: null, keyUrl: input?.issuerKeyUrl ?? null }, verificationUrl: VERIFICATION_URL };
+  }
+  return verifyBounded("offer", input.offer, input, options);
+}
+
 export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
   if (typeof did !== "string" || !did.startsWith("did:web:")) {
     return { available: false, reason: "not a did:web identifier" };

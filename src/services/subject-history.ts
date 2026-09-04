@@ -115,6 +115,12 @@ export interface SubjectRound {
   failed?: string[];
   advisories?: string[];
   /**
+   * WHICH BATTERY READ THE VERDICT (2026-09-04, for the reproduce
+   * comparison). Carried from the row when the census recorded it;
+   * absent on rows older than that field, which the comparison says.
+   */
+  battery?: string;
+  /**
    * The door's own declared terms that round, from its 402 — rails
    * and USDC price bounds only. No payment address rides here (G2
    * ruling: verbatim addresses stay out of derived cross-host
@@ -304,6 +310,7 @@ export async function subjectHistory(
         url: entry.url,
         verdict: entry.verdict,
         failed: entry.failed,
+        ...(entry.battery ? { battery: entry.battery } : {}),
         advisories: entry.advisories,
         ...(entry.offer
           ? {

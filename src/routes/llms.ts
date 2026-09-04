@@ -1,4 +1,6 @@
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
+import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
+import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -153,7 +155,9 @@ How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${ba
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+
+For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
@@ -308,6 +312,45 @@ instrument named first at each moment and every price read off the
 shelf when the page is served. A reading order, never a ranking, and
 nothing there certifies anyone.
 
+The same weeks by calendar month, for a citation: ${base}/corpus/month
+— doors named, probed, payable and not at the month's closing week,
+every round's counts summed as door-weeks and labelled apart, defects
+by name, the month before beside it, and a stable address per month at
+\`${base}/corpus/month/{YYYY-MM}\`. Two kinds of number, never a share.
+
+If your client should never see a shelf: ${base}/mcp/verifier is a
+second MCP door serving read-only tools and nothing paid —
+preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness,
+get_defect_definition, verify_scvd_artifact — the same handlers as
+${base}/mcp under task-shaped names.
+
+If you delegate rather than call: the evidence agent at ${base}/a2a
+speaks A2A — POST JSON-RPC message/send with one data part holding
+{ task, ...input } — and answers three read-only tasks with one
+bounded artifact each: preflight_endpoint, verify_receipt,
+get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
+It never says whether to pay or whom to trust; it hands back evidence
+with what it does not establish stated.
+
+If you poll rather than read: ${base}/feeds lists four Atom feeds,
+each derived when fetched from the same record the pages read —
+${base}/feeds/brief.xml (the week's doors, one entry per signed week),
+${base}/feeds/corpus.xml (one per signed snapshot),
+${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
+and every entry links the page it came from, where the derivation and
+the denominator are.
+For a scorer or a marketplace: ${base}/scorers. ${SCORERS_PROPOSITION}
+${SCORERS_FOR_MONEY} The page says how to pull the corpus, verify it,
+cite a row by its entry URL and digest (every row surface prints the
+citation for you), reproduce a probe and re-observe. Reproduce is one call: the
+look with "since" names a signed week, and the answer is classed
+same, moved, instrument_moved, not_comparable or no_such_round by
+the rule typed once at ${base}/criteria#result-class, the row cited.
+It names seats, not occupants: a system that consumes the corpus is
+listed there only with a dated citation and a check that fails when
+the citation disappears. A score, ranking or certification derived
+from the corpus is its publisher's interpretation, not ours.
+
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed
 with this store's key, not yours, is a claim someone else can check
@@ -361,6 +404,8 @@ A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
+The free instruments as function-calling tools, one worked call each,
+derived from the MCP catalog: ${base}/openapi-tools.json
 Developer documentation, one index of all of it: ${base}/developers
 (also at /docs and /api). No account and no API key exists to obtain:
 free shelves are open, paid ones take a signed x402 payment per
@@ -377,8 +422,11 @@ changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring
 version carries, and a live table of every version served. Nothing is
 deprecated today and the table says so.
 Official CLI, ${CLI_PACKAGE} (MIT, zero dependencies): one line per
-instrument — "scvd preflight <url>", "scvd conformance <file>", "scvd
-verify <id>", "scvd catalog", "scvd versions". It holds no key and
+instrument — "scvd preflight <url>", "scvd look <url>", "scvd
+before-you-pay <url>", "scvd conformance <file>", "scvd verify <id>",
+"scvd month", "scvd feeds", "scvd catalog", "scvd versions". Where a
+report names a defect, it prints the store's remediation rows, both
+halves. It holds no key and
 cannot spend money; --json prints this store's own response verbatim.
 ${
   CLI_PUBLISHED
@@ -410,9 +458,10 @@ ${base}/ registers the same free evidence instruments on
 document.modelContext (script at ${base}/webmcp.js, read-only by
 derivation — nothing registered can act or spend on your behalf).
 A2A agent card: ${base}/.well-known/a2a.json (also served at
-/.well-known/agent-card.json and /.well-known/agent.json). A discovery
-card, honestly labeled: skills derive live from the menu, and the
-transport field says MCP because that is what we actually speak.
+/.well-known/agent-card.json and /.well-known/agent.json). Since
+2026-09-03 it is the evidence agent's card, not a catalog: three
+read-only tasks at POST ${base}/a2a and no shelf, so the self-join
+no longer reads it as a surface that could disagree about what we sell.
 
 The case file (the_case_file, a quarter, since 2026-09-02) is the
 observation shelf assembled for the human who has to decide what went
@@ -960,7 +1009,13 @@ answers "what changed since a week I already saw": doors appeared and
 disappeared, verdict transitions, and drift in a door's own declared
 terms (price bounds, rails, schemes) between two signed weeks — the
 cheapest honest agent loop is polling that diff. A week the chain does
-not hold gets a 404 naming the weeks it does.
+not hold gets a 404 naming the weeks it does. To subscribe (since
+2026-09-04): ${base}/corpus/latest.json is the latest signed snapshot
+at an address that never changes, with ETag and Last-Modified for a
+conditional GET, and \`${base}/corpus/changes/{week}.json\` is one
+week against the one before it — additions, removals, recoveries,
+regressions, changed payment routes and prices, changed defect state —
+as fields and as a plain changelog.
 
 Wallet facts, under the operator-linking ruling of 2026-08-27: the
 store provides the wallet fact and the receiver makes the call.
@@ -1060,6 +1115,32 @@ never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
 
+Every signed document and page carries a cite line (since 2026-09-04),
+derived from its own fields: the issuer, what and which, when it was
+observed, how it is signed and where the key is, and the URL whose
+bytes are the thing cited. Quote it verbatim. The recorded doors, MPP
+challenges and signed-artifact vectors this store tests itself against
+are served at stable URLs with the sha256 of the bytes, unsigned and
+said so: ${base}/fixtures.json, then \`${base}/fixtures/{set}/{name}.json\`.
+
+The second wire, read only (since 2026-09-04): a door that speaks the
+Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
+and no PAYMENT-REQUIRED header. The free preflight reads that from the
+same one GET: protocols_spoken says which wires the door speaks (x402,
+mpp, both, neither), and the mpp block carries the MPP battery's own
+named checks and advisories. The verdict keeps meaning x402-ready,
+permanently — a door on the other wire reads not_ready there and that
+is a fact about the wire, never a defect. This store's till does not
+speak MPP; nothing here pays, verifies a credential or reads a
+receipt. Rehearse the shape at ${base}/api/practice/mpp-shape.
+
+Every class also carries both halves of the remediation: what the
+operator does to clear it and what the buyer does when a door shows
+it. The free preflight report joins them to its own findings as
+\`remediation\`, one row per failed check or raised advisory a class
+explains, with the definition URL, so the next step is in the same
+answer as the defect. Never part of the verdict.
+
 ## The notice desk, for an operator who found us in their log
 
 ${base}/notice explains the two calling cards this store sends —
@@ -1127,6 +1208,25 @@ ${base}/api/tab/pool publishes the sample sizes so far. Pooled READS
 are not built yet — contribution now is what earns them when the pool
 has enough to aggregate, and the pool endpoint says so honestly
 rather than pretending.
+
+## The trade counter — marketplaces buying on account
+
+Round the back, for platforms that resell to agents. ${TRADE_PROPOSITION}
+The instruction is HMAC-SHA256 over timestamp, nonce and the exact
+body, sent to \`POST ${base}/api/trade/{account}/{item_id}\`. The
+customer never touches x402. ${TRADE_FOR_MONEY} The certificate says
+settled_via: trade_account, names the account, the trade price and
+the digest of your instruction, and carries NO chain fields, because
+no chain was involved. Every trade price is printed per item at
+${base}/api/trade/contract; every account's receivable is public
+at ${base}/api/trade/ledger; ${base}/health is the one-line liveness
+a reseller's contract asks for. Try it before any conversation: the
+sandbox account's secret is published on ${base}/trade, its check
+desk (POST ${base}/api/trade/sandbox/check) reports every signature
+check by name and prints the signature it expected, and
+${base}/api/trade/catalog is the listing feed a marketplace lists
+from. Accounts are opened by the keeper's hand, in test mode first:
+write to POST ${base}/api/letter. The room is ${base}/trade.
 
 ## The commission desk, declines published
 
@@ -1624,6 +1724,7 @@ const SECTION_AREAS: Record<string, string> = {
   "How prices are set, signed": "menu",
   "Money that flows the other way": "menu",
   "The commission desk, declines published": "menu",
+  "The trade counter — marketplaces buying on account": "menu",
   "Where the money settles, drawn": "menu",
   "When we get it wrong": "trust",
   "The fulfillment log, order by order": "trust",

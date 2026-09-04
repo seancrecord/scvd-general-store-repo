@@ -117,6 +117,16 @@ const TASKS: readonly AtlasTask[] = [
     note: "Free, no account. The shelf from the seller's side: four moments from before launch to when something goes wrong, the free instrument named first in each, every price read off the shelf when served. Nothing there ranks, scores or certifies a door.",
   },
   {
+    /*
+     * ADDED 2026-09-03 with the scorers' room. A scorer or a
+     * marketplace consumes the evidence and owns the interpretation;
+     * the atlas had no goal in that voice.
+     */
+    goal: "I run a scorer or a marketplace and want to consume this store's evidence without inheriting its opinions",
+    call: ["GET /scorers", "GET /corpus.json"],
+    note: "Free, no account. Two seats — the record, and the reproducible dispute artifact — and how to pull, verify, cite, reproduce and re-observe, each as a shell line, a CLI verb and an MCP call. Reproduce is one call: look_at_door with since. Interpretation is yours; a score derived from the corpus is your claim, not ours.",
+  },
+  {
     goal: "I think this store published something wrong",
     call: ["GET /corrections"],
     note: "Every claim we got wrong, dated, with what changed. If yours is not there, the issue templates in the repo are the way in.",
@@ -259,6 +269,46 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     caution: "A reading order, not a recommendation to buy. Nothing there scores or certifies a door.",
   },
   {
+    path: "/mcp/verifier",
+    name: "The verifier (MCP, read-only tools only)",
+    access: "free",
+    method: "POST",
+    purpose: "A second MCP door serving read-only tools and nothing paid, each named here: preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness, get_defect_definition, verify_scvd_artifact. The same handlers as /mcp under task-shaped names, for a client that should never see a shelf.",
+    caution: "Evidence, never a judgment. Nothing here sells; the paid instruments are on /mcp and the x402 doors.",
+  },
+  {
+    path: "/a2a",
+    name: "The evidence agent (A2A)",
+    access: "free",
+    method: "POST",
+    purpose: "Hand this store a task the A2A way: message/send with { task, …input } for preflight_endpoint, verify_receipt or get_endpoint_readiness; one bounded artifact back. The card is at /.well-known/agent-card.json.",
+    caution: "Evidence, never a judgment: it does not say whether to pay, which door to use, or whether a merchant can be trusted. Read-only and free; the paid instruments stay x402 doors.",
+  },
+  {
+    path: "/corpus/month",
+    name: "The state of x402, by month",
+    access: "free",
+    method: "GET",
+    purpose: "The corpus by calendar month: doors named, probed, payable and not at month end, door-weeks across the rounds, defects by name, the month before beside it. A stable address per month to cite.",
+    caution: "Closing-week counts and door-week totals are two kinds of number and are never divided into a share. No host is named; nothing is ranked.",
+  },
+  {
+    path: "/feeds",
+    name: "Feeds",
+    access: "free",
+    method: "GET",
+    purpose: "Four Atom feeds derived from the record: the week's doors, the corpus chain, the corrections, the disagreements. Poll them instead of the pages.",
+    caution: "Entries are pointers with summaries; the derivation and the denominator are on the linked page. Never a ranking.",
+  },
+  {
+    path: "/scorers",
+    name: "For scorers and marketplaces",
+    access: "free",
+    method: "GET",
+    purpose: "The two seats this store occupies and how to consume its evidence: pull, verify, cite, reproduce, re-observe. Names seats, not occupants.",
+    caution: "A score, ranking or certification derived from the corpus is its publisher's interpretation; this store does not endorse derived conclusions.",
+  },
+  {
     path: "/try",
     name: "The practice till",
     access: "free",
@@ -325,6 +375,7 @@ export function buildAtlas(base: string): Record<string, unknown> {
       complete_guide: `${base}/llms-full.txt`,
       agent_manual: `${base}/agents.md`,
       openapi: `${base}/openapi.json`,
+      openapi_tools: `${base}/openapi-tools.json`,
       x402_discovery: `${base}/.well-known/x402.json`,
       mcp: `${base}/mcp`,
     },

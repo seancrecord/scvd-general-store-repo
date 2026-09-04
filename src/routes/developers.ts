@@ -75,6 +75,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           label: "/openapi.json",
           what: "OpenAPI 3.1 for every endpoint: unique operationIds, typed parameters, typed error responses, and the x402 terms on every paid operation.",
         },
+        {
+          href: `${base}/openapi-tools.json`,
+          label: "/openapi-tools.json",
+          what: "The free, read-only instruments as function-calling tool definitions, one worked call each, derived from the same catalog the MCP door serves. For wrapping them in your own agent without reading the whole contract.",
+        },
       ],
     },
     {
@@ -134,6 +139,31 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           href: `${base}/api/verify/{id}`,
           label: "GET /api/verify/{id}",
           what: "Verify anything this store ever signed. No account, no wallet, free forever — including artifacts you did not buy.",
+        },
+      ],
+    },
+    {
+      heading: "Reselling the shelf: the trade counter",
+      entries: [
+        {
+          href: `${base}/trade`,
+          label: "/trade",
+          what: "For marketplaces, aggregators and payment layers: your customer pays you, you send one HMAC-signed webhook, we deliver the same signed goods the front door sells and bill your account on a statement. Prices by a published rule, receivable public, no x402 in your customer's path.",
+        },
+        {
+          href: `${base}/api/trade/sandbox/check`,
+          label: "POST /api/trade/sandbox/check",
+          what: "The check desk on the sandbox account, whose secret is published: send the headers and body you would send to the order door and get every one of the four signature checks reported by name, plus the signature we expected. Nothing delivered, nothing consumed.",
+        },
+        {
+          href: `${base}/api/trade/contract`,
+          label: "GET /api/trade/contract",
+          what: "The contract: the door, the signing dialects, the pricing rule with every trade price derived from the live menu, every open account's row, every refusal by name.",
+        },
+        {
+          href: `${base}/api/trade/catalog`,
+          label: "GET /api/trade/catalog",
+          what: "A listing feed: every item at the counter with its copy, specimen, artifact class and price at your share, derived from the same rows our own shelf renders.",
         },
       ],
     },

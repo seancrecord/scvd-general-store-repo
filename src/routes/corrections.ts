@@ -54,6 +54,7 @@ correctionsRoutes.get("/corrections", (c) => {
           published: [...CORRECTIONS].map((e) => e.date).sort()[0],
           modified: [...CORRECTIONS].map((e) => e.date).sort().at(-1),
         },
+        feedAlt: { path: "/feeds/corrections.xml", title: "Corrections, as Atom" },
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_STANDFIRST)}</p>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_HOW_TO_READ)}</p>

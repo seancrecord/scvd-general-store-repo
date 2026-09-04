@@ -1,6 +1,5 @@
 import { joinClaimSets, type ClaimSetJoin, type IdentityClaim } from "@/discovery/binding";
 import {
-  claimsFromA2a,
   claimsFromLlmsTxt,
   claimsFromMcpItemIds,
   claimsFromMenuJson,
@@ -38,7 +37,6 @@ export interface FetchedSelfRow {
   menu: unknown;
   x402: unknown;
   openapi: unknown;
-  a2a: unknown;
   llms: string;
   skillMd: string;
   mcpItemIds: readonly string[];
@@ -51,7 +49,6 @@ export function assembleSelfRow(row: FetchedSelfRow): SurfaceClaims[] {
     { surface: "menu_json", claims: claimsFromMenuJson(row.menu, about, fetchedFrom) },
     { surface: "x402_catalog", claims: claimsFromX402Json(row.x402, about, fetchedFrom) },
     { surface: "openapi", claims: claimsFromOpenApi(row.openapi, about, fetchedFrom) },
-    { surface: "a2a_agent_card", claims: claimsFromA2a(row.a2a, about, fetchedFrom) },
     { surface: "llms_txt", claims: claimsFromLlmsTxt(row.llms, about, fetchedFrom) },
     { surface: "skill_md", claims: claimsFromSkillMd(row.skillMd, about, fetchedFrom) },
     {
