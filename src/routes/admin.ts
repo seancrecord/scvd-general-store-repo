@@ -1335,6 +1335,43 @@ adminRoutes.post("/admin/ward/run", async (c) => {
  * until the broken feed happens to vary). Idempotent; the JSON reply
  * IS the report, counts and all.
  */
+/**
+ * THE HOLE BUTTON (2026-09-04): read one recorded skipped range after
+ * the fact, bounded per press, replying with the counts the way the
+ * door-bank back-fill does. The range must be on the ledger exactly
+ * as recorded — the service refuses anything else, so this route
+ * cannot be talked into a coverage claim about an arbitrary window.
+ */
+adminRoutes.post("/admin/reconciliation/backfill", async (c) => {
+  const { backfillSkippedRange, BACKFILL_SPANS_PER_CALL } = await import(
+    "@/services/chain-reconciliation"
+  );
+  const { evmChainOf } = await import("@/lib/base-rpc");
+  const form = (await c.req.parseBody()) as Record<string, unknown>;
+  const fromBlock = Number.parseInt(String(form["from_block"] ?? ""), 10);
+  const toBlock = Number.parseInt(String(form["to_block"] ?? ""), 10);
+  const chain = evmChainOf(
+    typeof form["chain"] === "string" ? form["chain"] : undefined,
+  );
+  if (!Number.isFinite(fromBlock) || !Number.isFinite(toBlock) || toBlock < fromBlock) {
+    return c.json({ ok: false, reading: "from_block and to_block must be the bounds of a hole on the ledger, as integers." }, 400);
+  }
+  if (!chain) {
+    return c.json({ ok: false, reading: `chain ${String(form["chain"])} is not one this store's walk reads.` }, 400);
+  }
+  const result = await backfillSkippedRange(c.env, {
+    from_block: fromBlock,
+    to_block: toBlock,
+    chain,
+  });
+  const reading = !result.ran
+    ? `Did not read: ${result.reason ?? "no reason recorded"}.`
+    : result.complete
+      ? `Hole closed: blocks ${result.read_from}–${result.read_to} on ${chain.label} read after the fact, ${result.transfers_seen} incoming transfer${result.transfers_seen === 1 ? "" : "s"} seen, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}${result.orphans.length ? " — each one paged; the books page's alarm trail has them" : " — every transfer in the window has a certificate"}.${result.cert_scan_truncated ? " The certificate scan hit its cap, so an orphan here may be a false alarm." : ""}`
+      : `Read blocks ${result.read_from}–${result.read_to} on ${chain.label} (${result.transfers_seen} transfer${result.transfers_seen === 1 ? "" : "s"}, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}); ${result.remaining} blocks of this hole remain. Press again to continue — each press reads up to ${BACKFILL_SPANS_PER_CALL} spans.${result.failed ? ` This press ${result.reason}.` : ""}`;
+  return c.json({ ok: result.ran, ...result, reading });
+});
+
 adminRoutes.post("/admin/ward/backfill-doors", async (c) => {
   const { backfillDoorBank } = await import("@/services/door-bank");
   const report = await backfillDoorBank(c.env);
