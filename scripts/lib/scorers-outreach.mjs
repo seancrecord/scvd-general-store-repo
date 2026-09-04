@@ -60,3 +60,39 @@ export function entryProblems(entry) {
     problems.push("cites_since must be a YYYY-MM-DD date or null");
   return problems;
 }
+
+/**
+ * THE WATCHED SET (2026-09-04) — the only part of this register the
+ * EDGE ever carries. The Worker used to import the whole file: 44 KB
+ * of research bundled into every isolate to fetch, on the day it
+ * landed, zero pages. What the cron needs is the rows the keeper has
+ * written to, plus any already citing; everything else is the CLI's
+ * business, swept from a machine with no subrequest budget.
+ *
+ * Derived, never hand-edited, and held to the register by the same
+ * test that holds the table. Four fields, because a name, a URL and
+ * two dates are all the watch reads.
+ */
+export function watchedRows(register) {
+  return (register.systems ?? [])
+    .filter((entry) => entry.note_sent !== null || entry.cites_since !== null)
+    .map((entry) => ({
+      name: entry.name,
+      url: entry.url,
+      note_sent: entry.note_sent,
+      cites_since: entry.cites_since,
+    }));
+}
+
+/** The derived file's exact bytes, so the builder and the test agree. */
+export function renderWatched(register) {
+  return `${JSON.stringify(
+    {
+      what_this_is:
+        "Derived from registry/scorers-outreach.json by `npm run outreach:build` — the rows the Sunday citation watch fetches. Never hand-edit: the test fails when this and the register disagree. Empty until the keeper stamps a send.",
+      rows: watchedRows(register),
+    },
+    null,
+    2,
+  )}\n`;
+}

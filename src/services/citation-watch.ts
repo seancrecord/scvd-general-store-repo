@@ -9,7 +9,7 @@ import {
   type OutreachEntry,
 } from "@/lib/citations";
 import CITING_SYSTEMS_FILE from "@/store/citing-systems.json";
-import OUTREACH_REGISTER from "../../registry/scorers-outreach.json";
+import WATCHED_PAGES from "@/store/watched-pages.json";
 import type { Env } from "@/types";
 
 /**
@@ -34,7 +34,24 @@ import type { Env } from "@/types";
  * spoke to, which is the set where an answer is expected and which
  * costs one subrequest each. `npm run outreach:check` sweeps the
  * whole register from the keeper's machine, where no subrequest
- * budget applies. Same file, same matcher, two reaches.
+ * budget applies. Same source, same matcher, two reaches.
+ *
+ * AND THE EDGE CARRIES ONLY THAT SET (2026-09-04). The Worker used to
+ * import the whole register: 44 KB of research bundled into every
+ * isolate to fetch, the day it landed, zero pages — dead weight on
+ * exactly the cold-start path this store spent a week shortening.
+ * `npm run outreach:build` now derives src/store/watched-pages.json,
+ * the written-to rows and nothing else, and the same test that holds
+ * the table holds that file to the register.
+ *
+ * WATCH_CAP is the headroom. A hundred sends would otherwise mean a
+ * hundred subrequests on one tick; instead each pass reads at most
+ * WATCH_CAP of them, starting at an offset that walks with the week,
+ * so a long list is swept over several Sundays rather than blowing
+ * the budget on one. A capped pass says so in the report and never
+ * implies it read what it did not: a page not read this week is
+ * simply absent from the rows, so it can be neither newly cited nor
+ * newly gone.
  *
  * Nothing here edits either file: the watch reads, judges, stores
  * one report, and pages. Moving a prospect into the register is the
@@ -57,6 +74,10 @@ export interface CitationWatchReport {
   newly_cited: string[];
   /** Listed systems gone now that were cited on the previous report. */
   newly_gone: string[];
+  /** True when the watched set was longer than one pass reads. */
+  capped?: boolean;
+  /** How many watched rows this pass did not reach. Never implied read. */
+  not_read?: number;
 }
 
 const READ_TIMEOUT_MS = 10_000;
@@ -68,20 +89,38 @@ function listedSystems(): CitingSystem[] {
   return Array.isArray(systems) ? (systems as CitingSystem[]) : [];
 }
 
-/** Every row of the outreach register, as written. */
-export function outreachRegister(): OutreachEntry[] {
-  const systems = (OUTREACH_REGISTER as { systems?: unknown }).systems;
-  return Array.isArray(systems) ? (systems as OutreachEntry[]) : [];
+/**
+ * How many watched pages one Sunday pass will read. Chosen well under
+ * any plausible subrequest budget and well over the number of notes a
+ * keeper sends by hand in a season, so it is headroom, not a limit
+ * anyone meets.
+ */
+export const WATCH_CAP = 40;
+
+/**
+ * Every row the edge carries: the written-to set, derived from the
+ * register by `npm run outreach:build`. Empty until a send is stamped.
+ */
+export function watchedProspects(): OutreachEntry[] {
+  const rows = (WATCHED_PAGES as { rows?: unknown }).rows;
+  return Array.isArray(rows) ? (rows as OutreachEntry[]) : [];
 }
 
 /**
- * The rows the Sunday watch actually fetches: the ones the keeper has
- * sent the note to, plus any already carrying a row (so a citation
- * going away is caught too). A page nobody wrote to and that has
- * never cited is the CLI sweep's business, not the cron's.
+ * The slice this pass reads. Under the cap it is everything, in file
+ * order. Over it, the window walks by week so every row is read
+ * within a few passes, and `capped` tells the report to say so.
  */
-export function watchedProspects(): OutreachEntry[] {
-  return outreachRegister().filter((entry) => entry.note_sent !== null || entry.cites_since !== null);
+export function watchThisPass(now: Date, rows: OutreachEntry[] = watchedProspects()): {
+  slice: OutreachEntry[];
+  capped: boolean;
+  not_read: number;
+} {
+  if (rows.length <= WATCH_CAP) return { slice: rows, capped: false, not_read: 0 };
+  const weeksSinceEpoch = Math.floor(now.getTime() / (7 * 24 * 60 * 60 * 1000));
+  const start = (weeksSinceEpoch * WATCH_CAP) % rows.length;
+  const slice = [...rows.slice(start), ...rows.slice(0, start)].slice(0, WATCH_CAP);
+  return { slice, capped: true, not_read: rows.length - WATCH_CAP };
 }
 
 async function readPage(url: string, base: string): Promise<Fetched> {
@@ -114,6 +153,7 @@ export function judgeWatch(
   previous: CitationWatchReport | null,
   base: string,
   now: Date,
+  extra: { capped?: boolean; not_read?: number } = {},
 ): CitationWatchReport {
   const rows: CitationWatchRow[] = [
     ...pages.listed.map(({ system, fetched }) => ({
@@ -130,7 +170,7 @@ export function judgeWatch(
   const before = new Map((previous?.rows ?? []).map((row) => [row.url, row.verdict]));
   const newly_cited = rows.filter((row) => row.verdict === "cited" && before.get(row.url) !== "cited").map((row) => row.url);
   const newly_gone = rows.filter((row) => row.verdict === "gone" && before.get(row.url) === "cited").map((row) => row.url);
-  return { version: 1, checked_at: now.toISOString(), base, rows, newly_cited, newly_gone };
+  return { version: 1, checked_at: now.toISOString(), base, rows, newly_cited, newly_gone, ...extra };
 }
 
 export async function runCitationWatch(env: Env, now: Date = new Date()): Promise<CitationWatchReport> {
@@ -139,10 +179,17 @@ export async function runCitationWatch(env: Env, now: Date = new Date()): Promis
   const listed = await Promise.all(
     listedSystems().map(async (system) => ({ system, fetched: await readPage(system.cites_at, base) })),
   );
+  const pass = watchThisPass(now);
   const prospects = await Promise.all(
-    watchedProspects().map(async (prospect) => ({ prospect, fetched: await readPage(prospect.url, base) })),
+    pass.slice.map(async (prospect) => ({ prospect, fetched: await readPage(prospect.url, base) })),
   );
-  const report = judgeWatch({ listed, prospects }, previous, base, now);
+  const report = judgeWatch(
+    { listed, prospects },
+    previous,
+    base,
+    now,
+    pass.capped ? { capped: true, not_read: pass.not_read } : {},
+  );
   await kvPut(env.COUNTERS, KV_KEYS.citationWatch, JSON.stringify(report));
 
   for (const url of report.newly_cited) {

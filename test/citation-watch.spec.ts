@@ -2,10 +2,12 @@ import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { SELF_PUBLISHED_IDS, citationsOn, judgePage } from "@/lib/citations";
+import WATCHED_PAGES from "@/store/watched-pages.json";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { SELF_PUBLISHED_IDS as SELF_PUBLISHED_IDS_NODE, citationsOn as citationsOnNode, judge as judgeNode } from "../scripts/lib/citations.mjs";
 import {
-  outreachRegister,
+  WATCH_CAP,
+  watchThisPass,
   watchedProspects,
   judgeWatch,
   readCitationWatch,
@@ -166,19 +168,45 @@ describe("the run: reads the register, stores one report, pages on a change", ()
    * carrying a row; the CLI sweeps all of them from a machine with no
    * subrequest budget.
    */
-  it("watches the written-to rows of the keeper's register, and only those", () => {
-    const all = outreachRegister();
-    expect(all.length).toBeGreaterThan(50);
+  it("carries only the written-to rows to the edge, and no research", () => {
     const watched = watchedProspects();
-    expect(watched).toEqual(all.filter((entry) => entry.note_sent !== null || entry.cites_since !== null));
     for (const entry of watched) {
       expect(new URL(entry.url).host.endsWith("scvd.store")).toBe(false);
+      expect(entry.note_sent !== null || entry.cites_since !== null).toBe(true);
     }
-    // Nothing is asserted as citing that the current matcher cannot
-    // reproduce: the seven seeded on the first pass were cleared.
-    for (const entry of all) {
-      if (entry.cites_since !== null) expect(entry.cites_since).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // THE REGRESSION THIS PINS: the 101-row register used to ride to
+    // every isolate to fetch, on the day it landed, zero pages.
+    const shipped = JSON.stringify(WATCHED_PAGES);
+    expect(shipped.length).toBeLessThan(4000);
+    expect(shipped).not.toContain("category");
+    expect(shipped).not.toContain("why");
+  });
+
+  /**
+   * THE HEADROOM. A hundred sends must not mean a hundred subrequests
+   * on one tick, and a pass that could not read everything must never
+   * imply it did.
+   */
+  it("reads everything under the cap, and walks a window over the weeks above it", () => {
+    const few = Array.from({ length: 5 }, (_, i) => ({ name: `n${i}`, url: `https://e${i}.example/`, note_sent: "2026-09-04", cites_since: null }));
+    const under = watchThisPass(new Date("2026-09-06T11:00:00Z"), few);
+    expect(under.slice).toEqual(few);
+    expect(under.capped).toBe(false);
+    expect(under.not_read).toBe(0);
+
+    const many = Array.from({ length: WATCH_CAP * 3 }, (_, i) => ({ name: `n${i}`, url: `https://e${i}.example/`, note_sent: "2026-09-04", cites_since: null }));
+    const seen = new Set<string>();
+    let capped = false;
+    for (let week = 0; week < 4; week += 1) {
+      const pass = watchThisPass(new Date(Date.UTC(2026, 8, 6 + week * 7, 11)), many);
+      expect(pass.slice.length).toBe(WATCH_CAP);
+      expect(pass.not_read).toBe(many.length - WATCH_CAP);
+      capped = capped || pass.capped;
+      for (const row of pass.slice) seen.add(row.url);
     }
+    expect(capped).toBe(true);
+    // The window walks, so a long list is swept rather than starved.
+    expect(seen.size).toBe(many.length);
   });
 
   it("stays silent on silence, and pages when a written-to page starts carrying a row", async () => {

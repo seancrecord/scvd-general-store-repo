@@ -8,11 +8,16 @@
  * forgotten render is a failing build, not a quiet drift.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { renderMarkdown } from "./lib/scorers-outreach.mjs";
+import { renderMarkdown, renderWatched, watchedRows } from "./lib/scorers-outreach.mjs";
 
 const REGISTER = new URL("../registry/scorers-outreach.json", import.meta.url);
 const TABLE = new URL("../registry/scorers-outreach.md", import.meta.url);
+const WATCHED = new URL("../src/store/watched-pages.json", import.meta.url);
 
 const register = JSON.parse(readFileSync(REGISTER, "utf8"));
 writeFileSync(TABLE, renderMarkdown(register));
-console.log(`rendered ${register.systems.length} systems into registry/scorers-outreach.md`);
+writeFileSync(WATCHED, renderWatched(register));
+console.log(
+  `rendered ${register.systems.length} systems into registry/scorers-outreach.md, ` +
+    `${watchedRows(register).length} into src/store/watched-pages.json (the edge carries only these)`,
+);
