@@ -237,3 +237,20 @@ describe("the scan", () => {
     expect(html).toContain("no cookies and no IPs");
   });
 });
+
+/**
+ * A NAME ADDED TO THE HOUSE TODAY COVERS YESTERDAY'S ROWS (2026-09-04).
+ * cv-handrolled/1.0 sat on the census as one of two outside presenters
+ * with 13 declines — the store's own testing, stamped outside at write
+ * time because HOUSE_AGENTS did not know the name yet. The census now
+ * applies today's list to every row it reads.
+ */
+describe("house agents named after their rows were written", () => {
+  it("reads a cv-handrolled row as house even though it was stamped outside", async () => {
+    const { isHouseAgent } = await import("@/lib/channel");
+    expect(isHouseAgent("cv-handrolled/1.0")).toBe(true);
+    expect(isHouseAgent("cv-mcp-hand/1.0")).toBe(true);
+    expect(isHouseAgent("buyer-client/1.0")).toBe(false);
+    expect(isHouseAgent(undefined)).toBe(false);
+  });
+});

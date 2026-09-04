@@ -189,7 +189,21 @@ export interface HouseSignals {
  * organic is the failure the house rules exist to prevent. When only
  * two directions are available, take the one that flatters nobody.
  */
-export const HOUSE_AGENTS = ["scvd-walkabout"] as const;
+export const HOUSE_AGENTS = [
+  "scvd-walkabout",
+  // CV's hand-rolled clients, confirmed by the keeper 2026-09-04 off
+  // the census, where they had sat as the store's only two outside
+  // presenters — 13 declines between them, two of the walkers, and 13
+  // pages to the keeper's phone for the store's own testing.
+  "cv-handrolled",
+  "cv-mcp-hand",
+] as const;
+
+/** The agent test alone, for a surface reading rows already stamped. */
+export function isHouseAgent(userAgent: string | undefined): boolean {
+  const agent = userAgent?.toLowerCase() ?? "";
+  return agent.length > 0 && HOUSE_AGENTS.some((name) => agent.includes(name));
+}
 
 /** Family doesn't make the paper: true when a wallet is the house's own. */
 export function isHouseWallet(env: Env, address: string): boolean {

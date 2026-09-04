@@ -1,4 +1,4 @@
-import { inferChannel } from "@/lib/channel";
+import { inferChannel, isHouseAgent } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Channel, Env } from "@/types";
@@ -163,6 +163,9 @@ export async function takeCensus(
       }
 
       const ua = event.user_agent ?? NO_UA;
+      // Stamped at write time OR named today: a client added to
+      // HOUSE_AGENTS after its rows were written is still the house.
+      const house = event.house || isHouseAgent(event.user_agent);
       /**
        * KEYED BY USER-AGENT **AND** HOUSE FLAG, fixed 2026-07-30 the day
        * the first organic settle landed and this page still said zero.
@@ -182,7 +185,7 @@ export async function takeCensus(
        * original rule exactly — a house event still counts as house —
        * while stopping it from swallowing everyone standing nearby.
        */
-      const key = `${ua}\u0000${event.house ? "house" : "outside"}`;
+      const key = `${ua}\u0000${house ? "house" : "outside"}`;
       let tally = tallies.get(key);
       if (!tally) {
         tally = {
@@ -194,7 +197,7 @@ export async function takeCensus(
             distinct_items: 0,
             first_seen: event.at,
             last_seen: event.at,
-            house: event.house,
+            house,
             channel: inferChannel({
               userAgent: event.user_agent,
               referrer: event.referrer,
@@ -212,7 +215,7 @@ export async function takeCensus(
       // Within a bucket the flag is now constant by construction; kept
       // as an assignment rather than an assertion so the invariant is
       // visible at the point it is relied on.
-      tally.client.house = event.house;
+      tally.client.house = house;
       if (event.at > tally.client.last_seen) tally.client.last_seen = event.at;
       if (event.at < tally.client.first_seen)
         tally.client.first_seen = event.at;
