@@ -65,8 +65,12 @@ export interface RegistryWeekEntry {
   coverage?: {
     /** The round hit its host cap; the tail was never walked. */
     capped: boolean;
-    /** A full page arrived with no recognizable cursor. */
+    /** The feed read stopped short of what the feed holds. */
     coverage_suspect: boolean;
+    /** Why it stopped (2026-09-04): page_cap, time_budget, repeated_page… */
+    discovery_stop?: string;
+    /** What the feed said it held, when it said. */
+    feed_declared_total?: number;
     /** Set when this round probed under 60% of the last one's. */
     coverage_drop?: {
       previous_hosts: number;
@@ -123,6 +127,14 @@ export function buildRegistryWeek(
     coverage: {
       capped: round.capped === true,
       coverage_suspect: round.coverage_suspect === true,
+      ...(round.discovery_read
+        ? {
+            discovery_stop: round.discovery_read.stop,
+            ...(round.discovery_read.declared_total !== undefined
+              ? { feed_declared_total: round.discovery_read.declared_total }
+              : {}),
+          }
+        : {}),
       ...(round.coverage_drop ? { coverage_drop: round.coverage_drop } : {}),
       ...(round.population
         ? {

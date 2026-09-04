@@ -4,6 +4,7 @@ import {
   frontCounterVerdict,
   isFrontCounter,
   FRONT_COUNTER_PROMISE,
+  UNIVERSAL_INPUTS,
 } from "@/lib/front-counter";
 /**
  * STATICALLY IMPORTED, 2026-08-20. Five tests here each awaited a
@@ -80,8 +81,11 @@ describe("the four rules hold on every admitted item", () => {
       expect(item.fulfillment).toBe("instant");
       expect(item.weekly_inventory).toBeUndefined();
       const schema = buyInputSchema(item);
+      // Derived from the same set the predicate reads, so declaring a
+      // new universal input (purpose, 2026-09-04) cannot make this
+      // test and the counter disagree about what "no inputs" means.
       const inputs = Object.keys(schema.properties ?? {}).filter(
-        (name) => name !== "agent_name" && name !== "callback_url",
+        (name) => !UNIVERSAL_INPUTS.has(name),
       );
       expect(inputs).toEqual([]);
       expect(schema.required ?? []).toEqual([]);

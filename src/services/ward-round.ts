@@ -274,8 +274,19 @@ export interface WardRound {
   week: string;
   at: string;
   listed_resources: number;
-  /** True when a full page arrived with no recognizable cursor. */
+  /**
+   * True when the feed read stopped short of what the feed holds —
+   * a page cap, the time budget, a repeated page, a full page with no
+   * way forward, or a page that failed. `discovery_read.stop` says
+   * which; before 2026-09-04 only the flag was recorded.
+   */
   coverage_suspect: boolean;
+  /**
+   * Where the feed read stopped, why, how many pages it took and the
+   * total the feed declared (2026-09-04). Absent on rounds before it
+   * was recorded — five of them said suspect without saying why.
+   */
+  discovery_read?: DiscoveryReadNote;
   /**
    * Recorded only when coverage is suspect: the key names the feed's
    * last page actually carried (top level, plus one level under the
@@ -411,6 +422,17 @@ export interface WardDelta {
   flappers: string[];
 }
 
+/**
+ * How long one CDP call gets before it counts as not answering
+ * (2026-09-04). Until today a feed page had no ceiling of its own: a
+ * page that accepted the socket and never answered held the whole
+ * firing, and on the long walk's start firing that firing IS the
+ * roster — the week's walk would not start, and the hour after would
+ * try the same page again. Same rule the RPC ladder got on 09-03,
+ * generous for a 100-row JSON page.
+ */
+export const DISCOVERY_PAGE_TIMEOUT_MS = 10_000;
+
 async function cdpGet(env: Env, path: string, query = ""): Promise<unknown> {
   const token = await createAuthHeader(
     env.CDP_API_KEY_ID,
@@ -421,6 +443,7 @@ async function cdpGet(env: Env, path: string, query = ""): Promise<unknown> {
   );
   const response = await fetch(`https://${CDP_HOST}${path}${query}`, {
     headers: { Authorization: token, Accept: "application/json" },
+    signal: AbortSignal.timeout(DISCOVERY_PAGE_TIMEOUT_MS),
   });
   if (!response.ok) {
     throw new Error(`${path} answered ${response.status}`);
@@ -447,6 +470,47 @@ export interface DiscoveryRead {
    * as pagination_shape.
    */
   fieldsSeen?: string[];
+  /** Where the read stopped and why — the number the next cap raise needs. */
+  read: DiscoveryReadNote;
+}
+
+/**
+ * WHY THE FEED READ STOPPED WHERE IT DID (2026-09-04). Five signed
+ * rounds in a row said `coverage_suspect: true` and not one of them
+ * said why: W32–W34 were the one-page collapse, W35–W36 were the
+ * 60-page cap binding at exactly 6,000 rows — and the cap-binding
+ * branch never recorded the feed's declared total, so nobody could
+ * say how far to raise it. The tier rule turns every unobserved
+ * host in a suspect round into `indeterminate`; a reason beside the
+ * flag is what tells the keeper whether that is the feed or us.
+ *
+ * Clean stops: `declared_total` (read everything the feed declared),
+ * `short_page` (a last page under the page size, no way forward),
+ * `empty_page` (a cursor walk that ran out). Suspect stops:
+ * `page_cap`, `time_budget`, `repeated_page` (the server ignored
+ * our offset), `unpaged_full_page` (the 08-05 shape), `page_error`
+ * (a page failed twice mid-walk; what was read is kept).
+ */
+export type DiscoveryStop =
+  | "declared_total"
+  | "short_page"
+  | "empty_page"
+  | "page_cap"
+  | "time_budget"
+  | "repeated_page"
+  | "unpaged_full_page"
+  | "page_error";
+
+export interface DiscoveryReadNote {
+  stop: DiscoveryStop;
+  /** Pages actually fetched; a retried page counts once. */
+  pages: number;
+  /** The page cap this read ran under (the caller's budget). */
+  page_cap: number;
+  /** Wall time of the read, ms. */
+  ms: number;
+  /** `pagination.total` as the feed declared it, when it did. */
+  declared_total?: number;
 }
 
 /**
@@ -470,34 +534,136 @@ function describePaginationShape(body: Record<string, unknown>): string[] {
 }
 
 /**
- * Pages the reader will walk in one round. Raised from 20 on
- * 2026-08-19 when offset paging landed: at 100 rows a page this reads
- * up to 6,000 declared resources — comfortably past the arXiv-scale
- * listing — and each page is one subrequest, far inside the budget.
- * A declared total beyond it leaves coverage_suspect true, which is
- * the honest answer at any cap.
+ * Pages the reader will walk in one ONE-SHOT round. Raised from 20 on
+ * 2026-08-19 when offset paging landed; unchanged on 2026-09-04
+ * because this path spends the SAME invocation on up to WARD_CAP
+ * probes, the census's directory reads and the RPC leaves, and the
+ * 1,000-subrequest budget is hard. The long walk's start firing does
+ * nothing but read the feeds, so it runs under the larger cap below.
+ * A declared total beyond either cap leaves coverage_suspect true
+ * with `page_cap` as the reason — the honest answer at any cap.
  */
-const DISCOVERY_PAGE_CAP = 60;
+export const DISCOVERY_PAGE_CAP = 60;
+/**
+ * THE LONG WALK'S CAP (2026-09-04, the tier index reading
+ * "indeterminate — our coverage was suspect in this window" on hosts
+ * the walk had found ready). W35 and W36 stopped at 6,000 rows —
+ * sixty pages of a hundred — because the feed now declares more than
+ * that and the start firing ran under the one-shot cap. That firing
+ * reads the feeds and freezes the roster and does nothing else, so
+ * its budget is the whole subrequest allowance: 300 pages (30,000
+ * rows) plus one retry each in the worst case is still under 1,000
+ * with the leaderboard, the door bank and the state write beside it.
+ * A feed past this is a different architecture, not a bigger number.
+ */
+export const LONG_WALK_DISCOVERY_PAGE_CAP = 300;
+/**
+ * Offset pages in flight at once. The feed declares its total on
+ * page one, so every later page's offset is known before it is
+ * asked for — there is no reason to wait for page 12 before asking
+ * for page 13. Four lanes put a 300-page read near a minute instead
+ * of five, while staying far below anything the feed would read as a
+ * flood. Cursor paging stays sequential: the cursor IS the next
+ * page's address.
+ */
+const DISCOVERY_PAGE_CONCURRENCY = 4;
+/**
+ * Wall time the whole feed read may take. Cron firings get fifteen
+ * minutes; the one-shot round still has up to WARD_CAP probes to
+ * make after this, and the long walk's start firing has the roster
+ * to write. Ninety seconds is thirty times what a healthy read
+ * takes and exists so a slow feed degrades to a SHORT read that says
+ * `time_budget`, never to a firing that dies with nothing recorded.
+ */
+export const DISCOVERY_TIME_BUDGET_MS = 90_000;
+/** The pause before a failed page is asked for a second time. */
+const DISCOVERY_RETRY_MS = 500;
 
-export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
+export interface DiscoveryReadOptions {
+  pageCap?: number;
+  budgetMs?: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FeedPage = Record<string, any>;
+
+function pageItems(body: FeedPage): Record<string, unknown>[] {
+  return (body["items"] ?? body["resources"] ?? body["data"] ?? []) as Record<string, unknown>[];
+}
+
+function pageParams(cursor: string | undefined, offset: number | undefined): URLSearchParams {
+  const params = new URLSearchParams({ pageSize: "100" });
+  if (cursor) params.set("pageToken", cursor);
+  if (offset !== undefined) params.set("offset", String(offset));
+  return params;
+}
+
+/**
+ * One feed page, asked for at most twice. A 429 or a dropped socket
+ * on one page is a hiccup, and losing a whole week's roster to it
+ * is the wrong trade; the second failure is the feed's answer for
+ * this firing and the caller records it as `page_error`.
+ */
+async function discoveryPage(env: Env, params: URLSearchParams): Promise<FeedPage> {
+  try {
+    return (await cdpGet(env, DISCOVERY_PATH, `?${params}`)) as FeedPage;
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, DISCOVERY_RETRY_MS));
+    return (await cdpGet(env, DISCOVERY_PATH, `?${params}`)) as FeedPage;
+  }
+}
+
+export async function readDiscoveryList(
+  env: Env,
+  options: DiscoveryReadOptions = {},
+): Promise<DiscoveryRead> {
+  const pageCap = options.pageCap ?? DISCOVERY_PAGE_CAP;
+  const budgetMs = options.budgetMs ?? DISCOVERY_TIME_BUDGET_MS;
+  const startedAt = Date.now();
+  const overBudget = () => Date.now() - startedAt > budgetMs;
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const rows: Record<string, unknown>[] = [];
   const fieldsSeen = new Set<string>();
   let cursor: string | undefined;
-  let offset: number | undefined;
   let coverageSuspect = false;
   let paginationShape: string[] | undefined;
   let previousFirstRow: string | undefined;
-  for (let page = 0; page < DISCOVERY_PAGE_CAP; page += 1) {
-    const params = new URLSearchParams({ pageSize: "100" });
-    if (cursor) params.set("pageToken", cursor);
-    if (offset !== undefined) params.set("offset", String(offset));
-    const body = (await cdpGet(env, DISCOVERY_PATH, `?${params}`)) as Record<
-      string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      any
-    >;
-    const items = (body["items"] ?? body["resources"] ?? body["data"] ?? []) as Record<string, unknown>[];
+  let declaredTotal: number | undefined;
+  let stop: DiscoveryStop | undefined;
+  let pages = 0;
+
+  // The market desk's self-diagnosis: which metadata fields do the
+  // feed's rows actually carry? Capped; names only, never values.
+  const noteFields = (items: Record<string, unknown>[]): void => {
+    if (fieldsSeen.size >= 30) return;
+    for (const item of items.slice(0, 5)) {
+      for (const key of Object.keys(item)) fieldsSeen.add(key);
+    }
+  };
+  const suspectAt = (reason: DiscoveryStop, body?: FeedPage): void => {
+    coverageSuspect = true;
+    stop = reason;
+    if (body) paginationShape = describePaginationShape(body);
+  };
+
+  walk: for (let page = 0; page < pageCap; page += 1) {
+    if (overBudget()) {
+      suspectAt("time_budget");
+      break;
+    }
+    let body: FeedPage;
+    try {
+      body = await discoveryPage(env, pageParams(cursor, undefined));
+    } catch (error) {
+      // Nothing read at all is the caller's failure path, unchanged:
+      // a walk cannot start on an empty roster and the hour after
+      // tries again. A failure PAST page one keeps what was read.
+      if (rows.length === 0) throw error;
+      suspectAt("page_error");
+      break;
+    }
+    pages += 1;
+    const items = pageItems(body);
     /**
      * A SERVER THAT IGNORES OUR OFFSET SERVES PAGE ONE FOREVER, and a
      * reader that keeps counting it would invent a population 60x the
@@ -506,19 +672,12 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
      */
     const firstRow = items.length ? JSON.stringify(items[0]) : undefined;
     if (page > 0 && firstRow !== undefined && firstRow === previousFirstRow) {
-      coverageSuspect = true;
-      paginationShape = describePaginationShape(body);
+      suspectAt("repeated_page", body);
       break;
     }
     previousFirstRow = firstRow;
     rows.push(...items);
-    // The market desk's self-diagnosis: which metadata fields do the
-    // feed's rows actually carry? Capped; names only, never values.
-    if (fieldsSeen.size < 30) {
-      for (const item of items.slice(0, 5)) {
-        for (const key of Object.keys(item)) fieldsSeen.add(key);
-      }
-    }
+    noteFields(items);
     // Every cursor spelling seen or plausible in the wild. The
     // 2026-08-05 round read exactly one page (100 resources, 38
     // hosts) after weeks of several hundred — the feed's pagination
@@ -556,13 +715,19 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
        * advance by the served limit until the served total, and
        * anything else (no numbers, nonsense numbers) falls through
        * to the suspect check exactly as before.
+       *
+       * IN PARALLEL SINCE 2026-09-04: the total is known after page
+       * one, so the remaining offsets are asked for in lanes and
+       * folded back in order. A lane that meets the time budget
+       * hands back nothing rather than starting a page it cannot
+       * afford; the fold stops at the first gap, so rows are never
+       * kept past a hole.
        */
       const pg = body["pagination"];
       const limit = Number(pg?.limit);
       const total = Number(pg?.total);
-      const served = Number.isFinite(Number(pg?.offset))
-        ? Number(pg?.offset)
-        : (offset ?? 0);
+      const served = Number.isFinite(Number(pg?.offset)) ? Number(pg?.offset) : 0;
+      if (Number.isFinite(total) && total >= 0) declaredTotal = total;
       if (
         items.length > 0 &&
         Number.isFinite(limit) &&
@@ -570,24 +735,85 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
         Number.isFinite(total) &&
         served + items.length < total
       ) {
-        offset = served + items.length;
-        continue;
+        const nextOffset = served + items.length;
+        const wanted = Math.ceil((total - nextOffset) / limit);
+        const allowed = Math.max(0, pageCap - pages);
+        const offsets = Array.from(
+          { length: Math.min(wanted, allowed) },
+          (_, index) => nextOffset + index * limit,
+        );
+        const fetched = await pooled(
+          offsets,
+          DISCOVERY_PAGE_CONCURRENCY,
+          async (offset): Promise<{ body: FeedPage | null; failed: boolean }> => {
+            if (overBudget()) return { body: null, failed: false };
+            try {
+              return { body: await discoveryPage(env, pageParams(undefined, offset)), failed: false };
+            } catch {
+              return { body: null, failed: true };
+            }
+          },
+        );
+        for (const entry of fetched) {
+          if (entry.body === null) {
+            suspectAt(entry.failed ? "page_error" : "time_budget");
+            break walk;
+          }
+          pages += 1;
+          const pageRows = pageItems(entry.body);
+          const pageFirst = pageRows.length ? JSON.stringify(pageRows[0]) : undefined;
+          if (pageFirst !== undefined && pageFirst === firstRow) {
+            suspectAt("repeated_page", entry.body);
+            break walk;
+          }
+          if (pageRows.length === 0) break;
+          rows.push(...pageRows);
+          noteFields(pageRows);
+        }
+        if (rows.length >= total) {
+          stop = "declared_total";
+        } else if (wanted > allowed) {
+          suspectAt("page_cap");
+        } else {
+          // The feed served fewer rows than it declared. Not a cap of
+          // ours; the same clean read the sequential walk gave here.
+          stop = "short_page";
+        }
+        break;
       }
       if (Number.isFinite(total) && total >= 0 && rows.length >= total) {
         // The feed declared its total and we read all of it: the one
         // case a full last page is NOT a cap wearing completeness.
+        stop = "declared_total";
         break;
       }
       // A full page and no recognized way forward is a page cap
       // wearing completeness — the hand-run census's own lesson.
-      coverageSuspect = items.length > 0 && items.length % 100 === 0;
-      if (coverageSuspect) paginationShape = describePaginationShape(body);
+      if (items.length > 0 && items.length % 100 === 0) {
+        suspectAt("unpaged_full_page", body);
+      } else {
+        stop = "short_page";
+      }
       break;
     }
-    if (items.length === 0) break;
+    if (items.length === 0) {
+      stop = "empty_page";
+      break;
+    }
   }
-  // The page cap binding is a coverage statement too.
-  if (rows.length >= DISCOVERY_PAGE_CAP * 100) coverageSuspect = true;
+  // The cursor walk ran to the cap with a cursor still in hand: the
+  // page cap binding is a coverage statement too.
+  if (!stop) {
+    coverageSuspect = true;
+    stop = "page_cap";
+  }
+  const read: DiscoveryReadNote = {
+    stop,
+    pages,
+    page_cap: pageCap,
+    ms: Date.now() - startedAt,
+    ...(declaredTotal !== undefined ? { declared_total: declaredTotal } : {}),
+  };
   const seen = new Set<string>();
   const hosts: { host: string; url: string; catalog: CatalogTerms | null }[] = [];
   for (const row of rows) {
@@ -609,6 +835,7 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     coverageSuspect,
     ...(paginationShape ? { paginationShape } : {}),
     ...(fieldsSeen.size ? { fieldsSeen: [...fieldsSeen].slice(0, 30).sort() } : {}),
+    read,
   };
 }
 
@@ -1220,6 +1447,7 @@ async function assembleWalkRound(
     at: new Date().toISOString(),
     listed_resources: walk.listed_resources,
     coverage_suspect: walk.coverage_suspect,
+    ...(walk.discovery_read ? { discovery_read: walk.discovery_read } : {}),
     ...(walk.pagination_shape
       ? { pagination_shape: walk.pagination_shape }
       : {}),
@@ -1284,7 +1512,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     // round; fall through to the one-shot.
   }
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const { hosts, listed, coverageSuspect, paginationShape, fieldsSeen } =
+  const { hosts, listed, coverageSuspect, paginationShape, fieldsSeen, read } =
     await readDiscoveryList(env);
   /**
    * THE SECOND FEED (2026-08-04): the agent402 leaderboard, used for
@@ -1440,6 +1668,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     at: new Date().toISOString(),
     listed_resources: listed,
     coverage_suspect: coverageSuspect,
+    discovery_read: read,
     ...(paginationShape ? { pagination_shape: paginationShape } : {}),
     ...(doorBankNote ? { door_bank: doorBankNote } : {}),
     capped,

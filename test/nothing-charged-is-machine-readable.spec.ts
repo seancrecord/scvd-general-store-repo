@@ -1,6 +1,16 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import buySource from "../src/routes/buy.ts?raw";
+/**
+ * THE LAW MOVED, SO THE GUARD FOLLOWED IT (2026-09-04). Every
+ * argument-shaped refusal that used to be spelled out in
+ * routes/buy.ts now lives in lib/purchase-args.ts, where the MCP
+ * door reads the same sentences out of the same file. A guard that
+ * kept walking only the old file would have gone on passing while
+ * the entire set it was written about sat somewhere else — which is
+ * the failure mode this file's own header describes.
+ */
+import lawSource from "../src/lib/purchase-args.ts?raw";
 
 /**
  * "NOTHING CHARGED" WAS A SENTENCE, NOT A FIELD (rule 57.4, the sweep's
@@ -57,22 +67,66 @@ const CODES = [
  * a way a machine can read.
  */
 describe("every pre-payment refusal says so in a field, not only in a sentence", () => {
+  /**
+   * THE SHARED LAW STAMPS THE FIELD BY CONSTRUCTION, which is a
+   * stronger promise than forty-two hand-written literals ever were:
+   * there is exactly one place that builds a refusal, and it cannot
+   * build one without `charged: false` and a code. The guard checks
+   * the builder, then checks that the sentences actually go through
+   * it — a refusal in that file that dodged the builder and wrote its
+   * own object would be caught by the walk below, which reads both
+   * files.
+   */
+  it("builds every shared refusal through one helper that always says charged: false", () => {
+    const builder = /function refuse\([\s\S]*?\n\}/.exec(lawSource)?.[0] ?? "";
+    expect(builder, "lib/purchase-args no longer has a refuse() builder").toContain(
+      "charged: false",
+    );
+    const sites = [...lawSource.matchAll(/\brefuse\(\s*(\d{3}),/g)];
+    // A guard over an empty set is a guard that cannot fail.
+    expect(sites.length).toBeGreaterThan(30);
+    for (const site of sites) {
+      expect(["400", "403", "503"]).toContain(site[1]);
+    }
+  });
+
+  it("gives every shared refusal a code from the published set", () => {
+    const codes = [...lawSource.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
+      (match) => match[1]!,
+    );
+    expect(codes.length).toBeGreaterThan(30);
+    const unknown = [...new Set(codes)].filter(
+      (code) => !CODES.includes(code as (typeof CODES)[number]),
+    );
+    expect(
+      unknown,
+      "the shared purchase law emits a refusal code that is not in the published set, so a caller branching on codes meets one it has never seen",
+    ).toEqual([]);
+  });
+
   it("leaves no promise of no-charge unaccompanied by charged: false", () => {
     const literals: { snippet: string; hasField: boolean }[] = [];
+    /*
+     * Both files: the door still refuses at the shelf, the shutter,
+     * the capacity bench and the stock room with its own literals,
+     * and any object literal the shared law grew instead of going
+     * through refuse() has to answer here too.
+     */
+    const source = `${buySource}\n${lawSource}`;
     const marker = /return c\.json\(\s*\{/g;
     let match: RegExpExecArray | null;
-    while ((match = marker.exec(buySource)) !== null) {
+    while ((match = marker.exec(source)) !== null) {
       const open = match.index + match[0].length - 1;
       let depth = 0;
       let index = open;
-      for (; index < buySource.length; index += 1) {
-        if (buySource[index] === "{") depth += 1;
-        else if (buySource[index] === "}") {
+      for (; index < source.length; index += 1) {
+        if (source[index] === "{") depth += 1;
+        else if (source[index] === "}") {
           depth -= 1;
           if (depth === 0) break;
         }
       }
-      const body = buySource.slice(open, index + 1);
+      const body = source.slice(open, index + 1);
       const promises =
         body.includes("Nothing charged") || /no charge/i.test(body);
       if (!promises) continue;
@@ -83,7 +137,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
     }
 
     // A guard over an empty set is a guard that cannot fail.
-    expect(literals.length).toBeGreaterThan(30);
+    expect(literals.length).toBeGreaterThan(1);
     const silent = literals.filter((entry) => !entry.hasField);
     expect(
       silent.map((entry) => entry.snippet),
@@ -95,7 +149,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
     const codes = [...buySource.matchAll(/code: "([a-z_]+)"/g)].map(
       (match) => match[1]!,
     );
-    expect(codes.length).toBeGreaterThan(30);
+    expect(codes.length).toBeGreaterThan(3);
     const unknown = [...new Set(codes)].filter(
       (code) => !CODES.includes(code as (typeof CODES)[number]),
     );

@@ -16,7 +16,7 @@ is the one a buyer is going to be charged by?**
 The store was bitten by exactly this on 2026-08-31: the installed
 ClawHub bundle priced `service_audit` at $0.10 against $5 on the
 shelf, for weeks, and no check looked at a number beside a name
-(`src/store/corrections.ts`, the 2026-08-31 entry). Nobody on the
+(`src/store/corrections-ledger/ (one file per entry; npm run corrections:index)`, the 2026-08-31 entry). Nobody on the
 directory lists computes this for anybody else's door. The thread
 that handed us the idea also named the one line worth keeping for the
 desk: which pairs stay costly to fake once the check is public.
@@ -429,7 +429,7 @@ calendar gate — the dated wait written here earlier was struck
 - `src/services/preflight.ts` (the battery, `BATTERY_ADDS`,
   `BATTERY_CHANGELOG`), `src/services/ward-round.ts` (the census and
   the discovery index), `src/store/defect-vocabulary.ts`,
-  `src/store/corrections.ts` (the 2026-08-31 bundle entry),
+  `src/store/corrections-ledger/ (one file per entry; npm run corrections:index)` (the 2026-08-31 bundle entry),
   `test/door-fixtures.spec.ts`, `src/routes/practice.ts`.
 - x402 core spec, PR "docs(spec): clarify HTTP payment required
   header" (x402-foundation/x402#2320, merged 2026-05-26): the header
