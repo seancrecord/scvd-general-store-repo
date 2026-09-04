@@ -2,6 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import { getMenuItem } from "@/store/menu";
+import { passportEmbedFor } from "@/pages/passport-card";
 import type {
   WardHostResult,
   WardRound,
@@ -265,6 +266,7 @@ export function deriveWelcomes(
 
 export function draftWelcome(welcome: Welcome, base: string): string {
   const date = welcome.observed_at.slice(0, 10);
+  const embed = passportEmbedFor(welcome.host, base);
   const freshLine = welcome.newly_listed
     ? "\nIt was not in the listings on our previous pass, so this note is probably arriving in your first week. Congratulations on the door.\n"
     : "";
@@ -278,6 +280,10 @@ and it answered the way a buyer needs: a payable 402. That observation, dated, w
   ${base}/passport/${welcome.host}
 ${freshLine}
 The page carries a colophon you can paste beside your door — who looked, when, and the date the reading goes stale. It is not a badge and it never says "passed"; it says you were observed, which is the thing a counterparty can check. Reading it is free forever, and it re-derives from each weekly pass on its own.
+
+There is also a chip for a README, already yours — nothing to claim, the observation earned it. It wears the tier with its fraction and the date, links the page above, and goes dark rather than stale if the door leaves the ready side:
+  Markdown: ${embed.markdown}
+  HTML:     ${embed.html}
 
 Two free things, if you want them:
 - Re-check the door yourself any time: curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"${welcome.url}"}'

@@ -113,6 +113,14 @@ export const KV_KEYS = {
    * hand keeps its place. Sends are the keeper's alone (rule 30).
    */
   outreachLedger: "outreach_ledger",
+  /**
+   * THE CITATION WATCH (2026-09-04): the last Sunday report on which
+   * listed systems still cite the corpus and which prospect pages
+   * have started to. One key, rows plus the delta from the report
+   * before it. Derived from two files in the repo and the pages they
+   * name; never a verdict on anyone.
+   */
+  citationWatch: "citation_watch",
   /** The trust panel's hourly-recomputed half (corpus count + gallery). */
   trustPanelCache: "trust_panel_cache",
   /**

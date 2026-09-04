@@ -867,6 +867,26 @@ const worker: ExportedHandler<Env> = {
           ),
         ),
       );
+      /**
+       * THE CITATION WATCH rides the Sunday press (2026-09-04): does
+       * every system /scorers names still cite the corpus, and has
+       * any page the scorers note went to started to? The news is
+       * the delta, and it pages; the rows sit on /admin/outreach.
+       * Failure alerts rather than passing quietly — a watch that
+       * stopped reads exactly like a world that never cited us.
+       */
+      ctx.waitUntil(
+        import("@/services/citation-watch").then(({ runCitationWatch }) =>
+          runCitationWatch(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `Citation watch failed: ${String(error)}. The register and the prospects were not read this week; /admin/outreach shows the previous report, dated.`,
+              }),
+          ),
+        ),
+      );
       ctx.waitUntil(compileDigest(env));
       // Weekly Gazette self-drafting retired 2026-08-05 (keeper's
       // ruling: duplicative of the Almanac, standing maintenance the

@@ -58,6 +58,17 @@ build, it is on the roadmap.
   storefront, like `/operators`. PRESS: when a system meets
   the five listing facts, add it to the register with the
   citing URL and the date first seen, and nothing else.
+  AUTOMATED 2026-09-04 ("can we not just automate this
+  weekly check in admin?"): the citation watch rides the
+  Sunday press with the ward round. It reads every page the
+  register and `src/store/citation-prospects.json` name,
+  pages `citation_seen` when a prospect starts carrying a
+  row or a listed page stops, and prints the rows on
+  `/admin/outreach` under "Citations — who carries a row"
+  with a Check-now button. Your hand: put each page the
+  scorers note goes to in the prospects file (name, URL,
+  date noted) and keep pushing; move a prospect into the
+  register only when the five facts hold.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a
@@ -125,8 +136,10 @@ build, it is on the roadmap.
   Polygon walks. Not a code task.
 - **Send the welcomes.** `/admin/outreach` now lists the
   READY doors, newly listed first, each with a drafted
-  welcome (their passport page, the colophon, the free
-  checks, the two priced lines). Hand-deliver, stamp. The
+  welcome (their passport page, the colophon, the chip as
+  two paste-ready snippets — markdown and HTML, nothing to
+  claim, since 2026-09-04 — the free checks, the two priced
+  lines). Hand-deliver, stamp. The
   wire stays paused. This is the seller loop; it is your
   press.
 - **Re-register the missing doors.** After Sunday's round,
@@ -276,9 +289,15 @@ Do not relitigate without you.
   the provider key is a separate secret) and both fail closed if
   guessed wrong. Nothing goes live until they answer.
 - **Hands** — `wrangler secret put TRADE_SECRET_HAL` and
-  `TRADE_PROVIDER_KEY_HAL` with the values Hal issues. The account
-  answers 503 `counter_closed` until then. Verify with one signed
-  call from their side and read `/api/trade/ledger`.
+  `TRADE_PROVIDER_KEY_HAL`. Hal's side will not issue a credential
+  while the door answers 503, and the door answers 503
+  `account_not_provisioned` until a secret is set: one side moves
+  first, and it can be you — mint both values (`openssl rand -hex
+  32`, twice), put them, hand them to Hal's human over a private
+  channel, never through a chat with an agent. Their check desk
+  works before that (every check but the HMAC), and the contract
+  prints `provisioned: false` on the row until you do. Verify with
+  one signed call from their side and read `/api/trade/ledger`.
 - **RULE** — flip `hal` from `test` to `live` in
   `src/store/trade-counter.ts` when payout rail, cadence and
   statement API are agreed. Receiving sats is a new treasury rail:

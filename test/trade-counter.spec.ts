@@ -424,7 +424,7 @@ describe("the surfaces", () => {
     }
     const codes = new Set((terms["errors"] as Record<string, unknown>[]).map((row) => String(row["code"])));
     for (const code of [
-      "unknown_account", "counter_closed", "body_too_large", "missing_headers", "bad_provider_key",
+      "unknown_account", "counter_closed", "account_not_provisioned", "body_too_large", "missing_headers", "bad_provider_key",
       "bad_timestamp", "stale_timestamp", "bad_nonce", "bad_signature", "replayed",
       "not_at_the_counter", "bad_request", "target_refused", "cap_reached",
     ]) {
@@ -432,6 +432,62 @@ describe("the surfaces", () => {
     }
     const accounts = terms["accounts"] as Record<string, unknown>[];
     expect(accounts.map((row) => row["account"])).toContain("hal");
+    // Pass seven: every account carries its provisioning state and a fixture.
+    for (const row of accounts) {
+      expect(row["provisioned"]).toBe(true);
+      expect(row["door_status"]).toBe("open");
+      const fixture = row["fixture"] as Record<string, unknown>;
+      expect(String(fixture["door"])).toBe(`${BASE}/api/trade/${String(row["account"])}/${String(fixture["item_id"])}`);
+      expect(fixture["expected_status"]).toBe(200);
+      expect(Array.isArray(fixture["invariants"])).toBe(true);
+    }
+    expect(Array.isArray(terms["response_invariants"])).toBe(true);
+    expect(String((terms["pricing"] as Record<string, unknown>)["settlement_currency"])).toContain("US dollars");
+  });
+
+  it("the account's fixture delivers exactly what it promises, and every printed invariant holds on the body", async () => {
+    const terms = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+    const row = (terms["accounts"] as Record<string, unknown>[]).find((entry) => entry["account"] === "hal")!;
+    const fixture = row["fixture"] as Record<string, unknown>;
+    const { status, body } = await order(String(fixture["item_id"]), String(fixture["body"]));
+    expect(status).toBe(fixture["expected_status"]);
+    const trade = body["trade"] as Record<string, unknown>;
+    const expected = fixture["expected"] as Record<string, unknown>;
+    expect(body["settled_via"]).toBe(expected["settled_via"]);
+    expect(trade["account"]).toBe(expected["trade.account"]);
+    expect(trade["trade_price_usd"]).toBe(expected["trade.trade_price_usd"]);
+    expect(trade["net_usd"]).toBe(expected["trade.net_usd"]);
+    expect(trade["order_ref"]).toBe(expected["trade.order_ref"]);
+    // The invariant rows, one by one, against the same body.
+    const cert = certificateOf(body);
+    expect(body["item_id"]).toBe(fixture["item_id"]);
+    expect(String(body["deliverable"]).length).toBeGreaterThan(0);
+    expect(body["paid_usdc"]).toBeUndefined();
+    expect(["current", "previous"]).toContain(body["signed_with"]);
+    expect(String(trade["instruction_digest"])).toMatch(/^[0-9a-f]{64}$/);
+    expect(cert.settled_via).toBe(body["settled_via"]);
+    expect(cert.trade_partner).toBe("hal");
+    expect(cert.trade_price_usd).toBe(trade["trade_price_usd"]);
+    expect(cert.trade_instruction).toBe(trade["instruction_digest"]);
+    for (const absent of ["paid_usdc", "asset", "network", "payer", "settlement_tx"]) {
+      expect((cert as unknown as Record<string, unknown>)[absent], absent).toBeUndefined();
+    }
+    for (const present of ["signature", "public_key", "verify_url"]) {
+      expect(body[present], present).toBeDefined();
+    }
+    // The printed paths are the paths this test walked: a new row without an assertion here fails.
+    const paths = (fixture["invariants"] as Record<string, unknown>[]).map((entry) => String(entry["path"]));
+    expect(paths).toEqual([
+      "item_id", "deliverable", "settled_via", "paid_usdc", "trade.account", "trade.trade_price_usd",
+      "trade.net_usd", "trade.instruction_digest", "trade.order_ref", "signed_with",
+      "certificate.settled_via", "certificate.trade_partner", "certificate.trade_price_usd",
+      "certificate.trade_instruction", "certificate.paid_usdc, .asset, .network, .payer, .settlement_tx",
+      "signature, public_key, verify_url",
+    ]);
+    // Idempotent: the fixture sent twice is one delivery.
+    const again = await order(String(fixture["item_id"]), String(fixture["body"]));
+    expect(again.status).toBe(200);
+    expect((again.body["trade"] as Record<string, unknown>)["instruction_digest"]).toBe(trade["instruction_digest"]);
   });
 
   it("/trade answers a person with the page and an agent with the five answers", async () => {
@@ -552,6 +608,75 @@ describe("the check desk: every check reported, nothing delivered", () => {
     const body = await json(response);
     expect(body["expected_signature"]).toBeUndefined();
     expect(body["first_failure"]).toBe("bad_signature");
+  });
+});
+
+describe("an account before its secret exists (pass seven)", () => {
+  const withoutSecret = async (run: () => Promise<void>) => {
+    const bag = testEnv as unknown as Record<string, unknown>;
+    const saved = bag["TRADE_SECRET_HAL"];
+    bag["TRADE_SECRET_HAL"] = "";
+    try {
+      await run();
+    } finally {
+      bag["TRADE_SECRET_HAL"] = saved;
+    }
+  };
+
+  it("the signed doors answer 503 account_not_provisioned, never counter_closed", async () => {
+    await withoutSecret(async () => {
+      const refused = await order("certificate_of_patronage", { order_ref: "np-1" });
+      expect(refused.status).toBe(503);
+      expect(refused.body["code"]).toBe("account_not_provisioned");
+      expect(refused.body["delivered"]).toBe(false);
+      expect(refused.body["billed"]).toBe(false);
+      const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: "anything", provider_key: PROVIDER_KEY, body: "" });
+      const statement = await SELF.fetch(`${BASE}/api/trade/hal/statement`, { headers });
+      expect(statement.status).toBe(503);
+      expect((await json(statement))["code"]).toBe("account_not_provisioned");
+      const claim = await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=np-1`, { headers });
+      expect(claim.status).toBe(503);
+      expect((await json(claim))["code"]).toBe("account_not_provisioned");
+      const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradeRowPrefix("hal") });
+      expect(rows.keys.length).toBe(0);
+      // The contract says so, by account.
+      const terms = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+      const hal = (terms["accounts"] as Record<string, unknown>[]).find((entry) => entry["account"] === "hal")!;
+      expect(hal["provisioned"]).toBe(false);
+      expect(hal["door_status"]).toBe("awaiting_secret");
+    });
+  });
+
+  it("the check desk still reports every check that needs no secret, and names the two it cannot run", async () => {
+    await withoutSecret(async () => {
+      const raw = JSON.stringify({ order_ref: "np-2" });
+      const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: "their-secret-we-do-not-hold", provider_key: "their-key", body: raw });
+      const response = await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", headers, body: raw });
+      expect(response.status).toBe(200);
+      const body = await json(response);
+      expect(body["account_provisioned"]).toBe(false);
+      expect(String(body["note"])).toContain("account_not_provisioned");
+      expect(body["would_pass"]).toBe(false);
+      expect(body["first_failure"]).toBe("account_not_provisioned");
+      const checks = body["checks"] as Record<string, unknown>;
+      expect((checks["headers"] as Record<string, unknown>)["missing"]).toEqual([]);
+      expect(checks["provider_key"]).toBe("unverifiable");
+      expect((checks["timestamp"] as Record<string, unknown>)["within_window"]).toBe(true);
+      expect((checks["nonce"] as Record<string, unknown>)["shape_ok"]).toBe(true);
+      const signature = checks["signature"] as Record<string, unknown>;
+      expect(signature["prefix_ok"]).toBe(true);
+      expect(signature["hex_ok"]).toBe(true);
+      expect(signature["verified_with"]).toBe("unverifiable");
+      expect(String((body["signing_string"] as Record<string, unknown>)["sha256"])).toMatch(/^[0-9a-f]{64}$/);
+      expect(body["expected_signature"]).toBeUndefined();
+
+      // A byte-level fault is still named ahead of the missing secret.
+      const stale = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: "x", provider_key: "k", body: raw, now_ms: Date.now() - 20 * 60_000 });
+      const staleBody = await json(await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", headers: stale, body: raw }));
+      expect(staleBody["first_failure"]).toBe("stale_timestamp");
+      const missing = await json(await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", body: raw }));
+      expect(missing["first_failure"]).toBe("missing_headers");
+    });
   });
 });
 

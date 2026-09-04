@@ -75,6 +75,21 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   browser presents cached Basic Auth on a form from any origin and a
   forged payout would reopen credit. JSON from a script is unguarded
   by it, since a script carries no page's cached credentials.
+- **Pass seven (2026-09-04, Hal's reply: "I will not send credentials
+  while the door still returns 503")** — `account_not_provisioned`
+  (503) is its own refusal, distinct from `counter_closed` (the replay
+  store), and the contract prints `provisioned` and `door_status` per
+  account. The check desk answers WITHOUT a secret: every check that
+  needs none runs and is reported (headers, timestamp, nonce shape,
+  signature shape, the sha256 of the signing string), the provider key
+  and the HMAC are reported `unverifiable`, and `first_failure` names
+  the missing secret only when the bytes are right — so a partner
+  proves its signer in its own dialect before either side has issued
+  anything. Each account row carries a `fixture` (door, one-field
+  body, expected values on the 200) and the contract prints
+  `response_invariants` as rows the suite holds against a real
+  delivery. `pricing.settlement_currency` says once that the books
+  are in USD and the store prints no sats figure (rule 45).
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money
@@ -146,7 +161,9 @@ deliveries for one instruction. So the nonce set is a Durable Object,
 one per account, one writer, the same answer from every edge —
 `TRADE_NONCES` in `wrangler.jsonc`, SQLite-backed, created by the
 migration with no dashboard step. Unbound, every trade door answers
-503 `counter_closed`; money fails closed.
+503 `counter_closed`; money fails closed. An account whose secret is
+not yet set answers 503 `account_not_provisioned` instead, so a
+partner can tell the two apart.
 
 ## The margin, as a rule
 

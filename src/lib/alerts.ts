@@ -128,6 +128,16 @@ export const ALERT_CONDITIONS = [
    * below what the open board still promises this week.
    */
   "field_wallet_short",
+  /**
+   * A PAGE STARTED CARRYING A ROW (2026-09-04). The Sunday citation
+   * watch found a verify or corpus URL of this store on a page it
+   * had sent the scorers note to, or lost one on a page /scorers
+   * lists. The first is the news the keeper was waiting on and the
+   * second is /scorers making a claim its check no longer supports;
+   * neither is a fault of the Worker, so neither rides worker_health.
+   * Keyed by URL, so one page pages once.
+   */
+  "citation_seen",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];

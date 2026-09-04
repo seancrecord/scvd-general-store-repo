@@ -10,6 +10,7 @@ import {
   type Welcome,
 } from "@/services/outreach";
 import type { WardRound } from "@/services/ward-round";
+import type { CitationWatchReport, CitationWatchRow } from "@/services/citation-watch";
 
 /**
  * THE OUTREACH PAGE — the keeper's private work queue, and nothing
@@ -125,6 +126,47 @@ function welcomeCard(welcome: Welcome, ledger: OutreachLedger, base: string): st
   </section>`;
 }
 
+/**
+ * THE CITATION WATCH on the desk (2026-09-04): the Sunday report on
+ * who carries a row — the systems /scorers lists, and the pages the
+ * scorers note went to. The button is the same function the cron
+ * runs. Nothing here edits a list: a prospect that starts citing is
+ * moved to the register by hand, against the five listing facts.
+ */
+function citationRow(row: CitationWatchRow): string {
+  const word: Record<CitationWatchRow["verdict"], string> = {
+    cited: "<strong>cited</strong>",
+    gone: "<strong>gone</strong> — /scorers names it and its page no longer cites; fix the register",
+    silent: "silent — no row on the page yet; expected",
+    unreadable: `unreadable${row.reason ? ` (${escapeHtml(row.reason)})` : ""} — not a finding`,
+  };
+  const cites = row.citations.length
+    ? `<br><span class="menu-meta">carries: ${row.citations.slice(0, 3).map((c) => `<code>${escapeHtml(c)}</code>`).join(", ")}${row.citations.length > 3 ? ` +${row.citations.length - 3}` : ""}</span>`
+    : "";
+  return `<li>${row.kind === "listed" ? "listed" : "prospect"} · <a href="${escapeHtml(row.url)}">${escapeHtml(row.name)}</a> (${escapeHtml(row.dated)}) — ${word[row.verdict]}${cites}</li>`;
+}
+
+function citationBlock(report: CitationWatchReport | null): string {
+  const button = `<form method="post" action="/admin/citations/run" style="display:inline">
+    <button type="submit">Check citations now</button>
+  </form>`;
+  if (!report) {
+    return `<section><h2>Citations — who carries a row</h2>
+    <p class="menu-desc">No report yet. The watch reads every page the register (<code>src/store/citing-systems.json</code>) and the prospects file (<code>src/store/citation-prospects.json</code>) name, each Sunday with the ward round, and pages you when a prospect starts carrying a verify or corpus URL. ${button}</p></section>`;
+  }
+  const news = report.newly_cited.length || report.newly_gone.length
+    ? `<p class="menu-desc"><strong>News since the report before:</strong> ${[
+        ...report.newly_cited.map((u) => `newly cited: <code>${escapeHtml(u)}</code>`),
+        ...report.newly_gone.map((u) => `gone: <code>${escapeHtml(u)}</code>`),
+      ].join(" · ")}</p>`
+    : `<p class="menu-desc">Nothing moved since the report before.</p>`;
+  return `<section><h2>Citations — who carries a row</h2>
+  <p class="menu-desc">Read ${escapeHtml(report.checked_at.slice(0, 16).replace("T", " "))} UTC, ${report.rows.length} page${report.rows.length === 1 ? "" : "s"}; runs each Sunday with the ward round, and pages you on a change. A prospect that starts citing goes into the register by your hand, against the five listing facts on <a href="/scorers">/scorers</a>. ${button}</p>
+  ${news}
+  <ul>${report.rows.map(citationRow).join("\n") || "<li>Both lists are empty; nothing to watch.</li>"}</ul>
+  </section>`;
+}
+
 const WELCOME_RENDER_CAP = 25;
 const FRESH_RENDER_CAP = 50;
 const WORKED_RENDER_CAP = 100;
@@ -137,6 +179,7 @@ export function renderOutreachPage(
   base: string,
   notice?: string,
   welcomes: Welcome[] = [],
+  citations: CitationWatchReport | null = null,
 ): string {
   const noticeBlock = notice
     ? `<section><p><strong>${escapeHtml(notice)}</strong></p></section>`
@@ -193,6 +236,8 @@ export function renderOutreachPage(
   list you can see; press again for the next ten.</p>
 
   ${healedBlock}
+
+  ${citationBlock(citations)}
 
   <h2>Fresh (${fresh.length}${fresh.length > freshShown.length ? `, top ${freshShown.length} shown` : ""})</h2>
   ${freshShown.map((p) => prospectCard(p, ledger, base)).join("\n") || "<p class='empty'>Nothing fresh — every broken door already has a status.</p>"}

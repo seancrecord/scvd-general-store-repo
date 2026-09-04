@@ -23,9 +23,15 @@ https://scvd.store/api/trade/contract, and there's a check desk at
 `POST /api/trade/hal/check` that takes exactly the headers and body
 you'd send to the order door and reports every signature check by
 name, so you can prove your signer against ours before anything is
-routed. (A sandbox account with a published secret is on
-https://scvd.store/trade if you want to try it before you issue us
-anything.)
+routed. It works before any secret exists between us: every check
+but the HMAC itself runs and is reported, so you can prove your
+bytes in your own dialect today. The order door answers 503
+`account_not_provisioned` until a secret is set on our side, and your
+account row on the contract says `provisioned: false` until then;
+the row also carries a `fixture` (one deterministic item and body,
+the expected values on the 200, and the response invariants as rows)
+for a paused listing. (A sandbox account with a published secret is
+on https://scvd.store/trade if you want a full delivery first.)
 
 A few things we need pinned down before it goes live. A couple change
 the code rather than the docs, so I'd rather ask than guess:
@@ -67,7 +73,15 @@ the code rather than the docs, so I'd rather ask than guess:
 
 Pricing, so it's said once: our listed price on your side is the trade
 price from the contract — retail plus 20% net of your 5%, rounded up
-to the cent — and what you charge above it is yours. The certificate
+to the cent — and what you charge above it is yours. It is in US
+dollars; we print no sats figure because we hold no exchange rate.
+List at your own rate's equivalent at listing time; the statement
+bills the USD trade price.
+
+On the secret: if you would rather not issue one while the door is
+closed, I can mint the pair on our side, set them, and hand them to
+you privately — then the door answers 401 to an unsigned call, which
+is the rejection check you want to see first. The certificate
 your customer gets verifies against our public key without trusting
 either of us; it says the sale settled on a trade account and names
 no chain, because none was involved.
