@@ -72,6 +72,15 @@ What people arrive here to do, and where each door is:
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
   [scvd.store/corpus](https://scvd.store/corpus).
+- **Score, rank or list x402 doors?** Take the evidence and leave the
+  opinion: [scvd.store/scorers](https://scvd.store/scorers) is the
+  room for systems that consume this corpus. Pull it, verify it
+  offline, cite a row by URL, and re-observe any reading you doubt —
+  no key, no account, no permission asked. Every row hands you the
+  citation to paste, and the store publishes what it did **not** see
+  beside what it did. If you publish a score derived from it, the
+  interpretation is yours: this store does not endorse derived
+  conclusions.
 - **Buy a settlement attestation** — a signed observation of on-chain
   payment status on Base, Polygon, or Solana, with what the signature does and
   does not prove stated per class at

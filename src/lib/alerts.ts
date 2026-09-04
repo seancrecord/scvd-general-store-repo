@@ -118,6 +118,17 @@ export const ALERT_CONDITIONS = [
    */
   "payout_screen_unavailable",
   /**
+   * THE PAYING WALLET CANNOT COVER WHAT IT SIGNED (2026-09-04, the
+   * keeper: "where would I see money short — or a constant check if
+   * possible"). Every payout is a signed authorization the recipient
+   * redeems later, against whatever the field wallet holds THEN. The
+   * desk shows "short" when opened; this pages hourly whether or not
+   * anyone opens it: live bounty authorizations plus credit owed
+   * against the balance read off the chain, and separately a balance
+   * below what the open board still promises this week.
+   */
+  "field_wallet_short",
+  /**
    * A PAGE STARTED CARRYING A ROW (2026-09-04). The Sunday citation
    * watch found a verify or corpus URL of this store on a page it
    * had sent the scorers note to, or lost one on a page /scorers

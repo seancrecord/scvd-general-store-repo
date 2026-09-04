@@ -22,15 +22,20 @@ export function renderMarkdown(register) {
     "",
     `Seeded ${register.seeded}. Alphabetical by name, never a priority order.`,
     "",
-    'The note to send is the one on the desk under "For scorers and marketplaces"; `note sent` records',
-    "the date the keeper says he sent it, and only then. `cites since` stays empty until",
-    "`npm run outreach:check` reads one of our row URLs or the cite_json shape on their page.",
+    "WHO EXISTS, and nothing about what we did. This table is the DIRECTORY half of the",
+    "register: the systems that score or list x402 doors, and where to write to them. It",
+    "changes only when the list of systems changes, which is research and rare.",
     "",
-    "| Name | Contact | Note sent | Reply | Cites since |",
-    "| --- | --- | --- | --- | --- |",
-    ...systems.map(
-      (s) => `| [${cell(s.name)}](${s.url}) | ${cell(s.contact)} | ${cell(s.note_sent)} | ${cell(s.reply)} | ${cell(s.cites_since)} |`,
-    ),
+    "The WORKING half — `note_sent`, `reply`, `cites_since` — lives only in the JSON, and",
+    "`npm run outreach:check` prints it. That split is deliberate (2026-09-04): when the",
+    "table carried the status too, stamping a send desynced it and failed the build, so the",
+    "most ordinary act in the whole loop punished you for doing it. Now sending a note is a",
+    "one-field edit that breaks nothing, and this file only needs rendering when a system",
+    "joins or leaves.",
+    "",
+    "| Name | Contact |",
+    "| --- | --- |",
+    ...systems.map((s) => `| [${cell(s.name)}](${s.url}) | ${cell(s.contact)} |`),
     "",
   ];
   return lines.join("\n");
@@ -54,4 +59,40 @@ export function entryProblems(entry) {
   if (entry?.cites_since !== null && (typeof entry?.cites_since !== "string" || !DATE.test(entry.cites_since)))
     problems.push("cites_since must be a YYYY-MM-DD date or null");
   return problems;
+}
+
+/**
+ * THE WATCHED SET (2026-09-04) — the only part of this register the
+ * EDGE ever carries. The Worker used to import the whole file: 44 KB
+ * of research bundled into every isolate to fetch, on the day it
+ * landed, zero pages. What the cron needs is the rows the keeper has
+ * written to, plus any already citing; everything else is the CLI's
+ * business, swept from a machine with no subrequest budget.
+ *
+ * Derived, never hand-edited, and held to the register by the same
+ * test that holds the table. Four fields, because a name, a URL and
+ * two dates are all the watch reads.
+ */
+export function watchedRows(register) {
+  return (register.systems ?? [])
+    .filter((entry) => entry.note_sent !== null || entry.cites_since !== null)
+    .map((entry) => ({
+      name: entry.name,
+      url: entry.url,
+      note_sent: entry.note_sent,
+      cites_since: entry.cites_since,
+    }));
+}
+
+/** The derived file's exact bytes, so the builder and the test agree. */
+export function renderWatched(register) {
+  return `${JSON.stringify(
+    {
+      what_this_is:
+        "Derived from registry/scorers-outreach.json by `npm run outreach:build` — the rows the Sunday citation watch fetches. Never hand-edit: the test fails when this and the register disagree. Empty until the keeper stamps a send.",
+      rows: watchedRows(register),
+    },
+    null,
+    2,
+  )}\n`;
 }
