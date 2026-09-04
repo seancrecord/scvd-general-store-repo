@@ -667,6 +667,32 @@ describe("offset paging: the 08-05 collapse, solved by its own instrument", () =
     expect(round.coverage_suspect).toBe(true);
     expect(round.pagination_shape).toContain("pagination.total");
     expect(round.discovery_read?.stop).toBe("repeated_page");
+    // The census writes WHY beside the null: the paging broke.
+    expect(round.population?.per_source.find((row) => row.source === "discovery")).toEqual({
+      source: "discovery",
+      hosts: null,
+      why: "pagination",
+    });
+  });
+
+  /**
+   * THE CAP THAT BOUND (2026-09-04). The Bazaar passed 6,000 declared
+   * resources before W35; the one-shot read stopped at its sixty
+   * pages, said suspect, and the census recorded discovery as null —
+   * which the register then called `never_answered` for five rounds
+   * the feed had answered. The null was right (a short list is not a
+   * census). The blank beside it was the lie.
+   */
+  it("a listing past the one-shot page cap is suspect for the reason 'capped', not silent", async () => {
+    stubOffsetWorld({ total: 6050 });
+    const round = await runWardRound(testEnv);
+    expect(round.listed_resources).toBe(6000);
+    expect(round.coverage_suspect).toBe(true);
+    expect(round.population?.per_source.find((row) => row.source === "discovery")).toEqual({
+      source: "discovery",
+      hosts: null,
+      why: "capped",
+    });
   });
 });
 

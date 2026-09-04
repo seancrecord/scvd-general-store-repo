@@ -184,6 +184,24 @@ describe("the gaps fire, because a silent gap reads as reassurance", () => {
     expect(gap?.headline).not.toContain("fuchss");
   });
 
+  it("names a feed that answers short as its own finding, not as quiet", () => {
+    const findings = deriveFindings(
+      brief(),
+      null,
+      register([
+        { source: "fuchss", status: "live" },
+        { source: "discovery", status: "capped" },
+      ]),
+      [],
+      [],
+    );
+    expect(findings.find((f) => f.id === "sources-quiet")).toBeUndefined();
+    const capped = findings.find((f) => f.id === "sources-capped");
+    expect(capped?.kind).toBe("gap");
+    expect(capped?.headline).toContain("discovery");
+    expect(capped?.detail).toContain("not down");
+  });
+
   it("names weeks the chain does not hold at all", () => {
     const findings = deriveFindings(brief(), null, null, ["2026-W34"], []);
     const gap = findings.find((f) => f.id === "weeks-missing");

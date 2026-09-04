@@ -2,6 +2,9 @@ import { env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import {
+  FEED_PAGES_PER_PASS,
+  WALK_ROSTER_CAP,
+  appendDeclaredDoor,
   longWalkPass,
   readLongWalk,
   WALK_BATCH,
@@ -290,5 +293,128 @@ describe("the corpus graduates to R2", () => {
     expect(raw["pointer"]).toBeUndefined();
     expect((raw["snapshot"] as Record<string, unknown>)["sequence"]).toBe(1);
     expect((await verifyCorpusChain(legacyEnv)).intact).toBe(true);
+  });
+});
+
+/**
+ * THE FEED READ RESUMES (2026-09-04). The one-shot round's 60-page cap
+ * bound the day the Bazaar passed 6,000 declared resources, and for
+ * five rounds the census recorded discovery as unreadable while the
+ * walk walked the first 6,000 rows' hosts. A bigger cap binds again
+ * at the next size; so the walk reads the feed across hourly
+ * firings, on a stored cursor, until the feed's own declared total
+ * is reached. These hold: a feed larger than one pass is READ, not
+ * capped; the reading passes probe nobody; the census gets every
+ * host the feed named even where the walk's roster cap bound; and
+ * the cap says so.
+ */
+describe("the feed read resumes across firings", () => {
+  const TOTAL = FEED_PAGES_PER_PASS * 100 + 50;
+
+  it("reads a feed larger than one pass completely, over two firings, probing nobody", async () => {
+    await clearWalkState();
+    stubWalkWorld({ total: TOTAL });
+    const first = await longWalkPass(testEnv);
+    expect(first.phase).toBe("reading");
+    if (first.phase !== "reading") throw new Error("unreachable");
+    expect(first.rows).toBe(FEED_PAGES_PER_PASS * 100);
+    expect(first.declared).toBe(TOTAL);
+    expect(first.passes).toBe(1);
+    expect(probeCount, "a reading pass knocked on a door").toBe(0);
+    const reading = (await readLongWalk(testEnv))!;
+    expect(reading.feed?.resume.offset).toBe(FEED_PAGES_PER_PASS * 100);
+    expect(reading.feed?.resume.rows_read).toBe(FEED_PAGES_PER_PASS * 100);
+    // Not yet a roster: nothing walks, nothing assembles, from this state.
+    expect(reading.results).toEqual([]);
+
+    const second = await longWalkPass(testEnv);
+    expect(second.phase).toBe("started");
+    expect(probeCount).toBe(0);
+    const frozen = (await readLongWalk(testEnv))!;
+    expect(frozen.feed).toBeUndefined();
+    expect(frozen.listed_resources).toBe(TOTAL);
+    // Read to the declared total: complete, and said so — the cap that
+    // used to bind here is the thing this test exists to bury.
+    expect(frozen.coverage_suspect).toBe(false);
+    expect(frozen.discovery_read?.stop).toBe("declared_total");
+    // Pages are the read as a whole, across both firings.
+    expect(frozen.discovery_read?.pages).toBe(FEED_PAGES_PER_PASS + 1);
+    expect(frozen.feed_hosts).toHaveLength(TOTAL);
+
+    const third = await longWalkPass(testEnv);
+    expect(third.phase).toBe("walked");
+    expect(probeCount).toBe(WALK_BATCH);
+  });
+
+  it("caps the roster at the KV ceiling, says so, and still counts every feed host in the census", async () => {
+    await clearWalkState();
+    stubWalkWorld({ total: TOTAL });
+    await longWalkPass(testEnv);
+    await longWalkPass(testEnv);
+    const frozen = (await readLongWalk(testEnv))!;
+    expect(frozen.roster_capped).toBe(true);
+    expect(frozen.roster).toHaveLength(WALK_ROSTER_CAP);
+    expect(frozen.feed_hosts).toHaveLength(TOTAL);
+    // Walk one batch so Sunday has something to assemble.
+    await longWalkPass(testEnv);
+    const round = await runWardRound(testEnv);
+    expect(round.walk?.roster_capped).toBe(true);
+    expect(round.walk?.feed_hosts).toBe(TOTAL);
+    expect(round.walk?.roster).toBe(WALK_ROSTER_CAP);
+    // The census's discovery answer is the FEED, whole, not the roster.
+    const discovery = round.population?.per_source.find((row) => row.source === "discovery");
+    expect(discovery).toEqual({ source: "discovery", hosts: TOTAL });
+    // A directory that could not be read says so beside its null.
+    const fuchss = round.population?.per_source.find((row) => row.source === "fuchss");
+    expect(fuchss).toEqual({ source: "fuchss", hosts: null, why: "unreadable" });
+  });
+
+  it("a declared door while the feed is still being read waits for the freeze, and is not lost", async () => {
+    await clearWalkState();
+    stubWalkWorld({ total: TOTAL });
+    await longWalkPass(testEnv);
+    expect(
+      await appendDeclaredDoor(testEnv, "declares.example", "https://declares.example/api/pay"),
+    ).toBe("roster-not-frozen-yet");
+    const reading = (await readLongWalk(testEnv))!;
+    expect(reading.roster.some((entry) => entry.source === "well-known")).toBe(false);
+  });
+
+  it("declared doors ride behind the feed's cap, never inside it", async () => {
+    await clearWalkState();
+    stubWalkWorld({ total: TOTAL });
+    const { readWellKnownStore, writeWellKnownStore, recordWellKnownRead } = await import(
+      "@/services/well-known-doors"
+    );
+    const store = await readWellKnownStore(testEnv);
+    await writeWellKnownStore(
+      testEnv,
+      recordWellKnownRead(
+        store,
+        "declares.example",
+        {
+          kind: "doors",
+          declaring_host: "declares.example",
+          doors: ["https://declares.example/api/pay"],
+          foreign: 0,
+          refused: 0,
+          capped: false,
+          via: "x402",
+        },
+        "2026-W35",
+        "2026-09-01T00:00:00.000Z",
+      ).store,
+    );
+    await longWalkPass(testEnv);
+    await longWalkPass(testEnv);
+    const frozen = (await readLongWalk(testEnv))!;
+    expect(frozen.roster).toHaveLength(WALK_ROSTER_CAP + 1);
+    expect(frozen.roster[WALK_ROSTER_CAP]).toEqual({
+      host: "declares.example",
+      url: "https://declares.example/api/pay",
+      source: "well-known",
+      catalog: null,
+    });
+    await testEnv.COUNTERS.delete(KV_KEYS.wellKnownDoors);
   });
 });

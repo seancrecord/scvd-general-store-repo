@@ -211,6 +211,24 @@ describe("what the census refuses to claim", () => {
     ]);
   });
 
+  it("writes the reason beside a null, and never beside an answer", async () => {
+    const census = await takeCensus(
+      testEnv,
+      [
+        { source: "discovery", hosts: null, why: "capped" },
+        { source: "fuchss", hosts: ["a.example"], why: "capped" },
+      ],
+      1,
+      T1,
+    );
+    expect(census.per_source).toEqual([
+      { source: "discovery", hosts: null, why: "capped" },
+      { source: "fuchss", hosts: 1 },
+    ]);
+    // Short is still unread to the census: no delisting gets written.
+    expect(census.sources_failed).toEqual(["discovery"]);
+  });
+
   it("has no coverage figure at all when it knows of nobody, rather than reporting 0% or 100%", async () => {
     const census = await takeCensus(testEnv, [source("discovery", [])], 0, T1);
     expect(census.population_known).toBe(0);
