@@ -73,6 +73,31 @@ function stubWalkWorld(options: { total: number }) {
       // Unreadable directory this week; the census law handles null.
       return new Response("gone", { status: 503 });
     }
+    /*
+     * The two directories the roster widened to on 2026-09-04. Dark
+     * here for the same reason fuchss is: this file is about the
+     * WALK, and a readable directory would put hosts in the census
+     * that every population assertion below would then have to carry.
+     *
+     * They must be named rather than left to the fallthrough, because
+     * the fallthrough is the PROBE counter — an unrecognised fetch is
+     * scored as a knock on somebody door, which is exactly the thing
+     * the assembly test exists to prove does not happen. A new source
+     * added to the round would otherwise read here as the assembly
+     * probing again.
+     */
+    // Matched on the parsed hostname, not a substring of the URL: a
+    // substring check is the shape CodeQL rightly refuses, since any
+    // host may sit before or after it. Same refusal in a stub as in
+    // the reader it stubs for.
+    const host = new URL(url).hostname;
+    if (
+      host === "x402-list.com" ||
+      host === "agentic.market" ||
+      host.endsWith(".agentic.market")
+    ) {
+      return new Response("gone", { status: 503 });
+    }
     void init;
     probeCount += 1;
     return new Response("{}", {

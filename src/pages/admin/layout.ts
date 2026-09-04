@@ -46,6 +46,13 @@ export type AdminTab =
   | "bounties"
   | "referrals"
   | "ward"
+  /**
+   * The second ward (2026-09-04). Its own tab rather than a section of
+   * the first, because the two share no denominator and one console
+   * with both sets of numbers on it is the affordance that eventually
+   * gets them added together.
+   */
+  | "mcp-ward"
   | "cv"
   /**
    * Demoted readings and drawers (2026-08-05 consolidation): still
@@ -96,6 +103,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
+  { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
   { tab: "market", href: "/admin/market", label: "The market" },
   { tab: "outreach", href: "/admin/outreach", label: "Outreach" },
   { tab: "trade", href: "/admin/trade", label: "The trade counter" },
