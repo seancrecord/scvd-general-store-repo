@@ -53,6 +53,16 @@ export interface MoneyOutAllTime {
   credit_owed_usd: number | null;
 }
 
+/** One regular's credit, as the credit desk keeps it. */
+export interface CreditHolder {
+  wallet: string;
+  balance_usd: number;
+  earned_usd: number;
+  redeemed_usd: number;
+  expired_usd: number;
+  updated_at: string;
+}
+
 export interface BountiesPageData {
   board: BoardState | null;
   wallet: FieldWalletReading | null;
@@ -60,6 +70,8 @@ export interface BountiesPageData {
   attempts: MetricEvent[];
   funnel?: BountyFunnel | null;
   allTime?: MoneyOutAllTime | null;
+  /** Who holds store credit, largest balance first; null when unread. */
+  creditHolders?: CreditHolder[] | null;
   /** ISO, the moment the page was read; outstanding payouts are judged against it. */
   now: string;
   loadNotes: string[];
@@ -100,6 +112,41 @@ function funnelHtml(funnel: BountyFunnel | null | undefined): string {
     <tr><td>presented a claim</td><td>${funnel.claims_presented}</td><td>${rate(funnel.board_json, funnel.claims_presented)}</td></tr>
   </table>
   <p><small>Porch rows, organic only, counted from the day the board got its lines. A poller on a loop inflates the middle rows; the last row is the one that costs a walker money, and it is the honest one.</small></p>`;
+}
+
+/**
+ * WHO IS OWED (2026-09-04, the keeper: "how does the store credit get
+ * paid? I never saw a purchase for it"). Credit is not bought. Every
+ * organic purchase banks a fixed share of its price to the PAYING
+ * wallet, and the wallet cashes it out at the credit desk once it
+ * passes the floor — a signed authorization from the field wallet,
+ * same as a bounty reward. House wallets never accrue, so a balance
+ * here is a stranger's by construction.
+ */
+function creditHoldersHtml(holders: CreditHolder[] | null | undefined): string {
+  if (!holders) {
+    return "<p>The credit ledger did not load; nothing here is zero.</p>";
+  }
+  if (holders.length === 0) {
+    return "<p>Nobody holds store credit. It accrues from organic purchases only.</p>";
+  }
+  const rows = holders
+    .map(
+      (holder) => `<tr>
+      <td><code>${escapeHtml(holder.wallet)}</code></td>
+      <td>$${holder.balance_usd.toFixed(4)}</td>
+      <td>$${holder.earned_usd.toFixed(4)}</td>
+      <td>$${holder.redeemed_usd.toFixed(4)}</td>
+      <td>$${holder.expired_usd.toFixed(4)}</td>
+      <td>${escapeHtml(holder.updated_at.slice(0, 10))}</td>
+    </tr>`,
+    )
+    .join("\n");
+  return `<table>
+    <tr><th>wallet</th><th>balance</th><th>earned</th><th>cashed out</th><th>expired</th><th>last moved</th></tr>
+    ${rows}
+  </table>
+  <p><small>Credit is the rebate, not a purchase: a fixed share of every organic sale, banked to the wallet that paid, cashed out at <code>/api/credit/redeem</code> as a signed authorization once the balance passes the floor. A balance that sits idle long enough expires back to the store. <a href="/credit">The credit desk</a> states the dials.</small></p>`;
 }
 
 function allTimeHtml(allTime: MoneyOutAllTime | null | undefined): string {
@@ -282,6 +329,11 @@ export function renderBountiesPage(data: BountiesPageData): string {
   <section>
     <h2>The board's own funnel, ${escapeHtml(data.now.slice(0, 7))}</h2>
     ${funnelHtml(data.funnel)}
+  </section>
+
+  <section>
+    <h2>Store credit, by wallet</h2>
+    ${creditHoldersHtml(data.creditHolders)}
   </section>
 
   <section>

@@ -2378,7 +2378,7 @@ adminRoutes.post("/admin/market/publish-registry", async (c) => {
  */
 adminRoutes.get("/admin/bounties", async (c) => {
   const notes: string[] = [];
-  const [board, wallet, ledger, attempts, porch, creditOwed] =
+  const [board, wallet, ledger, attempts, porch, creditOwed, creditHolders] =
     await Promise.allSettled([
       import("@/services/bounty-board").then(({ bountyBoard }) =>
         bountyBoard(c.env),
@@ -2392,6 +2392,41 @@ adminRoutes.get("/admin/bounties", async (c) => {
       import("@/services/store-credit").then(({ creditOutstandingAtomic }) =>
         creditOutstandingAtomic(c.env),
       ),
+      /*
+       * Who is owed, off the credit rows (bounded; the sweep's own
+       * cap). "credit_" keys are the challenge and aggregate keys under
+       * the same prefix and are not records.
+       */
+      (async () => {
+        const listed = await listKeys(c.env.COUNTERS, {
+          prefix: KV_KEYS.creditPrefix,
+          cap: 200,
+        });
+        const names = listed.names.filter((name) => !name.startsWith("credit_"));
+        const rows = await import("@/lib/kv-bulk").then(({ bulkGetJson }) =>
+          bulkGetJson<{
+            wallet: string;
+            balance_atomic: string;
+            earned_total_atomic: string;
+            redeemed_total_atomic: string;
+            expired_total_atomic: string;
+            updated_at: string;
+          }>(c.env.COUNTERS, names),
+        );
+        const usd = (atomic: string | undefined): number =>
+          Number(BigInt(atomic ?? "0")) / 1e6;
+        return [...rows.values()]
+          .filter((row): row is NonNullable<typeof row> => Boolean(row))
+          .map((row) => ({
+            wallet: row.wallet,
+            balance_usd: usd(row.balance_atomic),
+            earned_usd: usd(row.earned_total_atomic),
+            redeemed_usd: usd(row.redeemed_total_atomic),
+            expired_usd: usd(row.expired_total_atomic),
+            updated_at: row.updated_at,
+          }))
+          .sort((a, b) => b.balance_usd - a.balance_usd);
+      })(),
     ]);
   const { renderBountiesPage, moneyOutAllTime } = await import(
     "@/pages/admin/bounties-page"
@@ -2418,6 +2453,7 @@ adminRoutes.get("/admin/bounties", async (c) => {
         boardState,
         shelf(creditOwed, null, "the credit liability", notes),
       ),
+      creditHolders: shelf(creditHolders, null, "the credit ledger", notes),
       now: new Date().toISOString(),
       loadNotes: notes,
     }),
