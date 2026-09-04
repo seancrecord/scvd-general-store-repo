@@ -13,6 +13,56 @@ import { isRecord, type HonoEnv } from "@/types";
  */
 export const requestRoutes = new Hono<HonoEnv>();
 
+/**
+ * HOW TO JOIN, said on the door itself (2026-09-04, CV's fourth
+ * round). The sold-out 409 hands a buyer this URL and says "leave your
+ * callback"; the obvious next move is a GET, and a GET answered "That
+ * aisle doesn't exist." The route took POST and nothing said so. The
+ * same block rides the 409 and the GET, so the instructions cannot
+ * drift between the pointer and the door.
+ */
+export function waitlistHowToJoin(base: string, itemId: string): Record<string, unknown> {
+  return {
+    waitlist_url: `${base}/api/waitlist/${itemId}`,
+    waitlist_method: "POST",
+    waitlist_body: {
+      agent_name: "optional, up to 80 characters, recorded as written",
+      callback_url:
+        "optional https URL; the keeper reads the list by hand and rings it when a slot opens",
+    },
+    waitlist_note:
+      "Free. Nothing is charged for joining, and a GET on that URL answers with these same instructions.",
+  };
+}
+
+requestRoutes.get("/api/waitlist/:item_id", async (c) => {
+  const itemId = c.req.param("item_id");
+  const item = getMenuItem(itemId);
+  if (!item) {
+    return c.json({ error: VOICE.unknownItem, charged: false }, 404);
+  }
+  const base = c.env.STORE_BASE_URL;
+  if (!item.waitlist) {
+    return c.json({
+      message: "No waitlist needed, that shelf never runs out. Go ahead and buy.",
+      charged: false,
+      buy_url: `${base}/api/buy/${item.id}`,
+    });
+  }
+  const remaining = await remainingInventory(c.env, item);
+  const stocked = remaining !== null && remaining > 0;
+  return c.json({
+    message: stocked
+      ? `Shelf's stocked, ${remaining} left this week. No need to wait, go right ahead.`
+      : VOICE.waitlist,
+    item_id: item.id,
+    charged: false,
+    shelf: stocked ? "stocked" : "empty",
+    ...(stocked ? { buy_url: `${base}/api/buy/${item.id}` } : {}),
+    ...waitlistHowToJoin(base, item.id),
+  });
+});
+
 requestRoutes.post("/api/waitlist/:item_id", async (c) => {
   const itemId = c.req.param("item_id");
   const item = getMenuItem(itemId);
@@ -51,7 +101,7 @@ requestRoutes.post("/api/waitlist/:item_id", async (c) => {
     record["agent_name"],
     callbackUrl,
   );
-  return c.json({ message: VOICE.waitlist, entry }, 201);
+  return c.json({ message: VOICE.waitlist, charged: false, entry }, 201);
 });
 
 requestRoutes.post("/api/request", async (c) => {

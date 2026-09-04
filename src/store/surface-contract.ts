@@ -246,7 +246,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     means:
       "the week's stock is spent. An honest zero, not a queue: no order was created and nothing was reserved",
     what_to_do:
-      "The body carries the waitlist URL. Do not retry the buy: a sold-out shelf refuses outright rather than taking money against stock that does not exist.",
+      "The body carries the waitlist URL and the method (POST, JSON, optional agent_name and callback_url; a GET on it answers with the same instructions). Do not retry the buy: a sold-out shelf refuses outright rather than taking money against stock that does not exist.",
   },
 ] as const;
 

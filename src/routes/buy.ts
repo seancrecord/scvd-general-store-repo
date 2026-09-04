@@ -15,6 +15,7 @@ import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
+import { waitlistHowToJoin } from "@/routes/requests";
 import { getMenuItem, VOICE } from "@/store";
 import { getRetiredItem } from "@/store/retired";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -154,7 +155,9 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         error: VOICE.soldOut,
         code: "sold_out",
         charged: false,
-        waitlist_url: `${c.env.STORE_BASE_URL}/api/waitlist/${item.id}`,
+        // The URL and the method, from the door's own block: a
+        // pointer that only names where, not how, was a dead end.
+        ...waitlistHowToJoin(c.env.STORE_BASE_URL, item.id),
       },
       409,
     );
