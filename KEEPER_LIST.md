@@ -58,6 +58,17 @@ build, it is on the roadmap.
   storefront, like `/operators`. PRESS: when a system meets
   the five listing facts, add it to the register with the
   citing URL and the date first seen, and nothing else.
+  AUTOMATED 2026-09-04 ("can we not just automate this
+  weekly check in admin?"): the citation watch rides the
+  Sunday press with the ward round. It reads every page the
+  register and `src/store/citation-prospects.json` name,
+  pages `citation_seen` when a prospect starts carrying a
+  row or a listed page stops, and prints the rows on
+  `/admin/outreach` under "Citations — who carries a row"
+  with a Check-now button. Your hand: put each page the
+  scorers note goes to in the prospects file (name, URL,
+  date noted) and keep pushing; move a prospect into the
+  register only when the five facts hold.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a

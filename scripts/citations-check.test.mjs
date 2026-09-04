@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { citationsOn, exitCodeFor, judge } from "./lib/citations.mjs";
+import { citationsOn, exitCodeFor, judge, judgeProspect } from "./lib/citations.mjs";
 
 const BASE = "https://scvd.store";
 
@@ -33,5 +33,24 @@ test("the register the page renders is the register the check reads, and every e
     assert.equal(typeof entry.name, "string");
     assert.match(entry.cites_at, /^https:\/\//);
     assert.match(entry.since, /^\d{4}-\d{2}-\d{2}$/);
+  }
+});
+
+test("a prospect that carries no row is silent, not gone, and never fails the run; one that does is cited", () => {
+  const prospect = { name: "Example List", url: "https://list.example/us", noted: "2026-09-04" };
+  assert.equal(judgeProspect(prospect, { status: 200, text: "a page about the store" }).verdict, "silent");
+  assert.equal(judgeProspect(prospect, { status: 200, text: `row: ${BASE}/corpus/host/door.example.json` }).verdict, "cited");
+  assert.equal(judgeProspect(prospect, { status: 404, text: "" }).verdict, "unreadable");
+  assert.equal(exitCodeFor([judgeProspect(prospect, { status: 200, text: "nothing" })]), 0);
+});
+
+test("every noted prospect is complete, and none is a page this store operates", () => {
+  const file = JSON.parse(readFileSync(new URL("../src/store/citation-prospects.json", import.meta.url), "utf8"));
+  assert.ok(Array.isArray(file.prospects));
+  for (const entry of file.prospects) {
+    assert.equal(typeof entry.name, "string");
+    assert.match(entry.url, /^https:\/\//);
+    assert.doesNotMatch(new URL(entry.url).host, /(^|\.)scvd\.store$/);
+    assert.match(entry.noted, /^\d{4}-\d{2}-\d{2}$/);
   }
 });
