@@ -173,6 +173,26 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **THE WALK CALLED 61 WORKING DOORS BROKEN (2026-09-04).**
+  Two preflight checks read every chain as Ethereum or
+  Solana. An XRPL address is base58 inside the Solana window,
+  Stellar and Algorand are base32 and matched nothing, and
+  XRPL issued currencies are decimal by the ledger — so
+  round W36 flipped 61 hosts from ready to not_ready and
+  moved published tiers (agent402.tools read "broken" on a
+  door answering a clean 402). Three of the 61 were on your
+  outreach list. Rule 52 already forbade it; its test walked
+  only KV reads. FIXED: unknown rails are named, never
+  judged, and the rule-52 guard now walks the readers that
+  judge strangers. `/corrections` carries it. YOUR PRESS,
+  after this deploys: walk the ward once by hand at
+  `/admin/ward` so the 61 get fresh rows before Sunday, and
+  do not hand-deliver any drafted note to a host in that 61
+  until the walk has re-read it. The next walk will list
+  them as "newly fixed" — that is us, not them; do not read
+  it as outreach working.
+
+
 - **Post this week's bounties.** The five on the board
   expired 2026-08-27 and read as open until 2026-09-01
   (`/corrections`). The board now says "between postings"

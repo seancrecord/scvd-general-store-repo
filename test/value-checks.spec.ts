@@ -236,13 +236,22 @@ describe("a rail this desk cannot read is never a defect in the door", () => {
     expect(payto.detail).toContain("Not judged");
   });
 
-  it("leaves an XRPL issued currency's decimal amount alone; drops are still judged", () => {
-    // RLUSD and friends are decimal by the ledger's own rules.
-    expect(
-      failed([{ network: "xrpl:0", amount: "0.01", asset: "524C555344000000000000000000000000000000", payTo: CLOUDPAYX }]),
-    ).toEqual([]);
-    // XRP itself is drops, an integer, and a decimal there is still wrong.
-    expect(failed([{ network: "xrpl:0", amount: "0.01", asset: "XRP", payTo: CLOUDPAYX }])).toContain("amount-atomic");
+  it("does not judge any amount on a rail this store does not settle on", () => {
+    // The first fix exempted XRPL issued currencies (decimal by the
+    // ledger) and kept judging XRP drops, Stellar and Algorand — on no
+    // better evidence than the assumption that had just been wrong.
+    // The rule-52 guard caught it. Recognising an address shape is not
+    // knowing a unit convention, so every non-EVM, non-Solana amount
+    // is named beside the pass and judged by nobody here.
+    for (const entry of [
+      { network: "xrpl:0", amount: "0.01", asset: "524C555344000000000000000000000000000000", payTo: CLOUDPAYX },
+      { network: "xrpl:0", amount: "0.01", asset: "XRP", payTo: CLOUDPAYX },
+      { network: "stellar:pubnet", amount: "0.5", asset: "USDC", payTo: AGENT402 },
+    ]) {
+      expect(failed([entry]), entry.network).toEqual([]);
+    }
+    const checks = l3bChecks([{ network: "xrpl:0", amount: "0.01", asset: "XRP", payTo: CLOUDPAYX }], readPayTo);
+    expect(checks.find((c) => c.name === "amount-atomic")!.detail).toContain("Not judged");
   });
 
   it("the whole mixed door the round misjudged now passes, entry for entry", () => {

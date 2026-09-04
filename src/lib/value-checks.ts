@@ -168,11 +168,21 @@ export function l3bChecks(
      * anything else is unsignable, and the check now says which
      * way it is wrong.
      */
+    /**
+     * NARROWED 2026-09-04, by the rule-52 guard catching this file's
+     * own first fix. Recognising a rail's ADDRESS shape is not knowing
+     * its AMOUNT semantics: the first pass exempted XRPL issued
+     * currencies and kept judging Stellar and Algorand, on no better
+     * evidence than the assumption that had just been wrong about
+     * XRPL. So the atomic-units rule is applied only where this store
+     * settles and has tested it — EVM and Solana — and every other
+     * rail's amount is named, not judged.
+     */
     const family = familyOf(network);
-    const issuedOnXrpl = family === "xrpl" && String(entry["asset"] ?? "").toUpperCase() !== "XRP";
-    if (family === "unknown" || issuedOnXrpl) {
+    const judgeAmount = ["evm", "base", "solana"].includes(family);
+    if (!judgeAmount) {
       amountUnjudged.push(
-        `accepts[${index}].amount "${amount}" on ${network}${issuedOnXrpl ? " (an issued currency, denominated in decimals by the ledger)" : " (a chain this desk does not read amounts for)"}`,
+        `accepts[${index}].amount "${amount}" on ${network} (this desk does not settle on this rail and does not know its unit convention)`,
       );
     } else if (amount.includes(".")) {
       decimalAmounts.push(`accepts[${index}].amount "${amount}"`);
