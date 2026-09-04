@@ -11,6 +11,10 @@ import {
 import { apiCatalog } from "@/lib/api-catalog";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { FEEDS } from "@/routes/feeds";
+import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
+import { VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 
 const BASE = "https://scvd.store";
 
@@ -388,5 +392,52 @@ describe("the manifest carries its envelope, not only its entries", () => {
     });
     expect(typeof manifest["updatedAt"]).toBe("string");
     expect(Array.isArray(manifest["entries"])).toBe(true);
+  });
+});
+
+describe("every record the store publishes is in the manifest (2026-09-04, roadmap C3)", () => {
+  /*
+   * The channel is agent-resource catalogs: a platform reads one
+   * document and learns what this origin serves. Before this, the
+   * manifest named the store's MCP door, the card, the contract and
+   * the skills — and none of the datasets, none of the feeds, not
+   * the verifier door, not the function-calling tools. Each roster
+   * below is the one the store's own guards already walk, so a
+   * dataset or feed added there is an entry here without a second
+   * list to forget.
+   */
+  it("names both MCP doors, and the verifier's capabilities are its tools by name", () => {
+    const entries = ardManifest(BASE).entries;
+    const doors = entries.filter((entry) => entry.type === "application/mcp-server-card+json");
+    expect(doors.map((entry) => entry.url).sort()).toEqual([`${BASE}/.well-known/mcp`, `${BASE}/mcp/verifier`].sort());
+    const verifier = doors.find((entry) => entry.url === `${BASE}/mcp/verifier`)!;
+    expect(verifier.capabilities).toEqual(VERIFIER_TOOLS.map((tool) => tool.name));
+    expect(verifier.capabilities!.some((name) => name.startsWith("buy_"))).toBe(false);
+  });
+
+  it("names the evidence agent's card with its tasks, at the URL the api-catalog anchors", () => {
+    const card = ardManifest(BASE).entries.find((entry) => entry.type === "application/a2a-agent-card+json")!;
+    expect(card.url).toBe(`${BASE}/.well-known/a2a.json`);
+    expect(card.capabilities).toEqual([...EVIDENCE_TASKS]);
+  });
+
+  it("names the function-calling tools document", () => {
+    const tools = ardManifest(BASE).entries.find((entry) => entry.url === `${BASE}/openapi-tools.json`)!;
+    expect(tools.identifier).toBe(`urn:air:${new URL(BASE).host}:api:function-calling-tools`);
+  });
+
+  it("names every published dataset and every feed, one entry each, from the rosters", () => {
+    const entries = ardManifest(BASE).entries;
+    const datasets = entries.filter((entry) => entry.identifier.includes(":dataset:"));
+    expect(datasets.map((entry) => entry.url).sort()).toEqual(PUBLISHED_DATASETS.map((dataset) => `${BASE}${dataset.path}`).sort());
+    for (const entry of datasets) {
+      const dataset = PUBLISHED_DATASETS.find((row) => `${BASE}${row.path}` === entry.url)!;
+      expect(entry.description, entry.identifier).toContain(dataset.caution);
+    }
+    const feeds = entries.filter((entry) => entry.type === "application/atom+xml");
+    expect(feeds.map((entry) => entry.url).sort()).toEqual(FEEDS.map((feed) => `${BASE}${feed.path}`).sort());
+    // Identifiers stay unique when the rosters grow: a registry keys on them.
+    const identifiers = entries.map((entry) => entry.identifier);
+    expect(new Set(identifiers).size).toBe(identifiers.length);
   });
 });

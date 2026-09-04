@@ -3,6 +3,10 @@ import { catalogLastUpdated } from "@/lib/freshness";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { MENU_ITEMS, STORE_SERVICE_NAME, STORE_TAGS } from "@/store";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { FEEDS } from "@/routes/feeds";
+import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
+import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 
 /**
  * AGENTIC RESOURCE DISCOVERY (ARD) — /.well-known/ard.json, and the
@@ -42,7 +46,12 @@ import { MENU_ITEMS, STORE_SERVICE_NAME, STORE_TAGS } from "@/store";
  *
  * DERIVED FROM WHAT THE STORE ALREADY DECLARES. Every entry's URL is a
  * surface the api-catalog, the MCP manifest or the A2A card already
- * names; the versioned instruments come from API_VERSIONS, the same
+ * names; since 2026-09-04 (roadmap C3) that is every record the
+ * store publishes — both MCP doors, the evidence agent's card, the
+ * HTTP contract and the function-calling tools document, every
+ * dataset in PUBLISHED_DATASETS, every feed in FEEDS, the skills —
+ * so an agent platform that reads one document learns all of them.
+ * The versioned instruments come from API_VERSIONS, the same
  * rows the deprecation policy prints and the routes read before
  * emitting Sunset headers; representative queries come from
  * CAPABILITY_QUERY and USE_WHEN, which exist precisely to hold "the
@@ -89,6 +98,9 @@ const TYPE_A2A_AGENT = "application/a2a-agent-card+json";
 const TYPE_SKILL = "application/ai-skill+md";
 /** Not from ARD: the de-facto OpenAPI type the api-catalog already uses. */
 const TYPE_OPENAPI = "application/openapi+json;version=3.1";
+const TYPE_DATASET = "application/ld+json;profile=dataset";
+const TYPE_FEED = "application/atom+xml";
+const TYPE_TOOLS = "application/json;profile=function-calling-tools";
 
 export interface ArdEntry {
   /** Present only on in-page copies — see ardInPageEntries. */
@@ -189,17 +201,59 @@ export function ardManifest(base: string): ArdManifest {
       trustManifest,
     },
     {
-      identifier: urn(host, "agent", "general-store"),
-      displayName: `${STORE_SERVICE_NAME} — A2A agent card`,
+      identifier: urn(host, "agent", "evidence"),
+      displayName: "SCVD Evidence Agent — A2A agent card",
       type: TYPE_A2A_AGENT,
       url: `${base}/.well-known/a2a.json`,
       description:
-        "The same store as an A2A agent: skills, input modes and the x402 payment terms each paid skill answers with. Also served at /.well-known/agent-card.json and /.well-known/agent.json.",
-      representativeQueries: shelfQueries(),
+        `A specialist another agent delegates to when it needs evidence about an x402 door: ${EVIDENCE_TASKS.length} read-only tasks over A2A message/send at /a2a — endpoint preflight, receipt verification, readiness lookup — each answered with one bounded artifact naming what it does not establish. Free; nothing paid; never a ranking. Also served at /.well-known/agent-card.json and /.well-known/agent.json.`,
+      capabilities: [...EVIDENCE_TASKS],
+      representativeQueries: ["is this x402 endpoint payable before I pay it", "does this x402 receipt verify against the issuer's key", "what does the signed corpus hold about this host"],
       tags: [...STORE_TAGS],
       updatedAt,
       trustManifest,
     },
+    {
+      identifier: urn(host, "server", "x402-verifier"),
+      displayName: `${VERIFIER_TITLE} — MCP server`,
+      type: TYPE_MCP_SERVER,
+      url: `${base}/mcp/verifier`,
+      description:
+        `A second MCP door (${VERIFIER_SERVER_NAME}) serving only read-only x402 verification tools under task-shaped names, on the same handlers as the store's full door, with no paid tool reachable. For a client that should never see a shelf.`,
+      capabilities: VERIFIER_TOOLS.map((tool) => tool.name),
+      representativeQueries: ["preflight an x402 endpoint", "verify an x402 receipt", "look up an endpoint's readiness history", "what does this x402 defect class mean"],
+      tags: [...STORE_TAGS],
+      updatedAt,
+      trustManifest,
+    },
+    {
+      identifier: urn(host, "api", "function-calling-tools"),
+      displayName: `${STORE_SERVICE_NAME} — the free instruments as function-calling tools`,
+      type: TYPE_TOOLS,
+      url: `${base}/openapi-tools.json`,
+      description:
+        "The free, read-only instruments in the common function-calling shape, one worked call each, derived from the same catalog the MCP door serves. No paid door appears.",
+      updatedAt,
+      trustManifest,
+    },
+    ...PUBLISHED_DATASETS.map((dataset) => ({
+      identifier: urn(host, "dataset", dataset.path.replace(/^\//, "").replace(/\.json$/, "").replace(/[^a-z0-9]+/gi, "-")),
+      displayName: `${dataset.name} — dataset`,
+      type: TYPE_DATASET,
+      url: `${base}${dataset.path}`,
+      description: `${dataset.description} ${dataset.caution}`,
+      updatedAt,
+      trustManifest,
+    })),
+    ...FEEDS.map((feed) => ({
+      identifier: urn(host, "feed", feed.path.replace(/^\/feeds\//, "").replace(/\.xml$/, "")),
+      displayName: `${feed.name} — Atom feed`,
+      type: TYPE_FEED,
+      url: `${base}${feed.path}`,
+      description: `${feed.what} ${feed.cadence}.`,
+      updatedAt,
+      trustManifest,
+    })),
     {
       identifier: urn(host, "api", "http"),
       displayName: `${STORE_SERVICE_NAME} — HTTP API`,
