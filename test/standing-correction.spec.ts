@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { MetricEvent } from "@/lib/metrics";
 import { readCorrection, recomputeCorrections } from "@/services/reclassify";
 import type { Env } from "@/types";
@@ -104,5 +104,56 @@ describe("the walk re-reads every row, not a window", () => {
     expect(after?.moved_to_infrastructure).toBe(
       before?.moved_to_infrastructure,
     );
+  });
+});
+
+/**
+ * THE SECOND MOVE (2026-09-04): a client the table calls organic whose
+ * behaviour is a catalog walk. Published as its own half so a reader
+ * can see which part of the correction is a name and which is a deed.
+ */
+describe("the standing correction moves walkers by behaviour", () => {
+  const T0 = Date.parse("2026-07-10T09:00:00.000Z");
+  const at = (ms: number) => new Date(T0 + ms).toISOString();
+
+  // The cases above compare before/after on a shared month; these
+  // count exact rows, so each starts from an empty book.
+  beforeEach(async () => {
+    let cursor: string | undefined;
+    for (;;) {
+      const listed = await testEnv.COUNTERS.list({ prefix: "evt:", limit: 1000, ...(cursor ? { cursor } : {}) });
+      for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+      if (listed.list_complete) break;
+      cursor = listed.cursor;
+    }
+  });
+
+  it("moves a generic-SDK client that walked four doors inside a minute", async () => {
+    for (const [n, item] of ["hello", "small_blessing", "luckies", "daily_fortune"].entries()) {
+      await seedRow(challenge({ user_agent: "node", item, at: at(n * 10_000) }));
+    }
+    // A buyer-shaped client that looked at two doors is left alone.
+    await seedRow(challenge({ user_agent: "buyer-client/1.0", item: "hello", at: at(5_000) }));
+    await seedRow(challenge({ user_agent: "buyer-client/1.0", item: "luckies", at: at(8_000) }));
+    const [july] = await recomputeCorrections(testEnv, new Date("2026-07-31T00:00:00Z"));
+    expect(july?.moved_by_behaviour).toBe(4);
+    expect(july?.behaviour_movers?.[0]).toEqual({ user_agent: "node", rows: 4 });
+    // The name-based half is untouched by it: "node" names nothing.
+    expect(july?.moved_to_infrastructure).toBe(0);
+    // And the corrected figure is what is left after BOTH halves.
+    expect(july?.corrected_organic).toBe(2);
+    expect(july?.recorded_organic).toBe(6);
+  });
+
+  it("does not move three doors in a minute, or four across two", async () => {
+    for (const [n, item] of ["hello", "small_blessing", "luckies"].entries()) {
+      await seedRow(challenge({ user_agent: "undici", item, at: at(n * 10_000) }));
+    }
+    for (const [n, item] of ["hello", "small_blessing", "luckies", "daily_fortune"].entries()) {
+      await seedRow(challenge({ user_agent: "Deno/2", item, at: at(n * 30_000) })); // 90s span
+    }
+    const [july] = await recomputeCorrections(testEnv, new Date("2026-07-31T00:00:00Z"));
+    expect(july?.moved_by_behaviour).toBe(0);
+    expect(july?.corrected_organic).toBe(7);
   });
 });

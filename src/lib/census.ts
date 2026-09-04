@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Channel, Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { WALK_MIN_ITEMS, WALK_WINDOW_MS, widestWalk } from "@/lib/walkers";
 
 /**
  * THE CENSUS and THE WALK DETECTOR: two questions, one row walk.
@@ -40,8 +41,8 @@ const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
 /** A walk is N distinct items inside this window from one user-agent. */
-const WALK_WINDOW_MS = 60_000;
-const WALK_MIN_ITEMS = 4;
+// The rule itself lives in lib/walkers.ts, shared with the
+// reclassification walk and the funnel, so the three cannot disagree.
 
 const NO_UA = "(no user-agent)";
 
@@ -105,32 +106,6 @@ interface Tally {
   items: Set<string>;
 }
 
-/**
- * The widest set of distinct items this client touched inside one
- * window. Two pointers over the sorted touches; the map holds the
- * items currently inside the window, so its size is the walk width.
- */
-function widestWalk(touches: { at: number; item: string }[]): number {
-  const sorted = [...touches].sort((a, b) => a.at - b.at);
-  const inWindow = new Map<string, number>();
-  let widest = 0;
-  let left = 0;
-  for (let right = 0; right < sorted.length; right += 1) {
-    const entry = sorted[right];
-    if (!entry) continue;
-    inWindow.set(entry.item, (inWindow.get(entry.item) ?? 0) + 1);
-    while (left < right) {
-      const oldest = sorted[left];
-      if (!oldest || entry.at - oldest.at <= WALK_WINDOW_MS) break;
-      const remaining = (inWindow.get(oldest.item) ?? 1) - 1;
-      if (remaining <= 0) inWindow.delete(oldest.item);
-      else inWindow.set(oldest.item, remaining);
-      left += 1;
-    }
-    widest = Math.max(widest, inWindow.size);
-  }
-  return widest;
-}
 
 /**
  * Walks the raw rows newest-first and takes the census. Bounded the
