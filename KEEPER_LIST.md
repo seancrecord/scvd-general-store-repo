@@ -71,7 +71,11 @@ build, it is on the roadmap.
   button. Your hand: set `note_sent` on a row the day you
   send, run `npm run outreach:build`, and move a system into
   `src/store/citing-systems.json` only when the five facts
-  hold.
+  hold. Stamping a send is a one-field edit that breaks
+  nothing: the derived table carries WHO EXISTS only, and
+  the status columns moved into the JSON alone (2026-09-04),
+  because a table that carried them failed the build every
+  time you did the one thing the whole loop is for.
   ⚑ CORRECTED 2026-09-04, and worth knowing: the first
   sweep reported SEVEN directories as citing us. Six carried
   this store's own README sentence ("read the dated,
