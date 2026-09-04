@@ -32,7 +32,8 @@ export const SELF_PUBLISHED_IDS = ["cert_4dww28dx5j", ...RETIRED_EXAMPLE_IDS];
 export function citationPatterns(base) {
   const root = base.replace(/\/$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return [
-    new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
+    // A real artifact id is a prefix and ten characters (src/lib/ids.ts).
+    new RegExp(`${root}/api/verify/[a-z]+_[A-Za-z0-9]{8,24}\\b`, "g"),
     new RegExp(`${root}/corpus/[0-9]+\\.json`, "g"),
     new RegExp(`${root}/corpus/host/[A-Za-z0-9.-]+\\.json`, "g"),
     new RegExp(`${root}/corpus/round/[0-9]{4}-W[0-9]{2}(?:\\.json)?`, "g"),

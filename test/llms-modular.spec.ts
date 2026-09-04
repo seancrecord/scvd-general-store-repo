@@ -770,14 +770,23 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "/sources",
  * "/ledger", "/mcp-ward" and "never_answered", and still every
  * earlier pin.
- * Re-taken 2026-09-04 — the SIXTY-SIXTH — on the keeper's ruling
+ * Re-taken 2026-09-04 — the SIXTY-SIXTH — at the merge of main into the
+ * sweep branch, and by the operators' paragraph:
+ * the room gained a door (POST /api/declare-door) and so a feature row,
+ * and the guide now carries its proposition and money sentence and
+ * says how a host the discovery feed does not name gets into the
+ * census — its own /.well-known/x402, read by the weekly sweep or by
+ * hand. Confirmed before this value was taken: the guide carries
+ * "/operators", "/api/declare-door", "/.well-known/x402" and "only
+ * that host's own file", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SEVENTH — on the keeper's ruling
  * that the three instrument sections are "fine as written": their
  * three ⚑ KEEPER'S PEN flags come off, which is the only edit. The
  * how-it-works flag is not his to lift here and stays. Confirmed
  * before this value was taken: the guide carries "/sources",
  * "/ledger", "/mcp-ward", exactly one "KEEPER'S PEN", and still every
  * earlier pin.
- * Re-taken 2026-09-04 — the SIXTY-SEVENTH — for the source register's
+ * Re-taken 2026-09-04 — the SIXTY-EIGHTH — for the source register's
  * fifth word. Its first live read showed the CDP discovery feed as
  * never_answered beside a heartbeat crediting it with a thousand
  * probes: the census records a page-capped listing as null on
@@ -786,12 +795,18 @@ const BASE = "https://scvd.store";
  * guide's "Four words carry it" became five. Confirmed before this
  * value was taken: the guide carries "Five words carry it" and
  * "partial", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-NINTH — at the merge of main into
+ * the instruments branch: the operators' paragraph and the register's
+ * five words both stand, and the value was taken once on the merged
+ * head. Confirmed before this value was taken: the guide carries
+ * "/api/declare-door" and "Five words carry it", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "df86eb6df8d6fafcb1fe03440fcaf632f727124d1e86f68e371c54fa1b60592a";
+  "52649b533e7655a67d6b941475d6f8d669eefd911e4650e247eaaf8b19eaae2a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
