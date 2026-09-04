@@ -8,6 +8,15 @@ import {
   type SourceRegister,
 } from "@/services/source-liveness";
 import { readHeartbeat, type Heartbeat } from "@/services/ward-heartbeat";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { securityBlock } from "@/store/surface-contract";
+import {
+  INSTRUMENTS_OPENED,
+  MCP_WARD_PROPOSITION,
+  SOURCES_FOR_MONEY,
+  SOURCES_FREE_FIRST,
+  SOURCES_PROPOSITION,
+} from "@/store/copy/instruments";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -147,6 +156,7 @@ function renderPage(
     : "none — no round has been stored yet, so every row below is a roster entry with no history behind it";
 
   return `<section>
+    <p class="menu-desc">${escapeHtml(SOURCES_PROPOSITION)}</p>
     <p class="menu-desc">Every number this store publishes about the x402
     ecosystem rests on a handful of public directories. This is the list of
     them, and — the column that matters — <strong>the last time each one
@@ -190,10 +200,76 @@ function renderPage(
     <p class="menu-desc">${escapeHtml(register.what_this_is_not)}</p>
     <p class="menu-meta">${escapeHtml(register.how_to_rederive)}</p>
   </section>
+  <section><h2>What this costs</h2>
+  <p class="menu-desc">${escapeHtml(SOURCES_FOR_MONEY)}</p>
+  <p class="menu-meta">${escapeHtml(SOURCES_FREE_FIRST)}</p></section>
   <section><p class="menu-desc">The same register as JSON, byte for byte:
   <a href="/sources.json"><code>${escapeHtml(base)}/sources.json</code></a>.
   Where our observing stops, by class and chain: <a href="/coverage">/coverage</a>.
-  What we later found we had stated wrong: <a href="/corrections">/corrections</a>.</p></section>`;
+  What we later found we had stated wrong: <a href="/corrections">/corrections</a>.
+  One week of all of it, read: <a href="/ledger">/ledger</a>.</p>
+  <p class="menu-desc">The other ward, kept apart on purpose:
+  <a href="/mcp-ward">/mcp-ward</a> walks the MCP registry.
+  ${escapeHtml(MCP_WARD_PROPOSITION)}</p></section>
+  ${jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Where our numbers come from",
+    description: SOURCES_PROPOSITION,
+    url: `${base}/sources`,
+    creator: organizationRef(base),
+    isAccessibleForFree: true,
+    conditionsOfAccess: "Free to read. No account, no key.",
+    measurementTechnique:
+      "Per-source liveness derived from the stored weekly ward rounds, where each round records what each source returned and distinguishes a source that answered with nothing from one that could not be read.",
+    variableMeasured: [
+      "source status: live, stale, never_answered or unread",
+      "last successful pull, with the signed week it belongs to",
+      "consecutive failed rounds since the last answer",
+      "rounds in which the source was asked at all",
+      "ward heartbeat: whether the weekly round ran and whether it wrote anything",
+    ],
+    distribution: [
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: `${base}/sources.json`,
+        name: "The source register, with the heartbeat",
+      },
+    ],
+  })}`;
+}
+
+/**
+ * THE FIVE ANSWERS (house rule 60.4) and the three sentences (60.2),
+ * identical on this twin, the page and the guide. A room that sells
+ * nothing owes them exactly as much as a room that takes money: the
+ * rule is about a reader finding the thing and knowing what it is
+ * for, and "what does money buy here" has a real answer on an
+ * instrument-transparency page — nothing, on purpose.
+ */
+function fiveAnswers(base: string) {
+  return {
+    what_this_is: SOURCES_PROPOSITION,
+    proposition: SOURCES_PROPOSITION,
+    price: SOURCES_FOR_MONEY,
+    free_first: SOURCES_FREE_FIRST,
+    opened: INSTRUMENTS_OPENED,
+    how_to_call: {
+      this_page: `GET ${base}/sources with Accept: application/json for this twin, text/html for the page. No account, no key.`,
+      one_source: "Every row is in `sources`; join a row to a signed round on `last_successful_week`.",
+      the_heartbeat: "The `heartbeat` block says whether the weekly round is still running and whether the newest one wrote anything.",
+      rederive: `GET ${base}/corpus.json for the signed weeks, then recount each source from the rounds own per_source block.`,
+    },
+    errors: {
+      this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
+      empty_history: "A store with no stored rounds answers 200 with every source at its roster state and no liveness behind it. That is a fact about our age, not an error.",
+    },
+    security: securityBlock(base, {
+      does_in_your_name: "Nothing. A GET here reads stored rounds; no directory is contacted, nothing is signed, nothing is fetched from anyone on your behalf.",
+      stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
+    }),
+  };
 }
 
 sourceRoutes.get("/sources.json", async (c) => {
@@ -201,7 +277,7 @@ sourceRoutes.get("/sources.json", async (c) => {
     sourceRegister(c.env),
     readHeartbeat(c.env),
   ]);
-  return c.json({ ...register, heartbeat });
+  return c.json({ ...fiveAnswers(c.env.STORE_BASE_URL), ...register, heartbeat });
 });
 
 sourceRoutes.get("/sources", async (c) => {
@@ -210,7 +286,7 @@ sourceRoutes.get("/sources", async (c) => {
     readHeartbeat(c.env),
   ]);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ ...register, heartbeat });
+    return c.json({ ...fiveAnswers(c.env.STORE_BASE_URL), ...register, heartbeat });
   }
   return c.html(
     renderSimplePage({

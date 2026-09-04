@@ -8,6 +8,14 @@ import {
   type LedgerFinding,
   type WeekLedger,
 } from "@/services/week-ledger";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { securityBlock } from "@/store/surface-contract";
+import {
+  INSTRUMENTS_OPENED,
+  LEDGER_FOR_MONEY,
+  LEDGER_FREE_FIRST,
+  LEDGER_PROPOSITION,
+} from "@/store/copy/instruments";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -182,7 +190,8 @@ function renderLedger(ledger: WeekLedger, base: string): string {
     : "";
 
   return `<section>
-    <p class="standfirst">This is one week of the public x402 neighbourhood as
+    <p class="standfirst">${escapeHtml(LEDGER_PROPOSITION)}</p>
+    <p class="menu-desc">This is one week of the public x402 neighbourhood as
     this store's weekly round saw it — what we reached, what answered, what
     broke, what moved, and the part that matters most on a page like this:
     what we could not see. Every figure is a count over a single signed,
@@ -267,13 +276,61 @@ function renderLedger(ledger: WeekLedger, base: string): string {
     <p class="menu-desc">${escapeHtml(ledger.how_to_rederive)}</p>
     <h3>What this is not</h3>
     <p class="menu-desc">${escapeHtml(ledger.what_this_is_not)}</p>
+    <h3>What this costs</h3>
+    <p class="menu-desc">${escapeHtml(LEDGER_FOR_MONEY)}</p>
+    <p class="menu-meta">${escapeHtml(LEDGER_FREE_FIRST)}</p>
     <p class="menu-meta">The same ledger as JSON:
     <a href="/ledger/${escapeHtml(ledger.week)}.json"><code>${escapeHtml(base)}/ledger/${escapeHtml(ledger.week)}.json</code></a>.
     The signed snapshot behind it:
     <a href="/corpus/${escapeHtml(String(ledger.sequence))}.json"><code>/corpus/${escapeHtml(String(ledger.sequence))}.json</code></a>.
-    Every door, alphabetical: <a href="/doors">/doors</a>.</p>
+    Every door, alphabetical: <a href="/doors">/doors</a>.
+    Where these numbers come from: <a href="/sources">/sources</a>.</p>
   </section>
-  ${nav}`;
+  ${nav}
+  ${jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Report",
+    name: `The Week's Ledger — ${ledger.week}`,
+    description: LEDGER_PROPOSITION,
+    url: `${base}/ledger/${ledger.week}`,
+    creator: organizationRef(base),
+    isAccessibleForFree: true,
+    datePublished: ledger.taken_at,
+    temporalCoverage: ledger.week,
+    citation: `${base}/corpus/${ledger.sequence}.json`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+  })}`;
+}
+
+/**
+ * THE FIVE ANSWERS (60.4) and the three sentences (60.2), on the index
+ * twin and on every week's twin alike. A reader who lands on one week
+ * should not have to walk up to the index to learn what the room is
+ * or what it costs.
+ */
+function fiveAnswers(base: string) {
+  return {
+    what_this_is: LEDGER_PROPOSITION,
+    proposition: LEDGER_PROPOSITION,
+    price: LEDGER_FOR_MONEY,
+    free_first: LEDGER_FREE_FIRST,
+    opened: INSTRUMENTS_OPENED,
+    how_to_call: {
+      the_index: `GET ${base}/ledger for every week the chain holds, HTML or JSON by Accept.`,
+      one_week: `GET ${base}/ledger/2026-W36 for the page, or ${base}/ledger/2026-W36.json for the same reading as JSON.`,
+      the_findings: "Every entry in `findings` names the fields it was computed from in `derived_from`; fetch the snapshot it cites and recount.",
+      subscribe: `The signed source is ${base}/corpus/latest.json, which carries ETag and Last-Modified for a conditional GET.`,
+    },
+    errors: {
+      unknown_week: "A week the chain does not hold answers 404 with `known_weeks` naming the weeks it does. This store does not invent a baseline for a week it did not seal.",
+      malformed_week: "Anything that is not a YYYY-Wnn week answers 404 rather than being guessed at.",
+      no_weeks_yet: "With an empty chain the index answers 200 with an empty `weeks_held`. That is our age, not an error.",
+    },
+    security: securityBlock(base, {
+      does_in_your_name: "Nothing. A GET here reads signed snapshots already published; no door is probed and nothing is fetched from anyone on your behalf.",
+      stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
+    }),
+  };
 }
 
 function notFound(week: string, known: string[], base: string) {
@@ -299,6 +356,7 @@ ledgerRoutes.get("/ledger", async (c) => {
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
       artifact: "week_ledger_index",
+      ...fiveAnswers(base),
       weeks_held: known_weeks,
       latest: ledger ? `${base}/ledger/${ledger.week}.json` : null,
       what_this_is:
@@ -314,10 +372,13 @@ ledgerRoutes.get("/ledger", async (c) => {
       path: "/ledger",
       extraCss: LEDGER_CSS,
       bodyHtml: `<section>
-        <p class="standfirst">One reading per signed week. Each page says what
+        <p class="standfirst">${escapeHtml(LEDGER_PROPOSITION)}</p>
+        <p class="menu-desc">One reading per signed week. Each page says what
         the round reached, what answered, what changed against the week before,
         and — on the same page, never a click away — what this instrument could
         not see.</p>
+        <p class="menu-desc">${escapeHtml(LEDGER_FOR_MONEY)}</p>
+        <p class="menu-meta">${escapeHtml(LEDGER_FREE_FIRST)}</p>
         ${
           ledger
             ? `<p class="menu-desc">The newest is
@@ -342,7 +403,27 @@ ledgerRoutes.get("/ledger", async (c) => {
       <p class="menu-meta">A week absent from this list was never sealed —
       the round did not run, or ran and could not be sealed. Gaps are named
       on each week's page and on <a href="/corpus.json">/corpus.json</a>
-      rather than left for a reader to notice.</p></section>`,
+      rather than left for a reader to notice. Whether the feeds behind these
+      weeks are still answering: <a href="/sources">/sources</a>.</p></section>
+      ${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: "The Week's Ledger",
+        description: LEDGER_PROPOSITION,
+        url: `${base}/ledger`,
+        creator: organizationRef(base),
+        isAccessibleForFree: true,
+        conditionsOfAccess: "Free to read. No account, no key.",
+        license: "https://creativecommons.org/licenses/by/4.0/",
+        measurementTechnique:
+          "Derived at read from the signed weekly corpus snapshots and the live source register; every finding names the fields it was computed from.",
+        variableMeasured: [
+          "doors named, knocked on, payable, not payable and unreachable, each with its denominator",
+          "week-over-week movement: appeared, left, recovered, regressed",
+          "named defect classes and their counts",
+          "gaps counted against the observer: doors never probed, degraded vantage, suspect coverage",
+        ],
+      })}`,
     }),
   );
 });
@@ -353,7 +434,7 @@ ledgerRoutes.get("/ledger/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) => {
   if (!ledger) {
     return c.json(notFound(week, known_weeks, c.env.STORE_BASE_URL), 404);
   }
-  return c.json({ ...ledger, weeks_held: known_weeks });
+  return c.json({ ...fiveAnswers(c.env.STORE_BASE_URL), ...ledger, weeks_held: known_weeks });
 });
 
 ledgerRoutes.get("/ledger/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
@@ -383,7 +464,7 @@ ledgerRoutes.get("/ledger/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
     );
   }
 
-  if (!html) return c.json({ ...ledger, weeks_held: known_weeks });
+  if (!html) return c.json({ ...fiveAnswers(base), ...ledger, weeks_held: known_weeks });
   return c.html(
     renderSimplePage({
       title: `The Week's Ledger — ${ledger.week}`,

@@ -73,6 +73,22 @@ function stubWalkWorld(options: { total: number }) {
       // Unreadable directory this week; the census law handles null.
       return new Response("gone", { status: 503 });
     }
+    /*
+     * The two directories the roster widened to on 2026-09-04. Dark
+     * here for the same reason fuchss is: this file is about the
+     * WALK, and a readable directory would put hosts in the census
+     * that every population assertion below would then have to carry.
+     *
+     * They must be named rather than left to the fallthrough, because
+     * the fallthrough is the PROBE counter — an unrecognised fetch is
+     * scored as a knock on somebody door, which is exactly the thing
+     * the assembly test exists to prove does not happen. A new source
+     * added to the round would otherwise read here as the assembly
+     * probing again.
+     */
+    if (url.includes("x402-list.com") || url.includes("agentic.market")) {
+      return new Response("gone", { status: 503 });
+    }
     void init;
     probeCount += 1;
     return new Response("{}", {

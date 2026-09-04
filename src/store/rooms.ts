@@ -144,6 +144,23 @@ export const ROOMS: readonly Room[] = [
     deeper: ["conformance_watch"],
   },
   /**
+   * THE WEEK'S LEDGER, 2026-09-04, placed here rather than beside
+   * the instrument rooms on purpose: it is a READING of the corpus,
+   * so its siblings are the brief and the monthly state, not the
+   * coverage matrix.
+   *
+   * The keeper asked for a summarised, human-readable snapshot
+   * "almost as publishing research". Everything on it was already
+   * published and already signed; what was missing was a page that
+   * joined the five surfaces a reader had to hold open at once and
+   * said what the week amounted to.
+   */
+  {
+    path: "/ledger",
+    name: "The Week's Ledger",
+    deeper: ["conformance_watch"],
+  },
+  /**
    * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
    * indexes snapshots and /corpus/host/{host}.json needs a hostname
    * you already know, so "which doors do you have?" — the first
@@ -259,33 +276,29 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/coverage", name: "What we observe, and what we do not" },
   /**
-   * The source register, 2026-09-04. The coverage matrix above says
-   * where our looking stops; this says where our numbers COME FROM
-   * and when each of those places last answered. It exists because
-   * the roster it replaced was prose in a TypeScript file that
-   * nothing re-checked — a claim about the present tense with no
-   * mechanism to make it false. Held off the storefront pending the
-   * keeper's slot ruling, like every room before it; every
-   * agent-read surface carries it from day one.
+   * THE SOURCE REGISTER, 2026-09-04, and it belongs directly under
+   * the coverage matrix because the two answer halves of one
+   * question. The matrix says where our looking STOPS; this says
+   * where our numbers COME FROM, and when each of those places last
+   * actually answered us.
+   *
+   * It exists because the roster it replaced was prose in a
+   * TypeScript file that nothing re-checked — a claim about the
+   * present tense with no mechanism to make it false. On the front
+   * of the store by the keeper's word, 2026-09-04 ("everything
+   * should be true"), which is the right call for the plainest
+   * question a reader can put to a measurement project.
    */
-  { path: "/sources", name: "Where our numbers come from", on_storefront: false },
+  { path: "/sources", name: "Where our numbers come from" },
   /**
-   * The week's ledger, 2026-09-04, on the keeper's ask for a
-   * summarised, human-readable snapshot "almost as publishing
-   * research". Everything on it was already published and already
-   * signed; what was missing was a page that joined the five
-   * surfaces a reader had to hold open at once and said what the
-   * week amounted to. Off the storefront pending his slot ruling.
-   */
-  { path: "/ledger", name: "The Week's Ledger", on_storefront: false },
-  /**
-   * The MCP ward, 2026-09-04, on the keeper's ask to "carve out an
+   * THE MCP WARD, 2026-09-04, on the keeper's ask to "carve out an
    * mcp ward and do another list similarly". Its own room rather
    * than a section of the x402 one, because the two share no
    * denominator and a reader who adds their totals has been misled
-   * by us. Off the storefront pending his slot ruling.
+   * by us rather than by themselves. Sits beside /sources because
+   * both are the store describing its own instruments.
    */
-  { path: "/mcp-ward", name: "The MCP ward", on_storefront: false },
+  { path: "/mcp-ward", name: "The MCP ward" },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   /**

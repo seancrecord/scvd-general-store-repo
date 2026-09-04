@@ -1088,10 +1088,30 @@ adminRoutes.get("/admin/ward", async (c) => {
     "@/services/ward-round"
   );
   const { renderWardPage } = await import("@/pages/admin/ward-page");
+  const { sourceRegister } = await import("@/services/source-liveness");
+  const { readHeartbeat } = await import("@/services/ward-heartbeat");
   const round = await latestWardRound(c.env);
   const previous = await previousWardRound(c.env);
+  /*
+   * Both readings are OPTIONAL on this page: they are what the keeper
+   * reaches for when something looks wrong, so a failed derive must
+   * never take down the round's own numbers. Null renders as an absent
+   * block, never as a confident all-clear — "unknown" and "healthy"
+   * cannot be allowed to look alike on a page about whether the
+   * instrument is running.
+   */
+  const [register, beat] = await Promise.all([
+    sourceRegister(c.env).catch(() => null),
+    readHeartbeat(c.env).catch(() => null),
+  ]);
   return c.html(
-    renderWardPage(round, previous, round ? wardDelta(round, previous) : null),
+    renderWardPage(
+      round,
+      previous,
+      round ? wardDelta(round, previous) : null,
+      register,
+      beat,
+    ),
   );
 });
 
@@ -1261,6 +1281,49 @@ adminRoutes.post("/admin/ward/run", async (c) => {
   const { takeCorpusSnapshot } = await import("@/services/corpus");
   await takeCorpusSnapshot(c.env).catch(() => undefined);
   return c.redirect("/admin/ward");
+});
+
+/**
+ * THE SECOND WARD'S ROOM AND ITS CRANK (2026-09-04, the keeper's ask
+ * for a way to run the MCP ward separately from the other).
+ *
+ * The crank advances ONE batch rather than running a whole pass: the
+ * registry answered past 20,000 rows and was still paginating, so a
+ * pass is hundreds of page fetches and cannot fit in one request
+ * without blowing the invocation budget. One press does exactly what
+ * one hourly firing does, and the page says how far along the pass
+ * is, so finishing one by hand is legible rather than mysterious.
+ */
+adminRoutes.get("/admin/mcp-ward", async (c) => {
+  const { latestMcpPass, readMcpRegister, readMcpWalk } = await import(
+    "@/services/mcp-ward"
+  );
+  const { renderMcpWardPage } = await import("@/pages/admin/mcp-ward-page");
+  const [walk, register, pass] = await Promise.all([
+    readMcpWalk(c.env),
+    readMcpRegister(c.env),
+    latestMcpPass(c.env),
+  ]);
+  return c.html(renderMcpWardPage(walk, register, pass));
+});
+
+adminRoutes.post("/admin/mcp-ward/run", async (c) => {
+  const { walkMcpRegistry } = await import("@/services/mcp-ward");
+  await walkMcpRegistry(c.env);
+  return c.redirect("/admin/mcp-ward");
+});
+
+/**
+ * Start a fresh pass. Blunt and safe: it drops the in-flight walk's
+ * cursor and accumulated hosts and touches the REGISTER not at all,
+ * so every host's first_seen and last_seen survive. A discarded
+ * partial pass could never have recorded a delisting anyway, which is
+ * why this needs no confirmation step.
+ */
+adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
+  const { KV_KEYS } = await import("@/lib/kv-keys");
+  await c.env.COUNTERS.delete(KV_KEYS.mcpWalkState);
+  return c.redirect("/admin/mcp-ward");
 });
 
 /**

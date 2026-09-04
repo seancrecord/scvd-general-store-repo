@@ -3,6 +3,14 @@ import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
 import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
+import {
+  LEDGER_FOR_MONEY,
+  LEDGER_PROPOSITION,
+  MCP_WARD_FOR_MONEY,
+  MCP_WARD_PROPOSITION,
+  SOURCES_FOR_MONEY,
+  SOURCES_PROPOSITION,
+} from "@/store/copy/instruments";
 import { catalogLastUpdated } from "@/lib/freshness";
 import {
   ALSO_A_STORE,
@@ -153,7 +161,9 @@ Free instruments (the first two are also MCP tools, preflight_endpoint and check
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+
+The instrument, reporting on itself: [where our numbers come from](${base}/sources) · [sources.json](${base}/sources.json) · [the MCP ward](${base}/mcp-ward) · [mcp-ward.json](${base}/mcp-ward.json). The first names every directory our ecosystem figures rest on beside the last time each one answered, and carries the heartbeat that says whether the weekly round is still running. The second is a separate ward over the MCP registry that shares no total with the x402 side.
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [function-calling tools](${base}/openapi-tools.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [the charter in markdown](${base}/pricing.md) · [how you get in](${base}/auth.md) · [protected-resource metadata](${base}/.well-known/oauth-protected-resource) · [the askable index](${base}/ask/feed.json) · [which sites /ask answers for](${base}/sites) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
@@ -441,6 +451,13 @@ under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 Coverage matrix (class × chain × depth, absence stated as none):
 ${base}/.well-known/coverage.json and ${base}/coverage.json
+Where our numbers come from, and when each source last answered:
+${base}/sources and ${base}/sources.json — derived from stored rounds,
+not maintained by hand, and it carries the ward's own heartbeat.
+One week read as a research note, findings and gaps together:
+${base}/ledger and \`${base}/ledger/{week}.json\`
+The second ward, MCP servers, its own denominators and no shared
+totals with the x402 side: ${base}/mcp-ward and ${base}/mcp-ward.json
 Which MCP door to use — remote, local stdio, the browser surface, or
 no MCP at all — with what renders where and what is not built yet:
 ${base}/mcp.md
@@ -1001,6 +1018,30 @@ read from the latest signed snapshot, with ?week= naming an earlier
 one. Counts with their denominators; never a ratio, never a rank,
 never a host named beside its verdict.
 
+⚑ KEEPER'S PEN, RULE 7: the two paragraphs below are DRAFTED, not
+canon. The list decides whether a room is named; the wording is yours.
+
+The same week READ, rather than tabulated: ${base}/ledger is The
+Week's Ledger, one page per signed week at \`${base}/ledger/{week}\`
+with JSON at \`${base}/ledger/{week}.json\`. ${LEDGER_PROPOSITION}
+${LEDGER_FOR_MONEY} Everything on it was
+already published and already signed — the brief has served the
+counts, the changes feed the movement, /sources the feeds' own
+health, /corrections what we got wrong. What none of them did was
+say what the week amounted to, which left a reader holding five tabs
+open and doing the joining themselves. The ledger does the joining:
+what we reached, what answered, what moved, which defects by name,
+whether the directories were even talking to us, and — on the same
+page, never a click away — what this instrument could not see.
+
+Its findings are MACHINE-DERIVED and it says so on itself. Every
+sentence comes from a fixed rule over fields it names in
+\`derived_from\`, and no rule fires without its numbers: a page that
+fills a quiet week with prose is how a measurement project starts
+publishing vibes. It structures; it does not interpret. Nothing on
+it is stored, so it cannot drift from what was sealed, and a week
+the chain does not hold is a 404 naming the weeks it does.
+
 The chain also reads as time, derived at read from the same signed
 snapshots. ${base}/corpus/trajectory.json serves one point per weekly
 snapshot — counts with their denominators, never a ratio, every point
@@ -1101,6 +1142,99 @@ The first such reading is the passport tier, and every host's sits at
 \`${base}/corpus/tiers.json\`: each host with its tier and the fraction
 it came from, alphabetical by host — ordered by tier would be a
 ranking. The per-host read above carries the same tier with its rows.
+
+## Where our numbers come from
+
+⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
+
+${base}/sources, JSON at ${base}/sources.json. ${SOURCES_PROPOSITION}
+${SOURCES_FOR_MONEY}
+
+Every figure this store publishes about the x402 ecosystem rests on a
+handful of public directories. This is the list of them and, the column that matters,
+THE LAST TIME EACH ONE ACTUALLY ANSWERED US.
+
+Nothing on it is maintained by hand, and that is the whole point.
+Until 2026-09-04 the roster stated its own health in prose — a
+constant in a source file, last edited by a person, re-checked by
+nothing, which is a claim about the present tense with no mechanism
+to make it false. Liveness now comes out of the stored weekly rounds,
+which have always recorded what each source returned and have always
+distinguished "answered with nothing" from "could not be read".
+Nobody had ever asked that field a question across rounds.
+
+Four words carry it. \`live\`: answered on the most recent round.
+\`stale\`: has answered before, not this time, so its hosts are on the
+register by carry-forward rather than by observation. \`unread\`: we
+name the directory and have no reader for it, with the reason and the
+condition that would dissolve it. And \`never_answered\`, which is the
+one to stare at: we built a reader, the round calls it every week,
+and it has never once come back with anything — a feed that looks
+configured and silently records nothing. Publishing that is cheaper
+than discovering it.
+
+It rates nobody. A directory we cannot read may be perfectly healthy
+for everyone else; what the row describes is the reach of THIS
+instrument, counted against the instrument, the same discipline as
+\`days_unchecked\` on a watch and \`not_probed\` on a brief.
+
+The page also carries the ward's heartbeat, because the plainest
+question after "are your sources answering" is "is your machine even
+running". It is checked hourly rather than weekly — a watchdog on the
+same schedule as the thing it watches dies with it — and it asks
+whether a round WROTE something, not merely whether one finished. A
+run that completes having recorded nothing is indistinguishable, on
+every other surface here, from a quiet week. Weeks the chain holds no
+snapshot for at all are named there and on ${base}/corpus.json under
+\`continuity\`, rather than left absent for a reader's own arithmetic
+to read as continuous coverage.
+
+## The MCP ward
+
+⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
+
+${base}/mcp-ward, JSON at ${base}/mcp-ward.json. ${MCP_WARD_PROPOSITION}
+${MCP_WARD_FOR_MONEY}
+
+A second ward on the same instrument design, pointed at the official
+MCP registry instead of at x402 doors, and kept rigorously apart from
+the first.
+
+IT COUNTS AND IT DOES NOT KNOCK. Probing an MCP server means opening
+a session and speaking the initialize handshake — a different
+battery, a different consent posture, a different set of things that
+can go wrong. This store has a published preflight battery for x402
+doors and nothing of the kind for MCP, and inventing a verdict here
+to match the other ward's shape would be the worst available kind of
+symmetry. What enumeration buys for free is the thing the population
+layer was built for: a host that was listed and is now listed nowhere
+is a delisting recorded having never spent a request on it.
+
+IT SHARES NO TOTAL WITH THE X402 SIDE, and neither page ever quotes
+the other's denominator. \`population_known\` is what
+\`coverage_pct\` divides by, and that percentage rides every corpus
+snapshot, every brief and every ledger sealed since July. Pouring
+twenty thousand MCP servers into it would not have widened our
+coverage; it would have retroactively changed what every published
+percentage was a percentage OF, with no correction possible, because
+the old rows keep their bytes while their meaning moves underneath
+them. Adding the two wards' totals gives a number that is about
+nothing.
+
+Rows and hosts are published as separate figures. A registration can
+be an npm or stdio server with no network address at all — a real row
+that contributes no host — and reporting only the host count would
+inflate the share of the registry that is remotely reachable. The
+registry's own status words are counted and not reinterpreted.
+
+The registry is far larger than one invocation can read, so a pass
+runs in hourly batches on a stored cursor and completes when the
+registry's own cursor runs out. Mortality is recorded ONLY on a
+completed pass: a partial read cannot tell a delisting from a page we
+never reached, and a truncated pass therefore records its hosts and
+refuses every disappearance, saying so on the artifact. A missed
+delisting is recoverable next pass; a fabricated one is a wrong claim
+about somebody's project inside a record we do not rewrite.
 
 ## Named defect classes, so two instruments can compare notes
 
@@ -1702,6 +1836,13 @@ const SECTION_AREAS: Record<string, string> = {
   "The notice desk, for an operator who found us in their log": "conformance",
 
   "The corpus": "corpus",
+  /* Both new rooms of 2026-09-04 file with the evidence, and for the
+   * same reason: they are the store describing the instrument that
+   * produces the corpus rather than describing the corpus. A reader
+   * who has got as far as asking how the record is made is already
+   * in this area. */
+  "Where our numbers come from": "corpus",
+  "The MCP ward": "corpus",
   "The same evidence as an OKF bundle": "corpus",
   "The tab's pooled corpus, taking contributions": "corpus",
   /* The goal-first opener belongs with the developer material: it is

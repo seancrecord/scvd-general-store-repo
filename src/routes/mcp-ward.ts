@@ -7,6 +7,14 @@ import {
   readMcpRegister,
   readMcpWalk,
 } from "@/services/mcp-ward";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { securityBlock } from "@/store/surface-contract";
+import {
+  INSTRUMENTS_OPENED,
+  MCP_WARD_FOR_MONEY,
+  MCP_WARD_FREE_FIRST,
+  MCP_WARD_PROPOSITION,
+} from "@/store/copy/instruments";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -41,16 +49,40 @@ function num(value: number): string {
   return value.toLocaleString("en-US");
 }
 
-mcpWardRoutes.get("/mcp-ward.json", async (c) => {
-  const [pass, register, walk] = await Promise.all([
-    latestMcpPass(c.env),
-    readMcpRegister(c.env),
-    readMcpWalk(c.env),
-  ]);
-  return c.json({
+/**
+ * THE TWIN, built once and served at both addresses. /mcp-ward with a
+ * JSON Accept used to 302 here, which is one redirect between a
+ * reader and an answer for no reason — and rule 60.4 asks the room
+ * itself for the five answers, not the room's forwarding address.
+ */
+function wardTwin(
+  base: string,
+  pass: Awaited<ReturnType<typeof latestMcpPass>>,
+  register: Awaited<ReturnType<typeof readMcpRegister>>,
+  walk: Awaited<ReturnType<typeof readMcpWalk>>,
+) {
+  return {
     artifact: "mcp_ward",
-    what_this_is:
-      "A weekly enumeration of the official MCP registry, kept as its own population with its own denominators. It counts registrations and records when a host stops being listed. It knocks on nothing.",
+    /* The five answers (60.4) and the three sentences (60.2), the
+     * same strings the page and the guide carry. */
+    what_this_is: MCP_WARD_PROPOSITION,
+    proposition: MCP_WARD_PROPOSITION,
+    price: MCP_WARD_FOR_MONEY,
+    free_first: MCP_WARD_FREE_FIRST,
+    opened: INSTRUMENTS_OPENED,
+    how_to_call: {
+      this_page: `GET ${base}/mcp-ward with Accept: application/json for this twin, text/html for the page. No account, no key.`,
+      the_latest_pass: "`latest_pass` is the newest COMPLETED pass; a pass in flight is under `walk_in_progress` and is not a result.",
+      mortality: "Read `latest_pass.disappeared` only when `latest_pass.truncated` is false. A truncated pass records no delisting at all, by design.",
+    },
+    errors: {
+      this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
+      no_pass_yet: "Before any pass completes, `latest_pass` is null and `hosts_on_register` is 0. That is our age, not a measurement of an empty registry.",
+    },
+    security: securityBlock(base, {
+      does_in_your_name: "Nothing. A GET here reads a stored register; no MCP server is contacted and no session is opened, here or ever, by this ward.",
+      stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
+    }),
     what_this_is_not: MCP_WARD_IS_NOT,
     latest_pass: pass,
     hosts_on_register: Object.keys(register.hosts).length,
@@ -66,8 +98,17 @@ mcpWardRoutes.get("/mcp-ward.json", async (c) => {
             hosts_so_far: walk.hosts.length,
           }
         : null,
-    separate_from_x402: `This ward shares no total with the x402 ward at ${c.env.STORE_BASE_URL}/sources. Its population is MCP servers; theirs is x402 doors. Adding them would produce a number that is about nothing.`,
-  });
+    separate_from_x402: `This ward shares no total with the x402 ward at ${base}/sources. Its population is MCP servers; theirs is x402 doors. Adding them would produce a number that is about nothing.`,
+  };
+}
+
+mcpWardRoutes.get("/mcp-ward.json", async (c) => {
+  const [pass, register, walk] = await Promise.all([
+    latestMcpPass(c.env),
+    readMcpRegister(c.env),
+    readMcpWalk(c.env),
+  ]);
+  return c.json(wardTwin(c.env.STORE_BASE_URL, pass, register, walk));
 });
 
 mcpWardRoutes.get("/mcp-ward", async (c) => {
@@ -77,7 +118,7 @@ mcpWardRoutes.get("/mcp-ward", async (c) => {
     readMcpWalk(c.env),
   ]);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.redirect("/mcp-ward.json", 302);
+    return c.json(wardTwin(c.env.STORE_BASE_URL, pass, register, walk));
   }
 
   const onRegister = Object.keys(register.hosts).length;
@@ -143,6 +184,7 @@ mcpWardRoutes.get("/mcp-ward", async (c) => {
       path: "/mcp-ward",
       extraCss: MCP_CSS,
       bodyHtml: `<section>
+        <p class="menu-desc">${escapeHtml(MCP_WARD_PROPOSITION)}</p>
         <p class="menu-desc">The store's other ward walks x402 doors once a
         week. This one walks the official MCP registry on the same design and
         with one deliberate difference: <strong>it counts, and it does not
@@ -166,8 +208,37 @@ mcpWardRoutes.get("/mcp-ward", async (c) => {
         ever quotes the other's denominator. The x402 side is at
         <a href="/sources">/sources</a> and <a href="/ledger">/ledger</a>.</p>
       </section>
+      <section><h2>What this costs</h2>
+      <p class="menu-desc">${escapeHtml(MCP_WARD_FOR_MONEY)}</p>
+      <p class="menu-meta">${escapeHtml(MCP_WARD_FREE_FIRST)}</p></section>
       <section><p class="menu-desc">The same ward as JSON:
-      <a href="/mcp-ward.json"><code>${escapeHtml(c.env.STORE_BASE_URL)}/mcp-ward.json</code></a>.</p></section>`,
+      <a href="/mcp-ward.json"><code>${escapeHtml(c.env.STORE_BASE_URL)}/mcp-ward.json</code></a>.</p></section>
+      ${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: "The MCP ward",
+        description: MCP_WARD_PROPOSITION,
+        url: `${c.env.STORE_BASE_URL}/mcp-ward`,
+        creator: organizationRef(c.env.STORE_BASE_URL),
+        isAccessibleForFree: true,
+        conditionsOfAccess: "Free to read. No account, no key.",
+        measurementTechnique:
+          "Enumeration only, never a probe: the official MCP registry is walked in hourly batches on a stored cursor, and a pass completes when the registry cursor runs out. Mortality is recorded only from a completed pass.",
+        variableMeasured: [
+          "registry rows read, and how many carried a remote URL",
+          "unique hosts across a completed pass",
+          "the registrys own status words, counted and not reinterpreted",
+          "hosts appeared, stopped being listed, and listed again",
+        ],
+        distribution: [
+          {
+            "@type": "DataDownload",
+            encodingFormat: "application/json",
+            contentUrl: `${c.env.STORE_BASE_URL}/mcp-ward.json`,
+            name: "The MCP ward register and its latest completed pass",
+          },
+        ],
+      })}`,
     }),
   );
 });
