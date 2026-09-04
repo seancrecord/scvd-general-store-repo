@@ -18,6 +18,7 @@ import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
+import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
 import { escapeHtml } from "@/lib/sanitize";
 import {
   CORPUS_DATASET_DESCRIPTION,
@@ -46,6 +47,25 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
  * the only kind this store publishes.
  */
 export const corpusRoutes = new Hono<HonoEnv>();
+
+/**
+ * Last-Modified on the index and the round pages (roadmap C6): the
+ * latest snapshot's own taken_at, so a subscriber's If-Modified-Since
+ * gets a 304 until the next signed week. The ETag middleware already
+ * hashes the bytes; this adds the date a feed reader expects.
+ */
+corpusRoutes.use("/corpus.json", async (c, next) => {
+  await next();
+  if (c.res.status !== 200 || c.res.headers.has("Last-Modified")) return;
+  const records = await listCorpus(c.env);
+  const latest = records[records.length - 1];
+  const header = lastModifiedOf(latest?.snapshot.taken_at);
+  if (header["Last-Modified"]) {
+    const headers = new Headers(c.res.headers);
+    headers.set("Last-Modified", header["Last-Modified"]);
+    c.res = new Response(c.res.body, { status: 200, headers });
+  }
+});
 
 corpusRoutes.get("/corpus.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -361,7 +381,7 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
   }
   const roundCite = { base, what: "corpus round", which: `${brief.week} (snapshot ${brief.sequence})`, observed_at: brief.taken_at, url: `${base}/corpus/${brief.sequence}.json`, verify_url: `${base}/corpus/round/${brief.week}` };
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER, ...citeBlock(roundCite) });
+    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER, ...citeBlock(roundCite) }, 200, lastModifiedOf(brief.taken_at));
   }
   const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
   return c.html(
@@ -667,8 +687,58 @@ corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
     );
   }
   const base = c.env.STORE_BASE_URL;
-  return c.json({
-    ...record,
-    ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week})`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
-  });
+  return c.json(
+    {
+      ...record,
+      ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week})`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+    },
+    200,
+    lastModifiedOf(record.snapshot.taken_at),
+  );
+});
+
+/**
+ * GET /corpus/latest.json — the latest signed snapshot at an address
+ * that never changes (roadmap C6, 2026-09-04): the subscriber's door.
+ * Poll it with If-None-Match or If-Modified-Since; a 304 costs nothing
+ * and a 200 is a new week. The same bytes as /corpus/{sequence}.json
+ * for that sequence, plus the cite line.
+ */
+corpusRoutes.get("/corpus/latest.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const records = await listCorpus(c.env);
+  const record = records[records.length - 1];
+  if (!record) {
+    return c.json({ error: "The chain holds no signed snapshot yet; the first Sunday round writes the first.", index: `${base}/corpus.json` }, 404);
+  }
+  return c.json(
+    {
+      ...record,
+      stable_address: `${base}/corpus/${record.snapshot.sequence}.json`,
+      changes_this_week: `${base}/corpus/changes/${record.snapshot.week}.json`,
+      ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week}), the latest`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+    },
+    200,
+    lastModifiedOf(record.snapshot.taken_at),
+  );
+});
+
+/**
+ * GET /corpus/changes/{week}.json — one signed week against the one
+ * before it, as plain fields and a plain-English changelog (roadmap
+ * C6). A week the chain does not hold gets a 404 naming the weeks it
+ * does; the first week says it has nothing to compare with.
+ */
+corpusRoutes.get("/corpus/changes/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const week = c.req.param("file").replace(/\.json$/, "");
+  const records = await listCorpus(c.env);
+  const changes = deriveChanges(records, week, base);
+  if (!changes) {
+    return c.json(
+      { error: `The chain holds no signed week named ${week}.`, known_weeks: records.map((record) => record.snapshot.week), latest: `${base}/corpus/latest.json` },
+      404,
+    );
+  }
+  return c.json(changes, 200, lastModifiedOf(changes.taken_at));
 });

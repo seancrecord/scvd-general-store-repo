@@ -997,7 +997,13 @@ answers "what changed since a week I already saw": doors appeared and
 disappeared, verdict transitions, and drift in a door's own declared
 terms (price bounds, rails, schemes) between two signed weeks — the
 cheapest honest agent loop is polling that diff. A week the chain does
-not hold gets a 404 naming the weeks it does.
+not hold gets a 404 naming the weeks it does. To subscribe (since
+2026-09-04): ${base}/corpus/latest.json is the latest signed snapshot
+at an address that never changes, with ETag and Last-Modified for a
+conditional GET, and \`${base}/corpus/changes/{week}.json\` is one
+week against the one before it — additions, removals, recoveries,
+regressions, changed payment routes and prices, changed defect state —
+as fields and as a plain changelog.
 
 Wallet facts, under the operator-linking ruling of 2026-08-27: the
 store provides the wallet fact and the receiver makes the call.

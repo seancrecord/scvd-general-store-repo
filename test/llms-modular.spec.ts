@@ -674,6 +674,12 @@ const BASE = "https://scvd.store";
  * and were renumbered at the rebase; the value was re-taken once on the
  * rebased head.)
  *
+ * Re-taken 2026-09-04 — the FIFTY-SIXTH — by the corpus as a feed
+ * (roadmap C6): the trajectory paragraph gains the subscriber's two
+ * doors, /corpus/latest.json and the per-week changes. Confirmed
+ * before this value was taken: the guide carries "/corpus/latest.json"
+ * and still every earlier pin.
+ *
  * Re-taken 2026-09-04 — the FIFTY-FIFTH — by the cite line and the
  * fixtures (roadmap C7): one paragraph before the second wire's,
  * naming the cite line every signed document carries and
@@ -711,7 +717,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "472cef1d7fb14fa8fa8572c745e68a35793dcc3cac24b989c1fc1e0285d7b9a2";
+  "eb4fdbba4a3779356a1c8aa26a83516e2e3b871d2249e79cd261786c629231a8";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
