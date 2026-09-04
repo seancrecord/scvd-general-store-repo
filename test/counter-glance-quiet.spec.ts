@@ -86,7 +86,7 @@ describe("the alarms stay on the wall and stop shouting", () => {
 
     // A new alarm gets one shout, and only that one.
     await sendAlert(testEnv, {
-      condition: "delivery_gap",
+      condition: "order_sla",
       detail: "something he has not met",
     });
     const third = await counter();
