@@ -8,3 +8,20 @@ ADMIN_PASSWORD=pick-something-the-keeper-can-remember
 # Optional. Glama's connector ownership claim token (glama_claim_...),
 # served at /.well-known/glama.json. Unset, that path 404s.
 GLAMA_CLAIM=
+# Optional. The Web Bot Auth EGRESS key: a second 64-hex ed25519 seed,
+# never the same value as SIGNING_KEY. Signs the Worker's outbound
+# probes and publishes /.well-known/http-message-signatures-directory;
+# unset, egress is unsigned and that path 404s. It must be the seed the
+# live directory already lists — `npm run keys:check:wba` tells you
+# whether a candidate is that seed. A different one is a rotation.
+WBA_SIGNING_KEY=
+# Optional. The field wallet's secp256k1 private key — the buyer-side
+# wallet the Launch Check pays FROM (PAY_TO_ADDRESS receives; this
+# spends). Must be listed in src/store/house-wallets.json first. Unset,
+# the launch_check door refuses new purchases before any money moves.
+FIELD_WALLET_KEY=
+
+# NOTE: this file feeds `wrangler dev` — the Worker, locally. The
+# walkabout runner (scripts/walkabout.mjs) is a separate Node process
+# and reads its own environment; it does not read .dev.vars. See
+# WALKABOUT.md, "Where the run's secrets live, and where they do not".

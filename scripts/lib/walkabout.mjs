@@ -75,6 +75,54 @@ export function isoWeek(date = new Date()) {
   return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
+/**
+ * WHICH ISO WEEK A LEDGER'S WALKING HAPPENED IN, from its bytes alone.
+ *
+ * Rule 1's standing approval is one run per week, and the runner
+ * enforces it by asking whether a ledger already exists for this week.
+ * That question was asked of `research/field-run-*` only, and of a
+ * `run` head line only — so a walk that landed in a differently-named
+ * directory, or one written by tooling that opens no run line, was
+ * invisible to it. On 2026-09-04 that hole was live: the walk of
+ * 2026-09-02 (ISO 2026-W36) sat in `research/x402-walk-ledger/` and
+ * a second run that same week would have passed the guard without the
+ * keeper's press, which is the one thing the guard is for.
+ *
+ * So the week comes from whatever the file actually carries: a `run`
+ * line's `started` first, and failing that the earliest timestamp on
+ * any row — `observed_at` or `ts`, the two field names the walk
+ * ledgers in this repository use. A file with no readable moment in it
+ * returns null and is not counted, because a guard that guessed would
+ * be worse than one that abstains out loud.
+ */
+export function ledgerWeek(text, isoWeekOf = isoWeek) {
+  const lines = String(text ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  let earliest = null;
+  for (const line of lines) {
+    let row;
+    try {
+      row = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (row?.kind === "run" && row.started) {
+      const started = new Date(row.started);
+      // The run line is authoritative when present: it is the moment
+      // the runner itself recorded opening the file.
+      if (!Number.isNaN(started.getTime())) return isoWeekOf(started);
+    }
+    const stamp = row?.observed_at ?? row?.ts;
+    if (typeof stamp !== "string") continue;
+    const at = new Date(stamp);
+    if (Number.isNaN(at.getTime())) continue;
+    if (earliest === null || at < earliest) earliest = at;
+  }
+  return earliest === null ? null : isoWeekOf(earliest);
+}
+
 function parseJson(text) {
   try {
     return JSON.parse(text);

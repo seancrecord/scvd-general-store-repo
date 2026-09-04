@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit",
     "keys:generate": "node scripts/generate-signing-key.mjs",
     "keys:check": "node scripts/check-key-transcription.mjs",
+    "keys:check:wba": "node scripts/check-wba-key.mjs",
     "shop": "node scripts/shopping-run.mjs",
     "bazaar:check": "node scripts/bazaar-check.mjs",
     "wba:check": "node scripts/wba-check.mjs",
