@@ -1,5 +1,6 @@
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
+import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -338,6 +339,17 @@ ${base}/feeds/corpus.xml (one per signed snapshot),
 ${base}/feeds/corrections.xml and ${base}/feeds/disagreements.xml —
 and every entry links the page it came from, where the derivation and
 the denominator are.
+For a scorer or a marketplace: ${base}/scorers. ${SCORERS_PROPOSITION}
+${SCORERS_FOR_MONEY} The page says how to pull the corpus, verify it,
+cite a row by its entry URL and digest (every row surface prints the
+citation for you), reproduce a probe and re-observe. Reproduce is one call: the
+look with "since" names a signed week, and the answer is classed
+same, moved, instrument_moved, not_comparable or no_such_round by
+the rule typed once at ${base}/criteria#result-class, the row cited.
+It names seats, not occupants: a system that consumes the corpus is
+listed there only with a dated citation and a check that fails when
+the citation disappears. A score, ranking or certification derived
+from the corpus is its publisher's interpretation, not ours.
 
 That verify paragraph is the whole reason to trust anything below it.
 Most of what an agent produces is self-attested; a certificate signed

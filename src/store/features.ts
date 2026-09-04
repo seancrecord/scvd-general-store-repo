@@ -1,5 +1,11 @@
 import { ROOMS } from "@/store/rooms";
 import {
+  SCORERS_FOR_MONEY,
+  SCORERS_FREE_FIRST,
+  SCORERS_OPENED,
+  SCORERS_PROPOSITION,
+} from "@/store/copy/scorers";
+import {
   TRADE_COUNTER_NAME,
   TRADE_COUNTER_OPENED,
   TRADE_FOR_MONEY,
@@ -79,6 +85,24 @@ export const FEATURES: readonly Feature[] = [
     ],
     named_on: ["/developers", "/operators", "/pricing", "/how-it-works"],
     opened: TRADE_COUNTER_OPENED,
+  },
+  {
+    /*
+     * FOR SCORERS AND MARKETPLACES (2026-09-04). A room that sells
+     * nothing still owes the rule its three sentences and its five
+     * answers. Its doors are the ones the store already had — the
+     * corpus, the verify URL, the look with `since` — so none are new
+     * here; the citation shape and the seats declaration ride those.
+     */
+    id: "scorers",
+    name: "For scorers and marketplaces",
+    room: "/scorers",
+    proposition: SCORERS_PROPOSITION,
+    for_money: SCORERS_FOR_MONEY,
+    free_first: SCORERS_FREE_FIRST,
+    doors: [],
+    named_on: ["/criteria"],
+    opened: SCORERS_OPENED,
   },
 ];
 

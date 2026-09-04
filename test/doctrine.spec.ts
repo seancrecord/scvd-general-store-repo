@@ -63,6 +63,8 @@ const PUBLIC_SURFACES: ReadonlyArray<[string, string]> = [
   ["/openapi.json", "application/json"],
   ["/agents.md", "text/markdown"],
   ["/developers", "text/html"],
+  ["/scorers", "text/html"],
+  ["/scorers", "application/json"],
   ["/mcp.md", "text/markdown"],
   ["/.well-known/x402", "application/json"],
 ];

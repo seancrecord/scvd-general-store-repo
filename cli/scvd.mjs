@@ -73,7 +73,18 @@ function usage() {
                                 back a signed verdict.
   scvd onpage <url>             What that page serves a machine reader.
   scvd fresh-set                This week's working x402 doors.
-  scvd corpus                   The weekly signed census, whole.
+  scvd corpus [--since <week>]  The weekly signed census index; with
+                                --since, what moved since that week.
+  scvd host <host>              Every signed round that met a host,
+                                the gaps by reason, the tier, the cite.
+  scvd cite <host> [--week <w>] The citation for a host's row — the
+                                last probed one, or the week named —
+                                as one line and as JSON.
+  scvd reproduce <url> [--since <week>]
+                                Probe the door now and set it against
+                                the signed row: same, moved,
+                                instrument_moved, not_comparable or
+                                no_such_round, both sides named.
   scvd month [YYYY-MM]          The state of x402 for one month: the
                                 closing week beside every round's door-
                                 weeks, defects by name, the month before.
@@ -92,6 +103,8 @@ function usage() {
 
 Flags
   --json                        Print the server's response verbatim.
+  --since <week>, --week <week> A signed week as the corpus spells it,
+                                e.g. 2026-W34.
   --base <url>                  Point at another origin (or SCVD_BASE_URL).
   --version, --help
 
@@ -532,9 +545,112 @@ const COMMANDS = {
   },
 
   async corpus(_args, options) {
+    if (options.week) {
+      const result = await call(`/corpus/diff.json?since=${encodeURIComponent(options.week)}`);
+      return dump(result);
+    }
     const result = await call("/corpus.json");
-    if (options.json) return dump(result);
     return dump(result);
+  },
+
+  async host(args, options) {
+    const host = args[0];
+    if (!host) fail("scvd host <host> — the hostname, e.g. example.com.");
+    const result = await call(`/corpus/host/${encodeURIComponent(host)}.json`);
+    if (options.json) return dump(result);
+    if (result.status === 404) {
+      process.stdout.write(`${result.json.error}\n`);
+      return EXIT.verdictNegative;
+    }
+    const history = result.json;
+    process.stdout.write(
+      `${host}\n  tier: ${history.tier?.line ?? "?"}\n  probed ${history.rounds_probed} of ${history.rounds_since_first_sighting} rounds since first sighting; missed ${history.rounds_gapped}\n\n`,
+    );
+    for (const round of history.timeline ?? []) {
+      process.stdout.write(
+        `  ${round.week}  ${round.probed ? String(round.verdict).padEnd(12) : `gap: ${round.gap}`.padEnd(12)}  ${(round.failed ?? []).join(", ")}\n`,
+      );
+    }
+    if (history.cite) {
+      process.stdout.write(`\n  cite: ${history.cite}\n`);
+    }
+    return EXIT.ok;
+  },
+
+  async cite(args, options) {
+    const host = args[0];
+    if (!host) fail("scvd cite <host> [--week <week>] — the host whose row you are citing.");
+    const result = await call(`/corpus/host/${encodeURIComponent(host)}.json`);
+    if (result.status === 404) {
+      process.stdout.write(`${result.json.error}\n`);
+      return EXIT.verdictNegative;
+    }
+    const history = result.json;
+    let cite = history.cite_json ? { text: history.cite ?? "", markdown: markdownFor(history.cite_json), json: history.cite_json } : null;
+    if (options.week) {
+      const round = (history.timeline ?? []).find((entry) => entry.week === options.week);
+      if (!round) {
+        process.stdout.write(
+          `No signed row for ${host} in ${options.week}. Weeks held: ${(history.timeline ?? []).map((entry) => entry.week).join(", ") || "none"}.\n`,
+        );
+        return EXIT.verdictNegative;
+      }
+      if (!round.probed) {
+        process.stdout.write(
+          `The row for ${host} in ${options.week} is a gap (${round.gap}), not an observation. Cite it as a gap: ${round.entry_url}\n`,
+        );
+        return EXIT.verdictNegative;
+      }
+      cite = citeShape(history.cite_json, host, round);
+    }
+    if (!cite) {
+      process.stdout.write(`${host} has no probed row yet; a gap is cited as a gap, never as a zero.\n`);
+      return EXIT.verdictNegative;
+    }
+    if (options.json) {
+      process.stdout.write(`${JSON.stringify(cite.json, null, 2)}\n`);
+      return EXIT.ok;
+    }
+    process.stdout.write(`${cite.text}\n\n${cite.markdown}\n\n${JSON.stringify(cite.json, null, 2)}\n`);
+    return EXIT.ok;
+  },
+
+  async reproduce(args, options) {
+    const url = args[0];
+    if (!url) fail("scvd reproduce <url> [--since <week>] — the door, as a buyer would GET it.");
+    const result = await call("/api/look/v1", {
+      method: "POST",
+      body: { url, ...(options.week ? { since: options.week } : {}) },
+    });
+    if (options.json) return dump(result);
+    if (result.status === 429) {
+      process.stdout.write(`${result.json.error}\n`);
+      return EXIT.unreachable;
+    }
+    const report = result.json;
+    if (report.error) {
+      process.stdout.write(`${report.error}\n`);
+      return EXIT.usage;
+    }
+    const r = report.reproduce ?? {};
+    process.stdout.write(`${url}\n  class: ${r.class}\n  ${r.detail}\n`);
+    if (r.compared_with) {
+      process.stdout.write(
+        `\n  row:  ${r.compared_with.week}  ${r.compared_with.verdict}  ${(r.compared_with.failed ?? []).join(", ")}  ${r.compared_with.entry_url}\n  live: ${r.live?.battery}  ${r.live?.verdict}  ${(r.live?.failed ?? []).join(", ")}\n`,
+      );
+    }
+    if (r.cite) process.stdout.write(`\n  cite: ${r.cite.text}\n`);
+    process.stdout.write(`\n  rule: ${r.rule_url}\n`);
+    printBudget(result);
+    /*
+     * Exit codes a script can branch on: 0 same, 1 moved or
+     * instrument_moved (something to look at), 3 not comparable or no
+     * such round (nothing was compared, which is not a finding about
+     * the door).
+     */
+    if (r.class === "same") return EXIT.ok;
+    if (r.class === "moved" || r.class === "instrument_moved") return EXIT.verdictNegative;
+    return EXIT.unreachable;
   },
 
   /** THE MONTH (0.2.0): one month of the corpus, closing week beside door-weeks, never divided. */
@@ -611,6 +727,37 @@ const COMMANDS = {
   },
 };
 
+/**
+ * The cite shape for a named week, built from the row the way the
+ * store builds it (services/cite.ts): the same fields, so a citation
+ * printed here and one printed by the store are one shape.
+ */
+function markdownFor(json) {
+  return `[scvd.store corpus, ${json.host ? `${json.host}, ` : ""}week ${json.week}, snapshot ${json.sequence}](${json.cites}) — sha256 \`${json.digest}\``;
+}
+
+function citeShape(template, host, round) {
+  const base = (template?.index ?? `${BASE}/corpus.json`).replace(/\/corpus\.json$/, "");
+  const text = `scvd.store, host row ${host}, week ${round.week}, snapshot ${round.sequence}, sha256 ${round.digest}, observed ${round.taken_at}; bytes at ${round.entry_url}.`;
+  const markdown = `[scvd.store corpus, ${host}, week ${round.week}, snapshot ${round.sequence}](${round.entry_url}) — sha256 \`${round.digest}\``;
+  return {
+    text,
+    markdown,
+    json: {
+      cites: round.entry_url,
+      host,
+      week: round.week,
+      sequence: round.sequence,
+      observed_at: round.taken_at,
+      digest: round.digest,
+      rows: `${base}/corpus/host/${host}.json`,
+      index: `${base}/corpus.json`,
+      license: "CC-BY-4.0",
+      how: `${base}/scorers`,
+    },
+  };
+}
+
 function dump(result) {
   process.stdout.write(`${JSON.stringify(result.json, null, 2)}\n`);
   return result.status >= 400 ? EXIT.verdictNegative : EXIT.ok;
@@ -622,7 +769,13 @@ async function main(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === "--json") options.json = true;
-    else if (argument === "--base") {
+    else if (argument === "--since" || argument === "--week") {
+      const next = argv[(index += 1)];
+      if (!next || !/^[0-9]{4}-W[0-9]{2}$/.test(next)) {
+        fail(`${argument} wants a signed week as the corpus spells it, e.g. 2026-W34.`);
+      }
+      options.week = next;
+    } else if (argument === "--base") {
       const next = argv[(index += 1)];
       if (!next) fail("--base wants a URL after it.");
       BASE = next.replace(/\/+$/, "");

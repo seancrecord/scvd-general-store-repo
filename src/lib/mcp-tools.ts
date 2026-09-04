@@ -888,15 +888,16 @@ const FREE_TOOLS: McpTool[] = [
     name: "look_at_door",
     reads: "subject_fetch",
     description:
-      "For a buyer with a URL in one hand and a wallet in the other: what does this store hold about this x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, on the same budget) folded with everything the signed chain already holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and whether the catalog's copy agreed with the door, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. Never a score, a rank or a safety threshold; counts travel with their denominators and the line is the reader's to draw. A host the chain never met comes back as never met. For the signed, dated version of the live half, buy_observation with item_id service_audit; for a fresh census look folded into the passport, passport_refresh.",
+      "What this store holds about an x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, same budget) folded with what the signed chain holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. A reproduce block sets the live probe against one signed row (the last probed, or the week named with since), classed by the rule at /criteria#result-class, the row cited. Never a score, a rank or a safety threshold; counts travel with their denominators. A host the chain never met comes back as never met. Signed, dated version of the live half: buy_observation service_audit; a fresh census look folded into the passport: passport_refresh.",
     inputSchema: {
       type: "object",
       properties: {
         url: str("The https x402 door you are asking about.", 2048),
+        since: str("Optional. A signed week, e.g. 2026-W34, to reproduce against that week's row.", 8),
       },
       required: ["url"],
       additionalProperties: false,
-      examples: [{ url: "https://example.com/api/paid-answer" }],
+      examples: [{ url: "https://example.com/api/paid-answer" }, { url: "https://example.com/api/paid-answer", since: "2026-W34" }],
     },
     outputSchema: {
       type: "object",
@@ -905,6 +906,7 @@ const FREE_TOOLS: McpTool[] = [
         now: { type: "object", description: "The live half: the preflight verdict, failed checks, advisories, and the whole preflight report." },
         held: { type: "object", description: "The held half: counts with denominators, the tier with its fraction and rows, the last probed round, the passport decision, when it was derived." },
         now_against_held: { type: "object", description: "same | changed | no_prior | not_comparable, with both sides named." },
+        reproduce: { type: "object", description: "The live probe against one signed row: the class, both sides, the failed checks added and cleared, the citation." },
         what_this_is_not: str("Not a score, a rank, or a safety threshold — the standing caveat."),
       },
       required: ["headline", "now", "held", "now_against_held"],

@@ -1,5 +1,6 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { evidenceAgentCard } from "@/services/a2a-evidence";
+import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { organizationRef } from "@/lib/jsonld";
 import { mcpToolCatalog, specShapedTool } from "@/lib/mcp-tools";
 import { apiCatalog, API_CATALOG_MEDIA_TYPE } from "@/lib/api-catalog";
@@ -134,6 +135,20 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * with /auth.md.
      */
     agent_auth: agentAuthBlock(base),
+    /*
+     * THE SEATS (2026-09-04): record and reproducible dispute
+     * artifact, and never interpretation. Stated where diligence
+     * readers look first, in the same words as /criteria.
+     */
+    seats: {
+      dated: TWO_SEATS_DATED,
+      record: true,
+      dispute_artifact: true,
+      interpretation: false,
+      sentence: TWO_SEATS_SENTENCE,
+      misuse: MISUSE_CLAUSE,
+      how_to_consume: `${base}/scorers`,
+    },
     /**
      * Absolute, so a reader following this document never has to
      * resolve a relative path against a base it had to guess.

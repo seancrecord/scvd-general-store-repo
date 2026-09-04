@@ -50,6 +50,10 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
 | `scvd receipt <file\|->` | Verify any issuer's receipt JSON and get back a signed verdict. |
 | `scvd verify <id>` | Verify anything this store ever signed. Free, forever, including artifacts you did not buy. |
+| `scvd corpus [--since <week>]` | The weekly signed census index; with `--since`, what moved since that week. |
+| `scvd host <host>` | Every signed round that met a host, the gaps by reason, the tier with its fraction, and the citation for the latest row. |
+| `scvd cite <host> [--week <week>]` | The citation for a host's row, as one line, as Markdown and as the JSON shape the store's citation watch reads. |
+| `scvd reproduce <url> [--since <week>]` | Probe the door now and set the answer against the signed row: `same`, `moved`, `instrument_moved`, `not_comparable` or `no_such_round`, by the rule at `/criteria#result-class`. Exit 0 on same, 1 on moved, 3 when nothing was compared. |
 | `scvd look <url>` | What the store holds about that door: one live preflight beside the signed history, rounds probed of rounds since first sighting, the tier with its fraction, now against held. Counts with denominators, never a score. |
 | `scvd before-you-pay <url> [--cap <usd>]` | Will a stock x402 client pay that door, and which accept would it sign? A dry run: nothing is signed, nothing is paid. `--cap` sets the client's per-payment ceiling; without it, the answer is for a client configured with nothing. |
 | `scvd onpage <url>` | What that page serves a machine reader: title, description, canonical, headings, JSON-LD. |

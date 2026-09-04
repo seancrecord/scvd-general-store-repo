@@ -716,12 +716,55 @@ const BASE = "https://scvd.store";
  * doors, /corpus/latest.json and the per-week changes. Confirmed
  * before this value was taken: the guide carries "/corpus/latest.json"
  * and still every earlier pin.
+ *
+ * Re-taken 2026-09-03 — the FIFTY-NINTH — by the scorers' room:
+ * one paragraph after the operators', for a scorer or a marketplace,
+ * naming /scorers as the two seats the store occupies and the way to
+ * pull, verify, cite, reproduce and re-observe the corpus; seats, not
+ * occupants; a derived score is its publisher's interpretation.
+ * Confirmed before this value was taken: the guide carries
+ * "/scorers", "names seats, not occupants" and "its publisher's
+ * interpretation, not ours", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTIETH — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved", "/criteria#result-class" and "prints the
+ * citation", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FIRST — by reproduce as one call:
+ * the scorers' paragraph now says every row surface prints the
+ * citation, that the look with "since" classes the live probe against
+ * a signed row by the rule at /criteria#result-class, and cites the
+ * row. Confirmed before this value was taken: the guide carries
+ * "instrument_moved" and "/criteria#result-class".
+ *
+ * Re-taken 2026-09-04 — the SIXTY-SECOND — at the rebase of the
+ * scorers' branch onto main after the trade counter, the verifier
+ * door, the evidence agent, the feeds and the month landed: the
+ * scorers' paragraph sits after the feeds', and the value was taken
+ * once on the rebased head. Confirmed before this value was taken:
+ * the guide carries "/scorers", "/feeds/disagreements.xml",
+ * "/mcp/verifier" and "trade.md", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-THIRD — by house rule 60 reaching
+ * the scorers' room: its proposition and its money sentence now ride
+ * the guide's paragraph verbatim, as test/feature-surfaces holds them
+ * identical across the page, the twin and here. Confirmed before this
+ * value was taken: the guide carries "Nothing here costs money" and
+ * "leaves interpretation to others", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FOURTH — at the merge of main into
+ * the scorers' branch after the corpus feed, the fixtures, the cite
+ * line and the CLI verbs landed: the scorers' paragraph and main's
+ * new paragraphs both stand, and the value was taken once on the
+ * merged head. Confirmed before this value was taken: the guide
+ * carries "/scorers", "/corpus/latest.json", "/fixtures.json" and
+ * "scvd look <url>", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "edce0074c0ea9c40a2514f4b077c192fa7404a27d2208f87ba5356fb974b3ce5";
+  "66d531dd171f5cfe82e4c16776e7450e6fa21ca2b685c27871b94417e1c75208";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

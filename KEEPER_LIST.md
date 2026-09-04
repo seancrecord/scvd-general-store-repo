@@ -26,6 +26,39 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Reproduce, cite, seats, three grips, 2026-09-04, "do it
+  all."** The look takes `since` and answers the class of
+  result by the rule at `/criteria#result-class`; every row
+  surface prints its citation; the seats ride
+  `/.well-known/trust.json` and `/corpus.json` as data;
+  `/scorers` opens with the same five steps as shell, CLI
+  and MCP; the CLI is 0.2.0 with `corpus --since`, `host`,
+  `cite`, `reproduce`. INKED 2026-09-04: the five class
+  rules and the note, wording as drafted. RULED 2026-09-04:
+  the CLI exit codes stay as built (0 same, 1 moved or
+  instrument_moved, 3 nothing compared); deploy cadence
+  unchanged for now; the register's five listing facts
+  (`src/store/citing-systems.json`, and on `/scorers`).
+  PRESS, once the branch is green and merged: the npm
+  publish workflow for scvd 0.2.0, so the `npx scvd` lines
+  on `/scorers` work for a stranger. LOOK once merged:
+  `npx scvd reproduce
+  https://lionx402.com/api/x402/wallet-screen-json --since
+  2026-W36` and read the class.
+- **For scorers and marketplaces, 2026-09-03, "build it."**
+  `/scorers` names the two seats — the record, and the
+  reproducible dispute artifact — and how to pull, verify,
+  cite, reproduce and re-observe the evidence. It names
+  seats, not occupants: the named-integrations block renders
+  `src/store/citing-systems.json`, empty today, and
+  `npm run citations:check` fails when a listed citation
+  disappears. INKED 2026-09-04: the seats sentence and the
+  misuse clause (`src/store/copy/doctrine.ts`), wording as
+  drafted. RULED 2026-09-04: `/scorers` stays off the
+  storefront, like `/operators`. PRESS: when a system meets
+  the five listing facts, add it to the register with the
+  citing URL and the date first seen, and nothing else.
+
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a
   dispute court.

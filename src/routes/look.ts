@@ -19,7 +19,7 @@ function doc(base: string) {
   return {
     title: "The look — what this store holds about one x402 door",
     version: LOOK_VERSION,
-    summary: `Send a URL. We knock once — the same single probe the free preflight makes, under the same limiter — and fold the answer with everything the signed chain already holds about that host: the rounds since we first met it, the tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Two halves, kept apart: what the door said just now, and what we held before you asked. Free.`,
+    summary: `Send a URL. We knock once — the same single probe the free preflight makes, under the same limiter — and fold the answer with everything the signed chain already holds about that host: the rounds since we first met it, the tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Two halves, kept apart: what the door said just now, and what we held before you asked. And one reproduction: the live probe against one signed row — the last probed row, or the week you name with "since" — classed same, moved, instrument_moved, not_comparable or no_such_round by the rule at /criteria#result-class, the row cited by entry URL and digest. Free.`,
     method: "POST",
     url: `${base}/api/look/${LOOK_VERSION}`,
     request: {
@@ -87,7 +87,7 @@ async function handle(c: Context<HonoEnv>) {
     return c.json({ error: 'Body must be JSON: {"url": "https://the-door-you-are-asking-about/..."}' }, 400);
   }
   const source = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
-  const result = await lookAtDoor(source["url"], c.env);
+  const result = await lookAtDoor(source["url"], c.env, new Date(), source["since"]);
   return c.json(result.body, result.status as 200, {
     "Cache-Control": "no-store",
     ...withLifecycle(c, `/api/look/${LOOK_VERSION}`),

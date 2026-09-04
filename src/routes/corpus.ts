@@ -1,4 +1,6 @@
 import { namedExclusions } from "@/store/exclusions";
+import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
+import { CITE_HOW, citeRow } from "@/services/cite";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { delisting } from "@/store/delisted";
 import { deriveDoorIndex } from "@/services/door-index";
@@ -110,6 +112,26 @@ corpusRoutes.get("/corpus.json", async (c) => {
     creator: organizationRef(base),
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to read. No account, no key, no rate limit.",
+    /*
+     * THE SEATS, WHERE A CRAWLER READS THEM (2026-09-04). A scorer's
+     * ingestion reads this Dataset before any page; the two seats the
+     * store occupies, the one it refuses, and the shape a citation
+     * takes are stated here so they survive being quoted.
+     */
+    seats: {
+      dated: TWO_SEATS_DATED,
+      record: true,
+      dispute_artifact: true,
+      interpretation: false,
+      sentence: TWO_SEATS_SENTENCE,
+      misuse: MISUSE_CLAUSE,
+      how_to_consume: `${base}/scorers`,
+    },
+    citation_shape: {
+      how: CITE_HOW,
+      json: { cites: `${base}/corpus/{n}.json`, host: "example.com", week: "2026-W34", sequence: 1, observed_at: "2026-08-…", digest: "<sha256 the index commits to>" },
+      every_row_prints_one: `${base}/corpus/host/{host}.json carries \`cite\`; ${base}/corpus/{n}.json carries \`cite\`; the look's reproduce block cites the row it compared with.`,
+    },
     ...(first ? { temporalCoverage: `${first}/${last ?? ".."}` } : {}),
     ...(last ? { dateModified: last } : {}),
     measurementTechnique:
@@ -225,12 +247,31 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   /* The tier rides the newest-wins fold, so a paid refresh moves it
    * here the same hour it moves the passport (2026-09-02). */
   const observation = await effectiveObservation(c.env, host);
+  const base = c.env.STORE_BASE_URL;
+  const latestProbed = [...observation.history.timeline].reverse().find((round) => round.probed) ?? null;
   return c.json({
     ...observation.history,
     tier: deriveTier(
       tierInputFromHistory(observation.history, observation),
-      `${c.env.STORE_BASE_URL}/criteria`,
+      `${base}/criteria`,
     ),
+    /*
+     * THE CITE BOX (2026-09-04): the latest probed row, in the shape
+     * the watch reads; every timeline entry carries entry_url and
+     * digest, so any row cites the same way.
+     */
+    ...citeBlock({
+      base,
+      what: "host history",
+      which: host,
+      observed_at: observation.history.last_observed,
+      url: `${base}/corpus/host/${host}.json`,
+      verify_url: latestProbed?.entry_url,
+    }),
+    cite_json: latestProbed ? citeRow(base, { host, ...latestProbed }).json : null,
+    cite_how: latestProbed
+      ? `${CITE_HOW} cite_json is the latest probed row in the shape the citation watch reads; each timeline entry carries entry_url and digest, so any row cites the same way.`
+      : `${CITE_HOW} No probed row yet; a gap is cited as a gap, never as a zero.`,
   });
 });
 
@@ -348,6 +389,18 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
         <h2>What this cannot see</h2>
         <ul class="menu-desc">${history.what_this_cannot_see.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
       </section>
+      ${(() => {
+        const latestProbed = [...history.timeline].reverse().find((round) => round.probed);
+        if (!latestProbed) return "";
+        const cite = citeRow(base, { host, ...latestProbed });
+        return `<section>
+        <h2>Cite this row</h2>
+        ${citeHtml({ base, what: "host history", which: host, observed_at: history.last_observed, url: `${base}/corpus/host/${host}.json`, verify_url: latestProbed.entry_url }, escapeHtml)}
+        <p class="menu-desc">${escapeHtml(cite.text)}</p>
+        <pre class="menu-meta">${escapeHtml(JSON.stringify(cite.json, null, 2))}</pre>
+        <p class="menu-meta">${escapeHtml(CITE_HOW)} Any earlier row cites the same way from its entry link above. How a scorer consumes this: <a href="/scorers">/scorers</a>.</p>
+      </section>`;
+      })()}
       <section>
         <h2>Check it yourself</h2>
         <p class="menu-desc">The free preflight runs the same battery on any door right now: <code>POST ${escapeHtml(base)}/api/preflight/v1</code> with <code>{"url": "https://${escapeHtml(host)}/…"}</code>. The signed rows behind this page are at <a href="/corpus/host/${escapeHtml(host)}.json"><code>/corpus/host/${escapeHtml(host)}.json</code></a>; every entry links the snapshot it came from and the chain at <a href="/corpus.json"><code>/corpus.json</code></a>. If you operate this host and want the page withdrawn, the <a href="/notice">notice desk</a> is the door. Corrections: <a href="/corrections">/corrections</a>.</p>
@@ -381,7 +434,17 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
   }
   const roundCite = { base, what: "corpus round", which: `${brief.week} (snapshot ${brief.sequence})`, observed_at: brief.taken_at, url: `${base}/corpus/${brief.sequence}.json`, verify_url: `${base}/corpus/round/${brief.week}` };
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER, ...citeBlock(roundCite) }, 200, lastModifiedOf(brief.taken_at));
+    return c.json(
+      {
+        ...brief,
+        weeks_held: known_weeks,
+        corrections: CORRECTIONS_POINTER,
+        ...citeBlock(roundCite),
+        cite_json: citeRow(base, { week: brief.week, sequence: brief.sequence, taken_at: brief.taken_at, digest: brief.digest, entry_url: `${base}/corpus/${brief.sequence}.json` }).json,
+      },
+      200,
+      lastModifiedOf(brief.taken_at),
+    );
   }
   const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
   return c.html(
@@ -691,6 +754,19 @@ corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
     {
       ...record,
       ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week})`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+      /*
+       * THE MACHINE SHAPE BESIDE THE LINE (2026-09-04, merged from the
+       * scorers' branch): the line above is the sentence to quote; this
+       * is the object a scorer writes and the citation watch reads.
+       * The digest is the one the chain commits to.
+       */
+      cite_json: citeRow(base, {
+        week: record.snapshot.week,
+        sequence: record.snapshot.sequence,
+        taken_at: record.snapshot.taken_at,
+        digest: record.digest,
+        entry_url: `${base}/corpus/${record.snapshot.sequence}.json`,
+      }).json,
     },
     200,
     lastModifiedOf(record.snapshot.taken_at),
@@ -717,6 +793,13 @@ corpusRoutes.get("/corpus/latest.json", async (c) => {
       stable_address: `${base}/corpus/${record.snapshot.sequence}.json`,
       changes_this_week: `${base}/corpus/changes/${record.snapshot.week}.json`,
       ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week}), the latest`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+      cite_json: citeRow(base, {
+        week: record.snapshot.week,
+        sequence: record.snapshot.sequence,
+        taken_at: record.snapshot.taken_at,
+        digest: record.digest,
+        entry_url: `${base}/corpus/${record.snapshot.sequence}.json`,
+      }).json,
     },
     200,
     lastModifiedOf(record.snapshot.taken_at),

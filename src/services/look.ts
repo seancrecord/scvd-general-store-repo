@@ -16,6 +16,7 @@ import {
   type PreflightReport,
 } from "@/services/preflight";
 import type { SubjectHistory, SubjectRound } from "@/services/subject-history";
+import { isIsoWeek, reproduceAgainst, type Reproduction } from "@/services/reproduce";
 import type { Env } from "@/types";
 
 /**
@@ -89,6 +90,10 @@ export interface HeldHalf {
     catalog?: SubjectRound["catalog"];
     offer?: SubjectRound["offer"];
     entry_url: string;
+    /** For the cite and the reproduce comparison (2026-09-04); absent on a held half derived before then. */
+    digest?: string;
+    sequence?: number;
+    battery?: string;
   } | null;
   verdict_changes: number;
   /** The host's own shared-wallet fact, when the chain has met it (G2 ruling). */
@@ -125,6 +130,12 @@ export interface LookReport {
     line: HoldLine;
     detail: string;
   };
+  /**
+   * REPRODUCE (2026-09-04): the live probe against one signed row,
+   * classed by the rule at /criteria#result-class, the row cited.
+   * The last probed row unless the caller named a week with `since`.
+   */
+  reproduce: Reproduction;
   counts_travel_with_denominators: string;
   what_this_is_not: string;
   the_ladder: {
@@ -191,6 +202,9 @@ export async function heldHalfOf(env: Env, host: string, now: Date = new Date())
           ...(last.catalog ? { catalog: last.catalog } : {}),
           ...(last.offer ? { offer: last.offer } : {}),
           entry_url: last.entry_url,
+          digest: last.digest,
+          sequence: last.sequence,
+          ...(last.battery ? { battery: last.battery } : {}),
         }
       : null,
     verdict_changes: history.verdict_changes.length,
@@ -257,12 +271,23 @@ export async function lookAtDoor(
   rawUrl: unknown,
   env: Env,
   now: Date = new Date(),
+  since?: unknown,
 ): Promise<{
   status: number;
   body: LookReport | { error: string; code?: string };
   headers?: Record<string, string>;
 }> {
   const base = env.STORE_BASE_URL;
+  if (since !== undefined && since !== null && since !== "" && !isIsoWeek(since)) {
+    return {
+      status: 400,
+      body: {
+        error: `since names a signed week as the corpus spells it, e.g. "2026-W34"; the weeks the chain holds are listed at ${base}/corpus.json. Leave it out to compare with the last probed row.`,
+        code: "bad_since",
+      },
+    };
+  }
+  const week = isIsoWeek(since) ? since : undefined;
   /*
    * EVERY REFUSAL IS THE PREFLIGHT'S REFUSAL, unchanged: the URL law,
    * the private-address law, the own-host answer (the instrument does
@@ -281,6 +306,34 @@ export async function lookAtDoor(
   const url = String(rawUrl);
   const host = hostOf(url);
   const held = await heldHalf(env, host, now);
+  /*
+   * The reproduce block reads a named week from the full timeline,
+   * derived fresh (a dispute call earns the derivation); the default
+   * reads the held half's own last probed row, which carries the
+   * digest and battery since 2026-09-04. A held half derived before
+   * that field existed lacks the digest for up to one hold; the
+   * comparison then re-derives rather than citing a row without one.
+   */
+  const timeline: SubjectRound[] =
+    week || !held.last_probed_round || held.last_probed_round.digest === undefined
+      ? (await effectiveObservation(env, host, now)).history.timeline
+      : [
+          {
+            sequence: held.last_probed_round.sequence ?? 0,
+            week: held.last_probed_round.week,
+            taken_at: held.last_probed_round.taken_at,
+            digest: held.last_probed_round.digest,
+            entry_url: held.last_probed_round.entry_url,
+            listed: true,
+            probed: true,
+            coverage_suspect: false,
+            ...(held.last_probed_round.url ? { url: held.last_probed_round.url } : {}),
+            ...(held.last_probed_round.verdict ? { verdict: held.last_probed_round.verdict } : {}),
+            failed: held.last_probed_round.failed,
+            advisories: held.last_probed_round.advisories,
+            ...(held.last_probed_round.battery ? { battery: held.last_probed_round.battery } : {}),
+          } as SubjectRound,
+        ];
   const live: LookReport["now"] = {
     battery: PREFLIGHT_VERSION_NEXT,
     verdict: report.verdict,
@@ -301,6 +354,13 @@ export async function lookAtDoor(
       now: live,
       held,
       now_against_held: nowAgainstHeld(report.verdict, held),
+      reproduce: reproduceAgainst(
+        base,
+        host,
+        { timeline },
+        { verdict: report.verdict, failed: live.failed, battery: PREFLIGHT_VERSION_NEXT },
+        week,
+      ),
       counts_travel_with_denominators: DENOMINATORS,
       what_this_is_not: NOT_A_SCORE,
       the_ladder: {

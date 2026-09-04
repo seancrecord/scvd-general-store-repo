@@ -44,6 +44,7 @@ import {
   monthlyStateRoutes,
   a2aRoutes,
   mcpVerifierRoutes,
+  scorersRoutes,
   openapiToolsRoutes,
   fixturesRoutes,
   visitorsRoutes,
@@ -479,6 +480,7 @@ app.route("/", feedsRoutes);
 app.route("/", monthlyStateRoutes);
 app.route("/", a2aRoutes);
 app.route("/", mcpVerifierRoutes);
+app.route("/", scorersRoutes);
 app.route("/", openapiToolsRoutes);
 app.route("/", fixturesRoutes);
 app.route("/", visitorsRoutes);

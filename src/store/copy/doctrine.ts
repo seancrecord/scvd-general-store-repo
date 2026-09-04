@@ -83,3 +83,26 @@ export const DOCTRINE_NOTE = {
     "Signed corpus rows, snapshots and paid artifacts issued before this date that quote the old sentence keep their bytes and verify as issued. Nothing is resigned. The new sentence governs what is signed from this date on.",
   rule: "House rule 43, amended the same day.",
 } as const;
+
+/**
+ * THE TWO SEATS (2026-09-03). A reader drew a three-layer stack —
+ * record, interpretation, dispute — and put this store in the first
+ * seat only, with the dispute artifact handed to somebody else. The
+ * case file, the launch check, the settlement attestation and the
+ * conformance desk are dispute artifacts, so the store occupies two
+ * of the three seats and refuses the third on purpose. Said once,
+ * here, so no diagram drawn elsewhere reassigns the microscope.
+ */
+export const TWO_SEATS_DATED = "2026-09-03";
+
+/** The sentence standing alone. */
+export const TWO_SEATS_SENTENCE =
+  "The store is the record and the reproducible dispute artifact. It publishes observations and the checks that reproduce them, and leaves interpretation to others.";
+
+/**
+ * THE MISUSE CLAUSE (2026-09-03). The corpus is CC BY 4.0 and anyone
+ * may derive a score from it; the derivation is theirs. Short and
+ * sharp so it survives quotation.
+ */
+export const MISUSE_CLAUSE =
+  "If you publish a score, ranking, or certification derived from this corpus, you are responsible for the interpretation. This store does not endorse derived conclusions.";
