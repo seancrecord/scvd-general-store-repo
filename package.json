@@ -54,7 +54,8 @@
     "tab:pager": "node tab/pager.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done",
-    "defects:cut": "node scripts/cut-defects.mjs"
+    "defects:cut": "node scripts/cut-defects.mjs",
+    "outreach:sent": "node scripts/outreach-sent.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

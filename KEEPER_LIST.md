@@ -80,7 +80,19 @@ build, it is on the roadmap.
   button. Your hand: set `note_sent` on a row the day you
   send, run `npm run outreach:build`, and move a system into
   `src/store/citing-systems.json` only when the five facts
-  hold. Stamping a send is a one-field edit that breaks
+  hold. ⚑ STAMP THE 20+ ALREADY SENT (2026-09-04, the
+  keeper: "weve sent 20+ notes"). The register recorded
+  none of them, so the Sunday watch was reading zero pages
+  while the work was done — the automation idle beside a
+  finished job. One command now, no JSON by hand:
+  `npm run outreach:sent -- "Glama" x402scan --date
+  2026-09-02`, which stamps, re-renders the table and the
+  edge's watched file, and prints how many pages the watch
+  will read. It refuses an argument that matches nothing or
+  matches two rows rather than guessing, because a wrong
+  stamp claims a note went somewhere it did not.
+  `npm run outreach:sent -- --list` shows who is stamped.
+  Stamping a send is a one-field edit that breaks
   nothing: the derived table carries WHO EXISTS only, and
   the status columns moved into the JSON alone (2026-09-04),
   because a table that carried them failed the build every
