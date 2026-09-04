@@ -519,6 +519,71 @@ describe("the keyless sanctions screen — the on-chain oracle", () => {
     expect(down.listed).toBeNull();
   });
 
+  /**
+   * THE BOUNTY WALKER'S LETTER, 2026-09-03: the public endpoint
+   * answered 429 for ninety minutes, the screen read only that one
+   * endpoint, and every claim failed closed while the authenticated
+   * keys sat idle. These hold the repair AND the rule it must not
+   * loosen: the next provider is asked; a listing anywhere is final;
+   * nothing answering is still null.
+   */
+  function rpcByHost(
+    answers: Record<string, { result?: string; status?: number } | "down">,
+  ): typeof fetch {
+    return (async (input: RequestInfo | URL) => {
+      const host = new URL(String(input)).host;
+      const answer = answers[host];
+      if (!answer || answer === "down") throw new Error(`${host} down`);
+      return new Response(JSON.stringify({ result: answer.result ?? "" }), {
+        status: answer.status ?? 200,
+      });
+    }) as typeof fetch;
+  }
+  const CLEAR = `0x${"0".repeat(64)}`;
+  const LISTED = `0x${"0".repeat(63)}1`;
+  const LADDER = ["https://primary.test/k", "https://secondary.test/k", "https://public.test"];
+
+  it("asks the next endpoint when the first answers 429 — the letter's case", async () => {
+    const verdict = await oracleScreen(
+      LADDER,
+      rpcByHost({
+        "primary.test": { status: 429 },
+        "secondary.test": { result: CLEAR },
+      }),
+    )(SELLER_PAY_TO);
+    expect(verdict.listed).toBe(false);
+  });
+
+  it("a listing on any endpoint is final; no later endpoint can clear it", async () => {
+    const verdict = await oracleScreen(
+      LADDER,
+      rpcByHost({
+        "primary.test": { result: LISTED },
+        "secondary.test": { result: CLEAR },
+        "public.test": { result: CLEAR },
+      }),
+    )(SELLER_PAY_TO);
+    expect(verdict.listed).toBe(true);
+  });
+
+  it("still fails closed when nothing answers, and names every host it asked", async () => {
+    const verdict = await oracleScreen(
+      LADDER,
+      rpcByHost({
+        "primary.test": { status: 429 },
+        "secondary.test": "down",
+        "public.test": { result: "0xdeadbeef" },
+      }),
+    )(SELLER_PAY_TO);
+    expect(verdict.listed).toBeNull();
+    expect(verdict.source).toContain("3 endpoints");
+    expect(verdict.source).toContain("primary.test (HTTP 429)");
+    expect(verdict.source).toContain("secondary.test (unreachable)");
+    expect(verdict.source).toContain("public.test (unexpected result)");
+    // Hosts only — an authenticated endpoint's token lives in its path.
+    expect(verdict.source).not.toContain("/k");
+  });
+
   it("a non-EVM address shape is unscreenable, said without a network call", async () => {
     const never = (async () => {
       throw new Error("must not be called");

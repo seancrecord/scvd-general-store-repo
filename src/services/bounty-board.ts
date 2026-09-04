@@ -5,6 +5,7 @@ import {
   getBlockNumber,
   getReceipt,
   isSameAddress,
+  rpcEndpoints,
   usdcFromUnits,
   usdcTransfers,
 } from "@/lib/base-rpc";
@@ -570,12 +571,12 @@ export async function claimBounty(
 
     // Rule 3, outbound: the address OUR money goes to, screened, fail
     // closed. The oracle needs no key; an unanswered screen pays nobody.
+    // Read over the same endpoint ladder as the receipt above — a 429
+    // from the public endpoint alone refused every claim for ninety
+    // minutes on 2026-09-03 while the authenticated keys sat idle.
     const screen =
       options.screen ??
-      oracleScreen(
-        env.BASE_RPC_URL ?? "https://mainnet.base.org",
-        options.fetch ?? fetch,
-      );
+      oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
     const screened = await screen(input.payoutTo);
     if (screened.listed !== false) {
       throw new BountyRefused(
