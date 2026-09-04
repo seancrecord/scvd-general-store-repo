@@ -1,6 +1,8 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { WardDelta, WardRound } from "@/services/ward-round";
+import type { SourceRegister } from "@/services/source-liveness";
+import type { Heartbeat } from "@/services/ward-heartbeat";
 
 /**
  * /admin/ward — the ward round's readout: the weekly ecosystem census
@@ -14,10 +16,78 @@ import type { WardDelta, WardRound } from "@/services/ward-round";
  * privately is help, naming them publicly is a verdict nobody asked
  * for). Anything that publishes from here does so by his hand.
  */
+/**
+ * THE TWO BLOCKS THIS PAGE WAS MISSING (2026-09-04). The round's own
+ * numbers were here from day one; whether the machine that produces
+ * them is still running, and whether the directories under them are
+ * still answering, were not on any keeper-facing surface at all —
+ * they were fields in KV nobody had asked a question of. The delta is
+ * still what the keeper acts on, so both go ABOVE the round summary
+ * and below nothing: a stale round reads exactly like a healthy
+ * ecosystem, and that is the one misreading this page must not
+ * permit.
+ */
+function instrumentBlock(
+  register: SourceRegister | null,
+  beat: Heartbeat | null,
+): string {
+  if (!register && !beat) return "";
+  const alarm =
+    beat && (beat.verdict === "overdue" || beat.verdict === "ran_empty");
+  const quiet =
+    register?.sources.filter(
+      (row) => row.status === "stale" || row.status === "never_answered",
+    ) ?? [];
+
+  const heart = beat
+    ? `<li>Heartbeat: <strong>${escapeHtml(beat.verdict)}</strong> — ${escapeHtml(beat.detail)}</li>
+       ${
+         beat.weeks_missing.length > 0
+           ? `<li><strong>Weeks the chain does not hold at all:</strong> ${beat.weeks_missing
+               .map((week) => `<code>${escapeHtml(week)}</code>`)
+               .join(", ")}. A gap in the record, not a quiet week in the ecosystem.</li>`
+           : ""
+       }`
+    : "";
+
+  const sources = register
+    ? `<li>Sources: ${register.sources
+        .filter((row) => row.status !== "unread")
+        .map(
+          (row) =>
+            `<strong>${escapeHtml(row.source)}</strong> ${escapeHtml(row.status)}${
+              row.last_successful_week
+                ? ` <small>(last answered ${escapeHtml(row.last_successful_week)})</small>`
+                : " <small>(never answered)</small>"
+            }`,
+        )
+        .join(" · ")}</li>
+      ${
+        quiet.length > 0
+          ? `<li><strong>Not answering: ${escapeHtml(quiet.map((row) => row.source).join(", "))}.</strong> Hosts named only by a quiet source are on the register by carry-forward, not by observation.</li>`
+          : ""
+      }`
+    : "";
+
+  return `<section${alarm ? ' style="border:1px solid currentColor;padding:0.5em 1em"' : ""}>
+    <h3>Is the instrument working?</h3>
+    <ul>${heart}${sources}</ul>
+    <p style="opacity:0.75">Derived from the stored rounds, not maintained by
+    hand. The public face is <a href="/sources">/sources</a>. The heartbeat
+    asks whether a round WROTE something, not merely whether one finished —
+    a run that completes having recorded nothing looks like a quiet week
+    everywhere else. The MCP ward is a separate instrument with separate
+    numbers: <a href="/admin/mcp-ward">its room</a>, and nothing there may be
+    added to anything here.</p>
+  </section>`;
+}
+
 export function renderWardPage(
   round: WardRound | null,
   previous: WardRound | null,
   delta: WardDelta | null,
+  register: SourceRegister | null = null,
+  beat: Heartbeat | null = null,
 ): string {
   const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
     <button type="submit">Walk the ward now</button>
@@ -36,7 +106,8 @@ export function renderWardPage(
         <p>No round on the books yet. The first one runs with the Sunday
         press (11:00 UTC), or walk it now:</p>
         ${runButton}
-      </section>`,
+      </section>
+      ${instrumentBlock(register, beat)}`,
     );
   }
 
@@ -176,6 +247,9 @@ export function renderWardPage(
       <h2>The ward round</h2>
       ${runButton}
       ${summary}
+    </section>
+    ${instrumentBlock(register, beat)}
+    <section>
       ${deltaHtml}
       <h3>Every door on the ward</h3>
       <table>

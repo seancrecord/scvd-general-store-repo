@@ -190,6 +190,85 @@ describe("the two opposite silences", () => {
     expect(row.verdict).toContain("1 unknown");
   });
 
+  /**
+   * THE LOCKED DOOR (2026-09-04). settlement_attestation needs
+   * ?tx_hash=; a scanner arriving without one could not have bought at
+   * any price. The verdict used to fold those into "window-shopping".
+   */
+  it("separates the asks that could not have bought from the ones that walked", async () => {
+    for (let i = 0; i < 6; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+        ...organic,
+        missingRequired: ["tx_hash"],
+      });
+    }
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.asks_organic).toBe(7);
+    expect(row.asks_locked).toBe(6);
+    expect(row.locked_inputs).toEqual({ tx_hash: 6 });
+    expect(row.verdict).toContain("LOCKED DOOR: 6 of the 7 asks");
+    expect(row.verdict).toContain("could not have bought at any price");
+    // And the one who could is the one to read the silence against.
+    expect(row.verdict).toContain("against the 1 who could have");
+  });
+
+  it("says nothing about locks on a row with none", async () => {
+    for (let i = 0; i < 5; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    }
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "small_blessing")!;
+    expect(row.asks_locked).toBe(0);
+    expect(row.verdict).not.toContain("LOCKED DOOR");
+  });
+
+  it("carries the locked clause on a REAL INTENT row too", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
+      ...organic,
+      missingRequired: ["tx_hash"],
+    });
+    await recordPaymentDecline(testEnv, "/api/buy/settlement_attestation", "verify_error:timeout", organic);
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
+    expect(row.verdict).toContain("REAL INTENT HIT A WALL");
+    expect(row.verdict).toContain("LOCKED DOOR");
+  });
+
+  /**
+   * THE WALKERS (2026-09-04). A client touching four doors inside a
+   * minute is indexing the shelf. Its asks were the bulk of every
+   * denominator; they are counted apart now and left out.
+   */
+  it("leaves a catalog walker's asks out of the organic count, and says so", async () => {
+    const doors = ["settlement_attestation", "small_blessing", "hello", "luckies", "daily_fortune"];
+    for (const door of doors) {
+      await recordChallengeIssued(testEnv, `/api/buy/${door}`, { userAgent: "node" });
+    }
+    await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
+    const report = await auditFunnel(testEnv);
+    const blessing = report.items.find((r) => r.item === "small_blessing")!;
+    expect(blessing.asks_walked).toBe(1);
+    expect(blessing.asks_organic).toBe(1);
+    expect(blessing.verdict).toContain("WALKED: 1 more ask");
+    const hello = report.items.find((r) => r.item === "hello")!;
+    expect(hello.asks_organic).toBe(0);
+    expect(hello.asks_walked).toBe(1);
+    expect(hello.verdict).toContain("WALKED ONLY");
+    expect(hello.verdict).toContain("Nothing here is a lost sale");
+    expect(report.walk_rule.min_items).toBe(4);
+  });
+
+  it("still counts a walker's payment as a wallet, because a crawler that pays is a customer", async () => {
+    const doors = ["settlement_attestation", "small_blessing", "hello", "luckies"];
+    for (const door of doors) {
+      await recordChallengeIssued(testEnv, `/api/buy/${door}`, { userAgent: "node" });
+    }
+    await recordPaymentDecline(testEnv, "/api/buy/hello", "settle:insufficient_funds", { userAgent: "node" });
+    const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "hello")!;
+    expect(row.asks_walked).toBe(1);
+    expect(row.wallets_opened).toBe(1);
+    expect(row.declines_organic).toBe(1);
+  });
+
   it("calls settles-with-no-declines converting, which is the quiet good news", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     await recordSettlement(testEnv, "/api/buy/small_blessing", {

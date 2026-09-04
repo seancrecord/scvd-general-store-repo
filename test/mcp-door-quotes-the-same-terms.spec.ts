@@ -3,6 +3,17 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MENU_ITEMS } from "@/store";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+/**
+ * THE WORKED EXAMPLE, NOT A BARE item_id (2026-09-04). The MCP door
+ * refuses a call missing a schema-required argument BEFORE quoting
+ * terms — that is how the buyer who paid $5 for a launch check of an
+ * empty string stops being possible — so the challenge this spec
+ * compares has to come from a call that could actually be fulfilled.
+ * Both doors get the same arguments, so the comparison stays
+ * like-for-like.
+ */
+import { buyInputExample } from "@/lib/bazaar-discovery";
+import { getMenuItem } from "@/store";
 
 const BASE = "https://scvd.store";
 
@@ -81,7 +92,10 @@ async function mcpChallenge(
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
-      params: { name: tool, arguments: { item_id: itemId } },
+      params: {
+        name: tool,
+        arguments: { item_id: itemId, ...buyInputExample(getMenuItem(itemId)!) },
+      },
     }),
   });
   const payload = (await response.json()) as Record<string, unknown>;
@@ -96,7 +110,12 @@ async function mcpChallenge(
 }
 
 async function httpChallenge(itemId: string): Promise<Challenge> {
-  const response = await SELF.fetch(`${BASE}/api/buy/${itemId}`);
+  const query = new URLSearchParams(
+    Object.entries(buyInputExample(getMenuItem(itemId)!)).map(
+      ([key, value]): [string, string] => [key, String(value)],
+    ),
+  );
+  const response = await SELF.fetch(`${BASE}/api/buy/${itemId}?${query}`);
   const header = response.headers.get("PAYMENT-REQUIRED");
   expect(header, `/api/buy/${itemId} served no PAYMENT-REQUIRED`).toBeTruthy();
   /*

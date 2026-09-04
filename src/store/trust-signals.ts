@@ -430,6 +430,29 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That Circle's readiness scanner reaches this origin, fetches its OpenAPI contract and its live 402, and scores how legible the paid interface is to a buying agent. Scored per endpoint with no summary page, so one door stands for the set — every paid door here is described by the same contract and answers the same challenge, which is the fact the reading actually turns on. An instrument reading, not a listing and not an audit: it measures the shape of the door — payment terms declared, inputs described, guidance present — and never buys anything, so it says nothing about the goods behind it.",
   },
   {
+    /**
+     * A DIRECTORY THIS TIME, NOT AN INSTRUMENT — and the wording below
+     * keeps the two apart, because the entry above is also Circle's
+     * and measures something. This one is a per-partner page in
+     * Circle's partner directory, submitted by the keeper on
+     * 2026-09-01 (KEEPER_LIST: "Circle Agent Marketplace") and seen
+     * listed 2026-09-04. A directory page proves the listing exists
+     * and that the operator went through a submission; it is not the
+     * issuer of USDC vouching for the goods, and the row says so.
+     *
+     * RECORDED FROM THE KEEPER'S WORD. The sandbox that wrote this row
+     * could not fetch partners.circle.com (egress policy), so the
+     * page's own wording is unread here and nothing from it is quoted
+     * — the same discipline as the score entry above, for a different
+     * reason. The confirmed date is the keeper's sighting.
+     */
+    url: "https://partners.circle.com/partner/scvdstore",
+    registry: "Circle partner directory",
+    confirmed: "2026-09-04",
+    what_it_proves:
+      "That Circle's partner directory carries a per-partner page for this store, submitted by the keeper and listed after review. Not an endorsement and not an audit: a directory page proves the listing exists and that a submission was accepted, nothing about the goods — and being listed by the issuer of the stablecoin this store is paid in says the store is on their map, not that they stand behind what it sells.",
+  },
+  {
     url: "https://www.getdrio.com/mcp/store-scvd-general-store",
     registry: "Drio (getdrio.com)",
     confirmed: "2026-09-01",

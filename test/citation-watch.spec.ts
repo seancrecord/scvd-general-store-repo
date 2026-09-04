@@ -1,7 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { SELF_PUBLISHED_IDS, citationsOn, judgePage } from "@/lib/citations";
+import { RETIRED_EXAMPLE_IDS, SELF_PUBLISHED_IDS, citationsOn, judgePage } from "@/lib/citations";
 import WATCHED_PAGES from "@/store/watched-pages.json";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { SELF_PUBLISHED_IDS as SELF_PUBLISHED_IDS_NODE, citationsOn as citationsOnNode, judge as judgeNode } from "../scripts/lib/citations.mjs";
@@ -50,12 +50,15 @@ function stubPages(pages: Record<string, { status?: number; text?: string; throw
 }
 
 describe("one reading, two runtimes", () => {
-  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
+  // The id here must be one WE never published: a page quoting our own
+  // specimen or a retired placeholder is our words coming back, not a
+  // citation, and SELF_PUBLISHED_IDS discounts both.
+  const fixture = `<p><a href="${BASE}/api/verify/cert_theirsnotours">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
 
   it("finds the same citations in the same order", () => {
     expect(citationsOn(fixture, BASE)).toEqual(citationsOnNode(fixture, BASE));
     expect(citationsOn(fixture, BASE)).toEqual([
-      `${BASE}/api/verify/cert_k2m9v4xwqp`,
+      `${BASE}/api/verify/cert_theirsnotours`,
       `${BASE}/corpus/3.json`,
       `${BASE}/corpus/host/door.example.json`,
       `${BASE}/corpus/round/2026-W36`,
@@ -80,13 +83,17 @@ describe("one reading, two runtimes", () => {
     for (const moving of [`${BASE}/corpus.json`, `${BASE}/corpus/latest.json`, `${BASE}/corpus/tiers.json`, `${BASE}/corpus/diff.json?since=2026-W30`]) {
       expect(citationsOn(moving, BASE), moving).toEqual([]);
     }
-    // The sample certificate every listing and the MCP card publish.
+    // Both ids this store publishes about itself.
     expect(SELF_PUBLISHED_IDS).toContain(SAMPLE_ARTIFACT_ID);
+    for (const retired of RETIRED_EXAMPLE_IDS) {
+      expect(SELF_PUBLISHED_IDS).toContain(retired);
+      expect(citationsOn(`verify_url: ${BASE}/api/verify/${retired}`, BASE)).toEqual([]);
+    }
     expect([...SELF_PUBLISHED_IDS_NODE]).toEqual([...SELF_PUBLISHED_IDS]);
     expect(citationsOn(`sample_verify_url: ${BASE}/api/verify/${SAMPLE_ARTIFACT_ID}`, BASE)).toEqual([]);
     // A real certificate on the same page still counts.
-    expect(citationsOn(`${BASE}/api/verify/${SAMPLE_ARTIFACT_ID} and ${BASE}/api/verify/cert_real9`, BASE)).toEqual([
-      `${BASE}/api/verify/cert_real9`,
+    expect(citationsOn(`${BASE}/api/verify/${SAMPLE_ARTIFACT_ID} and ${BASE}/api/verify/cert_rst2uvwxyz`, BASE)).toEqual([
+      `${BASE}/api/verify/cert_rst2uvwxyz`,
     ]);
   });
 
@@ -108,7 +115,7 @@ describe("the news is the delta", () => {
   it("a first report counts every cited page as new, and silence as nothing", () => {
     const report = judgeWatch(
       {
-        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_a` } }],
+        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_abc2defgh` } }],
         prospects: [{ prospect, fetched: { status: 200, text: "about the store" } }],
       },
       null,
@@ -126,7 +133,7 @@ describe("the news is the delta", () => {
   it("a prospect that starts citing is newly cited once; a listed page that stops is newly gone once; unreadable moves nothing", () => {
     const first = judgeWatch(
       {
-        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_a` } }],
+        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_abc2defgh` } }],
         prospects: [{ prospect, fetched: { status: 200, text: "about the store" } }],
       },
       null,
@@ -308,5 +315,95 @@ describe("the desk", () => {
     };
     expect(json.citations.newly_gone).toEqual(["https://scores.example/m"]);
     expect(json.citation_prospects.length).toBe(watchedProspects().length);
+  });
+});
+
+/**
+ * WHAT THE FIRST REAL SWEEP FOUND (2026-09-04). 101 pages, three
+ * "citations", and all three false. Two directories were showing the
+ * example purchase output this store publishes into bazaar discovery,
+ * and one was showing a truncated URL. These are those three pages,
+ * as they actually read, kept so the matcher can never call them
+ * citations again.
+ */
+describe("the three false positives the first sweep produced", () => {
+  it("does not count the bazaar example purchase two directories mirror", () => {
+    // x402-bazaar and x402scan, verbatim shape.
+    const listing = `"certificate":{"cert_id":"${RETIRED_EXAMPLE_IDS[0]}"},"verify_url":"${BASE}/api/verify/${RETIRED_EXAMPLE_IDS[0]}"`;
+    expect(citationsOn(listing, BASE)).toEqual([]);
+    expect(citationsOnNode(listing, BASE)).toEqual([]);
+  });
+
+  it("does not count a truncated verify URL that resolves to nothing", () => {
+    // socketcat displayed the URL clipped: /api/verify/ce
+    for (const clipped of [`${BASE}/api/verify/ce`, `${BASE}/api/verify/cert`, `${BASE}/api/verify/cert_`, `${BASE}/api/verify/x`]) {
+      expect(citationsOn(clipped, BASE), clipped).toEqual([]);
+      expect(citationsOnNode(clipped, BASE), clipped).toEqual([]);
+    }
+  });
+
+  it("still counts a real certificate somebody else published", () => {
+    const real = `${BASE}/api/verify/cert_9pq2rstuvw`;
+    expect(citationsOn(real, BASE)).toEqual([real]);
+    expect(citationsOnNode(real, BASE)).toEqual([real]);
+  });
+});
+
+/**
+ * THE PAGE THAT ACTUALLY PRODUCED THE FALSE POSITIVE (2026-09-04).
+ *
+ * SELF_PUBLISHED_IDS discounted the CURRENT specimen, which is right
+ * and was not enough: a directory's copy of our listing does not
+ * refresh when ours does. x402-list.com renders `cert_k2m9v4xwqp` —
+ * the placeholder buyOutputExample carried until that day — 62 times
+ * on its page for this store, against zero occurrences of the live
+ * specimen. So the keeper's row still read `cited` and still clicked
+ * through to "No certificate by that name on the wall."
+ *
+ * The bytes below are theirs, trimmed: the bazaar discovery extension
+ * we broadcast on every 402, harvested and rendered. Note the shape —
+ * escaped inside markup, never a clickable link, which is why nobody
+ * caught it by browsing.
+ */
+describe("a retired example id is still our own words", () => {
+  const theirPage = `{ "extensions": { "bazaar": { "info": { "output": { "type": "json", "example": {
+    "item_id": "the_statement",
+    "badge_url": "${BASE}/badges/41.svg",
+    "signature": "&lt;128 hex chars, ed25519&gt;",
+    "verify_url": "${BASE}/api/verify/cert_k2m9v4xwqp"
+  } } } } } }`;
+
+  it("reads the live x402-list page as silent, not cited", () => {
+    expect(citationsOn(theirPage, BASE)).toEqual([]);
+    expect(
+      judgePage("x402-list", "https://x402-list.com/services/x", { status: 200, text: theirPage }, BASE, "silent")
+        .verdict,
+    ).toBe("silent");
+  });
+
+  it("keeps the retired ids in both runtimes, so the CLI agrees with the cron", () => {
+    expect(SELF_PUBLISHED_IDS).toContain("cert_k2m9v4xwqp");
+    expect([...SELF_PUBLISHED_IDS_NODE]).toEqual([...SELF_PUBLISHED_IDS]);
+  });
+
+  /**
+   * The line this must not cross. Discounting our own placeholders
+   * must never discount an artifact somebody actually holds — that is
+   * the news the whole watch exists for.
+   */
+  it("still calls any other artifact id a citation", () => {
+    const theirs = `<a href="${BASE}/api/verify/cert_theirsnotours">receipt</a>`;
+    expect(citationsOn(theirs, BASE)).toEqual([`${BASE}/api/verify/cert_theirsnotours`]);
+    expect(
+      judgePage("P", "https://p.example/us", { status: 200, text: theirs }, BASE, "silent").verdict,
+    ).toBe("cited");
+  });
+
+  it("does not mask a real corpus row sitting beside our boilerplate", () => {
+    const both = `${theirPage} and ${BASE}/corpus/3.json`;
+    expect(citationsOn(both, BASE)).toContain(`${BASE}/corpus/3.json`);
+    expect(
+      judgePage("P", "https://p.example/us", { status: 200, text: both }, BASE, "silent").verdict,
+    ).toBe("cited");
   });
 });

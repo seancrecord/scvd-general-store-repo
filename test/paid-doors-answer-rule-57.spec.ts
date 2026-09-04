@@ -3,6 +3,12 @@ import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import BUY_SOURCE from "../src/routes/buy.ts?raw";
+/**
+ * THE LAW MOVED (2026-09-04): every argument-shaped refusal the buy
+ * doors emit is built in lib/purchase-args.ts now, for the HTTP and
+ * MCP doors alike, so the codes have to be read out of both files.
+ */
+import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -68,9 +74,13 @@ describe("the roster is the shelf, and it is not empty", () => {
  * code nothing documents, fails by name.
  */
 describe("the documented codes are the codes the doors send", () => {
-  const EMITTED = new Set(
-    [...BUY_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
-  );
+  const EMITTED = new Set([
+    ...[...BUY_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
+    // The shared law's refuse(status, code, sentence) builder.
+    ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
+      (match) => match[1]!,
+    ),
+  ]);
 
   it("finds codes in the source at all, or the check is vacuous", () => {
     expect(EMITTED.size).toBeGreaterThan(3);

@@ -4,6 +4,15 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { ladderRung } from "@/services/menu-markdown";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { getMenuItem } from "@/store";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { securityBlock } from "@/store/surface-contract";
+import {
+  OPERATORS_FOR_MONEY,
+  OPERATORS_FREE_FIRST,
+  OPERATORS_OPENED,
+  OPERATORS_PROPOSITION,
+} from "@/store/copy/operators";
+import { WELL_KNOWN_X402_PATH } from "@/services/well-known-doors";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -35,6 +44,24 @@ export interface OperatorStage {
 }
 
 export const OPERATOR_STAGES: readonly OperatorStage[] = [
+  {
+    /**
+     * BE FOUND (2026-09-04). The census walks doors, not homepages, and
+     * its roster comes from the discovery feed. A host the feed does
+     * not name was "listed, not walked" every week with no way in.
+     * Now there is one, and it is the host's own file — the same
+     * convention this store serves for itself — read by the weekly
+     * sweep, or read now on request. Nothing here is for sale.
+     */
+    moment: "Be found",
+    question: "How does the census find my door if the discovery feed does not name it?",
+    free: {
+      name: "Your own file",
+      how: (base) =>
+        `Serve https://{your-host}${WELL_KNOWN_X402_PATH} listing your doors as resources — the same file this store serves for itself — and the weekly sweep reads it and walks what it declares, one door per host. To be read now rather than next week: POST ${base}/api/declare-door with {"host": "{your-host}"}. We read only that host's own file, never what anyone else says about it, and a file may only declare doors on the host that serves it.`,
+    },
+    items: [],
+  },
   {
     moment: "Before you launch",
     question: "Does my door serve a 402 a stock client can actually pay?",
@@ -102,6 +129,29 @@ operatorsRoutes.get("/operators", (c) => {
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json({
       title: "For operators",
+      /*
+       * THE FIVE ANSWERS (house rule 60.4) and the three sentences
+       * (60.2), identical on this twin, the page and the guide.
+       */
+      what_this_is: STANDFIRST,
+      proposition: OPERATORS_PROPOSITION,
+      price: OPERATORS_FOR_MONEY,
+      free_first: OPERATORS_FREE_FIRST,
+      opened: OPERATORS_OPENED,
+      how_to_call: {
+        this_page: `GET ${base}/operators with Accept: application/json for this twin, text/html for the page. No account, no key.`,
+        be_found: `POST ${base}/api/declare-door with {"host": "your-host"} after serving ${WELL_KNOWN_X402_PATH} on it; GET the same URL explains the file and the words that come back.`,
+        the_preflight: `POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} with {"url": "..."} — every check by name, free.`,
+      },
+      errors: {
+        this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
+        the_doors_it_names: `Each door names its own refusals in its own JSON. ${base}/api/declare-door answers 400 for a host it will not read (not a hostname, this store, private), 429 for a host read by hand within the day, and 200 with one of three words — doors, none, unreadable — for a host it read.`,
+      },
+      security: securityBlock(base, {
+        does_in_your_name:
+          "A GET here reads a page. POST /api/declare-door makes at most three GETs to the host you name, to its own well-known paths, and knocks on no door; the walk knocks later, once, as it does for every host.",
+        stores: "The doors a host's own file declared, keyed by that host, and the day it was last read by hand. Nothing about you.",
+      }),
       summary: STANDFIRST,
       stages: rows,
       what_this_is_not: NOT,
@@ -116,12 +166,12 @@ operatorsRoutes.get("/operators", (c) => {
       <h2>${escapeHtml(stage.moment)}</h2>
       <p class="menu-desc"><em>${escapeHtml(stage.question)}</em></p>
       ${stage.free_first ? `<p class="menu-desc"><strong>Free first — ${escapeHtml(stage.free_first.name)}.</strong> ${escapeHtml(stage.free_first.how)}</p>` : ""}
-      <ul class="menu-desc">${stage.on_the_shelf
+      ${stage.on_the_shelf.length === 0 ? "" : `<ul class="menu-desc">${stage.on_the_shelf
         .map(
           (rung) =>
             `<li><a href="/menu/${escapeHtml(String(rung["id"]))}"><strong>${escapeHtml(String(rung["name"]))}</strong></a> — ${escapeHtml(String(rung["why"]))} <em>${escapeHtml(String(rung["price"]))}</em></li>`,
         )
-        .join("")}</ul>
+        .join("")}</ul>`}
     </section>`,
     )
     .join("\n");
@@ -132,11 +182,29 @@ operatorsRoutes.get("/operators", (c) => {
         "The shelf from the seller's side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed and servable. Never a score.",
       path: "/operators",
       bodyHtml: `<section>
+        <p class="menu-desc">${escapeHtml(OPERATORS_PROPOSITION)}</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
+        <p class="menu-meta">${escapeHtml(OPERATORS_FREE_FIRST)}</p>
       </section>
       ${sections}
       <section>
+        <p class="menu-desc">${escapeHtml(OPERATORS_FOR_MONEY)}</p>
         <p class="menu-desc"><strong>${escapeHtml(NOT)}</strong></p>
+        ${jsonLdScript({
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          name: "How an operator uses scvd.store, in the order a launch happens",
+          description: OPERATORS_PROPOSITION,
+          url: `${base}/operators`,
+          isAccessibleForFree: true,
+          publisher: organizationRef(base),
+          step: OPERATOR_STAGES.map((stage) => ({
+            "@type": "HowToStep",
+            name: stage.moment,
+            text: stage.free ? `${stage.question} Free first: ${stage.free.name}.` : stage.question,
+            url: `${base}/operators`,
+          })),
+        })}
         <p class="menu-meta">The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. If you resell to agents rather than run a door of your own, the same shelf sells on account at <a href="/trade">the trade counter</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),

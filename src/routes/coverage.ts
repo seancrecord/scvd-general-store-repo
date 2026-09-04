@@ -107,6 +107,16 @@ coverageRoutes.get("/coverage", (c) => {
     exactly the reader who needs to know what we later found we had stated
     wrong.</p>
   </section>
+  <section><h2>Where the looking comes from, and whether it is still happening</h2>
+  <p class="menu-desc">This matrix says how DEEP we reach. It does not say
+  whether the places we read are still answering, which is the other half of
+  the same question: <a href="/sources">/sources</a> names every directory our
+  ecosystem figures rest on beside the last time each one actually answered
+  us, and carries the ward heartbeat that says whether the weekly round is
+  still running at all.</p>
+  <p class="menu-desc">The second ward, kept apart on purpose, is at
+  <a href="/mcp-ward">/mcp-ward</a>: it walks the MCP registry, shares no
+  total with the x402 side, and counts without knocking.</p></section>
   <section><p class="menu-desc">The same matrix as JSON, byte for byte:
   <a href="/coverage.json"><code>${escapeHtml(base)}/coverage.json</code></a>
   (also at <code>/.well-known/coverage.json</code>).</p></section>`;

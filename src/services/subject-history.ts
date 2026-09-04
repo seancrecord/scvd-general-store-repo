@@ -301,8 +301,8 @@ export async function subjectHistory(
          * fact about the DIRECTORIES; our decision to keep knocking
          * must not be published as their decision to keep listing.
          */
-        listed: entry.source !== "revisit",
-        ...(entry.source !== "revisit"
+        listed: entry.source !== "revisit" && entry.source !== "well-known",
+        ...(entry.source !== "revisit" && entry.source !== "well-known"
           ? { listing_source: "round" as const }
           : {}),
         probed: true,
@@ -342,7 +342,7 @@ export async function subjectHistory(
      */
     // H2's rule holds here too: a revisit row was walked from the
     // door bank, not named by a feed, so it is not "listed".
-    const listedInRound = Boolean(entry) && entry?.source !== "revisit";
+    const listedInRound = Boolean(entry) && entry?.source !== "revisit" && entry?.source !== "well-known";
     const listedInRegister =
       listing !== null &&
       listing.first_seen <= snapshot.taken_at &&

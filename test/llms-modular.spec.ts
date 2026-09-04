@@ -759,12 +759,32 @@ const BASE = "https://scvd.store";
  * merged head. Confirmed before this value was taken: the guide
  * carries "/scorers", "/corpus/latest.json", "/fixtures.json" and
  * "scvd look <url>", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FIFTH — for the three instrument
+ * rooms of that day: /sources (the source register and the ward
+ * heartbeat), /ledger (one signed week read as a research note) and
+ * /mcp-ward (the second ward, over the MCP registry, sharing no total
+ * with the x402 side). Each earned a section in the guide, a line in
+ * the index door list under a new heading for the instrument
+ * reporting on itself, and its rule-60 proposition and money sentence
+ * carried verbatim from src/store/copy/instruments.ts. Confirmed
+ * before this value was taken: the guide carries "/sources",
+ * "/ledger", "/mcp-ward" and "never_answered", and still every
+ * earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SIXTH — at the merge of main into the
+ * sweep branch, and by the operators' paragraph:
+ * the room gained a door (POST /api/declare-door) and so a feature row,
+ * and the guide now carries its proposition and money sentence and
+ * says how a host the discovery feed does not name gets into the
+ * census — its own /.well-known/x402, read by the weekly sweep or by
+ * hand. Confirmed before this value was taken: the guide carries
+ * "/operators", "/api/declare-door", "/.well-known/x402" and "only
+ * that host's own file", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "66d531dd171f5cfe82e4c16776e7450e6fa21ca2b685c27871b94417e1c75208";
+  "cdcfdf87665176b77f1039aaebe0ec849bfca0a96b71dca9520b0dfc24eb7f89";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

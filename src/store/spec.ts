@@ -203,6 +203,7 @@ export const SKILL_VERSION = "3.15.0";
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
 
+
 /**
  * S2: the identity policy, one line, published wherever the key is.
  *

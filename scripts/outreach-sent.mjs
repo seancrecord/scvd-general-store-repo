@@ -90,4 +90,8 @@ writeFileSync(TABLE, renderMarkdown(register));
 writeFileSync(WATCHED, renderWatched(register));
 const watching = register.systems.filter((e) => e.note_sent !== null || e.cites_since !== null).length;
 console.log(`stamped ${stamped.length} as sent ${date}: ${stamped.join(", ") || "(none new)"}`);
-console.log(`the Sunday watch now reads ${watching} page${watching === 1 ? "" : "s"}. Commit the three changed files.`);
+console.log(
+  `the Sunday watch now reads ${watching} page${watching === 1 ? "" : "s"}. ` +
+    "Commit registry/scorers-outreach.json and src/store/watched-pages.json " +
+    "(the table carries who exists, not what we did, so a send never changes it).",
+);
