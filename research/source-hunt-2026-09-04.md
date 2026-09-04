@@ -116,9 +116,23 @@ take to add each:
 
 **Reachable and enumerable, shipped:** the official registry, as above.
 
-**Needs a key:** `glama.ai/api/mcp/v1/servers` answered 401. A free
-account may be all it wants; that is a keeper decision, not a build
-one, and no credential goes in this repo either way.
+**Read by hand with the keeper's key, and it does not fit:**
+`glama.ai/api/mcp/v1/servers` — cursor-paginated (`pageInfo.endCursor`,
+`?first=100&after=…`), 100 rows a page, `hasNextPage` running past the
+first page. Rows are keyed by **repository and Glama page**, carry a
+hosting attribute (`hosting:remote-capable` 34, `hosting:local-only`
+42, `hosting:hybrid` 23 of the first 100) and a `qualityScore` — and
+**no server host anywhere in the row**. The only network URLs are
+env-var *defaults* (`localhost:11434`, `api.billingo.hu`), which are a
+server's dependencies, not the server. The MCP ward's register is
+keyed by host, so admitting Glama would mean inventing hosts from
+repository names: a phantom row inflates the denominator every count
+is quoted against. It is on the ward's roster as named-and-unread with
+that reason; the score is a verdict on operators this store does not
+republish. The key was used for two reads from a shell variable, is
+written nowhere, and was pasted in a chat transcript — so it should be
+rotated, and the replacement lives only as a Worker secret
+(`GLAMA_API_KEY`) if a use for it is ever ruled.
 
 **Named, unread, no shape captured** — all egress-blocked here:
 `smithery.ai`, `pulsemcp.com`, `mcpcensus.com` (26k servers),

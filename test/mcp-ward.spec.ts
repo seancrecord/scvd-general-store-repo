@@ -1,6 +1,8 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
+  MCP_DIRECTORIES_UNREAD,
+  MCP_SOURCE_ROSTER,
   MCP_WARD_IS_NOT,
   foldPass,
   readPageRows,
@@ -191,5 +193,40 @@ describe("the two wards share nothing", () => {
     // reporting a zero that reads as a measurement.
     expect(body["latest_pass"]).toBeNull();
     expect(body["hosts_on_register"]).toBe(0);
+  });
+});
+
+/**
+ * THE SECOND WARD'S ROSTER holds the x402 roster's two promises: every
+ * unread directory names what would dissolve it, and the one read by
+ * hand that DOES NOT FIT is named with the reason rather than
+ * force-fitted or skipped. Glama carries no server host; a register
+ * keyed by host cannot admit it without inventing rows.
+ */
+describe("the MCP roster names what it does not read", () => {
+  it("gives every unread directory a reason and an unblock", () => {
+    expect(MCP_DIRECTORIES_UNREAD.length).toBeGreaterThan(5);
+    for (const row of MCP_DIRECTORIES_UNREAD) {
+      expect(row.why.length).toBeGreaterThan(60);
+      expect(row.unblock.length).toBeGreaterThan(40);
+    }
+  });
+
+  it("names glama as read by hand and unfitting, not as unreachable", () => {
+    const glama = MCP_DIRECTORIES_UNREAD.find((row) => row.source === "glama.ai");
+    expect(glama?.why).toContain("no server host");
+    expect(glama?.unblock).toContain("GLAMA_API_KEY");
+    expect(glama?.unblock).toContain("never a line in this repository");
+  });
+
+  it("reads exactly the official registry today", () => {
+    const read = MCP_SOURCE_ROSTER.filter((entry) => entry.readiness.state === "read");
+    expect(read.map((entry) => entry.source)).toEqual(["registry.modelcontextprotocol.io"]);
+  });
+
+  it("serves the roster on the room's twin", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/mcp-ward.json`)).json()) as Record<string, any>;
+    expect(body["sources_read"]).toEqual(["registry.modelcontextprotocol.io"]);
+    expect((body["directories_unread"] as { source: string }[]).map((r) => r.source)).toContain("glama.ai");
   });
 });

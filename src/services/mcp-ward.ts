@@ -159,6 +159,94 @@ export interface McpPass {
   what_this_is_not: string;
 }
 
+/**
+ * THE MCP WARD'S OWN ROSTER (2026-09-04), on the x402 roster's pattern:
+ * every MCP directory the ward knows of, read or not, with the reason.
+ * The x402 side learned that a roster that names only what it reads
+ * reports a reach it does not have; the same page discipline applies
+ * to the second ward on its first day.
+ *
+ * ONE ENTRY IS THE LESSON OF THE DAY. glama.ai was read by hand with
+ * the keeper's key (2026-09-04): cursor-paginated, 100 a page, rows
+ * keyed by REPOSITORY and Glama page, with a hosting attribute
+ * (remote-capable, local-only, hybrid) — and no server host anywhere
+ * in the row. This ward's register is keyed by host. Admitting Glama
+ * would mean inventing hosts from repository names, and a phantom row
+ * inflates the denominator every count is quoted against. So it is
+ * named, with its shape captured and the reason it does not fit — not
+ * silently skipped, and not force-fitted.
+ */
+export type McpReadiness =
+  | { state: "read" }
+  | { state: "unread"; why: string; unblock: string };
+
+export interface McpRosterEntry {
+  source: string;
+  home: string;
+  what: string;
+  readiness: McpReadiness;
+}
+
+export const MCP_SOURCE_ROSTER: readonly McpRosterEntry[] = [
+  {
+    source: "registry.modelcontextprotocol.io",
+    home: "https://registry.modelcontextprotocol.io",
+    what: "The official MCP registry: 90,845 rows across 909 pages on 2026-09-04, cursor-paginated, no key, with a remote URL on about 86% of rows.",
+    readiness: { state: "read" },
+  },
+  {
+    source: "glama.ai",
+    home: "https://glama.ai/mcp/servers",
+    what: "A curated MCP directory with a hosting attribute per server (remote-capable, local-only, hybrid) and a quality score; cursor-paginated at 100 a page behind an API key.",
+    readiness: {
+      state: "unread",
+      why: "Read by hand with the keeper's key on 2026-09-04: rows are keyed by repository and Glama page and carry no server host, and this register is keyed by host. Admitting it would mean inventing hosts from repository names. Its quality score is a verdict on operators this store does not republish.",
+      unblock: "A row shape that carries a hosted endpoint, or a decision to keep a second, repository-keyed population beside this one with its own denominator. Either is a keeper's ruling, and the key it needs is a Worker secret (GLAMA_API_KEY), never a line in this repository.",
+    },
+  },
+  {
+    source: "fetchgate.dev",
+    home: "https://fetchgate.dev/tools/agent-census",
+    what: "An outside census of who knocks on MCP doors, published as JSON at /v1/agent-census.json — a frame of probers rather than a directory of servers.",
+    readiness: {
+      state: "unread",
+      why: "Unreachable from every sandbox this store is built in; no shape captured. It enumerates crawlers, not servers, so it would be a frame to compare handshakes against rather than a population source.",
+      unblock: "One hand-run read of the JSON from the keeper's browser, and a ruling on whether a prober census belongs in this ward at all.",
+    },
+  },
+  ...[
+    ["smithery.ai", "https://smithery.ai", "A hosted MCP server directory with its own manifest expectations."],
+    ["pulsemcp.com", "https://www.pulsemcp.com", "An MCP server directory with newsletter-style curation."],
+    ["mcpcensus.com", "https://mcpcensus.com", "Health and ownership lookup across ~26k servers; returns both of this store's servers to a search, with no per-server page found."],
+    ["mcpbeat.com", "https://mcpbeat.com", "A directory that pings every listed server every fifteen minutes and publishes status pages — the highest-cadence frame on this list."],
+    ["mcphq.ai", "https://mcphq.ai", "A directory ranked by installs."],
+    ["mcpindex.ai", "https://mcpindex.ai", "An MCP index with a verdict page per server; its prober is already a trust signal on this store."],
+    ["verifymcp.io", "https://verifymcp.io", "A verifier that scores servers; its probe is already a trust signal on this store."],
+    ["catalog.agentage.io", "https://catalog.agentage.io", "A catalog with a health probe; already a trust signal on this store."],
+    ["proofbench.dev", "https://proofbench.dev", "A registry health probe."],
+    ["donnees.hultra.link", "https://donnees.hultra.link", "A verified directory of agent-callable capabilities that publishes what broke since yesterday."],
+  ].map(([source, home, what]) => ({
+    source: source!,
+    home: home!,
+    what: what!,
+    readiness: {
+      state: "unread" as const,
+      why: "Named in the handshake census in registry/directory-blitz.md; no enumeration endpoint documented and no response shape captured, and the host is unreachable from every sandbox this store is built in.",
+      unblock: "One hand-run read of whatever list it serves, saved as a fixture, exactly like every feed before it. Scores and rankings, where it publishes them, are dropped at the parse; only a host list would enter.",
+    },
+  })),
+] as const;
+
+/** The unread half, for the page and the JSON. */
+export const MCP_DIRECTORIES_UNREAD = MCP_SOURCE_ROSTER.filter(
+  (entry) => entry.readiness.state === "unread",
+).map((entry) => ({
+  source: entry.source,
+  what: entry.what,
+  why: (entry.readiness as { why: string }).why,
+  unblock: (entry.readiness as { unblock: string }).unblock,
+}));
+
 export const MCP_WARD_IS_NOT =
   "Not a verdict on any MCP server and not a health check on one. This ward COUNTS: it reads a public registry and records which hosts are listed, when each first appeared, and when one stops being listed. Nothing here knocks on an MCP server, so nothing here says whether one works. A host absent from this list may be perfectly healthy and simply not registered.";
 
