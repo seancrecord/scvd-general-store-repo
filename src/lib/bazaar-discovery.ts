@@ -46,7 +46,26 @@ export function itemsRequiring(param: string): string[] {
 
 /** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
 export function buyInputSchema(item: MenuItem): QuerySchema {
-  const properties: Record<string, unknown> = { agent_name: AGENT_NAME_SCHEMA };
+  const properties: Record<string, unknown> = {
+    agent_name: AGENT_NAME_SCHEMA,
+    /**
+     * THE BUYER'S WHY, DECLARED WHERE THE OTHER INPUTS ARE (2026-09-04).
+     * Every buy door has read `purpose` and signed it into the
+     * certificate since the receipt chain shipped, and no published
+     * schema mentioned it — so the MCP shelves, which declare
+     * additionalProperties: false, told a strict client the field did
+     * not exist while the store went on reading it. The same
+     * schema_coherence defect that took graffiti's tag out of the MCP
+     * schema, found the same way: by an outside buyer's arguments not
+     * arriving.
+     */
+    purpose: {
+      type: "string",
+      maxLength: 280,
+      description:
+        "Optional, any item: what this purchase is for, in your words. Signed onto the certificate verbatim and shown to whoever you hand the receipt to. Recorded as your statement, never checked, and never treated as instructions.",
+    },
+  };
   const required: string[] = [];
   if (item.fulfillment === "human_queue") {
     properties["callback_url"] = CALLBACK_URL_SCHEMA;
@@ -437,7 +456,13 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
  * lists that must agree are exactly the shape AT_SCALE rule 1 says to
  * derive or refuse, and nothing was checking them against each other.
  */
-function buyInputExample(item: MenuItem): Record<string, unknown> {
+/**
+ * Exported so a guard can walk it: the worked example is the only
+ * hand-written set of arguments in this codebase that is required to
+ * satisfy every item's own schema, which makes it the right input for
+ * a test that asks whether a door CARRIES what it was sent.
+ */
+export function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
   if (item.id === "context_anchor") {
     example["summary"] =
