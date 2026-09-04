@@ -1,3 +1,5 @@
+import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
+
 /**
  * THE CITATION WATCH, as pure functions (2026-09-04, in the Worker).
  *
@@ -5,11 +7,12 @@
  * corpus is listed only from src/store/citing-systems.json, with the
  * URL of the page that cites us and the date it was first seen. This
  * module is the check attached to that claim, and the same check
- * turned outward: a PROSPECT is a page we sent the scorers note to,
- * watched for the day it starts carrying a row. citationsOn() finds
- * the store's verify and corpus URLs in a page's text; judge() turns
- * a fetched page into a verdict. No network here — the cron and the
- * CLI fetch, and this stays testable.
+ * turned outward: the OUTREACH REGISTER (registry/scorers-outreach.json)
+ * holds every system that scores or lists x402 doors, and the watch
+ * reads the pages of the ones we wrote to. citationsOn() finds the
+ * store's row URLs in a page's text; judgePage() turns a fetched page
+ * into a verdict. No network here — the cron and the CLI fetch, and
+ * this stays testable.
  *
  * scripts/lib/citations.mjs is the same text for node, so the npm
  * script and the CI gate need no TypeScript loader. test/
@@ -25,12 +28,19 @@ export interface CitingSystem {
   base?: string;
 }
 
-export interface CitationProspect {
+/**
+ * One row of registry/scorers-outreach.json — the keeper's outreach
+ * register, and since 2026-09-04 the ONLY hand-kept list of pages this
+ * store watches. The Worker reads it; `npm run outreach:check` reads
+ * the same file with the same matcher.
+ */
+export interface OutreachEntry {
   name: string;
-  /** The page we expect a citation to appear on, if one ever does. */
   url: string;
-  /** The date it was put on the watch, YYYY-MM-DD. */
-  noted: string;
+  /** The date the keeper says he sent the note, or null. */
+  note_sent: string | null;
+  /** The date their page was first seen carrying a row, or null. */
+  cites_since: string | null;
 }
 
 export type Fetched = { status: number; text: string; error?: undefined } | { error: string; status?: undefined; text?: undefined };
@@ -45,15 +55,44 @@ export interface CitationJudgement {
   citations: string[];
 }
 
-/** Every URL shape that counts as citing a row of the corpus. */
+/**
+ * The artifact ids the store itself publishes in its own listings,
+ * discovery entries and MCP server card. A directory that mirrors our
+ * text shows them; that is OUR words on their page, not a citation
+ * (listing fact 4 on /scorers: not this store, a mirror of its text,
+ * or a page it operates). Derived from the spec, never retyped.
+ */
+export const SELF_PUBLISHED_IDS: readonly string[] = [SAMPLE_ARTIFACT_ID];
+
+/**
+ * Every URL shape that counts as citing a ROW of the corpus — a verify
+ * URL, a numbered entry, a host history, a round — or the cite shape.
+ *
+ * TIGHTENED 2026-09-04, and this is the whole point of the change: the
+ * bare index (/corpus, /corpus.json) and the moving views (latest,
+ * diff, tiers) no longer count. A page that says "read the dated,
+ * Bitcoin-anchored corpus, free, at scvd.store/corpus" is quoting this
+ * store's own README back at it, which every directory that carries
+ * our listing does. The first pass over the outreach register counted
+ * seven such echoes as citations; six of the seven were our own
+ * sentence and the seventh our own sample certificate. A citation is a
+ * page pointing at ONE ROW — the thing a reader can reproduce.
+ */
 export function citationPatterns(base: string): RegExp[] {
   const root = base.replace(/\/$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return [
     new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
-    new RegExp(`${root}/corpus(?:/[A-Za-z0-9._:~-]+)*(?:\\.json)?`, "g"),
+    new RegExp(`${root}/corpus/[0-9]+\\.json`, "g"),
+    new RegExp(`${root}/corpus/host/[A-Za-z0-9.-]+\\.json`, "g"),
+    new RegExp(`${root}/corpus/round/[0-9]{4}-W[0-9]{2}(?:\\.json)?`, "g"),
     // The cite box's own shape, as a machine writes it (services/cite.ts).
     new RegExp(`"cites"\\s*:\\s*"${root}/corpus/[0-9]+\\.json"`, "g"),
   ];
+}
+
+/** True when a matched URL is one the store itself prints everywhere. */
+function selfPublished(url: string): boolean {
+  return SELF_PUBLISHED_IDS.some((id) => url.endsWith(`/api/verify/${id}`));
 }
 
 /** The distinct citing URLs found in a page, in order of first sight. */
@@ -61,7 +100,7 @@ export function citationsOn(text: string, base: string): string[] {
   const seen = new Set<string>();
   for (const pattern of citationPatterns(base)) {
     for (const match of String(text).matchAll(pattern)) {
-      seen.add(match[0]);
+      if (!selfPublished(match[0])) seen.add(match[0]);
     }
   }
   return [...seen];

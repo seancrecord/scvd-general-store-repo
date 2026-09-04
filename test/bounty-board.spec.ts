@@ -235,6 +235,13 @@ describe("claiming — the chain's part verified, the payout signed", () => {
     const board = await bountyBoard(testEnv);
     expect(board.bounties[0]?.status).toBe("paid");
     expect(board.spent_this_week_usd).toBe(0.1);
+    // The chain's part is kept for the corpus row, and the store took
+    // its own knock at the door beside the walker's claim (2026-09-04).
+    const claim = board.bounties[0]?.claim;
+    expect(claim?.settled_block).toBe(500_010);
+    expect(claim?.house_probe?.verdict).toBeDefined();
+    expect(claim?.house_probe?.at).toBeTruthy();
+    expect(claim?.observation).toContain("402 clean");
   });
 
   it("one payout per transaction, ever — the replay costs nothing", async () => {

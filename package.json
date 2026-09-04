@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "deploy": "wrangler deploy && node scripts/indexnow-ping.mjs",
     "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
-    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run doors:test && npm run listings:test && npm run corpus:publish:test && npm run citations:test && npm run walkabout:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
+    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run doors:test && npm run listings:test && npm run corpus:publish:test && npm run citations:test && npm run outreach:test && npm run walkabout:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "keys:generate": "node scripts/generate-signing-key.mjs",
@@ -56,7 +56,8 @@
     "tab:pager": "node tab/pager.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "packages:test": "for d in x402-preflight corpus-client defects mcp-starter; do (cd \"$d\" && node --test) || exit 1; done",
-    "defects:cut": "node scripts/cut-defects.mjs"
+    "defects:cut": "node scripts/cut-defects.mjs",
+    "outreach:sent": "node scripts/outreach-sent.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

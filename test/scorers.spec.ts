@@ -98,3 +98,41 @@ describe("the room", () => {
     expect(criteria.seats.page).toBe(`${BASE}/scorers`);
   });
 });
+
+/**
+ * MAKING THE CITING PATH OBVIOUS (2026-09-04; the keeper: "how do we
+ * broadcast scorers so its used? how do we make it incredibly
+ * obvious?").
+ *
+ * The room existed and every corpus body already carried the terms,
+ * but the room was held off the front and a machine reading only
+ * headers learned nothing. Both are fixed; this is the part that
+ * keeps them fixed.
+ */
+describe("the citing path is obvious, not merely present", () => {
+  it("the storefront links the room", async () => {
+    const front = await (await SELF.fetch(BASE, { headers: { Accept: "text/html" } })).text();
+    expect(front).toContain('href="/scorers"');
+  });
+
+  it("every corpus door says where the terms are before the body is parsed", async () => {
+    for (const door of ["/corpus.json", "/corpus/latest.json", "/corpus/tiers.json"]) {
+      const link = (await SELF.fetch(`${BASE}${door}`)).headers.get("Link") ?? "";
+      expect(link, `${door} points at the room`).toContain(`<${BASE}/scorers>; rel="help"`);
+      expect(link, `${door} names the licence`).toContain('rel="license"');
+    }
+  });
+
+  it("answers a HEAD the same way, which is the whole point of a header", async () => {
+    const link = (await SELF.fetch(`${BASE}/corpus.json`, { method: "HEAD" })).headers.get("Link") ?? "";
+    expect(link).toContain(`<${BASE}/scorers>; rel="help"`);
+  });
+
+  it("keeps a door's own Link when it already set one", async () => {
+    // The lifecycle and catalog doors set their own; appending must
+    // never cost a caller the canonical or the sunset they rely on.
+    const response = await SELF.fetch(`${BASE}/corpus.json`);
+    const link = response.headers.get("Link") ?? "";
+    expect(link.split(",").length).toBeGreaterThanOrEqual(2);
+  });
+});
