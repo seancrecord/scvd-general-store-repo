@@ -1,5 +1,7 @@
 {
   "what_this_is": "Systems that consume this store's corpus and cite it by verify URL. Empty until one does. An entry is added only with a dated citation URL, and scripts/citations-check.mjs fetches that URL and fails when the citation is gone. The page at /scorers renders this file; nothing is typed there.",
-  "how_a_system_gets_listed": "Its public page cites a row of this corpus by verify URL (https://scvd.store/api/verify/{id}) or by corpus URL (https://scvd.store/corpus/...). Name, the citing URL, and the date it was first seen; nothing else, and no endorsement in either direction.",
-  "systems": []
+  "how_a_system_gets_listed": "Five facts, all observable, none a judgment: (1) a public page of theirs, reachable by a plain unauthenticated GET, (2) cites a specific row \u2014 a verify URL, a corpus entry or host URL, or the cite shape \u2014 not merely a link to the store's front door, (3) the citation is live when the entry is written and the watch can read it, (4) the system is not this store, a mirror of its text, or a page it operates, and (5) the entry is name, citing URL and the date first seen, nothing else. Not required: permission, reciprocity, a partnership, any view on their quality, or payment. Listing is not endorsement in either direction, and the list is alphabetical by name.",
+  "systems": [],
+  "how_an_entry_leaves": "When the watch reads the citing page and finds no citation (`gone`), the build fails until the entry is removed or its URL updated; git keeps the history. A page that could not be read is `unreadable` and is not a finding.",
+  "ruled": "2026-09-04, the keeper: the criteria above, and the default of listing nothing until a citation exists."
 }

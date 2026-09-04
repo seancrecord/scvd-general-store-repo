@@ -33,11 +33,16 @@ build, it is on the roadmap.
   `/.well-known/trust.json` and `/corpus.json` as data;
   `/scorers` opens with the same five steps as shell, CLI
   and MCP; the CLI is 0.2.0 with `corpus --since`, `host`,
-  `cite`, `reproduce`. ⚑ The five class rules and the note
-  (`src/services/reproduce.ts`) are drafted for your ink.
-  PRESS: `npm run skill:publish` / the npm publish workflow
-  for scvd 0.2.0 when you are ready for the verbs to be
-  `npx`-able. LOOK once merged: `npx scvd reproduce
+  `cite`, `reproduce`. INKED 2026-09-04: the five class
+  rules and the note, wording as drafted. RULED 2026-09-04:
+  the CLI exit codes stay as built (0 same, 1 moved or
+  instrument_moved, 3 nothing compared); deploy cadence
+  unchanged for now; the register's five listing facts
+  (`src/store/citing-systems.json`, and on `/scorers`).
+  PRESS, once the branch is green and merged: the npm
+  publish workflow for scvd 0.2.0, so the `npx scvd` lines
+  on `/scorers` work for a stranger. LOOK once merged:
+  `npx scvd reproduce
   https://lionx402.com/api/x402/wallet-screen-json --since
   2026-W36` and read the class.
 - **For scorers and marketplaces, 2026-09-03, "build it."**
@@ -47,12 +52,12 @@ build, it is on the roadmap.
   seats, not occupants: the named-integrations block renders
   `src/store/citing-systems.json`, empty today, and
   `npm run citations:check` fails when a listed citation
-  disappears. ⚑ The seats sentence and the misuse clause
-  (`src/store/copy/doctrine.ts`) are drafted for your ink.
-  RULE: whether `/scorers` gets a storefront slot (off it,
-  like `/operators`). PRESS: when a scorer or a marketplace
-  actually cites a row, add it to the register with the
-  citing URL and the date, and nothing else.
+  disappears. INKED 2026-09-04: the seats sentence and the
+  misuse clause (`src/store/copy/doctrine.ts`), wording as
+  drafted. RULED 2026-09-04: `/scorers` stays off the
+  storefront, like `/operators`. PRESS: when a system meets
+  the five listing facts, add it to the register with the
+  citing URL and the date first seen, and nothing else.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a

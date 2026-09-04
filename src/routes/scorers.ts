@@ -224,9 +224,9 @@ function integrationsBlock(base: string) {
   return {
     seats_not_occupants: "This page names seats, not occupants.",
     as_of: new Date().toISOString().slice(0, 10),
-    systems: systems.map((entry) => ({ ...entry })),
+    systems: [...systems].sort((a, b) => a.name.localeCompare(b.name)).map((entry) => ({ ...entry })),
     none_today: systems.length === 0 ? "No system is listed today." : undefined,
-    how_a_system_gets_listed: `Its public page cites a row of this corpus by verify URL (${base}/api/verify/{id}) or corpus URL (${base}/corpus/...). It is entered in src/store/citing-systems.json with the citing URL and the date first seen. No endorsement is implied in either direction.`,
+    how_a_system_gets_listed: `Five facts, none a judgment: a public page of theirs, reachable by a plain unauthenticated GET; citing a specific row — a verify URL (${base}/api/verify/{id}), a corpus entry or host URL (${base}/corpus/...), or the cite shape — not merely a link to the store's front door; live when the entry is written and readable by the watch; not this store, a mirror of its text, or a page it operates; entered in src/store/citing-systems.json as name, citing URL and the date first seen, nothing else. Not required: permission, reciprocity, a partnership, any view on their quality, or payment. Listing is not endorsement in either direction, and the list is alphabetical by name. Ruled 2026-09-04.`,
     check: "scripts/citations-check.mjs fetches every listed citing URL, looks for a verify or corpus URL of this store on it, and fails when the citation is gone. The page renders the same file the script reads.",
   };
 }
