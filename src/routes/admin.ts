@@ -2109,17 +2109,24 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
   const { latestWardRound, previousWardRound } = await import(
     "@/services/ward-round"
   );
-  const { deriveProspects, readOutreachLedger, scoutContacts } = await import(
-    "@/services/outreach"
-  );
+  const { deriveProspects, deriveWelcomes, readOutreachLedger, scoutContacts } =
+    await import("@/services/outreach");
   const round = await latestWardRound(c.env);
   if (!round) {
     return c.json({ refused: "no ward round yet" }, 404);
   }
-  const prospects = deriveProspects(round, await previousWardRound(c.env));
+  const previous = await previousWardRound(c.env);
+  const prospects = deriveProspects(round, previous);
+  // Both queues (2026-09-04): the broken doors in their ranking, then
+  // the ready doors in theirs, so a press reaches the top of each.
+  const welcomes = deriveWelcomes(
+    round,
+    previous,
+    new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+  );
   const report = await scoutContacts(
     c.env,
-    prospects,
+    [...prospects, ...welcomes],
     await readOutreachLedger(c.env),
   );
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
