@@ -243,6 +243,33 @@ export function readReason(raw: string): {
       } Nothing was spent and no money moved — the round trip was not worth making for a field that is wrong against the published v2 schema. This is deliberate rather than strict: the facilitator's answer to a bad payload is a union-type error truncated at 200 characters that names no field at all, so we check what we can check and say which one. The 402 the buyer received carried the rule and what actually arrived, under payload_problems.`,
     };
   }
+  /**
+   * REFUSED AT THE DOOR FOR A MISSING INPUT (2026-09-04). These were
+   * 400s before the payment gate and booked nothing, so a buyer who
+   * signed and forgot ?tx_hash= vanished from the funnel as somebody
+   * who never tried. They tried.
+   */
+  if (reason.startsWith("local:input_missing:")) {
+    const param = raw.slice("local:input_missing:".length);
+    return {
+      fault: "buyer",
+      reading: `A SIGNED request arrived without \`${param}\`, the input this door cannot work without, and was refused before the gate — no money moved. The buyer read the PAYMENT-REQUIRED header and signed off it without reading the input schema beside it; the 402 named the parameter in required_params. One client doing this is theirs. The same thing from DIFFERENT clients means the requirement is not discoverable from the header alone, and that would be ours to fix in the challenge, not theirs to fix in their client.`,
+    };
+  }
+  if (reason.startsWith("local:input_invalid:")) {
+    const param = raw.slice("local:input_invalid:".length);
+    return {
+      fault: "buyer",
+      reading: `A SIGNED request carried a \`${param}\` the door could not use — wrong shape, out of range, or refused by a rule the listing states — and was refused before the gate, no money moved. The 400 they received says which rule in plain words. Not a signing problem and not a funds problem; the input is the whole story.`,
+    };
+  }
+  if (reason === "local:refused_before_gate") {
+    return {
+      fault: "buyer",
+      reading:
+        "A SIGNED request was refused by a pre-gate check on an item that declares no required input, so the check was about something else — a closed shelf, a sold-out item, a rule the listing states — and no money moved. Read the item's own 400 for the rule; if the rule is one the 402 never mentioned, that is the fix.",
+    };
+  }
   if (reason === "local:sdk_threw") {
     return {
       fault: "buyer",

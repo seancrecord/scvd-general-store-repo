@@ -207,10 +207,20 @@ export interface MetricEvent {
   signature_agent_claim?: string;
   /** decline events: the facilitator's reason, kept, not discarded. */
   note?: string;
+  /**
+   * challenge events: the required inputs this request arrived
+   * WITHOUT. A 402 issued to a request that could not have bought —
+   * settlement_attestation with no tx_hash — is a scanner at a locked
+   * door, not a price-check with intent, and the funnel needs to tell
+   * the two apart. Absent when nothing was missing.
+   */
+  missing_required?: string[];
 }
 
 export interface EventSignals extends ChannelSignals, HouseSignals {
   declaredSource?: string;
+  /** Required inputs the request lacked; see MetricEvent.missing_required. */
+  missingRequired?: string[];
   /** Raw Signature-Agent header, if the visitor sent one. A claim. */
   signatureAgent?: string;
 }
@@ -239,6 +249,9 @@ function buildEvent(
   }
   if (signals.signatureAgent) {
     event.signature_agent_claim = signals.signatureAgent.slice(0, 200);
+  }
+  if (signals.missingRequired && signals.missingRequired.length > 0) {
+    event.missing_required = signals.missingRequired.slice(0, 4);
   }
   return event;
 }
