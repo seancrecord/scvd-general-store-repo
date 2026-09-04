@@ -770,12 +770,19 @@ const BASE = "https://scvd.store";
  * before this value was taken: the guide carries "/sources",
  * "/ledger", "/mcp-ward" and "never_answered", and still every
  * earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SIXTH — on the keeper's ruling
+ * that the three instrument sections are "fine as written": their
+ * three ⚑ KEEPER'S PEN flags come off, which is the only edit. The
+ * how-it-works flag is not his to lift here and stays. Confirmed
+ * before this value was taken: the guide carries "/sources",
+ * "/ledger", "/mcp-ward", exactly one "KEEPER'S PEN", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c0dba1bb6dd9b0d2c27a848659e2027a93ba140539a84f37e0edd25aeb12f15f";
+  "a6a8aa796f7b3b77712833136925acb6846476db3ab024509b04b8bda86b75a4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

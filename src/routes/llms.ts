@@ -1018,9 +1018,6 @@ read from the latest signed snapshot, with ?week= naming an earlier
 one. Counts with their denominators; never a ratio, never a rank,
 never a host named beside its verdict.
 
-⚑ KEEPER'S PEN, RULE 7: the two paragraphs below are DRAFTED, not
-canon. The list decides whether a room is named; the wording is yours.
-
 The same week READ, rather than tabulated: ${base}/ledger is The
 Week's Ledger, one page per signed week at \`${base}/ledger/{week}\`
 with JSON at \`${base}/ledger/{week}.json\`. ${LEDGER_PROPOSITION}
@@ -1145,8 +1142,6 @@ ranking. The per-host read above carries the same tier with its rows.
 
 ## Where our numbers come from
 
-⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
-
 ${base}/sources, JSON at ${base}/sources.json. ${SOURCES_PROPOSITION}
 ${SOURCES_FOR_MONEY}
 
@@ -1190,8 +1185,6 @@ snapshot for at all are named there and on ${base}/corpus.json under
 to read as continuous coverage.
 
 ## The MCP ward
-
-⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
 
 ${base}/mcp-ward, JSON at ${base}/mcp-ward.json. ${MCP_WARD_PROPOSITION}
 ${MCP_WARD_FOR_MONEY}
