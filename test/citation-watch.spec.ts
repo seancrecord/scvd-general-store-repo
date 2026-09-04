@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { SELF_PUBLISHED_IDS, citationsOn, judgePage } from "@/lib/citations";
 import WATCHED_PAGES from "@/store/watched-pages.json";
-import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
+import { BAZAAR_EXAMPLE_ARTIFACT_ID, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { SELF_PUBLISHED_IDS as SELF_PUBLISHED_IDS_NODE, citationsOn as citationsOnNode, judge as judgeNode } from "../scripts/lib/citations.mjs";
 import {
   WATCH_CAP,
@@ -50,12 +50,12 @@ function stubPages(pages: Record<string, { status?: number; text?: string; throw
 }
 
 describe("one reading, two runtimes", () => {
-  const fixture = `<p><a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
+  const fixture = `<p><a href="${BASE}/api/verify/cert_9pq2rstuvw">verify</a> ${BASE}/corpus/host/door.example.json {"cites": "${BASE}/corpus/3.json"} ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
 
   it("finds the same citations in the same order", () => {
     expect(citationsOn(fixture, BASE)).toEqual(citationsOnNode(fixture, BASE));
     expect(citationsOn(fixture, BASE)).toEqual([
-      `${BASE}/api/verify/cert_k2m9v4xwqp`,
+      `${BASE}/api/verify/cert_9pq2rstuvw`,
       `${BASE}/corpus/3.json`,
       `${BASE}/corpus/host/door.example.json`,
       `${BASE}/corpus/round/2026-W36`,
@@ -80,13 +80,15 @@ describe("one reading, two runtimes", () => {
     for (const moving of [`${BASE}/corpus.json`, `${BASE}/corpus/latest.json`, `${BASE}/corpus/tiers.json`, `${BASE}/corpus/diff.json?since=2026-W30`]) {
       expect(citationsOn(moving, BASE), moving).toEqual([]);
     }
-    // The sample certificate every listing and the MCP card publish.
+    // Both ids this store publishes about itself.
     expect(SELF_PUBLISHED_IDS).toContain(SAMPLE_ARTIFACT_ID);
+    expect(SELF_PUBLISHED_IDS).toContain(BAZAAR_EXAMPLE_ARTIFACT_ID);
+    expect(citationsOn(`verify_url: ${BASE}/api/verify/${BAZAAR_EXAMPLE_ARTIFACT_ID}`, BASE)).toEqual([]);
     expect([...SELF_PUBLISHED_IDS_NODE]).toEqual([...SELF_PUBLISHED_IDS]);
     expect(citationsOn(`sample_verify_url: ${BASE}/api/verify/${SAMPLE_ARTIFACT_ID}`, BASE)).toEqual([]);
     // A real certificate on the same page still counts.
-    expect(citationsOn(`${BASE}/api/verify/${SAMPLE_ARTIFACT_ID} and ${BASE}/api/verify/cert_real9`, BASE)).toEqual([
-      `${BASE}/api/verify/cert_real9`,
+    expect(citationsOn(`${BASE}/api/verify/${SAMPLE_ARTIFACT_ID} and ${BASE}/api/verify/cert_rst2uvwxyz`, BASE)).toEqual([
+      `${BASE}/api/verify/cert_rst2uvwxyz`,
     ]);
   });
 
@@ -108,7 +110,7 @@ describe("the news is the delta", () => {
   it("a first report counts every cited page as new, and silence as nothing", () => {
     const report = judgeWatch(
       {
-        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_a` } }],
+        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_abc2defgh` } }],
         prospects: [{ prospect, fetched: { status: 200, text: "about the store" } }],
       },
       null,
@@ -126,7 +128,7 @@ describe("the news is the delta", () => {
   it("a prospect that starts citing is newly cited once; a listed page that stops is newly gone once; unreadable moves nothing", () => {
     const first = judgeWatch(
       {
-        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_a` } }],
+        listed: [{ system: listed, fetched: { status: 200, text: `${BASE}/api/verify/cert_abc2defgh` } }],
         prospects: [{ prospect, fetched: { status: 200, text: "about the store" } }],
       },
       null,
@@ -308,5 +310,36 @@ describe("the desk", () => {
     };
     expect(json.citations.newly_gone).toEqual(["https://scores.example/m"]);
     expect(json.citation_prospects.length).toBe(watchedProspects().length);
+  });
+});
+
+/**
+ * WHAT THE FIRST REAL SWEEP FOUND (2026-09-04). 101 pages, three
+ * "citations", and all three false. Two directories were showing the
+ * example purchase output this store publishes into bazaar discovery,
+ * and one was showing a truncated URL. These are those three pages,
+ * as they actually read, kept so the matcher can never call them
+ * citations again.
+ */
+describe("the three false positives the first sweep produced", () => {
+  it("does not count the bazaar example purchase two directories mirror", () => {
+    // x402-bazaar and x402scan, verbatim shape.
+    const listing = `"certificate":{"cert_id":"${BAZAAR_EXAMPLE_ARTIFACT_ID}"},"verify_url":"${BASE}/api/verify/${BAZAAR_EXAMPLE_ARTIFACT_ID}"`;
+    expect(citationsOn(listing, BASE)).toEqual([]);
+    expect(citationsOnNode(listing, BASE)).toEqual([]);
+  });
+
+  it("does not count a truncated verify URL that resolves to nothing", () => {
+    // socketcat displayed the URL clipped: /api/verify/ce
+    for (const clipped of [`${BASE}/api/verify/ce`, `${BASE}/api/verify/cert`, `${BASE}/api/verify/cert_`, `${BASE}/api/verify/x`]) {
+      expect(citationsOn(clipped, BASE), clipped).toEqual([]);
+      expect(citationsOnNode(clipped, BASE), clipped).toEqual([]);
+    }
+  });
+
+  it("still counts a real certificate somebody else published", () => {
+    const real = `${BASE}/api/verify/cert_9pq2rstuvw`;
+    expect(citationsOn(real, BASE)).toEqual([real]);
+    expect(citationsOnNode(real, BASE)).toEqual([real]);
   });
 });

@@ -6,9 +6,9 @@ import { SELF_PUBLISHED_IDS, citationsOn, exitCodeFor, judge } from "./lib/citat
 const BASE = "https://scvd.store";
 
 test("a verify URL or a corpus ROW on the page is a citation; the store's other pages are not", () => {
-  const page = `<p>Row: <a href="${BASE}/api/verify/cert_k2m9v4xwqp">verify</a> and ${BASE}/corpus/host/door.example.json and ${BASE}/corpus/3.json and ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
+  const page = `<p>Row: <a href="${BASE}/api/verify/cert_9pq2rstuvw">verify</a> and ${BASE}/corpus/host/door.example.json and ${BASE}/corpus/3.json and ${BASE}/corpus/round/2026-W36</p><a href="${BASE}/menu/hello">shop</a>`;
   assert.deepEqual(citationsOn(page, BASE), [
-    `${BASE}/api/verify/cert_k2m9v4xwqp`,
+    `${BASE}/api/verify/cert_9pq2rstuvw`,
     `${BASE}/corpus/3.json`,
     `${BASE}/corpus/host/door.example.json`,
     `${BASE}/corpus/round/2026-W36`,
@@ -28,7 +28,7 @@ test("our own words on their page are not a citation: the bare corpus link from 
 
 test("a page that still cites is cited; one that stopped is gone; one we could not read is unreadable and not a failure", () => {
   const system = { name: "Example Scores", cites_at: "https://scores.example/method", since: "2026-09-03" };
-  assert.equal(judge(system, { status: 200, text: `see ${BASE}/api/verify/cert_abc` }).verdict, "cited");
+  assert.equal(judge(system, { status: 200, text: `see ${BASE}/api/verify/cert_9pq2rstuvw` }).verdict, "cited");
   assert.equal(judge(system, { status: 200, text: "we score things" }).verdict, "gone");
   assert.equal(judge(system, { status: 503, text: "" }).verdict, "unreadable");
   assert.equal(judge(system, { error: "ECONNRESET" }).verdict, "unreadable");
@@ -45,4 +45,14 @@ test("the register the page renders is the register the check reads, and every e
     assert.match(entry.cites_at, /^https:\/\//);
     assert.match(entry.since, /^\d{4}-\d{2}-\d{2}$/);
   }
+});
+
+test("the first sweep's three findings were all our own words or a clipped URL", () => {
+  for (const id of SELF_PUBLISHED_IDS) {
+    assert.deepEqual(citationsOn(`"verify_url":"${BASE}/api/verify/${id}"`, BASE), []);
+  }
+  for (const clipped of [`${BASE}/api/verify/ce`, `${BASE}/api/verify/cert_`]) {
+    assert.deepEqual(citationsOn(clipped, BASE), []);
+  }
+  assert.deepEqual(citationsOn(`${BASE}/api/verify/cert_9pq2rstuvw`, BASE), [`${BASE}/api/verify/cert_9pq2rstuvw`]);
 });

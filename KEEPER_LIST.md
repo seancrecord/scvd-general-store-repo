@@ -108,6 +108,18 @@ build, it is on the roadmap.
   shape. The seven `cites_since` dates were cleared; the
   check re-establishes any that are real. Nobody has cited
   us yet, which is the true reading.
+  ⚑ THE FIRST REAL SWEEP CONFIRMED IT (2026-09-04, your
+  `npm run outreach:check` over all 101). It reported three
+  citations and all three were false: x402-bazaar and
+  x402scan were showing the EXAMPLE PURCHASE this store
+  publishes into bazaar discovery — a certificate whose
+  signature is the literal string "<128 hex chars,
+  ed25519>" — and socketcat was showing a clipped URL,
+  `/api/verify/ce`, that resolves to nothing. Both are now
+  excluded by name and by shape, and all three pages are
+  pinned as fixtures. The count of systems citing this
+  store is STILL ZERO, and every reading that said
+  otherwise was this store reading its own words.
 
 - Evidence observatory for agentic commerce, and a general
   store on the same door. Not an escrow, a guarantor, or a

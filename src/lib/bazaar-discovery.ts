@@ -2,6 +2,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
+import { BAZAAR_EXAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 
 /**
@@ -544,13 +545,13 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
     patron_number: 41,
     badge_url: "https://scvd.store/badges/41.svg",
     certificate: {
-      cert_id: "cert_k2m9v4xwqp",
+      cert_id: BAZAAR_EXAMPLE_ARTIFACT_ID,
       item: item.id,
       patron_number: 41,
       date: "2026-07-22T15:04:05.000Z",
     },
     signature: "<128 hex chars, ed25519>",
-    verify_url: "https://scvd.store/api/verify/cert_k2m9v4xwqp",
+    verify_url: `https://scvd.store/api/verify/${BAZAAR_EXAMPLE_ARTIFACT_ID}`,
   };
   if (item.fulfillment === "instant") {
     return {
