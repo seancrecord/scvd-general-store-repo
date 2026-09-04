@@ -174,6 +174,136 @@ const ARTIFACT_READ_PREFIXES = [
   "/api/statement/",
 ] as const;
 
+/**
+ * WHAT KIND OF THING A SURFACE IS (2026-09-04), for the desk's porch
+ * table — which had grown past sixty rows the day the interactive
+ * doors were counted, and read as one long list in which "the
+ * preflight was used 40 times" and "somebody opened /privacy" sat
+ * side by side. The keeper's question was two questions: how many
+ * reach the free INSTRUMENTS, and how many try the DOORS that take
+ * something in. So every surface names its kind, and the table sums
+ * by kind before it lists.
+ *
+ *   storefront  the shop's own pages and catalogs
+ *   instrument  a free check somebody ran (preflight, look, conformance…)
+ *   door        an interactive counter: something was handed in or claimed
+ *   evidence    the corpus, passports, registry, chip — the record itself
+ *   room        a human page past the storefront
+ */
+export type PorchSurfaceKind =
+  | "storefront"
+  | "instrument"
+  | "door"
+  | "evidence"
+  | "room";
+
+const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
+  ["item:", "storefront"],
+  ["mcp:", "instrument"],
+  ["preflight", "instrument"],
+  ["conformance", "instrument"],
+  ["before-you-pay", "instrument"],
+  ["look", "instrument"],
+  ["discovery", "instrument"],
+  ["bounty", "door"],
+  ["bounties", "door"],
+  ["letter:", "door"],
+  ["credit", "door"],
+  ["guestbook:", "door"],
+  ["corpus", "evidence"],
+  ["okf:", "evidence"],
+  ["passport", "evidence"],
+  ["defects", "evidence"],
+  ["coverage", "evidence"],
+  ["pulse", "evidence"],
+  ["watch:", "evidence"],
+  ["gazette", "storefront"],
+  ["how-it-works", "room"],
+  ["pricing", "storefront"],
+  ["trade", "room"],
+  ["luckies:", "room"],
+];
+
+const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
+  storefront: "storefront",
+  what: "storefront",
+  "llms.txt": "storefront",
+  "llms-full.txt": "storefront",
+  "menu.json": "storefront",
+  menu: "storefront",
+  "skill.md": "storefront",
+  "execution-contract": "storefront",
+  almanac: "storefront",
+  stats: "storefront",
+  "index.md": "storefront",
+  "mcp.md": "storefront",
+  "openapi.json": "storefront",
+  rails: "storefront",
+  "well-known": "storefront",
+  zodiac: "storefront",
+  onpage: "instrument",
+  claims: "instrument",
+  "verify-receipt": "instrument",
+  stamp: "instrument",
+  "standing-note": "instrument",
+  "provenance:self": "instrument",
+  "bot-auth:check": "instrument",
+  practice: "instrument",
+  "x402-test": "instrument",
+  a2a: "instrument",
+  ask: "instrument",
+  bell: "door",
+  treat: "door",
+  request: "door",
+  tip: "door",
+  waitlist: "door",
+  train: "door",
+  "order:read": "door",
+  "commission:read": "door",
+  "refund:read": "door",
+  registry: "evidence",
+  inflows: "evidence",
+  atlas: "evidence",
+  "fresh-set": "evidence",
+  trust: "evidence",
+  chip: "evidence",
+  observatory: "evidence",
+  corrections: "evidence",
+  disagreements: "evidence",
+  criteria: "evidence",
+  "artifact:read": "evidence",
+  try: "room",
+  developers: "room",
+  samples: "room",
+  operators: "room",
+  directory: "room",
+  visitors: "room",
+  porch: "room",
+  rights: "room",
+  privacy: "room",
+  attestation: "room",
+  becoming: "room",
+  notice: "room",
+  neighbours: "room",
+  profiles: "room",
+  sites: "room",
+  "fulfillment-log": "room",
+  deprecation: "room",
+  "wind-down": "room",
+  "bot-auth": "room",
+};
+
+export function porchSurfaceKind(surface: string): PorchSurfaceKind {
+  const exact = KIND_EXACT[surface];
+  if (exact) return exact;
+  for (const [prefix, kind] of KIND_BY_PREFIX) {
+    if (surface.startsWith(prefix)) return kind;
+  }
+  // A surface nobody classified reads as a room rather than vanishing
+  // from the sums; the test that walks the map keeps this branch cold.
+  return "room";
+}
+
 export function porchSurface(path: string, method: string): string | undefined {
   const exact = PORCH_EXACT.get(path);
   if (exact) {

@@ -24,14 +24,98 @@ import { renderAdminShell } from "@/pages/admin/layout";
 
 type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
 
+/**
+ * THE BOARD'S OWN FUNNEL, this month, organic: the room read, the JSON
+ * board polled, the claim instructions read, a claim presented. From
+ * the porch surfaces the board got on 2026-09-04; null when the porch
+ * did not load.
+ */
+export interface BountyFunnel {
+  room: number;
+  board_json: number;
+  claim_read: number;
+  claims_presented: number;
+}
+
+/**
+ * ALL-TIME MONEY OUT, the take's mirror: what the board has paid since
+ * it opened, to how many distinct wallets, and what the store still
+ * owes in credit — the liability the books invariants watch.
+ */
+export interface MoneyOutAllTime {
+  paid_bounties: number;
+  paid_usd: number;
+  /** Distinct payout addresses ever paid. */
+  walkers: number;
+  /** Distinct paying wallets that walked a door for a bounty. */
+  walker_payers: number;
+  /** Store credit outstanding, in USD — owed, not yet cashed out. */
+  credit_owed_usd: number | null;
+}
+
 export interface BountiesPageData {
   board: BoardState | null;
   wallet: FieldWalletReading | null;
   ledger: BountyLedger | null;
   attempts: MetricEvent[];
+  funnel?: BountyFunnel | null;
+  allTime?: MoneyOutAllTime | null;
   /** ISO, the moment the page was read; outstanding payouts are judged against it. */
   now: string;
   loadNotes: string[];
+}
+
+/** The take's mirror, off the board's own records (bounded by the board's scan cap). */
+export function moneyOutAllTime(
+  board: BoardState | null,
+  creditOwedAtomic: bigint | null,
+): MoneyOutAllTime | null {
+  if (!board) return null;
+  const paid = board.bounties.filter((bounty) => bounty.status === "paid");
+  const payoutTo = new Set(paid.map((bounty) => bounty.claim?.payout_to ?? ""));
+  const payers = new Set(paid.map((bounty) => bounty.claim?.payer ?? ""));
+  payoutTo.delete("");
+  payers.delete("");
+  return {
+    paid_bounties: paid.length,
+    paid_usd: Math.round(paid.reduce((sum, bounty) => sum + bounty.reward_usd, 0) * 100) / 100,
+    walkers: payoutTo.size,
+    walker_payers: payers.size,
+    credit_owed_usd:
+      creditOwedAtomic === null ? null : Number(creditOwedAtomic) / 1e6,
+  };
+}
+
+function funnelHtml(funnel: BountyFunnel | null | undefined): string {
+  if (!funnel) {
+    return "<p>The porch did not load; the board's readers are unknown here, not zero.</p>";
+  }
+  const rate = (from: number, to: number): string =>
+    from > 0 ? `${Math.round((to / from) * 100)}%` : "—";
+  return `<table>
+    <tr><th>step</th><th>organic this month</th><th>of the step before</th></tr>
+    <tr><td>read the room (/bounties)</td><td>${funnel.room}</td><td>—</td></tr>
+    <tr><td>polled the board (/api/bounties)</td><td>${funnel.board_json}</td><td>${rate(funnel.room, funnel.board_json)}</td></tr>
+    <tr><td>read the claim instructions</td><td>${funnel.claim_read}</td><td>${rate(funnel.board_json, funnel.claim_read)}</td></tr>
+    <tr><td>presented a claim</td><td>${funnel.claims_presented}</td><td>${rate(funnel.board_json, funnel.claims_presented)}</td></tr>
+  </table>
+  <p><small>Porch rows, organic only, counted from the day the board got its lines. A poller on a loop inflates the middle rows; the last row is the one that costs a walker money, and it is the honest one.</small></p>`;
+}
+
+function allTimeHtml(allTime: MoneyOutAllTime | null | undefined): string {
+  if (!allTime) {
+    return "<p>The board did not load; nothing here is zero.</p>";
+  }
+  const credit =
+    allTime.credit_owed_usd === null
+      ? "credit owed: not read"
+      : `<strong>$${allTime.credit_owed_usd.toFixed(2)}</strong> in store credit still owed to regulars`;
+  return `<p><strong>$${allTime.paid_usd.toFixed(2)}</strong> paid across
+    <strong>${allTime.paid_bounties}</strong> bount${allTime.paid_bounties === 1 ? "y" : "ies"} to
+    <strong>${allTime.walkers}</strong> distinct payout wallet${allTime.walkers === 1 ? "" : "s"}
+    <small>(${allTime.walker_payers} distinct paying wallet${allTime.walker_payers === 1 ? "" : "s"} walked the doors)</small> ·
+    ${credit}.
+    <small>Paid means a signed authorization went out; whether it was redeemed is the chain's to say, and the outstanding line above counts the ones still live.</small></p>`;
 }
 
 /** Signed payouts a recipient can still redeem: paid, and not yet past validBefore. */
@@ -187,6 +271,17 @@ export function renderBountiesPage(data: BountiesPageData): string {
   <section>
     <h2>The week's budget</h2>
     ${budgetHtml(data.board)}
+  </section>
+
+  <section>
+    <h2>Money out, all-time</h2>
+    <p><small>The take's mirror: what the board has paid since it opened, and what the store still owes.</small></p>
+    ${allTimeHtml(data.allTime)}
+  </section>
+
+  <section>
+    <h2>The board's own funnel, ${escapeHtml(data.now.slice(0, 7))}</h2>
+    ${funnelHtml(data.funnel)}
   </section>
 
   <section>
