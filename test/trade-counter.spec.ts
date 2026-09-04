@@ -703,3 +703,69 @@ describe("the markdown twin and the statement desk", () => {
     expect(rows.keys.length).toBe(1);
   });
 });
+
+describe("pass four: signed statements, delivery receipts, the signer to paste", () => {
+  it("the statement is signed over its JCS form with the published key, and verifies offline", async () => {
+    await order("certificate_of_patronage", { order_ref: "signed-1" });
+    const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: SECRET, provider_key: PROVIDER_KEY, body: "" });
+    const body = await json(await SELF.fetch(`${BASE}/api/trade/hal/statement`, { headers }));
+    const { jcsCanonicalize } = await import("@/lib/jcs");
+    const { verifyMessageSignature } = await import("@/lib/signing");
+    const payload = body["signed_payload"] as Record<string, unknown>;
+    expect(body["canonical_form"]).toBe(jcsCanonicalize(payload));
+    expect(
+      await verifyMessageSignature(jcsCanonicalize(payload), String(body["signature_jcs"]), String(body["public_key"])),
+    ).toBe(true);
+    // Tamper a row and the signature no longer covers it.
+    const tampered = { ...payload, summary: { ...(payload["summary"] as Record<string, unknown>), outstanding_usd: 999 } };
+    expect(
+      await verifyMessageSignature(jcsCanonicalize(tampered), String(body["signature_jcs"]), String(body["public_key"])),
+    ).toBe(false);
+    expect((payload["deliveries"] as unknown[]).length).toBe(1);
+  });
+
+  it("a callback_url is validated like a probe target, and the receipt's outcome lands on the row", async () => {
+    await expectRefusalShape(await order("certificate_of_patronage", { callback_url: "http://insecure.example/hook" }), 400, "target_refused");
+    await expectRefusalShape(await order("certificate_of_patronage", { callback_url: "https://127.0.0.1/hook" }), 400, "target_refused");
+    await expectRefusalShape(await order("certificate_of_patronage", { callback_url: "https://scvd.store/hook" }), 400, "target_refused");
+    // A public host the test worker cannot reach: delivered anyway, outcome written down.
+    const { status } = await order("certificate_of_patronage", {
+      order_ref: "cb-1",
+      callback_url: "https://callback.invalid/receipt",
+    });
+    expect(status).toBe(200);
+    const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradeRowPrefix("hal") });
+    expect(rows.keys.length).toBe(1);
+    // The receipt rides waitUntil; give it a moment to write the outcome.
+    let row: Record<string, unknown> = {};
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      row = JSON.parse((await testEnv.ORDERS.get(rows.keys[0]!.name)) ?? "{}") as Record<string, unknown>;
+      if (typeof row["callback"] === "string") break;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    expect(String(row["callback"])).toMatch(/attempted once|delivered/);
+  });
+
+  it("the signer to paste is on the page and the twin in three languages, against the sandbox", async () => {
+    const md = await (await SELF.fetch(`${BASE}/trade.md`)).text();
+    for (const label of ["Node", "Python", "Go"]) expect(md).toContain(`**${label}**`);
+    expect(md).toContain("```python");
+    expect(md).toContain(TRADE_SANDBOX_SECRET);
+    expect(md).toContain("npx scvd trade check");
+    const page = await (await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/html" } })).text();
+    expect(page).toContain("<summary>Python</summary>");
+    const contract = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+    expect(((contract["how_to_call"] as Record<string, unknown>)["signers"] as unknown[]).length).toBe(3);
+  });
+});
+
+async function expectRefusalShape(
+  result: { status: number; body: Record<string, unknown> },
+  status: number,
+  code: string,
+): Promise<void> {
+  expect(result.status).toBe(status);
+  expect(result.body["delivered"]).toBe(false);
+  expect(result.body["billed"]).toBe(false);
+  expect(result.body["code"]).toBe(code);
+}

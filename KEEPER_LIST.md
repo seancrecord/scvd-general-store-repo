@@ -252,6 +252,11 @@ Do not relitigate without you.
   which wallet, whose custody, is yours to decide before the flip.
 - **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
   opening figure. Yours to move.
+- **Your press (rule 30), nothing else pending on the counter** —
+  `docs/TRADE_OUTREACH.md` is the letter and the four platforms CV
+  named; `docs/TRADE_HAL_LETTER.md` is Hal's. Check each paragraph
+  against their site, then send. The copy on `/trade` is inked on your
+  waiver ("I'm gonna let you ink this one"); move any line you like.
 - **Done on your word ("agreed lets do them all")** — `/trade` is on
   the storefront; the sandbox, check desk, statement API, catalog
   feed and credit ceiling are live; rule 60 and the feature register

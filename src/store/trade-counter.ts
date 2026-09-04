@@ -362,7 +362,10 @@ export const TRADE_SHELF: readonly TradeShelfEntry[] = [
 ];
 
 /** Every field any trade order may carry beside the item's own. */
-export const TRADE_COMMON_FIELDS = ["order_ref", "agent_name", "purpose"] as const;
+export const TRADE_COMMON_FIELDS = ["order_ref", "agent_name", "purpose", "callback_url"] as const;
+
+/** How long a delivery receipt waits at the partner's callback before it is written down as unreachable. */
+export const TRADE_CALLBACK_TIMEOUT_MS = 10_000;
 
 export function tradeShelfEntry(itemId: string): TradeShelfEntry | undefined {
   return TRADE_SHELF.find((entry) => entry.item_id === itemId);
@@ -408,7 +411,12 @@ export const TRADE_ORDER_TTL_SECONDS = 24 * 3600;
 export const TRADE_ORDER_REF_MAX = 120;
 
 /* ------------------------------------------------------------------ */
-/* Copy — the room, in the store's voice (rule 7: the keeper's to ink) */
+/* Copy — the room, in the store's voice                              */
+/*                                                                    */
+/* RULE 7, WAIVED FOR THIS ROOM BY THE KEEPER (2026-09-03): "I want a  */
+/* draft I'm gonna let you ink this one i like what you have." The    */
+/* copy below is therefore inked, not flagged. His pen still moves it */
+/* whenever he likes; the waiver is about who signs the first draft.  */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -681,3 +689,111 @@ export const TRADE_SECURITY_DOES =
 
 export const TRADE_SECURITY_STORES =
   "One ledger row per delivery: account, item, certificate id, trade price, the sha256 of your signed instruction, and your order_ref if you sent one. The body of your request is not stored; the signed goods are, as they are for any sale. Secrets you issue us are Worker secrets, never in the repository, never in a response or a log.";
+
+/* ------------------------------------------------------------------ */
+/* The signer, in the three languages a backend is actually written in */
+/* ------------------------------------------------------------------ */
+
+/**
+ * COPY THIS, NOT A LIBRARY. Each snippet signs one order in our
+ * canonical dialect against the sandbox, so it runs as pasted. A
+ * partner on another dialect changes four header names. The bytes
+ * that go into the HMAC are the bytes that go on the wire — that is
+ * the whole trick, and the reason every snippet builds the body
+ * string once and reuses it.
+ */
+export const TRADE_SNIPPETS: readonly { language: string; label: string; code: string }[] = [
+  {
+    language: "javascript",
+    label: "Node",
+    code: `import { createHmac, randomBytes } from "node:crypto";
+
+const secret = "${TRADE_SANDBOX_SECRET}"; // your own, once the account is live
+const body = JSON.stringify({ summary: "what to remember", order_ref: "your-order-id" });
+const timestamp = String(Math.floor(Date.now() / 1000));
+const nonce = randomBytes(16).toString("hex");
+const signature = createHmac("sha256", secret)
+  .update(\`\${timestamp}.\${nonce}.\${body}\`)
+  .digest("hex");
+
+const response = await fetch("https://scvd.store/api/trade/${TRADE_SANDBOX_ID}/context_anchor", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "X-Trade-Key": "${TRADE_SANDBOX_PROVIDER_KEY}",
+    "X-Trade-Timestamp": timestamp,
+    "X-Trade-Nonce": nonce,
+    "X-Trade-Signature": \`sha256=\${signature}\`,
+  },
+  body, // the same string you signed, byte for byte
+});
+console.log(response.status, await response.json());`,
+  },
+  {
+    language: "python",
+    label: "Python",
+    code: `import hashlib, hmac, json, secrets, time, urllib.request
+
+secret = b"${TRADE_SANDBOX_SECRET}"  # your own, once the account is live
+body = json.dumps({"summary": "what to remember", "order_ref": "your-order-id"}, separators=(",", ":"))
+timestamp = str(int(time.time()))
+nonce = secrets.token_hex(16)
+signature = hmac.new(secret, f"{timestamp}.{nonce}.{body}".encode(), hashlib.sha256).hexdigest()
+
+request = urllib.request.Request(
+    "https://scvd.store/api/trade/${TRADE_SANDBOX_ID}/context_anchor",
+    data=body.encode(),  # the same bytes you signed
+    method="POST",
+    headers={
+        "Content-Type": "application/json",
+        "X-Trade-Key": "${TRADE_SANDBOX_PROVIDER_KEY}",
+        "X-Trade-Timestamp": timestamp,
+        "X-Trade-Nonce": nonce,
+        "X-Trade-Signature": f"sha256={signature}",
+    },
+)
+with urllib.request.urlopen(request) as response:
+    print(response.status, response.read().decode())`,
+  },
+  {
+    language: "go",
+    label: "Go",
+    code: `package main
+
+import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+func main() {
+	secret := []byte("${TRADE_SANDBOX_SECRET}") // your own, once the account is live
+	body := \`{"summary":"what to remember","order_ref":"your-order-id"}\`
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	raw := make([]byte, 16)
+	rand.Read(raw)
+	nonce := hex.EncodeToString(raw)
+	mac := hmac.New(sha256.New, secret)
+	mac.Write([]byte(timestamp + "." + nonce + "." + body))
+	signature := hex.EncodeToString(mac.Sum(nil))
+
+	req, _ := http.NewRequest("POST", "https://scvd.store/api/trade/${TRADE_SANDBOX_ID}/context_anchor", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Trade-Key", "${TRADE_SANDBOX_PROVIDER_KEY}")
+	req.Header.Set("X-Trade-Timestamp", timestamp)
+	req.Header.Set("X-Trade-Nonce", nonce)
+	req.Header.Set("X-Trade-Signature", "sha256="+signature)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res.Status)
+}`,
+  },
+];

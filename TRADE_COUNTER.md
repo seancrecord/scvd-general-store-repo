@@ -47,6 +47,16 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   record a payout by hand. `/admin/trade.json` for a script.
 - **The letter to Hal** — `docs/TRADE_HAL_LETTER.md`, drafted for the
   keeper's hand with the ten questions in plain words.
+- **Pass four (2026-09-04, "don't let me gate keep")** — the signer
+  to paste in Node, Python and Go on `/trade` and `/trade.md`
+  (`TRADE_SNIPPETS`); `npx scvd trade check|order <item>` signs
+  against the sandbox with the secret it reads off the contract, never
+  one it is told; `callback_url` on any order POSTs the signed delivery
+  receipt once, after the response, with Web Bot Auth on the request,
+  outcome written on the statement row; the statement API is signed
+  over its JCS form with the published key; `docs/TRADE_OUTREACH.md`
+  carries the target list and the letter. Rule 7 waived for the
+  counter's copy by the keeper the same evening; the copy is inked.
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money

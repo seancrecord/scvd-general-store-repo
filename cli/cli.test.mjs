@@ -235,3 +235,59 @@ test("says the network failed in the store's own terms, not the endpoint's", asy
   assert.match(result.stderr, /Could not reach/);
   assert.match(result.stderr, /not about your endpoint/);
 });
+
+test("signs a sandbox order with the published secret it read off the contract, and never one it was told", async () => {
+  const secret = "served-sandbox-secret";
+  let seen;
+  const result = await run(["trade", "check", "context_anchor"], (request) => {
+    if (request.method === "GET" && request.url === "/api/trade/contract") {
+      return {
+        json: {
+          accounts: [
+            { account: "hal", mode: "test" },
+            { account: "sandbox", published_secret: secret, published_provider_key: "served-key" },
+          ],
+        },
+      };
+    }
+    seen = request;
+    return {
+      json: {
+        would_pass: true,
+        first_failure: null,
+        checks: {
+          headers: { missing: [] },
+          provider_key: "ok",
+          timestamp: { within_window: true, skew_seconds: 0 },
+          nonce: { shape_ok: true },
+          signature: { verified_with: "current" },
+          replay: "fresh",
+        },
+      },
+    };
+  });
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(seen.method, "POST");
+  assert.equal(seen.url, "/api/trade/sandbox/check");
+  assert.equal(seen.headers["x-trade-key"], "served-key");
+  assert.match(seen.headers["x-trade-nonce"], /^[0-9a-f]{32}$/);
+  // The signature is over timestamp.nonce.body with the SERVED secret.
+  const { createHmac } = await import("node:crypto");
+  const expected = createHmac("sha256", secret)
+    .update(`${seen.headers["x-trade-timestamp"]}.${seen.headers["x-trade-nonce"]}.${JSON.stringify(seen.body)}`)
+    .digest("hex");
+  assert.equal(seen.headers["x-trade-signature"], `sha256=${expected}`);
+  assert.match(result.stdout, /would pass: true/);
+  assert.match(result.stdout, /PASS\s+signature \(current\)/);
+});
+
+test("exits 1 when the check desk says the signature would not pass", async () => {
+  const result = await run(["trade", "check", "context_anchor"], (request) => {
+    if (request.url === "/api/trade/contract") {
+      return { json: { accounts: [{ account: "sandbox", published_secret: "s", published_provider_key: "k" }] } };
+    }
+    return { json: { would_pass: false, first_failure: "stale_timestamp", checks: {} } };
+  });
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /first failure: stale_timestamp/);
+});
