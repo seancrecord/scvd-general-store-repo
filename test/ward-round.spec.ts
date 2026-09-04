@@ -706,11 +706,12 @@ describe("the feed read says why it stopped (2026-09-04)", () => {
       resourceUrl: `https://host-${i}.example/api/buy/x`,
     }));
     vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
-      const url = String(input instanceof Request ? input.url : input);
-      if (!url.includes("api.cdp.coinbase.com") || url.includes("/discovery/search")) {
+      const parsed = new URL(String(input instanceof Request ? input.url : input));
+      // Host compared whole, not as a substring (CodeQL on the first push).
+      if (parsed.host !== "api.cdp.coinbase.com" || parsed.pathname.endsWith("/discovery/search")) {
         return Response.json({ items: [] });
       }
-      const requested = Number(new URL(url).searchParams.get("offset") ?? 0);
+      const requested = Number(parsed.searchParams.get("offset") ?? 0);
       calls.push(requested);
       if (options.delayMs) {
         await new Promise((resolve) => setTimeout(resolve, options.delayMs));
