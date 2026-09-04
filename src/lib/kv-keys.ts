@@ -516,6 +516,9 @@ export const KV_KEYS = {
   tradeAccount: (partner: string): string => `trade_account:${partner}`,
   tradeDay: (partner: string, isoDay: string): string =>
     `trade_day:${partner}:${isoDay}`,
+  /** Live deliveries in a calendar month, for the share ladder. YYYY-MM. */
+  tradeMonth: (partner: string, month: string): string =>
+    `trade_month:${partner}:${month}`,
   tradeOrder: (partner: string, refHash: string): string =>
     `trade_order:${partner}:${refHash}`,
   tradePayout: (partner: string, invertedTs: string, id: string): string =>

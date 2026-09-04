@@ -101,6 +101,44 @@ export const TRADE_DIALECTS: Readonly<Record<TradeDialectId, TradeDialect>> = {
 /* Accounts                                                           */
 /* ------------------------------------------------------------------ */
 
+export interface ShareTier {
+  /** Live deliveries in the calendar month at which this tier starts (0 = the first). */
+  from_monthly_deliveries: number;
+  partner_share_bps: number;
+}
+
+/**
+ * THE STANDARD OFFER, in basis points of the trade price, by live
+ * deliveries in the calendar month: the partner's cut RISES with
+ * volume, which is the shape resellers expect and the shape the
+ * pricing rule already absorbs (the trade price is derived from the
+ * share, so the store's net stays retail plus the uplift at every
+ * tier). ⚑ keeper dial.
+ */
+export const STANDARD_SHARE_LADDER: readonly ShareTier[] = [
+  { from_monthly_deliveries: 0, partner_share_bps: 500 },
+  { from_monthly_deliveries: 1_000, partner_share_bps: 800 },
+  { from_monthly_deliveries: 10_000, partner_share_bps: 1_200 },
+];
+
+/** The share an account earns on its next delivery, given the month so far. */
+export function effectiveShareBps(
+  partner: Pick<TradePartner, "partner_share_bps" | "share_ladder">,
+  monthlyDeliveriesSoFar: number,
+): number {
+  const ladder = partner.share_ladder;
+  if (!ladder || ladder.length === 0) {
+    return partner.partner_share_bps;
+  }
+  let share = partner.partner_share_bps;
+  for (const tier of ladder) {
+    if (monthlyDeliveriesSoFar >= tier.from_monthly_deliveries) {
+      share = tier.partner_share_bps;
+    }
+  }
+  return share;
+}
+
 export interface TradePartner {
   /** The path segment: /api/trade/{id}/{item_id}. Lower-case, [a-z0-9_]. */
   id: string;
@@ -140,6 +178,16 @@ export interface TradePartner {
    * Test-mode accounts book nothing and are never refused on it.
    */
   credit_ceiling_usd: number;
+  /**
+   * VOLUME TERMS AS ROWS, NOT CONVERSATIONS (pass five). Optional: a
+   * ladder of partner shares by live deliveries in the calendar month
+   * so far, highest tier reached wins. Absent, the flat share above
+   * applies. The standard offer is STANDARD_SHARE_LADDER, printed on
+   * the contract so the second partner reads terms instead of
+   * negotiating them; an account with its own contract (the first)
+   * carries none and keeps its flat share.
+   */
+  share_ladder?: readonly ShareTier[];
   /**
    * A PUBLISHED SECRET, for the one account that has one: the
    * sandbox. Every other account's secrets live in Worker secrets
@@ -614,6 +662,13 @@ export const TRADE_ERRORS: readonly TradeError[] = [
   },
   {
     status: 404,
+    code: "not_found",
+    meaning: "No delivery on this account carries that order_ref.",
+    what_to_do:
+      "Check the reference; deliveries are searchable by order_ref for as long as the rows are kept, and a delivery without one cannot be recovered this way.",
+  },
+  {
+    status: 404,
     code: "not_at_the_counter",
     meaning: "The item is not on your account, or not traded at the counter at all.",
     what_to_do: "Order from the items on your account row; ask the keeper to add one.",
@@ -797,3 +852,23 @@ func main() {
 }`,
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* The worked example — fixed inputs, so the bytes never move          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ONE ORDER, EVERY BYTE SHOWN. A fixed body, timestamp and nonce, so
+ * the signing string and the signature the contract prints are the
+ * same on every read and a partner can diff their signer's output
+ * against ours line by line. The timestamp is deliberately in the
+ * past: the example is for comparing bytes, and sending it to the
+ * door is refused as stale_timestamp — which is itself a line worth
+ * seeing.
+ */
+export const TRADE_WORKED_EXAMPLE = {
+  item_id: "context_anchor",
+  body: '{"summary":"The agent was halfway through a migration.","order_ref":"example-0001"}',
+  timestamp: "1756900000",
+  nonce: "0123456789abcdef0123456789abcdef",
+} as const;

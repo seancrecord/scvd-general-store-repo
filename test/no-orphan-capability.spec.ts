@@ -120,6 +120,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "the check desk sits at /api/trade/{account}/check; openapi.json lists it under that template and llms.txt names the sandbox's at /api/trade/sandbox/check — the probe's derivation drops the account segment, so no listing can contain it",
   "/api/trade/statement":
     "the statement sits at /api/trade/{account}/statement, listed under that template in openapi.json and named in the trade section of llms.txt; same derivation, same reason as the check desk above",
+  "/api/trade/claim":
+    "recovery by order_ref sits at /api/trade/{account}/claim, listed under that template in openapi.json and named on /trade; same derivation, same reason as the check desk above",
 
   // ---- the porch toy ----
   "/api/treat":
