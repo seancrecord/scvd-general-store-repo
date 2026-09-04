@@ -325,7 +325,8 @@ export interface TradeDiagnosis {
     present: string[];
     missing: string[];
   };
-  provider_key: "ok" | "wrong" | "missing" | "not_in_this_dialect";
+  /** `unverifiable`: the account has no secret on this side yet, so the key cannot be compared. */
+  provider_key: "ok" | "wrong" | "missing" | "not_in_this_dialect" | "unverifiable";
   timestamp: {
     raw: string | null;
     unit: TradeDialect["timestamp_unit"];
@@ -342,7 +343,8 @@ export interface TradeDiagnosis {
     raw: string | null;
     prefix_ok: boolean;
     hex_ok: boolean;
-    verified_with: "current" | "previous" | "none";
+    /** `unverifiable`: no secret on this side yet; the bytes were checked, the HMAC could not be. */
+    verified_with: "current" | "previous" | "none" | "unverifiable";
   };
   signing_string: {
     template: TradeSigningString;
@@ -350,8 +352,16 @@ export interface TradeDiagnosis {
     sha256: string;
   };
   expected_signature?: string;
+  /**
+   * PASS SEVEN: false while the account's secret is not set on this
+   * side. The desk still reports every check that needs no secret —
+   * headers, timestamp, nonce shape, signature shape, the sha256 of
+   * the signing string — so a partner proves its bytes in its own
+   * dialect before either side has issued anything.
+   */
+  account_provisioned: boolean;
   would_pass: boolean;
-  first_failure: TradeAuthFailure | null;
+  first_failure: TradeAuthFailure | "account_not_provisioned" | null;
 }
 
 export async function diagnoseTradeRequest(
@@ -376,9 +386,11 @@ export async function diagnoseTradeRequest(
     ? (header(dialect.provider_key_header)?.trim() ?? null)
     : null;
 
+  const provisioned = secrets.signing.length > 0;
   let providerKey: TradeDiagnosis["provider_key"] = "not_in_this_dialect";
   if (dialect.provider_key_header) {
     if (providerKeyRaw === null) providerKey = "missing";
+    else if (!provisioned && (secrets.provider_key ?? "").length === 0) providerKey = "unverifiable";
     else
       providerKey =
         (secrets.provider_key ?? "").length > 0 &&
@@ -408,8 +420,8 @@ export async function diagnoseTradeRequest(
   const hexOk = HEX_64.test(signatureHex);
 
   const message = tradeSigningString(dialect, timestampRaw ?? "", nonceRaw ?? undefined, rawBody);
-  let verifiedWith: TradeDiagnosis["signature"]["verified_with"] = "none";
-  if (hexOk) {
+  let verifiedWith: TradeDiagnosis["signature"]["verified_with"] = provisioned ? "none" : "unverifiable";
+  if (hexOk && provisioned) {
     if (secrets.signing.length > 0 && (await hmacMatches(secrets.signing, message, signatureHex))) {
       verifiedWith = "current";
     } else if (
@@ -422,6 +434,22 @@ export async function diagnoseTradeRequest(
   }
 
   const verdict = await verifyTradeRequest(input);
+  /*
+   * WITHOUT A SECRET the verdict is always a refusal, and it would
+   * name the provider key or the signature — the two checks that
+   * cannot run. So the first failure is taken from the checks that
+   * did run, in the door's order, and when all of them pass the
+   * answer is the honest one: the account is not provisioned.
+   */
+  let firstFailure: TradeDiagnosis["first_failure"] = verdict.ok ? null : verdict.code;
+  if (!provisioned) {
+    if (missing.length > 0) firstFailure = "missing_headers";
+    else if (parsedMs === null) firstFailure = "bad_timestamp";
+    else if (!withinWindow) firstFailure = "stale_timestamp";
+    else if (nonceShape === false) firstFailure = "bad_nonce";
+    else if (!prefixOk || !hexOk) firstFailure = "bad_signature";
+    else firstFailure = "account_not_provisioned";
+  }
   const diagnosis: TradeDiagnosis = {
     headers: { present, missing },
     provider_key: providerKey,
@@ -445,8 +473,9 @@ export async function diagnoseTradeRequest(
       length: message.length,
       sha256: await sha256Hex(message),
     },
-    would_pass: verdict.ok,
-    first_failure: verdict.ok ? null : verdict.code,
+    account_provisioned: provisioned,
+    would_pass: provisioned && verdict.ok,
+    first_failure: firstFailure,
   };
   if (input.reveal && secrets.signing.length > 0) {
     diagnosis.expected_signature = `${dialect.signature_prefix}${await hmacSha256Hex(secrets.signing, message)}`;

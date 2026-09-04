@@ -618,9 +618,17 @@ export const TRADE_ERRORS: readonly TradeError[] = [
     status: 503,
     code: "counter_closed",
     meaning:
-      "The counter cannot take orders right now: the account is not provisioned on this side, or the replay store is unreachable.",
+      "The replay store is unreachable on this side, so the counter fails closed rather than risk honouring one instruction twice.",
     what_to_do:
       "Do not retry in a loop; the condition is ours to fix and the keeper is paged. Retry after a minute.",
+  },
+  {
+    status: 503,
+    code: "account_not_provisioned",
+    meaning:
+      "This account's signing secret is not set on this side yet, so nothing can be verified and nothing is delivered or billed.",
+    what_to_do:
+      "Opening the account is the keeper's hand once a secret exists between us. Until then the sandbox is open, and this account's check desk still answers every check it can without a secret: headers, timestamp, nonce shape, signature shape, and the sha256 of your signing string.",
   },
   {
     status: 413,
@@ -764,6 +772,46 @@ export const TRADE_FAQ: readonly { q: string; a: string }[] = [
 
 export const TRADE_HONEST_LIMITS =
   "The store sees no payment on this door and signs none. A trade certificate proves the store delivered on a signed instruction from a named account; it does not prove the account's customer paid, was refunded, or existed. The receivable is derived from delivery rows on a capped read that says when it was cut short; the daily cap is counted on eventually consistent storage and can overshoot by a unit under a race. Nothing here is a rail, and the payout side of a statement is recorded by a person.";
+
+/**
+ * WHAT A DELIVERY PROMISES, AS ROWS (pass seven, 2026-09-04). A
+ * marketplace wiring a paused listing asked for the response
+ * invariants in a form its fixture can assert, not a paragraph. Each
+ * row is one path on the 200 body and what must hold there; the
+ * contract prints them and the suite holds every one against a real
+ * delivery, so the list cannot drift from the door.
+ */
+export interface TradeResponseInvariant {
+  path: string;
+  holds: string;
+}
+
+export const TRADE_RESPONSE_INVARIANTS: readonly TradeResponseInvariant[] = [
+  { path: "item_id", holds: "equals the item_id in the path" },
+  { path: "deliverable", holds: "a non-empty string: the goods, exactly what the front door delivers for the item" },
+  { path: "settled_via", holds: "\"trade_account\" on a live account, \"trade_account_test\" while the account is in test" },
+  { path: "paid_usdc", holds: "absent: no payment reached this store" },
+  { path: "trade.account", holds: "equals the account in the path" },
+  { path: "trade.trade_price_usd", holds: "equals the item's trade_price_usd on your account row at the share in force" },
+  { path: "trade.net_usd", holds: "trade_price_usd less your share, rounded to the cent" },
+  { path: "trade.instruction_digest", holds: "sha256 hex of the exact signing string you sent (timestamp.nonce.body in your dialect)" },
+  { path: "trade.order_ref", holds: "echoes your order_ref when you sent one" },
+  { path: "signed_with", holds: "\"current\" or \"previous\": which of the two secrets in service verified the call" },
+  { path: "certificate.settled_via", holds: "same as the top-level settled_via, inside the signed fields" },
+  { path: "certificate.trade_partner", holds: "equals the account; signed" },
+  { path: "certificate.trade_price_usd", holds: "equals trade.trade_price_usd; signed" },
+  { path: "certificate.trade_instruction", holds: "equals trade.instruction_digest; signed" },
+  { path: "certificate.paid_usdc, .asset, .network, .payer, .settlement_tx", holds: "all absent: the certificate names no chain, because none was involved" },
+  { path: "signature, public_key, verify_url", holds: "present; the certificate verifies offline against the published key and at verify_url without trusting either party" },
+];
+
+/**
+ * THE CURRENCY OF THE BOOKS, said once. An account that settles in
+ * sats asked for the sats price; the store holds no exchange rate
+ * and prints no figure it cannot stand behind (rule 45).
+ */
+export const TRADE_SETTLEMENT_CURRENCY =
+  "Every price, statement line and credit ceiling at the counter is in US dollars. The store prints no sats or other-currency figure: it holds no exchange rate and will not pretend to. An account that lists in another unit lists at its own rate's equivalent of trade_price_usd at listing time; the statement bills the USD trade price, and drift between listing and settlement is the account holder's to carry or to raise as a letter.";
 
 export const TRADE_SECURITY_DOES =
   "Verifies an HMAC-SHA256 signature over your timestamp, nonce and exact body against a secret you issued; refuses timestamps outside a five-minute window and any nonce seen before, on a strongly consistent store; then makes and signs the goods exactly as the front door would. Where the item is a probe, we fetch the URL you sent, once, in our own name.";
