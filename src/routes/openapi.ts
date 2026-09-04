@@ -6534,7 +6534,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/ledger/{week}.json": {
-        get: returns(
+        get: {
+          ...returns(
           freeOp(
             "One signed week, read",
             "One week of the observed x402 neighbourhood as a reading rather than a table: the doors reached and answered with their denominators, the movement against the week before, the defects by their registered names, whether the feeds were answering, the corrections dated into that week, and the gaps counted against the observer. Its `findings` are machine-derived — each names in `derived_from` the fields it was computed from, and no rule fires without its numbers. Derived at read from the signed snapshot it cites, never stored. A week the chain does not hold answers 404 naming the weeks it does. Free.",
@@ -6554,7 +6555,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
               how_to_rederive: { type: "string" },
             },
           },
-        ),
+          ),
+          parameters: [
+            pathParam(
+              "week",
+              "An ISO week the chain holds, e.g. 2026-W36. A week the chain does not hold answers 404 naming the weeks it does.",
+            ),
+          ],
+        },
       },
       "/mcp-ward.json": {
         get: returns(
