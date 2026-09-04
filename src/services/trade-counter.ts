@@ -7,18 +7,21 @@ import { checkProbeTarget } from "@/lib/probe-target";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { jcsCanonicalize, signJcs } from "@/lib/jcs";
 import { cachedPublicKeyHex } from "@/lib/signing";
-import { sha256Hex, type TradeSecrets } from "@/lib/trade-auth";
+import { hmacSha256Hex, sha256Hex, tradeSigningString, type TradeSecrets } from "@/lib/trade-auth";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import type { FulfillmentInput } from "@/services/fulfillment";
 import { validSubjectAddress } from "@/services/provenance-check";
 import {
   TRADE_CALLBACK_TIMEOUT_MS,
+  TRADE_CHECK_DESK_HOURLY_BUDGET,
   TRADE_EXAMPLE_SHARE_BPS,
   TRADE_ORDER_REF_MAX,
   TRADE_ORDER_TTL_SECONDS,
   TRADE_PARTNERS,
   TRADE_STATEMENT_DAYS,
+  TRADE_WORKED_EXAMPLE,
+  effectiveShareBps,
   tradeShelf,
   tradeNetUsd,
   tradePriceUsd,
@@ -27,6 +30,10 @@ import {
   type TradeShelfEntry,
 } from "@/store/trade-counter";
 import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec";
+import { getCertificate } from "@/services/certificates";
+
+/** The certificate record as the reader returns it; the type is not exported from there. */
+type CertificateRecord = NonNullable<Awaited<ReturnType<typeof getCertificate>>>;
 import { READS_SENTENCE } from "@/store/surface-contract";
 import { isRecord, type Env, type MenuItem, type TradeSettlement } from "@/types";
 
@@ -308,15 +315,16 @@ export function tradeSettlementFor(
   item: MenuItem,
   instructionDigest: string,
   orderRef?: string,
+  shareBps: number = partner.partner_share_bps,
 ): TradeSettlement {
-  const price = tradePriceUsd(item, partner.partner_share_bps);
+  const price = tradePriceUsd(item, shareBps);
   const settlement: TradeSettlement = {
     partner: partner.id,
     partner_name: partner.name,
     mode: partner.mode,
     trade_price_usd: price,
-    net_usd: tradeNetUsd(price, partner.partner_share_bps),
-    partner_share_bps: partner.partner_share_bps,
+    net_usd: tradeNetUsd(price, shareBps),
+    partner_share_bps: shareBps,
     instruction_digest: instructionDigest,
   };
   if (orderRef) {
@@ -384,6 +392,43 @@ export async function bumpTradeDay(
     expirationTtl: 3 * 86400,
   });
   return next;
+}
+
+/**
+ * The check desk's budget: read-then-write on KV, so a burst can
+ * overshoot by a few, which is fine for a bound that exists to make
+ * guessing slow rather than to be exact. True when the budget is
+ * spent; the count is bumped on every answered diagnosis.
+ */
+export async function checkDeskBudgetSpent(env: Env, partner: TradePartner, now: Date = new Date()): Promise<boolean> {
+  const hour = now.toISOString().slice(0, 13);
+  const key = KV_KEYS.tradeDeskHour(partner.id, hour);
+  const raw = await kvGet(env.COUNTERS, key);
+  const used = Number(raw ?? "0");
+  if (Number.isFinite(used) && used >= TRADE_CHECK_DESK_HOURLY_BUDGET) {
+    return true;
+  }
+  await kvPut(env.COUNTERS, key, String((Number.isFinite(used) ? used : 0) + 1), { expirationTtl: 2 * 3600 });
+  return false;
+}
+
+/** YYYY-MM, UTC. */
+export function utcMonth(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 7);
+}
+
+export async function tradeMonthCount(env: Env, partner: TradePartner, month: string): Promise<number> {
+  const raw = await kvGet(env.COUNTERS, KV_KEYS.tradeMonth(partner.id, month));
+  const count = Number(raw ?? "0");
+  return Number.isFinite(count) ? count : 0;
+}
+
+/** The share this account earns on its next delivery: the ladder against the month so far. */
+export async function shareForNextDelivery(env: Env, partner: TradePartner, now: Date = new Date()): Promise<number> {
+  if (!partner.share_ladder || partner.share_ladder.length === 0) {
+    return partner.partner_share_bps;
+  }
+  return effectiveShareBps(partner, await tradeMonthCount(env, partner, utcMonth(now)));
 }
 
 export async function alertCapReached(
@@ -524,6 +569,12 @@ export async function recordTradeDelivery(
   await bumpTradeDay(env, partner, utcDay(now));
   if (settlement.mode === "live") {
     await adjustOutstanding(env, partner, cents(settlement.net_usd));
+    // The ladder's denominator: live deliveries this calendar month.
+    const month = utcMonth(now);
+    const next = (await tradeMonthCount(env, partner, month)) + 1;
+    await kvPut(env.COUNTERS, KV_KEYS.tradeMonth(partner.id, month), String(next), {
+      expirationTtl: 62 * 86400,
+    });
   }
   if (settlement.order_ref) {
     await kvPut(
@@ -913,5 +964,67 @@ export async function tradeStatement(
     payouts: payouts.rows,
     deliveries_truncated: deliveries.truncated,
     payouts_truncated: payouts.truncated,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Recovery by order_ref — the partner's customer lost the receipt     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * THE RESET CASE, AT THE BACK DOOR (pass five). The front door's claims
+ * desk recovers certificates by proving a wallet; a marketplace's
+ * customer has no wallet here, only the order_ref their marketplace
+ * gave them. So the marketplace asks on their behalf, signed like any
+ * order, and gets the certificate record back. A bounded scan of the
+ * account's rows, newest first, that says when it stopped early.
+ */
+export async function findTradeDelivery(
+  env: Env,
+  partner: TradePartner,
+  orderRef: string,
+): Promise<{ row: TradeRow; certificate: CertificateRecord | null } | null> {
+  const listed = await listKeys(env.ORDERS, {
+    prefix: KV_KEYS.tradeRowPrefix(partner.id),
+    cap: ROW_SCAN_CAP,
+  });
+  for (const name of listed.names) {
+    const value = await kvGetJson<unknown>(env.ORDERS, name, "json");
+    if (isTradeRow(value) && value.order_ref === orderRef) {
+      return { row: value, certificate: await getCertificate(env, value.cert_id) };
+    }
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/* The worked example, computed                                        */
+/* ------------------------------------------------------------------ */
+
+export async function workedExample(base: string, sandbox: TradePartner) {
+  const secret = sandbox.sandbox?.signing_secret ?? "";
+  const signingString = tradeSigningString(
+    { signing_string: "timestamp.nonce.body" },
+    TRADE_WORKED_EXAMPLE.timestamp,
+    TRADE_WORKED_EXAMPLE.nonce,
+    TRADE_WORKED_EXAMPLE.body,
+  );
+  return {
+    what_this_is:
+      "One sandbox order with fixed inputs, every byte shown, so you can diff your signer against ours line by line. The timestamp is in the past on purpose: send it and the door answers stale_timestamp, which is also worth seeing once.",
+    door: `${base}/api/trade/${sandbox.id}/${TRADE_WORKED_EXAMPLE.item_id}`,
+    body: TRADE_WORKED_EXAMPLE.body,
+    body_bytes: new TextEncoder().encode(TRADE_WORKED_EXAMPLE.body).byteLength,
+    headers: {
+      "X-Trade-Key": sandbox.sandbox?.provider_key ?? "",
+      "X-Trade-Timestamp": TRADE_WORKED_EXAMPLE.timestamp,
+      "X-Trade-Nonce": TRADE_WORKED_EXAMPLE.nonce,
+      "X-Trade-Signature": `sha256=${await hmacSha256Hex(secret, signingString)}`,
+    },
+    signing_string: signingString,
+    signing_string_sha256: await sha256Hex(signingString),
+    secret,
+    how_to_compare:
+      "HMAC-SHA256 the signing_string with the secret; hex must equal the X-Trade-Signature value after sha256=. If your sha256 of the signing string differs from signing_string_sha256, your bytes differ before any secret is involved.",
   };
 }

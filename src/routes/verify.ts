@@ -9,6 +9,7 @@ import type { Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { isUrlTemplatePlaceholder } from "@/lib/url-template";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { citeBlock } from "@/lib/cite";
 import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
@@ -435,6 +436,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       artifact_hash: await artifactHash(reportCanonical),
       signature_covers:
         "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). The body_sha256 inside it binds the full report body served at report_url — hash that body yourself and compare; nothing in the report is outside the digest.",
+      ...citeBlock({ base: c.env.STORE_BASE_URL, what: "ecosystem report", which: id, observed_at: null, url: `${c.env.STORE_BASE_URL}/api/report/${id}`, verify_url: `${c.env.STORE_BASE_URL}/api/verify/${id}` }),
     });
   }
 
@@ -510,6 +512,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: certificateSignedPayload,
       artifact_hash: await artifactHash(certificateSignedPayload),
       signature_covers: HOW_TO_VERIFY,
+      ...citeBlock({ base: c.env.STORE_BASE_URL, what: "receipt", which: record.certificate.cert_id, observed_at: record.certificate.date, url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}` }),
       /*
        * THE DUAL-EMIT, REPORTED WITH THE SAME HONESTY AS THE PRIMARY
        * (2026-08-18). Three states, never collapsed: verified-here,

@@ -109,6 +109,24 @@ test("a not_ready door exits 1 and the summary names the failed check", async ()
   assert.match(result.output, /worst<<[^\n]*\nnot_ready\n/);
 });
 
+test("the summary carries the store's remediation for a failed check, operator's half and definition, and no section without rows", async () => {
+  const withRows = await run({ SCVD_PREFLIGHT_URLS: "https://shop.example/api/buy/thing" }, () => ({
+    json: {
+      ...report("not_ready", [{ name: "status-402", ok: false, detail: "answered 200" }]),
+      remediation: [
+        { signal: "status-402", kind: "check", defect_class: "no-402", definition_url: "https://scvd.store/defects/no-402", operator: "Serve 402 at the listed URL.", buyer: "Do not pay." },
+        { signal: "testnet-network", kind: "advisory", defect_class: "wrong-network", definition_url: "https://scvd.store/defects/wrong-network", operator: "Use mainnet.", buyer: "Do not sign." },
+      ],
+    },
+  }));
+  assert.match(withRows.summary, /### What to do/);
+  assert.match(withRows.summary, /`status-402` is \[no-402\]\(https:\/\/scvd\.store\/defects\/no-402\)\. Serve 402 at the listed URL\./);
+  // Advisories are outside the verdict and outside the deploy gate's list.
+  assert.doesNotMatch(withRows.summary, /wrong-network/);
+  const without = await run({ SCVD_PREFLIGHT_URLS: "https://shop.example/api/buy/thing" }, () => ({ json: report("ready") }));
+  assert.doesNotMatch(without.summary, /What to do/);
+});
+
 test("unreachable exits 0 by default, and says why in the summary", async () => {
   const result = await run({ SCVD_PREFLIGHT_URLS: "https://gone.example/api/x" }, () => ({
     json: report("unreachable", [{ name: "reachable", ok: false, detail: "does not prove the endpoint is down" }]),

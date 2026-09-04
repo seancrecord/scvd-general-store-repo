@@ -41,8 +41,13 @@ import type { HonoEnv } from "@/types";
  * inferChannel names it as its own channel.
  */
 
-/** The endpoint each WebMCP tool's handler calls. Public, same-origin. */
-const TOOL_ENDPOINTS: Readonly<
+/**
+ * The endpoint each WebMCP tool's handler calls. Public, same-origin.
+ * Exported since 2026-09-03 (roadmap C4): /openapi-tools.json derives
+ * its HTTP door per tool from THIS map, so the browser surface and the
+ * function-calling document cannot name different doors for one tool.
+ */
+export const TOOL_ENDPOINTS: Readonly<
   Record<string, { method: "GET" | "POST"; path: string }>
 > = {
   read_store_guide: { method: "GET", path: "/llms.txt" },

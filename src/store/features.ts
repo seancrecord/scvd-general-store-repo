@@ -73,6 +73,7 @@ export const FEATURES: readonly Feature[] = [
       "/api/trade/catalog",
       "/api/trade/ledger",
       "/api/trade/{partner}/check",
+      "/api/trade/{partner}/claim",
       "/api/trade/{partner}/statement",
       "/api/trade/{partner}/{item_id}",
     ],
@@ -109,6 +110,17 @@ export const ROOMS_BEFORE_RULE_60: readonly string[] = [
  * neither here nor a feature's door fails the register.
  */
 export const API_PATHS_BEFORE_RULE_60: readonly string[] = [
+  /*
+   * THE DRY RUN AND THE LOOK: doors that predate the rule (2026-08-28
+   * and 2026-09-02) whose contract paths were declared only on
+   * 2026-09-03, when the function-calling tools document found them
+   * missing from openapi.json. The rule froze what the contract had,
+   * not what the store had; these are pre-rule doors, frozen here,
+   * and not a feature skipping the register. Both are API doors with
+   * no room of their own: the atlas and /developers name them.
+   */
+  "/api/before-you-pay/v1",
+  "/api/look/v1",
   "/.well-known/agent-instructions", "/.well-known/ai-catalog.json",
   "/.well-known/api-catalog", "/.well-known/ard.json",
   "/.well-known/http-message-signatures-directory", "/.well-known/mcp",

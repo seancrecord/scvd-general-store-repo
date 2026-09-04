@@ -72,6 +72,47 @@
       "verdict": "not_ready",
       "difference": "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks."
     },
+    "remediation": [
+      {
+        "signal": "accepts",
+        "kind": "check",
+        "defect_class": "unsignable-offer",
+        "title": "Offer a buyer cannot sign against",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/unsignable-offer",
+        "operator": "Fill every accepts entry with the v2-required fields, as strings, and regenerate the offer from your server's own config rather than hand-editing JSON. The free preflight names the missing field.",
+        "buyer": "Do not sign: a missing required field means your client has nothing to construct, and any library that proceeds anyway is filling the gap with a default you did not choose. Read the preflight's named missing field and wait for a challenge that carries it.",
+        "falsified_by": "Every accepts entry carrying the published required fields at the stated moment."
+      },
+      {
+        "signal": "accepts",
+        "kind": "check",
+        "defect_class": "unpayable-payto",
+        "title": "payTo is not the bytes a payment signs over",
+        "detectable": "unpaid",
+        "definition_url": "https://scvd.store/defects/unpayable-payto",
+        "operator": "Give each accepts entry its own rail's address format: a 20-byte 0x address on EVM entries, a base58 pubkey on Solana entries. The commonest cause is one wallet string pasted across every rail's entry.",
+        "buyer": "Never resolve a name in payTo yourself and pay the result: your signature would bind to whatever the resolver said that second. Refuse until payTo is a concrete address in the format of its own entry's rail.",
+        "falsified_by": "The payTo parsing as a valid address for the rail its own entry names."
+      }
+    ],
+    "protocols_spoken": [
+      "x402"
+    ],
+    "mpp": {
+      "battery": "mpp-v1",
+      "spec": "draft-00",
+      "spoken": false,
+      "challenges": [],
+      "checks": [],
+      "advisories": [],
+      "the_x402_verdict_above": "The top-level verdict keeps meaning x402-ready, permanently (the keeper's ruling, 2026-09-04): an existing ready must not change meaning under anyone's feet. A door that speaks only MPP reads not_ready on the x402 battery and that is a fact about which wire it speaks, not a defect; read protocols_spoken for the union and this block for the MPP battery's own checks.",
+      "what_this_cannot_tell_you": [
+        "Whether the door verifies a credential, delivers, or issues a Payment-Receipt: those exist only after money moves, and this store's till does not speak MPP.",
+        "Whether the price advertised in the door's /openapi.json (x-payment-info) agrees with this challenge: the free preflight makes one request, and that read is the paid audit's.",
+        "Whether the door stays up, or whether the same challenge is served to a paying client. One request, one moment."
+      ]
+    },
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",

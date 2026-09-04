@@ -357,6 +357,7 @@ export function buildAtlas(base: string): Record<string, unknown> {
       complete_guide: `${base}/llms-full.txt`,
       agent_manual: `${base}/agents.md`,
       openapi: `${base}/openapi.json`,
+      openapi_tools: `${base}/openapi-tools.json`,
       x402_discovery: `${base}/.well-known/x402.json`,
       mcp: `${base}/mcp`,
     },

@@ -21,6 +21,7 @@ describe("the obstacle course", () => {
       "name-payto",
       "wrong-rail-payto",
       "two-surfaces",
+      "mpp-shape",
       "dust-correct",
     ]);
     expect(index.when_it_is_your_door).toContain("service_audit");

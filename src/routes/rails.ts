@@ -113,6 +113,26 @@ railsRoutes.get("/rails", async (c) => {
     computeStats(c.env),
   ]);
   const rail = stats.organic_by_rail;
+  const { tradeLedger } = await import("@/services/trade-counter");
+  const tradeAccounts = await tradeLedger(c.env);
+  const tradeCounter = {
+    what_this_is:
+      "Not a rail. Sales through the trade counter (/trade) are paid to a marketplace, off-chain from our view, and billed on a statement; they land on no chain and are counted here beside the rails so the denominator is honest, never inside them.",
+    accounts: tradeAccounts.map((account) => ({
+      account: account.account,
+      mode: account.mode,
+      delivered_live: account.delivered_live,
+      delivered_test: account.delivered_test,
+      net_usd: account.net_usd,
+      paid_usd: account.paid_usd,
+      outstanding_usd: account.outstanding_usd,
+      truncated: account.truncated,
+    })),
+    delivered_live_total: tradeAccounts.reduce((sum, account) => sum + account.delivered_live, 0),
+    outstanding_usd_total:
+      Math.round(tradeAccounts.reduce((sum, account) => sum + account.outstanding_usd, 0) * 100) / 100,
+    ledger: `${base}/api/trade/ledger`,
+  };
   const payload = {
     what_this_is:
       "Where this store's organic settlements actually land, by chain, month by month — the same books /stats serves, drawn. Organic only: house traffic is excluded at the till, never filtered afterwards.",
@@ -122,6 +142,7 @@ railsRoutes.get("/rails", async (c) => {
     method:
       "The monthly series is the till's own rail counters (recorded in the same call that produces the organic count). The all-time split additionally counts certificate-era sales from before the till kept rails, and names what neither record placed as rail_not_recorded rather than guessing.",
     the_books: `${base}/stats`,
+    trade_counter: tradeCounter,
   };
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
@@ -171,6 +192,15 @@ railsRoutes.get("/rails", async (c) => {
             : ""
         }
         ${tiles}
+      </section>
+      <section>
+        <h2>Not a rail: the trade counter</h2>
+        <p class="menu-desc">${escapeHtml(tradeCounter.what_this_is)}</p>
+        <table border="1" cellpadding="6">
+          <tr><th>account</th><th>mode</th><th>delivered, live</th><th>delivered, test</th><th>net owed</th><th>paid in</th><th>outstanding</th></tr>
+          ${tradeCounter.accounts.map((account) => `<tr><td>${escapeHtml(account.account)}</td><td>${escapeHtml(account.mode)}</td><td>${account.delivered_live}</td><td>${account.delivered_test}</td><td>$${account.net_usd.toFixed(2)}</td><td>$${account.paid_usd.toFixed(2)}</td><td>$${account.outstanding_usd.toFixed(2)}${account.truncated ? " *" : ""}</td></tr>`).join("")}
+        </table>
+        <p class="menu-meta">Derived from the delivery rows at request time; an asterisk marks a capped read whose figures are floors. The whole ledger: <a href="/api/trade/ledger"><code>/api/trade/ledger</code></a>.</p>
       </section>
       <section>
         <h2>Method, and what this cannot say</h2>

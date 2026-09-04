@@ -448,7 +448,8 @@ describe("our own guide, read by the reader it ships", () => {
 
 describe("the vocabulary's v9 row", () => {
   it("carries surface-contradicts-challenge as paid-detectable, pointing at the surfaces section", () => {
-    expect(DEFECT_VOCABULARY_VERSION).toBe("9");
+    // v9 added the row; v10 (2026-09-03, C1) was additive — buyer_hint on every class — and left it in place.
+    expect(Number(DEFECT_VOCABULARY_VERSION)).toBeGreaterThanOrEqual(9);
     const row = VOCABULARY_CHANGELOG.find((change) => change.version === "9")!;
     expect(row.date).toBe("2026-09-02");
     expect(row.what_changed).toContain("surface-contradicts-challenge");

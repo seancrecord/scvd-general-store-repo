@@ -1,0 +1,17 @@
+{
+  "name": "stripe-card",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "A card door on stripe: no recipient is required for this method, and the check says so.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [],
+  "expect_advisories": [],
+  "status": 402,
+  "headers": {
+    "content-type": "application/problem+json",
+    "www-authenticate": "Payment id=\"ch_04\", realm=\"door.example\", method=\"stripe\", intent=\"charge\", request=\"eyJhbW91bnQiOiI1MDAiLCJjdXJyZW5jeSI6InVzZCIsIm1ldGhvZERldGFpbHMiOnsibmV0d29ya0lkIjoiYm5wXzEyMyIsInBheW1lbnRNZXRob2RUeXBlcyI6WyJjYXJkIl19fQ\""
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

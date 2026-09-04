@@ -1,0 +1,20 @@
+{
+  "name": "bad-amount-unknown-method",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "amount as a decimal and a method with no draft: the price field a buyer reads is wrong, and no client can build a credential.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [
+    "mpp-amount-shape",
+    "mpp-method-registered"
+  ],
+  "expect_advisories": [],
+  "status": 402,
+  "headers": {
+    "content-type": "application/problem+json",
+    "www-authenticate": "Payment id=\"ch_12\", realm=\"door.example\", method=\"ripple\", intent=\"charge\", request=\"eyJhbW91bnQiOiIwLjAwMSIsImN1cnJlbmN5IjoieHJwIn0\""
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

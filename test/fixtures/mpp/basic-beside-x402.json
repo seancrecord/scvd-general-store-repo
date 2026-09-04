@@ -1,0 +1,18 @@
+{
+  "name": "basic-beside-x402",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "A proxy's WWW-Authenticate: Basic beside a door's PAYMENT-REQUIRED is not MPP. protocols_spoken is x402 only; the MPP battery does not run.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "x402"
+  ],
+  "expect_failed": [],
+  "expect_advisories": [],
+  "status": 402,
+  "headers": {
+    "content-type": "application/json",
+    "www-authenticate": "Basic realm=\"proxy\"",
+    "payment-required": "eyJ4NDAyVmVyc2lvbiI6IDIsICJhY2NlcHRzIjogW119"
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

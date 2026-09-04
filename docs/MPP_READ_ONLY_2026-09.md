@@ -242,7 +242,7 @@ WITH the battery is the point." PR 1 adds the family
 it reads, and nothing cites it before the battery exists.
 
 Vocabulary: the Tier 0 checks that fail are defect classes,
-unpaid-detectable, registered in `defect-vocabulary.ts` as v10 with
+unpaid-detectable, registered in `defect-vocabulary.ts` as the next vocabulary version (v11 as of 2026-09-03; v10 was C1's buyer_hint) with
 the registrar-not-author rule (the spec's own MUSTs are the
 `sourced_by`). Names as in the table. `x402-and-mpp` and the testnet
 default are advisories, not classes: a door speaking two protocols
@@ -277,7 +277,7 @@ fields on rows that already exist.
 ## Sequencing, one branch at a time
 
 1. **PR 1 — the parser, the checks, the fixtures, the practice door,
-   `protocols_spoken`, the family and vocabulary v10.** First act:
+   `protocols_spoken`, the family and the next vocabulary version.** First act:
    measure the misread — count existing signed rows whose captured
    headers carry a `Payment` challenge, and file the correction if
    the count is not zero. Free preflight and the look carry the `mpp`
@@ -338,6 +338,76 @@ the other wire).
    store's description before or after PR 2. The standards-boundary
    law says a protocol is claimed after its flows run; a reader has no
    flow, so the law does not obviously apply. His call.
+
+## Rulings, 2026-09-04
+
+The keeper read the whole note and ruled (his words in KEEPER_LIST):
+
+- **Decision 3 is firm, not recommended.** `verdict` keeps meaning
+  x402-ready, permanently; `protocols_spoken` is the union field.
+  Letting an existing ready/not_ready field change meaning would break
+  every historical row's comparability — the exact failure the
+  versioning section argues against for the battery names. Not to be
+  relitigated. PR 1 carries this on the report itself
+  (`mpp.the_x402_verdict_above`).
+- **Decision 2 needs a mockup before a ruling.** The principle — a
+  passport with the protocol named on its face — sounds right, but a
+  reader skimming fast misreads things, which is this note's whole
+  point. The copy is below; he rules on the copy, not the principle.
+- **Approved as-is:** the framing (till settled, reader open), the
+  sourcing discipline, zero added runtime cost, the versioning
+  (batteries frozen, `mpp-v1` its own constant, advisories outside the
+  verdict), the risk section.
+- **"Get bolder on actual implementation."** PR 1 is built the same
+  day (roadmap V3). The misread count PR 1 opens with reads zero over
+  rows that could not show it; that is forward cover for the door that
+  starts speaking both wires next month, not a fix for a pile of wrong
+  verdicts, and the count says so with its denominators.
+
+### The passport copy for an MPP-only door (decision 2, for his eyes)
+
+What the passport page's tier line and the chip would say for a door
+whose rounds are all MPP. Derived fields in braces; nothing else new.
+
+Tier line, today (x402 door):
+
+> `held` — 3 of 4, weeks 33–36 · the rule
+
+Tier line, proposed (MPP-only door):
+
+> `held` — 3 of 4, weeks 33–36, **on the MPP battery (mpp-v1)** · the rule
+> · this door speaks MPP, not x402: the rounds counted are its Payment
+> challenges read clean, and this store's till cannot pay it
+
+Headline, proposed:
+
+> {host} answered a well-formed MPP challenge on 3 of the 4 rounds
+> since we first met it. It does not speak x402. Delivery, credentials
+> and receipts were not observed: nothing here paid.
+
+The chip (the pasted badge), proposed: the same tier and fraction it
+carries today, with `MPP` where it says `x402` today, and the same
+rule that it stops rendering when the door leaves the ready side.
+
+JSON (`/passport/{host}`), proposed additive fields:
+
+```json
+"tier": { "tier": "held", "fraction": { "ready": 3, "rounds": 4, "weeks": "33-36" },
+          "battery": "mpp-v1", "protocol": "mpp" },
+"protocols_spoken": ["mpp"],
+"what_this_is_not": "… a door that speaks MPP is not a door this store can pay; the tier is about the door answering correctly, never about which wire."
+```
+
+What would make it read dishonestly at a glance, and the answer to
+each: a chip that says only `held` with no protocol (answered: the
+protocol is on the chip's face); a tier line whose fraction mixes
+x402 and MPP rounds (answered: one battery per tier, named; a door
+speaking both gets the x402 tier and an MPP line beside it, never a
+sum); a passport that implies the store paid the door (answered: the
+headline says nothing here paid, on every MPP passport, not as a
+footnote).
+
+Yes / no / later on this copy is the ruling PR 2 waits on.
 
 ## Sources read for this note
 

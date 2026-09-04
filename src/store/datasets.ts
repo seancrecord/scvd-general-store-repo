@@ -43,6 +43,15 @@ export interface PublishedDataset {
 
 export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   {
+    path: "/fixtures.json",
+    name: "The fixtures",
+    description:
+      "The recorded 402 doors, MPP challenges and signed-artifact vectors this store tests its own instruments against, at stable URLs with the sha256 of the bytes served, so another instrument can cite the exact bytes.",
+    caution:
+      "Test material, not observations of live doors, and not signed: a recorded fixture is bytes kept verbatim to test an instrument against; a synthetic one is built from a specification's own examples and says so.",
+    cadence: "appended when a fixture joins the tree",
+  },
+  {
     path: "/corpus.json",
     name: "The signed corpus",
     description:
