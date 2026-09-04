@@ -105,7 +105,18 @@ URLs decides whether they also feed the door bank.
   the roster in 100-host batches on a cursor all week
   (indexer-gentle, ~16,800 host-slots per week against today's
   ~6,000), Sunday ASSEMBLES what the week already walked instead of
-  probing again — one GET per host per week, unchanged — and the
+  probing again. **THE FEED'S PAGE CAP, RAISED 2026-09-04:** the
+  walk's start firing had been reading the feed under the one-shot
+  cap (60 pages = 6,000 rows), and W35 and W36 stopped at exactly
+  6,000 with `coverage_suspect: true` and no reason recorded — which
+  the tier index turned into "indeterminate" for every host those
+  rounds did not reach. The start firing does nothing but read the
+  feeds, so it now runs under `LONG_WALK_DISCOVERY_PAGE_CAP` (300
+  pages, offset pages fetched four at a time, one retry per page, a
+  10 s ceiling per page and a 90 s budget for the read), and every
+  round carries `discovery_read` — why the read stopped, how many
+  pages, and the total the feed declared. The one-shot cap stays 60:
+  that path spends the same invocation on the probes — one GET per host per week, unchanged — and the
   snapshot lands in R2 (`corpus/{seq}.json`, full record) with a slim
   pointer in KV. Pre-graduation entries stay in KV untouched and
   verify as they always did. The keeper created the bucket

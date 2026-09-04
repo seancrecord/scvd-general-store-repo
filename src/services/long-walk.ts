@@ -2,10 +2,12 @@ import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
 import {
+  LONG_WALK_DISCOVERY_PAGE_CAP,
   pooled,
   probeHost,
   readAgent402Leaderboard,
   readDiscoveryList,
+  type DiscoveryReadNote,
   type WardHostResult,
   type WardVolumeClaim,
 } from "@/services/ward-round";
@@ -59,6 +61,8 @@ export interface LongWalkState {
   started_at: string;
   listed_resources: number;
   coverage_suspect: boolean;
+  /** Why the feed read stopped where it did; rides into Sunday's round. */
+  discovery_read?: DiscoveryReadNote;
   pagination_shape?: string[];
   /** The feed's row-key names, for the market desk's self-diagnosis. */
   discovery_fields_seen?: string[];
@@ -120,7 +124,12 @@ export async function longWalkPass(env: Env): Promise<WalkPass> {
 
 async function startWalk(env: Env, week: string): Promise<WalkPass> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const discovery = await readDiscoveryList(env);
+  // This firing reads the feeds and freezes the roster and does
+  // nothing else, so it runs under the long walk's larger page cap
+  // (2026-09-04): the one-shot cap bound at 6,000 rows for two weeks.
+  const discovery = await readDiscoveryList(env, {
+    pageCap: LONG_WALK_DISCOVERY_PAGE_CAP,
+  });
   const leaderboard = await readAgent402Leaderboard(ownHost);
 
   const discoveryHosts = new Set(discovery.hosts.map((entry) => entry.host));
@@ -167,6 +176,7 @@ async function startWalk(env: Env, week: string): Promise<WalkPass> {
     started_at: new Date().toISOString(),
     listed_resources: discovery.listed,
     coverage_suspect: discovery.coverageSuspect,
+    discovery_read: discovery.read,
     ...(discovery.paginationShape
       ? { pagination_shape: discovery.paginationShape }
       : {}),
