@@ -22,19 +22,33 @@ import {
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
-import { recordPaymentDecline, recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
+import {
+  recordChallengeIssued,
+  recordPaymentDecline,
+  recordPorchVisit,
+  recordVerifyCall,
+} from "@/lib/metrics";
 import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { factBlockText } from "@/lib/listing-spec";
-import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
+/**
+ * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the HTTP
+ * door. This door's forked copies of both are what let a buyer pay
+ * for a signed reading of an empty string; see the note at the top
+ * of lib/purchase-args.ts.
+ */
+import {
+  checkPurchaseArgs,
+  purchaseInputFrom,
+  refusalCode,
+  refusalMessage,
+  refusalRpcCode,
+  toolArgs,
+} from "@/lib/purchase-args";
+import { sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
 import { getCertificate } from "@/services/certificates";
-import {
-  COFFEE_WIN_CAP,
-  GRIEVANCE_CAP,
-  fulfillPurchase,
-  stockedShelfCount,
-} from "@/services/fulfillment";
+import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
   idempotencyScope,
@@ -51,7 +65,6 @@ import { beforeYouPay, readProfile } from "@/services/before-you-pay";
 import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
-import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -679,63 +692,6 @@ export async function callFreeTool(
   return `No tool by that name on the shelf: ${name}`;
 }
 
-/** Pre-payment validation, mirroring the HTTP door: no target, no charge. */
-function validatePurchaseArgs(
-  item: MenuItem,
-  args: Record<string, unknown>,
-): string | undefined {
-  if (item.id === "context_anchor") {
-    const summary = typeof args["summary"] === "string" ? args["summary"] : "";
-    if (summary.trim().length === 0) {
-      return "An anchor needs a summary, the state you want remembered. No summary, no charge.";
-    }
-    if (summary.length > 4000) {
-      return "That summary runs past the ledger margin. 4000 characters, tops.";
-    }
-  }
-  if (item.id === "standing_watch") {
-    // Mirrors the HTTP door's standingWatchCheck: no target, no charge.
-    const url = typeof args["url"] === "string" ? args["url"] : "";
-    if (!isValidHttpUrl(url)) {
-      return "A standing watch needs a url — YOUR x402 endpoint, https. No target, no charge.";
-    }
-  }
-  if (item.id === "the_confession") {
-    const confession =
-      typeof args["confession"] === "string" ? args["confession"] : "";
-    if (confession.trim().length === 0) {
-      return "A confession needs the confession itself. Nothing to hear, no charge.";
-    }
-    if (confession.length > 500) {
-      return "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free.";
-    }
-  }
-  if (item.id === "coffees_for_closers") {
-    const win = typeof args["win"] === "string" ? args["win"] : "";
-    if (win.trim().length === 0) {
-      return "This coffee needs a win, the thing you closed. No win, no charge.";
-    }
-    if (win.length > COFFEE_WIN_CAP) {
-      return `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`;
-    }
-  }
-  if (item.id === "graffiti_on_a_train") {
-    // Same three refusals as the HTTP door's tagCheck, same order,
-    // all before money moves.
-    const tag = typeof args["tag"] === "string" ? args["tag"] : "";
-    if (tag.trim().length === 0) {
-      return "Nothing to spray. Put your mark in the tag input, up to 140 characters. No tag, no charge.";
-    }
-    if (tag.length > TAG_CAP) {
-      return `The side of a train holds ${TAG_CAP} characters. Anything longer is a letter, and the mailbox is free at /api/letter.`;
-    }
-    if (tagHasUrl(tag)) {
-      return "No URLs on the train. A tag is a mark, not a billboard — the wall is public and permanent, which is exactly what link spam wants. Say it without the link.";
-    }
-  }
-  return undefined;
-}
-
 /**
  * DELETED 2026-08-02: payerFromPaymentMeta, which read the payer out
  * of the caller's unverified `_meta`. Its only remaining caller was
@@ -755,14 +711,44 @@ async function callPurchaseTool(
   id: number | string | null,
   rawIdempotencyKey?: string,
 ): Promise<Response> {
-  const invalid = validatePurchaseArgs(item, args);
+  /**
+   * THE SAME PRE-PAYMENT LAW THE HTTP DOOR RUNS, out of the same
+   * file (lib/purchase-args), because this door's own shorter copy
+   * checked a handful of items and the HTTP door checked the rest —
+   * and the ones it did not check are the ones that took a buyer's
+   * money for a reading of an empty string on 2026-09-04.
+   *
+   * Run before the terms are quoted, which is this door's older and
+   * stricter habit: a shelf that cannot fulfil what you asked for
+   * should say so before it hands you an offer to sign.
+   */
   const missing = missingRequiredInputs(item, args);
-  if (invalid) {
-    // Same books as the HTTP door's pre-gate refusal: a caller that
-    // attached a payment and forgot the input opened a wallet and was
-    // refused, and the funnel must see it. A bare ask books nothing
-    // here — it never reached a 402 — exactly as on the HTTP side.
-    if (paymentMeta !== undefined && paymentMeta !== null) {
+  const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args));
+  if (refusal) {
+    const paying = paymentMeta !== undefined && paymentMeta !== null;
+    /**
+     * THE LOCKED DOOR, on this door's terms. The HTTP door quotes a
+     * 402 to a bare ask and stamps the ask row with the inputs it
+     * lacked (payment-gate, the locked-door work); this door refuses
+     * BEFORE quoting, so the same ask never reaches its 402 — and a
+     * funnel that only counted 402s would lose every MCP caller who
+     * asked without the one thing the shelf needed. That is the
+     * caller the locked-door column exists to count. So the bare ask
+     * that was refused for a missing required input is booked as the
+     * ask it was, stamped the same way, and the row reads the same
+     * whichever door it came through.
+     */
+    if (!paying && missing.length > 0) {
+      await recordChallengeIssued(c.env, `/api/buy/${item.id}`, {
+        ...mcpSignals(c),
+        missingRequired: missing,
+      }).catch(() => undefined);
+    }
+    // Same books as the HTTP door's bookRefusalBeforeGate: a caller
+    // that attached a payment and forgot the input opened a wallet and
+    // was refused, and the funnel must see it. Only the 400s book,
+    // exactly as there.
+    if (refusal.status === 400 && paying) {
       const required = buyInputSchema(item).required ?? [];
       const reason =
         missing.length > 0
@@ -777,7 +763,12 @@ async function callPurchaseTool(
         mcpSignals(c),
       ).catch(() => undefined);
     }
-    return rpcRefusal(id, -32602, "bad_request", invalid);
+    return rpcRefusal(
+      id,
+      refusalRpcCode(refusal),
+      refusalCode(refusal),
+      refusalMessage(refusal),
+    );
   }
   /**
    * Idempotency replay, same mechanism as the HTTP door (see
@@ -930,47 +921,16 @@ async function callPurchaseTool(
     );
   }
 
-  const input: Parameters<typeof fulfillPurchase>[3] = {};
-  const agentName = sanitizeText(args["agent_name"], 80);
-  if (agentName && item.id !== "the_confession") {
-    input.agentName = agentName;
-  }
-  if (item.id === "context_anchor" && typeof args["summary"] === "string") {
-    input.summary = args["summary"].replace(/\0/g, "");
-  }
-  if (item.id === "spot_check" && typeof args["host"] === "string") {
-    // Validation happens in performSpotCheck; a bad host refuses
-    // pre-mint and charges nothing, same law as the HTTP door.
-    input.spotCheckHost = args["host"].replace(/\0/g, "");
-  }
-  if (item.id === "coffees_for_closers" && typeof args["win"] === "string") {
-    const win = args["win"].replace(/\0/g, "");
-    input.win = win;
-    input.detail = win;
-  }
-  if (item.id === "graffiti_on_a_train" && typeof args["tag"] === "string") {
-    // Verbatim past validation, same as the HTTP door: the spray IS
-    // the product.
-    input.tag = args["tag"].replace(/\0/g, "");
-  }
-  if (item.id === "the_confession" && typeof args["confession"] === "string") {
-    input.confessionText = args["confession"].replace(/\0/g, "");
-    const signAs = sanitizeText(args["sign_as"], 80);
-    if (signAs && signAs.toLowerCase() !== "anonymous") {
-      input.agentName = signAs;
-    }
-  }
-  const passId = sanitizeText(args["pass_id"], 40);
-  if (passId) {
-    input.passId = passId;
-  }
-  const detail = sanitizeText(args["detail"], 600);
-  if (detail) {
-    input.detail = detail;
-  }
-  if (isValidHttpUrl(args["callback_url"])) {
-    input.callbackUrl = args["callback_url"] as string;
-  }
+  /*
+   * ONE ARGUMENT MAP FOR BOTH DOORS (lib/purchase-args). This door
+   * used to keep its own, and its own carried eleven fields out of
+   * the thirty-odd that decide the goods: `url`, `address`,
+   * `tx_hash`, `tx_hashes`, `wallet`, `digest`, `mandate`, `purpose`
+   * and the rest were read off the wire, validated by nothing, and
+   * dropped before fulfillment ever saw them. Everything below this
+   * line is what is genuinely particular to THIS channel.
+   */
+  const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {
