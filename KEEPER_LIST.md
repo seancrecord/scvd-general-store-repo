@@ -125,8 +125,10 @@ build, it is on the roadmap.
   Polygon walks. Not a code task.
 - **Send the welcomes.** `/admin/outreach` now lists the
   READY doors, newly listed first, each with a drafted
-  welcome (their passport page, the colophon, the free
-  checks, the two priced lines). Hand-deliver, stamp. The
+  welcome (their passport page, the colophon, the chip as
+  two paste-ready snippets — markdown and HTML, nothing to
+  claim, since 2026-09-04 — the free checks, the two priced
+  lines). Hand-deliver, stamp. The
   wire stays paused. This is the seller loop; it is your
   press.
 - **Re-register the missing doors.** After Sunday's round,

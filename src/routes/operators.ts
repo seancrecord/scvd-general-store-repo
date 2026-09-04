@@ -49,7 +49,8 @@ export const OPERATOR_STAGES: readonly OperatorStage[] = [
     question: "Can a buyer see that somebody outside looked?",
     free: {
       name: "The passport",
-      how: (base) => `${base}/passport/{your-host} — issued from the Sunday census once your door is on the ready side; the chip on that page is the thing to paste in a README, and it goes dark rather than stale.`,
+      how: (base) =>
+        `${base}/passport/{your-host} — issued from the Sunday census once your door is on the ready side. The chip is already yours, nothing to claim: paste [![scvd.store passport for {your-host}](${base}/badges/passport/{your-host}.svg)](${base}/passport/{your-host}) in a README (HTML on the passport page), and it goes dark rather than stale.`,
     },
     items: ["passport_refresh", "service_audit"],
   },
