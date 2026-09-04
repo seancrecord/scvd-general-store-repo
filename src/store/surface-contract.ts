@@ -329,7 +329,31 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     what_to_do:
       "The message lists what is on the shelf. This door costs nothing either way.",
   },
-] as const;
+  /**
+   * THE DOOR LAW'S OWN THREE (2026-09-04). The pre-payment refusals
+   * moved into lib/purchase-door.ts and the MCP door now runs every
+   * one of them, so the codes the HTTP gate could send for a refused
+   * probe target, a passport the gate declined, or a field wallet
+   * that is not provisioned are now sent from this door too. Derived
+   * from the buy doors' table rather than retyped: one sentence per
+   * code, wherever the refusal is the same. A 400 there is -32602
+   * here; everything else is -32000.
+   */
+  ...(["target_refused", "passport_refused", "upstream_unavailable"] as const).map(
+    (code): RpcRefusal => {
+      const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
+      if (!door) {
+        throw new Error(`the buy doors' table no longer names ${code}`);
+      }
+      return {
+        code,
+        jsonrpc: door.http === 400 ? -32602 : -32000,
+        means: door.means,
+        what_to_do: door.what_to_do,
+      };
+    },
+  ),
+];
 
 /**
  * The clauses themselves, as data, so the guard and any surface that

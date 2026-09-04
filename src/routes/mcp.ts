@@ -24,16 +24,15 @@ import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
 import { factBlockText } from "@/lib/listing-spec";
-import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
+import {
+  readFulfillmentInput,
+  refusePurchaseInput,
+} from "@/lib/purchase-door";
+import { sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
 import { getCertificate } from "@/services/certificates";
-import {
-  COFFEE_WIN_CAP,
-  GRIEVANCE_CAP,
-  fulfillPurchase,
-  stockedShelfCount,
-} from "@/services/fulfillment";
+import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
   idempotencyScope,
@@ -50,7 +49,6 @@ import { beforeYouPay, readProfile } from "@/services/before-you-pay";
 import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
-import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -187,8 +185,14 @@ function rpcRefusal(
   jsonrpc: number,
   code: string,
   message: string,
+  /**
+   * Whatever else the refusal carried beside its sentence — the
+   * anchor's before_you_file checklist, the shutter's machine_shelves
+   * link. The door law returns them; this door relays them.
+   */
+  extra: Record<string, unknown> = {},
 ): Response {
-  return rpcError(id, jsonrpc, message, { code, charged: false });
+  return rpcError(id, jsonrpc, message, { ...extra, code, charged: false });
 }
 
 function rpcError(
@@ -678,61 +682,23 @@ export async function callFreeTool(
   return `No tool by that name on the shelf: ${name}`;
 }
 
-/** Pre-payment validation, mirroring the HTTP door: no target, no charge. */
-function validatePurchaseArgs(
-  item: MenuItem,
-  args: Record<string, unknown>,
-): string | undefined {
-  if (item.id === "context_anchor") {
-    const summary = typeof args["summary"] === "string" ? args["summary"] : "";
-    if (summary.trim().length === 0) {
-      return "An anchor needs a summary, the state you want remembered. No summary, no charge.";
+/**
+ * One MCP argument, read the way the door law reads a query
+ * parameter: strings as sent; the numbers and booleans a JSON caller
+ * may legitimately send for fields the schema types as number
+ * (amount_usdc, declared_cap_usdc) as their decimal text; anything
+ * else — an object, an array, null — as absent, which the law then
+ * refuses by name.
+ */
+function readArg(args: Record<string, unknown>): (name: string) => string | undefined {
+  return (name) => {
+    const value = args[name];
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
     }
-    if (summary.length > 4000) {
-      return "That summary runs past the ledger margin. 4000 characters, tops.";
-    }
-  }
-  if (item.id === "standing_watch") {
-    // Mirrors the HTTP door's standingWatchCheck: no target, no charge.
-    const url = typeof args["url"] === "string" ? args["url"] : "";
-    if (!isValidHttpUrl(url)) {
-      return "A standing watch needs a url — YOUR x402 endpoint, https. No target, no charge.";
-    }
-  }
-  if (item.id === "the_confession") {
-    const confession =
-      typeof args["confession"] === "string" ? args["confession"] : "";
-    if (confession.trim().length === 0) {
-      return "A confession needs the confession itself. Nothing to hear, no charge.";
-    }
-    if (confession.length > 500) {
-      return "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free.";
-    }
-  }
-  if (item.id === "coffees_for_closers") {
-    const win = typeof args["win"] === "string" ? args["win"] : "";
-    if (win.trim().length === 0) {
-      return "This coffee needs a win, the thing you closed. No win, no charge.";
-    }
-    if (win.length > COFFEE_WIN_CAP) {
-      return `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`;
-    }
-  }
-  if (item.id === "graffiti_on_a_train") {
-    // Same three refusals as the HTTP door's tagCheck, same order,
-    // all before money moves.
-    const tag = typeof args["tag"] === "string" ? args["tag"] : "";
-    if (tag.trim().length === 0) {
-      return "Nothing to spray. Put your mark in the tag input, up to 140 characters. No tag, no charge.";
-    }
-    if (tag.length > TAG_CAP) {
-      return `The side of a train holds ${TAG_CAP} characters. Anything longer is a letter, and the mailbox is free at /api/letter.`;
-    }
-    if (tagHasUrl(tag)) {
-      return "No URLs on the train. A tag is a mark, not a billboard — the wall is public and permanent, which is exactly what link spam wants. Say it without the link.";
-    }
-  }
-  return undefined;
+    return undefined;
+  };
 }
 
 /**
@@ -754,9 +720,28 @@ async function callPurchaseTool(
   id: number | string | null,
   rawIdempotencyKey?: string,
 ): Promise<Response> {
-  const invalid = validatePurchaseArgs(item, args);
-  if (invalid) {
-    return rpcRefusal(id, -32602, "bad_request", invalid);
+  /**
+   * THE DOOR LAW, the same one the HTTP gate runs (lib/purchase-door.ts,
+   * 2026-09-04). This door used to check five items by name and let
+   * every other argument the tool's own schema advertises fall through
+   * unread — which is how a bitcoin_anchor settled, minted, and then
+   * died in the goods step with no digest. Every refusal lands here,
+   * before any payment is examined: a tools/call is an agent that has
+   * read the schema, and the cheapest moment to say the digest is
+   * malformed is before it signs. Nothing is charged for learning the
+   * rule. The HTTP door's 400 is -32602 here and its 403/503 are
+   * -32000, with the same string code and `charged: false` in data.
+   */
+  const refusal = await refusePurchaseInput(item, readArg(args), c.env, "input");
+  if (refusal) {
+    const { error, code, charged: _charged, ...extra } = refusal.body;
+    return rpcRefusal(
+      id,
+      refusal.status === 400 ? -32602 : -32000,
+      typeof code === "string" ? code : "bad_request",
+      error,
+      extra,
+    );
   }
   /**
    * Idempotency replay, same mechanism as the HTTP door (see
@@ -907,52 +892,15 @@ async function callPurchaseTool(
     );
   }
 
-  const input: Parameters<typeof fulfillPurchase>[3] = {};
-  const agentName = sanitizeText(args["agent_name"], 80);
-  if (agentName && item.id !== "the_confession") {
-    input.agentName = agentName;
-  }
-  if (item.id === "context_anchor" && typeof args["summary"] === "string") {
-    input.summary = args["summary"].replace(/\0/g, "");
-  }
-  if (item.id === "spot_check" && typeof args["host"] === "string") {
-    // Validation happens in performSpotCheck; a bad host refuses
-    // pre-mint and charges nothing, same law as the HTTP door.
-    input.spotCheckHost = args["host"].replace(/\0/g, "");
-  }
-  if (item.id === "coffees_for_closers" && typeof args["win"] === "string") {
-    const win = args["win"].replace(/\0/g, "");
-    input.win = win;
-    input.detail = win;
-  }
-  if (item.id === "graffiti_on_a_train" && typeof args["tag"] === "string") {
-    // Verbatim past validation, same as the HTTP door: the spray IS
-    // the product.
-    input.tag = args["tag"].replace(/\0/g, "");
-  }
-  if (item.id === "the_confession" && typeof args["confession"] === "string") {
-    input.confessionText = args["confession"].replace(/\0/g, "");
-    const signAs = sanitizeText(args["sign_as"], 80);
-    if (signAs && signAs.toLowerCase() !== "anonymous") {
-      input.agentName = signAs;
-    }
-  }
-  const passId = sanitizeText(args["pass_id"], 40);
-  if (passId) {
-    input.passId = passId;
-  }
-  const detail = sanitizeText(args["detail"], 600);
-  if (detail) {
-    input.detail = detail;
-  }
-  if (isValidHttpUrl(args["callback_url"])) {
-    input.callbackUrl = args["callback_url"] as string;
-  }
+  /**
+   * What the buyer sent, read by the one mapping both doors share —
+   * every field the tool's schema advertises reaches the till, on
+   * this door exactly as on the other. `source` names the door.
+   */
+  const input = readFulfillmentInput(item, readArg(args), {
+    userAgent: c.req.header("User-Agent"),
+  });
   input.source = "mcp";
-  const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
-  if (userAgent) {
-    input.userAgent = userAgent;
-  }
   /*
    * Deliver first (rule 9, amended 2026-08-10). fulfillPurchase takes
    * the AUTHORIZATION and presents it at its own last line, so a

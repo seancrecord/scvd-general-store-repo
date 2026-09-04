@@ -1,6 +1,18 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import buySource from "../src/routes/buy.ts?raw";
+import buyRouteSource from "../src/routes/buy.ts?raw";
+import doorLawSource from "../src/lib/purchase-door.ts?raw";
+
+/**
+ * THE GROUND TRUTH IS TWO FILES NOW (2026-09-04). The per-item
+ * refusals moved out of the route into lib/purchase-door.ts, where
+ * both doors run them; the shelf gate's three stayed with the route.
+ * The law's refusals are built with `refuse(status, {` rather than
+ * `return c.json({`, so the marker below matches either spelling —
+ * a walk that only knew the old one would pass over the new file and
+ * guard nothing, which is rule 46's own failure mode.
+ */
+const buySource = `${buyRouteSource}\n${doorLawSource}`;
 
 /**
  * "NOTHING CHARGED" WAS A SENTENCE, NOT A FIELD (rule 57.4, the sweep's
@@ -59,7 +71,7 @@ const CODES = [
 describe("every pre-payment refusal says so in a field, not only in a sentence", () => {
   it("leaves no promise of no-charge unaccompanied by charged: false", () => {
     const literals: { snippet: string; hasField: boolean }[] = [];
-    const marker = /return c\.json\(\s*\{/g;
+    const marker = /(?:return c\.json|refuse)\(\s*(?:\d+,\s*)?\{/g;
     let match: RegExpExecArray | null;
     while ((match = marker.exec(buySource)) !== null) {
       const open = match.index + match[0].length - 1;

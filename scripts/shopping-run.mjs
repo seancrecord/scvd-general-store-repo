@@ -5,6 +5,7 @@ import { createPublicClient, http, formatUnits } from "viem";
 import { base, polygon } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
+import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
 import { ExactEvmScheme } from "@x402/evm";
 
 /**
@@ -44,6 +45,10 @@ const ERC20_BALANCE_ABI = [
  * the MINIMUM tier, and writes receipts to shopping-run-receipts.json
  * (gitignored; contains cert ids, order ids, and verify results).
  *
+ * The client's per-payment spend ceiling is pinned to each item's listed
+ * price (see fetchWithPayFor): the stock @x402/fetch default is $1 and
+ * silently refuses anything dearer.
+ *
  * Usage:
  *   BUYER_PRIVATE_KEY=0x... HOUSE_SECRET=... node scripts/shopping-run.mjs
  * Over the Solana rail (registration runs; see PAYMENT_RAILS.md):
@@ -67,6 +72,8 @@ const ERC20_BALANCE_ABI = [
  */
 
 const STORE_URL = process.env.STORE_URL ?? "https://scvd.store";
+/** The client's stock per-payment cap, as the package writes it ("$1"). Never retyped. */
+const CLIENT_DEFAULT_CAP = String(DEFAULT_MAX_AMOUNT_PER_PAYMENT);
 const RECEIPTS_FILE = "shopping-run-receipts.json";
 
 /** Item-specific required/useful parameters. The spec's inputs, honored. */
@@ -263,7 +270,10 @@ console.log(
   `\n  Total: $${total.toFixed(3)} USDC on ${evmRail?.label ?? "Solana"}, all house-flagged.`,
 );
 console.log(
-  "  Human-queue items will stack orders at /admin/counter for you to self-fulfill\n  (that IS the other half of the test: work the counter like a stranger paid).\n",
+  "  Human-queue items will stack orders at /admin/counter for you to self-fulfill\n  (that IS the other half of the test: work the counter like a stranger paid).",
+);
+console.log(
+  `  Spend ceiling: pinned per purchase to the item's listed price. (The client's stock default is ${CLIENT_DEFAULT_CAP} per payment and refuses anything dearer, unsigned.)\n`,
 );
 
 if (process.env.DRY_RUN) {
@@ -381,7 +391,31 @@ if (evmRail) {
     client: new ExactSvmScheme(solanaSigner),
   });
 }
-const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, { schemes });
+/**
+ * THE CLIENT'S OWN CEILING, SET ON PURPOSE (2026-09-04, CV's field
+ * notes). @x402/fetch ships with spendControls ON and a per-payment
+ * cap — DEFAULT_MAX_AMOUNT_PER_PAYMENT, imported below rather than
+ * retyped — and this runner never set one. So the store's own
+ * reference client refused the store's own $5 service_audit outright,
+ * before signing anything, with a one-line error this loop cut to 120
+ * characters. An integrator who copied this file as their starter
+ * would hit the identical wall on anything over a dollar and probably
+ * not know why (docs/SPEND_CAP_RULINGS_2026-08.md is the store's own
+ * paper on exactly this, written about OTHER people's clients).
+ *
+ * The ceiling is not disabled; it is pinned, per purchase, to the
+ * shelf price of the item in hand. That keeps the control doing real
+ * work — a 402 that quotes more than the listed price is refused
+ * unsigned, which is a store-side bug this runner should surface, not
+ * pay — and on a pay-what-it's-worth door it selects the minimum tier
+ * by construction rather than by accept order.
+ */
+function fetchWithPayFor(item) {
+  return wrapFetchWithPaymentFromConfig(houseFetch, {
+    schemes,
+    spendControls: { maxAmountPerPayment: item.price_usdc },
+  });
+}
 
 const receipts = existsSync(RECEIPTS_FILE)
   ? JSON.parse(readFileSync(RECEIPTS_FILE, "utf8"))
@@ -399,7 +433,7 @@ for (const item of items) {
   process.stdout.write(`→ ${item.id} ... `);
   try {
     lastRequestPaid = false;
-    const response = await fetchWithPay(url);
+    const response = await fetchWithPayFor(item)(url);
     const body = await response.json();
     if (!response.ok) {
       failed += 1;
@@ -512,6 +546,15 @@ for (const item of items) {
   } catch (error) {
     failed += 1;
     console.log(`✖ ${String(error).slice(0, 120)}`);
+    if (/spendControls/.test(String(error))) {
+      // The client refused to sign: every accept in the 402 was above
+      // the ceiling pinned to this item's listed price. Nothing was
+      // signed and nothing moved. Since the ceiling IS the shelf price,
+      // this means the store quoted more than it lists — ours to fix.
+      console.log(
+        `    diagnosis: the client's spend ceiling ($${item.price_usdc}, this item's listed price) refused every accept in the 402 before signing — the store quoted more than the shelf says. Nothing signed, nothing moved. File it.`,
+      );
+    }
     receipts.push({ item: item.id, at: new Date().toISOString(), ok: false, error: String(error) });
   }
   writeFileSync(RECEIPTS_FILE, JSON.stringify(receipts, null, 2));
