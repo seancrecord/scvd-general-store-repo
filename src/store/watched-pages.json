@@ -1,0 +1,4 @@
+{
+  "what_this_is": "Derived from registry/scorers-outreach.json by `npm run outreach:build` — the rows the Sunday citation watch fetches. Never hand-edit: the test fails when this and the register disagree. Empty until the keeper stamps a send.",
+  "rows": []
+}

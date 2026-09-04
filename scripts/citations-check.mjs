@@ -12,26 +12,13 @@
  * Prints, never edits (the keeper's standing rule).
  */
 import { readFileSync } from "node:fs";
-import { exitCodeFor, judge, judgeProspect } from "./lib/citations.mjs";
+import { exitCodeFor, judge } from "./lib/citations.mjs";
 
 const REGISTER = new URL("../src/store/citing-systems.json", import.meta.url);
 const register = JSON.parse(readFileSync(REGISTER, "utf8"));
 const systems = Array.isArray(register.systems) ? register.systems : [];
-/**
- * The other half (2026-09-04): the PROSPECTS are pages the scorers
- * note went to, watched for the day one starts carrying a row. A
- * prospect with no citation is `silent`, which is expected and never
- * fails the run; one that cites is printed so the keeper can move it
- * to the register by hand. The Worker runs this same watch every
- * Sunday (services/citation-watch.ts) and pages on a change; this is
- * the hand-run copy for the keeper's machine.
- */
-const PROSPECTS = new URL("../src/store/citation-prospects.json", import.meta.url);
-const prospectFile = JSON.parse(readFileSync(PROSPECTS, "utf8"));
-const prospects = Array.isArray(prospectFile.prospects) ? prospectFile.prospects : [];
-
-if (systems.length === 0 && prospects.length === 0) {
-  console.log(JSON.stringify({ checked_at: new Date().toISOString(), systems: [], prospects: [], note: "No system is listed and no prospect is noted; nothing to watch. /scorers says so." }, null, 2));
+if (systems.length === 0) {
+  console.log(JSON.stringify({ checked_at: new Date().toISOString(), systems: [], note: "No system is listed; nothing to watch. /scorers says so. The outreach register's own check is npm run outreach:check." }, null, 2));
   process.exit(0);
 }
 
@@ -48,9 +35,5 @@ const verdicts = [];
 for (const system of systems) {
   verdicts.push(judge(system, await read(system.cites_at)));
 }
-const watched = [];
-for (const prospect of prospects) {
-  watched.push(judgeProspect(prospect, await read(prospect.url)));
-}
-console.log(JSON.stringify({ checked_at: new Date().toISOString(), systems: verdicts, prospects: watched }, null, 2));
+console.log(JSON.stringify({ checked_at: new Date().toISOString(), systems: verdicts }, null, 2));
 process.exit(exitCodeFor(verdicts));
