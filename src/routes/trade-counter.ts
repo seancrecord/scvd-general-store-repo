@@ -12,6 +12,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { fulfillPurchase } from "@/services/fulfillment";
 import {
   alertCapReached,
+  checkDeskBudgetSpent,
   creditCeilingReached,
   findTradeDelivery,
   notifyTradeCallback,
@@ -338,6 +339,10 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
   if (!secrets) {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
+  }
+  if (await checkDeskBudgetSpent(c.env, partner)) {
+    const error = errorByCode("desk_rate_limited");
+    return c.json(refusal(error, error.meaning), 429);
   }
   const dialect = TRADE_DIALECTS[partner.dialect];
   const diagnosis = await diagnoseTradeRequest({

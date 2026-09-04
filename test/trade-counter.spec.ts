@@ -845,3 +845,52 @@ describe("pass five: recovery by order_ref, the share ladder, the worked example
     expect(page).toContain("Not a rail: the trade counter");
   });
 });
+
+describe("pass six: tightening", () => {
+  it("the check desk answers an account's hourly budget and then refuses by name", async () => {
+    const { TRADE_CHECK_DESK_HOURLY_BUDGET } = await import("@/store/trade-counter");
+    const hour = new Date().toISOString().slice(0, 13);
+    await testEnv.COUNTERS.put(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour), String(TRADE_CHECK_DESK_HOURLY_BUDGET));
+    const refused = await sandboxSigned("x", {}, "check");
+    expect(refused.status).toBe(429);
+    expect(refused.body["code"]).toBe("desk_rate_limited");
+    expect(refused.body["delivered"]).toBe(false);
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour));
+    const answered = await sandboxSigned("x", {}, "check");
+    expect(answered.status).toBe(200);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour))).toBe("1");
+    await testEnv.COUNTERS.delete(KV_KEYS.tradeDeskHour(TRADE_SANDBOX_ID, hour));
+  });
+
+  it("the payout form refuses a cross-site submission and accepts the store's own page", async () => {
+    const auth = { Authorization: `Basic ${btoa("keeper:test-admin-password")}` };
+    const crossSite = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: {
+        ...auth,
+        "content-type": "application/x-www-form-urlencoded",
+        "sec-fetch-site": "cross-site",
+        origin: "https://elsewhere.example",
+      },
+      body: "amount_usd=1&reference=csrf",
+      redirect: "manual",
+    });
+    expect(crossSite.status).toBe(403);
+    expect((await json(crossSite))["code"]).toBe("cross_site_refused");
+    const own = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/x-www-form-urlencoded", "sec-fetch-site": "same-origin" },
+      body: "amount_usd=1&reference=own-page",
+      redirect: "manual",
+    });
+    expect(own.status).toBe(303);
+    // A script with JSON is not a browser form and is not guarded by it.
+    const script = await SELF.fetch(`${BASE}/admin/trade/hal/payout`, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/json", origin: "https://elsewhere.example" },
+      body: JSON.stringify({ amount_usd: 1, reference: "script" }),
+    });
+    expect(script.status).toBe(200);
+    await clearPrefix(testEnv.ORDERS, KV_KEYS.tradePayoutPrefix("hal"));
+  });
+});

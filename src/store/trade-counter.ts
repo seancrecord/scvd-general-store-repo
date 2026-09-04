@@ -452,6 +452,18 @@ export function tradeEligibleButUnshelved(): readonly string[] {
 
 /** The partner's own contract: one JSON object back, inside this. */
 export const TRADE_BODY_MAX_BYTES = 1_048_576;
+/**
+ * THE CHECK DESK'S HOURLY BUDGET PER ACCOUNT (pass six, tightening).
+ * The desk reports which check failed to anyone who asks, secret or
+ * no secret — that is its job — and an unbounded oracle that says
+ * "provider key: wrong" is an invitation to guess one. Secrets here
+ * are high-entropy and a guess rate in the hundreds per hour is not a
+ * threat to them; the budget exists so that a partner who issued a
+ * WEAK provider key (their choice, not ours) is not exposed by our
+ * helpfulness. Counted on KV per account per UTC hour. ⚑ dial.
+ */
+export const TRADE_CHECK_DESK_HOURLY_BUDGET = 120;
+
 /** Outlives every dialect's window with room: 2 × 300s. */
 export const TRADE_NONCE_TTL_SECONDS = 600;
 /** A marketplace retrying the same order_ref inside this gets the original delivery back. */
@@ -684,6 +696,20 @@ export const TRADE_ERRORS: readonly TradeError[] = [
     code: "target_refused",
     meaning: "The URL is not one we will probe: private, loopback, non-https, or our own hostname.",
     what_to_do: "Send a public https door. We do not sell audits of ourselves.",
+  },
+  {
+    status: 429,
+    code: "desk_rate_limited",
+    meaning: "The check desk has answered this account's hourly budget of diagnoses.",
+    what_to_do:
+      "Wait for the hour to roll. The budget bounds how fast anyone can use the desk as an oracle; a partner debugging a signer needs a handful of calls, not hundreds.",
+  },
+  {
+    status: 403,
+    code: "cross_site_refused",
+    meaning: "A browser form was submitted from another origin.",
+    what_to_do:
+      "The payout form is only accepted from the store's own admin page; a script records payouts with a JSON body instead.",
   },
   {
     status: 429,

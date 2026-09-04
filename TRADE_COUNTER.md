@@ -67,6 +67,14 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   example with fixed inputs and every byte shown (`worked_example` on
   the contract, a section on `/trade.md`); the counter beside the
   rails on `/rails`, never inside them.
+- **Pass six (2026-09-04, tightening)** — the check desk answers a
+  per-account hourly budget (`TRADE_CHECK_DESK_HOURLY_BUDGET`) and then
+  refuses as `desk_rate_limited`, so a partner who issued a weak
+  provider key is not exposed by our helpfulness; the admin payout
+  FORM is same-origin or refused (`cross_site_refused`), because a
+  browser presents cached Basic Auth on a form from any origin and a
+  forged payout would reopen credit. JSON from a script is unguarded
+  by it, since a script carries no page's cached credentials.
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money
