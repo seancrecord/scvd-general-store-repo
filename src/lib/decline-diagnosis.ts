@@ -2,6 +2,7 @@ import type { DeclineReason } from "@/lib/payments";
 import {
   blockingProblems,
   describeExactEvmPayload,
+  describeHeaderEncoding,
   describeMismatch,
   describePayloadShape,
   looksLikeAnException,
@@ -75,6 +76,24 @@ export function refusalBeforeVerify(
   const stated = sdkRefusal(challenge);
   if (!stated) {
     return undefined;
+  }
+  // The header before the envelope. A header that never decoded used
+  // to book as `payload_not_an_object` whatever the cause — raw JSON,
+  // the wrong alphabet, or the first line of a wrapped base64 — and
+  // the books carry only the code, so the keeper learned nothing from
+  // three of them. The cause goes in the code now; there are no
+  // top-level fields to list because there was never an object.
+  const encoding = paymentHeader
+    ? describeHeaderEncoding(paymentHeader)
+    : undefined;
+  if (encoding) {
+    return {
+      decline: {
+        reason: encoding.code,
+        message: encoding.says,
+        matched_by: "body",
+      },
+    };
   }
   const payload = decodePaymentHeader(paymentHeader);
 

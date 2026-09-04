@@ -81,6 +81,38 @@ export interface DeclineReport {
  * us — but the RAW REASON IS ALWAYS SHOWN alongside, so a wrong guess
  * here can never hide the real one.
  */
+/**
+ * How a header failed to decode, one clause per code, matched exactly.
+ * The codes are minted in requirement-match.ts's describeHeaderEncoding.
+ */
+const UNDECODED_HEADER_READINGS: ReadonlyArray<readonly [string, string]> = [
+  [
+    "local:payload_not_base64:raw_json",
+    "it carried the JSON envelope itself rather than its base64 — the MCP door's convention brought to the HTTP one, or the 402's payload_template pasted straight into the header.",
+  ],
+  [
+    "local:payload_not_base64:url_safe",
+    "it used the URL-safe base64 alphabet (- and _), which the x402 library's check refuses.",
+  ],
+  [
+    "local:payload_not_base64:whitespace",
+    "it contained whitespace, which the x402 library's check refuses.",
+  ],
+  ["local:payload_not_base64", "it was not base64 at all."],
+  [
+    "local:payload_truncated_envelope",
+    "it was clean base64 of the FIRST PART of a JSON object — the envelope arrived cut off. The known way to produce this: GNU base64 wraps its output at 76 columns unless passed -w0, and curl sends only a header value's first line. A curl client with this code is almost certainly that, and the fix on their side is one flag.",
+  ],
+  [
+    "local:payload_not_json",
+    "it was base64 of something that is not JSON — a bare signature or transaction, most likely, sent without the envelope around it.",
+  ],
+  [
+    "local:payload_not_an_object",
+    "it was base64 of a JSON value that is not an object — a string (an envelope encoded twice), an array, or a number.",
+  ],
+];
+
 export function readReason(raw: string): {
   fault: DeclineFault;
   reading: string;
@@ -129,11 +161,29 @@ export function readReason(raw: string): {
         "The client speaks x402 v1 — scheme and network at the top level, no accepted echo — a protocol-version straggler, not a bug on either side. The 402 told them so and named the upgrade. Nothing to fix here; if this recurs across DIFFERENT clients, the ecosystem still has a v1 tail and the reading is demand arriving ahead of its tooling.",
     };
   }
+  /**
+   * THE HEADER THAT NEVER DECODED (2026-09-04). Three emails about
+   * small_blessing from curl/8.5.0, all `local:payload_not_an_object`,
+   * all carrying the family reading below — "the message beside this
+   * says which field and lists what did arrive". No field was absent:
+   * there was no object to be missing one. And nothing was beside it:
+   * the books keep the code, not the 402's message. The codes now say
+   * how the header failed, so the reading can say it back.
+   */
+  const undecoded = UNDECODED_HEADER_READINGS.find(
+    ([code]) => reason === code,
+  );
+  if (undecoded) {
+    return {
+      fault: "buyer",
+      reading: `The PAYMENT-SIGNATURE header never decoded to an envelope, so no field was checked and none is missing: ${undecoded[1]} Not a signing problem and not a funds problem — the store never reached either. The 402 told the buyer exactly what to send instead. Nothing here names a field because there was no object to read one from.`,
+    };
+  }
   if (reason.startsWith("local:payload_")) {
     return {
       fault: "buyer",
       reading:
-        "The payment envelope was the wrong SHAPE — a field the protocol requires was absent, so there was nothing to compare and the signature was never examined. Not a signing problem and not a funds problem. The message beside this says which field and lists what did arrive.",
+        "The payment envelope was the wrong SHAPE — a field the protocol requires was absent, so there was nothing to compare and the signature was never examined. Not a signing problem and not a funds problem. The code names the field; the 402 the buyer received lists what did arrive (the books keep the code, not that message).",
     };
   }
   if (reason === "local:sdk_threw") {

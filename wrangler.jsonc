@@ -143,8 +143,10 @@
   //   SANCTIONS_API_KEY   Chainalysis screening API key — OPTIONAL OVERRIDE
   //                       only (their open signup has closed); the default
   //                       rule-3 screen is the keyless Chainalysis on-chain
-  //                       oracle on Base, read over BASE_RPC_URL, failing
-  //                       closed whenever it does not answer
+  //                       oracle on Base, read over the same endpoint
+  //                       ladder as every chain read (BASE_RPC_URL_PRIMARY,
+  //                       then _SECONDARY, then BASE_RPC_URL), failing
+  //                       closed only when none of them answers
   //   ADMIN_PASSWORD      Basic Auth password for /admin
   //   TRADE_SECRET_<PARTNER>            HMAC signing secret a marketplace
   //                                     issued us for its trade account

@@ -1,4 +1,4 @@
-import { BASE_USDC } from "@/lib/base-rpc";
+import { BASE_USDC, rpcEndpoints } from "@/lib/base-rpc";
 import { canonicalAddress } from "@/lib/addresses";
 import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -300,10 +300,10 @@ export async function redeemCredit(
   }
   const screen =
     options.screen ??
-    oracleScreen(
-      env.BASE_RPC_URL ?? "https://mainnet.base.org",
-      options.fetch ?? fetch,
-    );
+    // Over the same endpoint ladder as every other chain read; the
+    // public endpoint alone 429'd every bounty payout closed on
+    // 2026-09-03, and this door screens the same way.
+    oracleScreen(rpcEndpoints(env), options.fetch ?? fetch);
   const screened = await screen(record.wallet);
   if (screened.listed !== false) {
     throw new CreditRefused(

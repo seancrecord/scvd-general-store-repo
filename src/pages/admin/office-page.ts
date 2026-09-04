@@ -10,6 +10,7 @@ import { readWindowShopping } from "@/lib/window-shopping";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
 import type { TakeSummary } from "@/services/books-summary";
+import type { FieldWalletReading } from "@/services/field-wallet";
 import type { TillItemCount } from "@/services/stats";
 import { minimumUsdcForPath } from "@/lib/payments";
 import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
@@ -21,6 +22,51 @@ import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
  * fold away below. Work waiting shows as one strip up top with a
  * door to the counter.
  */
+
+export interface MoneyOut {
+  wallet: FieldWalletReading | null;
+  openBounties: number | null;
+  spentThisWeekUsd: number | null;
+  weeklyBudgetUsd: number | null;
+  /** Signed payouts a recipient can still redeem, in USD. */
+  outstandingUsd: number | null;
+}
+
+/** The paying wallet and the board's promises against it, one line. */
+function moneyOutHtml(money: MoneyOut | null | undefined): string {
+  if (!money) {
+    return `<p><strong>Money out:</strong> not read here — <a href="/admin/bounties">the bounty board</a> has the wallet and every claim.</p>`;
+  }
+  const wallet = money.wallet;
+  const walletText = !wallet
+    ? "the paying wallet was not read in time (the desk waits three seconds, no longer)"
+    : !wallet.provisioned || !wallet.address
+      ? "no paying wallet on this deployment"
+      : wallet.usdc === null
+        ? `field wallet <code>${escapeHtml(wallet.address.slice(0, 10))}…</code> balance <strong>not read</strong> <small>(${escapeHtml(wallet.problem ?? "")})</small>`
+        : `field wallet <code>${escapeHtml(wallet.address.slice(0, 10))}…</code> holds <strong>$${wallet.usdc.toFixed(2)} USDC</strong> on Base`;
+  const bounties =
+    money.openBounties === null
+      ? "the board was not read"
+      : `<strong>${money.openBounties}</strong> open bount${money.openBounties === 1 ? "y" : "ies"}`;
+  const budget =
+    money.spentThisWeekUsd === null || money.weeklyBudgetUsd === null
+      ? ""
+      : ` · $${money.spentThisWeekUsd.toFixed(2)} of $${money.weeklyBudgetUsd.toFixed(2)} spent this week`;
+  const outstanding =
+    money.outstandingUsd === null
+      ? ""
+      : ` · $${money.outstandingUsd.toFixed(2)} in signed payouts still redeemable`;
+  const short =
+    wallet?.usdc !== null &&
+    wallet?.usdc !== undefined &&
+    money.outstandingUsd !== null &&
+    money.outstandingUsd > wallet.usdc
+      ? ` <strong style="color:#8c2f1b">— short: promised more than it holds</strong>`
+      : "";
+  return `<p><strong>Money out:</strong> ${walletText} · ${bounties}${budget}${outstanding}${short}.
+    <small>Every claim presented and where it went: <a href="/admin/bounties">the bounty board</a>.</small></p>`;
+}
 
 export interface OfficePageData {
   monthLedger: MonthLedger;
@@ -69,6 +115,13 @@ export interface OfficePageData {
   gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
   work: { orders: number; letters: number; reviews: number; alerts: number };
+  /**
+   * MONEY OUT (2026-09-04): what the paying wallet holds, read off the
+   * chain, against what the bounty board has promised. Null fields
+   * are "not read here", never zero — the desk keeps its three-second
+   * leash on the chain and the bounty board page takes the full wait.
+   */
+  moneyOut?: MoneyOut | null;
   /** Every almanac page, compiled and office-written, for the want table. */
   almanacSlugs: readonly string[];
   loadNotes: string[];
@@ -812,6 +865,7 @@ export function renderOfficePage(data: OfficePageData): string {
            counted. A walk taken this second is at <a href="/admin/take">the take</a>.</p>`
     }
     ${workStrip}
+    ${moneyOutHtml(data.moneyOut)}
   </section>
 
   <section>
