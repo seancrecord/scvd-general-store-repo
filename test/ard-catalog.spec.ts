@@ -6,12 +6,14 @@ import {
   ARD_PREDECESSOR_LINK_REL,
   ARD_PREDECESSOR_PATH,
   ARD_WELL_KNOWN_PATH,
+  ardInPageEntries,
   ardManifest,
 } from "@/lib/ard-catalog";
 import { apiCatalog } from "@/lib/api-catalog";
 import { API_VERSIONS, isRetiring } from "@/store/api-lifecycle";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { ROOMS } from "@/store/rooms";
 import { FEEDS } from "@/routes/feeds";
 import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
 import { VERIFIER_TOOLS } from "@/routes/mcp-verifier";
@@ -309,9 +311,15 @@ describe("all four mechanisms this origin can serve, and the fifth named", () =>
       expect(entry["@context"]).toBe(ARD_CONTEXT_URL);
       expect(typeof entry["identifier"]).toBe("string");
     }
-    // The same entries, not a second set that can drift.
+    // The same entries, not a second set that can drift: the manifest's
+    // in order, less the rooms the keeper held off the front (checked
+    // below), which the storefront must not name even in JSON-LD.
     expect(embedded!.map((entry) => entry["identifier"])).toEqual(
-      ardManifest(BASE).entries.map((entry) => entry.identifier),
+      ardInPageEntries(BASE).map((entry) => entry.identifier),
+    );
+    const manifestIds = ardManifest(BASE).entries.map((entry) => entry.identifier);
+    expect(manifestIds.filter((id) => embedded!.some((entry) => entry["identifier"] === id))).toEqual(
+      embedded!.map((entry) => entry["identifier"]),
     );
   });
 
@@ -439,5 +447,21 @@ describe("every record the store publishes is in the manifest (2026-09-04, roadm
     // Identifiers stay unique when the rosters grow: a registry keys on them.
     const identifiers = entries.map((entry) => entry.identifier);
     expect(new Set(identifiers).size).toBe(identifiers.length);
+  });
+});
+
+describe("the in-page copies and the rooms held off the front", () => {
+  it("the storefront's copies leave out every held room; the manifest keeps them", async () => {
+    const held = ROOMS.filter((room) => room.on_storefront === false).map((room) => `${BASE}${room.path}`);
+    expect(held.length).toBeGreaterThan(0);
+    const inPage = ardInPageEntries(BASE).map((entry) => entry.url);
+    for (const url of held) expect(inPage, `${url} is held off the front and in the storefront's JSON-LD`).not.toContain(url);
+    const manifest = ardManifest(BASE).entries.map((entry) => entry.url);
+    // At least one held room is a published dataset, so the difference is real.
+    expect(held.some((url) => manifest.includes(url))).toBe(true);
+    const body = (await (await fetchManifest(ARD_WELL_KNOWN_PATH)).json()) as { entries: Array<{ url: string }> };
+    for (const url of held.filter((candidate) => manifest.includes(candidate))) {
+      expect(body.entries.map((entry) => entry.url)).toContain(url);
+    }
   });
 });

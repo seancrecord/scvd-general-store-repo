@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 import door_accepts_empty from "../../test/fixtures/doors/accepts-empty.json";
 import door_accepts_missing_asset from "../../test/fixtures/doors/accepts-missing-asset.json";
 import door_answers_200 from "../../test/fixtures/doors/answers-200.json";
@@ -157,6 +158,7 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
     what_this_is_not: `${NEVER_A_RANKING_SENTENCE} These are not observations of live doors and not signed: a recorded fixture is material to test a client or an instrument against, kept verbatim, and a synthetic one is built from a specification's own examples and says so. Nothing here names a live operator.`,
     fixture_count: count,
     sets,
+    corrections: CORRECTIONS_POINTER,
     ...citeBlock({ base, what: "fixture index", which: `(${count} fixtures in ${sets.length} sets)`, observed_at: null, url: `${base}/fixtures.json`, signed: false }),
   };
 }

@@ -4,6 +4,7 @@ import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { MENU_ITEMS, STORE_SERVICE_NAME, STORE_TAGS } from "@/store";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
+import { ROOMS } from "@/store/rooms";
 import { FEEDS } from "@/routes/feeds";
 import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
 import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
@@ -349,8 +350,22 @@ export function ardLinkTags(base: string): string {
  * stay terse for the same reason in reverse.
  */
 export function ardInPageEntries(base: string): ArdEntry[] {
-  return ardManifest(base).entries.map((entry) => ({
-    "@context": ARD_CONTEXT_URL,
-    ...entry,
-  })) as ArdEntry[];
+  /*
+   * THE STOREFRONT DOES NOT NAME A ROOM THE KEEPER HELD OFF IT
+   * (2026-09-04). These copies ride in the storefront's JSON-LD, and
+   * the day every dataset joined the manifest (roadmap C3) the front
+   * page named /registry through them, which his standing test
+   * caught: a room flagged off the front must be absent from the
+   * links and from the structured data both. The well-known manifest
+   * keeps every entry; the in-page copies leave out the held rooms.
+   */
+  const heldOffTheFront = new Set(
+    ROOMS.filter((room) => room.on_storefront === false).map((room) => `${base}${room.path}`),
+  );
+  return ardManifest(base)
+    .entries.filter((entry) => !heldOffTheFront.has(entry.url))
+    .map((entry) => ({
+      "@context": ARD_CONTEXT_URL,
+      ...entry,
+    })) as ArdEntry[];
 }
