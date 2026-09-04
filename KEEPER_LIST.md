@@ -154,8 +154,9 @@ build, it is on the roadmap.
   is inked (2026-09-03, the ink sheet). Skill bundle 3.14.0.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
-- Circle Agent Marketplace: submitted 2026-09-01.
-  Waiting. Do not chase.
+- Circle Agent Marketplace: submitted 2026-09-01, listed
+  2026-09-04 at partners.circle.com/partner/scvdstore. On the
+  trust record, the storefront sameAs and the README.
 
 ---
 
@@ -666,7 +667,6 @@ Do not relitigate without you.
 
 ## WAITING
 
-- Circle Agent Marketplace review. No SLA. Do not chase.
 
 ---
 

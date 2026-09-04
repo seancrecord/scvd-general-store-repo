@@ -141,6 +141,16 @@ export interface PulseWindow {
    * month, which is the error this whole mechanism exists to avoid.
    */
   known_machinery?: number;
+  /**
+   * The two halves of known_machinery, so a reader can check the
+   * working: rows whose user-agent NAMES a machine (the table), and
+   * rows whose client BEHAVED like one — WALK_MIN_ITEMS distinct doors
+   * inside WALK_WINDOW_MS — whatever it called itself. The second half
+   * joined the correction 2026-09-04; before that the published
+   * figure was the first half alone, and said it was a ceiling.
+   */
+  known_machinery_by_user_agent?: number;
+  known_machinery_by_behaviour?: number;
   /** organic_challenges − known_machinery, when the walk is complete. */
   corrected_challenges?: number;
   /** settled / corrected_challenges. Same three states as above. */
@@ -388,9 +398,16 @@ export async function computePulse(env: Env): Promise<Pulse> {
      * a correction's authority.
      */
     const correction = corrections?.months[month];
-    const machinery =
+    const byName =
       correction?.complete === true
         ? correction.moved_to_infrastructure
+        : undefined;
+    // Absent on corrections stored before the behaviour pass existed.
+    const byBehaviour =
+      correction?.complete === true ? (correction.moved_by_behaviour ?? 0) : undefined;
+    const machinery =
+      byName !== undefined && byBehaviour !== undefined
+        ? byName + byBehaviour
         : undefined;
     windows.push({
       month,
@@ -405,6 +422,8 @@ export async function computePulse(env: Env): Promise<Pulse> {
       ...(machinery !== undefined
         ? {
             known_machinery: machinery,
+            known_machinery_by_user_agent: byName,
+            known_machinery_by_behaviour: byBehaviour,
             // Never below zero: the counter and the rows are different
             // instruments and lost increments can put the row count
             // above the counter, which is a real and expected

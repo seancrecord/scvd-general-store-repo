@@ -195,10 +195,28 @@ describe("the round carries the widening whole", () => {
     const round = await runWardRound(testEnv);
     const named = round.directories_unread?.map((entry) => entry.source);
     expect(named).toEqual(UNREAD_DIRECTORIES.map((entry) => entry.source));
-    // Both exclusions are the wallet law's to dissolve, and the
-    // reason on the round says so rather than reading as permanent.
+    /*
+     * NO EXCLUSION MAY READ AS PERMANENT. Every unread entry has to
+     * carry the condition that would dissolve it, so a reader can
+     * tell a gap we are working on from a gap we have accepted.
+     *
+     * The assertion used to be "every entry names the wallet law",
+     * which held only while both unread directories happened to be
+     * paid ones. The roster widened on 2026-09-04 and the new
+     * entries are blocked on a captured response shape, not on
+     * money — so the test now holds the INVARIANT (a stated
+     * unblock) rather than one era's version of it, and pins the
+     * wallet law to the two directories it actually governs.
+     */
     for (const entry of round.directories_unread ?? []) {
-      expect(entry.why.toLowerCase()).toContain("wallet law");
+      expect(entry.why.length).toBeGreaterThan(80);
+      const dissolvable =
+        /wallet law|hand-run|hand-captured|capture/i.test(entry.why);
+      expect(dissolvable).toBe(true);
+    }
+    for (const paid of ["402index.io", "x402scan.com"]) {
+      const entry = round.directories_unread?.find((row) => row.source === paid);
+      expect(entry?.why.toLowerCase()).toContain("wallet law");
     }
   });
 

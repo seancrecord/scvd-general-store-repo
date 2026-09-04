@@ -67,6 +67,23 @@ export const KV_KEYS = {
   operatorStatement: (statementId: string): string => `ostmt:${statementId}`,
   operatorStatementPrefix: "ostmt:",
   wardRound: (week: string): string => `ward:${week}`,
+  /**
+   * The rounds' shared prefix, so the source register can walk the
+   * history the same way the corpus walks its own. Deliberately NOT
+   * matched by `ward_latest` / `ward_previous`, which are pointers
+   * rather than rounds and would be counted twice by a listing.
+   */
+  wardRoundPrefix: "ward:",
+  /**
+   * THE MCP WARD, kept in its own keys on purpose (2026-09-04). Its
+   * population is MCP servers, not x402 doors, and folding the two
+   * would silently change what `coverage_pct` and every corpus
+   * denominator mean. Two wards, two registers, no shared totals.
+   */
+  mcpWalkState: "mcp_walk_state",
+  mcpRegister: "mcp_register",
+  mcpPassPrefix: "mcp_pass:",
+  mcpPass: (week: string): string => `mcp_pass:${week}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
   /**
