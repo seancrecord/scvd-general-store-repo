@@ -16,6 +16,7 @@ import {
   classifyPaid,
   deriveTargets,
   isoWeek,
+  ledgerWeek,
   parseChallenge,
   paymentHeader,
   reconcile,
@@ -480,4 +481,57 @@ test("the CLI, dry, walks a fixture door through every rule up to the signature"
   } finally {
     server.close();
   }
+});
+
+/**
+ * RULE 1'S GUARD MUST SEE EVERY WALK, NOT ONLY THE ONES THIS RUNNER
+ * NAMED.
+ *
+ * The one-run-a-week check used to read `field-run-*` directories
+ * whose ledgers opened with a `run` line. On 2026-09-04 both
+ * narrowings were live at once: the walk of 2026-09-02 sat in
+ * research/x402-walk-ledger/ with no run line, in the same ISO week,
+ * so a second run would have passed a guard that had not looked at it.
+ * These cases are that ledger's shape, run zero's shape, and the two
+ * ways a file can carry no answer.
+ */
+test("ledgerWeek reads a run line's week, which is authoritative", () => {
+  const text = [
+    JSON.stringify({ kind: "run", started: "2026-09-02T19:00:00.000Z", week: "ignored" }),
+    JSON.stringify({ observed_at: "2026-08-01T00:00:00.000Z" }),
+  ].join("\n");
+  // The run line wins over a stray earlier row: it is the moment the
+  // runner recorded opening the file.
+  assert.equal(ledgerWeek(text), "2026-W36");
+});
+
+test("ledgerWeek reads a ledger with no run line, from observed_at", () => {
+  // The x402-walk-ledger shape — the one the old guard could not see.
+  const text = [
+    JSON.stringify({ row: 1, observed_at: "2026-09-02T19:14:59.728Z" }),
+    JSON.stringify({ row: 2, observed_at: "2026-09-02T19:34:11.457Z" }),
+  ].join("\n");
+  assert.equal(ledgerWeek(text), "2026-W36");
+});
+
+test("ledgerWeek reads run zero's shape, from ts", () => {
+  const text = JSON.stringify({ ts: "2026-08-18T20:55:10.882Z", url: "https://x.test/" });
+  assert.equal(ledgerWeek(text), "2026-W34");
+});
+
+test("ledgerWeek takes the earliest row when there is no run line", () => {
+  const text = [
+    JSON.stringify({ observed_at: "2026-09-09T00:00:00.000Z" }),
+    JSON.stringify({ observed_at: "2026-09-02T00:00:00.000Z" }),
+  ].join("\n");
+  assert.equal(ledgerWeek(text), "2026-W36");
+});
+
+test("ledgerWeek abstains rather than guessing", () => {
+  // A guard that guessed a week would refuse or admit runs on invented
+  // grounds. Null is not counted as a prior run, and says so.
+  assert.equal(ledgerWeek(""), null);
+  assert.equal(ledgerWeek("not json\n{}"), null);
+  assert.equal(ledgerWeek(JSON.stringify({ observed_at: "the other day" })), null);
+  assert.equal(ledgerWeek(null), null);
 });
