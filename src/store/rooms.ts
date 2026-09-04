@@ -247,9 +247,9 @@ export const ROOMS: readonly Room[] = [
    * occupies — the record and the reproducible dispute artifact — and
    * how to pull, verify, cite, reproduce and re-observe the evidence
    * without inheriting an opinion. Names seats, not occupants. Off the
-   * storefront on the same terms as its kin until the keeper rules.
+   * storefront by the keeper's ruling of 2026-09-04.
    */
-  { path: "/scorers", name: "For scorers and marketplaces" },
+  { path: "/scorers", name: "For scorers and marketplaces", on_storefront: false },
   /**
    * The coverage matrix got a room 2026-09-01. It had been published
    * since M1 — derived, honest, `none` stated rather than omitted —

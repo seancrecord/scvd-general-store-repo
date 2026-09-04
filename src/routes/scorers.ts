@@ -9,6 +9,9 @@ import {
 } from "@/store/copy/doctrine";
 import CITING_SYSTEMS_FILE from "@/store/citing-systems.json";
 import { CITE_HOW } from "@/services/cite";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { securityBlock } from "@/store/surface-contract";
+import { SCORERS_FOR_MONEY, SCORERS_FREE_FIRST, SCORERS_OPENED, SCORERS_PROPOSITION } from "@/store/copy/scorers";
 import { RESULT_CLASS_RULE } from "@/services/reproduce";
 import type { HonoEnv } from "@/types";
 
@@ -237,6 +240,29 @@ scorersRoutes.get("/scorers", (c) => {
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json({
       title: "For scorers and marketplaces",
+      /*
+       * THE FIVE ANSWERS (house rule 60.4) and the three sentences
+       * (60.2), identical on this twin, the page and the guide.
+       */
+      what_this_is: STANDFIRST,
+      proposition: SCORERS_PROPOSITION,
+      price: SCORERS_FOR_MONEY,
+      free_first: SCORERS_FREE_FIRST,
+      opened: SCORERS_OPENED,
+      how_to_call: {
+        this_page: `GET ${base}/scorers with Accept: application/json for this twin, text/html for the page. No account, no key.`,
+        pull: `GET ${base}/corpus.json, then the snapshots and host rows it lists.`,
+        reproduce: `POST ${base}/api/look/v1 with {"url": "...", "since": "2026-W34"}; the class and the citation ride the reproduce block.`,
+        verify: `GET ${base}/api/verify/{id}, or npx x402-verify against any artifact.`,
+      },
+      errors: {
+        this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",
+        the_doors_it_names: "Each door names its own refusals in its own JSON; the look refuses a since that is not a signed week with code bad_since, and a URL it will not probe with the preflight's own refusal text.",
+      },
+      security: securityBlock(base, {
+        does_in_your_name: "Nothing. A GET here reads a page; no probe is made, nothing is signed, nothing is fetched from anyone.",
+        stores: "Nothing about you. The porch counts a visit by surface, never by caller.",
+      }),
       seats: { dated: TWO_SEATS_DATED, sentence: TWO_SEATS_SENTENCE },
       summary: STANDFIRST,
       start_here: START_HERE(base),
@@ -307,6 +333,11 @@ scorersRoutes.get("/scorers", (c) => {
         ${rows(reObserve(base))}
       </section>
       <section>
+        <h2>What it costs</h2>
+        <p class="menu-desc">${escapeHtml(SCORERS_FOR_MONEY)}</p>
+        <p class="menu-desc">${escapeHtml(SCORERS_FREE_FIRST)}</p>
+      </section>
+      <section>
         <h2>What this enables</h2>
         <ul class="menu-desc">${ENABLES.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
         <p class="menu-desc"><strong>${escapeHtml(MISUSE_CLAUSE)}</strong></p>
@@ -332,6 +363,22 @@ scorersRoutes.get("/scorers", (c) => {
         <p class="menu-meta">Check: ${escapeHtml(integrations.check)}</p>
       </section>
       <section>
+        ${jsonLdScript({
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          name: "How a scorer or a marketplace consumes the scvd.store corpus",
+          description: SCORERS_PROPOSITION,
+          url: `${base}/scorers`,
+          isAccessibleForFree: true,
+          publisher: organizationRef(base),
+          step: [
+            { "@type": "HowToStep", name: "Pull", text: "Fetch the corpus index and the snapshots and host rows it lists.", url: `${base}/corpus.json` },
+            { "@type": "HowToStep", name: "Verify", text: "Check the chain digest, the signature and the key history; x402-verify does it offline.", url: `${base}/.well-known/did.json` },
+            { "@type": "HowToStep", name: "Cite", text: "Cite a row by its entry URL and digest in the shape every row surface prints.", url: `${base}/corpus.json` },
+            { "@type": "HowToStep", name: "Reproduce", text: "Set a live probe against the signed row with the look and since; read the class.", url: `${base}/api/look/v1` },
+            { "@type": "HowToStep", name: "Re-observe", text: "Run a fresh observation when a door has moved; differences are time, not error.", url: `${base}/corrections` },
+          ],
+        })}
         <p class="menu-meta">The record: <a href="/corpus.json"><code>/corpus.json</code></a>. The dispute artifacts on the shelf: <a href="/menu/the_case_file">the case file</a>, <a href="/menu/launch_check">the launch check</a>, <a href="/menu/settlement_attestation">the settlement attestation</a>; the free desk for any issuer's signed offers and receipts at <code>/api/conformance/v1</code>. For operators: <a href="/operators">/operators</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),
