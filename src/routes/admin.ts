@@ -341,6 +341,34 @@ adminRoutes.post("/admin/trade/:partner/payout", async (c) => {
   // JSON from a script, a form from the page: same two fields either way.
   const contentType = c.req.header("content-type") ?? "";
   const fromForm = contentType.includes("application/x-www-form-urlencoded");
+  /*
+   * THE FORM IS SAME-ORIGIN OR IT IS NOTHING (pass six, tightening).
+   * Basic Auth is the office's lock, and a browser that has cached it
+   * will present it on a form POST from ANY origin — which is exactly
+   * how a page elsewhere could record a payout it did not make,
+   * lowering the outstanding counter and reopening credit. A script
+   * sending JSON never carries a browser's cached credentials to a
+   * page it did not load, so the guard applies to the form only:
+   * Sec-Fetch-Site (every current browser sends it) must be
+   * same-origin or none, or failing that the Origin must be ours.
+   */
+  if (fromForm) {
+    const site = c.req.header("sec-fetch-site");
+    const origin = c.req.header("origin");
+    const ours = new URL(c.env.STORE_BASE_URL).origin;
+    // A browser always sends Sec-Fetch-Site; a curl or a script sends
+    // neither header and carries no cached credentials to another
+    // page's form, so silence on both is not a browser and passes.
+    const crossSite =
+      (site !== undefined && site !== "same-origin" && site !== "none") ||
+      (site === undefined && origin !== undefined && origin !== ours);
+    if (crossSite) {
+      return c.json(
+        { error: "The payout form is only accepted from the store's own admin page.", code: "cross_site_refused" },
+        403,
+      );
+    }
+  }
   const body: unknown = fromForm
     ? Object.fromEntries((await c.req.formData()).entries())
     : await c.req.json().catch(() => null);

@@ -14,6 +14,7 @@ import type { FulfillmentInput } from "@/services/fulfillment";
 import { validSubjectAddress } from "@/services/provenance-check";
 import {
   TRADE_CALLBACK_TIMEOUT_MS,
+  TRADE_CHECK_DESK_HOURLY_BUDGET,
   TRADE_EXAMPLE_SHARE_BPS,
   TRADE_ORDER_REF_MAX,
   TRADE_ORDER_TTL_SECONDS,
@@ -391,6 +392,24 @@ export async function bumpTradeDay(
     expirationTtl: 3 * 86400,
   });
   return next;
+}
+
+/**
+ * The check desk's budget: read-then-write on KV, so a burst can
+ * overshoot by a few, which is fine for a bound that exists to make
+ * guessing slow rather than to be exact. True when the budget is
+ * spent; the count is bumped on every answered diagnosis.
+ */
+export async function checkDeskBudgetSpent(env: Env, partner: TradePartner, now: Date = new Date()): Promise<boolean> {
+  const hour = now.toISOString().slice(0, 13);
+  const key = KV_KEYS.tradeDeskHour(partner.id, hour);
+  const raw = await kvGet(env.COUNTERS, key);
+  const used = Number(raw ?? "0");
+  if (Number.isFinite(used) && used >= TRADE_CHECK_DESK_HOURLY_BUDGET) {
+    return true;
+  }
+  await kvPut(env.COUNTERS, key, String((Number.isFinite(used) ? used : 0) + 1), { expirationTtl: 2 * 3600 });
+  return false;
 }
 
 /** YYYY-MM, UTC. */

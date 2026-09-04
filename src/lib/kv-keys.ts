@@ -516,6 +516,9 @@ export const KV_KEYS = {
   tradeAccount: (partner: string): string => `trade_account:${partner}`,
   tradeDay: (partner: string, isoDay: string): string =>
     `trade_day:${partner}:${isoDay}`,
+  /** The check desk's diagnoses per account per UTC hour. YYYY-MM-DDTHH. */
+  tradeDeskHour: (partner: string, hour: string): string =>
+    `trade_desk_hour:${partner}:${hour}`,
   /** Live deliveries in a calendar month, for the share ladder. YYYY-MM. */
   tradeMonth: (partner: string, month: string): string =>
     `trade_month:${partner}:${month}`,
