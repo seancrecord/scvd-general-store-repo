@@ -1,6 +1,7 @@
 import { sendAlert } from "@/lib/alerts";
-import { currentWeekKey, previousWeekKey, weekKeyMonday } from "@/lib/kv-keys";
-import { readRoundHistory } from "@/services/source-liveness";
+import { KV_KEYS, currentWeekKey, previousWeekKey, weekKeyMonday } from "@/lib/kv-keys";
+import { listRoundWeeks } from "@/services/source-liveness";
+import { kvGetJson } from "@/lib/kv-retry";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -140,12 +141,21 @@ export function missingWeeks(weeksHeld: string[]): string[] {
   return missing.reverse();
 }
 
+/**
+ * `rounds` is newest-first and may be JUST THE NEWEST ROUND: the
+ * emptiness and overdue tests only ever look at rounds[0], and the
+ * gap walk takes its weeks from `weeksHeld` when given, so the hourly
+ * caller can hand in one value and a list of key names instead of a
+ * year of full snapshots. Found on the red-team read of 2026-09-04:
+ * the first cut read every stored round, hundreds of kilobytes each,
+ * once an hour, to answer a question about one of them.
+ */
 export function deriveHeartbeat(
   rounds: WardRound[],
   now = new Date(),
+  weeksHeld: string[] = rounds.map((round) => round.week),
 ): Heartbeat {
   const at = now.toISOString();
-  const weeksHeld = rounds.map((round) => round.week);
   const weeks_missing = missingWeeks(weeksHeld);
   const newest = rounds[0];
 
@@ -216,8 +226,11 @@ export function deriveHeartbeat(
 }
 
 export async function readHeartbeat(env: Env): Promise<Heartbeat> {
-  const { rounds } = await readRoundHistory(env);
-  return deriveHeartbeat(rounds);
+  const [newest, { weeks }] = await Promise.all([
+    kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json"),
+    listRoundWeeks(env),
+  ]);
+  return deriveHeartbeat(newest ? [newest] : [], new Date(), weeks);
 }
 
 /**

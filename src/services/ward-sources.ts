@@ -404,11 +404,33 @@ export async function readX402List(ownHost: string): Promise<string[] | null> {
 export async function readAgenticMarket(ownHost: string): Promise<string[] | null> {
   const body = await fetchJson(`${AGENTIC_MARKET_BASE}/services?limit=1000`);
   if (body === null || typeof body !== "object") return null;
-  const rows = (body as { services?: unknown }).services;
+  const payload = body as Record<string, unknown>;
+  const rows = payload["services"];
   if (!Array.isArray(rows)) return null;
   // An enumeration endpoint answering with nothing at all is a shape
   // we do not recognise, not a market that emptied: it lists us.
   if (rows.length === 0) return null;
+  /*
+   * A FIRST PAGE IS NOT A READ. The shape is borrowed from a search
+   * endpoint, so we do not know how this one paginates — and a
+   * response that carries any of the usual "there is more" markers is
+   * a partial enumeration wearing a full one's clothes, which is the
+   * exact thing the population layer's law forbids. Refuse it, and let
+   * the register show never_answered until the shape is captured by
+   * hand and the reader taught to walk it.
+   */
+  const pagination = ["next", "next_cursor", "nextCursor", "cursor", "has_more", "hasMore"];
+  for (const marker of pagination) {
+    const value = payload[marker];
+    if (value !== undefined && value !== null && value !== false && value !== "") return null;
+  }
+  const meta = payload["meta"] ?? payload["pagination"];
+  if (typeof meta === "object" && meta !== null) {
+    const m = meta as Record<string, unknown>;
+    const total = typeof m["total"] === "number" ? m["total"] : null;
+    const pages = typeof m["total_pages"] === "number" ? m["total_pages"] : null;
+    if ((total !== null && total > rows.length) || (pages !== null && pages > 1)) return null;
+  }
 
   const hosts = new Set<string>();
   for (const row of rows) {

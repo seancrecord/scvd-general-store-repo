@@ -259,7 +259,7 @@ function fiveAnswers(base: string) {
       this_page: `GET ${base}/sources with Accept: application/json for this twin, text/html for the page. No account, no key.`,
       one_source: "Every row is in `sources`; join a row to a signed round on `last_successful_week`.",
       the_heartbeat: "The `heartbeat` block says whether the weekly round is still running and whether the newest one wrote anything.",
-      rederive: `GET ${base}/corpus.json for the signed weeks, then recount each source from the rounds own per_source block.`,
+      rederive: `GET ${base}/corpus.json for the signed weeks, then recount each source from each round's own per_source block.`,
     },
     errors: {
       this_page: "None: a GET here always answers 200, as HTML or JSON by Accept.",

@@ -46,8 +46,26 @@ import type { Env } from "@/types";
  * that row, and it is the first thing the page shows.
  */
 
-/** How many stored rounds the register reads back. */
-const HISTORY_CAP = 200;
+/**
+ * How many stored rounds the register reads back.
+ *
+ * FIFTY-TWO, NOT TWO HUNDRED, and the reason is cost rather than
+ * relevance. Each stored round is the full weekly snapshot — the
+ * hosts, their evidence, the census — which is why the corpus moved
+ * its copies to R2 at "hundreds of kilobytes and growing". This
+ * register needs one small block out of each (population.per_source)
+ * and reads the whole value to get it, on every /sources request and
+ * every hourly heartbeat. A year of rounds bounds that at a few tens
+ * of megabytes of KV reads a request; two hundred would not.
+ *
+ * `history_truncated` says when this binds, and a year is more than
+ * the liveness question needs: a source that last answered fifty-two
+ * rounds ago is stale by any reading. THE RIGHT FIX, when the count
+ * gets there, is a slim per-source history the round writer appends
+ * to — the door bank's pattern — so this reads kilobytes instead.
+ * Named here so it is a known next step, not a surprise.
+ */
+const HISTORY_CAP = 52;
 
 export type SourceStatus =
   /** Answered on the most recent round the register can see. */
@@ -114,24 +132,67 @@ export const REGISTER_IS_NOT =
 const HOW_TO_REDERIVE =
   "Every field is read out of the stored ward rounds' own `population.per_source` block, newest first, where `hosts: null` means the source could not be read that round. Nothing here is written by hand or cached: fetch the rounds and recount.";
 
-/** Newest-first rounds, as far back as the cap allows. */
+/**
+ * A ceiling on how many round KEY NAMES the walk below will page
+ * through. Names are cheap — no values are read — so this is a
+ * runaway guard, not a budget: at one round a week it is a century.
+ */
+const NAME_WALK_CAP = 5000;
+
+/**
+ * Every stored round's week, oldest first, read as KEY NAMES ONLY.
+ *
+ * KV lists ascending, and a capped list therefore returns the OLDEST
+ * keys under a prefix. The first cut of this file handed a capped
+ * list straight to a bulk read, which meant that the day the store
+ * held one more round than the cap, every liveness row would have
+ * been derived from the oldest year on file and every source would
+ * have read as stale — silently, with `history_truncated: true` as
+ * the only tell. Found on the red-team read of 2026-09-04. So the
+ * names are walked to the end here (cheap: no values), and the caller
+ * slices the NEWEST of them before reading any value at all.
+ */
+export async function listRoundWeeks(env: Env): Promise<{ weeks: string[]; truncated: boolean }> {
+  const weeks: string[] = [];
+  let cursor: string | undefined;
+  let truncated = false;
+  for (let pass = 0; pass < NAME_WALK_CAP / 100 + 1; pass += 1) {
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: KV_KEYS.wardRoundPrefix,
+      cap: 100,
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const name of listed.names) weeks.push(name.slice(KV_KEYS.wardRoundPrefix.length));
+    if (!listed.truncated || !listed.cursor) break;
+    cursor = listed.cursor;
+    if (weeks.length >= NAME_WALK_CAP) {
+      truncated = true;
+      break;
+    }
+  }
+  weeks.sort();
+  return { weeks, truncated };
+}
+
+/** Newest-first rounds, the newest HISTORY_CAP of them, values read last. */
 export async function readRoundHistory(
   env: Env,
 ): Promise<{ rounds: WardRound[]; truncated: boolean }> {
-  const listed = await listKeys(env.COUNTERS, {
-    prefix: KV_KEYS.wardRoundPrefix,
-    cap: HISTORY_CAP,
-  });
-  const values = await bulkGetJson<WardRound>(env.COUNTERS, listed.names);
+  const { weeks, truncated: namesTruncated } = await listRoundWeeks(env);
+  const newest = weeks.slice(-HISTORY_CAP);
+  const values = await bulkGetJson<WardRound>(
+    env.COUNTERS,
+    newest.map((week) => KV_KEYS.wardRound(week)),
+  );
   const rounds: WardRound[] = [];
-  for (const name of listed.names) {
-    const round = values.get(name);
+  for (const week of newest) {
+    const round = values.get(KV_KEYS.wardRound(week));
     if (round && typeof round.week === "string" && typeof round.at === "string") {
       rounds.push(round);
     }
   }
   rounds.sort((a, b) => b.week.localeCompare(a.week));
-  return { rounds, truncated: listed.truncated };
+  return { rounds, truncated: namesTruncated || weeks.length > HISTORY_CAP };
 }
 
 /**

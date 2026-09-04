@@ -26,7 +26,7 @@ visible; `/sources` is that something.
 | source | what it is | shape |
 |---|---|---|
 | **x402-list.com** | Open x402 directory, continuously monitored | `GET /api/v1/services?per_page=100&page=N`, no auth, 200 req/min, `meta.total_pages`. **630 services over 7 pages** on 2026-09-04. Reader shipped. |
-| **registry.modelcontextprotocol.io** | The official MCP registry | `GET /v0/servers?limit=100&cursor=…`, no auth, cursor-paginated. Walked to **20,000 rows and still paginating** before the read was cut off. Reader shipped as the MCP ward's walk. |
+| **registry.modelcontextprotocol.io** | The official MCP registry | `GET /v0/servers?limit=100&cursor=…`, no auth, cursor-paginated. **90,845 rows across 909 pages**, walked to the end. (A first read cut off at 20,000 set the ward's pass ceiling at 400 pages — under half the registry; caught and fixed the same day.) Reader shipped as the MCP ward's walk. |
 
 Two findings worth keeping from those reads:
 

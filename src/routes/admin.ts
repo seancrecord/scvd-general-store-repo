@@ -1288,8 +1288,8 @@ adminRoutes.post("/admin/ward/run", async (c) => {
  * for a way to run the MCP ward separately from the other).
  *
  * The crank advances ONE batch rather than running a whole pass: the
- * registry answered past 20,000 rows and was still paginating, so a
- * pass is hundreds of page fetches and cannot fit in one request
+ * registry is 909 pages (90,845 rows on 2026-09-04), so a pass is
+ * hundreds of page fetches and cannot fit in one request
  * without blowing the invocation budget. One press does exactly what
  * one hourly firing does, and the page says how far along the pass
  * is, so finishing one by hand is legible rather than mysterious.

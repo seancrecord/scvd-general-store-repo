@@ -36,6 +36,7 @@ function state(hosts: string[], truncated = false): McpWalkState {
     servers_seen: 300,
     hosts,
     status_counts: { active: 290, deprecated: 10 },
+    servers_with_remote: hosts.length,
     truncated,
   };
 }
@@ -94,7 +95,6 @@ describe("a completed pass records mortality", () => {
       EMPTY,
       state(["a.example", "b.example"]),
       "2026-09-06T12:00:00.000Z",
-      2,
     );
     expect(pass.appeared.sort()).toEqual(["a.example", "b.example"]);
     expect(pass.disappeared).toEqual([]);
@@ -102,8 +102,8 @@ describe("a completed pass records mortality", () => {
   });
 
   it("records a host that stopped being listed", () => {
-    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1", 2);
-    const second = foldPass(first.register, state(["a.example"]), "t2", 1);
+    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1");
+    const second = foldPass(first.register, state(["a.example"]), "t2");
     expect(second.pass.disappeared).toEqual(["b.example"]);
     expect(second.register.hosts["b.example"]?.unconfirmed).toBe(true);
     // The one still listed keeps its first_seen and advances last_seen.
@@ -112,9 +112,9 @@ describe("a completed pass records mortality", () => {
   });
 
   it("records a host listed again after being written off", () => {
-    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1", 2);
-    const second = foldPass(first.register, state(["a.example"]), "t2", 1);
-    const third = foldPass(second.register, state(["a.example", "b.example"]), "t3", 2);
+    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1");
+    const second = foldPass(first.register, state(["a.example"]), "t2");
+    const third = foldPass(second.register, state(["a.example", "b.example"]), "t3");
     expect(third.pass.returned).toEqual(["b.example"]);
     expect(third.register.hosts["b.example"]?.unconfirmed).toBeUndefined();
     // It is a RETURN, not a new arrival: the original first_seen stands.
@@ -129,8 +129,8 @@ describe("a completed pass records mortality", () => {
  */
 describe("a truncated pass records no delisting at all", () => {
   it("refuses the disappearance its own numbers would suggest", () => {
-    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1", 2);
-    const partial = foldPass(first.register, state(["a.example"], true), "t2", 1);
+    const first = foldPass(EMPTY, state(["a.example", "b.example"]), "t1");
+    const partial = foldPass(first.register, state(["a.example"], true), "t2");
     expect(partial.pass.truncated).toBe(true);
     expect(partial.pass.disappeared).toEqual([]);
     // And the absent host is NOT written off on the register either.
@@ -138,7 +138,7 @@ describe("a truncated pass records no delisting at all", () => {
   });
 
   it("says why, on the pass itself, rather than in a footnote elsewhere", () => {
-    const partial = foldPass(EMPTY, state(["a.example"], true), "t1", 1);
+    const partial = foldPass(EMPTY, state(["a.example"], true), "t1");
     expect(partial.pass.what_this_cannot_see[0]).toContain("PARTIAL");
     expect(partial.pass.what_this_cannot_see.join(" ")).toContain(
       "cannot tell a delisting from a page we never reached",
@@ -146,15 +146,36 @@ describe("a truncated pass records no delisting at all", () => {
   });
 
   it("still records the hosts it did see", () => {
-    const partial = foldPass(EMPTY, state(["a.example"], true), "t1", 1);
+    const partial = foldPass(EMPTY, state(["a.example"], true), "t1");
     expect(partial.pass.appeared).toEqual(["a.example"]);
+  });
+});
+
+/**
+ * THE RED-TEAM FINDING OF 2026-09-04, held so it cannot return: the
+ * remote-URL count is a property of the PASS, and a pass is many
+ * ticks. The first cut published only the final tick's share under
+ * the whole pass's name — a twelfth of the truth on a twelve-tick
+ * pass — because the accumulator lived in the tick's local scope.
+ */
+describe("the remote-URL count belongs to the pass, not the tick", () => {
+  it("publishes the accumulated count, not the last batch", () => {
+    const s = state(["a.example", "b.example", "c.example"]);
+    s.servers_with_remote = 250; // accumulated across ticks, not this tick's 3
+    expect(foldPass(EMPTY, s, "t1").pass.servers_with_remote).toBe(250);
+  });
+
+  it("treats state written before the field existed as zero, not undefined", () => {
+    const s = state(["a.example"]);
+    delete s.servers_with_remote;
+    expect(foldPass(EMPTY, s, "t1").pass.servers_with_remote).toBe(0);
   });
 });
 
 describe("the two wards share nothing", () => {
   it("says so on the ward's own artifact", () => {
     expect(MCP_WARD_IS_NOT).toContain("knocks on");
-    const pass = foldPass(EMPTY, state(["a.example"]), "t1", 1).pass;
+    const pass = foldPass(EMPTY, state(["a.example"]), "t1").pass;
     expect(pass.what_this_cannot_see.join(" ")).toContain(
       "Anything about the x402 population",
     );

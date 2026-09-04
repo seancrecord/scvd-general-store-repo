@@ -91,6 +91,12 @@ export interface WeekLedger {
     /** Named, because a source that stopped answering is the news. */
     not_answering: string[];
   };
+  /**
+   * The population layer's pair for the week: hosts every directory
+   * named, and hosts actually walked. Null when the sealed round
+   * predates the layer — not measured, never "all of them".
+   */
+  population: WeekPopulation | null;
   /** Weeks the chain does not hold at all, between its oldest and newest. */
   weeks_missing: string[];
   /** Corrections whose date falls in this week. Ours, published against us. */
@@ -130,31 +136,65 @@ function correctionWeek(correction: Correction): string {
  * the numbers are absent — a page that fills silence with prose is how
  * a measurement project starts publishing vibes.
  */
+/**
+ * The population layer's denominator for the week, when the sealed
+ * round carried one. Null on rounds before the layer existed, which
+ * a reader must take as "not measured" and never as "everything".
+ */
+export interface WeekPopulation {
+  known: number;
+  walked: number;
+}
+
 export function deriveFindings(
   brief: WeeklyBrief,
   changes: WeekChanges | null,
   register: SourceRegister | null,
   weeksMissing: string[],
   correctionsThisWeek: Correction[],
+  population: WeekPopulation | null = null,
 ): LedgerFinding[] {
   const findings: LedgerFinding[] = [];
   const { doors, our_gaps } = brief;
 
-  // ── How much of the neighbourhood did we actually reach ──────────
-  const reach = pct(doors.probed, doors.listed);
-  findings.push({
-    id: "reach",
-    kind: reach !== null && reach < 50 ? "gap" : "finding",
-    headline:
-      reach === null
-        ? `No door was named by any feed this week, so there is no denominator to report reach against.`
-        : `We knocked on ${doors.probed.toLocaleString("en-US")} of the ${doors.listed.toLocaleString("en-US")} doors our feeds named — ${reach}%.`,
-    detail:
-      reach === null
-        ? "A week with no named doors is a fact about our feeds, not about the ecosystem. The source register says which directories answered."
-        : `Enumeration is nearly free and probing is not, so the round names every host it can and knocks on as many as its cap allows. The ${(doors.listed - doors.probed).toLocaleString("en-US")} unknocked doors are not dead and are not healthy: they are unmeasured, and no figure on this page is taken over them.`,
-    derived_from: ["doors.probed", "doors.listed"],
-  });
+  /*
+   * ── How much of the neighbourhood did we actually reach ────────────
+   *
+   * THE DENOMINATOR HERE WAS WRONG IN THE FIRST CUT, and the way it was
+   * wrong is the exact sin test/denominator-discipline.spec.ts exists to
+   * catch. `doors.listed` is the discovery feed's RESOURCE count — URLs
+   * on one directory — while `probed` counts HOSTS, and the phrase
+   * "doors our feeds named" was hung on it as though it were the union
+   * of every directory the census reads. On an ordinary week that read
+   * as "750 of 900" against a population the census knew to be ten
+   * thousand. The population layer has carried the honest pair
+   * (population_known, population_walked) since it shipped, and the
+   * reach finding reads THAT when the week has it. When it does not —
+   * rounds before the layer — the finding says so and says what the
+   * fallback number actually counts, rather than dressing it up.
+   */
+  if (population && population.known > 0) {
+    const reach = pct(population.walked, population.known);
+    findings.push({
+      id: "reach",
+      kind: reach !== null && reach < 50 ? "gap" : "finding",
+      headline: `We knocked on ${population.walked.toLocaleString("en-US")} of the ${population.known.toLocaleString("en-US")} hosts every directory we read named this week — ${reach}%.`,
+      detail: `Enumeration is nearly free and probing is not, so the round names every host it can across every source that answered and knocks on as many as its cap allows. The ${(population.known - population.walked).toLocaleString("en-US")} unknocked hosts are not dead and are not healthy: they are unmeasured, and no figure on this page is taken over them. Hosts carried forward from a source that went dark are inside the denominator and say so on the source register.`,
+      derived_from: ["population.population_walked", "population.population_known"],
+    });
+  } else {
+    findings.push({
+      id: "reach",
+      kind: "gap",
+      headline:
+        doors.listed > 0
+          ? `This week's round carried no population census, so reach cannot be stated against every directory; the discovery list alone declared ${doors.listed.toLocaleString("en-US")} resources and we probed ${doors.probed.toLocaleString("en-US")} hosts.`
+          : `No door was named by any feed this week, so there is no denominator to report reach against.`,
+      detail:
+        "Resources and hosts are different units and the two numbers above are not a ratio of each other. A week without the population layer's census is a week whose reach is unmeasured, not a week where we reached everything; the layer has run on every round since it shipped.",
+      derived_from: ["doors.listed", "doors.probed"],
+    });
+  }
 
   // ── Of the doors that answered, could a buyer pay them ───────────
   const answered = doors.payable + doors.not_payable;
@@ -298,6 +338,12 @@ export function deriveLedger(
   if (!brief) return { ledger: null, known_weeks };
 
   const changes = deriveChanges(records, brief.week, base);
+  const sealed = records.find((record) => record.snapshot.week === brief.week);
+  const census = sealed?.snapshot.round.population;
+  const population: WeekPopulation | null =
+    census && typeof census.population_known === "number"
+      ? { known: census.population_known, walked: census.population_walked }
+      : null;
   const weeksMissing = missingWeeks(records.map((record) => record.snapshot.week));
   const correctionsThisWeek = CORRECTIONS.filter(
     (correction) => correctionWeek(correction) === brief.week,
@@ -327,12 +373,14 @@ export function deriveLedger(
       sources: { ...counts, not_answering: notAnswering },
       weeks_missing: weeksMissing,
       corrections_this_week: [...correctionsThisWeek],
+      population,
       findings: deriveFindings(
         brief,
         changes,
         register,
         weeksMissing,
         correctionsThisWeek,
+        population,
       ),
       what_this_is_not: LEDGER_IS_NOT,
       how_to_rederive: `Nothing on this page is stored. Every number is a count over ${base}/corpus/${brief.sequence}.json — the signed snapshot for ${brief.week}, digest ${brief.digest} — joined to the live source register at ${base}/sources.json and the corrections record at ${base}/corrections. Fetch those three and you can rebuild every sentence here, including the findings, whose rules are in services/week-ledger.ts.`,

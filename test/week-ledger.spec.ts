@@ -87,13 +87,35 @@ describe("every finding names where it came from", () => {
     }
   });
 
-  it("takes reach over doors named, and says both numbers", () => {
-    const reach = deriveFindings(brief(), null, null, [], []).find(
+  /**
+   * THE RED-TEAM FINDING OF 2026-09-04. The first cut took reach over
+   * `doors.listed`, which is the discovery feed's RESOURCE count on one
+   * directory, and called it "doors our feeds named" — against a
+   * population the census knew to be ten times larger. Reach is now
+   * taken over the population layer's own pair when the week has one,
+   * and the fallback says what it is actually counting.
+   */
+  it("takes reach over every directory's population, and says both numbers", () => {
+    const reach = deriveFindings(brief(), null, null, [], [], { known: 10_000, walked: 750 }).find(
       (f) => f.id === "reach",
     );
     expect(reach?.headline).toContain("750");
-    expect(reach?.headline).toContain("1,000");
-    expect(reach?.headline).toContain("75%");
+    expect(reach?.headline).toContain("10,000");
+    expect(reach?.headline).toContain("7.5%");
+    expect(reach?.derived_from).toContain("population.population_known");
+    // A tenth reached is a gap, not a finding.
+    expect(reach?.kind).toBe("gap");
+  });
+
+  it("never dresses the discovery resource count up as the population", () => {
+    const reach = deriveFindings(brief(), null, null, [], [], null).find(
+      (f) => f.id === "reach",
+    );
+    expect(reach?.kind).toBe("gap");
+    expect(reach?.headline).toContain("no population census");
+    expect(reach?.headline).toContain("resources");
+    expect(reach?.headline).not.toContain("doors our feeds named");
+    expect(reach?.detail).toContain("different units");
   });
 
   /**
@@ -180,7 +202,14 @@ describe("the gaps fire, because a silent gap reads as reassurance", () => {
       doors: { listed: 750, probed: 750, payable: 700, not_payable: 40, unreachable: 10, offers_seen: 700 },
       our_gaps: { not_probed: 0, observer_degraded: 0, coverage_suspect: false },
     });
-    const findings = deriveFindings(clean, null, register([{ source: "fuchss", status: "live" }]), [], []);
+    const findings = deriveFindings(
+      clean,
+      null,
+      register([{ source: "fuchss", status: "live" }]),
+      [],
+      [],
+      { known: 750, walked: 750 },
+    );
     expect(findings.filter((f) => f.kind === "gap")).toEqual([]);
   });
 });
@@ -193,14 +222,11 @@ describe("a week the chain does not hold is a refusal, not a guess", () => {
   });
 });
 
-describe("reach is a gap, not a finding, when most doors went unknocked", () => {
+describe("reach is a gap, not a finding, when most hosts went unknocked", () => {
   it("changes kind on the number rather than on an editor's judgement", () => {
-    const thin = brief({
-      doors: { listed: 1000, probed: 100, payable: 80, not_payable: 15, unreachable: 5, offers_seen: 80 },
-    });
-    expect(deriveFindings(thin, null, null, [], []).find((f) => f.id === "reach")?.kind).toBe("gap");
-    expect(deriveFindings(brief(), null, null, [], []).find((f) => f.id === "reach")?.kind).toBe(
-      "finding",
-    );
+    const thin = deriveFindings(brief(), null, null, [], [], { known: 1000, walked: 100 });
+    expect(thin.find((f) => f.id === "reach")?.kind).toBe("gap");
+    const wide = deriveFindings(brief(), null, null, [], [], { known: 1000, walked: 750 });
+    expect(wide.find((f) => f.id === "reach")?.kind).toBe("finding");
   });
 });

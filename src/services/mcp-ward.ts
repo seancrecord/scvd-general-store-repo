@@ -36,15 +36,25 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * listed nowhere is a delisting we can record having never spent a
  * request on it.
  *
- * THE WALK, because the registry does not fit in a tick. The official
- * registry answered past 20,000 rows and was still paginating when the
- * read was cut off on 2026-09-04 — far past the ~1,000 subrequest
- * budget one Worker invocation gets, which the x402 round already
- * spends most of. So this borrows the long walk's architecture
- * wholesale: the HOURLY cron reads a bounded number of registry pages
- * on a stored cursor, and a PASS completes whenever the registry's own
- * cursor runs out. At 20 pages a tick and 100 rows a page, a full pass
- * over 20,000 rows finishes in about half a day and then idles.
+ * THE WALK, because the registry does not fit in a tick. Walked to its
+ * end on 2026-09-04: 90,845 rows across 909 pages — ninety times the
+ * ~1,000 subrequest budget one Worker invocation gets, which the x402
+ * round already spends most of. So this borrows the long walk's
+ * architecture wholesale: the HOURLY cron reads a bounded number of
+ * registry pages on a stored cursor, and a PASS completes whenever the
+ * registry's own cursor runs out. At 20 pages a tick and 100 rows a
+ * page, a full pass takes about two days and then idles until the
+ * next one — a cadence of roughly three passes a week, which is
+ * plenty for a question about who was listed.
+ *
+ * A NOTE ON THE FIRST CUT'S CEILING, because it is the kind of error
+ * this store exists to catch. The first read was cut off at 20,000
+ * rows with the cursor still running, and the pass ceiling was set at
+ * 400 pages as "comfortably past" that. It was under half the
+ * registry. Every pass would have truncated, the artifact would have
+ * said so honestly on every one, and the ward would never have
+ * recorded a single delisting — correct by its own law, and useless.
+ * Found on the red-team read the same day by walking to the end.
  *
  * THE ONE LAW THIS INHERITS UNCHANGED. Mortality is computed ONLY on a
  * completed pass. A partial read cannot tell "delisted" from "on a
@@ -63,13 +73,22 @@ export const MCP_PAGES_PER_TICK = 20;
 /**
  * A ceiling on one pass, so a registry that starts answering with a
  * cursor that never terminates cannot grow this state without bound.
- * 400 pages ≈ 40,000 servers, comfortably past the ~20,000 read on
- * 2026-09-04 and nowhere near enough to be mistaken for "no limit".
+ * 909 pages was the whole registry on 2026-09-04; 2,000 pages is
+ * room for it to double and then some, and still a number rather
+ * than "no limit". When a pass hits this, the artifact says truncated
+ * and records no delisting — and the ceiling is what to raise.
  */
-export const MCP_MAX_PAGES_PER_PASS = 400;
+export const MCP_MAX_PAGES_PER_PASS = 2000;
 
-/** Hosts one register will hold. Named, because an unnamed cap is a silent one. */
-export const MCP_HOST_CAP = 20000;
+/**
+ * Hosts one pass will hold. Named, because an unnamed cap is a silent
+ * one. Sized from the registry's real shape: ~86% of rows carry a
+ * remote URL, so a full pass could contribute up to ~78,000 host
+ * strings before dedupe. At ~30 bytes each that is a KV value of a
+ * couple of megabytes rewritten once an hour while a pass runs —
+ * well under the 25 MB value limit, and worth knowing about.
+ */
+export const MCP_HOST_CAP = 100000;
 
 export interface McpWalkState {
   version: 1;
@@ -80,6 +99,15 @@ export interface McpWalkState {
   cursor: string | null;
   pages_read: number;
   servers_seen: number;
+  /**
+   * Rows that carried at least one usable remote URL, ACROSS THE
+   * PASS. This was a per-tick count until the red-team read of
+   * 2026-09-04: the pass artifact published only the final tick's
+   * share, which on a twelve-tick pass was a twelfth of the truth
+   * wearing the whole number's name. Absent on state written before
+   * the fix; treated as zero-so-far.
+   */
+  servers_with_remote?: number;
   /** Unique hosts accumulated so far this pass. */
   hosts: string[];
   /** The registry's own status word, counted. Its news, not ours. */
@@ -249,7 +277,6 @@ export function foldPass(
   register: McpRegister,
   state: McpWalkState,
   finishedAt: string,
-  withRemote: number,
 ): { register: McpRegister; pass: McpPass } {
   const seen = new Set(state.hosts);
   const next: McpRegister = {
@@ -291,7 +318,7 @@ export function foldPass(
       started_at: state.started_at,
       finished_at: finishedAt,
       servers_seen: state.servers_seen,
-      servers_with_remote: withRemote,
+      servers_with_remote: state.servers_with_remote ?? 0,
       hosts_known: seen.size,
       status_counts: state.status_counts,
       appeared: appeared.sort().slice(0, 250),
@@ -328,7 +355,6 @@ export async function walkMcpRegistry(
   if (state.finished_at) state = freshState(now);
 
   const hosts = new Set(state.hosts);
-  let withRemoteThisTick = 0;
   let complete = false;
 
   for (let page = 0; page < MCP_PAGES_PER_TICK; page += 1) {
@@ -349,7 +375,16 @@ export async function walkMcpRegistry(
       }
       hosts.add(host);
     }
-    withRemoteThisTick += withRemote;
+    // A pass that has hit its host ceiling is over: reading further
+    // pages would spend budget on rows it can no longer record.
+    if (state.truncated) {
+      state.servers_seen += read.rows.length;
+      state.pages_read += 1;
+      state.cursor = read.nextCursor;
+      complete = true;
+      break;
+    }
+    state.servers_with_remote = (state.servers_with_remote ?? 0) + withRemote;
     for (const [word, count] of Object.entries(statuses)) {
       state.status_counts[word] = (state.status_counts[word] ?? 0) + count;
     }
@@ -373,7 +408,7 @@ export async function walkMcpRegistry(
   const finishedAt = now.toISOString();
   state.finished_at = finishedAt;
   const register = await readMcpRegister(env);
-  const folded = foldPass(register, state, finishedAt, withRemoteThisTick);
+  const folded = foldPass(register, state, finishedAt);
   await kvPut(env.COUNTERS, KV_KEYS.mcpRegister, JSON.stringify(folded.register));
   await kvPut(env.COUNTERS, KV_KEYS.mcpPass(state.week), JSON.stringify(folded.pass));
   await kvPut(env.COUNTERS, KV_KEYS.mcpWalkState, JSON.stringify(state));

@@ -1015,10 +1015,10 @@ const worker: ExportedHandler<Env> = {
     );
     /**
      * THE MCP WARD'S WALK rides the hourly press for the same reason
-     * the x402 long walk does: the registry answered past 20,000 rows
-     * and was still paginating, which is many times what one
+     * the x402 long walk does: the registry is 909 pages and 90,845
+     * rows (walked to the end 2026-09-04), ninety times what one
      * invocation can read. Twenty pages a tick finishes a pass in
-     * about half a day and then idles until the next one. A failed
+     * about two days and then idles until the next one. A failed
      * tick keeps its cursor and resumes next hour — a slow registry
      * must not cost a pass that is most of the way done.
      */

@@ -15,8 +15,8 @@ import type { McpPass, McpRegister, McpWalkState } from "@/services/mcp-ward";
  * quotes the other's figures.
  *
  * WHY THE BUTTON ADVANCES ONE BATCH RATHER THAN RUNNING THE WHOLE
- * PASS. The registry answered past 20,000 rows and was still
- * paginating; a pass is many hundreds of page fetches and cannot fit
+ * PASS. The registry is 909 pages (90,845 rows on 2026-09-04); a
+ * pass is many hundreds of page fetches and cannot fit
  * in one request without blowing the invocation budget the audit
  * script exists to police. So the crank does exactly what an hourly
  * firing does — one bounded batch on the stored cursor — and the page

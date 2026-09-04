@@ -201,8 +201,16 @@ function renderLedger(ledger: WeekLedger, base: string): string {
 
   <section><h2>The week in figures</h2>
   <div class="figures">
-    ${figure(num(brief.doors.listed), "doors named by our feeds")}
-    ${figure(num(brief.doors.probed), "knocked on", `of ${num(brief.doors.listed)} named`)}
+    ${
+      ledger.population
+        ? figure(num(ledger.population.known), "hosts named, every directory")
+        : figure(num(brief.doors.listed), "resources on the discovery list")
+    }
+    ${figure(
+      num(brief.doors.probed),
+      "hosts knocked on",
+      ledger.population ? `of ${num(ledger.population.known)} named` : undefined,
+    )}
     ${figure(num(brief.doors.payable), "a buyer could pay", answered ? `of ${num(answered)} that answered` : undefined)}
     ${figure(num(brief.doors.not_payable), "answered, not payable", answered ? `of ${num(answered)} that answered` : undefined)}
     ${figure(num(brief.doors.unreachable), "did not answer")}
