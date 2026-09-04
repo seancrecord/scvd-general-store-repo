@@ -1097,6 +1097,17 @@ never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
 
+The second wire, read only (since 2026-09-04): a door that speaks the
+Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
+and no PAYMENT-REQUIRED header. The free preflight reads that from the
+same one GET: protocols_spoken says which wires the door speaks (x402,
+mpp, both, neither), and the mpp block carries the MPP battery's own
+named checks and advisories. The verdict keeps meaning x402-ready,
+permanently — a door on the other wire reads not_ready there and that
+is a fact about the wire, never a defect. This store's till does not
+speak MPP; nothing here pays, verifies a credential or reads a
+receipt. Rehearse the shape at ${base}/api/practice/mpp-shape.
+
 Every class also carries both halves of the remediation: what the
 operator does to clear it and what the buyer does when a door shows
 it. The free preflight report joins them to its own findings as

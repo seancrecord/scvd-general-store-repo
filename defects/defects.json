@@ -1,6 +1,6 @@
 {
   "what_this_is": "A snapshot of https://scvd.store/defects.json cut from the store's own source at the version below (npm run defects:cut). The live document is the authority; fetchLatest() reads it, and isStale() says whether this file is behind.",
-  "version": "10",
+  "version": "11",
   "url": "https://scvd.store/defects",
   "cross_instrument_mappings_read_on": "2026-08-23",
   "classes": [
@@ -221,6 +221,149 @@
       "repair_hint": "Derive every surface from the one place the price lives, the way this store derives its llms.txt lines from its shelf, and never type a number into a document that a buyer may install and never refresh. Where a surface must be static, put the endpoint path and the dollar amount in one code span so the convention reads it, and publish the date it was last derived.",
       "buyer_hint": "Budget from the 402, not from the surface you read first: an installed skill, a fetched llms.txt or a generated client can carry a stale number. Before paying, read the challenge's amount and refuse if it is not what you were told, rather than reporting the door as broken.",
       "registered": "2026-09-02"
+    },
+    {
+      "id": "mpp-challenge-id",
+      "title": "MPP challenge with no id",
+      "asserts": "Every WWW-Authenticate: Payment challenge carries a non-empty id.",
+      "costs": "Clients and parsers MUST reject a challenge whose id is missing or empty, so a stock MPP client refuses before any payment; the seller sees a request for a price followed by silence.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-challenge-id",
+      "falsified_by": "The same challenge carrying a non-empty id at the stated moment.",
+      "repair_hint": "Mint an id per challenge — any non-empty opaque string your server can recognise on the credential's return — and never leave the parameter out to save bytes.",
+      "buyer_hint": "Do not construct a credential against a challenge with no id: the door cannot bind your payment to its own request, and a client that proceeds pays into a challenge the server may not recognise. Refuse, and say which parameter was missing.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-challenge-realm",
+      "title": "MPP challenge with no realm",
+      "asserts": "Every Payment challenge names its realm, the RFC 9110 protection space.",
+      "costs": "A client cannot scope a credential to the door that asked for it; some clients refuse, others send credentials where they were not asked for.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-challenge-realm",
+      "falsified_by": "The same challenge carrying a realm at the stated moment.",
+      "repair_hint": "Set realm to your door's protection space — usually your host — on every challenge; the auth-scheme grammar requires it.",
+      "buyer_hint": "Treat a challenge with no realm as unscoped: do not reuse a credential across doors, and prefer a door whose challenge names where the credential belongs.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-method-unregistered",
+      "title": "MPP challenge naming a method no client can build",
+      "asserts": "The method parameter names a payment method the specification repository holds a draft for (card, evm, hedera, lightning, nearintents, solana, stellar, stripe, tempo, usdc).",
+      "costs": "A buyer holding the registry has no credential shape to construct; the refusal lands on the buyer's machine and the seller never learns a buyer came.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-method-registered",
+      "falsified_by": "The method appearing as a draft under specs/methods at the stated read date, or a published client building a credential for it.",
+      "repair_hint": "Name a method the drafts define, spelled lowercase exactly; if your method is your own, publish its credential shape where clients read and expect the registry to move before buyers do.",
+      "buyer_hint": "Do not guess a credential shape for a method you do not recognise: a signature over the wrong payload is money sent under terms neither side agreed to. Refuse, and name the method you could not build.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-intent-unregistered-or-missing",
+      "title": "MPP challenge with no usable intent",
+      "asserts": "The intent parameter is present and is either a drafted intent (charge, subscription) or one implementers advertise (session).",
+      "costs": "Without an intent a client cannot tell a one-off charge from a recurring commitment; a client that guesses charge on a subscription challenge signs for more than it meant to.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-intent-registered",
+      "falsified_by": "The challenge naming a drafted or widely advertised intent at the stated moment.",
+      "repair_hint": "Name the intent on every challenge; charge for a one-off, subscription for recurring; if you advertise session, know that it has no draft and a registry-only client cannot pay it.",
+      "buyer_hint": "Do not sign against a challenge whose intent you do not recognise: you cannot know whether you are committing once or repeatedly. Refuse, and say which intent you could not read.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-request-undecodable",
+      "title": "MPP request that does not decode",
+      "asserts": "The request parameter is base64url of a JSON object.",
+      "costs": "The price, currency and recipient are inside the request; a client that cannot decode it has nothing to sign and nothing to show its human. The seller sees nothing.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-request-decodes",
+      "falsified_by": "The request decoding, by any conforming base64url and JSON reader, to a JSON object at the stated moment.",
+      "repair_hint": "Encode the request as base64url (no padding, URL-safe alphabet) of UTF-8 JSON, and decode your own header with an independent client before shipping; a proxy that rewrites or size-caps headers is the usual cause.",
+      "buyer_hint": "Do not guess the terms: a request you could not decode is a door you cannot sign for. Report the decode failure by name and move on.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-request-not-canonical",
+      "title": "MPP request whose bytes are not their canonical form",
+      "asserts": "Re-canonicalizing the decoded request by RFC 8785 (JCS) reproduces the served bytes exactly.",
+      "costs": "A client that hashes the request for challenge binding gets a different hash from the one the server computed, so a correct payment is refused as mismatched, or a careless server accepts a rebound one.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-request-canonical",
+      "falsified_by": "The served request bytes equalling the RFC 8785 canonicalization of their own decoded JSON at the stated moment.",
+      "repair_hint": "Serialise the request with a JCS canonicalizer — sorted keys, no whitespace, ECMAScript number and string forms — rather than a pretty-printer or a hand-written template; the draft says MUST.",
+      "buyer_hint": "Bind your credential to the bytes you were served, never to a re-serialisation of them, and expect a mismatch refusal from a server that hashes its own canonical form; if the door's own bytes are not canonical, tell the operator rather than retrying.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-amount-not-integer",
+      "title": "MPP amount not an integer string in the smallest unit",
+      "asserts": "The request's amount is a base-10 integer string with no sign, point or exponent.",
+      "costs": "A decimal or a number usually means the price is off by a factor of the unit's decimals in one direction or the other — the amount-not-atomic mistake on the second wire.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-amount-shape",
+      "falsified_by": "The amount parsing as a digit string at the stated moment.",
+      "repair_hint": "Write amount as an integer string of the smallest unit — cents for fiat, the token's smallest unit for chains — derived from one constant so the discovery document and the challenge cannot disagree.",
+      "buyer_hint": "Do not pay a decimal amount: the true price is unknowable from it. Refuse, and if you must proceed, get the integer amount and its unit from the operator in writing first.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-currency-unnamed",
+      "title": "MPP request with no currency",
+      "asserts": "The request names its currency: ISO 4217 lowercase for fiat, a token contract address for chains, or the method's own convention.",
+      "costs": "A client cannot resolve what the amount is denominated in; a wallet that assumes settles in the wrong asset or refuses.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-currency-named",
+      "falsified_by": "The request carrying a non-empty currency at the stated moment.",
+      "repair_hint": "Name the currency on every request in the form the method draft specifies, and keep it beside the amount in one object so they cannot drift.",
+      "buyer_hint": "Do not sign for an amount with no currency: you cannot know what you are paying in. Refuse, and say which field was missing.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-recipient-missing",
+      "title": "MPP request with no recipient on a chain method",
+      "asserts": "On the evm, tempo and solana methods the request names a recipient the credential's to MUST match.",
+      "costs": "There is nowhere for the payment to land; a client that fills in a recipient from elsewhere pays a wallet the challenge never named.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-recipient-present",
+      "falsified_by": "The request carrying a recipient in the method's native format at the stated moment.",
+      "repair_hint": "Put the receiving address on every chain-method request in that chain's native format, and generate it from your server's config rather than a template.",
+      "buyer_hint": "Never supply a recipient the challenge did not: the credential's to must match the challenge, and a payment to any other address is unrecoverable. Refuse until the door names one.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-challenge-expired-at-issue",
+      "title": "MPP challenge already expired, or with an unreadable expires",
+      "asserts": "Where the challenge carries expires, it is RFC 3339 and later than the moment the challenge was served.",
+      "costs": "A challenge expired at issue cannot be paid: the server refuses the credential as payment-expired and the buyer's ledger records a failed purchase at a door that never offered a live one.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-expires-rfc3339",
+      "falsified_by": "The same door serving a challenge whose expires parses and lies in the future at the stated moment.",
+      "repair_hint": "Set expires from the server's clock at issue time plus a window a client can act in, in RFC 3339 with a timezone, or omit it; a fixed or stale timestamp is the usual cause.",
+      "buyer_hint": "Do not pay a challenge that is already expired: the credential will be refused and the attempt may still be logged against you. Re-request the door for a fresh challenge, and if it is expired again, tell the operator.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
+    },
+    {
+      "id": "mpp-challenge-over-http",
+      "title": "MPP challenge issued over unencrypted HTTP",
+      "asserts": "Payment challenges are issued only over TLS.",
+      "costs": "Servers MUST NOT issue Payment challenges over unencrypted HTTP; a credential sent in reply travels in the clear, and a client that honours the MUST refuses the door outright.",
+      "detectable": "unpaid",
+      "our_signal": "mpp-tls-only",
+      "falsified_by": "The same door serving its challenge over https at the stated moment.",
+      "repair_hint": "Serve the door over https only and redirect or refuse plain http before the 402 is built; a challenge over http is a challenge no conforming client will answer.",
+      "buyer_hint": "Never send a Payment credential over plain http, whatever the door asks: the credential travels in the clear. Refuse, and use the door's https address if it has one.",
+      "sourced_by": "The Machine Payments Protocol's own MUSTs — draft-httpauth-payment-00 and the method drafts in github.com/tempoxyz/mpp-specs, read at main 2026-09-03. This store is the registrar, not the author.",
+      "registered": "2026-09-04"
     }
   ],
   "evidence_labels": [
@@ -294,6 +437,12 @@
       "date": "2026-09-03",
       "at_the_instigation_of": "this store, roadmap C1 (the runtime workflow), on the keeper's word to take the channels in order",
       "what_changed": "Every defect class gains buyer_hint: what the buyer does when a door shows the class — refuse, keep the settlement reference, pay on another rail, wait — the other half of the remediation repair_hint has carried since v4. Additive only: no id, assertion, detectable line or falsified_by changed. The same rows now ride the free preflight report and the paid audit as remediation, derived from each failed check or raised advisory through our_signal, so an agent that has just read a named defect gets both halves without a second fetch. A hint is advice about a door, never a judgment about its operator."
+    },
+    {
+      "version": "11",
+      "date": "2026-09-04",
+      "at_the_instigation_of": "this store, roadmap V3 PR 1 (the second wire, read only), on the keeper's rulings of 2026-09-04: the x402 verdict keeps its meaning permanently, protocols_spoken carries the union, and implementation gets bolder",
+      "what_changed": "Added the Machine Payments Protocol's challenge classes, one per Tier 0 check of the MPP battery that can fail (mpp-challenge-id through mpp-challenge-over-http), each unpaid-detectable and each sourced to the specification's own MUSTs in github.com/tempoxyz/mpp-specs at draft-00 — this store is the registrar, not the author. mpp-challenge-present is a check and not a class: a door with no Payment challenge is not defective, it speaks another wire. The MPP advisories (testnet default, unregistered intent, body not problem+json, x402-and-mpp) are advisories, not classes: none is a defect. Additive only; no x402 class moved."
     }
   ],
   "license": "CC BY 4.0 for the names; MIT for the code that carries them."

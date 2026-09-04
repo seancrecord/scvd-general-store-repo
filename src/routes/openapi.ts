@@ -934,6 +934,8 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
     "checks",
     "advisories",
     "remediation",
+    "protocols_spoken",
+    "mpp",
     "single_probe_note",
     "what_this_cannot_tell_you",
     "our_conflict_of_interest",
@@ -1011,6 +1013,28 @@ const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
         version: { type: "string" },
         verdict: { type: "string", enum: ["ready", "not_ready", "unreachable"] },
         difference: { type: "string" },
+      },
+    },
+    protocols_spoken: {
+      type: "array",
+      items: { type: "string", enum: ["x402", "mpp"] },
+      description:
+        "Which protocols the 402 speaks, derived from its headers: x402 when PAYMENT-REQUIRED is present, mpp when a WWW-Authenticate: Payment challenge parses. The verdict keeps meaning x402-ready, permanently; read this for the union.",
+    },
+    mpp: {
+      type: "object",
+      required: ["battery", "spec", "spoken", "challenges", "checks", "advisories", "what_this_cannot_tell_you"],
+      description:
+        "The MPP battery's reading of the same bytes (mpp-v1, draft-00): whether the door speaks it, its challenges summarised, its named checks when it does (none when it does not — a check against no challenge is not an observation), its advisories outside any verdict, and what one unpaid GET cannot tell you.",
+      properties: {
+        battery: { type: "string" },
+        spec: { type: "string" },
+        spoken: { type: "boolean" },
+        challenges: { type: "array", items: { type: "object" } },
+        checks: { type: "array", items: { type: "object", required: ["name", "ok", "detail"], properties: { name: { type: "string" }, ok: { type: "boolean" }, detail: { type: "string" } } } },
+        advisories: { type: "array", items: { type: "object", required: ["name", "detail"], properties: { name: { type: "string" }, detail: { type: "string" } } } },
+        the_x402_verdict_above: { type: "string" },
+        what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
       },
     },
     remediation: {

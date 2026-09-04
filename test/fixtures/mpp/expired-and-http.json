@@ -1,0 +1,22 @@
+{
+  "name": "expired-and-http",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "A challenge already expired at issue, over plain http: two MUSTs broken. The body is JSON but not problem+json, so the advisory rides too.",
+  "url": "http://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [
+    "mpp-expires-rfc3339",
+    "mpp-tls-only"
+  ],
+  "expect_advisories": [
+    "mpp-body-not-problem-json"
+  ],
+  "status": 402,
+  "headers": {
+    "content-type": "application/json",
+    "www-authenticate": "Payment id=\"ch_13\", realm=\"door.example\", method=\"evm\", intent=\"charge\", request=\"eyJhbW91bnQiOiIxMDAwIiwiY3VycmVuY3kiOiIweDgzMzU4OWZDRDZlRGI2RTA4ZjRjN0MzMkQ0ZjcxYjU0YmRBMDI5MTMiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjg0NTMsImNyZWRlbnRpYWxUeXBlcyI6WyJhdXRob3JpemF0aW9uIl19LCJyZWNpcGllbnQiOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEifQ\", expires=\"2020-01-01T00:00:00Z\""
+  },
+  "body": "{\"error\": \"pay\"}"
+}

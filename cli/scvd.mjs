@@ -195,6 +195,27 @@ function printRemediation(rows = []) {
   }
 }
 
+/**
+ * THE SECOND WIRE (0.2.0, servers from 2026-09-04): which protocols the
+ * door speaks, and the MPP battery's own checks when it speaks MPP. The
+ * verdict line above stays x402's; a door on the other wire is not
+ * broken, and this is where the tool says so.
+ */
+function printProtocols(report) {
+  if (!Array.isArray(report.protocols_spoken)) return;
+  process.stdout.write(`  protocols spoken: ${report.protocols_spoken.length > 0 ? report.protocols_spoken.join(", ") : "none read"}\n`);
+  const mpp = report.mpp;
+  if (!mpp || !mpp.spoken) return;
+  process.stdout.write(`  MPP battery (${mpp.battery}, ${mpp.spec}):\n`);
+  for (const check of mpp.checks ?? []) {
+    process.stdout.write(`    ${mark(check.ok)}  ${check.name}\n`);
+    if (!check.ok && check.detail) process.stdout.write(`          ${check.detail}\n`);
+  }
+  for (const advisory of mpp.advisories ?? []) {
+    process.stdout.write(`    NOTE  ${advisory.name}: ${advisory.detail}\n`);
+  }
+}
+
 function printBudget({ remaining, reset }) {
   if (remaining === null || remaining === undefined) return;
   process.stdout.write(
@@ -300,7 +321,9 @@ const COMMANDS = {
       process.stdout.write(`${report.error}\n`);
       return EXIT.usage;
     }
-    process.stdout.write(`${url}\n  verdict: ${report.verdict}\n\n`);
+    process.stdout.write(`${url}\n  verdict: ${report.verdict}\n`);
+    printProtocols(report);
+    process.stdout.write("\n");
     printChecks(report.checks);
     for (const advisory of report.advisories ?? []) {
       process.stdout.write(`  NOTE  ${advisory.name}: ${advisory.detail}\n`);

@@ -674,6 +674,14 @@ const BASE = "https://scvd.store";
  * and were renumbered at the rebase; the value was re-taken once on the
  * rebased head.)
  *
+ * Re-taken 2026-09-04 — the FIFTY-FOURTH — by the second wire (roadmap
+ * V3 PR 1): one paragraph before the remediation's, saying what the
+ * preflight now says about a door that speaks MPP — protocols_spoken,
+ * the mpp block, the verdict's meaning kept, the till untouched, the
+ * practice door. Confirmed before this value was taken: the guide
+ * carries "protocols_spoken" and "/api/practice/mpp-shape", and still
+ * every earlier pin.
+ *
  * Re-taken 2026-09-03 — the FIFTY-FIRST — by the remediation (roadmap
  * C1): one paragraph after the vocabulary's, saying every class carries
  * both halves and the free report joins them to its findings as
@@ -697,7 +705,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "57a0504e378f3224fa5926be637297c9ad3afb7f33855e7a2898a27a996d3495";
+  "1cd3ca51e551acd6edd9a433c1cb13818a176c7216864565fa365e24e627f325";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

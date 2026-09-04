@@ -21,6 +21,14 @@ export const WATCH_EVIDENCE_BODY_LIMIT_BYTES = 256 * 1024;
  */
 const CURATED_RESPONSE_HEADERS = [
   "payment-required",
+  /*
+   * THE SECOND WIRE (roadmap V3 PR 1, 2026-09-04): an MPP door puts
+   * its challenge on WWW-Authenticate: Payment. Without this header
+   * no signed row can show that a door read as a broken x402 door was
+   * a working MPP door; from this round on it can, and the count is
+   * countMppMisreads() in services/mpp-battery.ts.
+   */
+  "www-authenticate",
   "content-type",
   "content-length",
   "location",

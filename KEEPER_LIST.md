@@ -294,6 +294,17 @@ Do not relitigate without you.
   is still yours: which intake wins when they disagree was
   not named, and the counterparty rule stands until it is.
   Roadmap L3 does not start without that word.
+- **MPP, 2026-09-04, your read of the design.** Decision 3 is
+  FIRM: the top-level preflight `verdict` keeps meaning x402-ready,
+  permanently, and `protocols_spoken` is the union field — never to
+  be relitigated, because a field that changes meaning breaks every
+  historical row's comparability. Decision 2 (a passport for an
+  MPP-only door) waits on an actual mockup of the passport copy,
+  now in the design note's rulings section: read it, then yes / no
+  / later. Framing, sourcing, zero added cost, versioning and the
+  risk section approved as-is. "Get bolder on actual
+  implementation": PR 1 is built the same day. Decisions 1, 4, 5
+  and 6 stand as recommended until you say otherwise.
 - **PROTOCOL_EXPANSION §11.** MPP wait-and-see on the TILL
   stands; the READ-ONLY battery is GO (2026-09-03, "go ahead
   and do those", reversing the sheet's default of wait the

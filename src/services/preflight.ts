@@ -1,6 +1,7 @@
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { type RemediationRow, remediationRows } from "@/services/remediation";
+import { type MppBlock, runMppChecks } from "@/services/mpp-battery";
 import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
@@ -568,6 +569,17 @@ export interface PreflightReport {
    * clean door.
    */
   remediation: RemediationRow[];
+  /**
+   * THE SECOND WIRE (roadmap V3 PR 1, 2026-09-04). Which protocols the
+   * 402 speaks, derived from its headers and never typed: x402 when
+   * PAYMENT-REQUIRED is present, mpp when a WWW-Authenticate: Payment
+   * challenge parses. Empty on an unreachable probe. The verdict above
+   * keeps meaning x402-ready, permanently (the keeper's ruling); a
+   * reader who wants the union reads this.
+   */
+  protocols_spoken: ("x402" | "mpp")[];
+  /** The MPP battery's own block: spoken or not, its checks when spoken, its advisories, what it cannot tell you. */
+  mpp: MppBlock;
   next_steps: Record<string, string>;
 }
 
@@ -584,6 +596,8 @@ function report(
       verdict: PreflightReport["verdict"];
       difference: string;
     };
+    /** The MPP battery's reading of the same bytes; absent on an unreachable probe. */
+    mpp?: MppBlock & { protocols_spoken: ("x402" | "mpp")[] };
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
@@ -600,6 +614,10 @@ function report(
     advisories,
     ...(options.alsoUnder ? { also_under: options.alsoUnder } : {}),
     remediation: remediationRows(base, checks, advisories),
+    protocols_spoken: options.mpp?.protocols_spoken ?? [],
+    mpp: options.mpp
+      ? (({ protocols_spoken: _spoken, ...block }) => block)(options.mpp)
+      : runMppChecks({ headers: { get: () => null }, url: "" }),
     single_probe_note:
       "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
     what_this_cannot_tell_you: [
@@ -1852,6 +1870,12 @@ export async function preflightUrl(
     url.toString(),
   );
   /*
+   * THE SAME ONE GET, PARSED TWICE (roadmap V3 PR 1): the MPP battery
+   * reads the response's WWW-Authenticate for Payment challenges. Zero
+   * extra contact; nothing here touches the x402 verdict.
+   */
+  const mpp = runMppChecks({ headers: outcome.response.headers, url: url.toString(), bodyText: outcome.body });
+  /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
    *
    * It reports a real defect — a payTo that owns no USDC token account
@@ -1957,6 +1981,7 @@ export async function preflightUrl(
     ...(accepts ? { accepts } : {}),
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
+      mpp,
       alsoUnder: {
         version: otherVersion,
         verdict: otherVerdict,

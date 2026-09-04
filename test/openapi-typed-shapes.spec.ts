@@ -212,6 +212,8 @@ const REPORT_FIELDS: Record<keyof PreflightReport, true> = {
   checks: true,
   advisories: true,
       remediation: true,
+      protocols_spoken: true,
+      mpp: true,
   single_probe_note: true,
   what_this_cannot_tell_you: true,
   our_conflict_of_interest: true,

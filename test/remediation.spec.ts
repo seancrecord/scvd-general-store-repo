@@ -2,7 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PREFLIGHT_VERSION_NEXT, preflightUrl } from "@/services/preflight";
 import { remediationRows } from "@/services/remediation";
-import { DEFECT_CLASSES, defectsBySignal } from "@/store/defect-vocabulary";
+import { DEFECT_CLASSES, DEFECT_VOCABULARY_VERSION, defectsBySignal } from "@/store/defect-vocabulary";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -95,7 +95,7 @@ describe("the free report and its refusals", () => {
 
   it("the served vocabulary carries the buyer's half on every class, and the class page prints it", async () => {
     const doc = (await (await SELF.fetch(`${BASE}/defects.json`)).json()) as Record<string, any>;
-    expect(doc.version).toBe("10");
+    expect(doc.version).toBe(DEFECT_VOCABULARY_VERSION);
     for (const entry of doc.classes) expect(entry.buyer_hint, entry.id).toBeTruthy();
     const page = await (await SELF.fetch(`${BASE}/defects/wrong-network`, { headers: { Accept: "text/html" } })).text();
     expect(page).toContain("What a buyer does");

@@ -1,0 +1,17 @@
+{
+  "name": "two-challenges",
+  "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "why": "Two Payment challenges on one 402 (evm and tempo mainnet), joined the way the Workers runtime joins repeated header values. Both parse; the checks judge every challenge.",
+  "url": "https://door.example/api/paid",
+  "expect_spoken": [
+    "mpp"
+  ],
+  "expect_failed": [],
+  "expect_advisories": [],
+  "status": 402,
+  "headers": {
+    "content-type": "application/problem+json",
+    "www-authenticate": "Payment id=\"ch_05a\", realm=\"door.example\", method=\"evm\", intent=\"charge\", request=\"eyJhbW91bnQiOiIxMDAwIiwiY3VycmVuY3kiOiIweDgzMzU4OWZDRDZlRGI2RTA4ZjRjN0MzMkQ0ZjcxYjU0YmRBMDI5MTMiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjg0NTMsImNyZWRlbnRpYWxUeXBlcyI6WyJhdXRob3JpemF0aW9uIl19LCJyZWNpcGllbnQiOiIweDExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEifQ\", Payment id=\"ch_05b\", realm=\"door.example\", method=\"tempo\", intent=\"charge\", request=\"eyJhbW91bnQiOiIyNTAwIiwiY3VycmVuY3kiOiIweDIwYzAwMDAwMDAwMDAwMDAwMDAwMDAwMGI5NTM3ZDExYzYwZThiNTAiLCJtZXRob2REZXRhaWxzIjp7ImNoYWluSWQiOjQyMTd9LCJyZWNpcGllbnQiOiIweDIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIifQ\""
+  },
+  "body": "{\"type\": \"https://paymentauth.org/problems/payment-required\", \"title\": \"Payment Required\", \"status\": 402}"
+}

@@ -114,6 +114,23 @@
         "falsified_by": "A declared input contract in the challenge, or the resource succeeding with no parameters."
       }
     ],
+    "protocols_spoken": [
+      "x402"
+    ],
+    "mpp": {
+      "battery": "mpp-v1",
+      "spec": "draft-00",
+      "spoken": false,
+      "challenges": [],
+      "checks": [],
+      "advisories": [],
+      "the_x402_verdict_above": "The top-level verdict keeps meaning x402-ready, permanently (the keeper's ruling, 2026-09-04): an existing ready must not change meaning under anyone's feet. A door that speaks only MPP reads not_ready on the x402 battery and that is a fact about which wire it speaks, not a defect; read protocols_spoken for the union and this block for the MPP battery's own checks.",
+      "what_this_cannot_tell_you": [
+        "Whether the door verifies a credential, delivers, or issues a Payment-Receipt: those exist only after money moves, and this store's till does not speak MPP.",
+        "Whether the price advertised in the door's /openapi.json (x-payment-info) agrees with this challenge: the free preflight makes one request, and that read is the paid audit's.",
+        "Whether the door stays up, or whether the same challenge is served to a paying client. One request, one moment."
+      ]
+    },
     "single_probe_note": "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable \u2014 a passing preflight quoted as an uptime claim is a misquote.",
     "what_this_cannot_tell_you": [
       "Whether the service behind the 402 delivers anything after payment. No probe can; that is a fact about the world, not about bytes.",
