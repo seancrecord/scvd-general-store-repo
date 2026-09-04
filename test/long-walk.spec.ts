@@ -86,7 +86,16 @@ function stubWalkWorld(options: { total: number }) {
      * added to the round would otherwise read here as the assembly
      * probing again.
      */
-    if (url.includes("x402-list.com") || url.includes("agentic.market")) {
+    // Matched on the parsed hostname, not a substring of the URL: a
+    // substring check is the shape CodeQL rightly refuses, since any
+    // host may sit before or after it. Same refusal in a stub as in
+    // the reader it stubs for.
+    const host = new URL(url).hostname;
+    if (
+      host === "x402-list.com" ||
+      host === "agentic.market" ||
+      host.endsWith(".agentic.market")
+    ) {
       return new Response("gone", { status: 503 });
     }
     void init;
