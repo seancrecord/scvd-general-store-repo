@@ -55,7 +55,16 @@ build, it is on the roadmap.
   disappears. INKED 2026-09-04: the seats sentence and the
   misuse clause (`src/store/copy/doctrine.ts`), wording as
   drafted. RULED 2026-09-04: `/scorers` stays off the
-  storefront, like `/operators`. PRESS: when a system meets
+  storefront, like `/operators`. ⚑ SUPERSEDED the same day
+  ("how do we broadcast scorers so its used? how do we make
+  it incredibly obvious?"): the room is ON the front now.
+  The ruling rested on a comparison that was not true —
+  `/operators` was never held back, it has had a storefront
+  slot all along — so the rule it invoked did not exist.
+  Also: every `/corpus` door now answers with
+  `Link: <…/scorers>; rel="help"` and the licence, so a
+  client reading only headers (or sending HEAD) learns where
+  the terms are; and the README names the room. PRESS: when a system meets
   the five listing facts, add it to the register with the
   citing URL and the date first seen, and nothing else.
   AUTOMATED 2026-09-04 ("can we not just automate this
