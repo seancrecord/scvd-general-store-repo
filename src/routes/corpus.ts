@@ -17,6 +17,7 @@ import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { citeBlock, citeHtml } from "@/lib/cite";
 import { escapeHtml } from "@/lib/sanitize";
 import {
   CORPUS_DATASET_DESCRIPTION,
@@ -358,8 +359,9 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
       404,
     );
   }
+  const roundCite = { base, what: "corpus round", which: `${brief.week} (snapshot ${brief.sequence})`, observed_at: brief.taken_at, url: `${base}/corpus/${brief.sequence}.json`, verify_url: `${base}/corpus/round/${brief.week}` };
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
-    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER });
+    return c.json({ ...brief, weeks_held: known_weeks, corrections: CORRECTIONS_POINTER, ...citeBlock(roundCite) });
   }
   const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
   return c.html(
@@ -367,7 +369,7 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
       title: `x402 endpoint readiness, week ${brief.week}: ${brief.doors.payable} of ${brief.doors.probed} probed doors payable`,
       description,
       path: `/corpus/round/${brief.week}`,
-      bodyHtml: `${briefHtml(brief)}${jsonLdScript({
+      bodyHtml: `${briefHtml(brief)}${citeHtml(roundCite, escapeHtml)}${jsonLdScript({
         "@context": "https://schema.org",
         "@type": "Dataset",
         name: `x402 endpoint readiness — ${brief.week}`,
@@ -664,5 +666,9 @@ corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
       404,
     );
   }
-  return c.json(record);
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    ...record,
+    ...citeBlock({ base, what: "corpus snapshot", which: `${record.snapshot.sequence} (${record.snapshot.week})`, observed_at: record.snapshot.taken_at, url: `${base}/corpus/${record.snapshot.sequence}.json` }),
+  });
 });

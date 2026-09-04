@@ -1097,6 +1097,14 @@ never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
 
+Every signed document and page carries a cite line (since 2026-09-04),
+derived from its own fields: the issuer, what and which, when it was
+observed, how it is signed and where the key is, and the URL whose
+bytes are the thing cited. Quote it verbatim. The recorded doors, MPP
+challenges and signed-artifact vectors this store tests itself against
+are served at stable URLs with the sha256 of the bytes, unsigned and
+said so: ${base}/fixtures.json, then \`${base}/fixtures/{set}/{name}.json\`.
+
 The second wire, read only (since 2026-09-04): a door that speaks the
 Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
 and no PAYMENT-REQUIRED header. The free preflight reads that from the

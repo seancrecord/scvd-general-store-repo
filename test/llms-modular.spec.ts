@@ -674,6 +674,12 @@ const BASE = "https://scvd.store";
  * and were renumbered at the rebase; the value was re-taken once on the
  * rebased head.)
  *
+ * Re-taken 2026-09-04 — the FIFTY-FIFTH — by the cite line and the
+ * fixtures (roadmap C7): one paragraph before the second wire's,
+ * naming the cite line every signed document carries and
+ * /fixtures.json. Confirmed before this value was taken: the guide
+ * carries "/fixtures.json" and "cite line", and still every earlier pin.
+ *
  * Re-taken 2026-09-04 — the FIFTY-FOURTH — by the second wire (roadmap
  * V3 PR 1): one paragraph before the remediation's, saying what the
  * preflight now says about a door that speaks MPP — protocols_spoken,
@@ -705,7 +711,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1cd3ca51e551acd6edd9a433c1cb13818a176c7216864565fa365e24e627f325";
+  "472cef1d7fb14fa8fa8572c745e68a35793dcc3cac24b989c1fc1e0285d7b9a2";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
