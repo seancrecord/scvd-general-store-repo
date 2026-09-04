@@ -1,4 +1,29 @@
 {
   "what_this_is": "Derived from registry/scorers-outreach.json by `npm run outreach:build` — the rows the Sunday citation watch fetches. Never hand-edit: the test fails when this and the register disagree. Empty until the keeper stamps a send.",
-  "rows": []
+  "rows": [
+    {
+      "name": "402.ad",
+      "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+      "note_sent": "2026-09-02",
+      "cites_since": null
+    },
+    {
+      "name": "Agent Catalog",
+      "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+      "note_sent": "2026-09-02",
+      "cites_since": null
+    },
+    {
+      "name": "Glama",
+      "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+      "note_sent": "2026-09-02",
+      "cites_since": null
+    },
+    {
+      "name": "x402scan",
+      "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+      "note_sent": "2026-09-02",
+      "cites_since": null
+    }
+  ]
 }

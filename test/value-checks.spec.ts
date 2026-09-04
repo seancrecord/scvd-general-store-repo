@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   CANONICAL_USDC,
   isCanonicalUsdc,
+  l3bChecks,
 } from "@/lib/value-checks";
+import { readPayTo } from "@/lib/pay-to";
 import type { Env } from "@/types";
 
 /**
@@ -185,4 +187,95 @@ describe("the desk notes a non-canonical asset without moving its verdict", () =
     expect(note?.ok).toBe(true);
     expect(note?.advisory).toBe(true);
   }, 30_000);
+});
+
+/**
+ * THE RAILS THIS DESK CALLED BROKEN (2026-09-04, /corrections).
+ *
+ * Two checks read every chain as Ethereum or Solana. An XRPL classic
+ * address is base58 inside the Solana window, so a correct payTo came
+ * back as "a base58 Solana address"; Stellar and Algorand are base32
+ * and matched nothing; and XRPL issued currencies, denominated in
+ * decimals by the ledger, were told they underpriced by a factor of a
+ * million. 63 of 1,089 hosts in one weekly round carried a published
+ * not_ready because of it.
+ *
+ * These are those doors, by the addresses they actually publish.
+ */
+describe("a rail this desk cannot read is never a defect in the door", () => {
+  const CLOUDPAYX = "rsnHPZjBSastxz1BE38WqKBR3sgpATvreL";
+  const AGENT402 = "GDNJXCKW7ZM7GEEVP674TWPU26YJNBQ2FI4ZIPRKTPTNUEJMDHFJWWRL";
+  const ASLAN_ALGO = "62A253YPATFNJCPRKID3FKD77MYJFNTVRYRP4B4JWG36EGLPY7UXFWGI7I";
+  const EVM = "0x1234567890abcdef1234567890ABCDEF12345678";
+  const failed = (accepts: Record<string, unknown>[]) =>
+    l3bChecks(accepts, readPayTo).filter((c) => !c.ok).map((c) => c.name);
+
+  it("reads an XRPL classic address as payable, where it used to say Solana", () => {
+    expect(readPayTo(CLOUDPAYX, "xrpl:0")).toMatchObject({ kind: "address", payable: true });
+    expect(failed([{ network: "xrpl:0", amount: "7132", asset: "XRP", payTo: CLOUDPAYX }])).toEqual([]);
+  });
+
+  it("reads Stellar and Algorand addresses, where it used to recognise neither", () => {
+    expect(readPayTo(AGENT402, "stellar:pubnet")).toMatchObject({ kind: "address", payable: true });
+    expect(readPayTo(ASLAN_ALGO, "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k")).toMatchObject({
+      kind: "address",
+      payable: true,
+    });
+  });
+
+  it("does not judge a chain it has never heard of, and says so rather than failing", () => {
+    const verdict = readPayTo("whatever-this-is", "someledger:1");
+    expect(verdict.kind).toBe("unknown-network");
+    expect(verdict.payable).toBeNull();
+    const checks = l3bChecks(
+      [{ network: "someledger:1", amount: "12", asset: "X", payTo: "whatever-this-is" }],
+      readPayTo,
+    );
+    const payto = checks.find((c) => c.name === "payto-payable")!;
+    expect(payto.ok).toBe(true);
+    expect(payto.detail).toContain("Not judged");
+  });
+
+  it("does not judge any amount on a rail this store does not settle on", () => {
+    // The first fix exempted XRPL issued currencies (decimal by the
+    // ledger) and kept judging XRP drops, Stellar and Algorand — on no
+    // better evidence than the assumption that had just been wrong.
+    // The rule-52 guard caught it. Recognising an address shape is not
+    // knowing a unit convention, so every non-EVM, non-Solana amount
+    // is named beside the pass and judged by nobody here.
+    for (const entry of [
+      { network: "xrpl:0", amount: "0.01", asset: "524C555344000000000000000000000000000000", payTo: CLOUDPAYX },
+      { network: "xrpl:0", amount: "0.01", asset: "XRP", payTo: CLOUDPAYX },
+      { network: "stellar:pubnet", amount: "0.5", asset: "USDC", payTo: AGENT402 },
+    ]) {
+      expect(failed([entry]), entry.network).toEqual([]);
+    }
+    const checks = l3bChecks([{ network: "xrpl:0", amount: "0.01", asset: "XRP", payTo: CLOUDPAYX }], readPayTo);
+    expect(checks.find((c) => c.name === "amount-atomic")!.detail).toContain("Not judged");
+  });
+
+  it("the whole mixed door the round misjudged now passes, entry for entry", () => {
+    expect(
+      failed([
+        { network: "eip155:8453", amount: "10000", asset: "USDC", payTo: EVM },
+        { network: "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k", amount: "10000", asset: "USDC", payTo: ASLAN_ALGO },
+        { network: "xrpl:0", amount: "0.01", asset: "524C555344000000000000000000000000000000", payTo: CLOUDPAYX },
+      ]),
+    ).toEqual([]);
+  });
+
+  it("still fails a door that is genuinely broken on a rail it does read", () => {
+    expect(failed([{ network: "eip155:8453", amount: "0.01", asset: "USDC", payTo: EVM }])).toContain("amount-atomic");
+    expect(
+      failed([{ network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", amount: "5000", asset: "USDC", payTo: EVM }]),
+    ).toContain("payto-payable");
+    expect(failed([{ network: "eip155:137", amount: "5000", asset: "USDC", payTo: "0xdeadbeef" }])).toContain("payto-payable");
+  });
+
+  it("does not call a non-EVM transfer method unbuildable", () => {
+    const evm = failed([{ network: "eip155:8453", amount: "1", asset: "USDC", payTo: EVM, extra: { assetTransferMethod: "made-up" } }]);
+    expect(evm).toContain("transfer-method-signable");
+    const xrpl = failed([{ network: "xrpl:0", amount: "7132", asset: "XRP", payTo: CLOUDPAYX, extra: { assetTransferMethod: "xrpl-payment" } }]);
+    expect(xrpl).toEqual([]);
+  });
 });

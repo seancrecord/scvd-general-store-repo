@@ -163,9 +163,12 @@ export interface WardHostResult {
    * THIS round — the probe walked a resource URL a past discovery
    * round declared, to keep observation breadth when the feed's own
    * coverage is suspect. Revisit rows carry real verdicts and stay out
-   * of the listed/gone delta.
+   * of the listed/gone delta. "well-known" (2026-09-04, the sweep): no
+   * feed gave this host a door; the host's OWN /.well-known/x402
+   * declared it. Real verdict, out of the delta for the same reason —
+   * a host declaring itself is not a directory listing or dropping it.
    */
-  source?: "discovery" | "leaderboard" | "both" | "revisit";
+  source?: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
   /**
    * RAW EVIDENCE (roadmap 1.2, B9/G1): the verbatim PAYMENT-REQUIRED
    * bytes, curated headers, and a bounded complete-body sha256 from
@@ -362,6 +365,17 @@ export interface WardRound {
     roster: number;
     walked: number;
     batches: number;
+    /** The well-known sweep (2026-09-04); absent on rounds before it. */
+    sweep?: {
+      hosts: number;
+      read: number;
+      found: number;
+      none: number;
+      unreadable: number;
+      doors_added: number;
+      capped: boolean;
+      source_unreadable: boolean;
+    };
     started_at: string;
   };
   hosts: WardHostResult[];
@@ -1159,6 +1173,7 @@ async function assembleWalkRound(
     (entry) => entry.verdict !== "not_probed",
   ).length;
   const widened = await readWidenedSources(ownHost);
+  const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
     {
       source: "discovery",
@@ -1172,6 +1187,16 @@ async function assembleWalkRound(
     { source: "fuchss", hosts: widened.fuchss },
     { source: "x402_list", hosts: widened.x402List },
     { source: "agentic_market", hosts: widened.agenticMarket },
+    /*
+     * Hosts that declared a door for themselves (the sweep). A host
+     * here is one whose own file the census could read and which
+     * named at least one door on itself — never "hosts with no
+     * doors", which the sweep counts separately below.
+     */
+    {
+      source: "well-known",
+      hosts: (await import("@/services/well-known-doors")).rosterDoorsFrom(wellKnownStore).map((d) => d.host),
+    },
   ];
   const population = await takeCensus(env, sources, walked).catch(() => null);
   const round: WardRound = {
@@ -1198,6 +1223,20 @@ async function assembleWalkRound(
       roster: walk.roster.length,
       walked,
       batches: walk.batches,
+      ...(walk.sweep
+        ? {
+            sweep: {
+              hosts: walk.sweep.hosts.length,
+              read: walk.sweep.read,
+              found: walk.sweep.found,
+              none: walk.sweep.none,
+              unreadable: walk.sweep.unreadable,
+              doors_added: walk.sweep.doors_added,
+              capped: walk.sweep.capped,
+              source_unreadable: walk.sweep.source_unreadable,
+            },
+          }
+        : {}),
       started_at: walk.started_at,
     },
     hosts: walk.results,
@@ -1294,7 +1333,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   const walkList: {
     host: string;
     url: string;
-    source: "discovery" | "leaderboard" | "both" | "revisit";
+    source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
     catalog?: CatalogTerms | null;
   }[] = [
     ...probeList.slice(0, WARD_CAP),
@@ -1310,7 +1349,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
         : await probeHost(env, entry.url, {
             // A revisit is a door no index row named this round; the
             // catalog column says so rather than comparing nothing.
-            listed: entry.source !== "revisit",
+            listed: entry.source !== "revisit" && entry.source !== "well-known",
             terms: entry.catalog ?? null,
           });
     return {
@@ -1414,7 +1453,7 @@ export function wardDelta(
   if (!previous) {
     return {
       new_hosts: current.hosts
-        .filter((entry) => entry.source !== "revisit")
+        .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
         .map((entry) => entry.host),
       gone_hosts: [],
       newly_failing: [],
@@ -1434,12 +1473,12 @@ export function wardDelta(
    */
   const listedBefore = new Set(
     previous.hosts
-      .filter((entry) => entry.source !== "revisit")
+      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
       .map((entry) => entry.host),
   );
   const listedAfter = new Set(
     current.hosts
-      .filter((entry) => entry.source !== "revisit")
+      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
       .map((entry) => entry.host),
   );
   const delta: WardDelta = {

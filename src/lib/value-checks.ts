@@ -1,4 +1,5 @@
 import { EVM_CHAINS } from "@/lib/base-rpc";
+import { familyOf } from "@/lib/pay-to";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 
 /**
@@ -111,9 +112,27 @@ export interface ValueCheck {
  */
 export function l3bChecks(
   accepts: Record<string, unknown>[],
-  readPayToImpl: (payTo: string, network: string) => { payable: boolean; detail?: string },
+  readPayToImpl: (payTo: string, network: string) => { payable: boolean | null; detail?: string },
 ): ValueCheck[] {
   const payToFailures: string[] = [];
+  /**
+   * Entries on rails this desk cannot read (2026-09-04). They are NOT
+   * failures and never enter the verdict; they are printed beside the
+   * pass so the reading names what it did not judge, which is the
+   * house sentence about gaps applied to our own instrument.
+   */
+  const payToUnjudged: string[] = [];
+  /**
+   * AMOUNTS THIS DESK MUST NOT JUDGE (2026-09-04, the same correction
+   * as payTo). "x402 amounts are ATOMIC units" is the rule on EVM and
+   * Solana, and on Stellar (stroops) and Algorand (microAlgos). It is
+   * NOT the rule for an XRPL ISSUED CURRENCY: RLUSD and friends are
+   * denominated in decimal strings by the protocol itself, so "0.01"
+   * is correct there and this desk was telling 56 hosts in one round
+   * that it "underprices by a factor of a million". Drops (XRP) stay
+   * judged, because those really are integers.
+   */
+  const amountUnjudged: string[] = [];
   const decimalAmounts: string[] = [];
   const malformedAmounts: string[] = [];
   const testnetNetworks: string[] = [];
@@ -122,13 +141,21 @@ export function l3bChecks(
     const entry = accepts[index]!;
     const network = String(entry["network"] ?? "");
     const method = declaredTransferMethod(entry);
-    if (method !== undefined && !KNOWN_TRANSFER_METHODS.includes(method)) {
+    // The known methods are EVM signature standards; a non-EVM rail
+    // naming its own is not a door this desk can call unbuildable.
+    if (
+      method !== undefined &&
+      !KNOWN_TRANSFER_METHODS.includes(method) &&
+      ["evm", "base"].includes(familyOf(network))
+    ) {
       unbuildableMethods.push(
         `accepts[${index}].extra.assetTransferMethod "${method}"`,
       );
     }
     const verdict = readPayToImpl(String(entry["payTo"] ?? ""), network);
-    if (!verdict.payable) {
+    if (verdict.payable === null) {
+      payToUnjudged.push(`accepts[${index}].payTo: ${verdict.detail ?? "not judged"}`);
+    } else if (!verdict.payable) {
       payToFailures.push(`accepts[${index}].payTo: ${verdict.detail ?? "not payable"}`);
     }
     const amount = String(entry["amount"] ?? "");
@@ -141,7 +168,23 @@ export function l3bChecks(
      * anything else is unsignable, and the check now says which
      * way it is wrong.
      */
-    if (amount.includes(".")) {
+    /**
+     * NARROWED 2026-09-04, by the rule-52 guard catching this file's
+     * own first fix. Recognising a rail's ADDRESS shape is not knowing
+     * its AMOUNT semantics: the first pass exempted XRPL issued
+     * currencies and kept judging Stellar and Algorand, on no better
+     * evidence than the assumption that had just been wrong about
+     * XRPL. So the atomic-units rule is applied only where this store
+     * settles and has tested it — EVM and Solana — and every other
+     * rail's amount is named, not judged.
+     */
+    const family = familyOf(network);
+    const judgeAmount = ["evm", "base", "solana"].includes(family);
+    if (!judgeAmount) {
+      amountUnjudged.push(
+        `accepts[${index}].amount "${amount}" on ${network} (this desk does not settle on this rail and does not know its unit convention)`,
+      );
+    } else if (amount.includes(".")) {
       decimalAmounts.push(`accepts[${index}].amount "${amount}"`);
     } else if (!/^[0-9]+$/.test(amount)) {
       malformedAmounts.push(`accepts[${index}].amount "${amount}"`);
@@ -155,7 +198,10 @@ export function l3bChecks(
       ? {
           name: "payto-payable",
           ok: true,
-          detail: "every accepts entry names a payable address for its own network",
+          detail:
+            payToUnjudged.length === 0
+              ? "every accepts entry names a payable address for its own network"
+              : `every accepts entry this desk can read names a payable address for its own network. Not judged, on rails this desk does not read: ${payToUnjudged.join("; ")}`,
         }
       : {
           name: "payto-payable",
@@ -167,7 +213,9 @@ export function l3bChecks(
           name: "amount-atomic",
           ok: true,
           detail:
-            "every accepts amount is a non-negative integer string of atomic units",
+            amountUnjudged.length === 0
+              ? "every accepts amount is a non-negative integer string of atomic units"
+              : `every accepts amount this desk judges is a non-negative integer string of atomic units. Not judged: ${amountUnjudged.join("; ")}`,
         }
       : {
           name: "amount-atomic",

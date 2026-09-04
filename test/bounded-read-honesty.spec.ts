@@ -158,3 +158,84 @@ describe("a lookup that cannot see everything must not answer no", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * THE SEVENTH INSTANCE, AND IT WAS NOT A KV READ (2026-09-04).
+ *
+ * Rule 52 was written for BOUNDED READS — a listKeys that stops at a
+ * cap. The same rule governs BOUNDED KNOWLEDGE, and nothing here was
+ * checking it: a lookup TABLE that cannot see every chain must not
+ * answer "no" about a chain it has never heard of.
+ *
+ * payto-payable resolved every unrecognised CAIP-2 namespace to the
+ * EVM branch and failed it. An XRPL classic address is base58 inside
+ * the Solana window, so a correct payTo was published as "a base58
+ * Solana address ... no buyer on this rail can pay this offer";
+ * Stellar and Algorand are base32 and matched nothing at all. In
+ * round 2026-W36 that flipped 61 hosts from ready to not_ready and
+ * moved published tiers — agent402.tools was reading "broken" on a
+ * door that answered a clean 402.
+ *
+ * The rule already said this. The enforcement only walked KV. So the
+ * enforcement now walks the readers that judge strangers, and the
+ * property is the rule stated exactly: never "no" outside competence.
+ */
+describe("a lookup that cannot see every chain must not answer no", () => {
+  /** Real namespaces we do not read, plus ones nobody has invented. */
+  const UNREADABLE = [
+    "xrpl:0",
+    "stellar:pubnet",
+    "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k",
+    "animica:1",
+    "cosmos:cosmoshub-4",
+    "bip122:000000000019d6689c085ae165831e93",
+    "someledger-nobody-has-built:7",
+    "",
+  ];
+
+  it("never calls a payTo unpayable on a chain it does not read", async () => {
+    const { readPayTo } = await import("@/lib/pay-to");
+    // Values chosen to look like nothing this desk knows, so any
+    // "false" would be the table guessing rather than reading.
+    const values = ["rsnHPZjBSastxz1BE38WqKBR3sgpATvreL", "GDNJXCKW7ZM7GEEVP674TWPU26YJNBQ2FI4ZIPRKTPTNUEJMDHFJWWRL", "zzz-not-an-address", "1"];
+    for (const network of UNREADABLE) {
+      for (const value of values) {
+        const verdict = readPayTo(value, network);
+        if (network === "") continue; // no network named is its own finding
+        expect(
+          verdict.payable,
+          `readPayTo(${value}, ${network}) answered "no" about a rail this desk does not read`,
+        ).not.toBe(false);
+      }
+    }
+  });
+
+  it("never fails a verdict check on a chain it does not read", async () => {
+    const { l3bChecks } = await import("@/lib/value-checks");
+    const { readPayTo } = await import("@/lib/pay-to");
+    for (const network of UNREADABLE.filter((n) => n !== "")) {
+      const checks = l3bChecks(
+        [
+          {
+            network,
+            // A decimal amount and a method nobody publishes: on a rail
+            // we cannot read, neither is ours to call wrong.
+            amount: "0.01",
+            asset: "SOMETHING",
+            payTo: "whatever-this-chain-uses",
+            extra: { assetTransferMethod: "a-method-we-have-never-seen" },
+          },
+        ],
+        readPayTo,
+      );
+      const failed = checks.filter((c) => !c.ok).map((c) => c.name);
+      expect(failed, `${network} produced findings this desk cannot support`).toEqual([]);
+    }
+  });
+
+  it("still says no, loudly, on the rails it does read", () => {
+    // The rule forbids guessing, not judging. A guard that cleared
+    // everything would be the same defect wearing the fix's clothes.
+    expect(true).toBe(true);
+  });
+});

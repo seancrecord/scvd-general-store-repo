@@ -40,6 +40,7 @@ import {
   disagreementsRoutes,
   observatoryRoutes,
   operatorsRoutes,
+  declareDoorRoutes,
   feedsRoutes,
   monthlyStateRoutes,
   a2aRoutes,
@@ -479,6 +480,7 @@ app.route("/", correctionsRoutes);
 app.route("/", disagreementsRoutes);
 app.route("/", observatoryRoutes);
 app.route("/", operatorsRoutes);
+app.route("/", declareDoorRoutes);
 app.route("/", feedsRoutes);
 app.route("/", monthlyStateRoutes);
 app.route("/", a2aRoutes);

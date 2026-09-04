@@ -4,6 +4,7 @@ import { MENU_ITEMS } from "@/store";
 import { OPERATOR_STAGES, unshelvedOperatorItems } from "@/routes/operators";
 import { ROOMS } from "@/store/rooms";
 import { FREE_DOORS } from "@/store/atlas";
+import { OPERATORS_FOR_MONEY, OPERATORS_PROPOSITION } from "@/store/copy/operators";
 
 /**
  * FOR OPERATORS (2026-09-03). What this file holds:
@@ -87,5 +88,36 @@ describe("the page", () => {
   it("is a registered room, and the atlas sends a seller here", () => {
     expect(ROOMS.map((room) => room.path)).toContain("/operators");
     expect(FREE_DOORS.map((door) => door.path)).toContain("/operators");
+  });
+});
+
+/**
+ * THE ROOM EARNS ITS ROW (2026-09-04). It gained a door of its own —
+ * POST /api/declare-door — so it left the pre-rule list and now owes
+ * everything rule 60 asks: the three sentences, the five answers, a
+ * typed node. feature-surfaces.spec.ts walks the rule; this pins the
+ * room's own new stage.
+ */
+describe("be found: the stage that gets a host into the census", () => {
+  it("is the first stage, sells nothing, and hands the operator both the file and the door", async () => {
+    const first = OPERATOR_STAGES[0]!;
+    expect(first.moment).toBe("Be found");
+    expect(first.items).toEqual([]);
+    const how = first.free!.how(BASE);
+    expect(how).toContain("/.well-known/x402");
+    expect(how).toContain(`${BASE}/api/declare-door`);
+    expect(how).toContain("only that host's own file");
+  });
+
+  it("the twin carries the five answers and the sentences; the page carries a typed node", async () => {
+    const twin = (await (await SELF.fetch(`${BASE}/operators`, { headers: { Accept: "application/json" } })).json()) as Record<string, unknown>;
+    for (const key of ["what_this_is", "price", "how_to_call", "errors", "security", "proposition", "free_first", "opened"]) {
+      expect(twin[key], key).toBeDefined();
+    }
+    expect(twin["proposition"]).toBe(OPERATORS_PROPOSITION);
+    expect(twin["price"]).toBe(OPERATORS_FOR_MONEY);
+    const html = await (await SELF.fetch(`${BASE}/operators`, { headers: { Accept: "text/html" } })).text();
+    expect(html).toContain('"@type":"HowTo"');
+    expect(html).toContain("Be found");
   });
 });

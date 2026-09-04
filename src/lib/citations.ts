@@ -100,11 +100,25 @@ export const SELF_PUBLISHED_IDS: readonly string[] = [
  * seven such echoes as citations; six of the seven were our own
  * sentence and the seventh our own sample certificate. A citation is a
  * page pointing at ONE ROW — the thing a reader can reproduce.
+ *
+ * TIGHTENED AGAIN the same day, after the first real sweep. It found
+ * three "citations" and all three were false: two directories showing
+ * the example purchase output this store publishes into bazaar
+ * discovery (a certificate whose signature is the literal string
+ * "<128 hex chars, ed25519>"), and one showing a TRUNCATED URL,
+ * `/api/verify/ce`, that resolves to nothing. So a verify URL now has
+ * to carry a well-formed id, and both ids this store publishes about
+ * itself are excluded by name.
  */
 export function citationPatterns(base: string): RegExp[] {
   const root = base.replace(/\/$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return [
-    new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
+    // A real artifact id is a prefix and ten characters (lib/ids.ts).
+    // The loose form matched `/api/verify/ce` on socketcat's page — a
+    // TRUNCATED display of a URL, resolving to nothing, counted as a
+    // citation on 2026-09-04. A citation a reader cannot follow is not
+    // a citation.
+    new RegExp(`${root}/api/verify/[a-z]+_[A-Za-z0-9]{8,24}\\b`, "g"),
     new RegExp(`${root}/corpus/[0-9]+\\.json`, "g"),
     new RegExp(`${root}/corpus/host/[A-Za-z0-9.-]+\\.json`, "g"),
     new RegExp(`${root}/corpus/round/[0-9]{4}-W[0-9]{2}(?:\\.json)?`, "g"),
