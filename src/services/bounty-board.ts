@@ -2,6 +2,7 @@ import {
   BASE_EVM,
   BASE_USDC,
   evmChainOf,
+  findAuthorizationUseInRange,
   getBlockNumber,
   getReceipt,
   isSameAddress,
@@ -90,6 +91,31 @@ export interface BountyRecord {
     observation?: string;
     authorization_nonce: string;
     authorization_valid_before: string;
+    /**
+     * THE CHAIN'S PART, KEPT (2026-09-04): the block the settlement
+     * landed in, read off the receipt this store verified. The corpus
+     * row cites it. Absent on claims paid before it was written down.
+     */
+    settled_block?: number;
+    /**
+     * OUR OWN KNOCK AT THE MOMENT OF THE CLAIM (2026-09-04, the keeper:
+     * "what if they type nonsense?"). The walker's observation is a
+     * claim and stays one. What this store CAN verify about the door
+     * it verifies itself: one unpaid GET at claim time, the same
+     * battery the census runs, verdict and named failures kept. So a
+     * crowd-walked row carries two facts of ours — the settlement on
+     * chain and the door's shape as we saw it — around one claim of
+     * theirs. Absent when the knock could not be taken; never a
+     * refusal, the claim pays on the chain's part alone.
+     */
+    house_probe?: {
+      verdict: "ready" | "not_ready" | "unreachable";
+      failed: string[];
+      advisories: string[];
+      battery?: string;
+      latency_ms?: number;
+      at: string;
+    };
   };
 }
 
@@ -570,6 +596,29 @@ export async function claimBounty(
       );
     }
 
+    /*
+     * OUR OWN KNOCK, beside their claim. The settlement above is
+     * proven; what the door looks like is something this store can
+     * see for itself, so it looks — one unpaid GET, the census's
+     * battery, fail-soft: a knock that cannot be taken changes
+     * nothing about the payout. Dynamic import: ward-round must not
+     * be a static dependency of the board (it imports nothing from
+     * here today, and a cycle here is the kind that deadlocks a
+     * worker on a bad day).
+     */
+    const houseProbe = await import("@/services/ward-round")
+      .then(({ probeHost }) => probeHost(env, bounty.target_url))
+      .then((probe) => ({
+        verdict:
+          probe.verdict === "not_probed" ? ("unreachable" as const) : probe.verdict,
+        failed: probe.failed,
+        advisories: probe.advisories,
+        ...(probe.battery ? { battery: probe.battery } : {}),
+        ...(probe.latency_ms !== undefined ? { latency_ms: probe.latency_ms } : {}),
+        at: new Date().toISOString(),
+      }))
+      .catch(() => undefined);
+
     // Rule 3, outbound: the address OUR money goes to, screened, fail
     // closed. The oracle needs no key; an unanswered screen pays nobody.
     // Read over the same endpoint ladder as the receipt above — a 429
@@ -655,6 +704,8 @@ export async function claimBounty(
         payer: input.payer.toLowerCase(),
         payout_to: input.payoutTo.toLowerCase(),
         claimed_at: now.toISOString(),
+        settled_block: receiptBlock,
+        ...(houseProbe ? { house_probe: houseProbe } : {}),
         ...(input.observation
           ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
           : {}),
@@ -685,4 +736,87 @@ export async function claimBounty(
     await releaseClaim();
     throw error;
   }
+}
+
+/**
+ * DID THE WALKER REDEEM IT? (2026-09-04, the keeper: "we still have
+ * to test that they can claim it, cause it's unclaimed.")
+ *
+ * "Paid" in this store's books means a signed authorization went out.
+ * Whether the recipient ever submitted it is the chain's fact, and
+ * until today nobody asked: the page said "still redeemable" of every
+ * live payout whether it had been redeemed an hour ago or never. An
+ * EIP-3009 nonce burns at most once and emits AuthorizationUsed
+ * (authorizer, nonce) when it does — both indexed, so the node answers
+ * the exact question. One bounded read per paid bounty, from the
+ * block the bounty opened to the head; a read that fails answers
+ * "unknown", never "not redeemed".
+ */
+export type PayoutRedemption =
+  | { state: "redeemed"; tx_hash: string }
+  | { state: "unredeemed" }
+  | { state: "unknown"; problem: string };
+
+export async function payoutRedemptions(
+  env: Env,
+  bounties: readonly BountyRecord[],
+  cap = 25,
+): Promise<Record<string, PayoutRedemption>> {
+  const out: Record<string, PayoutRedemption> = {};
+  const paid = bounties
+    .filter((bounty) => bounty.status === "paid" && bounty.claim)
+    .slice(0, cap);
+  if (paid.length === 0) return out;
+  if (!env.FIELD_WALLET_KEY) {
+    for (const bounty of paid) {
+      out[bounty.bounty_id] = {
+        state: "unknown",
+        problem: "no field wallet on this deployment to ask the chain about",
+      };
+    }
+    return out;
+  }
+  const authorizer = (await fieldSignerFromKey(env.FIELD_WALLET_KEY)).address;
+  const head = await getBlockNumber(env, BASE_EVM);
+  for (const bounty of paid) {
+    try {
+      const use = await findAuthorizationUseInRange(
+        env,
+        authorizer,
+        bounty.claim!.authorization_nonce,
+        bounty.opened_block,
+        head,
+        BASE_EVM,
+      );
+      out[bounty.bounty_id] = use
+        ? { state: "redeemed", tx_hash: use.txHash }
+        : { state: "unredeemed" };
+    } catch (error) {
+      out[bounty.bounty_id] = {
+        state: "unknown",
+        problem: String(error instanceof Error ? error.message : error).slice(0, 160),
+      };
+    }
+  }
+  return out;
+}
+
+/**
+ * The authorizations a recipient can still turn into money: paid,
+ * inside validBefore, and not already burned on chain. Redeemed ones
+ * are money gone, not money promised; unknown ones stay counted, the
+ * cautious direction.
+ */
+export function livePayouts(
+  bounties: readonly BountyRecord[],
+  redemptions: Readonly<Record<string, PayoutRedemption>>,
+  now: Date,
+): BountyRecord[] {
+  const nowSeconds = Math.floor(now.getTime() / 1000);
+  return bounties.filter(
+    (bounty) =>
+      bounty.status === "paid" &&
+      Number(bounty.claim?.authorization_valid_before ?? "0") > nowSeconds &&
+      redemptions[bounty.bounty_id]?.state !== "redeemed",
+  );
 }
