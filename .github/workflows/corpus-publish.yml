@@ -1,0 +1,28 @@
+# Mirror the newest signed round to Zenodo and Hugging Face, Mondays at
+# 09:00 UTC (the walk signs the round Sundays at 11:00 UTC), or by hand.
+# Both mirrors are optional: a missing token skips that mirror with a
+# line saying so. scripts/corpus-publish.mjs; secrets ZENODO_TOKEN and
+# HF_TOKEN in the repository's Actions secrets.
+name: corpus publish
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Mirror the newest round
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: node scripts/corpus-publish.mjs

@@ -1540,3 +1540,42 @@ describes.
   `https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness`
   (relation "Is identical to", type Dataset), then "Publish".
   Metadata edits publish in place; no new version, no new DOI.
+
+## The weekly mirror, built — 2026-09-03, late afternoon
+
+`npm run corpus:publish` (`scripts/corpus-publish.mjs`, pure parts in
+`scripts/lib/corpus-publish.mjs`, offline tests in
+`scripts/corpus-publish.test.mjs`, in the gates) mirrors the newest
+signed round to the two copies: a new version on the Zenodo record
+under the concept DOI, and one commit to the Hugging Face dataset. It
+reads the live `/corpus.json`, takes the DOI from the index's own
+`identifier` and the Hugging Face repo from its `sameAs` (derived,
+never typed), asks each mirror what it already holds, and sends only
+the round files it lacks plus the index and the tiers file, which
+change every round. A signed round is never re-sent. A missing token
+skips that mirror with a line saying so; the corpus is published on
+the site regardless.
+
+`.github/workflows/corpus-publish.yml` runs it Mondays at 09:00 UTC,
+after the Sunday walk, and on demand. `--dry-run` prints the plan
+and touches nothing; run 2026-09-03 against the live index it read
+round 5 (2026-W36), the concept DOI and the dataset repo correctly.
+The Zenodo and Hugging Face conversations could not be exercised
+from the build sandbox (both hosts are egress-blocked); the first
+live run is the test, and it is idempotent, so a half-run re-runs
+clean.
+
+⚑ Keeper, the two tokens, as repository secrets (GitHub → the repo →
+Settings → Secrets and variables → Actions → New repository secret):
+
+1. `ZENODO_TOKEN`: zenodo.org → your avatar → Applications →
+   Personal access tokens → New token, scopes `deposit:write` and
+   `deposit:actions`.
+2. `HF_TOKEN`: huggingface.co → Settings → Access Tokens → Create new
+   token, type Write.
+
+Then Actions → "corpus publish" → Run workflow, once, and read the
+log: it should say Zenodo already holds 5.json and Hugging Face
+already holds 5.json, and send only the index and tiers. The next
+Monday sends round 6 on its own. The same script runs from a laptop
+with the two variables exported.
