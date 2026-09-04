@@ -101,8 +101,12 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/developers", "developers"],
   ["/how-it-works", "how-it-works"],
   ["/how-it-works.json", "how-it-works.json"],
-  ["/doors", "doors"],
-  ["/doors.json", "doors.json"],
+  /*
+   * NOT /doors and NOT /doors.json, on purpose. That room promises in
+   * its own words that reading it "writes anything" nowhere, dated and
+   * held by a standing test (test/door-index.spec.ts). A porch row is
+   * a write. The sentence outranks the count.
+   */
   ["/pricing", "pricing"],
   ["/pricing.md", "pricing.md"],
   ["/rails", "rails"],
