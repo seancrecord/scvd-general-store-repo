@@ -21,6 +21,7 @@ import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
+import { missingWeeks } from "@/services/ward-heartbeat";
 import { escapeHtml } from "@/lib/sanitize";
 import {
   CORPUS_DATASET_DESCRIPTION,
@@ -77,6 +78,9 @@ corpusRoutes.get("/corpus.json", async (c) => {
   const chain = await verifyCorpusChain(c.env, records);
   const first = records[0]?.snapshot.taken_at ?? null;
   const last = records[records.length - 1]?.snapshot.taken_at ?? null;
+  // Derived from the chain's own week keys, never from a parallel count.
+  const chainWeeks = records.map((record) => record.snapshot.week);
+  const chainGaps = missingWeeks(chainWeeks);
   return c.json({
     /**
      * THE CORPUS DECLARES ITSELF A DATASET, and the reason is
@@ -183,6 +187,29 @@ corpusRoutes.get("/corpus.json", async (c) => {
     },
     started: first,
     entries: records.length,
+    /**
+     * THE WEEKS THE CHAIN DOES NOT HOLD (2026-09-04).
+     *
+     * The index has always said how many entries there are and when
+     * the record started. Between those two facts a reader does the
+     * arithmetic themselves and gets it wrong in the flattering
+     * direction: a chain running from July with thirty entries reads
+     * as thirty unbroken weeks unless a missing week is NAMED. The
+     * per-week rooms have always 404'd honestly and listed the weeks
+     * held; nothing on the index said a week was absent.
+     *
+     * `weeks_missing` is derived from the chain's own week keys, so
+     * it cannot disagree with the entries below it. Empty is the
+     * good answer and it is still published as a field rather than
+     * omitted — a key that vanishes when the news is good teaches a
+     * reader to read silence as continuity.
+     */
+    continuity: {
+      weeks_held: chainWeeks.length,
+      weeks_missing: chainGaps,
+      what_a_gap_means:
+        "A week between our first and newest entry that holds no snapshot at all: the round did not run, or ran and could not be sealed. It is a gap in OUR record, not a quiet week in the ecosystem, and the two are indistinguishable from the outside unless we say which this was.",
+    },
     chain,
     how_to_verify: [
       `1. Fetch any entry at ${base}/corpus/{sequence}.json.`,

@@ -118,6 +118,7 @@ import {
   verifyRoutes,
   wellKnownRoutes,
   coverageRoutes,
+  sourceRoutes,
   botAuthRoutes,
   botAuthLandingRoutes,
   whatRoutes,
@@ -492,6 +493,7 @@ app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", coverageRoutes);
+app.route("/", sourceRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
 app.route("/", buyRoutes);
@@ -981,6 +983,30 @@ const worker: ExportedHandler<Env> = {
             condition: "worker_health",
             detail: `Operator statement sweep failed: ${String(error)}`,
           }),
+      ),
+    );
+    /**
+     * THE WARD'S HEARTBEAT rides the HOURLY press, deliberately not
+     * the Sunday one: a watchdog on the same schedule as the thing it
+     * watches dies with it. The Sunday cron alerts when the round
+     * THROWS; nothing alerted when the round never ran, because a
+     * cron that does not fire throws nothing — and nothing alerted
+     * when a round completed having recorded nothing at all, which on
+     * every public surface is indistinguishable from a quiet week.
+     * Both are now checked here, deduped by condition so a standing
+     * fault is one notice rather than one an hour.
+     */
+    ctx.waitUntil(
+      import("@/services/ward-heartbeat").then(({ wardHeartbeatWatch }) =>
+        wardHeartbeatWatch(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "ward-heartbeat-failed",
+              detail: `The ward heartbeat itself failed: ${String(error)}. The watchdog is down, which says nothing about the round — check /sources and /admin/ward by hand until this clears.`,
+            }),
+        ),
       ),
     );
     ctx.waitUntil(runHealthChecks(env));

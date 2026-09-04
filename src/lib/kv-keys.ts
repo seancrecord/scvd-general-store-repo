@@ -67,6 +67,13 @@ export const KV_KEYS = {
   operatorStatement: (statementId: string): string => `ostmt:${statementId}`,
   operatorStatementPrefix: "ostmt:",
   wardRound: (week: string): string => `ward:${week}`,
+  /**
+   * The rounds' shared prefix, so the source register can walk the
+   * history the same way the corpus walks its own. Deliberately NOT
+   * matched by `ward_latest` / `ward_previous`, which are pointers
+   * rather than rounds and would be counted twice by a listing.
+   */
+  wardRoundPrefix: "ward:",
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
   /**

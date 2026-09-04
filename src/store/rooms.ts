@@ -258,6 +258,17 @@ export const ROOMS: readonly Room[] = [
    * to the operator deciding whether to trust it.
    */
   { path: "/coverage", name: "What we observe, and what we do not" },
+  /**
+   * The source register, 2026-09-04. The coverage matrix above says
+   * where our looking stops; this says where our numbers COME FROM
+   * and when each of those places last answered. It exists because
+   * the roster it replaced was prose in a TypeScript file that
+   * nothing re-checked — a claim about the present tense with no
+   * mechanism to make it false. Held off the storefront pending the
+   * keeper's slot ruling, like every room before it; every
+   * agent-read surface carries it from day one.
+   */
+  { path: "/sources", name: "Where our numbers come from", on_storefront: false },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   /**
