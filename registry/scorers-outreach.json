@@ -1,0 +1,1018 @@
+{
+  "what_this_is": "One entry per system that scores, ranks, lists, or monitors x402 endpoints or MCP servers - the outreach register for the note on the desk. Facts only, and nothing here is typed twice: registry/scorers-outreach.md is rendered from this file by npm run outreach:build, the test fails when the two disagree, and npm run outreach:check reads every url here for one of our row URLs or the cite_json shape. Alphabetical by name, never a priority order.",
+  "the_note": "The note to send is the one on the desk under 'For scorers and marketplaces'; it is never rewritten here or anywhere else in this tree. note_sent records the date the keeper says he sent it, and only then - the register never marks a note sent on its own.",
+  "the_fields": "name, url, what_it_scores (one sentence), contact (the address or form their own site gives, or null), found_on (where we learned of them), note_sent (date or null), reply (null, or one sentence with a date), cites_since (null until their page carries one of our row URLs or the cite_json shape).",
+  "seeded": "2026-09-04",
+  "systems": [
+    {
+      "name": "10x402",
+      "url": "https://10x402.com",
+      "what_it_scores": "x402 conformance lint: 75 checks against your live 402 with a specific fix for each finding, plus a separate Bazaar-indexability verdict.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "402.ad",
+      "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+      "what_it_scores": "The search engine for the agentic economy.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "54ch10 Brief API",
+      "url": "https://54ch10.uk/wire.md",
+      "what_it_scores": "GET /v1/open $0.015 (URL brief+whois+page).",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "767-2676.com - POPCORN",
+      "url": "https://767-2676.com/agents",
+      "what_it_scores": "Paid, signed temporal grounding for autonomous agents.",
+      "contact": "violet@briarwood.ai",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "ACE — Autonomous Commerce Engine by Black Knight Technologies",
+      "url": "https://blackknightstech.com",
+      "what_it_scores": "Evidence-backed x402 assurance APIs for part identity, source commercial-use checks, evidence provenance, rights clearance, and release certification, paid in Base USDC.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "AEGIS",
+      "url": "https://api.mcx-ventures.com/ui",
+      "what_it_scores": "Pay-per-call USDC on Base.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Aegis",
+      "url": "https://borisinc.com",
+      "what_it_scores": "Delivery-verified trust scoring for x402 services.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Agent Catalog",
+      "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+      "what_it_scores": "Find an agent by what it does.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Agent Identity Registry",
+      "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+      "what_it_scores": "AIR — The global identity standard and trust framework for AI agents.",
+      "contact": "https://agentidentityregistry.org/contact",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Agent Plugins Directory",
+      "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+      "what_it_scores": "Every Agent Plugin we can find for ChatGPT, Codex, Cursor, GitHub Copilot, VS Code and Kiro, each one verified against the official 1.0.0 schema.",
+      "contact": "info@ellelion.com",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "agent-tools.cloud",
+      "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+      "what_it_scores": "agent-tools.cloud is an open discovery directory for x402 paid APIs, remotely callable MCP servers, and A2A agents, with health checks and safety signals for agentic workflows.",
+      "contact": "https://agent-tools.cloud/about",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "AgentAge Catalog",
+      "url": "https://catalog.agentage.io/mcp/store-scvd-general-store",
+      "what_it_scores": "An open, searchable catalog of MCP servers for every AI.",
+      "contact": "support@agentage.io",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "AgentBiz",
+      "url": "https://agentbiz.mysterio.cloud",
+      "what_it_scores": "Three keyless pay-per-call services for AI agents on Base mainnet.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "agentic.market",
+      "url": "https://agentic.market/services/scvd-store",
+      "what_it_scores": "Thousands of services.",
+      "contact": "https://agentic.market/about",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Audit Tools",
+      "url": "https://audit-tools.ai",
+      "what_it_scores": "Evaluate an Apify actor before you use it.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Bounty Truth API",
+      "url": "https://happybirthday.digitalshop.xin/bounty-truth/guide.md",
+      "what_it_scores": "Deterministic preflight risk checks for public GitHub bounty issues.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Butterfly Delta Order Preflight",
+      "url": "https://butterflydelta.com",
+      "what_it_scores": "Exact-order execution-integrity preflight for autonomous crypto trading agents.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Canu Verify",
+      "url": "https://api.canuverify.com",
+      "what_it_scores": "Machine-first verification APIs for autonomous agents: deterministic MCP package security audits, isolated website and WebGL release QA.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Circle Agents",
+      "url": "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+      "what_it_scores": "Financial infrastructure for autonomous economic actors.",
+      "contact": "arbitration@circle.com",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Cleared Index Paid Probe",
+      "url": "https://clearedindex.com",
+      "what_it_scores": "Genuine HTTP 402 paid probe for Cleared Index ($0.001 USDC on Base).",
+      "contact": "hello@clearedindex.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "CopperheadAI",
+      "url": "https://copperhead.lonestaroracle.xyz",
+      "what_it_scores": "Security audit for Move smart contracts on Aptos and Sui.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "CottonmouthAI",
+      "url": "https://cottonmouth.lonestaroracle.xyz",
+      "what_it_scores": "POST /audit with Rust smart contract source or a GitHub URL and it returns an LLM generated security audit report, with per finding severity, description, proof of concept and fix.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Cursor Directory",
+      "url": "https://cursor.directory/plugins/scvd-general-store-repo",
+      "what_it_scores": "Directory of Cursor plugins and MCP servers; carries a listing page for this store.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Data Quality Gate",
+      "url": "https://www.aidatatools.dev",
+      "what_it_scores": "Clean scraped data and assess data quality before an agent acts on it.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Datasource Pulse",
+      "url": "https://datasourcepulse.com",
+      "what_it_scores": "One live health check on a data source, one instant machine-readable verdict.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Decipher Ranker",
+      "url": "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+      "what_it_scores": "Rank, benchmark, and improve your x402 merchant API.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Delvorn ASSET-TEST-FE2B3590",
+      "url": "https://delvorn.site",
+      "what_it_scores": "$1 USDC on Base.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Dokimo Verify API",
+      "url": "https://dokimo.augaster.com",
+      "what_it_scores": "Pay-per-call x402 endpoint that independently recomputes a Merkle evidence proof to its committed root and returns a signed attestation.",
+      "contact": "https://dokimo.augaster.com/contact.html",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Endpoint Liveness Probe",
+      "url": "https://x402.shortforge.dev/",
+      "what_it_scores": "A measured verdict on whether an endpoint is actually alive.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "fingers",
+      "url": "https://fingersai.co",
+      "what_it_scores": "The honest trust index for x402: check who you're paying before your agent pays.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "FractalAI � Post-Quantum Proofs for AI Agents",
+      "url": "https://fractalai.net.co",
+      "what_it_scores": "Post-quantum (CRYSTALS-Dilithium-2, NIST FIPS 204) services for autonomous agents, payable per call in USDC on Base: Dilithium-2 signing, PQC signature verification, AI decision attestation (VAID-1).",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "getdrio",
+      "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
+      "what_it_scores": "ChatGPT is recommending your competitors.",
+      "contact": "https://www.getdrio.com/contact",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "getmcp.es",
+      "url": "https://www.getmcp.es/servers/general-store",
+      "what_it_scores": "Install and configure MCP servers across Claude Desktop, VS Code, Cursor, Windsurf, Codex, and 14 more AI apps with one command.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Glama",
+      "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+      "what_it_scores": "81,811 MCP servers, all scanned and scored.",
+      "contact": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/blob/17ece1c95c5e4f0eb9b58ac58467409a37b186ec/WALKABOUT.md",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "Hermes Plant",
+      "url": "https://hermesplant.com/agent-services/action-safety-workflow",
+      "what_it_scores": "Deterministic pre-execution safety gates and signed evidence for AI agents.",
+      "contact": "contact@hermesplant.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Herramientas Cobrables",
+      "url": "https://herramientas-cobrables.consultoressasic.chatgpt.site",
+      "what_it_scores": "Small deterministic pay-per-use services for AI agents: JSON contract validation, business margin and break-even calculations, and public stock quotes.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "HexScan",
+      "url": "https://hexscan.xyz",
+      "what_it_scores": "Smart contract risk triage API.",
+      "contact": "glm-5.2@basecradle.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "HostDeFi Token Risk API",
+      "url": "https://hostdefi.com",
+      "what_it_scores": "Token safety verdicts (A+ to F grade, score, on-chain + market-structure signals) for Solana and EVM tokens, paid per call via x402 (USDC on Solana, Base, Polygon, Arbitrum, Avalanche; charge-on-success only).",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "IBANforge",
+      "url": "https://ibanforge.com",
+      "what_it_scores": "IBAN validation and BIC/SWIFT lookup backed by primary bank registries (GLEIF, SIX, Bundesbank, EBA, Bank of England).",
+      "contact": "support@ibanforge.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "IntentFence",
+      "url": "https://agentpass-protocol.rmalka06.chatgpt.site",
+      "what_it_scores": "Pre-transaction policy and quote safety checks for autonomous AI agents.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "KHOTEM — Cryptographic Witness",
+      "url": "https://khotem.com",
+      "what_it_scores": "KHOTEM is a cryptographic witness for AI agents: seal (SHA-256 commitments), attest, verify, timestamp and audit, plus three paid operational-law documents for agent builders.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Lazaretto",
+      "url": "https://lazaretto.dev",
+      "what_it_scores": "Deterministic pre-install verification for npm packages, AI agent skills and MCP tools.",
+      "contact": "contact@lazaretto.dev",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "LedgerProof Settlement Army",
+      "url": "https://ledgerproofhq.io",
+      "what_it_scores": "Pay-per-call evidence for autonomous agents, settled in USDC on Base via x402 — no account, no API key, no subscription.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Lightnow",
+      "url": "https://lightnow.ai/servers/store.scvd/general-store/versions",
+      "what_it_scores": "Discover trusted MCP servers, manage Runtime Profiles, connect AI clients through LightNow Proxy, and analyze runtime health with one MCP control plane.",
+      "contact": "https://lightnow.ai/contact",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "LION — Verified Company & Compliance Data",
+      "url": "https://lionx402.com",
+      "what_it_scores": "AML wallet + company counterparty checks for AI agents.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "M0 Email Verification",
+      "url": "https://m0.aiverall.com/v1/metadata",
+      "what_it_scores": "Validate an email address before your agent spends money enriching, contacting, or storing the lead.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "M2M Sentinel",
+      "url": "https://m2msentinel.com",
+      "what_it_scores": "Deterministic Base mainnet transaction preflight and static bytecode capability evidence with PUSH-aware opcode analysis, proxy and EIP-7702 resolution, explicit unknown states, and x402 v2 access.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "m8ven.ai",
+      "url": "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
+      "what_it_scores": "Independent trust scores for every MCP and business.",
+      "contact": "https://m8ven.ai/mcp/tydung26-websupport-mcp-1i3pwi",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "MCP Lookup",
+      "url": "https://mcplookup.com/server/store.scvd/general-store",
+      "what_it_scores": "Check MCP servers before you connect.",
+      "contact": "hello@mcplookup.com",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "MCP Registry (official)",
+      "url": "https://registry.modelcontextprotocol.io",
+      "what_it_scores": "Official MCP Registry",
+      "contact": null,
+      "found_on": "the registry half of npm run listings:check; our two servers are published there",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "mcp-marketplace.io",
+      "url": "https://mcp-marketplace.io/server/store-scvd-general-store",
+      "what_it_scores": "The curated, security-first marketplace for MCP servers.",
+      "contact": "support@mcp-marketplace.io",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "mcp.so",
+      "url": "https://mcp.so/servers/scvd-store",
+      "what_it_scores": "Connect AI apps to tools, data, and automated workflows.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "MCPBeat",
+      "url": "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+      "what_it_scores": "MCP server directory; carries listing pages for both of this store's servers.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "mcpindex.ai",
+      "url": "https://mcpindex.ai/server/store-scvd-general-store",
+      "what_it_scores": "The drift-monitored MCP server index with an in-path trust gate: pins each tool contract and HOLDs when it silently changes - before your agent acts.",
+      "contact": "hello@mcpindex.ai",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "MCPmarket",
+      "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+      "what_it_scores": "MCP server marketplace; carries a listing page for this store.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "mcppedia",
+      "url": "https://mcppedia.org/s/store-scvd-general-store",
+      "what_it_scores": "Discover and compare 36,000+ MCP servers — each scored on security, maintenance, and efficiency with real CVE scanning.",
+      "contact": "https://mcppedia.org/about",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "mcpservers.org",
+      "url": "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
+      "what_it_scores": "Explore 9,800+ official and community MCP servers for Claude, Codex, Cursor, and other AI agents.",
+      "contact": "https://github.com/seancrecord/scvd-general-store-repo/blob/HEAD/WALKABOUT.md",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "Nishvault x402 Pre-Send Guard",
+      "url": "https://api.nishvault.com/elizaos-action",
+      "what_it_scores": "0.01 USDC on Base for pre-send EVM transaction simulation for AI agents.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "nsgoods Sanctions Screening Oracle",
+      "url": "https://x402.nsgoods.org",
+      "what_it_scores": "Multi-chain OFAC SDN exact-address screening.",
+      "contact": "#about",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Payan Catalog Health Checker",
+      "url": "https://payanagent.com",
+      "what_it_scores": "4-cent x402 health check: hit a PayanAgent catalog endpoint and get live 402/accepts/payTo/uptime evidence as JSON.",
+      "contact": "payanagent@agentmail.to",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "PayPerByte",
+      "url": "https://www.payperbyte.io",
+      "what_it_scores": "Verify-before-act oracles for x402 agents.",
+      "contact": "hello@payperbyte.io",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Permit Verdict Settlement Oracle",
+      "url": "https://permitverdict.com/developers",
+      "what_it_scores": "Settlement oracle for crypto price events.",
+      "contact": "support@permitverdict.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "pkgproof",
+      "url": "https://pkgproof.net",
+      "what_it_scores": "pkgproof is a package-verification oracle for AI coding agents.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "probe402",
+      "url": "https://probe402.com",
+      "what_it_scores": "Independent health, price and history lookups for x402 and MPP endpoints.",
+      "contact": "hello@probe402.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "PulseFeed — x402 Trust & Safety Oracle",
+      "url": "https://pulsefeed.dev",
+      "what_it_scores": "Verify any x402 endpoint before your agent pays: liveness, scam/anomaly scan (payTo hijack, bait-and-switch, honeypot), on-chain receiver verification and an open Trust Score.",
+      "contact": "nikolife2016@gmail.com",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "RattlerAI",
+      "url": "https://rattler.lonestaroracle.xyz",
+      "what_it_scores": "Automated security audit for Solidity and EVM smart contracts, returning a Markdown report with findings by severity, proof of concept snippets and remediation notes.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "roninforge state-of-mcp",
+      "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+      "what_it_scores": "Free, open-source dev tools that track AI coding spend: a Claude Code spend monitor, a dashboard, a dated AI price index, and an MCP registry census.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Rubric Protocol — Post-Quantum AI Attestation",
+      "url": "https://rubric-protocol.com",
+      "what_it_scores": "Post-quantum attestation and evidence services for AI agents.",
+      "contact": "https://rubric-protocol.com/contact",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "SALT19 Agent Utility Grid",
+      "url": "https://salt19.com/agent-utility-grid/",
+      "what_it_scores": "MCP/x402 decision and verification utilities for autonomous software agents, paid in USDC on Base.",
+      "contact": "https://salt19.com/about",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Second Opinion",
+      "url": "https://secondopinionx402.com",
+      "what_it_scores": "Adversarial verification for AI agents: an independent skeptic attempts to refute a claim before the agent acts on it, returning a structured verdict (refuted / supported / inconclusive) with calibrated confidence.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Sentinel Global Check",
+      "url": "https://sentinel.rootstuff.io",
+      "what_it_scores": "Check any URL from four monitoring regions at once (US East, US West, EU, Asia) and get per-region reachability and latency with a consensus verdict.",
+      "contact": "https://sentinel.rootstuff.io/about",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Sentinel-01",
+      "url": "https://mungi.qd.je/v1/x402-audit/preview",
+      "what_it_scores": "Deterministic x402 v2 endpoint compliance auditor on Base.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "signal402",
+      "url": "https://signal402.com/services/scvd-store",
+      "what_it_scores": "Track 296 x402-enabled APIs across 5 categories.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "skills.sh",
+      "url": "https://skills.sh/seancrecord/scvd-general-store-repo",
+      "what_it_scores": "Discover and install skills for AI agents.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Smithery",
+      "url": "https://smithery.ai/servers/seancrecord/scvd-general-store",
+      "what_it_scores": "Connect agents to thousands of tools and services so they can act with more agency.",
+      "contact": "support@smithery.ai",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "socketcat",
+      "url": "https://socketcat.com/servers/store.scvd/general-store",
+      "what_it_scores": "An open registry for MCP servers and agent blueprints.",
+      "contact": "https://socketcat.com/blueprints?category=support",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "Sourcey Startup Review",
+      "url": "https://sourcey.com",
+      "what_it_scores": "Evidence-backed human review of startup credit and startup program submissions, paid per review using x402 on Base.",
+      "contact": "https://sourcey.com/catalog/creatorsuite/offers/annual-plan-discount-and-support",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Spoolis",
+      "url": "https://spoolis.com",
+      "what_it_scores": "Verify whether delivered work satisfied explicit acceptance criteria.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "StillOS Notary",
+      "url": "https://nolawealthfinancial.com",
+      "what_it_scores": "Signed x402 verification and screening primitives: claim notarization, resolver-graded verdicts, OFAC SDN screening, and validated corporate distress scoring, backed by an on-chain correctness bond.",
+      "contact": "https://nolawealthfinancial.com/about/",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Survival Colony — GitHub Opportunity Due-Diligence",
+      "url": "https://185-70-184-213.sslip.io",
+      "what_it_scores": "Read-only GitHub issue due-diligence for autonomous agents: issue state, assignment and claim signals, open PR competition, repository freshness, and strict payment-provenance checks.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "TinyOps Automation Integration Preflight",
+      "url": "https://tinyopsstudio.com/automation-preflight-api.html",
+      "what_it_scores": "Public-page automation readiness and acceptance-pack API.",
+      "contact": "https://tinyopsstudio.com/support",
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "token-risk",
+      "url": "https://5-9-107-124.nip.io",
+      "what_it_scores": "Static on-chain token/contract risk scanner (bytecode-only, safe): proxy/upgradeability, owner/mint/pause/blacklist/setFee selectors, Sourcify-verified source, honeypot heuristics.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "toll402",
+      "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+      "what_it_scores": "Search and compare MCP servers, APIs and exact endpoints that accept pay-per-call access over the x402 protocol.",
+      "contact": "https://toll402.com/contact",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Tracevero",
+      "url": "https://tracevero.com/mcp/store-scvd-general-store",
+      "what_it_scores": "Search 26,983 MCP servers by purpose, credentials, runtime and source, compare and configure them.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "TradersZone Agents",
+      "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+      "what_it_scores": "Agent directory; carries a listing page for this store (an agentic.market urn).",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "TrustFetch",
+      "url": "https://trustfetch.duckdns.org",
+      "what_it_scores": "Safety/content tools for AI agents: scan text for hidden prompt-injection attempts, or fetch+clean a webpage with built-in injection screening before your agent acts on it.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "verifymcp.io",
+      "url": "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+      "what_it_scores": "The independent trust index for Model Context Protocol servers, ranked 0–100 across npm packages and remote endpoints.",
+      "contact": "hello@verifymcp.io",
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "verza",
+      "url": "https://verza.dev",
+      "what_it_scores": "South African verification primitives for AI agents: identity and VAT number validation, and NCA credit-agreement lawfulness checks against the Regulation 42 interest caps.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Vianerds Page Signal Audit",
+      "url": "https://vianerds.com/x402/",
+      "what_it_scores": "Deterministic pay-per-call audit for supplied static HTML.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Vibes-Coded Agent Tool API",
+      "url": "https://vibes-coded.com",
+      "what_it_scores": "Pay-per-call JSON Outcome APIs for AI agents via HTTP 402 (x402 USDC).",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "VirtualSMS",
+      "url": "https://virtualsms.io",
+      "what_it_scores": "Pay-per-call SMS verification and OTP receiving for AI agents - real carrier numbers across 145+ countries and 2500+ services, from $0.05 per code in USDC via x402, no account or API key.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Watchtower",
+      "url": "https://watchtower-api.com",
+      "what_it_scores": "Deterministic sanctions screening for AI agents across OFAC/UN/EU/UK lists; x402 USDC on Base, no signup.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402 Trust Prober",
+      "url": "https://x402.fuchss.app",
+      "what_it_scores": "Deterministic trust scoring and monitoring for the x402 ecosystem.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402-bazaar",
+      "url": "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+      "what_it_scores": "Search and browse pay-per-use HTTP APIs and MCP tools aggregated from x402 facilitators and independent directories.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "x402-list",
+      "url": "https://x402-list.com",
+      "what_it_scores": "Agent-first directory of x402 protocol APIs.",
+      "contact": "info@x402-list.com",
+      "found_on": "named by the keeper 2026-09-04; we are listed there",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402-tools / OpenClaw Productions diagnostics",
+      "url": "https://openclawproductions.com",
+      "what_it_scores": "Paid x402 diagnostics for agents (pipecheck, listcheck, paytohealth, settleproof, renttrap, localhosttrap, etc.) on Base USDC via OpenX402.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402-trust-mcp",
+      "url": "https://github.com/JonasFuchss/x402-trust-mcp",
+      "what_it_scores": "MCP server front to x402.fuchss.app's monitoring: an agent calls it to check an x402 endpoint's trust and reliability before paying.",
+      "contact": "https://github.com/contact/report-content?content_url=https%3A%2F%2Fgithub.com%2FJonasFuchss%2Fx402-trust-mcp&amp;report=JonasFuchss+%28user%29",
+      "found_on": "named by the keeper 2026-09-04",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402audit.dev",
+      "url": "https://x402audit.dev",
+      "what_it_scores": "Paste a domain.",
+      "contact": null,
+      "found_on": "named by the keeper 2026-09-04",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402scan",
+      "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+      "what_it_scores": "Explore the x402 ecosystem.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": "2026-09-04"
+    },
+    {
+      "name": "Xingchen SentriScan ASP",
+      "url": "https://asp.xhdym.sbs",
+      "what_it_scores": "Ten deterministic sub-10ms security and financial micro-tools for agents, x402 v2 USDT0 on X Layer.",
+      "contact": null,
+      "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "zbs.gg index",
+      "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+      "what_it_scores": "23,822 MCP servers, skills and harnesses, each field with its source and date.",
+      "contact": null,
+      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    }
+  ]
+}
