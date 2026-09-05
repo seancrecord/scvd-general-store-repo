@@ -1,6 +1,8 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  LONG_WALK_DISCOVERY_PAGE_CAP,
+  readDiscoveryList,
   runWardRound,
   latestWardRound,
   wardDelta,
@@ -664,5 +666,112 @@ describe("offset paging: the 08-05 collapse, solved by its own instrument", () =
     expect(round.listed_resources).toBe(100);
     expect(round.coverage_suspect).toBe(true);
     expect(round.pagination_shape).toContain("pagination.total");
+    expect(round.discovery_read?.stop).toBe("repeated_page");
+  });
+});
+
+describe("the feed read says why it stopped (2026-09-04)", () => {
+  /*
+   * Five signed rounds said coverage_suspect and none said why; the
+   * tier index turned every unobserved host in them into
+   * "indeterminate". W35 and W36 were the sixty-page cap binding at
+   * exactly 6,000 rows with the declared total never written down.
+   * These hold: the cap records the total it could not reach, the
+   * long walk's cap reads past it, a page that fails mid-walk keeps
+   * what was read and says so, and a slow feed meets a time budget
+   * instead of holding the firing.
+   */
+  beforeAll(async () => {
+    const ed25519 = await import("@noble/ed25519");
+    const seed = new Uint8Array(32).fill(0x42);
+    const publicKey = await ed25519.getPublicKeyAsync(seed);
+    const both = new Uint8Array(64);
+    both.set(seed);
+    both.set(publicKey, 32);
+    testEnv.CDP_API_KEY_ID = "test-key-id";
+    testEnv.CDP_API_KEY_SECRET = btoa(String.fromCharCode(...both));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubFeed(options: {
+    total: number;
+    failAt?: number;
+    delayMs?: number;
+  }): { calls: number[] } {
+    const calls: number[] = [];
+    const all = Array.from({ length: options.total }, (_, i) => ({
+      resourceUrl: `https://host-${i}.example/api/buy/x`,
+    }));
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+      const parsed = new URL(String(input instanceof Request ? input.url : input));
+      // Host compared whole, not as a substring (CodeQL on the first push).
+      if (parsed.host !== "api.cdp.coinbase.com" || parsed.pathname.endsWith("/discovery/search")) {
+        return Response.json({ items: [] });
+      }
+      const requested = Number(parsed.searchParams.get("offset") ?? 0);
+      calls.push(requested);
+      if (options.delayMs) {
+        await new Promise((resolve) => setTimeout(resolve, options.delayMs));
+      }
+      if (options.failAt !== undefined && requested === options.failAt) {
+        return new Response("busy", { status: 429 });
+      }
+      return Response.json({
+        items: all.slice(requested, requested + 100),
+        pagination: { limit: 100, offset: requested, total: options.total },
+      });
+    });
+    return { calls };
+  }
+
+  it("the one-shot cap binding records the declared total it could not reach", async () => {
+    stubFeed({ total: 6_150 });
+    const read = await readDiscoveryList(testEnv, { pageCap: 60 });
+    expect(read.listed).toBe(6_000);
+    expect(read.coverageSuspect).toBe(true);
+    expect(read.read.stop).toBe("page_cap");
+    expect(read.read.declared_total).toBe(6_150);
+    expect(read.read.pages).toBe(60);
+  });
+
+  it("the long walk's cap reads past six thousand and claims clean coverage", async () => {
+    const feed = stubFeed({ total: 6_150 });
+    const read = await readDiscoveryList(testEnv, {
+      pageCap: LONG_WALK_DISCOVERY_PAGE_CAP,
+    });
+    expect(read.listed).toBe(6_150);
+    expect(read.coverageSuspect).toBe(false);
+    expect(read.read.stop).toBe("declared_total");
+    expect(read.read.pages).toBe(62);
+    // Every offset asked for exactly once, in the fold's order.
+    expect([...new Set(feed.calls)].length).toBe(62);
+  });
+
+  it("a page that fails twice mid-walk keeps what was read and says page_error", async () => {
+    const feed = stubFeed({ total: 1_000, failAt: 300 });
+    const read = await readDiscoveryList(testEnv, { pageCap: 60 });
+    expect(read.listed).toBe(300);
+    expect(read.coverageSuspect).toBe(true);
+    expect(read.read.stop).toBe("page_error");
+    expect(read.read.declared_total).toBe(1_000);
+    // Asked twice — one retry — and never a third time.
+    expect(feed.calls.filter((offset) => offset === 300).length).toBe(2);
+  });
+
+  it("a slow feed meets the time budget instead of holding the firing", async () => {
+    stubFeed({ total: 2_000, delayMs: 40 });
+    const read = await readDiscoveryList(testEnv, { pageCap: 60, budgetMs: 1 });
+    expect(read.listed).toBeLessThan(2_000);
+    expect(read.listed).toBeGreaterThanOrEqual(100);
+    expect(read.coverageSuspect).toBe(true);
+    expect(read.read.stop).toBe("time_budget");
+  });
+
+  it("a feed with nothing readable at all still throws, so the walk does not start empty", async () => {
+    stubFeed({ total: 500, failAt: 0 });
+    await expect(readDiscoveryList(testEnv)).rejects.toThrow(/answered 429/);
   });
 });

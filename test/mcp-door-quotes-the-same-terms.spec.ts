@@ -3,6 +3,17 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MENU_ITEMS } from "@/store";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+/**
+ * THE WORKED EXAMPLE, NOT A BARE item_id (2026-09-04). The MCP door
+ * refuses a call missing a schema-required argument BEFORE quoting
+ * terms — that is how the buyer who paid $5 for a launch check of an
+ * empty string stops being possible — so the challenge this spec
+ * compares has to come from a call that could actually be fulfilled.
+ * Both doors get the same arguments, so the comparison stays
+ * like-for-like.
+ */
+import { buyInputExample } from "@/lib/bazaar-discovery";
+import { getMenuItem } from "@/store";
 
 const BASE = "https://scvd.store";
 
@@ -70,37 +81,6 @@ function cheapestSellableByMcp(): { itemId: string; tool: string } {
   return { itemId: reachable!.item.id, tool: reachable!.tool!.name };
 }
 
-/**
- * The worked call the tool itself publishes for this item, read off
- * the served inputSchema.examples (derived there from the item's
- * required fields). Since 2026-09-04 the MCP door runs the whole door
- * law before quoting — a spot_check with no host is refused for free
- * rather than priced — so the challenge is asked for the way the tool
- * says to ask, and never with a call the schema itself rejects.
- */
-function publishedExample(tool: string, itemId: string): Record<string, unknown> {
-  const served = mcpToolCatalog(BASE).find((entry) => entry.name === tool);
-  const examples = (served?.inputSchema as { examples?: unknown[] } | undefined)
-    ?.examples;
-  const example = (examples ?? []).find(
-    (entry) =>
-      typeof entry === "object" &&
-      entry !== null &&
-      (entry as Record<string, unknown>)["item_id"] === itemId,
-  ) as Record<string, unknown> | undefined;
-  expect(example, `${tool} publishes no worked example for ${itemId}`).toBeTruthy();
-  return example!;
-}
-
-function queryFor(example: Record<string, unknown>): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(example)) {
-    if (key !== "item_id") params.set(key, String(value));
-  }
-  const query = params.toString();
-  return query ? `?${query}` : "";
-}
-
 async function mcpChallenge(
   tool: string,
   itemId: string,
@@ -112,7 +92,10 @@ async function mcpChallenge(
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
-      params: { name: tool, arguments: publishedExample(tool, itemId) },
+      params: {
+        name: tool,
+        arguments: { item_id: itemId, ...buyInputExample(getMenuItem(itemId)!) },
+      },
     }),
   });
   const payload = (await response.json()) as Record<string, unknown>;
@@ -126,11 +109,13 @@ async function mcpChallenge(
   return challenge as Challenge;
 }
 
-async function httpChallenge(tool: string, itemId: string): Promise<Challenge> {
-  // The same worked example, as the HTTP door spells it.
-  const response = await SELF.fetch(
-    `${BASE}/api/buy/${itemId}${queryFor(publishedExample(tool, itemId))}`,
+async function httpChallenge(itemId: string): Promise<Challenge> {
+  const query = new URLSearchParams(
+    Object.entries(buyInputExample(getMenuItem(itemId)!)).map(
+      ([key, value]): [string, string] => [key, String(value)],
+    ),
   );
+  const response = await SELF.fetch(`${BASE}/api/buy/${itemId}?${query}`);
   const header = response.headers.get("PAYMENT-REQUIRED");
   expect(header, `/api/buy/${itemId} served no PAYMENT-REQUIRED`).toBeTruthy();
   /*
@@ -168,7 +153,7 @@ describe("the challenge an MCP buyer reads before paying", () => {
     const { itemId, tool } = cheapestSellableByMcp();
     const [viaMcp, viaHttp] = await Promise.all([
       mcpChallenge(tool, itemId),
-      httpChallenge(tool, itemId),
+      httpChallenge(itemId),
     ]);
 
     // Same price, same rails. Two doors quoting one shelf.

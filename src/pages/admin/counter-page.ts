@@ -106,6 +106,29 @@ function clipped(text: string, cap: number): string {
   return text.length > cap ? `${text.slice(0, cap)}\u2026` : text;
 }
 
+/**
+ * THE WORK ORDER IS SHOWN WHOLE WHILE THE WORK IS OPEN.
+ *
+ * The detail used to be clipped at 200 characters on every row, open
+ * or delivered, under the note that "the full text always exists at
+ * its own record". True, and useless: the keeper does the work from
+ * this page, and a the_collab buyer's pitch — the one item on the
+ * shelf that is a request for a piece of joint work, 600 characters
+ * at the gate — was cut off mid-sentence on the only screen he reads
+ * it from. He could see that somebody wanted to make something and
+ * not what. The clip stays for the delivered list, which folds away
+ * and exists to be scrolled past; an open order gets every character
+ * the buyer paid to send, line breaks kept, because a pitch has
+ * paragraphs.
+ */
+function detailHtml(order: OrderRecord): string {
+  const detail = order.detail ?? "";
+  if (order.status !== "queued") {
+    return escapeHtml(clipped(detail, 200));
+  }
+  return `<span style="white-space:pre-wrap">${escapeHtml(detail)}</span>`;
+}
+
 function orderRowHtml(order: OrderRecord): string {
   const completeForm =
     order.status === "queued"
@@ -124,7 +147,7 @@ function orderRowHtml(order: OrderRecord): string {
   ${order.callback_url ? `\u00B7 webhook on completion` : ""}
   ${order.source ? `\u00B7 source (their words): ${escapeHtml(order.source)}` : ""}
   ${order.target_url ? `<p><em>Door to walk:</em> <code>${escapeHtml(order.target_url)}</code></p>` : ""}
-  ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${escapeHtml(clipped(order.detail, 200))}</p>` : ""}
+  ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${detailHtml(order)}</p>` : ""}
   ${completeForm}
 </li>`;
 }

@@ -2,7 +2,7 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { readFulfillmentInput } from "@/lib/purchase-door";
+import { purchaseInputFrom } from "@/lib/purchase-args";
 import type { MenuItem } from "@/types";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -29,7 +29,9 @@ beforeAll(() => {
  * "worked" by signing a statement about no wallet and a mandate with
  * no text.
  *
- * This file is the guard that would have caught all four, in three
+ * Main fixed the same defect the same day (lib/purchase-args.ts, one
+ * law and one map for both doors); this file is the guard that would
+ * have caught all four against that map, in three
  * parts: the mapping reads every field a shelf advertises (derived
  * from the schema, per item, so a field added next month is caught
  * the day it ships); the MCP door refuses a bad input before any
@@ -77,9 +79,12 @@ function goodsOf(body: Record<string, unknown>): Record<string, unknown> {
  */
 function droppedFields(item: MenuItem, advertised: string[]): string[] {
   const asked = new Set<string>();
-  readFulfillmentInput(item, (name) => {
-    asked.add(name);
-    return undefined;
+  purchaseInputFrom(item, {
+    get: (name) => {
+      asked.add(name);
+      return undefined;
+    },
+    field: (name) => name,
   });
   return advertised.filter((field) => !asked.has(field));
 }
@@ -122,8 +127,8 @@ describe("the MCP door refuses a bad input before any money moves", () => {
     expect(data["charged"]).toBe(false);
     expect(String(error["message"])).toContain("never see your bytes");
     // The same sentence the HTTP door says, in the vocabulary an MCP
-    // caller reads: inputs, not query parameters.
-    expect(String(error["message"])).toContain("digest input");
+    // caller reads: arguments, not query parameters.
+    expect(String(error["message"])).toContain("digest argument");
     expect(String(error["message"])).not.toContain("query parameter");
     expect(facilitator.settleCalls).toBe(settlesBefore);
   });

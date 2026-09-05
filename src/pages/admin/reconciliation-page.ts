@@ -1,7 +1,12 @@
 import type { SettleReconciliation } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import type { SkippedRangesRecord } from "@/services/chain-reconciliation";
+import type { CertificatesAgainstSettles } from "@/services/settle-sources";
+import {
+  unreadBlocks,
+  type SkippedBlockRange,
+  type SkippedRangesRecord,
+} from "@/services/chain-reconciliation";
 import type { DeliveryAudit } from "@/services/delivery-audit";
 
 /** Matches listAlerts' inline row shape. */
@@ -43,6 +48,8 @@ interface AlertLogEntry {
 
 export interface ReconciliationPageData {
   settles: SettleReconciliation | null;
+  /** The certificates read beside the counters and the rows; absent until the route wires it. */
+  certs?: CertificatesAgainstSettles | null;
   chain: {
     baseCursor: string | null;
     /** The third rail's walk: same discipline, its own cursor. */
@@ -80,6 +87,24 @@ export interface ReconciliationPageData {
 
 const PASS = `<strong style="color:#2f6b2f">PASS</strong>`;
 const ATTENTION = `<strong style="color:#8c2f1b">ATTENTION</strong>`;
+
+function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: SettleReconciliation | null): string {
+  if (c === undefined) return "";
+  if (c === null) return `<p><small>The certificates could not be read this time; reload to retry.</small></p>`;
+  const rows = c.wallets_disagreeing.slice(0, 10).map((w) =>
+    `<tr><td><code>${escapeHtml(w.address)}</code></td><td>${w.payer_row_purchases}</td><td>${w.certificates}</td></tr>`).join("");
+  return `<details ${settles && settles.unexplained !== 0 ? "open" : ""}><summary>The third witness: the certificates</summary>
+    <p>${escapeHtml(c.reading)}</p>
+    <table border="1" cellpadding="4">
+      <tr><td>certificates on the shelf</td><td>${c.certificates_total}${c.certificates_truncated ? " (scan capped)" : ""}</td></tr>
+      <tr><td>…carrying a paying wallet</td><td>${c.certificates_with_payer}</td></tr>
+      <tr><td>payer rows / purchases on them</td><td>${c.payer_rows} / ${c.payer_rows_purchases}</td></tr>
+      <tr><td>wallets whose row and certificates disagree</td><td>${c.wallets_disagreeing.length}</td></tr>
+    </table>
+    ${rows ? `<table border="1" cellpadding="4"><tr><th>wallet</th><th>row says</th><th>certificates</th></tr>${rows}</table>` : ""}
+    <p><small>Every wallet, with what it bought and in what order, is on <a href="/admin/buyers">the buyers</a>.</small></p>
+    </details>`;
+}
 
 function settlesHtml(r: SettleReconciliation | null): string {
   if (!r) return `<p>${ATTENTION} — the recount didn't load. Reload to retry.</p>`;
@@ -155,18 +180,53 @@ function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
     ? `<p>${ATTENTION} — the skipped-range record didn't load; Base coverage cannot be stated either way. Reload to retry.</p>`
     : skippedRecord.total_ranges === 0
       ? `<p>${PASS} — no skipped Base block ranges on record: every block from the walk's first pass to the cursor was actually read.</p>`
-      : `<p>${ATTENTION} — the Base walk has ${skippedRecord.total_ranges} hole${skippedRecord.total_ranges === 1 ? "" : "s"} on record (${skippedRecord.total_blocks} blocks NEVER read for incoming transfers — a payment in one is invisible to every instrument here unless the range is back-filled by hand):</p>
-        <ul>${skippedRecord.ranges
-          .map(
-            (range) =>
-              `<li>blocks ${range.from_block}\u2013${range.to_block} (${range.blocks} blocks), cursor moved past them ${escapeHtml(range.recorded_at)}</li>`,
-          )
-          .join("\n")}</ul>${
-          skippedRecord.total_ranges > skippedRecord.ranges.length
-            ? `<p><small>Only the most recent ${skippedRecord.ranges.length} ranges are listed; the totals above count every hole ever recorded.</small></p>`
-            : ""
-        }`;
+      : holesHtml(skippedRecord);
   return `${base}${polygon}${holes}${solana}`;
+}
+
+/**
+ * THE HOLES, WITH THE BUTTON THAT CLOSES THEM (2026-09-04). A hole
+ * stays on the ledger forever — it is the record that the walk
+ * skipped it — but once the back-fill has read every block of it the
+ * verdict changes: the range was read, late, and the page says so
+ * with the counts. The header goes PASS only when no block on the
+ * ledger is still unread; a hole mid-way through its back-fill is
+ * still a hole.
+ */
+function holesHtml(record: SkippedRangesRecord): string {
+  const unread = unreadBlocks(record);
+  const listed = record.ranges.length;
+  const header =
+    unread === 0
+      ? `<p>${PASS} — ${record.total_ranges} hole${record.total_ranges === 1 ? "" : "s"} on record, all back-filled: ${record.total_blocks} blocks the walk skipped have since been read for incoming transfers, so every block from the first pass to the cursor has now been read. The ranges stay listed as history.</p>`
+      : `<p>${ATTENTION} — the bank walk has ${record.total_ranges} hole${record.total_ranges === 1 ? "" : "s"} on record (${unread} of ${record.total_blocks} skipped blocks still NEVER read for incoming transfers — a payment in one is invisible to every instrument here until the range is back-filled). Each press reads up to 60,000 blocks and pages any orphan exactly as the hourly walk would:</p>`;
+  const rows = record.ranges.map((range) => holeRowHtml(range)).join("\n");
+  const cap =
+    record.total_ranges > listed
+      ? `<p><small>Only the most recent ${listed} ranges are listed; the totals above count every hole ever recorded.</small></p>`
+      : "";
+  return `${header}<ul>${rows}</ul>${cap}`;
+}
+
+function holeRowHtml(range: SkippedBlockRange): string {
+  const chainLabel = range.chain && range.chain !== "eip155:8453" ? ` on ${escapeHtml(range.chain)}` : "";
+  const bounds = `blocks ${range.from_block}\u2013${range.to_block}${chainLabel} (${range.blocks} blocks), cursor moved past them ${escapeHtml(range.recorded_at)}`;
+  const button = (label: string): string =>
+    `<form method="post" action="/admin/reconciliation/backfill" style="display:inline;margin-left:0.5em">
+      <input type="hidden" name="from_block" value="${range.from_block}">
+      <input type="hidden" name="to_block" value="${range.to_block}">
+      <input type="hidden" name="chain" value="${escapeHtml(range.chain ?? "eip155:8453")}">
+      <button type="submit">${label}</button>
+    </form>`;
+  const progress = range.backfill;
+  if (progress?.completed_at) {
+    return `<li>${bounds} — <strong>BACK-FILLED</strong> ${escapeHtml(progress.completed_at)}: ${progress.transfers_seen} transfer${progress.transfers_seen === 1 ? "" : "s"} seen, ${progress.orphans} orphan${progress.orphans === 1 ? "" : "s"}${progress.orphans > 0 ? " (paged; see the alarm trail below)" : ""}${progress.cert_scan_truncated ? " — the certificate scan hit its cap during the read, so an orphan here may be a false alarm" : ""}.</li>`;
+  }
+  if (progress) {
+    const read = progress.read_to - range.from_block + 1;
+    return `<li>${bounds} — back-fill under way: read to block ${progress.read_to} (${read} of ${range.blocks} blocks), ${progress.transfers_seen} transfer${progress.transfers_seen === 1 ? "" : "s"} seen, ${progress.orphans} orphan${progress.orphans === 1 ? "" : "s"} so far.${button("Continue the back-fill")}</li>`;
+  }
+  return `<li>${bounds}${button("Back-fill this hole")}</li>`;
 }
 
 function deliveriesHtml(
@@ -325,6 +385,7 @@ export function renderReconciliationPage(
   <section>
     <h2>Settle counters vs payer rows</h2>
     ${settlesHtml(data.settles)}
+    ${certsHtml(data.certs, data.settles)}
   </section>
 
   <section>

@@ -219,6 +219,10 @@ async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
     if (!delisting(entry.host)) paths.push(`/corpus/host/${entry.host}`);
   }
   for (const record of records) paths.push(`/corpus/round/${record.snapshot.week}`);
+  /* The week's reading rides beside the week's round (2026-09-04): the
+   * per-week ledger page is the citable one, and a room whose index is
+   * in the sitemap while its pages are not is half-published. */
+  for (const record of records) paths.push(`/ledger/${record.snapshot.week}`);
   for (const klass of DEFECT_CLASSES) paths.push(`/defects/${klass.id}`);
   return paths;
 }

@@ -1,0 +1,40 @@
+{
+ "data": [
+  {
+   "recipient": "0xf7b1356cfed0eebe01d76da7ba9e9f8bf12d9d57",
+   "facilitator_ids": [
+    "coinbase",
+    "daydreams",
+    "openx402",
+    "payAI",
+    "x402rs"
+   ],
+   "tx_count": 12375513,
+   "total_amount": 11514056400000,
+   "latest_block_timestamp": "2025-11-28T04:04:29.000Z",
+   "unique_buyers": 12827,
+   "chains": [
+    "base"
+   ]
+  },
+  {
+   "recipient": "0x07737a1fb3863202bcd3c7408b801eed68604d39",
+   "facilitator_ids": [
+    "coinbase",
+    "heurist"
+   ],
+   "tx_count": 886059,
+   "total_amount": 6997809190000,
+   "latest_block_timestamp": "2026-08-31T12:09:07.000Z",
+   "unique_buyers": 97,
+   "chains": [
+    "base"
+   ]
+  }
+ ],
+ "pagination": {
+  "page": 0,
+  "page_size": 2,
+  "has_next_page": true
+ }
+}

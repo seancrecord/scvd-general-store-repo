@@ -89,6 +89,36 @@ function railsSentence(rails: MarketRails | LegacyMarketRails): string {
  * walk). Rule 52: the reading publishes its own incompleteness or
  * it does not publish.
  */
+/**
+ * The reason a suspect read gives, in words a reader can act on. The
+ * rounds before 2026-09-04 recorded the flag and not the reason; for
+ * them the old sentence stands, labeled as the guess it always was.
+ */
+function suspectReason(
+  coverage: NonNullable<RegistryWeekEntry["coverage"]>,
+): string {
+  const total =
+    coverage.feed_declared_total !== undefined
+      ? `; the feed declared ${coverage.feed_declared_total} resources`
+      : "";
+  switch (coverage.discovery_stop) {
+    case "page_cap":
+      return `our page cap bound before the feed ran out${total}`;
+    case "time_budget":
+      return `the feed answered too slowly and our time budget bound${total}`;
+    case "repeated_page":
+      return `the feed served the same page twice, so its paging was not doing what it declared${total}`;
+    case "unpaged_full_page":
+      return "a full page arrived with no cursor";
+    case "page_error":
+      return `a page failed twice mid-walk and the read kept what it had${total}`;
+    case undefined:
+      return "reason not recorded on this round; before 2026-09-04 that usually meant a full page with no cursor";
+    default:
+      return `${coverage.discovery_stop}${total}`;
+  }
+}
+
 export function coverageCaveat(entry: RegistryWeekEntry): string {
   const coverage = entry.coverage;
   if (!coverage) {
@@ -102,7 +132,7 @@ export function coverageCaveat(entry: RegistryWeekEntry): string {
   }
   if (coverage.coverage_suspect) {
     notes.push(
-      "the discovery feed's own paging looked unreliable this round (a full page arrived with no cursor), so the denominator may undercount",
+      `the discovery feed read stopped short this round (${suspectReason(coverage)}), so the denominator may undercount`,
     );
   }
   if (coverage.coverage_drop) {

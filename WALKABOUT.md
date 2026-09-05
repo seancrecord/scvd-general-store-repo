@@ -136,6 +136,16 @@ What each rule became:
   refuse without `--override "<the keeper's words>"`; a second run in
   the same ISO week refuses without `--second-run "<his words>"`.
   Both strings land in the ledger, so the press is part of the record.
+  The week check reads EVERY `research/*/ledger.jsonl`, and takes the
+  week from a `run` line or, failing that, from the earliest row's own
+  timestamp. It asked two narrower questions until 2026-09-04 — only
+  `field-run-*`, only files opening with a run line — and both holes
+  were live together: the walk of 2026-09-02 sat in
+  `research/x402-walk-ledger/` with no run line, in that same week, so
+  a second run would have passed a guard that had not looked at it. A
+  ledger with no readable moment counts as no prior run and abstains
+  out loud rather than guessing (`ledgerWeek`, five cases in
+  `npm run walkabout:test`).
 - **Rule 2** — `derive` builds targets from the August ledger (settled
   or spec-shaped 402) and the latest corpus round's `ready` hosts, one
   URL per domain, never this store's own host.
@@ -172,6 +182,64 @@ as `unpaid_by_rule` with the reason, a statement about our reach. When
 `WBA_SIGNING_KEY` is set the egress carries the store's Web Bot Auth
 signature exactly as the Worker's own does; unset, the calling-card
 UA still goes on every request.
+
+### Where the run's secrets live, and where they do not
+
+The runner is a local Node process. It reads `FIELD_WALLET_KEY`,
+`WBA_SIGNING_KEY` and `BASE_RPC_URL` from the environment it is
+started in — a shell export, a local `.env` sourced by hand, or the
+environment settings of whatever host runs it. Nothing here is a
+Worker binding, and `wrangler secret put` does not reach it.
+
+Both names ALSO exist as Cloudflare secrets, because the Worker uses
+its own copies for other work: `WBA_SIGNING_KEY` signs the Worker's
+outbound probes and publishes the directory at
+`/.well-known/http-message-signatures-directory`, and
+`FIELD_WALLET_KEY` is what the Launch Check pays from
+(`src/types.ts` declares both). Same names, two homes, set
+independently. Setting one does not set the other, and a walk that
+fails for want of a key is not fixed in the Cloudflare dashboard.
+
+The egress key is the one with a trap in it. Its value must be the
+SAME seed the live directory publishes. Sign a walk with any other
+ed25519 seed and every request carries a `Signature-Agent` header
+pointing at a directory that does not list the signing key — an
+origin that checks gets a failed proof, which is strictly worse than
+the unsigned request it would otherwise have received. Unsigned is
+honest; a broken proof is a claim. So: walk unsigned rather than walk
+with a key you have not confirmed.
+
+Confirming it is the only thing you can do, because Worker secrets
+are write-only and nothing can display the seed the store is signing
+with. `npm run keys:check:wba` takes a candidate seed on a prompt,
+derives its `x` and its `kid`, and you compare those by eye against
+the published directory. Match means it is the live key.
+`test/wba-key-checker.spec.ts` holds that checker to the Worker's own
+derivation, because a checker that has drifted reports NO MATCH on a
+correct seed, and the obvious response to a no-match is a rotation
+that replaces a working published key to fix the tool that read it.
+
+**Or let the Worker sign (2026-09-04).** Set `STORE_ADMIN_PASSWORD`
+in the runner's environment instead of `WBA_SIGNING_KEY`, and the
+runner asks `POST /admin/wba/sign` for each paid request's triplet.
+The Worker mints it with the same code path that signs its own
+probes; the seed never leaves Cloudflare and the paper stays in the
+drawer. The run line records `web_bot_auth: "signing_desk"` (versus
+`"local_seed"` or `false`), and any failure of the desk falls back to
+the unsigned request, because unsigned is honest and a half-made proof
+is a claim. What the desk can sign is only "a request to authority X,
+in the next five minutes, from the key behind scvd.store" — the
+architecture draft's minimum covered components, with created,
+expires, nonce and tag minted server-side. It is a door behind the
+admin password and is listed here as one: someone holding that
+password could have requests signed as us, and that person already
+holds the counter, the refunds and the outreach desk.
+
+`npm run keys:generate` mints a NEW seed and is not how you find the
+existing one. Using its output as `WBA_SIGNING_KEY` is a rotation:
+the Worker secret changes, the published directory changes with the
+next deploy, and every signature the old key made stops verifying.
+That is a decision, not a setup step.
 
 ## What a run delivers
 

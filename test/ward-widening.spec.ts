@@ -195,10 +195,34 @@ describe("the round carries the widening whole", () => {
     const round = await runWardRound(testEnv);
     const named = round.directories_unread?.map((entry) => entry.source);
     expect(named).toEqual(UNREAD_DIRECTORIES.map((entry) => entry.source));
-    // Both exclusions are the wallet law's to dissolve, and the
-    // reason on the round says so rather than reading as permanent.
+    /*
+     * NO EXCLUSION MAY READ AS PERMANENT. Every unread entry has to
+     * carry the condition that would dissolve it, so a reader can
+     * tell a gap we are working on from a gap we have accepted.
+     *
+     * The assertion used to be "every entry names the wallet law",
+     * which held only while both unread directories happened to be
+     * paid ones. The roster widened on 2026-09-04 and the new
+     * entries are blocked on a captured response shape, not on
+     * money — so the test now holds the INVARIANT (a stated
+     * unblock) rather than one era's version of it, and pins the
+     * wallet law to the two directories it actually governs.
+     */
     for (const entry of round.directories_unread ?? []) {
-      expect(entry.why.toLowerCase()).toContain("wallet law");
+      expect(entry.why.length).toBeGreaterThan(80);
+      const dissolvable =
+        /wallet law|hand-run|hand-captured|capture/i.test(entry.why);
+      expect(dissolvable).toBe(true);
+    }
+    /*
+     * The two paid directories the widening ruling named left this
+     * list on 2026-09-04, the day the keeper priced them by hand and
+     * the walks were built. They are read now; the census row says
+     * whether the last pass stood.
+     */
+    for (const paid of ["402index.io", "x402scan.com"]) {
+      expect(round.directories_unread?.some((row) => row.source === paid)).toBe(false);
+      expect(round.population?.per_source.some((row) => row.source === paid)).toBe(true);
     }
   });
 
@@ -256,7 +280,14 @@ describe("the readout shows the widening", () => {
     );
     // The count is the truth, not the capped list's length.
     expect(html).toContain("8990 newly listed");
-    expect(html).toContain("402index.io");
-    expect(html).toContain("x402scan.com");
+    /*
+     * The unread line names what the round could not read. The two
+     * paid directories left it on 2026-09-04 when their walks were
+     * built; the hand-capture-pending ones remain, and the line must
+     * name those and not the read ones.
+     */
+    expect(html).toContain("endpoint.x402jp.com");
+    expect(html).toContain("agent-tools.cloud");
+    expect(html).not.toContain("cannot read: <strong>402index.io");
   });
 });

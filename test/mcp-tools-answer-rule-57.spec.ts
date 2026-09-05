@@ -5,7 +5,7 @@ import { MCP_REFUSAL_CODES } from "@/store/surface-contract";
 import { DELIVERY_FAILED_CODE } from "@/lib/delivery-failed";
 import { MENU_ITEMS } from "@/store";
 import MCP_SOURCE from "../src/routes/mcp.ts?raw";
-import DOOR_LAW_SOURCE from "../src/lib/purchase-door.ts?raw";
+import DOOR_LAW_SOURCE from "../src/lib/purchase-args.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -149,13 +149,13 @@ describe("a refusal on the wire carries the code and the charge", () => {
     }
     /*
      * Plus every code the door law can send (2026-09-04): the MCP
-     * door relays lib/purchase-door.ts's refusals through rpcRefusal
+     * door relays lib/purchase-args.ts's refusals through rpcRefusal
      * with the law's own code, so the codes are literals in THAT file.
      * Walked the same way the buy-door guard walks it; a code the law
      * grows is a code this door sends the same day.
      */
-    if (/refusePurchaseInput\(/.test(MCP_SOURCE)) {
-      for (const match of DOOR_LAW_SOURCE.matchAll(/code: "([a-z_]+)"/g)) {
+    if (/checkPurchaseArgs\(/.test(MCP_SOURCE)) {
+      for (const match of DOOR_LAW_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)) {
         emitted.add(match[1]!);
       }
     }

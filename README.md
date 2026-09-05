@@ -691,6 +691,12 @@ are not:
   same contract and answers the same challenge. The badge at the top
   of this file renders the live value; no number is written down here,
   because a number written down is a number that rots.
+- **Circle partner directory** — a
+  [per-partner page](https://partners.circle.com/partner/scvdstore),
+  submitted 2026-09-01 and listed 2026-09-04. A directory entry, not
+  the score above and not an endorsement: the issuer of the stablecoin
+  this store is paid in has the store on its map, which says nothing
+  about the goods.
 - **Drio** — [an MCP index listing](https://www.getdrio.com/mcp/store-scvd-general-store)
   under the store's canonical name.
 - **VerifyMCP** — a [scored page for the store](https://verifymcp.io/servers/store-scvd-general-store/scvd)

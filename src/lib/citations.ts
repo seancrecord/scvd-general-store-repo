@@ -62,7 +62,30 @@ export interface CitationJudgement {
  * (listing fact 4 on /scorers: not this store, a mirror of its text,
  * or a page it operates). Derived from the spec, never retyped.
  */
-export const SELF_PUBLISHED_IDS: readonly string[] = [SAMPLE_ARTIFACT_ID];
+/**
+ * Ids we published as examples and have since RETIRED. They belong on
+ * the list above for one reason: a directory's copy of our listing
+ * does not refresh when ours does.
+ *
+ * `cert_k2m9v4xwqp` was the placeholder in buyOutputExample until
+ * 2026-09-04. It rode the bazaar discovery extension on every 402,
+ * the facilitator catalogued it, and x402-list.com renders it 62
+ * times on its page for this store right now — against zero
+ * occurrences of the live specimen. Discounting only the CURRENT
+ * specimen therefore leaves the false positive alive on exactly the
+ * page that produced it, for as long as their cache lasts, which is
+ * not a length we control.
+ *
+ * Nothing is lost by discounting a retired one: it was never minted,
+ * so a page "citing" it is citing nothing. There is no artifact
+ * behind it for anybody to have consumed.
+ */
+export const RETIRED_EXAMPLE_IDS: readonly string[] = ["cert_k2m9v4xwqp"];
+
+export const SELF_PUBLISHED_IDS: readonly string[] = [
+  SAMPLE_ARTIFACT_ID,
+  ...RETIRED_EXAMPLE_IDS,
+];
 
 /**
  * Every URL shape that counts as citing a ROW of the corpus — a verify
@@ -77,11 +100,25 @@ export const SELF_PUBLISHED_IDS: readonly string[] = [SAMPLE_ARTIFACT_ID];
  * seven such echoes as citations; six of the seven were our own
  * sentence and the seventh our own sample certificate. A citation is a
  * page pointing at ONE ROW — the thing a reader can reproduce.
+ *
+ * TIGHTENED AGAIN the same day, after the first real sweep. It found
+ * three "citations" and all three were false: two directories showing
+ * the example purchase output this store publishes into bazaar
+ * discovery (a certificate whose signature is the literal string
+ * "<128 hex chars, ed25519>"), and one showing a TRUNCATED URL,
+ * `/api/verify/ce`, that resolves to nothing. So a verify URL now has
+ * to carry a well-formed id, and both ids this store publishes about
+ * itself are excluded by name.
  */
 export function citationPatterns(base: string): RegExp[] {
   const root = base.replace(/\/$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return [
-    new RegExp(`${root}/api/verify/[A-Za-z0-9_-]+`, "g"),
+    // A real artifact id is a prefix and ten characters (lib/ids.ts).
+    // The loose form matched `/api/verify/ce` on socketcat's page — a
+    // TRUNCATED display of a URL, resolving to nothing, counted as a
+    // citation on 2026-09-04. A citation a reader cannot follow is not
+    // a citation.
+    new RegExp(`${root}/api/verify/[a-z]+_[A-Za-z0-9]{8,24}\\b`, "g"),
     new RegExp(`${root}/corpus/[0-9]+\\.json`, "g"),
     new RegExp(`${root}/corpus/host/[A-Za-z0-9.-]+\\.json`, "g"),
     new RegExp(`${root}/corpus/round/[0-9]{4}-W[0-9]{2}(?:\\.json)?`, "g"),

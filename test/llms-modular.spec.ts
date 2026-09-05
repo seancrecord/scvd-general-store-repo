@@ -759,12 +759,54 @@ const BASE = "https://scvd.store";
  * merged head. Confirmed before this value was taken: the guide
  * carries "/scorers", "/corpus/latest.json", "/fixtures.json" and
  * "scvd look <url>", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-FIFTH — for the three instrument
+ * rooms of that day: /sources (the source register and the ward
+ * heartbeat), /ledger (one signed week read as a research note) and
+ * /mcp-ward (the second ward, over the MCP registry, sharing no total
+ * with the x402 side). Each earned a section in the guide, a line in
+ * the index door list under a new heading for the instrument
+ * reporting on itself, and its rule-60 proposition and money sentence
+ * carried verbatim from src/store/copy/instruments.ts. Confirmed
+ * before this value was taken: the guide carries "/sources",
+ * "/ledger", "/mcp-ward" and "never_answered", and still every
+ * earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SIXTH — at the merge of main into the
+ * sweep branch, and by the operators' paragraph:
+ * the room gained a door (POST /api/declare-door) and so a feature row,
+ * and the guide now carries its proposition and money sentence and
+ * says how a host the discovery feed does not name gets into the
+ * census — its own /.well-known/x402, read by the weekly sweep or by
+ * hand. Confirmed before this value was taken: the guide carries
+ * "/operators", "/api/declare-door", "/.well-known/x402" and "only
+ * that host's own file", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-SEVENTH — on the keeper's ruling
+ * that the three instrument sections are "fine as written": their
+ * three ⚑ KEEPER'S PEN flags come off, which is the only edit. The
+ * how-it-works flag is not his to lift here and stays. Confirmed
+ * before this value was taken: the guide carries "/sources",
+ * "/ledger", "/mcp-ward", exactly one "KEEPER'S PEN", and still every
+ * earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-EIGHTH — for the source register's
+ * fifth word. Its first live read showed the CDP discovery feed as
+ * never_answered beside a heartbeat crediting it with a thousand
+ * probes: the census records a page-capped listing as null on
+ * principle, and the register had read that null as a feed that never
+ * spoke. \`partial\` is the word for answered-but-uncountable, and the
+ * guide's "Four words carry it" became five. Confirmed before this
+ * value was taken: the guide carries "Five words carry it" and
+ * "partial", and still every earlier pin.
+ * Re-taken 2026-09-04 — the SIXTY-NINTH — at the merge of main into
+ * the instruments branch: the operators' paragraph and the register's
+ * five words both stand, and the value was taken once on the merged
+ * head. Confirmed before this value was taken: the guide carries
+ * "/api/declare-door" and "Five words carry it", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "66d531dd171f5cfe82e4c16776e7450e6fa21ca2b685c27871b94417e1c75208";
+  "52649b533e7655a67d6b941475d6f8d669eefd911e4650e247eaaf8b19eaae2a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

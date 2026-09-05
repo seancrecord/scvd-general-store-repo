@@ -28,6 +28,8 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import { wantsHtml } from "@/pages/simple-page";
 import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCensusPage } from "@/pages/admin/census-page";
+import { renderBuyersPage } from "@/pages/admin/buyers-page";
+import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
@@ -302,6 +304,96 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
+
+/**
+ * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).
+ *
+ * WBA_SIGNING_KEY is a Worker secret and Worker secrets are write-only,
+ * so the walkabout runner (a Node process on the keeper's machine) had
+ * two ways to sign its egress: hold a copy of the seed, or not sign.
+ * A copy means the paper leaves the drawer. This is the third way: the
+ * runner sends the URL it is about to call and the Worker returns the
+ * Web Bot Auth triplet, minted by the SAME code path that signs the
+ * store's own probes. The seed never leaves Cloudflare.
+ *
+ * WHAT THE ORACLE CAN AND CANNOT SIGN. The caller supplies only a
+ * target URL. created, expires, nonce and the tag are minted here, and
+ * the covered components are the architecture draft's minimum —
+ * ("@authority" "signature-agent") — so a signature from this desk
+ * asserts exactly one thing: "a request to authority X, in the next
+ * five minutes, came from the key behind scvd.store". Not a path, not
+ * a body, not a method. Someone holding the admin password could get
+ * requests signed as us; that person already holds the counter, the
+ * refunds and the outreach desk, so this widens nothing that matters.
+ * It is still a door, so it is named as one in WALKABOUT.md.
+ *
+ * JSON ONLY. A form body is refused outright rather than CSRF-guarded:
+ * no page posts here, so the same-origin dance the payout form needs
+ * is one more thing that could be got wrong for no caller that exists.
+ */
+const SIGNS_PER_MINUTE = 60;
+let signMinute = "";
+let signsThisMinute = 0;
+
+adminRoutes.post("/admin/wba/sign", async (c) => {
+  const contentType = c.req.header("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return c.json(
+      { error: "The signing desk takes JSON only: {\"url\": \"https://…\"}.", code: "json_only" },
+      415,
+    );
+  }
+  const minute = new Date().toISOString().slice(0, 16);
+  if (minute !== signMinute) {
+    signMinute = minute;
+    signsThisMinute = 0;
+  }
+  if (signsThisMinute >= SIGNS_PER_MINUTE) {
+    return c.json(
+      { error: `The signing desk signs at most ${SIGNS_PER_MINUTE} requests a minute; a walk paces slower than that by rule 4.`, code: "rate_limited" },
+      429,
+      { "Retry-After": "60" },
+    );
+  }
+  let body: { url?: unknown };
+  try {
+    body = (await c.req.json()) as { url?: unknown };
+  } catch {
+    return c.json({ error: "Body is not JSON.", code: "bad_json" }, 400);
+  }
+  let target: URL;
+  try {
+    target = new URL(String(body.url ?? ""));
+    if (target.protocol !== "https:" && target.protocol !== "http:") throw new Error("scheme");
+  } catch {
+    return c.json(
+      { error: "url must be an absolute http(s) URL — the authority is the only part that gets signed.", code: "bad_url" },
+      400,
+    );
+  }
+  const { webBotAuthHeaders } = await import("@/lib/web-bot-auth");
+  const headers = await webBotAuthHeaders(c.env, target.toString());
+  if (!headers["Signature-Input"]) {
+    // Same honesty as the directory's 404: "not turned on" is a
+    // different statement from "signed with nothing".
+    return c.json(
+      { error: "No egress key is configured, so nothing here can sign. The runner should walk unsigned.", code: "no_egress_key" },
+      404,
+    );
+  }
+  signsThisMinute += 1;
+  c.header("Cache-Control", "no-store");
+  return c.json({
+    authority: target.host,
+    headers: {
+      "Signature-Agent": headers["Signature-Agent"],
+      "Signature-Input": headers["Signature-Input"],
+      Signature: headers.Signature,
+    },
+    signed_by: "the store's Web Bot Auth egress key, from the Worker; the seed did not travel",
+    verify_at: `${new URL(c.env.STORE_BASE_URL).origin}/.well-known/http-message-signatures-directory`,
+  });
+});
 
 /**
  * THE TRADE COUNTER'S STATEMENT DESK (2026-09-03). Two doors behind
@@ -977,6 +1069,12 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
    */
   const alarmsLastRead = shelf(lastRead, null, "alarm watermark", notes);
   const markedAt = new Date().toISOString();
+  // The third witness (2026-09-04): the certificates, read beside the
+  // counters and the payer rows so an unexplained settle gets a cause
+  // and a wallet. Fail-soft — a shelf that does not load says so.
+  const settlesValue = shelf(settles, null, "settle recount", notes);
+  const { certificatesAgainstSettles } = await import("@/services/settle-sources");
+  const certsValue = await certificatesAgainstSettles(c.env, settlesValue).catch(() => null);
   if (alerts.status === "fulfilled" && lastRead.status === "fulfilled") {
     /*
      * Written before the render rather than after: this handler has no
@@ -992,7 +1090,8 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
   return c.html(
     renderReconciliationPage(
       {
-        settles: shelf(settles, null, "settle recount", notes),
+        settles: settlesValue,
+        certs: certsValue,
         chain: {
           baseCursor: shelf(baseCursor, null, "base cursor", notes),
           // Null when the read failed — the page then says coverage
@@ -1153,10 +1252,30 @@ adminRoutes.get("/admin/ward", async (c) => {
     "@/services/ward-round"
   );
   const { renderWardPage } = await import("@/pages/admin/ward-page");
+  const { sourceRegister } = await import("@/services/source-liveness");
+  const { readHeartbeat } = await import("@/services/ward-heartbeat");
   const round = await latestWardRound(c.env);
   const previous = await previousWardRound(c.env);
+  /*
+   * Both readings are OPTIONAL on this page: they are what the keeper
+   * reaches for when something looks wrong, so a failed derive must
+   * never take down the round's own numbers. Null renders as an absent
+   * block, never as a confident all-clear — "unknown" and "healthy"
+   * cannot be allowed to look alike on a page about whether the
+   * instrument is running.
+   */
+  const [register, beat] = await Promise.all([
+    sourceRegister(c.env).catch(() => null),
+    readHeartbeat(c.env).catch(() => null),
+  ]);
   return c.html(
-    renderWardPage(round, previous, round ? wardDelta(round, previous) : null),
+    renderWardPage(
+      round,
+      previous,
+      round ? wardDelta(round, previous) : null,
+      register,
+      beat,
+    ),
   );
 });
 
@@ -1341,12 +1460,107 @@ adminRoutes.post("/admin/ward/run", async (c) => {
 });
 
 /**
+ * THE SECOND WARD'S ROOM AND ITS CRANK (2026-09-04, the keeper's ask
+ * for a way to run the MCP ward separately from the other).
+ *
+ * The crank advances ONE batch rather than running a whole pass: the
+ * registry is 909 pages (90,845 rows on 2026-09-04), so a pass is
+ * hundreds of page fetches and cannot fit in one request
+ * without blowing the invocation budget. One press does exactly what
+ * one hourly firing does, and the page says how far along the pass
+ * is, so finishing one by hand is legible rather than mysterious.
+ */
+adminRoutes.get("/admin/mcp-ward", async (c) => {
+  const { latestMcpPass, readMcpRegister, readMcpWalk } = await import(
+    "@/services/mcp-ward"
+  );
+  const { renderMcpWardPage } = await import("@/pages/admin/mcp-ward-page");
+  const [walk, register, pass] = await Promise.all([
+    readMcpWalk(c.env),
+    readMcpRegister(c.env),
+    latestMcpPass(c.env),
+  ]);
+  return c.html(renderMcpWardPage(walk, register, pass));
+});
+
+adminRoutes.post("/admin/mcp-ward/run", async (c) => {
+  const { walkMcpRegistry } = await import("@/services/mcp-ward");
+  await walkMcpRegistry(c.env);
+  return c.redirect("/admin/mcp-ward");
+});
+
+/**
+ * Start a fresh pass. Blunt and safe: it drops the in-flight walk's
+ * cursor and accumulated hosts and touches the REGISTER not at all,
+ * so every host's first_seen and last_seen survive. A discarded
+ * partial pass could never have recorded a delisting anyway, which is
+ * why this needs no confirmation step.
+ */
+adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
+  const { KV_KEYS } = await import("@/lib/kv-keys");
+  await c.env.COUNTERS.delete(KV_KEYS.mcpWalkState);
+  return c.redirect("/admin/mcp-ward");
+});
+
+/**
+ * The directory walks' crank (2026-09-04): one bounded batch per
+ * reader on its stored cursor — what an hourly firing does — with the
+ * report as the reply so the keeper sees how far each pass has got.
+ */
+adminRoutes.post("/admin/ward/walk-directories", async (c) => {
+  const { walkAllDirectories } = await import("@/services/directory-walk");
+  const report = await walkAllDirectories(c.env);
+  return c.json({
+    ...report,
+    reading:
+      "One batch per directory. A pass that finished has folded into its source's completed pass, which the next Sunday round reads; a pass still walking resumes on the next firing or the next press of this button.",
+  });
+});
+
+/**
  * The door-bank backfill: one keeper-fired pass over the stored ward
  * rounds so the bank opens holding every door history already
  * declared (docs/CORPUS_VELOCITY.md — without this, revisits idle
  * until the broken feed happens to vary). Idempotent; the JSON reply
  * IS the report, counts and all.
  */
+/**
+ * THE HOLE BUTTON (2026-09-04): read one recorded skipped range after
+ * the fact, bounded per press, replying with the counts the way the
+ * door-bank back-fill does. The range must be on the ledger exactly
+ * as recorded — the service refuses anything else, so this route
+ * cannot be talked into a coverage claim about an arbitrary window.
+ */
+adminRoutes.post("/admin/reconciliation/backfill", async (c) => {
+  const { backfillSkippedRange, BACKFILL_SPANS_PER_CALL } = await import(
+    "@/services/chain-reconciliation"
+  );
+  const { evmChainOf } = await import("@/lib/base-rpc");
+  const form = (await c.req.parseBody()) as Record<string, unknown>;
+  const fromBlock = Number.parseInt(String(form["from_block"] ?? ""), 10);
+  const toBlock = Number.parseInt(String(form["to_block"] ?? ""), 10);
+  const chain = evmChainOf(
+    typeof form["chain"] === "string" ? form["chain"] : undefined,
+  );
+  if (!Number.isFinite(fromBlock) || !Number.isFinite(toBlock) || toBlock < fromBlock) {
+    return c.json({ ok: false, reading: "from_block and to_block must be the bounds of a hole on the ledger, as integers." }, 400);
+  }
+  if (!chain) {
+    return c.json({ ok: false, reading: `chain ${String(form["chain"])} is not one this store's walk reads.` }, 400);
+  }
+  const result = await backfillSkippedRange(c.env, {
+    from_block: fromBlock,
+    to_block: toBlock,
+    chain,
+  });
+  const reading = !result.ran
+    ? `Did not read: ${result.reason ?? "no reason recorded"}.`
+    : result.complete
+      ? `Hole closed: blocks ${result.read_from}–${result.read_to} on ${chain.label} read after the fact, ${result.transfers_seen} incoming transfer${result.transfers_seen === 1 ? "" : "s"} seen, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}${result.orphans.length ? " — each one paged; the books page's alarm trail has them" : " — every transfer in the window has a certificate"}.${result.cert_scan_truncated ? " The certificate scan hit its cap, so an orphan here may be a false alarm." : ""}`
+      : `Read blocks ${result.read_from}–${result.read_to} on ${chain.label} (${result.transfers_seen} transfer${result.transfers_seen === 1 ? "" : "s"}, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}); ${result.remaining} blocks of this hole remain. Press again to continue — each press reads up to ${BACKFILL_SPANS_PER_CALL} spans.${result.failed ? ` This press ${result.reason}.` : ""}`;
+  return c.json({ ok: result.ran, ...result, reading });
+});
+
 adminRoutes.post("/admin/ward/backfill-doors", async (c) => {
   const { backfillDoorBank } = await import("@/services/door-bank");
   const report = await backfillDoorBank(c.env);
@@ -1828,6 +2042,17 @@ adminRoutes.get("/admin/settlement-unknown", async (c) => {
   });
 });
 
+adminRoutes.get("/admin/buyers", async (c) => {
+  const { readBuyers } = await import("@/services/buyers");
+  return c.html(renderBuyersPage(await readBuyers(c.env)));
+});
+
+adminRoutes.get("/admin/instruments", async (c) => {
+  const { computeObservatory } = await import("@/services/observatory");
+  const { freeInstrumentUsage } = await import("@/services/instruments");
+  return c.html(renderInstrumentsPage(freeInstrumentUsage(await computeObservatory(c.env))));
+});
+
 adminRoutes.get("/admin/census", async (c) => {
   const census = await takeCensus(c.env);
   return c.html(renderCensusPage({ census, catalog_size: MENU_ITEMS.length }));
@@ -2058,17 +2283,24 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
   const { latestWardRound, previousWardRound } = await import(
     "@/services/ward-round"
   );
-  const { deriveProspects, readOutreachLedger, scoutContacts } = await import(
-    "@/services/outreach"
-  );
+  const { deriveProspects, deriveWelcomes, readOutreachLedger, scoutContacts } =
+    await import("@/services/outreach");
   const round = await latestWardRound(c.env);
   if (!round) {
     return c.json({ refused: "no ward round yet" }, 404);
   }
-  const prospects = deriveProspects(round, await previousWardRound(c.env));
+  const previous = await previousWardRound(c.env);
+  const prospects = deriveProspects(round, previous);
+  // Both queues (2026-09-04): the broken doors in their ranking, then
+  // the ready doors in theirs, so a press reaches the top of each.
+  const welcomes = deriveWelcomes(
+    round,
+    previous,
+    new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+  );
   const report = await scoutContacts(
     c.env,
-    prospects,
+    [...prospects, ...welcomes],
     await readOutreachLedger(c.env),
   );
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {

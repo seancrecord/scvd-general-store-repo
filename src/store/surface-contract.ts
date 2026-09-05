@@ -346,7 +346,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
   },
   /**
    * THE DOOR LAW'S OWN THREE (2026-09-04). The pre-payment refusals
-   * moved into lib/purchase-door.ts and the MCP door now runs every
+   * moved into lib/purchase-args.ts and the MCP door now runs every
    * one of them, so the codes the HTTP gate could send for a refused
    * probe target, a passport the gate declined, or a field wallet
    * that is not provisioned are now sent from this door too. Derived

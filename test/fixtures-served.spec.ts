@@ -25,13 +25,21 @@ const raw = {
   ...(import.meta.glob("./fixtures/doors/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("./fixtures/mpp/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../verifier/fixtures/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("./fixtures/402index/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
+  ...(import.meta.glob("./fixtures/x402scan/*.json", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
 };
 const names = (directory: string) =>
   Object.keys(raw)
     .filter((path) => path.includes(`/${directory}/`))
     .map((path) => path.split("/").at(-1)!.replace(/\.json$/, ""))
     .sort();
-const tree: Record<string, string[]> = { doors: names("doors"), mpp: names("mpp"), verifier: names("verifier/fixtures") };
+const tree: Record<string, string[]> = {
+  doors: names("doors"),
+  mpp: names("mpp"),
+  verifier: names("verifier/fixtures"),
+  "402index": names("402index"),
+  x402scan: names("x402scan"),
+};
 
 async function sha256(text: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));

@@ -2,17 +2,16 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import BUY_ROUTE_SOURCE from "../src/routes/buy.ts?raw";
-import DOOR_LAW_SOURCE from "../src/lib/purchase-door.ts?raw";
-import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
-
+import BUY_SOURCE from "../src/routes/buy.ts?raw";
 /**
- * The money path's refusals live in two files since 2026-09-04: the
- * shelf gate in the route, the per-item law in lib/purchase-door.ts
- * (shared with the MCP door). Both are walked, or the codes the law
- * sends would read as invented.
+ * THE LAW MOVED (2026-09-04): every argument-shaped refusal the buy
+ * doors emit is built in lib/purchase-args.ts now, for the HTTP and
+ * MCP doors alike, so the codes have to be read out of both files.
  */
-const BUY_SOURCE = `${BUY_ROUTE_SOURCE}\n${DOOR_LAW_SOURCE}\n${DELIVERY_FAILED_SOURCE}`;
+import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
+// The owned post-settlement failure's body (2026-09-04), whose code is
+// a literal in its own module.
+import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -78,9 +77,13 @@ describe("the roster is the shelf, and it is not empty", () => {
  * code nothing documents, fails by name.
  */
 describe("the documented codes are the codes the doors send", () => {
-  const EMITTED = new Set(
-    [...BUY_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
-  );
+  const EMITTED = new Set([
+    ...[...`${BUY_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
+    // The shared law's refuse(status, code, sentence) builder.
+    ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
+      (match) => match[1]!,
+    ),
+  ]);
 
   it("finds codes in the source at all, or the check is vacuous", () => {
     expect(EMITTED.size).toBeGreaterThan(3);

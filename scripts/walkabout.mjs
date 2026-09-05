@@ -44,6 +44,7 @@ import {
   headersRecord,
   hostOf,
   isoWeek,
+  ledgerWeek,
   parseChallenge,
   paymentHeader,
   reconcile,
@@ -152,6 +153,47 @@ async function wbaHeaders(material, targetUrl) {
   };
 }
 
+/**
+ * The signing desk: when the runner holds no seed but does hold the
+ * keeper's admin password, the Worker signs each request's authority
+ * and the seed stays in Cloudflare (POST /admin/wba/sign). Any failure
+ * falls back to the unsigned request — unsigned is honest; a half-made
+ * proof is a claim — and is counted so the run line can say so.
+ */
+const signDesk = {
+  password: process.env.STORE_ADMIN_PASSWORD ?? null,
+  failures: 0,
+};
+
+async function wbaHeadersRemote(targetUrl) {
+  if (!signDesk.password) return {};
+  try {
+    const response = await fetch(`${STORE_BASE_URL}/admin/wba/sign`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`keeper:${signDesk.password}`).toString("base64")}`,
+        "User-Agent": UA,
+      },
+      body: JSON.stringify({ url: targetUrl }),
+    });
+    if (!response.ok) {
+      signDesk.failures += 1;
+      return {};
+    }
+    const { headers } = await response.json();
+    return headers ?? {};
+  } catch {
+    signDesk.failures += 1;
+    return {};
+  }
+}
+
+async function signedHeaders(material, targetUrl) {
+  if (material) return wbaHeaders(material, targetUrl);
+  return wbaHeadersRemote(targetUrl);
+}
+
 /* ---------- derive ---------- */
 
 async function derive(flags) {
@@ -182,22 +224,26 @@ async function derive(flags) {
 
 /* ---------- walk ---------- */
 
+/**
+ * Rule 1's one-run-a-week guard, over every walk ledger under
+ * research/ — not only the ones this runner named.
+ *
+ * It used to ask two narrower questions than the rule it enforces:
+ * only `field-run-*` directories, and only ledgers opening with a
+ * `run` line. Both holes were live on 2026-09-04, and together: the
+ * walk of 2026-09-02 sat in `research/x402-walk-ledger/` with no run
+ * line, in the same ISO week, and a second run would have passed the
+ * guard silently. A guard that answers "no prior run" because it did
+ * not look is worse than no guard, because it reports as though it
+ * did. ledgerWeek() reads the week out of whatever the file carries.
+ */
 function priorRunThisWeek(week) {
   const researchDir = new URL("research/", REPO_ROOT);
   if (!existsSync(researchDir)) return null;
   for (const name of readdirSync(researchDir)) {
-    if (!name.startsWith("field-run-")) continue;
     const ledger = join(researchDir.pathname, name, "ledger.jsonl");
     if (!existsSync(ledger)) continue;
-    const first = readFileSync(ledger, "utf8").split("\n")[0] ?? "";
-    try {
-      const head = JSON.parse(first);
-      if (head.kind === "run" && isoWeek(new Date(head.started)) === week) {
-        return name;
-      }
-    } catch {
-      // A ledger without a run line predates this runner (run zero).
-    }
+    if (ledgerWeek(readFileSync(ledger, "utf8")) === week) return name;
   }
   return null;
 }
@@ -262,7 +308,7 @@ async function walk(flags) {
     caps,
     approval,
     ua: UA,
-    web_bot_auth: Boolean(material),
+    web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
     targets_file: flags.targets,
     targets: targets.length,
     dry_run: dryRun,
@@ -295,10 +341,11 @@ async function walk(flags) {
       domain,
       method: "GET",
       ua_sent: UA,
-      web_bot_auth: Boolean(material),
+      web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
+      signing_desk_failures: signDesk.failures,
     };
     try {
-      const headers = { "User-Agent": UA, Accept: "application/json", ...(await wbaHeaders(material, url)) };
+      const headers = { "User-Agent": UA, Accept: "application/json", ...(await signedHeaders(material, url)) };
       const first = await fetch(url, { method: "GET", headers, redirect: "manual" });
       const firstBody = await first.text();
       entry.status = first.status;
@@ -373,7 +420,7 @@ async function walk(flags) {
       entry.authorization = { nonce: authorization.nonce, valid_before: authorization.validBefore };
       const paidHeaders = {
         ...headers,
-        ...(await wbaHeaders(material, url)),
+        ...(await signedHeaders(material, url)),
         "PAYMENT-SIGNATURE": paymentHeader(chosen.accept, signature, authorization),
       };
       const second = await fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual" });

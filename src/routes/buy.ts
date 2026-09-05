@@ -1,21 +1,32 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { paymentGate } from "@/lib/payment-gate";
+import { gateSignals, paymentGate } from "@/lib/payment-gate";
+import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
+import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
+import { waitlistHowToJoin } from "@/routes/requests";
 import { SettlementDeclined,
   PAYMENT_VARY,
   type SettledPayment,
 } from "@/lib/payments";
-import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
+import { sanitizeText } from "@/lib/sanitize";
+/**
+ * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the MCP door.
+ * Everything this file used to spell out per item — the URL law, the
+ * hash shapes, the address shapes, the caps — lives there now, so a
+ * buyer gets the same refusal and the same goods whichever door they
+ * came through.
+ */
 import {
-  readFulfillmentInput,
-  refusePurchaseInput,
-} from "@/lib/purchase-door";
+  checkPurchaseArgs,
+  purchaseInputFrom,
+  queryArgs,
+} from "@/lib/purchase-args";
 import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
-import { waitlistHowToJoin } from "@/routes/requests";
 import { getMenuItem, VOICE } from "@/store";
 import { getRetiredItem } from "@/store/retired";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -192,6 +203,7 @@ function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
   );
 }
 
+
 /**
  * The shutter: no money taken for labor nobody is present to do.
  * Runs BEFORE the payment gate, so an away keeper can never cost a
@@ -280,30 +292,77 @@ const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
-
+buyRoutes.use("/api/buy/*", noStore);
+buyRoutes.use("/api/buy/*", shelfCheck);
 /**
- * THE DOOR LAW, shared with the MCP till (lib/purchase-door.ts,
- * 2026-09-04). Twenty-three per-item middlewares used to stand here,
- * each refusing one malformed input before the payment gate, while the
- * MCP door carried five of them and forwarded a dozen fields — so a
- * Bitcoin anchor bought over MCP settled, minted, and died in the goods
- * step with no digest. The refusals are the same sentences in the same
- * order; only the file changed, and now there is one of it.
+ * THE WALLET THAT OPENED AND WAS NEVER COUNTED (2026-09-04).
  *
- * The probe rule holds: a request with no PAYMENT-SIGNATURE is asking
- * the price, not placing an order, and the gate answers it with the
- * 402. Every refusal here lands before any money moves.
+ * Every pre-gate check below refuses a SIGNED request that lacks its
+ * input with a 400 — before the payment gate, so no money moves,
+ * which is right. But that path booked nothing. A buyer who read the
+ * PAYMENT-REQUIRED header, signed, and retried without ?tx_hash= —
+ * exactly what a library-driven client does, since it never reads the
+ * body — opened its wallet, was refused, and was recorded as somebody
+ * who "never presented a signature". The funnel's one signal worth
+ * having, a wallet opened at the door, was invisible on every door
+ * with a required input: three of the four cheapest on the shelf.
+ *
+ * So: one wrapper, ahead of every check, that books the refusal as
+ * the decline it is. The check's own body still goes out unchanged.
  */
-const inputLawCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  await next();
+  if (c.res.status !== 400 || !isBuying(c)) {
+    return;
+  }
+  // From the path, not c.req.param(): this runs on the "/api/buy/*"
+  // wildcard, ahead of the named route that would bind item_id.
+  const item = getMenuItem(itemKeyFromPath(c.req.path));
+  if (!item) {
+    return;
+  }
+  const missing = missingRequiredInputs(item, c.req.query());
+  const required = buyInputSchema(item).required ?? [];
+  const reason =
+    missing.length > 0
+      ? `local:input_missing:${missing[0]}`
+      : required.length > 0
+        ? `local:input_invalid:${required[0]}`
+        : "local:refused_before_gate";
+  await recordPaymentDecline(c.env, c.req.path, reason, gateSignals(c)).catch(
+    () => undefined,
+  );
+};
+buyRoutes.use("/api/buy/*", bookRefusalBeforeGate);
+buyRoutes.use("/api/buy/*", stockCheck);
+buyRoutes.use("/api/buy/*", shutterCheck);
+buyRoutes.use("/api/buy/*", capacityCheck);
+/**
+ * EVERY REFUSAL THAT DEPENDS ON WHAT THE BUYER SENT, in one gate,
+ * reading one law out of lib/purchase-args.
+ *
+ * There used to be twenty-three middlewares here, one per item, and
+ * the MCP door had its own five. The five were not the twenty-three:
+ * an MCP buyer could pay $5 for a launch check of an empty string,
+ * because the door that took their money never carried the `url`
+ * they sent and never checked for it either. That is why the law
+ * moved into a file both doors call rather than growing a
+ * twenty-fourth copy here — see the note at the top of
+ * lib/purchase-args.ts.
+ *
+ * The probe rule is unchanged: only a request PRESENTING PAYMENT is
+ * gated, so asking the price without the required inputs stays free
+ * and still answers with the 402 that names them.
+ */
+const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const item = getMenuItem(buyItemId(c));
   if (!item || !isBuying(c)) {
     return next();
   }
-  const refusal = await refusePurchaseInput(
-    item,
-    (name) => c.req.query(name),
+  const refusal = await checkPurchaseArgs(
     c.env,
-    "query",
+    item,
+    queryArgs((name) => c.req.query(name)),
   );
   if (refusal) {
     return c.json(refusal.body, refusal.status);
@@ -311,12 +370,7 @@ const inputLawCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
-buyRoutes.use("/api/buy/*", noStore);
-buyRoutes.use("/api/buy/*", shelfCheck);
-buyRoutes.use("/api/buy/*", stockCheck);
-buyRoutes.use("/api/buy/*", shutterCheck);
-buyRoutes.use("/api/buy/*", capacityCheck);
-buyRoutes.use("/api/buy/*", inputLawCheck);
+buyRoutes.use("/api/buy/*", argCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -335,11 +389,25 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
   }
 
-  // What the buyer sent, read by the one mapping both doors share.
-  const input = readFulfillmentInput(item, (name) => c.req.query(name), {
-    userAgent: c.req.header("User-Agent"),
-    referrer: c.req.header("Referer"),
-  });
+  /*
+   * ONE ARGUMENT MAP FOR BOTH DOORS (lib/purchase-args). This block
+   * used to be two hundred lines of `if (item.id === ...)` here and a
+   * shorter, different two hundred at the MCP door — which is how an
+   * MCP buyer came to pay for a signed reading of an empty string.
+   */
+  const input = purchaseInputFrom(item, queryArgs((name) => c.req.query(name)));
+  const source = sanitizeText(c.req.query("source"), 40);
+  if (source) {
+    input.source = source;
+  }
+  const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
+  if (userAgent) {
+    input.userAgent = userAgent;
+  }
+  const referrer = sanitizeText(c.req.header("Referer"), 200);
+  if (referrer) {
+    input.referrer = referrer;
+  }
 
   /*
    * THE DECLINE IS CAUGHT HERE, in the handler's own frame, and not

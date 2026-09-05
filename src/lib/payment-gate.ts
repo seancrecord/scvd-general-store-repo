@@ -79,6 +79,7 @@ import {
 } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
+import { missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import {
   GUARANTEE_BLOCK_TEXT,
@@ -554,8 +555,18 @@ async function recordReferralFor(
 }
 
 /** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
-function gateSignals(c: Context<HonoEnv>): EventSignals {
+export function gateSignals(c: Context<HonoEnv>): EventSignals {
   const signals: EventSignals = {};
+  // Which required inputs this request lacks, for the ask row: a 402
+  // to a request that could not have bought is a locked door, not a
+  // price-check. Computed here so every event this gate books gets it.
+  const item = getMenuItem(itemKeyFromPath(c.req.path));
+  if (item) {
+    const missing = missingRequiredInputs(item, c.req.query());
+    if (missing.length > 0) {
+      signals.missingRequired = missing;
+    }
+  }
   const userAgent = c.req.header("User-Agent");
   if (userAgent) {
     signals.userAgent = userAgent;

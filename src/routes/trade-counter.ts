@@ -244,6 +244,7 @@ function accountRows(base: string, env: Env) {
     check_desk: `${base}/api/trade/${partner.id}/check`,
     statement: `${base}/api/trade/${partner.id}/statement`,
     fixture: fixtureRow(base, partner),
+    ...(partner.partner_terms ? { partner_terms: partner.partner_terms } : {}),
     ...(partner.sandbox
       ? {
           published_secret: partner.sandbox.signing_secret,
@@ -259,6 +260,8 @@ function accountRows(base: string, env: Env) {
       return [
         {
           item_id: itemId,
+          /** The concrete door, for a marketplace that lists one endpoint URL per item. */
+          door: `${base}/api/trade/${partner.id}/${itemId}`,
           trade_price_usd: price,
           partner_share_usd: Math.round((price - tradeNetUsd(price, partner.partner_share_bps)) * 100) / 100,
           store_net_usd: tradeNetUsd(price, partner.partner_share_bps),

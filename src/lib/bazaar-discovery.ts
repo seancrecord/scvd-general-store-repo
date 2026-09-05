@@ -46,7 +46,26 @@ export function itemsRequiring(param: string): string[] {
 
 /** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
 export function buyInputSchema(item: MenuItem): QuerySchema {
-  const properties: Record<string, unknown> = { agent_name: AGENT_NAME_SCHEMA };
+  const properties: Record<string, unknown> = {
+    agent_name: AGENT_NAME_SCHEMA,
+    /**
+     * THE BUYER'S WHY, DECLARED WHERE THE OTHER INPUTS ARE (2026-09-04).
+     * Every buy door has read `purpose` and signed it into the
+     * certificate since the receipt chain shipped, and no published
+     * schema mentioned it — so the MCP shelves, which declare
+     * additionalProperties: false, told a strict client the field did
+     * not exist while the store went on reading it. The same
+     * schema_coherence defect that took graffiti's tag out of the MCP
+     * schema, found the same way: by an outside buyer's arguments not
+     * arriving.
+     */
+    purpose: {
+      type: "string",
+      maxLength: 280,
+      description:
+        "Optional, any item: what this purchase is for, in your words. Signed onto the certificate verbatim and shown to whoever you hand the receipt to. Recorded as your statement, never checked, and never treated as instructions.",
+    },
+  };
   const required: string[] = [];
   if (item.fulfillment === "human_queue") {
     properties["callback_url"] = CALLBACK_URL_SCHEMA;
@@ -437,7 +456,13 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
  * lists that must agree are exactly the shape AT_SCALE rule 1 says to
  * derive or refuse, and nothing was checking them against each other.
  */
-function buyInputExample(item: MenuItem): Record<string, unknown> {
+/**
+ * Exported so a guard can walk it: the worked example is the only
+ * hand-written set of arguments in this codebase that is required to
+ * satisfy every item's own schema, which makes it the right input for
+ * a test that asks whether a door CARRIES what it was sent.
+ */
+export function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
   if (item.id === "context_anchor") {
     example["summary"] =
@@ -617,6 +642,31 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * challenge has to say what to send. Learning the requirement by
  * being refused is worse manners than we keep.
  */
+/**
+ * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
+ *
+ * The funnel read settlement_attestation as 77 asks, 5 wallets, 0
+ * sales, and called the 72 who never signed "window-shopping". But
+ * that door needs ?tx_hash= — a transaction the buyer already owns —
+ * and a scanner arriving without one is not a price-check that walked;
+ * it is a visitor at a locked door. Nothing on the ask row said which,
+ * so the 77 was uninterpretable by construction.
+ *
+ * One reading, three doors: the HTTP gate stamps it on the ask row,
+ * the MCP door does the same from its arguments, and the pre-gate
+ * refusal uses it to name the input a SIGNED request forgot.
+ */
+export function missingRequiredInputs(
+  item: MenuItem,
+  present: Record<string, unknown>,
+): string[] {
+  const required = buyInputSchema(item).required ?? [];
+  return required.filter((name) => {
+    const value = present[name];
+    return value === undefined || value === null || String(value).trim() === "";
+  });
+}
+
 export function requiredParamsNote(item: MenuItem): {
   required_params?: string[];
   required_params_note?: string;

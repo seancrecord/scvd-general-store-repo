@@ -2,7 +2,8 @@
 
 Drafted 2026-09-03 for the keeper's hand. His to send, edit, or drop;
 nothing here is sent by any agent. `TRADE_COUNTER.md` carries the
-same ten questions with the engineering reason behind each.
+same ten questions with the engineering reason behind each, and, as
+of 2026-09-04, Hal's answers to all ten.
 
 ---
 
@@ -78,10 +79,10 @@ dollars; we print no sats figure because we hold no exchange rate.
 List at your own rate's equivalent at listing time; the statement
 bills the USD trade price.
 
-On the secret: if you would rather not issue one while the door is
-closed, I can mint the pair on our side, set them, and hand them to
-you privately — then the door answers 401 to an unsigned call, which
-is the rejection check you want to see first. The certificate
+On the secret: your side generates both values when I create the
+listing, and I set them here. Until I do, the door answers 503
+`account_not_provisioned` by design; after, an unsigned call answers
+401, which is the rejection check you want to see first. The certificate
 your customer gets verifies against our public key without trusting
 either of us; it says the sale settled on a trade account and names
 no chain, because none was involved.

@@ -23,12 +23,28 @@ import {
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
-import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
-import { factBlockText } from "@/lib/listing-spec";
 import {
-  readFulfillmentInput,
-  refusePurchaseInput,
-} from "@/lib/purchase-door";
+  recordChallengeIssued,
+  recordPaymentDecline,
+  recordPorchVisit,
+  recordVerifyCall,
+} from "@/lib/metrics";
+import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { factBlockText } from "@/lib/listing-spec";
+/**
+ * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the HTTP
+ * door. This door's forked copies of both are what let a buyer pay
+ * for a signed reading of an empty string; see the note at the top
+ * of lib/purchase-args.ts.
+ */
+import {
+  checkPurchaseArgs,
+  purchaseInputFrom,
+  refusalCode,
+  refusalMessage,
+  refusalRpcCode,
+  toolArgs,
+} from "@/lib/purchase-args";
 import { sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
@@ -186,14 +202,8 @@ function rpcRefusal(
   jsonrpc: number,
   code: string,
   message: string,
-  /**
-   * Whatever else the refusal carried beside its sentence — the
-   * anchor's before_you_file checklist, the shutter's machine_shelves
-   * link. The door law returns them; this door relays them.
-   */
-  extra: Record<string, unknown> = {},
 ): Response {
-  return rpcError(id, jsonrpc, message, { ...extra, code, charged: false });
+  return rpcError(id, jsonrpc, message, { code, charged: false });
 }
 
 function rpcError(
@@ -684,25 +694,6 @@ export async function callFreeTool(
 }
 
 /**
- * One MCP argument, read the way the door law reads a query
- * parameter: strings as sent; the numbers and booleans a JSON caller
- * may legitimately send for fields the schema types as number
- * (amount_usdc, declared_cap_usdc) as their decimal text; anything
- * else — an object, an array, null — as absent, which the law then
- * refuses by name.
- */
-function readArg(args: Record<string, unknown>): (name: string) => string | undefined {
-  return (name) => {
-    const value = args[name];
-    if (typeof value === "string") return value;
-    if (typeof value === "number" || typeof value === "boolean") {
-      return String(value);
-    }
-    return undefined;
-  };
-}
-
-/**
  * DELETED 2026-08-02: payerFromPaymentMeta, which read the payer out
  * of the caller's unverified `_meta`. Its only remaining caller was
  * the idempotency replay lookup, and that now happens inside the
@@ -722,26 +713,62 @@ async function callPurchaseTool(
   rawIdempotencyKey?: string,
 ): Promise<Response> {
   /**
-   * THE DOOR LAW, the same one the HTTP gate runs (lib/purchase-door.ts,
-   * 2026-09-04). This door used to check five items by name and let
-   * every other argument the tool's own schema advertises fall through
-   * unread — which is how a bitcoin_anchor settled, minted, and then
-   * died in the goods step with no digest. Every refusal lands here,
-   * before any payment is examined: a tools/call is an agent that has
-   * read the schema, and the cheapest moment to say the digest is
-   * malformed is before it signs. Nothing is charged for learning the
-   * rule. The HTTP door's 400 is -32602 here and its 403/503 are
-   * -32000, with the same string code and `charged: false` in data.
+   * THE SAME PRE-PAYMENT LAW THE HTTP DOOR RUNS, out of the same
+   * file (lib/purchase-args), because this door's own shorter copy
+   * checked a handful of items and the HTTP door checked the rest —
+   * and the ones it did not check are the ones that took a buyer's
+   * money for a reading of an empty string on 2026-09-04.
+   *
+   * Run before the terms are quoted, which is this door's older and
+   * stricter habit: a shelf that cannot fulfil what you asked for
+   * should say so before it hands you an offer to sign.
    */
-  const refusal = await refusePurchaseInput(item, readArg(args), c.env, "input");
+  const missing = missingRequiredInputs(item, args);
+  const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args));
   if (refusal) {
-    const { error, code, charged: _charged, ...extra } = refusal.body;
+    const paying = paymentMeta !== undefined && paymentMeta !== null;
+    /**
+     * THE LOCKED DOOR, on this door's terms. The HTTP door quotes a
+     * 402 to a bare ask and stamps the ask row with the inputs it
+     * lacked (payment-gate, the locked-door work); this door refuses
+     * BEFORE quoting, so the same ask never reaches its 402 — and a
+     * funnel that only counted 402s would lose every MCP caller who
+     * asked without the one thing the shelf needed. That is the
+     * caller the locked-door column exists to count. So the bare ask
+     * that was refused for a missing required input is booked as the
+     * ask it was, stamped the same way, and the row reads the same
+     * whichever door it came through.
+     */
+    if (!paying && missing.length > 0) {
+      await recordChallengeIssued(c.env, `/api/buy/${item.id}`, {
+        ...mcpSignals(c),
+        missingRequired: missing,
+      }).catch(() => undefined);
+    }
+    // Same books as the HTTP door's bookRefusalBeforeGate: a caller
+    // that attached a payment and forgot the input opened a wallet and
+    // was refused, and the funnel must see it. Only the 400s book,
+    // exactly as there.
+    if (refusal.status === 400 && paying) {
+      const required = buyInputSchema(item).required ?? [];
+      const reason =
+        missing.length > 0
+          ? `local:input_missing:${missing[0]}`
+          : required.length > 0
+            ? `local:input_invalid:${required[0]}`
+            : "local:refused_before_gate";
+      await recordPaymentDecline(
+        c.env,
+        `/api/buy/${item.id}`,
+        reason,
+        mcpSignals(c),
+      ).catch(() => undefined);
+    }
     return rpcRefusal(
       id,
-      refusal.status === 400 ? -32602 : -32000,
-      typeof code === "string" ? code : "bad_request",
-      error,
-      extra,
+      refusalRpcCode(refusal),
+      refusalCode(refusal),
+      refusalMessage(refusal),
     );
   }
   /**
@@ -827,7 +854,9 @@ async function callPurchaseTool(
     c.env,
     item.id,
     paymentMeta,
-    mcpSignals(c),
+    // The ask row says which required inputs were absent, so a 402 to
+    // a caller that could not have bought reads as a locked door.
+    { ...mcpSignals(c), ...(missing.length > 0 ? { missingRequired: missing } : {}) },
     replayCheck,
     // What the buyer asked for, for the delivery intent: same purpose
     // as the HTTP gate recording its query string, so a mint that dies
@@ -893,15 +922,21 @@ async function callPurchaseTool(
     );
   }
 
-  /**
-   * What the buyer sent, read by the one mapping both doors share —
-   * every field the tool's schema advertises reaches the till, on
-   * this door exactly as on the other. `source` names the door.
+  /*
+   * ONE ARGUMENT MAP FOR BOTH DOORS (lib/purchase-args). This door
+   * used to keep its own, and its own carried eleven fields out of
+   * the thirty-odd that decide the goods: `url`, `address`,
+   * `tx_hash`, `tx_hashes`, `wallet`, `digest`, `mandate`, `purpose`
+   * and the rest were read off the wire, validated by nothing, and
+   * dropped before fulfillment ever saw them. Everything below this
+   * line is what is genuinely particular to THIS channel.
    */
-  const input = readFulfillmentInput(item, readArg(args), {
-    userAgent: c.req.header("User-Agent"),
-  });
+  const input = purchaseInputFrom(item, toolArgs(args));
   input.source = "mcp";
+  const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
+  if (userAgent) {
+    input.userAgent = userAgent;
+  }
   /*
    * Deliver first (rule 9, amended 2026-08-10). fulfillPurchase takes
    * the AUTHORIZATION and presents it at its own last line, so a

@@ -41,7 +41,18 @@ import type { MenuItem } from "@/types";
  * Inputs every item accepts, which say nothing about complexity:
  * a name to put on the certificate, and a callback for the queue.
  */
-const UNIVERSAL_INPUTS = new Set(["agent_name", "callback_url"]);
+/**
+ * The inputs EVERY item carries and that carry no state: a name to
+ * sign as, a webhook to hear back on, and — since 2026-09-04, when it
+ * was declared where the other inputs are — the buyer's own statement
+ * of purpose, signed verbatim onto the certificate. None of the three
+ * is a branch: a caller that sends none of them gets the same goods.
+ */
+export const UNIVERSAL_INPUTS: ReadonlySet<string> = new Set([
+  "agent_name",
+  "callback_url",
+  "purpose",
+]);
 
 export interface FrontCounterVerdict {
   eligible: boolean;

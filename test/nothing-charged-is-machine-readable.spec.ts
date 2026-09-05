@@ -1,19 +1,20 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import buyRouteSource from "../src/routes/buy.ts?raw";
-import doorLawSource from "../src/lib/purchase-door.ts?raw";
-import deliveryFailedSource from "../src/lib/delivery-failed.ts?raw";
-
+import buySource from "../src/routes/buy.ts?raw";
 /**
- * THE GROUND TRUTH IS TWO FILES NOW (2026-09-04). The per-item
- * refusals moved out of the route into lib/purchase-door.ts, where
- * both doors run them; the shelf gate's three stayed with the route.
- * The law's refusals are built with `refuse(status, {` rather than
- * `return c.json({`, so the marker below matches either spelling —
- * a walk that only knew the old one would pass over the new file and
- * guard nothing, which is rule 46's own failure mode.
+ * THE LAW MOVED, SO THE GUARD FOLLOWED IT (2026-09-04). Every
+ * argument-shaped refusal that used to be spelled out in
+ * routes/buy.ts now lives in lib/purchase-args.ts, where the MCP
+ * door reads the same sentences out of the same file. A guard that
+ * kept walking only the old file would have gone on passing while
+ * the entire set it was written about sat somewhere else — which is
+ * the failure mode this file's own header describes.
  */
-const buySource = `${buyRouteSource}\n${doorLawSource}\n${deliveryFailedSource}`;
+import lawSource from "../src/lib/purchase-args.ts?raw";
+// And the owned post-settlement failure (2026-09-04): its code is
+// charged: TRUE and never says "no charge", so the walk below never
+// meets it; the code walk does.
+import deliveryFailedSource from "../src/lib/delivery-failed.ts?raw";
 
 /**
  * "NOTHING CHARGED" WAS A SENTENCE, NOT A FIELD (rule 57.4, the sweep's
@@ -61,9 +62,7 @@ const CODES = [
   "sold_out",
   /*
    * THE ONE THAT MEANS MONEY MOVED (2026-09-04): served when delivery
-   * threw after settlement. It carries charged: TRUE and never says
-   * "no charge", so the walk above never meets it; it is listed here
-   * because the code walk below does.
+   * threw after settlement, carrying charged: TRUE.
    */
   "delivery_failed",
 ] as const;
@@ -77,22 +76,66 @@ const CODES = [
  * a way a machine can read.
  */
 describe("every pre-payment refusal says so in a field, not only in a sentence", () => {
+  /**
+   * THE SHARED LAW STAMPS THE FIELD BY CONSTRUCTION, which is a
+   * stronger promise than forty-two hand-written literals ever were:
+   * there is exactly one place that builds a refusal, and it cannot
+   * build one without `charged: false` and a code. The guard checks
+   * the builder, then checks that the sentences actually go through
+   * it — a refusal in that file that dodged the builder and wrote its
+   * own object would be caught by the walk below, which reads both
+   * files.
+   */
+  it("builds every shared refusal through one helper that always says charged: false", () => {
+    const builder = /function refuse\([\s\S]*?\n\}/.exec(lawSource)?.[0] ?? "";
+    expect(builder, "lib/purchase-args no longer has a refuse() builder").toContain(
+      "charged: false",
+    );
+    const sites = [...lawSource.matchAll(/\brefuse\(\s*(\d{3}),/g)];
+    // A guard over an empty set is a guard that cannot fail.
+    expect(sites.length).toBeGreaterThan(30);
+    for (const site of sites) {
+      expect(["400", "403", "503"]).toContain(site[1]);
+    }
+  });
+
+  it("gives every shared refusal a code from the published set", () => {
+    const codes = [...lawSource.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
+      (match) => match[1]!,
+    );
+    expect(codes.length).toBeGreaterThan(30);
+    const unknown = [...new Set(codes)].filter(
+      (code) => !CODES.includes(code as (typeof CODES)[number]),
+    );
+    expect(
+      unknown,
+      "the shared purchase law emits a refusal code that is not in the published set, so a caller branching on codes meets one it has never seen",
+    ).toEqual([]);
+  });
+
   it("leaves no promise of no-charge unaccompanied by charged: false", () => {
     const literals: { snippet: string; hasField: boolean }[] = [];
-    const marker = /(?:return c\.json|refuse)\(\s*(?:\d+,\s*)?\{/g;
+    /*
+     * Both files: the door still refuses at the shelf, the shutter,
+     * the capacity bench and the stock room with its own literals,
+     * and any object literal the shared law grew instead of going
+     * through refuse() has to answer here too.
+     */
+    const source = `${buySource}\n${lawSource}`;
+    const marker = /return c\.json\(\s*\{/g;
     let match: RegExpExecArray | null;
-    while ((match = marker.exec(buySource)) !== null) {
+    while ((match = marker.exec(source)) !== null) {
       const open = match.index + match[0].length - 1;
       let depth = 0;
       let index = open;
-      for (; index < buySource.length; index += 1) {
-        if (buySource[index] === "{") depth += 1;
-        else if (buySource[index] === "}") {
+      for (; index < source.length; index += 1) {
+        if (source[index] === "{") depth += 1;
+        else if (source[index] === "}") {
           depth -= 1;
           if (depth === 0) break;
         }
       }
-      const body = buySource.slice(open, index + 1);
+      const body = source.slice(open, index + 1);
       const promises =
         body.includes("Nothing charged") || /no charge/i.test(body);
       if (!promises) continue;
@@ -103,7 +146,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
     }
 
     // A guard over an empty set is a guard that cannot fail.
-    expect(literals.length).toBeGreaterThan(30);
+    expect(literals.length).toBeGreaterThan(1);
     const silent = literals.filter((entry) => !entry.hasField);
     expect(
       silent.map((entry) => entry.snippet),
@@ -112,10 +155,10 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
   });
 
   it("gives every one of them a code from the published set", () => {
-    const codes = [...buySource.matchAll(/code: "([a-z_]+)"/g)].map(
+    const codes = [...`${buySource}\n${deliveryFailedSource}`.matchAll(/code: "([a-z_]+)"/g)].map(
       (match) => match[1]!,
     );
-    expect(codes.length).toBeGreaterThan(30);
+    expect(codes.length).toBeGreaterThan(3);
     const unknown = [...new Set(codes)].filter(
       (code) => !CODES.includes(code as (typeof CODES)[number]),
     );

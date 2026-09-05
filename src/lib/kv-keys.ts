@@ -67,6 +67,32 @@ export const KV_KEYS = {
   operatorStatement: (statementId: string): string => `ostmt:${statementId}`,
   operatorStatementPrefix: "ostmt:",
   wardRound: (week: string): string => `ward:${week}`,
+  /**
+   * The rounds' shared prefix, so the source register can walk the
+   * history the same way the corpus walks its own. Deliberately NOT
+   * matched by `ward_latest` / `ward_previous`, which are pointers
+   * rather than rounds and would be counted twice by a listing.
+   */
+  wardRoundPrefix: "ward:",
+  /**
+   * THE MCP WARD, kept in its own keys on purpose (2026-09-04). Its
+   * population is MCP servers, not x402 doors, and folding the two
+   * would silently change what `coverage_pct` and every corpus
+   * denominator mean. Two wards, two registers, no shared totals.
+   */
+  mcpWalkState: "mcp_walk_state",
+  mcpRegister: "mcp_register",
+  mcpPassPrefix: "mcp_pass:",
+  mcpPass: (week: string): string => `mcp_pass:${week}`,
+  /**
+   * THE DIRECTORY WALKS (2026-09-04): the two x402 directories too
+   * large or too dear to read inside the Sunday round — 402index at
+   * 104,106 rows, x402scan at a cent a page — walked in hourly
+   * batches on a stored cursor, one state and one completed pass per
+   * source. The round reads the pass, never the directory.
+   */
+  directoryWalk: (source: string): string => `dirwalk:${source}`,
+  directoryPass: (source: string): string => `dirpass:${source}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
   /**
@@ -102,6 +128,14 @@ export const KV_KEYS = {
    * produces are what graduated to R2, not the working state.
    */
   longWalkState: "long_walk_state",
+  /**
+   * WHAT HOSTS DECLARE ABOUT THEMSELVES (2026-09-04): the doors each
+   * host's own /.well-known/x402 (or agent-card pointer) named, keyed
+   * by the host the sweep asked. Separate from the door bank on
+   * purpose — the bank holds only what the discovery DIRECTORY
+   * declared, and its own comment says so.
+   */
+  wellKnownDoors: "well_known_doors",
   /**
    * THE OUTREACH LEDGER (2026-08-19): the keeper's private work queue
    * state for telling operators their own door is broken. One key,
