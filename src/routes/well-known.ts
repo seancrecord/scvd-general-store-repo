@@ -997,13 +997,14 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   return c.text(
     [
       `Contact: ${base}/api/letter`,
+      `Contact: mailto:security@${new URL(base).hostname}`,
       `Expires: ${expires}`,
       `Canonical: ${base}/.well-known/security.txt`,
       `Policy: ${base}/.well-known/trust.json`,
       "Preferred-Languages: en",
       "",
       "# One operator, one ed25519 key; scope and limits at /attestation.",
-      "# Found something? The mailbox above is free and read by a human.",
+      "# Found something? Either contact above is free and read by a human.",
       "# What we got wrong before is on the record at /corrections.",
     ].join("\n"),
     200,
