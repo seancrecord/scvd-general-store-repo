@@ -219,6 +219,22 @@ derivation, because a checker that has drifted reports NO MATCH on a
 correct seed, and the obvious response to a no-match is a rotation
 that replaces a working published key to fix the tool that read it.
 
+**Or let the Worker sign (2026-09-04).** Set `STORE_ADMIN_PASSWORD`
+in the runner's environment instead of `WBA_SIGNING_KEY`, and the
+runner asks `POST /admin/wba/sign` for each paid request's triplet.
+The Worker mints it with the same code path that signs its own
+probes; the seed never leaves Cloudflare and the paper stays in the
+drawer. The run line records `web_bot_auth: "signing_desk"` (versus
+`"local_seed"` or `false`), and any failure of the desk falls back to
+the unsigned request, because unsigned is honest and a half-made proof
+is a claim. What the desk can sign is only "a request to authority X,
+in the next five minutes, from the key behind scvd.store" — the
+architecture draft's minimum covered components, with created,
+expires, nonce and tag minted server-side. It is a door behind the
+admin password and is listed here as one: someone holding that
+password could have requests signed as us, and that person already
+holds the counter, the refunds and the outreach desk.
+
 `npm run keys:generate` mints a NEW seed and is not how you find the
 existing one. Using its output as `WBA_SIGNING_KEY` is a rotation:
 the Worker secret changes, the published directory changes with the

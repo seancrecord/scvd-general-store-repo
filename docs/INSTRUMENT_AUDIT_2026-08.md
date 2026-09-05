@@ -20,7 +20,7 @@ open. The findings below are left as found — they are the dated
 record of what the instruments were, and the diffs are the record
 of what changed. The corrections drafts in §4 are still DRAFTS —
 the corrections record is hand-written by a person, on purpose, and
-this branch does not touch src/store/corrections.ts; each draft's
+this branch does not touch src/store/corrections-ledger/ (one file per entry; npm run corrections:index); each draft's
 proposed mechanism now exists in code, so an entry the keeper files
 can cite a shipped mechanism rather than an intention. Method: for every quantitative or
 verdict-shaped claim the store publishes, read the caption, read the
@@ -306,7 +306,7 @@ its own `hosts` rows.
 Rule 30: the corrections record is written by a person. These are
 drafts in the record's own shape, offered for the keeper's editing
 and his decision on which belong at all. Nothing below has been added
-to src/store/corrections.ts. Dates are left as the keeper's call —
+to src/store/corrections-ledger/ (one file per entry; npm run corrections:index). Dates are left as the keeper's call —
 the honest date is the day the correction ships, not the day this
 audit found it.
 

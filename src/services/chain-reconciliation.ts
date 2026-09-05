@@ -270,6 +270,29 @@ export interface SkippedBlockRange {
   /** CAIP-2 of the chain the hole was torn on. Absent means Base —
    * every range recorded before the third rail's walk existed. */
   chain?: string;
+  /**
+   * THE HOLE, READ AFTER THE FACT (2026-09-04, the keeper's "what do
+   * i do about this" against seven holes from the August stall). The
+   * back-fill walks the range with the hourly walk's own reader and
+   * orphan rule, in bounded spans per call, and writes its progress
+   * here under the same clean-read rule the cursor lives by: read_to
+   * moves only past blocks that were actually read. `completed_at`
+   * set means every block of the hole has now been read — the range
+   * stays on the ledger as history, and the page can say so.
+   */
+  backfill?: HoleBackfillProgress;
+}
+
+export interface HoleBackfillProgress {
+  started_at: string;
+  updated_at: string;
+  /** The last block read so far; equals to_block once complete. */
+  read_to: number;
+  transfers_seen: number;
+  orphans: number;
+  /** True if any span's certificate scan hit its cap (a partial read). */
+  cert_scan_truncated: boolean;
+  completed_at?: string;
 }
 
 /**
@@ -283,6 +306,20 @@ export interface SkippedRangesRecord {
   ranges: SkippedBlockRange[];
   total_ranges: number;
   total_blocks: number;
+  /**
+   * Blocks and ranges the back-fill has read since (2026-09-04).
+   * TOTALS NEVER SHRINK — total_blocks is how much the walk skipped,
+   * forever; these say how much of it was read afterwards, so
+   * `unreadBlocks` is exact even mid-way through a range. Absent on
+   * records written before the back-fill existed: zero, not unknown.
+   */
+  backfilled_blocks?: number;
+  backfilled_ranges?: number;
+}
+
+/** Blocks the walk skipped that nothing has read since. */
+export function unreadBlocks(record: SkippedRangesRecord): number {
+  return Math.max(0, record.total_blocks - (record.backfilled_blocks ?? 0));
 }
 
 export const SKIPPED_RANGES_CAP = 100;
@@ -536,6 +573,260 @@ export async function tillOutflowDetail(
  * running — and an instrument that stops running is the failure this
  * whole file is about.
  */
+/**
+ * THE ORPHAN RULE, one place (2026-09-04, extracted for the hole
+ * back-fill so it reads by exactly the law the hourly walk reads by;
+ * behaviour unchanged). A transfer no certificate names is an orphan:
+ * dust below the cheapest listing, else a possible sale. Dust reaches
+ * for the payer rows once, to name a look-alike sender. The inflow
+ * meter's sums ride the same pass.
+ */
+async function classifyTransfers(
+  env: Env,
+  transfers: Array<{ txHash: string; from: string; amount: bigint; block: number }>,
+  hashes: ReadonlySet<string>,
+): Promise<{
+  orphans: OrphanTransfer[];
+  inflow: { microUsdc: number; dustMicroUsdc: number };
+}> {
+  const orphans: OrphanTransfer[] = [];
+  const floor = cheapestListingUsdc();
+  let counterparties: string[] | null = null;
+  const inflow = { microUsdc: 0, dustMicroUsdc: 0 };
+  for (const transfer of transfers) {
+    const transferUsdc = usdcFromUnits(transfer.amount);
+    inflow.microUsdc += Math.round(transferUsdc * INFLOW_MICRO);
+    if (transferUsdc < floor) {
+      inflow.dustMicroUsdc += Math.round(transferUsdc * INFLOW_MICRO);
+    }
+    if (hashes.has(transfer.txHash)) continue;
+    const usdc = transferUsdc;
+    const orphan: OrphanTransfer = {
+      tx_hash: transfer.txHash,
+      from: transfer.from,
+      usdc,
+      block: transfer.block,
+      classification: usdc < floor ? "dust" : "possible_sale",
+    };
+    if (orphan.classification === "dust") {
+      // Only reach for the payer rows when there is dust to explain.
+      counterparties ??= await knownCounterparties(env);
+      const mimicked = findLookalike(transfer.from, counterparties);
+      if (mimicked) {
+        orphan.lookalike_of = mimicked;
+      }
+    }
+    orphans.push(orphan);
+  }
+  return { orphans, inflow };
+}
+
+/**
+ * Spans one back-fill call will read before it stops and writes its
+ * progress: thirty of the chain's log span is 60,000 Base blocks,
+ * enough to close the largest August hole (58,422) in one press and
+ * about sixty RPC reads plus a handful of KV calls — far inside the
+ * subrequest budget, with nothing else riding the request. A bigger
+ * hole takes more presses; the ledger remembers where each stopped.
+ */
+export const BACKFILL_SPANS_PER_CALL = 30;
+
+export interface HoleBackfill {
+  ran: boolean;
+  /** Why not, when ran is false. Never a silent skip. */
+  reason?: string;
+  failed?: true;
+  chain: string;
+  from_block: number;
+  to_block: number;
+  /** The blocks THIS call read, when it read any. */
+  read_from?: number;
+  read_to?: number;
+  transfers_seen: number;
+  orphans: OrphanTransfer[];
+  cert_scan_truncated: boolean;
+  /** True once every block of the hole has been read and recorded. */
+  complete: boolean;
+  /** Blocks of this hole still unread after this call. */
+  remaining: number;
+}
+
+/**
+ * READ A HOLE AFTER THE FACT (2026-09-04). The hourly walk only goes
+ * forward, so a range the clamp discarded stays unread forever unless
+ * something reads it on purpose. This is that something: the keeper
+ * presses a button on the books page, and the range is walked in
+ * bounded spans with the SAME reader (usdcTransfersTo, the till
+ * sentinel beside it) and the SAME orphan rule as the hourly pass,
+ * paging the same alerts under the same keys. What it never does is
+ * touch the walk's cursor — the hole is history, and the walk's own
+ * position is not this function's to move.
+ *
+ * Refuses a range that is not on the ledger exactly as recorded: the
+ * ledger is the list of what was skipped, and a read of some other
+ * window would be a coverage claim nothing recorded. Progress is
+ * written ONCE per call, after the last clean span, because KV
+ * allows one write a second per key and thirty spans finish faster
+ * than that; a span that fails ends the call with everything before
+ * it kept.
+ */
+export async function backfillSkippedRange(
+  env: Env,
+  options: {
+    from_block: number;
+    to_block: number;
+    chain?: EvmChain;
+    now?: Date;
+    /** Test seam; production presses read BACKFILL_SPANS_PER_CALL. */
+    maxSpans?: number;
+  },
+): Promise<HoleBackfill> {
+  const chain = options.chain ?? BASE_EVM;
+  const base = {
+    chain: chain.caip2,
+    from_block: options.from_block,
+    to_block: options.to_block,
+    transfers_seen: 0,
+    orphans: [] as OrphanTransfer[],
+    cert_scan_truncated: false,
+  };
+  const record = await readSkippedRanges(env);
+  const hole = record.ranges.find(
+    (range) =>
+      range.from_block === options.from_block &&
+      range.to_block === options.to_block &&
+      (range.chain ?? BASE_EVM.caip2) === chain.caip2,
+  );
+  if (!hole) {
+    return {
+      ...base,
+      ran: false,
+      complete: false,
+      remaining: 0,
+      reason: `blocks ${options.from_block}–${options.to_block} on ${chain.label} are not a hole on record; only a range the walk recorded skipping can be back-filled`,
+    };
+  }
+  if (hole.backfill?.completed_at) {
+    return {
+      ...base,
+      ran: false,
+      complete: true,
+      remaining: 0,
+      transfers_seen: hole.backfill.transfers_seen,
+      cert_scan_truncated: hole.backfill.cert_scan_truncated,
+      reason: `already back-filled at ${hole.backfill.completed_at}: ${hole.backfill.transfers_seen} transfer${hole.backfill.transfers_seen === 1 ? "" : "s"} seen, ${hole.backfill.orphans} orphan${hole.backfill.orphans === 1 ? "" : "s"}`,
+    };
+  }
+  const payTo =
+    chain.key === "polygon" ? env.POLYGON_PAY_TO : env.PAY_TO_ADDRESS;
+  const startCursor = hole.backfill?.read_to ?? hole.from_block - 1;
+  if (!payTo) {
+    return {
+      ...base,
+      ran: false,
+      complete: false,
+      remaining: hole.to_block - startCursor,
+      reason:
+        chain.key === "polygon"
+          ? "no POLYGON_PAY_TO configured — the rail is not live here"
+          : "no PAY_TO_ADDRESS configured",
+    };
+  }
+
+  const known = await knownSettlementHashes(env);
+  const spans = options.maxSpans ?? BACKFILL_SPANS_PER_CALL;
+  let cursor = startCursor;
+  let transfersSeen = 0;
+  const orphans: OrphanTransfer[] = [];
+  const inflow = { microUsdc: 0, dustMicroUsdc: 0 };
+  let failure: string | undefined;
+  for (let span = 0; span < spans && cursor < hole.to_block; span += 1) {
+    const from = cursor + 1;
+    const to = Math.min(hole.to_block, from + chain.logSpan - 1);
+    // The till sentinel rides the back-fill too, fail-quiet as on the
+    // hourly pass: an outflow in the hole is the keeper's hand or a
+    // theft, and either one deserves the page it never got in August.
+    try {
+      const outflows = await usdcTransfersFrom(env, payTo, from, to, chain);
+      for (const outflow of outflows) {
+        await sendAlert(env, {
+          condition: "till_outflow",
+          detail: await tillOutflowDetail(env, outflow, options.now, chain),
+          key: outflow.txHash,
+        }).catch(() => undefined);
+      }
+    } catch {
+      // The incoming read below decides whether the span counts.
+    }
+    let transfers: Awaited<ReturnType<typeof usdcTransfersTo>>;
+    try {
+      transfers = await usdcTransfersTo(env, payTo, from, to, chain);
+    } catch (error) {
+      failure = `chain query failed at blocks ${from}–${to}: ${String(error)}`;
+      break;
+    }
+    const found = await classifyTransfers(env, transfers, known.hashes);
+    transfersSeen += transfers.length;
+    orphans.push(...found.orphans);
+    inflow.microUsdc += found.inflow.microUsdc;
+    inflow.dustMicroUsdc += found.inflow.dustMicroUsdc;
+    cursor = to;
+  }
+
+  const readAny = cursor > startCursor;
+  if (readAny) {
+    const now = (options.now ?? new Date()).toISOString();
+    const complete = cursor >= hole.to_block;
+    hole.backfill = {
+      started_at: hole.backfill?.started_at ?? now,
+      updated_at: now,
+      read_to: cursor,
+      transfers_seen: (hole.backfill?.transfers_seen ?? 0) + transfersSeen,
+      orphans: (hole.backfill?.orphans ?? 0) + orphans.length,
+      cert_scan_truncated:
+        (hole.backfill?.cert_scan_truncated ?? false) || known.truncated,
+      ...(complete ? { completed_at: now } : {}),
+    };
+    record.backfilled_blocks =
+      (record.backfilled_blocks ?? 0) + (cursor - startCursor);
+    if (complete) {
+      record.backfilled_ranges = (record.backfilled_ranges ?? 0) + 1;
+    }
+    // Progress and the meter under the clean-read rule: both describe
+    // the blocks actually read, written together, or neither.
+    await kvPut(
+      env.COUNTERS,
+      KV_KEYS.reconcileSkippedRanges,
+      JSON.stringify(record),
+    );
+    await bankInflow(env, chain.key, inflow);
+    await alertOrphans(env, orphans, chain.label, known.truncated);
+  }
+
+  if (failure && !readAny) {
+    return {
+      ...base,
+      ran: false,
+      failed: true,
+      complete: false,
+      remaining: hole.to_block - cursor,
+      reason: failure,
+    };
+  }
+  return {
+    ...base,
+    ran: true,
+    ...(failure ? { failed: true, reason: `stopped early — ${failure}` } : {}),
+    read_from: startCursor + 1,
+    read_to: cursor,
+    transfers_seen: transfersSeen,
+    orphans,
+    cert_scan_truncated: known.truncated,
+    complete: cursor >= hole.to_block,
+    remaining: hole.to_block - cursor,
+  };
+}
+
 export async function reconcileAgainstChain(
   env: Env,
   options: {
@@ -673,35 +964,7 @@ export async function reconcileAgainstChain(
 
   const { hashes, truncated } =
     options.known ?? (await knownSettlementHashes(env));
-  const orphans: OrphanTransfer[] = [];
-  const floor = cheapestListingUsdc();
-  let counterparties: string[] | null = null;
-  const inflow = { microUsdc: 0, dustMicroUsdc: 0 };
-  for (const transfer of transfers) {
-    const transferUsdc = usdcFromUnits(transfer.amount);
-    inflow.microUsdc += Math.round(transferUsdc * INFLOW_MICRO);
-    if (transferUsdc < floor) {
-      inflow.dustMicroUsdc += Math.round(transferUsdc * INFLOW_MICRO);
-    }
-    if (hashes.has(transfer.txHash)) continue;
-    const usdc = transferUsdc;
-    const orphan: OrphanTransfer = {
-      tx_hash: transfer.txHash,
-      from: transfer.from,
-      usdc,
-      block: transfer.block,
-      classification: usdc < floor ? "dust" : "possible_sale",
-    };
-    if (orphan.classification === "dust") {
-      // Only reach for the payer rows when there is dust to explain.
-      counterparties ??= await knownCounterparties(env);
-      const mimicked = findLookalike(transfer.from, counterparties);
-      if (mimicked) {
-        orphan.lookalike_of = mimicked;
-      }
-    }
-    orphans.push(orphan);
-  }
+  const { orphans, inflow } = await classifyTransfers(env, transfers, hashes);
 
   /**
    * THE CURSOR MOVES ONLY ON A CLEAN READ. Every early return above

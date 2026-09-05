@@ -153,6 +153,47 @@ async function wbaHeaders(material, targetUrl) {
   };
 }
 
+/**
+ * The signing desk: when the runner holds no seed but does hold the
+ * keeper's admin password, the Worker signs each request's authority
+ * and the seed stays in Cloudflare (POST /admin/wba/sign). Any failure
+ * falls back to the unsigned request — unsigned is honest; a half-made
+ * proof is a claim — and is counted so the run line can say so.
+ */
+const signDesk = {
+  password: process.env.STORE_ADMIN_PASSWORD ?? null,
+  failures: 0,
+};
+
+async function wbaHeadersRemote(targetUrl) {
+  if (!signDesk.password) return {};
+  try {
+    const response = await fetch(`${STORE_BASE_URL}/admin/wba/sign`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`keeper:${signDesk.password}`).toString("base64")}`,
+        "User-Agent": UA,
+      },
+      body: JSON.stringify({ url: targetUrl }),
+    });
+    if (!response.ok) {
+      signDesk.failures += 1;
+      return {};
+    }
+    const { headers } = await response.json();
+    return headers ?? {};
+  } catch {
+    signDesk.failures += 1;
+    return {};
+  }
+}
+
+async function signedHeaders(material, targetUrl) {
+  if (material) return wbaHeaders(material, targetUrl);
+  return wbaHeadersRemote(targetUrl);
+}
+
 /* ---------- derive ---------- */
 
 async function derive(flags) {
@@ -267,7 +308,7 @@ async function walk(flags) {
     caps,
     approval,
     ua: UA,
-    web_bot_auth: Boolean(material),
+    web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
     targets_file: flags.targets,
     targets: targets.length,
     dry_run: dryRun,
@@ -300,10 +341,11 @@ async function walk(flags) {
       domain,
       method: "GET",
       ua_sent: UA,
-      web_bot_auth: Boolean(material),
+      web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
+      signing_desk_failures: signDesk.failures,
     };
     try {
-      const headers = { "User-Agent": UA, Accept: "application/json", ...(await wbaHeaders(material, url)) };
+      const headers = { "User-Agent": UA, Accept: "application/json", ...(await signedHeaders(material, url)) };
       const first = await fetch(url, { method: "GET", headers, redirect: "manual" });
       const firstBody = await first.text();
       entry.status = first.status;
@@ -378,7 +420,7 @@ async function walk(flags) {
       entry.authorization = { nonce: authorization.nonce, valid_before: authorization.validBefore };
       const paidHeaders = {
         ...headers,
-        ...(await wbaHeaders(material, url)),
+        ...(await signedHeaders(material, url)),
         "PAYMENT-SIGNATURE": paymentHeader(chosen.accept, signature, authorization),
       };
       const second = await fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual" });

@@ -306,6 +306,96 @@ adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 
 /**
+ * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).
+ *
+ * WBA_SIGNING_KEY is a Worker secret and Worker secrets are write-only,
+ * so the walkabout runner (a Node process on the keeper's machine) had
+ * two ways to sign its egress: hold a copy of the seed, or not sign.
+ * A copy means the paper leaves the drawer. This is the third way: the
+ * runner sends the URL it is about to call and the Worker returns the
+ * Web Bot Auth triplet, minted by the SAME code path that signs the
+ * store's own probes. The seed never leaves Cloudflare.
+ *
+ * WHAT THE ORACLE CAN AND CANNOT SIGN. The caller supplies only a
+ * target URL. created, expires, nonce and the tag are minted here, and
+ * the covered components are the architecture draft's minimum —
+ * ("@authority" "signature-agent") — so a signature from this desk
+ * asserts exactly one thing: "a request to authority X, in the next
+ * five minutes, came from the key behind scvd.store". Not a path, not
+ * a body, not a method. Someone holding the admin password could get
+ * requests signed as us; that person already holds the counter, the
+ * refunds and the outreach desk, so this widens nothing that matters.
+ * It is still a door, so it is named as one in WALKABOUT.md.
+ *
+ * JSON ONLY. A form body is refused outright rather than CSRF-guarded:
+ * no page posts here, so the same-origin dance the payout form needs
+ * is one more thing that could be got wrong for no caller that exists.
+ */
+const SIGNS_PER_MINUTE = 60;
+let signMinute = "";
+let signsThisMinute = 0;
+
+adminRoutes.post("/admin/wba/sign", async (c) => {
+  const contentType = c.req.header("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return c.json(
+      { error: "The signing desk takes JSON only: {\"url\": \"https://…\"}.", code: "json_only" },
+      415,
+    );
+  }
+  const minute = new Date().toISOString().slice(0, 16);
+  if (minute !== signMinute) {
+    signMinute = minute;
+    signsThisMinute = 0;
+  }
+  if (signsThisMinute >= SIGNS_PER_MINUTE) {
+    return c.json(
+      { error: `The signing desk signs at most ${SIGNS_PER_MINUTE} requests a minute; a walk paces slower than that by rule 4.`, code: "rate_limited" },
+      429,
+      { "Retry-After": "60" },
+    );
+  }
+  let body: { url?: unknown };
+  try {
+    body = (await c.req.json()) as { url?: unknown };
+  } catch {
+    return c.json({ error: "Body is not JSON.", code: "bad_json" }, 400);
+  }
+  let target: URL;
+  try {
+    target = new URL(String(body.url ?? ""));
+    if (target.protocol !== "https:" && target.protocol !== "http:") throw new Error("scheme");
+  } catch {
+    return c.json(
+      { error: "url must be an absolute http(s) URL — the authority is the only part that gets signed.", code: "bad_url" },
+      400,
+    );
+  }
+  const { webBotAuthHeaders } = await import("@/lib/web-bot-auth");
+  const headers = await webBotAuthHeaders(c.env, target.toString());
+  if (!headers["Signature-Input"]) {
+    // Same honesty as the directory's 404: "not turned on" is a
+    // different statement from "signed with nothing".
+    return c.json(
+      { error: "No egress key is configured, so nothing here can sign. The runner should walk unsigned.", code: "no_egress_key" },
+      404,
+    );
+  }
+  signsThisMinute += 1;
+  c.header("Cache-Control", "no-store");
+  return c.json({
+    authority: target.host,
+    headers: {
+      "Signature-Agent": headers["Signature-Agent"],
+      "Signature-Input": headers["Signature-Input"],
+      Signature: headers.Signature,
+    },
+    signed_by: "the store's Web Bot Auth egress key, from the Worker; the seed did not travel",
+    verify_at: `${new URL(c.env.STORE_BASE_URL).origin}/.well-known/http-message-signatures-directory`,
+  });
+});
+
+/**
  * THE TRADE COUNTER'S STATEMENT DESK (2026-09-03). Two doors behind
  * the keeper's password: every account's rows, both sides, for
  * reconciling against the partner's payouts by hand; and the one
@@ -1407,6 +1497,43 @@ adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
  * until the broken feed happens to vary). Idempotent; the JSON reply
  * IS the report, counts and all.
  */
+/**
+ * THE HOLE BUTTON (2026-09-04): read one recorded skipped range after
+ * the fact, bounded per press, replying with the counts the way the
+ * door-bank back-fill does. The range must be on the ledger exactly
+ * as recorded — the service refuses anything else, so this route
+ * cannot be talked into a coverage claim about an arbitrary window.
+ */
+adminRoutes.post("/admin/reconciliation/backfill", async (c) => {
+  const { backfillSkippedRange, BACKFILL_SPANS_PER_CALL } = await import(
+    "@/services/chain-reconciliation"
+  );
+  const { evmChainOf } = await import("@/lib/base-rpc");
+  const form = (await c.req.parseBody()) as Record<string, unknown>;
+  const fromBlock = Number.parseInt(String(form["from_block"] ?? ""), 10);
+  const toBlock = Number.parseInt(String(form["to_block"] ?? ""), 10);
+  const chain = evmChainOf(
+    typeof form["chain"] === "string" ? form["chain"] : undefined,
+  );
+  if (!Number.isFinite(fromBlock) || !Number.isFinite(toBlock) || toBlock < fromBlock) {
+    return c.json({ ok: false, reading: "from_block and to_block must be the bounds of a hole on the ledger, as integers." }, 400);
+  }
+  if (!chain) {
+    return c.json({ ok: false, reading: `chain ${String(form["chain"])} is not one this store's walk reads.` }, 400);
+  }
+  const result = await backfillSkippedRange(c.env, {
+    from_block: fromBlock,
+    to_block: toBlock,
+    chain,
+  });
+  const reading = !result.ran
+    ? `Did not read: ${result.reason ?? "no reason recorded"}.`
+    : result.complete
+      ? `Hole closed: blocks ${result.read_from}–${result.read_to} on ${chain.label} read after the fact, ${result.transfers_seen} incoming transfer${result.transfers_seen === 1 ? "" : "s"} seen, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}${result.orphans.length ? " — each one paged; the books page's alarm trail has them" : " — every transfer in the window has a certificate"}.${result.cert_scan_truncated ? " The certificate scan hit its cap, so an orphan here may be a false alarm." : ""}`
+      : `Read blocks ${result.read_from}–${result.read_to} on ${chain.label} (${result.transfers_seen} transfer${result.transfers_seen === 1 ? "" : "s"}, ${result.orphans.length} orphan${result.orphans.length === 1 ? "" : "s"}); ${result.remaining} blocks of this hole remain. Press again to continue — each press reads up to ${BACKFILL_SPANS_PER_CALL} spans.${result.failed ? ` This press ${result.reason}.` : ""}`;
+  return c.json({ ok: result.ran, ...result, reading });
+});
+
 adminRoutes.post("/admin/ward/backfill-doors", async (c) => {
   const { backfillDoorBank } = await import("@/services/door-bank");
   const report = await backfillDoorBank(c.env);

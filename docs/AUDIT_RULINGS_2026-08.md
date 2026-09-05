@@ -250,7 +250,7 @@ that must stay true is that it does not promise a check the battery
 does not run.
 
 **b. The seven corrections.** Filed on your confirmation, in
-`src/store/corrections.ts`, each citing a mechanism that exists. But
+`src/store/corrections-ledger/ (one file per entry; npm run corrections:index)`, each citing a mechanism that exists. But
 I wrote the words, and that page is the one place in the store that
 is supposed to sound like a person admitting something. Read them
 once. Anything that reads like a machine apologising, rewrite — the
