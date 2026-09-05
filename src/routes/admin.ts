@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
@@ -2088,8 +2089,28 @@ adminRoutes.get("/admin/buyers", async (c) => {
 
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
-  const { freeInstrumentUsage } = await import("@/services/instruments");
-  return c.html(renderInstrumentsPage(freeInstrumentUsage(await computeObservatory(c.env))));
+  const { computePulse } = await import("@/services/pulse");
+  const { freeInstrumentUsage, readInstrumentReading, readUnknownSplit, writeInstrumentReading } = await import(
+    "@/services/instruments"
+  );
+  const now = new Date();
+  // One wave: the observatory, the funnel's settled counts, the last
+  // reading and the unknown split read disjoint keys. The settled
+  // figure and the split are decorations; either failing leaves the
+  // page standing with the field null and said so.
+  const [observatory, pulse, last, unknown] = await Promise.all([
+    computeObservatory(c.env, now),
+    computePulse(c.env).catch(() => null),
+    readInstrumentReading(c.env),
+    readUnknownSplit(c.env, metricsMonth(now)).catch(() => null),
+  ]);
+  const settled: Record<string, number> = {};
+  for (const window of pulse?.months ?? []) {
+    if (window.month) settled[window.month] = window.organic_settled;
+  }
+  const usage = freeInstrumentUsage(observatory, { now, settled, last, unknown });
+  deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
+  return c.html(renderInstrumentsPage(usage));
 });
 
 adminRoutes.get("/admin/census", async (c) => {
