@@ -273,16 +273,22 @@ function requestEra(
     if (!PROTOCOL_VERSIONS.includes(headerVersion)) {
       return unsupported(headerVersion);
     }
-    if (MODERN_PROTOCOL_VERSIONS.includes(headerVersion)) {
-      // The header promises the modern revision and the body carries
-      // none of it. The spec's own words: the header value MUST match
-      // the _meta field, and a required field that is absent is a
-      // mismatch.
-      return mismatch(
-        `MCP-Protocol-Version is ${headerVersion} but params._meta carries no ${META_PROTOCOL_VERSION}`,
-      );
-    }
-    return { modern: false, version: headerVersion };
+    /*
+     * A MODERN HEADER ON A LEGACY BODY IS A LEGACY REQUEST (2026-09-05).
+     *
+     * This branch answered 400 -32020 ("the header promises the modern
+     * revision and the body carries none of it"), reading the spec's
+     * MUST-match as a refusal. A ChatGPT-driven journey then read
+     * `spec: 2026-07-28` off this store's own manifest, sent it as the
+     * header on a plain tools/list, and got three 400s in a row before
+     * falling back to initialize — a door that advertises a version and
+     * refuses the first client to quote it back has advertised a trap.
+     * The body is what this server executes, and a body with no _meta
+     * is a handshake-era body whatever the header says; it is served
+     * as one. The mismatch that stays a mismatch is two values that
+     * both exist and disagree, which the branch below still refuses.
+     */
+    return { modern: false, version: MODERN_PROTOCOL_VERSIONS.includes(headerVersion) ? DEFAULT_PROTOCOL : headerVersion };
   }
 
   if (headerVersion !== undefined && headerVersion !== metaVersion) {
