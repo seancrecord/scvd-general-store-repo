@@ -120,15 +120,33 @@ function readCertificates(
   if (settles.unexplained === 0) {
     return "Nothing to explain: the counters and the payer rows agree, and the certificates are a third reading of the same figure.";
   }
+  /*
+   * DIRECTION IS THE READING (2026-09-05). A row ABOVE its certificates
+   * is the expected shape: the penny pages settle through the till and
+   * mint no certificate, so any wallet that buys them outruns its
+   * certificates for good. A row BELOW its certificates is the only
+   * shape worth a person — a settle the till may never have booked —
+   * and the repair books it from the certificate. The old reading
+   * named every disagreeing wallet as one "to look at" and told the
+   * keeper to trust none of three instruments, on a page whose only
+   * disagreements were penny pages in the expected direction.
+   */
+  const below = disagreeing.filter((w) => w.certificates > w.payer_row_purchases);
+  const above = disagreeing.filter((w) => w.certificates < w.payer_row_purchases);
+  const named = below.length > 0
+    ? ` The wallet${below.length === 1 ? "" : "s"} to look at, row BELOW its certificates: ${below.slice(0, 3).map((w) => `${w.address} (row ${w.payer_row_purchases}, certificates ${w.certificates})`).join("; ")} — a settle the till may never have booked; POST /admin/repair/payer-settles books it from the certificate.`
+    : above.length > 0
+      ? ` Every wallet whose row disagrees with its certificates has the row ABOVE them — the penny pages, which settle through the till and mint no certificate. No row is below its certificates, so nothing here is missing a booking.`
+      : " No single wallet's row disagrees with its certificates, so the gap is not in any one row.";
   const counted = settles.counter_settles - settles.founding - settles.unattributed;
-  const named = disagreeing.length > 0
-    ? ` The wallet${disagreeing.length === 1 ? "" : "s"} to look at: ${disagreeing.slice(0, 3).map((w) => `${w.address} (row ${w.payer_row_purchases}, certificates ${w.certificates})`).join("; ")}.`
-    : " No single wallet's row disagrees with its certificates, so the gap is not in any one row.";
   if (withPayer === counted) {
     return `The certificates side with the COUNTERS: ${withPayer} carry a payer, exactly the settles the counters know. So the settle minted its certificate and the payer row write was lost — the fold used to delete the old row before writing the merged one, and a KV failure between the two loses a purchase for good (fixed 2026-09-04 to write first). The row can be rebuilt from the certificates.${named}`;
   }
   if (withPayer === rowPurchases) {
     return `The certificates side with the PAYER ROWS: ${withPayer} carry a payer, matching the rows, and neither knows the settle the counters do. So a settle bumped the counter and no certificate carrying a payer was minted for it — either the mint never ran (the delivery audit at /admin/deliveries is the next page) or the settle predates payer recording.${named}`;
   }
-  return `The certificates agree with neither side: ${withPayer} carry a payer, against ${counted} on the counters and ${rowPurchases} on the rows. Three instruments, three numbers — read the per-wallet table before trusting any of them.${named}`;
+  if (below.length === 0) {
+    return `Three floors, three numbers: ${withPayer} certificates carry a payer, against ${counted} on the counters and ${rowPurchases} on the rows. The certificates trail both because the penny pages mint none, and the counters and rows differ by a lost increment on a shared key, which the keeper ruled is not a defect.${named}`;
+  }
+  return `The certificates agree with neither side: ${withPayer} carry a payer, against ${counted} on the counters and ${rowPurchases} on the rows. Read the per-wallet table before trusting any of them.${named}`;
 }

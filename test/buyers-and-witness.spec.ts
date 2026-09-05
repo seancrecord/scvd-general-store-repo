@@ -101,6 +101,39 @@ describe("the third witness on the books check", () => {
     expect(c.reading).toContain(B);
   });
 
+  it("reads a row above its certificates as the penny pages, never as a wallet to chase", async () => {
+    // 2026-09-05: the only disagreements on the live page were rows
+    // ABOVE their certificates — the shape every penny-page buyer has
+    // — and the reading told the keeper to trust none of three
+    // instruments. Direction is the reading.
+    await cert("cert_b1", "small_blessing", "2026-08-12T00:00:00.000Z", B);
+    await payerRow(B, 7);
+    const c = await certificatesAgainstSettles(testEnv, {
+      counter_settles: 9, payer_purchases: 7, founding: 1, unattributed: 0, unexplained: 1,
+      does_not_cover: "", delivery_audit: "",
+    } as never);
+    expect(c.wallets_disagreeing).toEqual([{ address: B, payer_row_purchases: 7, certificates: 1 }]);
+    expect(c.reading).toContain("penny pages");
+    expect(c.reading).toContain("nothing here is missing a booking");
+    expect(c.reading).not.toContain("to look at");
+    expect(c.reading).not.toContain("before trusting");
+  });
+
+  it("names a row below its certificates and the repair that books it", async () => {
+    await cert("cert_b1", "small_blessing", "2026-08-12T00:00:00.000Z", B);
+    await cert("cert_b2", "hello", "2026-08-13T00:00:00.000Z", B);
+    await cert("cert_c1", "hello", "2026-08-14T00:00:00.000Z", "0x3333333333333333333333333333333333333333");
+    await payerRow(B, 1);
+    await payerRow("0x3333333333333333333333333333333333333333", 4);
+    const c = await certificatesAgainstSettles(testEnv, {
+      counter_settles: 7, payer_purchases: 5, founding: 1, unattributed: 0, unexplained: 1,
+      does_not_cover: "", delivery_audit: "",
+    } as never);
+    expect(c.reading).toContain("row BELOW its certificates");
+    expect(c.reading).toContain(B);
+    expect(c.reading).toContain("/admin/repair/payer-settles");
+  });
+
   it("sides with the rows when no certificate carries the settle", async () => {
     await cert("cert_b1", "small_blessing", "2026-08-12T00:00:00.000Z", B);
     await payerRow(B, 1);

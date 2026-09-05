@@ -259,14 +259,29 @@ function reachList(
       const card = renderedHosts.has(host)
         ? ` · <a href="#card-${escapeHtml(host)}">the card</a>`
         : ` · <span class="menu-meta">card below the render cap — JSON twin carries it</span>`;
-      const send = opts.wire
+      // While the wire is paused the button only declines, so it is
+      // not rendered here: a button that cannot do its job is noise on
+      // the one list the keeper works from.
+      const send = opts.wire && !WIRE_PAUSED_SINCE
         ? ` <form method="post" action="/admin/outreach/send" style="display:inline">
       <input type="hidden" name="host" value="${escapeHtml(host)}">
       <button type="submit">verify live &amp; send</button>
     </form>`
         : "";
       const deliver = ` · <a href="${escapeHtml(mailtoFor(email, draft))}"><strong>open in mail — ${opts.what} written</strong></a>`;
-      return `<li><strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${deliver}${card}${send}</li>`;
+      /*
+       * THE STAMP ON THE ROW (2026-09-05). The keeper asked how to
+       * mark a note done: the stamps lived on the card, and most rows
+       * on this list sit below the render cap with no card at all. So
+       * the row carries its own stamp — the same form the card posts,
+       * for the one status a hand-delivered note earns.
+       */
+      const mark = ` <form method="post" action="/admin/outreach/status" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(host)}">
+      <input type="hidden" name="status" value="sent">
+      <button type="submit">mark sent — I delivered it myself</button>
+    </form>`;
+      return `<li><strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${deliver}${mark}${card}${send}</li>`;
     })
     .join("\n");
   return `<h3>${title} (${rows.length}${rows.length > shown.length ? `, top ${shown.length} named` : ""})</h3>
@@ -311,7 +326,8 @@ function unsentSummary(
   <p class="menu-desc">Every host here published an address and has never had a
   note from this desk — the same eligibility the wire enforces, in each
   queue's own order. Each row opens your mail client with the right note
-  already written; the stamps on the card record it afterwards.</p>
+  already written; send it, then press the row's own <em>mark sent</em> so it
+  leaves this queue.</p>
   ${paused}
   ${reachList("Broken doors — the finding", broken, renderedHosts, {
     wire: true,

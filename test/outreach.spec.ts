@@ -318,6 +318,50 @@ describe("the desk and its doors", () => {
     expect(text).toContain("Clear ALL stamps");
   });
 
+  it("lets a queue row be stamped sent without its card, and shows no wire button while the wire is paused", async () => {
+    /**
+     * 2026-09-05, the keeper: "how do I mark them done? I still see
+     * verify live & send." The stamps lived on the card; most rows on
+     * the unsent list sit below the render cap with no card at all,
+     * and the wire button on every row only declined while the pause
+     * stands. The row carries its own stamp now, and the wire button
+     * is not drawn while it cannot send.
+     */
+    const { WIRE_PAUSED_SINCE } = await import("@/services/outreach");
+    const hosts = Array.from({ length: 60 }, (_, i) =>
+      host(`broken-${String(i).padStart(2, "0")}.example`, "not_ready", { failed: ["status-402"] }),
+    );
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round("2026-W36", hosts)));
+    const ledger = {
+      version: 1,
+      hosts: Object.fromEntries(
+        hosts.map((h) => [h.host, { contacts: [`mailto:ops@${h.host}`], scouted_at: "2026-09-05T00:00:00.000Z" }]),
+      ),
+    };
+    await testEnv.COUNTERS.put(KV_KEYS.outreachLedger, JSON.stringify(ledger));
+    const page = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "text/html" },
+    });
+    const text = await page.text();
+    const unsent = text.slice(text.indexOf('id="unsent"'), text.indexOf("</section>", text.indexOf('id="unsent"')));
+    const rows = unsent.split("<li>").slice(1);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row).toContain('action="/admin/outreach/status"');
+      expect(row).toContain("mark sent — I delivered it myself");
+      if (WIRE_PAUSED_SINCE) expect(row).not.toContain('action="/admin/outreach/send"');
+    }
+    // And the stamp the row posts is the one the ledger keeps.
+    const stamped = await SELF.fetch(`${BASE}/admin/outreach/status`, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+      body: "host=broken-59.example&status=sent",
+    });
+    expect([200, 302]).toContain(stamped.status);
+    const after = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.outreachLedger)) ?? "{}") as { hosts: Record<string, { status?: string }> };
+    expect(after.hosts["broken-59.example"]?.status).toBe("sent");
+  });
+
   it("renders the top of a big queue, never the whole of it", async () => {
     /**
      * W35's first full walk lands ~2,000 broken doors on this queue;
@@ -430,8 +474,17 @@ describe("the desk and its doors", () => {
     // The doors that cannot be wired are counted, not hidden.
     expect(summary).toContain("1 scouted door that published no email");
     expect(summary).toContain("1 not scouted yet");
-    // And each row can be sent from where it is read.
-    expect(summary).toContain('action="/admin/outreach/send"');
+    // And each row can be worked from where it is read: stamped sent
+    // by hand always, and sent over the wire only while the wire can
+    // send (2026-09-05 — a button that only declines is not drawn).
+    const { WIRE_PAUSED_SINCE } = await import("@/services/outreach");
+    expect(summary).toContain('action="/admin/outreach/status"');
+    if (WIRE_PAUSED_SINCE) {
+      expect(summary).not.toContain('action="/admin/outreach/send"');
+      expect(summary).toContain("The wire is paused");
+    } else {
+      expect(summary).toContain('action="/admin/outreach/send"');
+    }
     expect(summary).toContain('href="#card-waiting.example"');
     expect(text).toContain('<section id="card-waiting.example">');
   });
