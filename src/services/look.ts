@@ -83,6 +83,8 @@ export interface HeldHalf {
   last_probed_round: {
     week: string;
     taken_at: string;
+    /** The knock's own moment, where the row carries one (2026-09-05). */
+    observed_at?: string;
     url?: string;
     verdict?: SubjectRound["verdict"];
     failed: string[];
@@ -195,6 +197,9 @@ export async function heldHalfOf(env: Env, host: string, now: Date = new Date())
       ? {
           week: last.week,
           taken_at: last.taken_at,
+          // The knock's own moment where the row carries one
+          // (2026-09-05); taken_at above stays the round's seal.
+          ...(last.observed_at ? { observed_at: last.observed_at } : {}),
           ...(last.url ? { url: last.url } : {}),
           ...(last.verdict ? { verdict: last.verdict } : {}),
           failed: last.failed ?? [],

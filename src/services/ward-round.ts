@@ -159,6 +159,18 @@ export interface WardHostResult {
   failed: string[];
   advisories: string[];
   /**
+   * WHEN THIS ROW WAS READ (2026-09-05). The week's walk knocks in
+   * hourly batches and Sunday only assembles, so the round's `at` is
+   * the seal, not the knock — and every surface that dated a row by
+   * the round told a different day from every other: the welcome
+   * said 09-05, the passport said 09-01, and an operator wrote back
+   * to say that for a shop selling dated observations those want to
+   * be the same date. Stamped by the probe at the moment it fetched;
+   * absent on rows walked before this field, where the round's own
+   * time is the best the record holds.
+   */
+  observed_at?: string;
+  /**
    * Which feed(s) named this host. Absent on pre-feed rounds =
    * discovery. "revisit" (2026-08-18, the door bank): no feed named it
    * THIS round — the probe walked a resource URL a past discovery
@@ -1034,13 +1046,16 @@ export async function probeHost(
    */
   catalog?: { listed: boolean; terms: CatalogTerms | null },
 ): Promise<Omit<WardHostResult, "host" | "url">> {
+  /*
+   * 3.1: the probe times itself. Not writing the number down was
+   * the one loss here that was pure carelessness — every other
+   * dimension at least had a reason. Since 2026-09-05 the moment is
+   * written down too, on both branches: a door that gave no answer
+   * was still asked at a time.
+   */
+  const startedAt = Date.now();
+  const observedAt = new Date(startedAt).toISOString();
   try {
-    /*
-     * 3.1: the probe times itself. Not writing the number down was
-     * the one loss here that was pure carelessness — every other
-     * dimension at least had a reason.
-     */
-    const startedAt = Date.now();
     const response = await fetch(url, {
       method: "GET",
       redirect: "manual",
@@ -1113,6 +1128,7 @@ export async function probeHost(
       verdict: failed.length === 0 ? "ready" : "not_ready",
       failed,
       advisories: advisoryNames,
+      observed_at: observedAt,
       ...(offer ? { offer } : {}),
       ...(catalog
         ? { catalog: compareCatalogToDoor(catalog.terms, accepts ?? null, catalog.listed) }
@@ -1134,6 +1150,7 @@ export async function probeHost(
       verdict: "unreachable",
       failed: [],
       advisories: [],
+      observed_at: observedAt,
       ...(catalog
         ? { catalog: compareCatalogToDoor(catalog.terms, null, catalog.listed) }
         : {}),

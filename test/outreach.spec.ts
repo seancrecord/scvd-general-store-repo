@@ -333,10 +333,17 @@ describe("the desk and its doors", () => {
       host(`broken-${String(i).padStart(2, "0")}.example`, "not_ready", { failed: ["status-402"] }),
     );
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round("2026-W36", hosts)));
+    /*
+     * SINCE THE SAME EVENING, a row carries its Gmail link only from a
+     * live reading (test/outreach-verify.spec.ts holds the other half:
+     * no reading, no link). These rows are all freshly read, so every
+     * one is armed and the flow below is unchanged.
+     */
+    const live = { at: new Date().toISOString(), verdict: "not_ready", failed: ["status-402"] };
     const ledger = {
       version: 1,
       hosts: Object.fromEntries(
-        hosts.map((h) => [h.host, { contacts: [`mailto:ops@${h.host}`], scouted_at: "2026-09-05T00:00:00.000Z" }]),
+        hosts.map((h) => [h.host, { contacts: [`mailto:ops@${h.host}`], scouted_at: "2026-09-05T00:00:00.000Z", live }]),
       ),
     };
     await testEnv.COUNTERS.put(KV_KEYS.outreachLedger, JSON.stringify(ledger));
@@ -685,5 +692,38 @@ describe("hand delivery in one press", () => {
     const params = new URL(link).searchParams;
     expect(params.get("subject")).toBe("");
     expect(params.get("body")).toBe("just a body");
+  });
+});
+
+describe("the date a note carries is the row's, not the seal's (2026-09-05)", () => {
+  /*
+   * tensorfeed.ai's operator read "On 2026-09-05" in the welcome and
+   * "observed 2026-09-01" on the passport it linked, and said that
+   * for a shop selling dated observations those want to agree. The
+   * seal time is the fallback only for rows the probe did not stamp.
+   */
+  const latest = round("2026-W36", [
+    host("stamped.example", "not_ready", {
+      failed: ["status-402"],
+      observed_at: "2026-09-01T13:27:08.998Z",
+    }),
+    host("unstamped.example", "not_ready", { failed: ["status-402"] }),
+    host("stamped-ready.example", "ready", { observed_at: "2026-09-02T08:00:00.000Z" }),
+    host("unstamped-ready.example", "ready"),
+  ]);
+  latest.at = "2026-09-05T13:27:08.998Z";
+
+  it("dates a prospect by the row where the probe wrote a time down", () => {
+    const byHost = Object.fromEntries(deriveProspects(latest, null).map((p) => [p.host, p]));
+    expect(byHost["stamped.example"]!.observed_at).toBe("2026-09-01T13:27:08.998Z");
+    expect(byHost["unstamped.example"]!.observed_at).toBe("2026-09-05T13:27:08.998Z");
+    expect(draftNote(byHost["stamped.example"]!, BASE)).toContain("On 2026-09-01 our weekly probe");
+  });
+
+  it("dates a welcome the same way", () => {
+    const byHost = Object.fromEntries(deriveWelcomes(latest, null).map((w) => [w.host, w]));
+    expect(byHost["stamped-ready.example"]!.observed_at).toBe("2026-09-02T08:00:00.000Z");
+    expect(byHost["unstamped-ready.example"]!.observed_at).toBe("2026-09-05T13:27:08.998Z");
+    expect(draftWelcome(byHost["stamped-ready.example"]!, BASE)).toContain("On 2026-09-02 our weekly pass");
   });
 });

@@ -26,6 +26,93 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- ⚑ **402signal.com — his reply is right, and the note was ours
+  (09-05).** Ross McIntyre wrote back: the live door answers 402
+  with three payable accepts (Base / Solana / Algorand), our own
+  free preflight reads `ready` on both batteries, and the passport
+  still refuses on the W36 row. The row is the Algorand misread the
+  2026-09-04 correction retracted; the note went out by hand from
+  that stored row the day AFTER the fix, because the Gmail link
+  drafted from the round and only the paused wire ever re-probed
+  live. Built on `claude/402signal-x402-payment-6n12hk`: no live
+  reading, no note (the hand road now walks the wire's law), the
+  finding sentence says what the check saw, and the ledger entry
+  for 2026-09-05. YOUR HANDS:
+  1. Reply to Ross (the draft is in the session summary): he is
+     right, the reading was ours, the row stays in the chain as
+     walked, Sunday's walk re-reads with the corrected instrument,
+     nothing to change on his side. Then stamp `replied` on his
+     card at `/admin/outreach`.
+  2. LOOK, Sunday after 11:00 UTC: `/passport/402signal.com`
+     should issue. If it still refuses, paste the row here.
+  3. RULE (rule 7): the note's subject moved from "is turning
+     buyers away" to "a failed readiness check on your x402
+     endpoint at …" for doors that answered, and the finding from
+     "no x402 buyer can pay" to "did not pass our readiness check.
+     What failed, by name: …". Kill or keep; `draftNote` in
+     `src/services/outreach.ts`.
+  4. LOOK: the outreach ledger's other hand-delivered W36 rows.
+     Each got a note from a stored row; `verify live` on the card
+     says now whether the corrected instrument agrees. Any that
+     answer ready got a note they should not have — same reply as
+     Ross's, by your hand.
+
+- ⚑ **tensorfeed.ai — the welcome's date was the seal, not the
+  knock (09-05).** Their reply is friendly and right: the welcome
+  said "On 2026-09-05", the passport it linked said observed
+  09-01. Same branch: every row now carries the moment the probe
+  knocked (`observed_at`), and the note, the corpus row and the
+  passport date by it. They passed on the chip and the paid tiers
+  (their rule: no third-party grades in front of agents; not a
+  finding against us) and asked one question. YOUR HANDS:
+  1. Reply (draft in the session summary): thank them for the
+     date catch, say what changed; answer the question — `fuchss`
+     is x402.fuchss.app (x402 Trust), a free provider directory
+     with a page per host at `/provider/<host>`; `x402_list` is
+     x402-list.com, an open directory with per-row provenance
+     (`submitted`, `imported:bazaar`, `imported:x402scan`). Neither
+     needs anything from an operator; both are worth a look to
+     see what each says about their door. Stamp `replied`.
+  2. RULE (rule 7): the welcome's first line still says "our
+     weekly pass"; from the next round it dates by the knock. Fine
+     as is, or reword — `draftWelcome` in `src/services/outreach.ts`.
+
+- ⚑ **RULE — the chip and the share card, redrawn (09-05).** Your
+  two looks: the chip overlapped itself and the card read like a
+  terminal dump. Both are rebuilt on `claude/402signal-x402-payment-6n12hk`,
+  and the geometry is now tested so neither can drift back.
+  THREE COPY CALLS ARE YOURS (rule 7), all reversible in one edit:
+  1. The chip's eyebrow reads `ENDPOINT PASSPORT` (was
+     `SCVD PASSPORT · <TIER> <n>/<n>`), with the store's name now
+     carried by the seal instead.
+  2. An `indeterminate` tier no longer prints its word on the face,
+     only its fraction (`1/1 round ready`) — the word is about how
+     many rounds we hold, not about their door, and it was the
+     loudest thing on a chip whose decision was READY. Full line
+     still in the alt text and on the page.
+  3. The card's lines: `SCVD GENERAL STORE · OAK CITY`, then
+     `ENDPOINT PASSPORT`, the host, the two dates, and `GAPS
+     COUNTED AGAINST THE OBSERVER`. No verdict word, as before.
+  LOOK: `/badges/passport/{host}.svg` and
+  `/passport/card/{host}.png` after deploy. The card is now ~380 KB
+  (was ~95 KB) because the type is anti-aliased; still far under
+  any unfurler's ceiling.
+
+- ⚑ **PRESS — re-read every door we wrote to (09-05).** Your ask,
+  after two corrections in one afternoon: how the desk catches the
+  next wrong note before its operator does. `/admin/outreach` now
+  carries **Doors we wrote to, re-read** — one press knocks again
+  on ten hosts a note went to, oldest first, by the instrument as
+  it is now, and lays the answer beside the row the note came
+  from. It sends nothing. Hosts where the two disagree are named
+  at the top: that is either a door healed since, or a note of
+  ours that was wrong, and no arithmetic can tell those apart —
+  only you can. YOUR HANDS: press it until the queue is exhausted
+  (the notice says how many remain), then for each disagreement
+  decide healed-or-ours, and write by your hand where it is ours.
+  Any host that reads ready now and got a "your door is broken"
+  note is owed the same reply Ross got.
+
 - **TEST — flip the doors (09-05).** You ruled the split; it is
   built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a
   656 KB Worker (the store is 3.5 MB) that answers the unpaid

@@ -195,7 +195,10 @@ describe("the wire holds the verified-fact law", () => {
     // finding and the re-verified line — never the round's stale one.
     expect(sends[0]).toContain("no accepts entry priced in USDC");
     expect(sends[0]).not.toContain("stale finding from the round");
-    expect(sends[0]).toContain("re-checked seconds before this note was sent");
+    // The re-check line names the moment (2026-09-05), not "seconds
+    // ago": the wire's reading is seconds old and a hand delivery's
+    // is not, and the timestamp is what an operator can find in logs.
+    expect(sends[0]).toMatch(/re-checked live at \d{2}:\d{2} UTC on \d{4}-\d{2}-\d{2}/);
 
     const entry = ledger.hosts["broken.example"]!;
     expect(entry.status).toBe("sent");

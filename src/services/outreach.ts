@@ -91,6 +91,68 @@ export interface OutreachEntry {
   sent_to?: string;
   /** When the live re-probe last confirmed (or cleared) the defect. */
   verified_at?: string;
+  /**
+   * THE LIVE READING (2026-09-05): what the current instrument saw at
+   * this door when the keeper pressed verify, stored so the hand
+   * road can draft from it. Present only while the door read broken;
+   * a door read ready is stamped fixed and this is cleared. See
+   * `liveReadingFor` for the age past which it no longer arms a note.
+   */
+  live?: LiveReading;
+  /**
+   * THE RE-READ AFTER THE NOTE (2026-09-05): what the current
+   * instrument saw at this door the last time the keeper pressed the
+   * audit, kept so a note we sent can be checked against the door as
+   * it is, before its operator has to write back.
+   */
+  audit?: NoteAudit;
+}
+
+/**
+ * ONE READING, SECONDS OLD, FROM THE INSTRUMENT AS IT IS NOW.
+ *
+ * The wire has always re-probed at press time (rule 30's condition:
+ * "a verified fact, re-checked live at press time, never a stored
+ * reading assumed still true"). The hand road did not. While the
+ * wire was paused, the Gmail links drafted every note from the
+ * week's stored row — and on 2026-09-05 a note went to an operator
+ * about a payTo the desk had misread on a rail it could not speak,
+ * a defect this store had corrected the day BEFORE the note went
+ * out. The operator ran our own free preflight and got `ready`.
+ *
+ * So the hand road now walks the same law: the note is drafted from
+ * THIS reading, taken by the instrument as deployed at the press,
+ * and a card with no reading has no note. The battery is recorded
+ * beside the verdict so the row says which instrument spoke.
+ */
+export interface LiveReading {
+  at: string;
+  verdict: "not_ready" | "unreachable";
+  failed: string[];
+  battery?: string;
+}
+
+/**
+ * How long a live reading arms the hand road. The wire's reading is
+ * seconds old at send; a hand delivery is minutes, sometimes a
+ * sitting. Four hours is one sitting. Past it the links go dark and
+ * the button comes back: pressing verify again costs one knock and
+ * makes the note true again, which is the whole trade.
+ */
+export const LIVE_READING_FRESH_HOURS = 4;
+
+/** The reading that may draft a note now, or null. */
+export function liveReadingFor(
+  entry: OutreachEntry | undefined,
+  now: Date = new Date(),
+): LiveReading | null {
+  const live = entry?.live;
+  if (!live) return null;
+  const ageMs = now.getTime() - new Date(live.at).getTime();
+  if (!(ageMs >= 0 && ageMs <= LIVE_READING_FRESH_HOURS * 3_600_000)) {
+    return null;
+  }
+  return live;
 }
 
 export interface OutreachLedger {
@@ -170,7 +232,9 @@ export function deriveProspects(
       verdict: entry.verdict,
       failed: entry.failed,
       week: latest.week,
-      observed_at: latest.at,
+      // The row's own read time where the probe wrote one (2026-09-05);
+      // the seal time only for rows walked before it did.
+      observed_at: entry.observed_at ?? latest.at,
       ...(claim ? { claim } : {}),
       newly_failing: newlyFailing,
       reason,
@@ -248,7 +312,14 @@ export function deriveWelcomes(
         host: entry.host,
         url: entry.url,
         week: latest.week,
-        observed_at: latest.at,
+        /*
+         * THE DATE THE WELCOME CARRIES IS THE ROW'S (2026-09-05). The
+         * operator of tensorfeed.ai read "On 2026-09-05" in the note
+         * and "observed 2026-09-01" on the passport it linked, and
+         * said so. The seal time is the fallback for rows the probe
+         * did not stamp.
+         */
+        observed_at: entry.observed_at ?? latest.at,
         newly_listed: newlyListed,
         ...(claim ? { claim } : {}),
         reason,
@@ -330,24 +401,44 @@ export function draftNote(
   opts: { firstSeenWeek?: string } = {},
 ): string {
   const date = prospect.observed_at.slice(0, 10);
+  /*
+   * THE RE-CHECK LINE names the moment, not "seconds ago". The wire's
+   * reading is seconds old at send and a hand delivery's is minutes
+   * or an hour; both are true as of the timestamp, and the timestamp
+   * is what the operator can find in their own logs.
+   */
   const verifiedLine = opts.firstSeenWeek
-    ? `\n(First seen on our ${opts.firstSeenWeek} weekly pass; re-checked seconds before this note was sent, so the observation above is current as of the send, not the week.)\n`
+    ? `\n(First seen on our ${opts.firstSeenWeek} weekly pass; re-checked live at ${prospect.observed_at.slice(11, 16)} UTC on ${date}, so the observation above is current as of that re-check, not the week.)\n`
     : "";
+  /*
+   * THE FINDING SAYS WHAT THE CHECK SAW, NOT MORE (2026-09-05). This
+   * used to read "a response that no x402 buyer can pay" for every
+   * not_ready — and a door failing one named check on one of three
+   * rails is not that door. The operator who read that sentence
+   * against a live door with three payable accepts was right to
+   * write back. So: the door answered, the readiness check failed,
+   * and here is the check by name, defined where they can read it.
+   * ⚑ Rule 7: the keeper kills or keeps this wording.
+   */
   const finding =
     prospect.verdict === "unreachable"
       ? "got no usable answer at all (connection failed, timed out, or the response was unreadable)"
-      : `got a response that no x402 buyer can pay: ${
+      : `got an answer that did not pass our readiness check. What failed, by name: ${
           prospect.failed.length > 0
             ? prospect.failed.join(", ")
             : "the payment challenge did not parse"
-        }`;
+        } (each check is defined at ${base}/api/preflight/v2)`;
+  const subject =
+    prospect.verdict === "unreachable"
+      ? `your x402 endpoint at ${prospect.host} is turning buyers away`
+      : `a failed readiness check on your x402 endpoint at ${prospect.host}`;
   const claimLine = prospect.claim
     ? `\nThe agent402.tools leaderboard credits this endpoint with $${prospect.claim.usd} across ${prospect.claim.calls} calls (window: ${prospect.claim.window}). If that traffic is real, some of it is currently bouncing off a door that does not open.\n`
     : "";
   const freshLine = prospect.newly_failing
     ? "\nIt answered correctly on our previous weekly pass, so this looks like a recent break — likely a deploy, not a design choice.\n"
     : "";
-  return `Subject: your x402 endpoint at ${prospect.host} is turning buyers away
+  return `Subject: ${subject}
 
 Hello — I run ${base.replace("https://", "")}, a small store and free conformance desk in the x402 ecosystem.
 
@@ -519,6 +610,254 @@ export function contactEmail(entry: OutreachEntry | undefined): string | null {
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bare)) return bare;
   }
   return null;
+}
+
+/**
+ * THE NOTE THE HAND ROAD MAY CARRY: drafted from the live reading, or
+ * nothing. The week's row never reaches a draft on this road — that
+ * is the 2026-09-05 correction, held as a function shape rather than
+ * a habit. The `observed_at` the note carries is the re-check's, so
+ * the date in the first line is the moment the operator can find in
+ * their logs, not the day the round was sealed.
+ */
+export function handDraftFor(
+  prospect: Prospect,
+  entry: OutreachEntry | undefined,
+  base: string,
+  now: Date = new Date(),
+): string | null {
+  const live = liveReadingFor(entry, now);
+  if (!live) return null;
+  return draftNote(
+    {
+      ...prospect,
+      verdict: live.verdict,
+      failed: live.failed,
+      observed_at: live.at,
+    },
+    base,
+    { firstSeenWeek: prospect.week },
+  );
+}
+
+export type VerifyOutcome =
+  | { host: string; result: "reproduced"; live: LiveReading }
+  | { host: string; result: "healed"; verified_at: string }
+  | { host: string; result: "not-in-queue" };
+
+/**
+ * VERIFY LIVE, ONE HOST (2026-09-05). The knock the wire makes before
+ * it sends, made by itself so the hand road can have it too: the
+ * door is probed NOW by the instrument as deployed NOW. A door that
+ * answers ready is stamped fixed and gets no note — the week's row
+ * was stale or the instrument that wrote it was wrong, and either
+ * way there is nothing true to say to its operator. A door that
+ * still reads broken gets its reading written on the card, dated,
+ * and the note is drafted from that and nothing else.
+ *
+ * This sends nothing. It is one outward GET, the same knock the
+ * census makes, and the ledger write beside it.
+ */
+export async function verifyProspect(
+  env: Env,
+  host: string,
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+  now: Date = new Date(),
+): Promise<VerifyOutcome> {
+  const prospect = prospects.find((p) => p.host === host);
+  if (!prospect) return { host, result: "not-in-queue" };
+  const { probeHost } = await import("@/services/ward-round");
+  const probe = await probeHost(env, prospect.url);
+  const at = now.toISOString();
+  const entry = ledger.hosts[host] ?? {};
+  if (probe.verdict === "ready") {
+    delete entry.live;
+    ledger.hosts[host] = {
+      ...entry,
+      status: "fixed",
+      status_at: at,
+      verified_at: at,
+    };
+    await writeOutreachLedger(env, ledger);
+    return { host, result: "healed", verified_at: at };
+  }
+  const live: LiveReading = {
+    at,
+    verdict: probe.verdict === "unreachable" ? "unreachable" : "not_ready",
+    failed: probe.failed,
+    ...(probe.battery ? { battery: probe.battery } : {}),
+  };
+  ledger.hosts[host] = { ...entry, verified_at: at, live };
+  await writeOutreachLedger(env, ledger);
+  return { host, result: "reproduced", live };
+}
+
+/**
+ * Per-press ceiling on the batch verify: the same ten as the batch
+ * wire, for the same reason — the press is a decision about a list
+ * the keeper can see, and ten knocks is a bounded outward act.
+ */
+export const VERIFY_BATCH_CAP = 10;
+
+export interface BatchVerifyReport {
+  reproduced: string[];
+  healed: string[];
+  /** Eligible hosts the cap left for the next press. */
+  remaining: number;
+}
+
+/**
+ * VERIFY LIVE, THE NEXT TEN (2026-09-05). Walks the hand road's own
+ * eligibility — an email the operator published, no note ever sent,
+ * and no reading still fresh — top of the ranking first, so one
+ * press arms the ten notes the keeper would send next. Sequential
+ * for the same reason the batch wire is: a legible ledger over a
+ * fast one.
+ */
+export async function verifyNext(
+  env: Env,
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+  now: Date = new Date(),
+): Promise<BatchVerifyReport> {
+  const eligible = prospects.filter((p) => {
+    const entry = ledger.hosts[p.host];
+    if (entry?.status === "sent" || entry?.status === "replied") return false;
+    if (entry?.status === "fixed" || entry?.status === "skip") return false;
+    if (contactEmail(entry) === null) return false;
+    return liveReadingFor(entry, now) === null;
+  });
+  const slice = eligible.slice(0, VERIFY_BATCH_CAP);
+  const report: BatchVerifyReport = {
+    reproduced: [],
+    healed: [],
+    remaining: eligible.length - slice.length,
+  };
+  for (const prospect of slice) {
+    const outcome = await verifyProspect(env, prospect.host, prospects, ledger, now);
+    if (outcome.result === "reproduced") report.reproduced.push(prospect.host);
+    else if (outcome.result === "healed") report.healed.push(prospect.host);
+  }
+  return report;
+}
+
+/**
+ * THE RE-READ OF EVERY DOOR WE WROTE TO (2026-09-05, the keeper: "how
+ * do we check more of this to make sure we are airtight").
+ *
+ * A note is a claim with a date on it, and the reply that corrects
+ * it arrives on the operator's schedule, not ours. This is the desk
+ * finding its own wrong notes first: every host the ledger says a
+ * note went to is knocked on again by the instrument as it is now,
+ * and the reading is laid beside the round's row the note was
+ * presumably drafted from. Where they disagree the keeper looks —
+ * healed since, or ours to correct — because no arithmetic can tell
+ * those apart, and the house sentence is that we do not guess.
+ *
+ * Bounded like every other press: ten doors, oldest audit first,
+ * and nothing is sent. The reading is stored on the entry so the
+ * page can show it without knocking twice.
+ */
+export interface NoteAudit {
+  at: string;
+  verdict: "ready" | "not_ready" | "unreachable";
+  failed: string[];
+  battery?: string;
+}
+
+export const AUDIT_BATCH_CAP = 10;
+
+export interface NoteAuditRow {
+  host: string;
+  status: OutreachStatus;
+  status_at?: string;
+  /** What the round's row says now — the reading a note would have been drafted from. */
+  row: { verdict: WardHostResult["verdict"]; failed: string[] } | null;
+  audit: NoteAudit;
+  /** The live reading and the row disagree on readiness: the keeper looks. */
+  disagrees: boolean;
+}
+
+export interface NoteAuditReport {
+  rows: NoteAuditRow[];
+  /** Hosts written to that this round holds no door for; nothing to knock on. */
+  no_door: string[];
+  /** Eligible hosts the cap left for the next press. */
+  remaining: number;
+}
+
+/** Sent or replied hosts, never audited first, then oldest audit first. */
+function auditOrder(ledger: OutreachLedger): string[] {
+  return Object.entries(ledger.hosts)
+    .filter(([, entry]) => entry.status === "sent" || entry.status === "replied")
+    .sort(([, a], [, b]) => (a.audit?.at ?? "").localeCompare(b.audit?.at ?? ""))
+    .map(([host]) => host);
+}
+
+export async function auditSentNotes(
+  env: Env,
+  round: WardRound,
+  ledger: OutreachLedger,
+  now: Date = new Date(),
+): Promise<NoteAuditReport> {
+  const doors = new Map(round.hosts.map((entry) => [entry.host, entry]));
+  const ordered = auditOrder(ledger);
+  const eligible = ordered.filter((host) => doors.has(host));
+  const report: NoteAuditReport = {
+    rows: [],
+    no_door: ordered.filter((host) => !doors.has(host)),
+    remaining: Math.max(0, eligible.length - AUDIT_BATCH_CAP),
+  };
+  const { probeHost } = await import("@/services/ward-round");
+  for (const host of eligible.slice(0, AUDIT_BATCH_CAP)) {
+    const door = doors.get(host)!;
+    const probe = await probeHost(env, door.url);
+    const audit: NoteAudit = {
+      at: now.toISOString(),
+      verdict: probe.verdict === "not_probed" ? "unreachable" : probe.verdict,
+      failed: probe.failed,
+      ...(probe.battery ? { battery: probe.battery } : {}),
+    };
+    const entry = ledger.hosts[host]!;
+    entry.audit = audit;
+    const row =
+      door.verdict === "not_probed" ? null : { verdict: door.verdict, failed: door.failed };
+    report.rows.push({
+      host,
+      status: entry.status!,
+      ...(entry.status_at ? { status_at: entry.status_at } : {}),
+      row,
+      audit,
+      disagrees: row !== null && (row.verdict === "ready") !== (audit.verdict === "ready"),
+    });
+  }
+  await writeOutreachLedger(env, ledger);
+  return report;
+}
+
+/**
+ * The audits already on the ledger, laid beside the round, for the
+ * page — no knock. Same disagreement rule as the press.
+ */
+export function auditedNotes(round: WardRound, ledger: OutreachLedger): NoteAuditRow[] {
+  const doors = new Map(round.hosts.map((entry) => [entry.host, entry]));
+  return Object.entries(ledger.hosts)
+    .filter(([, entry]) => entry.audit && (entry.status === "sent" || entry.status === "replied"))
+    .map(([host, entry]) => {
+      const door = doors.get(host);
+      const row =
+        door && door.verdict !== "not_probed" ? { verdict: door.verdict, failed: door.failed } : null;
+      return {
+        host,
+        status: entry.status!,
+        ...(entry.status_at ? { status_at: entry.status_at } : {}),
+        row,
+        audit: entry.audit!,
+        disagrees: row !== null && (row.verdict === "ready") !== (entry.audit!.verdict === "ready"),
+      };
+    })
+    .sort((a, b) => Number(b.disagrees) - Number(a.disagrees) || a.host.localeCompare(b.host));
 }
 
 /**

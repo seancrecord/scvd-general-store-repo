@@ -3,11 +3,16 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import {
   gmailComposeFor,
   splitDraft,
+  AUDIT_BATCH_CAP,
+  LIVE_READING_FRESH_HOURS,
   OUTREACH_STATUSES,
+  VERIFY_BATCH_CAP,
   WIRE_PAUSED_SINCE,
+  auditedNotes,
   contactEmail,
-  draftNote,
   draftWelcome,
+  handDraftFor,
+  liveReadingFor,
   mailtoFor,
   type OutreachEntry,
   type OutreachLedger,
@@ -52,6 +57,25 @@ function handDeliverLink(email: string, draft: string, what: string): string {
   return `<a href="${escapeHtml(gmailComposeFor(email, draft))}" target="_blank" rel="noopener"><strong>open in Gmail — ${what} already written</strong></a> · <a href="${escapeHtml(mailtoFor(email, draft))}">mail app</a> to ${escapeHtml(email)}<span class="menu-meta"> — your client sends it; stamp it afterwards</span>`;
 }
 
+/**
+ * THE KNOCK BEFORE THE NOTE (2026-09-05). Where the hand road used to
+ * show a Gmail link straight off the week's row, it shows this until
+ * a live reading exists: one press, one probe by the instrument as
+ * deployed now, and the note is written from what that probe saw. A
+ * door that answers ready is stamped fixed and gets no note at all.
+ * A reading older than a sitting is said to be, and the button is
+ * back.
+ */
+function verifyButton(host: string, entry: OutreachEntry | undefined): string {
+  const stale = entry?.live
+    ? ` <span class="menu-meta">(the last live reading, ${escapeHtml(entry.live.at.slice(0, 16).replace("T", " "))} UTC, is older than ${LIVE_READING_FRESH_HOURS} hours and no longer arms a note)</span>`
+    : "";
+  return `<form method="post" action="/admin/outreach/verify" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(host)}">
+      <button type="submit"><strong>verify live</strong> — probe the door now, then write the note from that</button>
+    </form>${stale}`;
+}
+
 function prospectCard(
   prospect: Prospect,
   ledger: OutreachLedger,
@@ -91,32 +115,51 @@ function prospectCard(
     </form>`
       : "";
   const email = contactEmail(entry);
+  const unsent = entry?.status !== "sent" && entry?.status !== "replied";
+  /*
+   * THE HAND ROAD DRAFTS FROM THE LIVE READING OR NOT AT ALL
+   * (2026-09-05). The Gmail link used to carry the week's stored row;
+   * a note went out on a reading the corrected instrument no longer
+   * made. Now the link exists only while a fresh live reading does,
+   * and the button that takes its place makes that reading.
+   */
+  const live = liveReadingFor(entry);
+  const handDraft = handDraftFor(prospect, entry, base);
+  const hand =
+    email && unsent && handDraft && live
+      ? `<span class="menu-meta">re-probed live ${escapeHtml(live.at.slice(0, 16).replace("T", " "))} UTC — ${escapeHtml(live.verdict === "unreachable" ? "no usable answer" : `failed: ${live.failed.join(", ") || "challenge did not parse"}`)}; the note below is drafted from that reading.</span><br>${handDeliverLink(email, handDraft, "the note")}`
+      : email && unsent
+        ? verifyButton(prospect.host, entry)
+        : "";
   // THE WIRE (rule 30 as amended 2026-08-20). Only rendered where an
   // email contact exists and no note has ever gone out; the route
   // re-checks both, the button is just the honest surface of it.
   const wire =
-    email && entry?.status !== "sent" && entry?.status !== "replied" && WIRE_PAUSED_SINCE
+    email && unsent && WIRE_PAUSED_SINCE
       ? // The wire is paused: its button would only decline, so the
         // card shows the road that works and says why (2026-09-05).
-        `<span class="menu-meta">the wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)} — hand delivery only:</span><br>${handDeliverLink(email, draftNote(prospect, base), "the note")}`
-      : email && entry?.status !== "sent" && entry?.status !== "replied"
+        `<span class="menu-meta">the wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)} — hand delivery only:</span><br>${hand}`
+      : email && unsent
       ? `<form method="post" action="/admin/outreach/send" style="display:inline">
       <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
       <button type="submit"><strong>verify live &amp; send</strong> to ${escapeHtml(email)}</button>
     </form>
     <span class="menu-meta"> — re-probes the door first; sends only if the defect reproduces right now, once per host ever</span>
-    <br>${handDeliverLink(email, draftNote(prospect, base), "the note")}`
+    <br>${hand}`
       : entry?.wired
         ? `<span class="menu-meta">wired to ${escapeHtml(entry.sent_to ?? "")} ${escapeHtml((entry.status_at ?? "").slice(0, 16))} (live-verified first)</span>`
         : "";
+  const draftBlock = handDraft
+    ? `<details><summary>the note (drafted from the live reading, never the week's row)</summary>
+    <pre>${escapeHtml(handDraft)}</pre></details>`
+    : `<p class="menu-meta">No note yet: nothing is drafted from the week's row. Press <em>verify live</em> and the note is written from that probe.</p>`;
   // Anchored so the unsent summary at the top can send you straight
   // to this card's draft.
   return `<section id="card-${escapeHtml(prospect.host)}">
     <h3>${escapeHtml(prospect.host)}${prospect.newly_failing ? " <em>· newly failing</em>" : ""}</h3>
     <p class="menu-desc">${escapeHtml(prospect.reason)}</p>
     <p class="menu-meta">contact: ${contacts} · status: ${status}</p>
-    <details><summary>the draft (what the wire sends, redrafted from the live probe at press time)</summary>
-    <pre>${escapeHtml(draftNote(prospect, base))}</pre></details>
+    ${draftBlock}
     ${wire ? `<p class="menu-meta">${wire}</p>` : ""}
     <p class="menu-meta"><strong>Stamps, not sends</strong> — these record hand-delivery for contacts the wire can't reach: ${buttons}${undo}</p>
   </section>`;
@@ -223,13 +266,14 @@ interface Reachable {
   email: string;
   reason: string;
   entry: OutreachEntry | undefined;
-  draft: string;
+  /** Null on the broken side until a live reading exists to draft from. */
+  draft: string | null;
 }
 
 function reachable<T extends { host: string; reason: string }>(
   rows: T[],
   ledger: OutreachLedger,
-  draft: (row: T) => string,
+  draft: (row: T) => string | null,
 ): Reachable[] {
   const out: Reachable[] = [];
   for (const row of rows) {
@@ -281,8 +325,20 @@ function reachList(
        * compose link, the mail-app link for anyone else, and the note
        * itself in a box he can read and copy without leaving the page.
        */
+      /*
+       * NO READING, NO NOTE (2026-09-05). A broken-side row with no
+       * fresh live reading carries the verify button where the Gmail
+       * link would be, and no tick: there is nothing to have sent.
+       */
+      if (draft === null) {
+        return `<li><strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${card} · ${verifyButton(host, entry)}</li>`;
+      }
       const { subject, body } = splitDraft(draft);
       const deliver = ` · <a href="${escapeHtml(gmailComposeFor(email, draft))}" target="_blank" rel="noopener"><strong>open in Gmail — ${opts.what} written</strong></a> · <a href="${escapeHtml(mailtoFor(email, draft))}">mail app</a>`;
+      const live = liveReadingFor(entry);
+      const reading = live
+        ? ` · <em>re-probed live ${escapeHtml(live.at.slice(0, 16).replace("T", " "))} UTC: ${escapeHtml(live.verdict === "unreachable" ? "no usable answer" : `failed ${live.failed.join(", ") || "(challenge did not parse)"}`)}</em>`
+        : "";
       const note = `<details><summary>read the note</summary>
       <p class="menu-meta">To: <code>${escapeHtml(email)}</code> · Subject: ${escapeHtml(subject)}</p>
       <textarea readonly rows="12" style="width:100%;max-width:60em">${escapeHtml(body)}</textarea></details>`;
@@ -293,7 +349,7 @@ function reachList(
        * `form` attribute keeps the row free of a nested form.
        */
       const tick = `<input type="checkbox" name="host" value="${escapeHtml(host)}" form="stamp-many" id="tick-${escapeHtml(host)}"> <label for="tick-${escapeHtml(host)}">sent</label> `;
-      return `<li>${tick}<strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${deliver}${card}${send}${note}</li>`;
+      return `<li>${tick}<strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${reading}${deliver}${card}${send}${note}</li>`;
     })
     .join("\n");
   return `<h3>${title} (${rows.length}${rows.length > shown.length ? `, top ${shown.length} named` : ""})</h3>
@@ -315,8 +371,21 @@ function unsentSummary(
   renderedHosts: Set<string>,
   base: string,
 ): string {
-  const broken = reachable(prospects, ledger, (p) => draftNote(p, base));
+  const broken = reachable(prospects, ledger, (p) =>
+    handDraftFor(p, ledger.hosts[p.host], base),
+  );
   const ready = reachable(welcomes, ledger, (w) => draftWelcome(w, base));
+  // The rows one press of the batch verify would knock on: reachable,
+  // unstamped, and without a reading fresh enough to arm a note.
+  const unverified = broken.filter(
+    (row) => row.draft === null && !row.entry?.status,
+  ).length;
+  const verifyMany = unverified
+    ? `<form method="post" action="/admin/outreach/verify-many" style="display:inline">
+    <button type="submit"><strong>Verify live the next ${Math.min(unverified, VERIFY_BATCH_CAP)}</strong> (${unverified} broken door${unverified === 1 ? "" : "s"} with an address and no live reading)</button>
+  </form>
+  <span class="menu-meta"> — one probe each by the instrument as it is now; a door that answers ready is stamped fixed and gets no note, the rest get their note written from that probe. Sends nothing.</span>`
+    : "";
   const everyone = [...prospects, ...welcomes];
   const scoutedNoEmail = everyone.filter((row) => {
     const entry = ledger.hosts[row.host];
@@ -329,8 +398,15 @@ function unsentSummary(
   // this line cannot outlive it: while it stands, the send buttons
   // below decline and the open-in-mail links are the road that works.
   const paused = WIRE_PAUSED_SINCE
-    ? `<p class="menu-meta"><strong>The wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)}</strong> — every "verify live &amp; send" button on this page declines while it stands (the domain sits in a spam category and outbound notes deepen it). Until it lifts, <strong>open in mail</strong> is the road: your own client sends, then you stamp.</p>`
+    ? `<p class="menu-meta"><strong>The wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)}</strong> — every "verify live &amp; send" button on this page declines while it stands (the domain sits in a spam category and outbound notes deepen it). Until it lifts, <strong>verify live, then open in mail</strong> is the road: the probe writes the note, your own client sends it, then you stamp.</p>`
     : "";
+  /*
+   * THE LAW ON THIS ROAD, SAID WHERE THE ROAD STARTS (2026-09-05). A
+   * note on the broken side is drafted from a live reading no older
+   * than a sitting, or it does not exist; the week's row never
+   * reaches a mail client from here again.
+   */
+  const law = `<p class="menu-meta"><strong>No live reading, no note.</strong> A broken-door row carries its Gmail link only while a live probe under ${LIVE_READING_FRESH_HOURS} hours old says the defect is still there, and the note is written from that probe — never from the week's row. On 2026-09-05 a note went out from a stored row the corrected instrument no longer agreed with; this is what changed. ${verifyMany}</p>`;
   // One line, not wrapped: the counts are read at a glance, and a
   // phrase broken across source lines is a phrase nothing can find.
   const tail = `<p class="menu-meta">Also on the round: ${scoutedNoEmail} scouted door${scoutedNoEmail === 1 ? "" : "s"} that published no email (hand delivery only — copy the draft from the card), and ${unscouted} not scouted yet (press <em>Scout contacts</em> and they land here if they publish one).</p>`;
@@ -347,6 +423,7 @@ function unsentSummary(
   you tick the row. Then one press below stamps every ticked row sent and
   they leave this queue.</p>
   ${paused}
+  ${law}
   ${stampForm}
   ${reachList("Broken doors — the finding", broken, renderedHosts, {
     wire: true,
@@ -387,6 +464,33 @@ export function renderOutreachPage(
     ? `<section><h2>Came back after outreach</h2>
        <p class="menu-desc">${healed.map((h) => `<code>${escapeHtml(h)}</code>`).join(" · ")}
        — marked sent or replied in this ledger, answering ready this round. Your case-study list.</p></section>`
+    : "";
+  /*
+   * THE DOORS WE WROTE TO, RE-READ (2026-09-05). Two operators wrote
+   * back in one afternoon with a fact of ours that did not hold. This
+   * is the desk finding the next one first: every door a note went
+   * to is knocked on again by the instrument as it is now, and where
+   * it disagrees with the row the note came from, the host is named
+   * at the top — healed since, or ours to correct; the keeper looks.
+   */
+  const written = Object.values(ledger.hosts).filter(
+    (entry) => entry.status === "sent" || entry.status === "replied",
+  ).length;
+  const audits = auditedNotes(round, ledger);
+  const disagreeing = audits.filter((row) => row.disagrees);
+  const auditRow = (row: (typeof audits)[number]): string => {
+    const said = row.row
+      ? `${row.row.verdict}${row.row.failed.length ? ` (${row.row.failed.join(", ")})` : ""}`
+      : "no row this round";
+    const live = `${row.audit.verdict}${row.audit.failed.length ? ` (${row.audit.failed.join(", ")})` : ""}`;
+    return `<li><strong>${escapeHtml(row.host)}</strong> — ${escapeHtml(row.status)} ${escapeHtml((row.status_at ?? "").slice(0, 10))} · the row says <code>${escapeHtml(said)}</code> · re-read ${escapeHtml(row.audit.at.slice(0, 16).replace("T", " "))} UTC says <code>${escapeHtml(live)}</code>${row.disagrees ? " · <strong>disagree — healed since, or ours: look, and write if it is ours</strong>" : " · agree"}</li>`;
+  };
+  const auditBlock = written
+    ? `<section id="audit"><h2>Doors we wrote to, re-read (${audits.length} of ${written})</h2>
+    <p class="menu-desc">A note is a claim with a date on it, and the reply that corrects it arrives on the operator's schedule. This press knocks again, ten doors at a time, oldest re-read first, by the instrument as it is now, and lays the answer beside the row the note came from. Sends nothing.
+    <form method="post" action="/admin/outreach/audit-sent" style="display:inline"><button type="submit"><strong>Re-read the next ${Math.min(AUDIT_BATCH_CAP, written)}</strong></button></form></p>
+    ${disagreeing.length ? `<p class="menu-desc"><strong>${disagreeing.length} disagree${disagreeing.length === 1 ? "s" : ""}</strong> with the row the note came from — the list a correction may be owed on:</p>` : audits.length ? `<p class="menu-meta">Every door re-read so far agrees with its row.</p>` : ""}
+    <ul>${audits.map(auditRow).join("\n")}</ul></section>`
     : "";
   const unscouted = [...prospects, ...welcomes].filter(
     (row) => !ledger.hosts[row.host]?.scouted_at,
@@ -453,6 +557,8 @@ export function renderOutreachPage(
   </form>
 
   ${healedBlock}
+
+  ${auditBlock}
 
   ${citationBlock(citations)}
 

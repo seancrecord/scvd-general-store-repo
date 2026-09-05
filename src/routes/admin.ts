@@ -2314,6 +2314,113 @@ adminRoutes.post("/admin/outreach/send-all", async (c) => {
 });
 
 /**
+ * VERIFY LIVE, ONE HOST (2026-09-05). The wire's knock without the
+ * wire's send: the door is probed now by the instrument as deployed
+ * now, a ready door is stamped fixed and gets no note, a broken one
+ * gets its reading written on the card and the hand road's note is
+ * drafted from that. Nothing leaves this store but one GET. Built
+ * the day a hand-delivered note went out on a stored row the
+ * corrected instrument no longer agreed with.
+ */
+adminRoutes.post("/admin/outreach/verify", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, readOutreachLedger, verifyProspect } = await import(
+    "@/services/outreach"
+  );
+  const body = await c.req.parseBody();
+  const host = String(body["host"] ?? "").trim().toLowerCase();
+  if (!host) return c.redirect("/admin/outreach?notice=no+host+named");
+  const round = await latestWardRound(c.env);
+  if (!round) return c.redirect("/admin/outreach");
+  const previous = await previousWardRound(c.env);
+  const ledger = await readOutreachLedger(c.env);
+  const prospects = deriveProspects(round, previous);
+  const outcome = await verifyProspect(c.env, host, prospects, ledger);
+  const notice =
+    outcome.result === "reproduced"
+      ? `${host} re-probed at ${outcome.live.at.slice(0, 19)}Z: ${
+          outcome.live.verdict === "unreachable"
+            ? "no usable answer"
+            : `failed ${outcome.live.failed.join(", ") || "(challenge did not parse)"}`
+        } — the note is written from that reading; open it on the card.`
+      : outcome.result === "healed"
+        ? `${host} answered ready on the live re-probe at ${outcome.verified_at.slice(0, 19)}Z — the week's row is stale or was misread; marked fixed, no note.`
+        : `${host} is not in the current round's queue; nothing to verify against.`;
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(outcome);
+  }
+  return c.redirect(`/admin/outreach?notice=${encodeURIComponent(notice)}`);
+});
+
+/**
+ * VERIFY LIVE, THE NEXT TEN (2026-09-05): the batch wire's shape with
+ * no send in it. One press knocks on the top ten reachable, unstamped
+ * broken doors that have no fresh reading, and the notice says which
+ * reproduced and which healed.
+ */
+adminRoutes.post("/admin/outreach/verify-many", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, readOutreachLedger, verifyNext } = await import(
+    "@/services/outreach"
+  );
+  const round = await latestWardRound(c.env);
+  if (!round) return c.redirect("/admin/outreach");
+  const previous = await previousWardRound(c.env);
+  const ledger = await readOutreachLedger(c.env);
+  const prospects = deriveProspects(round, previous);
+  const report = await verifyNext(c.env, prospects, ledger);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(report);
+  }
+  const parts = [
+    report.reproduced.length
+      ? `Reproduced on ${report.reproduced.length}, notes written: ${report.reproduced.join(", ")}.`
+      : "Nothing reproduced.",
+    report.healed.length
+      ? `Answered ready, marked fixed, no note: ${report.healed.join(", ")}.`
+      : "",
+    report.remaining > 0
+      ? `${report.remaining} more without a reading — press again for the next batch.`
+      : "Every reachable broken door has a live reading or a stamp.",
+  ].filter(Boolean);
+  return c.redirect(
+    `/admin/outreach?notice=${encodeURIComponent(parts.join(" "))}`,
+  );
+});
+
+/**
+ * THE RE-READ OF EVERY DOOR WE WROTE TO (2026-09-05): ten per press,
+ * oldest audit first, nothing sent. The notice names the doors where
+ * the instrument as it is now disagrees with the row the note came
+ * from — the keeper's list of who may be owed a correction.
+ */
+adminRoutes.post("/admin/outreach/audit-sent", async (c) => {
+  const { latestWardRound } = await import("@/services/ward-round");
+  const { auditSentNotes, readOutreachLedger } = await import("@/services/outreach");
+  const round = await latestWardRound(c.env);
+  if (!round) return c.redirect("/admin/outreach");
+  const ledger = await readOutreachLedger(c.env);
+  const report = await auditSentNotes(c.env, round, ledger);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(report);
+  }
+  const disagree = report.rows.filter((row) => row.disagrees).map((row) => row.host);
+  const parts = [
+    `Re-read ${report.rows.length} door${report.rows.length === 1 ? "" : "s"} we wrote to.`,
+    disagree.length
+      ? `Disagree with the row the note came from: ${disagree.join(", ")} — healed since, or ours; look.`
+      : "Every re-read agrees with its row.",
+    report.no_door.length ? `${report.no_door.length} written-to host${report.no_door.length === 1 ? "" : "s"} not on this round; nothing to knock on.` : "",
+    report.remaining > 0 ? `${report.remaining} more — press again.` : "",
+  ].filter(Boolean);
+  return c.redirect(`/admin/outreach?notice=${encodeURIComponent(parts.join(" "))}`);
+});
+
+/**
  * The contact scout, keeper-fired: one press reads security.txt for
  * up to SCOUT_CAP un-scouted queue hosts. Idempotent per host — a
  * host once looked at (found or "none published") is never re-read.

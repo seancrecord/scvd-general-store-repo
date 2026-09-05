@@ -31,6 +31,69 @@ function fitName(name: string, max: number): string {
   return name.length > max ? `${name.slice(0, max - 1)}\u2026` : name;
 }
 
+/**
+ * HOW WIDE THAT WILL DRAW, IN PIXELS (2026-09-05).
+ *
+ * SVG text does not wrap and a Worker cannot measure a glyph, so
+ * every label in this file placed its text at hand-picked
+ * coordinates and hoped. The passport chip stopped hoping in public:
+ * a tier word on the left and a date on the right were drawn at the
+ * same baseline with no budget between them, so `SCVD PASSPORT \u00b7
+ * INDETERMINATE` ran straight through `FRESH \u2022 2026-09-01`, and the
+ * host ran through a verify URL on the line below. It was the one
+ * artifact we ask operators to paste in their README.
+ *
+ * A COUNT OF CHARACTERS CANNOT FIX IT, which is why the old
+ * `fitName(host, 34)` did not: `WWW.EXAMPLE.COM` and `illinois.io`
+ * are the same length and nowhere near the same width. So this
+ * estimates by glyph class \u2014 Georgia's caps are near 0.7em, its
+ * lowercase near 0.5, digits 0.55, and punctuation a third of that \u2014
+ * and every string on the chip is fitted to a stated budget before
+ * it is drawn. The estimate runs slightly WIDE on purpose: erring
+ * long costs an ellipsis, erring short costs an overlap, and only
+ * one of those ends up on somebody's front page.
+ */
+function glyphEm(ch: string): number {
+  if (ch === " ") return 0.25;
+  if (/[.,:;'`!|]/.test(ch)) return 0.28;
+  if (/[\u00b7\u2022\u2013\u2014]/.test(ch)) return 0.5;
+  if (/[ilj]/.test(ch)) return 0.31;
+  if (/[tfr]/.test(ch)) return 0.4;
+  if (/[mw]/.test(ch)) return 0.82;
+  if (/[MW]/.test(ch)) return 0.95;
+  if (/[IJ]/.test(ch)) return 0.42;
+  if (/[A-Z]/.test(ch)) return 0.72;
+  if (/[0-9]/.test(ch)) return 0.56;
+  return 0.52;
+}
+
+export function textWidth(text: string, fontSize: number, letterSpacing = 0): number {
+  let em = 0;
+  for (const ch of text) em += glyphEm(ch);
+  return em * fontSize + Math.max(0, [...text].length - 1) * letterSpacing;
+}
+
+/**
+ * The longest prefix of `text` that draws inside `maxWidth`, with an
+ * ellipsis when anything was dropped. Returns "" rather than a bare
+ * ellipsis when even one glyph will not fit: a lone "\u2026" in a label is
+ * noise pretending to be information.
+ */
+export function fitToWidth(
+  text: string,
+  fontSize: number,
+  maxWidth: number,
+  letterSpacing = 0,
+): string {
+  if (textWidth(text, fontSize, letterSpacing) <= maxWidth) return text;
+  const chars = [...text];
+  for (let take = chars.length - 1; take > 0; take -= 1) {
+    const candidate = `${chars.slice(0, take).join("").trimEnd()}\u2026`;
+    if (textWidth(candidate, fontSize, letterSpacing) <= maxWidth) return candidate;
+  }
+  return "";
+}
+
 export function renderPatronBadge(options: PatronBadgeOptions): string {
   const ink = inkParamsFromSignature(options.signature);
   const sealRotation = (-8 + ink.rotationDeg).toFixed(2);
@@ -145,15 +208,36 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
 </svg>`;
 }
 
-/** The chip's freshness palette. Broken and indeterminate never
- * render — the route refuses them the way the passport door does. */
+/**
+ * THE CHIP'S OWN INKS (2026-09-05). Warmer paper and a darker,
+ * browner black than the big badges use: the chip renders at 300px on
+ * somebody else's page, usually beside their own type, and the
+ * mid-brown that reads as aged paper at 400x300 reads as washed out
+ * at this size. Kept separate rather than moving the shared constants,
+ * because the patron badge and the audit badge are drawn for print
+ * proportions and were not the thing that looked cheap.
+ */
+const CHIP_PAPER = "#f7f2e6";
+const CHIP_INK = "#241d16";
+const CHIP_FADED = "#8a7b64";
+
+/**
+ * The chip's freshness palette. Broken and indeterminate never
+ * render — the route refuses them the way the passport door does.
+ *
+ * PRINTER'S INKS, NOT TRAFFIC LIGHTS (2026-09-05): the old #2e7d32
+ * was a dashboard's success green and made the label read as a status
+ * pill. Deep forest, ochre and a grey that genuinely looks dead are
+ * the three a letterpress shop would have on the shelf, and the last
+ * one does the functional work of an expired chip looking expired.
+ */
 const CHIP_STATE: Record<
   "fresh" | "aging" | "expired",
   { color: string; sub: string }
 > = {
-  fresh: { color: "#2e7d32", sub: "observed inside one census cadence" },
-  aging: { color: "#b26a00", sub: "older than one cadence — a refresh would say more" },
-  expired: { color: FADED, sub: "too old to rely on; agents should refuse it" },
+  fresh: { color: "#2f5d3a", sub: "observed inside one census cadence" },
+  aging: { color: "#8a5a12", sub: "older than one cadence — a refresh says more" },
+  expired: { color: "#8f8474", sub: "too old to rely on; agents should refuse it" },
 };
 
 export interface PassportChipOptions {
@@ -201,30 +285,123 @@ export interface PassportChipOptions {
  * free/paid line maps onto the assurance ladder, not onto a paywall
  * invented for the chip.
  */
+/**
+ * THE CHIP'S GEOMETRY, STATED ONCE (2026-09-05). Every number the
+ * layout depends on lives here so the test can assert the budgets
+ * rather than re-measure a string of SVG — and so a later edit that
+ * moves the stamp has to move the budget that keeps text out of it.
+ */
+export const CHIP_LAYOUT = {
+  width: 300,
+  height: 56,
+  /** The struck seal on the left: a notary's mark, not an icon. */
+  seal: { cx: 31, cy: 28, r: 17.5 },
+  /** The hairline that separates the seal from the setting. */
+  divider: 55,
+  /** Where the three set lines begin. */
+  textX: 67,
+  /** The right edge every line stops at. */
+  textEnd: 286,
+  eyebrow: { y: 19, size: 6.6, spacing: 1.9 },
+  host: { y: 35, size: 12.5 },
+  meta: { y: 46.5, size: 6.6 },
+  /** The state, set right on the eyebrow's own baseline. */
+  state: { y: 19, size: 8.2, spacing: 1.4, reserve: 58 },
+} as const;
+
+/** Budgets derived from the geometry, never typed twice (AT_SCALE rule 1). */
+export const CHIP_BUDGETS = {
+  /** The eyebrow shares its baseline with the state, so it stops short. */
+  eyebrow:
+    CHIP_LAYOUT.textEnd - CHIP_LAYOUT.state.reserve - CHIP_LAYOUT.textX - 10,
+  /** The host and meta rows have the setting to themselves. */
+  full: CHIP_LAYOUT.textEnd - CHIP_LAYOUT.textX,
+  /** What the state word itself may occupy. */
+  state: CHIP_LAYOUT.state.reserve,
+} as const;
+
+/**
+ * The tier as the chip's face says it. The face used to print the
+ * tier word in caps beside the store's name, which put
+ * `INDETERMINATE` — a statement about how MANY rounds we have, not
+ * about the door — in the loudest position on a chip whose own
+ * decision was READY. A reader saw a scary word next to their
+ * hostname. So the face states the fraction, which is the part that
+ * means something at a glance, and names the tier only when the tier
+ * is a finding rather than an absence. The whole line stays in the
+ * accessible label and on the passport page.
+ * ⚑ Rule 7: the wording is the keeper's to keep or kill.
+ */
+export function chipTierFace(tier: { tier: string; ready: number; rounds: number }): string {
+  const fraction = `${tier.ready}/${tier.rounds} ${tier.rounds === 1 ? "round" : "rounds"} ready`;
+  /*
+   * Two tier words are dropped from the face rather than printed.
+   * `indeterminate` is a statement about how many rounds we hold, not
+   * about the door, and it was the loudest thing on a chip whose own
+   * decision was READY. `observed` is the entry tier, and the line it
+   * would sit on already opens "observed <date>" — the chip read
+   * "observed 2026-08-19 · observed · 1/1 round ready", which is a
+   * label stuttering at its reader. Both keep their full line in the
+   * accessible label and on the passport page.
+   */
+  return tier.tier === "indeterminate" || tier.tier === "observed"
+    ? fraction
+    : `${tier.tier} · ${fraction}`;
+}
+
+/**
+ * THE CHIP, AS A LETTERPRESS LABEL (redrawn 2026-09-05, second pass).
+ *
+ * The first pass fixed the overlap and the keeper looked at it: "at
+ * least they are aligned now, they still don't look premium." He was
+ * right, and the reasons were all craft rather than arithmetic —
+ * nested rounded rectangles read as a web widget, a supermarket green
+ * read as a status pill, three left-aligned rows of near-equal weight
+ * gave the eye nothing to land on, and a small italic sub-line at 7px
+ * is mud at any resolution.
+ *
+ * So: squared corners and ONE hairline frame, because engraving does
+ * not round its corners. A struck seal on the left, which is the
+ * house's own mark and gives the label an anchor the way a wax seal
+ * anchors a document. A hairline rule between the seal and the
+ * setting. Real hierarchy — tracked small caps over a large host over
+ * a quiet line of record. And one accent, in inks a printer would
+ * recognise (deep forest, ochre, a grey that reads dead) rather than
+ * the traffic-light greens a dashboard uses.
+ */
 export function renderPassportChip(options: PassportChipOptions): string {
+  const L = CHIP_LAYOUT;
   const state = CHIP_STATE[options.freshness];
   const date = options.observedAt.slice(0, 10);
-  const host = fitName(options.host, 34);
-  const sub = options.selfObserved
-    ? "self-read of our own catalogs at render, not a census probe"
-    : state.sub;
   const tier = options.selfObserved ? undefined : options.tier;
-  const label = options.selfObserved
-    ? "SCVD PASSPORT · SELF"
+  const serif = "Georgia, 'Times New Roman', serif";
+  const eyebrow = options.selfObserved ? "SELF-OBSERVED PASSPORT" : "ENDPOINT PASSPORT";
+  /*
+   * The record line: the date, then ONE thing more. Three parts made
+   * a line that ellipsed on ordinary hosts, and a label whose last
+   * words are always "…" reads as broken rather than as brief — so the
+   * second part is the tier where a tier exists (it says something the
+   * stamp cannot) and the freshness gloss only where one does not.
+   */
+  const second = options.selfObserved
+    ? "self-read, not a census probe"
     : tier
-      ? `SCVD PASSPORT · ${tier.tier.toUpperCase()} ${tier.ready}/${tier.rounds}`
-      : "SCVD PASSPORT";
-  const labelColor = tier?.tier === "indeterminate" || tier?.tier === "broken" ? INK : FADED;
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}">
-  <rect width="300" height="56" fill="${PAPER}" rx="6"/>
-  <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
-  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="${tier ? 1 : 2}" fill="${labelColor}">${escapeHtml(label)}</text>
-  <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
-  <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
-  <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
-    <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
-  </a>
-  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a ranking</text>
+      ? chipTierFace(tier)
+      : state.sub;
+  const meta = `observed ${date}  ·  ${second}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
+  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="2"/>
+  <rect x="2.5" y="2.5" width="${L.width - 5}" height="${L.height - 5}" fill="none" stroke="${CHIP_INK}" stroke-width="1" rx="1.5"/>
+  <g stroke="${CHIP_INK}" fill="none">
+    <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.1"/>
+    <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3.2}" stroke-width="0.4" stroke-opacity="0.7"/>
+  </g>
+  <text x="${L.seal.cx}" y="${L.seal.cy + 2.6}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="7.6" letter-spacing="1" fill="${CHIP_INK}">SCVD</text>
+  <line x1="${L.divider}" y1="11" x2="${L.divider}" y2="45" stroke="${CHIP_INK}" stroke-width="0.4" stroke-opacity="0.45"/>
+  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_FADED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
+  <text x="${L.textEnd}" y="${L.state.y}" text-anchor="end" font-family="${serif}" font-size="${L.state.size}" letter-spacing="${L.state.spacing}" fill="${state.color}">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), L.state.size, CHIP_BUDGETS.state, L.state.spacing))}</text>
+  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${L.host.size}" fill="${CHIP_INK}">${escapeHtml(fitToWidth(options.host, L.host.size, CHIP_BUDGETS.full))}</text>
+  <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_FADED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
 </svg>`;
 }
 

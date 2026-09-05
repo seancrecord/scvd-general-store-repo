@@ -12,6 +12,7 @@ import {
   type PassportModule,
 } from "@/discovery/self-module";
 import { signJcs, JCS_DISCIPLINE } from "@/lib/jcs";
+import { retractionFor } from "@/store/retracted-readings";
 import { readPassportRefresh } from "@/services/passport-refresh";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
@@ -230,8 +231,17 @@ export type PassportOutcome =
   | { issued: true; passport: EndpointPassport }
   | {
       issued: false;
-      reason: "never-observed" | "not-ready";
+      /**
+       * `retracted-reading` (2026-09-05): the latest observation is
+       * not on the ready side, and the only checks it failed are ones
+       * this store has since retracted. We do not publish it as a
+       * finding against the host, and we do not upgrade it to ready
+       * either — there is no verdict here until the next walk.
+       */
+      reason: "never-observed" | "not-ready" | "retracted-reading";
       detail: string;
+      /** Present on `retracted-reading`: the correction that withdrew it. */
+      correction_date?: string;
     };
 
 const NOT_A_GUARANTEE =
@@ -422,6 +432,25 @@ export async function issuePassport(
     };
   }
   if (effectiveVerdict !== "ready") {
+    /*
+     * A VERDICT WHOSE CHECK WE WITHDREW IS NOT A VERDICT (2026-09-05,
+     * rule 56). The row stays in the chain as walked; what stops is
+     * DERIVING a public not-ready from it. Never an upgrade to ready:
+     * the reason for the refusal changes, the refusal does not.
+     */
+    const retraction = retractionFor(
+      refreshIsNewest ? null : (latestProbed?.week ?? null),
+      observation.failed,
+      observation.offer?.networks,
+    );
+    if (retraction) {
+      return {
+        issued: false,
+        reason: "retracted-reading",
+        correction_date: retraction.correction_date,
+        detail: `${host} has no current verdict from this store. Its latest observation failed only ${retraction.checks.join(", ")}, and ${retraction.why} The correction is at ${base}/corrections, dated ${retraction.correction_date}. Treat this as no evidence rather than as a soft no — the free self-check is POST ${base}/api/preflight, and it needs no account.`,
+      };
+    }
     return {
       issued: false,
       reason: "not-ready",

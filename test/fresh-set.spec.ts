@@ -175,3 +175,18 @@ describe("the door serves both dialects", () => {
     expect(await html.text()).toContain("No round yet");
   });
 });
+
+describe("a row is dated by its own knock where the probe wrote one (2026-09-05)", () => {
+  it("uses the row's observed_at and falls back to the round's seal", async () => {
+    await seed(
+      round([
+        host("stamped.example", "ready", { observed_at: "2026-08-17T04:00:00.000Z" }),
+        host("plain.example", "ready"),
+      ]),
+    );
+    const set = (await buildFreshSet(testEnv))!;
+    const byHost = Object.fromEntries(set.rows.map((row) => [row.host, row]));
+    expect(byHost["stamped.example"]!.observed_at).toBe("2026-08-17T04:00:00.000Z");
+    expect(byHost["plain.example"]!.observed_at).toBe("2026-08-19T17:00:00.000Z");
+  });
+});

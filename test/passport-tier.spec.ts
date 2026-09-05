@@ -222,7 +222,15 @@ describe("the tier rides every surface with its fraction, on the same fold", () 
     expect(html).toContain("4 of 4, W01–W04");
 
     const chip = await (await SELF.fetch(`${BASE}/badges/passport/door.example.svg`)).text();
-    expect(chip).toContain("ESTABLISHED 4/4");
+    /*
+     * The face carries the tier and its fraction in the meta line
+     * (2026-09-05, the chip's redraw): the old face printed the tier
+     * word in caps beside the store's name, which put INDETERMINATE —
+     * a statement about how many rounds we hold, not about the door —
+     * in the loudest place on a chip whose decision was READY. The
+     * whole line still rides in the accessible label.
+     */
+    expect(chip).toContain("established · 4/4 rounds ready");
     expect(chip).toContain("tier established — 4 of 4, W01–W04");
 
     const history = await json("/corpus/host/door.example.json");

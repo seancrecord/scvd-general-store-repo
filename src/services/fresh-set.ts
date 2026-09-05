@@ -199,9 +199,11 @@ export function freshRows(round: WardRound, base: string): FreshSetRow[] {
       /*
        * Per-row where the row knows it, the round's timestamp
        * otherwise — stated either way rather than left to a reader
-       * to infer from the document it arrived in.
+       * to infer from the document it arrived in. The row knows it
+       * since 2026-09-05 (the probe stamps its knock); this line said
+       * "per-row" for two weeks while reading the seal.
        */
-      observed_at: round.at,
+      observed_at: host.observed_at ?? round.at,
       conditions: [...(host.advisories ?? [])],
       not_checked: [...FRESH_SET_NOT_CHECKED],
     });

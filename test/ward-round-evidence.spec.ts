@@ -105,3 +105,33 @@ describe("the census keeps what the knock already fetched", () => {
     expect(row.evidence).toBeUndefined();
   });
 });
+
+describe("the row carries the moment it was read (2026-09-05)", () => {
+  /*
+   * The walk knocks in hourly batches and Sunday seals; the round's
+   * `at` is the seal. Every surface that dated a row by the round
+   * told a different day from every other — a welcome said 09-05 of
+   * a row whose passport said 09-01 — so the probe now writes down
+   * when it knocked, on both branches.
+   */
+  it("stamps an answered door with the fetch's own time", async () => {
+    stubDoor("{}", { "PAYMENT-REQUIRED": challenge() });
+    const before = Date.now();
+    const row = await probeHost(testEnv, DOOR);
+    const at = new Date(row.observed_at!).getTime();
+    expect(at).toBeGreaterThanOrEqual(before);
+    expect(at).toBeLessThanOrEqual(Date.now());
+  });
+
+  it("stamps a door that never answered too — it was still asked at a time", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("connect timeout");
+      }),
+    );
+    const row = await probeHost(testEnv, DOOR);
+    expect(row.verdict).toBe("unreachable");
+    expect(row.observed_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+});
