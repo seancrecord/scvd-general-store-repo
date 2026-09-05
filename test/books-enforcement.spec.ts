@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { recordSettlement } from "@/lib/metrics";
 import { BASE_NETWORK, SOLANA_NETWORK } from "@/lib/payments";
+import { mintCertificate } from "@/services/certificates";
+import { backfillPayerSettlesFromCertificates } from "@/services/payer-repair";
 import { sweepBooksInvariants } from "@/services/books-invariants";
 import { computeNetStatement } from "@/services/net-statement";
 import { RAILS_ENTERED_BY_HAND } from "@/services/stats";
@@ -160,6 +162,46 @@ describe("the books invariant sweep", () => {
       sweep.breaches.some((breach) => breach.startsWith("booked-exceeds-chain")),
       `booked-but-never-arrived went undetected: ${JSON.stringify(sweep.breaches)}`,
     ).toBe(true);
+  });
+
+  /**
+   * THE ALARM MOVED (2026-09-05). The counters-vs-rows compare paged
+   * twice in a week, both times on a lost read-modify-write, which the
+   * keeper ruled is not a books defect. What a certificate can PROVE
+   * is a settle: payer and transaction on the artifact, and the books'
+   * per-settle record under the same wallet and transaction. A
+   * certificate with no record is a sale the till never booked — the
+   * two Solana penny settles of 2026-08-05 — and that is what pages.
+   */
+  it("pages on a certificate whose settle the books never recorded, and stops once it is booked", async () => {
+    const wallet = "TeStKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHw";
+    // Money moved and a certificate minted; recordSettlement never ran.
+    const minted = await mintCertificate(testEnv, {
+      itemId: "hello",
+      paidUsdc: 0.01,
+      network: SOLANA_NETWORK,
+      payer: wallet,
+      settlementTx: "5neverBooked000000000000000000000000000000000000000000000000000001",
+    });
+    const sweep = await sweepBooksInvariants(testEnv);
+    const breach = sweep.breaches.find((line) => line.startsWith("certificate-without-settle"));
+    expect(breach, `an unbooked settle went undetected: ${JSON.stringify(sweep.breaches)}`).toBeDefined();
+    expect(breach).toContain(minted.certificate.cert_id);
+    expect(breach).toContain(wallet);
+    expect(breach).toContain("/admin/repair/payer-settles");
+    // The repair the breach names books it, and the breach closes.
+    await backfillPayerSettlesFromCertificates(testEnv);
+    const after = await sweepBooksInvariants(testEnv);
+    expect(after.breaches.filter((line) => line.startsWith("certificate-without-settle"))).toEqual([]);
+  });
+
+  it("no longer pages when a counter and a row differ by a lost increment", async () => {
+    const month = new Date().toISOString().slice(0, 7);
+    // A settle on the counters with no payer row behind it: the shape
+    // that paged as settle-reconciliation until 2026-09-05.
+    await testEnv.COUNTERS.put(`metric:${month}:paid:hello`, "2");
+    const sweep = await sweepBooksInvariants(testEnv);
+    expect(sweep.breaches.filter((line) => line.startsWith("settle-reconciliation"))).toEqual([]);
   });
 
   it("does not judge the current month, which the walk still trails", async () => {

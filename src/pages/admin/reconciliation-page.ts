@@ -108,12 +108,24 @@ function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: Se
 
 function settlesHtml(r: SettleReconciliation | null): string {
   if (!r) return `<p>${ATTENTION} — the recount didn't load. Reload to retry.</p>`;
+  /*
+   * A READING, NOT AN ALARM (2026-09-05). Until this date a nonzero
+   * difference here read ATTENTION and paged hourly. It paged twice
+   * in a week and both times the cause was a lost read-modify-write
+   * on a shared KV key: the settle counters and the payer rows are
+   * both written that way, either can drop an increment under a
+   * burst, and the keeper ruled on 2026-09-04 that a lost increment
+   * is not a books defect. So the three figures are floors, read
+   * beside the certificates below — the third witness, and the only
+   * one that names a wallet — and the alarm now lives on the one
+   * thing a certificate can prove: a settle the books never recorded.
+   */
   const verdict =
     r.unexplained === 0
-      ? `<p>${PASS} — every settle the counters know is on a payer row, the founding settle, or a settle that arrived without a wallet address.</p>`
+      ? `<p>${PASS} — the counters and the derived payer purchases agree, allowing for the founding settle and any settle that arrived without a wallet address. Both are floors; agreement is a good sign, not a proof.</p>`
       : r.unexplained > 0
-        ? `<p>${ATTENTION} — ${r.unexplained} settle${r.unexplained === 1 ? "" : "s"} moved a counter without writing a payer row. This is the one to chase.</p>`
-        : `<p>${ATTENTION} — ${-r.unexplained} more purchase${r.unexplained === -1 ? "" : "s"} on the payer rows than the counters admit.</p>`;
+        ? `<p>${PASS} — the counters read ${r.unexplained} settle${r.unexplained === 1 ? "" : "s"} more than the derived payer purchases. A payer row dropped an increment under a burst, most likely; the per-settle records and the certificates cannot lose one, and a settle none of the three knows would show below as a certificate without its record. Not an alarm.</p>`
+        : `<p>${PASS} — the derived payer purchases read ${-r.unexplained} more than the counters. A shared month counter dropped an increment under a burst, most likely; the counters are the lossiest of the three witnesses and are read as a floor. Not an alarm.</p>`;
   return `${verdict}
     <details><summary>The arithmetic</summary>
     <table border="1" cellpadding="4">
@@ -125,7 +137,11 @@ function settlesHtml(r: SettleReconciliation | null): string {
     </table>
     <p><small>All-time on both sides: payer rows carry no month, so a
     month-window compare would manufacture a discrepancy every time the
-    calendar turned. Row-level detail lives at <a href="/admin/recount">the recount</a>.</small></p>
+    calendar turned. "Purchases on the payer rows" is the larger of each
+    wallet's row and its per-settle records. A certificate whose settle
+    has no record is the defect this page pages on; the repair is
+    <code>POST /admin/repair/payer-settles</code>, which books it from
+    the certificate. Row-level detail lives at <a href="/admin/recount">the recount</a>.</small></p>
     </details>`;
 }
 
@@ -383,7 +399,7 @@ export function renderReconciliationPage(
   </section>
 
   <section>
-    <h2>Settle counters vs payer rows</h2>
+    <h2>Settle counters vs payer rows (three floors, one reading)</h2>
     ${settlesHtml(data.settles)}
     ${certsHtml(data.certs, data.settles)}
   </section>

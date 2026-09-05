@@ -6,7 +6,7 @@ import { sendAlert } from "@/lib/alerts";
 // whose problem a decline is. declines.ts imports only a TYPE from this
 // module, so the pair erases to no runtime cycle.
 import { readReason, type DeclineFault } from "@/lib/declines";
-import { inferChannel, isHouseTraffic } from "@/lib/channel";
+import { houseWallets, inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
@@ -877,6 +877,46 @@ async function recordPayerSettle(
     KV_KEYS.payerSettle(address, id),
     JSON.stringify({ item, at, ...(transaction ? { transaction } : {}) }),
   );
+}
+
+/**
+ * THE REBOOK FROM A CERTIFICATE (2026-09-05, the keeper's "fix the
+ * books too"). Two Solana penny settles from one wallet on 2026-08-05
+ * minted their certificates and left nothing else: no payer row, no
+ * counter — recordSettlement never ran for them, and the certificate
+ * is the only trace. The backfill (payer-repair.ts) proves such a
+ * settle from the certificate and books it here, in the MONTH the
+ * certificate carries rather than the month of the repair, so the
+ * ledger for August says August. What it books is what the
+ * certificate can witness — the settle, the money, the rail — and
+ * nothing it cannot: no channel, no tier, no venue. The buyer's
+ * wallet decides organic or house exactly as it would have at the
+ * till.
+ */
+export async function rebookSettleFromCertificate(
+  env: Env,
+  certificate: { item: string; date: string; paid_usdc?: number; network?: string; payer?: string },
+): Promise<void> {
+  const month = certificate.date.slice(0, 7);
+  const house = certificate.payer
+    ? houseWallets(env).includes(certificate.payer.toLowerCase())
+    : false;
+  const suffix = house ? "h" : "";
+  const item = certificate.item;
+  const micro = Math.round((certificate.paid_usdc ?? 0) * USDC_MICRO);
+  const pending: Array<Promise<void>> = [
+    bump(env, KV_KEYS.metric(month, `paid${suffix}`, item)),
+    bumpBy(env, KV_KEYS.metric(month, `rev${suffix}`, "total"), micro),
+  ];
+  const rail = railOf(certificate.network);
+  if (rail) {
+    pending.push(bump(env, KV_KEYS.metric(month, `rail${suffix}`, rail)));
+    pending.push(bumpBy(env, KV_KEYS.metric(month, `revrail${suffix}`, rail), micro));
+  }
+  if (!house) {
+    pending.push(bump(env, KV_KEYS.metric(month, "dpaid", certificate.date.slice(8, 10))));
+  }
+  await Promise.all(pending);
 }
 
 async function recordPayerSeen(env: Env, address: string): Promise<void> {
