@@ -1,6 +1,8 @@
 import { Hono, type Context } from "hono";
 import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
-import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, toolText } from "@/routes/mcp";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { recordPorchVisit } from "@/lib/metrics";
+import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import type { HonoEnv } from "@/types";
@@ -28,6 +30,14 @@ import type { HonoEnv } from "@/types";
  * stranger's endpoint, and a test pins that the tool list is exactly
  * the one name. The store's actual instruments are on /mcp and
  * /mcp/verifier; this door tells a client where they are.
+ *
+ * COUNTED FROM ITS FIRST DAY, unlike the two doors before it. /mcp
+ * tagged its own traffic from the start and the verifier ran two days
+ * unseen; a door nobody counts cannot answer "did anyone read this",
+ * which is the only question a documentation server exists to raise.
+ * BOUNDED, like every porch line: the counted methods are a fixed
+ * set, never the caller's string, and the tool line is minted only
+ * for this door's one tool name.
  */
 export const mcpDocsRoutes = new Hono<HonoEnv>();
 
@@ -37,6 +47,16 @@ export const DOCS_TOOL_NAME = "read_docs";
 
 /** Where the door answers. The page address answers POST; the plain address answers both. */
 export const DOCS_PATHS = ["/mcp.md", "/mcp/docs"] as const;
+
+/** The methods that earn a porch line, as a fixed set: the caller's own string never mints a counter key. */
+const COUNTED_METHODS: ReadonlySet<string> = new Set([
+  "initialize",
+  "server/discover",
+  "resources/list",
+  "resources/read",
+  "tools/list",
+  "tools/call",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -149,6 +169,9 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
   const id = body["id"] ?? null;
   const method = body["method"];
   const params = isRecord(body["params"]) ? body["params"] : {};
+  if (COUNTED_METHODS.has(method)) {
+    deferBookkeeping(c, recordPorchVisit(c.env, `mcp-docs:${method}`, mcpSignals(c)));
+  }
   switch (method) {
     case "initialize": {
       const requested = String(params["protocolVersion"] ?? "");
@@ -205,6 +228,9 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
     case "tools/call": {
       const name = typeof params["name"] === "string" ? params["name"] : "";
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
+      if (name === DOCS_TOOL_NAME) {
+        deferBookkeeping(c, recordPorchVisit(c.env, `mcp-docs:tool:${DOCS_TOOL_NAME}`, mcpSignals(c)));
+      }
       const result = await callDocsTool(c, name, args);
       if (typeof result === "string") return rpcError(id, -32602, result);
       return rpcResult(id, toolText(result));

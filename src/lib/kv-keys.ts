@@ -226,6 +226,8 @@ export const KV_KEYS = {
   lettersAnswered: "letters_answered",
   porchSits: (day: string): string => `porch_sits:${day}`,
   porchTreats: (day: string): string => `porch_treats:${day}`,
+  /** The keeper's last reading of /admin/instruments, rewritten on every render so the next one can print the slope. */
+  instrumentsReading: "instruments_reading",
   gazetteWeeklyState: "gazette_weekly_state",
   gazetteCorrections: "gazette_corrections",
   letterSent: (who: string, day: string): string => `letter_sent:${who}:${day}`,
