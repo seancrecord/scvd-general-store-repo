@@ -60,7 +60,7 @@ const DOORS_BUDGET = 1_000_000;
 const DELIVERY_FLOOR = "src/services/fulfillment.ts";
 
 const require = createRequire(import.meta.url);
-const workerd = require.resolve("@cloudflare/workerd-linux-64/bin/workerd").replace(/\/bin\/workerd$/, "/bin/workerd");
+const workerd = require.resolve("@cloudflare/workerd-linux-64/bin/workerd");
 
 const dir = mkdtempSync(join(tmpdir(), "scvd-cold-local-"));
 try {
