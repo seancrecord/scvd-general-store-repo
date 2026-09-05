@@ -33,7 +33,20 @@ describe("which way the verify call died", () => {
     const withStatus = (status: number): Error =>
       Object.assign(new Error("nope"), { statusCode: status });
     expect(classifyVerifyFailure(withStatus(502))).toBe("upstream_5xx");
-    expect(classifyVerifyFailure(withStatus(401))).toBe("upstream_4xx");
+    /*
+     * BOTH DIRECTIONS (2026-09-04, the keeper's ruling on CV's
+     * spot_check decline). A key, account or quota refusal — 401, 403,
+     * 429 — is the emergency, and the library delivers it SHAPELESS:
+     * a plain Error whose message carries the status, no field. A
+     * status field on the error means a verdict wearing an error code,
+     * and the hook books that under the facilitator's own reason
+     * before this classifier is ever asked.
+     */
+    expect(classifyVerifyFailure(new Error("Facilitator verify failed (401): unauthorized"))).toBe("upstream_auth");
+    expect(classifyVerifyFailure(new Error("Facilitator verify failed (429): slow down"))).toBe("upstream_auth");
+    expect(classifyVerifyFailure(new Error("Facilitator verify failed (400): bad request"))).toBe("upstream_4xx");
+    expect(classifyVerifyFailure(new Error("Facilitator verify failed (503): later"))).toBe("upstream_5xx");
+    expect(classifyVerifyFailure(withStatus(401))).toBe("upstream_auth");
     expect(
       classifyVerifyFailure(
         Object.assign(new Error("hung"), { timeoutMs: 10_000 }),
@@ -62,10 +75,13 @@ describe("which way the verify call died", () => {
    * quota — and it never looked at the payload. Every sale at every
    * door dies on it while each row looks like one unlucky buyer.
    */
-  it("calls a 4xx from the facilitator OURS, not the buyer's and not unclear", () => {
-    const { fault, reading } = readReason("verify_error:upstream_4xx");
-    expect(fault).toBe("ours");
-    expect(reading).toContain("credentials");
+  it("calls a refusal to talk to us OURS, and a 4xx with no verdict neither ours nor the buyer's", () => {
+    const auth = readReason("verify_error:upstream_auth");
+    expect(auth.fault).toBe("ours");
+    expect(auth.reading).toContain("credentials");
+    const bare = readReason("verify_error:upstream_4xx");
+    expect(bare.fault).toBe("unknown");
+    expect(bare.reading).toContain("NO verdict");
   });
 
   it("calls a 5xx theirs and leaves the buyer out of it", () => {
@@ -82,6 +98,7 @@ describe("which way the verify call died", () => {
       "verify_error",
       "verify_error:timeout",
       "verify_error:transport",
+      "verify_error:upstream_auth",
       "verify_error:upstream_4xx",
       "verify_error:upstream_5xx",
     ];
@@ -108,6 +125,7 @@ describe("what the buyer is told when nothing judged their payment", () => {
       "verify_error",
       "verify_error:timeout",
       "verify_error:transport",
+      "verify_error:upstream_auth",
       "verify_error:upstream_4xx",
       "verify_error:upstream_5xx",
     ]) {

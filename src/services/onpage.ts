@@ -1,6 +1,6 @@
 import { CONFLICT } from "@/services/conformance";
 import { storeIdentity } from "@/lib/identity";
-import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
+import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import {
   ONPAGE_VERSION,
@@ -140,7 +140,7 @@ export async function fetchPageOnce(
   fetchImpl: typeof fetch = fetch,
   env?: WbaEnv,
 ): Promise<PageProbeOutcome> {
-  const verdict = checkProbeTarget(new URL(url), "");
+  const verdict = checkProbeTarget(parseProbeTarget(url), "");
   if (!verdict.ok) {
     throw new ProbeTargetRefused(verdict.reason ?? "refused target");
   }

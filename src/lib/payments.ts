@@ -1002,15 +1002,37 @@ function verifyDeliveredAVerdict(error: unknown): boolean {
  * so a reader who knows one knows all of them.
  */
 export type VerifyFailureClass =
+  | "upstream_auth"
   | "upstream_4xx"
   | "upstream_5xx"
   | "timeout"
   | "transport";
 
+/**
+ * The status a non-verdict facilitator error carries in its MESSAGE.
+ * The library formats a non-2xx answer with no `isValid` body as
+ * "Facilitator verify failed (NNN): …" and attaches no field — so a
+ * 401 on our key arrived here shapeless and was filed as transport,
+ * while a verdict wearing a 400 (which DOES carry statusCode) was
+ * filed as the credentials emergency. Both backwards, both fixed
+ * 2026-09-04 (the keeper's ruling on CV's spot_check decline).
+ */
+function facilitatorStatusOf(error: unknown): number | undefined {
+  const field = (error as { statusCode?: unknown } | null)?.statusCode;
+  if (typeof field === "number") return field;
+  const text = error instanceof Error ? error.message : String(error);
+  const match = /Facilitator verify failed \((\d{3})\)/.exec(text);
+  return match ? Number(match[1]) : undefined;
+}
+
 export function classifyVerifyFailure(error: unknown): VerifyFailureClass {
-  const status = (error as { statusCode?: unknown } | null)?.statusCode;
+  const status = facilitatorStatusOf(error);
   if (typeof status === "number") {
-    return status >= 500 ? "upstream_5xx" : "upstream_4xx";
+    if (status >= 500) return "upstream_5xx";
+    // The facilitator refused to talk to US: key, account, quota. This
+    // is the shape that kills every sale at every door at once.
+    if (status === 401 || status === 403 || status === 429) return "upstream_auth";
+    return "upstream_4xx";
   }
   // The library's timeout shape. Belt and braces on the message too:
   // an AbortSignal.timeout rejection reaches here as a DOMException
@@ -1288,6 +1310,32 @@ export function getPaymentStack(env: Env): PaymentStack {
       }
     });
     resourceServer.onVerifyFailure(async (context) => {
+      /**
+       * A VERDICT WEARING AN ERROR STATUS IS A VERDICT (2026-09-04).
+       * The library throws VerifyError when the facilitator answered
+       * non-2xx WITH an isValid body — it read the payload and refused
+       * it, and its reason is on the error. That is the same decline
+       * onAfterVerify books for a 200 with isValid: false, and it is
+       * booked the same way: the facilitator's own reason, never a
+       * verify_error class, never "ours". CV's hand-rolled spot_check
+       * of this afternoon was one of these, paged as a credentials
+       * emergency.
+       */
+      const verdict = context.error as {
+        invalidReason?: unknown;
+        invalidMessage?: unknown;
+      } | null;
+      if (verifyDeliveredAVerdict(context.error)) {
+        rememberDecline(
+          context.paymentPayload,
+          context.transportContext,
+          typeof verdict?.invalidReason === "string"
+            ? verdict.invalidReason
+            : "verification_declined",
+          typeof verdict?.invalidMessage === "string" ? verdict.invalidMessage : undefined,
+        );
+        return undefined;
+      }
       rememberDecline(
         context.paymentPayload,
         context.transportContext,

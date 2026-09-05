@@ -1,6 +1,6 @@
 import { signJcs } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
+import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -69,7 +69,9 @@ export async function performPassportRefresh(
   rawUrl: string,
   now: Date = new Date(),
 ): Promise<SignedPassportRefresh> {
-  const url = new URL(rawUrl); // an unparseable URL throws before the 402 — validated pre-payment in buy.ts, same as the audits
+  // An unparseable URL is a refused target under the shared law, never
+  // a throw the catch below would sign as "unreachable".
+  const url = parseProbeTarget(rawUrl);
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const target = checkProbeTarget(url, ownHost);
   if (!target.ok) {

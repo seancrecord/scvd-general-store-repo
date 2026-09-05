@@ -288,3 +288,29 @@ export class ProbeTargetRefused extends Error {
     this.name = "ProbeTargetRefused";
   }
 }
+
+/**
+ * THE TARGET, PARSED UNDER THE SAME LAW (2026-09-04, CV's second
+ * round). Every probing door ran `checkProbeTarget(new URL(url))`,
+ * and `new URL` throws a TypeError before the law is consulted — so a
+ * target that was not a URL at all (an empty string, once the MCP door
+ * dropped the buyer's url) fell into each service's generic catch and
+ * was SIGNED as "unreachable": "We knocked. Nobody came." No knock was
+ * ever made. A paid, signed artifact said a false sentence about the
+ * network path under this store's own key, and /api/verify called it
+ * valid, because the signature was.
+ *
+ * So the parse is part of the law. A string that is not a URL is a
+ * refused target — no request was made, and the artifact says so as a
+ * fact about OUR input handling, never about the host. Every door
+ * that dials through this function inherits the honest verdict.
+ */
+export function parseProbeTarget(raw: string): URL {
+  try {
+    return new URL(raw);
+  } catch {
+    throw new ProbeTargetRefused(
+      `"${raw.slice(0, 80)}" is not a URL, so nothing was dialled.`,
+    );
+  }
+}

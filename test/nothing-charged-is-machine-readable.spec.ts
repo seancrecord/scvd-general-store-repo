@@ -11,6 +11,10 @@ import buySource from "../src/routes/buy.ts?raw";
  * the failure mode this file's own header describes.
  */
 import lawSource from "../src/lib/purchase-args.ts?raw";
+// And the owned post-settlement failure (2026-09-04): its code is
+// charged: TRUE and never says "no charge", so the walk below never
+// meets it; the code walk does.
+import deliveryFailedSource from "../src/lib/delivery-failed.ts?raw";
 
 /**
  * "NOTHING CHARGED" WAS A SENTENCE, NOT A FIELD (rule 57.4, the sweep's
@@ -56,6 +60,11 @@ const CODES = [
   "retired",
   "unknown_item",
   "sold_out",
+  /*
+   * THE ONE THAT MEANS MONEY MOVED (2026-09-04): served when delivery
+   * threw after settlement, carrying charged: TRUE.
+   */
+  "delivery_failed",
 ] as const;
 
 /**
@@ -146,7 +155,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
   });
 
   it("gives every one of them a code from the published set", () => {
-    const codes = [...buySource.matchAll(/code: "([a-z_]+)"/g)].map(
+    const codes = [...`${buySource}\n${deliveryFailedSource}`.matchAll(/code: "([a-z_]+)"/g)].map(
       (match) => match[1]!,
     );
     expect(codes.length).toBeGreaterThan(3);

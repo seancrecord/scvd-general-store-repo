@@ -583,14 +583,47 @@ function notFoundLinks(base: string): Array<{ url: string; what: string }> {
  * nobody's memory.
  */
 function methodsFor(path: string): string[] {
-  const allowed = new Set<string>();
+  const exact = new Set<string>();
+  const byShape = new Set<string>();
   for (const route of app.routes) {
-    if (route.path !== path) continue;
     const method = route.method.toUpperCase();
     if (method === "ALL") continue;
-    allowed.add(method);
+    if (route.path === path) exact.add(method);
+    else if (routeMatches(route.path, path)) byShape.add(method);
   }
-  return [...allowed].sort();
+  /*
+   * A literal door outranks a shaped one. `POST /api/credit/challenge`
+   * sits beside `GET /api/credit/:wallet`, and a GET on the former is
+   * a wrong method on a real door, not a wallet called "challenge" —
+   * the shape match only speaks for paths no literal route names.
+   */
+  return [...(exact.size > 0 ? exact : byShape)].sort();
+}
+
+/**
+ * A ROUTE WITH A PARAMETER IS STILL A DOOR (2026-09-04, CV's fourth
+ * round). The 405 above compared the request path to each route's
+ * PATTERN as a literal string, so `/api/waitlist/aura_walk` never
+ * matched `/api/waitlist/:item_id` and a GET on the waitlist — the
+ * exact URL the sold-out 409 hands a buyer — fell through to "That
+ * aisle doesn't exist." The aisle existed; it took POST. Every
+ * parametrized POST-only door had the same dead end. Matched by
+ * shape now: `:name` is one segment, `*` is the rest.
+ */
+function routeMatches(pattern: string, path: string): boolean {
+  if (pattern === path) return true;
+  if (!pattern.includes(":") && !pattern.includes("*")) return false;
+  const source = pattern
+    .split("/")
+    .map((segment) =>
+      segment === "*"
+        ? ".*"
+        : segment.startsWith(":")
+          ? "[^/]+"
+          : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    )
+    .join("/");
+  return new RegExp(`^${source}$`).test(path);
 }
 
 /**

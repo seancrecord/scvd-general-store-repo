@@ -2,8 +2,10 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MCP_REFUSAL_CODES } from "@/store/surface-contract";
+import { DELIVERY_FAILED_CODE } from "@/lib/delivery-failed";
 import { MENU_ITEMS } from "@/store";
 import MCP_SOURCE from "../src/routes/mcp.ts?raw";
+import DOOR_LAW_SOURCE from "../src/lib/purchase-args.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -145,6 +147,24 @@ describe("a refusal on the wire carries the code and the charge", () => {
       emitted.add("wrong_shelf");
       emitted.add("unknown_item");
     }
+    /*
+     * Plus every code the door law can send (2026-09-04): the MCP
+     * door relays lib/purchase-args.ts's refusals through rpcRefusal
+     * with the law's own code, so the codes are literals in THAT file.
+     * Walked the same way the buy-door guard walks it; a code the law
+     * grows is a code this door sends the same day.
+     */
+    if (/checkPurchaseArgs\(/.test(MCP_SOURCE)) {
+      for (const match of DOOR_LAW_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)) {
+        emitted.add(match[1]!);
+      }
+    }
+    // And the owned post-settlement failure (2026-09-04): the door
+    // relays lib/delivery-failed.ts's body, whose code is charged: TRUE
+    // and so never rides rpcRefusal.
+    if (/deliveryFailedBody\(/.test(MCP_SOURCE)) {
+      emitted.add(DELIVERY_FAILED_CODE);
+    }
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
     expect(
@@ -188,6 +208,9 @@ describe("a refusal on the wire carries the code and the charge", () => {
       .filter((call) => {
         if (call.code === "-32700") return false; // parse error, same class as -32601
         if (call.code === "-32602" && /prompts/i.test(call.tail)) return false;
+        // Money moved and delivery failed: not a refusal, charged is
+        // TRUE, and the body is the shared one (lib/delivery-failed.ts).
+        if (call.code === "-32000" && /message, data/.test(call.tail)) return false;
         return NOT_REFUSALS[call.code] === undefined;
       });
     expect(
@@ -232,11 +255,11 @@ describe("a refusal on the wire carries the code and the charge", () => {
      * leave this file green; both are exercised now.
      */
     /*
-     * standing_watch is one of the items validatePurchaseArgs checks
-     * by name, mirroring the HTTP door's standingWatchCheck: no
-     * target, no charge. service_audit takes its url later, so it
-     * reaches the challenge instead — which is why the first draft of
-     * this test proved nothing.
+     * standing_watch was one of the five items the MCP door checked
+     * by name; since 2026-09-04 every item runs the shared door law
+     * (lib/purchase-door.ts) before any terms are quoted, so this is
+     * one refusal site standing in for all of them: no target, no
+     * charge.
      */
     const body = await rpc("tools/call", {
       name: "buy_observation",

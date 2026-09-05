@@ -496,8 +496,29 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       form === "legacy"
         ? canonicalizeCertificateLegacy(record.certificate)
         : canonicalizeCertificate(record.certificate);
+    /**
+     * AN ATTESTATION OF NOTHING IS NAMED AS ONE (2026-09-04, CV's
+     * second round). Two certificates were minted over MCP whose
+     * `attests` is sha256 of the empty string — the sheaf's evidence
+     * hash over zero observations, after the door dropped the
+     * buyer's hashes — and this endpoint answered valid: true for
+     * both, correctly: the signature covers exactly that. Signature
+     * validity and substance are different questions, and a reader
+     * running the automated check got only the first. The digest is
+     * derived here, never typed, so the sentence cannot drift from
+     * the bytes it describes.
+     */
+    const attestsNothing =
+      typeof record.certificate.attests === "string" &&
+      record.certificate.attests.toLowerCase() === (await artifactHash(""));
     return c.json({
       valid,
+      ...(attestsNothing
+        ? {
+            attests_note:
+              "This certificate's `attests` field is the sha256 of the EMPTY STRING: the signature is genuine and covers it, and what it attests to is nothing — no observation lay behind it when it was minted. Treat the artifact as void of substance; the signature only proves this store issued it.",
+          }
+        : {}),
       /**
        * Every verify response, not only the certificate one: an
        * artifact explains itself wherever it is checked, and a stamp

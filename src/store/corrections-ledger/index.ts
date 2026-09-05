@@ -2,39 +2,40 @@
 // Add a file to this directory and run: npm run corrections:index
 import type { Correction } from "./types";
 import { correction as c0 } from "./2026-09-05-a-nonce-is-indexed-on-chain";
-import { correction as c1 } from "./2026-09-04-the-x402-walk-ledger-carried-one";
-import { correction as c2 } from "./2026-09-04-the-weekly-walk-published-not-ready";
-import { correction as c3 } from "./2026-09-04-the-mcp-door-took-a-buyer";
-import { correction as c4 } from "./2026-09-04-every-conversion-figure-on-pulse-and";
-import { correction as c5 } from "./2026-09-03-the-organic-402-count-per-item";
-import { correction as c6 } from "./2026-09-03-the-attestation-spec-page-said-since";
-import { correction as c7 } from "./2026-09-01-the-public-bounty-board-listed-five";
-import { correction as c8 } from "./2026-09-01-the-5-once-over-cited-preflight";
-import { correction as c9 } from "./2026-08-31-the-skill-bundle-published-to-clawhub";
-import { correction as c10 } from "./2026-08-29-doors-published-that-morning-told-a";
-import { correction as c11 } from "./2026-08-28-the-store-s-most-quoted-fact";
-import { correction as c12 } from "./2026-08-28-the-self-passport-s-caption-said";
-import { correction as c13 } from "./2026-08-28-the-night-watch-s-shelf-copy";
-import { correction as c14 } from "./2026-08-28-the-conformance-desk-s-docs-promised";
-import { correction as c15 } from "./2026-08-28-the-advisory-behind-every-signed-offers";
-import { correction as c16 } from "./2026-08-28-the-2026-08-26-correction-on";
-import { correction as c17 } from "./2026-08-28-the-1-passport-refresh-was-sold";
-import { correction as c18 } from "./2026-08-28-after-earlier-corrections-re-worded-registry";
-import { correction as c19 } from "./2026-08-26-the-store-s-paid-doors-refused";
-import { correction as c20 } from "./2026-08-26-every-row-of-the-weekly-census";
-import { correction as c21 } from "./2026-08-25-every-signed-offer-and-every-signed";
-import { correction as c22 } from "./2026-08-04-the-public-organic-settlement-count-read";
-import { correction as c23 } from "./2026-08-01-the-refund-policy-shipped-saying-nobody";
-import { correction as c24 } from "./2026-07-31-stack-told-buyers-that-if-this";
-import { correction as c25 } from "./2026-07-31-entry-25";
-import { correction as c26 } from "./2026-07-30-on-the-day-this-store-took";
-import { correction as c27 } from "./2026-07-30-entry-26";
-import { correction as c28 } from "./2026-07-30-certificates-could-not-actually-be-verified";
-import { correction as c29 } from "./2026-07-29-entry-31";
-import { correction as c30 } from "./2026-07-28-five-pages-of-the-store-s";
-import { correction as c31 } from "./2026-07-28-entry-29";
-import { correction as c32 } from "./2026-07-26-entry-27";
-import { correction as c33 } from "./2026-07-25-parameter-guards-fired-before-the-payment";
+import { correction as c1 } from "./2026-09-04-two-certificates-attested-to-nothing";
+import { correction as c2 } from "./2026-09-04-the-x402-walk-ledger-carried-one";
+import { correction as c3 } from "./2026-09-04-the-weekly-walk-published-not-ready";
+import { correction as c4 } from "./2026-09-04-the-mcp-door-took-a-buyer";
+import { correction as c5 } from "./2026-09-04-every-conversion-figure-on-pulse-and";
+import { correction as c6 } from "./2026-09-03-the-organic-402-count-per-item";
+import { correction as c7 } from "./2026-09-03-the-attestation-spec-page-said-since";
+import { correction as c8 } from "./2026-09-01-the-public-bounty-board-listed-five";
+import { correction as c9 } from "./2026-09-01-the-5-once-over-cited-preflight";
+import { correction as c10 } from "./2026-08-31-the-skill-bundle-published-to-clawhub";
+import { correction as c11 } from "./2026-08-29-doors-published-that-morning-told-a";
+import { correction as c12 } from "./2026-08-28-the-store-s-most-quoted-fact";
+import { correction as c13 } from "./2026-08-28-the-self-passport-s-caption-said";
+import { correction as c14 } from "./2026-08-28-the-night-watch-s-shelf-copy";
+import { correction as c15 } from "./2026-08-28-the-conformance-desk-s-docs-promised";
+import { correction as c16 } from "./2026-08-28-the-advisory-behind-every-signed-offers";
+import { correction as c17 } from "./2026-08-28-the-2026-08-26-correction-on";
+import { correction as c18 } from "./2026-08-28-the-1-passport-refresh-was-sold";
+import { correction as c19 } from "./2026-08-28-after-earlier-corrections-re-worded-registry";
+import { correction as c20 } from "./2026-08-26-the-store-s-paid-doors-refused";
+import { correction as c21 } from "./2026-08-26-every-row-of-the-weekly-census";
+import { correction as c22 } from "./2026-08-25-every-signed-offer-and-every-signed";
+import { correction as c23 } from "./2026-08-04-the-public-organic-settlement-count-read";
+import { correction as c24 } from "./2026-08-01-the-refund-policy-shipped-saying-nobody";
+import { correction as c25 } from "./2026-07-31-stack-told-buyers-that-if-this";
+import { correction as c26 } from "./2026-07-31-entry-25";
+import { correction as c27 } from "./2026-07-30-on-the-day-this-store-took";
+import { correction as c28 } from "./2026-07-30-entry-26";
+import { correction as c29 } from "./2026-07-30-certificates-could-not-actually-be-verified";
+import { correction as c30 } from "./2026-07-29-entry-31";
+import { correction as c31 } from "./2026-07-28-five-pages-of-the-store-s";
+import { correction as c32 } from "./2026-07-28-entry-29";
+import { correction as c33 } from "./2026-07-26-entry-27";
+import { correction as c34 } from "./2026-07-25-parameter-guards-fired-before-the-payment";
 
 export const CORRECTIONS: readonly Correction[] = [
   c0,
@@ -71,4 +72,5 @@ export const CORRECTIONS: readonly Correction[] = [
   c31,
   c32,
   c33,
+  c34,
 ];

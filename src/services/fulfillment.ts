@@ -268,6 +268,23 @@ export async function fulfillPurchase(
      * observation carries the same chain_head.
      */
     const hashes = input.bundleTxHashes ?? [];
+    /*
+     * A SHEAF OF NOTHING IS NOT AN ARTIFACT (2026-09-04, CV's second
+     * round). The MCP door dropped tx_hashes on the floor, this line
+     * observed zero receipts, bundleEvidenceHash hashed the empty
+     * string, and the store settled $0.05 and signed a certificate
+     * whose `attests` is sha256("") — which /api/verify then called
+     * valid, because the signature was. The door law now refuses the
+     * empty sheaf before terms are quoted; this is the till's own
+     * backstop, thrown BEFORE settle so it costs the buyer nothing,
+     * because the next door somebody adds must not be able to buy a
+     * signature over nothing.
+     */
+    if (hashes.length === 0) {
+      throw new Error(
+        "attestation_bundle reached the till with no hashes: a sheaf of nothing is refused before settlement, never signed.",
+      );
+    }
     const [receipts, head] = await Promise.all([
       getReceiptsBatch(env, hashes),
       getBlockNumber(env),

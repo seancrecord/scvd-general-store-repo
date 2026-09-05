@@ -1349,6 +1349,18 @@ adminRoutes.post("/admin/repair/payer-case", async (c) => {
 });
 
 /**
+ * THE SETTLE-RECORD BACKFILL (2026-09-04): seeds one per-settle record
+ * from every certificate that names a payer and a transaction, and
+ * raises any payer row short of its records. Idempotent; press it
+ * once after the records shipped, and again whenever the settle
+ * reconciliation reports a wallet short.
+ */
+adminRoutes.post("/admin/repair/payer-settles", async (c) => {
+  const { backfillPayerSettlesFromCertificates } = await import("@/services/payer-repair");
+  return c.json(await backfillPayerSettlesFromCertificates(c.env));
+});
+
+/**
  * THE TAX DRAWER: the whole money ledger as one CSV — sale rows off
  * the certificates, refund rows as their own offsetting events,
  * house purchases flagged and never omitted. Penny-page settles mint

@@ -9,6 +9,9 @@ import BUY_SOURCE from "../src/routes/buy.ts?raw";
  * MCP doors alike, so the codes have to be read out of both files.
  */
 import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
+// The owned post-settlement failure's body (2026-09-04), whose code is
+// a literal in its own module.
+import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 
 const BASE = "https://scvd.store";
 
@@ -75,7 +78,7 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
-    ...[...BUY_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
+    ...[...`${BUY_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
     // The shared law's refuse(status, code, sentence) builder.
     ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
       (match) => match[1]!,

@@ -291,11 +291,18 @@ export function readReason(raw: string): {
    * the 5xx is not ours at all. Bare `verify_error` below is the
    * historical row, from before the classes existed.
    */
-  if (reason === "verify_error:upstream_4xx") {
+  if (reason === "verify_error:upstream_auth") {
     return {
       fault: "ours",
       reading:
-        "EMERGENCY, AND IT IS OURS. The facilitator ANSWERED the verify call and refused US, not the buyer — a 4xx on this endpoint is our API key, our account or our quota, and it never looked at the payload. The buyer did nothing wrong and neither did their wallet. This is the shape that kills every sale at every door simultaneously while each row looks like one unlucky buyer, so treat a single one as live: check the CDP credentials in the worker's secrets first, then the account's standing.",
+        "EMERGENCY, AND IT IS OURS. The facilitator refused to talk to us at all — a 401, 403 or 429 on the verify call is our API key, our account or our quota, and it never looked at the payload. The buyer did nothing wrong and neither did their wallet. This is the shape that kills every sale at every door simultaneously while each row looks like one unlucky buyer, so treat a single one as live: check the CDP credentials in the worker's secrets first, then the account's standing.",
+    };
+  }
+  if (reason === "verify_error:upstream_4xx") {
+    return {
+      fault: "unknown",
+      reading:
+        "The facilitator answered the verify call with a 4xx and NO verdict: it could not read the request we sent it, or refused it for a reason it did not name — its words are in the message beside this. Not the buyer's signature, which it never got as far as judging, and not our credentials, which book as upstream_auth. If the message names a field of the request, that request is ours to fix; a verdict on the buyer's payload would have booked under the facilitator's own reason instead of here. No money moved.",
     };
   }
   if (reason === "verify_error:upstream_5xx") {

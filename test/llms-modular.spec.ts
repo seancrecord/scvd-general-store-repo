@@ -801,12 +801,18 @@ const BASE = "https://scvd.store";
  * head. Confirmed before this value was taken: the guide carries
  * "/api/declare-door" and "Five words carry it", and still every
  * earlier pin.
+ * Re-taken 2026-09-04 — the SEVENTIETH — on the keeper's ruling that
+ * the Aura Walk carries five slots a week, not one ("at least 5"): the
+ * shelf's stock line in the guide reads "Stock: 5 per week" and that
+ * is the only edit. Confirmed before this value was taken: the guide
+ * carries "Stock: 5 per week, waitlist when we're out", "/api/declare-door"
+ * and "Five words carry it", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "52649b533e7655a67d6b941475d6f8d669eefd911e4650e247eaaf8b19eaae2a";
+  "870843e22b18778df7f42228c02967279829011d9ddc4a9c56127056b8da26d7";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
