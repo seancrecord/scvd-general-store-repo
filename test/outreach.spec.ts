@@ -318,14 +318,15 @@ describe("the desk and its doors", () => {
     expect(text).toContain("Clear ALL stamps");
   });
 
-  it("lets a queue row be stamped sent without its card, and shows no wire button while the wire is paused", async () => {
+  it("works the unsent queue from the top: scout first, Gmail and the note on every row, one press stamps the ticked rows", async () => {
     /**
-     * 2026-09-05, the keeper: "how do I mark them done? I still see
-     * verify live & send." The stamps lived on the card; most rows on
-     * the unsent list sit below the render cap with no card at all,
-     * and the wire button on every row only declined while the pause
-     * stands. The row carries its own stamp now, and the wire button
-     * is not drawn while it cannot send.
+     * 2026-09-05, the keeper, three at once: the scout should be the
+     * first thing on the page; "open in mail" opened a desktop client
+     * he has never set up (he reads Gmail in a browser), so the note
+     * was invisible; and stamping 25 notes one by one is not a
+     * workflow. So: the bench is at the top, each row carries a Gmail
+     * compose link and the note itself, each row ticks into one stamp
+     * form, and the wire's buttons are not drawn while it is paused.
      */
     const { WIRE_PAUSED_SINCE } = await import("@/services/outreach");
     const hosts = Array.from({ length: 60 }, (_, i) =>
@@ -343,23 +344,48 @@ describe("the desk and its doors", () => {
       headers: { ...auth, Accept: "text/html" },
     });
     const text = await page.text();
+    // The bench, then the queue, then the prose — in that order.
+    expect(text.indexOf('action="/admin/outreach/scout"')).toBeLessThan(text.indexOf('id="unsent"'));
+    expect(text.indexOf('id="unsent"')).toBeLessThan(text.indexOf("Derived from round"));
     const unsent = text.slice(text.indexOf('id="unsent"'), text.indexOf("</section>", text.indexOf('id="unsent"')));
+    expect(unsent).toContain('id="stamp-many"');
+    expect(unsent).toContain('action="/admin/outreach/stamp-many"');
     const rows = unsent.split("<li>").slice(1);
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
-      expect(row).toContain('action="/admin/outreach/status"');
-      expect(row).toContain("mark sent — I delivered it myself");
+      expect(row).toContain('form="stamp-many"');
+      expect(row).toContain('name="host"');
+      expect(row).toContain("https://mail.google.com/mail/?view=cm");
+      expect(row).toContain("<textarea");
       if (WIRE_PAUSED_SINCE) expect(row).not.toContain('action="/admin/outreach/send"');
     }
-    // And the stamp the row posts is the one the ledger keeps.
-    const stamped = await SELF.fetch(`${BASE}/admin/outreach/status`, {
+    if (WIRE_PAUSED_SINCE) {
+      // Nowhere on the page, card or batch, is a wire button drawn.
+      expect(text).not.toContain('action="/admin/outreach/send"');
+      expect(text).not.toContain('action="/admin/outreach/send-all"');
+    }
+    // One press stamps every ticked row.
+    const stamped = await SELF.fetch(`${BASE}/admin/outreach/stamp-many`, {
       method: "POST",
       headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
-      body: "host=broken-59.example&status=sent",
+      body: "status=sent&host=broken-58.example&host=broken-59.example",
     });
     expect([200, 302]).toContain(stamped.status);
     const after = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.outreachLedger)) ?? "{}") as { hosts: Record<string, { status?: string }> };
+    expect(after.hosts["broken-58.example"]?.status).toBe("sent");
     expect(after.hosts["broken-59.example"]?.status).toBe("sent");
+    expect(after.hosts["broken-57.example"]?.status).toBeUndefined();
+    // And they have left the queue.
+    const again = await (await SELF.fetch(`${BASE}/admin/outreach`, { headers: { ...auth, Accept: "text/html" } })).text();
+    const unsentAgain = again.slice(again.indexOf('id="unsent"'), again.indexOf("</section>", again.indexOf('id="unsent"')));
+    expect(unsentAgain).not.toContain("ops@broken-59.example");
+    // Nothing ticked is a notice, not a write.
+    const empty = await SELF.fetch(`${BASE}/admin/outreach/stamp-many`, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+      body: "status=sent",
+    });
+    expect([200, 302]).toContain(empty.status);
   });
 
   it("renders the top of a big queue, never the whole of it", async () => {
@@ -454,9 +480,10 @@ describe("the desk and its doors", () => {
       headers: { ...auth, Accept: "text/html" },
     });
     const text = await page.text();
+    // The bench (scout) now sits ABOVE the queue; the prose is below it.
     const summary = text.slice(
       text.indexOf('<section id="unsent">'),
-      text.indexOf('action="/admin/outreach/scout"'),
+      text.indexOf("Derived from round"),
     );
 
     // It is at the top: before the cards, before the batch buttons.
@@ -478,7 +505,7 @@ describe("the desk and its doors", () => {
     // by hand always, and sent over the wire only while the wire can
     // send (2026-09-05 — a button that only declines is not drawn).
     const { WIRE_PAUSED_SINCE } = await import("@/services/outreach");
-    expect(summary).toContain('action="/admin/outreach/status"');
+    expect(summary).toContain('form="stamp-many"');
     if (WIRE_PAUSED_SINCE) {
       expect(summary).not.toContain('action="/admin/outreach/send"');
       expect(summary).toContain("The wire is paused");
@@ -537,22 +564,23 @@ describe("the desk and its doors", () => {
       headers: { ...auth, Accept: "text/html" },
     });
     const text = await page.text();
+    // The bench (scout) now sits ABOVE the queue; the prose is below it.
     const summary = text.slice(
       text.indexOf('<section id="unsent">'),
-      text.indexOf('action="/admin/outreach/scout"'),
+      text.indexOf("Derived from round"),
     );
     expect(summary).toContain("Ready doors — the welcome (1)");
     expect(summary).toContain("hello@ready.example");
     // The welcome list never offers the wire; the note list does.
     const readyList = summary.slice(summary.indexOf("Ready doors — the welcome"));
     expect(readyList).not.toContain('action="/admin/outreach/send"');
-    expect(readyList).toContain("open in mail — the welcome written");
+    expect(readyList).toContain("open in Gmail — the welcome written");
     expect(readyList).toContain('href="mailto:hello%40ready.example?subject=there%20is%20a%20dated%20page');
     expect(readyList).toContain('href="#card-ready.example"');
     // The card carries the contact and the same link.
     const card = text.slice(text.indexOf('<section id="card-ready.example">'));
     expect(card).toContain("contact: <code>mailto:hello@ready.example</code>");
-    expect(card).toContain("open in mail — the welcome already written");
+    expect(card).toContain("open in Gmail — the welcome already written");
     // And the scout button counts both queues as scouted now.
     expect(text).toContain("Scout contacts (0 unscouted");
   });

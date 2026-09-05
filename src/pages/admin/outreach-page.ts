@@ -1,6 +1,8 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import {
+  gmailComposeFor,
+  splitDraft,
   OUTREACH_STATUSES,
   WIRE_PAUSED_SINCE,
   contactEmail,
@@ -47,7 +49,7 @@ function contactsLine(entry: OutreachEntry | undefined): string {
  * link sends nothing itself — his client does, and then he stamps.
  */
 function handDeliverLink(email: string, draft: string, what: string): string {
-  return `<a href="${escapeHtml(mailtoFor(email, draft))}"><strong>open in mail — ${what} already written</strong></a> to ${escapeHtml(email)}<span class="menu-meta"> — your client sends it; stamp it below afterwards</span>`;
+  return `<a href="${escapeHtml(gmailComposeFor(email, draft))}" target="_blank" rel="noopener"><strong>open in Gmail — ${what} already written</strong></a> · <a href="${escapeHtml(mailtoFor(email, draft))}">mail app</a> to ${escapeHtml(email)}<span class="menu-meta"> — your client sends it; stamp it afterwards</span>`;
 }
 
 function prospectCard(
@@ -93,7 +95,11 @@ function prospectCard(
   // email contact exists and no note has ever gone out; the route
   // re-checks both, the button is just the honest surface of it.
   const wire =
-    email && entry?.status !== "sent" && entry?.status !== "replied"
+    email && entry?.status !== "sent" && entry?.status !== "replied" && WIRE_PAUSED_SINCE
+      ? // The wire is paused: its button would only decline, so the
+        // card shows the road that works and says why (2026-09-05).
+        `<span class="menu-meta">the wire is paused since ${escapeHtml(WIRE_PAUSED_SINCE)} — hand delivery only:</span><br>${handDeliverLink(email, draftNote(prospect, base), "the note")}`
+      : email && entry?.status !== "sent" && entry?.status !== "replied"
       ? `<form method="post" action="/admin/outreach/send" style="display:inline">
       <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
       <button type="submit"><strong>verify live &amp; send</strong> to ${escapeHtml(email)}</button>
@@ -258,7 +264,7 @@ function reachList(
         : "";
       const card = renderedHosts.has(host)
         ? ` · <a href="#card-${escapeHtml(host)}">the card</a>`
-        : ` · <span class="menu-meta">card below the render cap — JSON twin carries it</span>`;
+        : "";
       // While the wire is paused the button only declines, so it is
       // not rendered here: a button that cannot do its job is noise on
       // the one list the keeper works from.
@@ -268,25 +274,32 @@ function reachList(
       <button type="submit">verify live &amp; send</button>
     </form>`
         : "";
-      const deliver = ` · <a href="${escapeHtml(mailtoFor(email, draft))}"><strong>open in mail — ${opts.what} written</strong></a>`;
       /*
-       * THE STAMP ON THE ROW (2026-09-05). The keeper asked how to
-       * mark a note done: the stamps lived on the card, and most rows
-       * on this list sit below the render cap with no card at all. So
-       * the row carries its own stamp — the same form the card posts,
-       * for the one status a hand-delivered note earns.
+       * THE NOTE, READABLE HERE (2026-09-05). The keeper reads mail in
+       * a browser: a mailto: opened a desktop client he has never set
+       * up, and the note was invisible. So the row carries a Gmail
+       * compose link, the mail-app link for anyone else, and the note
+       * itself in a box he can read and copy without leaving the page.
        */
-      const mark = ` <form method="post" action="/admin/outreach/status" style="display:inline">
-      <input type="hidden" name="host" value="${escapeHtml(host)}">
-      <input type="hidden" name="status" value="sent">
-      <button type="submit">mark sent — I delivered it myself</button>
-    </form>`;
-      return `<li><strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${deliver}${mark}${card}${send}</li>`;
+      const { subject, body } = splitDraft(draft);
+      const deliver = ` · <a href="${escapeHtml(gmailComposeFor(email, draft))}" target="_blank" rel="noopener"><strong>open in Gmail — ${opts.what} written</strong></a> · <a href="${escapeHtml(mailtoFor(email, draft))}">mail app</a>`;
+      const note = `<details><summary>read the note</summary>
+      <p class="menu-meta">To: <code>${escapeHtml(email)}</code> · Subject: ${escapeHtml(subject)}</p>
+      <textarea readonly rows="12" style="width:100%;max-width:60em">${escapeHtml(body)}</textarea></details>`;
+      /*
+       * THE STAMP IS A CHECKBOX (2026-09-05). The keeper: "what if I
+       * do like 25+, then I have to one by one select them?" Each row
+       * ticks into the one stamp form at the head of this section; the
+       * `form` attribute keeps the row free of a nested form.
+       */
+      const tick = `<input type="checkbox" name="host" value="${escapeHtml(host)}" form="stamp-many" id="tick-${escapeHtml(host)}"> <label for="tick-${escapeHtml(host)}">sent</label> `;
+      return `<li>${tick}<strong>${escapeHtml(host)}</strong> — <code>${escapeHtml(email)}</code> · ${escapeHtml(reason)}${stamp}${deliver}${card}${send}${note}</li>`;
     })
     .join("\n");
   return `<h3>${title} (${rows.length}${rows.length > shown.length ? `, top ${shown.length} named` : ""})</h3>
-  <p class="menu-meta">The ${addresses.length} address${addresses.length === 1 ? "" : "es"}, comma-joined, to pull into one mail:</p>
+  <details><summary>The ${addresses.length} address${addresses.length === 1 ? "" : "es"}, comma-joined</summary>
   <p><code>${escapeHtml(addresses.join(", "))}</code></p>
+  <p class="menu-meta">For a roundup you write yourself. Every draft below names ONE door, so never paste one draft to this whole list.</p></details>
   <ol>${items}</ol>
   ${
     rows.length > shown.length
@@ -321,14 +334,20 @@ function unsentSummary(
   // One line, not wrapped: the counts are read at a glance, and a
   // phrase broken across source lines is a phrase nothing can find.
   const tail = `<p class="menu-meta">Also on the round: ${scoutedNoEmail} scouted door${scoutedNoEmail === 1 ? "" : "s"} that published no email (hand delivery only — copy the draft from the card), and ${unscouted} not scouted yet (press <em>Scout contacts</em> and they land here if they publish one).</p>`;
+  const stampForm = `<form id="stamp-many" method="post" action="/admin/outreach/stamp-many" style="display:inline">
+    <input type="hidden" name="status" value="sent">
+    <button type="submit"><strong>mark the ticked rows sent — I delivered them myself</strong></button>
+  </form>`;
   return `<section id="unsent">
   <h2>Scouted, with an email, not yet sent (${broken.length + ready.length})</h2>
   <p class="menu-desc">Every host here published an address and has never had a
   note from this desk — the same eligibility the wire enforces, in each
-  queue's own order. Each row opens your mail client with the right note
-  already written; send it, then press the row's own <em>mark sent</em> so it
-  leaves this queue.</p>
+  queue's own order. Work a row: <em>open in Gmail</em> puts the note in a
+  compose window (or <em>read the note</em> to copy it by hand), you send it,
+  you tick the row. Then one press below stamps every ticked row sent and
+  they leave this queue.</p>
   ${paused}
+  ${stampForm}
   ${reachList("Broken doors — the finding", broken, renderedHosts, {
     wire: true,
     what: "the note",
@@ -339,6 +358,7 @@ function unsentSummary(
     what: "the welcome",
     empty: "Nobody is waiting on the ready side: press Scout contacts if the ready doors have not been scouted yet.",
   })}
+  ${broken.length + ready.length > 0 ? `<p><button type="submit" form="stamp-many"><strong>mark the ticked rows sent — I delivered them myself</strong></button></p>` : ""}
   ${tail}</section>`;
 }
 
@@ -385,9 +405,22 @@ export function renderOutreachPage(
     ...workedShown.map((p) => p.host),
     ...welcomesShown.map((w) => w.host),
   ]);
+  /*
+   * THE BENCH IS AT THE TOP (2026-09-05). The keeper: the scout is
+   * the most important loading piece and should be easy to find. So
+   * the first thing under the title is the one button that fills the
+   * queue, then the queue itself; the prose about the wire and the
+   * ranking comes after the work, not before it.
+   */
   const body = `
   <h1>Outreach — the queue, drafted; the send, one press</h1>
   ${noticeBlock}
+  <section id="bench">
+  <form method="post" action="/admin/outreach/scout" style="display:inline">
+    <button type="submit"><strong>Scout contacts (${unscouted} unscouted, 25 per press)</strong></button>
+  </form>
+  <span class="menu-meta"> — reads each door's security.txt for a published address; a found address puts the door on the queue below.</span>
+  </section>
   ${unsentSummary(prospects, welcomes, ledger, renderedHosts, base)}
   <p class="menu-desc">Derived from round <strong>${escapeHtml(round.week)}</strong>:
   ${prospects.length} broken doors ranked by four named tiers (newly failing with a
@@ -404,19 +437,20 @@ export function renderOutreachPage(
   Clear-ALL leaves them alone. Cards without a published email keep the old
   flow: copy the draft, deliver by hand, stamp it.</p>
 
-  <form method="post" action="/admin/outreach/scout" style="display:inline">
-    <button type="submit">Scout contacts (${unscouted} unscouted, 25 per press)</button>
-  </form>
-  <form method="post" action="/admin/outreach/send-all" style="display:inline">
+  ${
+    WIRE_PAUSED_SINCE
+      ? `<p class="menu-meta">The batch wire ("verify &amp; send to all scouted") is not drawn while the wire is paused; it would decline every press. ${wireEligible} scouted door${wireEligible === 1 ? "" : "s"} with an email are on the queue above for hand delivery.</p>`
+      : `<form method="post" action="/admin/outreach/send-all" style="display:inline">
     <button type="submit"><strong>Verify &amp; send to all scouted</strong> (${wireEligible} with emails, ${wireEligible > 10 ? "10 per press" : "one press"})</button>
-  </form>
-  <form method="post" action="/admin/outreach/clear-statuses" style="display:inline">
-    <button type="submit">Clear ALL stamps (keeps contacts) — the mispress recovery</button>
   </form>
   <p class="menu-meta">The batch button walks the same wire as each card's own
   button: every host re-probed live at this press, healed doors skipped and
   marked fixed, one note per host ever. Ten per press so what you approve is a
-  list you can see; press again for the next ten.</p>
+  list you can see; press again for the next ten.</p>`
+  }
+  <form method="post" action="/admin/outreach/clear-statuses" style="display:inline">
+    <button type="submit">Clear ALL stamps (keeps contacts) — the mispress recovery</button>
+  </form>
 
   ${healedBlock}
 
