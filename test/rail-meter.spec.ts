@@ -4,7 +4,12 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { railOf, recordSettlement } from "@/lib/metrics";
 import { BASE_NETWORK, SOLANA_NETWORK } from "@/lib/payments";
 import { readRailCounters } from "@/services/rails";
-import { computeStats, storefrontLedgerLine } from "@/services/stats";
+import {
+  computeStats,
+  computeStatsDiagnosed,
+  RAILS_ENTERED_BY_HAND,
+  storefrontLedgerLine,
+} from "@/services/stats";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -224,6 +229,50 @@ describe("a sale from the single-rail weeks can only have been Base", () => {
     // the identical question.
     expect(inSingleRailWindow("2026-07")).toBe(true);
     expect(inSingleRailWindow("2026-08")).toBe(false);
+  });
+});
+
+describe("the sales placed from the chain by hand", () => {
+  const snapshot = {
+    base: 0,
+    solana: 0,
+    unknown: 0,
+    placed_before_second_rail: 0,
+    truncated: false,
+    computed_at: new Date().toISOString(),
+  };
+
+  it("fill the remainder the records left, so the front names no unplaced sale", async () => {
+    // Two organic settles the till counted in the rail month with no
+    // rail written — the 2026-08-07 pair — beside one the till placed.
+    const hand = RAILS_ENTERED_BY_HAND.base.length + RAILS_ENTERED_BY_HAND.polygon.length + RAILS_ENTERED_BY_HAND.solana.length;
+    await testEnv.COUNTERS.put("metric:2026-08:paid:hello", String(hand + 1));
+    await testEnv.COUNTERS.put("metric:2026-08:rail:solana", "1");
+    await testEnv.COUNTERS.put(KV_KEYS.railSplit, JSON.stringify(snapshot));
+
+    const { stats, hand_placements_unapplied } = await computeStatsDiagnosed(testEnv);
+    expect(hand_placements_unapplied).toBe(0);
+    expect(stats.organic_by_rail?.base).toBe(RAILS_ENTERED_BY_HAND.base.length);
+    expect(stats.organic_by_rail?.solana).toBe(1 + RAILS_ENTERED_BY_HAND.solana.length);
+    expect(stats.organic_by_rail?.rail_not_recorded).toBe(0);
+    expect(storefrontLedgerLine(stats)).not.toContain("before we logged the rail");
+  });
+
+  it("apply all together or not at all, and say so when the books cannot hold them", async () => {
+    // One organic settle, already placed by the till: nothing is left
+    // for a hand-placed sale to stand on, so none applies and the split
+    // stays honest instead of overshooting.
+    await testEnv.COUNTERS.put("metric:2026-08:paid:hello", "1");
+    await testEnv.COUNTERS.put("metric:2026-08:rail:base", "1");
+    await testEnv.COUNTERS.put(KV_KEYS.railSplit, JSON.stringify(snapshot));
+
+    const { stats, rail_overshoot, hand_placements_unapplied } = await computeStatsDiagnosed(testEnv);
+    expect(rail_overshoot).toBeNull();
+    expect(hand_placements_unapplied).toBe(
+      RAILS_ENTERED_BY_HAND.base.length + RAILS_ENTERED_BY_HAND.polygon.length + RAILS_ENTERED_BY_HAND.solana.length,
+    );
+    expect(stats.organic_by_rail?.base).toBe(1);
+    expect(stats.organic_by_rail?.rail_not_recorded).toBe(0);
   });
 });
 

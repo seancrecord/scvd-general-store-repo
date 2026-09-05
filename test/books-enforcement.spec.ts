@@ -41,18 +41,29 @@ describe("hand-entered rails are hashes or nothing", () => {
   it("derives the count from the evidence, so a bare number cannot exist", () => {
     // The shape IS the enforcement: adding a hand-placed sale without
     // its transaction hash is unrepresentable. These patterns hold
-    // whatever is added later; today both lists are honestly empty.
-    for (const hash of RAILS_ENTERED_BY_HAND.base) {
-      expect(hash, `base entry "${hash}" is not an EVM tx hash`).toMatch(
-        /^0x[0-9a-fA-F]{64}$/,
-      );
+    // whatever is added later; the count is the length of the list.
+    for (const entry of RAILS_ENTERED_BY_HAND.base) {
+      expect(entry.transactions.length, "a placed sale with no evidence").toBeGreaterThan(0);
+      expect(entry.why.length).toBeGreaterThan(20);
+      for (const hash of entry.transactions) {
+        expect(hash, `base entry "${hash}" is not an EVM tx hash`).toMatch(
+          /^0x[0-9a-fA-F]{64}$/,
+        );
+      }
     }
-    for (const signature of RAILS_ENTERED_BY_HAND.solana) {
-      expect(
-        signature,
-        `solana entry "${signature}" is not a base58 transaction signature`,
-      ).toMatch(/^[1-9A-HJ-NP-Za-km-z]{64,88}$/);
+    for (const entry of RAILS_ENTERED_BY_HAND.solana) {
+      expect(entry.transactions.length, "a placed sale with no evidence").toBeGreaterThan(0);
+      for (const signature of entry.transactions) {
+        expect(
+          signature,
+          `solana entry "${signature}" is not a base58 transaction signature`,
+        ).toMatch(/^[1-9A-HJ-NP-Za-km-z]{64,88}$/);
+      }
     }
+    // A hash is evidence for exactly one placed sale.
+    const all = [...RAILS_ENTERED_BY_HAND.base, ...RAILS_ENTERED_BY_HAND.polygon, ...RAILS_ENTERED_BY_HAND.solana]
+      .flatMap((entry) => entry.transactions.map((tx) => tx.toLowerCase()));
+    expect(new Set(all).size).toBe(all.length);
   });
 });
 

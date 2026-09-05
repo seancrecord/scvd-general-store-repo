@@ -136,7 +136,16 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   }
 
   // 2 & 3. The rail records against the organic count.
-  const { stats, rail_overshoot } = await computeStatsDiagnosed(env);
+  const { stats, rail_overshoot, hand_placements_unapplied } =
+    await computeStatsDiagnosed(env);
+  // A hand-placed sale that found no unplaced settle to stand on is a
+  // wrong placement — on a store that has organic sales at all. An
+  // empty store (every test store) trivially has nothing to place.
+  if (hand_placements_unapplied > 0 && stats.organic_settlements > 0) {
+    breaches.push(
+      `hand-placement-unapplied: RAILS_ENTERED_BY_HAND places ${hand_placements_unapplied} sale(s) by hash, but the books hold fewer organic settles without a rail than that. Either a placement names a sale the till never counted, or a record now places it too — the split leaves all of them out until a person reads the list against the chain.`,
+    );
+  }
   if (rail_overshoot) {
     breaches.push(
       `rail-overshoot: the rail records claim ${rail_overshoot.rail_total} organic sale(s) but the counters know ${rail_overshoot.organic}. The storefront is correctly refusing to print the split, and that refusal is this defect's only other witness.`,

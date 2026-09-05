@@ -1,0 +1,14 @@
+import type { Correction } from "./types";
+
+/** One entry of the corrections ledger. Add a file, run `npm run corrections:index`. */
+export const correction: Correction = {
+  date: "2026-09-05",
+  what_was_wrong:
+    "After the rail double-count was reversed, the storefront's ledger line read '2 from before we logged the rail' — two organic settles the books held with no chain against them. They were not new and they were not unknowable: two settles counted at the till between the Solana door opening (2026-08-04) and the till learning to write rails down (2026-08-07T21:16Z), with no certificate to carry a rail, exactly the closed set /stats had described since August. The reversal did not create them; it stopped two double-counted Solana entries from silently standing in for them. The store's own rule for that set was a chain read against the transaction hash, and nobody had done the read.",
+  how_long:
+    "The two settles have been unplaced in the books since 2026-08-07. The line was visible on the storefront for about an hour on 2026-09-05, between the rail-seam press and this placement; before that the double count hid it.",
+  found_by:
+    "The keeper, reading the front of the store and refusing the wording for the second time: 'we have already been through this.' The first time (2026-08-13) the unplaced sale was a July penny page, placed by the fact that Base was the only door then. This time both doors were open, so only the chain could place them.",
+  what_changed:
+    "The read was done. Every USDC transfer into the Base receiving wallet from 2026-08-01 to the rail meter's first tick was listed from the chain and matched against the certificate drawer. Exactly three outside payments in the window carry no certificate, all from one wallet, 0x42b3…029f, inside one minute on 2026-08-07: two of $0.005 (small_blessing's price, an item that mints a certificate — so two deliveries died after the money moved, the failure rule 9's settle-last ordering later closed) and one of $0.01 (a penny page's price, which mints none by design). The till counted two settles there; the books cannot say which two, and do not pretend to. Both placements are entered in RAILS_ENTERED_BY_HAND on Base with their transaction hashes as the evidence — the second entry cites both candidate hashes and says so — and the shape now allows exactly that: an entry is one placed sale carrying the hash or hashes that prove its chain, never a bare count. The storefront reads 25 on Base, 3 on Solana, and the remainder is zero. Not read: the Solana receiving wallet over the same window, because this session's network could not reach a Solana RPC; a certificate-less Solana payment in that window would mean one of these two placements is wrong, and the net statement's Solana inflow line is where it would show.",
+};
