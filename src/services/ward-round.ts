@@ -414,8 +414,22 @@ export interface WardRound {
       directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
     };
     started_at: string;
+    /** Batch values the assembly could not read back (2026-09-05); absent when none. */
+    batches_missing?: number;
   };
   hosts: WardHostResult[];
+  /**
+   * WHERE THE ROWS LIVE (2026-09-05). Each host's row carries its
+   * evidence, ~6 KB; a round of a few thousand hosts is tens of MB and
+   * KV holds 25 per value. So the stored round keeps `hosts: []` and
+   * names the R2 object holding the rows; latestWardRound and
+   * previousWardRound read it back whole, and a reader that takes the
+   * stored value raw (the heartbeat, the register) uses `hosts_count`.
+   * Absent on rounds sealed before the move and on a store with no
+   * bucket bound, where the rows stay inline as they always were.
+   */
+  hosts_r2_key?: string;
+  hosts_count?: number;
   /**
    * THE CROWD'S WALKS (2026-09-04): every bounty claim this store paid
    * inside this week — a stranger's real settlement at a listed door,
@@ -1395,12 +1409,13 @@ async function sealRound(
       previous_at: previous?.at ?? "",
     };
   }
-  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), JSON.stringify(round));
-  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  const stored = JSON.stringify(await storeRoundRows(env, round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), stored);
+  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, stored);
   if (previous && previous.week !== round.week) {
     await kvPut(env.COUNTERS, 
       KV_KEYS.wardRoundPrevious,
-      JSON.stringify(previous),
+      JSON.stringify(await storeRoundRows(env, previous)),
     );
   }
   /**
@@ -1535,9 +1550,9 @@ async function assembleWalkRound(
 ): Promise<WardRound> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const { presence, doors } = await ourSearchReading(env);
-  const walked = walk.results.filter(
-    (entry) => entry.verdict !== "not_probed",
-  ).length;
+  const { readWalkResults } = await import("@/services/long-walk");
+  const { rows, batches_missing } = await readWalkResults(env, walk);
+  const walked = rows.filter((entry) => entry.verdict !== "not_probed").length;
   const widened = await readWidenedSources(env, ownHost);
   const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
@@ -1590,8 +1605,8 @@ async function assembleWalkRound(
     capped: walk.cursor < walk.roster.length,
     our_search_presence: presence,
     our_doors: doors,
-    ...(catalogMeasured(walk.results)
-      ? { catalog_agreement: catalogAgreementOf(walk.results) }
+    ...(catalogMeasured(rows)
+      ? { catalog_agreement: catalogAgreementOf(rows) }
       : {}),
     leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
     leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
@@ -1620,8 +1635,9 @@ async function assembleWalkRound(
           }
         : {}),
       started_at: walk.started_at,
+      ...(batches_missing > 0 ? { batches_missing } : {}),
     },
-    hosts: walk.results,
+    hosts: rows,
   };
   return sealRound(env, round, walked, presence, walk.discovery_fields_seen);
 }
@@ -1641,7 +1657,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     if (
       walk &&
       walk.week === currentWeekKey() &&
-      walk.results.length > 0
+      (walk.results.length > 0 || (walk.result_batches ?? 0) > 0)
     ) {
       return await assembleWalkRound(env, walk);
     }
@@ -1821,12 +1837,46 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   return sealRound(env, round, walked, presence, fieldsSeen);
 }
 
+/** The R2 object holding one round's rows. */
+export function roundRowsKey(week: string): string {
+  return `ward/${week}/hosts.json`;
+}
+
+/**
+ * The shape a round takes in KV: rows in R2, a pointer and a count in
+ * their place. A round already stored that way keeps its pointer; a
+ * store with no bucket keeps the rows inline, as before the move.
+ */
+async function storeRoundRows(env: Env, round: WardRound): Promise<WardRound> {
+  if (round.hosts_r2_key) return { ...round, hosts: [] };
+  if (!env.CORPUS_R2) return round;
+  const key = roundRowsKey(round.week);
+  await env.CORPUS_R2.put(key, JSON.stringify(round.hosts));
+  return { ...round, hosts: [], hosts_r2_key: key, hosts_count: round.hosts.length };
+}
+
+/**
+ * A stored round, whole. A pointer whose object cannot be read is
+ * NULL, never a round with no hosts: "could not read" and "nobody
+ * walked" are different facts and every surface downstream treats
+ * null as the first (rule 52).
+ */
+export async function hydrateRound(env: Env, stored: WardRound | null): Promise<WardRound | null> {
+  if (!stored) return null;
+  if (!stored.hosts_r2_key) return stored;
+  const object = env.CORPUS_R2 ? await env.CORPUS_R2.get(stored.hosts_r2_key) : null;
+  if (!object) return null;
+  const hosts = (await object.json()) as WardHostResult[];
+  if (!Array.isArray(hosts)) return null;
+  return { ...stored, hosts };
+}
+
 export async function latestWardRound(env: Env): Promise<WardRound | null> {
-  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json");
+  return hydrateRound(env, await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json"));
 }
 
 export async function previousWardRound(env: Env): Promise<WardRound | null> {
-  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundPrevious, "json");
+  return hydrateRound(env, await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundPrevious, "json"));
 }
 
 export function wardDelta(

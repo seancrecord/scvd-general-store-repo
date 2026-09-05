@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { longWalkPass, readLongWalk } from "@/services/long-walk";
+import { longWalkPass, readLongWalk, readWalkResults } from "@/services/long-walk";
 import { readWellKnownStore } from "@/services/well-known-doors";
 import { wardDelta, type WardRound } from "@/services/ward-round";
 import { backfillDoorBank, readDoorBank } from "@/services/door-bank";
@@ -242,7 +242,7 @@ describe("walk before sweep, then walk what the sweep found", () => {
     // A host whose own file spoke keeps that record; the page does not overwrite it.
     expect(store.hosts["foreign.example"]).toMatchObject({ via: "x402", foreign: 1 });
     // Walked, with a real verdict, under its own word.
-    const walked = state.results.find((r) => r.host === "paged.example");
+    const walked = (await readWalkResults(testEnv, state)).rows.find((r) => r.host === "paged.example");
     expect(walked?.source).toBe("directory");
     expect(walked?.verdict).toBe("ready");
     expect(probed).toContain("https://paged.example/v1/pay");
@@ -267,7 +267,7 @@ describe("walk before sweep, then walk what the sweep found", () => {
     await longWalkPass(testEnv);
     await runWeek();
     const state = (await readLongWalk(testEnv))!;
-    const rows = state.results.filter((r) => r.source === "well-known");
+    const rows = (await readWalkResults(testEnv, state)).rows.filter((r) => r.source === "well-known");
     expect(rows.map((r) => r.host).sort()).toEqual(["api.hops.example", "declares.example"]);
     for (const row of rows) expect(row.verdict).toBe("ready");
     expect(probed).toContain("https://declares.example/api/pay");

@@ -7,9 +7,10 @@ import {
   appendDeclaredDoor,
   longWalkPass,
   readLongWalk,
+  readWalkResults,
   WALK_BATCH,
 } from "@/services/long-walk";
-import { runWardRound } from "@/services/ward-round";
+import { latestWardRound, runWardRound } from "@/services/ward-round";
 import {
   getCorpusEntry,
   listCorpus,
@@ -172,9 +173,8 @@ describe("the walk's three phases", () => {
     expect(probeCount).toBe(WALK_BATCH);
     const state = (await readLongWalk(testEnv))!;
     expect(state.cursor).toBe(WALK_BATCH);
-    expect(
-      state.results.filter((r) => r.verdict === "ready"),
-    ).toHaveLength(WALK_BATCH);
+    const { rows } = await readWalkResults(testEnv, state);
+    expect(rows.filter((r) => r.verdict === "ready")).toHaveLength(WALK_BATCH);
 
     // Two more firings finish the 250-door roster, then it idles.
     await longWalkPass(testEnv);
@@ -282,6 +282,17 @@ describe("the corpus graduates to R2", () => {
       cursor = listed.cursor;
     }
     const legacyEnv = { ...testEnv, CORPUS_R2: undefined } as Env;
+    /*
+     * The round above was sealed with the bucket bound, so its rows
+     * live in R2 and a store with no bucket cannot read it back — by
+     * design: null, never a round nobody walked (walk-storage.spec).
+     * A legacy store holds its rounds inline; give it one.
+     */
+    const whole = (await latestWardRound(testEnv))!;
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify({ ...whole, hosts_r2_key: undefined, hosts_count: undefined }),
+    );
     const pass = await takeCorpusSnapshot(legacyEnv, okCalendar);
     expect(pass.taken).toBe(true);
     const raw = (await testEnv.COUNTERS.get(

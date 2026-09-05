@@ -22,6 +22,7 @@ import {
   type WardVolumeClaim,
 } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
@@ -104,23 +105,24 @@ export const FEED_PAGES_PER_PASS = LONG_WALK_DISCOVERY_PAGE_CAP;
 export const FEED_MAX_PASSES = 24;
 
 /**
- * Doors the roster takes from the feed in one week. THE NEXT CEILING,
- * named before it binds: the walk's state is ONE KV value, and each
- * walked host carries its evidence (~6 KB median, 13 KB at p90) into
- * `results`, so at KV's 25 MB value limit the walk breaks somewhere
- * near 3,900 hosts — silently, on an hourly write, with Sunday
- * assembling whatever was written before it. 2,000 keeps a full week
- * of typical evidence near half that limit and a heavy week inside
- * it. Past this cap is not a bigger number either: it is results
- * stored per batch under their own keys and the round's hosts living
- * in R2 alone. Until then the state says when it bound, the census
- * still counts every host the feed named (`feed_hosts`), and the
- * hosts beyond the cap read as listed_not_walked in their histories
- * — a gap the record names, never a verdict it invents. Declared and
- * swept doors ride BEHIND this cap, never inside it: a host that
- * asked to be read is not crowded out by the feed's size.
+ * Doors the roster takes from the feed in one week. THE CEILING THIS
+ * WAS (2026-09-04): the walk's state was one KV value carrying every
+ * walked host's evidence, and would have failed near 3,900 hosts at
+ * KV's 25 MB value limit, silently, on an hourly write; 2,000 kept a
+ * heavy week inside it. THE MOVE (2026-09-05, "yes i agree with the
+ * two moves"): the rows live one value per batch and the sealed
+ * round's rows live in R2, so the state carries the roster, the
+ * cursor and the counts and nothing that grows with evidence. The
+ * ceiling now is the walk's own capacity — ~168 hourly firings of
+ * WALK_BATCH, ~16,800 knocks a week, shared with the sweep's
+ * SWEEP_ROSTER_CAP behind it. Ten thousand feed doors plus three
+ * thousand swept fits inside it with the reading passes to spare.
+ * The state still says when it bound (`roster_capped`), the census
+ * still counts every host the feed named (`feed_hosts`), and hosts
+ * beyond the cap read as listed_not_walked in their histories.
+ * Declared and swept doors ride BEHIND this cap, never inside it.
  */
-export const WALK_ROSTER_CAP = 2000;
+export const WALK_ROSTER_CAP = 10000;
 
 export interface LongWalkState {
   version: 1;
@@ -159,8 +161,17 @@ export interface LongWalkState {
   /** Probeable doors only; leaderboard-only rows are pre-recorded. */
   roster: WalkRosterEntry[];
   cursor: number;
+  /**
+   * Rows recorded WITHOUT a knock (leaderboard homepages) — small, and
+   * kept here. Probed rows live one value per batch under
+   * KV_KEYS.longWalkResults since 2026-09-05; readWalkResults joins the
+   * two. A state frozen before that still carries its probed rows here
+   * and is read the same way.
+   */
   results: WardHostResult[];
   batches: number;
+  /** Batch values written under KV_KEYS.longWalkResults; absent before the move. */
+  result_batches?: number;
   finished_at?: string;
   /** The well-known sweep over name-only hosts; absent on states frozen before it. */
   sweep?: SweepState;
@@ -195,6 +206,37 @@ export const SWEEP_BATCH = 100;
 const SWEEP_CONCURRENCY = 10;
 /** Swept doors the roster will take in one week; past it the sweep still reads and records, and says it capped. */
 export const SWEEP_ROSTER_CAP = 3000;
+
+/** Batch values outlive the week they belong to by this much, then go. */
+export const WALK_RESULTS_TTL_SECONDS = 21 * 24 * 3600;
+
+/**
+ * Every row the week's walk recorded: the state's own (unknocked)
+ * rows, then each batch in order. A batch the store no longer holds
+ * is COUNTED, never skipped in silence — Sunday's round says how many
+ * batches it could not read, so a short week reads as short.
+ */
+export async function readWalkResults(
+  env: Env,
+  state: LongWalkState,
+): Promise<{ rows: WardHostResult[]; batches_missing: number }> {
+  const count = state.result_batches ?? 0;
+  const keys = Array.from({ length: count }, (_, index) => KV_KEYS.longWalkResults(state.week, index));
+  const values = keys.length
+    ? await bulkGetJson<WardHostResult[]>(env.COUNTERS, keys)
+    : new Map<string, WardHostResult[] | null>();
+  const rows = [...state.results];
+  let missing = 0;
+  for (const key of keys) {
+    const batch = values.get(key);
+    if (!Array.isArray(batch)) {
+      missing += 1;
+      continue;
+    }
+    rows.push(...batch);
+  }
+  return { rows, batches_missing: missing };
+}
 
 export async function readLongWalk(env: Env): Promise<LongWalkState | null> {
   return kvGetJson<LongWalkState>(env.COUNTERS, KV_KEYS.longWalkState, "json");
@@ -592,7 +634,13 @@ async function walkBatch(env: Env, state: LongWalkState): Promise<WalkPass> {
       ...probe,
     } satisfies WardHostResult;
   });
-  state.results.push(...probed);
+  // The batch's evidence goes under its own key, never into the state:
+  // the state is written every hour and must stay small at any scale.
+  const batchIndex = state.result_batches ?? 0;
+  await kvPut(env.COUNTERS, KV_KEYS.longWalkResults(state.week, batchIndex), JSON.stringify(probed), {
+    expirationTtl: WALK_RESULTS_TTL_SECONDS,
+  });
+  state.result_batches = batchIndex + 1;
   state.cursor += slice.length;
   state.batches += 1;
   const sweepDone = !state.sweep || state.sweep.cursor >= state.sweep.hosts.length;

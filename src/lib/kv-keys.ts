@@ -123,11 +123,24 @@ export const KV_KEYS = {
    * week's roster, cursor, and accumulated results. ONE key, holding
    * its own week — a new week's first pass overwrites it, so there is
    * no per-week key litter and no previous-week arithmetic to get
-   * wrong. At full-universe scale this value runs a few megabytes,
-   * comfortably inside KV's 25 MB value ceiling; the SNAPSHOTS it
-   * produces are what graduated to R2, not the working state.
+   * wrong. Since 2026-09-05 it holds the roster, the cursor and the
+   * counts only — the probed rows live one value per batch below —
+   * so it stays a few hundred KB at any roster size this walk can
+   * cover in a week.
    */
   longWalkState: "long_walk_state",
+  /**
+   * THE WALK'S EVIDENCE, ONE VALUE PER BATCH (2026-09-05). The state
+   * above used to carry every probed host's evidence — ~6 KB a host —
+   * and would have hit KV's 25 MB value ceiling near 3,900 hosts, on
+   * an hourly write, silently. Each batch now lands under its own
+   * key; the state keeps the roster, the cursor and the counts; Sunday
+   * reads the batches back in order. Keys expire on their own a few
+   * weeks on, so a week that never assembled does not pile up.
+   */
+  longWalkResults: (week: string, batch: number): string =>
+    `long_walk_results:${week}:${String(batch).padStart(4, "0")}`,
+  longWalkResultsPrefix: "long_walk_results:",
   /**
    * WHAT HOSTS DECLARE ABOUT THEMSELVES (2026-09-04): the doors each
    * host's own /.well-known/x402 (or agent-card pointer) named, keyed

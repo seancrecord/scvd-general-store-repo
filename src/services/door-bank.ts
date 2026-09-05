@@ -140,9 +140,12 @@ export async function backfillDoorBank(env: Env): Promise<{
   let evicted = 0;
   // One bulk read for every stored round — the audit's per-key law
   // holds here too, and the merge only needs the values in week order.
-  const rounds = await bulkGetJson<WardRound>(env.COUNTERS, weekKeys);
+  const stored = await bulkGetJson<WardRound>(env.COUNTERS, weekKeys);
+  const { hydrateRound } = await import("@/services/ward-round");
   for (const key of weekKeys) {
-    const round = rounds.get(key);
+    // Rows live in R2 since 2026-09-05; a round whose rows cannot be
+    // read is skipped as unread, never folded in as "named nobody".
+    const round = await hydrateRound(env, stored.get(key) ?? null);
     if (!round?.week || !Array.isArray(round.hosts)) continue;
     roundsRead += 1;
     const declared = round.hosts

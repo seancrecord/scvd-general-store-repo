@@ -198,6 +198,26 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
+  moves").** A week's evidence lived in ONE KV value (the walk
+  state) and the sealed round in three more, each carrying every
+  row's evidence at ~6 KB a host against KV's 25 MB a value — a
+  ceiling near 3,900 hosts that lane C could have reached next
+  week. Now: each walked batch lands under its own key
+  (`long_walk_results:{week}:{n}`, expiring three weeks on) and the
+  state keeps the roster, the cursor and the counts; Sunday reads
+  the batches back in order and the round says `walk.batches_missing`
+  if one could not be read. The sealed round keeps its rows in R2
+  (`ward/{week}/hosts.json`) with a pointer and `hosts_count` in KV;
+  `latestWardRound` returns it whole, the heartbeat reads the count
+  off the pointer, and a pointer whose object is gone reads as NULL,
+  never as a round nobody walked. A store with no bucket keeps rows
+  inline as before. `WALK_ROSTER_CAP` raised 2,000 → 10,000; the
+  ceiling now is the walk's own ~16,800 knocks a week.
+  YOUR PRESS: none. The first round sealed after deploy is the first
+  in the new shape; `/admin/ward` and `/corpus/latest.json` should
+  read exactly as before.
+
 - ⚑ **LANE C — THE DIRECTORY'S PAGE FOR A HOST (2026-09-05, "i added
   you access for fuchss").** The sweep read each name-only host's own
   `/.well-known/x402`; most hosts serve none, and the register kept
