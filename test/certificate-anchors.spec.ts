@@ -39,16 +39,21 @@ function network(overrides: {
 } = {}): typeof fetch {
   return (async (input: RequestInfo | URL) => {
     const url = String(input);
-    if (url.endsWith("/digest")) return new Response(pendingProofBytes());
-    if (url.includes("/timestamp/")) {
+    // Dispatch on the parsed origin and path, never on a substring of
+    // the string: a prefix match on a host is the sanitization hole
+    // CodeQL rightly flags, even in a mock.
+    const parsed = new URL(url);
+    const path = parsed.pathname;
+    if (path.endsWith("/digest")) return new Response(pendingProofBytes());
+    if (path.startsWith("/timestamp/")) {
       return overrides.upgrade
         ? overrides.upgrade()
         : new Response(bitcoinProofBytes(HEIGHT));
     }
-    if (url.startsWith(EXPLORER)) {
+    if (parsed.origin === EXPLORER) {
       if (overrides.explorer) return overrides.explorer(url);
-      if (url.includes("/api/block-height/")) return new Response(BLOCK_HASH);
-      if (url.includes("/api/block/")) {
+      if (path.startsWith("/api/block-height/")) return new Response(BLOCK_HASH);
+      if (path.startsWith("/api/block/")) {
         return new Response(
           JSON.stringify({ height: HEIGHT, timestamp: BLOCK_TIME_UNIX }),
         );
@@ -127,7 +132,7 @@ describe("the block-time lookup", () => {
     const time = await lookupBlockTime(HEIGHT, {
       fetch: network({
         explorer: (url) =>
-          url.includes("/api/block/")
+          new URL(url).pathname.startsWith("/api/block/")
             ? new Response(JSON.stringify({ height: HEIGHT + 1, timestamp: 1 }))
             : new Response(BLOCK_HASH),
       }),
