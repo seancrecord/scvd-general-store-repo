@@ -1,6 +1,9 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import buySource from "../src/routes/buy.ts?raw";
+// The refusals before the gate moved to routes/door-checks.ts
+// (2026-09-05, the doors Worker); their source is read beside buy.ts.
+import doorChecksSource from "../src/routes/door-checks.ts?raw";
 /**
  * THE LAW MOVED, SO THE GUARD FOLLOWED IT (2026-09-04). Every
  * argument-shaped refusal that used to be spelled out in
@@ -121,7 +124,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
      * and any object literal the shared law grew instead of going
      * through refuse() has to answer here too.
      */
-    const source = `${buySource}\n${lawSource}`;
+    const source = `${buySource}\n${doorChecksSource}\n${lawSource}`;
     const marker = /return c\.json\(\s*\{/g;
     let match: RegExpExecArray | null;
     while ((match = marker.exec(source)) !== null) {
@@ -155,7 +158,7 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
   });
 
   it("gives every one of them a code from the published set", () => {
-    const codes = [...`${buySource}\n${deliveryFailedSource}`.matchAll(/code: "([a-z_]+)"/g)].map(
+    const codes = [...`${buySource}\n${doorChecksSource}\n${deliveryFailedSource}`.matchAll(/code: "([a-z_]+)"/g)].map(
       (match) => match[1]!,
     );
     expect(codes.length).toBeGreaterThan(3);

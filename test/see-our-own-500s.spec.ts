@@ -56,10 +56,12 @@ describe("a 500 leaves a trace that outlives the request", () => {
      * The recorder's own behaviour is exercised for real in the tests
      * below. An assertion this file cannot make is left unmade.
      */
+    // The handler moved to lib/edge.ts (2026-09-05, the doors Worker)
+    // so both Workers fall off the same shelf; index.ts registers it.
     const source = (
-      await import("../src/index.ts?raw")
+      await import("../src/lib/edge.ts?raw")
     ).default as unknown as string;
-    const handler = source.slice(source.indexOf("app.onError"));
+    const handler = source.slice(source.indexOf("export const edgeOnError"));
     expect(handler).toContain("recordServerError");
     expect(handler).toContain("sendAlert");
     // Deferred, or the visitor waits on our bookkeeping about their

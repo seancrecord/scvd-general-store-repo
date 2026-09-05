@@ -120,6 +120,17 @@ jobs:
       # ships.
       - name: Build
         run: npm run build:check
+      # THE COST OF STARTING IT (2026-09-05, the x402-list night read).
+      # The same bundle, started in the real workerd, timed from spawn
+      # to open port against a script that does nothing: compile plus
+      # top-level evaluation, the half of a cold start that is ours.
+      # Printed on every run so a pull request that adds a hundred
+      # kilobytes shows what it costs the first knock, and a diet
+      # shows what it saved, before either meets a colo. A reading,
+      # never a gate: it fails only if the Worker will not start,
+      # which the build step above already catches for the same reason.
+      - name: The cost of starting it
+        run: npm run cold:local
 
   # THE RED LIGHT THAT TELLS SOMEBODY (2026-08-07, the keeper's ask for
   # enforcement that costs him nothing per push). main sat red for two

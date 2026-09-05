@@ -72,7 +72,7 @@ import {
 import {
   certIdForSettlement,
   recordDeliveredSettlement,
-} from "@/services/chain-reconciliation";
+} from "@/services/settlement-records";
 import {
   signedOffersForChallenge,
   withReceiptHeader,
@@ -651,7 +651,15 @@ export const PAYMENT_HEADER_V1_ALIAS = "X-PAYMENT";
  * looked dialect-aware. So there is exactly one reader now, and
  * test/no-bare-payment-header.spec.ts fails if a second appears.
  */
-function paymentHeaderOf(c: Context<HonoEnv>): string | undefined {
+/**
+ * The one reading of "did this knock carry a payment" — v2's header
+ * first, v1's alias second. Exported (2026-09-05) because the doors
+ * Worker (src/doors.ts) hands every knock that carries one to the
+ * store before any check runs, and it must decide that on exactly the
+ * terms the gate does: the same two names, the same `??`, the same
+ * truthiness. A second reading would be a second opinion.
+ */
+export function paymentHeaderOf(c: Context<HonoEnv>): string | undefined {
   return c.req.header(PAYMENT_HEADER) ?? c.req.header(PAYMENT_HEADER_V1_ALIAS);
 }
 

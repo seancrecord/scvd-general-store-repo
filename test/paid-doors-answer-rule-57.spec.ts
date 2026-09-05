@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import BUY_SOURCE from "../src/routes/buy.ts?raw";
+// The refusals before the gate moved to routes/door-checks.ts
+// (2026-09-05, the doors Worker); the codes they send are read there.
+import DOOR_CHECKS_SOURCE from "../src/routes/door-checks.ts?raw";
 /**
  * THE LAW MOVED (2026-09-04): every argument-shaped refusal the buy
  * doors emit is built in lib/purchase-args.ts now, for the HTTP and
@@ -78,7 +81,7 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
-    ...[...`${BUY_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
+    ...[...`${BUY_SOURCE}\n${DOOR_CHECKS_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
     // The shared law's refuse(status, code, sentence) builder.
     ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
       (match) => match[1]!,
