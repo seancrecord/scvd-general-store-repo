@@ -82,3 +82,28 @@ describe("payer address case", () => {
     expect(KV_KEYS.payer("0xABC")).toBe("payer:0xabc");
   });
 });
+
+describe("the rail-seam repair door", () => {
+  it("refuses a body that names no transactions", async () => {
+    for (const body of ["{}", '{"transactions": []}', '{"transactions": "5abc"}', "not json"]) {
+      const response = await SELF.fetch(`${BASE}/admin/repair/rail-seam`, {
+        method: "POST",
+        headers: { ...AUTH, "Content-Type": "application/json" },
+        body,
+      });
+      expect(response.status).toBe(400);
+    }
+  });
+
+  it("answers a well-formed press with what it reversed and what it refused", async () => {
+    const response = await SELF.fetch(`${BASE}/admin/repair/rail-seam`, {
+      method: "POST",
+      headers: { ...AUTH, "Content-Type": "application/json" },
+      body: JSON.stringify({ transactions: ["5nosuchsettle"] }),
+    });
+    expect(response.status).toBe(200);
+    const result = (await response.json()) as { reversed: unknown[]; refused: Array<{ transaction: string }> };
+    expect(result.reversed).toEqual([]);
+    expect(result.refused.map((entry) => entry.transaction)).toEqual(["5nosuchsettle"]);
+  });
+});

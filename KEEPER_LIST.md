@@ -49,7 +49,21 @@ build, it is on the roadmap.
   moved: counters-vs-rows is a desk reading of three floors,
   and what pages is a certificate carrying a payer and a
   transaction the books never recorded. PRESS again once
-  deployed, then read the books check. RULED 2: the verify-failure
+  deployed, then read the books check. THEN, THE SAME
+  EVENING: the first press bumped the till's August Solana
+  rail counter for both 2026-08-05 settles, and both
+  certificates predate the rail-meter seam the certificate
+  walk already counts up to — the storefront read 5 on
+  Solana for 3. The rebook now leaves the rail count to the
+  walk before the seam (the settle and the money still
+  book). PRESS once deployed: `POST /admin/repair/rail-seam`
+  with `{"transactions": [...]}` — the transaction half of
+  each `counters_rebooked` entry from the payer-settles
+  press. It checks every transaction against its certificate
+  before a counter moves and refuses the rest with reasons;
+  a second press is a no-op. Then read /rails: Solana should
+  fall by two and rail_not_recorded rise by two. Corrections
+  entry on the ledger. RULED 2: the verify-failure
   classifier fixed both ways — a facilitator verdict wearing
   a 4xx books under the facilitator's own reason, and a bare
   401/403/429 books as `upstream_auth`, the emergency.
