@@ -26,6 +26,24 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **TEST — the cold canary (09-05).** The night of 09-04/05
+  was eight hours of 1,000ms+ x402-list checks with no deploy
+  inside them; the cost is the 3.5 MB script's cold start, not
+  the 402 path (research/x402-list-latency-2026-09-05.md).
+  Whether a bundle diet is worth its risk turns on one number
+  nobody can read from inside: our script's share of that
+  start, Cloudflare's floor subtracted. Deploy the instrument
+  by your hand — `npx wrangler deploy -c canary/wrangler.jsonc`
+  — then, right after the next store deploy, run
+  `npm run cold:read -- --url=https://scvd.store/api/buy/hello
+  --url=https://scvd-cold-canary.<account>.workers.dev/`.
+  Store penalty minus canary penalty is the figure; under
+  200ms and the diet is not worth it. LOOK, the next quiet
+  night: Workers Logs, filter `cold:true`, and read what the
+  prober's own knocks met. The cold read also runs itself
+  after every push to main (`.github/workflows/cold-read.yml`,
+  artifact kept 90 days).
+
 - **CV's four rounds, 2026-09-04, "give me my decisions with
   drafts."** Six on the desk, ruled the same evening. RULED
   1: payer purchases are derived — one lossless record per

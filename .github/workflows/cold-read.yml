@@ -1,0 +1,72 @@
+# The cold read, taken after every deploy (2026-09-05, the x402-list
+# night read; research/x402-list-latency-2026-09-05.md).
+#
+# Every deploy evicts every isolate, and the first knock each colo
+# then serves pays for the script to be fetched, compiled and
+# evaluated before a line of ours runs. No dashboard reports that
+# figure — Workers Logs start their clock after the isolate exists —
+# so it is read from outside, by scripts/cold-read.mjs, from a runner
+# that knocks once cold and then warm on the same socket. The
+# directory that scores this store knocks on every paid door at once,
+# so the same run fires that burst and counts the cold isolates it
+# wakes.
+#
+# A READING, NEVER A GATE. The run is green whenever the door
+# answered; a slow cold start is a fact to keep for ninety days and
+# compare against the next one, not a red build. Push to main is the
+# deploy signal (the Worker is a git-connected build); the run waits
+# for the build to land and the reading says whether it had — an
+# isolate older than the push is the old script, and the line says
+# NOT YET.
+name: The cold read
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "A door to read (a second --url can be the canary)"
+        required: false
+        default: "https://scvd.store/api/buy/hello"
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # NO `npm ci`, DELIBERATELY: the reader and its tests use Node
+      # builtins and nothing else. A job that pulls a thousand packages
+      # to time one HTTPS request is a supply-chain event per deploy.
+      - name: The reader's own tests
+        run: npm run cold:test
+      # Workers Builds takes a few minutes from push to live. Read too
+      # early and the isolate that answers predates the push; the
+      # reading marks that (NOT YET) rather than pretending.
+      - name: Wait for the build to land
+        if: github.event_name == 'push'
+        run: sleep 300
+      - name: Read the door cold, then warm, then the shelf at once
+        shell: bash
+        env:
+          SINCE: ${{ github.event.head_commit.timestamp }}
+          URL: ${{ github.event.inputs.url || 'https://scvd.store/api/buy/hello' }}
+        run: |
+          set -o pipefail
+          npm run cold:read -- --url="$URL" --burst ${SINCE:+--since=$SINCE} | tee cold-reading.txt
+          npm run cold:read -- --url="$URL" --burst --warm=0 --json > cold-reading.json || true
+      - name: Keep the reading
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cold-reading
+          path: |
+            cold-reading.txt
+            cold-reading.json
+          retention-days: 90

@@ -300,10 +300,41 @@ app.use("*", async (c, next) => {
       c.res = new Response(c.res.body, { status: c.res.status, headers });
     }
   }
+  const isolateAgeSeconds = Math.round((startedAt - isolateBornAt) / 1000);
+  const requestWallMs = Date.now() - startedAt;
   c.res.headers.set(
     "Server-Timing",
-    `isolate;desc=${coldIsolate ? "cold" : "warm"}, age;dur=${Math.round((startedAt - isolateBornAt) / 1000)}, req;dur=${Date.now() - startedAt}`,
+    `isolate;desc=${coldIsolate ? "cold" : "warm"}, age;dur=${isolateAgeSeconds}, req;dur=${requestWallMs}`,
   );
+  /*
+   * AND THE LOG SAYS THE SAME (2026-09-05, the x402-list night read).
+   * The header answers whoever knocked; it says nothing to the keeper
+   * about the knocks he did not make. The night of 09-04/05 was eight
+   * hours of 1,000ms+ checks with no deploy inside them, and the only
+   * way to read what the prober's own requests met was a per-request
+   * line in Workers Logs (observability, wrangler.jsonc) that carries
+   * the cold marker. One JSON line per request, so the Logs filter
+   * `cold:true` or `ua:x402` finds the exact knocks. Never awaited,
+   * never thrown: a lost log line is a smaller lie than a slow door
+   * (test/telemetry-never-costs-the-answer.spec.ts). The query string
+   * stays out; it can carry a buyer's payload.
+   */
+  try {
+    console.log(
+      JSON.stringify({
+        knock: 1,
+        cold: coldIsolate,
+        age: isolateAgeSeconds,
+        req: requestWallMs,
+        method,
+        path: url.pathname,
+        status: c.res.status,
+        ua: (c.req.header("User-Agent") ?? "").slice(0, 120),
+      }),
+    );
+  } catch {
+    // The log is bookkeeping; the answer has already left.
+  }
   /*
    * AND THE CACHE IS TOLD. Every negotiated route reads the Accept
    * header and, since the same day, the User-Agent; forty-five of
