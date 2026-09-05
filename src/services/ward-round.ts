@@ -168,8 +168,12 @@ export interface WardHostResult {
    * feed gave this host a door; the host's OWN /.well-known/x402
    * declared it. Real verdict, out of the delta for the same reason —
    * a host declaring itself is not a directory listing or dropping it.
+   * "directory" (2026-09-05, lane C): no feed gave this host a door
+   * and its own file declared none; the name directory's page for the
+   * host listed a path. Real verdict, out of the delta and out of the
+   * door bank — a feed's page for one host, not the discovery feed.
    */
-  source?: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
+  source?: "discovery" | "leaderboard" | "both" | "revisit" | "well-known" | "directory";
   /**
    * RAW EVIDENCE (roadmap 1.2, B9/G1): the verbatim PAYMENT-REQUIRED
    * bytes, curated headers, and a bounded complete-body sha256 from
@@ -268,6 +272,18 @@ export interface OurDoors {
   unknown?: string[];
   /** The search could not be read: a gap in our vantage, never a miss. */
   could_not_check: boolean;
+}
+
+/**
+ * Did a FEED name this host this round? The listed/gone delta, the
+ * catalog column and the door bank are all questions about the
+ * discovery feed's word; a revisit, a host's own file and the name
+ * directory's page all carry real verdicts and are none of them a
+ * listing. One predicate, so a fourth off-feed source cannot be
+ * forgotten in one of five filters.
+ */
+export function namedByFeed(source: string | undefined): boolean {
+  return source !== "revisit" && source !== "well-known" && source !== "directory";
 }
 
 export interface WardRound {
@@ -394,10 +410,26 @@ export interface WardRound {
       doors_added: number;
       capped: boolean;
       source_unreadable: boolean;
+      /** Lane C (2026-09-05): the directory's page, read where the host's own file gave no door. */
+      directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
     };
     started_at: string;
+    /** Batch values the assembly could not read back (2026-09-05); absent when none. */
+    batches_missing?: number;
   };
   hosts: WardHostResult[];
+  /**
+   * WHERE THE ROWS LIVE (2026-09-05). Each host's row carries its
+   * evidence, ~6 KB; a round of a few thousand hosts is tens of MB and
+   * KV holds 25 per value. So the stored round keeps `hosts: []` and
+   * names the R2 object holding the rows; latestWardRound and
+   * previousWardRound read it back whole, and a reader that takes the
+   * stored value raw (the heartbeat, the register) uses `hosts_count`.
+   * Absent on rounds sealed before the move and on a store with no
+   * bucket bound, where the rows stay inline as they always were.
+   */
+  hosts_r2_key?: string;
+  hosts_count?: number;
   /**
    * THE CROWD'S WALKS (2026-09-04): every bounty claim this store paid
    * inside this week — a stranger's real settlement at a listed door,
@@ -1377,12 +1409,13 @@ async function sealRound(
       previous_at: previous?.at ?? "",
     };
   }
-  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), JSON.stringify(round));
-  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  const stored = JSON.stringify(await storeRoundRows(env, round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), stored);
+  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, stored);
   if (previous && previous.week !== round.week) {
     await kvPut(env.COUNTERS, 
       KV_KEYS.wardRoundPrevious,
-      JSON.stringify(previous),
+      JSON.stringify(await storeRoundRows(env, previous)),
     );
   }
   /**
@@ -1517,9 +1550,9 @@ async function assembleWalkRound(
 ): Promise<WardRound> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const { presence, doors } = await ourSearchReading(env);
-  const walked = walk.results.filter(
-    (entry) => entry.verdict !== "not_probed",
-  ).length;
+  const { readWalkResults } = await import("@/services/long-walk");
+  const { rows, batches_missing } = await readWalkResults(env, walk);
+  const walked = rows.filter((entry) => entry.verdict !== "not_probed").length;
   const widened = await readWidenedSources(env, ownHost);
   const wellKnownStore = await (await import("@/services/well-known-doors")).readWellKnownStore(env);
   const sources: SourceResult[] = [
@@ -1533,7 +1566,7 @@ async function assembleWalkRound(
       hosts: walk.coverage_suspect
         ? null
         : (walk.feed_hosts ??
-          walk.roster.filter((entry) => entry.source !== "well-known").map((entry) => entry.host)),
+          walk.roster.filter((entry) => namedByFeed(entry.source)).map((entry) => entry.host)),
       ...(walk.coverage_suspect
         ? { why: shortfallOf(walk.discovery_read?.stop) ?? "capped" }
         : {}),
@@ -1552,7 +1585,10 @@ async function assembleWalkRound(
      */
     {
       source: "well-known",
-      hosts: (await import("@/services/well-known-doors")).rosterDoorsFrom(wellKnownStore).map((d) => d.host),
+      hosts: (await import("@/services/well-known-doors"))
+        .rosterDoorsFrom(wellKnownStore)
+        .filter((d) => d.via !== "directory")
+        .map((d) => d.host),
     },
   ];
   const population = await takeCensus(env, sources, walked).catch(() => null);
@@ -1569,8 +1605,8 @@ async function assembleWalkRound(
     capped: walk.cursor < walk.roster.length,
     our_search_presence: presence,
     our_doors: doors,
-    ...(catalogMeasured(walk.results)
-      ? { catalog_agreement: catalogAgreementOf(walk.results) }
+    ...(catalogMeasured(rows)
+      ? { catalog_agreement: catalogAgreementOf(rows) }
       : {}),
     leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
     leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
@@ -1594,12 +1630,14 @@ async function assembleWalkRound(
               doors_added: walk.sweep.doors_added,
               capped: walk.sweep.capped,
               source_unreadable: walk.sweep.source_unreadable,
+              ...(walk.sweep.directory ? { directory: walk.sweep.directory } : {}),
             },
           }
         : {}),
       started_at: walk.started_at,
+      ...(batches_missing > 0 ? { batches_missing } : {}),
     },
-    hosts: walk.results,
+    hosts: rows,
   };
   return sealRound(env, round, walked, presence, walk.discovery_fields_seen);
 }
@@ -1619,7 +1657,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     if (
       walk &&
       walk.week === currentWeekKey() &&
-      walk.results.length > 0
+      (walk.results.length > 0 || (walk.result_batches ?? 0) > 0)
     ) {
       return await assembleWalkRound(env, walk);
     }
@@ -1693,7 +1731,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   const walkList: {
     host: string;
     url: string;
-    source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
+    source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known" | "directory";
     catalog?: CatalogTerms | null;
   }[] = [
     ...probeList.slice(0, WARD_CAP),
@@ -1709,7 +1747,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
         : await probeHost(env, entry.url, {
             // A revisit is a door no index row named this round; the
             // catalog column says so rather than comparing nothing.
-            listed: entry.source !== "revisit" && entry.source !== "well-known",
+            listed: namedByFeed(entry.source),
             terms: entry.catalog ?? null,
           });
     return {
@@ -1799,12 +1837,46 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   return sealRound(env, round, walked, presence, fieldsSeen);
 }
 
+/** The R2 object holding one round's rows. */
+export function roundRowsKey(week: string): string {
+  return `ward/${week}/hosts.json`;
+}
+
+/**
+ * The shape a round takes in KV: rows in R2, a pointer and a count in
+ * their place. A round already stored that way keeps its pointer; a
+ * store with no bucket keeps the rows inline, as before the move.
+ */
+async function storeRoundRows(env: Env, round: WardRound): Promise<WardRound> {
+  if (round.hosts_r2_key) return { ...round, hosts: [] };
+  if (!env.CORPUS_R2) return round;
+  const key = roundRowsKey(round.week);
+  await env.CORPUS_R2.put(key, JSON.stringify(round.hosts));
+  return { ...round, hosts: [], hosts_r2_key: key, hosts_count: round.hosts.length };
+}
+
+/**
+ * A stored round, whole. A pointer whose object cannot be read is
+ * NULL, never a round with no hosts: "could not read" and "nobody
+ * walked" are different facts and every surface downstream treats
+ * null as the first (rule 52).
+ */
+export async function hydrateRound(env: Env, stored: WardRound | null): Promise<WardRound | null> {
+  if (!stored) return null;
+  if (!stored.hosts_r2_key) return stored;
+  const object = env.CORPUS_R2 ? await env.CORPUS_R2.get(stored.hosts_r2_key) : null;
+  if (!object) return null;
+  const hosts = (await object.json()) as WardHostResult[];
+  if (!Array.isArray(hosts)) return null;
+  return { ...stored, hosts };
+}
+
 export async function latestWardRound(env: Env): Promise<WardRound | null> {
-  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json");
+  return hydrateRound(env, await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json"));
 }
 
 export async function previousWardRound(env: Env): Promise<WardRound | null> {
-  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundPrevious, "json");
+  return hydrateRound(env, await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundPrevious, "json"));
 }
 
 export function wardDelta(
@@ -1814,7 +1886,7 @@ export function wardDelta(
   if (!previous) {
     return {
       new_hosts: current.hosts
-        .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+        .filter((entry) => namedByFeed(entry.source))
         .map((entry) => entry.host),
       gone_hosts: [],
       newly_failing: [],
@@ -1834,12 +1906,12 @@ export function wardDelta(
    */
   const listedBefore = new Set(
     previous.hosts
-      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+      .filter((entry) => namedByFeed(entry.source))
       .map((entry) => entry.host),
   );
   const listedAfter = new Set(
     current.hosts
-      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+      .filter((entry) => namedByFeed(entry.source))
       .map((entry) => entry.host),
   );
   const delta: WardDelta = {

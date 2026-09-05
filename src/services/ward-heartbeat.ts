@@ -105,7 +105,9 @@ export function roundWrote(
 ): NonNullable<Heartbeat["newest_wrote"]> {
   const perSource = round.population?.per_source ?? [];
   return {
-    hosts: Array.isArray(round.hosts) ? round.hosts.length : 0,
+    // The stored value keeps its rows in R2 since 2026-09-05 and says
+    // how many; a raw read must not mistake the pointer for a quiet week.
+    hosts: Array.isArray(round.hosts) && round.hosts.length > 0 ? round.hosts.length : (round.hosts_count ?? 0),
     population_known: round.population?.population_known ?? 0,
     sources_answered: perSource.filter((row) => row.hosts !== null).length,
     sources_asked: perSource.length,

@@ -198,6 +198,48 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
+  moves").** A week's evidence lived in ONE KV value (the walk
+  state) and the sealed round in three more, each carrying every
+  row's evidence at ~6 KB a host against KV's 25 MB a value — a
+  ceiling near 3,900 hosts that lane C could have reached next
+  week. Now: each walked batch lands under its own key
+  (`long_walk_results:{week}:{n}`, expiring three weeks on) and the
+  state keeps the roster, the cursor and the counts; Sunday reads
+  the batches back in order and the round says `walk.batches_missing`
+  if one could not be read. The sealed round keeps its rows in R2
+  (`ward/{week}/hosts.json`) with a pointer and `hosts_count` in KV;
+  `latestWardRound` returns it whole, the heartbeat reads the count
+  off the pointer, and a pointer whose object is gone reads as NULL,
+  never as a round nobody walked. A store with no bucket keeps rows
+  inline as before. `WALK_ROSTER_CAP` raised 2,000 → 10,000; the
+  ceiling now is the walk's own ~16,800 knocks a week.
+  YOUR PRESS: none. The first round sealed after deploy is the first
+  in the new shape; `/admin/ward` and `/corpus/latest.json` should
+  read exactly as before.
+
+- ⚑ **LANE C — THE DIRECTORY'S PAGE FOR A HOST (2026-09-05, "i added
+  you access for fuchss").** The sweep read each name-only host's own
+  `/.well-known/x402`; most hosts serve none, and the register kept
+  ~5,300 names the walk could not knock on. x402.fuchss.app, the
+  directory that names them, also serves one page per host listing
+  its endpoints, paths in the markup (`<span class="r-path">`).
+  Saymon's page lists his five best-scored doors. So: where a
+  host's own file gives no door, the sweep reads the directory's
+  page for that host and takes one path, joined to that host and
+  nothing else. Source `directory` on the row — a feed's word, not
+  the host's — out of the listed/gone delta and out of the door
+  bank like a revisit; the store keeps the record under `via:
+  "directory"`, and a host's own file wins over the page for the
+  same host. Counts ride the round under `walk.sweep.directory`
+  (read / found / none / unreadable / doors_added), kept apart from
+  the file's. Worst case four GETs a host, inside the sweep's
+  budget. Nothing in the guide changed: this asks nothing of an
+  operator.
+  LOOK next Sunday: `walk.sweep.directory.found` on
+  `/corpus/latest.json`, and `coverage_pct` against 17.1 — this is
+  the lane that should move it.
+
 - ⚑ **THE FEED OUTGREW THE READ, AND THE REGISTER CALLED IT
   SILENT (2026-09-04, your paste of "Not answering: discovery"
   and "why not raise higher then that even? what happens when

@@ -43,7 +43,13 @@ export const WELL_KNOWN_DOOR_CAP = 20;
 export const WELL_KNOWN_BODY_CAP = 256 * 1024;
 export const WELL_KNOWN_TIMEOUT_MS = 8000;
 
-export type WellKnownVia = "x402" | "agent-card";
+/**
+ * Where a host's doors were read from. "x402" and "agent-card" are the
+ * host's own word; "directory" (2026-09-05, lane C) is the directory's
+ * page for that host, a feed — see directory-doors.ts for the line
+ * between the two.
+ */
+export type WellKnownVia = "x402" | "agent-card" | "directory";
 
 export type WellKnownRead =
   | {
@@ -148,13 +154,13 @@ export function agentCardDiscoveryPointer(card: unknown): string | null {
   return null;
 }
 
-type Fetched = { status: number; text: string; final_host: string } | { error: string };
+export type Fetched = { status: number; text: string; final_host: string } | { error: string };
 
 /** One GET, bounded in time and bytes, and honest about where it landed. */
-async function fetchBounded(url: string): Promise<Fetched> {
+export async function fetchBounded(url: string, accept = "application/json"): Promise<Fetched> {
   try {
     const response = await fetch(url, {
-      headers: { Accept: "application/json", "user-agent": "scvd-census/1 (+https://scvd.store/coverage)" },
+      headers: { Accept: accept, "user-agent": "scvd-census/1 (+https://scvd.store/coverage)" },
       redirect: "follow",
       signal: AbortSignal.timeout(WELL_KNOWN_TIMEOUT_MS),
     });
@@ -354,12 +360,20 @@ export function recordWellKnownRead(
  * for the same reason). The rest stay in the record for the operator
  * to see.
  */
-export function rosterDoorsFrom(store: WellKnownStore): { host: string; url: string }[] {
-  const byHost = new Map<string, string>();
-  for (const record of Object.values(store.hosts)) {
+export function rosterDoorsFrom(
+  store: WellKnownStore,
+): { host: string; url: string; via: WellKnownVia }[] {
+  const byHost = new Map<string, { url: string; via: WellKnownVia }>();
+  // A host's own word wins over the directory's page for the same host.
+  const records = Object.values(store.hosts).sort((a, b) =>
+    a.via === b.via ? 0 : a.via === "directory" ? 1 : b.via === "directory" ? -1 : 0,
+  );
+  for (const record of records) {
     const door = record.doors[0];
     if (!door) continue;
-    if (!byHost.has(record.declaring_host)) byHost.set(record.declaring_host, door);
+    if (!byHost.has(record.declaring_host)) byHost.set(record.declaring_host, { url: door, via: record.via });
   }
-  return [...byHost.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([host, url]) => ({ host, url }));
+  return [...byHost.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([host, { url, via }]) => ({ host, url, via }));
 }

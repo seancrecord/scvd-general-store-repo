@@ -2,6 +2,7 @@ import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
 import { readFuchssProviders } from "@/services/ward-sources";
+import { readDirectoryDoors } from "@/services/directory-doors";
 import {
   readWellKnownDoors,
   readWellKnownStore,
@@ -21,6 +22,7 @@ import {
   type WardVolumeClaim,
 } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
@@ -69,7 +71,7 @@ const WALK_CONCURRENCY = 20;
 interface WalkRosterEntry {
   host: string;
   url: string;
-  source: "discovery" | "both" | "well-known";
+  source: "discovery" | "both" | "well-known" | "directory";
   /**
    * The catalog's copy of the door's terms, frozen with the roster
    * (S8 Tier C). The index is read once at walk start and the probes
@@ -103,23 +105,24 @@ export const FEED_PAGES_PER_PASS = LONG_WALK_DISCOVERY_PAGE_CAP;
 export const FEED_MAX_PASSES = 24;
 
 /**
- * Doors the roster takes from the feed in one week. THE NEXT CEILING,
- * named before it binds: the walk's state is ONE KV value, and each
- * walked host carries its evidence (~6 KB median, 13 KB at p90) into
- * `results`, so at KV's 25 MB value limit the walk breaks somewhere
- * near 3,900 hosts — silently, on an hourly write, with Sunday
- * assembling whatever was written before it. 2,000 keeps a full week
- * of typical evidence near half that limit and a heavy week inside
- * it. Past this cap is not a bigger number either: it is results
- * stored per batch under their own keys and the round's hosts living
- * in R2 alone. Until then the state says when it bound, the census
- * still counts every host the feed named (`feed_hosts`), and the
- * hosts beyond the cap read as listed_not_walked in their histories
- * — a gap the record names, never a verdict it invents. Declared and
- * swept doors ride BEHIND this cap, never inside it: a host that
- * asked to be read is not crowded out by the feed's size.
+ * Doors the roster takes from the feed in one week. THE CEILING THIS
+ * WAS (2026-09-04): the walk's state was one KV value carrying every
+ * walked host's evidence, and would have failed near 3,900 hosts at
+ * KV's 25 MB value limit, silently, on an hourly write; 2,000 kept a
+ * heavy week inside it. THE MOVE (2026-09-05, "yes i agree with the
+ * two moves"): the rows live one value per batch and the sealed
+ * round's rows live in R2, so the state carries the roster, the
+ * cursor and the counts and nothing that grows with evidence. The
+ * ceiling now is the walk's own capacity — ~168 hourly firings of
+ * WALK_BATCH, ~16,800 knocks a week, shared with the sweep's
+ * SWEEP_ROSTER_CAP behind it. Ten thousand feed doors plus three
+ * thousand swept fits inside it with the reading passes to spare.
+ * The state still says when it bound (`roster_capped`), the census
+ * still counts every host the feed named (`feed_hosts`), and hosts
+ * beyond the cap read as listed_not_walked in their histories.
+ * Declared and swept doors ride BEHIND this cap, never inside it.
  */
-export const WALK_ROSTER_CAP = 2000;
+export const WALK_ROSTER_CAP = 10000;
 
 export interface LongWalkState {
   version: 1;
@@ -158,8 +161,17 @@ export interface LongWalkState {
   /** Probeable doors only; leaderboard-only rows are pre-recorded. */
   roster: WalkRosterEntry[];
   cursor: number;
+  /**
+   * Rows recorded WITHOUT a knock (leaderboard homepages) — small, and
+   * kept here. Probed rows live one value per batch under
+   * KV_KEYS.longWalkResults since 2026-09-05; readWalkResults joins the
+   * two. A state frozen before that still carries its probed rows here
+   * and is read the same way.
+   */
   results: WardHostResult[];
   batches: number;
+  /** Batch values written under KV_KEYS.longWalkResults; absent before the move. */
+  result_batches?: number;
   finished_at?: string;
   /** The well-known sweep over name-only hosts; absent on states frozen before it. */
   sweep?: SweepState;
@@ -179,6 +191,13 @@ export interface SweepState {
   doors_added: number;
   /** True once the weekly roster cap on swept doors bound. */
   capped: boolean;
+  /**
+   * LANE C (2026-09-05): for a host whose own file gave no door, the
+   * directory's page for that host was read. Same three words, kept
+   * apart from the file's — a door the directory names is not a door
+   * the host declared. Absent on states frozen before lane C.
+   */
+  directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
   finished_at?: string;
 }
 
@@ -187,6 +206,37 @@ export const SWEEP_BATCH = 100;
 const SWEEP_CONCURRENCY = 10;
 /** Swept doors the roster will take in one week; past it the sweep still reads and records, and says it capped. */
 export const SWEEP_ROSTER_CAP = 3000;
+
+/** Batch values outlive the week they belong to by this much, then go. */
+export const WALK_RESULTS_TTL_SECONDS = 21 * 24 * 3600;
+
+/**
+ * Every row the week's walk recorded: the state's own (unknocked)
+ * rows, then each batch in order. A batch the store no longer holds
+ * is COUNTED, never skipped in silence — Sunday's round says how many
+ * batches it could not read, so a short week reads as short.
+ */
+export async function readWalkResults(
+  env: Env,
+  state: LongWalkState,
+): Promise<{ rows: WardHostResult[]; batches_missing: number }> {
+  const count = state.result_batches ?? 0;
+  const keys = Array.from({ length: count }, (_, index) => KV_KEYS.longWalkResults(state.week, index));
+  const values = keys.length
+    ? await bulkGetJson<WardHostResult[]>(env.COUNTERS, keys)
+    : new Map<string, WardHostResult[] | null>();
+  const rows = [...state.results];
+  let missing = 0;
+  for (const key of keys) {
+    const batch = values.get(key);
+    if (!Array.isArray(batch)) {
+      missing += 1;
+      continue;
+    }
+    rows.push(...batch);
+  }
+  return { rows, batches_missing: missing };
+}
 
 export async function readLongWalk(env: Env): Promise<LongWalkState | null> {
   return kvGetJson<LongWalkState>(env.COUNTERS, KV_KEYS.longWalkState, "json");
@@ -362,7 +412,12 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
   const wellKnown = await readWellKnownStore(env);
   for (const declared of rosterDoorsFrom(wellKnown)) {
     if (rosterHosts.has(declared.host) || declared.host === ownHost) continue;
-    roster.push({ host: declared.host, url: declared.url, source: "well-known", catalog: null });
+    roster.push({
+      host: declared.host,
+      url: declared.url,
+      source: declared.via === "directory" ? "directory" : "well-known",
+      catalog: null,
+    });
     rosterHosts.add(declared.host);
   }
 
@@ -389,6 +444,7 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
     unreadable: 0,
     doors_added: 0,
     capped: false,
+    directory: { read: 0, found: 0, none: 0, unreadable: 0, doors_added: 0 },
   };
 
   const claims: Record<string, WardVolumeClaim> = {};
@@ -448,47 +504,93 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
  * here knocks on a door — that is the walk's job, on the walk's
  * budget, and the sweep only ever reads what a host published to be
  * read.
+ *
+ * LANE C (2026-09-05): a host whose own file gave no door gets one
+ * more read — the directory's page for that host, which lists its
+ * endpoints. A path it lists, joined to the host it is listed under,
+ * is a door from a feed; the row says so (source "directory") and is
+ * never mistaken for the host's own word. Worst case four GETs per
+ * host: the file, the agent card, its pointer, the page.
  */
 async function sweepBatch(env: Env, state: LongWalkState, sweep: SweepState): Promise<WalkPass> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const slice = sweep.hosts.slice(sweep.cursor, sweep.cursor + SWEEP_BATCH);
-  const reads = await pooled(slice, SWEEP_CONCURRENCY, async (host) => ({
-    host,
-    read: await readWellKnownDoors(host, ownHost),
-  }));
+  const reads = await pooled(slice, SWEEP_CONCURRENCY, async (host) => {
+    const own = await readWellKnownDoors(host, ownHost);
+    const ownDoor = own.kind === "doors" ? own.doors[0] : undefined;
+    // The directory's page is read only where the host's own file
+    // gave no door on the host itself — the host's word, when it
+    // speaks, is the whole of it.
+    const directory = ownDoor ? null : await readDirectoryDoors(host, ownHost);
+    return { host, own, directory };
+  });
 
   let store = await readWellKnownStore(env);
   const at = new Date().toISOString();
   const rosterHosts = new Set(state.roster.map((entry) => entry.host));
+  const swept = () =>
+    state.roster.filter((entry) => entry.source === "well-known" || entry.source === "directory").length;
+  const dir = sweep.directory ?? (sweep.directory = { read: 0, found: 0, none: 0, unreadable: 0, doors_added: 0 });
   let added = 0;
-  for (const { host, read } of reads) {
+  let addedByDirectory = 0;
+  for (const { host, own, directory } of reads) {
     sweep.read += 1;
-    if (read.kind === "unreadable") {
-      sweep.unreadable += 1;
+    if (own.kind === "unreadable") sweep.unreadable += 1;
+    else if (own.kind === "none") sweep.none += 1;
+    else {
+      sweep.found += 1;
+      store = recordWellKnownRead(store, host, own, state.week, at).store;
+      const door = own.doors[0];
+      if (door && !rosterHosts.has(own.declaring_host) && own.declaring_host !== ownHost) {
+        if (swept() >= SWEEP_ROSTER_CAP) {
+          sweep.capped = true;
+        } else {
+          state.roster.push({ host: own.declaring_host, url: door, source: "well-known", catalog: null });
+          rosterHosts.add(own.declaring_host);
+          added += 1;
+        }
+      }
+    }
+    if (!directory) continue;
+    dir.read += 1;
+    if (directory.kind === "unreadable") {
+      dir.unreadable += 1;
       continue;
     }
-    if (read.kind === "none") {
-      sweep.none += 1;
+    if (directory.kind === "none") {
+      dir.none += 1;
       continue;
     }
-    sweep.found += 1;
-    store = recordWellKnownRead(store, host, read, state.week, at).store;
-    const door = read.doors[0];
-    if (!door || rosterHosts.has(read.declaring_host) || read.declaring_host === ownHost) continue;
-    if (state.roster.filter((entry) => entry.source === "well-known").length >= SWEEP_ROSTER_CAP) {
+    dir.found += 1;
+    // The record is kept under the host with via "directory"; a host
+    // whose own file spoke this week (foreign-only, say) keeps that
+    // record — the directory's page does not overwrite the host's word.
+    if (own.kind !== "doors") {
+      store = recordWellKnownRead(store, host, directory, state.week, at).store;
+    }
+    const door = directory.doors[0];
+    if (!door || rosterHosts.has(host) || host === ownHost) continue;
+    if (swept() >= SWEEP_ROSTER_CAP) {
       sweep.capped = true;
       continue;
     }
-    state.roster.push({ host: read.declaring_host, url: door, source: "well-known", catalog: null });
-    rosterHosts.add(read.declaring_host);
-    added += 1;
+    state.roster.push({ host, url: door, source: "directory", catalog: null });
+    rosterHosts.add(host);
+    addedByDirectory += 1;
   }
   sweep.doors_added += added;
+  dir.doors_added += addedByDirectory;
   sweep.cursor += slice.length;
   if (sweep.cursor >= sweep.hosts.length) sweep.finished_at = at;
   await writeWellKnownStore(env, store);
   await writeLongWalk(env, state);
-  return { phase: "swept", read: slice.length, cursor: sweep.cursor, hosts: sweep.hosts.length, doors_added: added };
+  return {
+    phase: "swept",
+    read: slice.length,
+    cursor: sweep.cursor,
+    hosts: sweep.hosts.length,
+    doors_added: added + addedByDirectory,
+  };
 }
 
 /**
@@ -532,7 +634,13 @@ async function walkBatch(env: Env, state: LongWalkState): Promise<WalkPass> {
       ...probe,
     } satisfies WardHostResult;
   });
-  state.results.push(...probed);
+  // The batch's evidence goes under its own key, never into the state:
+  // the state is written every hour and must stay small at any scale.
+  const batchIndex = state.result_batches ?? 0;
+  await kvPut(env.COUNTERS, KV_KEYS.longWalkResults(state.week, batchIndex), JSON.stringify(probed), {
+    expirationTtl: WALK_RESULTS_TTL_SECONDS,
+  });
+  state.result_batches = batchIndex + 1;
   state.cursor += slice.length;
   state.batches += 1;
   const sweepDone = !state.sweep || state.sweep.cursor >= state.sweep.hosts.length;

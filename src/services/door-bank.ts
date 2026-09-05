@@ -140,9 +140,12 @@ export async function backfillDoorBank(env: Env): Promise<{
   let evicted = 0;
   // One bulk read for every stored round — the audit's per-key law
   // holds here too, and the merge only needs the values in week order.
-  const rounds = await bulkGetJson<WardRound>(env.COUNTERS, weekKeys);
+  const stored = await bulkGetJson<WardRound>(env.COUNTERS, weekKeys);
+  const { hydrateRound } = await import("@/services/ward-round");
   for (const key of weekKeys) {
-    const round = rounds.get(key);
+    // Rows live in R2 since 2026-09-05; a round whose rows cannot be
+    // read is skipped as unread, never folded in as "named nobody".
+    const round = await hydrateRound(env, stored.get(key) ?? null);
     if (!round?.week || !Array.isArray(round.hosts)) continue;
     roundsRead += 1;
     const declared = round.hosts
@@ -150,9 +153,11 @@ export async function backfillDoorBank(env: Env): Promise<{
         (host) =>
           host.source !== "leaderboard" &&
           host.source !== "revisit" &&
-          // A host's own declaration is not the directory's; the bank
-          // holds only what the directory itself named.
+          // A host's own declaration is not the discovery feed's, and
+          // neither is the name directory's page (lane C); the bank
+          // holds only what the discovery feed itself named.
           host.source !== "well-known" &&
+          host.source !== "directory" &&
           typeof host.url === "string" &&
           host.url.startsWith("https://"),
       )

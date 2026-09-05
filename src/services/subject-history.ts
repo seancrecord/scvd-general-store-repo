@@ -8,6 +8,7 @@ import {
 import { notesForHost, type StandingNote } from "@/services/standing-note";
 import { populationHistory, type PopulationRecord } from "@/services/population";
 import type { WardHostResult } from "@/services/ward-round";
+import { namedByFeed } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 
@@ -301,8 +302,8 @@ export async function subjectHistory(
          * fact about the DIRECTORIES; our decision to keep knocking
          * must not be published as their decision to keep listing.
          */
-        listed: entry.source !== "revisit" && entry.source !== "well-known",
-        ...(entry.source !== "revisit" && entry.source !== "well-known"
+        listed: namedByFeed(entry.source),
+        ...(namedByFeed(entry.source)
           ? { listing_source: "round" as const }
           : {}),
         probed: true,
@@ -342,7 +343,7 @@ export async function subjectHistory(
      */
     // H2's rule holds here too: a revisit row was walked from the
     // door bank, not named by a feed, so it is not "listed".
-    const listedInRound = Boolean(entry) && entry?.source !== "revisit" && entry?.source !== "well-known";
+    const listedInRound = Boolean(entry) && namedByFeed(entry?.source);
     const listedInRegister =
       listing !== null &&
       listing.first_seen <= snapshot.taken_at &&

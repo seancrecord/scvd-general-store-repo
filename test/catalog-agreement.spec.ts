@@ -219,7 +219,8 @@ describe("on the census", () => {
     const walked = await longWalkPass(testEnv);
     expect(walked.phase).toBe("walked");
     const after = await readLongWalk(testEnv);
-    const result = after!.results.find((entry) => entry.host === "differs.example");
+    const { readWalkResults } = await import("@/services/long-walk");
+    const result = (await readWalkResults(testEnv, after!)).rows.find((entry) => entry.host === "differs.example");
     expect(result?.catalog).toMatchObject({ state: "differs", fields: ["amount on eip155:8453: catalog 2000, door 1000"] });
   });
 });
