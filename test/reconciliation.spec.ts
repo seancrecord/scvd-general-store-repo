@@ -159,7 +159,7 @@ describe("a lost row increment is not a books defect", () => {
    * and each settle is booked onto the month the certificate carries.
    */
   it("creates the missing row from the certificates and books the counters the till never bumped", async () => {
-    const wallet = "TeStKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHw";
+    const wallet = "F1xtureSo1anaWa11etNotAnyBuyer11111111111111";
     const month = metricsMonth();
     const paidKey = KV_KEYS.metric(month, "paid", "hello");
     const railKey = KV_KEYS.metric(month, "rail", "solana");

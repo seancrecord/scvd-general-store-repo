@@ -174,7 +174,7 @@ describe("the books invariant sweep", () => {
    * two Solana penny settles of 2026-08-05 — and that is what pages.
    */
   it("pages on a certificate whose settle the books never recorded, and stops once it is booked", async () => {
-    const wallet = "TeStKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHw";
+    const wallet = "F1xtureSo1anaWa11etNotAnyBuyer11111111111111";
     // Money moved and a certificate minted; recordSettlement never ran.
     const minted = await mintCertificate(testEnv, {
       itemId: "hello",
