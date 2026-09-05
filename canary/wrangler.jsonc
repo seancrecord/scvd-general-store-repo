@@ -1,0 +1,16 @@
+{
+  /**
+   * The cold canary: Cloudflare's own cold-start floor, measured with a
+   * Worker that has nothing in it. See canary/index.mjs. Deployed by
+   * hand, never by the git-connected build (that build reads the root
+   * wrangler.jsonc only). Served at workers.dev on purpose: it is a
+   * measuring instrument, not a door, and it must not share the
+   * store's hostname or its isolates.
+   */
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "scvd-cold-canary",
+  "main": "index.mjs",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": true,
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

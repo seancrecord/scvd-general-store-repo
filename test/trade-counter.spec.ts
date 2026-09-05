@@ -506,6 +506,41 @@ describe("the surfaces", () => {
       expect(body[key], key).toBeDefined();
     }
   });
+
+  it("pass nine: says who buys on account on all three twins, carries the FAQ as a FAQPage node, and names no partner in generic copy", async () => {
+    const page = await (await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/html" } })).text();
+    const body = await json(await SELF.fetch(`${BASE}/trade`));
+    const markdown = await (await SELF.fetch(`${BASE}/trade.md`)).text();
+    const rows = body["who_buys_on_account"] as Record<string, string>[];
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    expect(page).toContain("<h2>Who buys on account</h2>");
+    expect(markdown).toContain("## Who buys on account");
+    for (const row of rows) {
+      expect(page).toContain(row["who"]!.slice(0, 40));
+      expect(markdown).toContain(row["who"]!);
+      // Generic by construction: no row names a partner.
+      expect(String(row["who"]) + String(row["why"])).not.toMatch(/\bHal\b/);
+    }
+    const faq = body["faq"] as Record<string, string>[];
+    expect(faq.some((entry) => /sats, cards, credits/.test(entry["q"] ?? ""))).toBe(true);
+    expect(faq.some((entry) => /sign webhooks a different way/.test(entry["q"] ?? ""))).toBe(true);
+    const nodes = [...page.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)].map((m) => JSON.parse(m[1]!) as Record<string, unknown>);
+    const faqNode = nodes.find((node) => node["@type"] === "FAQPage")!;
+    expect(faqNode).toBeDefined();
+    expect((faqNode["mainEntity"] as unknown[]).length).toBe(faq.length);
+    // The page's own copy never leans on the first partner's name.
+    const generic = page.replace(/<li><strong>Hal<\/strong>[^<]*<\/li>/g, "");
+    expect(generic).not.toMatch(/\bHal\b/);
+    // The room "for scorers and marketplaces" points at the counter.
+    const scorers = await json(await SELF.fetch(`${BASE}/scorers`, { headers: { Accept: "application/json" } }));
+    expect(scorers["resell_on_account"]).toBe(`${BASE}/trade`);
+    const scorersPage = await (await SELF.fetch(`${BASE}/scorers`, { headers: { Accept: "text/html" } })).text();
+    expect(scorersPage).toContain('href="/trade"');
+    // The storefront says who the counter is for beside the link, in the proposition's own words.
+    const storefront = await (await SELF.fetch(`${BASE}/`, { headers: { Accept: "text/html" } })).text();
+    expect(storefront).toContain('class="porch-trade"');
+    expect(storefront).toContain(TRADE_PROPOSITION.slice(0, 40));
+  });
 });
 
 /* ------------------------------------------------------------------ */
@@ -513,6 +548,7 @@ describe("the surfaces", () => {
 /* ------------------------------------------------------------------ */
 
 import {
+  TRADE_PROPOSITION,
   TRADE_SANDBOX_ID,
   TRADE_SANDBOX_PROVIDER_KEY,
   TRADE_SANDBOX_SECRET,
@@ -683,6 +719,84 @@ describe("an account before its secret exists (pass seven)", () => {
       const missing = await json(await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", body: raw }));
       expect(missing["first_failure"]).toBe("missing_headers");
     });
+  });
+});
+
+describe("one pair per listing (pass ten)", () => {
+  const ITEM_SECRET = "per-listing-secret-context-anchor";
+  const ITEM_KEY = "per-listing-key-context-anchor";
+  const withListingPair = async (run: () => Promise<void>) => {
+    const bag = testEnv as unknown as Record<string, unknown>;
+    bag["TRADE_SECRET_HAL__CONTEXT_ANCHOR"] = ITEM_SECRET;
+    bag["TRADE_PROVIDER_KEY_HAL__CONTEXT_ANCHOR"] = ITEM_KEY;
+    try {
+      await run();
+    } finally {
+      delete bag["TRADE_SECRET_HAL__CONTEXT_ANCHOR"];
+      delete bag["TRADE_PROVIDER_KEY_HAL__CONTEXT_ANCHOR"];
+    }
+  };
+
+  it("an item with its own pair verifies against it and not the account's; the other items keep the account's", async () => {
+    await withListingPair(async () => {
+      const own = await order("context_anchor", { summary: "s" }, { secret: ITEM_SECRET, provider_key: ITEM_KEY });
+      expect(own.status).toBe(200);
+      expect((own.body["trade"] as Record<string, unknown>)["account"]).toBe("hal");
+      const wrong = await order("context_anchor", { summary: "s" });
+      expect(wrong.status).toBe(401);
+      const other = await order("certificate_of_patronage", {});
+      expect(other.status).toBe(200);
+      // The contract says which items are provisioned and how.
+      const terms = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+      const hal = (terms["accounts"] as Record<string, unknown>[]).find((row) => row["account"] === "hal")!;
+      expect(hal["secret_scope"]).toBe("per_listing");
+      const items = hal["items"] as Record<string, unknown>[];
+      expect(items.every((row) => row["provisioned"] === true)).toBe(true);
+    });
+  });
+
+  it("the check desk, the statement and the claim accept any pair the account holds and say which one", async () => {
+    await withListingPair(async () => {
+      const raw = JSON.stringify({ summary: "s" });
+      const headers = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: ITEM_SECRET, provider_key: ITEM_KEY, body: raw });
+      const desk = await json(await SELF.fetch(`${BASE}/api/trade/hal/check`, { method: "POST", headers, body: raw }));
+      expect(desk["would_pass"]).toBe(true);
+      expect(desk["secret_matched"]).toEqual({ scope: "listing", item_id: "context_anchor" });
+      expect((desk["secrets_on_this_side"] as unknown[]).length).toBe(2);
+      const stmtHeaders = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: ITEM_SECRET, provider_key: ITEM_KEY, body: "" });
+      expect((await SELF.fetch(`${BASE}/api/trade/hal/statement`, { headers: stmtHeaders })).status).toBe(200);
+      await order("context_anchor", { summary: "s", order_ref: "pl-1" }, { secret: ITEM_SECRET, provider_key: ITEM_KEY });
+      const claimHeaders = await signTradeRequest({ dialect: TRADE_DIALECTS.hal, secret: ITEM_SECRET, provider_key: ITEM_KEY, body: "" });
+      expect((await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=pl-1`, { headers: claimHeaders })).status).toBe(200);
+    });
+  });
+
+  it("an account with only listing pairs refuses an unpaired item by name, and the account row still says provisioned", async () => {
+    const bag = testEnv as unknown as Record<string, unknown>;
+    const saved = { s: bag["TRADE_SECRET_HAL"], p: bag["TRADE_SECRET_HAL_PREVIOUS"], k: bag["TRADE_PROVIDER_KEY_HAL"] };
+    bag["TRADE_SECRET_HAL"] = "";
+    bag["TRADE_SECRET_HAL_PREVIOUS"] = "";
+    bag["TRADE_PROVIDER_KEY_HAL"] = "";
+    try {
+      await withListingPair(async () => {
+        const unpaired = await order("certificate_of_patronage", {}, { secret: ITEM_SECRET, provider_key: ITEM_KEY });
+        expect(unpaired.status).toBe(503);
+        expect(unpaired.body["code"]).toBe("account_not_provisioned");
+        expect(String(unpaired.body["error"])).toContain("certificate_of_patronage");
+        const paired = await order("context_anchor", { summary: "s" }, { secret: ITEM_SECRET, provider_key: ITEM_KEY });
+        expect(paired.status).toBe(200);
+        const terms = await json(await SELF.fetch(`${BASE}/api/trade/contract`));
+        const hal = (terms["accounts"] as Record<string, unknown>[]).find((row) => row["account"] === "hal")!;
+        expect(hal["provisioned"]).toBe(true);
+        const items = hal["items"] as Record<string, unknown>[];
+        expect(items.find((row) => row["item_id"] === "context_anchor")!["provisioned"]).toBe(true);
+        expect(items.find((row) => row["item_id"] === "certificate_of_patronage")!["provisioned"]).toBe(false);
+      });
+    } finally {
+      bag["TRADE_SECRET_HAL"] = saved.s;
+      bag["TRADE_SECRET_HAL_PREVIOUS"] = saved.p;
+      bag["TRADE_PROVIDER_KEY_HAL"] = saved.k;
+    }
   });
 });
 

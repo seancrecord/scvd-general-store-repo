@@ -30,7 +30,7 @@ they reply.
 
 ---
 
-Subject: Resell our signed evidence instruments on account — sandbox is live, no conversation needed to try it
+Subject: Sell signed evidence under your own roof — your customer pays you, we deliver and bill your account; the sandbox is live, try it before you reply
 
 Hi —
 

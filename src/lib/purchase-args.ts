@@ -4,12 +4,14 @@ import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { issuePassport } from "@/services/passport";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
-import { COFFEE_WIN_CAP } from "@/services/fulfillment";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { nonceFromPaymentPayload } from "@/services/attestation";
 import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { fulfillPurchase } from "@/services/fulfillment";
 import type { Env, MenuItem } from "@/types";
+
+/** The counter takes a win of up to this many characters. */
+export const COFFEE_WIN_CAP = 200;
 
 /**
  * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, FOR BOTH DOORS.

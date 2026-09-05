@@ -12,3 +12,4 @@ x402-census-results.json
 # Python bytecode caches (examples:test regenerates these on every gate run)
 __pycache__/
 *.pyc
+.build-check-doors/

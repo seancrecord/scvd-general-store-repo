@@ -68,7 +68,13 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/bounty-board.ts",
   "../src/services/closers.ts",
   "../src/services/confessions.ts",
-  "../src/services/corpus.ts",
+  /*
+   * corpus.ts CAME OFF THIS LIST ON 2026-09-05: its one bounded read,
+   * listCorpus, moved to services/corpus-list.ts so the doors Worker
+   * could import it without the rest of the observatory, and the new
+   * file says why its cap is safe (one record a week, a cap of a
+   * thousand) instead of staying quiet about it.
+   */
   "../src/services/gazette.ts",
   "../src/services/grudges.ts",
   /*
@@ -88,7 +94,6 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/letters.ts",
   "../src/services/orders.ts",
   "../src/services/patron-anchors.ts",
-  "../src/services/payer-repair.ts",
   "../src/services/phantom.ts",
   "../src/services/refunds.ts",
   "../src/services/requests.ts",

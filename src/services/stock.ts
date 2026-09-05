@@ -2,7 +2,7 @@ import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newLuckyStockId } from "@/lib/ids";
-import type { Env } from "@/types";
+import type { Env, MenuItem } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a stock units scan. An unnamed cap is a silent one. */
@@ -144,4 +144,17 @@ export async function takeStockUnit(
   }
   await removeStockUnit(env, itemId, next.unit_id);
   return next;
+}
+
+/**
+ * How many units sit on a shelf: the stock check reads it before the
+ * gate (routes/door-checks.ts), so it lives beside listStock and not
+ * in fulfillment, whose import graph is the whole delivery floor —
+ * the doors Worker must never carry that (2026-09-05).
+ */
+export async function stockedShelfCount(
+  env: Env,
+  item: MenuItem,
+): Promise<number> {
+  return (await listStock(env, item.id).catch(() => [])).length;
 }

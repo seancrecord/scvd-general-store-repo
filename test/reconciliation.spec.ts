@@ -11,7 +11,10 @@ import {
 import type { Env, PayerRecord } from "@/types";
 import { SOLANA_NETWORK } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
-import { backfillPayerSettlesFromCertificates } from "@/services/payer-repair";
+import {
+  backfillPayerSettlesFromCertificates,
+  reverseRailBookedBeforeSeam,
+} from "@/services/payer-repair";
 
 const testEnv = env as unknown as Env;
 
@@ -156,10 +159,13 @@ describe("a lost row increment is not a books defect", () => {
    * and each settle is booked onto the month the certificate carries.
    */
   it("creates the missing row from the certificates and books the counters the till never bumped", async () => {
-    const wallet = "TeStKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHw";
+    const wallet = "F1xtureSo1anaWa11etNotAnyBuyer11111111111111";
     const month = metricsMonth();
     const paidKey = KV_KEYS.metric(month, "paid", "hello");
     const railKey = KV_KEYS.metric(month, "rail", "solana");
+    // The seam is behind these certificates: the till is the rail
+    // record for them, so the rail is booked here.
+    await testEnv.COUNTERS.put(KV_KEYS.railMeterStart, "2026-01-01T00:00:00.000Z");
     const paidBefore = parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10);
     const railBefore = parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10);
     const revenueBefore = (await readMonthLedger(testEnv, month)).revenueUsdc;
@@ -179,6 +185,7 @@ describe("a lost row increment is not a books defect", () => {
     expect(first.counters_rebooked).toEqual(
       expect.arrayContaining([`${wallet}:5unbooked01`, `${wallet}:5unbooked02`]),
     );
+    expect(first.rail_left_to_certificates).toEqual([]);
     const row = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.payer(wallet))) ?? "{}") as PayerRecord;
     expect(row.address).toBe(wallet);
     expect(row.purchases).toBe(2);
@@ -217,5 +224,153 @@ describe("a lost row increment is not a books defect", () => {
     expect(pass.rows_created).toContain(wallet);
     expect(pass.counters_rebooked).toEqual([]);
     expect(parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10)).toBe(paidBefore);
+  });
+
+  /**
+   * THE RAIL STOPS AT THE SEAM (2026-09-05, the same evening). The
+   * first press rebooked the two 2026-08-05 Solana settles and bumped
+   * the till's rail counter for both — but both certificates predate
+   * the rail-meter seam, so the certificate walk had already placed
+   * them, and the storefront read five Solana sales for three. The
+   * settle and the money are booked either way; the rail COUNT before
+   * the seam belongs to the walk.
+   */
+  it("books the settle but leaves the rail to the certificate walk when the certificate predates the seam", async () => {
+    const wallet = "SeAmKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHx";
+    const month = metricsMonth();
+    const paidKey = KV_KEYS.metric(month, "paid", "hello");
+    const railKey = KV_KEYS.metric(month, "rail", "solana");
+    const revRailKey = KV_KEYS.metric(month, "revrail", "solana");
+    for (const tx of ["5preseam01", "5preseam02"]) {
+      await mintCertificate(testEnv, {
+        itemId: "hello",
+        paidUsdc: 0.0075,
+        network: SOLANA_NETWORK,
+        payer: wallet,
+        settlementTx: tx,
+      });
+    }
+    // The seam falls AFTER the certificates: the walk counts them.
+    await testEnv.COUNTERS.put(KV_KEYS.railMeterStart, "2099-01-01T00:00:00.000Z");
+    const paidBefore = parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10);
+    const railBefore = parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10);
+    const revRailBefore = parseInt((await testEnv.COUNTERS.get(revRailKey)) ?? "0", 10);
+
+    const pass = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(pass.counters_rebooked).toEqual(
+      expect.arrayContaining([`${wallet}:5preseam01`, `${wallet}:5preseam02`]),
+    );
+    expect(pass.rail_left_to_certificates).toEqual(
+      expect.arrayContaining([`${wallet}:5preseam01`, `${wallet}:5preseam02`]),
+    );
+    expect(parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10)).toBe(paidBefore + 2);
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+    // The money still lands on the rail: the net statement reads it.
+    expect(parseInt((await testEnv.COUNTERS.get(revRailKey)) ?? "0", 10)).toBe(revRailBefore + 15_000);
+    // The record says who holds the rail, and the reversal refuses it:
+    // no counter was bumped, so there is nothing to put back.
+    const record = await testEnv.COUNTERS.get<{ rail_counted_by?: string }>(KV_KEYS.payerSettle(wallet, "5preseam01"), "json");
+    expect(record?.rail_counted_by).toBe("certificates");
+    const reversal = await reverseRailBookedBeforeSeam(testEnv, ["5preseam01"]);
+    expect(reversal.reversed).toEqual([]);
+    expect(reversal.refused[0]?.reason).toContain("nothing to reverse");
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+    await testEnv.COUNTERS.delete(KV_KEYS.railMeterStart);
+  });
+
+  it("reverses a rail bump made before the seam, once, against the certificate", async () => {
+    const wallet = "ReVrKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHy";
+    const month = metricsMonth();
+    const railKey = KV_KEYS.metric(month, "rail", "solana");
+    for (const tx of ["5reverse01", "5reverse02"]) {
+      await mintCertificate(testEnv, {
+        itemId: "hello",
+        paidUsdc: 0.0075,
+        network: SOLANA_NETWORK,
+        payer: wallet,
+        settlementTx: tx,
+      });
+      // The backfill's record, and the bump the first press made.
+      await testEnv.COUNTERS.put(
+        KV_KEYS.payerSettle(wallet, tx),
+        JSON.stringify({ item: "hello", at: new Date().toISOString(), transaction: tx, source: "certificate" }),
+      );
+    }
+    await testEnv.COUNTERS.put(KV_KEYS.railMeterStart, "2099-01-01T00:00:00.000Z");
+    const railBefore = parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10);
+    await testEnv.COUNTERS.put(railKey, String(railBefore + 2));
+
+    const first = await reverseRailBookedBeforeSeam(testEnv, ["5reverse01", "5REVERSE02", "5reverse01"]);
+    expect(first.reversed.map((entry) => entry.transaction).sort()).toEqual(["5REVERSE02", "5reverse01"]);
+    expect(first.reversed[0]?.wallet).toBe(wallet);
+    expect(first.reversed[0]?.rail).toBe("solana");
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+
+    // A second press finds the markers and moves nothing.
+    const second = await reverseRailBookedBeforeSeam(testEnv, ["5reverse01", "5reverse02"]);
+    expect(second.reversed).toEqual([]);
+    expect(second.already_reversed.sort()).toEqual(["5reverse01", "5reverse02"]);
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+    await testEnv.COUNTERS.delete(KV_KEYS.railMeterStart);
+  });
+
+  it("refuses to reverse a rail the till booked itself, a certificate after the seam, or a transaction nobody minted for", async () => {
+    const month = metricsMonth();
+    const railKey = KV_KEYS.metric(month, "rail", "solana");
+    // The till ran for this one: its record carries no source.
+    const tillWallet = "TiLlKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHz";
+    await recordSettlement(testEnv, "/api/buy/hello", {
+      paidUsdc: 0.0075,
+      minimumUsdc: 0.0075,
+      payer: tillWallet,
+      transaction: "5tillbooked01",
+      network: SOLANA_NETWORK,
+    });
+    await mintCertificate(testEnv, {
+      itemId: "hello",
+      paidUsdc: 0.0075,
+      network: SOLANA_NETWORK,
+      payer: tillWallet,
+      settlementTx: "5tillbooked01",
+    });
+    // Dated after the seam: the till is the record, the bump stands.
+    const lateWallet = "LaTeKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnH1";
+    await testEnv.COUNTERS.put(KV_KEYS.railMeterStart, "2026-01-01T00:00:00.000Z");
+    await mintCertificate(testEnv, {
+      itemId: "hello",
+      paidUsdc: 0.0075,
+      network: SOLANA_NETWORK,
+      payer: lateWallet,
+      settlementTx: "5afterseam01",
+    });
+    await testEnv.COUNTERS.put(
+      KV_KEYS.payerSettle(lateWallet, "5afterseam01"),
+      JSON.stringify({ item: "hello", at: new Date().toISOString(), transaction: "5afterseam01", source: "certificate" }),
+    );
+    const railBefore = parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10);
+
+    const pass = await reverseRailBookedBeforeSeam(testEnv, ["5afterseam01", "5nobodyminted", "5tillbooked01"]);
+    expect(pass.reversed).toEqual([]);
+    const reasons = Object.fromEntries(pass.refused.map((entry) => [entry.transaction, entry.reason]));
+    expect(reasons["5afterseam01"]).toContain("at or after the seam");
+    expect(reasons["5nobodyminted"]).toContain("no certificate");
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+
+    // Move the seam past the till-booked certificate: still refused,
+    // because the till's own record says the bump was the till's.
+    await testEnv.COUNTERS.put(KV_KEYS.railMeterStart, "2099-01-01T00:00:00.000Z");
+    const again = await reverseRailBookedBeforeSeam(testEnv, ["5tillbooked01"]);
+    expect(again.reversed).toEqual([]);
+    expect(again.refused[0]?.reason).toContain("the till wrote this settle's record itself");
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore);
+    await testEnv.COUNTERS.delete(KV_KEYS.railMeterStart);
+  });
+
+  it("refuses everything when no seam exists, and names why", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.railMeterStart);
+    const pass = await reverseRailBookedBeforeSeam(testEnv, ["5anything"]);
+    expect(pass.meter_start).toBeNull();
+    expect(pass.reversed).toEqual([]);
+    expect(pass.refused[0]?.reason).toContain("no seam");
   });
 });

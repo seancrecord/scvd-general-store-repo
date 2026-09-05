@@ -57,15 +57,8 @@ import { isRecord, type Env, type MenuItem, type TradeSettlement } from "@/types
  * up dynamically — and it only ever reads names tradeSecretNames
  * derived, never a caller's string.
  */
-export function tradeSecrets(env: Env, partner: TradePartner): TradeSecrets | null {
-  if (partner.sandbox) {
-    // The published secret. Test-mode by construction; a guard holds it.
-    return {
-      signing: partner.sandbox.signing_secret,
-      provider_key: partner.sandbox.provider_key,
-    };
-  }
-  const names = tradeSecretNames(partner);
+function readSecretSet(env: Env, partner: TradePartner, itemId?: string): TradeSecrets | null {
+  const names = tradeSecretNames(partner, itemId);
   const bag = env as unknown as Record<string, unknown>;
   const read = (name: string): string | undefined => {
     const value = bag[name];
@@ -85,6 +78,54 @@ export function tradeSecrets(env: Env, partner: TradePartner): TradeSecrets | nu
     secrets.provider_key = providerKey;
   }
   return secrets;
+}
+
+/**
+ * The secrets a call for ONE ITEM verifies against: the item's own
+ * pair when the partner issues one per listing, else the account's.
+ * Without an item (the check desk, the statement, the claim) the
+ * caller tries every candidate — tradeSecretCandidates below.
+ */
+export function tradeSecrets(env: Env, partner: TradePartner, itemId?: string): TradeSecrets | null {
+  if (partner.sandbox) {
+    // The published secret. Test-mode by construction; a guard holds it.
+    return {
+      signing: partner.sandbox.signing_secret,
+      provider_key: partner.sandbox.provider_key,
+    };
+  }
+  if (itemId) {
+    const perListing = readSecretSet(env, partner, itemId);
+    if (perListing) return perListing;
+  }
+  return readSecretSet(env, partner);
+}
+
+export interface TradeSecretCandidate {
+  scope: "account" | "listing";
+  item_id?: string;
+  secrets: TradeSecrets;
+}
+
+/** Every secret set the account has on this side: the account's own, then one per provisioned listing. */
+export function tradeSecretCandidates(env: Env, partner: TradePartner): TradeSecretCandidate[] {
+  if (partner.sandbox) {
+    const secrets = tradeSecrets(env, partner);
+    return secrets ? [{ scope: "account", secrets }] : [];
+  }
+  const candidates: TradeSecretCandidate[] = [];
+  const account = readSecretSet(env, partner);
+  if (account) candidates.push({ scope: "account", secrets: account });
+  for (const itemId of partner.items) {
+    const secrets = readSecretSet(env, partner, itemId);
+    if (secrets) candidates.push({ scope: "listing", item_id: itemId, secrets });
+  }
+  return candidates;
+}
+
+/** Whether ONE item can be ordered: its own pair, or the account's. */
+export function tradeItemProvisioned(env: Env, partner: TradePartner, itemId: string): boolean {
+  return tradeSecrets(env, partner, itemId) !== null;
 }
 
 /* ------------------------------------------------------------------ */

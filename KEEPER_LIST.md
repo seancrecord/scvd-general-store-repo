@@ -26,6 +26,55 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **TEST — flip the doors (09-05).** You ruled the split; it is
+  built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a
+  656 KB Worker (the store is 3.5 MB) that answers the unpaid
+  knock on `/api/buy/*` with the store's own checks and hands
+  everything else to the store over a service binding
+  (`doors/wrangler.jsonc`). Locally it starts in 79ms against
+  the store's 181; the canary said Cloudflare's floor is 5.
+  `test/doors-parity.spec.ts` holds every door's answer
+  byte-equal across both Workers. The flip is safe by
+  construction — a doors Worker without its secrets hands
+  every knock to the store — so the order is (1 to 5 DONE 2026-09-05 19:55 UTC by your hand; the doors answer):
+  1. Merge the branch. The store deploys as always; nothing
+     changes on the wire yet.
+  2. `npx wrangler deploy -c doors/wrangler.jsonc` by your
+     hand. This claims the route `scvd.store/api/buy/*`
+     beside the custom domain (a route wins on its own paths;
+     Workers docs, "Routes"). Every knock now passes through
+     the doors and on to the store, marked `X-Scvd-Doors:
+     not-ready`. Cost: one hop, no change in answers.
+  3. Set the secrets on the doors Worker:
+     `npx wrangler secret put SIGNING_KEY -c doors/wrangler.jsonc`,
+     then PAY_TO_ADDRESS, CDP_API_KEY_ID, CDP_API_KEY_SECRET,
+     the same values the store holds. From the next knock the
+     doors answer the 402 themselves.
+  4. `npm run doors:live -- --doors=https://scvd-doors.seancrecord.workers.dev`
+     reads every door at both hosts and prints agrees/differs
+     per door. All agree, or stop and paste it here.
+  5. Workers Builds → create a second project on this repo
+     with deploy command `npx wrangler deploy -c
+     doors/wrangler.jsonc`, so a push to main deploys both.
+     Until then a shelf change needs step 2 again by hand.
+  6. DONE 20:16 UTC: the doors knock cold in 177ms (136 over a
+     warm 41), the canary in 31 (8 over 23); the 32-door burst
+     woke 9 cold isolates and finished in 330ms. In the note.
+     Was: READ, from your Mac after ten minutes of not touching
+     a door, so the isolate at your colo is cold:
+     `npm run cold:read -- --url=https://scvd.store/api/buy/hello --url=https://scvd-cold-canary.seancrecord.workers.dev/ --control=https://x402-list.com/robots.txt --burst`
+     That is the store's cold penalty from a clean vantage,
+     which the sandbox could never give (its proxy added
+     ~370ms to every first knock; corrected in the research
+     note 20:05 UTC). Paste it into the note.
+  7. LOOK, the next morning: x402-list's per-check history
+     (`/api/v1/services/sean-claude-van-damme-s-general-store/checks`)
+     and `.github/workflows/cold-read.yml`'s artifact. The night
+     reads should sit near 100ms with 31 of 31 found.
+  Rollback at any step: delete the route in the dashboard
+  (Workers → scvd-doors → Domains & Routes), or remove the
+  `routes` block in `doors/wrangler.jsonc` and deploy it.
+
 - **CV's four rounds, 2026-09-04, "give me my decisions with
   drafts."** Six on the desk, ruled the same evening. RULED
   1: payer purchases are derived — one lossless record per
@@ -49,7 +98,21 @@ build, it is on the roadmap.
   moved: counters-vs-rows is a desk reading of three floors,
   and what pages is a certificate carrying a payer and a
   transaction the books never recorded. PRESS again once
-  deployed, then read the books check. RULED 2: the verify-failure
+  deployed, then read the books check. THEN, THE SAME
+  EVENING: the first press bumped the till's August Solana
+  rail counter for both 2026-08-05 settles, and both
+  certificates predate the rail-meter seam the certificate
+  walk already counts up to — the storefront read 5 on
+  Solana for 3. The rebook now leaves the rail count to the
+  walk before the seam (the settle and the money still
+  book). PRESS once deployed: `POST /admin/repair/rail-seam`
+  with `{"transactions": [...]}` — the transaction half of
+  each `counters_rebooked` entry from the payer-settles
+  press. It checks every transaction against its certificate
+  before a counter moves and refuses the rest with reasons;
+  a second press is a no-op. Then read /rails: Solana should
+  fall by two and rail_not_recorded rise by two. Corrections
+  entry on the ledger. RULED 2: the verify-failure
   classifier fixed both ways — a facilitator verdict wearing
   a 4xx books under the facilitator's own reason, and a bare
   401/403/429 books as `upstream_auth`, the emergency.
@@ -496,20 +559,23 @@ Do not relitigate without you.
   Two of the answers are dialect fields (`timestamp_unit`; whether
   the provider key is a separate secret) and both fail closed if
   guessed wrong. Nothing goes live until they answer.
-- **Hands (Hal answered 2026-09-04; nothing is minted here)** —
-  create ONE PAUSED LISTING PER ITEM at
+- **Hands (Hal issues ONE PAIR PER LISTING; nothing is minted here)** —
+  create one PAUSED listing per item at
   `https://sell.halmarket.dev/services/new`: endpoint URL = the
   item's `door` on the hal row of `/api/trade/contract` (nine of
-  them), price = a fixed integer in sats at or above that item's
-  `trade_price_usd` at the day's rate, rounded up. Hal shows a
-  provider key and a signing secret; put them with `wrangler secret
-  put TRADE_PROVIDER_KEY_HAL` and `TRADE_SECRET_HAL`, never through
-  a chat with an agent. If Hal issues a pair PER LISTING rather than
-  per account, tell me before putting anything: secrets keyed per
-  item is a small change on this side. Confirm to Hal only the
-  listing id and `is_paused: true`. The contract row flips to
-  `provisioned: true` on its own. No paid canary without your word
-  and theirs; the fixture on the row is the no-spend check.
+  them), payment type "API key", price = a fixed integer in sats at
+  or above that item's `trade_price_usd` at the day's rate, rounded
+  up. After each create Hal shows that listing's provider key and
+  signing secret; put them under the ITEM'S names, never through a
+  chat with an agent:
+  `wrangler secret put TRADE_PROVIDER_KEY_HAL__<ITEM_ID>` and
+  `wrangler secret put TRADE_SECRET_HAL__<ITEM_ID>` (item id
+  upper-cased: `TRADE_SECRET_HAL__CONTEXT_ANCHOR`). Eighteen puts.
+  The contract row flips to `provisioned: true` and `secret_scope:
+  per_listing` on its own, and each item row says whether its pair
+  is set. Confirm to Hal only the listing ids and `is_paused: true`.
+  No paid canary without your word and theirs; the fixture on the
+  row is the no-spend check.
 - **RULE** — flip `hal` from `test` to `live` in
   `src/store/trade-counter.ts` when the listings resume. Hal pays
   sats over Lightning (OpenNode, mainnet) at 95% of each listing's

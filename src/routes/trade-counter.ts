@@ -7,7 +7,7 @@ import {
   organizationRef,
 } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
-import { diagnoseTradeRequest, verifyTradeRequest } from "@/lib/trade-auth";
+import { diagnoseTradeRequest, verifyTradeRequest, type TradeDialect, type TradeSecrets } from "@/lib/trade-auth";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { fulfillPurchase } from "@/services/fulfillment";
 import {
@@ -30,6 +30,9 @@ import {
   tradeStatement,
   utcDay,
   validateTradeInputs,
+  tradeItemProvisioned,
+  tradeSecretCandidates,
+  type TradeSecretCandidate,
 } from "@/services/trade-counter";
 import { claimTradeNonce, peekTradeNonce } from "@/services/trade-nonces";
 import { STORE_SERVICE_NAME, getMenuItem } from "@/store";
@@ -64,6 +67,7 @@ import {
   TRADE_WHAT_IT_IS_FOR,
   TRADE_WHAT_THIS_IS,
   TRADE_WHAT_THIS_IS_NOT,
+  TRADE_WHO_BUYS,
   TRADE_WHY,
   getTradePartner,
   tradeEligibleButUnshelved,
@@ -231,8 +235,13 @@ function accountRows(base: string, env: Env) {
     site: partner.site,
     dialect: partner.dialect,
     mode: partner.mode,
-    provisioned: tradeSecrets(env, partner) !== null,
-    door_status: tradeSecrets(env, partner) !== null ? "open" : "awaiting_secret",
+    provisioned: tradeSecretCandidates(env, partner).length > 0,
+    door_status: tradeSecretCandidates(env, partner).length > 0 ? "open" : "awaiting_secret",
+    secret_scope: tradeSecretCandidates(env, partner).some((row) => row.scope === "listing")
+      ? "per_listing"
+      : "per_account",
+    secret_scope_note:
+      "per_account: one pair verifies every item. per_listing: the partner issues one pair per listing and each item verifies against its own; an item without a pair on this side answers 503 account_not_provisioned naming the item.",
     opened: partner.opened,
     partner_share_bps: partner.partner_share_bps,
     settles_in: partner.settles_in,
@@ -262,6 +271,7 @@ function accountRows(base: string, env: Env) {
           item_id: itemId,
           /** The concrete door, for a marketplace that lists one endpoint URL per item. */
           door: `${base}/api/trade/${partner.id}/${itemId}`,
+          provisioned: tradeItemProvisioned(env, partner, itemId),
           trade_price_usd: price,
           partner_share_usd: Math.round((price - tradeNetUsd(price, partner.partner_share_bps)) * 100) / 100,
           store_net_usd: tradeNetUsd(price, partner.partner_share_bps),
@@ -371,6 +381,27 @@ tradeCounterRoutes.get("/api/trade/catalog", (c) => {
   });
 });
 
+/**
+ * Verify a signed call against every pair the account holds, first
+ * match wins; the last refusal stands when none does. Used where the
+ * path carries no item (statement, claim), since a partner that
+ * issues one pair per listing may sign those with any of them.
+ */
+async function verifyAgainstCandidates(
+  candidates: TradeSecretCandidate[],
+  dialect: TradeDialect,
+  header: (name: string) => string | undefined,
+  rawBody: string,
+): Promise<Awaited<ReturnType<typeof verifyTradeRequest>>> {
+  const now = Date.now();
+  let last: Awaited<ReturnType<typeof verifyTradeRequest>> | undefined;
+  for (const candidate of candidates) {
+    last = await verifyTradeRequest({ dialect, header, rawBody, secrets: candidate.secrets, now_ms: now });
+    if (last.ok) return last;
+  }
+  return last ?? { ok: false, code: "bad_signature" };
+}
+
 /* ------------------------------------------------------------------ */
 /* The check desk                                                     */
 /* ------------------------------------------------------------------ */
@@ -389,20 +420,38 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
    * anything: every check that needs no secret runs and is reported,
    * and the two that do are reported as unverifiable, by name.
    */
-  const secrets = tradeSecrets(c.env, partner) ?? { signing: "" };
+  const candidates = tradeSecretCandidates(c.env, partner);
   if (await checkDeskBudgetSpent(c.env, partner)) {
     const error = errorByCode("desk_rate_limited");
     return c.json(refusal(error, error.meaning), 429);
   }
   const dialect = TRADE_DIALECTS[partner.dialect];
-  const diagnosis = await diagnoseTradeRequest({
-    dialect,
-    header: (name) => c.req.header(name),
-    rawBody,
-    secrets,
-    now_ms: Date.now(),
-    reveal: partner.sandbox !== undefined,
-  });
+  const now = Date.now();
+  const diagnose = (secrets: TradeSecrets) =>
+    diagnoseTradeRequest({
+      dialect,
+      header: (name) => c.req.header(name),
+      rawBody,
+      secrets,
+      now_ms: now,
+      reveal: partner.sandbox !== undefined,
+    });
+  /*
+   * ONE PAIR PER LISTING (pass ten): the desk has no item in its
+   * path, so it tries every pair the account has on this side and
+   * reports the one that verified. Nothing leaks: a caller who holds
+   * a pair already knows which listing it belongs to.
+   */
+  let diagnosis = await diagnose(candidates[0]?.secrets ?? { signing: "" });
+  let matched: (typeof candidates)[number] | undefined = diagnosis.would_pass ? candidates[0] : undefined;
+  for (const candidate of candidates.slice(1)) {
+    if (matched) break;
+    const attempt = await diagnose(candidate.secrets);
+    if (attempt.would_pass) {
+      diagnosis = attempt;
+      matched = candidate;
+    }
+  }
   const replayKey =
     dialect.signing_string === "timestamp.nonce.body"
       ? diagnosis.nonce.raw
@@ -414,6 +463,8 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
     account: partner.id,
     dialect: dialectRow(dialect),
     account_provisioned: diagnosis.account_provisioned,
+    secrets_on_this_side: candidates.map((row) => (row.scope === "listing" ? { scope: row.scope, item_id: row.item_id } : { scope: row.scope })),
+    ...(matched ? { secret_matched: matched.scope === "listing" ? { scope: "listing", item_id: matched.item_id } : { scope: "account" } } : {}),
     ...(diagnosis.account_provisioned
       ? {}
       : {
@@ -490,8 +541,8 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
     const error = errorByCode("unknown_account");
     return c.json(refusal(error, error.meaning), 404);
   }
-  const secrets = tradeSecrets(c.env, partner);
-  if (!secrets) {
+  const candidates = tradeSecretCandidates(c.env, partner);
+  if (candidates.length === 0) {
     const error = errorByCode("account_not_provisioned");
     return c.json(refusal(error, error.meaning), 503);
   }
@@ -499,14 +550,8 @@ tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
   }
-  // A GET signs the empty body: timestamp.nonce."" under the account's dialect.
-  const verdict = await verifyTradeRequest({
-    dialect: TRADE_DIALECTS[partner.dialect],
-    header: (name) => c.req.header(name),
-    rawBody: "",
-    secrets,
-    now_ms: Date.now(),
-  });
+  // A GET signs the empty body: timestamp.nonce."" under the account's dialect. Any pair the account holds may sign it.
+  const verdict = await verifyAgainstCandidates(candidates, TRADE_DIALECTS[partner.dialect], (name) => c.req.header(name), "");
   if (!verdict.ok) {
     const error = errorByCode(verdict.code);
     return c.json(refusal(error, error.meaning), 401);
@@ -571,6 +616,7 @@ function roomJson(base: string) {
     what_you_can_use_it_for: TRADE_WHAT_IT_IS_FOR,
     what_this_is_not: TRADE_WHAT_THIS_IS_NOT,
     why_a_marketplace_would: TRADE_WHY,
+    who_buys_on_account: TRADE_WHO_BUYS,
     how_it_works: TRADE_HOW_IT_WORKS,
     price: {
       this_surface: "free",
@@ -662,6 +708,19 @@ function tradeJsonLd(base: string): string {
   });
 }
 
+/** The FAQ as a FAQPage node, from the same rows the page prints. Inert data. */
+function tradeFaqJsonLd(): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: TRADE_FAQ.map((entry) => ({
+      "@type": "Question",
+      name: entry.q,
+      acceptedAnswer: { "@type": "Answer", text: entry.a },
+    })),
+  });
+}
+
 function roomHtml(base: string): string {
   const why = TRADE_WHY.map(
     (entry) =>
@@ -709,6 +768,10 @@ function roomHtml(base: string): string {
   <ul>${why}</ul>
 </section>
 <section>
+  <h2>Who buys on account</h2>
+  <ul>${TRADE_WHO_BUYS.map((row) => `<li><strong>${escapeHtml(row.who)}.</strong> ${escapeHtml(row.why)}</li>`).join("")}</ul>
+</section>
+<section>
   <h2>How it works</h2>
   <ol>${steps}</ol>
 </section>
@@ -719,7 +782,7 @@ function roomHtml(base: string): string {
     <thead><tr><th>Item</th><th>Retail</th><th>Trade price</th><th>Store nets</th><th>Fields</th></tr></thead>
     <tbody>${shelf}</tbody>
   </table>
-  <p class="menu-desc">Not at the counter: the penny shelf (under $${TRADE_MIN_RETAIL_USD} retail cannot be split in sats), the human-queue shelf, stocked units, and the term watches. The front door sells all of them.</p>
+  <p class="menu-desc">Not at the counter: the penny shelf (under $${TRADE_MIN_RETAIL_USD} retail, a partner's share of it is less than a cent in any unit), the human-queue shelf, stocked units, and the term watches. The front door sells all of them.</p>
   <p class="menu-meta">List from it by machine: <a href="/api/trade/catalog"><code>/api/trade/catalog</code></a> carries every item's copy, specimen, artifact class and price at your share (<code>?account=</code>).</p>
 </section>
 <section>
@@ -809,6 +872,7 @@ ${example.how_to_compare}
     (entry) => `${entry.step}. **${entry.name}.** ${entry.what_happens} _Check it yourself: ${entry.what_you_can_check}_`,
   ).join("\n");
   const why = TRADE_WHY.map((entry) => `- **${entry.point}** ${entry.because}`).join("\n");
+  const whoBuys = TRADE_WHO_BUYS.map((entry) => `- **${entry.who}.** ${entry.why}`).join("\n");
   const sandbox = sandboxBlock(base);
   const dialect = dialectRow(TRADE_DIALECTS.canonical);
   return `# ${TRADE_COUNTER_NAME}
@@ -828,6 +892,9 @@ ${
 
 ## Why a marketplace would
 ${why}
+
+## Who buys on account
+${whoBuys}
 
 ## How it works
 ${steps}
@@ -891,7 +958,7 @@ tradeCounterRoutes.get("/trade", async (c) => {
         description: ROOM_DESCRIPTION,
         path: "/trade",
         markdownAlt: "/trade.md",
-        bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}`,
+        bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}\n${tradeFaqJsonLd()}`,
       }),
     );
   }
@@ -910,8 +977,8 @@ tradeCounterRoutes.get("/api/trade/:partner/claim", async (c) => {
     const error = errorByCode("unknown_account");
     return c.json(refusal(error, error.meaning), 404);
   }
-  const secrets = tradeSecrets(c.env, partner);
-  if (!secrets) {
+  const candidates = tradeSecretCandidates(c.env, partner);
+  if (candidates.length === 0) {
     const error = errorByCode("account_not_provisioned");
     return c.json(refusal(error, error.meaning), 503);
   }
@@ -919,13 +986,7 @@ tradeCounterRoutes.get("/api/trade/:partner/claim", async (c) => {
     const error = errorByCode("counter_closed");
     return c.json(refusal(error, error.meaning), 503);
   }
-  const verdict = await verifyTradeRequest({
-    dialect: TRADE_DIALECTS[partner.dialect],
-    header: (name) => c.req.header(name),
-    rawBody: "",
-    secrets,
-    now_ms: Date.now(),
-  });
+  const verdict = await verifyAgainstCandidates(candidates, TRADE_DIALECTS[partner.dialect], (name) => c.req.header(name), "");
   if (!verdict.ok) {
     const error = errorByCode(verdict.code);
     return c.json(refusal(error, error.meaning), 401);
@@ -993,10 +1054,19 @@ tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
     return c.json(refusal(error, error.meaning), 413);
   }
 
-  const secrets = tradeSecrets(c.env, partner);
+  const secrets = tradeSecrets(c.env, partner, c.req.param("item_id"));
   if (!secrets) {
     const error = errorByCode("account_not_provisioned");
-    return c.json(refusal(error, error.meaning), 503);
+    const anyPair = tradeSecretCandidates(c.env, partner).length > 0;
+    return c.json(
+      refusal(
+        error,
+        anyPair
+          ? `This account holds secrets on this side, but none for the listing ${c.req.param("item_id")}: the partner issues one pair per listing and this item's pair is not set yet.`
+          : error.meaning,
+      ),
+      503,
+    );
   }
   if (!c.env.TRADE_NONCES) {
     const error = errorByCode("counter_closed");
