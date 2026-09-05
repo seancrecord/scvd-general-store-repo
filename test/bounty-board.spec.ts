@@ -8,7 +8,10 @@ import {
   bountyBoard,
   claimBounty,
   openBounty,
+  type ClaimInput,
 } from "@/services/bounty-board";
+import { crowdWalkRow } from "@/services/crowd-walks";
+import { SOLANA_CHAIN, SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { BASE_USDC, POLYGON_USDC, TRANSFER_TOPIC } from "@/lib/base-rpc";
@@ -663,5 +666,237 @@ describe("an unconfirmed claim is released, not kept", () => {
       "a stale read burned a real settlement permanently",
     ).toBeNull();
     expect(String(refusal)).toMatch(/could not be confirmed/);
+  });
+});
+
+/**
+ * THE FOURTH RAIL ON THE BOARD (2026-09-05, SOLANA_PARITY.md #2): a
+ * Solana-wallet shopper wrote in asking why a Solana door could not be
+ * walked for a reward. The bounty captures the Solana rail, the claim
+ * verifier reads pre/post token balances on Solana, and the reward
+ * STILL pays in Base USDC to a 0x address — money-out on Solana is
+ * gap #4 and stays shut. Two clocks on the record: the slot the
+ * settlement must postdate, and the Base block the payout scans from.
+ */
+describe("the fourth rail on the board", () => {
+  const SIG = "5".repeat(87);
+  const SOL_SHOPPER = "BuYeRWaLLeT1111111111111111111111111111111a";
+  const SOL_DOOR = "SeLLeRWaLLeT111111111111111111111111111111b";
+  const OPEN_SLOT = 300_000_000;
+
+  const tokenBalance = (owner: string, amount: string, accountIndex: number) => ({
+    accountIndex,
+    mint: SOLANA_USDC_MINT,
+    owner,
+    uiTokenAmount: { amount },
+  });
+
+  /** A settled SPL USDC transfer: shopper debited, door credited. */
+  const settledTx = (opts: {
+    slot?: number;
+    amount?: string;
+    err?: unknown;
+    from?: string;
+    to?: string;
+  } = {}) => ({
+    slot: opts.slot ?? OPEN_SLOT + 100,
+    meta: {
+      err: opts.err ?? null,
+      preTokenBalances: [
+        tokenBalance(opts.from ?? SOL_SHOPPER, opts.amount ?? "50000", 0),
+        tokenBalance(opts.to ?? SOL_DOOR, "0", 1),
+      ],
+      postTokenBalances: [
+        tokenBalance(opts.from ?? SOL_SHOPPER, "0", 0),
+        tokenBalance(opts.to ?? SOL_DOOR, opts.amount ?? "50000", 1),
+      ],
+    },
+    transaction: { message: { accountKeys: [] } },
+  });
+
+  /**
+   * The Solana world: the door quotes Solana (and, optionally, Base
+   * beside it), the Solana node answers getSlot and getTransaction,
+   * and everything EVM (the Base head, the oracle) falls through to
+   * the EVM world.
+   */
+  const solanaWorld = (opts: {
+    tx?: unknown;
+    headSlot?: number;
+    slotAtOpen?: number;
+    alsoBase?: boolean;
+  } = {}): typeof fetch => {
+    const evm = world();
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      if (url.startsWith("https://shop.example/")) {
+        const solanaEntry = {
+          scheme: "exact",
+          network: SOLANA_CHAIN,
+          amount: "50000",
+          asset: SOLANA_USDC_MINT,
+          payTo: SOL_DOOR,
+        };
+        const baseEntry = {
+          scheme: "exact",
+          network: "eip155:8453",
+          amount: "50000",
+          asset: BASE_USDC,
+          payTo: DOOR_PAY_TO,
+        };
+        return new Response("{}", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": btoa(
+              JSON.stringify({
+                x402Version: 2,
+                accepts: opts.alsoBase ? [solanaEntry, baseEntry] : [solanaEntry],
+              }),
+            ),
+          },
+        });
+      }
+      const body = JSON.parse(String(init?.body ?? "{}")) as { method?: string };
+      if (body.method === "getSlot") {
+        return Response.json({
+          jsonrpc: "2.0",
+          id: 1,
+          result: opts.headSlot ?? opts.slotAtOpen ?? OPEN_SLOT,
+        });
+      }
+      if (body.method === "getTransaction") {
+        return Response.json({
+          jsonrpc: "2.0",
+          id: 1,
+          result: opts.tx === undefined ? settledTx() : opts.tx,
+        });
+      }
+      return evm(input, init);
+    }) as typeof fetch;
+  };
+
+  async function openSolanaBounty(alsoBase = false) {
+    const opening = solanaWorld({ slotAtOpen: OPEN_SLOT, alsoBase });
+    vi.stubGlobal("fetch", opening);
+    return openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: opening },
+    );
+  }
+
+  const solanaClaim = async (bountyId: string, over: Partial<ClaimInput> = {}) =>
+    claimBounty(
+      testEnv,
+      {
+        bountyId,
+        txHash: SIG,
+        payer: SOL_SHOPPER,
+        payoutTo: PAYOUT_TO,
+        ...over,
+      },
+      { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: globalThis.fetch },
+    );
+
+  it("captures a Solana-only door with both clocks and pays its Solana-verified claim in Base USDC", async () => {
+    const bounty = await openSolanaBounty();
+    expect(bounty.network).toBe(SOLANA_CHAIN);
+    expect(bounty.pay_to).toBe(SOL_DOOR);
+    expect(bounty.opened_slot).toBe(OPEN_SLOT);
+    // The Base head at the same instant: the payout rail's clock.
+    expect(bounty.opened_block).toBe(500_000);
+
+    // Well past finality, after the opening slot.
+    vi.stubGlobal("fetch", solanaWorld({ headSlot: OPEN_SLOT + 1_000 }));
+    const result = await claimBounty(
+      testEnv,
+      {
+        bountyId: bounty.bounty_id,
+        txHash: SIG,
+        payer: SOL_SHOPPER,
+        payoutTo: PAYOUT_TO,
+        observation: "402 clean, paid on Solana, goods returned",
+      },
+      { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: globalThis.fetch },
+    );
+    expect(result.what_was_verified).toContain("succeeded on Solana");
+    expect(result.what_was_verified).toContain("in a slot after");
+    // One payout rail, stated: the reward is Base USDC regardless.
+    expect(result.payout.asset).toBe(BASE_USDC);
+    expect(result.payout.chain).toBe("eip155:8453");
+    expect(result.payout.authorization.to).toBe(PAYOUT_TO);
+
+    const board = await bountyBoard(testEnv);
+    const claim = board.bounties[0]?.claim;
+    expect(board.bounties[0]?.status).toBe("paid");
+    // The slot is kept, never a block; the signature keeps its case.
+    expect(claim?.settled_slot).toBe(OPEN_SLOT + 100);
+    expect(claim?.settled_block).toBeUndefined();
+    expect(claim?.tx_hash).toBe(SIG);
+    expect(claim?.payer).toBe(SOL_SHOPPER);
+    // The replay key is chain-prefixed and case-preserving.
+    expect(await testEnv.COUNTERS.get(KV_KEYS.bountyTx(`sol:${SIG}`))).toBeTruthy();
+    // The corpus row prints the slot as a slot.
+    const row = await crowdWalkRow(board.bounties[0]!);
+    expect(row?.settlement.slot).toBe(OPEN_SLOT + 100);
+    expect(row?.settlement.block).toBeUndefined();
+    expect(row?.network).toBe(SOLANA_CHAIN);
+  });
+
+  it("prefers an EVM rail when the door offers one beside Solana", async () => {
+    const bounty = await openSolanaBounty(true);
+    expect(bounty.network).toBe("eip155:8453");
+    expect(bounty.pay_to).toBe(DOOR_PAY_TO);
+    expect(bounty.opened_slot).toBeUndefined();
+  });
+
+  it("reads the claim's shapes against the bounty's rail, and the payout stays 0x", async () => {
+    const bounty = await openSolanaBounty();
+    vi.stubGlobal("fetch", solanaWorld({ headSlot: OPEN_SLOT + 1_000 }));
+    await expect(
+      solanaClaim(bounty.bounty_id, { txHash: TX }),
+    ).rejects.toThrow(/base58 Solana transaction signature/);
+    await expect(
+      solanaClaim(bounty.bounty_id, { payer: SHOPPER }),
+    ).rejects.toThrow(/base58 Solana wallet/);
+    await expect(
+      solanaClaim(bounty.bounty_id, { payoutTo: SOL_SHOPPER }),
+    ).rejects.toThrow(/payout_to must be a 0x Base address/);
+    // Nothing above touched the chain or the budget.
+    const board = await bountyBoard(testEnv);
+    expect(board.bounties[0]?.status).toBe("open");
+    expect(board.spent_this_week_usd).toBe(0);
+  });
+
+  it("refuses a missing, failed, unfinal, prehistoric, or mismatched settlement — and releases each", async () => {
+    const bounty = await openSolanaBounty();
+    const refusals: Array<[Parameters<typeof solanaWorld>[0], RegExp]> = [
+      [{ tx: null, headSlot: OPEN_SLOT + 1_000 }, /no transaction under that signature/],
+      [{ tx: settledTx({ err: { InstructionError: [0, "Custom"] } }), headSlot: OPEN_SLOT + 1_000 }, /transaction failed/],
+      [{ headSlot: OPEN_SLOT + 100 + 5 }, /slots deep/],
+      [{ tx: settledTx({ slot: OPEN_SLOT - 1 }), headSlot: OPEN_SLOT + 1_000 }, /predates the bounty/],
+      [{ tx: settledTx({ amount: "40000" }), headSlot: OPEN_SLOT + 1_000 }, /no transfer of 50000/],
+      [{ tx: settledTx({ to: SOL_SHOPPER, from: SOL_DOOR }), headSlot: OPEN_SLOT + 1_000 }, /no transfer of 50000/],
+    ];
+    for (const [worldOpts, message] of refusals) {
+      vi.stubGlobal("fetch", solanaWorld(worldOpts));
+      await expect(solanaClaim(bounty.bounty_id)).rejects.toThrow(message);
+      // Released: the settlement stays claimable and nothing is spent.
+      expect(await testEnv.COUNTERS.get(KV_KEYS.bountyTx(`sol:${SIG}`))).toBeNull();
+    }
+    expect((await bountyBoard(testEnv)).spent_this_week_usd).toBe(0);
+    // And the same signature pays once the chain agrees.
+    vi.stubGlobal("fetch", solanaWorld({ headSlot: OPEN_SLOT + 1_000 }));
+    const paid = await claimBounty(
+      testEnv,
+      { bountyId: bounty.bounty_id, txHash: SIG, payer: SOL_SHOPPER, payoutTo: PAYOUT_TO },
+      { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: globalThis.fetch },
+    );
+    expect(paid.reward_usd).toBe(0.1);
   });
 });

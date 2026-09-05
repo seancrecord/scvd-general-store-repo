@@ -33,14 +33,19 @@ describe a board the other does not run.
    402 itself and captures the terms: payTo, price, block height.
 2. **A shopper walks the door** with their own wallet: pays it for
    real, keeps what it returns.
-3. **The shopper claims**: POST the settlement transaction hash,
-   their paying wallet, an address to be paid at, and (optionally)
-   what they observed — status codes, whether a PAYMENT-RESPONSE
-   receipt came back, what was delivered.
+3. **The shopper claims**: POST the settlement transaction id (a 0x
+   hash on Base or Polygon, a base58 signature on Solana), their
+   paying wallet in that rail's own shape, a 0x address to be paid
+   at, and (optionally) what they observed — status codes, whether a
+   PAYMENT-RESPONSE receipt came back, what was delivered.
 4. **The store verifies THE CHAIN'S PART mechanically** before a
-   cent moves: the receipt is real and succeeded, the USDC transfer
-   inside it runs from the claimed payer to the captured payTo for
-   exactly the captured amount, it postdates the bounty, and the
+   cent moves, on the door's own rail: on Base and Polygon the
+   receipt is real and succeeded and the USDC Transfer log inside it
+   runs from the claimed payer to the captured payTo for exactly the
+   captured amount; on Solana the transaction did not fail, is past
+   the finality window, and its pre/post USDC token balances credit
+   the captured payTo exactly the captured amount and debit the
+   payer at least it. On every rail it postdates the bounty and the
    transaction has never been claimed before. The payout address is
    sanctions-screened, fail closed, same rule 3 as every outbound
    dollar here.
@@ -51,6 +56,24 @@ describe a board the other does not run.
    transferWithAuthorization is submittable by anyone). The store
    holds no gas, broadcasts nothing, and the payout instrument is
    itself a verifiable artifact with an expiry.
+
+## The rails (2026-09-05)
+
+Doors on Base, Polygon and Solana can be posted. When a door quotes
+more than one, the store captures an EVM rail first (Base before
+Polygon) and Solana only when the door offers nothing else. A Solana
+bounty keeps two clocks on its record: `opened_slot`, the Solana
+height a claimed settlement must postdate, and `opened_block`, the
+Base height at the same instant, because the payout scans Base from
+it. The paid claim keeps `settled_slot`, and the corpus row prints it
+as a slot, never as a block.
+
+**The reward pays in Base USDC to a 0x address on every rail, Solana
+included.** That is not parity left undone; it is SOLANA_PARITY.md
+gap 4, which stands: the payout here is an authorization the
+recipient redeems, and SPL USDC has no such instrument. A shopper who
+walks a Solana door names any 0x address for the reward — the claim
+form already takes `payout_to` apart from `payer`.
 
 ## The honest register (the part that keeps this ours)
 
@@ -72,8 +95,9 @@ describe a board the other does not run.
   fee; total capped at BOUNTY_MAX_REWARD_USD ($0.25 default).
 - Weekly budget: BOUNTY_WEEKLY_BUDGET_USD ($10 default, walkabout
   scale) — the board refuses new claims past it and says so.
-- One bounty per domain per week; one payout per transaction hash,
-  ever; authorizations expire (7 days) so unredeemed rewards return
+- One bounty per domain per week; one payout per transaction id,
+  ever (Solana signatures are keyed behind a `sol:` prefix, as
+  written — base58 is case-sensitive); authorizations expire (7 days) so unredeemed rewards return
   to the budget by themselves.
 - FIELD_WALLET_KEY gates all payouts; unset, the board is read-only
   and says so plainly.

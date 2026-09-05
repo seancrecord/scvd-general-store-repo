@@ -62,6 +62,8 @@ export interface CrowdWalk {
     tx_hash: string;
     /** Absent on claims paid before the block was kept. */
     block?: number;
+    /** The Solana slot, on the fourth rail; never printed as a block. */
+    slot?: number;
     amount_usd: number;
     payer_digest: string;
     pay_to_digest: string;
@@ -98,6 +100,7 @@ export async function crowdWalkRow(bounty: BountyRecord): Promise<CrowdWalk | nu
     settlement: {
       tx_hash: claim.tx_hash,
       ...(claim.settled_block !== undefined ? { block: claim.settled_block } : {}),
+      ...(claim.settled_slot !== undefined ? { slot: claim.settled_slot } : {}),
       amount_usd: bounty.amount_usd,
       payer_digest: await payToDigest(claim.payer),
       pay_to_digest: await payToDigest(bounty.pay_to),

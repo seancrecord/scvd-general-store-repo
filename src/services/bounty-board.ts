@@ -11,7 +11,15 @@ import {
   usdcTransfers,
 } from "@/lib/base-rpc";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
-import { readPayTo } from "@/lib/pay-to";
+import { familyOf, readPayTo, SOLANA_ADDRESS } from "@/lib/pay-to";
+import {
+  getSlot,
+  isSolanaSignature,
+  SOLANA_CHAIN,
+  SOLANA_USDC_MINT,
+  solanaTransactionFacts,
+} from "@/lib/solana-rpc";
+import { SOLANA_FINALITY_SLOTS } from "@/services/attestation";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newEntryId } from "@/lib/ids";
@@ -68,6 +76,16 @@ export interface BountyRecord {
   /** CAIP-2 of the rail the captured terms quote. Absent means Base —
    * every bounty opened before the third rail's parity build. */
   network?: string;
+  /**
+   * THE FOURTH RAIL ON THE BOARD (2026-09-05, SOLANA_PARITY.md #2):
+   * a bounty on a Solana door keeps two heights, not one. `opened_slot`
+   * is the settlement rail's height at posting — the slot a claimed
+   * signature must postdate. `opened_block` stays the Base head at the
+   * same instant, because the PAYOUT is Base whatever the door's rail,
+   * and the redemption reader scans Base from that block. Two chains,
+   * two clocks, each named. Absent on every EVM bounty.
+   */
+  opened_slot?: number;
   amount_atomic: string;
   amount_usd: number;
   reward_usd: number;
@@ -97,6 +115,12 @@ export interface BountyRecord {
      * row cites it. Absent on claims paid before it was written down.
      */
     settled_block?: number;
+    /**
+     * The slot a Solana settlement landed in, the chain's part on the
+     * fourth rail. Present only when the bounty's rail is Solana; the
+     * corpus row prints it as `slot`, never as `block`.
+     */
+    settled_slot?: number;
     /**
      * OUR OWN KNOCK AT THE MOMENT OF THE CLAIM (2026-09-04, the keeper:
      * "what if they type nonsense?"). The walker's observation is a
@@ -243,12 +267,14 @@ export async function openBounty(
   } | null;
   const accepts = Array.isArray(challenge?.accepts) ? challenge.accepts : [];
   /**
-   * EVM entries only, Base preferred, Polygon accepted (parity ruling
+   * EVM entries first, Base preferred, Polygon accepted (parity ruling
    * 2026-08-21: a Polygon-only door is still a door somebody should
-   * be paid to walk). The claim verifier reads the bounty's own chain,
-   * so whichever rail is captured here is the rail the settlement
-   * must land on. Solana doors stay refused — the claim check for
-   * that rail is a per-build item (SOLANA_PARITY.md #2).
+   * be paid to walk). Solana accepted last (2026-09-05, the fourth
+   * rail — a Solana-wallet shopper asked, in writing, why a Solana door
+   * could not be walked for a reward). The claim verifier reads the
+   * bounty's own chain, so whichever rail is captured here is the rail
+   * the settlement must land on. The REWARD is Base USDC on every rail:
+   * money-out on Solana is SOLANA_PARITY.md #4 and stays shut.
    */
   const evmEntries = accepts
     .map((entry) => ({
@@ -273,16 +299,25 @@ export async function openBounty(
           ? -1
           : 1,
     );
+  const solanaEntries = accepts
+    .filter(
+      (entry) =>
+        entry.network === SOLANA_CHAIN &&
+        (entry.scheme ?? "exact") === "exact" &&
+        Number.isFinite(amountUsd(entry)),
+    )
+    .sort((a, b) => amountUsd(a) - amountUsd(b));
   const chosenPair = evmEntries[0];
-  const chosen = chosenPair?.entry;
+  const chosenSolana = chosenPair ? undefined : solanaEntries[0];
+  const chosen = chosenPair?.entry ?? chosenSolana;
   const bountyChain = chosenPair?.chain;
-  if (
-    !chosen?.payTo ||
-    !bountyChain ||
-    !isSameAddress(chosen.asset ?? "", bountyChain.usdc)
-  ) {
+  const assetMatches = bountyChain
+    ? isSameAddress(chosen?.asset ?? "", bountyChain.usdc)
+    : chosen?.asset === SOLANA_USDC_MINT;
+  const railCaip2 = bountyChain?.caip2 ?? SOLANA_CHAIN;
+  if (!chosen?.payTo || !assetMatches) {
     throw new BountyRefused(
-      "no payable USDC rail on Base or Polygon could be read from the door's 402 — the claim verifier would have nothing to verify against",
+      "no payable USDC rail on Base, Polygon or Solana could be read from the door's 402 — the claim verifier would have nothing to verify against",
     );
   }
   /**
@@ -303,7 +338,7 @@ export async function openBounty(
    * Refusing at open is the only honest moment: after that, somebody
    * is already out of pocket.
    */
-  const payToRead = readPayTo(chosen.payTo, chosen.network ?? "eip155:8453");
+  const payToRead = readPayTo(chosen.payTo, railCaip2);
   if (!payToRead.payable) {
     throw new BountyRefused(
       `${payToRead.detail} A bounty captures this value and the claim verifier compares an on-chain transfer against it, so a shopper who managed to pay could never prove it — no bounty is opened, and nothing is held.`,
@@ -326,8 +361,12 @@ export async function openBounty(
     reward_usd: input.rewardUsd,
     opened_at: now.toISOString(),
     ...(input.note?.trim() ? { note: input.note.trim().slice(0, 500) } : {}),
-    network: bountyChain.caip2,
-    opened_block: await getBlockNumber(env, bountyChain),
+    network: railCaip2,
+    // The payout rail's height is always kept (the redemption reader
+    // scans Base from it); the settlement rail's height is kept beside
+    // it when the two differ.
+    opened_block: await getBlockNumber(env, bountyChain ?? BASE_EVM),
+    ...(bountyChain ? {} : { opened_slot: await getSlot(env) }),
     expires_at: new Date(
       now.getTime() + BOUNTY_OPEN_DAYS * 24 * 3600 * 1000,
     ).toISOString(),
@@ -426,14 +465,12 @@ export async function claimBounty(
       "payouts are not enabled on this deployment (the field wallet is not provisioned); the board is read-only and no claim can pay",
     );
   }
-  if (!/^0x[0-9a-fA-F]{64}$/.test(input.txHash)) {
-    throw new BountyRefused("tx_hash must be a 0x 32-byte transaction hash");
-  }
-  if (
-    !/^0x[0-9a-fA-F]{40}$/.test(input.payer) ||
-    !/^0x[0-9a-fA-F]{40}$/.test(input.payoutTo)
-  ) {
-    throw new BountyRefused("payer and payout_to must be 0x Base addresses");
+  // The payout is Base on every rail, so the payout address is 0x on
+  // every rail — checked before the bounty is even looked up.
+  if (!/^0x[0-9a-fA-F]{40}$/.test(input.payoutTo)) {
+    throw new BountyRefused(
+      "payout_to must be a 0x Base address — rewards pay in Base USDC whatever rail the door is on",
+    );
   }
   const bounty = await kvGetJson<BountyRecord>(env.COUNTERS, 
     KV_KEYS.bounty(input.bountyId),
@@ -443,6 +480,35 @@ export async function claimBounty(
     throw new BountyRefused(
       "no bounty under that id — the board is /api/bounties",
     );
+  }
+  /*
+   * THE BOUNTY'S RAIL DECIDES THE SHAPES (2026-09-05, the fourth rail).
+   * Until today the hash and payer were checked against the 0x shape
+   * before the bounty was read, which was right when every bounty was
+   * EVM. A Solana door's settlement is a base58 signature paid by a
+   * base58 wallet; the same shape check would refuse every honest
+   * claim on it with a message about Base. So the record is read
+   * first and the shapes are read against ITS rail.
+   */
+  const solanaRail = familyOf(bounty.network ?? "eip155:8453") === "solana";
+  if (solanaRail) {
+    if (!isSolanaSignature(input.txHash)) {
+      throw new BountyRefused(
+        "tx_hash must be a base58 Solana transaction signature — this bounty's door settles on Solana",
+      );
+    }
+    if (!SOLANA_ADDRESS.test(input.payer)) {
+      throw new BountyRefused(
+        "payer must be a base58 Solana wallet — the owner of the token account that paid the door",
+      );
+    }
+  } else {
+    if (!/^0x[0-9a-fA-F]{64}$/.test(input.txHash)) {
+      throw new BountyRefused("tx_hash must be a 0x 32-byte transaction hash");
+    }
+    if (!/^0x[0-9a-fA-F]{40}$/.test(input.payer)) {
+      throw new BountyRefused("payer must be a 0x address on the bounty's EVM rail");
+    }
   }
   if (bounty.status !== "open") {
     throw new BountyRefused(`that bounty is ${bounty.status}, not open`);
@@ -487,7 +553,15 @@ export async function claimBounty(
    * status "open" above and both pay. That is a separate defect with
    * no fix in this commit.
    */
-  const txKey = KV_KEYS.bountyTx(input.txHash.toLowerCase());
+  /*
+   * The replay key is the transaction id, and the two id families
+   * cannot collide (base58 has no 0x prefix), so the EVM keys keep
+   * the shape every paid claim already wrote under. Solana signatures
+   * are case-sensitive and are keyed as written, behind a `sol:`
+   * prefix so the family is legible in the KV listing.
+   */
+  const txId = solanaRail ? input.txHash : input.txHash.toLowerCase();
+  const txKey = KV_KEYS.bountyTx(solanaRail ? `sol:${txId}` : txId);
   const claimId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
   if (await kvGet(env.COUNTERS, txKey)) {
     throw new BountyRefused(
@@ -571,29 +645,88 @@ export async function claimBounty(
     // The bounty's own rail is the one the settlement must be on —
     // captured at open, defaulting Base for bounties older than the
     // third rail's parity build.
-    const claimChain = evmChainOf(bounty.network) ?? BASE_EVM;
-    const receipt = await getReceipt(env, input.txHash, claimChain);
-    if (!receipt || receipt.status !== "0x1") {
-      throw new BountyRefused(
-        `${claimChain.label} shows no successful transaction under that hash — nothing verified, nothing paid. The bounty's captured rail is ${claimChain.caip2}; a settlement on another chain cannot claim it`,
+    let railLabel: string;
+    let settledHeight: { settled_block: number } | { settled_slot: number };
+    if (solanaRail) {
+      /*
+       * SOLANA HAS NO RECEIPT LOGS: the settled outcome is the
+       * pre/post token balances, read per owner (the same reader the
+       * attestation uses — one parser, not a third). The door's owner
+       * must have been credited EXACTLY the captured amount and the
+       * payer's owner debited at least it, in a transaction that did
+       * not fail and landed after the bounty's opening slot.
+       *
+       * FINALITY IS CHECKED HERE AND NOT ON THE EVM PATH, on purpose:
+       * getTransaction at "confirmed" can answer for a transaction the
+       * cluster later drops. A reward signed against a dropped
+       * settlement is money for nothing, so a claim inside the
+       * finality window is refused, released, and told to come back.
+       */
+      const [facts, headSlot] = await Promise.all([
+        solanaTransactionFacts(env, input.txHash),
+        getSlot(env),
+      ]);
+      if (!facts) {
+        throw new BountyRefused(
+          `Solana shows no transaction under that signature — nothing verified, nothing paid. The bounty's captured rail is ${SOLANA_CHAIN}; a settlement on another chain cannot claim it`,
+        );
+      }
+      if (facts.err) {
+        throw new BountyRefused(
+          "Solana shows that transaction failed — a failed transaction moved no USDC, so there is no settlement to pay for",
+        );
+      }
+      if (headSlot - facts.slot < SOLANA_FINALITY_SLOTS) {
+        throw new BountyRefused(
+          `that settlement is ${Math.max(0, headSlot - facts.slot)} slots deep and the board pays only past ${SOLANA_FINALITY_SLOTS} — nothing is spent and the claim is released; try again in a minute`,
+        );
+      }
+      if (facts.slot < (bounty.opened_slot ?? 0)) {
+        throw new BountyRefused(
+          "that settlement predates the bounty — the board pays for walks it commissioned, not history",
+        );
+      }
+      const expected = BigInt(bounty.amount_atomic);
+      const credited = facts.deltas.some(
+        (delta) => delta.owner === bounty.pay_to && delta.delta === expected,
       );
-    }
-    const receiptBlock = Number.parseInt(receipt.blockNumber ?? "0x0", 16);
-    if (receiptBlock < bounty.opened_block) {
-      throw new BountyRefused(
-        "that settlement predates the bounty — the board pays for walks it commissioned, not history",
+      const debited = facts.deltas.some(
+        (delta) => delta.owner === input.payer && delta.delta <= -expected,
       );
-    }
-    const transfer = usdcTransfers(receipt, claimChain).find(
-      (candidate) =>
-        isSameAddress(candidate.from, input.payer) &&
-        isSameAddress(candidate.to, bounty.pay_to) &&
-        candidate.amount.toString() === bounty.amount_atomic,
-    );
-    if (!transfer) {
-      throw new BountyRefused(
-        `the receipt carries no USDC transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
+      if (!credited || !debited) {
+        throw new BountyRefused(
+          `the transaction's USDC balance changes carry no transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
+        );
+      }
+      railLabel = "Solana";
+      settledHeight = { settled_slot: facts.slot };
+    } else {
+      const claimChain = evmChainOf(bounty.network) ?? BASE_EVM;
+      const receipt = await getReceipt(env, input.txHash, claimChain);
+      if (!receipt || receipt.status !== "0x1") {
+        throw new BountyRefused(
+          `${claimChain.label} shows no successful transaction under that hash — nothing verified, nothing paid. The bounty's captured rail is ${claimChain.caip2}; a settlement on another chain cannot claim it`,
+        );
+      }
+      const receiptBlock = Number.parseInt(receipt.blockNumber ?? "0x0", 16);
+      if (receiptBlock < bounty.opened_block) {
+        throw new BountyRefused(
+          "that settlement predates the bounty — the board pays for walks it commissioned, not history",
+        );
+      }
+      const transfer = usdcTransfers(receipt, claimChain).find(
+        (candidate) =>
+          isSameAddress(candidate.from, input.payer) &&
+          isSameAddress(candidate.to, bounty.pay_to) &&
+          candidate.amount.toString() === bounty.amount_atomic,
       );
+      if (!transfer) {
+        throw new BountyRefused(
+          `the receipt carries no USDC transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
+        );
+      }
+      railLabel = claimChain.label;
+      settledHeight = { settled_block: receiptBlock };
     }
 
     /*
@@ -700,11 +833,12 @@ export async function claimBounty(
       ...bounty,
       status: "paid",
       claim: {
-        tx_hash: input.txHash.toLowerCase(),
-        payer: input.payer.toLowerCase(),
+        // Base58 is case-sensitive: a Solana id is kept as written.
+        tx_hash: txId,
+        payer: solanaRail ? input.payer : input.payer.toLowerCase(),
         payout_to: input.payoutTo.toLowerCase(),
         claimed_at: now.toISOString(),
-        settled_block: receiptBlock,
+        ...settledHeight,
         ...(houseProbe ? { house_probe: houseProbe } : {}),
         ...(input.observation
           ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
@@ -720,7 +854,7 @@ export async function claimBounty(
     return {
       bounty_id: bounty.bounty_id,
       reward_usd: bounty.reward_usd,
-      what_was_verified: `The chain's part: transaction ${input.txHash.toLowerCase()} succeeded on ${claimChain.label} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a block after the bounty existed, never claimed before. That is what the reward pays for.`,
+      what_was_verified: `The chain's part: transaction ${txId} succeeded on ${railLabel} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a ${solanaRail ? "slot" : "block"} after the bounty existed, never claimed before. That is what the reward pays for.`,
       what_was_not:
         "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
       payout: {
