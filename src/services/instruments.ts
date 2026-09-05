@@ -2,6 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 import type { MetricEvent } from "@/lib/metrics";
+import { walkerKey } from "@/lib/walkers";
 import type { Observatory, SurfaceCount } from "@/services/observatory";
 import type { Env } from "@/types";
 
@@ -122,12 +123,34 @@ export interface UnknownSplit {
   complete: boolean;
   /** Unknown because the client sent no user-agent at all: a scraper's signature. */
   no_user_agent: number;
-  /** Unknown because a referrer was present and unrecognised: somebody linking to us. */
+  /** Unknown because the referrer was one of OUR pages: a reader following the store's own links, human or browser-resident agent. */
+  self_referred: number;
+  /** Unknown because a referrer was present, unrecognised, and not ours: somebody linking to us. */
   referred: number;
   /** The referring hosts, most seen first, bounded. */
   referrer_hosts: { host: string; visits: number }[];
   /** The no-user-agent visits by surface, most seen first. */
   no_user_agent_by_surface: { surface: string; visits: number }[];
+}
+
+/**
+ * THE HANDOFF: did a free check lead to a price being asked, and to a
+ * sale? Keyed by user-agent like the census keys walkers, so it is a
+ * floor on clients (one SDK string is many agents) and can be fooled
+ * by two agents on the same string within the window. Said on the
+ * page. Distinct clients, never calls: a client that checked ten
+ * doors and bought one is one checker and one buyer.
+ */
+export interface Handoff {
+  window_minutes: number;
+  /** Distinct clients that made at least one argument-carrying free call this month. */
+  checkers: number;
+  /** ...of those, the ones a 402 was issued to within the window after a check. */
+  then_priced: number;
+  /** ...of those, the ones whose payment settled within the window after a check. */
+  then_settled: number;
+  /** The paid items those clients were priced for after a check, most seen first, bounded. */
+  items_after_check: { item: string; clients: number }[];
 }
 
 export interface InstrumentMonth {
@@ -143,7 +166,14 @@ export interface InstrumentMonth {
   paid_tool_calls: number;
   /** Organic settled sales the same month off /pulse, when the route had it. A buy_* tool is called at least twice per sale, so this is the honest right-hand side. */
   settled: number | null;
+  /** Free re-checks of already-issued artifacts at /api/verify, off /pulse: the after-the-sale half. */
+  rechecks: number | null;
+  /** The receipts and artifacts verified through the roster's own doors (verify-receipt, verify_artifact). */
+  receipts_verified: number;
+  /** MCP sessions that opened (initialize) — the denominator for how many tool calls a handshake turns into. */
+  mcp_handshakes: number;
   unknown: UnknownSplit | null;
+  handoff: Handoff | null;
   /** The reading the deltas are against, when there was one for this month. */
   since: string | null;
   truncated: boolean;
@@ -170,10 +200,14 @@ export interface InstrumentInputs {
   now?: Date;
   /** organic_settled by ISO month, off /pulse. */
   settled?: Record<string, number>;
+  /** organic_rechecks by ISO month, off /pulse. */
+  rechecks?: Record<string, number>;
   /** The previous render's stored counts. */
   last?: InstrumentReading | null;
   /** The current month's unknown split, off the event rows. */
   unknown?: UnknownSplit | null;
+  /** The current month's handoff, off the same rows. */
+  handoff?: Handoff | null;
 }
 
 function rosterEntry(surface: string): InstrumentEntry | undefined {
@@ -257,7 +291,13 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
       paid_tools: paid,
       paid_tool_calls: paid.reduce((sum, s) => sum + s.organic, 0),
       settled: inputs.settled?.[m.month] ?? null,
+      rechecks: inputs.rechecks?.[m.month] ?? null,
+      receipts_verified: free
+        .filter((s) => s.surface.startsWith("verify-receipt") || s.surface === "mcp:tool:verify_artifact")
+        .reduce((sum, s) => sum + s.organic, 0),
+      mcp_handshakes: m.surfaces.find((s) => s.surface === "mcp:initialize")?.organic ?? 0,
       unknown: m.month === currentMonth ? (inputs.unknown ?? null) : null,
+      handoff: m.month === currentMonth ? (inputs.handoff ?? null) : null,
       since: last?.at ?? null,
       truncated: m.truncated,
     };
@@ -306,8 +346,15 @@ export const UNKNOWN_HOSTS_SHOWN = 8;
  * other months, kinds and surfaces are ignored, not counted against
  * the scan. Pure so the test can hand it rows.
  */
-export function splitUnknown(events: readonly MetricEvent[], month: string, scanned: number, complete: boolean): UnknownSplit {
+export function splitUnknown(
+  events: readonly MetricEvent[],
+  month: string,
+  scanned: number,
+  complete: boolean,
+  selfHost = "",
+): UnknownSplit {
   let noUserAgent = 0;
+  let selfReferred = 0;
   let referred = 0;
   const hosts = new Map<string, number>();
   const bySurface = new Map<string, number>();
@@ -315,8 +362,12 @@ export function splitUnknown(events: readonly MetricEvent[], month: string, scan
     if (event.kind !== "porch" || event.house || event.channel !== "unknown") continue;
     if (!event.at.startsWith(month) || !isFreeInstrument(event.item)) continue;
     if (event.referrer) {
-      referred += 1;
       const host = referrerHost(event.referrer);
+      if (selfHost && host === selfHost.toLowerCase()) {
+        selfReferred += 1;
+        continue;
+      }
+      referred += 1;
       hosts.set(host, (hosts.get(host) ?? 0) + 1);
     } else {
       noUserAgent += 1;
@@ -327,21 +378,78 @@ export function splitUnknown(events: readonly MetricEvent[], month: string, scan
     rows_scanned: scanned,
     complete,
     no_user_agent: noUserAgent,
+    self_referred: selfReferred,
     referred,
     referrer_hosts: topOf(hosts, UNKNOWN_HOSTS_SHOWN).map(({ key, visits }) => ({ host: key, visits })),
     no_user_agent_by_surface: topOf(bySurface, UNKNOWN_HOSTS_SHOWN).map(({ key, visits }) => ({ surface: key, visits })),
   };
 }
 
-/** Newest rows first (the key is an inverted timestamp), so the scan can stop at the first row older than the month. */
-export const UNKNOWN_SCAN_CAP = 3000;
+/**
+ * THE HANDOFF, computed over the same rows. A client's argument-carrying
+ * free call at time T is "handed off" when the same walker key has a
+ * challenge (a 402 issued) or a settle inside (T, T + window]. The
+ * window is generous by design: an agent reads the check, decides, and
+ * signs, and the doctrine's direction of error is to understate — a
+ * narrow window would call a real handoff a coincidence, a wide one
+ * calls a coincidence a handoff, and the page says which way it leans.
+ */
+export const HANDOFF_WINDOW_MS = 30 * 60 * 1000;
+export const HANDOFF_ITEMS_SHOWN = 8;
 
-export async function readUnknownSplit(env: Env, month: string): Promise<UnknownSplit> {
+export function handoffs(events: readonly MetricEvent[], month: string, windowMs = HANDOFF_WINDOW_MS): Handoff {
+  const checks = new Map<string, number[]>();
+  const priced = new Map<string, { at: number; item: string }[]>();
+  const settled = new Map<string, number[]>();
+  for (const event of events) {
+    if (event.house || !event.at.startsWith(month)) continue;
+    const key = walkerKey(event);
+    const at = Date.parse(event.at);
+    if (event.kind === "porch" && instrumentKind(event.item) === "argument") {
+      checks.set(key, [...(checks.get(key) ?? []), at]);
+    } else if (event.kind === "challenge") {
+      priced.set(key, [...(priced.get(key) ?? []), { at, item: event.item }]);
+    } else if (event.kind === "settle") {
+      settled.set(key, [...(settled.get(key) ?? []), at]);
+    }
+  }
+  let thenPriced = 0;
+  let thenSettled = 0;
+  const items = new Map<string, number>();
+  const after = (from: number, t: number): boolean => t > from && t <= from + windowMs;
+  for (const [key, times] of checks) {
+    const pricedAfter = (priced.get(key) ?? []).filter((p) => times.some((t) => after(t, p.at)));
+    if (pricedAfter.length > 0) {
+      thenPriced += 1;
+      for (const item of new Set(pricedAfter.map((p) => p.item))) items.set(item, (items.get(item) ?? 0) + 1);
+    }
+    if ((settled.get(key) ?? []).some((s) => times.some((t) => after(t, s)))) thenSettled += 1;
+  }
+  return {
+    window_minutes: Math.round(windowMs / 60000),
+    checkers: checks.size,
+    then_priced: thenPriced,
+    then_settled: thenSettled,
+    items_after_check: topOf(items, HANDOFF_ITEMS_SHOWN).map(({ key, visits }) => ({ item: key, clients: visits })),
+  };
+}
+
+export interface MonthEvents {
+  events: MetricEvent[];
+  rows_scanned: number;
+  /** True when the scan reached the oldest row of the month; false when it hit its cap first. */
+  complete: boolean;
+}
+
+/** Newest rows first (the key is an inverted timestamp), so the scan can stop at the first row older than the month. */
+export const EVENT_SCAN_CAP = 3000;
+
+export async function readMonthEvents(env: Env, month: string): Promise<MonthEvents> {
   const events: MetricEvent[] = [];
   let cursor: string | undefined;
   let scanned = 0;
   let complete = false;
-  while (scanned < UNKNOWN_SCAN_CAP) {
+  while (scanned < EVENT_SCAN_CAP) {
     const listed = await kvList(env.COUNTERS, { prefix: "evt:", limit: 1000, ...(cursor ? { cursor } : {}) });
     const names = listed.keys.map((key) => key.name);
     scanned += names.length;
@@ -350,7 +458,7 @@ export async function readUnknownSplit(env: Env, month: string): Promise<Unknown
     for (const name of names) {
       const event = values.get(name);
       if (!event) continue;
-      if (event.at < `${month}`) {
+      if (event.at < month) {
         passedMonth = true;
         break;
       }
@@ -362,7 +470,7 @@ export async function readUnknownSplit(env: Env, month: string): Promise<Unknown
     }
     cursor = listed.cursor;
   }
-  return splitUnknown(events, month, scanned, complete);
+  return { events, rows_scanned: scanned, complete };
 }
 
 /* ---------------------------------------------------------------- */

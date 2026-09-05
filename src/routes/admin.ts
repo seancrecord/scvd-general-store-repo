@@ -2090,25 +2090,36 @@ adminRoutes.get("/admin/buyers", async (c) => {
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
   const { computePulse } = await import("@/services/pulse");
-  const { freeInstrumentUsage, readInstrumentReading, readUnknownSplit, writeInstrumentReading } = await import(
-    "@/services/instruments"
-  );
+  const { freeInstrumentUsage, handoffs, readInstrumentReading, readMonthEvents, splitUnknown, writeInstrumentReading } =
+    await import("@/services/instruments");
   const now = new Date();
-  // One wave: the observatory, the funnel's settled counts, the last
-  // reading and the unknown split read disjoint keys. The settled
-  // figure and the split are decorations; either failing leaves the
-  // page standing with the field null and said so.
-  const [observatory, pulse, last, unknown] = await Promise.all([
+  const month = metricsMonth(now);
+  // One wave: the observatory, the funnel's counts, the last reading
+  // and the month's event rows read disjoint keys. The funnel figures
+  // and everything off the rows are decorations; any failing leaves
+  // the page standing with the field null and said so.
+  const [observatory, pulse, last, rows] = await Promise.all([
     computeObservatory(c.env, now),
     computePulse(c.env).catch(() => null),
     readInstrumentReading(c.env),
-    readUnknownSplit(c.env, metricsMonth(now)).catch(() => null),
+    readMonthEvents(c.env, month).catch(() => null),
   ]);
   const settled: Record<string, number> = {};
+  const rechecks: Record<string, number> = {};
   for (const window of pulse?.months ?? []) {
-    if (window.month) settled[window.month] = window.organic_settled;
+    if (!window.month) continue;
+    settled[window.month] = window.organic_settled;
+    rechecks[window.month] = window.organic_rechecks;
   }
-  const usage = freeInstrumentUsage(observatory, { now, settled, last, unknown });
+  let selfHost = "";
+  try {
+    selfHost = new URL(c.env.STORE_BASE_URL).host;
+  } catch {
+    selfHost = "";
+  }
+  const unknown = rows ? splitUnknown(rows.events, month, rows.rows_scanned, rows.complete, selfHost) : null;
+  const handoff = rows ? handoffs(rows.events, month) : null;
+  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, last, unknown, handoff });
   deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
   return c.html(renderInstrumentsPage(usage));
 });
