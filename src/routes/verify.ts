@@ -29,6 +29,11 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import {
+  existenceVerdict,
+  type ExistenceInput,
+  type ExistenceVerdict,
+} from "@/services/certificate-anchors";
 import { canonicalizeReport } from "@/services/reports";
 import {
   CROSS_REF_INDEPENDENCE,
@@ -310,6 +315,7 @@ function receiptPageHtml(
   cert: Certificate,
   valid: boolean,
   form: string,
+  existence?: ExistenceVerdict,
 ): string {
   // The certificate binds the item ID; the page shows the shelf name
   // where the menu still knows it, and the honest id where it doesn't
@@ -347,6 +353,7 @@ function receiptPageHtml(
       ${explorer ? row("On-chain settlement", `<a href="${explorer}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
       ${cert.settled_via ? row("How it was paid for", `Trade account <strong>${escapeHtml(cert.trade_partner ?? "")}</strong>${cert.settled_via === "trade_account_test" ? " (test mode: nothing booked)" : ""}, listed trade price $${escapeHtml(String(cert.trade_price_usd ?? ""))}. <span class="menu-meta">The marketplace collected its customer's payment; this store saw none and names no chain. Refunds go through the account holder, who took the payment. Instruction digest <code>${escapeHtml(cert.trade_instruction ?? "")}</code>.</span>`) : ""}
       ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
+      ${existence ? row("Existed by", existence.existed_by ? `Bitcoin block ${existence.existed_by.block_height}${existence.existed_by.block_time ? ` (mined ${escapeHtml(existence.existed_by.block_time.slice(0, 10))})` : ""} <span class="menu-meta">${escapeHtml(existence.verdict)}</span>` : `<span class="menu-meta">${escapeHtml(existence.verdict)}</span>`) : ""}
     </section>
     ${cert.from_the_store ? `<section><p class="menu-desc"><em>${escapeHtml(cert.from_the_store)}</em> — the store</p></section>` : ""}
     <section>
@@ -449,6 +456,39 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       record.public_key,
     );
     const valid = form !== "invalid";
+    /**
+     * THE EXISTED-BY BOUND (2026-09-05), on both faces of the receipt.
+     * Computed once, up here, from the same signed payload the JSON
+     * serves — the digest comparison inside it is between two values
+     * derived on this response, which is the only way it can be
+     * trusted to mean anything. The key's window comes from the same
+     * registry read the service-window check uses; the artifact's own
+     * date is deliberately NOT an input, because that date is the
+     * claim this bound exists to test.
+     */
+    // Bound once rather than recomputed: the digest must be taken over
+    // the EXACT string served as signed_payload, and a second call to
+    // the canonicalizer is a second chance for the two to disagree.
+    const certificateSignedPayload =
+      form === "legacy"
+        ? canonicalizeCertificateLegacy(record.certificate)
+        : canonicalizeCertificate(record.certificate);
+    const certificateArtifactHash = await artifactHash(certificateSignedPayload);
+    const currentForBound = await cachedPublicKeyHex(c.env.SIGNING_KEY);
+    const recordKey = record.public_key.toLowerCase();
+    const retiredEntry = retiredKeysFor(currentForBound).find(
+      (entry) => entry.public_key.toLowerCase() === recordKey,
+    );
+    const boundKey: ExistenceInput["key"] =
+      recordKey === currentForBound.toLowerCase()
+        ? { status: "current" }
+        : retiredEntry
+          ? { status: "retired", retiredOn: retiredEntry.retired_on }
+          : { status: "unrecognised" };
+    const existence = existenceVerdict(record, {
+      artifactHash: certificateArtifactHash,
+      key: boundKey,
+    });
     if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       return c.html(
         renderSimplePage({
@@ -459,6 +499,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
             record.certificate,
             valid,
             form,
+            existence,
           )}${jsonLdScript({
             "@context": "https://schema.org",
             "@type": "DigitalDocument",
@@ -487,15 +528,6 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       form === "legacy"
         ? fieldsOutsideLegacySignature(record.certificate)
         : [];
-    /**
-     * Bound once rather than recomputed: the digest must be taken over
-     * the EXACT string served as signed_payload, and a second call to
-     * the canonicalizer is a second chance for the two to disagree.
-     */
-    const certificateSignedPayload =
-      form === "legacy"
-        ? canonicalizeCertificateLegacy(record.certificate)
-        : canonicalizeCertificate(record.certificate);
     /**
      * AN ATTESTATION OF NOTHING IS NAMED AS ONE (2026-09-04, CV's
      * second round). Two certificates were minted over MCP whose
@@ -531,8 +563,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       ...(await signedBy(c, record.public_key, record.certificate.date)),
       algorithm: "ed25519",
       signed_payload: certificateSignedPayload,
-      artifact_hash: await artifactHash(certificateSignedPayload),
+      artifact_hash: certificateArtifactHash,
       signature_covers: HOW_TO_VERIFY,
+      existence,
       ...citeBlock({ base: c.env.STORE_BASE_URL, what: "receipt", which: record.certificate.cert_id, observed_at: record.certificate.date, url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}` }),
       /*
        * THE DUAL-EMIT, REPORTED WITH THE SAME HONESTY AS THE PRIMARY

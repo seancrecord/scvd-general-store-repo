@@ -34,6 +34,26 @@
 
 /** PendingAttestation's magic, from the OpenTimestamps spec. */
 const PENDING_MAGIC = "83dfe30d2ef90c8e";
+/** BitcoinBlockHeaderAttestation's magic, from the same spec. */
+const BITCOIN_MAGIC = "0588960d73d71901";
+
+/**
+ * A BITCOIN ATTESTATION READ OFF A COMPLETED PROOF (2026-09-05).
+ *
+ * The second parse the protocol forces on us, and the last. A
+ * completed proof ends at one or more BitcoinBlockHeaderAttestation
+ * leaves, each carrying only a block height: the claim is "the
+ * message at this leaf is committed to by the merkle root of block
+ * N". Reading the height is what lets a verify response say WHICH
+ * block bounds an artifact's existence instead of "a block, run the
+ * tool" — the height is the one fact the proof states in the clear,
+ * and it is exactly as strong as the proof: we do not check the
+ * merkle path here any more than we check it anywhere else.
+ * Verification against real headers still belongs to `ots verify`.
+ */
+export interface BitcoinAttestation {
+  block_height: number;
+}
 
 export interface PendingCommitment {
   /** Hex of the message at the pending attestation — the poll key. */
@@ -110,24 +130,28 @@ class ProofReader {
   }
 }
 
+interface WalkResult {
+  pending: PendingCommitment[];
+  bitcoin: BitcoinAttestation[];
+}
+
 /**
- * Walk a calendar proof and return every pending attestation found,
- * with the message (commitment) in effect where it sits and the byte
- * range its node occupies. Returns null on anything unparseable —
- * fail-soft is the contract, because a wrong guess here would splice
- * garbage into evidence we publish.
+ * The one walker, both attestation kinds. Returns null on anything
+ * unparseable — fail-soft is the contract, because a wrong guess here
+ * would splice garbage into evidence we publish, or name a block that
+ * was never in the proof.
  */
-export async function findPendingCommitments(
+async function walkProof(
   proof: Uint8Array,
   digestHex: string,
-): Promise<PendingCommitment[] | null> {
+): Promise<WalkResult | null> {
   if (!/^[0-9a-f]{64}$/i.test(digestHex)) return null;
   const digest = new Uint8Array(32);
   for (let i = 0; i < 32; i += 1) {
     digest[i] = parseInt(digestHex.slice(i * 2, i * 2 + 2), 16);
   }
   const reader = new ProofReader(proof);
-  const found: PendingCommitment[] = [];
+  const found: WalkResult = { pending: [], bitcoin: [] };
 
   async function walk(message: Uint8Array): Promise<void> {
     let current = message;
@@ -138,7 +162,8 @@ export async function findPendingCommitments(
         const magicBytes = new Uint8Array(8);
         for (let i = 0; i < 8; i += 1) magicBytes[i] = reader.byte();
         const payload = reader.varbytes();
-        if (bytesToHex(magicBytes) === PENDING_MAGIC) {
+        const magic = bytesToHex(magicBytes);
+        if (magic === PENDING_MAGIC) {
           // The payload is itself varbytes: the calendar's URI.
           let uri: string | undefined;
           try {
@@ -148,12 +173,22 @@ export async function findPendingCommitments(
           } catch {
             uri = undefined;
           }
-          found.push({
+          found.pending.push({
             commitment_hex: bytesToHex(current),
             ...(uri ? { calendar_uri: uri } : {}),
             splice_start: start,
             splice_end: reader.position,
           });
+        } else if (magic === BITCOIN_MAGIC) {
+          // The payload is one varint: the block height. A height the
+          // payload does not fully spell out is a parse failure, not
+          // a guess at a block.
+          const inner = new ProofReader(payload);
+          const height = inner.varint();
+          if (inner.position !== payload.length) {
+            throw new Error("bitcoin attestation payload has trailing bytes");
+          }
+          found.bitcoin.push({ block_height: height });
         }
         return;
       }
@@ -175,6 +210,35 @@ export async function findPendingCommitments(
     return null;
   }
   return found;
+}
+
+/**
+ * Walk a calendar proof and return every pending attestation found,
+ * with the message (commitment) in effect where it sits and the byte
+ * range its node occupies. Null on anything unparseable.
+ */
+export async function findPendingCommitments(
+  proof: Uint8Array,
+  digestHex: string,
+): Promise<PendingCommitment[] | null> {
+  const walked = await walkProof(proof, digestHex);
+  return walked ? walked.pending : null;
+}
+
+/**
+ * Every Bitcoin block-header attestation in a proof, in the order the
+ * proof states them. Empty on a proof still pending; null on one that
+ * does not parse. The LOWEST height is the existed-by bound a verifier
+ * should quote — a proof can carry several attestations (one per
+ * calendar that aggregated it), and the earliest block is the tight
+ * one.
+ */
+export async function findBitcoinAttestations(
+  proof: Uint8Array,
+  digestHex: string,
+): Promise<BitcoinAttestation[] | null> {
+  const walked = await walkProof(proof, digestHex);
+  return walked ? walked.bitcoin : null;
 }
 
 /**

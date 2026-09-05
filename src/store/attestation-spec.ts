@@ -376,8 +376,23 @@ export function artifactClassForItem(itemId: string): ArtifactClass | undefined 
   return ARTIFACT_CLASSES.find((entry) => entry.id === classId);
 }
 
+/**
+ * WHAT A CERTIFICATE'S EXISTED-BY BOUND MEANS (2026-09-05), one text
+ * for the verify response and this page, so the two cannot describe
+ * it differently. Written the day an outside reader on the x402
+ * settlement-receipt thread pointed out that the key log bounds the
+ * ANNOUNCEMENT of a retirement and nothing about any artifact the
+ * retired key signed: a holder of a retired key could mint a receipt
+ * today, date it inside the key's service window, cite a real old
+ * settlement, and nothing on the artifact would refute it. The
+ * settlement transaction gives every receipt a not-before; this is the
+ * not-after.
+ */
+export const EXISTENCE_BOUND_MEANS =
+  "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by an hourly sweep, so it lags issue by an hour or so, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered.";
+
 export const NOT_BUILT: readonly string[] = [
-  "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten, and do nothing for the shelf.)",
+  "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten. Since 2026-09-05 each certificate also carries its own OpenTimestamps existed-by, served as `existence` on /api/verify, which bounds when that one receipt existed and still says nothing about what was withheld between one receipt and the next.)",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",
   `No successor key. One ed25519 key signs everything at a time — ${RETIRED_KEYS.length} retired, one in service — and if the live one is stolen every signature it produces is indistinguishable from ours; a backup is no defence against that and is not offered as one. ${
     KEY_BACKUP_EXISTS
