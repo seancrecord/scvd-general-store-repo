@@ -277,6 +277,14 @@ export const FREE_DOORS: readonly AtlasDoor[] = [
     caution: "Evidence, never a judgment. Nothing here sells; the paid instruments are on /mcp and the x402 doors.",
   },
   {
+    path: "/mcp/docs",
+    name: "The documentation door (MCP, resources only)",
+    access: "free",
+    method: "POST",
+    purpose: "An MCP server whose whole catalog is the store's reference material: the same resources /mcp lists (the guide, the manual, the catalog, the criteria, the routing table, the week's doors), plus one tool, read_docs, that returns any of them by name. Also answers POST on /mcp.md, whose GET is the page about which door to use.",
+    caution: "Documentation, never an instrument. Nothing here acts, spends, or probes; a tools/call for anything but read_docs is refused. The instruments are on /mcp and /mcp/verifier.",
+  },
+  {
     path: "/a2a",
     name: "The evidence agent (A2A)",
     access: "free",

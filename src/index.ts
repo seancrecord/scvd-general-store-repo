@@ -45,6 +45,7 @@ import {
   monthlyStateRoutes,
   a2aRoutes,
   mcpVerifierRoutes,
+  mcpDocsRoutes,
   scorersRoutes,
   openapiToolsRoutes,
   fixturesRoutes,
@@ -485,6 +486,7 @@ app.route("/", feedsRoutes);
 app.route("/", monthlyStateRoutes);
 app.route("/", a2aRoutes);
 app.route("/", mcpVerifierRoutes);
+app.route("/", mcpDocsRoutes);
 app.route("/", scorersRoutes);
 app.route("/", openapiToolsRoutes);
 app.route("/", fixturesRoutes);
@@ -714,7 +716,7 @@ app.notFound(async (c) => {
   }
   const links = notFoundLinks(base);
   const message = "That aisle doesn't exist.";
-  if (prefersMarkdown(c.req.header("Accept"))) {
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
     const body = `# 404 — no such aisle\n\n${message} Nothing here has moved; this path was never a door.\n\n## Where to look next\n\n${links
       .map((link) => `- [${link.url}](${link.url}) — ${link.what}`)
       .join("\n")}\n`;

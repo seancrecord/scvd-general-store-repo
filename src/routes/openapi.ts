@@ -44,6 +44,9 @@ import {
 } from "@/store";
 import type { Env, HonoEnv, MenuItem } from "@/types";
 import { NEVER_A_RANKING, NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
+import { TRADE_SANDBOX_ID } from "@/store/trade-counter";
+import { VERDICTS } from "@/routes/doors";
+import { MODES } from "@/routes/ask";
 
 /**
  * GET /openapi.json, an OpenAPI 3.1 contract for the whole store,
@@ -196,6 +199,121 @@ const TOO_MANY_REQUESTS: OpenApiObject = {
  * path does. Derived from method + path so the id cannot drift from
  * the operation it names, and asserted unique by test.
  */
+/**
+ * THE INPUTS THE INPUT-LESS DOORS ACTUALLY READ (2026-09-05).
+ *
+ * A readiness scan counted 90 of 162 operations as typed and 72 as
+ * not, by one rule: an operation is typed when it declares a request
+ * body or any parameter. The 72 were every free GET with no query
+ * string — and this store's own guard already held that an input-less
+ * GET has nothing to type, and that inventing a parameter to flatter
+ * a ratio is exactly the number it keeps off its books.
+ *
+ * Both were half right. Probed one by one (test/openapi-declared-
+ * inputs.spec.ts re-probes them on every run), those doors read
+ * inputs the contract never mentioned: three read a query string
+ * (since, verdict, query), twenty-seven negotiate the representation
+ * on the Accept header, and all but a handful answer 304 to an
+ * If-None-Match carrying their own ETag. A header a route reads is
+ * an input, and a poller that does not know a door honours
+ * conditional GET re-downloads 1.3 MB it already holds. So they are
+ * declared — only where the route reads them, held to the live
+ * behaviour both ways by the spec, and the one door that reads
+ * nothing (/health, no-store, one representation) stays bare.
+ */
+
+/**
+ * Which brace-less GETs negotiate, and what each can serve. Read off
+ * the live routes on 2026-09-05; the spec beside this asserts every
+ * listed type is served for its Accept and that no unlisted door
+ * negotiates. The first entry is what a bare wildcard gets.
+ */
+export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string[]>> = {
+  "/menu.json": ["application/json", "text/markdown"],
+  "/api/preflight/v1": ["application/json", "text/markdown"],
+  "/api/preflight/v2": ["application/json", "text/markdown"],
+  "/pricing": ["application/json", "text/markdown", "text/html"],
+  "/deprecation": ["text/html", "text/markdown", "application/json"],
+  "/developers": ["text/html", "text/markdown", "application/json"],
+  "/what": ["application/json", "text/html"],
+  "/porch": ["application/json", "text/html"],
+  "/attestation": ["application/json", "text/html"],
+  "/rights": ["application/json", "text/html"],
+  "/wind-down": ["application/json", "text/html"],
+  "/registry": ["application/json", "text/html"],
+  "/passport": ["application/json", "text/html"],
+  "/profiles": ["application/json", "text/html"],
+  "/trust": ["application/json", "text/html"],
+  "/fresh-set": ["application/json", "text/html"],
+  "/corrections": ["application/json", "text/html"],
+  "/api/conformance/v1": ["application/json", "text/html"],
+  "/bounties": ["application/json", "text/html"],
+  "/credit": ["application/json", "text/html"],
+  "/samples": ["application/json", "text/html"],
+  "/ledger": ["application/json", "text/html"],
+  "/doors": ["application/json", "text/html"],
+  "/zodiac": ["application/json", "text/html"],
+  "/almanac": ["application/json", "text/html"],
+  "/gazette": ["application/json", "text/html"],
+  "/directory": ["application/json", "text/html"],
+};
+
+/**
+ * Brace-less GETs that do NOT honour If-None-Match, each with the
+ * reason. Every other brace-less free GET does, because
+ * lib/conditional-get.ts runs on every machine-readable 200 that is
+ * not marked no-store; the paid doors and the order poll are no-store
+ * and are excluded by rule, not by name.
+ */
+export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
+  "/health": "no-store by design: a liveness line that must never be a cached yes",
+};
+const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
+
+const IF_NONE_MATCH_PARAMETER: OpenApiObject = {
+  name: "If-None-Match",
+  in: "header",
+  required: false,
+  schema: { type: "string" },
+  description:
+    "Conditional GET. Send the ETag a previous answer carried (a SHA-256 of the exact bytes served, not a version somebody maintains) and an unchanged document answers 304 with no body. Send it on a schedule instead of re-downloading what you already hold.",
+};
+
+const NOT_MODIFIED_RESPONSE: OpenApiObject = {
+  description:
+    "Not Modified: the ETag you sent still names these exact bytes. No body; every other header is as the 200 would carry it.",
+};
+
+function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): void {
+  for (const [path, item] of Object.entries(paths)) {
+    if (path.includes("{")) continue;
+    const op = item["get"] as OpenApiObject | undefined;
+    if (!op || typeof op !== "object") continue;
+    const parameters = Array.isArray(op["parameters"]) ? (op["parameters"] as OpenApiObject[]) : [];
+    const has = (name: string): boolean =>
+      parameters.some((parameter) => String(parameter["name"]).toLowerCase() === name.toLowerCase());
+    const offered = NEGOTIATED_REPRESENTATIONS[path];
+    if (offered && !has("Accept")) {
+      parameters.push({
+        name: "Accept",
+        in: "header",
+        required: false,
+        schema: { type: "string", enum: [...offered] },
+        description: `This door negotiates: ${offered.join(", ")}, parsed with q-values (RFC 9110 §12.5.1). A bare wildcard or no header gets ${offered[0]}; a named AI reader that states no preference gets markdown where it is offered. The answer carries Vary.`,
+      });
+    }
+    const paid = Boolean(op["x-payment"]);
+    const noStore = NO_STORE_PREFIXES.some((prefix) => path.startsWith(prefix));
+    if (!paid && !noStore && !(path in CONDITIONAL_GET_EXEMPT) && !has("If-None-Match")) {
+      parameters.push({ ...IF_NONE_MATCH_PARAMETER });
+      const responses = (op["responses"] ?? {}) as OpenApiObject;
+      if (!responses["304"]) responses["304"] = { ...NOT_MODIFIED_RESPONSE };
+      op["responses"] = responses;
+    }
+    if (parameters.length > 0) op["parameters"] = parameters;
+  }
+}
+
 export function operationIdFor(method: string, path: string): string {
   /*
    * THE EXTENSION IS PART OF THE NAME, and the first draft of this
@@ -1994,6 +2112,22 @@ function tradeHeader(name: string, description: string, required = true): OpenAp
  * which return the refusal shape rather than a problem object because
  * `delivered:false, billed:false` is the fact a marketplace reads.
  */
+/**
+ * The two signed trade doors, as one definition each, served on the
+ * templated path and on the sandbox's literal path (below).
+ */
+function onSandbox(operation: OpenApiObject, summary: string): OpenApiObject {
+  const parameters = (operation["parameters"] as OpenApiObject[]).filter(
+    (parameter) => parameter["name"] !== "partner",
+  );
+  return {
+    ...operation,
+    summary,
+    description: `${operation["description"]} THIS PATH IS THE SANDBOX: the account named ${TRADE_SANDBOX_ID}, whose signing secret and provider key are published on /trade and returned by a GET on its check desk. Real signatures checked, real goods delivered and marked test, nothing booked to anyone, fifty a day.`,
+    parameters,
+  };
+}
+
 function tradeOrderOperation(
   operation: OpenApiObject,
   parameters: OpenApiObject[],
@@ -2007,6 +2141,74 @@ function tradeOrderOperation(
       ...extraResponses,
     },
   };
+}
+
+/*
+ * FUNCTIONS, NOT CONSTS: the id pass at the bottom of this file writes
+ * operationId onto each operation in place, and a shared object served
+ * on two paths would carry the first path's id onto the second by the
+ * next request. A fresh object per call keeps every path its own.
+ */
+function tradeCheckOperation(): OpenApiObject {
+  return tradeOrderOperation(
+          returns(
+            postOp(
+              "The check desk: every signature check reported, nothing delivered",
+              "Send exactly the headers and body you would send to the order door. All four checks run and each is reported — headers present, provider key, clock skew, nonce shape, whether the HMAC verified under the secret in service or the previous one — with the sha256 of the signing string we computed so you can compare bytes. No nonce is consumed, nothing is delivered, no money moves. On the sandbox account the expected signature is printed, since that secret is public.",
+              "The body you would send to the order door, byte for byte.",
+              TRADE_ORDER_BODY,
+            ),
+            TRADE_CHECK_SCHEMA,
+          ),
+          [
+            pathParam("partner", "The account id; use sandbox to test against the published secret."),
+            tradeHeader("X-Trade-Timestamp", "As you would send it to the order door."),
+            tradeHeader("X-Trade-Nonce", "As you would send it.", false),
+            tradeHeader("X-Trade-Signature", "As you would send it.", false),
+            tradeHeader("X-Trade-Key", "As you would send it, where the dialect has one.", false),
+          ],
+          {},
+        );
+}
+
+function tradeItemOperation(): OpenApiObject {
+  return tradeOrderOperation(
+          returns(
+            postOp(
+              "Order one item on a trade account (signed, billed on statement)",
+              "NOT free and NOT x402: the marketplace named by {partner} collected its customer's payment and is billed the trade price on its statement. The request is authenticated by HMAC-SHA256 over timestamp, nonce and the exact body under the account's dialect (/api/trade/contract), a five-minute window, and a nonce never seen before. Delivers the same signed goods /api/buy/{item_id} would, with a certificate that says settled_via: trade_account and carries no chain fields.",
+              "One JSON object: the item's fields plus optional order_ref, agent_name, purpose. Sign the exact bytes.",
+              TRADE_ORDER_BODY,
+            ),
+            TRADE_DELIVERY_SCHEMA,
+          ),
+          [
+            pathParam("partner", "The account id from /api/trade/contract accounts[].account."),
+            pathParam("item_id", "A menu id on that account's row."),
+            tradeHeader("X-Trade-Timestamp", "Unix seconds at signing (the header name and unit follow the account's dialect; this is ours)."),
+            tradeHeader("X-Trade-Nonce", "32 hex characters, fresh per request."),
+            tradeHeader("X-Trade-Signature", "sha256=<hex of HMAC-SHA256(secret, timestamp.nonce.body)>."),
+            tradeHeader("X-Trade-Key", "The provider key, where the account's dialect sends one.", false),
+          ],
+          {
+            "401": {
+              description: "The signature, timestamp, nonce or provider key did not verify. delivered:false, billed:false, and the code names which.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+            "409": {
+              description: "Replayed: this nonce or instruction was already presented. Nothing delivered on this call.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+            "429": {
+              description: "The account's daily cap is reached.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+            "503": {
+              description: "The counter is closed: the account is not provisioned on this side, or the replay store is unreachable.",
+              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+            },
+          },
+        );
 }
 
 const RIGHTS_SCHEMA: OpenApiObject = {
@@ -5469,26 +5671,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
           TRADE_CATALOG_SCHEMA,
         ),
       },
+      /*
+       * THE SANDBOX BY ITS REAL PATHS (2026-09-05). A template is not
+       * a resource: a scanner reading the contract for a test surface
+       * found {partner} and no way to learn that one of its values is
+       * public, and reported that no sandbox could be verified. The
+       * same rule the buy paths follow since 2026-07-27, applied to
+       * the one account whose secret is published — derived from the
+       * account id, so a renamed sandbox moves here on the same
+       * deploy.
+       */
+      [`/api/trade/${TRADE_SANDBOX_ID}/check`]: {
+        post: onSandbox(tradeCheckOperation(), "The sandbox's check desk"),
+      },
+      [`/api/trade/${TRADE_SANDBOX_ID}/{item_id}`]: {
+        post: onSandbox(tradeItemOperation(), "Order one item on the sandbox account"),
+      },
       "/api/trade/{partner}/check": {
-        post: tradeOrderOperation(
-          returns(
-            postOp(
-              "The check desk: every signature check reported, nothing delivered",
-              "Send exactly the headers and body you would send to the order door. All four checks run and each is reported — headers present, provider key, clock skew, nonce shape, whether the HMAC verified under the secret in service or the previous one — with the sha256 of the signing string we computed so you can compare bytes. No nonce is consumed, nothing is delivered, no money moves. On the sandbox account the expected signature is printed, since that secret is public.",
-              "The body you would send to the order door, byte for byte.",
-              TRADE_ORDER_BODY,
-            ),
-            TRADE_CHECK_SCHEMA,
-          ),
-          [
-            pathParam("partner", "The account id; use sandbox to test against the published secret."),
-            tradeHeader("X-Trade-Timestamp", "As you would send it to the order door."),
-            tradeHeader("X-Trade-Nonce", "As you would send it.", false),
-            tradeHeader("X-Trade-Signature", "As you would send it.", false),
-            tradeHeader("X-Trade-Key", "As you would send it, where the dialect has one.", false),
-          ],
-          {},
-        ),
+        post: tradeCheckOperation(),
       },
       "/api/trade/{partner}/claim": {
         get: tradeOrderOperation(
@@ -5554,43 +5754,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/trade/{partner}/{item_id}": {
-        post: tradeOrderOperation(
-          returns(
-            postOp(
-              "Order one item on a trade account (signed, billed on statement)",
-              "NOT free and NOT x402: the marketplace named by {partner} collected its customer's payment and is billed the trade price on its statement. The request is authenticated by HMAC-SHA256 over timestamp, nonce and the exact body under the account's dialect (/api/trade/contract), a five-minute window, and a nonce never seen before. Delivers the same signed goods /api/buy/{item_id} would, with a certificate that says settled_via: trade_account and carries no chain fields.",
-              "One JSON object: the item's fields plus optional order_ref, agent_name, purpose. Sign the exact bytes.",
-              TRADE_ORDER_BODY,
-            ),
-            TRADE_DELIVERY_SCHEMA,
-          ),
-          [
-            pathParam("partner", "The account id from /api/trade/contract accounts[].account."),
-            pathParam("item_id", "A menu id on that account's row."),
-            tradeHeader("X-Trade-Timestamp", "Unix seconds at signing (the header name and unit follow the account's dialect; this is ours)."),
-            tradeHeader("X-Trade-Nonce", "32 hex characters, fresh per request."),
-            tradeHeader("X-Trade-Signature", "sha256=<hex of HMAC-SHA256(secret, timestamp.nonce.body)>."),
-            tradeHeader("X-Trade-Key", "The provider key, where the account's dialect sends one.", false),
-          ],
-          {
-            "401": {
-              description: "The signature, timestamp, nonce or provider key did not verify. delivered:false, billed:false, and the code names which.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
-            },
-            "409": {
-              description: "Replayed: this nonce or instruction was already presented. Nothing delivered on this call.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
-            },
-            "429": {
-              description: "The account's daily cap is reached.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
-            },
-            "503": {
-              description: "The counter is closed: the account is not provisioned on this side, or the replay store is unreachable.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
-            },
-          },
-        ),
+        post: tradeItemOperation(),
       },
       "/api/claims/challenge": {
         post: returns(
@@ -5886,13 +6050,46 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * description is the only documentation some callers ever read.
        */
       "/ask": {
-        get: returns(
-          freeOp(
-          "Ask this store a question about itself",
-            "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+        get: {
+          ...returns(
+            freeOp(
+              "Ask this store a question about itself",
+              "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. No query at all answers 400 with a worked example. Free, no account.",
+            ),
+            ASK_SCHEMA,
           ),
-          ASK_SCHEMA,
-        ),
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              required: true,
+              schema: { type: "string" },
+              example: "how do I pay",
+              description: "Your question, in words. `q` is accepted as an alias.",
+            },
+            {
+              name: "mode",
+              in: "query",
+              required: false,
+              schema: { type: "string", enum: Object.keys(MODES), default: "list" },
+              description: "NLWeb mode. Only `list` answers; the generative modes return 501 on purpose.",
+            },
+            {
+              name: "limit",
+              in: "query",
+              required: false,
+              schema: { type: "integer", minimum: 1 },
+              description: "How many ranked entries to return. `num_results` is accepted as an alias.",
+            },
+            {
+              name: "streaming",
+              in: "query",
+              required: false,
+              schema: { type: "boolean", default: false },
+              description: "true for text/event-stream, one entry per event.",
+            },
+          ],
+        },
         post: {
           ...returns(
             freeOp(
@@ -6665,13 +6862,25 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/doors.json": {
-        get: returns(
+        get: {
+          ...returns(
   freeOp(
             "Every endpoint observed, listed",
             "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
           ),
           DOOR_INDEX_SCHEMA,
         ),
+          parameters: [
+            {
+              name: "verdict",
+              in: "query",
+              required: false,
+              schema: { type: "string", enum: [...VERDICTS] },
+              description:
+                "Narrow the list to hosts whose latest verdict is this one. Anything not in the enum answers 400 naming the four.",
+            },
+          ],
+        },
       },
       "/corpus/battery-delta.json": {
         get: returns(
@@ -6692,13 +6901,26 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corpus/diff.json": {
-        get: returns(
-  freeOp(
-            "What changed since a signed week",
-            "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
-          ),
+        get: {
+          ...returns(
+            freeOp(
+              "What changed since a signed week",
+              "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines; no week at all gets a 400 naming them too. The cheapest agent loop is polling this. Free.",
+            ),
             CORPUS_DIFF_SCHEMA,
           ),
+          parameters: [
+            {
+              name: "since",
+              in: "query",
+              required: true,
+              schema: { type: "string", pattern: "^\\d{4}-W\\d{2}$" },
+              example: "2026-W34",
+              description:
+                "The baseline: an ISO week the chain holds a signed snapshot for. The comparison is always against the latest snapshot. Omit it and the answer is a 400 listing the weeks the chain holds.",
+            },
+          ],
+        },
       },
       "/mcp": {
         post: returns(
@@ -7342,6 +7564,7 @@ export function stampAsyncJob(document: OpenApiObject): void {
 export function stampIdempotencyKey(document: OpenApiObject): void {
   const paths = document["paths"];
   if (typeof paths !== "object" || paths === null) return;
+  declareHeaderInputs(paths as Record<string, Record<string, unknown>>);
   for (const item of Object.values(paths as Record<string, unknown>)) {
     if (typeof item !== "object" || item === null) continue;
     for (const operation of Object.values(item as Record<string, unknown>)) {
@@ -7360,7 +7583,15 @@ export function stampIdempotencyKey(document: OpenApiObject): void {
       ) {
         continue;
       }
-      parameters.push({ ...IDEMPOTENCY_PARAMETER_REF });
+      /*
+       * INLINE, NOT A $ref (2026-09-05). The component stays for readers
+       * that resolve, but a scan that does not resolve `$ref` parameters
+       * reported this key as "a floating, unused component" against a
+       * contract that attached it to every paid door. Thirty-five copies
+       * of one parameter is the price of being read by the naive reader
+       * too; the document stays well under the megabyte.
+       */
+      parameters.push({ ...IDEMPOTENCY_PARAMETER });
       op["parameters"] = parameters;
     }
   }

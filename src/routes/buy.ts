@@ -28,6 +28,7 @@ import { capacityVerdict } from "@/services/queue-capacity";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
+import { orderStatusBody } from "@/lib/order-status";
 import { getRetiredItem } from "@/store/retired";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -461,61 +462,6 @@ buyRoutes.get("/api/order/:order_id", async (c) => {
   if (!order) {
     return c.json({ error: VOICE.orderNotFound }, 404);
   }
-  const response: Record<string, unknown> = {
-    order_id: order.order_id,
-    item_id: order.item_id,
-    item_name: order.item_name,
-    status: order.status,
-    created_at: order.created_at,
-    sla_hours: order.sla_hours,
-    patron_number: order.patron_number,
-    badge_url: `${c.env.STORE_BASE_URL}/badges/${order.patron_number}.svg`,
-  };
-  if (order.status === "completed") {
-    response["deliverable"] = order.deliverable;
-    response["completed_at"] = order.completed_at;
-    response["message"] = VOICE.orderCompleted;
-  } else {
-    response["message"] = VOICE.queueConfirmation;
-  }
-
-  /**
-   * THE BREACH, WHERE THE BUYER CAN SEE IT.
-   *
-   * The card by the door promises: miss a promised window and you get
-   * your money back, and you will not have to argue for it. Until now
-   * the check behind that promise reported to the KEEPER only — which
-   * makes "you won't have to argue for it" depend on somebody else
-   * reading their alarms. A promise the buyer cannot verify is a
-   * promise they have to argue for by definition.
-   *
-   * So the order's own page says it: past the window, by how long,
-   * and whether a refund has been raised yet. Derived at read from
-   * the order's own timestamps, so it cannot drift from the record
-   * and cannot be forgotten on a write path.
-   *
-   * IT MOVES NO MONEY AND PROMISES NO DATE. Rule 10: refunds are
-   * created pending and the keeper pays them by hand. Saying "owed"
-   * here and "automatic" nowhere is the distinction that rule exists
-   * to protect.
-   */
-  const due = Date.parse(order.created_at) + order.sla_hours * 3_600_000;
-  const finishedAt = order.completed_at ? Date.parse(order.completed_at) : null;
-  const reference = finishedAt ?? Date.now();
-  if (Number.isFinite(due) && reference > due) {
-    const hoursLate = Math.round(((reference - due) / 3_600_000) * 10) / 10;
-    response["window_breached"] = {
-      due_at: new Date(due).toISOString(),
-      hours_late: hoursLate,
-      kind: finishedAt ? "delivered_late" : "still_open",
-      owed_usdc: order.paid_usdc,
-      note: finishedAt
-        ? "This was delivered after its promised window. The promise says a missed window earns the money back; delivering eventually does not discharge it. You are owed a refund and you do not have to ask for it."
-        : "This is past its promised window and nothing has been delivered. You are owed a refund and you do not have to ask for it.",
-      how_it_gets_paid:
-        "The keeper pays refunds by hand, with a transaction hash on the record. Nothing here is automatic and this store does not claim it is — see rule 10 in HOUSE_RULES.",
-      verify: `${c.env.STORE_BASE_URL}/api/order/${order.order_id}`,
-    };
-  }
-  return c.json(response);
+  // One derivation with the MCP door's check_order (lib/order-status).
+  return c.json(orderStatusBody(c.env.STORE_BASE_URL, order));
 });

@@ -177,7 +177,7 @@ for (const battery of PREFLIGHT_VERSIONS) {
      * when a client ranked it above JSON, which is the same rule every
      * negotiating surface here follows.
      */
-    if (prefersMarkdown(c.req.header("Accept"))) {
+    if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
       return c.text(docMarkdown(base, battery), 200, {
         "content-type": MARKDOWN_MEDIA_TYPE,
         Vary: VARY_ACCEPT,

@@ -38,7 +38,9 @@ export function instrumentTools(): McpTool[] {
 
 function curlFor(base: string, endpoint: { method: "GET" | "POST"; path: string }, example: Record<string, unknown>): string {
   if (endpoint.method === "GET") {
-    const path = endpoint.path.replace("{id}", encodeURIComponent(String(example["id"] ?? "")));
+    const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) =>
+      encodeURIComponent(String(example[name] ?? "")),
+    );
     return `curl -sS ${base}${path}`;
   }
   return `curl -sS -X POST ${base}${endpoint.path} -H 'content-type: application/json' -d '${JSON.stringify(example)}'`;

@@ -95,7 +95,8 @@ const MAX_LIMIT = 50;
  * an index can do; the other two need a generator this door does not
  * have, and saying so is cheaper for the caller than a bad answer.
  */
-const MODES = {
+/** Exported so the contract enumerates the modes from the same object the door checks. */
+export const MODES = {
   list: "Ranked entries from the store's own published index. This is what this door does.",
   summarize:
     "Not implemented. It would need a generator this door does not have, and a summary assembled from keyword matches is not a summary.",

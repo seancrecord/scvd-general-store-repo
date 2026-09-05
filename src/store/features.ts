@@ -97,6 +97,8 @@ export const FEATURES: readonly Feature[] = [
       "/api/trade/catalog",
       "/api/trade/ledger",
       "/api/trade/{partner}/check",
+      "/api/trade/sandbox/check",
+      "/api/trade/sandbox/{item_id}",
       "/api/trade/{partner}/claim",
       "/api/trade/{partner}/statement",
       "/api/trade/{partner}/{item_id}",

@@ -141,6 +141,8 @@ export const ASYNC_JOB = {
   job_id_field: "order_id",
   poll_url_field: "order_url",
   poll_url_template: "/api/order/{order_id}",
+  /** The same poll on the MCP door, for an agent that holds only that transport. */
+  mcp_tool: "check_order",
   status_field: "status",
   /** Derived from the union the code actually assigns. */
   states: [...ORDER_STATUSES],

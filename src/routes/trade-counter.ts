@@ -444,6 +444,45 @@ tradeCounterRoutes.post("/api/trade/:partner/check", async (c) => {
 /* The account's own statement, signed                                */
 /* ------------------------------------------------------------------ */
 
+/**
+ * A GET ON THE CHECK DESK IS A QUESTION, NOT A MISSING DOOR
+ * (2026-09-05). The developers page links the sandbox's check desk by
+ * its POST address, and a reader that follows a link follows it with
+ * GET: it got the 404 whose body says "this path was never a door",
+ * and a readiness scan reported that no sandbox surface could be
+ * verified — against the one sandbox this store actually has. Same
+ * cure as the six POST-only doors of 2026-08-25: 405, Allow, and the
+ * desk described in-band. On the sandbox account the published
+ * secret and the worked example ride along, since they are public.
+ */
+tradeCounterRoutes.get("/api/trade/:partner/check", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    const error = errorByCode("unknown_account");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const dialect = TRADE_DIALECTS[partner.dialect];
+  return c.json(
+    {
+      error: "The check desk opens on POST.",
+      allow: ["POST"],
+      what: `Send exactly the headers and body you would send to ${base}/api/trade/${partner.id}/{item_id}; every signature check is reported by name, the signing string's sha256 is printed so you can compare bytes, and nothing is consumed, delivered or billed.`,
+      account: partner.id,
+      dialect: dialect.id,
+      contract: `${base}/api/trade/contract`,
+      ...(partner.sandbox
+        ? {
+            sandbox: sandboxBlock(base),
+            worked_example: await workedExample(base, partner),
+          }
+        : {}),
+    },
+    405,
+    { Allow: "POST", "Cache-Control": "no-store" },
+  );
+});
+
 tradeCounterRoutes.get("/api/trade/:partner/statement", async (c) => {
   c.header("Cache-Control", "no-store");
   const partner = getTradePartner(c.req.param("partner"));
@@ -839,7 +878,7 @@ tradeCounterRoutes.get("/trade", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const accept = c.req.header("Accept");
   const html = wantsHtml(accept, c.req.header("User-Agent"));
-  if (prefersMarkdown(accept, html ? "text/html" : "application/json")) {
+  if (prefersMarkdown(accept, html ? "text/html" : "application/json", c.req.header("User-Agent"))) {
     return c.text(await tradeMarkdown(base), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,

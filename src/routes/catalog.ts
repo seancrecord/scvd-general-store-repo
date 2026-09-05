@@ -21,7 +21,7 @@ import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept"
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
-import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
+import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
@@ -130,7 +130,7 @@ function varyOnAccept(c: { header: (name: string, value: string) => void }): voi
 catalogRoutes.get("/menu.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   varyOnAccept(c);
-  if (prefersMarkdown(c.req.header("Accept"))) {
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
     return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
   }
   // The books are part of the catalog's root metadata (C2); a ledger
@@ -544,7 +544,7 @@ function renderItemPage(
     // so the link tag may say so).
     markdownAlt: `/menu/${item.id}`,
     // P8: the WebMCP declaration on every till page; the caller sends
-    // FIRST_PARTY_SCRIPT_CSP alongside.
+    // firstPartyScriptCsp() alongside.
     webmcp: true,
     inertHtml: tillShelfHtml([item], {
       heading: "Buy it from this browser",
@@ -653,7 +653,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
    */
   const canonical = { Link: `<${base}/menu/${item.id}>; rel="canonical"` };
   varyOnAccept(c);
-  if (prefersMarkdown(c.req.header("Accept"))) {
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
     return c.text(renderItemMarkdown(item, base), 200, {
       ...MARKDOWN_HEADERS,
       ...canonical,
@@ -692,7 +692,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     c.header("Link", canonical.Link);
     // P8: the page carries /webmcp.js, so the P7 script fence rides too.
-    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+    c.header("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
     const listing = sampleForItem(item.id);
     const specimen = listing
       ? await Promise.resolve(listing.build(c.env, item.price_usdc)).catch(() => undefined)

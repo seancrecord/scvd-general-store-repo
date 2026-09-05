@@ -6,7 +6,7 @@ import {
   VARY_ACCEPT,
 } from "@/lib/accept";
 import { agentsMd } from "@/routes/agents-md";
-import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
+import { firstPartyScriptCsp } from "@/lib/csp";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
@@ -94,7 +94,7 @@ storefrontRoutes.get("/", async (c) => {
       Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
     });
   }
-  if (prefersMarkdown(c.req.header("Accept"), "text/html")) {
+  if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
@@ -151,7 +151,7 @@ storefrontRoutes.get("/", async (c) => {
    * (never prepared as scripts) and the inline <style> is untouched —
    * only script execution is being fenced, and 'self' is the fence.
    */
-  c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+  c.header("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
   /**
    * THE MAP, IN HEADERS, BEFORE THE 84KB OF NEON PARSES.
    *

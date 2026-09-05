@@ -9,6 +9,7 @@ import { PUBLISHED_DATASETS } from "@/store/datasets";
 import { FEEDS } from "@/routes/feeds";
 import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
 import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
+import { DOCS_SERVER_NAME, DOCS_TITLE } from "@/routes/mcp-docs";
 import {
   CLI_PACKAGE,
   CLI_PUBLISHED,
@@ -307,6 +308,29 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
             href: `${base}/mcp.md`,
             type: "text/markdown",
             title: "Which MCP door to use",
+          },
+        ],
+      }),
+      /**
+       * THE DOCUMENTATION DOOR (2026-09-05): the third MCP server,
+       * listed as its own API because a host that wants only the
+       * reference material is told here which door to open.
+       */
+      apiEntry({
+        anchor: `${base}/mcp/docs`,
+        title: `${DOCS_TITLE} — MCP server (${DOCS_SERVER_NAME}, resources and one read-only tool)`,
+        desc: [
+          {
+            href: `${base}/mcp/docs`,
+            type: "application/json",
+            title: "The door's own document: the resources by name, the one tool, the handshake, and the two other doors beside it",
+          },
+        ],
+        doc: [
+          {
+            href: `${base}/mcp.md`,
+            type: "text/markdown",
+            title: "Which MCP door to use (the same address answers POST as this server)",
           },
         ],
       }),

@@ -40,7 +40,7 @@ export interface SimplePageOptions {
    * has a next step worth declaring — the till pages — and nowhere by
    * default: the script feature-detects document.modelContext and
    * no-ops everywhere else, the token is inert data, and a page that
-   * opts in must also send FIRST_PARTY_SCRIPT_CSP (the P7 ruling's
+   * opts in must also send firstPartyScriptCsp() (the P7 ruling's
    * condition on any first-party script).
    */
   webmcp?: boolean;

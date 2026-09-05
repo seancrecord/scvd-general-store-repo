@@ -67,7 +67,9 @@ import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
-import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
+import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
+import { getOrder } from "@/services/orders";
+import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
@@ -634,6 +636,23 @@ export async function callFreeTool(
       recordPorchVisit(c.env, "conformance:mcp", mcpSignals(c)),
     );
     return outcome.verdict as unknown as Record<string, unknown>;
+  }
+  if (name === "check_order") {
+    /*
+     * The same record and the same derivation the HTTP poll serves
+     * (lib/order-status): a 404 there is a refusal here, with the
+     * order id echoed so a mistyped id reads as one.
+     */
+    const orderId = sanitizeText(args["order_id"], 60);
+    if (!orderId) {
+      return "check_order needs the order_id from a human-queue purchase result.";
+    }
+    const order = await getOrder(c.env, orderId);
+    if (!order) {
+      return `No order by that id: ${orderId}. ${VOICE.orderNotFound}`;
+    }
+    deferBookkeeping(c, recordPorchVisit(c.env, "order:mcp", mcpSignals(c)));
+    return orderStatusBody(c.env.STORE_BASE_URL, order);
   }
   if (name === "verify_artifact") {
     const id = sanitizeText(args["id"], 60);

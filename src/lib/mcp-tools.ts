@@ -299,7 +299,7 @@ function purchaseOutputSchema(item: MenuItem): Schema {
     type: "object",
     properties: {
       order_id: str("Your place in the human queue."),
-      order_url: str("Poll here; completed orders carry the goods."),
+      order_url: str("Poll here over HTTP, or call check_order with the order_id on this door; completed orders carry the goods."),
       sla_hours: { type: "number", description: "The delivery promise, in hours." },
       ...common,
     },
@@ -426,7 +426,7 @@ function completionCriteria(item: MenuItem): string {
   if (item.fulfillment === "instant") {
     return `Completes in one call: the result carries deliverable, cert_id, and patron_number. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
   }
-  return `Completes in one call with an order, not the goods: the result carries order_id and order_url; a human fulfills within ${item.sla_hours ?? 168}h and the completed order carries the deliverable. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
+  return `Completes in one call with an order, not the goods: the result carries order_id and order_url; a human fulfills within ${item.sla_hours ?? 168}h and the completed order carries the deliverable — poll it with check_order on this door, free. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
 /**
@@ -563,7 +563,7 @@ function clusterOutputSchema(items: MenuItem[]): Schema {
       ...(hasQueue
         ? {
             order_id: str("Your place in the human queue. Human-queue items."),
-            order_url: str("Poll here; completed orders carry the goods."),
+            order_url: str("Poll here over HTTP, or call check_order with the order_id on this door; completed orders carry the goods."),
             sla_hours: {
               type: "number",
               description: "The delivery promise, in hours.",
@@ -1080,6 +1080,57 @@ const FREE_TOOLS: McpTool[] = [
     },
     annotations: {
       title: "Verify an Artifact",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    /*
+     * THE POLL HALF OF THE ASYNC JOB, ON THIS DOOR (2026-09-05). A
+     * buy_human_task result carries order_id and order_url, and an
+     * agent holding only this transport could not follow the url: it
+     * had to leave the connection to learn whether the keeper had
+     * delivered. This is GET /api/order/{order_id} as a tool, the same
+     * derivation (lib/order-status), so the two doors cannot disagree.
+     */
+    name: "check_order",
+    reads: "our_books",
+    description:
+      "Check a human-queue order by its order_id: status (queued or completed), the promised window, and once completed the deliverable itself — the poll half of the store's async-job pattern, the same record GET /api/order/{order_id} serves, for an agent holding only this transport. Free, no payment, no account; poll no faster than once a minute. Past its window the order carries a window_breached block stating what is owed. NOT a purchase; instant items arrive in the buy result. A store errand, for you the visiting agent — nothing here needs a human's decision.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        order_id: str("The order_id from a human-queue purchase result.", 60),
+      },
+      required: ["order_id"],
+      additionalProperties: false,
+      examples: [{ order_id: "ord_example" }],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        order_id: str("The order polled."),
+        item_id: str("What was bought."),
+        item_name: str("Its name on the shelf."),
+        status: str("queued | completed. Completed is terminal."),
+        created_at: str("When the order was taken, ISO 8601."),
+        sla_hours: { type: "number", description: "The delivery promise, in hours from created_at." },
+        patron_number: { type: "number", description: "Your sequential patron number." },
+        badge_url: str("The patron badge, an SVG."),
+        deliverable: str("The goods, as text. Present once status is completed."),
+        completed_at: str("When it was delivered, ISO 8601. Present once completed."),
+        message: str("The store's word on where things stand."),
+        window_breached: {
+          type: "object",
+          description: "Present only past the promised window: due_at, hours_late, kind, owed_usdc, and how the refund gets paid (by the keeper's hand, never automatically).",
+        },
+      },
+      required: ["order_id", "item_id", "status", "created_at", "sla_hours", "message"],
+    },
+    annotations: {
+      title: "Check an Order",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,

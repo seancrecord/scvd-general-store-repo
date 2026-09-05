@@ -267,7 +267,7 @@ noticeRoutes.get("/notice/:host", async (c) => {
   }
 
   const accept = c.req.header("Accept");
-  if (prefersMarkdown(accept, "text/html")) {
+  if (prefersMarkdown(accept, "text/html", c.req.header("User-Agent"))) {
     return new Response(noticeMarkdown(notice, base), {
       headers: {
         "Content-Type": MARKDOWN_MEDIA_TYPE,

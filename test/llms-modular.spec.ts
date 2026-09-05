@@ -807,12 +807,22 @@ const BASE = "https://scvd.store";
  * is the only edit. Confirmed before this value was taken: the guide
  * carries "Stock: 5 per week, waitlist when we're out", "/api/declare-door"
  * and "Five words carry it", and still every earlier pin.
+ * Re-taken 2026-09-05 — the SEVENTY-FIRST — for the six-gap build at
+ * the keeper's ask: the guide gains one paragraph naming the
+ * documentation door (${base}/mcp/docs, also POST on /mcp.md, with its
+ * read_docs tool) beside the verifier's; the developers area carries
+ * the amended declined positions (the docs door, the reader/indexer
+ * split for markdown, the page header's two CSP rails, the trade
+ * counter's sandbox named). Confirmed before this value was taken:
+ * the guide carries "/mcp/docs", "read_docs", "Stock: 5 per week,
+ * waitlist when we're out", "/api/declare-door" and "Five words carry
+ * it", and still every earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "870843e22b18778df7f42228c02967279829011d9ddc4a9c56127056b8da26d7";
+  "6aa44435c1dfd4ad09e058bffce8cb5b6cc24178b08f0c17c354797829bdef95";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

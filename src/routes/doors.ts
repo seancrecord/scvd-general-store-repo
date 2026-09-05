@@ -45,7 +45,8 @@ import type { HonoEnv, MenuItem } from "@/types";
  */
 export const doorsRoutes = new Hono<HonoEnv>();
 
-const VERDICTS = ["ready", "not_ready", "unreachable", "not_probed"] as const;
+/** Exported so the contract enumerates the filter from the same array the route checks. */
+export const VERDICTS = ["ready", "not_ready", "unreachable", "not_probed"] as const;
 
 /** Plain English for each verdict, for readers who have never been here. */
 const VERDICT_MEANS: Record<string, string> = {

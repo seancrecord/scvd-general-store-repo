@@ -64,6 +64,8 @@ export const TOOL_ENDPOINTS: Readonly<
   look_at_door: { method: "POST", path: "/api/look/v1" },
   check_conformance: { method: "POST", path: "/api/conformance/v1" },
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
+  /* The poll half of the async job, for an agent in a browser holding an order id: free, read-only, the store's own books. */
+  check_order: { method: "GET", path: "/api/order/{order_id}" },
 };
 
 /** Free and read-only, derived — the only tools the browser surface may carry. */
@@ -132,10 +134,11 @@ export function webmcpScript(): string {
   }
 
   function call(endpoint, args) {
-    var path = endpoint.path;
-    if (path.indexOf("{id}") !== -1) {
-      path = path.replace("{id}", encodeURIComponent(String(args.id || "")));
-    }
+    // Every {placeholder} in the door's path is the argument of that
+    // name, URL-encoded; a GET door carries its input in the path.
+    var path = endpoint.path.replace(/\{([a-z_]+)\}/g, function (_m, name) {
+      return encodeURIComponent(String(args[name] || ""));
+    });
     var init = { method: endpoint.method };
     if (endpoint.method === "POST") {
       init.headers = { "Content-Type": "application/json" };
