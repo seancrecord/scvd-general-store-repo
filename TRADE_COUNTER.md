@@ -1,6 +1,6 @@
 # The Trade Counter — the shelf, sold on account to marketplaces
 
-Opened 2026-09-03. Status: BUILT, first account in TEST. The keeper's
+Opened 2026-09-03. Status: BUILT, first account LIVE (2026-09-05). The keeper's
 greenlight, verbatim: "make sure we get good margin and lets build it
 out, make sure we have good marketable copy, we sell as a product,
 nothing to do with hal we just take his need or problem and build it
@@ -251,7 +251,7 @@ observations. `/api/trade/contract` prints
 
 ## The first account: Hal's answers (2026-09-04)
 
-`hal` (halmarket.dev), share 5%, in TEST. Hal's owner answered the
+`hal` (halmarket.dev), share 5%, LIVE since 2026-09-05 on the keeper's word, once the nine listings went live on Hal's side. Hal's owner answered the
 ten questions the same day; every dialect field already matched
 (seconds, a separate provider key, a 300-second window, a 32-hex
 nonce), so nothing failed closed. The answers, and what each one
@@ -300,6 +300,30 @@ statement bills USD; `pricing.settlement_currency` says so), and
 pointing at the item's `door` printed on the account row.
 
 All of this is public on the account row as `partner_terms`.
+
+### The nine listings on Hal (created 2026-09-05, one pair per listing)
+
+Seller-dashboard ids, in creation order, matched to items by that
+order (the keeper's paste; confirm against the dashboard before
+relying on the mapping for a dispute). Each listing's endpoint URL is
+the item's `door` on the hal row; each pair is under
+`TRADE_SECRET_HAL__<ITEM>` / `TRADE_PROVIDER_KEY_HAL__<ITEM>`.
+
+| Item | Listing id |
+|---|---|
+| certificate_of_patronage | `4c94f7d6-7b01-4310-a7de-95df3e7b2a00` |
+| context_anchor | `23b07a8a-ea0b-4255-8779-fcf16709feb4` |
+| bitcoin_anchor | `337f84d2-029d-4aff-bb58-2e600b9d70aa` |
+| signature_agent_card | `936dbccb-0963-4ef9-8f32-3b213faa1827` |
+| onpage_audit | `22a55522-eac2-4bd1-afdc-24e96d673c9c` |
+| service_audit | `7b1581ad-11f4-408a-ab1a-83b8502c5f7c` |
+| passport_refresh | `c5860e61-29d9-49d7-99ca-5a6159435c2b` |
+| good_buyer | `59f3e9bd-bd29-408c-8a3b-b54537671fae` |
+| provenance_check | `4bf3c2c4-1df1-422b-8bf4-c93c5309b982` |
+
+The listings went LIVE on Hal's side the same day, not paused. One
+pair was saved as plain text by mistake, deployed, then rotated on
+both sides the same hour; the burned value is out of service.
 ## What this is not
 
 Not a rail (no money moves through this door). Not a discount
