@@ -261,7 +261,7 @@ defectRoutes.get("/defects.json", (c) =>
 defectRoutes.get("/defects", (c) => {
   const base = c.env.STORE_BASE_URL;
   const accept = c.req.header("Accept");
-  if (prefersMarkdown(accept, "text/html")) {
+  if (prefersMarkdown(accept, "text/html", c.req.header("User-Agent"))) {
     return new Response(markdown(base), {
       headers: { "Content-Type": MARKDOWN_MEDIA_TYPE, Vary: VARY_ACCEPT },
     });

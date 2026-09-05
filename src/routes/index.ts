@@ -37,6 +37,7 @@ export { feedsRoutes } from "@/routes/feeds";
 export { monthlyStateRoutes } from "@/routes/monthly-state";
 export { a2aRoutes } from "@/routes/a2a";
 export { mcpVerifierRoutes } from "@/routes/mcp-verifier";
+export { mcpDocsRoutes } from "@/routes/mcp-docs";
 export { scorersRoutes } from "@/routes/scorers";
 export { openapiToolsRoutes } from "@/routes/openapi-tools";
 export { fixturesRoutes } from "@/routes/fixtures";

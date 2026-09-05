@@ -4,6 +4,8 @@ import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { webmcpTools } from "@/routes/webmcp";
 import { uiResourceCatalog } from "@/lib/mcp-apps";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { DOCS_TOOL_NAME } from "@/routes/mcp-docs";
+import { VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -49,6 +51,8 @@ canonical: "${base}/mcp.md"
 url: "${base}/mcp.md"
 server: "${base}/mcp"
 server_card: "${base}/.well-known/mcp/server-card.json"
+verifier: "${base}/mcp/verifier"
+docs_server: "${base}/mcp/docs"
 auth: "${base}/auth.md"
 ---
 
@@ -83,6 +87,22 @@ either is not us.
 - **${cards} \`ui://\` card templates** (MCP Apps, SEP-1865) for hosts that render them.
 
 Add it as a custom connector, or point any MCP client at the URL.
+
+### The other two doors on this origin
+
+- **The verifier, \`POST ${base}/mcp/verifier\`** — ${VERIFIER_TOOLS.length} read-only
+  tools under task-shaped names (${VERIFIER_TOOLS.map((t) => `\`${t.name}\``).join(", ")}),
+  the same handlers as the main door, and no shelf: for a client that
+  should never see a paid tool.
+- **The documentation door, \`POST ${base}/mcp/docs\`** — and \`POST\` on
+  this very address, \`${base}/mcp.md\`: a JSON-RPC server whose whole
+  catalog is the reference material. The same ${shelves} resources the
+  main door lists, read by the same function, plus one tool,
+  \`${DOCS_TOOL_NAME}\`, that returns any of them by name for a host that
+  hides resources. Nothing on it acts, spends, or probes. Added
+  2026-09-05, when a scanner that POSTed a handshake here and got a
+  405 reported a documentation server that was down — the page was
+  true and read as a lie, so the address now answers both ways.
 
 ## 2. Local stdio — the same server, bridged
 

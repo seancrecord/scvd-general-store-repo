@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
+import { firstPartyScriptCsp } from "@/lib/csp";
 
 const BASE = "https://scvd.store";
 const AS_A_BROWSER = {
@@ -181,12 +181,12 @@ describe("the form declares itself to a browser agent", () => {
     const { html, csp } = await room();
     expect(html).toContain('<script src="/webmcp.js"');
     // Shipping a script means shipping a fence (the P7 condition).
-    expect(csp).toBe(FIRST_PARTY_SCRIPT_CSP);
+    expect(csp).toBe(firstPartyScriptCsp(BASE));
   });
 
   it("keeps the fence on the answer page too, not just the form", async () => {
     const { csp } = await submit({ artifact: "" });
-    expect(csp).toBe(FIRST_PARTY_SCRIPT_CSP);
+    expect(csp).toBe(firstPartyScriptCsp(BASE));
   });
 });
 

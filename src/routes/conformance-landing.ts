@@ -6,7 +6,7 @@ import {
   type ConformanceRequest,
   type ConformanceVerdict,
 } from "@/services/conformance";
-import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
+import { firstPartyScriptCsp } from "@/lib/csp";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
@@ -281,7 +281,7 @@ conformanceLandingRoutes.get("/conformance", (c) => {
     // send. The declarative form needs no script; /webmcp.js rides
     // along so the imperative tools are declared in the room where
     // this desk's verb lives.
-    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+    c.header("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
     return c.html(
       renderSimplePage({
         title: "The conformance desk",
@@ -321,7 +321,7 @@ conformanceLandingRoutes.post("/conformance", async (c) => {
   };
 
   const page = (bodyHtml: string) => {
-    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+    c.header("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
     c.header("Cache-Control", "no-store");
     return c.html(
       renderSimplePage({

@@ -27,6 +27,8 @@
  * is the exact failure the convention exists to prevent.
  */
 
+import { isMarkdownReader } from "@/lib/crawlers";
+
 export const MARKDOWN_MEDIA_TYPE = "text/markdown; charset=utf-8";
 
 /**
@@ -120,11 +122,30 @@ export function negotiate(
  * route serves by default — pass the media type it really sends, or
  * the ranking is decided against the wrong opponent.
  */
+/**
+ * True when the Accept header says nothing a route could act on: no
+ * header, nothing parseable, or only wildcards (`*​/*`, `text/*`). A
+ * concrete type at any q is a preference, and a preference wins.
+ */
+export function statesNoPreference(header: string | undefined | null): boolean {
+  return parseAccept(header).every((entry) => entry.specificity < 2);
+}
+
 export function prefersMarkdown(
   header: string | undefined | null,
   alternative = "application/json",
+  userAgent?: string | undefined | null,
 ): boolean {
-  return negotiate(header, [alternative, "text/markdown"]) === "text/markdown";
+  if (negotiate(header, [alternative, "text/markdown"]) === "text/markdown") {
+    return true;
+  }
+  /*
+   * A NAMED READER THAT SAID NOTHING gets the markdown (2026-09-05;
+   * lib/crawlers.ts says who and why). Only where the header is
+   * silent: `Accept: text/html` from GPTBot is still a request for
+   * HTML, and the second clause never overrules the first.
+   */
+  return statesNoPreference(header) && isMarkdownReader(userAgent);
 }
 
 /**

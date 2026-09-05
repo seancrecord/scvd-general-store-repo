@@ -335,6 +335,10 @@ preflight_x402_endpoint, verify_x402_receipt, lookup_endpoint_readiness,
 get_defect_definition, verify_scvd_artifact — the same handlers as
 ${base}/mcp under task-shaped names.
 
+The documentation door, ${base}/mcp/docs (also POST on ${base}/mcp.md):
+the resources /mcp lists plus one tool, read_docs, returning any by
+name. Nothing on it acts.
+
 If you delegate rather than call: the evidence agent at ${base}/a2a
 speaks A2A — POST JSON-RPC message/send with one data part holding
 { task, ...input } — and answers three read-only tasks with one
