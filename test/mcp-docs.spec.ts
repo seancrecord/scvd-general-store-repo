@@ -1,5 +1,7 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { readPorchLedger } from "@/lib/metrics";
+import type { Env } from "@/types";
 import { DOCS_PATHS, DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { FREE_DOORS } from "@/store/atlas";
@@ -31,6 +33,24 @@ async function rpc(
   });
   return { status: response.status, body: (await response.json()) as Record<string, any> };
 }
+
+describe("the porch counts this door", () => {
+  it("books the handshake and the one tool, and mints nothing for a method or a name it does not serve", async () => {
+    const testEnv = env as unknown as Env;
+    const before = await readPorchLedger(testEnv);
+    const listBefore = before.surfaces["mcp-docs:resources/list"]?.["organic:mcp"] ?? 0;
+    const toolBefore = before.surfaces["mcp-docs:tool:read_docs"]?.["organic:mcp"] ?? 0;
+    await rpc("/mcp/docs", "resources/list");
+    await rpc("/mcp/docs", "tools/call", { name: DOCS_TOOL_NAME, arguments: {} });
+    await rpc("/mcp/docs", "tools/call", { name: "buy_observation", arguments: {} });
+    await rpc("/mcp/docs", "nonsense/method");
+    const after = await readPorchLedger(testEnv);
+    expect(after.surfaces["mcp-docs:resources/list"]?.["organic:mcp"]).toBe(listBefore + 1);
+    expect(after.surfaces["mcp-docs:tool:read_docs"]?.["organic:mcp"]).toBe(toolBefore + 1);
+    expect(after.surfaces["mcp-docs:tool:buy_observation"]).toBeUndefined();
+    expect(after.surfaces["mcp-docs:nonsense/method"]).toBeUndefined();
+  });
+});
 
 describe("the documentation door answers a handshake at both addresses", () => {
   it("initialize names the docs server and declares resources and tools", async () => {

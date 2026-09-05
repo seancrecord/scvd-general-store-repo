@@ -33,6 +33,8 @@ const sample: Observatory = {
       { surface: "mcp-verifier:tool:preflight_x402_endpoint", organic: 2, by_channel: { mcp: 2 }, house: 0, infrastructure: 0 },
       { surface: "mcp-verifier:tool:get_defect_definition", organic: 1, by_channel: { mcp: 1 }, house: 0, infrastructure: 0 },
       { surface: "mcp-verifier:initialize", organic: 9, by_channel: { mcp: 9 }, house: 0, infrastructure: 0 },
+      { surface: "mcp-docs:tool:read_docs", organic: 4, by_channel: { mcp: 4 }, house: 0, infrastructure: 0 },
+      { surface: "mcp-docs:initialize", organic: 6, by_channel: { mcp: 6 }, house: 0, infrastructure: 0 },
       { surface: "mcp:tool:buy_observation", organic: 18, by_channel: { mcp: 18 }, house: 0, infrastructure: 0 },
       { surface: "menu.json", organic: 885, by_channel: { direct: 169 }, house: 0, infrastructure: 291 },
       { surface: "mcp:initialize", organic: 1613, by_channel: { mcp: 1613 }, house: 0, infrastructure: 0 },
@@ -52,14 +54,16 @@ describe("the free instruments, sorted out of the observatory", () => {
     const u = freeInstrumentUsage(sample, { now: NOW });
     const m = u.months[0]!;
     expect(m.free.map((s) => s.surface)).toEqual([
-      "corpus:host", "mcp:tool:preflight_endpoint", "artifact:read", "mcp:tool:check_before_you_pay", "verify-receipt", "preflight:batch", "mcp:tool:verify_artifact",
+      "corpus:host", "mcp:tool:preflight_endpoint", "artifact:read", "mcp:tool:check_before_you_pay", "verify-receipt",
+      "mcp-docs:tool:read_docs", "preflight:batch", "mcp:tool:verify_artifact",
       "mcp-verifier:tool:preflight_x402_endpoint", "mcp-verifier:tool:get_defect_definition",
     ]);
-    expect(m.free_total).toBe(226);
-    expect(m.free_by_channel).toEqual({ mcp: 75, direct: 111, unknown: 40 });
-    // Both doors' handshakes, neither door's handshake on the roster.
-    expect(m.mcp_handshakes).toBe(1622);
+    expect(m.free_total).toBe(230);
+    expect(m.free_by_channel).toEqual({ mcp: 79, direct: 111, unknown: 40 });
+    // Every door's handshake in the denominator, no door's handshake on the roster.
+    expect(m.mcp_handshakes).toBe(1628);
     expect(JSON.stringify(m.free)).not.toContain("mcp-verifier:initialize");
+    expect(JSON.stringify(m.free)).not.toContain("mcp-docs:initialize");
     expect(m.paid_tool_calls).toBe(18);
     // Handshakes and the menu are neither: the noise stays out.
     expect(JSON.stringify(m)).not.toContain("mcp:initialize");
@@ -68,7 +72,10 @@ describe("the free instruments, sorted out of the observatory", () => {
   it("splits the free uses into the ones that carried an argument and the ones that were reads", () => {
     const m = freeInstrumentUsage(sample, { now: NOW }).months[0]!;
     expect(m.argument_uses).toBe(82);
-    expect(m.read_uses).toBe(144);
+    expect(m.read_uses).toBe(148);
+    // The documentation door hands back reference material: a read, counted from the day it opened.
+    expect(m.free.find((s) => s.surface === "mcp-docs:tool:read_docs")?.kind).toBe("read");
+    expect(m.free.find((s) => s.surface === "mcp-docs:tool:read_docs")?.logged_since).toBe("2026-09-05");
     // The verifier's task-shaped names: a preflight needs a URL; the vocabulary is a read.
     expect(m.free.find((s) => s.surface === "mcp-verifier:tool:preflight_x402_endpoint")?.logged_since).toBe("2026-09-05");
     expect(m.free.find((s) => s.surface === "mcp-verifier:tool:get_defect_definition")?.kind).toBe("read");
@@ -135,6 +142,7 @@ describe("the free instruments, sorted out of the observatory", () => {
         "corpus:host": 100, "mcp:tool:preflight_endpoint": 45, "artifact:read": 43, "mcp:tool:check_before_you_pay": 24,
         "verify-receipt": 5, "mcp:tool:verify_artifact": 3, "preflight:batch": 3,
         "mcp-verifier:tool:preflight_x402_endpoint": 2, "mcp-verifier:tool:get_defect_definition": 1,
+        "mcp-docs:tool:read_docs": 4,
       },
       paid: { "mcp:tool:buy_observation": 18 },
     });
@@ -228,6 +236,9 @@ describe("the free instruments, sorted out of the observatory", () => {
     expect(html).toContain("logged since");
     expect(html).toContain("After the sale");
     expect(html).toContain("The handoff");
+    // The till line points at the desk AND says why the two can disagree.
+    expect(html).toContain("At the till");
+    expect(html).toContain("THE TWO READ DIFFERENT THINGS");
     const stored = await readInstrumentReading(testEnv);
     expect(stored?.month).toBe(new Date().toISOString().slice(0, 7));
   });

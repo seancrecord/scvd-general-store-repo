@@ -58,7 +58,8 @@ function tillHtml(m: InstrumentMonth): string {
   if (m.declines === null && m.settled === null) return "";
   const declines = m.declines === null ? "unknown" : String(m.declines);
   const settled = m.settled === null ? "unknown" : String(m.settled);
-  return `<p><small><strong>At the till:</strong> signed payments refused ${declines} beside settled ${settled}. When refusals outnumber settles, the reasons are the lever: <a href="/admin/declines">the declines desk</a> groups them by client and fault, and <a href="/admin/funnel">the funnel</a> reads whether one wall or a scatter.</small></p>`;
+  return `<p><small><strong>At the till:</strong> signed payments refused ${declines} beside settled ${settled}. When refusals outnumber settles, the reasons are the lever: <a href="/admin/declines">the declines desk</a> groups them by client and fault, and <a href="/admin/funnel">the funnel</a> reads whether one wall or a scatter.
+    THE TWO READ DIFFERENT THINGS, and on a busy month they disagree: this figure is a monthly COUNTER, while the desk SCANS the newest event rows and stops at its cap. A desk reporting no declines while this line names some has not contradicted it — the refused rows are older than the desk's window, and the desk says so in its own first sentence. The rows keep for ninety days; the way to reach them is a narrower scan, not a longer wait.</small></p>`;
 }
 
 function monthHtml(m: InstrumentMonth): string {
@@ -100,7 +101,7 @@ export function renderInstrumentsPage(usage: InstrumentUsage): string {
     with arguments are the part of the traffic crawlers cannot fake. Computed ${escapeHtml(usage.computed_at)}.</small></p>
     <p><small><strong>Read the gaps as gaps.</strong> The porch began counting surfaces on ${escapeHtml(usage.porch_counting_since)};
     the interactive doors (preflight, look, before-you-pay, verify-receipt, bot-auth check, the desk page) got their lines
-    on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}.
+    on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}, the documentation door's on ${escapeHtml(usage.docs_logged_since)}.
     A zero before a row's logged-since date is the counter's absence, not the agents'. "Per day" divides by the days the line existed this month, so a partial month reads beside a whole one.</small></p>
   </section>
   ${usage.months.map(monthHtml).join("")}

@@ -66,6 +66,8 @@ export const PORCH_COUNTING_SINCE = "2026-08-21";
 export const DOORS_LOGGED_SINCE = "2026-09-04";
 /** The verifier door at /mcp/verifier, open since 2026-09-03, was given porch lines on this day. */
 export const VERIFIER_LOGGED_SINCE = "2026-09-05";
+/** The documentation door at /mcp.md and /mcp/docs, counted from the day it opened. */
+export const DOCS_LOGGED_SINCE = "2026-09-05";
 
 export const FREE_INSTRUMENTS: readonly InstrumentEntry[] = [
   { prefix: "preflight", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
@@ -83,6 +85,8 @@ export const FREE_INSTRUMENTS: readonly InstrumentEntry[] = [
   { prefix: "mcp:tool:verify_artifact", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
   { prefix: "mcp:tool:read_store_guide", kind: "read", logged_since: PORCH_COUNTING_SINCE },
   { prefix: "mcp-verifier:tool:", kind: "argument", logged_since: VERIFIER_LOGGED_SINCE },
+  /* The documentation door's one tool hands back reference material by name: a read, like the store guide. */
+  { prefix: "mcp-docs:tool:", kind: "read", logged_since: DOCS_LOGGED_SINCE },
 ];
 
 /**
@@ -106,6 +110,13 @@ const SURFACE_OVERRIDES: Readonly<Record<string, Partial<InstrumentEntry>>> = {
 };
 
 export const FREE_INSTRUMENT_PREFIXES: readonly string[] = FREE_INSTRUMENTS.map((entry) => entry.prefix);
+
+/** Every MCP door's opening handshake: the denominator for how many sessions become tool calls. */
+const MCP_HANDSHAKE_SURFACES: ReadonlySet<string> = new Set([
+  "mcp:initialize",
+  "mcp-verifier:initialize",
+  "mcp-docs:initialize",
+]);
 
 export const PAID_TOOL_PREFIXES: readonly string[] = ["mcp:tool:buy_"];
 
@@ -200,6 +211,7 @@ export interface InstrumentUsage {
   porch_counting_since: string;
   doors_logged_since: string;
   verifier_logged_since: string;
+  docs_logged_since: string;
   /** What this render stored for the next one to diff against. */
   reading: InstrumentReading;
 }
@@ -307,7 +319,7 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
         .filter((s) => s.surface.startsWith("verify-receipt") || s.surface === "mcp:tool:verify_artifact")
         .reduce((sum, s) => sum + s.organic, 0),
       mcp_handshakes: m.surfaces
-        .filter((s) => s.surface === "mcp:initialize" || s.surface === "mcp-verifier:initialize")
+        .filter((s) => MCP_HANDSHAKE_SURFACES.has(s.surface))
         .reduce((sum, s) => sum + s.organic, 0),
       unknown: m.month === currentMonth ? (inputs.unknown ?? null) : null,
       handoff: m.month === currentMonth ? (inputs.handoff ?? null) : null,
@@ -329,6 +341,7 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
     porch_counting_since: PORCH_COUNTING_SINCE,
     doors_logged_since: DOORS_LOGGED_SINCE,
     verifier_logged_since: VERIFIER_LOGGED_SINCE,
+    docs_logged_since: DOCS_LOGGED_SINCE,
     reading,
   };
 }
