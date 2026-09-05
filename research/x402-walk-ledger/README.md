@@ -114,8 +114,12 @@ sentence that led them to it. The verifier reads both ways now.
 For row 1 the same lookup found nothing: no `AuthorizationUsed` for its nonce on
 any contract in ±25 hours, and no USDC transfer into its `payTo` at all. On Base
 mainnet the $0.10 did not move. Base Sepolia — where a v1 `X-PAYMENT` door in
-2026 may well settle — was not reachable from where this ran and is unsearched,
-and the row says so. The row we picked for the cross-check is the one row whose
+2026 may well settle — was not reachable from here; 0200project searched its USDC
+contract by hand on 2026-09-05 across ~93 days covering `observed_at`, positive
+control included, and found nothing either. Both reads are on the row. What is
+left is narrower than "unresolved": a different token, a different chain, or no
+settlement at all — and the door's operator holds the facilitator response that
+would say which. The row we picked for the cross-check is the one row whose
 settlement we cannot show.
 
 It is an EIP-3009 authorization nonce. `buildAuthorization` in
