@@ -194,6 +194,23 @@ knocks). What is not yet known: the store's cold penalty from a clean
 vantage, which is one `npm run cold:read` from the keeper's Mac after
 ten quiet minutes, beside the canary, with the control on.
 
+## The clean read (20:16 UTC, the keeper's Mac, ten quiet minutes after the flip)
+
+| from the Mac, cold | first knock | warm median | cold penalty |
+|---|---|---|---|
+| a paid door, now the doors Worker | 177 ms | 41 ms | 136 ms |
+| the canary, Cloudflare's floor | 31 ms | 23 ms | 8 ms |
+
+The burst from the same vantage: 32 doors knocked at once, 32 answered
+402, 9 cold isolates and 23 warm, min 39 ms, median 156 ms, max 330 ms
+(a warm `aura_walk`). So the doors' cold start from a clean vantage is
+about 130 ms over an 8 ms floor, and a directory-shaped burst finishes
+inside a third of a second where the night reads had been running to
+the 2 s cap and dropping doors. The store's own cold penalty from this
+vantage was never taken before the flip; the local workerd ratio
+(152 ms to 50 ms) is the only estimate of it, and it is an estimate.
+The night reads on x402-list are the measurement that matters.
+
 ## The canary, read (17:49 UTC, the keeper's Mac)
 
 Deployed by the keeper's hand at 17:4x UTC; read from his Mac minutes

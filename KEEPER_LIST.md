@@ -57,8 +57,11 @@ build, it is on the roadmap.
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.
      Until then a shelf change needs step 2 again by hand.
-  6. READ, from your Mac after ten minutes of not touching a
-     door, so the isolate at your colo is cold:
+  6. DONE 20:16 UTC: the doors knock cold in 177ms (136 over a
+     warm 41), the canary in 31 (8 over 23); the 32-door burst
+     woke 9 cold isolates and finished in 330ms. In the note.
+     Was: READ, from your Mac after ten minutes of not touching
+     a door, so the isolate at your colo is cold:
      `npm run cold:read -- --url=https://scvd.store/api/buy/hello --url=https://scvd-cold-canary.seancrecord.workers.dev/ --control=https://x402-list.com/robots.txt --burst`
      That is the store's cold penalty from a clean vantage,
      which the sandbox could never give (its proxy added
