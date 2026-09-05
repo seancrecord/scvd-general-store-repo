@@ -1027,9 +1027,6 @@ read from the latest signed snapshot, with ?week= naming an earlier
 one. Counts with their denominators; never a ratio, never a rank,
 never a host named beside its verdict.
 
-⚑ KEEPER'S PEN, RULE 7: the two paragraphs below are DRAFTED, not
-canon. The list decides whether a room is named; the wording is yours.
-
 The same week READ, rather than tabulated: ${base}/ledger is The
 Week's Ledger, one page per signed week at \`${base}/ledger/{week}\`
 with JSON at \`${base}/ledger/{week}.json\`. ${LEDGER_PROPOSITION}
@@ -1154,8 +1151,6 @@ ranking. The per-host read above carries the same tier with its rows.
 
 ## Where our numbers come from
 
-⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
-
 ${base}/sources, JSON at ${base}/sources.json. ${SOURCES_PROPOSITION}
 ${SOURCES_FOR_MONEY}
 
@@ -1172,9 +1167,13 @@ which have always recorded what each source returned and have always
 distinguished "answered with nothing" from "could not be read".
 Nobody had ever asked that field a question across rounds.
 
-Four words carry it. \`live\`: answered on the most recent round.
-\`stale\`: has answered before, not this time, so its hosts are on the
-register by carry-forward rather than by observation. \`unread\`: we
+Five words carry it. \`live\`: answered on the most recent round.
+\`partial\`: answered, and the census would not count it — the
+listing is page-capped, and a partial enumeration cannot tell a
+delisting from a page we never reached; the round still walked every
+door it named, and only the denominator leaves it out. \`stale\`: has
+answered before, not this time, so its hosts are on the register by
+carry-forward rather than by observation. \`unread\`: we
 name the directory and have no reader for it, with the reason and the
 condition that would dissolve it. And \`never_answered\`, which is the
 one to stare at: we built a reader, the round calls it every week,
@@ -1199,8 +1198,6 @@ snapshot for at all are named there and on ${base}/corpus.json under
 to read as continuous coverage.
 
 ## The MCP ward
-
-⚑ KEEPER'S PEN, RULE 7: this section is DRAFTED, not canon.
 
 ${base}/mcp-ward, JSON at ${base}/mcp-ward.json. ${MCP_WARD_PROPOSITION}
 ${MCP_WARD_FOR_MONEY}

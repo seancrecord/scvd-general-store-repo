@@ -117,24 +117,14 @@ export const SOURCE_ROSTER: readonly RosterEntry[] = [
   {
     source: "402index.io",
     home: "https://402index.io",
-    what: "A directory of paid endpoints across L402, x402 and MPP — self-described as 15,000+, which would make it the largest single frame available to us.",
-    readiness: {
-      state: "unread",
-      why: "Full enumeration is paid (L402-gated CSV export); the free API rate-limits into 402s well before its rows are exhausted. A partial read is unread by the population layer's own law, so it is named instead of half-read.",
-      unblock:
-        "The wallet law was ruled 2026-08-18 ($25/month funding discipline). What remains is a funded wallet, one hand-captured paid response to build the reader against, and a price the keeper has seen — none of the three is done, and the price is not published anywhere we could reach.",
-    },
+    what: "A directory of paid endpoints across L402, x402 and MPP — 104,106 rows on 2026-09-04, the largest frame this ward reads. The free JSON list at 100 requests a minute, walked on the hourly press; only its x402 rows enter the census. The roster once said its free API rate-limited into 402s; the keeper's hand showed it does not.",
+    readiness: { state: "read" },
   },
   {
     source: "x402scan.com",
     home: "https://www.x402scan.com",
-    what: "A settlement indexer with a resource directory; the only one of these that watches money move rather than doors exist.",
-    readiness: {
-      state: "unread",
-      why: "Resource enumeration is a paid endpoint. Paying is a wallet decision.",
-      unblock:
-        "The wallet law was ruled 2026-08-18; a funded wallet and one hand-captured paid response remain. Partial relief already landed: x402-list carries rows it imported from x402scan, tagged `imported:x402scan`, so a slice of this population now arrives free — 3 rows of 630 on 2026-09-04, which is a slice and not a substitute.",
-    },
+    what: "A settlement indexer with a resource directory — the only source here that watches money move rather than doors exist. A cent a page in USDC on Base, priced by the keeper's hand on 2026-09-04 ($0.03 spent), the price living nowhere but the 402 itself. Walked on the hourly press from the field wallet under the wallet law: a dollar a pass, and a pass that reaches it is truncated, not continued.",
+    readiness: { state: "read" },
   },
   {
     source: "endpoint.x402jp.com",

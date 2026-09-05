@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
+  MCP_DIRECTORIES_UNREAD,
+  MCP_SOURCE_ROSTER,
   MCP_WARD_IS_NOT,
   latestMcpPass,
   readMcpRegister,
@@ -43,6 +45,7 @@ const MCP_CSS = `
 .limits { border: 1px dashed var(--line); padding: 0.9rem 1rem; margin: 1.5rem 0; }
 .limits h3 { margin-top: 0; }
 .statuses td { padding: 0.3rem 0.8rem 0.3rem 0; border-bottom: 1px solid var(--line); }
+.roster-row { border: 1px dashed var(--line); padding: 0.5rem 1rem; margin: 0.5rem 0; }
 `;
 
 function num(value: number): string {
@@ -99,6 +102,10 @@ function wardTwin(
           }
         : null,
     separate_from_x402: `This ward shares no total with the x402 ward at ${base}/sources. Its population is MCP servers; theirs is x402 doors. Adding them would produce a number that is about nothing.`,
+    /* Every MCP directory the ward knows of, read or not, with the
+     * reason — the x402 roster's discipline on the second ward. */
+    sources_read: MCP_SOURCE_ROSTER.filter((entry) => entry.readiness.state === "read").map((entry) => entry.source),
+    directories_unread: MCP_DIRECTORIES_UNREAD,
   };
 }
 
@@ -195,6 +202,17 @@ mcpWardRoutes.get("/mcp-ward", async (c) => {
         ${progress}
       </section>
       ${body}
+      <section><h2>Named, not read</h2>
+      <p class="menu-desc">Directories we know exist and do not read, each with
+      the reason and what would dissolve it. A roster that named only what it
+      reads would report a reach it does not have.</p>
+      ${MCP_DIRECTORIES_UNREAD.map(
+        (row) => `<div class="roster-row">
+        <p class="menu-desc"><strong><code>${escapeHtml(row.source)}</code></strong> — ${escapeHtml(row.what)}</p>
+        <p class="menu-desc">${escapeHtml(row.why)}</p>
+        <p class="menu-meta"><strong>What would dissolve it:</strong> ${escapeHtml(row.unblock)}</p>
+      </div>`,
+      ).join("")}</section>
       <section class="limits">
         <h3>What this is not</h3>
         <p class="menu-desc">${escapeHtml(MCP_WARD_IS_NOT)}</p>

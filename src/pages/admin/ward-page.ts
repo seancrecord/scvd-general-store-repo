@@ -93,6 +93,10 @@ export function renderWardPage(
     <button type="submit">Walk the ward now</button>
     <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round, and a hand-run round mints its corpus entry too.</span>
   </form>
+  <form method="post" action="/admin/ward/walk-directories" style="margin:0.5em 0">
+    <button type="submit">Advance the directory walks one batch</button>
+    <span style="opacity:0.7"> — 402index (free, 104k rows) and x402scan (a cent a page, a dollar a pass) each read one bounded batch on their stored cursors, exactly what an hourly firing does. The Sunday round reads each one's last completed pass; /sources says which passes stand.</span>
+  </form>
   <form method="post" action="/admin/ward/backfill-doors" style="margin:0.5em 0">
     <button type="submit">Backfill the door bank</button>
     <span style="opacity:0.7"> — one-time seed from every stored round's declared doors; idempotent, replies with the counts.</span>

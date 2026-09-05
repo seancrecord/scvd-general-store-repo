@@ -85,6 +85,8 @@ export interface WeekLedger {
   /** Which directories were answering when this ledger was derived. */
   sources: {
     live: number;
+    /** Answered, and the census would not count it. Not quiet. */
+    partial: number;
     stale: number;
     never_answered: number;
     unread: number;
@@ -349,7 +351,7 @@ export function deriveLedger(
     (correction) => correctionWeek(correction) === brief.week,
   );
 
-  const counts = { live: 0, stale: 0, never_answered: 0, unread: 0 };
+  const counts = { live: 0, partial: 0, stale: 0, never_answered: 0, unread: 0 };
   const notAnswering: string[] = [];
   for (const row of register?.sources ?? []) {
     counts[row.status] += 1;

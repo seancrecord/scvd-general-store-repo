@@ -1037,6 +1037,26 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    /**
+     * THE DIRECTORY WALKS ride the hourly press beside the MCP walk
+     * (2026-09-04): 402index at 104,106 rows, free, and x402scan at a
+     * cent a page from the field wallet under the wallet law. The
+     * Sunday round reads each one's last completed pass and never the
+     * directory. A failed tick keeps its cursor and resumes next hour.
+     */
+    ctx.waitUntil(
+      import("@/services/directory-walk").then(({ walkAllDirectories }) =>
+        walkAllDirectories(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "directory-walk-failed",
+              detail: `A directory walk failed: ${String(error)}. Each walk resumes from its stored cursor on the next firing; the Sunday round reads the last completed pass and is unaffected.`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(runHealthChecks(env));
     /**
      * THE GLANCE, WRITTEN WHERE THE WALKS ARE ALREADY PAID FOR. The

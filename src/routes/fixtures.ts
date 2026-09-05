@@ -29,6 +29,13 @@ import verifier_offer_valid from "../../verifier/fixtures/offer-valid.json";
 import verifier_receipt_missing_payer from "../../verifier/fixtures/receipt-missing-payer.json";
 import verifier_receipt_valid from "../../verifier/fixtures/receipt-valid.json";
 import verifier_receipt_wrong_key from "../../verifier/fixtures/receipt-wrong-key.json";
+import index402_services_page1 from "../../test/fixtures/402index/services-page1.json";
+import x402scan_facilitators_stats from "../../test/fixtures/x402scan/facilitators-stats.json";
+import x402scan_facilitators_stats_terms from "../../test/fixtures/x402scan/facilitators-stats.terms.json";
+import x402scan_merchants from "../../test/fixtures/x402scan/merchants.json";
+import x402scan_merchants_terms from "../../test/fixtures/x402scan/merchants.terms.json";
+import x402scan_resources from "../../test/fixtures/x402scan/resources.json";
+import x402scan_resources_terms from "../../test/fixtures/x402scan/resources.terms.json";
 import { citeBlock } from "@/lib/cite";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import type { HonoEnv } from "@/types";
@@ -93,6 +100,27 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
       { name: "tempo-mainnet", body: mpp_tempo_mainnet as Record<string, unknown> },
       { name: "two-challenges", body: mpp_two_challenges as Record<string, unknown> },
       { name: "x402-and-mpp", body: mpp_x402_and_mpp as Record<string, unknown> }
+    ],
+  },
+  {
+    set: "402index",
+    directory: "test/fixtures/402index",
+    what: "One page of 402index.io's free service list as captured by the keeper on 2026-09-04 (limit 25, offset 0, total 104,106): the shape the directory walk reads, kept so the reader's parser is held to real bytes.",
+    entries: [
+      { name: "services-page1", body: index402_services_page1 as Record<string, unknown> },
+    ],
+  },
+  {
+    set: "x402scan",
+    directory: "test/fixtures/x402scan",
+    what: "x402scan.com's paid directory API as captured by the keeper on 2026-09-04 ($0.03 in total): three response bodies, each beside the decoded Payment-Required challenge that priced it, so the price evidence sits next to the shape. A cent a call, USDC on Base, one payTo across all fourteen endpoints.",
+    entries: [
+      { name: "facilitators-stats", body: x402scan_facilitators_stats as Record<string, unknown> },
+      { name: "facilitators-stats.terms", body: x402scan_facilitators_stats_terms as Record<string, unknown> },
+      { name: "merchants", body: x402scan_merchants as Record<string, unknown> },
+      { name: "merchants.terms", body: x402scan_merchants_terms as Record<string, unknown> },
+      { name: "resources", body: x402scan_resources as Record<string, unknown> },
+      { name: "resources.terms", body: x402scan_resources_terms as Record<string, unknown> },
     ],
   },
   {
@@ -165,7 +193,12 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
 
 fixturesRoutes.get("/fixtures.json", async (c) => c.json(await fixturesIndex(c.env.STORE_BASE_URL), 200, { "Cache-Control": "public, max-age=3600" }));
 
-fixturesRoutes.get("/fixtures/:set{[a-z]+}/:file{[a-z0-9-]+\\.json}", (c) => {
+/*
+ * A set may start with a digit (402index) and a fixture may carry a dot
+ * (resources.terms) since the keeper's captures of 2026-09-04; the
+ * pattern is exactly as wide as the tree and no wider.
+ */
+fixturesRoutes.get("/fixtures/:set{[a-z0-9]+}/:file{[a-z0-9.-]+\\.json}", (c) => {
   const set = FIXTURE_SETS.find((candidate) => candidate.set === c.req.param("set"));
   const name = c.req.param("file").replace(/\.json$/, "");
   const entry = set?.entries.find((candidate) => candidate.name === name);

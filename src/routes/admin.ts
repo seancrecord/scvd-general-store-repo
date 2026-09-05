@@ -1482,6 +1482,21 @@ adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
 });
 
 /**
+ * The directory walks' crank (2026-09-04): one bounded batch per
+ * reader on its stored cursor — what an hourly firing does — with the
+ * report as the reply so the keeper sees how far each pass has got.
+ */
+adminRoutes.post("/admin/ward/walk-directories", async (c) => {
+  const { walkAllDirectories } = await import("@/services/directory-walk");
+  const report = await walkAllDirectories(c.env);
+  return c.json({
+    ...report,
+    reading:
+      "One batch per directory. A pass that finished has folded into its source's completed pass, which the next Sunday round reads; a pass still walking resumes on the next firing or the next press of this button.",
+  });
+});
+
+/**
  * The door-bank backfill: one keeper-fired pass over the stored ward
  * rounds so the bank opens holding every door history already
  * declared (docs/CORPUS_VELOCITY.md — without this, revisits idle

@@ -51,33 +51,60 @@ and hosts as separate figures for exactly this reason: reporting only
 hosts would inflate the share of the registry that is remotely
 reachable.
 
-## The paid two: still unpriced, and that is the finding
+## The paid two: priced by the keeper's hand, later the same day
 
-The keeper offered to fund these. **Neither price could be
-determined**, and not for want of trying.
+The keeper ran the captures himself. Total spent: **$0.03**.
 
-**402index.io** — self-describes as 15,000+ paid endpoints across
-L402, x402 and MPP, which would make it the largest single frame
-available to us, larger than fuchss. Its API docs at `/api-docs`
-describe a free tier with L402 payments for higher limits, and it ships
-an MCP server (`ryanthegentry/402index-mcp-server`) that would let a
-paid read be captured by hand without writing a client first. The docs
-page is egress-blocked from here and the price is not quoted in any
-search result, on any mirror, or in the MCP server's published
-description.
+**x402scan.com — $0.01 a call, USDC on Base.** All fourteen endpoints
+in its openapi.json carry identical terms (exact scheme, x402 v2, one
+payTo, 300s timeout), and the price is published nowhere but the 402
+challenge — which is why nothing above could find it. Three endpoints
+bought to capture price and shape together:
 
-**x402scan.com** — a settlement indexer, the only candidate that
-watches money move rather than doors exist. Resource enumeration is
-paid; no figure is published anywhere reachable.
+- `/resources` — paginated rows: `id`, `url`, `x402Version`,
+  `lastUpdated`. This is the door the ward wants.
+- `/merchants` — `recipient`, `facilitator_ids`, `tx_count`,
+  `total_amount`; the top merchant at 12.37M transactions.
+- `/facilitators/stats` — ecosystem totals: 225.4M transactions,
+  $54.18M lifetime, 860K buyers, 275K sellers, current to 2026-09-03
+  23:55Z.
 
-**What that means for funding.** The honest answer to "is it cheap?"
-is that nobody outside these two companies appears to know, and the
-wallet law's own $1-per-action threshold cannot be applied to a price
-we have not seen. The unblock for both is unchanged and is a browser
-job, not a build job: one hand-run read from the keeper's machine that
-captures the price and the response shape in the same sitting. Until
-then both stay named-and-unread on `/sources` with that stated, which
-is at least now a page rather than a comment in a TypeScript file.
+The three bodies landed in `test/fixtures/x402scan/` (PR #482, each
+beside its decoded challenge), and the reader was built against them
+the same night: `src/services/directory-walk.ts`, walked hourly from
+the field wallet through `src/lib/pay-fetch.ts`, which carries every
+refusal the launch check makes — never our own wallet, never an
+unscreened payTo (rule 3 fails closed), never over the five-cent house
+cap, never a redirect followed with an authorization in hand, never a
+retry. A pass is capped at a dollar — the wallet law's line before
+asking — and a pass that reaches it is truncated, which the census
+reads as unread. Raising it is the keeper's ruling.
+
+**402index.io — free, and the roster had it wrong.** The JSON API is
+free at 100 requests a minute per IP, and 140 cache-bypassing unique
+requests in twenty seconds sailed through: the documented limiter
+overstates itself. The L402 Lightning tier (1,000 a minute) prices
+itself only on breach and could not be tripped politely. The one
+concrete paid product, self-listed in its own directory, is the full
+CSV export at `/api/v1/export.csv` — **500 sats (~$0.40)** over L402
+Lightning. Challenge contract captured; settlement needs a Lightning
+wallet, which nothing here has, so the CSV's shape is out of reach
+unless LN capability is stood up. The raw bolt11 invoice stayed
+uncaptured because the limiter finally 429'd on export retries —
+recoverable once it forgets the IP. The free list's shape landed as
+`test/fixtures/402index/services-page1.json` (PR #482) and the reader
+was built against it: free, fifty pages an hour, only the `x402` rows
+taken, the page stride trusted as the directory echoes it. At 104,106
+rows a pass is about a day.
+
+**A side finding on the keeper's buyer, checked against ours.** His
+hand-rolled buyer did a case-sensitive lookup of the 402 header and
+x402scan's title-case `Payment-Required` crashed it. Every buyer this
+repository ships was audited the same hour: `scripts/lib/walkabout.mjs`
+lowercases both sides of its hand-rolled lookup, and the CLI, the
+till, the tab, the Action and the preflight package all use
+`headers.get()`, which the Fetch spec makes case-insensitive. Nothing
+to patch here.
 
 ## x402 candidates, named on the roster, unread
 
@@ -116,9 +143,23 @@ take to add each:
 
 **Reachable and enumerable, shipped:** the official registry, as above.
 
-**Needs a key:** `glama.ai/api/mcp/v1/servers` answered 401. A free
-account may be all it wants; that is a keeper decision, not a build
-one, and no credential goes in this repo either way.
+**Read by hand with the keeper's key, and it does not fit:**
+`glama.ai/api/mcp/v1/servers` — cursor-paginated (`pageInfo.endCursor`,
+`?first=100&after=…`), 100 rows a page, `hasNextPage` running past the
+first page. Rows are keyed by **repository and Glama page**, carry a
+hosting attribute (`hosting:remote-capable` 34, `hosting:local-only`
+42, `hosting:hybrid` 23 of the first 100) and a `qualityScore` — and
+**no server host anywhere in the row**. The only network URLs are
+env-var *defaults* (`localhost:11434`, `api.billingo.hu`), which are a
+server's dependencies, not the server. The MCP ward's register is
+keyed by host, so admitting Glama would mean inventing hosts from
+repository names: a phantom row inflates the denominator every count
+is quoted against. It is on the ward's roster as named-and-unread with
+that reason; the score is a verdict on operators this store does not
+republish. The key was used for two reads from a shell variable, is
+written nowhere, and was pasted in a chat transcript — so it should be
+rotated, and the replacement lives only as a Worker secret
+(`GLAMA_API_KEY`) if a use for it is ever ruled.
 
 **Named, unread, no shape captured** — all egress-blocked here:
 `smithery.ai`, `pulsemcp.com`, `mcpcensus.com` (26k servers),
