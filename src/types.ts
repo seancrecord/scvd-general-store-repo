@@ -664,6 +664,51 @@ export interface CertificateRecord {
    * fields. See lib/jcs.ts for why it exists.
    */
   signature_jcs?: string;
+  /**
+   * THE EXISTED-BY BOUND (2026-09-05): this certificate's signed bytes,
+   * digested and submitted to OpenTimestamps by the hourly sweep, so a
+   * holder can place the artifact in time with something other than
+   * the date it claims for itself. OUTSIDE the signature, like the
+   * corpus record's `ots` — it is a fact about the artifact, made
+   * after the artifact, and records minted before the sweep existed
+   * lack it the way they lack later fields. See
+   * services/certificate-anchors.ts.
+   */
+  anchor?: CertificateAnchor;
+}
+
+/** An OpenTimestamps proof's state, shared with the key log and the corpus. */
+export interface CertificateAnchorOts {
+  status: "pending" | "complete" | "failed";
+  submitted_at?: string;
+  proof_base64?: string;
+  upgraded_at?: string;
+  calendar?: string;
+  error?: string;
+}
+
+export interface CertificateAnchor {
+  /**
+   * sha256 hex of the exact signed_payload the signature covers — the
+   * same value /api/verify derives as artifact_hash, so the two can be
+   * compared on every response rather than trusted to agree.
+   */
+  digest: string;
+  /** Which canonical form the digest was taken over. */
+  form: "current" | "legacy";
+  ots: CertificateAnchorOts;
+  /**
+   * Read off the completed proof and, for the time, looked up: the
+   * lowest Bitcoin block whose header attests the digest. `block_height`
+   * is parsed from the proof bytes; `block_time` is a courtesy read
+   * from the named explorer and is absent when no explorer answered.
+   */
+  bitcoin?: {
+    block_height: number;
+    block_hash?: string;
+    block_time?: string;
+    block_time_source?: string;
+  };
 }
 
 export interface PatronRecord {

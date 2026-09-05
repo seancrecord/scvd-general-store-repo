@@ -1230,6 +1230,23 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    // The certificates' existed-by anchors ride the same hour (2026-09-05):
+    // new receipts forward from the head cursor, old ones on the
+    // backfill, then upgrade what Bitcoin has since confirmed. Never on
+    // the money path; the mint writes nothing for this.
+    ctx.waitUntil(
+      import("@/services/certificate-anchors").then(
+        ({ sweepCertificateAnchors }) =>
+          sweepCertificateAnchors(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `Certificate anchor sweep failed: ${String(error)}`,
+              }),
+          ),
+      ),
+    );
     // The ecosystem reports' anchors ride the same hour, same shape:
     // submit any report body not yet stamped, upgrade what Bitcoin has
     // since confirmed. Bounded by the shelf — the report list is

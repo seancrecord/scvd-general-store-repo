@@ -513,6 +513,24 @@ export const KV_KEYS = {
   cert: (certId: string): string => `cert:${certId}`,
   certPrefix: "cert:",
   /**
+   * THE CERTIFICATE ANCHOR SWEEP'S TWO CURSORS (2026-09-05), one JSON
+   * value in COUNTERS: `head` is the last patron number whose
+   * certificate has been submitted to OpenTimestamps going forward,
+   * `backfill` the lowest one reached walking backward from where the
+   * sweep first started. Patron numbers are the walk order because
+   * they are sequential and bounded by the counter — a `cert:` prefix
+   * scan is capped and would silently stop seeing older receipts.
+   */
+  certAnchorCursor: "cert_anchor_cursor",
+  /**
+   * A certificate whose anchor is not yet Bitcoin-confirmed: the
+   * marker the sweep lists to know what still wants an upgrade or a
+   * resubmission. PATRONS beside the certificate; deleted the moment
+   * the proof completes, so the list is only ever the open work.
+   */
+  certAnchorPending: (certId: string): string => `cert_anchor_pending:${certId}`,
+  certAnchorPendingPrefix: "cert_anchor_pending:",
+  /**
    * How far the bank reconciliation has walked Base. Stored rather
    * than derived: re-walking history every hour would eventually stop
    * running, and an instrument that stops running is the defect the

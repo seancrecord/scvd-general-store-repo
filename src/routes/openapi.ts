@@ -506,6 +506,11 @@ const VERIFY_SCHEMA: OpenApiObject = {
       type: "string",
       description: "Exactly which bytes the signature is over.",
     },
+    existence: {
+      type: "object",
+      description:
+        "The existed-by bound (certificates only): sha256 of signed_payload submitted to OpenTimestamps by the hourly sweep, the proof, the Bitcoin block read off it once complete, and a verdict placing that block against the signing key's service window — none, pending, failed, or bounded; on a retired key, signed_while_current or bound_after_retirement (unproven, never called forged). The artifact's own date is not an input.",
+    },
     signature_jcs: { type: "string" },
     signature_jcs_valid: { type: "boolean" },
     signature_jcs_payload: { type: "string" },
