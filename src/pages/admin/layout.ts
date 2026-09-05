@@ -45,6 +45,15 @@ export type AdminTab =
    */
   | "bounties"
   | "referrals"
+  /**
+   * THE BUYERS AND THE FREE INSTRUMENTS (2026-09-04). The two readings
+   * the keeper asked for after the walkers were subtracted: who the
+   * ~two dozen real buyers are, off the certificates they hold, and
+   * which free tools agents actually use, off the porch — the demand
+   * that never needed a pitch.
+   */
+  | "buyers"
+  | "instruments"
   | "ward"
   /**
    * The second ward (2026-09-04). Its own tab rather than a section of
@@ -101,6 +110,12 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "declines", href: "/admin/declines", label: "Declines" },
   { tab: "bounties", href: "/admin/bounties", label: "The bounty board" },
   { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
+  // Promoted to the nav 2026-09-04: the keeper could not find it. The
+  // 08-05 consolidation left it reachable only from a footnote on the
+  // books check, which is not reachable, it is remembered.
+  { tab: "census", href: "/admin/census", label: "The census" },
+  { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
+  { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
   { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
@@ -177,4 +192,32 @@ export function renderAdminShell(
 export const ADMIN_PAGES: readonly { tab: AdminTab; href: string }[] = [
   ...ROOMS,
   ...READINGS,
+];
+
+/**
+ * EVERY ROOM THAT IS NOT ON THE NAV (2026-09-04). The 08-05
+ * consolidation demoted readings off the top nav "reachable through
+ * the books check and the back shelf" — and the back shelf linked five
+ * of them. books, deliveries, glance, settlement-unknown and the two
+ * market sub-pages were reachable from nowhere; the census from one
+ * footnote. This list is rendered on the back shelf, and
+ * test/admin-reach.spec.ts holds every static GET route under /admin
+ * to be on the nav or on this list, so a page cannot be built and
+ * then lost again.
+ */
+export const EVERY_ROOM: readonly { href: string; label: string }[] = [
+  { href: "/admin/recount", label: "The recount (row-level settle audit)" },
+  { href: "/admin/take", label: "The take (every certificate, counted)" },
+  { href: "/admin/books", label: "The books" },
+  { href: "/admin/deliveries", label: "Deliveries (money in vs goods out)" },
+  { href: "/admin/settlement-unknown", label: "Settlements the store could not read" },
+  { href: "/admin/glance", label: "The glance" },
+  { href: "/admin/events", label: "Item events" },
+  { href: "/admin/bell", label: "The bell" },
+  { href: "/admin/market/authenticity", label: "The market: authenticity" },
+  { href: "/admin/market/inflows", label: "The market: inflows" },
+  { href: "/admin/digest", label: "Latest weekly digest (JSON)" },
+  { href: "/admin/testing", label: "Testing" },
+  { href: "/admin/trade.json", label: "The trade counter (JSON)" },
+  { href: "/admin/export/tax.csv", label: "Tax export (CSV)" },
 ];

@@ -84,6 +84,14 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 10,
     crawler_names: 64,
   },
+  {
+    date: "2026-09-04",
+    what_changed:
+      "x402watch joined the crawler table off the census: x402watch/1 (+https://x402watch.vercel.app) walked 21 of 32 doors inside a minute, 45 asks in a day, and sat in the organic column naming its own job. Two of CV's hand-rolled test clients (cv-handrolled, cv-mcp-hand) joined the house agents, confirmed by the keeper: they had sat on the census as the store's only two outside presenters, 13 declines between them. And the census now applies today's house-agent list to rows already stamped, so a name added after its rows were written does not stay on the census as a buyer for ninety days.",
+    effect: "The organic 402 count fell by x402watch's asks. The census's outside-presenter line fell by two clients and the decline desk's outside count by thirteen — the store's own testing, no longer counted as intent. No settle moved.",
+    house_wallets: 10,
+    crawler_names: 65,
+  },
 ];
 
 export interface NamedExclusions {

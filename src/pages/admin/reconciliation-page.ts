@@ -1,6 +1,7 @@
 import type { SettleReconciliation } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import type { CertificatesAgainstSettles } from "@/services/settle-sources";
 import {
   unreadBlocks,
   type SkippedBlockRange,
@@ -47,6 +48,8 @@ interface AlertLogEntry {
 
 export interface ReconciliationPageData {
   settles: SettleReconciliation | null;
+  /** The certificates read beside the counters and the rows; absent until the route wires it. */
+  certs?: CertificatesAgainstSettles | null;
   chain: {
     baseCursor: string | null;
     /** The third rail's walk: same discipline, its own cursor. */
@@ -84,6 +87,24 @@ export interface ReconciliationPageData {
 
 const PASS = `<strong style="color:#2f6b2f">PASS</strong>`;
 const ATTENTION = `<strong style="color:#8c2f1b">ATTENTION</strong>`;
+
+function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: SettleReconciliation | null): string {
+  if (c === undefined) return "";
+  if (c === null) return `<p><small>The certificates could not be read this time; reload to retry.</small></p>`;
+  const rows = c.wallets_disagreeing.slice(0, 10).map((w) =>
+    `<tr><td><code>${escapeHtml(w.address)}</code></td><td>${w.payer_row_purchases}</td><td>${w.certificates}</td></tr>`).join("");
+  return `<details ${settles && settles.unexplained !== 0 ? "open" : ""}><summary>The third witness: the certificates</summary>
+    <p>${escapeHtml(c.reading)}</p>
+    <table border="1" cellpadding="4">
+      <tr><td>certificates on the shelf</td><td>${c.certificates_total}${c.certificates_truncated ? " (scan capped)" : ""}</td></tr>
+      <tr><td>…carrying a paying wallet</td><td>${c.certificates_with_payer}</td></tr>
+      <tr><td>payer rows / purchases on them</td><td>${c.payer_rows} / ${c.payer_rows_purchases}</td></tr>
+      <tr><td>wallets whose row and certificates disagree</td><td>${c.wallets_disagreeing.length}</td></tr>
+    </table>
+    ${rows ? `<table border="1" cellpadding="4"><tr><th>wallet</th><th>row says</th><th>certificates</th></tr>${rows}</table>` : ""}
+    <p><small>Every wallet, with what it bought and in what order, is on <a href="/admin/buyers">the buyers</a>.</small></p>
+    </details>`;
+}
 
 function settlesHtml(r: SettleReconciliation | null): string {
   if (!r) return `<p>${ATTENTION} — the recount didn't load. Reload to retry.</p>`;
@@ -364,6 +385,7 @@ export function renderReconciliationPage(
   <section>
     <h2>Settle counters vs payer rows</h2>
     ${settlesHtml(data.settles)}
+    ${certsHtml(data.certs, data.settles)}
   </section>
 
   <section>

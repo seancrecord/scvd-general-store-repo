@@ -28,6 +28,8 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import { wantsHtml } from "@/pages/simple-page";
 import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCensusPage } from "@/pages/admin/census-page";
+import { renderBuyersPage } from "@/pages/admin/buyers-page";
+import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
@@ -1067,6 +1069,12 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
    */
   const alarmsLastRead = shelf(lastRead, null, "alarm watermark", notes);
   const markedAt = new Date().toISOString();
+  // The third witness (2026-09-04): the certificates, read beside the
+  // counters and the payer rows so an unexplained settle gets a cause
+  // and a wallet. Fail-soft — a shelf that does not load says so.
+  const settlesValue = shelf(settles, null, "settle recount", notes);
+  const { certificatesAgainstSettles } = await import("@/services/settle-sources");
+  const certsValue = await certificatesAgainstSettles(c.env, settlesValue).catch(() => null);
   if (alerts.status === "fulfilled" && lastRead.status === "fulfilled") {
     /*
      * Written before the render rather than after: this handler has no
@@ -1082,7 +1090,8 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
   return c.html(
     renderReconciliationPage(
       {
-        settles: shelf(settles, null, "settle recount", notes),
+        settles: settlesValue,
+        certs: certsValue,
         chain: {
           baseCursor: shelf(baseCursor, null, "base cursor", notes),
           // Null when the read failed — the page then says coverage
@@ -2019,6 +2028,17 @@ adminRoutes.get("/admin/settlement-unknown", async (c) => {
       : {}),
     rows: rows.map((entry) => entry.row),
   });
+});
+
+adminRoutes.get("/admin/buyers", async (c) => {
+  const { readBuyers } = await import("@/services/buyers");
+  return c.html(renderBuyersPage(await readBuyers(c.env)));
+});
+
+adminRoutes.get("/admin/instruments", async (c) => {
+  const { computeObservatory } = await import("@/services/observatory");
+  const { freeInstrumentUsage } = await import("@/services/instruments");
+  return c.html(renderInstrumentsPage(freeInstrumentUsage(await computeObservatory(c.env))));
 });
 
 adminRoutes.get("/admin/census", async (c) => {
