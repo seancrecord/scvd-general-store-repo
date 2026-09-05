@@ -968,8 +968,20 @@ const FREE_TOOLS: McpTool[] = [
         url: str("The https x402 door you are about to pay.", 2048),
         client_profile: {
           type: "object",
+          /*
+           * DESCRIBED, NOT INSTRUCTED, AND UNDER CHROME'S CAP
+           * (2026-09-05). This field read "Leave it off and you get
+           * the reading for a client configured with NOTHING" — an
+           * imperative sentence addressed to the reader, at 165
+           * characters. A WebMCP scan flagged it twice, as an
+           * over-length parameter description and as metadata that
+           * instructs the agent, and it was right on both: the same
+           * fact states cleanly as what absence MEANS. The other
+           * fields here keep the second person, which describes the
+           * caller's own configuration and is not an instruction.
+           */
           description:
-            "Optional. What your client is configured with. Leave it off and you get the reading for a client configured with NOTHING, which is the case that loses money quietly.",
+            "The caller's own x402 client settings. Absent, the replay runs against a client configured with nothing, the case that loses money quietly.",
           properties: {
             max_amount_per_payment_usd: {
               type: ["number", "boolean"],
