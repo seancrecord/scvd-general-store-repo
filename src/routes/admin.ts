@@ -1509,11 +1509,20 @@ adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
  */
 adminRoutes.post("/admin/ward/walk-directories", async (c) => {
   const { walkAllDirectories } = await import("@/services/directory-walk");
-  const report = await walkAllDirectories(c.env);
+  /*
+   * `fresh=1` is the keeper's hand: start another pass inside a week
+   * whose pass is already done. It costs at most one more pass cap on
+   * the paid reader and never abandons a pass still walking. Without
+   * it the button does exactly what the hourly firing does, rest
+   * included.
+   */
+  const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
+  const force = form["fresh"] === "1" || c.req.query("fresh") === "1";
+  const report = await walkAllDirectories(c.env, { force });
   return c.json({
     ...report,
     reading:
-      "One batch per directory. A pass that finished has folded into its source's completed pass, which the next Sunday round reads; a pass still walking resumes on the next firing or the next press of this button.",
+      "One batch per directory. A pass that finished has folded into its source's completed pass, which the next Sunday round reads; a pass still walking resumes on the next firing or the next press of this button. `resting: true` means this week's pass is already done and nothing was read or paid; a pass begins at most once per ISO week unless this button is pressed with fresh=1, which is the keeper's hand and costs at most one more pass.",
   });
 });
 

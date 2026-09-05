@@ -59,6 +59,22 @@ import type { Env } from "@/types";
  * refusals as the launch check's: never our own wallet, never an
  * unscreened address (rule 3 fails closed), never over cap, never a
  * redirect followed with an authorization in hand, never a retry.
+ *
+ * ONE PASS A WEEK (2026-09-05). The first cut capped the pass and not
+ * the cadence: a finished pass rolled into a fresh one on the next
+ * hourly firing, so the dollar-a-pass line was being crossed every
+ * five hours. Base showed it — 311 one-cent transfers to x402scan's
+ * payTo in the sixteen hours after the merge, about $4.60 a day, on
+ * course for six times the wallet law's month. The keeper's word was
+ * that it should cost about a dollar, and it should: the census is
+ * weekly, so a directory read more than once a week buys nothing the
+ * round can use. A pass now BEGINS at most once per ISO week, for the
+ * free reader and the paid one alike; a finished pass rests until the
+ * week turns, and the rest is on the state for the admin page to show.
+ * So the paid walk's ceiling is X402SCAN_PASS_CAP_USD a week, by
+ * construction rather than by hoping the directory is short. The admin
+ * crank can start a fresh pass inside the week when the keeper asks,
+ * and that is his hand, at most another pass cap.
  */
 
 export interface DirectoryPage {
@@ -99,6 +115,25 @@ export interface DirectoryWalkState {
   finished_at?: string;
 }
 
+/**
+ * A finished pass rests until the ISO week after the one it BEGAN in.
+ * Keyed on the start, not the finish: a slow pass that runs into the
+ * next week does not push the following one a week further out, and a
+ * fast one cannot start twice in a week. Ceiling per source per week:
+ * one pass.
+ */
+export function passRests(state: DirectoryWalkState | null, now: Date): boolean {
+  return state !== null && state.finished_at !== undefined && state.week === currentWeekKey(now);
+}
+
+export interface WalkTick {
+  state: DirectoryWalkState;
+  /** The pass that finished on this tick, or null. */
+  pass: DirectoryPass | null;
+  /** True when this week's pass was already done and nothing was read. */
+  resting: boolean;
+}
+
 
 
 /** Capped for the artifact; the truth is `hosts_known`. */
@@ -127,14 +162,21 @@ function fresh(source: string, now: Date): DirectoryWalkState {
  * One hourly firing for one reader. A page that cannot be read ends the
  * tick and keeps the cursor: a slow directory must not cost a pass that
  * is most of the way done. A pass ends when the reader says there is no
- * next page, or when a ceiling binds — and then it is truncated.
+ * next page, or when a ceiling binds — and then it is truncated. A
+ * finished pass rests until the week turns unless `force` says the
+ * keeper wants another now; force never abandons a pass still walking.
  */
 export async function walkDirectory(
   env: Env,
   reader: DirectoryReader,
   now = new Date(),
-): Promise<{ state: DirectoryWalkState; pass: DirectoryPass | null }> {
-  let state = (await readState(env, reader.source)) ?? fresh(reader.source, now);
+  options: { force?: boolean } = {},
+): Promise<WalkTick> {
+  const stored = await readState(env, reader.source);
+  if (!options.force && passRests(stored, now)) {
+    return { state: stored as DirectoryWalkState, pass: null, resting: true };
+  }
+  let state = stored ?? fresh(reader.source, now);
   if (state.finished_at) state = fresh(reader.source, now);
   const hosts = new Set(state.hosts);
   let complete = false;
@@ -171,7 +213,7 @@ export async function walkDirectory(
 
   if (!complete) {
     await kvPut(env.COUNTERS, KV_KEYS.directoryWalk(reader.source), JSON.stringify(state));
-    return { state, pass: null };
+    return { state, pass: null, resting: false };
   }
 
   const finished_at = now.toISOString();
@@ -197,7 +239,7 @@ export async function walkDirectory(
   };
   await kvPut(env.COUNTERS, KV_KEYS.directoryPass(reader.source), JSON.stringify(pass));
   await kvPut(env.COUNTERS, KV_KEYS.directoryWalk(reader.source), JSON.stringify(state));
-  return { state, pass };
+  return { state, pass, resting: false };
 }
 
 
@@ -329,12 +371,32 @@ export const X402SCAN_READER: DirectoryReader = {
 
 export const DIRECTORY_READERS: readonly DirectoryReader[] = [INDEX402_READER, X402SCAN_READER];
 
+export interface DirectoryTickReport {
+  week: string;
+  pages_read: number;
+  spent_usd: number;
+  finished: boolean;
+  truncated: boolean;
+  /** This week's pass was already done; nothing was read or paid. */
+  resting: boolean;
+}
+
 /** The hourly press: every reader, one tick each, failures kept apart. */
-export async function walkAllDirectories(env: Env): Promise<Record<string, { pages_read: number; finished: boolean; truncated: boolean }>> {
-  const report: Record<string, { pages_read: number; finished: boolean; truncated: boolean }> = {};
+export async function walkAllDirectories(
+  env: Env,
+  options: { force?: boolean } = {},
+): Promise<Record<string, DirectoryTickReport>> {
+  const report: Record<string, DirectoryTickReport> = {};
   for (const reader of DIRECTORY_READERS) {
-    const { state, pass } = await walkDirectory(env, reader);
-    report[reader.source] = { pages_read: state.pages_read, finished: pass !== null, truncated: state.truncated };
+    const { state, pass, resting } = await walkDirectory(env, reader, new Date(), options);
+    report[reader.source] = {
+      week: state.week,
+      pages_read: state.pages_read,
+      spent_usd: state.spent_usd,
+      finished: pass !== null || state.finished_at !== undefined,
+      truncated: state.truncated,
+      resting,
+    };
   }
   return report;
 }

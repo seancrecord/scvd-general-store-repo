@@ -1073,8 +1073,10 @@ const worker: ExportedHandler<Env> = {
     /**
      * THE DIRECTORY WALKS ride the hourly press beside the MCP walk
      * (2026-09-04): 402index at 104,106 rows, free, and x402scan at a
-     * cent a page from the field wallet under the wallet law. The
-     * Sunday round reads each one's last completed pass and never the
+     * cent a page from the field wallet under the wallet law, one pass
+     * per ISO week each (a finished pass rests until the week turns; the
+     * paid one's ceiling is therefore a dollar a week). The Sunday
+     * round reads each one's last completed pass and never the
      * directory. A failed tick keeps its cursor and resumes next hour.
      */
     ctx.waitUntil(
