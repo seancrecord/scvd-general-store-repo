@@ -8,3 +8,7 @@ dist/
 shopping-run-receipts.json
 x402-census-results.json
 .build-check/
+
+# Python bytecode caches (examples:test regenerates these on every gate run)
+__pycache__/
+*.pyc
