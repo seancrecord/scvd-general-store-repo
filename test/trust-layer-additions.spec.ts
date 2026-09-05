@@ -114,6 +114,10 @@ describe("security.txt (RFC 9116)", () => {
     expect(res.headers.get("content-type")).toContain("text/plain");
     const text = await res.text();
     expect(text).toContain("Contact: ");
+    // A mailto contact beside the letter door: the mailbox exists
+    // (Cloudflare Email Routing, catch-all to the keeper) and RFC 2142
+    // scanners look for one. Host derived from STORE_BASE_URL, never typed.
+    expect(text).toMatch(/^Contact: mailto:security@[a-z0-9.-]+$/m);
     expect(text).toContain("Canonical: ");
     const expiresLine = text
       .split("\n")
