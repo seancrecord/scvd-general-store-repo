@@ -576,13 +576,19 @@ Do not relitigate without you.
   is set. Confirm to Hal only the listing ids and `is_paused: true`.
   No paid canary without your word and theirs; the fixture on the
   row is the no-spend check.
-- **RULE** — flip `hal` from `test` to `live` in
-  `src/store/trade-counter.ts` when the listings resume. Hal pays
-  sats over Lightning (OpenNode, mainnet) at 95% of each listing's
-  fixed sats price; there is no bilateral statement API, so the
-  weekly reconciliation is their seller dashboard against
-  `/api/trade/hal/statement`. Receiving sats is a new treasury rail:
-  which wallet, whose custody, is yours to decide before the flip.
+- **DONE 2026-09-05** — `hal` flipped to `live` on your word, the day
+  the nine listings went live on Hal's side. Hal pays sats over
+  Lightning (OpenNode, mainnet) at 95% of each listing's fixed sats
+  price; there is no bilateral statement API, so the weekly
+  reconciliation is their seller dashboard against
+  `/api/trade/hal/statement`, and each payout you receive is
+  recorded by hand at `/admin/trade`.
+- **⚑ WATCH — the credit ceiling is $250 of unpaid net.** At the
+  certificate's $24 net that is about ten deliveries before the
+  door refuses `credit_ceiling_reached` and Hal refunds a real
+  buyer. Record Hal's payouts promptly, or raise
+  `credit_ceiling_usd` on the hal row to match their payout cadence.
+  Which wallet receives the sats, and whose custody, is still yours.
 - **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
   opening figure. Yours to move.
 - **Your press (rule 30), nothing else pending on the counter** —

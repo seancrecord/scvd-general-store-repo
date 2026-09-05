@@ -292,7 +292,13 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
       "Hal has no sats sandbox: a paused listing and the fixture on this row cover preflight without spend; any paid canary uses real sats and needs explicit authorisation on both sides.",
     ],
     daily_cap: 200,
-    mode: "test",
+    /**
+     * LIVE 2026-09-05, the keeper's word ("flip hal to live now"): the
+     * nine listings went live on Hal's side the same day, and a real
+     * buyer's sale must book to the receivable and carry a receipt
+     * that says trade_account, not trade_account_test (rule 45).
+     */
+    mode: "live",
     opened: TRADE_COUNTER_OPENED,
     /** ⚑ keeper dial: how much unpaid net the account may carry. */
     credit_ceiling_usd: 250,

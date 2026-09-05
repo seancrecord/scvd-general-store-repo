@@ -50,6 +50,9 @@ beforeEach(async () => {
   await clearPrefix(testEnv.ORDERS, "trade_payout:");
   await clearPrefix(testEnv.COUNTERS, "trade_day:");
   await clearPrefix(testEnv.COUNTERS, "trade_order:");
+  // Live accounts book: the ceiling and the month counters start clean per test.
+  await clearPrefix(testEnv.COUNTERS, "trade_account:");
+  await clearPrefix(testEnv.COUNTERS, "trade_month:");
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {
@@ -104,8 +107,8 @@ describe("a signed order delivers the front door's goods", () => {
     expect(status).toBe(200);
     expect(body["item_id"]).toBe("certificate_of_patronage");
     expect(typeof body["deliverable"]).toBe("string");
-    // The first account is in test mode until its terms are settled.
-    expect(body["settled_via"]).toBe("trade_account_test");
+    // The first account went live 2026-09-05: a real sale says so on its receipt.
+    expect(body["settled_via"]).toBe("trade_account");
     expect(body["paid_usdc"]).toBeUndefined();
     expect(body["signed_with"]).toBe("current");
 
@@ -128,7 +131,7 @@ describe("a signed order delivers the front door's goods", () => {
     expect(cert.payer).toBeUndefined();
     expect(cert.settlement_tx).toBeUndefined();
     // And the four presences.
-    expect(cert.settled_via).toBe("trade_account_test");
+    expect(cert.settled_via).toBe("trade_account");
     expect(cert.trade_partner).toBe("hal");
     expect(cert.trade_price_usd).toBe(trade["trade_price_usd"]);
     expect(cert.trade_instruction).toBe(trade["instruction_digest"]);
@@ -164,26 +167,29 @@ describe("a signed order delivers the front door's goods", () => {
       })
     ).text();
     expect(page).toContain("Trade account");
-    expect(page).toContain("test mode");
+    // Live since 2026-09-05: the receipt no longer says test mode.
+    expect(page).not.toContain("test mode");
     expect(page).not.toContain("basescan.org");
   });
 
-  it("books the delivery: one ledger row, counted on the public ledger and unbilled while in test", async () => {
+  it("books the delivery: one ledger row, counted on the public ledger and billed, since the account is live", async () => {
     await order("certificate_of_patronage", { order_ref: "hal-order-77" });
     const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradeRowPrefix("hal") });
     expect(rows.keys.length).toBe(1);
     const row = JSON.parse((await testEnv.ORDERS.get(rows.keys[0]!.name)) ?? "{}") as Record<string, unknown>;
-    expect(row["mode"]).toBe("test");
+    expect(row["mode"]).toBe("live");
     expect(row["order_ref"]).toBe("hal-order-77");
     expect(row["item"]).toBe("certificate_of_patronage");
 
+    const item = getMenuItem("certificate_of_patronage")!;
+    const price = tradePriceUsd(item, HAL.partner_share_bps);
     const ledger = await json(await SELF.fetch(`${BASE}/api/trade/ledger`));
     const accounts = ledger["accounts"] as Record<string, unknown>[];
     const hal = accounts.find((entry) => entry["account"] === "hal")!;
-    expect(hal["delivered_test"]).toBe(1);
-    expect(hal["delivered_live"]).toBe(0);
-    expect(hal["billed_usd"]).toBe(0);
-    expect(hal["outstanding_usd"]).toBe(0);
+    expect(hal["delivered_live"]).toBe(1);
+    expect(hal["delivered_test"]).toBe(0);
+    expect(hal["billed_usd"]).toBe(price);
+    expect(hal["outstanding_usd"]).toBe(tradeNetUsd(price, HAL.partner_share_bps));
     expect(hal["truncated"]).toBe(false);
   });
 
