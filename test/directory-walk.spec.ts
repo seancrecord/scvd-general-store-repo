@@ -8,10 +8,12 @@ import { chooseAccept, decodeChallenge, payOnce, type PayOnceOptions } from "@/l
 import {
   PASS_FRESH_HOURS,
   X402SCAN_PASS_CAP_USD,
+  X402SCAN_READER,
   latestDirectoryPass,
   parse402indexPage,
   parseX402scanPage,
   passForCensus,
+  passRests,
   walkDirectory,
   type DirectoryReader,
 } from "@/services/directory-walk";
@@ -187,6 +189,107 @@ describe("the walk machine", () => {
 
   it("the x402scan pass cap is the wallet law's line", () => {
     expect(X402SCAN_PASS_CAP_USD).toBe(1);
+  });
+});
+
+/**
+ * THE CADENCE, held after the money moved (2026-09-05). The first cut
+ * capped the pass and not the week: a finished pass rolled into a fresh
+ * one on the next hourly firing, and Base showed 311 one-cent transfers
+ * to x402scan in sixteen hours — six times the wallet law's month, on a
+ * walk the keeper had assumed cost about a dollar. It should. The
+ * census is weekly; a pass BEGINS at most once per ISO week.
+ */
+describe("one pass a week", () => {
+  const monday = new Date("2026-09-07T00:30:00Z"); // 2026-W37
+  const wednesday = new Date("2026-09-09T12:30:00Z"); // still W37
+  const nextMonday = new Date("2026-09-14T00:30:00Z"); // W38
+
+  it("a finished pass rests until the week turns, and a resting tick reads nothing", async () => {
+    await clear("w1");
+    const reader = scripted("w1", [
+      { hosts: ["a.example"], next: null, paidUsd: 0.01 },
+      { hosts: ["b.example"], next: null, paidUsd: 0.01 },
+    ]);
+    const done = await walkDirectory(testEnv, reader, monday);
+    expect(done.pass?.hosts_known).toBe(1);
+    expect(done.resting).toBe(false);
+    const again = await walkDirectory(testEnv, reader, wednesday);
+    expect(again.resting).toBe(true);
+    expect(again.pass).toBeNull();
+    expect(reader.calls).toBe(1); // not a page read, not a cent paid
+    expect(passRests(again.state, wednesday)).toBe(true);
+    // The completed pass still stands for the census meanwhile.
+    expect(await passForCensus(testEnv, "w1", wednesday)).toEqual(["a.example"]);
+  });
+
+  it("the week turning starts the next pass", async () => {
+    await clear("w2");
+    const reader = scripted("w2", [
+      { hosts: ["a.example"], next: null, paidUsd: 0 },
+      { hosts: ["b.example"], next: null, paidUsd: 0 },
+    ]);
+    await walkDirectory(testEnv, reader, monday);
+    const next = await walkDirectory(testEnv, reader, nextMonday);
+    expect(next.resting).toBe(false);
+    expect(next.pass?.hosts_known).toBe(1);
+    expect(next.pass?.week).toBe("2026-W38");
+    expect(reader.calls).toBe(2);
+  });
+
+  it("the rest is keyed on the week a pass BEGAN: a slow pass does not push the next one out", async () => {
+    await clear("w3");
+    const reader = scripted("w3", [
+      { hosts: ["a.example"], next: "1", paidUsd: 0 },
+      { hosts: ["b.example"], next: null, paidUsd: 0 },
+      { hosts: ["c.example"], next: null, paidUsd: 0 },
+    ], { pagesPerTick: 1 });
+    const sunday = new Date("2026-09-13T23:30:00Z"); // W37, its last hour
+    await walkDirectory(testEnv, reader, sunday); // began in W37
+    const finished = await walkDirectory(testEnv, reader, nextMonday); // finished in W38
+    expect(finished.pass?.week).toBe("2026-W37");
+    // W38 has had no pass begin, so the next firing begins one.
+    const following = await walkDirectory(testEnv, reader, new Date("2026-09-14T01:30:00Z"));
+    expect(following.resting).toBe(false);
+    expect(following.pass?.week).toBe("2026-W38");
+  });
+
+  it("a truncated pass rests too: the cap is a ceiling on the week, not a retry budget", async () => {
+    await clear("w4");
+    const reader = scripted("w4", Array.from({ length: 10 }, (_u, i) => ({ hosts: [`h${i}.example`], next: String(i + 1), paidUsd: 0.05 })), {
+      passCapUsd: 0.12,
+      pagesPerTick: 10,
+    });
+    const first = await walkDirectory(testEnv, reader, monday);
+    expect(first.pass?.truncated).toBe(true);
+    const again = await walkDirectory(testEnv, reader, wednesday);
+    expect(again.resting).toBe(true);
+    expect(reader.calls).toBe(2);
+  });
+
+  it("force is the keeper's hand: another pass inside the week, never an abandoned one", async () => {
+    await clear("w5");
+    const reader = scripted("w5", [
+      { hosts: ["a.example"], next: null, paidUsd: 0 },
+      { hosts: ["b.example"], next: "1", paidUsd: 0 },
+      { hosts: ["c.example"], next: null, paidUsd: 0 },
+    ], { pagesPerTick: 1 });
+    await walkDirectory(testEnv, reader, monday);
+    const forced = await walkDirectory(testEnv, reader, wednesday, { force: true });
+    expect(forced.resting).toBe(false);
+    expect(forced.pass).toBeNull(); // a fresh pass, one page in
+    expect(forced.state.cursor).toBe("1");
+    // Forcing again mid-pass continues that pass; it does not restart it.
+    const continued = await walkDirectory(testEnv, reader, wednesday, { force: true });
+    expect(continued.pass?.hosts_known).toBe(2);
+    expect(reader.calls).toBe(3);
+  });
+
+  it("so the paid walk's ceiling is the pass cap per week, by construction", () => {
+    // One pass may begin per ISO week; one pass may authorise at most the cap.
+    expect(X402SCAN_READER.passCapUsd).toBe(X402SCAN_PASS_CAP_USD);
+    expect(passRests({ version: 1, source: "x402scan.com", week: "2026-W37", started_at: "", cursor: null, pages_read: 100, hosts: [], spent_usd: 1, truncated: true, finished_at: "2026-09-07T05:30:00Z" }, wednesday)).toBe(true);
+    expect(passRests(null, wednesday)).toBe(false);
   });
 });
 

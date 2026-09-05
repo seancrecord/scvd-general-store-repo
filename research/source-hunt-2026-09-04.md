@@ -80,6 +80,20 @@ retry. A pass is capped at a dollar — the wallet law's line before
 asking — and a pass that reaches it is truncated, which the census
 reads as unread. Raising it is the keeper's ruling.
 
+**The next morning, on Base (2026-09-05).** The first cut capped the
+pass and not the cadence: a finished pass rolled straight into a fresh
+one on the next hourly firing. The chain showed it before anything on
+the site did — 311 one-cent transfers from the field wallet
+(`0x843b…4a7`, CV's, the one `FIELD_WALLET_KEY` names) to x402scan's
+payTo in the sixteen hours after the merge, about $4.60 a day, on
+course for six times the wallet law's month. The keeper had assumed
+about a dollar, and that is what it should cost: the census is weekly,
+and a directory read twice in a week buys nothing the round can use. A
+pass now begins at most once per ISO week, for both readers, and the
+paid one's ceiling is a dollar a week by construction. Held by
+`test/directory-walk.spec.ts` ("one pass a week"). Cost of the lesson:
+$3.11.
+
 **402index.io — free, and the roster had it wrong.** The JSON API is
 free at 100 requests a minute per IP, and 140 cache-bypassing unique
 requests in twenty seconds sailed through: the documented limiter

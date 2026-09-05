@@ -89,7 +89,9 @@ export const KV_KEYS = {
    * large or too dear to read inside the Sunday round — 402index at
    * 104,106 rows, x402scan at a cent a page — walked in hourly
    * batches on a stored cursor, one state and one completed pass per
-   * source. The round reads the pass, never the directory.
+   * source, and one pass begun per ISO week (2026-09-05: the first cut
+   * restarted on finishing and cost six times the wallet law). The
+   * round reads the pass, never the directory.
    */
   directoryWalk: (source: string): string => `dirwalk:${source}`,
   directoryPass: (source: string): string => `dirpass:${source}`,

@@ -95,7 +95,12 @@ export function renderWardPage(
   </form>
   <form method="post" action="/admin/ward/walk-directories" style="margin:0.5em 0">
     <button type="submit">Advance the directory walks one batch</button>
-    <span style="opacity:0.7"> — 402index (free, 104k rows) and x402scan (a cent a page, a dollar a pass) each read one bounded batch on their stored cursors, exactly what an hourly firing does. The Sunday round reads each one's last completed pass; /sources says which passes stand.</span>
+    <span style="opacity:0.7"> — 402index (free, 104k rows) and x402scan (a cent a page, a dollar a pass, one pass a week) each read one bounded batch on their stored cursors, exactly what an hourly firing does. A source whose pass finished this week answers <code>resting</code> and reads nothing. The Sunday round reads each one's last completed pass; /sources says which passes stand.</span>
+  </form>
+  <form method="post" action="/admin/ward/walk-directories" style="margin:0.5em 0">
+    <input type="hidden" name="fresh" value="1">
+    <button type="submit">Start a fresh directory pass this week</button>
+    <span style="opacity:0.7"> — your hand on the wallet law: begins another pass for a source whose pass is already done this week (at most another dollar on x402scan). Never abandons a pass still walking.</span>
   </form>
   <form method="post" action="/admin/ward/backfill-doors" style="margin:0.5em 0">
     <button type="submit">Backfill the door bank</button>

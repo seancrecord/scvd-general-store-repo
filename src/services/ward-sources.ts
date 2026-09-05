@@ -117,13 +117,13 @@ export const SOURCE_ROSTER: readonly RosterEntry[] = [
   {
     source: "402index.io",
     home: "https://402index.io",
-    what: "A directory of paid endpoints across L402, x402 and MPP — 104,106 rows on 2026-09-04, the largest frame this ward reads. The free JSON list at 100 requests a minute, walked on the hourly press; only its x402 rows enter the census. The roster once said its free API rate-limited into 402s; the keeper's hand showed it does not.",
+    what: "A directory of paid endpoints across L402, x402 and MPP — 104,106 rows on 2026-09-04, the largest frame this ward reads. The free JSON list at 100 requests a minute, walked in hourly batches, one pass a week; only its x402 rows enter the census. The roster once said its free API rate-limited into 402s; the keeper's hand showed it does not.",
     readiness: { state: "read" },
   },
   {
     source: "x402scan.com",
     home: "https://www.x402scan.com",
-    what: "A settlement indexer with a resource directory — the only source here that watches money move rather than doors exist. A cent a page in USDC on Base, priced by the keeper's hand on 2026-09-04 ($0.03 spent), the price living nowhere but the 402 itself. Walked on the hourly press from the field wallet under the wallet law: a dollar a pass, and a pass that reaches it is truncated, not continued.",
+    what: "A settlement indexer with a resource directory — the only source here that watches money move rather than doors exist. A cent a page in USDC on Base, priced by the keeper's hand on 2026-09-04 ($0.03 spent), the price living nowhere but the 402 itself. Walked in hourly batches from the field wallet under the wallet law: one pass a week, a dollar a pass, and a pass that reaches the dollar is truncated, not continued — so a dollar a week is the ceiling, not the average.",
     readiness: { state: "read" },
   },
   {
