@@ -60,6 +60,12 @@
       "who": "scvd-store agent on Virtuals ACP (Solana)",
       "since": "2026-08-24",
       "why": "The Virtuals agent's Solana wallet, listed the day it was provisioned and before any spend, same rule as its EVM twin."
+    },
+    {
+      "address": "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F",
+      "who": "the field wallet (dedicated)",
+      "since": "2026-09-05",
+      "why": "The key behind FIELD_WALLET_KEY from 2026-09-05: the wallet the Worker signs from for launch checks, bounty payouts, store-credit cash-outs and the paid x402scan directory walk. Made for the job so that the most it can ever lose is its own balance, which the keeper keeps around $75 \u2014 the wallet law made physical. It replaces CV's wallet (0x843b\u20264a7, above) in that role; his stays listed for its own live buy tests. Listed the day it was funded and before its first signature, per the rule attached to the sonnet46 entry. Its settles at this store are house tests, never organic."
     }
   ]
 }
