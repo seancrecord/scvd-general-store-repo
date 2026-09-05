@@ -377,6 +377,13 @@ export interface WardRound {
     roster: number;
     walked: number;
     batches: number;
+    /**
+     * The feed read behind this roster (2026-09-04): how many hosts the
+     * feed named, and whether the roster cap bound. Absent on rounds
+     * before the resumable read.
+     */
+    feed_hosts?: number;
+    roster_capped?: boolean;
     /** The well-known sweep (2026-09-04); absent on rounds before it. */
     sweep?: {
       hosts: number;
@@ -472,6 +479,14 @@ export interface DiscoveryRead {
   fieldsSeen?: string[];
   /** Where the read stopped and why — the number the next cap raise needs. */
   read: DiscoveryReadNote;
+  /**
+   * True on a clean stop. False when the read stopped short in a way
+   * the next firing can continue from (`resume` says where): a page
+   * cap, the time budget, a failed page. A caller that cannot come
+   * back reads `coverageSuspect`, which already says short.
+   */
+  complete: boolean;
+  resume?: DiscoveryCursor;
 }
 
 /**
@@ -579,9 +594,57 @@ export const DISCOVERY_TIME_BUDGET_MS = 90_000;
 /** The pause before a failed page is asked for a second time. */
 const DISCOVERY_RETRY_MS = 500;
 
+/**
+ * Where a read stopped, so the next firing can pick up there
+ * (2026-09-04). The feed pages by offset today and paged by cursor
+ * once; both are carried so a shape change does not lose the resume.
+ * `rows_read` is the count so far, which the declared-total test
+ * needs across passes; `previous_first_row` keeps the page-one-
+ * forever check honest across a boundary.
+ */
+export interface DiscoveryCursor {
+  offset?: number;
+  cursor?: string;
+  rows_read: number;
+  previous_first_row?: string;
+}
+
 export interface DiscoveryReadOptions {
   pageCap?: number;
   budgetMs?: number;
+  /** Continue a read that stopped short last time, from where it stopped. */
+  resume?: DiscoveryCursor;
+  /** Hosts an earlier pass already took; first-wins holds across passes. */
+  skipHosts?: Iterable<string>;
+}
+
+/**
+ * The census's word for a short read. `capped`: the feed answered
+ * every page asked and declared more than the read reached, or the
+ * read's own time ran out. `pagination`: it answered but its paging
+ * could not be followed. `unreadable`: a page failed. A clean stop
+ * has no word — it is not short.
+ */
+export function shortfallOf(
+  stop: DiscoveryStop | undefined,
+): "capped" | "pagination" | "unreadable" | undefined {
+  switch (stop) {
+    case "page_cap":
+    case "time_budget":
+      return "capped";
+    case "repeated_page":
+    case "unpaged_full_page":
+      return "pagination";
+    case "page_error":
+      return "unreadable";
+    default:
+      return undefined;
+  }
+}
+
+/** A stop the next firing can read on from. */
+function resumable(stop: DiscoveryStop | undefined): boolean {
+  return stop === "page_cap" || stop === "time_budget" || stop === "page_error";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -623,14 +686,20 @@ export async function readDiscoveryList(
   const overBudget = () => Date.now() - startedAt > budgetMs;
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const rows: Record<string, unknown>[] = [];
+  const rowsBefore = options.resume?.rows_read ?? 0;
   const fieldsSeen = new Set<string>();
-  let cursor: string | undefined;
+  let cursor: string | undefined = options.resume?.cursor;
+  // A resumed offset read asks its first page AT the stored offset;
+  // every later page's address comes from the feed as before.
+  let startOffset: number | undefined = options.resume?.offset;
   let coverageSuspect = false;
   let paginationShape: string[] | undefined;
-  let previousFirstRow: string | undefined;
+  let previousFirstRow: string | undefined = options.resume?.previous_first_row;
   let declaredTotal: number | undefined;
   let stop: DiscoveryStop | undefined;
   let pages = 0;
+  /** The offset the next firing should ask for, once one is known. */
+  let readUpTo: number | undefined;
 
   // The market desk's self-diagnosis: which metadata fields do the
   // feed's rows actually carry? Capped; names only, never values.
@@ -653,7 +722,8 @@ export async function readDiscoveryList(
     }
     let body: FeedPage;
     try {
-      body = await discoveryPage(env, pageParams(cursor, undefined));
+      body = await discoveryPage(env, pageParams(cursor, startOffset));
+      startOffset = undefined;
     } catch (error) {
       // Nothing read at all is the caller's failure path, unchanged:
       // a walk cannot start on an empty roster and the hour after
@@ -671,7 +741,7 @@ export async function readDiscoveryList(
      * its shape declares; stop, keep what page one gave, say suspect.
      */
     const firstRow = items.length ? JSON.stringify(items[0]) : undefined;
-    if (page > 0 && firstRow !== undefined && firstRow === previousFirstRow) {
+    if ((page > 0 || rowsBefore > 0) && firstRow !== undefined && firstRow === previousFirstRow) {
       suspectAt("repeated_page", body);
       break;
     }
@@ -726,7 +796,9 @@ export async function readDiscoveryList(
       const pg = body["pagination"];
       const limit = Number(pg?.limit);
       const total = Number(pg?.total);
-      const served = Number.isFinite(Number(pg?.offset)) ? Number(pg?.offset) : 0;
+      const served = Number.isFinite(Number(pg?.offset))
+        ? Number(pg?.offset)
+        : (options.resume?.offset ?? 0);
       if (Number.isFinite(total) && total >= 0) declaredTotal = total;
       if (
         items.length > 0 &&
@@ -736,6 +808,7 @@ export async function readDiscoveryList(
         served + items.length < total
       ) {
         const nextOffset = served + items.length;
+        readUpTo = nextOffset;
         const wanted = Math.ceil((total - nextOffset) / limit);
         const allowed = Math.max(0, pageCap - pages);
         const offsets = Array.from(
@@ -769,8 +842,9 @@ export async function readDiscoveryList(
           if (pageRows.length === 0) break;
           rows.push(...pageRows);
           noteFields(pageRows);
+          readUpTo += pageRows.length;
         }
-        if (rows.length >= total) {
+        if (rowsBefore + rows.length >= total) {
           stop = "declared_total";
         } else if (wanted > allowed) {
           suspectAt("page_cap");
@@ -781,7 +855,7 @@ export async function readDiscoveryList(
         }
         break;
       }
-      if (Number.isFinite(total) && total >= 0 && rows.length >= total) {
+      if (Number.isFinite(total) && total >= 0 && rowsBefore + rows.length >= total) {
         // The feed declared its total and we read all of it: the one
         // case a full last page is NOT a cap wearing completeness.
         stop = "declared_total";
@@ -814,7 +888,27 @@ export async function readDiscoveryList(
     ms: Date.now() - startedAt,
     ...(declaredTotal !== undefined ? { declared_total: declaredTotal } : {}),
   };
-  const seen = new Set<string>();
+  /**
+   * WHERE TO PICK UP (2026-09-04). A short stop of the resumable kind
+   * hands the next firing its address: the offset after the last
+   * page folded, or the cursor still in hand. A caller that cannot
+   * come back ignores it and reads the flag; the long walk reads on,
+   * so that no cap, of ours or of the clock, is the last word on how
+   * much of the feed a week sees.
+   */
+  const complete = !coverageSuspect;
+  let resume: DiscoveryCursor | undefined;
+  if (resumable(stop)) {
+    const rowsRead = rowsBefore + rows.length;
+    if (cursor) {
+      resume = { cursor, rows_read: rowsRead, previous_first_row: previousFirstRow };
+    } else if (readUpTo !== undefined) {
+      resume = { offset: readUpTo, rows_read: rowsRead, previous_first_row: previousFirstRow };
+    } else if (rows.length > 0) {
+      resume = { offset: (options.resume?.offset ?? 0) + rows.length, rows_read: rowsRead, previous_first_row: previousFirstRow };
+    }
+  }
+  const seen = new Set<string>(options.skipHosts ?? []);
   const hosts: { host: string; url: string; catalog: CatalogTerms | null }[] = [];
   for (const row of rows) {
     const url = (row["resourceUrl"] ?? row["resource_url"] ?? row["resource"] ?? row["url"]) as unknown;
@@ -831,11 +925,13 @@ export async function readDiscoveryList(
   }
   return {
     hosts,
-    listed: rows.length,
+    listed: rowsBefore + rows.length,
     coverageSuspect,
     ...(paginationShape ? { paginationShape } : {}),
     ...(fieldsSeen.size ? { fieldsSeen: [...fieldsSeen].slice(0, 30).sort() } : {}),
     read,
+    complete,
+    ...(resume ? { resume } : {}),
   };
 }
 
@@ -1397,6 +1493,17 @@ async function readWidenedSources(env: Env, ownHost: string): Promise<{
 }
 
 /**
+ * A directory's answer for the census, with the reason beside a null:
+ * every reader other than discovery returns null only when it could
+ * not be read at all, and the register should be able to say so
+ * rather than leaving "did not answer" and "answered short" as one
+ * blank.
+ */
+function unread(source: string, hosts: string[] | null): SourceResult {
+  return hosts === null ? { source, hosts: null, why: "unreadable" } : { source, hosts };
+}
+
+/**
  * ASSEMBLE FROM THE LONG WALK: the week's hourly batches already
  * knocked on every door the roster froze; this collects their
  * verdicts into a round, takes the census and the presence check
@@ -1420,16 +1527,23 @@ async function assembleWalkRound(
       source: "discovery",
       // Same law as the one-shot path: a page-capped listing is
       // UNREADABLE to the census, not a short answer.
+      // The FEED's hosts, all of them by name, not the capped roster —
+      // and never the declared doors riding behind it, which are the
+      // well-known row's answer below.
       hosts: walk.coverage_suspect
         ? null
-        : walk.roster.map((entry) => entry.host),
+        : (walk.feed_hosts ??
+          walk.roster.filter((entry) => entry.source !== "well-known").map((entry) => entry.host)),
+      ...(walk.coverage_suspect
+        ? { why: shortfallOf(walk.discovery_read?.stop) ?? "capped" }
+        : {}),
     },
-    { source: "leaderboard", hosts: walk.leaderboard?.hosts ?? null },
-    { source: "fuchss", hosts: widened.fuchss },
-    { source: "x402_list", hosts: widened.x402List },
-    { source: "agentic_market", hosts: widened.agenticMarket },
-    { source: "402index.io", hosts: widened.index402 },
-    { source: "x402scan.com", hosts: widened.x402scan },
+    unread("leaderboard", walk.leaderboard?.hosts ?? null),
+    unread("fuchss", widened.fuchss),
+    unread("x402_list", widened.x402List),
+    unread("agentic_market", widened.agenticMarket),
+    unread("402index.io", widened.index402),
+    unread("x402scan.com", widened.x402scan),
     /*
      * Hosts that declared a door for themselves (the sweep). A host
      * here is one whose own file the census could read and which
@@ -1467,6 +1581,8 @@ async function assembleWalkRound(
       roster: walk.roster.length,
       walked,
       batches: walk.batches,
+      ...(walk.feed_hosts ? { feed_hosts: walk.feed_hosts.length } : {}),
+      ...(walk.roster_capped ? { roster_capped: true } : {}),
       ...(walk.sweep
         ? {
             sweep: {
@@ -1649,16 +1765,14 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     {
       source: "discovery",
       hosts: coverageSuspect ? null : hosts.map((entry) => entry.host),
+      ...(coverageSuspect ? { why: shortfallOf(read.stop) ?? "capped" } : {}),
     },
-    {
-      source: "leaderboard",
-      hosts: leaderboard ? [...leaderboard.byHost.keys()] : null,
-    },
-    { source: "fuchss", hosts: widened.fuchss },
-    { source: "x402_list", hosts: widened.x402List },
-    { source: "agentic_market", hosts: widened.agenticMarket },
-    { source: "402index.io", hosts: widened.index402 },
-    { source: "x402scan.com", hosts: widened.x402scan },
+    unread("leaderboard", leaderboard ? [...leaderboard.byHost.keys()] : null),
+    unread("fuchss", widened.fuchss),
+    unread("x402_list", widened.x402List),
+    unread("agentic_market", widened.agenticMarket),
+    unread("402index.io", widened.index402),
+    unread("x402scan.com", widened.x402scan),
   ];
   // The probe results are the expensive part of this round; a census
   // that cannot write must not take them down with it.

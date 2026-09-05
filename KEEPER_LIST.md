@@ -198,6 +198,36 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **THE FEED OUTGREW THE READ, AND THE REGISTER CALLED IT
+  SILENT (2026-09-04, your paste of "Not answering: discovery"
+  and "why not raise higher then that even? what happens when
+  things grow?").** The Bazaar passed 6,000 declared resources
+  before W35; the one-shot read stops at sixty pages; every
+  round since recorded discovery as unreadable to the census
+  (rightly — a short list is not a census) while the walk walked
+  the first 6,000 rows' hosts. The register, opened the same
+  day, had no word for "answered short" and published
+  `never_answered`. Two fixes. The word: the census writes WHY
+  beside a null (`unreadable`, `capped`, `pagination`); the
+  register's own word for that feed is `partial`, landed the same
+  day from another desk (#487) — the feed is not down, the read is
+  not wide enough. The read: the long walk
+  reads the feed ACROSS hourly firings on a stored cursor
+  (`FEED_PAGES_PER_PASS`, 300 pages a firing — main's cap for the walk's start firing, shipped the same day by another hand, and now not the last word) until the feed's
+  own declared total is reached; no page cap binds at any size.
+  "Why not raise it higher?" — because the next ceiling is not
+  the feed: a week's evidence lives in ONE KV value and would
+  fail near 3,900 walked hosts, silently, on an hourly write.
+  So `WALK_ROSTER_CAP` = 2,000 feed doors, announced in the
+  round (`walk.roster_capped`, `walk.feed_hosts`), declared and
+  swept doors riding BEHIND it, the census counting every host
+  the feed named. Past that cap is results stored per batch and
+  the round's hosts in R2 alone — named in `ROADMAP.md` R9, not
+  built. Corrections entry recorded.
+  YOUR PRESS: none. Next Sunday, `walk.feed_hosts` on the round
+  should exceed 1,088 and `per_source` discovery should be a
+  number, not null; `/sources` should show discovery `live`.
+
 - ⚑ **THE CENSUS NOW READS WHAT A HOST DECLARES ABOUT ITSELF
   (2026-09-04, "could we add a way to add apis to walk or
   somehow pick up doors that arent on bazaar?").** The register

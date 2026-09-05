@@ -152,7 +152,9 @@ declareDoorRoutes.post("/api/declare-door", async (c) => {
           ? "The next hourly firing of the long walk knocks on it; the Sunday round carries the row under source well-known; the passport page and host history derive from it."
           : walk === "already-on-roster"
             ? "This host is already on this week's roster; its row will come from that knock."
-            : walk === "no-walk-this-week"
+            : walk === "roster-not-frozen-yet"
+              ? "This week's walk is still reading the discovery feed; the declaration is on record and joins the roster when it freezes, within hours, and the knock follows."
+              : walk === "no-walk-this-week"
               ? "No walk is open this week yet; the declaration is on record and seeds next week's roster from the start."
               : "The file declares doors, but none on its own host — those are counted as foreign and never walked. Declare the door on the host that serves the file.",
     },

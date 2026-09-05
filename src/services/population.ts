@@ -55,7 +55,19 @@ import { kvPut } from "@/lib/kv-retry";
 export interface SourceResult {
   source: string;
   hosts: string[] | null;
+  /**
+   * Beside a null, WHY. `unreadable`: the source did not answer.
+   * `capped`: it answered every page asked and declared more than the
+   * read reached. `pagination`: it answered but its paging could not
+   * be followed. All three count as unread here — a short list is
+   * how the mass extinction gets written — but the register that
+   * reads this block back should never call an answering feed
+   * silent, which for five rounds it did.
+   */
+  why?: SourceShortfall;
 }
+
+export type SourceShortfall = "unreadable" | "capped" | "pagination";
 
 /** What the population layer knows about one host, across all rounds. */
 export interface PopulationRecord {
@@ -92,7 +104,7 @@ export interface PopulationCensus {
   population_walked: number;
   /** walked / known, the number that belongs beside every verdict. */
   coverage_pct: number | null;
-  per_source: { source: string; hosts: number | null }[];
+  per_source: { source: string; hosts: number | null; why?: SourceShortfall }[];
   sources_failed: string[];
   /** Hosts kept alive on the register because their source went dark. */
   carried_forward: number;
@@ -321,6 +333,7 @@ export async function takeCensus(
     per_source: results.map((result) => ({
       source: result.source,
       hosts: result.hosts?.length ?? null,
+      ...(result.hosts === null && result.why ? { why: result.why } : {}),
     })),
     sources_failed: failed,
     carried_forward: carriedForward,

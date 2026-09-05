@@ -15,6 +15,7 @@ import {
   probeHost,
   readAgent402Leaderboard,
   readDiscoveryList,
+  type DiscoveryCursor,
   type DiscoveryReadNote,
   type WardHostResult,
   type WardVolumeClaim,
@@ -79,14 +80,70 @@ interface WalkRosterEntry {
   catalog?: CatalogTerms | null;
 }
 
+/**
+ * Feed pages one hourly firing reads: the long walk's cap, which is
+ * the whole subrequest allowance of a firing that reads feeds and
+ * nothing else. WHAT CHANGED ON 2026-09-04, when the keeper asked
+ * "why not raise it higher? what happens when things grow?": the cap
+ * is no longer the last word. A read that stops short of the feed's
+ * declared total — the cap, the time budget, a failed page — hands
+ * the next firing its address, and the next firing reads on from
+ * there until the total is reached. No page cap binds at any size;
+ * a listing of any size is read whole a few hours into the week.
+ * Ten thousand is not a bigger number, it is this: the same lesson
+ * the walk itself was built on, applied to the read that feeds it.
+ */
+export const FEED_PAGES_PER_PASS = LONG_WALK_DISCOVERY_PAGE_CAP;
+/**
+ * Firings the feed read may take before the roster freezes with what
+ * was read. A feed that fails the same page every hour for a day is
+ * not going to answer this week; the state says what it got and
+ * why, coverage_suspect stays true, and the walk walks what it has.
+ */
+export const FEED_MAX_PASSES = 24;
+
+/**
+ * Doors the roster takes from the feed in one week. THE NEXT CEILING,
+ * named before it binds: the walk's state is ONE KV value, and each
+ * walked host carries its evidence (~6 KB median, 13 KB at p90) into
+ * `results`, so at KV's 25 MB value limit the walk breaks somewhere
+ * near 3,900 hosts — silently, on an hourly write, with Sunday
+ * assembling whatever was written before it. 2,000 keeps a full week
+ * of typical evidence near half that limit and a heavy week inside
+ * it. Past this cap is not a bigger number either: it is results
+ * stored per batch under their own keys and the round's hosts living
+ * in R2 alone. Until then the state says when it bound, the census
+ * still counts every host the feed named (`feed_hosts`), and the
+ * hosts beyond the cap read as listed_not_walked in their histories
+ * — a gap the record names, never a verdict it invents. Declared and
+ * swept doors ride BEHIND this cap, never inside it: a host that
+ * asked to be read is not crowded out by the feed's size.
+ */
+export const WALK_ROSTER_CAP = 2000;
+
 export interface LongWalkState {
   version: 1;
   week: string;
   started_at: string;
   listed_resources: number;
   coverage_suspect: boolean;
-  /** Why the feed read stopped where it did; rides into Sunday's round. */
+  /** Why the feed read stopped where it did; rides into Sunday's round. Across firings, pages and ms are the sum. */
   discovery_read?: DiscoveryReadNote;
+  /**
+   * Set while the feed is still being read across firings; absent
+   * once the roster is frozen. A state carrying this walks nothing
+   * and assembles nothing — it is not yet a week's roster.
+   */
+  feed?: { resume: DiscoveryCursor; passes: number; declared_total: number | null };
+  /**
+   * Every host the feed named, names only — the census's discovery
+   * answer. The roster below is the WALKABLE subset: capped, with
+   * declared doors behind the cap. Absent on states frozen before
+   * the cap existed, when the roster was the whole feed.
+   */
+  feed_hosts?: string[];
+  /** True when WALK_ROSTER_CAP bound at freeze. */
+  roster_capped?: boolean;
   pagination_shape?: string[];
   /** The feed's row-key names, for the market desk's self-diagnosis. */
   discovery_fields_seen?: string[];
@@ -140,6 +197,7 @@ async function writeLongWalk(env: Env, state: LongWalkState): Promise<void> {
 }
 
 export type WalkPass =
+  | { phase: "reading"; rows: number; declared: number | null; passes: number }
   | { phase: "started"; roster: number; sweep: number }
   | { phase: "walked"; walked: number; cursor: number; roster: number }
   | { phase: "swept"; read: number; cursor: number; hosts: number; doors_added: number }
@@ -158,6 +216,11 @@ export async function longWalkPass(env: Env): Promise<WalkPass> {
 
   if (!existing || existing.week !== week) {
     return startWalk(env, week);
+  }
+  // The feed is still being read: nothing to walk yet, and nothing
+  // to assemble — read on from where the last firing stopped.
+  if (existing.feed) {
+    return continueFeed(env, existing);
   }
 
   if (existing.cursor < existing.roster.length) {
@@ -179,28 +242,121 @@ export async function longWalkPass(env: Env): Promise<WalkPass> {
   return { phase: "idle", reason: `week ${week} fully walked` };
 }
 
+/**
+ * The first firing of a week: read the feed's first pages. When the
+ * whole feed fits in one pass (every week so far), the roster freezes
+ * in the same firing exactly as before; when it does not, the state
+ * holds the cursor and the next firing reads on.
+ */
 async function startWalk(env: Env, week: string): Promise<WalkPass> {
-  const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   // This firing reads the feeds and freezes the roster and does
   // nothing else, so it runs under the long walk's larger page cap
   // (2026-09-04): the one-shot cap bound at 6,000 rows for two weeks.
+  const discovery = await readDiscoveryList(env, { pageCap: FEED_PAGES_PER_PASS });
+  const state: LongWalkState = {
+    version: 1,
+    week,
+    started_at: new Date().toISOString(),
+    listed_resources: discovery.listed,
+    coverage_suspect: discovery.coverageSuspect,
+    discovery_read: discovery.read,
+    ...(discovery.paginationShape
+      ? { pagination_shape: discovery.paginationShape }
+      : {}),
+    ...(discovery.fieldsSeen
+      ? { discovery_fields_seen: discovery.fieldsSeen }
+      : {}),
+    leaderboard: null,
+    claims: {},
+    roster: discovery.hosts.map((entry) => ({ ...entry, source: "discovery" as const })),
+    cursor: 0,
+    results: [],
+    batches: 0,
+  };
+  if (!discovery.complete && discovery.resume) {
+    state.feed = {
+      resume: discovery.resume,
+      passes: 1,
+      declared_total: discovery.read.declared_total ?? null,
+    };
+    await writeLongWalk(env, state);
+    return { phase: "reading", rows: discovery.listed, declared: state.feed.declared_total, passes: 1 };
+  }
+  return freezeRoster(env, state);
+}
+
+/** A later firing while the feed is still being read. */
+async function continueFeed(env: Env, state: LongWalkState): Promise<WalkPass> {
+  const feed = state.feed;
+  if (!feed) return freezeRoster(env, state);
   const discovery = await readDiscoveryList(env, {
-    pageCap: LONG_WALK_DISCOVERY_PAGE_CAP,
+    pageCap: FEED_PAGES_PER_PASS,
+    resume: feed.resume,
+    skipHosts: state.roster.map((entry) => entry.host),
   });
+  state.roster.push(...discovery.hosts.map((entry) => ({ ...entry, source: "discovery" as const })));
+  state.listed_resources = discovery.listed;
+  state.coverage_suspect = discovery.coverageSuspect;
+  // The note is the read as a whole: this pass's stop, every pass's
+  // pages and wall time. A pass that ran out of pages wrote page_cap;
+  // the pass that reaches the total takes it back.
+  const before = state.discovery_read;
+  state.discovery_read = {
+    ...discovery.read,
+    pages: (before?.pages ?? 0) + discovery.read.pages,
+    ms: (before?.ms ?? 0) + discovery.read.ms,
+  };
+  if (discovery.paginationShape) state.pagination_shape = discovery.paginationShape;
+  if (discovery.fieldsSeen) {
+    state.discovery_fields_seen = [
+      ...new Set([...(state.discovery_fields_seen ?? []), ...discovery.fieldsSeen]),
+    ]
+      .slice(0, 30)
+      .sort();
+  }
+  feed.passes += 1;
+  feed.declared_total = discovery.read.declared_total ?? feed.declared_total;
+  if (!discovery.complete && discovery.resume && feed.passes < FEED_MAX_PASSES) {
+    feed.resume = discovery.resume;
+    await writeLongWalk(env, state);
+    return { phase: "reading", rows: discovery.listed, declared: feed.declared_total, passes: feed.passes };
+  }
+  return freezeRoster(env, state);
+}
+
+/**
+ * The feed is read: freeze the week's roster. Everything that used to
+ * happen at walk start and is not the feed read happens here — the
+ * leaderboard, the declared doors, the sweep's list, the door bank —
+ * so a feed that took several firings to read changes WHEN the
+ * roster freezes, never what it is made of.
+ */
+async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
+  const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
+  const week = state.week;
   const leaderboard = await readAgent402Leaderboard(ownHost);
 
-  const discoveryHosts = new Set(discovery.hosts.map((entry) => entry.host));
-  const roster: WalkRosterEntry[] = discovery.hosts.map((entry) => ({
+  // The roster so far is the feed's hosts, one door each, and nothing
+  // else: the census gets all of them by name; the walk gets the cap.
+  const feedEntries = state.roster.filter((entry) => entry.source !== "well-known");
+  const discoveryHosts = new Set(feedEntries.map((entry) => entry.host));
+  state.feed_hosts = [...discoveryHosts];
+  let roster: WalkRosterEntry[] = feedEntries.map((entry) => ({
     ...entry,
     source: leaderboard?.byHost.has(entry.host)
       ? ("both" as const)
       : ("discovery" as const),
   }));
+  if (roster.length > WALK_ROSTER_CAP) {
+    roster = roster.slice(0, WALK_ROSTER_CAP);
+    state.roster_capped = true;
+  }
 
   /*
    * WHAT HOSTS DECLARED LAST WEEK rides this week's roster from the
    * start, so a door found by a late sweep is not lost to the next
    * week's fresh state. The feed wins a host the feed also names.
+   * Declared doors sit behind the feed's cap, never inside it.
    */
   const rosterHosts = new Set(roster.map((entry) => entry.host));
   const wellKnown = await readWellKnownStore(env);
@@ -215,10 +371,12 @@ async function startWalk(env: Env, week: string): Promise<WalkPass> {
    * gave a door for, minus any already read this week by hand. A
    * directory that could not be read leaves nothing to sweep, and the
    * state says so instead of reading as "nobody declared anything".
+   * A feed host beyond the roster cap is still a feed host: the
+   * sweep does not read files for doors the feed already named.
    */
   const named = await readFuchssProviders(ownHost);
   const sweepHosts = (named ?? [])
-    .filter((host) => !rosterHosts.has(host) && !leaderboard?.byHost.has(host))
+    .filter((host) => !rosterHosts.has(host) && !discoveryHosts.has(host) && !leaderboard?.byHost.has(host))
     .filter((host) => wellKnown.hosts[host]?.read_week !== week)
     .sort();
   const sweep: SweepState = {
@@ -257,40 +415,27 @@ async function startWalk(env: Env, week: string): Promise<WalkPass> {
 
   // The bank remembers every declared door, same as the one-shot path.
   try {
-    const merged = mergeDoors(await readDoorBank(env), discovery.hosts, week);
+    const merged = mergeDoors(await readDoorBank(env), feedEntries, week);
     await writeDoorBank(env, merged.bank);
   } catch {
     // The bank is memory, not the walk; a KV hiccup costs nothing here.
   }
 
-  const state: LongWalkState = {
-    version: 1,
-    week,
-    started_at: new Date().toISOString(),
-    listed_resources: discovery.listed,
-    coverage_suspect: discovery.coverageSuspect,
-    discovery_read: discovery.read,
-    ...(discovery.paginationShape
-      ? { pagination_shape: discovery.paginationShape }
-      : {}),
-    ...(discovery.fieldsSeen
-      ? { discovery_fields_seen: discovery.fieldsSeen }
-      : {}),
-    leaderboard: leaderboard
-      ? {
-          sellers: leaderboard.sellers,
-          window: leaderboard.window,
-          our_rank: leaderboard.ourRank,
-          hosts: [...leaderboard.byHost.keys()],
-        }
-      : null,
-    claims,
-    roster,
-    cursor: 0,
-    results,
-    batches: 0,
-    sweep,
-  };
+  delete state.feed;
+  state.leaderboard = leaderboard
+    ? {
+        sellers: leaderboard.sellers,
+        window: leaderboard.window,
+        our_rank: leaderboard.ourRank,
+        hosts: [...leaderboard.byHost.keys()],
+      }
+    : null;
+  state.claims = claims;
+  state.roster = roster;
+  state.cursor = 0;
+  state.results = results;
+  state.batches = 0;
+  state.sweep = sweep;
   await writeLongWalk(env, state);
   return { phase: "started", roster: roster.length, sweep: sweep.hosts.length };
 }
@@ -356,9 +501,12 @@ export async function appendDeclaredDoor(
   env: Env,
   host: string,
   url: string,
-): Promise<"appended" | "already-on-roster" | "no-walk-this-week"> {
+): Promise<"appended" | "already-on-roster" | "no-walk-this-week" | "roster-not-frozen-yet"> {
   const state = await readLongWalk(env);
   if (!state || state.week !== currentWeekKey()) return "no-walk-this-week";
+  // The feed is still being read; the store already holds the
+  // declaration and the freeze seeds it onto the roster within hours.
+  if (state.feed) return "roster-not-frozen-yet";
   if (state.roster.some((entry) => entry.host === host)) return "already-on-roster";
   state.roster.push({ host, url, source: "well-known", catalog: null });
   await writeLongWalk(env, state);
