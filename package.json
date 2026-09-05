@@ -61,7 +61,8 @@
     "corrections:index": "node scripts/corrections-index.mjs",
     "corrections:test": "node --test scripts/corrections-index.test.mjs",
     "cold:read": "node scripts/cold-read.mjs",
-    "cold:test": "node --test scripts/cold-read.test.mjs"
+    "cold:test": "node --test scripts/cold-read.test.mjs",
+    "cold:local": "node scripts/cold-local.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

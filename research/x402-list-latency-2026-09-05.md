@@ -125,6 +125,50 @@ decays yet, but that is their rule, not ours); a buyer's first 402 at
 a quiet hour pays 0.5 to 1 s once per session; and an observatory
 that publishes other doors' latency carries a 1.3 s p95 on its own.
 
+## Our half, measured locally (same day)
+
+`npm run cold:local` bundles the tree as a deploy would and times the
+real workerd from spawn to open port, which is compile plus top-level
+evaluation, against a script that does nothing.
+
+| script | startup, median of 5 |
+|---|---|
+| nothing | 29 ms |
+| the store (3,522,782 bytes) | 183 ms |
+| ours | 154 ms |
+
+Compile is close to linear in bytes (Node compiles and links the same
+file in about 120 ms; evaluation is the remaining ~35 ms), and the
+whole realistic diet is 21 % of the script:
+
+| candidate | bytes | share |
+|---|---|---|
+| admin routes and pages | 217,132 | 6.2 % |
+| OpenAPI document | 166,789 | 4.8 % |
+| llms.txt and the guide | 98,504 | 2.8 % |
+| store copy | 87,665 | 2.5 % |
+| fixtures, verifier fixtures, conformance vectors | 68,326 | 2.0 % |
+| trade counter | 67,931 | 2.0 % |
+| spec documents | 56,305 | 1.6 % |
+| till source served as text | 49,180 | 1.4 % |
+| defect vocabulary | 43,830 | 1.3 % |
+| dependencies (cannot move) | 480,006 | 13.8 % |
+
+So the diet as planned buys about 30 ms of the 154 on this machine,
+and less on Cloudflare's. The other ~280 ms of the 430 ms live penalty
+is on Cloudflare's side of the line: finding, fetching and housing a
+1.15 MB (gzip) script. Whether that half also scales with bytes is
+what the canary answers; nothing here can.
+
+The one change that would move the directory's number by hundreds of
+milliseconds rather than tens is structural: the paid doors, the
+discovery document and the payment gate in a Worker of their own
+(dependencies and shelf, about 0.7 MB), with a thin front routing
+everything else — pages, admin, corpus, wards, the trade counter — to
+the store as it is. The prober's burst would then wake a script a
+fifth the size. That is a week, it reshapes a test suite built around
+one app, and it is the keeper's to rule, not an agent's to start.
+
 ## The plan, in order
 
 1. Measure before cutting (this branch): the per-request log line;
@@ -133,11 +177,11 @@ that publishes other doors' latency carries a 1.3 s p95 on its own.
    after every push to main; `canary/` — a Worker with nothing in it
    and the same Server-Timing line, deployed by the keeper's hand, so
    the store's penalty minus the canary's is our script's share.
-2. Bundle diet, only if our share is 200 ms or more: fixtures out of
-   the production bundle (~70 KB); the admin surface to its own
-   Worker (~280 KB, Basic-Auth only); OpenAPI, llms.txt and the guide
-   copy generated at build into Static Assets (~300 KB, and those
-   paths then never wake the isolate); vocabulary and specs to KV
-   (~100 KB). Re-read after each cut.
+2. Read the canary beside the store (KEEPER_LIST). Our half is
+   154 ms locally; the diet moves about 30 ms of it and is not worth
+   its churn on that alone. If the canary shows Cloudflare's half
+   also scales with bytes, the split above is the move, and the
+   keeper rules on it. `npm run cold:local` before and after any cut
+   is the local check; the workflow is the live one.
 3. The door their count missed from 09-04 19:34 to the 10:59 deploy:
    the keeper has already resubmitted it.
