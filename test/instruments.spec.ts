@@ -30,6 +30,9 @@ const sample: Observatory = {
       { surface: "verify-receipt", organic: 5, by_channel: { direct: 5 }, house: 0, infrastructure: 0 },
       { surface: "mcp:tool:verify_artifact", organic: 3, by_channel: { mcp: 3 }, house: 0, infrastructure: 0 },
       { surface: "artifact:read", organic: 43, by_channel: { direct: 43 }, house: 0, infrastructure: 184 },
+      { surface: "mcp-verifier:tool:preflight_x402_endpoint", organic: 2, by_channel: { mcp: 2 }, house: 0, infrastructure: 0 },
+      { surface: "mcp-verifier:tool:get_defect_definition", organic: 1, by_channel: { mcp: 1 }, house: 0, infrastructure: 0 },
+      { surface: "mcp-verifier:initialize", organic: 9, by_channel: { mcp: 9 }, house: 0, infrastructure: 0 },
       { surface: "mcp:tool:buy_observation", organic: 18, by_channel: { mcp: 18 }, house: 0, infrastructure: 0 },
       { surface: "menu.json", organic: 885, by_channel: { direct: 169 }, house: 0, infrastructure: 291 },
       { surface: "mcp:initialize", organic: 1613, by_channel: { mcp: 1613 }, house: 0, infrastructure: 0 },
@@ -50,10 +53,13 @@ describe("the free instruments, sorted out of the observatory", () => {
     const m = u.months[0]!;
     expect(m.free.map((s) => s.surface)).toEqual([
       "corpus:host", "mcp:tool:preflight_endpoint", "artifact:read", "mcp:tool:check_before_you_pay", "verify-receipt", "preflight:batch", "mcp:tool:verify_artifact",
+      "mcp-verifier:tool:preflight_x402_endpoint", "mcp-verifier:tool:get_defect_definition",
     ]);
-    expect(m.free_total).toBe(223);
-    expect(m.free_by_channel).toEqual({ mcp: 72, direct: 111, unknown: 40 });
-    expect(m.mcp_handshakes).toBe(1613);
+    expect(m.free_total).toBe(226);
+    expect(m.free_by_channel).toEqual({ mcp: 75, direct: 111, unknown: 40 });
+    // Both doors' handshakes, neither door's handshake on the roster.
+    expect(m.mcp_handshakes).toBe(1622);
+    expect(JSON.stringify(m.free)).not.toContain("mcp-verifier:initialize");
     expect(m.paid_tool_calls).toBe(18);
     // Handshakes and the menu are neither: the noise stays out.
     expect(JSON.stringify(m)).not.toContain("mcp:initialize");
@@ -61,8 +67,11 @@ describe("the free instruments, sorted out of the observatory", () => {
 
   it("splits the free uses into the ones that carried an argument and the ones that were reads", () => {
     const m = freeInstrumentUsage(sample, { now: NOW }).months[0]!;
-    expect(m.argument_uses).toBe(80);
-    expect(m.read_uses).toBe(143);
+    expect(m.argument_uses).toBe(82);
+    expect(m.read_uses).toBe(144);
+    // The verifier's task-shaped names: a preflight needs a URL; the vocabulary is a read.
+    expect(m.free.find((s) => s.surface === "mcp-verifier:tool:preflight_x402_endpoint")?.logged_since).toBe("2026-09-05");
+    expect(m.free.find((s) => s.surface === "mcp-verifier:tool:get_defect_definition")?.kind).toBe("read");
     expect(m.free.find((s) => s.surface === "corpus:host")?.kind).toBe("read");
     expect(m.free.find((s) => s.surface === "preflight:batch")?.kind).toBe("argument");
   });
@@ -90,14 +99,16 @@ describe("the free instruments, sorted out of the observatory", () => {
   });
 
   it("puts settled sales and re-checks beside the paid calls when the route has them, and null when it does not", () => {
-    const withPulse = freeInstrumentUsage(sample, { now: NOW, settled: { "2026-09": 7 }, rechecks: { "2026-09": 116 } }).months[0]!;
+    const withPulse = freeInstrumentUsage(sample, { now: NOW, settled: { "2026-09": 7 }, rechecks: { "2026-09": 116 }, declines: { "2026-09": 31 } }).months[0]!;
     expect(withPulse.settled).toBe(7);
     expect(withPulse.rechecks).toBe(116);
+    expect(withPulse.declines).toBe(31);
     // The after-the-sale half through the roster's own doors: the receipt door and the MCP verify tool.
     expect(withPulse.receipts_verified).toBe(8);
     const bare = freeInstrumentUsage(sample, { now: NOW }).months[0]!;
     expect(bare.settled).toBeNull();
     expect(bare.rechecks).toBeNull();
+    expect(bare.declines).toBeNull();
   });
 
   it("prints the slope against the stored reading, and stores this one for the next", () => {
@@ -123,6 +134,7 @@ describe("the free instruments, sorted out of the observatory", () => {
       free: {
         "corpus:host": 100, "mcp:tool:preflight_endpoint": 45, "artifact:read": 43, "mcp:tool:check_before_you_pay": 24,
         "verify-receipt": 5, "mcp:tool:verify_artifact": 3, "preflight:batch": 3,
+        "mcp-verifier:tool:preflight_x402_endpoint": 2, "mcp-verifier:tool:get_defect_definition": 1,
       },
       paid: { "mcp:tool:buy_observation": 18 },
     });

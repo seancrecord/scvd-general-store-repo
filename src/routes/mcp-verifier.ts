@@ -1,7 +1,9 @@
 import { Hono, type Context } from "hono";
 import { findMcpTool, type McpTool } from "@/lib/mcp-tools";
 import { runEvidenceTask } from "@/services/a2a-evidence";
-import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, toolText } from "@/routes/mcp";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
+import { recordPorchVisit } from "@/lib/metrics";
+import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { DEFECT_CLASSES, DEFECT_VOCABULARY_VERSION, defectClass } from "@/store/defect-vocabulary";
@@ -24,6 +26,16 @@ import type { HonoEnv } from "@/types";
  * No handler is duplicated: a call is translated to the base tool's
  * name and run by the same function /mcp runs, so the two doors
  * cannot disagree about what a probe saw.
+ *
+ * COUNTED, FROM 2026-09-05. For its first two days this door logged
+ * nothing: the /mcp handler tags its own handshakes and tool calls
+ * and this one ran beside it unseen, so the free-instruments page
+ * could say how often preflight_endpoint was called on the full door
+ * and nothing about the same probe run here under its task-shaped
+ * name. Same lesson as the evidence surfaces and the interactive
+ * doors before it, one door further along. Surfaces are bounded:
+ * the two handshakes by method, and a tool line only for a name on
+ * this door's own list, so a stranger's string cannot mint a key.
  */
 export const mcpVerifierRoutes = new Hono<HonoEnv>();
 
@@ -145,6 +157,9 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
   const id = body["id"] ?? null;
   const method = body["method"];
   const params = isRecord(body["params"]) ? body["params"] : {};
+  if (method === "initialize" || method === "tools/list") {
+    deferBookkeeping(c, recordPorchVisit(c.env, `mcp-verifier:${method}`, mcpSignals(c)));
+  }
   switch (method) {
     case "initialize": {
       const requested = String(params["protocolVersion"] ?? "");
@@ -162,6 +177,9 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
     case "tools/call": {
       const name = typeof params["name"] === "string" ? params["name"] : "";
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
+      if (VERIFIER_TOOLS.some((tool) => tool.name === name)) {
+        deferBookkeeping(c, recordPorchVisit(c.env, `mcp-verifier:tool:${name}`, mcpSignals(c)));
+      }
       const result = await callVerifierTool(c, name, args);
       if (typeof result === "string") return rpcError(id, -32602, result);
       return rpcResult(id, toolText(result));

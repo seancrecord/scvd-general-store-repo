@@ -2106,10 +2106,12 @@ adminRoutes.get("/admin/instruments", async (c) => {
   ]);
   const settled: Record<string, number> = {};
   const rechecks: Record<string, number> = {};
+  const declines: Record<string, number> = {};
   for (const window of pulse?.months ?? []) {
     if (!window.month) continue;
     settled[window.month] = window.organic_settled;
     rechecks[window.month] = window.organic_rechecks;
+    declines[window.month] = window.organic_declines;
   }
   let selfHost = "";
   try {
@@ -2119,7 +2121,7 @@ adminRoutes.get("/admin/instruments", async (c) => {
   }
   const unknown = rows ? splitUnknown(rows.events, month, rows.rows_scanned, rows.complete, selfHost) : null;
   const handoff = rows ? handoffs(rows.events, month) : null;
-  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, last, unknown, handoff });
+  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, declines, last, unknown, handoff });
   deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
   return c.html(renderInstrumentsPage(usage));
 });

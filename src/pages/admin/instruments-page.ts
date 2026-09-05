@@ -54,6 +54,13 @@ function afterSaleHtml(m: InstrumentMonth): string {
   return `<p><small><strong>After the sale:</strong> re-checks of issued artifacts at /api/verify ${rechecks} · receipts and artifacts verified through the roster's doors ${m.receipts_verified} · purchased artifacts read back ${artifactReads} · beside settled sales ${settled}. The re-check line is the one that says whether what was bought gets used.</small></p>`;
 }
 
+function tillHtml(m: InstrumentMonth): string {
+  if (m.declines === null && m.settled === null) return "";
+  const declines = m.declines === null ? "unknown" : String(m.declines);
+  const settled = m.settled === null ? "unknown" : String(m.settled);
+  return `<p><small><strong>At the till:</strong> signed payments refused ${declines} beside settled ${settled}. When refusals outnumber settles, the reasons are the lever: <a href="/admin/declines">the declines desk</a> groups them by client and fault, and <a href="/admin/funnel">the funnel</a> reads whether one wall or a scatter.</small></p>`;
+}
+
 function monthHtml(m: InstrumentMonth): string {
   const settled = m.settled === null ? "" : ` · settled sales: <strong>${m.settled}</strong>`;
   const since = m.since
@@ -67,6 +74,7 @@ function monthHtml(m: InstrumentMonth): string {
     · paid tool calls: ${m.paid_tool_calls}${settled}
     <small>(${channels(m.free_by_channel) || "no channel split"})</small></p>
     <p><small>The line that matters is argument-carrying uses beside settled sales: a buy_* tool is called at least twice per sale (once for the terms, once with the payment), and most sales arrive over plain HTTP rather than MCP, so paid tool calls are neither a floor nor a ceiling on sales. MCP sessions opened this month: ${m.mcp_handshakes}, against ${m.free_by_channel["mcp"] ?? 0} free tool calls and ${m.paid_tool_calls} paid.</small></p>
+    ${tillHtml(m)}
     ${afterSaleHtml(m)}
     ${since}
     <table border="1" cellpadding="4">
@@ -92,8 +100,8 @@ export function renderInstrumentsPage(usage: InstrumentUsage): string {
     with arguments are the part of the traffic crawlers cannot fake. Computed ${escapeHtml(usage.computed_at)}.</small></p>
     <p><small><strong>Read the gaps as gaps.</strong> The porch began counting surfaces on ${escapeHtml(usage.porch_counting_since)};
     the interactive doors (preflight, look, before-you-pay, verify-receipt, bot-auth check, the desk page) got their lines
-    on ${escapeHtml(usage.doors_logged_since)}. A zero before a row's logged-since date is the counter's absence, not the
-    agents'. "Per day" divides by the days the line existed this month, so a partial month reads beside a whole one.</small></p>
+    on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}.
+    A zero before a row's logged-since date is the counter's absence, not the agents'. "Per day" divides by the days the line existed this month, so a partial month reads beside a whole one.</small></p>
   </section>
   ${usage.months.map(monthHtml).join("")}
   <section><p><small>Roster, by prefix: ${usage.roster

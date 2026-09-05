@@ -200,6 +200,7 @@ export type PorchSurfaceKind =
 const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["item:", "storefront"],
   ["mcp:", "instrument"],
+  ["mcp-verifier:", "instrument"],
   ["preflight", "instrument"],
   ["conformance", "instrument"],
   ["before-you-pay", "instrument"],

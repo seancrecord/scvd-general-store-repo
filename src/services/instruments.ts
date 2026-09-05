@@ -64,6 +64,8 @@ export interface InstrumentEntry {
 export const PORCH_COUNTING_SINCE = "2026-08-21";
 /** The interactive doors and free resources were given porch lines on this day. */
 export const DOORS_LOGGED_SINCE = "2026-09-04";
+/** The verifier door at /mcp/verifier, open since 2026-09-03, was given porch lines on this day. */
+export const VERIFIER_LOGGED_SINCE = "2026-09-05";
 
 export const FREE_INSTRUMENTS: readonly InstrumentEntry[] = [
   { prefix: "preflight", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
@@ -80,6 +82,7 @@ export const FREE_INSTRUMENTS: readonly InstrumentEntry[] = [
   { prefix: "mcp:tool:check_conformance", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
   { prefix: "mcp:tool:verify_artifact", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
   { prefix: "mcp:tool:read_store_guide", kind: "read", logged_since: PORCH_COUNTING_SINCE },
+  { prefix: "mcp-verifier:tool:", kind: "argument", logged_since: VERIFIER_LOGGED_SINCE },
 ];
 
 /**
@@ -98,6 +101,8 @@ const SURFACE_OVERRIDES: Readonly<Record<string, Partial<InstrumentEntry>>> = {
   "look:mcp": { logged_since: PORCH_COUNTING_SINCE },
   "before-you-pay:mcp": { logged_since: PORCH_COUNTING_SINCE },
   "bot-auth:check": { kind: "argument" },
+  /* The defect vocabulary is a read with or without an id; every other verifier tool needs a URL, a receipt or a host. */
+  "mcp-verifier:tool:get_defect_definition": { kind: "read" },
 };
 
 export const FREE_INSTRUMENT_PREFIXES: readonly string[] = FREE_INSTRUMENTS.map((entry) => entry.prefix);
@@ -168,9 +173,11 @@ export interface InstrumentMonth {
   settled: number | null;
   /** Free re-checks of already-issued artifacts at /api/verify, off /pulse: the after-the-sale half. */
   rechecks: number | null;
+  /** Signed payments presented and refused, off /pulse. The reasons live on /admin/declines. */
+  declines: number | null;
   /** The receipts and artifacts verified through the roster's own doors (verify-receipt, verify_artifact). */
   receipts_verified: number;
-  /** MCP sessions that opened (initialize) — the denominator for how many tool calls a handshake turns into. */
+  /** MCP sessions that opened (initialize) on either door — the denominator for how many tool calls a handshake turns into. */
   mcp_handshakes: number;
   unknown: UnknownSplit | null;
   handoff: Handoff | null;
@@ -192,6 +199,7 @@ export interface InstrumentUsage {
   roster: readonly InstrumentEntry[];
   porch_counting_since: string;
   doors_logged_since: string;
+  verifier_logged_since: string;
   /** What this render stored for the next one to diff against. */
   reading: InstrumentReading;
 }
@@ -202,6 +210,8 @@ export interface InstrumentInputs {
   settled?: Record<string, number>;
   /** organic_rechecks by ISO month, off /pulse. */
   rechecks?: Record<string, number>;
+  /** organic_declines by ISO month, off /pulse: signed payments turned away. */
+  declines?: Record<string, number>;
   /** The previous render's stored counts. */
   last?: InstrumentReading | null;
   /** The current month's unknown split, off the event rows. */
@@ -292,10 +302,13 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
       paid_tool_calls: paid.reduce((sum, s) => sum + s.organic, 0),
       settled: inputs.settled?.[m.month] ?? null,
       rechecks: inputs.rechecks?.[m.month] ?? null,
+      declines: inputs.declines?.[m.month] ?? null,
       receipts_verified: free
         .filter((s) => s.surface.startsWith("verify-receipt") || s.surface === "mcp:tool:verify_artifact")
         .reduce((sum, s) => sum + s.organic, 0),
-      mcp_handshakes: m.surfaces.find((s) => s.surface === "mcp:initialize")?.organic ?? 0,
+      mcp_handshakes: m.surfaces
+        .filter((s) => s.surface === "mcp:initialize" || s.surface === "mcp-verifier:initialize")
+        .reduce((sum, s) => sum + s.organic, 0),
       unknown: m.month === currentMonth ? (inputs.unknown ?? null) : null,
       handoff: m.month === currentMonth ? (inputs.handoff ?? null) : null,
       since: last?.at ?? null,
@@ -315,6 +328,7 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
     roster: FREE_INSTRUMENTS,
     porch_counting_since: PORCH_COUNTING_SINCE,
     doors_logged_since: DOORS_LOGGED_SINCE,
+    verifier_logged_since: VERIFIER_LOGGED_SINCE,
     reading,
   };
 }

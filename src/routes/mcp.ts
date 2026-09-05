@@ -456,7 +456,7 @@ async function modernize(
   });
 }
 
-function mcpSignals(c: Context<HonoEnv>): EventSignals {
+export function mcpSignals(c: Context<HonoEnv>): EventSignals {
   const signals: EventSignals = { viaMcp: true };
   const userAgent = c.req.header("User-Agent");
   if (userAgent) {
