@@ -1,6 +1,22 @@
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payOnce } from "@/lib/pay-fetch";
+import {
+  PASS_FRESH_HOURS,
+  latestDirectoryPass,
+  passForCensus,
+  type DirectoryPass,
+} from "@/services/directory-pass";
+
+/*
+ * THE READ SIDE LIVES IN directory-pass.ts, and the ward round imports
+ * THAT, never this file: this module reaches the payment signer (it
+ * pays x402scan a cent a page) and test/collector-cannot-pay.spec.ts
+ * holds that no probe root may reach one. Re-exported here for the
+ * walker's own callers and tests; the round must not take them from
+ * here.
+ */
+export { PASS_FRESH_HOURS, latestDirectoryPass, passForCensus, type DirectoryPass };
 import { hostFromUrl } from "@/services/ward-sources";
 import { rpcEndpoints } from "@/lib/base-rpc";
 import {
@@ -83,23 +99,7 @@ export interface DirectoryWalkState {
   finished_at?: string;
 }
 
-export interface DirectoryPass {
-  artifact: "directory_pass";
-  source: string;
-  week: string;
-  started_at: string;
-  finished_at: string;
-  pages_read: number;
-  hosts_known: number;
-  hosts: string[];
-  spent_usd: number;
-  truncated: boolean;
-  truncated_why?: string;
-  what_this_cannot_see: string[];
-}
 
-/** A completed pass older than this is not this week's population. */
-export const PASS_FRESH_HOURS = 24 * 8;
 
 /** Capped for the artifact; the truth is `hosts_known`. */
 const PASS_HOST_LIST_CAP = 20000;
@@ -108,9 +108,6 @@ async function readState(env: Env, source: string): Promise<DirectoryWalkState |
   return kvGetJson<DirectoryWalkState>(env.COUNTERS, KV_KEYS.directoryWalk(source), "json");
 }
 
-export async function latestDirectoryPass(env: Env, source: string): Promise<DirectoryPass | null> {
-  return kvGetJson<DirectoryPass>(env.COUNTERS, KV_KEYS.directoryPass(source), "json");
-}
 
 function fresh(source: string, now: Date): DirectoryWalkState {
   return {
@@ -203,19 +200,6 @@ export async function walkDirectory(
   return { state, pass };
 }
 
-/**
- * WHAT THE CENSUS GETS: the last completed pass's hosts, when it ran to
- * the directory's own end within the freshness window; null otherwise.
- * Null is the census's word for "could not read", and that is exactly
- * what a truncated or stale pass is to a weekly population.
- */
-export async function passForCensus(env: Env, source: string, now = new Date()): Promise<string[] | null> {
-  const pass = await latestDirectoryPass(env, source);
-  if (!pass || pass.truncated) return null;
-  const age = now.getTime() - Date.parse(pass.finished_at);
-  if (!Number.isFinite(age) || age > PASS_FRESH_HOURS * 3_600_000) return null;
-  return pass.hosts;
-}
 
 /* ── 402index.io — free ───────────────────────────────────────────────── */
 

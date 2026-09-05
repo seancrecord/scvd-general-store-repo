@@ -12,7 +12,7 @@ import {
   UNREAD_DIRECTORIES,
 } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
-import { passForCensus } from "@/services/directory-walk";
+import { passForCensus } from "@/services/directory-pass";
 import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 
 /**

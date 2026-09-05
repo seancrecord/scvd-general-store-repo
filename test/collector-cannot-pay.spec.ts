@@ -48,6 +48,10 @@ const PAYING_TOOLS = [
   "/src/services/launch-check.ts",
   "/src/services/bounty-board.ts",
   "/src/services/store-credit.ts",
+  /* The directory walker pays x402scan a cent a page (2026-09-04); the
+   * round reads its completed pass through directory-pass.ts and never
+   * this module. Named here so the walk is proven to see the signer. */
+  "/src/services/directory-walk.ts",
 ];
 
 const STATIC_IMPORT = /^import\s+(?!type\s)[^;]*?from\s*["'](@\/[^"']+|\.{1,2}\/[^"']+)["']/gms;
