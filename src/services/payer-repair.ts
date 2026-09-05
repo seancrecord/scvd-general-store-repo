@@ -1,10 +1,11 @@
 import { canonicalAddress } from "@/lib/addresses";
+import { houseWallets } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import type { CertificateRecord, Env, PayerRecord } from "@/types";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
-import { rebookSettleFromCertificate } from "@/lib/metrics";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { railOf, rebookSettleFromCertificate } from "@/lib/metrics";
 
 /**
  * THE PAYER-CASE REPAIR: the books' first Solana buyer arrived and
@@ -110,6 +111,14 @@ export interface PayerSettleBackfill {
    * bookkeeping demonstrably never ran is rebooked; see below.
    */
   counters_rebooked: string[];
+  /**
+   * Of the settles rebooked, those whose certificate is dated before
+   * the rail-meter seam, as `<wallet>:<transaction>`: the settle and
+   * its money are booked, the rail COUNT is left to the certificate
+   * walk, which already places every certificate from before the
+   * seam. Absent on responses from before 2026-09-05's fix.
+   */
+  rail_left_to_certificates: string[];
 }
 
 interface SettleRecordValue {
@@ -117,6 +126,13 @@ interface SettleRecordValue {
   at?: string;
   transaction?: string;
   source?: string;
+  /**
+   * Stamped by the backfill when a rebooked settle's certificate
+   * predates the rail-meter seam: the rail count was left to the
+   * certificate walk and no till counter was bumped, so the rail-seam
+   * repair has nothing to reverse for it and refuses.
+   */
+  rail_counted_by?: "certificates";
 }
 
 /**
@@ -164,6 +180,7 @@ export async function backfillPayerSettlesFromCertificates(
     rows_corrected: [],
     rows_created: [],
     counters_rebooked: [],
+    rail_left_to_certificates: [],
   };
   // Per wallet, the certificates that carry a settle, oldest first.
   const certsByWallet = new Map<string, Array<{ cert: CertificateRecord["certificate"]; key: string; wasRecorded: boolean }>>();
@@ -220,8 +237,25 @@ export async function backfillPayerSettlesFromCertificates(
     for (const entry of proven) {
       const value = entry.wasRecorded ? recorded.get(entry.key) : null;
       if (entry.wasRecorded && value && value.source !== "certificate") continue;
-      await rebookSettleFromCertificate(env, entry.cert);
-      result.counters_rebooked.push(`${wallet}:${entry.cert.settlement_tx ?? ""}`);
+      const outcome = await rebookSettleFromCertificate(env, entry.cert);
+      const label = `${wallet}:${entry.cert.settlement_tx ?? ""}`;
+      result.counters_rebooked.push(label);
+      if (outcome.rail_counted_by === "certificates") {
+        result.rail_left_to_certificates.push(label);
+        // The record says so, so the rail-seam repair can tell this
+        // settle from one the first press bumped a counter for.
+        await kvPut(
+          env.COUNTERS,
+          entry.key,
+          JSON.stringify({
+            item: entry.cert.item,
+            at: entry.cert.date,
+            transaction: entry.cert.settlement_tx,
+            source: "certificate",
+            rail_counted_by: "certificates",
+          } satisfies SettleRecordValue),
+        );
+      }
     }
     const first = proven[0]!.cert.date;
     const last = proven[proven.length - 1]!.cert.date;
@@ -233,6 +267,151 @@ export async function backfillPayerSettlesFromCertificates(
     };
     await kvPut(env.COUNTERS, key, JSON.stringify(created));
     result.rows_created.push(wallet);
+  }
+  return result;
+}
+
+export interface RailSeamReversal {
+  transaction: string;
+  wallet: string;
+  rail: string;
+  month: string;
+  /** The counter decremented, and what it read after. */
+  counter: string;
+  now_reads: number;
+}
+
+export interface RailSeamRepair {
+  /** The seam the till's rail record starts at; null when none exists. */
+  meter_start: string | null;
+  reversed: RailSeamReversal[];
+  /** Transactions a previous press already reversed: nothing moved. */
+  already_reversed: string[];
+  refused: Array<{ transaction: string; reason: string }>;
+}
+
+/** The most one press may reverse; a longer list is a typo, not a repair. */
+const RAIL_SEAM_MAX = 50;
+
+/**
+ * THE RAIL-SEAM REPAIR (2026-09-05): reverse a rail bump the first
+ * press of the backfill made for a certificate dated before the seam.
+ *
+ * The backfill's first press, on 2026-09-05, rebooked two Solana
+ * settles from 2026-08-05 and bumped the till's August Solana rail
+ * counter for both. Both certificates are dated before
+ * KV_KEYS.railMeterStart, so the certificate walk already counted them
+ * — the front of the store read five Solana sales where the books
+ * hold three. rebookSettleFromCertificate no longer bumps a rail
+ * before the seam; this puts the two bumps already made back.
+ *
+ * WHY IT TAKES THE TRANSACTIONS AS INPUT rather than finding them. A
+ * settle rebooked by the first press is indistinguishable, in the
+ * books as they stand, from a settle the till booked before the
+ * per-settle records existed: both have a certificate, a payer row,
+ * and a certificate-sourced record. The keeper holds the list — the
+ * press returned it as counters_rebooked — and this checks every
+ * entry against the certificate on the shelf before it moves a
+ * counter: the transaction must name a certificate that carries a
+ * payer and a rail, dated before the seam, whose settle record the
+ * backfill wrote (source "certificate"; a record the till wrote itself
+ * is the wave that also bumped the counters, and that bump stands).
+ * A marker per transaction makes a second press a no-op, and a
+ * counter already at zero is refused rather than driven negative.
+ * Each entry IS its transaction, the same bar RAILS_ENTERED_BY_HAND
+ * holds.
+ */
+export async function reverseRailBookedBeforeSeam(
+  env: Env,
+  transactions: readonly string[],
+): Promise<RailSeamRepair> {
+  const meterStart = (await kvGet(env.COUNTERS, KV_KEYS.railMeterStart)) ?? null;
+  const result: RailSeamRepair = {
+    meter_start: meterStart,
+    reversed: [],
+    already_reversed: [],
+    refused: [],
+  };
+  const wanted = [...new Set(transactions.map((tx) => tx.trim()).filter((tx) => tx.length > 0))]
+    .slice(0, RAIL_SEAM_MAX);
+  if (wanted.length === 0) return result;
+  if (!meterStart) {
+    for (const transaction of wanted) {
+      result.refused.push({
+        transaction,
+        reason: "no seam: the till has never recorded a rail, so the certificate walk is the only rail record and no rebook has bumped a till counter",
+      });
+    }
+    return result;
+  }
+  const certKeys = await listKeys(env.PATRONS, { prefix: KV_KEYS.certPrefix, cap: SCAN_CAP });
+  const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
+  const byTransaction = new Map<string, CertificateRecord["certificate"]>();
+  for (const record of certs.values()) {
+    const cert = record?.certificate;
+    if (cert?.settlement_tx) byTransaction.set(cert.settlement_tx.toLowerCase(), cert);
+  }
+  for (const transaction of wanted) {
+    const cert = byTransaction.get(transaction.toLowerCase());
+    if (!cert || !cert.payer) {
+      result.refused.push({
+        transaction,
+        reason: certKeys.truncated
+          ? "no certificate on the shelf names this settlement transaction with a payer (the certificate scan hit its cap; press again later)"
+          : "no certificate on the shelf names this settlement transaction with a payer",
+      });
+      continue;
+    }
+    const rail = railOf(cert.network);
+    if (!rail) {
+      result.refused.push({ transaction, reason: "the certificate names no rail, so no rail counter was ever bumped for it" });
+      continue;
+    }
+    if (cert.date >= meterStart) {
+      result.refused.push({
+        transaction,
+        reason: `the certificate is dated ${cert.date}, at or after the seam ${meterStart}: the till is the rail record there and its bump stands`,
+      });
+      continue;
+    }
+    const record = await kvGetJson<SettleRecordValue>(env.COUNTERS, KV_KEYS.payerSettle(cert.payer, cert.settlement_tx ?? transaction), "json");
+    if (!record || record.source !== "certificate") {
+      result.refused.push({
+        transaction,
+        reason: record
+          ? "the till wrote this settle's record itself, in the wave that bumped the counters: that bump is the till's, not a rebook"
+          : "no settle record under this wallet and transaction: the backfill never rebooked it",
+      });
+      continue;
+    }
+    if (record.rail_counted_by === "certificates") {
+      result.refused.push({
+        transaction,
+        reason: "the rebook left this rail to the certificate walk and bumped no till counter: nothing to reverse",
+      });
+      continue;
+    }
+    const marker = KV_KEYS.railSeamReversal(transaction);
+    if (await kvGet(env.COUNTERS, marker)) {
+      result.already_reversed.push(transaction);
+      continue;
+    }
+    const wallet = canonicalAddress(cert.payer);
+    const house = houseWallets(env).includes(cert.payer.toLowerCase());
+    const month = cert.date.slice(0, 7);
+    const counter = KV_KEYS.metric(month, `rail${house ? "h" : ""}`, rail);
+    const current = parseInt((await kvGet(env.COUNTERS, counter)) ?? "0", 10);
+    if (!Number.isFinite(current) || current < 1) {
+      result.refused.push({ transaction, reason: `${counter} already reads ${current}; a counter is never driven below zero` });
+      continue;
+    }
+    await kvPut(env.COUNTERS, counter, String(current - 1));
+    await kvPut(
+      env.COUNTERS,
+      marker,
+      JSON.stringify({ transaction, wallet, rail, month, counter, at: new Date().toISOString() }),
+    );
+    result.reversed.push({ transaction, wallet, rail, month, counter, now_reads: current - 1 });
   }
   return result;
 }

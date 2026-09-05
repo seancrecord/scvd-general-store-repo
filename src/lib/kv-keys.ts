@@ -284,6 +284,15 @@ export const KV_KEYS = {
    */
   railMeterStart: "rail_meter_start",
   /**
+   * One per rail bump reversed by the rail-seam repair (2026-09-05):
+   * a settle rebooked from a certificate dated before the seam had its
+   * rail counted on the till as well as by the walk. The marker keeps
+   * the reversal from ever running twice for one transaction, and is
+   * the record of the correction beside the counter it corrected.
+   */
+  railSeamReversal: (transaction: string): string =>
+    `rail_seam_reversal:${transaction.toLowerCase()}`,
+  /**
    * When the chain-side inflow meter started counting, per chain. Set
    * once by the first reconciliation pass that banks an inflow sum;
    * published on the net statement so "no inflow recorded" before this

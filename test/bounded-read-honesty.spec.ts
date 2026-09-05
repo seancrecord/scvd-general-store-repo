@@ -94,7 +94,6 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/letters.ts",
   "../src/services/orders.ts",
   "../src/services/patron-anchors.ts",
-  "../src/services/payer-repair.ts",
   "../src/services/phantom.ts",
   "../src/services/refunds.ts",
   "../src/services/requests.ts",

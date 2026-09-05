@@ -892,11 +892,39 @@ async function recordPayerSettle(
  * nothing it cannot: no channel, no tier, no venue. The buyer's
  * wallet decides organic or house exactly as it would have at the
  * till.
+ *
+ * THE RAIL STOPS AT THE SEAM (2026-09-05, the same evening). The
+ * public split adds two rail records that cover disjoint sales: the
+ * till's counters from KV_KEYS.railMeterStart on, and the certificate
+ * walk for everything dated before it. A certificate dated before the
+ * seam is therefore ALREADY placed by the walk, and the first press
+ * of this repair bumped the till's rail counter for it as well — so
+ * the two 2026-08-05 settles read as four Solana sales on the front
+ * of the store, and the identity check never fired because two
+ * rail-less penny settles from the same window were silently
+ * absorbing the surplus. The count went in once (the paid counter is
+ * the only organic count), the rail went in twice. So: the rail count
+ * is bumped only for a certificate dated at or after the seam, where
+ * the till is the rail record; before it, the walk is, and this
+ * leaves the rail to the walk and says so. The MONEY per rail is
+ * booked either way — the net statement reads booked revenue against
+ * chain inflow, and the walk carries no money.
  */
+export interface RebookOutcome {
+  /** The rail the certificate named, or null when it named none. */
+  rail: SettlementRail | null;
+  /**
+   * Who holds the rail COUNT for this settle: the till (bumped here),
+   * the certificate walk (dated before the seam — nothing bumped), or
+   * nobody (the certificate carries no rail).
+   */
+  rail_counted_by: "till" | "certificates" | "none";
+}
+
 export async function rebookSettleFromCertificate(
   env: Env,
   certificate: { item: string; date: string; paid_usdc?: number; network?: string; payer?: string },
-): Promise<void> {
+): Promise<RebookOutcome> {
   const month = certificate.date.slice(0, 7);
   const house = certificate.payer
     ? houseWallets(env).includes(certificate.payer.toLowerCase())
@@ -909,14 +937,25 @@ export async function rebookSettleFromCertificate(
     bumpBy(env, KV_KEYS.metric(month, `rev${suffix}`, "total"), micro),
   ];
   const rail = railOf(certificate.network);
+  let railCountedBy: RebookOutcome["rail_counted_by"] = "none";
   if (rail) {
-    pending.push(bump(env, KV_KEYS.metric(month, `rail${suffix}`, rail)));
     pending.push(bumpBy(env, KV_KEYS.metric(month, `revrail${suffix}`, rail), micro));
+    const meterStart = await kvGet(env.COUNTERS, KV_KEYS.railMeterStart);
+    if (meterStart && certificate.date >= meterStart) {
+      pending.push(bump(env, KV_KEYS.metric(month, `rail${suffix}`, rail)));
+      railCountedBy = "till";
+    } else {
+      // Before the seam (or before any seam exists) the certificate
+      // walk counts every certificate: bumping here would count the
+      // rail twice.
+      railCountedBy = "certificates";
+    }
   }
   if (!house) {
     pending.push(bump(env, KV_KEYS.metric(month, "dpaid", certificate.date.slice(8, 10))));
   }
   await Promise.all(pending);
+  return { rail, rail_counted_by: railCountedBy };
 }
 
 async function recordPayerSeen(env: Env, address: string): Promise<void> {

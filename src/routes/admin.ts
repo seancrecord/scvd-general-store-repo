@@ -1361,6 +1361,36 @@ adminRoutes.post("/admin/repair/payer-settles", async (c) => {
 });
 
 /**
+ * THE RAIL-SEAM REPAIR (2026-09-05): the backfill's first press bumped
+ * the till's rail counter for two settles whose certificates predate
+ * the rail-meter seam, which the certificate walk already counts —
+ * the storefront read five Solana sales for three. Body:
+ * {"transactions": [...]} — the counters_rebooked entries' transaction
+ * halves. Every transaction is checked against its certificate before
+ * a counter moves; a marker per transaction makes a second press a
+ * no-op. The response names what it reversed and why it refused the
+ * rest.
+ */
+adminRoutes.post("/admin/repair/rail-seam", async (c) => {
+  const body = (await c.req.json().catch(() => null)) as { transactions?: unknown } | null;
+  const transactions = body?.transactions;
+  if (
+    !Array.isArray(transactions) ||
+    transactions.length === 0 ||
+    !transactions.every((tx) => typeof tx === "string")
+  ) {
+    return c.json(
+      {
+        error: "body must be {\"transactions\": [<settlement transaction>, ...]} — the transaction half of each counters_rebooked entry from the payer-settles repair",
+      },
+      400,
+    );
+  }
+  const { reverseRailBookedBeforeSeam } = await import("@/services/payer-repair");
+  return c.json(await reverseRailBookedBeforeSeam(c.env, transactions as string[]));
+});
+
+/**
  * THE TAX DRAWER: the whole money ledger as one CSV — sale rows off
  * the certificates, refund rows as their own offsetting events,
  * house purchases flagged and never omitted. Penny-page settles mint
