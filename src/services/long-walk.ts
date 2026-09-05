@@ -2,6 +2,7 @@ import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
 import { readFuchssProviders } from "@/services/ward-sources";
+import { readDirectoryDoors } from "@/services/directory-doors";
 import {
   readWellKnownDoors,
   readWellKnownStore,
@@ -69,7 +70,7 @@ const WALK_CONCURRENCY = 20;
 interface WalkRosterEntry {
   host: string;
   url: string;
-  source: "discovery" | "both" | "well-known";
+  source: "discovery" | "both" | "well-known" | "directory";
   /**
    * The catalog's copy of the door's terms, frozen with the roster
    * (S8 Tier C). The index is read once at walk start and the probes
@@ -179,6 +180,13 @@ export interface SweepState {
   doors_added: number;
   /** True once the weekly roster cap on swept doors bound. */
   capped: boolean;
+  /**
+   * LANE C (2026-09-05): for a host whose own file gave no door, the
+   * directory's page for that host was read. Same three words, kept
+   * apart from the file's — a door the directory names is not a door
+   * the host declared. Absent on states frozen before lane C.
+   */
+  directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
   finished_at?: string;
 }
 
@@ -362,7 +370,12 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
   const wellKnown = await readWellKnownStore(env);
   for (const declared of rosterDoorsFrom(wellKnown)) {
     if (rosterHosts.has(declared.host) || declared.host === ownHost) continue;
-    roster.push({ host: declared.host, url: declared.url, source: "well-known", catalog: null });
+    roster.push({
+      host: declared.host,
+      url: declared.url,
+      source: declared.via === "directory" ? "directory" : "well-known",
+      catalog: null,
+    });
     rosterHosts.add(declared.host);
   }
 
@@ -389,6 +402,7 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
     unreadable: 0,
     doors_added: 0,
     capped: false,
+    directory: { read: 0, found: 0, none: 0, unreadable: 0, doors_added: 0 },
   };
 
   const claims: Record<string, WardVolumeClaim> = {};
@@ -448,47 +462,93 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
  * here knocks on a door — that is the walk's job, on the walk's
  * budget, and the sweep only ever reads what a host published to be
  * read.
+ *
+ * LANE C (2026-09-05): a host whose own file gave no door gets one
+ * more read — the directory's page for that host, which lists its
+ * endpoints. A path it lists, joined to the host it is listed under,
+ * is a door from a feed; the row says so (source "directory") and is
+ * never mistaken for the host's own word. Worst case four GETs per
+ * host: the file, the agent card, its pointer, the page.
  */
 async function sweepBatch(env: Env, state: LongWalkState, sweep: SweepState): Promise<WalkPass> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const slice = sweep.hosts.slice(sweep.cursor, sweep.cursor + SWEEP_BATCH);
-  const reads = await pooled(slice, SWEEP_CONCURRENCY, async (host) => ({
-    host,
-    read: await readWellKnownDoors(host, ownHost),
-  }));
+  const reads = await pooled(slice, SWEEP_CONCURRENCY, async (host) => {
+    const own = await readWellKnownDoors(host, ownHost);
+    const ownDoor = own.kind === "doors" ? own.doors[0] : undefined;
+    // The directory's page is read only where the host's own file
+    // gave no door on the host itself — the host's word, when it
+    // speaks, is the whole of it.
+    const directory = ownDoor ? null : await readDirectoryDoors(host, ownHost);
+    return { host, own, directory };
+  });
 
   let store = await readWellKnownStore(env);
   const at = new Date().toISOString();
   const rosterHosts = new Set(state.roster.map((entry) => entry.host));
+  const swept = () =>
+    state.roster.filter((entry) => entry.source === "well-known" || entry.source === "directory").length;
+  const dir = sweep.directory ?? (sweep.directory = { read: 0, found: 0, none: 0, unreadable: 0, doors_added: 0 });
   let added = 0;
-  for (const { host, read } of reads) {
+  let addedByDirectory = 0;
+  for (const { host, own, directory } of reads) {
     sweep.read += 1;
-    if (read.kind === "unreadable") {
-      sweep.unreadable += 1;
+    if (own.kind === "unreadable") sweep.unreadable += 1;
+    else if (own.kind === "none") sweep.none += 1;
+    else {
+      sweep.found += 1;
+      store = recordWellKnownRead(store, host, own, state.week, at).store;
+      const door = own.doors[0];
+      if (door && !rosterHosts.has(own.declaring_host) && own.declaring_host !== ownHost) {
+        if (swept() >= SWEEP_ROSTER_CAP) {
+          sweep.capped = true;
+        } else {
+          state.roster.push({ host: own.declaring_host, url: door, source: "well-known", catalog: null });
+          rosterHosts.add(own.declaring_host);
+          added += 1;
+        }
+      }
+    }
+    if (!directory) continue;
+    dir.read += 1;
+    if (directory.kind === "unreadable") {
+      dir.unreadable += 1;
       continue;
     }
-    if (read.kind === "none") {
-      sweep.none += 1;
+    if (directory.kind === "none") {
+      dir.none += 1;
       continue;
     }
-    sweep.found += 1;
-    store = recordWellKnownRead(store, host, read, state.week, at).store;
-    const door = read.doors[0];
-    if (!door || rosterHosts.has(read.declaring_host) || read.declaring_host === ownHost) continue;
-    if (state.roster.filter((entry) => entry.source === "well-known").length >= SWEEP_ROSTER_CAP) {
+    dir.found += 1;
+    // The record is kept under the host with via "directory"; a host
+    // whose own file spoke this week (foreign-only, say) keeps that
+    // record — the directory's page does not overwrite the host's word.
+    if (own.kind !== "doors") {
+      store = recordWellKnownRead(store, host, directory, state.week, at).store;
+    }
+    const door = directory.doors[0];
+    if (!door || rosterHosts.has(host) || host === ownHost) continue;
+    if (swept() >= SWEEP_ROSTER_CAP) {
       sweep.capped = true;
       continue;
     }
-    state.roster.push({ host: read.declaring_host, url: door, source: "well-known", catalog: null });
-    rosterHosts.add(read.declaring_host);
-    added += 1;
+    state.roster.push({ host, url: door, source: "directory", catalog: null });
+    rosterHosts.add(host);
+    addedByDirectory += 1;
   }
   sweep.doors_added += added;
+  dir.doors_added += addedByDirectory;
   sweep.cursor += slice.length;
   if (sweep.cursor >= sweep.hosts.length) sweep.finished_at = at;
   await writeWellKnownStore(env, store);
   await writeLongWalk(env, state);
-  return { phase: "swept", read: slice.length, cursor: sweep.cursor, hosts: sweep.hosts.length, doors_added: added };
+  return {
+    phase: "swept",
+    read: slice.length,
+    cursor: sweep.cursor,
+    hosts: sweep.hosts.length,
+    doors_added: added + addedByDirectory,
+  };
 }
 
 /**

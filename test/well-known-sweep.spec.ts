@@ -40,7 +40,22 @@ const NAME_ONLY = {
   "silent.example": "404",
   "broken.example": "500",
   "foreign.example": { resources: ["https://victim.example/door"] },
+  "paged.example": "404", // no own file; the directory's page lists its paths (lane C)
 } as const;
+
+/**
+ * LANE C: the directory's page per host. paged.example has no file of
+ * its own and two paths on its page, one of them an absolute URL on
+ * somebody else's host (foreign, never walked). broken.example has no
+ * page. Everyone else gets the hub's bucket markup, which names no
+ * path at all: "none".
+ */
+const PROVIDER_PAGES: Record<string, string | "404"> = {
+  "paged.example":
+    '<ul class="results"><li><a class="result" href="/endpoint/1"><span class="r-host">/v1/pay</span><span class="r-path">/v1/pay</span></a></li>' +
+    '<li><a class="result" href="/endpoint/2"><span class="r-host">x</span><span class="r-path">https://victim.example/door</span></a></li></ul>',
+  "broken.example": "404",
+};
 
 let probed: string[] = [];
 
@@ -61,6 +76,13 @@ function stubWorld(options: { directoryReadable: boolean } = { directoryReadable
     if (u.host.includes("fuchss")) {
       if (!options.directoryReadable) return new Response("gone", { status: 503 });
       if (u.pathname === "/providers") return new Response('<a href="/providers/a">a</a>');
+      if (u.pathname.startsWith("/provider/")) {
+        const host = decodeURIComponent(u.pathname.slice("/provider/".length));
+        const page = PROVIDER_PAGES[host];
+        if (page === "404") return new Response("", { status: 404 });
+        if (page) return new Response(page);
+        // The bucket markup: anchors, no r-path — a page that names no path.
+      }
       const all = [...DISCOVERY, ...Object.keys(NAME_ONLY)];
       return new Response(all.map((h) => `<a href="/provider/${encodeURIComponent(h)}">${h}</a>`).join(""));
     }
@@ -174,9 +196,9 @@ describe("walk before sweep, then walk what the sweep found", () => {
     await runWeek();
     const state = (await readLongWalk(testEnv))!;
     const sweep = state.sweep!;
-    expect(sweep.read).toBe(5);
+    expect(sweep.read).toBe(6);
     expect(sweep.found).toBe(3); // declares, hops (via card), foreign (readable, declares something)
-    expect(sweep.none).toBe(1); // silent
+    expect(sweep.none).toBe(2); // silent, paged
     expect(sweep.unreadable).toBe(1); // broken
     expect(sweep.doors_added).toBe(2); // declares + hops; foreign adds nothing
     expect(sweep.capped).toBe(false);
@@ -186,6 +208,44 @@ describe("walk before sweep, then walk what the sweep found", () => {
     expect(added.find((r) => r.host === "declares.example")?.url).toBe("https://declares.example/api/pay");
     // Foreign never reaches the roster.
     expect(state.roster.some((r) => r.host === "victim.example" || r.url.includes("victim"))).toBe(false);
+  });
+
+  /**
+   * LANE C. The directory's page is read only where the host's own
+   * file gave no door: silent (no file), paged (no file), broken
+   * (unreadable file) and foreign (a file naming only somebody else's
+   * door). Its three words are kept apart from the file's.
+   */
+  it("reads the directory's page where the host's own file gave no door, and keeps the counts apart", async () => {
+    await reset();
+    stubWorld();
+    await longWalkPass(testEnv);
+    await runWeek();
+    const state = (await readLongWalk(testEnv))!;
+    const dir = state.sweep!.directory!;
+    expect(dir.read).toBe(4); // silent, broken, foreign, paged
+    expect(dir.found).toBe(1); // paged
+    expect(dir.none).toBe(3); // silent and foreign (a page naming no path), broken (no page)
+    expect(dir.unreadable).toBe(0);
+    expect(dir.doors_added).toBe(1);
+    const row = state.roster.find((r) => r.source === "directory");
+    expect(row).toEqual({ host: "paged.example", url: "https://paged.example/v1/pay", source: "directory", catalog: null });
+    // The absolute URL on the page pointed at another host: counted, never walked.
+    expect(state.roster.some((r) => r.url.includes("victim"))).toBe(false);
+    const store = await readWellKnownStore(testEnv);
+    expect(store.hosts["paged.example"]).toMatchObject({
+      via: "directory",
+      declaring_host: "paged.example",
+      doors: ["https://paged.example/v1/pay"],
+      foreign: 1,
+    });
+    // A host whose own file spoke keeps that record; the page does not overwrite it.
+    expect(store.hosts["foreign.example"]).toMatchObject({ via: "x402", foreign: 1 });
+    // Walked, with a real verdict, under its own word.
+    const walked = state.results.find((r) => r.host === "paged.example");
+    expect(walked?.source).toBe("directory");
+    expect(walked?.verdict).toBe("ready");
+    expect(probed).toContain("https://paged.example/v1/pay");
   });
 
   it("the store keeps every door the file named, and the hop's declaring host is the pointer's target", async () => {
@@ -218,7 +278,7 @@ describe("walk before sweep, then walk what the sweep found", () => {
 describe("what a declaration is not", () => {
   const roundWith = (hosts: WardRound["hosts"]): WardRound =>
     ({ week: "2026-W36", at: "2026-09-06T11:00:00.000Z", listed_resources: 2, coverage_suspect: false, capped: false, our_search_presence: true, hosts }) as WardRound;
-  const row = (host: string, source: "discovery" | "well-known"): WardRound["hosts"][number] =>
+  const row = (host: string, source: "discovery" | "well-known" | "directory"): WardRound["hosts"][number] =>
     ({ host, url: `https://${host}/x`, source, verdict: "ready", failed: [], advisories: [] }) as WardRound["hosts"][number];
 
   it("sits out the listed/gone delta — a host declaring itself is not a directory listing it", () => {
@@ -228,13 +288,18 @@ describe("what a declaration is not", () => {
     expect(wardDelta(after, null).new_hosts).toEqual(["a.example"]);
     const gone = roundWith([row("a.example", "discovery")]);
     expect(wardDelta(gone, after).gone_hosts).toEqual([]);
+    // Lane C rows sit it out the same way: a directory's page for one
+    // host is not the discovery feed listing or dropping it.
+    const withPage = roundWith([row("a.example", "discovery"), row("paged.example", "directory")]);
+    expect(wardDelta(withPage, before).new_hosts).toEqual([]);
+    expect(wardDelta(before, withPage).gone_hosts).toEqual([]);
   });
 
   it("never enters the door bank, which holds the directory's word only", async () => {
     await reset();
     await testEnv.COUNTERS.put(
       "ward:2026-W36",
-      JSON.stringify(roundWith([row("feed.example", "discovery"), row("self.example", "well-known")])),
+      JSON.stringify(roundWith([row("feed.example", "discovery"), row("self.example", "well-known"), row("paged.example", "directory")])),
     );
     await backfillDoorBank(testEnv);
     const bank = await readDoorBank(testEnv);
@@ -257,6 +322,8 @@ describe("next week", () => {
     const fresh = (await readLongWalk(testEnv))!;
     const seeded = fresh.roster.filter((r) => r.source === "well-known").map((r) => r.host).sort();
     expect(seeded).toEqual(["api.hops.example", "declares.example"]);
+    // What the directory's page named last week rides too, under its own word.
+    expect(fresh.roster.filter((r) => r.source === "directory").map((r) => r.host)).toEqual(["paged.example"]);
     // And those hosts are not swept again this week; the others are.
     expect(fresh.sweep?.hosts).not.toContain("declares.example");
     expect(fresh.sweep?.hosts).toContain("silent.example");

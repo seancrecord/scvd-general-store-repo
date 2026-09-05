@@ -168,8 +168,12 @@ export interface WardHostResult {
    * feed gave this host a door; the host's OWN /.well-known/x402
    * declared it. Real verdict, out of the delta for the same reason —
    * a host declaring itself is not a directory listing or dropping it.
+   * "directory" (2026-09-05, lane C): no feed gave this host a door
+   * and its own file declared none; the name directory's page for the
+   * host listed a path. Real verdict, out of the delta and out of the
+   * door bank — a feed's page for one host, not the discovery feed.
    */
-  source?: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
+  source?: "discovery" | "leaderboard" | "both" | "revisit" | "well-known" | "directory";
   /**
    * RAW EVIDENCE (roadmap 1.2, B9/G1): the verbatim PAYMENT-REQUIRED
    * bytes, curated headers, and a bounded complete-body sha256 from
@@ -268,6 +272,18 @@ export interface OurDoors {
   unknown?: string[];
   /** The search could not be read: a gap in our vantage, never a miss. */
   could_not_check: boolean;
+}
+
+/**
+ * Did a FEED name this host this round? The listed/gone delta, the
+ * catalog column and the door bank are all questions about the
+ * discovery feed's word; a revisit, a host's own file and the name
+ * directory's page all carry real verdicts and are none of them a
+ * listing. One predicate, so a fourth off-feed source cannot be
+ * forgotten in one of five filters.
+ */
+export function namedByFeed(source: string | undefined): boolean {
+  return source !== "revisit" && source !== "well-known" && source !== "directory";
 }
 
 export interface WardRound {
@@ -394,6 +410,8 @@ export interface WardRound {
       doors_added: number;
       capped: boolean;
       source_unreadable: boolean;
+      /** Lane C (2026-09-05): the directory's page, read where the host's own file gave no door. */
+      directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
     };
     started_at: string;
   };
@@ -1533,7 +1551,7 @@ async function assembleWalkRound(
       hosts: walk.coverage_suspect
         ? null
         : (walk.feed_hosts ??
-          walk.roster.filter((entry) => entry.source !== "well-known").map((entry) => entry.host)),
+          walk.roster.filter((entry) => namedByFeed(entry.source)).map((entry) => entry.host)),
       ...(walk.coverage_suspect
         ? { why: shortfallOf(walk.discovery_read?.stop) ?? "capped" }
         : {}),
@@ -1552,7 +1570,10 @@ async function assembleWalkRound(
      */
     {
       source: "well-known",
-      hosts: (await import("@/services/well-known-doors")).rosterDoorsFrom(wellKnownStore).map((d) => d.host),
+      hosts: (await import("@/services/well-known-doors"))
+        .rosterDoorsFrom(wellKnownStore)
+        .filter((d) => d.via !== "directory")
+        .map((d) => d.host),
     },
   ];
   const population = await takeCensus(env, sources, walked).catch(() => null);
@@ -1594,6 +1615,7 @@ async function assembleWalkRound(
               doors_added: walk.sweep.doors_added,
               capped: walk.sweep.capped,
               source_unreadable: walk.sweep.source_unreadable,
+              ...(walk.sweep.directory ? { directory: walk.sweep.directory } : {}),
             },
           }
         : {}),
@@ -1693,7 +1715,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   const walkList: {
     host: string;
     url: string;
-    source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known";
+    source: "discovery" | "leaderboard" | "both" | "revisit" | "well-known" | "directory";
     catalog?: CatalogTerms | null;
   }[] = [
     ...probeList.slice(0, WARD_CAP),
@@ -1709,7 +1731,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
         : await probeHost(env, entry.url, {
             // A revisit is a door no index row named this round; the
             // catalog column says so rather than comparing nothing.
-            listed: entry.source !== "revisit" && entry.source !== "well-known",
+            listed: namedByFeed(entry.source),
             terms: entry.catalog ?? null,
           });
     return {
@@ -1814,7 +1836,7 @@ export function wardDelta(
   if (!previous) {
     return {
       new_hosts: current.hosts
-        .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+        .filter((entry) => namedByFeed(entry.source))
         .map((entry) => entry.host),
       gone_hosts: [],
       newly_failing: [],
@@ -1834,12 +1856,12 @@ export function wardDelta(
    */
   const listedBefore = new Set(
     previous.hosts
-      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+      .filter((entry) => namedByFeed(entry.source))
       .map((entry) => entry.host),
   );
   const listedAfter = new Set(
     current.hosts
-      .filter((entry) => entry.source !== "revisit" && entry.source !== "well-known")
+      .filter((entry) => namedByFeed(entry.source))
       .map((entry) => entry.host),
   );
   const delta: WardDelta = {

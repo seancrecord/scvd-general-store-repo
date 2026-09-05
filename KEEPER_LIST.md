@@ -198,6 +198,28 @@ build, it is on the roadmap.
 
 ## NOW
 
+- ⚑ **LANE C — THE DIRECTORY'S PAGE FOR A HOST (2026-09-05, "i added
+  you access for fuchss").** The sweep read each name-only host's own
+  `/.well-known/x402`; most hosts serve none, and the register kept
+  ~5,300 names the walk could not knock on. x402.fuchss.app, the
+  directory that names them, also serves one page per host listing
+  its endpoints, paths in the markup (`<span class="r-path">`).
+  Saymon's page lists his five best-scored doors. So: where a
+  host's own file gives no door, the sweep reads the directory's
+  page for that host and takes one path, joined to that host and
+  nothing else. Source `directory` on the row — a feed's word, not
+  the host's — out of the listed/gone delta and out of the door
+  bank like a revisit; the store keeps the record under `via:
+  "directory"`, and a host's own file wins over the page for the
+  same host. Counts ride the round under `walk.sweep.directory`
+  (read / found / none / unreadable / doors_added), kept apart from
+  the file's. Worst case four GETs a host, inside the sweep's
+  budget. Nothing in the guide changed: this asks nothing of an
+  operator.
+  LOOK next Sunday: `walk.sweep.directory.found` on
+  `/corpus/latest.json`, and `coverage_pct` against 17.1 — this is
+  the lane that should move it.
+
 - ⚑ **THE FEED OUTGREW THE READ, AND THE REGISTER CALLED IT
   SILENT (2026-09-04, your paste of "Not answering: discovery"
   and "why not raise higher then that even? what happens when

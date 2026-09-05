@@ -150,9 +150,11 @@ export async function backfillDoorBank(env: Env): Promise<{
         (host) =>
           host.source !== "leaderboard" &&
           host.source !== "revisit" &&
-          // A host's own declaration is not the directory's; the bank
-          // holds only what the directory itself named.
+          // A host's own declaration is not the discovery feed's, and
+          // neither is the name directory's page (lane C); the bank
+          // holds only what the discovery feed itself named.
           host.source !== "well-known" &&
+          host.source !== "directory" &&
           typeof host.url === "string" &&
           host.url.startsWith("https://"),
       )
