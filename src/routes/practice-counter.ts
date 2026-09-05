@@ -9,7 +9,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
+import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import {
@@ -253,7 +253,7 @@ practiceCounterRoutes.get("/try", (c) => {
     // The WebMCP declaration reaches the room where the verb lives
     // (P8): same read-only tool set as the storefront, same CSP fence
     // per the P7 ruling's shipping-a-script condition.
-    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+    c.header("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
     return c.html(
       renderSimplePage({
         title: COPY.title,

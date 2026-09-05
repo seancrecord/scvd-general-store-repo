@@ -8,6 +8,7 @@ import {
 import { porchSurface } from "@/lib/porch-surface";
 import { STORE_HEADER } from "@/lib/identity";
 import { conditionalGet } from "@/lib/conditional-get";
+import { scriptFence } from "@/lib/csp";
 import { discoveryCors } from "@/lib/cors";
 import type { HonoEnv } from "@/types";
 import type { ErrorHandler, MiddlewareHandler } from "hono";
@@ -304,6 +305,8 @@ export const edgeMiddleware: readonly MiddlewareHandler<HonoEnv>[] = [
   isolateTiming,
   discoveryCors,
   conditionalGet,
+  // The script fence on every HTML answer (lib/csp.ts says why).
+  scriptFence,
   houseHeaders,
   porchVisit,
 ];

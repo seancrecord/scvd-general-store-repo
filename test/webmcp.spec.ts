@@ -67,11 +67,11 @@ describe("the derived tool set cannot drift", () => {
     expect(webmcpUnhandledTools()).toEqual([]);
   });
 
-  it("serves the MCP catalog's own descriptions, byte for byte", () => {
+  it("serves the MCP catalog's own short forms, byte for byte", () => {
     const script = webmcpScript();
     for (const tool of webmcpTools()) {
       expect(script).toContain(JSON.stringify(tool.name));
-      expect(script).toContain(JSON.stringify(tool.description));
+      expect(script).toContain(JSON.stringify(tool.summary ?? tool.description));
     }
   });
 

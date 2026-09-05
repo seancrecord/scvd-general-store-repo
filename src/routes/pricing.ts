@@ -272,7 +272,7 @@ pricingRoutes.get("/pricing", async (c) => {
    */
   const accept = c.req.header("Accept");
   const defaultMedia = wantsHtml(accept, c.req.header("User-Agent")) ? "text/html" : "application/json";
-  if (prefersMarkdown(accept, defaultMedia)) {
+  if (prefersMarkdown(accept, defaultMedia, c.req.header("User-Agent"))) {
     return c.text(pricingMarkdown(base, floorUsd, signature), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
