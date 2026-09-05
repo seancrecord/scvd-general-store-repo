@@ -1,8 +1,11 @@
 import { sendAlert } from "@/lib/alerts";
-import { reconcileSettles } from "@/lib/metrics";
+import { canonicalAddress } from "@/lib/addresses";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { KV_KEYS } from "@/lib/kv-keys";
+import { listKeys } from "@/lib/kv-list";
 import { computeStatsDiagnosed } from "@/services/stats";
 import { computeNetStatement } from "@/services/net-statement";
-import type { Env } from "@/types";
+import type { CertificateRecord, Env } from "@/types";
 
 /**
  * THE BOOKS INVARIANT SWEEP (enforcement item #1, 2026-08-07): the
@@ -20,11 +23,24 @@ import type { Env } from "@/types";
  *
  * WHAT IT HOLDS, and why each one:
  *
- *  1. THE SETTLE RECONCILIATION: counter settles minus payer purchases
- *     equals the founding settle plus the settles that arrived without
- *     a payer address. Anything else means a counter moved without its
- *     row. The check existed; it ran only when the office page loaded,
- *     which meant it ran when somebody was already looking.
+ *  1. EVERY CERTIFICATE'S SETTLE IS ON THE BOOKS (2026-09-05, in place
+ *     of the counters-vs-rows compare that paged here until then). A
+ *     certificate carrying a payer and a settlement transaction is
+ *     proof money moved; the per-settle record under that wallet and
+ *     transaction is the books saying so. A certificate with no record
+ *     is a sale the till never booked — two Solana penny settles on
+ *     2026-08-05 were exactly that, found by a person reading the
+ *     buyers page — and the repair at POST /admin/repair/payer-settles
+ *     books it from the certificate.
+ *
+ *     WHY THE OLD COMPARE NO LONGER PAGES. Counter settles minus payer
+ *     purchases was meant to equal the founding settle plus the
+ *     unattributed ones. It paged twice in a week and both times the
+ *     cause was a lost read-modify-write on a shared KV key — the
+ *     keeper's ruling of 2026-09-04 says that is not a books defect —
+ *     and the count could not name a wallet either way. The three
+ *     figures still sit on the books check, as floors with the
+ *     certificates read beside them; they just no longer wake anyone.
  *
  *  2. THE RAIL TALLY NEVER OVERSHOOTS THE ORGANIC COUNT. The public
  *     path handles overshoot by dropping the split — absent is honest
@@ -60,14 +76,62 @@ export interface InvariantSweep {
 /** Sub-cent tolerance: micro-USDC rounding is not a books defect. */
 const CENT = 0.01;
 
+/** Ceiling on the certificate walk; a walk that hits it says so. */
+const CERT_SCAN_CAP = 5000;
+
+export interface UnbookedCertificate {
+  cert_id: string;
+  item: string;
+  payer: string;
+  transaction: string;
+  date: string;
+}
+
+/**
+ * Certificates that name a settle the books never recorded: payer and
+ * settlement_tx on the certificate, no payer_settle record under that
+ * wallet and transaction. Certificates from before the records shipped
+ * are covered by the backfill, which the keeper has pressed; a cert
+ * this finds after that press is a sale the till missed outright.
+ */
+export async function certificatesWithoutSettleRecord(
+  env: Env,
+): Promise<{ certificates: UnbookedCertificate[]; truncated: boolean }> {
+  const [certKeys, settleKeys] = await Promise.all([
+    listKeys(env.PATRONS, { prefix: KV_KEYS.certPrefix, cap: CERT_SCAN_CAP }),
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: CERT_SCAN_CAP }),
+  ]);
+  const recorded = new Set(settleKeys.names);
+  const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
+  const missing: UnbookedCertificate[] = [];
+  for (const record of certs.values()) {
+    const cert = record?.certificate;
+    if (!cert?.payer || !cert.settlement_tx) continue;
+    if (recorded.has(KV_KEYS.payerSettle(cert.payer, cert.settlement_tx))) continue;
+    missing.push({
+      cert_id: cert.cert_id,
+      item: cert.item,
+      payer: canonicalAddress(cert.payer),
+      transaction: cert.settlement_tx,
+      date: cert.date,
+    });
+  }
+  missing.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  return { certificates: missing, truncated: certKeys.truncated || settleKeys.truncated };
+}
+
 export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   const breaches: string[] = [];
 
-  // 1. Settle counters against payer rows, all-time on both sides.
-  const settles = await reconcileSettles(env);
-  if (settles.unexplained !== 0) {
+  // 1. Every certificate that names a settle has its record.
+  const unbooked = await certificatesWithoutSettleRecord(env);
+  if (unbooked.certificates.length > 0) {
+    const named = unbooked.certificates
+      .slice(0, 5)
+      .map((c) => `${c.cert_id} (${c.item}, ${c.payer}, ${c.transaction}, ${c.date.slice(0, 10)})`)
+      .join("; ");
     breaches.push(
-      `settle-reconciliation: ${settles.unexplained} settle(s) unexplained — counter says ${settles.counter_settles}, payer rows say ${settles.payer_purchases}, founding ${settles.founding}, unattributed ${settles.unattributed}. A counter moved without its row (or a row without its counter).`,
+      `certificate-without-settle: ${unbooked.certificates.length} certificate(s) carry a payer and a settlement transaction that the books never recorded — ${named}${unbooked.certificates.length > 5 ? "; …" : ""}. Money moved and the till did not book it. POST /admin/repair/payer-settles books each one from its certificate${unbooked.truncated ? " (the scan hit its cap; the count is a floor)" : ""}.`,
     );
   }
 

@@ -9,6 +9,7 @@ import {
   recordSettlement,
 } from "@/lib/metrics";
 import type { Env, PayerRecord } from "@/types";
+import { SOLANA_NETWORK } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { backfillPayerSettlesFromCertificates } from "@/services/payer-repair";
 
@@ -140,5 +141,81 @@ describe("a lost row increment is not a books defect", () => {
     const second = await backfillPayerSettlesFromCertificates(testEnv);
     expect(second.records_written).toBe(0);
     expect(second.rows_corrected).not.toContain(older);
+    // A row that exists is never a reason to rebook the counters: the
+    // row is the lossy side, and the counter may well have gone through.
+    expect(first.counters_rebooked.filter((entry) => entry.startsWith(older))).toEqual([]);
+  });
+
+  /**
+   * THE ROW THAT NEVER EXISTED (2026-09-05). The keeper pressed the
+   * repair for a wallet with two Solana penny settles on 2026-08-05
+   * and got rows_corrected: [] — there was no row to raise, because
+   * recordSettlement, which writes the row and the counters in one
+   * wave, never ran. Certificates were the only trace. So a wallet
+   * with certificates and no row gets its row FROM the certificates,
+   * and each settle is booked onto the month the certificate carries.
+   */
+  it("creates the missing row from the certificates and books the counters the till never bumped", async () => {
+    const wallet = "TeStKWyNre9PW8XbLfvuBm9f6EnTBYqS5GXTzciCnHw";
+    const month = metricsMonth();
+    const paidKey = KV_KEYS.metric(month, "paid", "hello");
+    const railKey = KV_KEYS.metric(month, "rail", "solana");
+    const paidBefore = parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10);
+    const railBefore = parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10);
+    const revenueBefore = (await readMonthLedger(testEnv, month)).revenueUsdc;
+    for (const tx of ["5unbooked01", "5unbooked02"]) {
+      await mintCertificate(testEnv, {
+        itemId: "hello",
+        paidUsdc: 0.0075,
+        network: SOLANA_NETWORK,
+        payer: wallet,
+        settlementTx: tx,
+      });
+    }
+    expect(await testEnv.COUNTERS.get(KV_KEYS.payer(wallet))).toBeNull();
+
+    const first = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(first.rows_created).toContain(wallet);
+    expect(first.counters_rebooked).toEqual(
+      expect.arrayContaining([`${wallet}:5unbooked01`, `${wallet}:5unbooked02`]),
+    );
+    const row = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.payer(wallet))) ?? "{}") as PayerRecord;
+    expect(row.address).toBe(wallet);
+    expect(row.purchases).toBe(2);
+    expect(row.first_seen <= row.last_seen).toBe(true);
+    expect(parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10)).toBe(paidBefore + 2);
+    expect(parseInt((await testEnv.COUNTERS.get(railKey)) ?? "0", 10)).toBe(railBefore + 2);
+    // The month ledger now says what the certificates say.
+    const ledger = await readMonthLedger(testEnv, month);
+    expect(ledger.items["hello"]?.settled).toBeGreaterThanOrEqual(2);
+    expect(ledger.revenueUsdc - revenueBefore).toBeCloseTo(0.015, 6);
+
+    // Idempotent: the row exists now, so nothing is rebooked twice.
+    const second = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(second.rows_created).not.toContain(wallet);
+    expect(second.counters_rebooked).toEqual([]);
+    expect(parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10)).toBe(paidBefore + 2);
+  });
+
+  it("never rebooks a settle the till itself recorded, even with no row behind it", async () => {
+    const wallet = "0xrowlost000000000000000000000000000000003";
+    const month = metricsMonth();
+    const paidKey = KV_KEYS.metric(month, "paid", "hello");
+    // The till ran: counters and record written in one wave…
+    await recordSettlement(testEnv, "/api/buy/hello", {
+      paidUsdc: 0.5,
+      minimumUsdc: 0.5,
+      payer: wallet,
+      transaction: "0xtillran01",
+    });
+    await mintCertificate(testEnv, { itemId: "hello", payer: wallet, settlementTx: "0xtillran01" });
+    // …and the row write was the one that got lost.
+    await testEnv.COUNTERS.delete(KV_KEYS.payer(wallet));
+    const paidBefore = parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10);
+
+    const pass = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(pass.rows_created).toContain(wallet);
+    expect(pass.counters_rebooked).toEqual([]);
+    expect(parseInt((await testEnv.COUNTERS.get(paidKey)) ?? "0", 10)).toBe(paidBefore);
   });
 });

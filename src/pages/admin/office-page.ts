@@ -988,7 +988,7 @@ export function renderOfficePage(data: OfficePageData): string {
         ? `<p>Not checked here \u2014 the chain walk runs at <a href="/admin/reconciliation">the books check</a>, which is where its verdicts belong. This page no longer pays for one to print a sentence about it.</p>`
         : data.reconciliation.unexplained === 0
           ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
-          : `<p><strong style="color:#8c2f1b">Something to chase.</strong> ${data.reconciliation.unexplained} unexplained. Verdicts and arithmetic at <a href="/admin/reconciliation">the books check</a>.</p>`
+          : `<p><strong>They differ by ${Math.abs(data.reconciliation.unexplained)}</strong> — a lost increment on a shared key, read as a floor, not an alarm (ruled 2026-09-04). The three witnesses and the arithmetic are at <a href="/admin/reconciliation">the books check</a>.</p>`
     }
   </section>
 

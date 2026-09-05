@@ -38,7 +38,18 @@ build, it is on the roadmap.
   certificate, still is. PRESS once deployed: `POST
   /admin/repair/payer-settles`, then read the settle
   reconciliation — the one unexplained settle from CV's
-  Base batch should close. RULED 2: the verify-failure
+  Base batch should close. PRESSED 2026-09-05: it did not
+  close, and the press found the second case — a wallet
+  with two Solana penny settles on 2026-08-05, certificates
+  minted, no row and no counter, the till's whole wave
+  never ran. So the repair now CREATES the missing row from
+  the certificates and books each such settle onto the
+  month the certificate carries (rows_created,
+  counters_rebooked on the record), and the hourly page
+  moved: counters-vs-rows is a desk reading of three floors,
+  and what pages is a certificate carrying a payer and a
+  transaction the books never recorded. PRESS again once
+  deployed, then read the books check. RULED 2: the verify-failure
   classifier fixed both ways — a facilitator verdict wearing
   a 4xx books under the facilitator's own reason, and a bare
   401/403/429 books as `upstream_auth`, the emergency.
