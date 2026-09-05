@@ -301,7 +301,16 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
     mode: "live",
     opened: TRADE_COUNTER_OPENED,
     /** ⚑ keeper dial: how much unpaid net the account may carry. */
-    credit_ceiling_usd: 250,
+    /*
+     * RAISED TO $2,500 (2026-09-05, the keeper: "swap it and pr merge
+     * i agree"). At $250 the account could carry about ten of the
+     * dearest deliveries before the door refused and the partner
+     * refunded a real buyer — a bound sized for a test account, not a
+     * live one settling weekly. $2,500 is roughly a hundred, which
+     * covers a month at any volume the counter has seen while still
+     * bounding what an unpaid account can run up. ⚑ keeper dial.
+     */
+    credit_ceiling_usd: 2500,
   },
 ];
 
