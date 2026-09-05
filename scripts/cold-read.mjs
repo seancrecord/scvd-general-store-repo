@@ -35,6 +35,20 @@
  *   npm run cold:read -- --burst                       # every paid door at once
  *   npm run cold:read -- --since=2026-09-05T12:11:00Z  # says whether the deploy had landed
  *   npm run cold:read -- --warm=10 --json
+ *   npm run cold:read -- --control=https://x402-list.com/robots.txt   # the vantage's own first-knock cost
+ *
+ * THE VANTAGE HAS A COST OF ITS OWN (2026-09-05, found the evening the
+ * doors went live). Read from a sandbox behind a connecting proxy, a
+ * plain static file on a host with no Worker at all showed a first
+ * knock 370 ms slower than the warm ones: the proxy opening its
+ * upstream connection, invisible to this socket's handshake timing.
+ * Every cold penalty read from that sandbox that day carried it, and
+ * one derivation compared them to a canary read from a clean machine.
+ * So: --control knocks a URL that cannot have a cold start, first and
+ * warm, and prints the difference as the vantage's floor. A cold
+ * penalty is only worth quoting when it clears that floor by a wide
+ * margin, and a floor near zero (a laptop on a plain connection) is
+ * the reading to trust.
  *
  * The canary (canary/) is a hello-world Worker with the same
  * Server-Timing line and nothing else; read it beside the store from
@@ -68,6 +82,7 @@ const warmKnocks = Math.max(0, Number(value("warm", "6")) || 0);
 const since = value("since", "");
 const json = Boolean(flag("json"));
 const burst = Boolean(flag("burst"));
+const control = value("control", "");
 const TIMEOUT_MS = 20_000;
 
 /**
@@ -160,9 +175,23 @@ async function readBurst(base) {
   return readings;
 }
 
-const observation = { read_at: new Date().toISOString(), since: since || null, doors: [], burst: null };
+const observation = { read_at: new Date().toISOString(), since: since || null, control: null, doors: [], burst: null };
 let exitCode = 0;
 const out = [];
+
+if (control) {
+  const knocks = await readDoor(control);
+  const first = knocks[0];
+  const warm = knocks.slice(1).map((k) => k.ms);
+  const warmMedian = warm.length ? [...warm].sort((a, b) => a - b)[Math.floor(warm.length / 2)] : null;
+  const floor = Number.isFinite(first.ms) && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null;
+  observation.control = { url: control, first_ms: first.ms, warm_median_ms: warmMedian, vantage_floor_ms: floor };
+  out.push(
+    Number.isFinite(first.ms)
+      ? `${control}\n  control       ${String(first.ms).padStart(6)} ms   first knock on a host with no cold start; warm median ${warmMedian ?? "-"} ms\n  vantage floor ${String(floor ?? "-").padStart(6)} ms   what this vantage adds to any first knock; a cold penalty must clear it by a wide margin`
+      : `${control}\n  control unreachable: ${first.error ?? "no answer"}`,
+  );
+}
 
 for (const url of urls) {
   const knocks = await readDoor(url);

@@ -36,7 +36,7 @@ build, it is on the roadmap.
   `test/doors-parity.spec.ts` holds every door's answer
   byte-equal across both Workers. The flip is safe by
   construction — a doors Worker without its secrets hands
-  every knock to the store — so the order is:
+  every knock to the store — so the order is (1 to 5 DONE 2026-09-05 19:55 UTC by your hand; the doors answer):
   1. Merge the branch. The store deploys as always; nothing
      changes on the wire yet.
   2. `npx wrangler deploy -c doors/wrangler.jsonc` by your
@@ -57,7 +57,14 @@ build, it is on the roadmap.
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.
      Until then a shelf change needs step 2 again by hand.
-  6. LOOK, the next morning: x402-list's per-check history
+  6. READ, from your Mac after ten minutes of not touching a
+     door, so the isolate at your colo is cold:
+     `npm run cold:read -- --url=https://scvd.store/api/buy/hello --url=https://scvd-cold-canary.seancrecord.workers.dev/ --control=https://x402-list.com/robots.txt --burst`
+     That is the store's cold penalty from a clean vantage,
+     which the sandbox could never give (its proxy added
+     ~370ms to every first knock; corrected in the research
+     note 20:05 UTC). Paste it into the note.
+  7. LOOK, the next morning: x402-list's per-check history
      (`/api/v1/services/sean-claude-van-damme-s-general-store/checks`)
      and `.github/workflows/cold-read.yml`'s artifact. The night
      reads should sit near 100ms with 31 of 31 found.

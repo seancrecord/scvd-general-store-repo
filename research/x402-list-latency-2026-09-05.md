@@ -169,6 +169,31 @@ the store as it is. The prober's burst would then wake a script a
 fifth the size. That is a week, it reshapes a test suite built around
 one app, and it is the keeper's to rule, not an agent's to start.
 
+## Correction (20:05 UTC): the sandbox's first knock carried its proxy
+
+The cold penalties in this note that were read from the agent's
+sandbox — 430 ms, 627 ms, and the 426 ms read after the flip — were
+not Cloudflare's alone. A control knock on a plain static file at a
+host with no Worker at all (`x402-list.com/robots.txt`) read 581 ms
+first and 210 ms warm from the same sandbox: about 370 ms is the
+sandbox's egress proxy opening its upstream connection, invisible to
+the socket's own handshake timing. The canary's 5 ms was read from
+the keeper's Mac, a clean vantage. "The Canary, read" below compared
+the two across vantages and concluded the script was "all of it"; the
+comparison was wrong and the sentence is withdrawn. `npm run
+cold:read -- --control=<url>` now prints the vantage's own floor so
+this cannot be done silently again.
+
+What still stands, with its source named: the directory's own night
+reads of 1,000 ms and more (their vantage, their clock); the local
+workerd starts (152 ms for the store, 50 ms for the doors, this
+machine, the ratio being the fact); Cloudflare's own "Worker Startup
+Time: 50 ms" printed when the doors deployed; and the seven-of-32 cold
+isolates a burst wakes (the store's own marker, whichever vantage
+knocks). What is not yet known: the store's cold penalty from a clean
+vantage, which is one `npm run cold:read` from the keeper's Mac after
+ten quiet minutes, beside the canary, with the control on.
+
 ## The canary, read (17:49 UTC, the keeper's Mac)
 
 Deployed by the keeper's hand at 17:4x UTC; read from his Mac minutes
@@ -180,11 +205,10 @@ later, cold everywhere by construction.
 | store, from the sandbox the same hour | 655 ms, cold | 28 ms | 627 ms |
 | store, from the sandbox an hour earlier | 483 ms, cold | 53 ms | 430 ms |
 
-Cloudflare's floor is five milliseconds. The store's 430 to 627 ms
-cold penalty is the script, all of it — and more than the 154 ms
-that compile and evaluation cost locally, so the rest is what a
-1.15 MB (gzip) script costs to fetch and house per isolate, which
-also scales with bytes. Every byte is ours.
+Cloudflare's floor is five milliseconds. WITHDRAWN 20:05 UTC (see the
+correction above): the 430 to 627 ms rows were read from the sandbox
+and carry its proxy; they cannot be set beside a figure read from the
+Mac. The two-vantage comparison is void; the floor of five is not.
 
 ## What a Worker of only the doors would weigh
 
@@ -204,6 +228,14 @@ gate reaching into the corpus for `archive_depth` and the vocabulary
 for its decline reasons, and is prunable to about 0.7 MB. At the
 penalty per byte measured above, a 1.1 MB doors Worker knocks cold
 in roughly 140 to 200 ms; a 0.7 MB one in roughly 90 to 120 ms.
+
+## The doors, live (19:55 UTC)
+
+Deployed by the keeper's hand; secrets set; the first GET after the
+flip answered by the doors with two signed offers that verify against
+the store's published key. x402-list's first check after the flip:
+43 ms, 31 of 31, the lowest of the day. The night reads are the
+measurement that matters and they are tomorrow's.
 
 ## The doors, built (the same evening)
 
