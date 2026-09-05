@@ -39,15 +39,19 @@ produce the same `challenge_digest` (modulo the door's own nonce/timestamp
 fields, which rotate) and, on a settle, a comparable `delivery_body_digest`. The
 reproducibility is the point — the rows are re-derivable, not asserted.
 
-What you cannot do from these rows is address the settlement on chain. Every
-current row's identifier is an authorization nonce, not a transaction hash, and
-`settlement_tx_hash` is `null` on all seven. That is a stated hole, not an
-oversight left to be discovered — see the next section.
+Six of the seven rows now carry `settlement_tx_hash`, each read off the chain
+by the authorization's own event (see the next section). Row 1 does not: its
+nonce was never used on Base mainnet and its `payTo` received nothing that day,
+so the row says `settlement_confirmation: not_found_on_base_mainnet` and states
+that its `terminal_state: settled` is the door's report, not the chain's.
 
-`npm run walk-ledger:verify` asks a node whether each row's identifier is what
-the row says it is, and prints the RPC, chain, head block, moment and control
-hash it used. A nonce that resolves, or a settlement hash that does not, exits
-non-zero. Run it against your own endpoint with `--rpc`.
+`npm run walk-ledger:verify` asks a node whether each row's identifiers are
+what the row says, two ways: as a transaction (a nonce must not resolve, a
+settlement hash must) and as an authorization (the `AuthorizationUsed` log for
+the nonce must name the row's settlement, and a nonce the chain shows spent
+while the row carries no settlement hash is a finding). It prints the RPC,
+chain, head block, moment and control hash it used. Run it against your own
+endpoint with `--rpc`.
 
 **Honesty note on signing:** these rows are captured and digested but not yet
 carrying the store's ed25519 signature — that key lives only in the production
@@ -93,6 +97,27 @@ Base Sepolia, with a control hash from the head block returning normally on the
 same endpoint — so the null was about the identifier, not about their reach.
 They reported it and asked, correctly, whether it was a transaction hash at all.
 
+**2026-09-05, the overstatement in the correction.** The paragraph below
+said, and the 2026-09-04 rows said, that no node would ever answer a nonce. As a
+*transaction* identifier that is true and the nulls stand. But a nonce is
+indexed on chain: an EIP-3009 settlement emits
+`AuthorizationUsed(address indexed authorizer, bytes32 indexed nonce)` on the
+USDC contract, and `eth_getLogs` filtered on that topic and the nonce answers
+with the settlement transaction. Run on 2026-09-05 it recovered rows 2–7's
+settlements — each receipt status `0x1`, mined within two seconds of
+`observed_at`, one USDC transfer from the declared house wallet to the row's
+`payTo` for exactly `amount_usd` — and the rows now carry them with that basis.
+0200project's consequence ("any row keyed on the nonce can never be verified
+against the chain by anyone") was therefore too strong, and so was our own
+sentence that led them to it. The verifier reads both ways now.
+
+For row 1 the same lookup found nothing: no `AuthorizationUsed` for its nonce on
+any contract in ±25 hours, and no USDC transfer into its `payTo` at all. On Base
+mainnet the $0.10 did not move. Base Sepolia — where a v1 `X-PAYMENT` door in
+2026 may well settle — was not reachable from where this ran and is unsearched,
+and the row says so. The row we picked for the cross-check is the one row whose
+settlement we cannot show.
+
 It is an EIP-3009 authorization nonce. `buildAuthorization` in
 `scripts/lib/walkabout.mjs` mints it as `0x` + `randomBytes(32)` before the
 payment is signed; the walker records it in `entry.authorization.nonce`, and
@@ -105,9 +130,9 @@ So the rows now carry:
 
 - `authorization_nonce` — the EIP-3009 nonce. Not addressable on chain, by
   construction. It proves which authorization was signed, nothing more.
-- `settlement_tx_hash` — the on-chain settlement, or `null` when this ledger
-  did not capture one. `null` on every current row, and the absence is now in
-  the bytes instead of hidden behind a union.
+- `settlement_tx_hash` + `settlement_tx_hash_basis` — the on-chain settlement
+  and the dated read that produced it, or `null` and the dated search that did
+  not. Rows 2–7 carry one as of 2026-09-05; row 1 carries the search.
 - `identifier_kind` + `identifier_kind_basis` — which kind the row names, and
   on what basis. For rows 1–7 the basis is a chain read: both lookups returned
   null for every one of them on Base mainnet at head block 50879438 on
