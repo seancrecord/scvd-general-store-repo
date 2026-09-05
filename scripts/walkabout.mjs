@@ -59,6 +59,13 @@ import {
 const REPO_ROOT = new URL("..", import.meta.url);
 const STORE_BASE_URL = process.env.STORE_BASE_URL ?? "https://scvd.store";
 const RPC_URL = process.env.BASE_RPC_URL ?? "https://mainnet.base.org";
+/**
+ * Per-request ceiling. Without one, a dead host waits on the OS to give
+ * up — a minute or more each — and a 900-door walk turned into hours of
+ * silence on 2026-09-05. A door that cannot answer in this long is
+ * recorded as unreachable, which is a dated fact about it, not a wait.
+ */
+const REQUEST_TIMEOUT_MS = Number(process.env.WALK_TIMEOUT_MS ?? 15000);
 
 function fail(message) {
   console.error(`\n✗ ${message}\n`);
@@ -170,6 +177,7 @@ async function wbaHeadersRemote(targetUrl) {
   try {
     const response = await fetch(`${STORE_BASE_URL}/admin/wba/sign`, {
       method: "POST",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Basic ${Buffer.from(`keeper:${signDesk.password}`).toString("base64")}`,
@@ -346,7 +354,7 @@ async function walk(flags) {
     };
     try {
       const headers = { "User-Agent": UA, Accept: "application/json", ...(await signedHeaders(material, url)) };
-      const first = await fetch(url, { method: "GET", headers, redirect: "manual" });
+      const first = await fetch(url, { method: "GET", headers, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       const firstBody = await first.text();
       entry.status = first.status;
       entry.response_headers = headersRecord(first.headers);
@@ -423,7 +431,7 @@ async function walk(flags) {
         ...(await signedHeaders(material, url)),
         "PAYMENT-SIGNATURE": paymentHeader(chosen.accept, signature, authorization),
       };
-      const second = await fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual" });
+      const second = await fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       const secondBody = await second.text();
       entry.paid_status = second.status;
       entry.paid_response_headers = headersRecord(second.headers);
