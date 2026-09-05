@@ -559,20 +559,23 @@ Do not relitigate without you.
   Two of the answers are dialect fields (`timestamp_unit`; whether
   the provider key is a separate secret) and both fail closed if
   guessed wrong. Nothing goes live until they answer.
-- **Hands (Hal answered 2026-09-04; nothing is minted here)** —
-  create ONE PAUSED LISTING PER ITEM at
+- **Hands (Hal issues ONE PAIR PER LISTING; nothing is minted here)** —
+  create one PAUSED listing per item at
   `https://sell.halmarket.dev/services/new`: endpoint URL = the
   item's `door` on the hal row of `/api/trade/contract` (nine of
-  them), price = a fixed integer in sats at or above that item's
-  `trade_price_usd` at the day's rate, rounded up. Hal shows a
-  provider key and a signing secret; put them with `wrangler secret
-  put TRADE_PROVIDER_KEY_HAL` and `TRADE_SECRET_HAL`, never through
-  a chat with an agent. If Hal issues a pair PER LISTING rather than
-  per account, tell me before putting anything: secrets keyed per
-  item is a small change on this side. Confirm to Hal only the
-  listing id and `is_paused: true`. The contract row flips to
-  `provisioned: true` on its own. No paid canary without your word
-  and theirs; the fixture on the row is the no-spend check.
+  them), payment type "API key", price = a fixed integer in sats at
+  or above that item's `trade_price_usd` at the day's rate, rounded
+  up. After each create Hal shows that listing's provider key and
+  signing secret; put them under the ITEM'S names, never through a
+  chat with an agent:
+  `wrangler secret put TRADE_PROVIDER_KEY_HAL__<ITEM_ID>` and
+  `wrangler secret put TRADE_SECRET_HAL__<ITEM_ID>` (item id
+  upper-cased: `TRADE_SECRET_HAL__CONTEXT_ANCHOR`). Eighteen puts.
+  The contract row flips to `provisioned: true` and `secret_scope:
+  per_listing` on its own, and each item row says whether its pair
+  is set. Confirm to Hal only the listing ids and `is_paused: true`.
+  No paid canary without your word and theirs; the fixture on the
+  row is the no-spend check.
 - **RULE** — flip `hal` from `test` to `live` in
   `src/store/trade-counter.ts` when the listings resume. Hal pays
   sats over Lightning (OpenNode, mainnet) at 95% of each listing's
