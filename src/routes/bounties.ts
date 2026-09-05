@@ -33,12 +33,13 @@ const BOARD_WHAT_THIS_IS =
   "Paid mystery shopping for the x402 economy: walk a listed door with your own wallet, submit the settlement transaction, get the door's price back plus a finder's fee — paid as a signed EIP-3009 authorization you redeem on chain yourself. The store verifies the settlement against terms it captured when the bounty opened; your observations ride along verbatim as your claim, labeled so.";
 
 const BOARD_HOW_TO_CLAIM =
-  'POST /api/bounty-claim with JSON {"bounty_id": "bty_…", "tx_hash": "0x…", "payer": "0x… (the wallet that paid the door)", "payout_to": "0x… (where your reward goes)", "observation": "optional — what the door actually did"}';
+  'POST /api/bounty-claim with JSON {"bounty_id": "bty_…", "tx_hash": "the settlement on the bounty\'s rail — 0x… on Base or Polygon, a base58 signature on Solana", "payer": "the wallet that paid the door, in that rail\'s own address shape", "payout_to": "0x… (where your reward goes — Base USDC on every rail)", "observation": "optional — what the door actually did"}';
 
 const BOARD_RULES: readonly string[] = [
         `One payout per settlement transaction, ever; one bounty per domain per week; rewards cap at $${BOUNTY_MAX_REWARD_USD} and the weekly budget at $${BOUNTY_WEEKLY_BUDGET_USD} — the board refuses past it and reopens with the ISO week.`,
         "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting — price drift between then and your walk is the one honest loss mode; check the bounty's amount_usd before you pay.",
         "Payout addresses are sanctions-screened, fail closed. The payer is a named US LLC and that is not negotiable.",
+        "Doors on Base, Polygon and Solana can be posted; the settlement is verified on the door's own rail. The reward pays in Base USDC to a 0x address on every rail — the store signs authorizations and broadcasts nothing, and Solana has no authorization a recipient can redeem.",
         "What the reward pays for is the chain-verified settlement. Your observations are recorded verbatim as YOUR claim — crowd-walked evidence is its own tier, below house-walked, and the tier is always printed.",
 ];
 

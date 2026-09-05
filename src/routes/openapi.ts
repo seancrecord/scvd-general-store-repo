@@ -6149,7 +6149,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
   postOp(
             "Claim a bounty (POST /api/bounty-claim)",
-            "POST /api/bounty-claim. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
+            "POST /api/bounty-claim. The store verifies the settlement on the bounty's own rail (Base, Polygon or Solana) against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
             "The settlement you are claiming against, and where the reward should go.",
             {
               type: "object",
@@ -6162,16 +6162,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 tx_hash: {
                   type: "string",
                   description:
-                    "The Base transaction that settled your purchase at the bounty's door. One payout per transaction, ever.",
+                    "The transaction that settled your purchase at the bounty's door, on the bounty's rail: a 0x hash on Base or Polygon, a base58 signature on Solana. One payout per transaction, ever.",
                 },
                 payer: {
                   type: "string",
-                  description: "The wallet that paid, 0x + 40 hex.",
+                  description: "The wallet that paid, in the rail's own shape: 0x + 40 hex on Base or Polygon, a base58 pubkey on Solana.",
                 },
                 payout_to: {
                   type: "string",
                   description:
-                    "Where the signed EIP-3009 authorization pays. Screened before the authorization is issued.",
+                    "Where the signed EIP-3009 authorization pays: a 0x Base address on every rail, Solana doors included. Screened before the authorization is issued.",
                 },
                 observation: {
                   type: "string",

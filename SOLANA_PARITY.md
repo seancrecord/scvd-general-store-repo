@@ -69,24 +69,38 @@ chain" is exactly the product. This is the first gap to close.
     fork per chain, only the reader does.
 
 ### 2. Solana bounty claims — the board verifies Base settlements only
-**Demand evidence: none yet** — gated on board traction, but Ramp
-wallets are Solana wallets, so a Solana door bounty would need this.
+**Demand evidence: one letter, 2026-09-05** — a Solana-settled agent
+read the board, priced the Base-only reward against its own wallet,
+and wrote in. Ramp wallets are Solana wallets too.
 
-- [ ] Extend `claimBounty` to verify an SPL USDC transfer when the
-  claimed tx id is base58-shaped (mirror the attestation's
-  shape-picks-the-chain move).
-- **Nuance:**
-  - Verification = fetch transaction, confirm success, confirm a USDC
-    token transfer of exactly the captured atomic amount from claimer's
-    ATA to the door's ATA, postdating the bounty's opened slot. The
-    replay guard keys on tx id — chain-prefix the key
-    (`base:0x…` / `sol:…`) so ids can never collide across chains.
-  - `opened_block` becomes `opened_slot` on Solana — the record shape
-    needs a chain-tagged variant, not an overload.
+- [x] DONE 2026-09-05: `openBounty` captures a Solana door (EVM rails
+  preferred when the door quotes both; asset must be the USDC mint),
+  and `claimBounty` reads the shapes against the BOUNTY'S rail rather
+  than assuming 0x — a base58 signature and a base58 payer on Solana.
+  Verification is `solanaTransactionFacts` (the attestation's reader,
+  not a third parser): no error, past `SOLANA_FINALITY_SLOTS`, slot ≥
+  `opened_slot`, the door's owner credited exactly the captured atomic
+  amount and the payer's owner debited at least it. The replay key is
+  `bounty_tx:sol:<signature>`, as written; EVM keys keep their shape so
+  no paid claim becomes claimable again. `test/bounty-board.spec.ts`,
+  "the fourth rail on the board".
+- **How the nuance below landed:**
+  - Finality is checked on the Solana path and not on the EVM path,
+    on purpose: `getTransaction` at "confirmed" can answer for a
+    transaction the cluster later drops, and a reward signed against a
+    dropped settlement is money for nothing. Inside the window the
+    claim is refused and released, and told to come back.
+  - The record is chain-tagged by ADDITION, not by overload:
+    `opened_slot` is kept beside `opened_block`, because `opened_block`
+    is the BASE head the payout-redemption reader scans from, and the
+    payout is Base on every rail. `settled_slot` beside `settled_block`
+    on the claim; the corpus row prints `slot`, never `block`.
+  - Owner-level balance deltas, not ATA-level: the same coverage the
+    Solana statement chose, and the door's payTo is an owner pubkey.
   - **The payout stays EVM regardless** (see 4) — a shopper who walks
-    a Solana door still gets paid by EIP-3009 on Base/Polygon to an 0x
-    address. The claim form already takes `payout_to` separately from
-    `payer`, so this composes without new fields.
+    a Solana door is paid by EIP-3009 on Base to the 0x `payout_to`
+    they name. The public copy says so on the board, in the rules,
+    and on the OpenAPI shape.
 
 ### 3. Solana Launch Check — the field walker spends on Base only
 **Demand evidence: weak** — the census shows only 4 solana-only doors.
@@ -151,3 +165,32 @@ through the window, (b) the board posts its first solana-only door,
 authorization, or (d) a Solana sanctions oracle appears. Any one of
 those changes an answer above, and the file should say so with a date
 rather than silently rotting.
+
+### Re-read 2026-09-05 — trigger (a), a letter
+
+A Solana-settled agent wrote to the mailbox: it had read two open
+bounties, noted the reward redeems on Base only, and asked whether the
+store commissions Solana-paid work. Rulings, dated:
+
+- **Gap 2 closed** (above). The half of the complaint the store can
+  fix without moving money on Solana is fixed: a Solana door can be
+  posted and a Solana wallet can claim it, paid on Base.
+- **Gap 4 stands.** Checked against what x402 itself does on Solana:
+  the payer signs an SPL transfer and a sponsor co-signs as fee payer
+  and broadcasts. The mirror image — the store signs the transfer, the
+  recipient co-signs as fee payer — is buildable, but not as the
+  instrument the board pays with. A plain Solana transaction dies with
+  its blockhash inside about a minute, not seven days; a durable nonce
+  gives it the lifetime, but the nonce account needs SOL rent (the
+  shopper could fund one with the store as authority), and the
+  authorization then has NO self-expiry: an unredeemed reward stays
+  live until the store advances the nonce, which is a broadcast and
+  SOL. "Expires free, budget takes it back" cannot be replicated. And
+  blocker 2 does not move at all: no Solana sanctions screen exists,
+  and the payout rule fails closed without one. That is the blocker
+  that actually blocks; the nonce mechanics are secondary.
+- **The commission itself is not the board's.** A one-off report at
+  twenty times the reward ceiling is the keeper's commission, paid by
+  hand from the keeper's own Solana wallet on delivery, recorded as
+  such. The worker moves no money on Solana. Re-read again when (c)
+  or (d) changes.
