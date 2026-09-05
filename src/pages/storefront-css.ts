@@ -477,6 +477,11 @@ html { overflow-x: clip; }
   margin-top: 0.6rem !important; line-height: 2.1;
   color: var(--line);
 }
+.porch-trade {
+  max-width: 640px; margin-left: auto; margin-right: auto;
+  margin-top: 0.9rem !important; line-height: 1.6;
+  color: var(--line); font-size: 0.92em;
+}
 .porch-rooms a {
   display: inline-block; white-space: nowrap;
   text-decoration: none;
