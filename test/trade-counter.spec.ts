@@ -506,6 +506,37 @@ describe("the surfaces", () => {
       expect(body[key], key).toBeDefined();
     }
   });
+
+  it("pass nine: says who buys on account on all three twins, carries the FAQ as a FAQPage node, and names no partner in generic copy", async () => {
+    const page = await (await SELF.fetch(`${BASE}/trade`, { headers: { Accept: "text/html" } })).text();
+    const body = await json(await SELF.fetch(`${BASE}/trade`));
+    const markdown = await (await SELF.fetch(`${BASE}/trade.md`)).text();
+    const rows = body["who_buys_on_account"] as Record<string, string>[];
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    expect(page).toContain("<h2>Who buys on account</h2>");
+    expect(markdown).toContain("## Who buys on account");
+    for (const row of rows) {
+      expect(page).toContain(row["who"]!.slice(0, 40));
+      expect(markdown).toContain(row["who"]!);
+      // Generic by construction: no row names a partner.
+      expect(String(row["who"]) + String(row["why"])).not.toMatch(/\bHal\b/);
+    }
+    const faq = body["faq"] as Record<string, string>[];
+    expect(faq.some((entry) => /sats, cards, credits/.test(entry["q"] ?? ""))).toBe(true);
+    expect(faq.some((entry) => /sign webhooks a different way/.test(entry["q"] ?? ""))).toBe(true);
+    const nodes = [...page.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)].map((m) => JSON.parse(m[1]!) as Record<string, unknown>);
+    const faqNode = nodes.find((node) => node["@type"] === "FAQPage")!;
+    expect(faqNode).toBeDefined();
+    expect((faqNode["mainEntity"] as unknown[]).length).toBe(faq.length);
+    // The page's own copy never leans on the first partner's name.
+    const generic = page.replace(/<li><strong>Hal<\/strong>[^<]*<\/li>/g, "");
+    expect(generic).not.toMatch(/\bHal\b/);
+    // The room "for scorers and marketplaces" points at the counter.
+    const scorers = await json(await SELF.fetch(`${BASE}/scorers`, { headers: { Accept: "application/json" } }));
+    expect(scorers["resell_on_account"]).toBe(`${BASE}/trade`);
+    const scorersPage = await (await SELF.fetch(`${BASE}/scorers`, { headers: { Accept: "text/html" } })).text();
+    expect(scorersPage).toContain('href="/trade"');
+  });
 });
 
 /* ------------------------------------------------------------------ */

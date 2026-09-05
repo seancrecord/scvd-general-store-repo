@@ -522,6 +522,42 @@ export const TRADE_WHAT_IT_IS_FOR =
 export const TRADE_WHAT_THIS_IS_NOT =
   "Not a payment rail: no money moves through this door, and the store does not verify that any moved through yours. Not a discount channel: trade prices sit above the front door's, by a published rule, because an account is credit. Not an escrow, a guarantor, or a dispute court between you and your customer. And not a way to buy the keeper's hands: the human-queue shelf is not at this counter.";
 
+/**
+ * WHO BUYS ON ACCOUNT (pass nine, 2026-09-04, "is this marketed
+ * correctly for other people outside Hal"). The proposition names
+ * the shape — a platform that resells to agents — and a stranger
+ * reads a shape and asks "is that me?". These are the answers, one
+ * per kind of platform, each with the reason the counter fits it
+ * better than sending their customer to the front door. Generic by
+ * construction: no row names a partner.
+ */
+export const TRADE_WHO_BUYS: readonly { who: string; why: string }[] = [
+  {
+    who: "An agent marketplace or tool directory that charges per call",
+    why: "You already collect from your customer in your own unit and your own checkout; our instrument becomes one listing among yours, and the receipt your customer gets verifies against a key that is neither yours nor ours to fake.",
+  },
+  {
+    who: "An agent framework or runtime with built-in credits or billing",
+    why: "Your agents spend credits, not USDC. One signed POST from your backend turns a credit into a signed audit, anchor or certificate, and the agent never leaves your billing model.",
+  },
+  {
+    who: "A payments layer that hides x402 from its own users",
+    why: "Your user wanted a receipt, not a rail. You settle with us on a statement in dollars and hand them the same artifact the front door mints, with the chain fields honestly absent.",
+  },
+  {
+    who: "A platform settling in sats, a card, or a currency we do not take",
+    why: "The counter never sees a payment, so it never cares what the payment was. List at your rate's equivalent of the trade price; the statement bills dollars; the goods are the same.",
+  },
+  {
+    who: "An API aggregator or gateway reselling third-party endpoints",
+    why: "Every item at the counter has a machine-readable listing on the catalog feed — copy, specimen, price at your share, what the signature does and does not prove — so onboarding it is a row, not a project.",
+  },
+  {
+    who: "An enterprise or internal platform whose procurement wants an invoice, not a wallet",
+    why: "A trade account is credit with a ceiling, a statement and a named human who records payouts. That is the shape finance already knows, and the daily cap is the limit they will ask about first.",
+  },
+];
+
 export interface TradeStep {
   step: number;
   name: string;
@@ -774,7 +810,19 @@ export const TRADE_FAQ: readonly { q: string; a: string }[] = [
   },
   {
     q: "Can I rotate my secret without downtime?",
-    a: "Yes. Tell the keeper the new secret; for the handover window both verify and the response says which one signed. Then the old one is unset.",
+    a: "Yes, either way your side works. If you can run two secrets at once, tell the keeper the new one; for the handover window both verify and the response says which one signed, then the old one is unset. If your side cuts over — replace, pause, resume — the keeper sets the new value while you are paused and you resume against it.",
+  },
+  {
+    q: "I take payment in sats, cards, credits or a currency you do not accept. Does that work?",
+    a: "Yes; it is the point. This door sees no payment, so it does not care what yours was. Every price and statement line here is in US dollars; you list at your own rate's equivalent of the trade price and bill your customer however you bill. We print no figure in any other unit, because we hold no exchange rate and will not pretend to.",
+  },
+  {
+    q: "I already sign webhooks a different way. Do I have to change?",
+    a: "No. The differences between marketplaces — header names, the order of the signed string, seconds or milliseconds, a signature prefix, whether a provider key travels alongside — are a dialect row on your account, not a branch in the code. Two dialects are published on the contract today; yours is a row the keeper adds when the account opens.",
+  },
+  {
+    q: "Does my share improve with volume?",
+    a: "The standard offer does: the share rises with live deliveries in the calendar month, by a ladder printed on the contract, and the trade price is derived from the share so the store nets the same at every step. An account with its own contract keeps its own terms.",
   },
   {
     q: "My signature is rejected and I cannot see why.",

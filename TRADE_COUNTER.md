@@ -97,6 +97,16 @@ The door: `POST /api/trade/{account}/{item_id}`. The check desk:
   Lightning on mainnet at 95% of a fixed sats price. The keeper's
   step corrected: Hal generates both secrets at listing creation and
   the keeper copies them in; nothing is minted here.
+- **Pass nine (2026-09-04, "is this marketed correctly for other
+  people outside Hal")** — the audit found the copy generic and
+  consistent across every surface, with four gaps, now closed: who
+  buys on account as six concrete rows (`TRADE_WHO_BUYS`) on the
+  page, the JSON twin and the markdown; four FAQ entries a stranger
+  asks first (a currency we do not take, a signing scheme they
+  already have, volume terms, rotation by cutover); the FAQ as a
+  FAQPage node beside the Service node; and `/scorers`, the room
+  titled for marketplaces, now pointing at the counter. A test holds
+  that no generic row names a partner.
 - **House rule 60 and the feature register** — `src/store/features.ts`
   and `test/feature-surfaces.spec.ts`: one row per feature (room,
   doors, pages that must link it, one proposition sentence, one money

@@ -219,6 +219,7 @@ const START_HERE = (base: string) => ({
 const ENABLES = [
   "A scorer maps observations to scores by a rule of its own, and cites the rows it read.",
   "A marketplace gates a listing on a reproducible check — the preflight, the passport tier with its fraction — rather than on a claim.",
+  "A marketplace that would rather sell the instruments than gate on them buys the same shelf on account at /trade: its customer pays it, it sends one signed webhook, the store delivers and bills a statement.",
   "An operator attaches a statement to the record — the operator's statement, the case file — without anything overwriting the observation it answers.",
 ];
 
@@ -272,6 +273,7 @@ scorersRoutes.get("/scorers", (c) => {
       reproduce: reproduce(base),
       re_observe: { ...RE_OBSERVE, surfaces: reObserve(base) },
       enables: ENABLES,
+      resell_on_account: `${base}/trade`,
       misuse: MISUSE_CLAUSE,
       named_integrations: integrations,
       license: "https://creativecommons.org/licenses/by/4.0/",
@@ -340,6 +342,7 @@ scorersRoutes.get("/scorers", (c) => {
       <section>
         <h2>What this enables</h2>
         <ul class="menu-desc">${ENABLES.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
+        <p class="menu-meta">Reselling rather than scoring: <a href="/trade">the trade counter</a> sells this shelf on account to marketplaces by signed webhook.</p>
         <p class="menu-desc"><strong>${escapeHtml(MISUSE_CLAUSE)}</strong></p>
       </section>
       <section>

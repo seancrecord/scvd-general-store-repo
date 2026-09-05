@@ -64,6 +64,7 @@ import {
   TRADE_WHAT_IT_IS_FOR,
   TRADE_WHAT_THIS_IS,
   TRADE_WHAT_THIS_IS_NOT,
+  TRADE_WHO_BUYS,
   TRADE_WHY,
   getTradePartner,
   tradeEligibleButUnshelved,
@@ -532,6 +533,7 @@ function roomJson(base: string) {
     what_you_can_use_it_for: TRADE_WHAT_IT_IS_FOR,
     what_this_is_not: TRADE_WHAT_THIS_IS_NOT,
     why_a_marketplace_would: TRADE_WHY,
+    who_buys_on_account: TRADE_WHO_BUYS,
     how_it_works: TRADE_HOW_IT_WORKS,
     price: {
       this_surface: "free",
@@ -623,6 +625,19 @@ function tradeJsonLd(base: string): string {
   });
 }
 
+/** The FAQ as a FAQPage node, from the same rows the page prints. Inert data. */
+function tradeFaqJsonLd(): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: TRADE_FAQ.map((entry) => ({
+      "@type": "Question",
+      name: entry.q,
+      acceptedAnswer: { "@type": "Answer", text: entry.a },
+    })),
+  });
+}
+
 function roomHtml(base: string): string {
   const why = TRADE_WHY.map(
     (entry) =>
@@ -670,6 +685,10 @@ function roomHtml(base: string): string {
   <ul>${why}</ul>
 </section>
 <section>
+  <h2>Who buys on account</h2>
+  <ul>${TRADE_WHO_BUYS.map((row) => `<li><strong>${escapeHtml(row.who)}.</strong> ${escapeHtml(row.why)}</li>`).join("")}</ul>
+</section>
+<section>
   <h2>How it works</h2>
   <ol>${steps}</ol>
 </section>
@@ -680,7 +699,7 @@ function roomHtml(base: string): string {
     <thead><tr><th>Item</th><th>Retail</th><th>Trade price</th><th>Store nets</th><th>Fields</th></tr></thead>
     <tbody>${shelf}</tbody>
   </table>
-  <p class="menu-desc">Not at the counter: the penny shelf (under $${TRADE_MIN_RETAIL_USD} retail cannot be split in sats), the human-queue shelf, stocked units, and the term watches. The front door sells all of them.</p>
+  <p class="menu-desc">Not at the counter: the penny shelf (under $${TRADE_MIN_RETAIL_USD} retail, a partner's share of it is less than a cent in any unit), the human-queue shelf, stocked units, and the term watches. The front door sells all of them.</p>
   <p class="menu-meta">List from it by machine: <a href="/api/trade/catalog"><code>/api/trade/catalog</code></a> carries every item's copy, specimen, artifact class and price at your share (<code>?account=</code>).</p>
 </section>
 <section>
@@ -770,6 +789,7 @@ ${example.how_to_compare}
     (entry) => `${entry.step}. **${entry.name}.** ${entry.what_happens} _Check it yourself: ${entry.what_you_can_check}_`,
   ).join("\n");
   const why = TRADE_WHY.map((entry) => `- **${entry.point}** ${entry.because}`).join("\n");
+  const whoBuys = TRADE_WHO_BUYS.map((entry) => `- **${entry.who}.** ${entry.why}`).join("\n");
   const sandbox = sandboxBlock(base);
   const dialect = dialectRow(TRADE_DIALECTS.canonical);
   return `# ${TRADE_COUNTER_NAME}
@@ -789,6 +809,9 @@ ${
 
 ## Why a marketplace would
 ${why}
+
+## Who buys on account
+${whoBuys}
 
 ## How it works
 ${steps}
@@ -852,7 +875,7 @@ tradeCounterRoutes.get("/trade", async (c) => {
         description: ROOM_DESCRIPTION,
         path: "/trade",
         markdownAlt: "/trade.md",
-        bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}`,
+        bodyHtml: `${roomHtml(base)}\n${tradeJsonLd(base)}\n${tradeFaqJsonLd()}`,
       }),
     );
   }
