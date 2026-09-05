@@ -29,6 +29,7 @@ import {
   corpusDatasetIdentityFields,
 } from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
+import { TRADE_PROPOSITION } from "@/store/trade-counter";
 
 /**
  * ORIGIN-TRIAL TOKENS FOR WEBMCP — ONE PER BROWSER VENDOR, and that is
@@ -1005,6 +1006,7 @@ ${webmcpOriginTrialTags()}
       <p>${COPY.finePrintVerify}</p>
       <p class="porch-rooms-label">Every room, all free to read</p>
       <p class="porch-rooms">${roomsFooterHtml()}</p>
+      <p class="porch-trade">Reselling to agents rather than buying for one? <a href="/trade">The Trade Counter</a> sells this shelf on account to marketplaces, tool directories, agent frameworks and payment layers: ${escapeHtml(TRADE_PROPOSITION)}</p>
       <p class="porch-est">${COPY.footerAddress} \u00B7 ${escapeHtml(OPERATED_BY)}</p>
     </footer>
 

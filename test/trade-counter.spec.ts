@@ -536,6 +536,10 @@ describe("the surfaces", () => {
     expect(scorers["resell_on_account"]).toBe(`${BASE}/trade`);
     const scorersPage = await (await SELF.fetch(`${BASE}/scorers`, { headers: { Accept: "text/html" } })).text();
     expect(scorersPage).toContain('href="/trade"');
+    // The storefront says who the counter is for beside the link, in the proposition's own words.
+    const storefront = await (await SELF.fetch(`${BASE}/`, { headers: { Accept: "text/html" } })).text();
+    expect(storefront).toContain('class="porch-trade"');
+    expect(storefront).toContain(TRADE_PROPOSITION.slice(0, 40));
   });
 });
 
@@ -544,6 +548,7 @@ describe("the surfaces", () => {
 /* ------------------------------------------------------------------ */
 
 import {
+  TRADE_PROPOSITION,
   TRADE_SANDBOX_ID,
   TRADE_SANDBOX_PROVIDER_KEY,
   TRADE_SANDBOX_SECRET,
