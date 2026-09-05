@@ -5,6 +5,7 @@ import { cachedPublicKeyHex } from "@/lib/signing";
 import { RETIRED_KEYS, retiredKeysFor } from "@/store/key-registry";
 import type { Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { findBitcoinAttestations } from "@/services/ots-proof";
 
 /**
  * THE ANCHOR LOG — an append-only hash chain over this store's key
@@ -279,6 +280,95 @@ export function registryKeyCount(): number {
 
 
 /**
+ * WHICH SIDE OF THE LINE EACH ENTRY SITS ON (2026-09-05).
+ *
+ * The log is anchored periodically, so at any moment it has two
+ * halves: entries at or below the newest Bitcoin-confirmed anchor,
+ * which the chain commits to (every entry's digest covers the digest
+ * before it, so one confirmed proof vouches for everything behind
+ * it), and entries above it, which are only this store's declaration
+ * until the next proof confirms. An outside reader on the x402
+ * receipt thread put it exactly: grading the log as a whole hides
+ * that line, and the verdict should say per entry which side it is
+ * on. So it does. Three states, never collapsed:
+ *
+ *   bitcoin_confirmed        the entry's OWN proof reached a block,
+ *                            and the height is read off the proof.
+ *   covered_by_later_anchor  its own proof is not confirmed, but a
+ *                            LATER entry's is, and the chain from
+ *                            that entry back to this one recomputes —
+ *                            so this entry existed by that block too.
+ *   declared_only            no confirmed proof at or after it. The
+ *                            entry is our word, and stays our word
+ *                            until a stamp lands.
+ *
+ * DERIVED, both halves: the height from the proof bytes, the coverage
+ * from the digests. A broken chain forfeits coverage — a later anchor
+ * vouches for earlier entries only through links that recompute — so
+ * on a broken chain every entry without its own confirmed proof is
+ * declared_only, whatever its neighbours say.
+ */
+export interface EntryExistence {
+  status: "bitcoin_confirmed" | "covered_by_later_anchor" | "declared_only";
+  /** Lowest Bitcoin block whose header attests this entry, directly or through a later anchor. */
+  block_height: number | null;
+  /** For covered_by_later_anchor: the sequence whose proof does the vouching. */
+  via_sequence?: number;
+}
+
+async function ownBlockHeight(record: AnchorRecord): Promise<number | null> {
+  if (record.ots?.status !== "complete" || !record.ots.proof_base64) {
+    return null;
+  }
+  let proof: Uint8Array;
+  try {
+    const raw = atob(record.ots.proof_base64);
+    proof = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i += 1) proof[i] = raw.charCodeAt(i);
+  } catch {
+    return null;
+  }
+  const attestations = await findBitcoinAttestations(proof, record.digest);
+  if (!attestations || attestations.length === 0) return null;
+  return Math.min(...attestations.map((entry) => entry.block_height));
+}
+
+export async function existenceOfEntries(
+  records: readonly AnchorRecord[],
+  chainIntact: boolean,
+): Promise<EntryExistence[]> {
+  const own = await Promise.all(records.map(ownBlockHeight));
+  const result: EntryExistence[] = new Array(records.length);
+  // Walk newest to oldest, carrying the tightest confirmed block seen
+  // so far; every entry behind a confirmed one is committed to by it.
+  let covering: { block_height: number; sequence: number } | null = null;
+  for (let i = records.length - 1; i >= 0; i -= 1) {
+    const record = records[i] as AnchorRecord;
+    const height = own[i] ?? null;
+    if (height !== null) {
+      // A complete proof with a readable height. An entry whose proof
+      // is marked complete but does not parse gets no height and no
+      // confirmed status: bookkeeping is not a block.
+      if (chainIntact && (!covering || height < covering.block_height)) {
+        covering = { block_height: height, sequence: record.snapshot.sequence };
+      }
+      result[i] = { status: "bitcoin_confirmed", block_height: height };
+      continue;
+    }
+    if (covering && chainIntact) {
+      result[i] = {
+        status: "covered_by_later_anchor",
+        block_height: covering.block_height,
+        via_sequence: covering.sequence,
+      };
+      continue;
+    }
+    result[i] = { status: "declared_only", block_height: null };
+  }
+  return result;
+}
+
+/**
  * THE PUBLISHED LOG AS DATA, extracted from the route on 2026-08-03
  * for the same reason as buildDidDocument: the conformance desk's
  * anchored-key-history check reads /.well-known/anchor-log.json off
@@ -293,6 +383,21 @@ export async function buildAnchorLogDocument(env: Env): Promise<object> {
   const problems = await verifyChain(records);
   const pending = records.filter((r) => r.ots?.status === "pending").length;
   const complete = records.filter((r) => r.ots?.status === "complete").length;
+  const existence = await existenceOfEntries(records, problems.length === 0);
+  const confirmedSequences = records
+    .filter((_, i) => existence[i]?.status === "bitcoin_confirmed")
+    .map((r) => r.snapshot.sequence);
+  const lastConfirmed =
+    confirmedSequences.length > 0 ? Math.max(...confirmedSequences) : null;
+  const newest = records[records.length - 1]?.snapshot.sequence ?? null;
+  const declaredOnlyFrom =
+    newest === null
+      ? null
+      : lastConfirmed === null
+        ? records[0]?.snapshot.sequence ?? null
+        : lastConfirmed < newest
+          ? lastConfirmed + 1
+          : null;
 
   return {
     what_this_is:
@@ -336,17 +441,30 @@ export async function buildAnchorLogDocument(env: Env): Promise<object> {
     ots_complete: complete,
     ots_pending: pending,
     /**
-     * WHAT OUR OWN STATUS WORD MEANS, because we do not parse the
+     * THE LINE ITSELF, at document level so nobody has to find it by
+     * reading every entry: the newest sequence whose own proof reached
+     * a block, and the first sequence above it that is still only our
+     * declaration. Null when nothing has confirmed (then everything
+     * is declared) or when the newest entry is itself confirmed.
+     */
+    last_confirmed_sequence: lastConfirmed,
+    declared_only_from_sequence: declaredOnlyFrom,
+    existed_by_note:
+      "Each entry carries existed_by. bitcoin_confirmed: its own proof reached the block named, height read off the proof bytes. covered_by_later_anchor: its own proof is not confirmed, but a later entry's is and the chain from there back to it recomputes, so it existed by that block too — one confirmed anchor vouches for everything behind it, and only behind it. declared_only: no confirmed proof at or after it; the entry is this store's word until a stamp lands, which is the same state a same-day rewrite would show. A broken chain forfeits coverage: then only an entry's own proof counts. The heights are parsed, not verified — run `ots verify` on the proof to settle any of them.",
+    /**
+     * WHAT OUR OWN STATUS WORD MEANS, because we do not VERIFY the
      * proofs we serve. "complete" means a calendar handed back an
      * upgraded timestamp when we asked; per the OpenTimestamps
      * protocol that happens once the commitment is in a confirmed
-     * block, but WE did not check a Bitcoin header — we deliberately
-     * do not ship a second OTS implementation to be wrong. Step 3
-     * above is the check that settles it, and this line exists so
-     * nobody reads our bookkeeping as our verification.
+     * block, but WE did not check a merkle path against a Bitcoin
+     * header — we deliberately do not ship a second OTS
+     * implementation to be wrong. Since 2026-09-05 the walker in
+     * ots-proof.ts reads the block HEIGHT the proof names, which is a
+     * parse, not a verification, and the line says so. Step 3 above
+     * is the check that settles it.
      */
     what_our_status_word_means:
-      "`complete` means a calendar returned an upgraded proof when we asked, not that this store verified it against Bitcoin. We do not parse OTS proofs — writing a second implementation to be wrong would be worse than serving the bytes. Run `ots verify` yourself; that is the fact, this is our bookkeeping.",
+      "`complete` means a calendar returned an upgraded proof when we asked, not that this store verified it against Bitcoin. Since 2026-09-05 we parse exactly enough of the proof to read the block height it names (existed_by.block_height) — reading a number off the bytes, not checking a merkle path against a header, which we deliberately do not do. Run `ots verify` yourself; that is the fact, this is our bookkeeping.",
     /**
      * Our own verification of our own chain, published for what it is
      * worth — which is: it catches accidents, not us. A reader who
@@ -357,11 +475,12 @@ export async function buildAnchorLogDocument(env: Env): Promise<object> {
     self_check: problems.length === 0 ? "no breaks found" : problems,
     scan_cap: ANCHOR_SCAN_CAP,
     truncated: records.length >= ANCHOR_SCAN_CAP,
-    entries: records.map((record) => ({
+    entries: records.map((record, i) => ({
       snapshot: record.snapshot,
       digest: record.digest,
       canonical_form: canonicalizeSnapshot(record.snapshot),
       ots: record.ots ?? { status: "not submitted yet" },
+      existed_by: existence[i],
     })),
     key_history: `${base}/.well-known/scvd-signing-key`,
     succession_protocol: `${base}/attestation`,
