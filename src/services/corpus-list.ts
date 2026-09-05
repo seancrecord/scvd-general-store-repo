@@ -70,6 +70,10 @@ export async function resolveRecord(
 export const CORPUS_SCAN_CAP = 1000;
 
 export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
+  // BOUNDED-READ-SAFE: the corpus is one record a week (takeCorpusSnapshot
+  // is idempotent per week), so a cap of 1,000 is nineteen years of
+  // snapshots; the flag cannot trip before 2045. Rule 52 wants that
+  // said here, per file, not assumed (test/bounded-read-honesty.spec.ts).
   const listed = await listKeys(env.COUNTERS, {
     prefix: KV_KEYS.corpusPrefix,
     cap: CORPUS_SCAN_CAP,
