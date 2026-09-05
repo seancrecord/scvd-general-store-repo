@@ -13,6 +13,7 @@ import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
 import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
+import { tradeMonthGauge } from "@/services/trade-counter";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 import { kvGet } from "@/lib/kv-retry";
@@ -110,6 +111,7 @@ storefrontRoutes.get("/", async (c) => {
     stats,
     firstDollar,
     board,
+    trade,
   ] = await Promise.all([
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
@@ -143,6 +145,13 @@ storefrontRoutes.get("/", async (c) => {
         budget_left_usd: Math.max(0, b.weekly_budget_usd - b.spent_this_week_usd),
       }))
       .catch(() => null),
+    /*
+     * The trade gauge: one counter get per live account (rule 52 is
+     * satisfied by the counter being the door's own, not a walk cut
+     * short). Fail-soft to null: a KV hiccup hides the gauge, never
+     * breaks the front page.
+     */
+    tradeMonthGauge(c.env).catch(() => null),
   ]);
   /*
    * A CSP arrives with the storefront's first first-party script
@@ -200,6 +209,7 @@ storefrontRoutes.get("/", async (c) => {
       ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
       firstDollar,
       board,
+      trade,
     }),
   );
 });

@@ -135,6 +135,13 @@ export interface StorefrontData {
    * copy already said — never a count that might be stale.
    */
   board?: { open_count: number; budget_left_usd: number } | null;
+  /**
+   * The trade counter's gauge: live deliveries on account this month
+   * across live accounts, from the door's own month counters. Null
+   * when the read failed; the gauge then says the counter is open and
+   * nothing more.
+   */
+  trade?: { month: string; deliveries: number; live_accounts: number } | null;
 }
 
 /**
@@ -153,6 +160,21 @@ function boardLineHtml(board: StorefrontData["board"]): string {
 }
 
 /** Canon 2026-07-24: the frame holds the first organic settlement, forever. */
+/**
+ * THE TRADE GAUGE: what the counter round the back did this month,
+ * in the same LED the record uses. Zero is a number, not an absence
+ * — a live account with no sale yet reads "0 this month", which is
+ * the truth and the pitch in one line. No live account reads as the
+ * door being open, which is also the truth.
+ */
+function tradeGaugeHtml(trade: StorefrontData["trade"]): string {
+  if (!trade || trade.live_accounts === 0) {
+    return `<span class="led"><a href="/trade">the counter is open</a> <span class="led-sep">\u00B7</span> marketplaces sell this shelf on account</span>`;
+  }
+  const accounts = `${trade.live_accounts} marketplace${trade.live_accounts === 1 ? "" : "s"}`;
+  return `<span class="led"><em class="led-num">${trade.deliveries}</em> on account this month <span class="led-sep">\u00B7</span> <a href="/trade">${accounts}</a> <span class="led-sep">\u00B7</span> <a href="/api/trade/ledger">the books</a></span>`;
+}
+
 function firstDollarHtml(firstDollar: FirstDollar | null | undefined): string {
   if (!firstDollar) {
     return `<span class="frame-line">It's waiting.</span>`;
@@ -933,6 +955,10 @@ ${webmcpOriginTrialTags()}
       <div class="gauge">
         <span class="gauge-label">The first dollar</span>
         ${firstDollarHtml(data.firstDollar)}
+      </div>
+      <div class="gauge">
+        <span class="gauge-label">${COPY.gaugeTrade}</span>
+        ${tradeGaugeHtml(data.trade)}
       </div>
     </div>
 
