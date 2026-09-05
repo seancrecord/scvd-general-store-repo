@@ -154,9 +154,11 @@ export function renderSimplePage(options: SimplePageOptions): string {
   // One origin-trial tag per browser vendor, derived from the same
   // list the storefront emits — a third trial is one entry there, not
   // an edit in two files that can disagree.
-  const webmcp = options.webmcp
-    ? `\n${webmcpOriginTrialTags()}\n  <script src="/webmcp.js" defer></script>`
-    : "";
+  // On every room since 2026-09-05 (arrival is discovery only where
+  // the door is); a room may still opt out with webmcp: false.
+  const webmcp = options.webmcp === false
+    ? ""
+    : `\n${webmcpOriginTrialTags()}\n  <script src="/webmcp.js" defer></script>`;
   const markdownAlt = options.markdownAlt
     ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
     : "";

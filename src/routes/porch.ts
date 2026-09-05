@@ -1,3 +1,4 @@
+import { webmcpOriginTrialTags } from "@/pages/storefront-page";
 import { goDeeperSection } from "@/store/go-deeper";
 import { Hono } from "hono";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
@@ -67,6 +68,8 @@ porchRoutes.get("/porch", async (c) => {
   <link rel="canonical" href="https://scvd.store/porch">
   <meta name="theme-color" content="#0b0a12">
   <style>${STOREFRONT_CSS}</style>
+  ${webmcpOriginTrialTags()}
+  <script src="/webmcp.js" defer></script>
 </head>
 <body class="night">
   <div class="stars"></div>

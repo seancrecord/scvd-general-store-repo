@@ -7,9 +7,16 @@ import type { HonoEnv } from "@/types";
  * THE WEBMCP DOOR (P7, unblocked 2026-08-27; design doc §10 and §12).
  *
  * WebMCP is the browser's own tool surface: a page registers tools on
- * `document.modelContext` and an agent RESIDENT IN THE VISITOR'S
+ * `document.modelContext` (or `navigator.modelContext`, the trial's
+ * older root, read second) and an agent RESIDENT IN THE VISITOR'S
  * BROWSER — Chrome/Edge origin trials, ChatGPT Desktop, Brave Leo —
- * discovers them by arriving. No server connection, no directory, no
+ * discovers them by arriving. Since 2026-09-05 the script rides EVERY
+ * room, not only the storefront and the till pages: arrival is
+ * discovery only if the door is wherever the agent arrives, and the
+ * script fence (lib/csp.ts) rides every HTML answer for the same
+ * reason. Handlers answer in the spec's shape — MCP's content array,
+ * one compact text block — take the host's AbortSignal, and pass it
+ * to the fetch so a cancelled call cancels the request. No server connection, no directory, no
  * auth beyond the browsing session itself. API shape read from the
  * spec repo first-hand (webmachinelearning/webmcp, 2026-08-27):
  * `document.modelContext.registerTool({name, description, inputSchema,
@@ -28,9 +35,10 @@ import type { HonoEnv } from "@/types";
  * keys, no wallet code, and asks the visitor for nothing. Rule 17's
  * property, on the store's second executable surface.
  *
- * CAN IT DRIFT? No. Names, descriptions and input schemas are the
- * MCP catalog's own objects, serialized into the script at request
- * time — one source for both doors, the MENU_ITEMS/ROOMS pattern.
+ * CAN IT DRIFT? No. Names, input schemas and annotations are the
+ * MCP catalog's own objects, and the description is the catalog
+ * row's own short form (McpTool.summary), serialized into the script
+ * at request time — one source for both doors, the MENU_ITEMS/ROOMS pattern.
  * A tool renamed or retired on the MCP door changes here on the same
  * deploy without anyone editing a list. The only hand-written part
  * is the endpoint map below, and webmcpUnhandledTools() lets a test
@@ -95,7 +103,9 @@ function registrations(): string {
       .filter((tool) => TOOL_ENDPOINTS[tool.name])
       .map((tool) => ({
         name: tool.name,
-        description: tool.description,
+        // The short, descriptive form (McpTool.summary says why); a
+        // tool without one is refused by test, never served long.
+        description: tool.summary ?? tool.description,
         inputSchema: tool.inputSchema,
         annotations: tool.annotations,
         endpoint: TOOL_ENDPOINTS[tool.name],
@@ -121,7 +131,12 @@ export function webmcpScript(): string {
  */
 (function () {
   "use strict";
-  var mc = typeof document !== "undefined" && document.modelContext;
+  // Two-headed detection, in spec order: document.modelContext is the
+  // surface the spec settled on; navigator.modelContext is what the
+  // origin trial shipped and Chrome 150 deprecated. Read both, survive
+  // neither (which is nearly every browser there is).
+  var mc = (typeof document !== "undefined" && document.modelContext) ||
+    (typeof navigator !== "undefined" && navigator.modelContext);
   if (!mc || typeof mc.registerTool !== "function") return;
 
   var TOOLS = ${registrations()};
@@ -133,7 +148,16 @@ export function webmcpScript(): string {
     return path + (path.indexOf("?") === -1 ? "?" : "&") + "src=webmcp";
   }
 
-  function call(endpoint, args) {
+  // The handler's answer, in the shape the spec fixes: MCP's own
+  // content array, the endpoint's JSON as one compact text block, and
+  // the same object under structuredContent for a host that reads it.
+  function answer(payload) {
+    return {
+      content: [{ type: "text", text: JSON.stringify(payload) }],
+      structuredContent: payload,
+    };
+  }
+  function call(endpoint, args, signal) {
     // Every {placeholder} in the door's path is the argument of that
     // name, URL-encoded; a GET door carries its input in the path.
     var path = endpoint.path.replace(/\{([a-z_]+)\}/g, function (_m, name) {
@@ -144,13 +168,15 @@ export function webmcpScript(): string {
       init.headers = { "Content-Type": "application/json" };
       init.body = JSON.stringify(args || {});
     }
+    // A cancelled call aborts the request too, not only the promise.
+    if (signal) init.signal = signal;
     return fetch(tag(path), init).then(function (response) {
       var type = response.headers.get("Content-Type") || "";
       if (type.indexOf("json") !== -1) {
-        return response.json();
+        return response.json().then(answer);
       }
       return response.text().then(function (text) {
-        return { guide: text };
+        return answer({ guide: text });
       });
     });
   }
@@ -161,8 +187,12 @@ export function webmcpScript(): string {
       description: tool.description,
       inputSchema: tool.inputSchema,
       annotations: tool.annotations,
-      execute: function (args) {
-        return call(tool.endpoint, args || {});
+      // (input, { signal }): the second argument carries the host's
+      // AbortSignal; an already-aborted call never touches the network.
+      execute: function (args, opts) {
+        var signal = opts && opts.signal ? opts.signal : undefined;
+        if (signal && typeof signal.throwIfAborted === "function") signal.throwIfAborted();
+        return call(tool.endpoint, args || {}, signal);
       },
     };
     Promise.resolve()

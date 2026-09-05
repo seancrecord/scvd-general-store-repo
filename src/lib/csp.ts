@@ -39,6 +39,9 @@
  * header is the one the store is actually served from.
  */
 
+import type { MiddlewareHandler } from "hono";
+import type { HonoEnv } from "@/types";
+
 /** The chat hosts that may frame a connected server's pages. */
 export const FRAME_ANCESTOR_HOSTS: readonly string[] = [
   "https://chatgpt.com",
@@ -55,3 +58,22 @@ export function firstPartyScriptCsp(base: string): string {
     `frame-ancestors 'self' ${FRAME_ANCESTOR_HOSTS.join(" ")}`,
   ].join("; ");
 }
+
+/**
+ * THE FENCE ON EVERY PAGE (2026-09-05). Until now each route that
+ * shipped a script set the header itself, and the four that did were
+ * the four that carried /webmcp.js. With the script on every room the
+ * condition follows it: any HTML answer outside /admin carries the
+ * fence, set here once, after the handler, only where a route has not
+ * already set one. No public page carries an inline executable script
+ * (the JSON-LD and JSON-island blocks are data), so 'self' breaks
+ * nothing and fences everything.
+ */
+export const scriptFence: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  await next();
+  if (c.req.path.startsWith("/admin")) return;
+  if (c.res.headers.has("Content-Security-Policy")) return;
+  const type = c.res.headers.get("Content-Type") ?? "";
+  if (!type.toLowerCase().startsWith("text/html")) return;
+  c.res.headers.set("Content-Security-Policy", firstPartyScriptCsp(c.env.STORE_BASE_URL));
+};

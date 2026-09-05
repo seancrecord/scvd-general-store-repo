@@ -155,6 +155,7 @@ import {
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
 import { conditionalGet } from "@/lib/conditional-get";
+import { scriptFence } from "@/lib/csp";
 import { discoveryCors } from "@/lib/cors";
 import type { Env, HonoEnv } from "@/types";
 
@@ -341,6 +342,8 @@ app.use("*", discoveryCors);
  * which is the worst possible way for a cache to behave.
  */
 app.use("*", conditionalGet);
+// The script fence on every HTML answer (lib/csp.ts says why).
+app.use("*", scriptFence);
 
 // house tradition
 app.use("*", async (c, next) => {

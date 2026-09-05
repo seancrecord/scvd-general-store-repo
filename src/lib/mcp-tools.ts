@@ -46,6 +46,22 @@ export interface McpToolAnnotations {
 export interface McpTool {
   name: string;
   /**
+   * THE SHORT FORM, FOR THE BROWSER (2026-09-05). The MCP description
+   * is long on purpose — it names the audience, the instrument's
+   * limits and what the tool is NOT — and a WebMCP scan (Ora,
+   * 2026-09-01, Chrome 148) read exactly that as two defects: over
+   * Chrome's 500-character guidance, and "instruction-shaped": text
+   * that addresses the agent (call this, hand that to your human)
+   * rather than describing the tool. A browser agent's registry is a
+   * different room from an MCP handshake, so the browser surface
+   * serves this field: one descriptive sentence or two, what the tool
+   * does and what it returns, under 500 characters, never a second
+   * person and never an instruction. One catalog object, two lengths;
+   * a test holds every browser tool to carrying one and every summary
+   * to the shape. Not a second list — a field on the same row.
+   */
+  summary?: string;
+  /**
    * The spec's own display name (MCP 2025-06-18 promoted `title` to a
    * top-level Tool field; `annotations.title` is the older spelling it
    * supersedes). Filled at the `underContract` chokepoint FROM
@@ -732,6 +748,8 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
 const FREE_TOOLS: McpTool[] = [
   {
     name: "read_store_guide",
+    summary:
+      "Returns the store's guide as plain text: the catalog with prices, how x402 payment works here, the free instruments, and the house promises. Free; no purchase is made and nothing is stored.",
     reads: "made_here",
     description:
       "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide. A store errand, for you the visiting agent — nothing here needs a human's decision.",
@@ -839,6 +857,8 @@ const FREE_TOOLS: McpTool[] = [
      * and the MCP door cannot be used to walk around the rate limit.
      */
     name: "preflight_endpoint",
+    summary:
+      "Probes one x402 endpoint unpaid and returns whether it serves a well-formed x402 v2 payment challenge right now: the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. A shape check at one moment, not an uptime or delivery claim. Free and rate limited; the ceiling travels with the result.",
     reads: "subject_fetch",
     description:
       "x402 endpoint preflight, free. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
@@ -886,6 +906,8 @@ const FREE_TOOLS: McpTool[] = [
      * limiter, one law, plus a read of our own signed chain.
      */
     name: "look_at_door",
+    summary:
+      "Returns what the store holds about one x402 door: one unpaid probe now, folded with the signed weekly record of that host — rounds probed of rounds since first seen, the passport tier with its fraction, the last probed round's failed checks, and whether the door answers now the way the last signed round saw it. Not a score or a rank; counts carry their denominators. Free.",
     reads: "subject_fetch",
     description:
       "What this store holds about an x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, same budget) folded with what the signed chain holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. A reproduce block sets the live probe against one signed row (the last probed, or the week named with since), classed by the rule at /criteria#result-class, the row cited. Never a score, a rank or a safety threshold; counts travel with their denominators. A host the chain never met comes back as never met. Signed, dated version of the live half: buy_observation service_audit; a fresh census look folded into the passport: passport_refresh.",
@@ -935,6 +957,8 @@ const FREE_TOOLS: McpTool[] = [
      * already is rather than somewhere it would have to know to look.
      */
     name: "check_before_you_pay",
+    summary:
+      "Probes one x402 door unpaid and replays the stock @x402/core client selection over the accepts it returned, under the caller's own profile. Returns which accept a stock client would sign — network, asset, amount, signing window — or that it would refuse locally before signing, with the stage and the setting that decided it. Free; nothing is signed and nothing is paid.",
     reads: "subject_fetch",
     description:
       "For a buyer whose client has its own rules, to learn before signing whether this door meets them. Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
@@ -1008,6 +1032,8 @@ const FREE_TOOLS: McpTool[] = [
      * this tool adds nothing but reach.
      */
     name: "check_conformance",
+    summary:
+      "Verifies any issuer's signed x402 offer or receipt (a compact JWS): structure, the signature against the issuer's did:web key, and liveness. Returns a verdict with every check named. With public_key_hex supplied the check runs fully offline. Free; the method is MIT-licensed and identical to the published verifier.",
     reads: "subject_fetch",
     description:
       "x402 receipt verification and signed-offer verification, free, against the issuer's published key. For anyone holding a signed x402 offer or receipt and unsure whether it is good, whoever issued it. Check any issuer's x402 signed offer or receipt — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
@@ -1059,6 +1085,8 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     name: "verify_artifact",
+    summary:
+      "Verifies a certificate, visit stamp or context anchor by its id against the store's own ed25519 key. Returns valid (true or false), the artifact kind, and a one-line note. Free and unlimited, for artifacts anyone bought or none.",
     reads: "our_books",
     description:
       "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued; another issuer's signed offer or receipt goes to check_conformance. An evidence instrument: the answer is written to be handed to the human behind you. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
@@ -1096,6 +1124,8 @@ const FREE_TOOLS: McpTool[] = [
      * derivation (lib/order-status), so the two doors cannot disagree.
      */
     name: "check_order",
+    summary:
+      "Returns the current state of a human-queue order by its order_id: status (queued or completed), the promised window in hours, and the deliverable once completed. The same record GET /api/order/{order_id} serves. Free; past its window the order carries a window_breached block stating what is owed.",
     reads: "our_books",
     description:
       "Check a human-queue order by its order_id: status (queued or completed), the promised window, and once completed the deliverable itself — the poll half of the store's async-job pattern, the same record GET /api/order/{order_id} serves, for an agent holding only this transport. Free, no payment, no account; poll no faster than once a minute. Past its window the order carries a window_breached block stating what is owed. NOT a purchase; instant items arrive in the buy result. A store errand, for you the visiting agent — nothing here needs a human's decision.",
