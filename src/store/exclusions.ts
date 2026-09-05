@@ -92,6 +92,14 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 10,
     crawler_names: 65,
   },
+  {
+    date: "2026-09-05",
+    what_changed:
+      "A dedicated field wallet (0x4040…017F) was listed as house the day it was funded and before its first signature. It is the wallet behind FIELD_WALLET_KEY from today: launch checks, bounty payouts, store-credit cash-outs and the paid x402scan directory walk sign from it, so the most the store can ever lose from the key is that wallet's own balance. It takes that role over from CV's wallet, which stays listed for his live buy tests.",
+    effect: "None on any published number: listed before its first settle, which is the rule.",
+    house_wallets: 11,
+    crawler_names: 65,
+  },
 ];
 
 export interface NamedExclusions {
