@@ -94,6 +94,20 @@ describe("the three words", () => {
     expect(store.hosts["declares.example"]?.doors).toEqual(["https://declares.example/api/pay", "https://declares.example/api/two"]);
   });
 
+  it("doors, while this week's walk is still reading the feed: on record, roster not frozen yet", async () => {
+    await reset("declares.example");
+    await testEnv.COUNTERS.put(
+      KV_KEYS.longWalkState,
+      JSON.stringify({ version: 1, week: currentWeekKey(), started_at: new Date().toISOString(), listed_resources: 20000, coverage_suspect: false, feed: { resume: { offset: 20000, rows_read: 20000 }, passes: 1, declared_total: 20050 }, leaderboard: null, claims: {}, roster: [], cursor: 0, results: [], batches: 0 }),
+    );
+    stubFiles({ "https://declares.example/.well-known/x402": { resources: ["https://declares.example/api/pay"] } });
+    const body = (await (await post({ host: "declares.example" })).json()) as Record<string, unknown>;
+    expect(body["walk"]).toMatchObject({ this_week: "roster-not-frozen-yet" });
+    expect(String((body["walk"] as Record<string, unknown>)["then"])).toContain("still reading");
+    const state = (await readLongWalk(testEnv))!;
+    expect(state.roster).toEqual([]);
+  });
+
   it("doors, with a walk open this week: the door joins the roster now, and again is already there", async () => {
     await reset("declares.example");
     await testEnv.COUNTERS.put(
