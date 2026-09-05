@@ -1465,6 +1465,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (till.settled.network) {
       settlementSignals.network = till.settled.network;
     }
+    if (till.settled.transaction) {
+      settlementSignals.transaction = till.settled.transaction;
+    }
     // The payer, from the facilitator if it returned one and from the
     // signed authorization if it did not. THIS MATTERS MORE THAN IT
     // LOOKS: the house flag is decided by wallet address, so a settle

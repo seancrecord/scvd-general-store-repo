@@ -30,6 +30,12 @@ export interface FacilitatorMockState {
   verifyNetworkFailures: number;
   /** Every verify call, answers and throws alike. */
   verifyCalls: number;
+  /**
+   * A fixed answer for the next verify calls, status and body as
+   * given (2026-09-04): a verdict wearing a 400, or a bare 401 with
+   * no verdict at all — the two shapes the classifier had backwards.
+   */
+  verifyAnswer?: { status: number; body: unknown };
   /** The facilitator's own words for a failed verify; the default is the funds case. */
   verifyInvalidReason?: string;
   /**
@@ -184,6 +190,9 @@ export function installFacilitatorMock(): FacilitatorMockState {
         // No status, no body: the far end never spoke. This is what
         // the runtime raises for DNS, connect and reset failures.
         throw new TypeError("Network connection lost.");
+      }
+      if (state.verifyAnswer) {
+        return Response.json(state.verifyAnswer.body, { status: state.verifyAnswer.status });
       }
       if (state.verifyShouldFail) {
         return Response.json({

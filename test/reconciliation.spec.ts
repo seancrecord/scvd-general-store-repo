@@ -8,7 +8,9 @@ import {
   reconcileSettles,
   recordSettlement,
 } from "@/lib/metrics";
-import type { Env } from "@/types";
+import type { Env, PayerRecord } from "@/types";
+import { mintCertificate } from "@/services/certificates";
+import { backfillPayerSettlesFromCertificates } from "@/services/payer-repair";
 
 const testEnv = env as unknown as Env;
 
@@ -82,5 +84,61 @@ describe("the reconciliation", () => {
     await testEnv.COUNTERS.put(key, String(current));
     const restored = await reconcileSettles(testEnv);
     expect(restored.unexplained).toBe(before.unexplained);
+  });
+});
+
+/**
+ * THE LOST INCREMENT (the keeper's ruling, 2026-09-04). The payer row
+ * is a read-modify-write on one KV key per wallet; two settles from
+ * one wallet close together read the same count and both write count
+ * plus one, and the sweep paged "one settle unexplained" on CV's Base
+ * batch. The per-settle record cannot lose one, and the reconciliation
+ * takes the larger of row and records per wallet.
+ */
+describe("a lost row increment is not a books defect", () => {
+  const wallet = "0xlostincrement00000000000000000000000001";
+
+  it("counts the settle records when the row fell behind", async () => {
+    const before = await reconcileSettles(testEnv);
+    for (const transaction of ["0xaaa1", "0xaaa2", "0xaaa3"]) {
+      await recordSettlement(testEnv, "/api/buy/hello", {
+        paidUsdc: 0.5,
+        minimumUsdc: 0.5,
+        payer: wallet,
+        transaction,
+      });
+    }
+    // The race, replayed by hand: the row lost one of the three.
+    const key = KV_KEYS.payer(wallet);
+    const row = JSON.parse((await testEnv.COUNTERS.get(key)) ?? "{}") as PayerRecord;
+    await testEnv.COUNTERS.put(key, JSON.stringify({ ...row, purchases: row.purchases - 1 }));
+
+    const after = await reconcileSettles(testEnv);
+    expect(after.counter_settles).toBe(before.counter_settles + 3);
+    expect(after.payer_purchases).toBe(before.payer_purchases + 3);
+    expect(after.unexplained).toBe(before.unexplained);
+    expect(after.settle_records).toBeGreaterThanOrEqual(3);
+  });
+
+  it("backfills a record from a certificate for a settle older than the records, and raises the short row", async () => {
+    const older = "0xbackfilled0000000000000000000000000002";
+    // A settle from before the records existed: row only, one short.
+    await testEnv.COUNTERS.put(
+      KV_KEYS.payer(older),
+      JSON.stringify({ address: older, first_seen: "2026-08-01T00:00:00.000Z", last_seen: "2026-08-01T00:00:00.000Z", purchases: 1 }),
+    );
+    await mintCertificate(testEnv, { itemId: "hello", payer: older, settlementTx: "0xbf01" });
+    await mintCertificate(testEnv, { itemId: "hello", payer: older, settlementTx: "0xbf02" });
+
+    const first = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(first.records_written).toBeGreaterThanOrEqual(2);
+    expect(first.rows_corrected).toContain(older);
+    const row = JSON.parse((await testEnv.COUNTERS.get(KV_KEYS.payer(older))) ?? "{}") as PayerRecord;
+    expect(row.purchases).toBe(2);
+
+    // Idempotent: a second pass writes nothing and corrects nothing.
+    const second = await backfillPayerSettlesFromCertificates(testEnv);
+    expect(second.records_written).toBe(0);
+    expect(second.rows_corrected).not.toContain(older);
   });
 });

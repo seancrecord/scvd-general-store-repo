@@ -26,6 +26,30 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **CV's four rounds, 2026-09-04, "give me my decisions with
+  drafts."** Six on the desk, ruled the same evening. RULED
+  1: payer purchases are derived — one lossless record per
+  settle (`payer_settle:<wallet>:<tx>`, never read-modify-
+  written), the payer row kept as the cache, the
+  reconciliation taking the larger of the two per wallet,
+  and the certificates as the backfill for history. A lost
+  increment on a shared KV key is not a books defect; a
+  certificate without a settle, or a settle without a
+  certificate, still is. PRESS once deployed: `POST
+  /admin/repair/payer-settles`, then read the settle
+  reconciliation — the one unexplained settle from CV's
+  Base batch should close. RULED 2: the verify-failure
+  classifier fixed both ways — a facilitator verdict wearing
+  a 4xx books under the facilitator's own reason, and a bare
+  401/403/429 books as `upstream_auth`, the emergency.
+  RULED 3: the two void certificates (cert_a7qcdbh98v,
+  cert_6fbvtpdwgu) get a corrections entry that says why they
+  existed, and stay on the wall. INKED 4: the three probing
+  notes' refused ending, "We did not knock", wording as
+  drafted. RULED 5: aura_walk carries five slots a week, not
+  one. RULED 6: PR and merge once the changes are green.
+  LOOK after deploy: have CV rerun the anchor, the sheaf and
+  the statement over MCP as the acceptance.
 - **Reproduce, cite, seats, three grips, 2026-09-04, "do it
   all."** The look takes `since` and answers the class of
   result by the rule at `/criteria#result-class`; every row

@@ -639,6 +639,13 @@ export interface SettlementSignals extends EventSignals {
    * guess, same rule as an absent payer.
    */
   network?: string;
+  /**
+   * The settlement transaction, when the facilitator named one. It
+   * keys the per-settle payer record (KV_KEYS.payerSettle), which is
+   * the lossless side of the reconciliation; a settle without one is
+   * recorded under a random id so it still counts once.
+   */
+  transaction?: string;
 }
 
 /**
@@ -827,6 +834,7 @@ export async function recordSettlement(
   pending.push(raiseFirstOutsideSignature(env, event, "settled"));
   if (signals.payer) {
     pending.push(recordPayerSeen(env, signals.payer));
+    pending.push(recordPayerSettle(env, signals.payer, signals.transaction, event.item, event.at));
   } else {
     // Money moved and no wallet came back with it. Counted, so the gap
     // between settle counters and payer rows stays explainable instead
@@ -834,6 +842,28 @@ export async function recordSettlement(
     pending.push(bump(env, KV_KEYS.metric(month, "nopayer", event.item)));
   }
   await Promise.all(pending);
+}
+
+/**
+ * The per-settle record: one idempotent put, no read, so a burst from
+ * one wallet cannot lose a purchase the way the row below can. The row
+ * stays as the cache the desks read; reconcileSettles takes the larger
+ * of the two per wallet, and the certificate backfill (payer-repair.ts)
+ * seeds history so old wallets are not short from before this existed.
+ */
+async function recordPayerSettle(
+  env: Env,
+  address: string,
+  transaction: string | undefined,
+  item: string,
+  at: string,
+): Promise<void> {
+  const id = transaction ?? `nonce_${Math.random().toString(36).slice(2, 12)}`;
+  await kvPut(
+    env.COUNTERS,
+    KV_KEYS.payerSettle(address, id),
+    JSON.stringify({ item, at, ...(transaction ? { transaction } : {}) }),
+  );
 }
 
 async function recordPayerSeen(env: Env, address: string): Promise<void> {
@@ -971,7 +1001,16 @@ export const FOUNDING_SETTLES_WITHOUT_PAYER_ROW = 1;
  */
 export interface SettleReconciliation {
   counter_settles: number;
+  /**
+   * Per wallet, the LARGER of the payer row's counter and the number of
+   * per-settle records under it (2026-09-04). The row can only ever
+   * under-count — a lost read-modify-write drops an increment and
+   * nothing ever applies one twice — and the records cannot lose one,
+   * so the larger of the two is the floor-corrected truth.
+   */
   payer_purchases: number;
+  /** The per-settle records counted, all wallets. */
+  settle_records: number;
   founding: number;
   /** Settles that arrived with no payer address to attribute them to. */
   unattributed: number;
@@ -1005,10 +1044,18 @@ const RECONCILIATION_BLIND_SPOT =
 export async function reconcileSettles(
   env: Env,
 ): Promise<SettleReconciliation> {
-  const [metrics, payerKeys] = await Promise.all([
+  const [metrics, payerKeys, settleKeys] = await Promise.all([
     listKeys(env.COUNTERS, { prefix: "metric:", cap: METRIC_KEY_CAP }),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_KEY_CAP }),
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: PAYER_KEY_CAP }),
   ]);
+  // Settle records per wallet: the key is payer_settle:<address>:<tx>,
+  // and the address is canonical, so the prefix walk needs no reads.
+  const settlesByWallet = new Map<string, number>();
+  for (const name of settleKeys.names) {
+    const wallet = name.slice(KV_KEYS.payerSettlePrefix().length).split(":")[0] ?? "";
+    settlesByWallet.set(wallet, (settlesByWallet.get(wallet) ?? 0) + 1);
+  }
   const [metricValues, payerValues] = await Promise.all([
     bulkGetText(
       env.COUNTERS,
@@ -1037,13 +1084,24 @@ export async function reconcileSettles(
   }
 
   let payerPurchases = 0;
+  const walletsWithRows = new Set<string>();
   for (const record of payerValues.values()) {
-    if (record) payerPurchases += record.purchases;
+    if (!record) continue;
+    const wallet = canonicalAddress(record.address);
+    walletsWithRows.add(wallet);
+    payerPurchases += Math.max(record.purchases, settlesByWallet.get(wallet) ?? 0);
   }
+  // A wallet with settle records and no row yet (the row write lost
+  // outright) still counts its settles.
+  for (const [wallet, count] of settlesByWallet) {
+    if (!walletsWithRows.has(wallet)) payerPurchases += count;
+  }
+  const settleRecords = [...settlesByWallet.values()].reduce((sum, n) => sum + n, 0);
 
   return {
     counter_settles: counterSettles,
     payer_purchases: payerPurchases,
+    settle_records: settleRecords,
     founding: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     unattributed,
     unexplained:

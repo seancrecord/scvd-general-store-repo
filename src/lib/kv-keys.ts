@@ -447,6 +447,18 @@ export const KV_KEYS = {
   // recordPayerSeen and the payer-case repair.
   payer: (address: string): string => `payer:${canonicalAddress(address)}`,
   payerPrefix: "payer:",
+  /**
+   * ONE KEY PER SETTLE, NEVER READ-MODIFY-WRITTEN (the keeper's ruling
+   * of 2026-09-04). The payer row's `purchases` is a counter on one
+   * key per wallet, and two settles from one wallet close together
+   * lose an increment — KV is last-write-wins with no compare-and-swap.
+   * This key is written once per settlement, idempotently, so counting
+   * the keys under a wallet's prefix cannot lose one.
+   */
+  payerSettle: (address: string, transaction: string): string =>
+    `payer_settle:${canonicalAddress(address)}:${transaction.toLowerCase()}`,
+  payerSettlePrefix: (address?: string): string =>
+    address ? `payer_settle:${canonicalAddress(address)}:` : "payer_settle:",
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,

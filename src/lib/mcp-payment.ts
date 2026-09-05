@@ -512,6 +512,9 @@ export async function runMcpPayment(
   if (settledFacts.network) {
     settlementSignals.network = settledFacts.network;
   }
+  if (settledFacts.transaction) {
+    settlementSignals.transaction = settledFacts.transaction;
+  }
   // Same fallback as the HTTP door: a settle with no payer would book
   // as organic, and the house flag is decided by wallet.
   const payer = settledFacts.payer ?? payerFromPaymentHeader(paymentHeader);

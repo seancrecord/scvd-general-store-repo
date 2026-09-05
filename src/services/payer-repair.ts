@@ -90,3 +90,75 @@ export async function repairPayerCase(env: Env): Promise<PayerRepairResult> {
   }
   return result;
 }
+
+export interface PayerSettleBackfill {
+  certificates_read: number;
+  /** Settle records written this pass; a second pass writes none. */
+  records_written: number;
+  /** Payer rows raised to the record count where the row was short. */
+  rows_corrected: string[];
+}
+
+/**
+ * THE BACKFILL FROM CERTIFICATES (the keeper's ruling, 2026-09-04):
+ * the per-settle records (KV_KEYS.payerSettle) exist from the day
+ * they shipped, and every settle before that is only on the payer
+ * row, which is the counter that loses increments. Certificates carry
+ * the payer and the settlement transaction for every /api/buy sale,
+ * so they seed a record for each — idempotent, one put per cert, no
+ * reads — and a row that is short against its records is raised to
+ * them. The penny pages mint no certificate; their settles stay on
+ * the row, which is why the reconciliation takes the larger of the
+ * two rather than the records alone.
+ */
+export async function backfillPayerSettlesFromCertificates(
+  env: Env,
+): Promise<PayerSettleBackfill> {
+  const certKeys = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.certPrefix,
+    cap: SCAN_CAP,
+  });
+  const certs = await bulkGetJson<CertificateRecord>(env.PATRONS, certKeys.names);
+  const existing = new Set(
+    (await listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: SCAN_CAP })).names,
+  );
+  const result: PayerSettleBackfill = {
+    certificates_read: certKeys.names.length,
+    records_written: 0,
+    rows_corrected: [],
+  };
+  const perWallet = new Map<string, number>();
+  for (const record of certs.values()) {
+    const cert = record?.certificate;
+    const payer = cert?.payer;
+    const transaction = cert?.settlement_tx;
+    if (!payer || !transaction) continue;
+    const wallet = canonicalAddress(payer);
+    perWallet.set(wallet, (perWallet.get(wallet) ?? 0) + 1);
+    const key = KV_KEYS.payerSettle(payer, transaction);
+    if (existing.has(key)) continue;
+    await kvPut(
+      env.COUNTERS,
+      key,
+      JSON.stringify({ item: cert.item, at: cert.date, transaction, source: "certificate" }),
+    );
+    existing.add(key);
+    result.records_written += 1;
+  }
+  for (const name of existing) {
+    const wallet = name.slice(KV_KEYS.payerSettlePrefix().length).split(":")[0] ?? "";
+    if (!perWallet.has(wallet)) perWallet.set(wallet, 0);
+  }
+  for (const wallet of perWallet.keys()) {
+    const records = [...existing].filter((name) =>
+      name.startsWith(KV_KEYS.payerSettlePrefix(wallet)),
+    ).length;
+    const key = KV_KEYS.payer(wallet);
+    const row = await kvGetJson<PayerRecord>(env.COUNTERS, key, "json");
+    if (row && row.purchases < records) {
+      await kvPut(env.COUNTERS, key, JSON.stringify({ ...row, purchases: records }));
+      result.rows_corrected.push(wallet);
+    }
+  }
+  return result;
+}

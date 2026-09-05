@@ -60,7 +60,9 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     reads: "made_here",
     fulfillment: "human_queue",
     sla_hours: 168,
-    weekly_inventory: 1,
+    // Five a week, the keeper's ruling of 2026-09-04 ("at least 5"):
+    // one held the whole shelf and every stranger met a 409.
+    weekly_inventory: 5,
     waitlist: true,
     description: `Your x402 door shopped cold, the way this store walks its own: no prior context, no memory of you, a different entry point each pass (${AURA_WALK_ENTRY_POINTS.length} of them, from the raw HTTP door to the installed skill), and every point where the model had to guess, retry or dig written down. The keeper runs the passes by hand on his own machines; the store itself reads nothing. The completed order carries the report — per entry point, ${AURA_WALK_MEASURES.map((m) => m.charAt(0).toLowerCase() + m.slice(1)).join("; ")} — with every transcript attached verbatim and the model named on each. ${AURA_WALK_MODELS_LINE}. Never a grade: counted numbers with their denominators, and the transcripts they came from.`,
     note_402:

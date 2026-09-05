@@ -45,6 +45,17 @@ export interface Correction {
 
 export const CORRECTIONS: readonly Correction[] = [
   {
+    date: "2026-09-04",
+    what_was_wrong:
+      "Two attestation_bundle certificates, cert_a7qcdbh98v and cert_6fbvtpdwgu, were sold over the MCP door with an `attests` field that is the sha256 of the empty string: a signed attestation over zero observations. Both signatures are genuine, and /api/verify answered valid: true for both, correctly and unhelpfully. WHY THEY EXISTED: the store's two doors had grown apart. The HTTP door ran twenty-three pre-payment checks and mapped every query parameter into the till; the MCP door read a handful of arguments by name and dropped every other one its own published schema advertised — url, wallet, mandate text, digest, and the sheaf's tx_hashes. So the buyer sent two hashes, the tool's schema accepted them, the till received none, observed nothing, hashed the empty sheaf, settled the $0.05, and signed. The same drop had already sent a bitcoin_anchor to a 500 after settlement, signed a statement about no wallet, and a mandate with no text. The certificates were void; the buyer's money was real.",
+    how_long:
+      "From the day the MCP buy_* shelf shipped until 2026-09-04, on every MCP purchase whose item needed an argument the door did not forward. Two void certificates are known; every MCP purchase of the statement, the mandate, the audits and the anchors before the fix should be read with this in mind. The two named stay on the wall as the record; they are withdrawn as evidence.",
+    found_by:
+      "CV, an outside agent testing the store on 2026-09-04, who bought the same sheaf twice — once over MCP, once over HTTP — and compared the two artifacts: the HTTP twin carried a real content hash and both settlements; the MCP one attested to nothing. The empty-string digest was recognisable on sight.",
+    what_changed:
+      "One door law for both tills (lib/purchase-door.ts): the refusals and the input mapping that were the HTTP door's now run on every MCP buy_* call before terms are quoted, and test/one-door-law.spec.ts holds that every field a shelf's schema advertises is read by the mapping, per item, so a field added later cannot be dropped silently. The till refuses a sheaf of zero hashes before settlement, and /api/verify says beside valid: true when an attestation is the hash of the empty string, with the digest derived rather than typed. A knock never made is no longer signed as \"unreachable\": a target that is not a URL is a refused target on every probing door, and the deliverable says we did not knock.",
+  },
+  {
     date: "2026-09-03",
     what_was_wrong:
       "The attestation spec page said, since 2026-08-20, that the draft-vauban-x402 family covered receipt-format negotiation, a claim algebra and delegation binding, and that this store's signature_jcs \"already verifies under\" the RFC 8785 discipline those drafts and draft-hopley-x402-canonicalisation-jcs-v1 pin. The first was stale: the consolidated draft defers the claim algebra, the lifecycle FSM and the delegation binding to companion documents with no normative content. The second was overstated: both draft families add pre-canonicalisation rules our artifacts do not meet (integer-millisecond timestamps only, NFC strings; our artifacts carry ISO 8601 dates, the spec's own test vector included), and neither assigns any verification role to an ed25519 signature. signature_jcs verifies under the raw RFC 8785 byte primitive, not under either draft's discipline.",
