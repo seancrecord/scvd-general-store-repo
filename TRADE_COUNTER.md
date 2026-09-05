@@ -1,6 +1,6 @@
 # The Trade Counter — the shelf, sold on account to marketplaces
 
-Opened 2026-09-03. Status: BUILT, first account in TEST. The keeper's
+Opened 2026-09-03. Status: BUILT, first account LIVE (2026-09-05). The keeper's
 greenlight, verbatim: "make sure we get good margin and lets build it
 out, make sure we have good marketable copy, we sell as a product,
 nothing to do with hal we just take his need or problem and build it
@@ -251,7 +251,7 @@ observations. `/api/trade/contract` prints
 
 ## The first account: Hal's answers (2026-09-04)
 
-`hal` (halmarket.dev), share 5%, in TEST. Hal's owner answered the
+`hal` (halmarket.dev), share 5%, LIVE since 2026-09-05 on the keeper's word, once the nine listings went live on Hal's side. Hal's owner answered the
 ten questions the same day; every dialect field already matched
 (seconds, a separate provider key, a 300-second window, a 32-hex
 nonce), so nothing failed closed. The answers, and what each one
