@@ -2362,6 +2362,50 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
  * "sent" while nothing had gone anywhere, which would have poisoned
  * the healed list with false outreach wins.
  */
+/**
+ * MANY STAMPS, ONE PRESS (2026-09-05). The keeper delivers a run of
+ * notes from the unsent list and ticks each row; this stamps every
+ * ticked host in one ledger write. Same statuses as the single stamp,
+ * "sent" by default, and a host the round does not know is stamped
+ * all the same — the ledger is keyed by host, not by round.
+ */
+adminRoutes.post("/admin/outreach/stamp-many", async (c) => {
+  const form = await c.req.parseBody({ all: true });
+  const raw = form["host"];
+  const hosts = (Array.isArray(raw) ? raw : raw ? [raw] : [])
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim().toLowerCase())
+    .filter((value) => value.length > 0);
+  const statusRaw = typeof form["status"] === "string" ? form["status"] : "sent";
+  const { OUTREACH_STATUSES, readOutreachLedger, writeOutreachLedger } =
+    await import("@/services/outreach");
+  const status = OUTREACH_STATUSES.find((entry) => entry === statusRaw);
+  if (!status) {
+    return c.json({ refused: `status must be one of: ${OUTREACH_STATUSES.join(", ")}` }, 400);
+  }
+  if (hosts.length === 0) {
+    const empty = "nothing ticked — tick the rows you delivered, then press";
+    return wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))
+      ? c.redirect(`/admin/outreach?notice=${encodeURIComponent(empty)}`)
+      : c.json({ stamped: [], status, notice: empty });
+  }
+  const ledger = await readOutreachLedger(c.env);
+  const at = new Date().toISOString();
+  for (const host of hosts) {
+    const entry = ledger.hosts[host] ?? {};
+    entry.status = status;
+    entry.status_at = at;
+    ledger.hosts[host] = entry;
+  }
+  await writeOutreachLedger(c.env, ledger);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json({ stamped: hosts, status });
+  }
+  return c.redirect(
+    `/admin/outreach?notice=${encodeURIComponent(`${hosts.length} stamped ${status}`)}`,
+  );
+});
+
 adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
   const { clearStatuses, readOutreachLedger, writeOutreachLedger } =
     await import("@/services/outreach");

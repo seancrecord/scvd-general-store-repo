@@ -490,11 +490,25 @@ export async function scoutContacts(
  * under that; if one ever grows past it the client opens blank, and
  * the draft is still on the card to copy.
  */
-export function mailtoFor(email: string, draft: string): string {
+export function splitDraft(draft: string): { subject: string; body: string } {
   const match = /^Subject:\s*(.*)\r?\n\r?\n?([\s\S]*)$/.exec(draft);
-  const subject = match?.[1] ?? "";
-  const body = match?.[2] ?? draft;
+  return { subject: match?.[1] ?? "", body: match?.[2] ?? draft };
+}
+
+export function mailtoFor(email: string, draft: string): string {
+  const { subject, body } = splitDraft(draft);
   return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/**
+ * THE SAME NOTE, IN GMAIL (2026-09-05). The keeper reads mail in a
+ * browser; a mailto: opens a desktop client he has never set up, and
+ * the note went nowhere he could see it. Gmail's compose URL takes the
+ * same three fields and opens a draft in the tab he already has.
+ */
+export function gmailComposeFor(email: string, draft: string): string {
+  const { subject, body } = splitDraft(draft);
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 /** The first email-shaped contact the operator published, or null.
