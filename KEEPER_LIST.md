@@ -26,23 +26,26 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **TEST — the cold canary (09-05).** The night of 09-04/05
-  was eight hours of 1,000ms+ x402-list checks with no deploy
-  inside them; the cost is the 3.5 MB script's cold start, not
-  the 402 path (research/x402-list-latency-2026-09-05.md).
-  Whether a bundle diet is worth its risk turns on one number
-  nobody can read from inside: our script's share of that
-  start, Cloudflare's floor subtracted. Deploy the instrument
-  by your hand — `npx wrangler deploy -c canary/wrangler.jsonc`
-  — then, right after the next store deploy, run
-  `npm run cold:read -- --url=https://scvd.store/api/buy/hello
-  --url=https://scvd-cold-canary.<account>.workers.dev/`.
-  Store penalty minus canary penalty is the figure; under
-  200ms and the diet is not worth it. LOOK, the next quiet
-  night: Workers Logs, filter `cold:true`, and read what the
-  prober's own knocks met. The cold read also runs itself
-  after every push to main (`.github/workflows/cold-read.yml`,
-  artifact kept 90 days).
+- **RULE — the doors in a Worker of their own (09-05).** The
+  cold canary you deployed at 17:4x read a 5ms cold penalty
+  from your Mac; the store reads 430 to 627ms from the same
+  hour. Cloudflare's floor is nothing; the 3.5 MB script is
+  the whole cost, and the x402-list night reads are that cost
+  paid nine times per burst. The diet moves ~30ms and is not
+  worth it (research/x402-list-latency-2026-09-05.md). The
+  one change that moves the directory's figure by hundreds
+  of milliseconds: `/api/buy/*` and `/.well-known/x402*`
+  served by a second Worker built from this same tree (a
+  trial entry bundles to 1.1 MB as-is, ~0.7 MB pruned; cold
+  in roughly 100 to 200ms instead of 430 to 627), reached by
+  zone routes on scvd.store with the more specific pattern
+  winning, the same KV bound to both, the trade-counter DO
+  left in the store, rollback by deleting two routes. Cost:
+  two to three days, and a test that holds the doors Worker's
+  402 byte-for-byte to the store's. Your call — nothing
+  starts until you rule. LOOK, the next quiet night: Workers
+  Logs, filter `cold:true`, and read what the prober's own
+  knocks met.
 
 - **CV's four rounds, 2026-09-04, "give me my decisions with
   drafts."** Six on the desk, ruled the same evening. RULED

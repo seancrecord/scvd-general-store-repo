@@ -169,6 +169,42 @@ the store as it is. The prober's burst would then wake a script a
 fifth the size. That is a week, it reshapes a test suite built around
 one app, and it is the keeper's to rule, not an agent's to start.
 
+## The canary, read (17:49 UTC, the keeper's Mac)
+
+Deployed by the keeper's hand at 17:4x UTC; read from his Mac minutes
+later, cold everywhere by construction.
+
+| | first knock | warm median | cold penalty |
+|---|---|---|---|
+| canary (a Worker with nothing in it) | 29 ms, cold | 24 ms | **5 ms** |
+| store, from the sandbox the same hour | 655 ms, cold | 28 ms | 627 ms |
+| store, from the sandbox an hour earlier | 483 ms, cold | 53 ms | 430 ms |
+
+Cloudflare's floor is five milliseconds. The store's 430 to 627 ms
+cold penalty is the script, all of it — and more than the 154 ms
+that compile and evaluation cost locally, so the rest is what a
+1.15 MB (gzip) script costs to fetch and house per isolate, which
+also scales with bytes. Every byte is ours.
+
+## What a Worker of only the doors would weigh
+
+Bundled from this tree as it stands, no code moved, one trial entry
+that mounts only the routes named:
+
+| entry | bytes | of the store |
+|---|---|---|
+| `/api/buy/*` (the gate, the shelf, signing, the facilitator client) | 1,114,761 | 32 % |
+| `/api/buy/*` plus every `/.well-known/*` | 1,610,407 | 46 % |
+
+The well-known routes drag the guide (`llms.ts`, 98 KB) and the rest
+of the store's copy in; the two the directory reads (`/.well-known/
+x402` and `x402.json`) need only the shelf. What `/api/buy/*` still
+drags on its own — 250 KB of services, 198 KB of store copy — is the
+gate reaching into the corpus for `archive_depth` and the vocabulary
+for its decline reasons, and is prunable to about 0.7 MB. At the
+penalty per byte measured above, a 1.1 MB doors Worker knocks cold
+in roughly 140 to 200 ms; a 0.7 MB one in roughly 90 to 120 ms.
+
 ## The plan, in order
 
 1. Measure before cutting (this branch): the per-request log line;
@@ -177,11 +213,16 @@ one app, and it is the keeper's to rule, not an agent's to start.
    after every push to main; `canary/` — a Worker with nothing in it
    and the same Server-Timing line, deployed by the keeper's hand, so
    the store's penalty minus the canary's is our script's share.
-2. Read the canary beside the store (KEEPER_LIST). Our half is
-   154 ms locally; the diet moves about 30 ms of it and is not worth
-   its churn on that alone. If the canary shows Cloudflare's half
-   also scales with bytes, the split above is the move, and the
-   keeper rules on it. `npm run cold:local` before and after any cut
-   is the local check; the workflow is the live one.
+2. DONE the same evening: the canary read 5 ms. The diet (30 ms of
+   430) is not worth its churn. The split is the move, and it is on
+   the keeper's desk as a RULE (KEEPER_LIST): the paid doors and the
+   two x402 well-known documents in a Worker of their own, reached by
+   zone routes on the same hostname (`scvd.store/api/buy/*` and
+   `scvd.store/.well-known/x402*` to the doors Worker, `scvd.store/*`
+   to the store as it is; the more specific pattern wins, no thin
+   front and no second hop), the same KV namespaces bound to both,
+   the trade-counter Durable Object left where it is. Rollback is
+   deleting two routes. `npm run cold:local` before and after is the
+   local check; the workflow is the live one.
 3. The door their count missed from 09-04 19:34 to the 10:59 deploy:
    the keeper has already resubmitted it.
