@@ -205,6 +205,51 @@ for its decline reasons, and is prunable to about 0.7 MB. At the
 penalty per byte measured above, a 1.1 MB doors Worker knocks cold
 in roughly 140 to 200 ms; a 0.7 MB one in roughly 90 to 120 ms.
 
+## The doors, built (the same evening)
+
+The keeper ruled for the split. What was built, on this branch:
+
+- `src/routes/door-checks.ts`: the seven refusals before the gate and
+  the gate itself, moved out of `routes/buy.ts` unchanged, exported as
+  one ordered list both Workers register.
+- `src/lib/edge.ts`: the store's global middleware, moved out of
+  `index.ts` unchanged, exported as one ordered list both Workers
+  register.
+- `src/lib/doors-app.ts` and `src/doors.ts`: the doors Worker. A knock
+  with a payment header, or any knock while the Worker lacks its
+  secrets or its STORE binding, goes to the store over the service
+  binding as it came; everything else meets the same edge and the same
+  checks and gets the same 402. A knock that passes every check
+  without a 402 (an unpaid HEAD, an OPTIONS, a POST) also goes to the
+  store, because the store's own handler answers those.
+- Three import cuts so the doors carry no delivery code: a constant
+  out of `services/fulfillment.ts`, `listCorpus` out of
+  `services/corpus.ts` (which reaches the whole observatory), the two
+  settlement-record functions out of `services/chain-reconciliation.ts`
+  (the chain walker). Each old module re-exports, so no caller moved.
+
+| Worker | bytes, minified | workerd start, this machine | ours |
+|---|---|---|---|
+| the store | 3,522,974 | 181 ms | 152 ms |
+| the doors | 656,415 | 79 ms | 50 ms |
+| nothing | | 29 ms | |
+
+`npm run cold:local` now times both and fails if the doors pass
+1,000,000 bytes or carry `services/fulfillment.ts`.
+
+What the parity test found on its first runs, none of it imagined:
+
+- An unpaid HEAD passes the gate (x402 requires payment of a GET) and
+  is answered by the store's handler, not its gate. The doors hand it
+  over. Same for an OPTIONS on a paid door and a POST with no payment.
+- With a trailing slash, the store's 402 is thinner: the root app is
+  strict, `routes/buy.ts`'s non-strict setting does not survive
+  mounting, and the item lookup inside the body keeps the slash and
+  misses. A non-strict doors app trimmed the slash and answered the
+  fuller body. The doors are strict now and answer as the store does.
+  Whether the store should be fixed is a separate question for
+  `routes/buy.ts`.
+
 ## The plan, in order
 
 1. Measure before cutting (this branch): the per-request log line;
@@ -213,7 +258,9 @@ in roughly 140 to 200 ms; a 0.7 MB one in roughly 90 to 120 ms.
    after every push to main; `canary/` — a Worker with nothing in it
    and the same Server-Timing line, deployed by the keeper's hand, so
    the store's penalty minus the canary's is our script's share.
-2. DONE the same evening: the canary read 5 ms. The diet (30 ms of
+2. DONE the same evening: the canary read 5 ms, the keeper ruled, the
+   doors are built (above); the flip is on the keeper's desk as six
+   steps (KEEPER_LIST). Earlier text of this step, kept for the record: The diet (30 ms of
    430) is not worth its churn. The split is the move, and it is on
    the keeper's desk as a RULE (KEEPER_LIST): the paid doors and the
    two x402 well-known documents in a Worker of their own, reached by

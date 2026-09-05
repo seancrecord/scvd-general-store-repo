@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payToDigest } from "@/lib/pay-to-digest";
-import { listCorpus } from "@/services/corpus";
+import { listCorpus } from "@/services/corpus-list";
 import { deriveDoorIndex } from "@/services/door-index";
 import { deriveProvenance } from "@/services/provenance-check";
 import { subjectHistory } from "@/services/subject-history";

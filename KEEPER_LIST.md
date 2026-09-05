@@ -26,26 +26,44 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **RULE — the doors in a Worker of their own (09-05).** The
-  cold canary you deployed at 17:4x read a 5ms cold penalty
-  from your Mac; the store reads 430 to 627ms from the same
-  hour. Cloudflare's floor is nothing; the 3.5 MB script is
-  the whole cost, and the x402-list night reads are that cost
-  paid nine times per burst. The diet moves ~30ms and is not
-  worth it (research/x402-list-latency-2026-09-05.md). The
-  one change that moves the directory's figure by hundreds
-  of milliseconds: `/api/buy/*` and `/.well-known/x402*`
-  served by a second Worker built from this same tree (a
-  trial entry bundles to 1.1 MB as-is, ~0.7 MB pruned; cold
-  in roughly 100 to 200ms instead of 430 to 627), reached by
-  zone routes on scvd.store with the more specific pattern
-  winning, the same KV bound to both, the trade-counter DO
-  left in the store, rollback by deleting two routes. Cost:
-  two to three days, and a test that holds the doors Worker's
-  402 byte-for-byte to the store's. Your call — nothing
-  starts until you rule. LOOK, the next quiet night: Workers
-  Logs, filter `cold:true`, and read what the prober's own
-  knocks met.
+- **TEST — flip the doors (09-05).** You ruled the split; it is
+  built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a
+  656 KB Worker (the store is 3.5 MB) that answers the unpaid
+  knock on `/api/buy/*` with the store's own checks and hands
+  everything else to the store over a service binding
+  (`doors/wrangler.jsonc`). Locally it starts in 79ms against
+  the store's 181; the canary said Cloudflare's floor is 5.
+  `test/doors-parity.spec.ts` holds every door's answer
+  byte-equal across both Workers. The flip is safe by
+  construction — a doors Worker without its secrets hands
+  every knock to the store — so the order is:
+  1. Merge the branch. The store deploys as always; nothing
+     changes on the wire yet.
+  2. `npx wrangler deploy -c doors/wrangler.jsonc` by your
+     hand. This claims the route `scvd.store/api/buy/*`
+     beside the custom domain (a route wins on its own paths;
+     Workers docs, "Routes"). Every knock now passes through
+     the doors and on to the store, marked `X-Scvd-Doors:
+     not-ready`. Cost: one hop, no change in answers.
+  3. Set the secrets on the doors Worker:
+     `npx wrangler secret put SIGNING_KEY -c doors/wrangler.jsonc`,
+     then PAY_TO_ADDRESS, CDP_API_KEY_ID, CDP_API_KEY_SECRET,
+     the same values the store holds. From the next knock the
+     doors answer the 402 themselves.
+  4. `npm run doors:live -- --doors=https://scvd-doors.seancrecord.workers.dev`
+     reads every door at both hosts and prints agrees/differs
+     per door. All agree, or stop and paste it here.
+  5. Workers Builds → create a second project on this repo
+     with deploy command `npx wrangler deploy -c
+     doors/wrangler.jsonc`, so a push to main deploys both.
+     Until then a shelf change needs step 2 again by hand.
+  6. LOOK, the next morning: x402-list's per-check history
+     (`/api/v1/services/sean-claude-van-damme-s-general-store/checks`)
+     and `.github/workflows/cold-read.yml`'s artifact. The night
+     reads should sit near 100ms with 31 of 31 found.
+  Rollback at any step: delete the route in the dashboard
+  (Workers → scvd-doors → Domains & Routes), or remove the
+  `routes` block in `doors/wrangler.jsonc` and deploy it.
 
 - **CV's four rounds, 2026-09-04, "give me my decisions with
   drafts."** Six on the desk, ruled the same evening. RULED

@@ -60,7 +60,7 @@ import {
   createOrder,
   recordInventorySale,
 } from "@/services/orders";
-import { listStock, takeStockUnit } from "@/services/stock";
+import { takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
@@ -72,19 +72,20 @@ import type { Env, MenuItem } from "@/types";
  * doors. Never call without a settled payment in hand.
  */
 
-/** The counter takes a win of up to this many characters. */
-export const COFFEE_WIN_CAP = 200;
+// COFFEE_WIN_CAP lives in lib/purchase-args.ts (2026-09-05): the
+// argument check reads it before the gate, and the doors Worker must
+// read the check without carrying this file. Re-exported for the
+// callers that always found it here.
+export { COFFEE_WIN_CAP } from "@/lib/purchase-args";
 
 /** The register holds this much grievance. Spite survives compression. */
 export const GRIEVANCE_CAP = 280;
 
 /** Live stock for a stocked item. */
-export async function stockedShelfCount(
-  env: Env,
-  item: MenuItem,
-): Promise<number> {
-  return (await listStock(env, item.id).catch(() => [])).length;
-}
+// stockedShelfCount moved to services/stock.ts (2026-09-05) so the
+// doors Worker can read a shelf without carrying the delivery floor;
+// re-exported here for the callers that always found it under this name.
+export { stockedShelfCount } from "@/services/stock";
 
 export interface FulfillmentInput {
   agentName?: string;

@@ -24,6 +24,14 @@ export interface TradeSettlement {
 }
 
 export interface Env {
+  /**
+   * The store itself, as a service binding — present only in the doors
+   * Worker (doors/wrangler.jsonc), which answers the unpaid knock on
+   * `/api/buy/*` and hands everything else through this to the store.
+   * Absent in the store's own environment; src/doors.ts treats its
+   * absence as "not ready" and answers nothing itself.
+   */
+  STORE?: Fetcher;
   ORDERS: KVNamespace;
   /**
    * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the one binding in

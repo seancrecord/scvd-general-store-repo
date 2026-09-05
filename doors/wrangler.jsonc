@@ -1,0 +1,65 @@
+{
+  /**
+   * THE DOORS WORKER (2026-09-05). Built from the same tree as the
+   * store, from src/doors.ts: the unpaid knock on /api/buy/* answered by
+   * a script a fifth the size, everything else handed to the store over
+   * the STORE binding. Read src/doors.ts first; this file only says
+   * what the runtime must provide for the answer to be the store's.
+   *
+   * WHAT MUST MATCH THE ROOT wrangler.jsonc, and is held to it by
+   * scripts/doors-config.test.mjs: the compatibility date and flags,
+   * every KV namespace id, the R2 bucket, every var, minify and
+   * observability. A 402 minted from a different shelf or a different
+   * KV is not the store's 402.
+   *
+   * WHAT MUST NOT BE HERE: cron triggers (the wards run in the store),
+   * the Durable Object (the trade counter lives in the store; its
+   * routes are not under /api/buy/), a custom domain (the store keeps
+   * it; the route below sits beside it and wins on its own paths).
+   *
+   * SECRETS, set by the keeper's hand once, on this Worker
+   * (`npx wrangler secret put <NAME> -c doors/wrangler.jsonc`):
+   * SIGNING_KEY, PAY_TO_ADDRESS, and — so the facilitator's supported
+   * kinds can be refreshed when KV has none — CDP_API_KEY_ID and
+   * CDP_API_KEY_SECRET. Until SIGNING_KEY and PAY_TO_ADDRESS are set,
+   * src/doors.ts answers nothing itself and hands every knock to the
+   * store: the first deploy is a pass-through, not a change.
+   */
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "scvd-doors",
+  "main": "../src/doors.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "limits": { "cpu_ms": 100 },
+  "minify": true,
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  /**
+   * The route: this hostname's paid doors, and nothing else. Cloudflare
+   * gives a route precedence over a Custom Domain configured on the
+   * same hostname (Workers docs, "Routes"), so the store's custom
+   * domain stays exactly as it is and this pattern takes only what it
+   * names. Rollback is deleting this one line and deploying, or
+   * deleting the route in the dashboard.
+   */
+  "routes": [
+    { "pattern": "scvd.store/api/buy/*", "zone_name": "scvd.store" }
+  ],
+  "workers_dev": true,
+  "services": [
+    { "binding": "STORE", "service": "scvd-general-store-repo" }
+  ],
+  "kv_namespaces": [
+    { "binding": "ORDERS", "id": "4a23f9dd93f4434aad98295e592c8805" },
+    { "binding": "GUESTBOOK", "id": "93c5a5a59fbe4fa6ad96ed9af3852d70" },
+    { "binding": "COUNTERS", "id": "bc1397211dbd4b30876edb76b45a1142" },
+    { "binding": "PATRONS", "id": "b3b7dc0f951f4b4a9995afe7dc35e015" }
+  ],
+  "r2_buckets": [
+    { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
+  ],
+  "vars": {
+    "STORE_BASE_URL": "https://scvd.store",
+    "BASE_RPC_URL": "https://mainnet.base.org",
+    "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"
+  }
+}
