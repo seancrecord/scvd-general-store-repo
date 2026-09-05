@@ -1,0 +1,18 @@
+{
+  "ledger": "research/field-run-2026-09-05/ledger.jsonl",
+  "blocks": [
+    50918927,
+    50918979
+  ],
+  "wallet": "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F",
+  "ledger_count": 34,
+  "chain_count": 34,
+  "matched": 34,
+  "ledger_only": 0,
+  "chain_only": 0,
+  "ledger_only_rows": [],
+  "chain_only_rows": [],
+  "ledger_usd": 0.035,
+  "chain_usd": 0.035,
+  "gap_usd": 0
+}
