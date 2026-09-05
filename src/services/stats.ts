@@ -21,7 +21,7 @@ const PAID_METRIC_CAP = 2000;
 export const OPERATING_SINCE = "2026-07-22";
 
 /**
- * PRE-METER SALES WHOSE RAIL WAS IDENTIFIED BY HAND, and the only
+ * PRE-METER SALES WHOSE RAIL WAS IDENTIFIED FROM THE CHAIN, and the only
  * hand-typed figures in this file.
  *
  * A sale settled before the till recorded rails, that also minted no
@@ -34,24 +34,56 @@ export const OPERATING_SINCE = "2026-07-22";
  * recoverable by a person reading a block explorer rather than by this
  * code.
  *
- * THE BAR FOR ADDING TO THIS is now the SHAPE, not a comment asking
- * nicely: each entry IS its transaction hash, and the count the books
- * use is the length of the list. A hand-placed sale without its
- * evidence is unrepresentable — there is no integer to bump — and a
- * test holds each entry to its chain's hash format. Same standard as
- * the founding settle in metrics.ts, which carries its own hash;
- * here the hash is the value rather than the comment beside it.
+ * THE BAR FOR ADDING TO THIS is the SHAPE, not a comment asking
+ * nicely: each entry is one placed sale, it carries the transaction
+ * hash(es) that are its evidence, and the count the books use is the
+ * length of the list. A hand-placed sale without its evidence is
+ * unrepresentable — there is no integer to bump — and a test holds
+ * every hash to its chain's format. Same standard as the founding
+ * settle in metrics.ts, which carries its own hash.
  *
- * Empty is the honest starting state and the set is closed: nothing
- * can join it, because every sale from the meter's start is counted
- * at the till.
+ * WHY AN ENTRY MAY CITE MORE THAN ONE HASH (2026-09-05). The two
+ * sales placed below were counted by the till in the window between
+ * the second rail opening and the till learning to write rails down
+ * (2026-08-04 to 2026-08-07T21:16:56Z), with no certificate. A read
+ * of the Base receiving wallet over that whole window found exactly
+ * three outside payments with no certificate behind them, all from
+ * one wallet inside one minute on 2026-08-07: two of $0.005 and one
+ * of $0.01. The till counted two settles there, not three, and the
+ * books cannot say which two — a settle is a counter, not a row. What
+ * the books CAN say is the chain, because every candidate is on Base,
+ * and the chain is the only fact a placement here uses. So the entry
+ * that cannot name its one hash names both, and says so.
+ *
+ * The set is closed: nothing can join it, because every sale from the
+ * meter's start is counted at the till.
  */
+export interface HandPlacedSale {
+  /** The transaction(s) that are the evidence; usually exactly one. */
+  transactions: readonly string[];
+  why: string;
+}
+
 export const RAILS_ENTERED_BY_HAND: {
-  base: readonly string[];
-  polygon: readonly string[];
-  solana: readonly string[];
+  base: readonly HandPlacedSale[];
+  polygon: readonly HandPlacedSale[];
+  solana: readonly HandPlacedSale[];
 } = {
-  base: [],
+  base: [
+    {
+      transactions: [
+        "0xb98e8a60323ffa64b744c6f546dd51cec2c5bd559ab0bfae89c492fe46be56ec",
+      ],
+      why: "2026-08-07T13:06:03Z, $0.01 USDC into the Base receiving wallet from 0x42b3…029f, no certificate on the shelf for it: the price of a penny page, which mints none by design. Read off Base (eth_getLogs on the USDC Transfer event, blocks 49506127–49674035) on 2026-09-05.",
+    },
+    {
+      transactions: [
+        "0x924c03103ad17b8e764fb26dd4ec6fcab63c7c435ead8f054dc2c656bfbc973f",
+        "0xc2fd264b3ffa08b934bf2657adc1bb9fc6a6d409271d15e09489b4e5afeb1353",
+      ],
+      why: "2026-08-07T13:05:11Z and 13:05:31Z, $0.005 USDC each into the Base receiving wallet from the same 0x42b3…029f, neither with a certificate: the price of small_blessing, which mints one — so these are payments whose delivery died after the money moved, the failure the settle-last ordering later closed. The till counted one settle for the pair; the books cannot say which, and both are on Base, which is all this placement claims. Read off Base on 2026-09-05, the same eth_getLogs read as the entry above.",
+    },
+  ],
   polygon: [],
   solana: [],
 };
@@ -148,6 +180,13 @@ export interface BooksDiagnostics {
   till_by_item: Record<string, TillItemCount>;
   /** Set when the rail records claim more sales than the counters know. */
   rail_overshoot: { rail_total: number; organic: number } | null;
+  /**
+   * The hand-placed sales (RAILS_ENTERED_BY_HAND) that did NOT apply,
+   * because the books hold fewer unplaced organic settles than the
+   * list places. Zero is the normal state; on a store with organic
+   * sales it means a placement is wrong, and the sweep pages on it.
+   */
+  hand_placements_unapplied: number;
 }
 
 export async function computeStats(env: Env): Promise<StoreStats> {
@@ -274,17 +313,29 @@ export async function computeStatsDiagnosed(
     0,
     organicBeforeSecondRail - (split?.placed_before_second_rail ?? 0),
   );
-  const railBase =
-    (split?.base ?? 0) +
-    (till?.base ?? 0) +
-    singleRailUnplaced +
-    RAILS_ENTERED_BY_HAND.base.length;
-  const railSolana =
-    (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana.length;
-  const railPolygon =
-    (split?.polygon ?? 0) +
-    (till?.polygon ?? 0) +
-    RAILS_ENTERED_BY_HAND.polygon.length;
+  const recordedBase = (split?.base ?? 0) + (till?.base ?? 0) + singleRailUnplaced;
+  const recordedSolana = (split?.solana ?? 0) + (till?.solana ?? 0);
+  const recordedPolygon = (split?.polygon ?? 0) + (till?.polygon ?? 0);
+  /**
+   * THE HAND-PLACED SALES fill the remainder the records left, and only
+   * that: they are evidence about sales the till counted with no rail,
+   * so they apply when the books hold at least that many such sales,
+   * all together or not at all. A store whose remainder is smaller
+   * than its hand-placed list (a fresh test store, or a placement that
+   * was wrong) applies none and says so on the diagnostics, where the
+   * invariant sweep reads it — never a split that overshoots, and
+   * never a placement quietly half-applied.
+   */
+  const handBase = RAILS_ENTERED_BY_HAND.base.length;
+  const handPolygon = RAILS_ENTERED_BY_HAND.polygon.length;
+  const handSolana = RAILS_ENTERED_BY_HAND.solana.length;
+  const handTotal = handBase + handPolygon + handSolana;
+  const remainderBeforeHand =
+    organicSettlements - (recordedBase + recordedPolygon + recordedSolana);
+  const handApplies = handTotal > 0 && remainderBeforeHand >= handTotal;
+  const railBase = recordedBase + (handApplies ? handBase : 0);
+  const railSolana = recordedSolana + (handApplies ? handSolana : 0);
+  const railPolygon = recordedPolygon + (handApplies ? handPolygon : 0);
   const haveRails = split !== null || till !== null;
   const railTotal = railBase + railPolygon + railSolana;
   const overshoot = railTotal > organicSettlements;
@@ -316,6 +367,7 @@ export async function computeStatsDiagnosed(
     rail_overshoot: overshoot
       ? { rail_total: railTotal, organic: organicSettlements }
       : null,
+    hand_placements_unapplied: handApplies ? 0 : handTotal,
   };
 }
 
