@@ -234,6 +234,26 @@ export async function readShopWindow(
    * of a page size and a row counter.
    */
   const walk = async (prefix: string): Promise<void> => {
+    /*
+     * BOUNDED-READ-SAFE: truncation cannot change this answer, and the
+     * key format is the reason rather than the cap being large.
+     *
+     * Sale keys are `sellevt:<invertedTimestamp>:<rand>`, and the
+     * inverted stamp is zero-padded to a fixed 13 digits — so KV's
+     * lexicographic order IS reverse chronological order, exactly.
+     * The window wants the newest five; the cap reads two hundred.
+     * Anything past the cap is therefore OLDER than every row already
+     * in hand and cannot displace one of them. A truncated read and a
+     * complete read return the same five sales.
+     *
+     * The one figure truncation touches is `reached_back_to`, and its
+     * name and its doc already say what it is: the oldest sale the
+     * scan REACHED, never a claim about the oldest that exists.
+     *
+     * If the key format ever loses that padding, this stops being true
+     * silently — which is why the reason names the padding rather than
+     * saying the cap is big enough.
+     */
     const listed = await listKeys(env.COUNTERS, { prefix, cap: SCAN_CAP });
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, listed.names);
     for (const name of listed.names) {
