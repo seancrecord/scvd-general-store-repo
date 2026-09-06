@@ -211,6 +211,20 @@ describe("the desk and its doors", () => {
       host("broken.example", "not_ready", { failed: ["status-402"] }),
     ]);
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(latest));
+    // A card is drawn for a door you can write to (2026-09-06): the
+    // address is what makes this a worked row rather than a count.
+    await testEnv.COUNTERS.put(
+      KV_KEYS.outreachLedger,
+      JSON.stringify({
+        version: 1,
+        hosts: {
+          "broken.example": {
+            scouted_at: "2026-09-02T00:00:00.000Z",
+            contacts: ["mailto:ops@broken.example"],
+          },
+        },
+      }),
+    );
 
     const html = await SELF.fetch(`${BASE}/admin/outreach`, {
       headers: { ...auth, Accept: "text/html" },
@@ -307,6 +321,18 @@ describe("the desk and its doors", () => {
           host("broken.example", "not_ready", { failed: ["status-402"] }),
         ]),
       ),
+    );
+    await testEnv.COUNTERS.put(
+      KV_KEYS.outreachLedger,
+      JSON.stringify({
+        version: 1,
+        hosts: {
+          "broken.example": {
+            scouted_at: "2026-09-02T00:00:00.000Z",
+            contacts: ["mailto:ops@broken.example"],
+          },
+        },
+      }),
     );
     const page = await SELF.fetch(`${BASE}/admin/outreach`, {
       headers: { ...auth, Accept: "text/html" },
@@ -411,7 +437,23 @@ describe("the desk and its doors", () => {
       ),
     );
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(many));
-    await testEnv.COUNTERS.delete(KV_KEYS.outreachLedger);
+    // All 120 scouted with an address, so the render cap is what the
+    // page is being asked about here and not the contact filter.
+    await testEnv.COUNTERS.put(
+      KV_KEYS.outreachLedger,
+      JSON.stringify({
+        version: 1,
+        hosts: Object.fromEntries(
+          many.hosts.map((row) => [
+            row.host,
+            {
+              scouted_at: "2026-09-02T00:00:00.000Z",
+              contacts: [`mailto:ops@${row.host}`],
+            },
+          ]),
+        ),
+      }),
+    );
 
     const page = await SELF.fetch(`${BASE}/admin/outreach`, {
       headers: { ...auth, Accept: "text/html" },
