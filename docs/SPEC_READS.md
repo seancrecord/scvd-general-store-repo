@@ -1,5 +1,12 @@
 # Spec reads — the store's positions on adjacent protocols
 
+**THIS FILE IS NOW LOAD-BEARING (rule 61, 2026-09-06).** It was a
+register of positions kept out of good practice; it is now the
+evidence any work that turns on an outside fact has to cite. A read
+that is not written here did not happen. Name the source, the date,
+and the parts that stayed secondhand — a read with no gaps declared
+is the one to distrust.
+
 One dated entry per read. These are POSITIONS, not implementations:
 what the protocol is, what it would cost us to speak it, and what we
 say about it until we do. The standards-boundary law applies to every
@@ -13,6 +20,72 @@ coverage and Circle's own announcement posts, dated below. Byte-level
 claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
+
+## 2026-09-06 — the listing and discovery surfaces, read under rule 61
+
+The read that motivated rule 61, recorded first so the rule ships with
+its own evidence rather than as an instruction nobody has followed yet.
+Occasioned by two listings in this repository being found stale on the
+same afternoon: `DISTRIBUTION.md` called the Cursor directory a place
+that "accepts submissions" while `trust-signals.ts` had carried its
+page, and the archived venue list called mcpbeat "not yet opened" while
+the same file carried two of its pages. Both errors were repeated aloud
+from the written record before anyone read the live one.
+
+**REACHED, and what each settled.**
+
+- **OpenAI plugins.** The App Directory folded into the Plugin
+  Directory on 2026-07-09; a plugin bundles an app (a remote MCP
+  server), skills and app templates, and is submitted at
+  platform.openai.com/plugins. Domain control is proved by a bare
+  token at `/.well-known/openai-apps-challenge` on the ORIGIN ROOT —
+  the `/mcp` subpath is stripped server-side. Their scan opens a GET
+  expecting `text/event-stream` before it POSTs anything. Commerce is
+  physical-goods only: "selling digital products or services —
+  including subscriptions, digital content, tokens, or credits — is
+  not allowed, whether offered directly or indirectly." Filed as
+  DISTRIBUTION §5b; both wire facts are now built and tested.
+- **Claude connectors.** Submission is through the portal in a Team or
+  Enterprise organisation's settings on claude.ai. A personal Pro
+  account cannot reach it. The two technical gates the store already
+  meets — a public privacy policy and a remote streamable-HTTP server
+  — are not the blocker; the organisation is.
+- **Perplexity.** THERE IS NO DIRECTORY TO SUBMIT TO, which corrects
+  what DISTRIBUTION §5 said. Two paths exist and neither is an
+  application: any Pro, Max or Enterprise user adds a custom remote
+  connector by pasting the MCP URL (remote MCP URLs launched there
+  2026-03-13), and built-in connectors are business-development
+  partnerships (Semrush, 2026-06). The action is documentation, not a
+  form.
+- **AWS Agent Registry.** GA 2026-08 as part of Bedrock AgentCore, and
+  it is a PRIVATE catalog a customer creates in their own AWS account,
+  shared across accounts by AWS RAM. There is no public AWS-hosted
+  directory a third party lists in for discovery; cross-organisational
+  discovery is announced future work. The AWS-aligned discovery move is
+  the open ARD specification, which this store already serves at
+  `/.well-known/ard.json`. A keeper-list row that read "an AWS Agent
+  Registry entry" was written on the opposite assumption.
+- **WebMCP directories.** At least six list sites — webmcp.com (email
+  and URL, human review), webmcp.cool (nekuda; a scanner verifies the
+  tools are live), webmcpdirectory.com, webmcplist.com, webmcp.ora.ai
+  (which grades each row as a registry claim, tools observed live, or a
+  full audit), and webmcp-registry.dev (DNS TXT proof of control).
+  Four more audit rather than list: webmcpaudit.com,
+  webmcpvalidator.com, webmcp-checker.com, and Discovered Labs'
+  agentic-browsing-checker. NONE appears in `trust-signals.ts`, though
+  the store has served `webmcp.js` for weeks.
+
+**NOT REACHED, and therefore secondhand (rule 55).** Every one of
+these domains is egress-blocked from the build sandbox:
+developers.openai.com, help.openai.com, learn.chatgpt.com,
+community.openai.com, docs.aws.amazon.com, www.perplexity.ai, and all
+ten WebMCP hosts above. The findings are assembled from search results
+and secondary coverage. The two OpenAI wire facts are the exception and
+are NOT secondhand — the challenge path and the SSE probe were proved
+against the live portal, which failed and then passed. Everything else
+here should be re-read from a primary source before anything is built
+on it, and the WebMCP list in particular is a list of names to go and
+look at, not a set of confirmed listings.
 
 ## 2026-08-30 — the cross-protocol re-read (supersedes the sourcing caveat above, in part)
 

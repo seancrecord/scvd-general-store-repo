@@ -26,18 +26,31 @@
  * against the shelf. One row per fact: agrees, differs (ours and
  * theirs named), unknown, unreachable. Never a score.
  *
- * EXIT CODES: 0 no regression and no drift; 1 a mirror regressed or a
- * registry differs from the tree; 2 the homepage could not be read at
- * all. --report-only prints everything and exits 0 unless the
- * homepage was unreadable: the shape a pull request's push runs in,
- * because drift on an index is press, never a fact about the commit.
+ * THE THIRD HALF (2026-09-06): the roster. Every venue row this store
+ * publishes at /.well-known/trust.json is fetched and asked one
+ * question — does that page still name us? A row that stops naming us
+ * is a claim on our own served surface that has quietly gone false,
+ * and until now nothing re-read the forty-nine of them. Reported as
+ * holds / silent / unreachable, alarmed on the move rather than the
+ * state, because half these venues render client-side and a bare
+ * "silent" would cry wolf weekly. Stale `confirmed` dates are printed
+ * oldest first and never fail: a date is the keeper's hand.
+ *
+ * EXIT CODES: 0 no regression and no drift; 1 a mirror regressed, a
+ * registry differs from the tree, or a roster row moved backwards; 2
+ * the homepage could not be read at all. --report-only prints
+ * everything and exits 0 unless the homepage was unreadable: the
+ * shape a pull request's push runs in, because drift on an index is
+ * press, never a fact about the commit.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { compare, walk } from "./lib/listings.mjs";
 import { walkVersions } from "./lib/listing-versions.mjs";
+import { compareRoster, readRoster, staleRows, STALE_AFTER_DAYS } from "./lib/listing-roster.mjs";
 
 const RECORD = new URL("../docs/listings/observation.json", import.meta.url);
+const ROSTER_RECORD = new URL("../docs/listings/roster.json", import.meta.url);
 const args = process.argv.slice(2);
 const flag = (name) => args.some((arg) => arg === `--${name}`);
 const value = (name) => {
@@ -86,9 +99,17 @@ const local = {
 };
 const versions = await walkVersions(base, local);
 const drift = versions.rows.filter((r) => r.state === "differs");
+
+// The third half: does every venue we CLAIM still name us? Read before
+// the output so one --json document can carry all three batteries.
+const roster = await readRoster(base);
+const rosterBaseline = existsSync(ROSTER_RECORD) ? JSON.parse(readFileSync(ROSTER_RECORD, "utf8")) : null;
+const rosterMoves = compareRoster(rosterBaseline, roster);
+const stale = staleRows(roster);
+
 if (flag("json")) {
-  // One document for a pipe: the mirrors and the versions together.
-  console.log(JSON.stringify({ mirrors: { ...fresh, regressions, advances }, versions }, null, 2));
+  // One document for a pipe: the mirrors, the versions and the roster.
+  console.log(JSON.stringify({ mirrors: { ...fresh, regressions, advances }, versions, roster: { ...roster, ...rosterMoves, stale } }, null, 2));
 } else {
   console.log(`\nTHE VERSIONS AND THE SHELF — read ${versions.read_at.slice(0, 10)}`);
   const width = Math.max(...versions.rows.map((r) => `${r.index} ${r.field}`.length));
@@ -105,8 +126,32 @@ if (flag("json")) {
   const tally = versions.rows.reduce((acc, r) => ({ ...acc, [r.state]: (acc[r.state] ?? 0) + 1 }), {});
   console.log(`\n${versions.rows.length} facts: ${Object.entries(tally).map(([k, v]) => `${k} ${v}`).join(", ")}. Nothing here was written to any index; press is the keeper's.`);
 }
+if (!flag("json")) {
+  console.log(`\nTHE ROSTER — ${roster.records.length} rows read ${roster.read_at.slice(0, 10)}`);
+  if (!roster.roster_read) {
+    console.log("trust.json could not be read; the roster was not checked this run.");
+  } else {
+    const tally = roster.records.reduce((acc, r) => ({ ...acc, [r.state]: (acc[r.state] ?? 0) + 1 }), {});
+    console.log(Object.entries(tally).map(([k, v]) => `${k} ${v}`).join(", ") + ".");
+    for (const r of rosterMoves.regressions) console.log(`REGRESSED  ${r.registry || r.url}: ${r.was} -> ${r.now}  ${r.url}`);
+    for (const a of rosterMoves.advances) console.log(`advanced   ${a.registry || a.url}: ${a.was} -> ${a.now}`);
+    if (!rosterBaseline) console.log("No roster baseline yet; --record writes one.");
+    if (stale.length > 0) {
+      console.log(`\n${stale.length} rows confirmed over ${STALE_AFTER_DAYS} days ago — a look, not a failure:`);
+      for (const r of stale.slice(0, 10)) console.log(`  ${String(r.age_days).padStart(4)}d  ${r.registry || r.url}`);
+    }
+  }
+}
+
+if (flag("record") && roster.roster_read) {
+  mkdirSync(dirname(ROSTER_RECORD.pathname), { recursive: true });
+  writeFileSync(ROSTER_RECORD, `${JSON.stringify(roster, null, 2)}\n`);
+  console.log(`Recorded ${roster.records.length} roster rows to ${ROSTER_RECORD.pathname}.`);
+}
+
+const fell = regressions.length > 0 || drift.length > 0 || rosterMoves.regressions.length > 0;
 if (flag("report-only")) {
-  if (regressions.length > 0 || drift.length > 0) console.log("(report only: the drift above is press, not a fact about this commit)");
+  if (fell) console.log("(report only: the drift above is press, not a fact about this commit)");
   process.exit(0);
 }
-process.exit(regressions.length > 0 || drift.length > 0 ? 1 : 0);
+process.exit(fell ? 1 : 0);
