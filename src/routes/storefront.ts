@@ -14,6 +14,7 @@ import { listGuestbook } from "@/services/guestbook";
 import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { tradeMonthGauge } from "@/services/trade-counter";
+import { readShopWindow, WINDOW_SIZE } from "@/services/shop-window";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 import { kvGet } from "@/lib/kv-retry";
@@ -112,6 +113,7 @@ storefrontRoutes.get("/", async (c) => {
     firstDollar,
     board,
     trade,
+    shopWindow,
   ] = await Promise.all([
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
@@ -152,6 +154,16 @@ storefrontRoutes.get("/", async (c) => {
      * breaks the front page.
      */
     tradeMonthGauge(c.env).catch(() => null),
+    /*
+     * The shop window: one capped key-list and a bulk read on a prefix
+     * where every key is a sale, so the newest few are reached without
+     * walking the whole event stream (services/shop-window.ts says why
+     * that prefix exists). Fail-soft to null with every other gauge
+     * here — a KV hiccup reads exactly as a quiet afternoon does,
+     * never as a broken front page, and never as a shorter window
+     * presented as the whole of the trade.
+     */
+    readShopWindow(c.env, WINDOW_SIZE).catch(() => null),
   ]);
   /*
    * A CSP arrives with the storefront's first first-party script
@@ -211,6 +223,7 @@ storefrontRoutes.get("/", async (c) => {
       firstDollar,
       board,
       trade,
+      shopWindow,
     }),
   );
 });
