@@ -578,6 +578,23 @@ export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
       : "Not yet run. `node scripts/walkabout.mjs reconcile <ledger>` reads the wallet's USDC transfers over the run's block range and states the gap in dollars, even when it is zero.",
   );
   lines.push("");
+  /*
+   * WHAT A ZERO GAP IS WORTH, SAID BESIDE IT (2026-09-06).
+   *
+   * The paragraph above reads the chain and compares it to the ledger,
+   * and a reader can take that for verification. It is not: both sides
+   * come from one party's tooling reading one declared wallet in one
+   * run, so a defect common to both survives the comparison intact.
+   * 0200project put it exactly right on issue #188 after re-deriving
+   * the 2026-09-05 run themselves — "your gap $0.00 was your instrument
+   * agreeing with itself; this is a second instrument agreeing with the
+   * chain, which is a different claim and the one you actually wanted."
+   * They were right, so the number now carries its own denominator.
+   */
+  lines.push(
+    "**What that gap establishes, and what it does not.** It establishes that this record agrees with the chain over this block range. It does not establish independence: the ledger and the reconciliation are one party's tooling reading one declared wallet in one run, so a defect common to both would survive a gap of zero unchanged. The stronger claim is a second instrument re-deriving these rows from the chain on its own, and this is not that. Every settled row carries its transaction hash, and rows whose receipt named none carry the authorization nonce the settlement spent, so anyone can be that second instrument without asking us for anything.",
+  );
+  lines.push("");
   lines.push("## What this is not");
   lines.push("");
   lines.push(

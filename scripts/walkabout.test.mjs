@@ -298,6 +298,19 @@ test("rule 5: every number in the report re-derives from the ledger", () => {
   assert.match(report, /`per_item_cap` × 1/);
   assert.match(report, /Not yet run\./);
   assert.match(report, /Not a score on any operator/);
+  /*
+   * A ZERO GAP NEVER TRAVELS WITHOUT ITS DENOMINATOR (2026-09-06).
+   *
+   * The reconciliation paragraph reads the chain and compares it to
+   * the ledger, which a reader can take for verification. Both sides
+   * are one party's tooling reading one wallet in one run, so a
+   * defect common to both survives a gap of zero. 0200project named
+   * this on issue #188 after re-deriving a run themselves. The
+   * report says so beside the number, on every run, or this fails.
+   */
+  assert.match(report, /What that gap establishes, and what it does not/);
+  assert.match(report, /does not establish independence/i);
+  assert.match(report, /second instrument/i);
   // A summary with no attempts renders without dividing by zero.
   const empty = renderReport(summarize([]));
   assert.match(empty, /\| attempts \| 0 \|/);
