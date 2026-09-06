@@ -406,3 +406,8 @@ Receipt links: [Arbitrum's builder directory](https://arbitrum.io/build-app) nam
 Receiving-account preflight, 2026-09-06: the public Base and Polygon offers name the same receiving account. Read-only Arbitrum and World calls confirmed each chain ID, no deployed code at that recipient, and code at the listed native USDC contract. This checks account shape and contract presence; it does not prove a live settlement or authorize production activation.
 
 World RPC fallback: [World's node-provider directory](https://docs.world.org/world-chain/providers/nodes) names Tenderly. Read-only calls to its World mainnet endpoint returned chain ID 480 and a complete 500-block native-USDC log window. The World reader keeps both Alchemy and Tenderly fallbacks; no timeout allowance or fallback test was relaxed.
+
+
+### 2026-09-06 — five-network quote header budget
+
+Re-read `https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md`, sections 2, 4.1 and 6.1: the signed-offer extension is optional and its response-body placement remains usable when a duplicate header copy exceeds transport limits. All accepts and all signed offers remain available. Stock Node fetch reproduced `UND_ERR_HEADERS_OVERFLOW` after five networks were enabled; the all-network regression reproduces oversized menu and publication quotes before the fix. The optional signed-offer header mirror is now capped at 12 KiB, reserving 4 KiB of the common 16 KiB header allowance for other headers and edge additions.

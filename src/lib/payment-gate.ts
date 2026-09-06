@@ -151,7 +151,11 @@ import type { HonoEnv } from "@/types";
  * uniform spec and the C1 fact block in-payload.
  */
 
-/** Splice the signed offers into the PAYMENT-REQUIRED header's JSON. */
+// Leave 4 KiB of Node's default 16 KiB header allowance for the other
+// response headers and edge additions. Offers always remain in the body.
+const OFFER_HEADER_MIRROR_BUDGET = 12_288;
+
+/** Mirror signed offers into the challenge header only when they fit. */
 function withOfferHeader(
   headers: Record<string, string>,
   offers: Record<string, unknown>,
@@ -173,7 +177,12 @@ function withOfferHeader(
         ...offers,
       },
     };
-    return { ...headers, [headerName]: encodeBase64Json(merged) };
+    const encoded = encodeBase64Json(merged);
+    // Five networks times three tiers overflowed stock Node fetch before
+    // it could read the 402. Keep every payable term in the original
+    // header and every signed offer in the body; only omit this mirror.
+    if (encoded.length > OFFER_HEADER_MIRROR_BUDGET) return headers;
+    return { ...headers, [headerName]: encoded };
   } catch {
     return headers;
   }
@@ -1022,9 +1031,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
          * x402 Signed Offers & Receipts: one JWS offer per accepts
          * tier, the store COMMITTING to its quoted terms before any
          * money moves. Spliced into the PAYMENT-REQUIRED header's own
-         * JSON — the document a compliant client actually parses —
-         * and mirrored onto the body for readers following the docs'
-         * body-first example. Null on any failure, and the 402 goes
+         * JSON when the extra copy fits the header budget, and always
+         * onto the body for readers following the docs' body-first
+         * example. Null on any failure, and the 402 goes
          * out exactly as it would have: no decoration is worth
          * blocking the till. See lib/offer-receipt.ts.
          */
