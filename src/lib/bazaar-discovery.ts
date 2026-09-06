@@ -667,6 +667,55 @@ export function missingRequiredInputs(
   });
 }
 
+/**
+ * THE REQUIRED INPUTS, WHERE A CLIENT WILL ACTUALLY REACH THEM
+ * (2026-09-06).
+ *
+ * The requirement was already in the challenge — at
+ * extensions.bazaar.schema.properties.input.properties.queryParams
+ * .required, four levels inside a vendor namespace, beside an EXAMPLE
+ * value of the same parameter. It was true and it was unreachable: an
+ * x402 library reads `accepts`, signs, and retries the same URL. It
+ * never descends a schema it did not author, so it never learned that
+ * this door cannot be served without ?tx_hash=, and its signed retry
+ * was refused before the gate.
+ *
+ * The store's own decline reading states the test: one client doing
+ * this is the client's; the same failure from DIFFERENT clients means
+ * the requirement is not discoverable from the header alone, and that
+ * is ours to fix in the challenge. Seventeen doors carry a required
+ * input, including all five of the dearest.
+ *
+ * So the same fact, one level deep, under a key that says what it is,
+ * with the retry spelled out. It is a DUPLICATE on purpose: the
+ * schema keeps its place for readers that parse schemas, and this is
+ * for the ones that do not. Both derive from buyInputSchema, so they
+ * cannot drift apart.
+ */
+export function requiredInputsExtension(
+  item: MenuItem,
+  base?: string,
+): Record<string, DiscoveryExtension> {
+  const required = (buyInputSchema(item).required ?? []).filter(
+    (name) => name !== "agent_name",
+  );
+  if (required.length === 0) {
+    return {};
+  }
+  const query = required.map((name) => `${name}=<${name}>`).join("&");
+  return {
+    "required-inputs": {
+      queryParams: [...required],
+      note: `This door cannot be served without ${required
+        .map((name) => `?${name}=`)
+        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.`,
+      ...(base
+        ? { retry_url_template: `${base}/api/buy/${item.id}?${query}` }
+        : {}),
+    } as unknown as DiscoveryExtension,
+  };
+}
+
 export function requiredParamsNote(item: MenuItem): {
   required_params?: string[];
   required_params_note?: string;
@@ -687,12 +736,16 @@ export function requiredParamsNote(item: MenuItem): {
 
 export function buyDiscoveryExtensions(
   item: MenuItem,
+  base?: string,
 ): Record<string, DiscoveryExtension> {
-  return declareDiscoveryExtension({
-    input: buyInputExample(item),
-    inputSchema: buyInputSchema(item),
-    output: { example: buyOutputExample(item) },
-  });
+  return {
+    ...declareDiscoveryExtension({
+      input: buyInputExample(item),
+      inputSchema: buyInputSchema(item),
+      output: { example: buyOutputExample(item) },
+    }),
+    ...requiredInputsExtension(item, base),
+  };
 }
 
 /** Penny pages (Almanac pages, Gazette issues) take no input and return markdown. */

@@ -24,7 +24,7 @@ import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputSchema, requiredParamsNote } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
@@ -166,6 +166,17 @@ catalogRoutes.get("/menu.json", async (c) => {
           }
         : {}),
       price_tiers_usdc: priceTiersUsdc(item),
+      /*
+       * WHAT THIS DOOR CANNOT BE SERVED WITHOUT (2026-09-06). The
+       * catalog is the document a planning agent reads, and for
+       * seventeen items it named a price and a buy_url and never that
+       * the door needs an input. agents.md told agents this document
+       * carried "every item id, price, and input schema"; it carried
+       * two of the three. The item PAGE has always had it; nobody
+       * fetches thirty-two pages to plan one purchase. Same keys the
+       * 402 body uses, from the same schema.
+       */
+      ...requiredParamsNote(item),
       /*
        * ADDED 2026-08-30. The catalogue named a buy_url and no way to
        * read ABOUT the item — an agent holding menu.json had to build
