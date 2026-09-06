@@ -1,7 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Env } from "@/types";
-import { isRecord } from "@/types";
+import { listSettlementUnknowns } from "@/services/settlement-unknown";
 import { readDeclines } from "@/lib/declines";
 import { isTransientSettleFailure } from "@/lib/payments";
 import {
@@ -99,31 +99,19 @@ describe("a facilitator blip", () => {
    * work. On a loaded CI pool it lost that second twice in one run.
    * The budget below is the designed sleeps plus honest headroom.
    */
-  it("books the verbatim reason when the outage outlives the retry", { timeout: 15_000 }, async () => {
+  it("keeps the verbatim reason on an unresolved row when the outage outlives the retry", { timeout: 15_000 }, async () => {
     facilitator.settleTransient502s = 2;
     const response = await buyPaid("small_blessing");
-    expect(response.status).toBe(402);
+    expect(response.status).toBe(503);
     // One retry, never a loop: a rail that is down stays down.
     expect(facilitator.settleCalls).toBe(2);
-
-    const body: unknown = await response.json();
-    expect(isRecord(body)).toBe(true);
-    const declined = isRecord(body) ? body["payment_declined"] : undefined;
-    expect(isRecord(declined) ? declined["reason"] : undefined).toBe(
-      "Facilitator settle failed (502): error code: 502",
-    );
-
-    // And the desk reads it as the rail's fault, raw string intact.
+    expect(await response.json()).toMatchObject({ code: "settlement_unknown", charged: null });
+    const reason = "settle:Facilitator settle failed (502): error code: 502";
+    const { rows } = await listSettlementUnknowns(testEnv);
+    expect(rows.some(({ row }) => row.reason === reason && row.state === "open")).toBe(true);
+    // An unanswered settlement is not booked as a confirmed refusal.
     const report = await readDeclines(testEnv);
-    const row = report.declines.find(
-      (entry) =>
-        entry.user_agent === "settle-retry-spec/1" &&
-        entry.reason ===
-          "settle:Facilitator settle failed (502): error code: 502",
-    );
-    expect(row).toBeDefined();
-    expect(row?.stage).toBe("settle");
-    expect(row?.fault).toBe("facilitator");
+    expect(report.declines.find(entry => entry.reason === reason)).toBeUndefined();
   });
 });
 

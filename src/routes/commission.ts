@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
-import { SettlementDeclined } from "@/lib/payments";
+import { SettlementDeclined, SettlementUnknown } from "@/lib/payments";
 import { sanitizeText } from "@/lib/sanitize";
 import {
   acceptCommission,
@@ -273,6 +273,7 @@ commissionRoutes.get("/api/commission/pay/:rung", async (c) => {
       commission_url: `${c.env.STORE_BASE_URL}/api/commission/${request.id}`,
     });
   } catch (error) {
+    if (error instanceof SettlementUnknown) return error.response();
     if (error instanceof SettlementDeclined) return error.response;
     throw error;
   }

@@ -38,7 +38,7 @@ import {
 } from "@/lib/payments";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
-import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
 
 /**
  * The MCP door speaks JSON-RPC, not HTTP status codes, so a decline
@@ -495,14 +495,13 @@ export async function runMcpPayment(
       network: verifiedRequirementsForSettle.network,
       ...(paymentHeader ? { paymentHeader } : {}),
     });
-    if (error instanceof InvalidSettlementReceipt) {
-      error.reconciliationReference = reference;
-    }
+    const unknown = error instanceof SettlementUnknown ? error : new SettlementUnknown(verifiedRequirementsForSettle.network);
+    unknown.reconciliationReference = reference;
     await sendAlert(env, {
       condition: "settlement_failure",
       detail: `MCP processSettlement threw for ${itemId}: ${String(error)}`,
     });
-    throw error;
+    throw unknown;
   }
   await persistBazaarObservations(env, path);
   /*
@@ -538,13 +537,16 @@ export async function runMcpPayment(
         isTransientSettleFailure(settlement.errorReason) ||
         settlement.transaction
       ) {
-        await recordSettlementUnknown(env, {
+        const reference = await recordSettlementUnknown(env, {
           path,
           door: "mcp",
           reason: `settle:${settlement.errorReason}`.slice(0, 300),
           network: verifiedRequirementsForSettle.network,
           ...(paymentHeader ? { paymentHeader } : {}),
         });
+        const unknown = new SettlementUnknown(verifiedRequirementsForSettle.network);
+        unknown.reconciliationReference = reference;
+        throw unknown;
       }
       await recordPaymentDecline(
         env,

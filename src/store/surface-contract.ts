@@ -243,6 +243,15 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
       "Do not buy again — that is a second charge. The keeper is paged with your transaction and finishes it by hand or refunds it; the verify URL answers for any certificate that was minted, and the trust page lists it for your wallet.",
   },
   {
+    code: "settlement_unknown",
+    http: 503,
+    charged: null,
+    means:
+      "the payment processor did not provide a confirmed outcome and no on-chain rescue established settlement. Money may have moved; this is not a confirmed refusal",
+    what_to_do:
+      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+  },
+  {
     code: "invalid_settlement_receipt",
     http: 503,
     charged: null,
@@ -366,7 +375,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "invalid_settlement_receipt"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "settlement_unknown", "invalid_settlement_receipt"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

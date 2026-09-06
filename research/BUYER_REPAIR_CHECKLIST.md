@@ -8,7 +8,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 - [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; PR #540.
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
-- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — open.
+- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired; durable intent/recovery after reconciliation remains open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — open.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
@@ -80,3 +80,11 @@ BUY-004: the schema and validator share one purpose limit. Both doors reject exc
 BUY-010: buy_simple now derives all optional receipt fields from its eligible products, keeping only item_id required and no conditional branches. The served-schema and three-rail literal-buyer controls all failed before the fix; they now verify purpose survival and price agreement through both simple and theme shelves. The final combined gate for BUY-003/004/010 passed 112 tests across six files, typecheck and both Worker dry-run builds. BUY-002 remains open: changing bare HTTP purchase URLs from discovery probes to strict purchase requests requires a coordinated discovery/client transition.
 
 Recovery release prerequisite: PR #542 adds only the coordinator storage class/binding/migration. Cloudflare preview error 10211 requires this additive migration to be applied by main's regular deployment before #541's preview can upload. PR #542 merged as `e00307bd` and its production Worker build succeeded (version `6c3ac7a3-4ce7-4f9d-88e2-84e169f32673`). The consumer preview is being rechecked after merging main. This release prerequisite does not close BUY-037.
+
+## BUY-017 progress (finding remains open)
+
+- [x] Report thrown/lost settlement acknowledgements and unconfirmed transaction claims as `charged:null`, `payment_state:unknown`, with the existing reconciliation reference and same-payment guidance. HTTP returns 503; both MCP profiles signal errors. The discovery contract names the state too.
+- [ ] Preserve a durable purchase intent and stable buyer status handle across ambiguity and retries.
+- [ ] Complete the original good once settlement is established, including rails without an immediate chain rescue.
+
+The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.

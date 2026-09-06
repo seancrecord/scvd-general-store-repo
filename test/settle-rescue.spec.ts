@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { AUTHORIZATION_USED_TOPIC } from "@/lib/base-rpc";
 import { runMcpPayment } from "@/lib/mcp-payment";
-import { SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown } from "@/lib/payments";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import type { FacilitatorMockState } from "./helpers/facilitator-mock";
 import {
@@ -155,14 +155,15 @@ describe("a settle refusal that names the landed transaction (#55)", () => {
     expect(chain.getLogsCalls()).toBe(1);
   }, 30_000);
 
-  it("still fails closed when the named transaction's authorization never burned", async () => {
+  it("keeps a named transaction unresolved when its authorization is not visible", async () => {
     // The reverted-tx edge V1 did not test: a hash on the failure is a
-    // CLAIM, and the chain not showing the burn means no money moved.
+    // CLAIM; a missing event cannot establish that no money moved.
     answerChain({ burned: false });
     const declined = await payAfterDuplicateAnswer();
-    expect(declined.status).toBe(402);
+    expect(declined.status).toBe(503);
     const body = (await declined.json()) as Record<string, any>;
-    expect(body.payment_declined.reason).toContain("invalid_payload");
+    expect(body).toMatchObject({ code: "settlement_unknown", charged: null });
+    expect(body.payment_declined).toBeUndefined();
   }, 30_000);
 });
 
@@ -213,7 +214,7 @@ describe("the MCP till rescues too", () => {
 
   it("still fails closed when the chain never saw the burn", async () => {
     answerChain({ burned: false });
-    await expect(settleThroughMcp()).rejects.toThrow(SettlementDeclined);
+    await expect(settleThroughMcp()).rejects.toThrow(SettlementUnknown);
   }, 30_000);
 });
 
@@ -231,12 +232,13 @@ describe("the ambiguous-settle rescue", () => {
     expect(chain.getLogsCalls()).toBe(1);
   }, 30_000);
 
-  it("books the decline unchanged when the chain says the nonce never burned", async () => {
+  it("reports uncertainty when the chain has no visible nonce burn", async () => {
     answerChain({ burned: false });
     const declined = await payAfterOutage();
     // Money failed closed, exactly as before the rescue existed.
-    expect(declined.status).toBe(402);
+    expect(declined.status).toBe(503);
     const body = (await declined.json()) as Record<string, any>;
-    expect(body.payment_declined.reason).toContain("502");
+    expect(body).toMatchObject({ code: "settlement_unknown", charged: null });
+    expect(body.payment_declined).toBeUndefined();
   }, 30_000);
 });
