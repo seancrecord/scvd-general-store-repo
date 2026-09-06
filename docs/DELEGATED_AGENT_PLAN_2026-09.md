@@ -63,8 +63,12 @@ never a chat agent that duplicates the site.
    `message/send`, or the plain POST the memo sketches. Recommendation:
    the spec's shape at `/a2a`, with the memo's artifact as the task's
    result, so a framework's A2A client works without a custom adapter.
-4. **AWS Agent Registry.** Worth an entry once the card exists; the
-   listing is his press.
+4. **AWS Agent Registry — original listing assumption withdrawn 2026-09-06.**
+   The intake proposed an entry once the card existed. The primary read
+   in `docs/SPEC_READS.md` ("AWS registry cleanup") describes a catalog
+   created in an AWS account, with configured access and approval.
+   A named customer's registry may be an integration request; this is
+   not a general public-directory submission waiting on his press.
 
 ## Order, and what is queued
 
