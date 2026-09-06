@@ -641,7 +641,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Give the transaction hash in the tx_hash query parameter: 0x + 64 hex for Base or Polygon, a base58 signature for Solana — the shape picks the chain",
       "Optional: mandate_id, url (the endpoint paid), payer, recipient, expected_amount_usdc, launch_check_id",
       "Optional claim: your own account, up to 1000 characters, stored verbatim and marked declared — never checked, never allowed to change an observed field",
-      "Same tx_hash and mandate_id inside 24 hours returns the same case file, not a second charge for a second assembly",
+      "Identical transaction and declared inputs inside 24 hours reuse the same case file; changed claims or evidence inputs require a new assembly",
       "Reconciliation is EVM only; a Solana purchase gets that section as absent, with the reason",
       "No verdict, ever: the file never says who was wronged, at fault, or liable",
     ],

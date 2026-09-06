@@ -6,8 +6,8 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 ## SEV-1 findings
 
-- [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit included in this commit; not deployed.
-- [ ] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — regression verified locally; separate commit pending.
+- [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; not deployed.
+- [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit included in this commit; not deployed.
 - [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — open.
 - [ ] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — regression verified locally; separate commit pending.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — open.

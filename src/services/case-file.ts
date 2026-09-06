@@ -1,5 +1,5 @@
 import { BASE_EVM, EVM_CHAINS, getBlockTimestamp } from "@/lib/base-rpc";
-import { signJcs } from "@/lib/jcs";
+import { jcsCanonicalize, signJcs } from "@/lib/jcs";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
@@ -63,7 +63,7 @@ import type { Env } from "@/types";
 
 export const CASE_FILE_CLAIM_CAP = 1000;
 export const CASE_FILE_DOOR_WINDOW_DAYS = 7;
-/** Same tx and same mandate inside a day is the same case file. */
+/** The same complete question inside a day reuses the same case file. */
 export const CASE_FILE_IDEMPOTENT_SECONDS = 24 * 3600;
 const WATCH_SCAN_CAP = 500;
 
@@ -217,9 +217,14 @@ export function chainOfHash(txHash: string): "evm" | "solana" {
   return isSolanaSignature(txHash) ? "solana" : "evm";
 }
 
-/** The idempotency key: same tx and same mandate is the same case. */
-export async function caseFileQueryDigest(txHash: string, mandateId: string | undefined): Promise<string> {
-  return sha256Hex(`${txHash.toLowerCase()}|${mandateId ?? ""}`);
+/** Versioned to avoid reusing old entries that ignored the buyer's claim. */
+export async function caseFileQueryDigest(input: CaseFileInput): Promise<string> {
+  const question = Object.fromEntries(
+    Object.entries(input).filter(([, value]) => value !== undefined),
+  );
+  question.txHash = chainOfHash(input.txHash) === "evm"
+    ? input.txHash.toLowerCase() : input.txHash;
+  return sha256Hex(jcsCanonicalize({ version: 2, question }));
 }
 
 /**
@@ -528,7 +533,7 @@ export async function storeCaseFile(
   await kvPut(env.PATRONS, KV_KEYS.caseFile(signed.case_id), JSON.stringify(record));
   await kvPut(
     env.PATRONS,
-    KV_KEYS.caseFileQuery(await caseFileQueryDigest(input.txHash, input.mandateId)),
+    KV_KEYS.caseFileQuery(await caseFileQueryDigest(input)),
     signed.case_id,
     { expirationTtl: CASE_FILE_IDEMPOTENT_SECONDS },
   );
@@ -539,13 +544,12 @@ export async function getCaseFile(env: Env, caseId: string): Promise<CaseFileRec
   return kvGetJson<CaseFileRecord>(env.PATRONS, KV_KEYS.caseFile(caseId), "json");
 }
 
-/** The case already assembled for this tx and mandate inside a day, if any. */
+/** The case already assembled for this complete question inside a day, if any. */
 export async function existingCaseFor(
   env: Env,
-  txHash: string,
-  mandateId: string | undefined,
+  input: CaseFileInput,
 ): Promise<CaseFileRecord | null> {
-  const caseId = await kvGet(env.PATRONS, KV_KEYS.caseFileQuery(await caseFileQueryDigest(txHash, mandateId)));
+  const caseId = await kvGet(env.PATRONS, KV_KEYS.caseFileQuery(await caseFileQueryDigest(input)));
   return caseId ? getCaseFile(env, caseId) : null;
 }
 

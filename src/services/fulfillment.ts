@@ -474,15 +474,15 @@ export async function fulfillPurchase(
   }
   /**
    * THE CASE FILE assembles first and mints second, like every
-   * observation above it, and is idempotent by tx and mandate inside a
-   * day: the same question inside the window binds the same case to a
+   * observation above it, and is idempotent by the complete question inside a
+   * day: the same inputs inside the window bind the same case to a
    * new certificate rather than assembling and charging twice.
    */
   let caseFile: SignedCaseFile | undefined;
   let caseFileReused = false;
   if (item.id === "the_case_file") {
     const ask = input.caseFileInput ?? { txHash: "" };
-    const existing = await existingCaseFor(env, ask.txHash, ask.mandateId);
+    const existing = await existingCaseFor(env, ask);
     if (existing) {
       caseFile = existing.case;
       caseFileReused = true;
