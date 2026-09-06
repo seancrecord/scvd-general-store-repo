@@ -46,7 +46,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — open.
 - [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
 - [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — open.
-- [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in the paid-response encoding commit; PR #541 (draft).
+- [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (draft).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.
 
 ## Verification and scope
