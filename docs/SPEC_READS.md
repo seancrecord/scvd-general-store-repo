@@ -103,6 +103,60 @@ here should be re-read from a primary source before anything is built
 on it, and the WebMCP list in particular is a list of names to go and
 look at, not a set of confirmed listings.
 
+## 2026-09-06, third pass — A2A's URL and the browser door's listings
+
+Three reads the register itself asked for, plus one lesson that cost a
+morning's work and belongs on the record.
+
+**THE A2A SPECIFICATION HAS A HOME, AND WE ALREADY SERVE THE RIGHT
+PATH.** `a2a-protocol.org` is the specification site; the reference
+repository is `github.com/a2aproject/A2A`. Google donated the protocol
+to the Linux Foundation in June 2025 for neutral governance and it
+reached v1.0 in 2026. The spec recommends the agent card at
+`/.well-known/agent-card.json` under RFC 8615 — which is exactly where
+this store serves it, checked live today alongside
+`/.well-known/a2a.json`. The gap the register flagged was in our
+RECORD, not our behaviour: the card was right and the citation was
+missing. `a2a-agent-card` is now its own row, sourced at the
+versionless site because the specification is versioned and a pinned
+URL would rot.
+
+**AWS: SUPERSEDED BY THE PRIMARY READ ABOVE.** This pass reached the
+same conclusion from search results while another session reached the
+AWS documentation itself ("AWS registry cleanup", above, which cites
+the registry overview and concepts pages). Theirs is the primary read
+and this one defers to it rather than restating it: two entries saying
+the same thing from different evidence is how a register starts
+disagreeing with itself. The ROADMAP C3 and decision-4 rows carry
+their wording, not this session's. What stands from here: the spec
+watch's `aws-ard` row, and the point that ARD — the open specification
+AWS itself published — is the discovery move, already served at
+`/.well-known/ard.json`.
+
+**THE BROWSER DOOR HAS EXTERNAL RECORDS AT LAST.** The keeper supplied
+four URLs, closing the gap found this morning — the store had served
+`/webmcp.js` for weeks with not one listing row behind it. Four rows,
+kept apart on purpose: `webmcpdirectory.com` and `webmcp.ora.ai` are
+WebMCP directories, `directory.ora.ai` is Ora's wider agentic index,
+and `ora.ai/score` is an INSTRUMENT rather than a listing, filed with
+the separation the two Circle rows already keep. None was opened from
+here; all four are the keeper's confirmation, the standard every row
+in that file runs on.
+
+**⚑ THE LESSON, RECORDED AGAINST US.** An agent spent this morning
+building the verifier door — roadmap A3, `/mcp/verifier`, five
+read-only tools — and it was already built and merged, in
+`src/routes/mcp-verifier.ts`, under the memo's own task-shaped names,
+wired into the atlas, the catalogs, the docs and the porch count. The
+work was discarded whole. The cause was exactly what rule 61 names,
+turned inward: a picture of the repository formed earlier in a long
+session, trusted instead of re-read, while other sessions merged into
+main the whole time. **Rule 61 says outside facts expire. So does the
+state of this repository during a session that changes it.** Before
+building anything from a roadmap row, re-read main and grep for the
+thing — a test file named for the feature would have shown it in one
+command.
+
 ## 2026-09-06, later — the register's own sources, challenged and corrected
 
 The keeper's question, hours after rule 61 was adopted: are those the
