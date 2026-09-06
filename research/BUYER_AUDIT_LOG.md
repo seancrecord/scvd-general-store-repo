@@ -104,6 +104,8 @@ Evidence: `capacity-fills` rows in the [quote-to-fulfillment report](buyer-quote
 
 ### BUY-011 — P1: MCP returns a settlement refusal as a successful tool result
 
+**Repaired:** HTTP and both MCP payment profiles now return the same confirmed refusal reason and explicit no-charge state. MCP marks the tool result `isError:true`; the standard profile no longer substitutes a fresh quote. The 192 public-door comparisons and discovery guard were observed failing before this repair.
+
 **Open · HTTP/MCP equivalence audit.** The same `insufficient_funds` settlement refusal is a failed HTTP response with `payment_declined.reason`; MCP returns a normal JSON-RPC tool result, no `isError`, and only an English error sentence. Reproduced for all 32 products through all 35 applicable MCP shelf memberships on three rails: 105 paired refusal cases. A capable reader can infer refusal from the sentence, but a literal client receives neither the protocol failure signal nor the machine-readable reason available over HTTP. No money settles in this fixture.
 
 Repair: preserve the structured settlement reason and confirmed charge state, and signal a tool failure in MCP's own protocol. Different envelopes are appropriate; losing the failure indication is not. Keep ambiguous settlement distinct from a confirmed refusal.

@@ -8,7 +8,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 - [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; PR #540.
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
-- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired; durable intent/recovery after reconciliation remains open.
+- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired in `092c3a2f`; durable intent/recovery after reconciliation remains open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — open.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
@@ -23,7 +23,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — open.
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
 - [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
-- [ ] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — open.
+- [x] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — repaired: both MCP profiles return an error tool result with the same refusal reason and no-charge state as HTTP.
 - [ ] **BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit** — open.
 - [ ] **BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling** — open.
 - [ ] **BUY-014 — P1: a spent payment without its original key does not retrieve the receipt** — open.
@@ -88,3 +88,11 @@ Recovery release prerequisite: PR #542 adds only the coordinator storage class/b
 - [ ] Complete the original good once settlement is established, including rails without an immediate chain rescue.
 
 The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.
+
+## BUY-011: confirmed settlement refusals
+
+- [x] Preserve the processor's refusal reason and explicit `charged:false`, `payment_state:not_settled` on both doors.
+- [x] Mark the result `isError:true` for both MCP payment profiles; the standard profile retains the refusal instead of replacing it with a fresh quote.
+- [x] Describe the tool-result error in the served discovery contract.
+
+All 192 catalog × three-rail × two-profile public-door comparisons failed before the repair; each checks both HTTP and MCP reached settlement, the same machine-readable reason, and no certificate or order. They passed after the fix, along with the separately red discovery assertion. This closes BUY-011; it does not close the unknown-settlement or fulfillment-recovery findings.

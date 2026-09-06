@@ -1611,6 +1611,20 @@ export interface PendingPayment {
  * done its work does not have to carry decline-handling code it would
  * get wrong; the gate unwinds to this and serves `response`.
  */
+export function settlementDeclinedBody(body: unknown, reason: string, message?: string): Record<string, unknown> {
+  return {
+    ...(isRecord(body) ? body : { error: "Payment declined at settlement." }),
+    code: "payment_declined",
+    charged: false,
+    payment_state: "not_settled",
+    payment_declined: {
+      reason,
+      ...(message ? { message } : {}),
+      note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+    },
+  };
+}
+
 export class SettlementDeclined extends Error {
   readonly response: Response;
 

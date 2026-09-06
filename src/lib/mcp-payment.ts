@@ -38,7 +38,7 @@ import {
 } from "@/lib/payments";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
-import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 
 /**
  * The MCP door speaks JSON-RPC, not HTTP status codes, so a decline
@@ -561,7 +561,7 @@ export async function runMcpPayment(
        * carry a decline branch of its own.
        */
       throw new SettlementDeclined(
-        jsonDeclineResponse(settlement.response.body),
+        jsonDeclineResponse(settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage)),
       );
     }
     settledFacts = {
