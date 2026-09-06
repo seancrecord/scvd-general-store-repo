@@ -54,6 +54,46 @@ describe("the named list splits by purpose, exactly once", () => {
     expect(MARKDOWN_READERS).toContain("Claude-User");
   });
 
+  it("names every major model builder by name, not only under the wildcard", () => {
+    /*
+     * THE ROSTER, WALKED 2026-09-06. A crawler is welcome under the
+     * wildcard whether or not it is listed; what the list decides is
+     * whether the store SAYS so by name, which is the only permission
+     * a crawler reads. This holds the roster to the field as it stood
+     * that day — every vendor a reader of this store would name.
+     */
+    const named = new Set([...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS]);
+    for (const token of [
+      // OpenAI, Anthropic, Google, Microsoft, Amazon, Perplexity, Meta,
+      // ByteDance, Mistral, Cohere, Apple, Common Crawl.
+      "GPTBot", "ChatGPT-User", "OAI-SearchBot",
+      "ClaudeBot", "Claude-User", "Claude-SearchBot", "anthropic-ai",
+      "Googlebot", "Google-Extended", "GoogleOther", "Google-CloudVertexBot",
+      "bingbot", "Amazonbot", "PerplexityBot", "Perplexity-User",
+      "Meta-ExternalAgent", "Meta-ExternalFetcher", "Bytespider",
+      "MistralAI-User", "cohere-ai", "Applebot", "Applebot-Extended", "CCBot",
+      // The answer engines and corpora added the same day.
+      "DuckAssistBot", "YouBot", "PetalBot", "AI2Bot",
+      // xAI: named though the vendor publishes no bots page.
+      "GrokBot", "xAI-Grok", "Grok-DeepSearch",
+    ]) {
+      expect(named.has(token), `${token} is not named anywhere`).toBe(true);
+    }
+  });
+
+  it("leaves a vendor with no published purpose as an indexer, never a reader", () => {
+    /*
+     * The classification rule is the vendor's own stated purpose. xAI
+     * publishes none, so its three strings cannot be classed as
+     * readers by it — and unsure defaults to the answer that loses
+     * least, which is the page and its structured data.
+     */
+    for (const token of ["GrokBot", "xAI-Grok", "Grok-DeepSearch", "GoogleOther", "Google-CloudVertexBot"]) {
+      expect(MARKDOWN_READERS, `${token} was classed on a purpose nobody published`).not.toContain(token);
+      expect(HTML_INDEXERS).toContain(token);
+    }
+  });
+
   it("reads the User-Agent as a substring, case-insensitively, and never a blank", () => {
     expect(isMarkdownReader("Mozilla/5.0 AppleWebKit/537.36 (compatible; GPTBot/1.2)")).toBe(true);
     expect(isMarkdownReader("gptbot")).toBe(true);
