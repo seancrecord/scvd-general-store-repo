@@ -115,3 +115,36 @@ describe("the card door", () => {
     expect(home).toContain(`<meta property="og:image" content="${BASE}/og.png">`);
   });
 });
+
+describe("the mark, and the ground it sits on (2026-09-06)", () => {
+  it("flattens the store's own dino path into fillable rings", async () => {
+    const { flattenPath } = await import("@/lib/pixel-card");
+    const { DINO_PATH } = await import("@/services/favicon");
+    const rings = flattenPath(DINO_PATH, (x, y) => [x, y]);
+    // The mark is five subpaths: the body, its details and two eyes.
+    expect(rings.length).toBe(5);
+    for (const ring of rings) expect(ring.length).toBeGreaterThan(8);
+    // Curves are flattened, so a ring carries far more points than the
+    // path has commands — a straight-line reading would be a wrong shape.
+    expect(rings[0]!.length).toBeGreaterThan(100);
+  });
+
+  it("refuses a path command it cannot draw rather than guessing a shape", async () => {
+    const { flattenPath } = await import("@/lib/pixel-card");
+    // Arcs and quadratics are not implemented; a silent wrong shape on
+    // the store's own mark is worse than a build that stops.
+    expect(() => flattenPath("M0 0 A 5 5 0 0 1 10 10", (x, y) => [x, y])).toThrow();
+  });
+
+  it("draws on the dark ground the chip uses, not the old cream", async () => {
+    const png = renderCardPng(sample);
+    // The PLTE chunk's first entry is the field; it is dark now.
+    const text = new TextDecoder("latin1").decode(png);
+    const at = text.indexOf("PLTE") + 4;
+    const [r, g, b] = [png[at]!, png[at + 1]!, png[at + 2]!];
+    expect(r + g + b).toBeLessThan(120);
+    // And the last entry is the warm ink it sets type in.
+    const last = at + (16 - 1) * 3;
+    expect(png[last]! + png[last + 1]! + png[last + 2]!).toBeGreaterThan(600);
+  });
+});

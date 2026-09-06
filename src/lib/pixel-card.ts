@@ -34,15 +34,34 @@
  * that said READY would be the badge rules 43 and 54 refuse.
  */
 
+import { DINO_PATH } from "@/services/favicon";
+
 const W = 1200;
 const H = 630;
-const CREAM: readonly [number, number, number] = [245, 240, 228];
-const BROWN: readonly [number, number, number] = [74, 46, 28];
+/**
+ * THE CARD GOES DARK TOO (2026-09-06). The keeper on the cream face:
+ * "I don't like the off white paper texture, I want premium." The
+ * chip's answer was a forest-black plaque with the type in warm
+ * foil, and the share card is the same artifact at unfurl size — two
+ * different grounds for one document would read as two documents.
+ * The ramp is simply the other way round now: the field is the dark
+ * the store's own favicon badge is cut from, and the ink is warm
+ * cream over it.
+ */
+const FIELD: readonly [number, number, number] = [15, 26, 19];
+const INK: readonly [number, number, number] = [240, 230, 207];
 
 /** Ramp steps between paper and ink. Sixteen is 4 bits a pixel. */
 const INK_STEPS = 16;
 
 const GLYPH_W = 6;
+/**
+ * The favicon authors the dino on a 100x100 field via
+ * `scale(0.01118568 -0.01118568)`; this is that factor, named, so the
+ * card maps the same path onto its own box without copying a magic
+ * number out of another file's markup.
+ */
+const DINO_UNIT = 0.01118568;
 const GLYPH_H = 9;
 
 /**
@@ -174,6 +193,68 @@ class Surface {
     }
   }
 
+  /**
+   * A FILLED POLYGON, SCANLINE, WITH COVERAGE (2026-09-06).
+   *
+   * The card needed the store's dinosaur — the same mark the favicon
+   * and the chip carry — and a mark that lives as vector path data
+   * cannot be drawn by a renderer that only knows rectangles. So this
+   * fills an arbitrary polygon set: four sub-scanlines a row for the
+   * vertical, exact span arithmetic for the horizontal, nonzero
+   * winding for the crossings. It is the smallest thing that can put
+   * a curve on this card without a dependency.
+   */
+  polygons(rings: readonly (readonly [number, number][])[]): void {
+    const edges: { x0: number; y0: number; x1: number; y1: number }[] = [];
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const ring of rings) {
+      for (let i = 0; i < ring.length; i += 1) {
+        const [x0, y0] = ring[i]!;
+        const [x1, y1] = ring[(i + 1) % ring.length]!;
+        if (y0 === y1) continue;
+        edges.push({ x0, y0, x1, y1 });
+        minY = Math.min(minY, y0, y1);
+        maxY = Math.max(maxY, y0, y1);
+      }
+    }
+    if (edges.length === 0) return;
+    const SUB = 4;
+    const from = Math.max(0, Math.floor(minY));
+    const to = Math.min(this.height, Math.ceil(maxY));
+    for (let py = from; py < to; py += 1) {
+      for (let sub = 0; sub < SUB; sub += 1) {
+        const sy = py + (sub + 0.5) / SUB;
+        const hits: { x: number; dir: number }[] = [];
+        for (const e of edges) {
+          const [lo, hi] = e.y0 < e.y1 ? [e.y0, e.y1] : [e.y1, e.y0];
+          if (sy < lo || sy >= hi) continue;
+          const t = (sy - e.y0) / (e.y1 - e.y0);
+          hits.push({ x: e.x0 + (e.x1 - e.x0) * t, dir: e.y1 > e.y0 ? 1 : -1 });
+        }
+        if (hits.length < 2) continue;
+        hits.sort((a, b) => a.x - b.x);
+        let winding = 0;
+        for (let i = 0; i < hits.length - 1; i += 1) {
+          winding += hits[i]!.dir;
+          if (winding === 0) continue;
+          this.span(hits[i]!.x, hits[i + 1]!.x, py, 1 / SUB);
+        }
+      }
+    }
+  }
+
+  /** One sub-scanline's worth of ink between two x positions. */
+  private span(x0: number, x1: number, py: number, weight: number): void {
+    if (x1 <= x0) return;
+    const px0 = Math.max(0, Math.floor(x0));
+    const px1 = Math.min(this.width, Math.ceil(x1));
+    for (let px = px0; px < px1; px += 1) {
+      const cov = Math.min(x1, px + 1) - Math.max(x0, px);
+      if (cov > 0) this.add(px, py, cov * weight);
+    }
+  }
+
   /** A struck diamond: the rule ornament, and the seal's centre mark. */
   diamond(cx: number, cy: number, r: number): void {
     const step = 0.5;
@@ -301,6 +382,117 @@ function drawText(
     }
     x += advanceOf(ch, spec);
   }
+}
+
+/* ---------------- The mark ---------------- */
+
+/**
+ * The dinosaur's path data, flattened to polygons.
+ *
+ * The mark is authored on the favicon's 100x100 field and reaches
+ * this file as the same string the favicon draws — one drawing, three
+ * surfaces, no copy to drift. Only the commands that path actually
+ * uses are handled (M, m, l, c, z); anything else would be a silent
+ * wrong shape, so it throws rather than guesses.
+ */
+export function flattenPath(
+  d: string,
+  map: (x: number, y: number) => [number, number],
+): [number, number][][] {
+  /*
+   * Numbers first, so an exponent's "e" is eaten by the number rather
+   * than read as a command; and EVERY letter is tokenized, not just the
+   * handled ones — a pattern that matches only what it supports skips
+   * an arc silently and lets the following coordinates fall into the
+   * previous command, which draws a wrong shape and says nothing.
+   */
+  const tokens = d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[A-Za-z]/g) ?? [];
+  const rings: [number, number][][] = [];
+  let ring: [number, number][] = [];
+  let x = 0;
+  let y = 0;
+  let startX = 0;
+  let startY = 0;
+  let index = 0;
+  let command = "";
+  const next = (): number => Number(tokens[index++]);
+  const push = (px: number, py: number): void => {
+    ring.push(map(px, py));
+  };
+  const cubic = (x1: number, y1: number, x2: number, y2: number, ex: number, ey: number): void => {
+    const STEPS = 14;
+    for (let i = 1; i <= STEPS; i += 1) {
+      const t = i / STEPS;
+      const u = 1 - t;
+      push(
+        u * u * u * x + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * ex,
+        u * u * u * y + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * ey,
+      );
+    }
+    x = ex;
+    y = ey;
+  };
+  while (index < tokens.length) {
+    const token = tokens[index]!;
+    if (/[A-Za-z]/.test(token)) {
+      if (!/[MmLlCcZz]/.test(token)) {
+        throw new Error(`pixel-card: unsupported path command ${token}`);
+      }
+      command = token;
+      index += 1;
+    }
+    switch (command) {
+      case "M":
+      case "m": {
+        if (ring.length > 2) rings.push(ring);
+        ring = [];
+        const nx = next();
+        const ny = next();
+        x = command === "m" ? x + nx : nx;
+        y = command === "m" ? y + ny : ny;
+        startX = x;
+        startY = y;
+        push(x, y);
+        // A run of pairs after a moveto is an implicit lineto.
+        command = command === "m" ? "l" : "L";
+        break;
+      }
+      case "L":
+      case "l": {
+        const nx = next();
+        const ny = next();
+        x = command === "l" ? x + nx : nx;
+        y = command === "l" ? y + ny : ny;
+        push(x, y);
+        break;
+      }
+      case "C":
+      case "c": {
+        const rel = command === "c";
+        const x1 = (rel ? x : 0) + next();
+        const y1 = (rel ? y : 0) + next();
+        const x2 = (rel ? x : 0) + next();
+        const y2 = (rel ? y : 0) + next();
+        const ex = (rel ? x : 0) + next();
+        const ey = (rel ? y : 0) + next();
+        cubic(x1, y1, x2, y2, ex, ey);
+        break;
+      }
+      case "Z":
+      case "z": {
+        if (ring.length > 2) rings.push(ring);
+        ring = [];
+        x = startX;
+        y = startY;
+        index += 1;
+        break;
+      }
+      default:
+        throw new Error(`pixel-card: unsupported path command ${command || token}`);
+    }
+  }
+  if (ring.length > 2) rings.push(ring);
+  return rings;
 }
 
 /* ---------------- PNG encoding, the honest way: no compression ---------------- */
@@ -467,7 +659,7 @@ const LAYOUT = {
   stale: { top: 424, cell: 3, tracking: 2 },
   ruleBottom: 498,
   footer: { top: 530, cell: 2.4, tracking: 6 },
-  seal: { cx: 1060, cy: 534, radius: 44 },
+  seal: { cx: 1052, cy: 520, radius: 58 },
 } as const;
 
 export function renderCardPng(content: CardContent): Uint8Array {
@@ -521,13 +713,26 @@ export function renderCardPng(content: CardContent): Uint8Array {
   rule(LAYOUT.ruleBottom, LAYOUT.margin, LAYOUT.seal.cx - LAYOUT.seal.radius - 26);
   drawText(surface, content.footer, W / 2, LAYOUT.footer.top, LAYOUT.footer);
 
-  // The seal: two struck rings and the house initials, set to sit
-  // inside the inner ring rather than crowd it.
+  /*
+   * The seal: two struck rings with the store's dinosaur inside it —
+   * the same path data the favicon and the chip draw, so the mark is
+   * one drawing on three surfaces rather than three that drift. It
+   * held the letters "scvd" until 2026-09-06, which was a wordmark
+   * set inside a ring on a card that says the name twice already.
+   */
   const { cx, cy, radius } = LAYOUT.seal;
-  surface.ring(cx, cy, radius, 2.5);
-  surface.ring(cx, cy, radius - 7, 1);
-  const sealSpec = { cell: 2.6, tracking: 1.5 };
-  drawText(surface, "scvd", cx, cy - (GLYPH_H * sealSpec.cell) / 2, sealSpec);
+  surface.ring(cx, cy, radius, 3);
+  surface.ring(cx, cy, radius - 8, 1);
+  const markSize = (radius - 8) * 1.72;
+  const scale = markSize / 100;
+  const left = cx - markSize / 2;
+  const top = cy - markSize / 2;
+  surface.polygons(
+    flattenPath(DINO_PATH, (px, py) => [
+      left + px * DINO_UNIT * scale,
+      top + (100 - py * DINO_UNIT) * scale,
+    ]),
+  );
 
   // Quantize the coverage to the ink ramp.
   const indices = new Uint8Array(W * H);
@@ -537,9 +742,9 @@ export function renderCardPng(content: CardContent): Uint8Array {
   const palette = Array.from({ length: INK_STEPS }, (_, step) => {
     const t = step / (INK_STEPS - 1);
     return [
-      Math.round(CREAM[0] + (BROWN[0] - CREAM[0]) * t),
-      Math.round(CREAM[1] + (BROWN[1] - CREAM[1]) * t),
-      Math.round(CREAM[2] + (BROWN[2] - CREAM[2]) * t),
+      Math.round(FIELD[0] + (INK[0] - FIELD[0]) * t),
+      Math.round(FIELD[1] + (INK[1] - FIELD[1]) * t),
+      Math.round(FIELD[2] + (INK[2] - FIELD[2]) * t),
     ] as [number, number, number];
   });
   return encodePngIndexed(W, H, indices, palette, 4);

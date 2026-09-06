@@ -252,12 +252,27 @@ describe("what the chip says", () => {
     expect(chip()).toContain("never a ranking");
   });
 
-  it("keeps the seal's mark inside its ring and its legend on the arc", () => {
-    const runs = drawnText(chip());
-    const mark = runs.find((run) => run.text === "SCVD")!;
-    // The inner ring is the real bound, not the outer one.
-    expect(textWidth(mark.text, mark.size, mark.spacing)).toBeLessThanOrEqual(CHIP_BUDGETS.seal);
-    const legend = runs.find((run) => run.y === null)!;
+  it("carries the store's own dino inside the seal, at the size the ring allows", () => {
+    /*
+     * The seal held the letters SCVD until 2026-09-06; it holds the
+     * mark now, which is the same drawing the favicon is cut from
+     * rather than a second copy of it. A wordmark inside a ring that
+     * already says SCVD GENERAL STORE around it was saying it twice.
+     */
+    const svg = chip();
+    const dino = /<g transform="translate\(([-\d.]+) ([-\d.]+)\) scale\(([\d.]+)\)"/.exec(svg);
+    expect(dino, "the dino group is drawn").not.toBeNull();
+    const size = Number(dino![3]) * 100;
+    // It has to sit inside the inner ring, not merely inside the card.
+    expect(size).toBeLessThanOrEqual(CHIP_BUDGETS.seal + 8);
+    const [x, y] = [Number(dino![1]), Number(dino![2])];
+    expect(x).toBeGreaterThan(CHIP_LAYOUT.seal.cx - CHIP_LAYOUT.seal.r);
+    expect(x + size).toBeLessThan(CHIP_LAYOUT.seal.cx + CHIP_LAYOUT.seal.r);
+    expect(y).toBeGreaterThan(CHIP_LAYOUT.seal.cy - CHIP_LAYOUT.seal.r);
+  });
+
+  it("keeps the seal's legend on the arc", () => {
+    const legend = drawnText(chip()).find((run) => run.y === null)!;
     expect(legend.text).toBe("SCVD GENERAL STORE");
     expect(textWidth(legend.text, legend.size, legend.spacing)).toBeLessThanOrEqual(CHIP_BUDGETS.arc);
   });

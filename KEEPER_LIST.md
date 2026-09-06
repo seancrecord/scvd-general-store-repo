@@ -109,6 +109,14 @@ build, it is on the roadmap.
      page emit the new size on their own. If that trade is wrong,
      say so and it goes back to the ribbon — the geometry is one
      constant (`CHIP_LAYOUT`).
+  6. AND THE GROUND WENT DARK (09-06), on your "I want premium /
+     I scroll right past": forest-black with a gradient and a
+     bevelled rim, foil frame and seal, bold type, and YOUR DINO in
+     the seal instead of the letters SCVD — the same path the
+     favicon draws, so there is one mark and not two. The share
+     card follows onto the same ground with the same dino. The
+     freshness inks moved to their bright-on-dark versions and were
+     re-checked at 4.5:1 first.
   LOOK: `/badges/passport/{host}.svg` and
   `/passport/card/{host}.png` after deploy. The card is now ~380 KB
   (was ~95 KB) because the type is anti-aliased; still far under

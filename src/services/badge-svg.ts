@@ -1,5 +1,6 @@
 import { inkParamsFromSignature } from "@/lib/ink";
 import { escapeHtml } from "@/lib/sanitize";
+import { dinoMark } from "@/services/favicon";
 import { STORE_METADATA } from "@/store";
 
 /**
@@ -217,18 +218,36 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
  * because the patron badge and the audit badge are drawn for print
  * proportions and were not the thing that looked cheap.
  */
-const CHIP_PAPER = "#f7f2e6";
-const CHIP_INK = "#241d16";
 /**
- * ACCESSIBILITY, NOT TASTE (2026-09-06). The muted tone was #8a7b64,
- * which is 3.69:1 against this paper — under the 4.5:1 WCAG asks for,
- * and it was carrying BOTH small runs on the chip. A chip is an image
- * of text, so the ratio binds here exactly as it does in a page; the
- * one it was failing is the criterion an operator's own accessibility
- * audit would fail them on for embedding it. #6f6250 is the same warm
- * grey four steps darker, at 5.31:1.
+ * THE PLAQUE'S INKS (2026-09-06, fifth pass).
+ *
+ * The keeper on the cream card: "I don't like the off white paper
+ * texture, I want premium... this shit I see on the page and I don't
+ * click, I scroll right past." That names the real failure, and it is
+ * not a taste one — a pale label sits at the same VALUE as the README
+ * around it, and equal value is exactly what an eye skips. So the
+ * ground goes dark, in the forest-black the store's own favicon badge
+ * is cut from, with the type in warm white and brass over it. A dark
+ * plaque is the one thing that holds its edge on a white page and a
+ * black one alike, which is the whole job.
+ *
+ * ACCESSIBILITY IS NOT A CASUALTY OF THAT. Every ink below clears
+ * 4.5:1 against the LIGHTER end of the ground's gradient, which is the
+ * worst case; test/chip-contrast.spec.ts walks them and fails the
+ * build under it. The tone this replaces, #6f6250 on cream, was itself
+ * the fix for a #8a7b64 that had been running at 3.69:1.
  */
-const CHIP_MUTED = "#6f6250";
+const CHIP_GROUND_TOP = "#16261b";
+const CHIP_GROUND_BASE = "#0a130e";
+/** The lit rim and the shadowed one: the bevel is these two, offset. */
+const CHIP_BEVEL_LIT = "#3a5a43";
+const CHIP_BEVEL_DARK = "#050906";
+/** Foil — the rules, the seal, the eyebrow, the dino. */
+const CHIP_FOIL = "#cfa963";
+/** The subject, and the only thing set in near-white. */
+const CHIP_INK = "#f4f1e6";
+/** The record line. */
+const CHIP_MUTED = "#a9b8ac";
 
 /**
  * The chip's freshness palette. Broken and indeterminate never
@@ -244,9 +263,9 @@ export const CHIP_STATE: Record<
   "fresh" | "aging" | "expired",
   { color: string; sub: string }
 > = {
-  fresh: { color: "#1f4d33", sub: "inside one census cadence" },
-  aging: { color: "#7a4a0e", sub: "older than one cadence" },
-  expired: { color: "#5d5548", sub: "too old to rely on" },
+  fresh: { color: "#74d1a0", sub: "inside one census cadence" },
+  aging: { color: "#e6b862", sub: "older than one cadence" },
+  expired: { color: "#a7b2a8", sub: "too old to rely on" },
 };
 
 export interface PassportChipOptions {
@@ -509,7 +528,7 @@ function guilloche(host: string, width: number, height: number): string {
   return lines
     .map(
       (d) =>
-        `<path d="${d}" fill="none" stroke="${CHIP_INK}" stroke-opacity="0.055" stroke-width="0.7"/>`,
+        `<path d="${d}" fill="none" stroke="${CHIP_FOIL}" stroke-opacity="0.10" stroke-width="0.7"/>`,
     )
     .join("\n  ");
 }
@@ -521,9 +540,12 @@ function guilloche(host: string, width: number, height: number): string {
  * carrying both small runs at 3.69:1.
  */
 export const CHIP_PALETTE = {
-  paper: CHIP_PAPER,
+  /** The worst case a light run must clear: the lit end of the ground. */
+  paper: CHIP_GROUND_TOP,
+  groundBase: CHIP_GROUND_BASE,
   ink: CHIP_INK,
   muted: CHIP_MUTED,
+  foil: CHIP_FOIL,
 } as const;
 
 export function renderPassportChip(options: PassportChipOptions): string {
@@ -556,34 +578,46 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const S = L.stamp;
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
   <defs>
+    <linearGradient id="chipFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${CHIP_GROUND_TOP}"/>
+      <stop offset="0.6" stop-color="${CHIP_GROUND_BASE}"/>
+      <stop offset="1" stop-color="#101d15"/>
+    </linearGradient>
+    <linearGradient id="chipFoil" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#f2dcaa"/>
+      <stop offset="0.45" stop-color="${CHIP_FOIL}"/>
+      <stop offset="1" stop-color="#8f6f37"/>
+    </linearGradient>
     <clipPath id="chipField"><rect x="9" y="9" width="${L.width - 18}" height="${L.height - 18}" rx="2"/></clipPath>
     <path id="chipArc" d="M ${L.seal.cx - L.seal.arc} ${L.seal.cy} A ${L.seal.arc} ${L.seal.arc} 0 0 1 ${L.seal.cx + L.seal.arc} ${L.seal.cy}"/>
   </defs>
-  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="4"/>
+  <rect width="${L.width}" height="${L.height}" fill="${CHIP_BEVEL_DARK}" rx="5"/>
+  <rect x="0" y="0" width="${L.width}" height="${L.height - 1.5}" fill="${CHIP_BEVEL_LIT}" rx="5"/>
+  <rect x="1.4" y="1.4" width="${L.width - 2.8}" height="${L.height - 3.4}" fill="url(#chipFace)" rx="4"/>
+  <path d="M 5 2.6 H ${L.width - 5}" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1"/>
+  <path d="M 5 ${L.height - 2.4} H ${L.width - 5}" stroke="#000000" stroke-opacity="0.45" stroke-width="1.2"/>
   <g clip-path="url(#chipField)">
   ${guilloche(options.host, L.width, L.height)}
   </g>
-  <rect x="4.5" y="4.5" width="${L.width - 9}" height="${L.height - 9}" fill="none" stroke="${CHIP_INK}" stroke-width="1.2" rx="3"/>
-  <rect x="8.5" y="8.5" width="${L.width - 17}" height="${L.height - 17}" fill="none" stroke="${CHIP_INK}" stroke-width="0.35" stroke-opacity="0.55" rx="2"/>
+  <rect x="6.5" y="6.5" width="${L.width - 13}" height="${L.height - 13}" fill="none" stroke="url(#chipFoil)" stroke-width="1" rx="2.5"/>
+  <rect x="9.5" y="9.5" width="${L.width - 19}" height="${L.height - 19}" fill="none" stroke="${CHIP_FOIL}" stroke-width="0.35" stroke-opacity="0.45" rx="1.5"/>
   <g transform="rotate(${sealAngle} ${L.seal.cx} ${L.seal.cy})">
-    <g stroke="${CHIP_INK}" fill="none">
-      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.2"/>
+    <g stroke="url(#chipFoil)" fill="none">
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.4"/>
       <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-dasharray="1.6 2.4"/>
-      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.arc - 5}" stroke-width="0.5"/>
     </g>
-    <text font-family="${serif}" font-size="4.4" letter-spacing="0.5" fill="${CHIP_INK}"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
-    <text x="${L.seal.cx}" y="${L.seal.cy + 3.4}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="10" letter-spacing="1.4" fill="${CHIP_INK}">SCVD</text>
-    <path d="M ${L.seal.cx} ${L.seal.cy + L.seal.arc - 6} l 2.6 2.6 l -2.6 2.6 l -2.6 -2.6 z" fill="${CHIP_INK}"/>
+    <text font-family="${serif}" font-weight="bold" font-size="4.4" letter-spacing="0.5" fill="${CHIP_FOIL}"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
+    ${dinoMark(L.seal.cx - 15, L.seal.cy - 13, 30, "url(#chipFoil)")}
   </g>
-  <line x1="${L.divider}" y1="24" x2="${L.divider}" y2="86" stroke="${CHIP_INK}" stroke-width="0.4" stroke-opacity="0.4"/>
-  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
+  <line x1="${L.divider}" y1="24" x2="${L.divider}" y2="86" stroke="${CHIP_FOIL}" stroke-width="0.4" stroke-opacity="0.4"/>
+  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-weight="bold" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_FOIL}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
   <g transform="rotate(${S.angle} ${S.cx} ${S.cy})" fill="none" stroke="${state.color}">
-    <rect x="${S.cx - S.w / 2}" y="${S.cy - S.h / 2}" width="${S.w}" height="${S.h}" rx="2.5" stroke-width="1.6"/>
+    <rect x="${S.cx - S.w / 2}" y="${S.cy - S.h / 2}" width="${S.w}" height="${S.h}" rx="2.5" stroke-width="1.9"/>
     <rect x="${S.cx - S.w / 2 + 3.5}" y="${S.cy - S.h / 2 + 3.5}" width="${S.w - 7}" height="${S.h - 7}" rx="1.5" stroke-width="0.5"/>
     <text x="${S.cx}" y="${S.cy - 2}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="12.5" letter-spacing="2.4" fill="${state.color}" stroke="none">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), 12.5, CHIP_BUDGETS.stamp, 2.4))}</text>
-    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-size="9" letter-spacing="1.3" fill="${state.color}" stroke="none">${escapeHtml(date)}</text>
+    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="9" letter-spacing="1.3" fill="${state.color}" stroke="none">${escapeHtml(date)}</text>
   </g>
-  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
+  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-weight="bold" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
   <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
 </svg>`;
 }
