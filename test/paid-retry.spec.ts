@@ -81,7 +81,7 @@ describe("the paid retry", () => {
     expect(await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(tx))).toBeNull();
   });
 
-  it("points at the existing artifact when the crash landed after the mint", async () => {
+  it("keeps delivery open when only the certificate can be recovered", async () => {
     // A real purchase start to finish: cert mints, intent closes.
     const header = await challengeAndSign("small_blessing");
     const paid = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
@@ -104,18 +104,18 @@ describe("the paid retry", () => {
     const retry = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(retry.status).toBe(200);
-    expect(retry.headers.get("Paid-Retry")).toBe("already-delivered");
+    expect(retry.status).toBe(500);
+    expect(retry.headers.get("Paid-Retry")).toBe("incomplete");
     const body = (await retry.json()) as Record<string, any>;
-    // The pointer, never a second artifact: one payment, one cert
-    // (rule 13's double-count made impossible by construction).
-    expect(body.already_delivered).toBe(true);
+    // A blessing's purchased text is not recoverable from its certificate.
+    // Preserve the obligation and the payment state instead of claiming delivery.
+    expect(body).toMatchObject({ code: "delivery_failed", charged: true, charged_again: false });
+    expect(body.already_delivered).not.toBe(true);
     expect(body.certificate_id).toBe(firstBody.certificate.cert_id);
     expect(body.verify_url).toContain(firstBody.certificate.cert_id);
-    // And the reopened intent closed itself.
     expect(
       await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(TEST_TRANSACTION)),
-    ).toBeNull();
+    ).not.toBeNull();
   });
 
   it("still refuses a spent nonce whose goods went out (intent closed)", async () => {
