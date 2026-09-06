@@ -7,6 +7,7 @@ import {
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { CATALOG_ROW_SCHEMA } from "@/routes/catalog";
 import {
   frontCounterItems,
   FRONT_COUNTER_PROMISE,
@@ -858,7 +859,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "preflight_endpoint",
     summary:
-      "Probes one x402 endpoint unpaid and returns whether it serves a well-formed x402 v2 payment challenge right now: the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. A shape check at one moment, not an uptime or delivery claim. Free and rate limited; the ceiling travels with the result.",
+      "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
     reads: "subject_fetch",
     description:
       "x402 endpoint preflight, free. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
@@ -907,7 +908,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "look_at_door",
     summary:
-      "Returns what the store holds about one x402 door: one unpaid probe now, folded with the signed weekly record of that host — rounds probed of rounds since first seen, the passport tier with its fraction, the last probed round's failed checks, and whether the door answers now the way the last signed round saw it. Not a score or a rank; counts carry their denominators. Free.",
+      "What has this store recorded about the host over time? One unpaid probe now, folded with the signed weekly record: rounds probed of rounds since first seen, the passport tier with its fraction, the last probed round's failed checks, and whether the door answers now the way the last signed round saw it. History, not a fresh shape check and not a score; counts carry their denominators. Free.",
     reads: "subject_fetch",
     description:
       "What this store holds about an x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, same budget) folded with what the signed chain holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. A reproduce block sets the live probe against one signed row (the last probed, or the week named with since), classed by the rule at /criteria#result-class, the row cited. Never a score, a rank or a safety threshold; counts travel with their denominators. A host the chain never met comes back as never met. Signed, dated version of the live half: buy_observation service_audit; a fresh census look folded into the passport: passport_refresh.",
@@ -958,7 +959,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "check_before_you_pay",
     summary:
-      "Probes one x402 door unpaid and replays the stock @x402/core client selection over the accepts it returned, under the caller's own profile. Returns which accept a stock client would sign — network, asset, amount, signing window — or that it would refuse locally before signing, with the stage and the setting that decided it. Free; nothing is signed and nothing is paid.",
+      "Would a stock x402 client sign anything this door offers? One unpaid probe, then the @x402/core selection replayed over the accepts under the caller's own profile. Returns which accept would be signed — network, asset, amount, signing window — or that the client refuses locally first, with the stage and the setting that decided it. A wallet question, not a door-shape one. Free; nothing is signed and nothing is paid.",
     reads: "subject_fetch",
     description:
       "For a buyer whose client has its own rules, to learn before signing whether this door meets them. Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
@@ -1229,7 +1230,11 @@ const FREE_TOOLS: McpTool[] = [
         items: {
           type: "array",
           description: "The rows, in the shelf's own order.",
-          items: { type: "object" },
+          // The row's own shape, from the one function that builds a
+          // row. Untyped, this said only "objects come back" — and an
+          // agent could not see that a row carries the `id` a buy_*
+          // call takes next, which is the whole reason to search.
+          items: CATALOG_ROW_SCHEMA,
         },
         how_this_was_ordered: str("That the order is the shelf's own and nothing is ranked."),
         whole_catalogue: str("The full catalogue, for a caller that wants every field."),

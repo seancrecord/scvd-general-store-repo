@@ -880,6 +880,42 @@ interface CatalogRow {
   listing_url: string;
 }
 
+/**
+ * THE ROW, AS A SCHEMA (2026-09-06).
+ *
+ * `find_in_catalog` declared its answer as `items: array of object`
+ * and stopped there, so an agent could see that rows come back and
+ * not that a row carries the `id` a `buy_*` call takes next. A
+ * planner cannot chain what it cannot see, and "call it and find out"
+ * is the cost an output schema exists to remove.
+ *
+ * It lives here, beside `catalogRow`, because that function is the
+ * only thing that builds a row. `CatalogRow` is a compile-time type
+ * and vanishes at runtime; this is its runtime twin, and a test walks
+ * a real row's keys against these properties so the two cannot drift.
+ */
+export const CATALOG_ROW_SCHEMA = {
+  type: "object",
+  description: "One shelf row, in the shelf's own order.",
+  properties: {
+    id: { type: "string", description: "The item id a buy_* call or item_id lookup takes." },
+    name: { type: "string", description: "What the item is called." },
+    subtitle: { type: "string", description: "The one-line gloss, when the item has one." },
+    price_usdc: { type: "number", description: "The lowest price on this row, in USDC." },
+    price_tiers_usdc: {
+      type: "array",
+      description: "Every price this item is sold at, cheapest first.",
+      items: { type: "number" },
+    },
+    cadence: { type: "string", description: "one_off, or the recurring shape." },
+    fulfillment: { type: "string", description: "instant, or human-fulfilled with a window." },
+    reads: { type: "string", description: "What the item reads: our_books, subject_fetch, made_here." },
+    buy_url: { type: "string", format: "uri", description: "The x402 door that sells it." },
+    listing_url: { type: "string", format: "uri", description: "The room that describes it in full." },
+  },
+  required: ["id", "name", "price_usdc", "cadence", "fulfillment", "reads", "buy_url", "listing_url"],
+} as const;
+
 function catalogRow(item: MenuItem, base: string): CatalogRow {
   return {
     id: item.id,

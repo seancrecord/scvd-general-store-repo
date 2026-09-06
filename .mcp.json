@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@1.8.0"]
+    },
+    "scvd-store": {
+      "type": "http",
+      "url": "https://scvd.store/mcp"
+    }
+  }
+}

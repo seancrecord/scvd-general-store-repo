@@ -109,6 +109,17 @@ function registrations(): string {
         // tool without one is refused by test, never served long.
         description: tool.summary ?? tool.description,
         inputSchema: tool.inputSchema,
+        /*
+         * WHAT COMES BACK, not only how to ask (2026-09-06). Every
+         * catalogue row has carried an outputSchema since the surface
+         * contract; this serializer dropped it, so a browser agent
+         * had to call a tool to learn what a call returns — the one
+         * cost the schema exists to remove — and a planner could not
+         * see that find_in_catalog hands back the id the next tool
+         * takes. Passed through, never restated: one schema, both
+         * doors, no way for them to drift.
+         */
+        outputSchema: tool.outputSchema,
         annotations: tool.annotations,
         endpoint: TOOL_ENDPOINTS[tool.name],
       })),
@@ -202,6 +213,7 @@ export function webmcpScript(): string {
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema,
+      outputSchema: tool.outputSchema,
       annotations: tool.annotations,
       // (input, { signal }): the second argument carries the host's
       // AbortSignal; an already-aborted call never touches the network.
@@ -223,6 +235,19 @@ export const webmcpRoutes = new Hono<HonoEnv>();
 
 webmcpRoutes.get("/webmcp.js", (c) => {
   c.header("Content-Type", "text/javascript; charset=utf-8");
+  /*
+   * Five minutes, and the conditional-GET layer supplies the ETag
+   * that makes each re-check cost a header rather than 12KB. Short
+   * because a tool registered today should reach an already-open tab
+   * today; the validator is what makes short cheap.
+   */
   c.header("Cache-Control", "public, max-age=300");
+  /*
+   * No sniffing. The till has said this since it shipped and this
+   * script did not, which was an inconsistency rather than a
+   * decision: a script served without it is a script somebody else's
+   * browser guessed the type of.
+   */
+  c.header("X-Content-Type-Options", "nosniff");
   return c.body(webmcpScript());
 });
