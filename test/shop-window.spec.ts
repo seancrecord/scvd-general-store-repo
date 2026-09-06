@@ -93,11 +93,11 @@ describe("the shop window", () => {
   /**
    * THE REASON THE SALE INDEX EXISTS, as a test rather than as a
    * comment. The raw `evt:` stream carries every price check and every
-   * corpus read, so a bounded scan of it spends its whole cap on
-   * traffic and reports an empty shop over one that is trading — the
+   * corpus read; a window that read it would spend its whole cap on
+   * traffic and report an empty shop over one that is trading — the
    * failure booked against the decline desk on 2026-09-05. Bury one
-   * sale under more newer rows than the window will ever scan and it
-   * must still be in the glass.
+   * sale under a burst of newer traffic and it must still be in the
+   * glass, because the glass never looks at that stream at all.
    */
   it("reaches a sale buried under a burst of newer traffic", async () => {
     await recordSettlement(testEnv, "/api/buy/hello", {
@@ -185,6 +185,37 @@ describe("the shop window", () => {
      * above is the spin coming back.
      */
     expect(listCalls).toBeLessThan(10);
+  });
+
+  /**
+   * AND WHAT IT COSTS, which is the other half of the same decision.
+   *
+   * The first build read the raw `evt:` stream as a tail behind the
+   * index, so every render of the front page did a 200-key scan and a
+   * bulk read of the busiest prefix in the store. It put roughly twenty
+   * minutes on CI's Tests step and would have put the same weight on a
+   * page crawlers hit for free. The tail is gone; this pins that it
+   * stays gone, by counting what the read actually touches.
+   */
+  it("reads only the prefix where every key is a sale", async () => {
+    const asked: string[] = [];
+    const counting = {
+      list: async (options: { prefix: string }) => {
+        asked.push(options.prefix);
+        return { keys: [], list_complete: true, cursor: undefined };
+      },
+      get: async () => null,
+      put: async () => undefined,
+      delete: async () => undefined,
+    };
+
+    await readShopWindow({ COUNTERS: counting } as unknown as Env);
+
+    expect(asked).toEqual([KV_KEYS.saleEventPrefix]);
+    expect(
+      asked,
+      "the front page is walking the raw event stream again",
+    ).not.toContain("evt:");
   });
 
   it("hangs the rows in the storefront's own HTML, with no script involved", async () => {

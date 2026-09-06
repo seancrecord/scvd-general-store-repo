@@ -279,10 +279,11 @@ async function writeDeclineIndex(env: Env, event: MetricEvent): Promise<void> {
  * shop that is trading. The decline desk was caught by exactly that on
  * 2026-09-05; this is the same fix, pointed the other way.
  *
- * The WHOLE event is stored, not a display row: the same object the
- * raw stream holds, so the window's two sources are one type and the
- * older half needs no translation. What the window chooses to show is
- * the window's business.
+ * The WHOLE event is stored, not a display row. It costs the same as a
+ * trimmed one and it keeps this function out of the business of
+ * deciding what the front page may say — the window reads the same
+ * object every other desk reads, and what it chooses to show is the
+ * window's business, changeable without touching the till.
  */
 async function writeSaleIndex(env: Env, event: MetricEvent): Promise<void> {
   const key = KV_KEYS.saleEvent(

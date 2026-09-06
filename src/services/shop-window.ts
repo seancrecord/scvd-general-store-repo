@@ -35,11 +35,14 @@ import type { Env } from "@/types";
  *    buyers.
  *
  * 3. NO PRICE IN THE WINDOW, and this is a choice rather than an
- *    oversight. The rows recovered from the raw event stream (below)
- *    carry no amount, so half the window could show money and half
- *    could not — and a window where some rows have a price reads as a
- *    bug rather than as a policy. The shelf's price is one click away
- *    on the item's own page, where it is the live one.
+ *    oversight. A settle event carries no amount, so a price here
+ *    would mean either widening what the till writes down or printing
+ *    the SHELF's price beside somebody's purchase — and the second is
+ *    a claim about what they paid, which on a shelf carrying
+ *    pay-what-you-want items would sometimes be false. The window says
+ *    what sold; the price is one click away on the item's own page,
+ *    where it is the live one, and what was actually taken is counted
+ *    at /stats.
  *
  * WHAT IT DELIBERATELY IS NOT: a count. Nothing here adds up, nothing
  * here is a total, and a row that scrolled off is not a row that was
@@ -75,11 +78,12 @@ export interface ShopWindow {
 export const WINDOW_SIZE = 5;
 
 /**
- * The ceiling on either scan, named once and handed to the helper that
- * enforces it. Small on purpose: this runs on the front page and on a
- * poll, and the index prefix means a small cap already reaches months
- * of sales. The raw-stream tail below gets the same cap and reaches far
- * less, which is exactly why the index exists.
+ * The ceiling on the scan, named once and handed to the helper that
+ * enforces it. It is a backstop rather than a budget: the prefix holds
+ * only sales, on a 90-day TTL, so the list returns what exists and the
+ * cap is what keeps a busy future from turning the front page into a
+ * walk. Reaching it would mean 200 sales in 90 days, which is a problem
+ * worth having and a number worth revisiting on the day it arrives.
  */
 const SCAN_CAP = 200;
 
@@ -164,14 +168,29 @@ function isOutsideSale(event: MetricEvent | null | undefined): event is MetricEv
 /**
  * The newest few outside sales, newest first.
  *
- * TWO SOURCES, ONE ORDER, exactly as the decline desk reads its own
- * rows (lib/declines.ts): the sale index first, because every key
- * under it IS a sale and the cap therefore buys sales rather than
- * corpus reads; then the raw `evt:` stream as a tail, because the
- * index began on 2026-09-06 and every settle before it exists only
- * there. Deduped on the instant and the item — a sale after the index
- * shipped is in both — so the seam between the two is invisible in
- * the glass.
+ * THE SALE INDEX ONLY, and the raw `evt:` stream deliberately not.
+ *
+ * The decline desk (lib/declines.ts) reads its index AND the raw
+ * stream behind it, because a decline is rare and the desk is a page
+ * the keeper opens on purpose. This is the front door, and the same
+ * shape priced differently: the tail is a 200-key scan plus a bulk
+ * read of the BUSIEST prefix in the store, on every render of the page
+ * a crawler hits for free — the cost services/stats.ts moved the rail
+ * split off this render to avoid, arriving by another door. Measured
+ * 2026-09-06: it put roughly twenty minutes on CI's Tests step.
+ *
+ * And it bought nothing. `evt:` carries every price check and every
+ * corpus read, so 200 rows back is minutes of traffic, not days of
+ * sales — a settle from before the index shipped is essentially never
+ * inside that window. The store paid for a scan whose hit rate was
+ * zero. So the window reads the prefix where every key is a sale, at a
+ * cost bounded by how many sales exist rather than by how busy the
+ * store is, and the pre-index settles simply are not in it. They are
+ * in the books at /stats, which is where a count belongs.
+ *
+ * WHAT THIS MEANS ON THE DAY IT SHIPS: an empty window until the next
+ * sale, and the copy already says that plainly. A shop window shows
+ * what is moving, not an archive.
  *
  * Fail-soft is the CALLER's job here, not this function's: it throws
  * what KV throws, and the storefront catches, because a bare window is
@@ -183,18 +202,8 @@ export async function readShopWindow(
   limit: number = WINDOW_SIZE,
   now: number = Date.now(),
 ): Promise<ShopWindow> {
-  const seen = new Set<string>();
   const rows: MetricEvent[] = [];
   let oldest: string | null = null;
-
-  const take = (event: MetricEvent): void => {
-    const identity = `${event.at}|${event.item}`;
-    if (seen.has(identity)) {
-      return;
-    }
-    seen.add(identity);
-    rows.push(event);
-  };
 
   /**
    * ONE CAPPED LIST, THEN ONE BULK READ, THROUGH THE HOUSE HELPER —
@@ -232,19 +241,16 @@ export async function readShopWindow(
         oldest = event.at;
       }
       if (isOutsideSale(event)) {
-        take(event);
+        rows.push(event);
       }
     }
   };
 
   await walk(KV_KEYS.saleEventPrefix);
-  if (rows.length < limit) {
-    await walk("evt:");
-  }
 
-  // Two sources, one order. The index is newest-first by key design and
-  // so is the raw stream, but a row from the tail can be newer than the
-  // last row of the index, so the glass sorts rather than assumes.
+  // Newest first. The index is newest-first by key design already; the
+  // sort is what makes that a property of the answer rather than of the
+  // key format, and it costs nothing on five rows.
   rows.sort((a, b) => b.at.localeCompare(a.at));
 
   return {
