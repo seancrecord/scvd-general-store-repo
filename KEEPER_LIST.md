@@ -26,6 +26,14 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Browser till purchase delivered (2026-09-06).** The keeper reported
+  the delivered Small Blessing and full till reading. Certificate
+  `cert_et6zuesrrn` verifies: patron 243, $0.005 USDC on Base, recorded
+  at 22:48:31 UTC. This closes the reported browser-till purchase check,
+  not paid WebMCP completion or every wallet/network combination.
+  Browser and extension versions were not supplied. Evidence and the
+  remaining test boundary: `docs/BROWSER_CHECKOUT_2026-09-06.md`.
+
 - **Arbitrum and World checkout activated (2026-09-06).** The keeper
   entered `ARBITRUM_PAY_TO` and `WORLD_PAY_TO` on the store, using the
   existing Rainbow receiving address. That saved version needed a
@@ -943,10 +951,11 @@ Do not relitigate without you.
   your hand (done), carrying everything since 3.8.0: the
   fortune, the doctrine sentence, the passport tier, the
   case file, the aura walk, the operator's statement. The
-  tree now holds 3.16.0 (2026-09-06): explicit browser purchases and
-  quote-led payment instructions for older agents. That new bundle
-  is ready for your publish press; the registry record remains 3.15.0
-  until that press is observed.
+  3.16.0 publication was observed on 2026-09-06 and recorded in
+  `registry/clawhub/published.json`. The tree now holds 3.16.1:
+  secondary checkout/reader copy and browser-till limits corrected.
+  Publish that bundle after its merge/deploy; the published record
+  remains 3.16.0 until the next successful press is observed.
 - **x402-list owner update, round five (09-02).** Submitted
   by your hand: the five doors listed W35-W36 and the
   description. Their token is served at
