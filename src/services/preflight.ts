@@ -508,6 +508,12 @@ export interface PreflightCheck {
   name: string;
   ok: boolean;
   detail: string;
+  /**
+   * What this check did not look at, as data rather than prose. Set
+   * only on a passing check that skipped something — see ValueCheck
+   * in lib/value-checks.ts for why it exists and who found it.
+   */
+  not_judged?: readonly string[];
 }
 
 /** Advisory: true and worth knowing, never folded into the verdict. */
