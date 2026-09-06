@@ -18,6 +18,11 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/what", "what"],
   ["/llms.txt", "llms.txt"],
   ["/menu.json", "menu.json"],
+  // The shelf searched rather than fetched whole (2026-09-06). Its own
+  // row, not menu.json's: the question "what is here under a cent" is
+  // a different reading from "give me the catalogue", and folding them
+  // would hide which one agents actually ask.
+  ["/api/catalog/v1", "catalog-search"],
   ["/skill.md", "skill.md"],
   // The execution-contract give-away's 30-day gate is "did anyone
   // organically fetch or reference this" — a porch row, not a feeling.
@@ -232,6 +237,7 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   "llms.txt": "storefront",
   "llms-full.txt": "storefront",
   "menu.json": "storefront",
+  "catalog-search": "storefront",
   menu: "storefront",
   "skill.md": "storefront",
   "execution-contract": "storefront",

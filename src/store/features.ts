@@ -256,6 +256,7 @@ export const API_PATHS_BEFORE_RULE_60: readonly string[] = [
   "/corpus/diff.json", "/corpus/tiers.json", "/corpus/trajectory.json",
   "/corpus/wallet-facts.json", "/corrections", "/credit", "/defects.json",
   "/deprecation", "/developers", "/directory", "/doors", "/doors.json",
+  "/api/catalog/v1",
   "/fresh-set", "/gazette", "/mcp", "/menu.json", "/menu/{item_id}", "/passport",
   "/passport/{host}", "/porch", "/pricing", "/pricing.md", "/profiles",
   "/profiles/{host}", "/pulse.json", "/registry", "/rights", "/samples",

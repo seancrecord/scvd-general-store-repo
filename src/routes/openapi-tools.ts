@@ -38,10 +38,17 @@ export function instrumentTools(): McpTool[] {
 
 function curlFor(base: string, endpoint: { method: "GET" | "POST"; path: string }, example: Record<string, unknown>): string {
   if (endpoint.method === "GET") {
-    const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) =>
-      encodeURIComponent(String(example[name] ?? "")),
-    );
-    return `curl -sS ${base}${path}`;
+    const used = new Set<string>();
+    const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) => {
+      used.add(name);
+      return encodeURIComponent(String(example[name] ?? ""));
+    });
+    // Anything the path did not consume rides the query string, the
+    // same rule the browser surface follows.
+    const query = Object.entries(example)
+      .filter(([key, value]) => !used.has(key) && value !== undefined && value !== "")
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+    return `curl -sS ${base}${path}${query.length ? `?${query.join("&")}` : ""}`;
   }
   return `curl -sS -X POST ${base}${endpoint.path} -H 'content-type: application/json' -d '${JSON.stringify(example)}'`;
 }

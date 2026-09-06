@@ -817,12 +817,19 @@ const BASE = "https://scvd.store";
  * the guide carries "/mcp/docs", "read_docs", "Stock: 5 per week,
  * waitlist when we're out", "/api/declare-door" and "Five words carry
  * it", and still every earlier pin.
+ * Re-taken 2026-09-06 — the SEVENTY-SECOND — for the sixteenth tool:
+ * `find_in_catalog` joins the MCP catalogue the guide prints, so the
+ * guide moved without a word of its prose being edited. Confirmed
+ * before this value was taken: the guide carries "find_in_catalog",
+ * "/mcp/docs", "read_docs", "Stock: 5 per week, waitlist when we're
+ * out", "/api/declare-door" and "Five words carry it", and still every
+ * earlier pin.
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6aa44435c1dfd4ad09e058bffce8cb5b6cc24178b08f0c17c354797829bdef95";
+  "b2f5463efd9e62ddc8e39fff91e86c4cdaf82981bcf771ce5e592d74a9b17765";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
