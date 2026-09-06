@@ -21,6 +21,12 @@ import {
   priceLine,
 } from "@/services/menu-markdown";
 import { MENU_ITEMS, getMenuItem } from "@/store";
+import {
+  CONFORMANCE_KINDS,
+  CONFORMANCE_VERDICTS,
+  KEY_RESOLUTIONS,
+} from "@/services/conformance";
+import { ORDER_STATUSES } from "@/types";
 import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
@@ -289,6 +295,23 @@ const str = (description: string, maxLength?: number): Schema => ({
   type: "string",
   description,
   ...(maxLength ? { maxLength } : {}),
+});
+
+/**
+ * A STRING WHOSE VALUES ARE A CLOSED SET (2026-09-06).
+ *
+ * Several fields spelled their vocabulary into the description —
+ * "offer | receipt", "queued | completed" — which reads fine and
+ * validates against nothing. A WebMCP scan named one of them; the
+ * others were the same defect on quieter fields. The values are
+ * always passed in from the runtime constant the code branches on,
+ * never retyped here, so a word added to the code cannot go missing
+ * from what callers are told.
+ */
+const choice = (description: string, values: readonly string[]): Schema => ({
+  type: "string",
+  description,
+  enum: [...values],
 });
 
 function purchaseOutputSchema(item: MenuItem): Schema {
@@ -916,7 +939,16 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         url: str("The https x402 door you are asking about.", 2048),
-        since: str("Optional. A signed week, e.g. 2026-W34, to reproduce against that week's row.", 8),
+        since: {
+          type: "string",
+          description:
+            "Optional. A signed week, to reproduce against that week's row.",
+          // ISO 8601 week date. The shape lived only in the "e.g."
+          // until a scan pointed out that an example is not a format.
+          pattern: "^\\d{4}-W\\d{2}$",
+          maxLength: 8,
+          examples: ["2026-W34"],
+        },
       },
       required: ["url"],
       additionalProperties: false,
@@ -1057,7 +1089,10 @@ const FREE_TOOLS: McpTool[] = [
           "The signed offer or receipt as a compact JWS: header.payload.signature, base64url.",
           9000,
         ),
-        kind: str("Optional: offer | receipt. Detected from the artifact when absent."),
+        kind: choice(
+          "Optional. The artifact kind; detected from the artifact when absent.",
+          CONFORMANCE_KINDS,
+        ),
         public_key_hex: str(
           "Optional ed25519 public key, hex. Supplying it makes the check fully offline.",
           64,
@@ -1075,15 +1110,20 @@ const FREE_TOOLS: McpTool[] = [
     outputSchema: {
       type: "object",
       properties: {
-        verdict: str("conforms | does_not_conform | could_not_check."),
-        kind: str("offer | receipt, or null when undetectable."),
+        verdict: choice("The desk's finding on the artifact.", CONFORMANCE_VERDICTS),
+        kind: {
+          type: ["string", "null"],
+          description: "The artifact kind, or null when it could not be detected.",
+          enum: [...CONFORMANCE_KINDS, null],
+        },
         live: {
           description:
             "Separate from conformance: an expired offer can conform and not be payable. Null for receipts.",
           type: ["boolean", "null"],
         },
-        key_resolution: str(
-          "offline | did:web | not_attempted | budget_exhausted.",
+        key_resolution: choice(
+          "How the issuer's key was obtained, or why it was not.",
+          KEY_RESOLUTIONS,
         ),
       },
       required: ["verdict", "kind"],
@@ -1157,7 +1197,7 @@ const FREE_TOOLS: McpTool[] = [
         order_id: str("The order polled."),
         item_id: str("What was bought."),
         item_name: str("Its name on the shelf."),
-        status: str("queued | completed. Completed is terminal."),
+        status: choice("Where the order stands. Completed is terminal.", ORDER_STATUSES),
         created_at: str("When the order was taken, ISO 8601."),
         sla_hours: { type: "number", description: "The delivery promise, in hours from created_at." },
         patron_number: { type: "number", description: "Your sequential patron number." },
@@ -1167,7 +1207,23 @@ const FREE_TOOLS: McpTool[] = [
         message: str("The store's word on where things stand."),
         window_breached: {
           type: "object",
-          description: "Present only past the promised window: due_at, hours_late, kind, owed_usdc, and how the refund gets paid (by the keeper's hand, never automatically).",
+          description:
+            "Present only past the promised window. The store counting a missed promise against itself, in full.",
+          properties: {
+            due_at: str("When the window closed, ISO 8601."),
+            hours_late: { type: "number", description: "How far past it, in hours." },
+            kind: choice(
+              "Whether it arrived late or has still not arrived.",
+              ["delivered_late", "still_open"],
+            ),
+            owed_usdc: { type: "number", description: "What is owed back, in USDC." },
+            note: str("What the promise says about this case, in plain words."),
+            how_it_gets_paid: str(
+              "That the keeper pays refunds by hand, with a transaction hash on the record.",
+            ),
+            verify: str("The order's own URL, for checking this independently."),
+          },
+          required: ["due_at", "hours_late", "kind", "owed_usdc"],
         },
       },
       required: ["order_id", "item_id", "status", "created_at", "sla_hours", "message"],
@@ -1216,7 +1272,10 @@ const FREE_TOOLS: McpTool[] = [
           minimum: 0,
           description: "A ceiling in USDC. Items at or below it match.",
         },
-        item_id: str("One item's id. The answer carries that item alone, in full.", 60),
+        item_id: str(
+          "One item's id, from an earlier answer's rows. Supplying it switches the tool out of search: q and max_price_usdc are not applied, and the answer is that one item in full.",
+          60,
+        ),
       },
       additionalProperties: false,
       examples: [{ max_price_usdc: 0.01 }, { q: "watch" }, { item_id: "spot_check" }],

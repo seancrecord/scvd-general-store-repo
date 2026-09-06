@@ -186,11 +186,36 @@ export interface ConformanceCheck {
   advisory?: boolean;
 }
 
+/**
+ * THE VOCABULARIES, AT RUNTIME (2026-09-06).
+ *
+ * These three were TypeScript unions and nothing else, so every
+ * surface that published them — the MCP output schema, the OpenAPI
+ * contract — restated the words in prose an agent had to read rather
+ * than in an enum a client could validate against. A WebMCP scan
+ * named the input half of it ("kind lacks enum constraint"); the
+ * output half was the same defect one field over. The unions below
+ * are now derived FROM these arrays, so a fourth key_resolution
+ * cannot be added to the code and left out of what callers are told.
+ */
+export const CONFORMANCE_VERDICTS = [
+  "conforms",
+  "does_not_conform",
+  "could_not_check",
+] as const;
+export const CONFORMANCE_KINDS = ["offer", "receipt"] as const;
+export const KEY_RESOLUTIONS = [
+  "offline",
+  "did:web",
+  "not_attempted",
+  "budget_exhausted",
+] as const;
+
 export interface ConformanceVerdict {
   /** Frozen contract marker. See CONFORMANCE_VERSION. */
   version: string;
-  verdict: "conforms" | "does_not_conform" | "could_not_check";
-  kind: "offer" | "receipt" | null;
+  verdict: (typeof CONFORMANCE_VERDICTS)[number];
+  kind: (typeof CONFORMANCE_KINDS)[number] | null;
   checks: ConformanceCheck[];
   /**
    * LIVENESS IS A SEPARATE QUESTION FROM CONFORMANCE, and it gets its
@@ -209,7 +234,7 @@ export interface ConformanceVerdict {
    */
   live: boolean | null;
   liveness: string;
-  key_resolution: "offline" | "did:web" | "not_attempted" | "budget_exhausted";
+  key_resolution: (typeof KEY_RESOLUTIONS)[number];
   /**
    * Present only when the artifact's issuer is THIS STORE. Additive to
    * the frozen v1 contract. Cloudflare refuses a Worker's subrequest
