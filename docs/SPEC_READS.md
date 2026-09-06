@@ -87,6 +87,69 @@ here should be re-read from a primary source before anything is built
 on it, and the WebMCP list in particular is a list of names to go and
 look at, not a set of confirmed listings.
 
+## 2026-09-06, later — the register's own sources, challenged and corrected
+
+The keeper's question, hours after rule 61 was adopted: are those the
+right sources, and is Amazon not doing WebMCP work? Both halves earned
+a change, and the first one caught a row that was wrong on its opening
+day — which is the register working, not the register failing.
+
+**THE x402 SPEC HAD ALREADY MOVED, AND TWO ROWS POINTED AT A FORK.**
+Governance went to the x402 Foundation: announced with Cloudflare
+2025-09-23, formalised under the Linux Foundation 2026-04-02 with 22
+launch members (AWS, Circle, Google, Mastercard, Stripe, Visa among
+them). The repository is `github.com/x402-foundation/x402`;
+`coinbase/x402` is now a development fork. `x402-wire`,
+`offer-receipt` and `x402-client-defaults` all cited the fork.
+`docs/PROTOCOL_EXPANSION_2026-08.md` had recorded the foundation in
+August and the spec URL was never moved with it — a fact known in one
+file and stale in another, which is the same shape as the listing
+drift that started this whole thread.
+
+**WEBMCP: THE SOURCE IS RIGHT, THE FACT MAY NOT BE.** The W3C Web
+Machine Learning Community Group draft is the spec of record — a Draft
+Community Group Report, not on the standards track, edited by Google
+and Microsoft engineers, most recent revision reported 2026-07-21, API
+surface still changing between drafts. So the row's source stands. But
+this repository records `document.modelContext` as the surface with
+`navigator.modelContext` deprecated, and sources read today still show
+`navigator.modelContext.registerTool()` in the @mcp-b polyfill. A
+moved spec with a lagging polyfill explains both; so does our note
+being wrong. Nobody here has opened the draft. The row now asks the
+question instead of asserting the answer, and it is the read to do
+before anything touches `/webmcp.js`.
+
+**GOOGLE, YES. AMAZON, NOT IN WEBMCP.** Google moved WebMCP from
+prototype to public origin trial at I/O 2026, with Gemini as the
+in-browser agent and the trial reported as Chrome 149 to 156; Edge
+ships it behind a flag. That makes Chrome the browser door's landlord
+and its trial window a date this store depends on, so the row now
+carries the window rather than a vague "unexpired". On Amazon: no
+WebMCP standards work found. What exists is adjacent and easy to
+conflate — AWS shipped a managed MCP server (GA, OAuth 2.1 through
+AWS Sign-In since July), AgentCore has a browser tool, AWS is a launch
+member of the x402 Foundation, and Alex Nahas built MCPB, WebMCP's
+precursor, while at Amazon. Real proximity, no specification work.
+Recorded so the next intake does not re-open it on the same hunch.
+
+**ROW 14 WAS ONE ROW DOING FIVE JOBS,** covering llms.txt, agents.md,
+RFC 9727, ARD, ai-catalog and the A2A card against a single source
+that describes one of them. Split into `llms-txt` and
+`well-known-catalogs`. The second carries the sharper finding: **the
+A2A specification's canonical URL is written down nowhere in this
+tree.** The store serves an agent card at three paths against a shape
+it cannot cite. Establishing that URL is the first read that row is
+due.
+
+**EVERY SOURCE ABOVE IS SECONDHAND (rule 55).** github.com,
+developer.chrome.com, the W3C hosts and aws.amazon.com are all
+egress-blocked from the build sandbox; this is assembled from search
+results, and not one of the primaries was opened. Five rows now carry
+a `caveat` field saying what is unsettled about the row itself, and
+`npm run specs:check` prints them under a ⚑. A register whose own rows
+are presumed sound is the failure rule 61 describes, so the doubt
+travels with the row.
+
 ## 2026-08-30 — the cross-protocol re-read (supersedes the sourcing caveat above, in part)
 
 The three reads below were assembled under an egress block. On

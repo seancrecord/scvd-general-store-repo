@@ -60,7 +60,13 @@ if (flag("json")) {
   const width = Math.max(...rows.map((row) => row.id.length));
   for (const row of [...rows].sort((a, b) => b.days - a.days)) {
     const when = row.counted_from === "read" ? `read ${row.last_read}` : `never read`;
-    console.log(`${row.overdue ? "OVERDUE" : "ok     "} ${String(row.days).padStart(4)}d  ${row.id.padEnd(width)}  ${when}`);
+    const doubt = row.caveat ? "  ⚑" : "";
+    console.log(`${row.overdue ? "OVERDUE" : "ok     "} ${String(row.days).padStart(4)}d  ${row.id.padEnd(width)}  ${when}${doubt}`);
+  }
+  const flagged = rows.filter((row) => row.caveat);
+  if (flagged.length > 0) {
+    console.log(`\n⚑ ${flagged.length} rows carry a caveat — something about the row itself is unsettled:`);
+    for (const row of flagged) console.log(`\n  ${row.id}\n    ${row.caveat}`);
   }
   if (late.length > 0) {
     console.log(`\n${late.length} overdue. Open the source, then record the read:`);
@@ -69,6 +75,7 @@ if (flag("json")) {
       console.log(`    ${row.fact}`);
       console.log(`    source:  ${row.source}`);
       console.log(`    breaks:  ${row.depends}`);
+      if (row.caveat) console.log(`    ⚑        ${row.caveat}`);
     }
     console.log(`\nRule 61: the read goes in docs/SPEC_READS.md with its date and what could not be reached. Then: npm run specs:check -- --review=<id>`);
   } else {

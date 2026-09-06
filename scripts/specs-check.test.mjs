@@ -24,7 +24,22 @@ test("every fact names what it is, where to read it, and what breaks when it mov
     // The rule the register is built on: a row nobody can say what
     // breaks for is a row that does not belong here.
     assert.ok(entry.depends.length > 10, `${entry.id} does not say what breaks`);
+    // A caveat is optional, but an empty one is worse than none: it
+    // shows the flag and says nothing.
+    if ("caveat" in entry) assert.ok(entry.caveat.length > 40, `${entry.id} has a caveat that says nothing`);
   }
+});
+
+test("a row's own doubt travels with it into the reading", () => {
+  const rows = readWatch(null, at(REGISTER_STARTED));
+  const flagged = rows.filter((row) => row.caveat);
+  // The x402 rows were wrong on the register's first day — the spec had
+  // already moved to the foundation — and the row that records that is
+  // the register's own evidence that it needs re-reading, not proof it
+  // is trustworthy.
+  assert.ok(flagged.length > 0);
+  assert.match(rows.find((row) => row.id === "x402-wire").caveat, /foundation/i);
+  assert.equal(rows.find((row) => row.id === "mcp-revisions").caveat, null);
 });
 
 test("a fact never read counts from the register's opening, and is not backdated to look green", () => {

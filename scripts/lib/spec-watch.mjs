@@ -40,6 +40,12 @@ export const REVIEW_EVERY_DAYS = 90;
  * One row per outside fact the store encodes. `fact` is the thing that
  * could stop being true; `depends` is what in this tree is wrong the
  * day it does. Sources are primary where one exists.
+ *
+ * `caveat` is optional and carries what is WRONG OR UNSETTLED about
+ * the row itself — a source nobody here has opened, a fact stated two
+ * ways by two places, a URL that may already have moved. A register
+ * whose own rows are presumed sound is the thing rule 61 warns about,
+ * so the doubt travels with the row and prints beside it.
  */
 export const FACTS = Object.freeze([
   {
@@ -66,36 +72,40 @@ export const FACTS = Object.freeze([
   {
     id: "webmcp-api",
     protocol: "WebMCP",
-    fact: "The page surface is document.modelContext with registerTool, and the tool descriptor shape is unchanged. navigator.modelContext is the deprecated spelling.",
+    fact: "Which object carries registerTool — document.modelContext or navigator.modelContext — and whether the tool descriptor shape is unchanged. The W3C Web Machine Learning CG draft is the spec of record.",
     source: "https://github.com/webmachinelearning/webmcp",
     depends: "src/routes/webmcp.ts and the declarations served at /webmcp.js",
+    caveat: "STATED TWO WAYS AND NOT SETTLED HERE (2026-09-06). This repository has recorded document.modelContext as the surface and navigator.modelContext as deprecated; sources read the same day still show navigator.modelContext.registerTool(), at least in the @mcp-b polyfill. Both can be true at once — a spec that moved and a polyfill that has not — but nobody here has opened the draft to find out, and the answer decides what /webmcp.js should serve. Read this one before touching the browser door.",
   },
   {
     id: "webmcp-origin-trial",
     protocol: "WebMCP",
-    fact: "The Chrome origin-trial token for this origin is unexpired, and a shipping Chrome still enables the API without one where we assume it does.",
+    fact: "The Chrome origin-trial window (reported as Chrome 149 to 156) and whether our token for this origin outlives it — plus whether a shipping Chrome enables the API without one where we assume it does. Google moved WebMCP to a public origin trial at I/O 2026, which makes Chrome the door's landlord.",
     source: "https://developer.chrome.com/docs/ai/webmcp",
+    caveat: "The 149-to-156 window is secondhand (rule 55): developer.chrome.com is egress-blocked from the build sandbox and nobody here has opened it. A trial that ends without the API shipping closes the browser door, so this row is a date, not an opinion.",
     depends: "the origin-trial meta on every room that declares the browser door; the WebMCP door's own criterion in the six-doors battery",
   },
   {
     id: "x402-wire",
     protocol: "x402",
     fact: "The v2 challenge shape holds: PAYMENT-REQUIRED as base64 JSON, x402Version 2, the accepts entry fields, and payment presented at _meta['x402/payment'] over MCP.",
-    source: "https://github.com/coinbase/x402",
+    source: "https://github.com/x402-foundation/x402",
     depends: "the whole preflight battery, every 402 the till serves, and lib/mcp-payment.ts",
+    caveat: "THE SPEC MOVED AND THIS ROW WAS WRONG ON ITS FIRST DAY (corrected 2026-09-06). Governance went to the x402 Foundation — announced with Cloudflare 2025-09-23, formalised under the Linux Foundation 2026-04-02 — and coinbase/x402 is now a development fork, not the spec of record. Both x402 rows pointed at the fork. The new URL is itself secondhand; github.com is egress-blocked from here.",
   },
   {
     id: "x402-client-defaults",
     protocol: "x402",
     fact: "The stock @x402/core selection logic and its $1 default per-payment cap are as check_before_you_pay replays them.",
-    source: "https://github.com/coinbase/x402/tree/main/typescript",
+    source: "https://github.com/x402-foundation/x402",
+    caveat: "The reference implementations moved with the spec; the client this row models may now live under the foundation rather than in the Coinbase tree this store installed from. Which package a caller actually runs is the fact, not which repository we read.",
     depends: "check_before_you_pay — a reading that models a client version nobody runs any more is a wrong answer delivered confidently",
   },
   {
     id: "offer-receipt",
     protocol: "x402 offer-receipt",
     fact: "The signed offer and receipt schemas, and the extension key they ride under, are unchanged.",
-    source: "https://github.com/coinbase/x402",
+    source: "https://github.com/x402-foundation/x402",
     depends: "the conformance desk, the published vectors at /.well-known/conformance/offer-receipt-vectors.json, and the defect vocabulary",
   },
   {
@@ -139,11 +149,19 @@ export const FACTS = Object.freeze([
     reviewed_at: "2026-09-06",
   },
   {
-    id: "agent-discovery-conventions",
+    id: "llms-txt",
     protocol: "Discovery / AEO",
-    fact: "llms.txt, agents.md, the RFC 9727 api-catalog, ai-catalog and the A2A agent card are still the conventions agents look for, in the shapes we serve.",
+    fact: "llms.txt and agents.md are still the conventions a model reaches for first, in the shapes we serve them.",
     source: "https://llmstxt.org/",
-    depends: "every well-known document, and rule 61's claim that discovery moves faster than the rails",
+    depends: "/llms.txt, /agents.md, the per-area llms files, and every claim that a model can read this store without a crawler",
+  },
+  {
+    id: "well-known-catalogs",
+    protocol: "Discovery",
+    fact: "The RFC 9727 api-catalog, the ARD document and ai-catalog still name records in the shapes those specifications define, and the A2A agent card still matches its own.",
+    source: "https://www.rfc-editor.org/info/rfc9727",
+    depends: "/.well-known/api-catalog, /.well-known/ard.json, /.well-known/ai-catalog.json, /.well-known/a2a.json and its two aliases",
+    caveat: "THREE SPECIFICATIONS, ONE SOURCE, WHICH IS NOT ENOUGH. RFC 9727 is the only one with a URL this repository has recorded. ARD's is an AWS blog post rather than a specification host, and the A2A spec's canonical URL is written down NOWHERE in this tree — the card is served against a shape nobody here can cite. Establishing that URL is the first read this row is due, and the row should be split again once it exists.",
   },
 ]);
 
@@ -170,6 +188,7 @@ export function readWatch(record, now = new Date(), reviewEveryDays = REVIEW_EVE
       fact: entry.fact,
       source: entry.source,
       depends: entry.depends,
+      caveat: entry.caveat ?? null,
       last_read: last ? last.slice(0, 10) : null,
       counted_from: last ? "read" : "register",
       days: age,
