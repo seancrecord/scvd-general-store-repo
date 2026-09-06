@@ -162,6 +162,15 @@ export function securityBlock(
  */
 export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
+    code: "payment_identity_unavailable",
+    http: 503,
+    charged: false,
+    means:
+      "verification did not identify the signer needed to check the supplied idempotency key; this request did not attempt settlement",
+    what_to_do:
+      "Keep the original signed payment and idempotency key. Retry the identical request when verification is available; do not replace the key to bypass this check. Standard MCP payment mode reports this with isError:true in the tool result.",
+  },
+  {
     code: "target_refused",
     http: 400,
     means:
@@ -366,7 +375,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "invalid_settlement_receipt"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "invalid_settlement_receipt", "payment_identity_unavailable"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

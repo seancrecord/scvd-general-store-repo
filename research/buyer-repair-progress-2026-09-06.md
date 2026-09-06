@@ -8,6 +8,22 @@ Sean authorized rebasing on main and beginning implementation. Work is local; pe
 - Created `codex/buyer-repairs` from the existing checkout and rebased successfully. Its pre-existing listing-record commit was replayed as `9f6a73f8`; that unrelated change remains intact.
 - Four untracked paths now tracked on main were preserved under `/private/tmp/scvd-pre-rebase-20260906/` before rebasing: `docs/THE_MAP_2026-09.md`, `src/lib/buyer-contract.ts`, `test/machine-buyer-entrypoints.spec.ts`, and `test/purchase-refusal-fields.spec.ts`. The refusal-fields file was identical; the other local versions remain in that backup. Main's versions are in the checkout. All other untracked audit work was retained.
 
+## BUY-007 — verified Solana purchase replay
+
+Worktree `codex/buyer-solana-replay` started independently from main `4f086c26` while PR #549 ran CI. The Solana payer is the token authority returned by successful facilitator verification, not the transaction fee payer or adjacent buyer-supplied metadata. The installed SVM SDK's `getTokenPayerFromTransaction` confirms that contract. A per-request slot carries this identity to both cache seams. Cache keys retain base58 case while preserving EVM address normalization.
+
+A valid idempotency key with no usable verified payer now refuses before settlement with a stable `payment_identity_unavailable` code. The HTTP listing and MCP tool catalog publish the refusal, and standard MCP marks the result as an error. A failed verification never opens a cached purchase.
+
+Regression evidence:
+
+- Before repair: 304 runtime failures, including every catalog product over HTTP, legacy MCP and standard MCP with identical-payment, fresh-payment and already-processed controls. A fresh transaction previously reached settlement again; rebroadcast of the same transaction does not by itself prove another debit.
+- Before discovery publication: both new served-contract checks failed because the code was absent.
+- After repair: 397 focused tests across nine files passed, including EVM replay authorization/scope, cross-rail identity, receipt integrity and discovery guards. All payment egress is mocked; disposable buyer and separate fee-payer signatures are independently verified by the fixture.
+- Added hostile controls preserve separate buyers' receipts under the same key and ignore forged adjacent payer metadata; unrelated transaction signatures cannot retrieve a cached good. Parallel cached requests exercise request-local identity isolation.
+- Typecheck and both Worker dry-run builds passed. The full suite remains assigned to GitHub, as requested.
+
+The existing 24-hour cache and verification prerequisite remain. This repair does not close expired/spent verification, stock checks preceding replay, simultaneous first-purchase races, cache persistence loss, or the three remaining SEV-1 recovery findings.
+
 ## BUY-018 — fixed locally
 
 The verified payment's envelope now determines whether EVM authorization fields may identify a payer. Only exact-EVM v2 payments can supply that identity. A Solana transaction's unsigned adjacent `authorization` object cannot open another wallet's receipt cache or consume an EVM nonce.
