@@ -701,6 +701,25 @@ Do not relitigate without you.
 
 ### Presses waiting (2026-09-03, evening)
 
+- **RECORD THE LISTINGS AND ROSTER BASELINES — after PR 525 merges.**
+  The Saturday job gained a third battery that re-reads all forty-nine
+  venue rows served at `/.well-known/trust.json`, and it has nothing to
+  compare against until a baseline exists. From a clone on a machine
+  with ordinary internet — NOT the agent's sandbox, which reads 43 of
+  49 as unreachable and would bake that in as truth:
+
+      git checkout main && git pull
+      npm run listings:check -- --record
+      git add docs/listings/ && git commit -m "Record the listings and roster baselines" && git push
+
+  No `npm install` needed; the battery is Node builtins and fetch.
+  Writes `docs/listings/observation.json` (mirrors) and
+  `docs/listings/roster.json` (the roster). Expect some rows to read
+  `silent` on the first pass and do NOT read those as delistings — a
+  venue that renders in JavaScript serves HTML naming nobody. The
+  first recording freezes what is true; the alarm only fires when a
+  row later moves DOWN from what it recorded.
+
 - **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
   before-you-pay, month, feeds, the FIX lines (roadmap C5). The
   Saturday listings read will say the registry differs from the
