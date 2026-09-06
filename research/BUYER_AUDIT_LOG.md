@@ -82,6 +82,8 @@ Repair: serialize or atomically claim a purchase intent before settlement, and g
 
 ### BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”
 
+**Partial repair:** the unknown settlement response now carries `charged:null`, a reconciliation reference when recorded, and instructions to retain the original payment/key. Both HTTP and MCP distinguish uncertainty from a confirmed refusal. Full input-bound intent, stable status and post-reconciliation delivery remain open.
+
 **Open · injected payment-ambiguity audit, not a verified live incident.** The simulated transfer lands, the facilitator acknowledgement is replaced with transport failures, and the immediate chain lookup has no visible event. On Base/Polygon, the purchase and identical retry provide no certificate while claiming no charge. The audit also checks persisted certificate keys. Base's positive control rescues and fulfills when the event is visible. Polygon does not invoke that immediate rescue even when the fixture would expose the event.
 
 Repair: distinguish confirmed rejection from unresolved settlement in the buyer response. Preserve the purchase intent and give a stable status/recovery handle; complete delivery when settlement is established. Do not advise an unqualified fresh payment. The repository already records settlement-unknown rows and has later reconciliation/alerts; those defenses do not make the immediate “No charge” statement true or deliver the good during these tests. Eventual reconciliation is not claimed tested here.

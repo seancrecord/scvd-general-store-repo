@@ -14,7 +14,7 @@ import {
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
-import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
@@ -1004,7 +1004,7 @@ async function callPurchaseTool(
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
     }
-    if (error instanceof InvalidSettlementReceipt) {
+    if (error instanceof SettlementUnknown) {
       const body = error.body();
       if (standardPayment(c)) {
         return rpcResult(id, {

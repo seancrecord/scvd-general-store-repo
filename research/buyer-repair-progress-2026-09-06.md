@@ -153,3 +153,11 @@ The earlier probe timing/cleanup test repair is commit `b4f9936f`. Each buyer fi
 - BUY-019: `1a0b3827`.
 
 The checklist checks off only these six findings. BUY-017, BUY-034, and BUY-037 remain unchecked. All fixes are local on `codex/buyer-repairs`; nothing was pushed or deployed. Settlement in every repair regression was simulated, with no real funds moved. Historical Markdown audit reports are preserved alongside the log; raw JSON captures and exploratory scripts/specs remain local and are not part of this commit.
+
+## BUY-017: truthful unknown settlement responses (partial)
+
+The public-door fixture lets the local processor settle once, then replaces the acknowledgement with a throw, persistent transport failure, or a failed response naming the transaction. The inline chain reader has no event yet. All 27 Base/Polygon/Solana × HTTP/legacy-MCP/standard-MCP × failure cases were red before the response repair; each also checks an identical retry. The shared discovery guard independently failed before the new code was advertised.
+
+Unresolved outcomes now throw `SettlementUnknown`, return `charged:null` and `payment_state:unknown`, and retain the existing reconciliation reference when it writes. HTTP uses 503; legacy MCP returns a protocol error and standard MCP sets `isError:true`. Neither offers a fresh payment as a remedy. An invalid Solana receipt retains its distinct existing code under the same unknown-state boundary. The decline log is reserved for answered refusals; unresolved attempts stay in the reconciliation queue.
+
+The related gate passed 137 of 140 assertions; three obsolete expectations across two files were updated for the new uncertainty response and rechecked separately: all 11 tests in those files passed. Typecheck and both Worker dry-run builds passed. This is response correctness, not complete recovery: stable intent/status storage, old-input binding, cross-rail reconciliation and eventual fulfillment remain open under BUY-017/034/037. No real payments were made and no full suite was run locally.

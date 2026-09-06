@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MCP_REFUSAL_CODES } from "@/store/surface-contract";
 import { DELIVERY_FAILED_CODE } from "@/lib/delivery-failed";
-import { INVALID_SETTLEMENT_RECEIPT_CODE } from "@/lib/payments";
+import { INVALID_SETTLEMENT_RECEIPT_CODE, SettlementUnknown } from "@/lib/payments";
 import { MENU_ITEMS } from "@/store";
 import MCP_SOURCE from "../src/routes/mcp.ts?raw";
 import DOOR_LAW_SOURCE from "../src/lib/purchase-args.ts?raw";
@@ -166,8 +166,11 @@ describe("a refusal on the wire carries the code and the charge", () => {
     if (/deliveryFailedBody\(/.test(MCP_SOURCE)) {
       emitted.add(DELIVERY_FAILED_CODE);
     }
-    if (/error instanceof InvalidSettlementReceipt/.test(MCP_SOURCE)) {
+    if (/error instanceof (?:InvalidSettlementReceipt|SettlementUnknown)/.test(MCP_SOURCE)) {
       emitted.add(INVALID_SETTLEMENT_RECEIPT_CODE);
+    }
+    if (/error instanceof SettlementUnknown/.test(MCP_SOURCE)) {
+      emitted.add(String(new SettlementUnknown("fixture:rail").body().code));
     }
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
