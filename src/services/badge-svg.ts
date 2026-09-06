@@ -292,46 +292,63 @@ export interface PassportChipOptions {
  * moves the stamp has to move the budget that keeps text out of it.
  */
 export const CHIP_LAYOUT = {
-  width: 300,
-  height: 56,
   /**
-   * THE SPINE (2026-09-05, third pass). A cream label is quiet on a
-   * light README and invisible next to a row of shields.io badges. The
-   * spine gives the chip its own dark mass, so it carries contrast
-   * with it onto any page rather than borrowing the page's — and it is
-   * inked in the FRESHNESS colour, which means an expired chip goes
-   * visibly dead instead of announcing it in six-point type.
+   * A CARD, NOT A BADGE (2026-09-06, fourth pass).
+   *
+   * The keeper's read of the ribbon: "second tier of five." Three
+   * things were holding it there. It was small — a 300px strip beside
+   * a row of shields, when this store's own copy calls it a COLOPHON
+   * to paste beside your door. It carried no craft: a rectangle, a
+   * circle and three lines of Georgia is what every SaaS card is. And
+   * it looked like nothing in particular, when the artifact is called
+   * a PASSPORT and a passport has one unmistakable visual language —
+   * the entry stamp.
+   *
+   * So: a card at 400x110, an engraved ground, a seal with its legend
+   * set around the arc, and the freshness struck across the corner as
+   * a stamp rather than printed as a word. The aspect changes, which
+   * old pasted embeds cannot follow; every generator here emits the
+   * new size and the keeper's desk carries the note.
    */
-  spine: { w: 52 },
-  /** The house mark, reversed out of the spine. */
-  seal: { cx: 26, cy: 28, r: 15 },
-  /** Where the set lines begin, clear of the spine. */
-  textX: 64,
-  /** The right edge every line stops at. */
-  textEnd: 288,
-  eyebrow: { y: 16, size: 6.2, spacing: 2 },
+  width: 400,
+  height: 110,
+  /** The struck seal, with its legend around the arc. */
+  seal: { cx: 56, cy: 55, r: 28, arc: 21 },
+  /** The hairline between the seal and the setting. */
+  divider: 100,
+  /** Where the set lines begin. */
+  textX: 114,
+  /** The right edge the set lines stop at. */
+  textEnd: 382,
+  eyebrow: { y: 34, size: 7, spacing: 2.2 },
+  /** The entry stamp: the one loud thing, struck across the corner. */
+  stamp: { cx: 320, cy: 36, w: 112, h: 40, angle: -3.5 },
   /**
-   * The host is the thing a reader came for, so it gets the room: one
-   * size down the ramp per step until it fits, and the subdomain
-   * muted so the eye lands on the registrable name.
+   * The host is what a reader came for, so it gets the room: one size
+   * down the ramp per step until it fits, and the subdomain muted so
+   * the eye lands on the registrable name.
    */
-  host: { y: 35, sizes: [14, 13, 12, 11, 10, 9, 8.2] },
-  meta: { y: 47, size: 6.6 },
-  /** The state, set right on the eyebrow's own baseline. */
-  state: { y: 16, size: 7.6, spacing: 1.2, reserve: 54 },
+  host: { y: 79, sizes: [22, 20, 18, 16, 14, 12, 10.5] },
+  meta: { y: 94, size: 8 },
 } as const;
 
 /** Budgets derived from the geometry, never typed twice (AT_SCALE rule 1). */
 export const CHIP_BUDGETS = {
-  /** The eyebrow shares its baseline with the state, so it stops short. */
+  /** The eyebrow shares its band with the stamp, so it stops short of it. */
   eyebrow:
-    CHIP_LAYOUT.textEnd - CHIP_LAYOUT.state.reserve - CHIP_LAYOUT.textX - 10,
-  /** The host and record rows have the setting to themselves. */
+    CHIP_LAYOUT.stamp.cx - CHIP_LAYOUT.stamp.w / 2 - CHIP_LAYOUT.textX - 12,
+  /** The host and record rows run under the stamp, to the full width. */
   full: CHIP_LAYOUT.textEnd - CHIP_LAYOUT.textX,
-  /** What the state word itself may occupy. */
-  state: CHIP_LAYOUT.state.reserve,
+  /** Inside the stamp's inner rule. */
+  stamp: CHIP_LAYOUT.stamp.w - 22,
   /** Inside the seal's inner ring, where the house mark is struck. */
-  seal: (CHIP_LAYOUT.seal.r - 3) * 2 - 2,
+  seal: (CHIP_LAYOUT.seal.arc - 4) * 2,
+  /**
+   * Along the seal's TOP arc. The legend rides the upper half only —
+   * text set around the bottom of a circle reads upside down, which is
+   * exactly how the first draft of this seal rendered it.
+   */
+  arc: Math.PI * CHIP_LAYOUT.seal.arc,
 } as const;
 
 /**
@@ -458,13 +475,46 @@ export function sealAngleFor(host: string): number {
   return Math.round((((hash % 91) - 45) / 10) * 10) / 10;
 }
 
+/**
+ * THE ENGRAVED GROUND. Four sine lines at a whisper of opacity, the
+ * way a bond certificate lays a guilloche under its type — it is not
+ * meant to be looked at, only to be there when somebody looks closely,
+ * which is the difference between printed and produced. The phase is
+ * derived from the host, so no two chips carry quite the same weave.
+ */
+function guilloche(host: string, width: number, height: number): string {
+  let hash = 0;
+  for (const ch of host) hash = (hash * 131 + ch.codePointAt(0)!) >>> 0;
+  const lines: string[] = [];
+  for (let index = 0; index < 4; index += 1) {
+    const phase = ((hash >>> (index * 3)) % 36) / 6;
+    const midline = height * (0.22 + index * 0.19);
+    const amplitude = 5 + (index % 2) * 2.5;
+    const points: string[] = [];
+    for (let x = 0; x <= width; x += 5) {
+      const y = midline + Math.sin(x / 17 + phase + index) * amplitude;
+      points.push(`${x === 0 ? "M" : "L"}${x} ${y.toFixed(1)}`);
+    }
+    lines.push(points.join(" "));
+  }
+  return lines
+    .map(
+      (d) =>
+        `<path d="${d}" fill="none" stroke="${CHIP_INK}" stroke-opacity="0.055" stroke-width="0.7"/>`,
+    )
+    .join("\n  ");
+}
+
 export function renderPassportChip(options: PassportChipOptions): string {
   const L = CHIP_LAYOUT;
   const state = CHIP_STATE[options.freshness];
   const date = options.observedAt.slice(0, 10);
   const tier = options.selfObserved ? undefined : options.tier;
   const serif = "Georgia, 'Times New Roman', serif";
-  const eyebrow = options.selfObserved ? "SELF-OBSERVED PASSPORT" : "ENDPOINT PASSPORT";
+  /* "SELF-OBSERVED PASSPORT" did not fit the band beside the stamp and
+   * came out cut mid-word; the record line below carries the whole of
+   * what self-observed means anyway. */
+  const eyebrow = options.selfObserved ? "SELF-OBSERVED" : "ENDPOINT PASSPORT";
   const host = fitHost(options.host, L.host.sizes, CHIP_BUDGETS.full);
   const sealAngle = sealAngleFor(options.host);
   /*
@@ -473,7 +523,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
    * are always "…" reads as broken rather than as brief.
    */
   const second = options.selfObserved
-    ? "self-read, not a census probe"
+    ? "self-read of our own catalogs, not a census probe"
     : tier
       ? chipTierFace(tier)
       : state.sub;
@@ -481,24 +531,39 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const prefix = host.prefix
     ? `<tspan fill="${CHIP_MUTED}">${escapeHtml(host.prefix)}</tspan>`
     : "";
+  const legend = "SCVD GENERAL STORE";
+  const S = L.stamp;
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
-  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="3"/>
-  <g fill="${state.color}">
-    <rect x="0" y="0" width="${L.spine.w}" height="${L.height}" rx="3"/>
-    <rect x="${L.spine.w - 8}" y="0" width="8" height="${L.height}"/>
+  <defs>
+    <clipPath id="chipField"><rect x="9" y="9" width="${L.width - 18}" height="${L.height - 18}" rx="2"/></clipPath>
+    <path id="chipArc" d="M ${L.seal.cx - L.seal.arc} ${L.seal.cy} A ${L.seal.arc} ${L.seal.arc} 0 0 1 ${L.seal.cx + L.seal.arc} ${L.seal.cy}"/>
+  </defs>
+  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="4"/>
+  <g clip-path="url(#chipField)">
+  ${guilloche(options.host, L.width, L.height)}
   </g>
+  <rect x="4.5" y="4.5" width="${L.width - 9}" height="${L.height - 9}" fill="none" stroke="${CHIP_INK}" stroke-width="1.2" rx="3"/>
+  <rect x="8.5" y="8.5" width="${L.width - 17}" height="${L.height - 17}" fill="none" stroke="${CHIP_INK}" stroke-width="0.35" stroke-opacity="0.55" rx="2"/>
   <g transform="rotate(${sealAngle} ${L.seal.cx} ${L.seal.cy})">
-    <g stroke="${CHIP_PAPER}" fill="none">
-      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.1"/>
-      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-opacity="0.65"/>
+    <g stroke="${CHIP_INK}" fill="none">
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.2"/>
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-dasharray="1.6 2.4"/>
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.arc - 5}" stroke-width="0.5"/>
     </g>
-    <text x="${L.seal.cx}" y="${L.seal.cy + 2.3}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="6.5" letter-spacing="0.8" fill="${CHIP_PAPER}">SCVD</text>
+    <text font-family="${serif}" font-size="4.4" letter-spacing="0.5" fill="${CHIP_INK}" fill-opacity="0.85"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
+    <text x="${L.seal.cx}" y="${L.seal.cy + 3.4}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="10" letter-spacing="1.4" fill="${CHIP_INK}">SCVD</text>
+    <text x="${L.seal.cx}" y="${L.seal.cy + L.seal.arc - 1}" text-anchor="middle" font-family="${serif}" font-size="5" fill="${CHIP_INK}" fill-opacity="0.75">◆</text>
   </g>
+  <line x1="${L.divider}" y1="24" x2="${L.divider}" y2="86" stroke="${CHIP_INK}" stroke-width="0.4" stroke-opacity="0.4"/>
   <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
-  <text x="${L.textEnd}" y="${L.state.y}" text-anchor="end" font-family="${serif}" font-weight="bold" font-size="${L.state.size}" letter-spacing="${L.state.spacing}" fill="${state.color}">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), L.state.size, CHIP_BUDGETS.state, L.state.spacing))}</text>
+  <g transform="rotate(${S.angle} ${S.cx} ${S.cy})" fill="none" stroke="${state.color}">
+    <rect x="${S.cx - S.w / 2}" y="${S.cy - S.h / 2}" width="${S.w}" height="${S.h}" rx="2.5" stroke-width="1.6"/>
+    <rect x="${S.cx - S.w / 2 + 3.5}" y="${S.cy - S.h / 2 + 3.5}" width="${S.w - 7}" height="${S.h - 7}" rx="1.5" stroke-width="0.5"/>
+    <text x="${S.cx}" y="${S.cy - 2}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="12.5" letter-spacing="2.4" fill="${state.color}" stroke="none">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), 12.5, CHIP_BUDGETS.stamp, 2.4))}</text>
+    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-size="8.4" letter-spacing="1.3" fill="${state.color}" fill-opacity="0.9" stroke="none">${escapeHtml(date)}</text>
+  </g>
   <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
   <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
-  <rect x="0.5" y="0.5" width="${L.width - 1}" height="${L.height - 1}" fill="none" stroke="${CHIP_INK}" stroke-width="1" stroke-opacity="0.85" rx="3"/>
 </svg>`;
 }
 

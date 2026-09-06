@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import type { CardContent } from "@/lib/pixel-card";
+import { CHIP_LAYOUT } from "@/services/badge-svg";
 import {
   DECISION_MEANING,
   DECISION_RULE,
@@ -290,7 +291,7 @@ export function passportEmbedFor(rawHost: string, base: string): PassportEmbed {
   return {
     chip_svg: chip,
     markdown: `[![${alt}](${chip})](${url})`,
-    html: `<a href="${url}"><img src="${chip}" alt="${alt}" width="300" height="56"></a>`,
+    html: `<a href="${url}"><img src="${chip}" alt="${alt}" width="${CHIP_LAYOUT.width}" height="${CHIP_LAYOUT.height}"></a>`,
     note:
       "The chip re-renders from the same dates this page carries, wears the tier with its fraction, and stops rendering when the door leaves the ready side — a pasted chip can go dark, never stale-green. Six-hour edge cache.",
   };
@@ -303,7 +304,7 @@ export function colophonBlock(passport: EndpointPassport, base: string): string 
   return `<section>
     <h2>To paste beside your door</h2>
     <p class="menu-desc">The chip: the tier with its fraction on its face, the observation date, a link to this page. ${escapeHtml(embed.note)}</p>
-    <p><a href="${escapeHtml(url)}"><img src="${escapeHtml(embed.chip_svg)}" alt="${escapeHtml(`scvd.store passport chip for ${passport.payload.host}`)}" width="300" height="56"></a></p>
+    <p><a href="${escapeHtml(url)}"><img src="${escapeHtml(embed.chip_svg)}" alt="${escapeHtml(`scvd.store passport chip for ${passport.payload.host}`)}" width="${CHIP_LAYOUT.width}" height="${CHIP_LAYOUT.height}"></a></p>
     <p class="menu-meta">Markdown, for a README:</p>
     <pre class="menu-desc"><code>${escapeHtml(embed.markdown)}</code></pre>
     <p class="menu-meta">HTML, for a page:</p>

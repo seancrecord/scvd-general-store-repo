@@ -47,13 +47,16 @@ function chip(over: Partial<Parameters<typeof renderPassportChip>[0]> = {}): str
 /** Every `<text>` the chip drew, with the font size and spacing it used. */
 function drawnText(
   svg: string,
-): { text: string; size: number; spacing: number; anchor: string; y: number }[] {
+): { text: string; size: number; spacing: number; anchor: string; y: number | null }[] {
   return [...svg.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map((match) => {
     const tag = match[0];
     const size = Number(/font-size="([\d.]+)"/.exec(tag)![1]);
     const spacing = Number(/letter-spacing="([\d.]+)"/.exec(tag)?.[1] ?? 0);
     const anchor = /text-anchor="([a-z]+)"/.exec(tag)?.[1] ?? "start";
-    const y = Number(/ y="([\d.]+)"/.exec(tag)![1]);
+    // The seal's legend is set on a path and carries no y at all; it
+    // is measured against the arc's length instead of a row budget.
+    const yAttr = / y="(-?[\d.]+)"/.exec(tag)?.[1];
+    const y = yAttr === undefined ? null : Number(yAttr);
     // The host is set as two tspans (muted subdomain, inked apex); the
     // width that matters is the whole run, so the markup comes out.
     const text = match[1]!.replace(/<[^>]*>/g, "");
@@ -98,14 +101,18 @@ describe("no drawn string leaves its box, for any input", () => {
     it(`keeps every run inside the card: ${name}`, () => {
       for (const run of drawnText(svg)) {
         const width = textWidth(run.text, run.size, run.spacing);
-        if (run.anchor === "middle") {
-          // The seal's two lines, centred in the struck circle.
-          expect(width, `seal "${run.text}"`).toBeLessThanOrEqual(CHIP_LAYOUT.seal.r * 2 - 4);
+        if (run.y === null) {
+          // The seal's legend, set around the arc.
+          expect(width, `legend "${run.text}"`).toBeLessThanOrEqual(CHIP_BUDGETS.arc);
           continue;
         }
-        if (run.anchor === "end") {
-          // The state, set right; it may not reach back into the eyebrow.
-          expect(width, `state "${run.text}"`).toBeLessThanOrEqual(CHIP_BUDGETS.state);
+        if (run.anchor === "middle") {
+          // Centred runs are the seal's mark and the stamp's two lines;
+          // each has its own enclosure to stay inside.
+          const enclosure = run.text === "SCVD"
+            ? CHIP_BUDGETS.seal
+            : CHIP_BUDGETS.stamp;
+          expect(width, `centred "${run.text}"`).toBeLessThanOrEqual(enclosure);
           continue;
         }
         const budget =
@@ -117,28 +124,38 @@ describe("no drawn string leaves its box, for any input", () => {
     });
   }
 
-  it("the eyebrow stops before the state's reserved column", () => {
+  it("the eyebrow stops before the stamp begins", () => {
     // The old chip's actual failure: two runs sharing one baseline
     // with no budget between them.
     const eyebrowRight = CHIP_LAYOUT.textX + CHIP_BUDGETS.eyebrow;
-    expect(eyebrowRight).toBeLessThan(CHIP_LAYOUT.textEnd - CHIP_BUDGETS.state);
+    expect(eyebrowRight).toBeLessThan(CHIP_LAYOUT.stamp.cx - CHIP_LAYOUT.stamp.w / 2);
   });
 
-  it("the setting starts clear of the spine, and the seal sits inside it", () => {
-    expect(CHIP_LAYOUT.textX).toBeGreaterThan(CHIP_LAYOUT.spine.w);
-    expect(CHIP_LAYOUT.seal.cx + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.spine.w - 8);
-    expect(CHIP_LAYOUT.seal.cx - CHIP_LAYOUT.seal.r).toBeGreaterThanOrEqual(3);
-    expect(CHIP_LAYOUT.seal.cy + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.height - 3);
+  it("the seal, the rule and the setting are laid out in that order", () => {
+    expect(CHIP_LAYOUT.seal.cx + CHIP_LAYOUT.seal.r).toBeLessThan(CHIP_LAYOUT.divider);
+    expect(CHIP_LAYOUT.textX).toBeGreaterThan(CHIP_LAYOUT.divider);
+    // The seal and the stamp both sit inside the inner rule.
+    expect(CHIP_LAYOUT.seal.cy + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.height - 9);
+    expect(CHIP_LAYOUT.seal.cx - CHIP_LAYOUT.seal.r).toBeGreaterThanOrEqual(9);
+    expect(CHIP_LAYOUT.stamp.cx + CHIP_LAYOUT.stamp.w / 2).toBeLessThanOrEqual(CHIP_LAYOUT.width - 9);
+    expect(CHIP_LAYOUT.stamp.cy - CHIP_LAYOUT.stamp.h / 2).toBeGreaterThanOrEqual(9);
   });
 
-  it("the three set lines clear each other at the largest host size", () => {
+  it("the set lines clear the stamp and each other at the largest host size", () => {
     // Georgia's cap height is about 0.75em above the baseline.
     const biggest = CHIP_LAYOUT.host.sizes[0]!;
     expect(CHIP_LAYOUT.host.y - biggest * 0.75).toBeGreaterThan(CHIP_LAYOUT.eyebrow.y);
+    // The host runs under the stamp, so it must start below it — the
+    // stamp is rotated, which costs it a little more height.
+    const stampBottom =
+      CHIP_LAYOUT.stamp.cy +
+      CHIP_LAYOUT.stamp.h / 2 +
+      (CHIP_LAYOUT.stamp.w / 2) * Math.abs(Math.sin((CHIP_LAYOUT.stamp.angle * Math.PI) / 180));
+    expect(CHIP_LAYOUT.host.y - biggest * 0.75).toBeGreaterThan(stampBottom);
     expect(CHIP_LAYOUT.meta.y - CHIP_LAYOUT.meta.size * 0.75).toBeGreaterThan(
       CHIP_LAYOUT.host.y + biggest * 0.16,
     );
-    expect(CHIP_LAYOUT.meta.y).toBeLessThan(CHIP_LAYOUT.height - 3);
+    expect(CHIP_LAYOUT.meta.y).toBeLessThan(CHIP_LAYOUT.height - 9);
   });
 });
 
@@ -226,13 +243,14 @@ describe("what the chip says", () => {
     expect(chip()).toContain("never a ranking");
   });
 
-  it("keeps the seal's mark inside its ring", () => {
-    const seal = drawnText(chip()).filter((run) => run.anchor === "middle");
-    expect(seal.length).toBe(1);
+  it("keeps the seal's mark inside its ring and its legend on the arc", () => {
+    const runs = drawnText(chip());
+    const mark = runs.find((run) => run.text === "SCVD")!;
     // The inner ring is the real bound, not the outer one.
-    expect(textWidth(seal[0]!.text, seal[0]!.size, seal[0]!.spacing)).toBeLessThanOrEqual(
-      (CHIP_LAYOUT.seal.r - 3.2) * 2 - 2,
-    );
+    expect(textWidth(mark.text, mark.size, mark.spacing)).toBeLessThanOrEqual(CHIP_BUDGETS.seal);
+    const legend = runs.find((run) => run.y === null)!;
+    expect(legend.text).toBe("SCVD GENERAL STORE");
+    expect(textWidth(legend.text, legend.size, legend.spacing)).toBeLessThanOrEqual(CHIP_BUDGETS.arc);
   });
 
   it("strikes each host's seal at its own small angle, and always the same one", () => {
@@ -249,6 +267,9 @@ describe("what the chip says", () => {
   it("says self-read on our own chip rather than claiming a census probe", () => {
     const svg = chip({ host: "scvd.store", selfObserved: true });
     expect(svg).toContain("self-read");
+    // And its eyebrow is not cut mid-word to fit beside the stamp.
+    const eyebrow = drawnText(svg).find((run) => run.y === CHIP_LAYOUT.eyebrow.y)!;
+    expect(eyebrow.text).not.toContain("…");
     expect(svg).not.toContain("census cadence");
   });
 });

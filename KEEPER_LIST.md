@@ -100,6 +100,15 @@ build, it is on the roadmap.
      worth your eye: it makes an expired chip look expired from
      across the page, and it spends the one strong colour on
      status rather than on the house red.
+  5. The chip is now a CARD at 400x110, not a 300x56 strip, and it
+     is drawn as what its name says: an engraved ground, a seal with
+     its legend around the arc, and the freshness struck across the
+     corner as an entry stamp with the date inside it. THE ASPECT
+     CHANGED, so a chip somebody already pasted will render squashed
+     until they re-copy the snippet. Both snippets on the passport
+     page emit the new size on their own. If that trade is wrong,
+     say so and it goes back to the ribbon — the geometry is one
+     constant (`CHIP_LAYOUT`).
   LOOK: `/badges/passport/{host}.svg` and
   `/passport/card/{host}.png` after deploy. The card is now ~380 KB
   (was ~95 KB) because the type is anti-aliased; still far under
