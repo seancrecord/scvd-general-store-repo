@@ -107,6 +107,18 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /trust-list.json",
   "GET /house-ledger.json",
   /**
+   * THE STOREFRONT'S OWN FURNITURE. /shop-window.json is what
+   * /shop-window.js polls once a minute while somebody has the front
+   * page open; the rows it carries are already in the storefront's
+   * HTML, and the storefront is counted. Counting this too would
+   * count one reader sixty times an hour and call the front page's
+   * refresh loop a readership — the same double-count the second
+   * spellings above are kept dark for, arriving by machinery rather
+   * than by a second address. If it is ever published as an
+   * instrument in its own right, it earns a porch line that day.
+   */
+  "GET /shop-window.json",
+  /**
    * PER-ID ROOMS WITH NO BUCKET YET. Each needs the treatment corpus:host
    * and passport:host already have — one bucketed key, never one per
    * stranger's id — and none has been given it.

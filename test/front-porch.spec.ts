@@ -197,26 +197,41 @@ describe("nothing client-side that can act", () => {
    * AMENDED 2026-08-27 with rule 17's rewrite. The old assertion was
    * ZERO executable scripts — the mechanism form of the promise, and
    * true while it held. The property form is what the rule says now:
-   * nothing served can act without the visitor's decision. The
-   * storefront ships exactly one first-party script — /webmcp.js,
-   * which registers read-only tools derived from the MCP catalog
-   * (test/webmcp.spec.ts pins that it cannot act and cannot drift) —
-   * fenced by a CSP that refuses every other script origin. Still no
-   * cookies, still nothing third-party, and the count is pinned at
-   * ONE so a second script has to argue with this test in review.
+   * nothing served can act without the visitor's decision. Every
+   * script here is first-party and fenced by a CSP that refuses every
+   * other script origin. Still no cookies, still nothing third-party,
+   * and the count is PINNED so a new script has to argue with this
+   * test in review.
+   *
+   * THE SECOND SCRIPT ARGUED ITS CASE ON 2026-09-06, and this is the
+   * argument. /shop-window.js refreshes the "over the counter" rows on
+   * the front page while somebody is looking at it. It cannot act by
+   * the same construction /webmcp.js cannot: one same-origin GET to a
+   * public feed the page has already rendered from, no wallet, no
+   * keys, no storage, no cookies, and no input from the visitor to
+   * take. It reads and it draws text. If it never loads, the rows the
+   * server drew stay exactly as they are — so it is not even load-
+   * bearing for the page it decorates, which is the strongest form of
+   * "the visitor decides" available to a script.
+   *
+   * Both are named below rather than counted loosely: a THIRD script
+   * fails this test by name and comes back to review, which is the
+   * property the pin was always for.
    */
-  it("serves the storefront with only the fenced WebMCP script and no cookies", async () => {
+  it("serves the storefront with only the two fenced first-party scripts and no cookies", async () => {
     const response = await SELF.fetch(`${BASE}/`, {
       headers: { "User-Agent": "browser/1.0" },
     });
     const html = await response.text();
     expect(response.headers.get("Set-Cookie")).toBeNull();
     // JSON-LD is inert structured data; executable script is exactly
-    // the one derived, read-only WebMCP surface.
+    // the derived read-only WebMCP surface and the shop window's
+    // refresh, both same-origin and both unable to act.
     const executableScripts =
       html.match(/<script(?![^>]*type="application\/ld\+json")/g) ?? [];
-    expect(executableScripts).toHaveLength(1);
+    expect(executableScripts).toHaveLength(2);
     expect(html).toContain('<script src="/webmcp.js" defer>');
+    expect(html).toContain('<script src="/shop-window.js" defer>');
     expect(
       response.headers.get("Content-Security-Policy") ?? "",
     ).toContain("script-src 'self'");

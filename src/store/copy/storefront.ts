@@ -232,6 +232,38 @@ export const STOREFRONT_COPY = {
    */
   gaugeTrade: "On account",
   /**
+   * THE SHOP WINDOW (2026-09-06, the keeper: "a running or live index
+   * of the most recent sells... to show what people are buying").
+   *
+   * The store could tell you how many sales it had made and which one
+   * was first, and could not tell you the ordinary thing a person
+   * reads a shop window for: somebody was just in here and they bought
+   * that. These four lines are the whole of the copy; the rows
+   * underneath are the till's own, named off the shelf.
+   *
+   * THE EMPTY LINE IS NOT AN APOLOGY. A quiet window on a young store
+   * is a true thing, and this store's whole argument is that it
+   * publishes the true quiet ones — the front page already carries a
+   * zero or two on purpose. So the empty state points at the shelf and
+   * the books rather than at itself.
+   */
+  soldHead: "OVER THE COUNTER",
+  soldLine:
+    "The last few things that went out the door, as they go out. Strangers only \u2014 the proprietors' own wallets are flagged at the till and never show up here.",
+  soldEmpty: "Nothing's crossed the counter lately. The shelves are open.",
+  /**
+   * Pre-escaped HTML: the one link out to the books.
+   *
+   * AND NOT TO /pulse, which is the fuller answer and is HELD OFF THE
+   * FRONT OF THE STORE by the keeper's standing call (see ROOMS, and
+   * the note at the top of routes/pulse.ts saying whether that funnel
+   * becomes content anywhere else is his decision and not that file's).
+   * The first draft of this line linked it and his own test caught it,
+   * which is the second time that guard has earned its keep.
+   */
+  soldFootnote:
+    'No wallets, no names, no totals \u2014 the window shows what sold and when. The counting is done at <a href="/stats">/stats</a>.',
+  /**
    * WHAT THIS IS, BEFORE WHAT IT SELLS (2026-08-10). Five outside
    * models were asked "what is scvd.store"; the three that leaned on
    * third-party directories called it a novelty shop, and none of the
