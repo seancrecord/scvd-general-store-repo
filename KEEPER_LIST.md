@@ -849,13 +849,21 @@ Do not relitigate without you.
   `general-store`, or the bare `/mcp` URL — their probe
   (`sasame-audit`) did connect. https://srl-sasame.com
 - **The handshake census venues.** LOOK, five minutes each,
-  in order of handshake volume; the list with what each is
-  lives in `registry/directory-blitz.md` under "Handshake
-  census". Unopened as of 2026-09-02: glimind.com (286
-  handshakes, the most of anyone), mcpbeat.com,
-  proofbench.dev, mcphq.ai, hultra.link, golemreach.com,
-  mcpplaygroundonline.com/mcp-checker, factanker.com,
-  orank.ai.
+  in handshake order. A handshake is one `clientInfo.name` the
+  MCP door recorded at `initialize`, so every name here is a
+  crawler that found us unprompted and is likely already
+  carrying an unclaimed row. Unopened, re-checked against
+  `src/store/trust-signals.ts` on 2026-09-06: glimind.com
+  (286 handshakes, the most of anyone; opt-out at
+  glimind.com/opt-out), proofbench.dev (11), factanker.com
+  (7), orank.ai (7), mcpplaygroundonline.com/mcp-checker (7),
+  modc2.com/mcpscan (6), golemreach.com (2), mcphq.ai (2),
+  donnees.hultra.link (2). **mcpbeat.com left this list
+  2026-09-06: it carries both servers and has been a trust
+  signal for some time — the census had gone stale against
+  the served record.** The full 2026-09-02 read, with what
+  each venue is, is history in
+  `docs/archive/DIRECTORY_BLITZ_2026-09-06.md`.
 - **endpoint.x402jp.com.** LOOK, five minutes, browser only
   (the sandbox cannot reach it). An x402 host index that
   found us on its own; we are row 50 of 1,031. Its row says
@@ -863,9 +871,9 @@ Do not relitigate without you.
   same day says 39 at 0.99. Find whether it reads the Bazaar
   or the well-known file and whether a listing can be
   claimed or refreshed; nothing that wants a token. The
-  full read and the table live in
-  `registry/directory-blitz.md` §5 and
-  `research/x402-pulse.md` under 2026-09-03.
+  full read and the table live in `research/x402-pulse.md`
+  under 2026-09-03, and in §5 of
+  `docs/archive/DIRECTORY_BLITZ_2026-09-06.md`.
 
 - **ClawHub republish.** 3.15.0 went out 2026-09-02 by
   your hand (done), carrying everything since 3.8.0: the
