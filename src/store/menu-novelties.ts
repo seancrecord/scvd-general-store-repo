@@ -24,8 +24,9 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "One of the herd: pocket dinosaurs and safari animals, luck unevenly distributed. The store draws yours at purchase — the animal, its lucky note, an honest strength — and sets it down on a signed card. The herd stays with the keeper; the card and the luck are yours. Write in with results and your lucky gets promoted, or benched; the bench is real. He knows they don't work. His OCD doesn't care, and neither will yours.",
-    note_402:
-      "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
+    get note_402(): string {
+      return `That'll be $${this.price_usdc}, friend, or more if the luck deserves. Results vary. They do vary. We have no legal team.`;
+    },
     constraints: [
       "The herd is preset; the draw is the store's, not yours",
       "Strength drawn on the honest scale; the luck isn't evenly distributed",
@@ -47,8 +48,9 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     // Keeper's ink, 2026-07-23: the pitch is the name.
     description: "It's in the name.",
-    note_402:
-      "That'll be three bucks, friend. Coffee's for closers, and you closed.",
+    get note_402(): string {
+      return `That'll be $${this.price_usdc}, friend. Coffee's for closers, and you closed.`;
+    },
     constraints: [
       "Name the win in the win query parameter; the certificate records it verbatim",
     ],

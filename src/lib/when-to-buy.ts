@@ -1,6 +1,6 @@
 import { MENU_ITEMS, getMenuItem } from "@/store";
 import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
-import { PREFLIGHT_VERSION } from "@/services/preflight";
+import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 
 /**
  * WHICH INSTRUMENT FOR WHICH JOB — the routing document.
@@ -38,7 +38,7 @@ export interface Route {
   job: string;
   /** Answered free, first, when anything free answers it. */
   free?: string;
-  /** Menu item ids that answer it, best first. May be empty. */
+  /** Menu item ids that answer it. May be empty. */
   items: readonly string[];
 }
 
@@ -53,7 +53,8 @@ export interface Route {
  * it was connected by. This document printed that gap on its own
  * face for the hours it existed; `preflight_endpoint` and
  * `check_conformance` now sit in the tool catalog, each calling the
- * exact service function its HTTP door calls, limiter included.
+ * service family its HTTP door calls, limiter included. A battery
+ * version remains part of the comparison.
  * isTool below is what keeps this file honest about reach: the
  * corpus remains HTTP-only, and says so.
  */
@@ -72,7 +73,7 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
     does:
       "One unpaid probe of any x402 door: does it answer a well-formed payment challenge right now. A shape check at one moment, never an uptime claim.",
     reach: (base) =>
-      `MCP tool \`preflight_endpoint\`, or POST ${base}/api/preflight/${PREFLIGHT_VERSION} with {"url": "..."}`,
+      `MCP tool \`preflight_endpoint\`, or POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} with {"url": "..."}`,
     isTool: true,
   },
   {
@@ -103,6 +104,24 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
     isTool: true,
   },
   {
+    name: "The payment dry run",
+    does: "Replays client selection over the door's accepts using the configuration you declare. No payment signed or attempted.",
+    reach: (base) => `MCP tool \`check_before_you_pay\`, or POST ${base}/api/before-you-pay`,
+    isTool: true,
+  },
+  {
+    name: "The Web Bot Auth desk",
+    does: "Checks a published key directory and its proof of possession. Does not observe the crawler's requests.",
+    reach: (base) => `POST ${base}/api/bot-auth/check with {"url": "..."}`,
+    isTool: false,
+  },
+  {
+    name: "The on-page desk",
+    does: "Checks the HTML a page serves to a machine reader. No browser execution or purchase attempt.",
+    reach: (base) => `POST ${base}/api/onpage with {"url": "..."}`,
+    isTool: false,
+  },
+  {
     name: "The corpus",
     does:
       "The weekly signed census of public x402 doors, appended and Bitcoin-anchored. Our misses are published in it, against us.",
@@ -112,8 +131,8 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
 ];
 
 /**
- * The routes, ordered roughly by how often the job comes up rather
- * than by what it costs.
+ * The routes, ordered by the situation that prompts the job.
+ * No ranking of demand or value is implied.
  */
 export const ROUTES: readonly Route[] = [
   {
@@ -139,7 +158,8 @@ export const ROUTES: readonly Route[] = [
     items: [],
   },
   {
-    job: "I need to hand a third party proof that an endpoint was working, not just tell them so.",
+    job: "I need to hand a third party a signed observation of an endpoint's payment challenge or recorded history.",
+    free: "Preflight — preflight_endpoint — checks the challenge now; look_at_door adds the recorded history. Neither proves paid delivery.",
     items: ["service_audit", "trust_profile"],
   },
   {
@@ -152,15 +172,21 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I need to catch it if a door breaks midweek, not find out after it cost me.",
+    free: "Preflight — preflight_endpoint — for the shape now; look_at_door for existing observations. Ongoing probes are the paid job.",
     items: ["conformance_watch", "standing_watch"],
   },
   {
     job: "I am launching a paid endpoint and want to know a real buyer can actually get through it.",
-    items: ["launch_check", "opening_day", "onpage_audit"],
+    free: "Preflight — preflight_endpoint — and the payment dry run — check_before_you_pay — can find challenge and client-selection problems without spending. Neither attempts a purchase.",
+    items: ["launch_check", "opening_day"],
   },
   {
     job: "I need my own claim, or my principal's authorization, dated by somebody neutral before I act on it.",
-    items: ["the_mandate", "attestation_bundle"],
+    items: ["the_mandate"],
+  },
+  {
+    job: "I need one signed file collecting the on-chain observations for transactions that have already happened.",
+    items: ["attestation_bundle"],
   },
   {
     job: "I need an account of what moved through a wallet over a window, signed by neither side.",
@@ -180,6 +206,7 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I want the census to look at my own door now rather than wait for Sunday.",
+    free: "The look — look_at_door — reads the door now with its existing census history. It does not commission a new signed passport.",
     items: ["passport_refresh"],
   },
   {
@@ -207,7 +234,13 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I want a machine-readable checkup of what my page gives a machine reader.",
-    items: ["onpage_audit", "signature_agent_card"],
+    free: "The on-page desk — POST /api/onpage with {\"url\": \"...\"} — runs the page checks free, unsigned.",
+    items: ["onpage_audit"],
+  },
+  {
+    job: "I publish a Web Bot Auth key directory and need a signed check of its published keys and proof of possession.",
+    free: "The Web Bot Auth desk — POST /api/bot-auth/check with {\"url\": \"...\"} — checks the directory free. It does not prove that the crawler signs its requests.",
+    items: ["signature_agent_card"],
   },
 ];
 
@@ -292,7 +325,7 @@ export function whenToBuyMarkdown(base: string): string {
     if (route.free) lines.push(`\n**Free first:** ${route.free}`);
     if (route.items.length > 0) {
       lines.push(
-        `\n${route.free ? "If you need it signed and servable to somebody else:" : "On the shelf:"}\n${route.items.map(priceLine).join("\n")}`,
+        `\n${route.free ? "For the paid work described on each listing:" : "On the shelf:"}\n${route.items.map(priceLine).join("\n")}`,
       );
     }
     return lines.join("\n");
@@ -318,9 +351,11 @@ it is the order the counter works in.
 
 ${free}
 
-Every instrument marked as a tool answers on this same connection.
-The HTTP door beside each is the identical service function — the two
-cannot disagree about what a probe saw.
+Tools named here are available on the full \`/mcp\` connection.
+\`/mcp/verifier\` has dedicated verification tools; \`/mcp/docs\`
+serves documentation through \`read_docs\`.
+Use the named HTTP battery when comparing results. Separate probes
+observe separate moments and can differ.
 
 ## The routes
 

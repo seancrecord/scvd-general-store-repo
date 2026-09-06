@@ -345,8 +345,11 @@ build, it is on the roadmap.
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.
-  Human queue, a week's promise, one a week. The row copy
-  is inked (2026-09-03, the ink sheet). Skill bundle 3.14.0.
+  Human queue, a week's promise. Capacity is the later 09-04 ruling
+  above, implemented in `aura_walk.weekly_inventory` in `src/store/menu.ts`.
+  The row copy is inked (2026-09-03, the ink sheet). The original
+  bundle was 3.14.0; the current publish receipt is
+  `registry/clawhub/published.json`. Corrected 2026-09-06.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01, listed
@@ -526,8 +529,10 @@ Do not relitigate without you.
   2026-10-02" an agent wrote here was struck 2026-09-03
   ("i dont wait i decide yes/no/later"); nothing on this
   list waits on a calendar.
-- **The Aura Walk cap, 2026-09-02.** One a week; two after
-  the first three ship inside the window.
+- **The Aura Walk cap, 2026-09-02 (superseded 09-04).** The original
+  one-slot limit and conditional increase are historical; the 09-04
+  ruling above and `aura_walk.weekly_inventory` are current.
+  Cross-reference corrected 2026-09-06.
 - **The next builds, 2026-09-02, "On do that then."** After
   the SOON/LATER review: L6 (the look) first, then L7 (the
   CI check for our fixtures). L6 shipped the same day. The

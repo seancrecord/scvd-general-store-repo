@@ -1917,8 +1917,8 @@ export async function preflightUrl(
    * NOT run here: this free door's load-bearing promise is one
    * outbound request, held by test as a count, and an eth_call with
    * transport retries is several. It runs on the paid single-door
-   * audit, where the five dollars is the meter and the probe runs
-   * post-settle — the response's signed_report pointer says so.
+   * audit, where the price covers the extra reads. Fallible report generation
+   * finishes before pending.settle(); signing follows settlement.
    */
 
   /*

@@ -10,7 +10,8 @@ import type { Env } from "@/types";
  * THE FREE INSTRUMENTS, USED (2026-09-04). The one real signal in the
  * September porch was not on any paid door: preflight_endpoint called
  * 45 times, check_before_you_pay 24, look_at_door 22 — tools called
- * with arguments, which crawlers do not do — against 22 paid attempts.
+ * with arguments — against 22 paid attempts. These dated counts record
+ * invocations, not buyer intent; automated callers can supply arguments too.
  * Agents use this store to check a door before paying it. That is the
  * demand, and the observatory already counts it; it just counts it in
  * a list of 130 surfaces. This is the same numbers, sorted into free
@@ -23,7 +24,7 @@ import type { Env } from "@/types";
  *     preflight cannot be called without a URL. Every roster entry is
  *     typed "argument" or "read", and the month's headline is the
  *     argument-carrying count beside the paid calls and the settled
- *     sales — the check-to-buy ratio a crawler cannot inflate.
+ *     sales. Both classes can include automated traffic.
  *  2. SINCE WHEN EACH LINE WAS LOGGED. The interactive doors got their
  *     porch line on 2026-09-04 and the evidence surfaces on 2026-08-21,
  *     so July's zero and August's missing preflights are gaps in the
@@ -31,7 +32,7 @@ import type { Env } from "@/types";
  *     the days it was counted this month, and a per-day figure so a
  *     five-day month reads beside a thirty-day one.
  *  3. WHAT "UNKNOWN" IS. The channel inferrer's last bucket is two
- *     opposite stories: a client with no user-agent at all (a scraper)
+ *     opposite stories: a client with no user-agent at all (caller type unknown)
  *     or a referrer it does not recognise (somebody linking to us).
  *     The counters cannot tell them apart; the event rows can. A
  *     bounded scan of the newest rows splits the month's unknowns and
@@ -51,8 +52,8 @@ export type InstrumentKind = "argument" | "read";
 export interface InstrumentEntry {
   prefix: string;
   /**
-   * "argument": the call cannot be made without input a crawler would
-   * not invent (a URL, a receipt, a host to check). "read": a GET of a
+   * "argument": the call takes input (a URL, a receipt, a host to check).
+   * Automated callers can supply it too. "read": a GET of a
    * page or list that any walker fetches by following links.
    */
   kind: InstrumentKind;
@@ -137,7 +138,7 @@ export interface UnknownSplit {
   rows_scanned: number;
   /** True when the scan reached the oldest row of the month; false when it hit its cap first. */
   complete: boolean;
-  /** Unknown because the client sent no user-agent at all: a scraper's signature. */
+  /** Unknown because the client sent no user-agent at all; no caller type inferred. */
   no_user_agent: number;
   /** Unknown because the referrer was one of OUR pages: a reader following the store's own links, human or browser-resident agent. */
   self_referred: number;
@@ -173,9 +174,9 @@ export interface InstrumentMonth {
   month: string;
   free: InstrumentRow[];
   free_total: number;
-  /** Uses that carried an argument: the part crawlers cannot fake. */
+  /** Calls to instruments that take arguments; not evidence of buyer intent. */
   argument_uses: number;
-  /** Page and list reads: the part they can. */
+  /** Page and list reads; caller intent is not inferred. */
   read_uses: number;
   free_by_channel: Record<string, number>;
   paid_tools: InstrumentRow[];
