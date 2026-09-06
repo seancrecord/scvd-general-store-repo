@@ -16,6 +16,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
 import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
+import { KV_KEYS } from "@/lib/kv-keys";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
@@ -765,7 +766,8 @@ async function callPurchaseTool(
   args: Record<string, unknown>,
   paymentMeta: unknown,
   id: number | string | null,
-  rawIdempotencyKey?: string,
+  rawIdempotencyKey: string | undefined,
+  renderResponse: (response: Response) => Promise<Response>,
 ): Promise<Response> {
   /**
    * THE SAME PRE-PAYMENT LAW THE HTTP DOOR RUNS, out of the same
@@ -864,6 +866,7 @@ async function callPurchaseTool(
         .map(([key, value]): [string, string] => [key, String(value)]),
     ),
   );
+  let replayedTransaction: string | undefined;
   const replayCheck = idempotencyKey
     ? async (verifiedPayer: string) => {
         const replay = await lookupIdempotentWithBucketGrace(
@@ -873,6 +876,7 @@ async function callPurchaseTool(
           idempotencyKey,
           item.id,
         );
+        if (replay) replayedTransaction = replay.transaction;
         return replay
           ? { ...replay.body, ...replayNote(replay.first_served_at) }
           : null;
@@ -922,7 +926,27 @@ async function callPurchaseTool(
    * the original purchase without settling anything.
    */
   if (outcome.kind === "replay") {
-    return rpcResult(id, purchaseResult(outcome.body));
+    try {
+      const answer = await renderResponse(rpcResult(id, purchaseResult(outcome.body)));
+      if (replayedTransaction) {
+        await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(replayedTransaction)).catch(() => undefined);
+        await recordDeliveredSettlement(c.env, replayedTransaction);
+      }
+      return answer;
+    } catch {
+      // This cache is read only after payer verification. Its original
+      // transaction is an existing purchase, never a new unpaid request.
+      const failure = {
+        error: "Your purchase is already paid, but we could not encode its saved response. Retry the identical request with the same payment and idempotency key to retrieve it without another charge.",
+        code: "delivery_failed", charged: true, charged_again: false,
+        ...(replayedTransaction ? { transaction: replayedTransaction } : {}),
+        ...(typeof outcome.body.paid_usdc === "number" ? { paid_usdc: outcome.body.paid_usdc } : {}),
+        ...(typeof outcome.body.verify_url === "string" ? { verify_url: outcome.body.verify_url } : {}),
+      };
+      if (standardPayment(c)) return rpcResult(id, { ...toolText(failure) as Record<string, unknown>, isError: true });
+      const { error: message, ...data } = failure;
+      return rpcError(id, -32000, message, data);
+    }
   }
   if (outcome.kind === "delivery-failed") {
     const body = deliveryFailedBody(c.env.STORE_BASE_URL, item, outcome.payment);
@@ -1036,6 +1060,63 @@ async function callPurchaseTool(
     } else {
       response = await fulfillPurchase(c.env, item, outcome.pending, input);
     }
+    const settled = outcome.settledSoFar();
+    const flat = flattenPurchase(response);
+    if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
+    // Preserve the actual protocol receipt across an idempotent retry. Never
+    // reconstruct it from the current challenge or a guessed default rail.
+    const encodedReceipt = settled && Object.entries(settled.settleHeaders)
+      .find(([name]) => name.toLowerCase() === "payment-response")?.[1];
+    if (encodedReceipt) {
+      try {
+        const receipt = decodeBase64Json(encodedReceipt);
+        if (isRecord(receipt)) flat[CACHED_PAYMENT_RESPONSE] = receipt;
+      } catch {
+        // The goods have already settled: missing receipt metadata must not
+        // turn a delivered purchase into another payment attempt.
+      }
+    }
+    /**
+     * Stored under the VERIFIED payer the pipeline carried out, not the
+     * address the caller claimed. The two are the same for an honest
+     * client and only diverge for a dishonest one, which is the case
+     * worth being right about: a cache written under an asserted
+     * address would be a cache another wallet could later collect.
+     */
+    if (idempotencyKey && outcome.verifiedPayer && settled) {
+      await storeIdempotent(
+        c.env,
+        idempotencySurface,
+        outcome.verifiedPayer,
+        idempotencyKey,
+        flat,
+        settled?.transaction,
+      );
+    }
+    // Encoding, including the negotiated protocol envelope, is part of
+    // delivery. A cached good can survive a failed response; an unencoded
+    // good must not close the delivery desk's obligation.
+    const answer = await renderResponse(rpcResult(id, purchaseResult(flat)));
+    /**
+     * GOODS WENT OUT, so the delivery-intent row stops existing — the
+     * MCP door's equivalent of the HTTP gate's 2xx seam (task #85).
+     * Reached only after goods and their final response encode: a decline
+     * unwound above, a throw propagated, and in both of those cases the
+     * row stays behind as the trace that money may have moved without
+     * delivery. Closing never fails the response; a row left open on a
+     * failed delete is a false alarm the keeper can dismiss.
+     */
+    const deliveryKey = outcome.deliveryKeySoFar();
+    if (settled && deliveryKey) {
+      await closeDeliveryIntent(c.env, deliveryKey).catch(() => undefined);
+    }
+    if (settled) {
+      // The chain walk's record that this money BOUGHT SOMETHING — same
+      // write, same seam as the HTTP door, so reconciliation never
+      // depends on which door a buyer came through.
+      await recordDeliveredSettlement(c.env, settled.transaction);
+    }
+    return answer;
   } catch (error) {
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
@@ -1081,63 +1162,13 @@ async function callPurchaseTool(
         item,
         failedAfterSettle,
       );
+      if (standardPayment(c)) {
+        return rpcResult(id, { ...toolText({ error: message, ...data }) as Record<string, unknown>, isError: true });
+      }
       return rpcError(id, -32000, message, data);
     }
     throw error;
   }
-  const settled = outcome.settledSoFar();
-  /**
-   * GOODS WENT OUT, so the delivery-intent row stops existing — the
-   * MCP door's equivalent of the HTTP gate's 2xx seam (task #85).
-   * Reached only when fulfillPurchase returned goods: a decline
-   * unwound above, a throw propagated, and in both of those cases the
-   * row stays behind as the trace that money may have moved without
-   * delivery. Closing never fails the response; a row left open on a
-   * failed delete is a false alarm the keeper can dismiss.
-   */
-  const deliveryKey = outcome.deliveryKeySoFar();
-  if (settled && deliveryKey) {
-    await closeDeliveryIntent(c.env, deliveryKey).catch(() => undefined);
-  }
-  if (settled) {
-    // The chain walk's record that this money BOUGHT SOMETHING — same
-    // write, same seam as the HTTP door, so reconciliation never
-    // depends on which door a buyer came through.
-    await recordDeliveredSettlement(c.env, settled.transaction);
-  }
-  const flat = flattenPurchase(response);
-  if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
-  // Preserve the actual protocol receipt across an idempotent retry. Never
-  // reconstruct it from the current challenge or a guessed default rail.
-  const encodedReceipt = settled && Object.entries(settled.settleHeaders)
-    .find(([name]) => name.toLowerCase() === "payment-response")?.[1];
-  if (encodedReceipt) {
-    try {
-      const receipt = decodeBase64Json(encodedReceipt);
-      if (isRecord(receipt)) flat[CACHED_PAYMENT_RESPONSE] = receipt;
-    } catch {
-      // The goods have already settled: missing receipt metadata must not
-      // turn a delivered purchase into another payment attempt.
-    }
-  }
-  /**
-   * Stored under the VERIFIED payer the pipeline carried out, not the
-   * address the caller claimed. The two are the same for an honest
-   * client and only diverge for a dishonest one, which is the case
-   * worth being right about: a cache written under an asserted
-   * address would be a cache another wallet could later collect.
-   */
-  if (idempotencyKey && outcome.verifiedPayer && settled) {
-    await storeIdempotent(
-      c.env,
-      idempotencySurface,
-      outcome.verifiedPayer,
-      idempotencyKey,
-      flat,
-      settled?.transaction,
-    );
-  }
-  return rpcResult(id, purchaseResult(flat));
 }
 
 
@@ -1210,10 +1241,17 @@ async function handleRpc(
   if (era instanceof Response) {
     return era;
   }
-  const answer = await dispatchRpc(c, request, era.modern);
-  return era.modern
-    ? modernize(answer, request.method, serverInfo(c.env.STORE_BASE_URL))
-    : answer;
+  // Paid handlers render inside their payment-aware boundary. Other
+  // responses use the same renderer here, exactly once per response.
+  let rendered: Response | undefined;
+  const renderResponse = async (response: Response): Promise<Response> => {
+    rendered = era.modern
+      ? await modernize(response, request.method, serverInfo(c.env.STORE_BASE_URL))
+      : response;
+    return rendered;
+  };
+  const answer = await dispatchRpc(c, request, era.modern, renderResponse);
+  return answer === rendered ? answer : renderResponse(answer);
 }
 
 /** Every MCP server negotiates and renders the same revision rules. */
@@ -1239,6 +1277,7 @@ async function dispatchRpc(
   c: Context<HonoEnv>,
   request: JsonRpcRequest,
   modern: boolean,
+  renderResponse: (response: Response) => Promise<Response>,
 ): Promise<Response> {
   const id = request.id ?? null;
   if (
@@ -1535,6 +1574,7 @@ async function dispatchRpc(
           meta,
           id,
           typeof idempotencyKey === "string" ? idempotencyKey : undefined,
+          renderResponse,
         );
       }
       const result = await callFreeTool(c, name, args);

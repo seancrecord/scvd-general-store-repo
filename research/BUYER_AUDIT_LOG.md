@@ -304,7 +304,9 @@ Repair: give both paid doors the same authenticated, idempotent reconstruction p
 
 ### BUY-038 — P1: MCP can claim no charge after paid response serialization fails
 
-**Open · raw response controls.** After fulfillment and cache persistence, a failure while encoding the tool response escapes the payment-aware exception boundary. Three raw MCP cases, one per rail, return a generic HTTP 500 saying “no charge for the noise” despite confirmed settlement. The identical retry retrieves the cached good. This is a false payment-state message on a recoverable delivery, not demonstrated loss of the artifact or a second transfer.
+**Repaired in PR #541 (draft).** Tool text, JSON-RPC encoding, and modern protocol decoration now execute inside the purchase's payment-aware boundary. Cached purchases also report their recorded payment if encoding fails. Standard-profile failures are error tool results. Delivery cleanup follows complete response encoding, and a successful cached retry closes a retained delivery row. Thirty raw fault-injection controls were red before the fix and green afterward; all three rails and both payment profiles are covered, with exact-artifact/no-extra-settlement replay checks on Base and Polygon. Solana replay remains separately open under BUY-007.
+
+**Original raw response controls.** After fulfillment and cache persistence, a failure while encoding the tool response escapes the payment-aware exception boundary. Three raw MCP cases, one per rail, return a generic HTTP 500 saying “no charge for the noise” despite confirmed settlement. The identical retry retrieves the cached good. This is a false payment-state message on a recoverable delivery, not demonstrated loss of the artifact or a second transfer.
 
 Repair: keep response flattening/serialization within the payment-aware failure boundary, returning the confirmed charge state and an authenticated recovery handle when encoding fails. Ensure delivery completion and cleanup do not depend on an unencoded response being assumed delivered. Relevant paths: `src/routes/mcp.ts` after `fulfillPurchase`, `toolText`, and the global error handler.
 
