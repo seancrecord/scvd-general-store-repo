@@ -1,0 +1,2624 @@
+{
+  "registry": "ardregistry",
+  "url": "https://ardregistry.org/api/search",
+  "request": {
+    "query": {
+      "text": "x402"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T22:10:05.131036+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:ora.ai:skill:browser-use.com-browser-use-browser-use-x402",
+        "displayName": "x402",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/browser-use/browser-use",
+        "data": null,
+        "description": "Agent skill \"x402\" published by browser-use.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 76,
+        "source": "browser-use.github.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:x402.clashofcoins.app-mcp-1",
+        "displayName": "x402.clashofcoins.app MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.clashofcoins.app/mcp.json",
+        "data": null,
+        "description": "Model Context Protocol server for x402.clashofcoins.app.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 71,
+        "source": "clashofcoins.app"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:x402.clashofcoins.app-mcp-0",
+        "displayName": "x402.clashofcoins.app MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.clashofcoins.app/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for x402.clashofcoins.app. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 70,
+        "source": "clashofcoins.app"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:allium.so-allium-labs-skills-allium-x402",
+        "displayName": "allium-x402",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/allium-labs/skills",
+        "data": null,
+        "description": "Agent skill \"allium-x402\" published by allium.so.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 69,
+        "source": "allium.so"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:descope.com-descope-skills-okta-cis-to-descope",
+        "displayName": "okta-cis-to-descope",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/descope/skills",
+        "data": null,
+        "description": "Agent skill \"okta-cis-to-descope\" published by descope.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:optiqcode.com-mcp-0",
+        "displayName": "optiqcode.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.optiqcode.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for optiqcode.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "optiqcode.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:ora.run-mcp-0",
+        "displayName": "ora.run MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.ora.ai/api/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for ora.run, exposing 8 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "scan_domain",
+          "get_score",
+          "get_leaderboard",
+          "discover_products",
+          "get_verification_challenge",
+          "submit_feedback",
+          "submit_check_feedback",
+          "get_feedback"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "ora.run"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:getdex.com-mcp-0",
+        "displayName": "getdex.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.getdex.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for getdex.com, exposing 38 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "dex_search_contacts",
+          "dex_list_contacts",
+          "dex_get_contact",
+          "dex_create_contact",
+          "dex_update_contact",
+          "dex_delete_contacts",
+          "dex_merge_contacts",
+          "dex_list_groups",
+          "dex_get_group",
+          "dex_create_group",
+          "dex_update_group",
+          "dex_delete_group",
+          "dex_add_contacts_to_group",
+          "dex_remove_contacts_from_group",
+          "dex_list_group_contacts",
+          "dex_list_tags",
+          "dex_get_tag",
+          "dex_create_tag",
+          "dex_update_tag",
+          "dex_delete_tag",
+          "dex_add_tags_to_contacts",
+          "dex_remove_tags_from_contacts",
+          "dex_list_reminders",
+          "dex_get_reminder",
+          "dex_create_reminder",
+          "dex_update_reminder",
+          "dex_delete_reminder",
+          "dex_list_notes",
+          "dex_get_note",
+          "dex_list_note_types",
+          "dex_create_note",
+          "dex_update_note",
+          "dex_delete_note",
+          "dex_list_custom_fields",
+          "dex_create_custom_field",
+          "dex_update_custom_field",
+          "dex_delete_custom_field",
+          "dex_set_custom_field_values"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "getdex.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-e2e-studio-tests",
+        "displayName": "e2e-studio-tests",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"e2e-studio-tests\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:outlit.ai:mcp:server-card",
+        "displayName": "Outlit MCP Server Card",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.outlit.ai/.well-known/mcp/server-card.json",
+        "data": null,
+        "description": "Branded server card for the Outlit remote MCP server that exposes customer context tools to compatible AI clients.",
+        "tags": [
+          "outlit",
+          "mcp",
+          "model-context-protocol",
+          "customer-intelligence"
+        ],
+        "capabilities": [
+          "customer-context",
+          "facts",
+          "timeline",
+          "semantic-search",
+          "read-only-sql"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": null,
+        "score": 64,
+        "source": "outlit.ai"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:loyaltyvip.com-mcp-0",
+        "displayName": "loyaltyvip.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://loyaltyvip.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for loyaltyvip.com, exposing 4 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "search_casinos",
+          "get_casino",
+          "list_rewards_programs",
+          "player_action"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "loyaltyvip.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:debridge.com-mcp-1",
+        "displayName": "debridge.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agents.debridge.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for debridge.com, exposing 5 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "get_instructions",
+          "search_tokens",
+          "get_supported_chains",
+          "create_tx",
+          "transaction_same_chain_swap"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "debridge.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:yutori.com-yutori-ai-yutori-mcp-yutori-browse",
+        "displayName": "yutori-browse",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/yutori-ai/yutori-mcp",
+        "data": null,
+        "description": "Agent skill \"yutori-browse\" published by yutori.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-hyperframes-embedded-captions",
+        "displayName": "embedded-captions",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "data": null,
+        "description": "Agent skill \"embedded-captions\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:yutori.com-yutori-ai-frontend-visualqa-frontend-visualqa",
+        "displayName": "frontend-visualqa",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/yutori-ai/frontend-visualqa",
+        "data": null,
+        "description": "Agent skill \"frontend-visualqa\" published by yutori.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:brightdata.com-brightdata-skills-brd-browser-debug",
+        "displayName": "brd-browser-debug",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/brightdata/skills",
+        "data": null,
+        "description": "Agent skill \"brd-browser-debug\" published by brightdata.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "brightdata.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:descope.com-descope-skills-workos-to-descope",
+        "displayName": "workos-to-descope",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/descope/skills",
+        "data": null,
+        "description": "Agent skill \"workos-to-descope\" published by descope.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:yutori.com-mcp-2",
+        "displayName": "yutori.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://docs.yutori.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for yutori.com, exposing 3 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_yutori_api",
+          "query_docs_filesystem_yutori_api",
+          "submit_feedback"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:yutori.com-mcp-3",
+        "displayName": "yutori.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://yutori.main-kill-isr.mintlify.me/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for yutori.com, exposing 3 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_yutori_api",
+          "query_docs_filesystem_yutori_api",
+          "submit_feedback"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:descope.com-descope-skills-descope-byos-builder",
+        "displayName": "descope-byos-builder",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/descope/skills",
+        "data": null,
+        "description": "Agent skill \"descope-byos-builder\" published by descope.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:yutori.com-mcp-1",
+        "displayName": "yutori.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.yutori.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for yutori.com, exposing 11 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "list_api_usage",
+          "list_scouts",
+          "get_scout_detail",
+          "get_scout_updates",
+          "create_scout",
+          "edit_scout",
+          "delete_scout",
+          "run_browsing_task",
+          "get_browsing_task_result",
+          "run_research_task",
+          "get_research_task_result"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:telnyx.com-team-telnyx-skills-telnyx-10dlc-ruby",
+        "displayName": "telnyx-10dlc-ruby",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/team-telnyx/skills",
+        "data": null,
+        "description": "Agent skill \"telnyx-10dlc-ruby\" published by telnyx.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "telnyx.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:yutori.com-mcp-0",
+        "displayName": "yutori.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.yutori.com/sse",
+        "data": null,
+        "description": "Model Context Protocol server for yutori.com. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-oss-dtctl-dtctl",
+        "displayName": "dtctl",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace-oss/dtctl",
+        "data": null,
+        "description": "Agent skill \"dtctl\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:descope.com-mcp-1",
+        "displayName": "descope.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.descope.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for descope.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-directives",
+        "displayName": "directives",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"directives\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:crew-1rndckoag-crew-ai-5d7600d3.vercel.app-mcp-0",
+        "displayName": "crew-1rndckoag-crew-ai-5d7600d3.vercel.app MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://crew-1rndckoag-crew-ai-5d7600d3.vercel.app/.well-known/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for crew-1rndckoag-crew-ai-5d7600d3.vercel.app.",
+        "tags": [
+          "mcp"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "vercel.app"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-studio-e2e-tests",
+        "displayName": "studio-e2e-tests",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"studio-e2e-tests\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:esdeveniments.cat-mcp-1",
+        "displayName": "esdeveniments.cat MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.esdeveniments.cat/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for esdeveniments.cat. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "esdeveniments.cat"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-dynatrace-for-ai-dt-app-notebooks",
+        "displayName": "dt-app-notebooks",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace/dynatrace-for-ai",
+        "data": null,
+        "description": "Agent skill \"dt-app-notebooks\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-thermo-nuclear-code-quality-review",
+        "displayName": "thermo-nuclear-code-quality-review",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"thermo-nuclear-code-quality-review\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:descope.com-mcp-0",
+        "displayName": "descope.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.descope.com",
+        "data": null,
+        "description": "Model Context Protocol server for descope.com. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:brightdata.com-brightdata-skills-competitive-intel",
+        "displayName": "competitive-intel",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/brightdata/skills",
+        "data": null,
+        "description": "Agent skill \"competitive-intel\" published by brightdata.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "brightdata.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:brightdata.com-brightdata-open-enrich-enriching-tables",
+        "displayName": "enriching-tables",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/brightdata/open-enrich",
+        "data": null,
+        "description": "Agent skill \"enriching-tables\" published by brightdata.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "brightdata.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:descope.com-descope-skills-descope-fga-schema",
+        "displayName": "descope-fga-schema",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/descope/skills",
+        "data": null,
+        "description": "Agent skill \"descope-fga-schema\" published by descope.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:yutori.com-yutori-ai-yutori-mcp-yutori-login",
+        "displayName": "yutori-login",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/yutori-ai/yutori-mcp",
+        "data": null,
+        "description": "Agent skill \"yutori-login\" published by yutori.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:oresundspace.com-mcp-1",
+        "displayName": "oresundspace.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://oresundspace.com/docs/mcp.md",
+        "data": null,
+        "description": "Model Context Protocol server for oresundspace.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "oresundspace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-dynatrace-for-ai-dt-obs-problems",
+        "displayName": "dt-obs-problems",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace/dynatrace-for-ai",
+        "data": null,
+        "description": "Agent skill \"dt-obs-problems\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-skills-video-understand",
+        "displayName": "video-understand",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/skills",
+        "data": null,
+        "description": "Agent skill \"video-understand\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:helius.dev-helius-labs-core-ai-okx",
+        "displayName": "okx",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/helius-labs/core-ai",
+        "data": null,
+        "description": "Agent skill \"okx\" published by helius.dev.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "helius.dev"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:yutori.com-yutori-ai-yutori-mcp-yutori-scout",
+        "displayName": "yutori-scout",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/yutori-ai/yutori-mcp",
+        "data": null,
+        "description": "Agent skill \"yutori-scout\" published by yutori.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:mcp.laisky.com-mcp-hub.momenta.works-feishu",
+        "displayName": "feishu",
+        "type": "application/ai-skill+md",
+        "url": null,
+        "data": null,
+        "description": "Agent skill \"feishu\" published by mcp.laisky.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "laisky.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-dynatrace-for-ai-dt-obs-frontends",
+        "displayName": "dt-obs-frontends",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace/dynatrace-for-ai",
+        "data": null,
+        "description": "Agent skill \"dt-obs-frontends\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:zgts.in-mcp-0",
+        "displayName": "zgts.in MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://zgts.in/api/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for zgts.in, exposing 4 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_guides",
+          "get_needle_recommendation",
+          "get_product_info",
+          "get_usage_guide"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "zgts.in"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:yutori.com-yutori-ai-yutori-mcp-yutori-competitor-watch",
+        "displayName": "yutori-competitor-watch",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/yutori-ai/yutori-mcp",
+        "data": null,
+        "description": "Agent skill \"yutori-competitor-watch\" published by yutori.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "yutori.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:workos.com-workos-skills-workos-directory-sync",
+        "displayName": "workos-directory-sync",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/workos/skills",
+        "data": null,
+        "description": "Agent skill \"workos-directory-sync\" published by workos.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "workos.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:oresundspace.com-mcp-0",
+        "displayName": "oresundspace.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://oresundspace.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for oresundspace.com, exposing 14 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "create_space",
+          "get_space",
+          "create_invitation",
+          "join_space",
+          "get_join_status",
+          "leave_space",
+          "send_message",
+          "list_messages",
+          "create_artifact",
+          "list_artifacts",
+          "get_artifact",
+          "write_artifact",
+          "search_docs",
+          "read_doc"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "oresundspace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:telnyx.com-team-telnyx-skills-telnyx-fax-ruby",
+        "displayName": "telnyx-fax-ruby",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/team-telnyx/skills",
+        "data": null,
+        "description": "Agent skill \"telnyx-fax-ruby\" published by telnyx.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "telnyx.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-codegen",
+        "displayName": "codegen",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"codegen\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-studio-error-handling",
+        "displayName": "studio-error-handling",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"studio-error-handling\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:helius.xyz-helius-labs-core-ai-okx",
+        "displayName": "okx",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/helius-labs/core-ai",
+        "data": null,
+        "description": "Agent skill \"okx\" published by helius.xyz.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "helius.xyz"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:env0.com-mcp-1",
+        "displayName": "env0.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.env0.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for env0.com.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "env0.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:codetime.dev-mcp-0",
+        "displayName": "codetime.dev MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://codetime.dev/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for codetime.dev.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "codetime.dev"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:descope.com-descope-skills-descope-auth",
+        "displayName": "descope-auth",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/descope/skills",
+        "data": null,
+        "description": "Agent skill \"descope-auth\" published by descope.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "descope.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:forter.com-mcp-0",
+        "displayName": "forter.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.forter.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for forter.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "forter.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:workos.com-workos-skills-workos-migrate-descope",
+        "displayName": "workos-migrate-descope",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/workos/skills",
+        "data": null,
+        "description": "Agent skill \"workos-migrate-descope\" published by workos.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "workos.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-cursor-sdk",
+        "displayName": "cursor-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"cursor-sdk\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:assemblyai.com-mcp-0",
+        "displayName": "assemblyai.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.assemblyai.com/docs/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for assemblyai.com, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_assembly_ai",
+          "query_docs_filesystem_assembly_ai"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "assemblyai.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-skills-video-download",
+        "displayName": "video-download",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/skills",
+        "data": null,
+        "description": "Agent skill \"video-download\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-skills-video-translate",
+        "displayName": "video-translate",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/skills",
+        "data": null,
+        "description": "Agent skill \"video-translate\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-oss-dtctl-dtctl-release",
+        "displayName": "dtctl-release",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace-oss/dtctl",
+        "data": null,
+        "description": "Agent skill \"dtctl-release\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:debridge.com-mcp-2",
+        "displayName": "debridge.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agents.debridge.com/.well-known/mcp.json",
+        "data": null,
+        "description": "Model Context Protocol server for debridge.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "debridge.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-control-ui",
+        "displayName": "control-ui",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"control-ui\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:uapis.cn-mcp-0",
+        "displayName": "uapis.cn MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://uapis.cn/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for uapis.cn, exposing 93 tools.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [
+          "post_convert_json",
+          "get_convert_unixtime",
+          "get_daily_news_image",
+          "get_game_minecraft_historyid",
+          "get_game_minecraft_serverstatus",
+          "get_game_minecraft_userinfo",
+          "get_game_steam_summary",
+          "get_game_epic_free",
+          "get_image_bing_daily",
+          "get_image_bing_daily_history",
+          "post_image_frombase64",
+          "get_image_motou",
+          "post_image_motou",
+          "post_image_speechless",
+          "get_image_qrcode",
+          "get_image_tobase64",
+          "post_image_decode",
+          "post_image_svg",
+          "post_image_compress",
+          "get_avatar_gravatar",
+          "post_image_ocr",
+          "post_image_nsfw",
+          "get_misc_hotboard",
+          "get_misc_movie_box_office",
+          "get_misc_phoneinfo",
+          "get_misc_randomnumber",
+          "get_misc_timestamp",
+          "get_misc_weather",
+          "get_misc_worldtime",
+          "get_misc_lunartime",
+          "get_misc_holiday_calendar",
+          "get_history_programmer_today",
+          "get_history_programmer",
+          "get_misc_tracking_query",
+          "get_misc_tracking_detect",
+          "get_misc_tracking_carriers",
+          "post_misc_date_diff",
+          "get_misc_district",
+          "get_network_dns",
+          "get_network_icp",
+          "get_network_ipinfo",
+          "get_network_myip",
+          "get_network_ping",
+          "get_network_pingmyip",
+          "get_network_portscan",
+          "get_network_urlstatus",
+          "get_network_whois",
+          "get_network_wxdomain",
+          "get_saying",
+          "get_random_image",
+          "get_random_string",
+          "get_answerbook_ask",
+          "post_answerbook_ask",
+          "get_social_bilibili_userinfo",
+          "get_social_qq_userinfo",
+          "get_social_bilibili_archives",
+          "get_social_bilibili_videoinfo",
+          "get_social_bilibili_replies",
+          "get_social_bilibili_liveroom",
+          "get_social_qq_groupinfo",
+          "get_github_repo",
+          "get_github_user",
+          "get_status_ratelimit",
+          "get_status_usage"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "uapis.cn"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:ydb-qdrant.tech-mcp-1",
+        "displayName": "ydb-qdrant.tech MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ydb-qdrant.tech/docs/mcp/",
+        "data": null,
+        "description": "Model Context Protocol server for ydb-qdrant.tech.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "ydb-qdrant.tech"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:ydb-qdrant.tech-mcp-2",
+        "displayName": "ydb-qdrant.tech MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ydb-qdrant.tech/docs/mcp.md",
+        "data": null,
+        "description": "Model Context Protocol server for ydb-qdrant.tech.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "ydb-qdrant.tech"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:forter.com-mcp-1",
+        "displayName": "forter.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.forter.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for forter.com, exposing 5 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "get_fraud_decision",
+          "evaluate_login_risk",
+          "evaluate_signup_risk",
+          "lookup_dispute_evidence",
+          "check_agent_trust"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "forter.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:workos.com-workos-skills-workos-magic-link",
+        "displayName": "workos-magic-link",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/workos/skills",
+        "data": null,
+        "description": "Agent skill \"workos-magic-link\" published by workos.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "workos.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:hiro.is-mcp-0",
+        "displayName": "hiro.is MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://docs.hiro.is/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for hiro.is, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_hiro",
+          "query_docs_filesystem_hiro"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "hiro.is"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:rgate.io-mcp-0",
+        "displayName": "rgate.io MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.rgate.io/api/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for rgate.io, exposing 8 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "start_scan",
+          "get_scan",
+          "list_checks",
+          "get_pricing",
+          "create_checkout_handoff",
+          "generate_fix_plan",
+          "export_scan_markdown",
+          "compare_scan_history"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "rgate.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:budgetfitter.uk-mcp-0",
+        "displayName": "budgetfitter.uk MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://budgetfitter.uk/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for budgetfitter.uk, exposing 4 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "search",
+          "brand_lookup",
+          "get_llms_index",
+          "navigate"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "budgetfitter.uk"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-video-gen",
+        "displayName": "tavus-video-gen",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-video-gen\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:workos.com-mcp-0",
+        "displayName": "workos.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://workos.com/docs/authkit/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for workos.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "workos.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:twenty.com-mcp-0",
+        "displayName": "twenty.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.twenty.com",
+        "data": null,
+        "description": "Model Context Protocol server for twenty.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "twenty.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:forter.com-mcp-2",
+        "displayName": "forter.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://docs.forter.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for forter.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "forter.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:forter.com-mcp-4",
+        "displayName": "forter.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.forter.com/wp-content/cache/min/1/webmcp.js",
+        "data": null,
+        "description": "Model Context Protocol server for forter.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "forter.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vocab.voyage-mcp-0",
+        "displayName": "vocab.voyage MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://gponcrussdahcdyrlhcr.supabase.co/functions/v1/mcp-server",
+        "data": null,
+        "description": "Model Context Protocol server for vocab.voyage, exposing 31 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "get_word_of_the_day",
+          "get_definition",
+          "generate_quiz",
+          "get_course_word_list",
+          "list_courses",
+          "explain_word_in_context",
+          "study_plan_preview",
+          "get_flashcards",
+          "get_my_progress",
+          "play_game",
+          "record_word_result",
+          "record_session_complete",
+          "award_game_xp",
+          "mark_word_known",
+          "mark_word_difficult",
+          "update_adaptive_level",
+          "file_support_ticket",
+          "get_recent_mistakes",
+          "get_session_detail",
+          "get_pending_invites",
+          "nudge_child",
+          "resend_pending_invite",
+          "get_class_standing",
+          "get_sparkle_guidance",
+          "set_persona",
+          "get_recommended_next_action",
+          "list_starter_prompts",
+          "get_session_trends",
+          "get_class_session_trends",
+          "get_child_session_detail",
+          "get_study_plan_recommendation"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "vocab.voyage"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-dynatrace-for-ai-dt-obs-tracing",
+        "displayName": "dt-obs-tracing",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace/dynatrace-for-ai",
+        "data": null,
+        "description": "Agent skill \"dt-obs-tracing\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-hyperframes-hyperframes-captions",
+        "displayName": "hyperframes-captions",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "data": null,
+        "description": "Agent skill \"hyperframes-captions\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:debridge.com-mcp-0",
+        "displayName": "debridge.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://docs.debridge.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for debridge.com, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_de_bridge_home",
+          "query_docs_filesystem_de_bridge_home"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "debridge.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:coralogix.com-coralogix-cx-cli-cx-olly",
+        "displayName": "cx-olly",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/coralogix/cx-cli",
+        "data": null,
+        "description": "Agent skill \"cx-olly\" published by coralogix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "coralogix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:getdex.com-getdex-agent-skills-dex-skill",
+        "displayName": "dex-skill",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/getdex/agent-skills",
+        "data": null,
+        "description": "Agent skill \"dex-skill\" published by getdex.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "getdex.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:dynatrace.com-dynatrace-dynatrace-for-ai-dt-obs-services",
+        "displayName": "dt-obs-services",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/dynatrace/dynatrace-for-ai",
+        "data": null,
+        "description": "Agent skill \"dt-obs-services\" published by dynatrace.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "dynatrace.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:loyaltylion.com-mcp-1",
+        "displayName": "loyaltylion.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://developers.loyaltylion.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for loyaltylion.com, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_loyalty_lion",
+          "query_docs_filesystem_loyalty_lion"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "loyaltylion.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:loyaltylion.com-mcp-0",
+        "displayName": "loyaltylion.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://loyaltylion.main-kill-isr.mintlify.me/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for loyaltylion.com, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_loyalty_lion",
+          "query_docs_filesystem_loyalty_lion"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "loyaltylion.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-jotai",
+        "displayName": "jotai",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"jotai\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:tavus.io-mcp-1",
+        "displayName": "tavus.io MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://docs.tavus.io/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for tavus.io, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_tavus",
+          "query_docs_filesystem_tavus"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:tavus.io-mcp-0",
+        "displayName": "tavus.io MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://tavus.main-kill-isr.mintlify.me/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for tavus.io, exposing 2 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search_tavus",
+          "query_docs_filesystem_tavus"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:ora.ai-mcp-0",
+        "displayName": "ora.ai MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.ora.ai",
+        "data": null,
+        "description": "Model Context Protocol server for ora.ai, exposing 8 tools.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [
+          "scan_domain",
+          "get_score",
+          "get_leaderboard",
+          "discover_products",
+          "get_verification_challenge",
+          "submit_feedback",
+          "submit_check_feedback",
+          "get_feedback"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "ora.ai"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-hyperframes-graphic-overlays",
+        "displayName": "graphic-overlays",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "data": null,
+        "description": "Agent skill \"graphic-overlays\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:budgetfitter.co.uk-mcp-0",
+        "displayName": "budgetfitter.co.uk MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://budgetfitter.uk/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for budgetfitter.co.uk, exposing 4 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "search",
+          "brand_lookup",
+          "get_llms_index",
+          "navigate"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "budgetfitter.co.uk"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:telnyx.com-team-telnyx-skills-telnyx-texml-ruby",
+        "displayName": "telnyx-texml-ruby",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/team-telnyx/skills",
+        "data": null,
+        "description": "Agent skill \"telnyx-texml-ruby\" published by telnyx.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "telnyx.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-benchmark-e2e",
+        "displayName": "benchmark-e2e",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"benchmark-e2e\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:fynfyn.top-mcp-1",
+        "displayName": "fynfyn.top MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://fynfyn.top/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for fynfyn.top, exposing 1 tool.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [
+          "search_properties"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "fynfyn.top"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:fynfyn.top-mcp-0",
+        "displayName": "fynfyn.top MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.fynfyn.top/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for fynfyn.top, exposing 1 tool.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [
+          "search_properties"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "fynfyn.top"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-hyperframes-hyperframes-registry",
+        "displayName": "hyperframes-registry",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "data": null,
+        "description": "Agent skill \"hyperframes-registry\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-vitest",
+        "displayName": "vitest",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"vitest\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 63,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-server-supabase-server",
+        "displayName": "supabase-server",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/server",
+        "data": null,
+        "description": "Agent skill \"supabase-server\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 62,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:telnyx.com-team-telnyx-skills-telnyx-10dlc-javascript",
+        "displayName": "telnyx-10dlc-javascript",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/team-telnyx/skills",
+        "data": null,
+        "description": "Agent skill \"telnyx-10dlc-javascript\" published by telnyx.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 62,
+        "source": "telnyx.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-dev-toolbar-review",
+        "displayName": "dev-toolbar-review",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"dev-toolbar-review\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 62,
+        "source": "supabase.com"
+      }
+    ],
+    "referrals": [],
+    "pageToken": "eyJvZmZzZXQiOjEwMH0="
+  }
+}

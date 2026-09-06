@@ -234,6 +234,10 @@ export function ardManifest(base: string): ArdManifest {
       url: `${base}/openapi-tools.json`,
       description:
         "The free, read-only instruments in the common function-calling shape, one worked call each, derived from the same catalog the MCP door serves. No paid door appears.",
+      representativeQueries: [
+        "get JSON function-calling definitions for free x402 verification tools",
+        "find worked function-calling examples for x402 preflight and receipt verification",
+      ],
       updatedAt,
       trustManifest,
     },
@@ -243,6 +247,7 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_DATASET,
       url: `${base}${dataset.path}`,
       description: `${dataset.description} ${dataset.caution}`,
+      representativeQueries: dataset.representativeQueries,
       updatedAt,
       trustManifest,
     })),
@@ -252,6 +257,7 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_FEED,
       url: `${base}${feed.path}`,
       description: `${feed.what} ${feed.cadence}.`,
+      representativeQueries: feed.representativeQueries,
       updatedAt,
       trustManifest,
     })),
@@ -292,7 +298,11 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_SKILL,
       url: `${base}/skills/execution-contract.md`,
       description:
-        "The store's published execution-contract skill: what an agent may rely on when it spends money here, and what it may not.",
+        "A free behavioral contract for autonomous work: success criteria, bounded retries, terminal states and an evidence ledger.",
+      representativeQueries: [
+        "stop an autonomous agent from retrying without progress",
+        "define evidence requirements and terminal states for an agent task",
+      ],
       updatedAt,
       trustManifest,
     },

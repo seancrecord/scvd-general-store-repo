@@ -1,5 +1,32 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-06 — ARD search-query coverage
+
+Read [Neuronto's publishing guide](https://www.neuronto.com/publish) and
+the keeper's live discoverability scorecard: 21 entries, only five with
+representativeQueries, zero conformance errors and 16 warnings. The
+guide asks for 2–5 requests per entry in the words a caller would use.
+This is a discovery requirement beyond passing the JSON schemas; the
+existing test skipped entries without queries and therefore concealed
+the gap. Every emitted entry now has queries, including datasets and
+feeds, whose queries live beside their source descriptions.
+
+Read the actual dataset and feed declarations and the execution-contract
+skill before writing its requests. Queries describe the evidence those
+resources serve: inflows remain transfers, fixtures remain test material,
+and dated observations remain dated. No media type was relabelled merely
+to fit an audit allowlist.
+
+Both ARD head links were present in live homepage HTML fetched with
+Accept `*/*` and `text/html` despite the scorecard's missing-path finding.
+The cause is reproducible: [Neuronto's audit source](https://github.com/neuronto/agentic-resource-discovery/blob/main/app/audit.py)
+sends Accept `application/json,*/*` to every path, including the homepage,
+then searches that response for HTML link tags. Our homepage correctly
+returns JSON for that request and HTML with both tags for an HTML request.
+Changing content negotiation to satisfy that detector would break the
+agent's JSON door. Registry admission and query ranking are external results;
+coverage changes do not guarantee a particular score or search position.
+
 ## 2026-09-06 — ARD trust-manifest signing
 
 Read the [current ARD specification §4.5–5.1](https://agenticresourcediscovery.org/spec/),
