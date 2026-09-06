@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MCP_REFUSAL_CODES } from "@/store/surface-contract";
 import { DELIVERY_FAILED_CODE } from "@/lib/delivery-failed";
+import { INVALID_SETTLEMENT_RECEIPT_CODE } from "@/lib/payments";
 import { MENU_ITEMS } from "@/store";
 import MCP_SOURCE from "../src/routes/mcp.ts?raw";
 import DOOR_LAW_SOURCE from "../src/lib/purchase-args.ts?raw";
@@ -165,6 +166,9 @@ describe("a refusal on the wire carries the code and the charge", () => {
     if (/deliveryFailedBody\(/.test(MCP_SOURCE)) {
       emitted.add(DELIVERY_FAILED_CODE);
     }
+    if (/error instanceof InvalidSettlementReceipt/.test(MCP_SOURCE)) {
+      emitted.add(INVALID_SETTLEMENT_RECEIPT_CODE);
+    }
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
     expect(
@@ -208,8 +212,8 @@ describe("a refusal on the wire carries the code and the charge", () => {
       .filter((call) => {
         if (call.code === "-32700") return false; // parse error, same class as -32601
         if (call.code === "-32602" && /prompts/i.test(call.tail)) return false;
-        // Money moved and delivery failed: not a refusal, charged is
-        // TRUE, and the body is the shared one (lib/delivery-failed.ts).
+        // A shared payment-outcome body: delivery failure is charged
+        // TRUE; an invalid settlement receipt leaves it unknown.
         if (call.code === "-32000" && /message, data/.test(call.tail)) return false;
         return NOT_REFUSALS[call.code] === undefined;
       });
