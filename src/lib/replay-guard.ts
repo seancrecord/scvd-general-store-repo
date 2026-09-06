@@ -17,11 +17,29 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
 /** Comfortably outlives any authorization's validBefore window. */
 const NONCE_TTL_SECONDS = 24 * 60 * 60;
 
-/** Pulls the EIP-3009 nonce out of an exact-EVM payment payload, if present. */
+function isExactEvmPayment(paymentPayload: Record<string, unknown>): boolean {
+  const accepted = paymentPayload["accepted"];
+  return (
+    paymentPayload["x402Version"] === 2 &&
+    isRecord(accepted) && accepted["scheme"] === "exact" &&
+    typeof accepted["network"] === "string" &&
+    /^eip155:[1-9][0-9]*$/.test(accepted["network"])
+  );
+}
+
+/**
+ * Pulls an EIP-3009 nonce from an exact-EVM envelope. Bare authorization
+ * fragments remain readable as buyer-supplied attestation evidence;
+ * they are not sufficient to identify an authenticated payer below.
+ */
 export function extractPaymentNonce(paymentPayload: unknown): string | null {
   if (!isRecord(paymentPayload)) {
     return null;
   }
+  if (
+    ("accepted" in paymentPayload || "x402Version" in paymentPayload) &&
+    !isExactEvmPayment(paymentPayload)
+  ) return null;
   const payload = paymentPayload["payload"];
   if (!isRecord(payload)) {
     return null;
@@ -35,20 +53,22 @@ export function extractPaymentNonce(paymentPayload: unknown): string | null {
 }
 
 /**
- * The payer out of a VERIFIED payment payload.
+ * The payer out of a VERIFIED exact-EVM payment payload.
  *
  * Deliberately distinct from `payerFromPaymentHeader`, which decodes
  * the raw request header and checks nothing — fine for books and
  * diagnostics, never for an authorization decision, because anyone can
- * write any address into a base64 blob. This one is only ever called
- * on the object the facilitator handed back, so the address it returns
- * is an account that actually signed. Two functions rather than one
- * with a flag, so the unsafe reading cannot be selected by accident.
+ * write any address into a base64 blob. The caller must verify first.
+ * Verification authenticates the selected scheme's fields, not arbitrary
+ * adjacent metadata: a valid Solana transaction may carry an unsigned
+ * authorization.from. Never interpret that as an EVM signer's identity.
  */
 export function payerOfVerifiedPayload(
   paymentPayload: unknown,
 ): string | undefined {
-  if (!isRecord(paymentPayload)) return undefined;
+  if (!isRecord(paymentPayload) || !isExactEvmPayment(paymentPayload)) {
+    return undefined;
+  }
   const payload = paymentPayload["payload"];
   if (!isRecord(payload)) return undefined;
   const authorization = payload["authorization"];
