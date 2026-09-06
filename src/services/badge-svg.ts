@@ -219,7 +219,7 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
  */
 const CHIP_PAPER = "#f7f2e6";
 const CHIP_INK = "#241d16";
-const CHIP_FADED = "#8a7b64";
+const CHIP_MUTED = "#8a7b64";
 
 /**
  * The chip's freshness palette. Broken and indeterminate never
@@ -235,9 +235,9 @@ const CHIP_STATE: Record<
   "fresh" | "aging" | "expired",
   { color: string; sub: string }
 > = {
-  fresh: { color: "#2f5d3a", sub: "observed inside one census cadence" },
-  aging: { color: "#8a5a12", sub: "older than one cadence — a refresh says more" },
-  expired: { color: "#8f8474", sub: "too old to rely on; agents should refuse it" },
+  fresh: { color: "#1f4d33", sub: "observed inside one census cadence" },
+  aging: { color: "#7a4a0e", sub: "older than one cadence — a refresh says more" },
+  expired: { color: "#6b6154", sub: "too old to rely on; agents should refuse it" },
 };
 
 export interface PassportChipOptions {
@@ -294,19 +294,31 @@ export interface PassportChipOptions {
 export const CHIP_LAYOUT = {
   width: 300,
   height: 56,
-  /** The struck seal on the left: a notary's mark, not an icon. */
-  seal: { cx: 31, cy: 28, r: 17.5 },
-  /** The hairline that separates the seal from the setting. */
-  divider: 55,
-  /** Where the three set lines begin. */
-  textX: 67,
+  /**
+   * THE SPINE (2026-09-05, third pass). A cream label is quiet on a
+   * light README and invisible next to a row of shields.io badges. The
+   * spine gives the chip its own dark mass, so it carries contrast
+   * with it onto any page rather than borrowing the page's — and it is
+   * inked in the FRESHNESS colour, which means an expired chip goes
+   * visibly dead instead of announcing it in six-point type.
+   */
+  spine: { w: 52 },
+  /** The house mark, reversed out of the spine. */
+  seal: { cx: 26, cy: 28, r: 15 },
+  /** Where the set lines begin, clear of the spine. */
+  textX: 64,
   /** The right edge every line stops at. */
-  textEnd: 286,
-  eyebrow: { y: 19, size: 6.6, spacing: 1.9 },
-  host: { y: 35, size: 12.5 },
-  meta: { y: 46.5, size: 6.6 },
+  textEnd: 288,
+  eyebrow: { y: 16, size: 6.2, spacing: 2 },
+  /**
+   * The host is the thing a reader came for, so it gets the room: one
+   * size down the ramp per step until it fits, and the subdomain
+   * muted so the eye lands on the registrable name.
+   */
+  host: { y: 35, sizes: [14, 13, 12, 11, 10, 9, 8.2] },
+  meta: { y: 47, size: 6.6 },
   /** The state, set right on the eyebrow's own baseline. */
-  state: { y: 19, size: 8.2, spacing: 1.4, reserve: 58 },
+  state: { y: 16, size: 7.6, spacing: 1.2, reserve: 54 },
 } as const;
 
 /** Budgets derived from the geometry, never typed twice (AT_SCALE rule 1). */
@@ -314,10 +326,12 @@ export const CHIP_BUDGETS = {
   /** The eyebrow shares its baseline with the state, so it stops short. */
   eyebrow:
     CHIP_LAYOUT.textEnd - CHIP_LAYOUT.state.reserve - CHIP_LAYOUT.textX - 10,
-  /** The host and meta rows have the setting to themselves. */
+  /** The host and record rows have the setting to themselves. */
   full: CHIP_LAYOUT.textEnd - CHIP_LAYOUT.textX,
   /** What the state word itself may occupy. */
   state: CHIP_LAYOUT.state.reserve,
+  /** Inside the seal's inner ring, where the house mark is struck. */
+  seal: (CHIP_LAYOUT.seal.r - 3) * 2 - 2,
 } as const;
 
 /**
@@ -332,6 +346,64 @@ export const CHIP_BUDGETS = {
  * accessible label and on the passport page.
  * ⚑ Rule 7: the wording is the keeper's to keep or kill.
  */
+/**
+ * A HOSTNAME, SPLIT WHERE A READER SPLITS IT.
+ *
+ * `api.long-subdomain.enterprise.example.com` truncated from the right
+ * loses the only part anybody recognises. So the chip sets the
+ * registrable name in ink and everything before it muted: the eye
+ * lands on `example.com`, and the path to it is still legible for
+ * anyone who wants it. The split is the last two labels, which is
+ * wrong for a handful of public suffixes (`co.uk` and its cousins) and
+ * harmless when it is — being wrong here mutes one label too few, it
+ * never hides the name.
+ */
+export function splitHost(host: string): { prefix: string; apex: string } {
+  const parts = host.split(".");
+  if (parts.length <= 2) return { prefix: "", apex: host };
+  const apex = parts.slice(-2).join(".");
+  return { prefix: host.slice(0, host.length - apex.length), apex };
+}
+
+export interface FittedHost {
+  prefix: string;
+  apex: string;
+  size: number;
+}
+
+/**
+ * The largest size on the ramp at which the whole name fits, and only
+ * when nothing on the ramp does, a cut — taken off the FRONT, where
+ * the subdomains are, so the registrable name survives. Shrinking
+ * before cutting is the elegant order: a name set two points smaller
+ * is still the name, and a name with its tail cut off is not.
+ */
+export function fitHost(
+  host: string,
+  sizes: readonly number[],
+  budget: number,
+): FittedHost {
+  const { prefix, apex } = splitHost(host);
+  for (const size of sizes) {
+    if (textWidth(host, size) <= budget) return { prefix, apex, size };
+  }
+  const size = sizes[sizes.length - 1]!;
+  // Keep the apex whole and eat the prefix from the left.
+  const apexWidth = textWidth(apex, size);
+  const room = budget - apexWidth - textWidth("…", size);
+  if (room <= 0) {
+    // Even the registrable name will not fit; fall back to the plain
+    // fitter rather than pretend the split bought us anything.
+    return { prefix: "", apex: fitToWidth(apex, size, budget), size };
+  }
+  const chars = [...prefix];
+  for (let drop = 1; drop <= chars.length; drop += 1) {
+    const tail = chars.slice(drop).join("");
+    if (textWidth(tail, size) <= room) return { prefix: `…${tail}`, apex, size };
+  }
+  return { prefix: "", apex, size };
+}
+
 export function chipTierFace(tier: { tier: string; ready: number; rounds: number }): string {
   const fraction = `${tier.ready}/${tier.rounds} ${tier.rounds === 1 ? "round" : "rounds"} ready`;
   /*
@@ -369,6 +441,23 @@ export function chipTierFace(tier: { tier: string; ready: number; rounds: number
  * recognise (deep forest, ochre, a grey that reads dead) rather than
  * the traffic-light greens a dashboard uses.
  */
+/**
+ * HOW FAR OFF SQUARE THIS HOST'S SEAL SITS.
+ *
+ * A seal printed at exactly zero degrees is a logo; one a degree or
+ * two off is a mark somebody pressed. The angle is DERIVED from the
+ * hostname rather than random, so a chip is stable across every
+ * re-render — the same host always gets the same press — and no two
+ * neighbouring hosts sit at quite the same angle. Bounded to a few
+ * degrees: enough to read as struck, never enough to read as broken.
+ */
+export function sealAngleFor(host: string): number {
+  let hash = 0;
+  for (const ch of host) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
+  // -4.5 to +4.5 degrees, in tenths, so the string stays short.
+  return Math.round((((hash % 91) - 45) / 10) * 10) / 10;
+}
+
 export function renderPassportChip(options: PassportChipOptions): string {
   const L = CHIP_LAYOUT;
   const state = CHIP_STATE[options.freshness];
@@ -376,12 +465,12 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const tier = options.selfObserved ? undefined : options.tier;
   const serif = "Georgia, 'Times New Roman', serif";
   const eyebrow = options.selfObserved ? "SELF-OBSERVED PASSPORT" : "ENDPOINT PASSPORT";
+  const host = fitHost(options.host, L.host.sizes, CHIP_BUDGETS.full);
+  const sealAngle = sealAngleFor(options.host);
   /*
-   * The record line: the date, then ONE thing more. Three parts made
-   * a line that ellipsed on ordinary hosts, and a label whose last
-   * words are always "…" reads as broken rather than as brief — so the
-   * second part is the tier where a tier exists (it says something the
-   * stamp cannot) and the freshness gloss only where one does not.
+   * The record line: the date, then ONE thing more. Three parts made a
+   * line that ellipsed on ordinary hosts, and a label whose last words
+   * are always "…" reads as broken rather than as brief.
    */
   const second = options.selfObserved
     ? "self-read, not a census probe"
@@ -389,19 +478,27 @@ export function renderPassportChip(options: PassportChipOptions): string {
       ? chipTierFace(tier)
       : state.sub;
   const meta = `observed ${date}  ·  ${second}`;
+  const prefix = host.prefix
+    ? `<tspan fill="${CHIP_MUTED}">${escapeHtml(host.prefix)}</tspan>`
+    : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
-  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="2"/>
-  <rect x="2.5" y="2.5" width="${L.width - 5}" height="${L.height - 5}" fill="none" stroke="${CHIP_INK}" stroke-width="1" rx="1.5"/>
-  <g stroke="${CHIP_INK}" fill="none">
-    <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.1"/>
-    <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3.2}" stroke-width="0.4" stroke-opacity="0.7"/>
+  <rect width="${L.width}" height="${L.height}" fill="${CHIP_PAPER}" rx="3"/>
+  <g fill="${state.color}">
+    <rect x="0" y="0" width="${L.spine.w}" height="${L.height}" rx="3"/>
+    <rect x="${L.spine.w - 8}" y="0" width="8" height="${L.height}"/>
   </g>
-  <text x="${L.seal.cx}" y="${L.seal.cy + 2.6}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="7.6" letter-spacing="1" fill="${CHIP_INK}">SCVD</text>
-  <line x1="${L.divider}" y1="11" x2="${L.divider}" y2="45" stroke="${CHIP_INK}" stroke-width="0.4" stroke-opacity="0.45"/>
-  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_FADED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
-  <text x="${L.textEnd}" y="${L.state.y}" text-anchor="end" font-family="${serif}" font-size="${L.state.size}" letter-spacing="${L.state.spacing}" fill="${state.color}">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), L.state.size, CHIP_BUDGETS.state, L.state.spacing))}</text>
-  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${L.host.size}" fill="${CHIP_INK}">${escapeHtml(fitToWidth(options.host, L.host.size, CHIP_BUDGETS.full))}</text>
-  <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_FADED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
+  <g transform="rotate(${sealAngle} ${L.seal.cx} ${L.seal.cy})">
+    <g stroke="${CHIP_PAPER}" fill="none">
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.1"/>
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-opacity="0.65"/>
+    </g>
+    <text x="${L.seal.cx}" y="${L.seal.cy + 2.3}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="6.5" letter-spacing="0.8" fill="${CHIP_PAPER}">SCVD</text>
+  </g>
+  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
+  <text x="${L.textEnd}" y="${L.state.y}" text-anchor="end" font-family="${serif}" font-weight="bold" font-size="${L.state.size}" letter-spacing="${L.state.spacing}" fill="${state.color}">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), L.state.size, CHIP_BUDGETS.state, L.state.spacing))}</text>
+  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
+  <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
+  <rect x="0.5" y="0.5" width="${L.width - 1}" height="${L.height - 1}" fill="none" stroke="${CHIP_INK}" stroke-width="1" stroke-opacity="0.85" rx="3"/>
 </svg>`;
 }
 

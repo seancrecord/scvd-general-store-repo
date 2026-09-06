@@ -93,6 +93,13 @@ build, it is on the roadmap.
   3. The card's lines: `SCVD GENERAL STORE · OAK CITY`, then
      `ENDPOINT PASSPORT`, the host, the two dates, and `GAPS
      COUNTED AGAINST THE OBSERVER`. No verdict word, as before.
+  4. The chip's left third is now a SPINE inked in the freshness
+     colour — deep forest fresh, burnt ochre aging, dead grey
+     expired — with the seal reversed out of it and struck at a
+     small angle derived from the hostname. That is the call most
+     worth your eye: it makes an expired chip look expired from
+     across the page, and it spends the one strong colour on
+     status rather than on the house red.
   LOOK: `/badges/passport/{host}.svg` and
   `/passport/card/{host}.png` after deploy. The card is now ~380 KB
   (was ~95 KB) because the type is anti-aliased; still far under

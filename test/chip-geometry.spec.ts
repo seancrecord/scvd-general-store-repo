@@ -3,8 +3,11 @@ import {
   CHIP_BUDGETS,
   CHIP_LAYOUT,
   chipTierFace,
+  fitHost,
   fitToWidth,
   renderPassportChip,
+  sealAngleFor,
+  splitHost,
   textWidth,
 } from "@/services/badge-svg";
 
@@ -45,13 +48,16 @@ function chip(over: Partial<Parameters<typeof renderPassportChip>[0]> = {}): str
 function drawnText(
   svg: string,
 ): { text: string; size: number; spacing: number; anchor: string; y: number }[] {
-  return [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((match) => {
+  return [...svg.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map((match) => {
     const tag = match[0];
     const size = Number(/font-size="([\d.]+)"/.exec(tag)![1]);
     const spacing = Number(/letter-spacing="([\d.]+)"/.exec(tag)?.[1] ?? 0);
     const anchor = /text-anchor="([a-z]+)"/.exec(tag)?.[1] ?? "start";
     const y = Number(/ y="([\d.]+)"/.exec(tag)![1]);
-    return { text: match[1]!, size, spacing, anchor, y };
+    // The host is set as two tspans (muted subdomain, inked apex); the
+    // width that matters is the whole run, so the markup comes out.
+    const text = match[1]!.replace(/<[^>]*>/g, "");
+    return { text, size, spacing, anchor, y };
   });
 }
 
@@ -118,22 +124,21 @@ describe("no drawn string leaves its box, for any input", () => {
     expect(eyebrowRight).toBeLessThan(CHIP_LAYOUT.textEnd - CHIP_BUDGETS.state);
   });
 
-  it("the setting starts clear of the seal and its rule", () => {
-    const sealRight = CHIP_LAYOUT.seal.cx + CHIP_LAYOUT.seal.r;
-    expect(CHIP_LAYOUT.divider).toBeGreaterThan(sealRight);
-    expect(CHIP_LAYOUT.textX).toBeGreaterThan(CHIP_LAYOUT.divider);
-    // The seal sits inside the card, clear of the frame.
-    expect(CHIP_LAYOUT.seal.cy + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.height - 3);
+  it("the setting starts clear of the spine, and the seal sits inside it", () => {
+    expect(CHIP_LAYOUT.textX).toBeGreaterThan(CHIP_LAYOUT.spine.w);
+    expect(CHIP_LAYOUT.seal.cx + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.spine.w - 8);
     expect(CHIP_LAYOUT.seal.cx - CHIP_LAYOUT.seal.r).toBeGreaterThanOrEqual(3);
+    expect(CHIP_LAYOUT.seal.cy + CHIP_LAYOUT.seal.r).toBeLessThanOrEqual(CHIP_LAYOUT.height - 3);
   });
 
-  it("the three set lines clear each other", () => {
+  it("the three set lines clear each other at the largest host size", () => {
     // Georgia's cap height is about 0.75em above the baseline.
-    expect(CHIP_LAYOUT.host.y - CHIP_LAYOUT.host.size * 0.75).toBeGreaterThan(CHIP_LAYOUT.eyebrow.y);
+    const biggest = CHIP_LAYOUT.host.sizes[0]!;
+    expect(CHIP_LAYOUT.host.y - biggest * 0.75).toBeGreaterThan(CHIP_LAYOUT.eyebrow.y);
     expect(CHIP_LAYOUT.meta.y - CHIP_LAYOUT.meta.size * 0.75).toBeGreaterThan(
-      CHIP_LAYOUT.host.y + CHIP_LAYOUT.host.size * 0.16,
+      CHIP_LAYOUT.host.y + biggest * 0.16,
     );
-    expect(CHIP_LAYOUT.meta.y).toBeLessThan(CHIP_LAYOUT.height - 4);
+    expect(CHIP_LAYOUT.meta.y).toBeLessThan(CHIP_LAYOUT.height - 3);
   });
 });
 
@@ -149,6 +154,36 @@ describe("what the chip says", () => {
     // The link still reaches a screen reader, and the markdown embed
     // wraps the whole chip in the anchor.
     expect(svg).toContain("https://scvd.store/passport/bykaranteli.com");
+  });
+
+  it("shrinks a long host down the ramp before it cuts anything", () => {
+    const short = fitHost("ok.io", CHIP_LAYOUT.host.sizes, CHIP_BUDGETS.full);
+    expect(short.size).toBe(CHIP_LAYOUT.host.sizes[0]);
+    expect(short.prefix).toBe("");
+    expect(short.apex).toBe("ok.io");
+
+    // A long name is set smaller, WHOLE, with its subdomain muted —
+    // shrinking is what buys the name's survival.
+    const longish = "api.some-long-subdomain.enterprise.example.com";
+    const long = fitHost(longish, CHIP_LAYOUT.host.sizes, CHIP_BUDGETS.full);
+    expect(long.size).toBeLessThan(CHIP_LAYOUT.host.sizes[0]!);
+    expect(long.apex).toBe("example.com");
+    expect(`${long.prefix}${long.apex}`).toBe(longish);
+    expect(long.prefix).not.toContain("…");
+    expect(textWidth(long.prefix + long.apex, long.size)).toBeLessThanOrEqual(CHIP_BUDGETS.full);
+
+    // Past the ramp, the cut comes off the FRONT: the registrable name
+    // is the part a reader recognises and it survives.
+    const absurd = fitHost(LONG_HOST, CHIP_LAYOUT.host.sizes, CHIP_BUDGETS.full);
+    expect(absurd.apex).toBe("example.com");
+    expect(absurd.prefix.startsWith("…")).toBe(true);
+    expect(textWidth(absurd.prefix + absurd.apex, absurd.size)).toBeLessThanOrEqual(CHIP_BUDGETS.full);
+  });
+
+  it("splits a host where a reader splits it", () => {
+    expect(splitHost("example.com")).toEqual({ prefix: "", apex: "example.com" });
+    expect(splitHost("api.example.com")).toEqual({ prefix: "api.", apex: "example.com" });
+    expect(splitHost("localhost")).toEqual({ prefix: "", apex: "localhost" });
   });
 
   it("states an indeterminate tier as its fraction, not as a verdict-shaped word", () => {
@@ -198,6 +233,17 @@ describe("what the chip says", () => {
     expect(textWidth(seal[0]!.text, seal[0]!.size, seal[0]!.spacing)).toBeLessThanOrEqual(
       (CHIP_LAYOUT.seal.r - 3.2) * 2 - 2,
     );
+  });
+
+  it("strikes each host's seal at its own small angle, and always the same one", () => {
+    // Derived, not random: a chip must render identically every time,
+    // and the angle is what makes it look pressed rather than printed.
+    expect(sealAngleFor("402signal.com")).toBe(sealAngleFor("402signal.com"));
+    expect(sealAngleFor("402signal.com")).not.toBe(sealAngleFor("tensorfeed.ai"));
+    for (const host of ["a.io", "402signal.com", "tensorfeed.ai", "bykaranteli.com", "x".repeat(60)]) {
+      expect(Math.abs(sealAngleFor(host))).toBeLessThanOrEqual(4.5);
+    }
+    expect(chip()).toContain("rotate(");
   });
 
   it("says self-read on our own chip rather than claiming a census probe", () => {
