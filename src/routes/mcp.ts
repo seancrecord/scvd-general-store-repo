@@ -14,7 +14,7 @@ import {
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
-import { SettlementDeclined } from "@/lib/payments";
+import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
@@ -73,6 +73,7 @@ import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
 import { getOrder } from "@/services/orders";
+import { InvalidPatronageTarget } from "@/services/patronage";
 import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
@@ -1000,6 +1001,20 @@ async function callPurchaseTool(
   try {
     response = await fulfillPurchase(c.env, item, outcome.pending, input);
   } catch (error) {
+    if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
+      return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
+    }
+    if (error instanceof InvalidSettlementReceipt) {
+      const body = error.body();
+      if (standardPayment(c)) {
+        return rpcResult(id, {
+          ...toolText(body) as Record<string, unknown>,
+          isError: true,
+        });
+      }
+      const { error: message, ...data } = body;
+      return rpcError(id, -32000, message, data);
+    }
     if (error instanceof SettlementDeclined) {
       if (standardPayment(c)) {
         const challenge = { ...await readMcpPaymentChallenge(c.env, item.id), error: "Settlement failed" };

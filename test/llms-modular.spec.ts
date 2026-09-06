@@ -832,6 +832,11 @@ const BASE = "https://scvd.store";
  * and substituting the two corrected sentences reproduced the new guide
  * exactly. The find_in_catalog and documentation-door additions remain.
  *
+ * Re-taken 2026-09-06 for BUY-005: the case-file constraint now names
+ * the complete declared input when promising assembly reuse. Replacing
+ * only that corrected sentence with the old sentence in the normalized
+ * served guide reproduces the previous digest exactly.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
@@ -839,7 +844,7 @@ const BASE = "https://scvd.store";
 // 2026-09-06: configured checkout names and current-quote instructions replace
 // stale payment lists. The HTTP and MCP copies now share the same configuration.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e3e022a66669e9cfb972bd51fa757151a16653a6da9f5116ee3b0f5368238227";
+  "3b7158595016d86f8b783644af074f96af5294e532aba3adaf0a88cb0d95a875";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

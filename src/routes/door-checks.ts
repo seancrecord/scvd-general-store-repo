@@ -32,6 +32,7 @@ import {
  */
 import {
   checkPurchaseArgs,
+  checkPurchaseInputSafety,
   queryArgs,
 } from "@/lib/purchase-args";
 import { stockedShelfCount } from "@/services/stock";
@@ -333,20 +334,20 @@ export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next)
  * twenty-fourth copy here — see the note at the top of
  * lib/purchase-args.ts.
  *
- * The probe rule is unchanged: only a request PRESENTING PAYMENT is
+ * Malformed text encoding is refused even before a quote. The remaining
+ * probe rule is unchanged: only a request PRESENTING PAYMENT is
  * gated, so asking the price without the required inputs stays free
  * and still answers with the 402 that names them.
  */
 export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const item = getMenuItem(buyItemId(c));
-  if (!item || !isBuying(c)) {
+  if (!item) {
     return next();
   }
-  const refusal = await checkPurchaseArgs(
-    c.env,
-    item,
-    queryArgs((name) => c.req.query(name)),
-  );
+  const args = queryArgs((name) => c.req.query(name));
+  const refusal = isBuying(c)
+    ? await checkPurchaseArgs(c.env, item, args)
+    : await checkPurchaseInputSafety(c.env, item, args);
   if (refusal) {
     c.set("inputRefusal", refusal.body);
     return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);

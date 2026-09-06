@@ -34,6 +34,8 @@ export interface DoorError {
   /** Stable across versions. The thing a small model matches on. */
   code: string;
   http: number;
+  /** Omitted on pre-payment refusals; null explicitly means unknown. */
+  charged?: boolean | null;
   means: string;
   /** Not what it is — what the caller should DO. */
   what_to_do: string;
@@ -226,8 +228,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
       "Re-read the menu URL in the body. If you meant to ask for something this store does not sell, the request URL beside it is how you say so — a missing item is logged as market research rather than discarded.",
   },
   /**
-   * THE ONE CODE HERE THAT MEANS MONEY MOVED (2026-09-04). Every other
-   * entry refuses before payment. This one is served when delivery
+   * THE CODE HERE THAT MEANS MONEY MOVED (2026-09-04). This is served when delivery
    * threw AFTER settlement — rule 9's owned failure — and it exists so
    * the buyer is told in a field rather than handed a generic 500
    * whose copy promised no charge. charged is TRUE on it.
@@ -235,10 +236,20 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
     code: "delivery_failed",
     http: 500,
+    charged: true,
     means:
       "your payment settled and the delivery then failed on our side. Money moved; the goods did not leave. The body carries the transaction and the recovery path",
     what_to_do:
       "Do not buy again — that is a second charge. The keeper is paged with your transaction and finishes it by hand or refunds it; the verify URL answers for any certificate that was minted, and the trust page lists it for your wallet.",
+  },
+  {
+    code: "invalid_settlement_receipt",
+    http: 503,
+    charged: null,
+    means:
+      "the processor reported success but returned an invalid settlement receipt. Payment is unknown, not declined; no valid purchase receipt was issued",
+    what_to_do:
+      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
   },
   {
     code: "sold_out",
@@ -285,6 +296,7 @@ export interface RpcRefusal {
   code: string;
   /** The JSON-RPC code on the envelope. Several refusals share one. */
   jsonrpc: number;
+  charged?: boolean | null;
   means: string;
   what_to_do: string;
 }
@@ -354,7 +366,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "invalid_settlement_receipt"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {
@@ -365,6 +377,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
         // A 400 there is -32602 here; everything else, the owned
         // post-settlement failure included, is -32000.
         jsonrpc: door.http === 400 ? -32602 : -32000,
+        ...(door.charged !== undefined ? { charged: door.charged } : {}),
         means: door.means,
         what_to_do: door.what_to_do,
       };
@@ -516,12 +529,12 @@ function whatYouCanUseItFor(task: string | undefined): string {
  * which names the specific parameter.
  */
 function doorErrors(): (DoorError & {
-  charged: boolean;
+  charged: boolean | null;
   code_on_the_wire: boolean;
 })[] {
   const refusals = BUY_REFUSAL_CODES.map((refusal) => ({
     ...refusal,
-    charged: false,
+    charged: refusal.charged === undefined ? false : refusal.charged,
     code_on_the_wire: true,
   }));
   return [

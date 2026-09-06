@@ -1,8 +1,14 @@
 // Worker bindings load the app; initialize them before the timed probe assertions.
 import { env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { captureWatchEvidence } from "@/services/watch-evidence";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
+import { probeHost } from "@/services/ward-round";
+import { canonicalizeProbe } from "@/services/standing-watch";
+
+// Load the probe before the timed assertion and before replacing fetch.
+// A failed assertion must restore the transport just as a successful one does.
+afterEach(() => vi.unstubAllGlobals());
 
 /**
  * ROADMAP 3.1 — WHAT IS FREE NOW AND UNCOLLECTABLE LATER (ledger G3/G4).
@@ -134,7 +140,6 @@ describe("the round writes down what only it can see", () => {
         },
       }),
     );
-    const { vi } = await import("vitest");
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -145,18 +150,15 @@ describe("the round writes down what only it can see", () => {
           }),
       ),
     );
-    const { probeHost } = await import("@/services/ward-round");
     const row = await probeHost(env as never, "https://door.example/api/buy/thing");
     expect(row.signer_kids).toEqual(["did:web:door.example#key-1"]);
     expect(typeof row.latency_ms).toBe("number");
     expect(row.latency_ms).toBeGreaterThanOrEqual(0);
     expect(row.evidence?.headers["server"]).toBe("cloudflare");
     expect(row.evidence?.tls).toBe("unavailable-from-this-vantage");
-    vi.unstubAllGlobals();
   }, 30_000);
 
   it("a door with no signed offers records an empty list, not an absent field", async () => {
-    const { vi } = await import("vitest");
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -169,16 +171,13 @@ describe("the round writes down what only it can see", () => {
           }),
       ),
     );
-    const { probeHost } = await import("@/services/ward-round");
     const row = await probeHost(env as never, "https://bare.example/api/buy/thing");
     expect(row.signer_kids).toEqual([]);
-    vi.unstubAllGlobals();
   }, 30_000);
 });
 
 describe("the preimage law holds across the 3.1 capture", () => {
   it("a legacy row carrying no tls canonicalizes without one", async () => {
-    const { canonicalizeProbe } = await import("@/services/standing-watch");
     const legacy = {
       at: "2026-08-20T00:00:00.000Z",
       verdict: "ready" as const,

@@ -39,6 +39,7 @@ import { isRecord } from "@/types";
 import type { TradeSettlement, Env, MenuItem } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import { decodeBase64Json } from "@/lib/base64-json";
+import { decodeBase58 } from "@/lib/base58";
 
 /**
  * x402 v2 payment plumbing. USDC on Base (eip155:8453), Polygon
@@ -1364,16 +1365,66 @@ export function isTransientSettleFailure(errorReason: string | undefined): boole
 
 type SettlementArgs = Parameters<x402HTTPResourceServer["processSettlement"]>;
 
+/** A success claim with an unusable receipt does not establish non-payment. */
+export const INVALID_SETTLEMENT_RECEIPT_CODE = "invalid_settlement_receipt";
+
+export class InvalidSettlementReceipt extends Error {
+  reconciliationReference: string | null = null;
+
+  constructor(readonly network: string) {
+    super("invalid settlement receipt");
+    this.name = "InvalidSettlementReceipt";
+  }
+
+  body(): Record<string, unknown> & { error: string } {
+    return {
+      error: "The payment processor reported success, but its settlement receipt could not be validated. Money may have moved; no valid purchase receipt has been issued.",
+      code: INVALID_SETTLEMENT_RECEIPT_CODE,
+      charged: null,
+      payment_state: "unknown",
+      network: this.network,
+      recovery: {
+        reference: this.reconciliationReference,
+        recorded: this.reconciliationReference !== null,
+        retry: "Keep the original signed payment and idempotency key. Retry only the identical request with that same payment and key; do not sign a new payment while this one is unresolved.",
+      },
+    };
+  }
+
+  response(): Response {
+    return Response.json(this.body(), {
+      status: 503,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+}
+
+function checkedSettlement(
+  result: Awaited<ReturnType<x402HTTPResourceServer["processSettlement"]>>,
+  network: string,
+): typeof result {
+  // The offered rail is authoritative. A response naming another rail must
+  // not bypass its check. Bound decoding before inspecting the 64-byte ID.
+  if (result.success && network === SOLANA_NETWORK) {
+    const tx = result.transaction;
+    if (result.network !== network || typeof tx !== "string" ||
+      tx.length < 64 || tx.length > 88 || decodeBase58(tx)?.length !== 64) {
+      throw new InvalidSettlementReceipt(network);
+    }
+  }
+  return result;
+}
+
 export async function processSettlementWithRetry(
   httpServer: x402HTTPResourceServer,
   ...args: SettlementArgs
 ): Promise<Awaited<ReturnType<x402HTTPResourceServer["processSettlement"]>>> {
   const first = await httpServer.processSettlement(...args);
   if (first.success || !isTransientSettleFailure(first.errorReason)) {
-    return first;
+    return checkedSettlement(first, args[1].network);
   }
   await new Promise((resolve) => setTimeout(resolve, SETTLE_RETRY_DELAY_MS));
-  return httpServer.processSettlement(...args);
+  return checkedSettlement(await httpServer.processSettlement(...args), args[1].network);
 }
 
 /**
@@ -1531,6 +1582,8 @@ export interface PendingPayment {
    *
    * THROWS `SettlementDeclined` if the money does not move. The gate
    * catches it and returns the decline; a handler does not have to.
+   * `InvalidSettlementReceipt` instead means payment is unresolved,
+   * so the buyer must not be told to authorize a new purchase.
    */
   settle: () => Promise<SettledPayment>;
 }

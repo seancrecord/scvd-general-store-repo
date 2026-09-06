@@ -15,6 +15,8 @@ import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
 // The owned post-settlement failure's body (2026-09-04), whose code is
 // a literal in its own module.
 import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
+import PAYMENT_GATE_SOURCE from "../src/lib/payment-gate.ts?raw";
+import { INVALID_SETTLEMENT_RECEIPT_CODE } from "@/lib/payments";
 
 const BASE = "https://scvd.store";
 
@@ -81,6 +83,8 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
+    ...(PAYMENT_GATE_SOURCE.includes("error instanceof InvalidSettlementReceipt")
+      ? [INVALID_SETTLEMENT_RECEIPT_CODE] : []),
     ...[...`${BUY_SOURCE}\n${DOOR_CHECKS_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
     // The shared law's refuse(status, code, sentence) builder.
     ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
@@ -186,13 +190,14 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
         `${id} does not publish ${shelfGate}, which the shelf gate can send before the parameter check ever runs`,
       ).toContain(shelfGate);
     }
-    // Every refusal says whether it cost anything. On a money path
-    // that is the one fact a client must not have to infer.
+    // Confirmed delivery failure is charged; an invalid processor receipt
+    // leaves payment unknown. Only pre-payment refusals promise no charge.
     for (const error of errors) {
       expect(
         error.charged,
         `${error.code} on ${id} does not say whether it charged`,
-      ).toBe(false);
+      ).toBe(error.code === "delivery_failed" ? true
+        : error.code === INVALID_SETTLEMENT_RECEIPT_CODE ? null : false);
     }
   });
 

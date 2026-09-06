@@ -37,6 +37,12 @@ function code(source: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
+function awaitsMoneyWrite(line: string, guard: string): boolean {
+  // Keeping the returned reconciliation reference does not defer the write.
+  return new RegExp(`^(?:(?:const|let)\\s+[A-Za-z_$][\\w$]*\\s*=\\s*)?await\\s+${guard}\\(`)
+    .test(line.trim());
+}
+
 describe("the MCP door keeps its counters beside the answer", () => {
   it("never awaits the per-tool count on the way to a reply", () => {
     const source = code(Object.values(SOURCES)[0]!);
@@ -168,6 +174,18 @@ describe("the paid HTTP till keeps its courtesies beside the answer", () => {
  * than an increment.
  */
 describe("the money writes on the paid path keep their await", () => {
+  it("recognizes an awaited result while rejecting fire-and-forget forms", () => {
+    const guard = "recordSettlementUnknown";
+    expect(awaitsMoneyWrite("await recordSettlementUnknown(env, input);", guard)).toBe(true);
+    expect(awaitsMoneyWrite("const reference = await recordSettlementUnknown(env, input);", guard)).toBe(true);
+    for (const line of [
+      "recordSettlementUnknown(env, input);",
+      "const reference = recordSettlementUnknown(env, input);",
+      "void recordSettlementUnknown(env, input);",
+      "await deferBookkeeping(() => recordSettlementUnknown(env, input));",
+    ]) expect(awaitsMoneyWrite(line, guard), line).toBe(false);
+  });
+
   it("never lets the replay guard or the ambiguous-settle note go async", () => {
     const source = code(Object.values(GATE)[0]!);
     for (const guard of ["recordSpentNonce", "recordSettlementUnknown"]) {
@@ -180,7 +198,7 @@ describe("the money writes on the paid path keep their await", () => {
         `${guard} is not called here any more; this guard has gone stale`,
       ).toBeGreaterThan(0);
       expect(
-        calls.filter((line) => line.startsWith("await ")).length,
+        calls.filter((line) => awaitsMoneyWrite(line, guard)).length,
         `${guard} lost its await — money must fail closed, not fast`,
       ).toBe(calls.length);
     }
