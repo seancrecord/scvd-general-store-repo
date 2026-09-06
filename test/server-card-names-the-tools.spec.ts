@@ -111,11 +111,20 @@ describe("the server card names the tools it claims to have", () => {
 describe("the card's tools are shaped the way a card reader types them", () => {
   it("carries only fields the MCP Tool defines", async () => {
     /*
-     * At /mcp the rule-57 error catalogue, the security block, `reads`
-     * and the per-item listing specs ride along harmlessly — an MCP
-     * client ignores a key it does not know. A card reader types these
-     * entries from the SDK, so the card gets the spec's Tool and
-     * nothing else. 164 KB of catalog, 51 KB of card.
+     * At /mcp the rule-57 error catalogue, the security block and
+     * `reads` ride along — an MCP client ignores a key it does not
+     * know. A card reader types these entries from the SDK, so the
+     * card gets the spec's Tool and nothing else.
+     *
+     * "RIDE ALONG HARMLESSLY" WAS HALF TRUE, and the half it got
+     * wrong cost every session (2026-09-06). Ignoring a key is a
+     * parsing fact; the bytes are still transferred, and most hosts
+     * serialize the whole tool object into the model's context, so
+     * they are paid in tokens by readers that never look at them. The
+     * per-item listing specs used to ride here too — 115 KB of a
+     * 234 KB catalog — and now do not; they are pointed at, per item,
+     * at /menu/{item_id}. The budget that keeps them out is
+     * test/mcp-tool-catalog-budget.spec.ts.
      */
     const SPEC_KEYS = new Set([
       "name",
