@@ -1,0 +1,968 @@
+{
+  "registry": "wellknown",
+  "url": "https://wellknownhq.com/registry/search",
+  "request": {
+    "query": {
+      "text": "x402"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T22:10:04.804205+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:nohumans.directory:x402:manifest",
+        "displayName": "x402 payment manifest",
+        "type": "application/json",
+        "url": "https://api.nohumans.directory/.well-known/x402",
+        "score": 79,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "D",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:api.delx.ai:discovery:x402",
+        "displayName": "Delx x402 resource discovery",
+        "type": "application/json",
+        "url": "https://api.delx.ai/.well-known/x402",
+        "score": 79,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.forgemeshlabs:mcp:x402-notary-mcp",
+        "displayName": "x402-notary-mcp",
+        "type": "application/mcp-server",
+        "url": "https://github.com/forgemeshlabs/x402-notary-mcp",
+        "score": 77,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.fernsugi:mcp:x402-api",
+        "displayName": "x402-api",
+        "type": "application/mcp-server",
+        "url": "https://github.com/fernsugi/x402-api-mcp-server",
+        "score": 77,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.911fund.x402:mcp:x402-alpha",
+        "displayName": "x402-alpha",
+        "type": "application/mcp-server",
+        "url": "https://x402.911fund.io/mcp",
+        "score": 77,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.gadgethumans.swarm:mcp:x402-middleware",
+        "displayName": "x402-middleware",
+        "type": "application/mcp-server",
+        "url": "https://github.com/scotia1973-bot/gadgethumans-x402",
+        "score": 76,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.forgemeshlabs:mcp:x402-ads-mcp",
+        "displayName": "x402-ads-mcp",
+        "type": "application/mcp-server",
+        "url": "https://github.com/forgemeshlabs/x402-ads-mcp",
+        "score": 75,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:delx.ai:api:openapi-x402",
+        "displayName": "Delx paid OpenAPI x402",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://api.delx.ai/openapi.x402.json",
+        "score": 74,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:commerce.delx.ai:discovery:x402",
+        "displayName": "Delx x402 resource discovery",
+        "type": "application/json",
+        "url": "https://commerce.delx.ai/.well-known/x402",
+        "score": 74,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.codespar:mcp:mcp-x402",
+        "displayName": "mcp-x402",
+        "type": "application/mcp-server",
+        "url": "https://github.com/codespar/mcp-dev-brasil",
+        "score": 73,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.iainkek:mcp:flipr-x402",
+        "displayName": "flipr-x402",
+        "type": "application/mcp-server",
+        "url": "https://flipr-x402.fly.dev/mcp",
+        "score": 73,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.digitalweb33333-creator:mcp:x402-solana",
+        "displayName": "x402-solana",
+        "type": "application/mcp-server",
+        "url": "https://x402-solana-cva8.onrender.com/mcp/",
+        "score": 72,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.zadengg:mcp:x402-snap",
+        "displayName": "x402-snap",
+        "type": "application/mcp-server",
+        "url": "https://x402-snap.zaden-gaming.workers.dev/mcp",
+        "score": 72,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.hergertsynthora:mcp:synthora-x402",
+        "displayName": "synthora-x402",
+        "type": "application/mcp-server",
+        "url": "https://mcp.hergertsynthora.com/mcp",
+        "score": 71,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.wiselyenterprisesllc:mcp:x402-agent-payment-infrastructure",
+        "displayName": "x402 Agent-Payment Infrastructure",
+        "type": "application/mcp-server",
+        "url": "https://payments.wiselyenterprisesllc.com/ai/mcp",
+        "score": 71,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.gigsoul:mcp:x402-api",
+        "displayName": "x402-api",
+        "type": "application/mcp-server",
+        "url": "https://gig-x402-api.jayson-be1.workers.dev",
+        "score": 70,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.kali123411:mcp:kx402",
+        "displayName": "kx402",
+        "type": "application/mcp-server",
+        "url": "https://github.com/Kali123411/kx402",
+        "score": 69,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.cryptoapis-io:mcp:mcp-x402-pay",
+        "displayName": "mcp-x402-pay",
+        "type": "application/mcp-server",
+        "url": "https://github.com/CryptoAPIs-io/cryptoapis-mcp-x402-pay",
+        "score": 69,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.lionx402:mcp:lion-x402",
+        "displayName": "lion-x402",
+        "type": "application/mcp-server",
+        "url": "https://lionx402.com/api/mcp",
+        "score": 69,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:minia2a.uk:protocol:x402-payment",
+        "displayName": "x402 Payment Endpoint \u2014 USDC Micropayments",
+        "type": "application/json",
+        "url": "https://minia2a.uk/.well-known/x402",
+        "score": 68,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.jienweng:mcp:x402-osint",
+        "displayName": "x402-osint",
+        "type": "application/mcp-server",
+        "url": "https://x402-osint.tail66f665.ts.net:8443/sse",
+        "score": 67,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.nikolife2016:mcp:pulsefeed-x402",
+        "displayName": "pulsefeed-x402",
+        "type": "application/mcp-server",
+        "url": "https://pulsefeed.dev",
+        "score": 67,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.digitalweb33333-creator:mcp:x402-endpoints",
+        "displayName": "x402-endpoints",
+        "type": "application/mcp-server",
+        "url": "https://x402-endpoints.onrender.com/mcp/",
+        "score": 67,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.solomonisblack:mcp:tollbooth-x402",
+        "displayName": "tollbooth-x402",
+        "type": "application/mcp-server",
+        "url": "https://github.com/SolomonisBlack/tollbooth-x402",
+        "score": 66,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.blackwalltier:mcp:blackwall-x402-guardrail",
+        "displayName": "blackwall-x402-guardrail",
+        "type": "application/mcp-server",
+        "url": "https://mcp.blackwalltier.com",
+        "score": 66,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.asaishota:mcp:mcp-server",
+        "displayName": "x402-market",
+        "type": "application/mcp-server",
+        "url": "https://x402-market-api.lien-studio-akiyama.workers.dev",
+        "score": 66,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.senpi-station:mcp:x402-web-extract",
+        "displayName": "x402 Web Extract",
+        "type": "application/mcp-server",
+        "url": "https://x402-web-extract.senpi-agent.workers.dev/mcp",
+        "score": 64,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:api.delx.ai:portfolio:x402",
+        "displayName": "Delx x402 business portfolio",
+        "type": "application/json",
+        "url": "https://api.delx.ai/x402-portfolio.json",
+        "score": 63,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.mahesvannan:mcp:tx402",
+        "displayName": "tx402",
+        "type": "application/mcp-server",
+        "url": "https://github.com/Mahesvannan/tx402",
+        "score": 63,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.firmbrain:mcp:x402-services",
+        "displayName": "x402 Trading & On-Chain Intelligence",
+        "type": "application/mcp-server",
+        "url": "https://x402-services-production.up.railway.app/mcp",
+        "score": 63,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.epistemedeus:mcp:x402-data-gateway",
+        "displayName": "x402-data-gateway",
+        "type": "application/mcp-server",
+        "url": "https://x402-url-extractor-production.up.railway.app/mcp",
+        "score": 60,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:geckovision.tech:skill:x402-payai-setup",
+        "displayName": "x402-payai-setup",
+        "type": "application/ai-skill+md",
+        "url": "https://geckovision.tech/.well-known/agent-skills/x402-payai-setup/SKILL.md",
+        "score": 57,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.fabio662:mcp:yieldagentx402",
+        "displayName": "yieldagentx402",
+        "type": "application/mcp-server",
+        "url": "https://yieldagentx402.app/mcp-server",
+        "score": 57,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.x402-list:mcp:x402-list-mcp",
+        "displayName": "x402-list-mcp",
+        "type": "application/mcp-server",
+        "url": "https://mcp.x402-list.com/mcp",
+        "score": 56,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:server:x402-verifier",
+        "displayName": "SCVD x402 Verifier \u2014 MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://scvd.store/mcp/verifier",
+        "score": 55,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "C",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:ai:fabtally.com:x402:discovery",
+        "displayName": "FabTally x402 Resource Discovery",
+        "type": "application/json",
+        "url": "https://fabtally.com/.well-known/x402",
+        "score": 53,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.csoai-org:mcp:agent-x402-paywall-mcp",
+        "displayName": "agent-x402-paywall-mcp",
+        "type": "application/mcp-server",
+        "url": null,
+        "score": 52,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.timwal78:mcp:402proof",
+        "displayName": "402proof",
+        "type": "application/mcp-server",
+        "url": "https://four02proof.onrender.com/mcp",
+        "score": 51,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.carboncashmere:mcp:x402-mcp",
+        "displayName": "x402-mcp",
+        "type": "application/mcp-server",
+        "url": "https://github.com/CarbonCashmere/x402-mcp",
+        "score": 50,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.run402:mcp:mcp",
+        "displayName": "Run402",
+        "type": "application/mcp-server",
+        "url": "https://mcp.run402.com/mcp",
+        "score": 50,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": "dev-infra",
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.thememebanker:mcp:nory-x402",
+        "displayName": "nory-x402",
+        "type": "application/mcp-server",
+        "url": "https://github.com/TheMemeBanker/x402-pay",
+        "score": 49,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.benji7891:mcp:macro-pulse-x402",
+        "displayName": "macro-pulse-x402",
+        "type": "application/mcp-server",
+        "url": "https://macro-pulse-x402.onrender.com/mcp/",
+        "score": 48,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.larrylemonbot:mcp:boundary-guard-x402",
+        "displayName": "Boundary Guard x402",
+        "type": "application/mcp-server",
+        "url": "https://x402-resource-scanner.vercel.app/mcp",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.x402supply:mcp:endpoint-diligence",
+        "displayName": "endpoint-diligence",
+        "type": "application/mcp-server",
+        "url": "https://diligence.x402supply.com/mcp",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.cryptoapis-io:mcp:mcp-x402-accept",
+        "displayName": "mcp-x402-accept",
+        "type": "application/mcp-server",
+        "url": "https://github.com/CryptoAPIs-io/cryptoapis-mcp-x402-accept",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.agenttools-cloud:mcp:agent-tools-mcp",
+        "displayName": "agent-tools (x402 directory)",
+        "type": "application/mcp-server",
+        "url": "https://agent-tools.cloud/mcp-discovery/",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.acjlabs:mcp:x402-listing-monitor",
+        "displayName": "x402 Bazaar Listing Monitor",
+        "type": "application/mcp-server",
+        "url": "https://x402-listing-monitor.acjlabs.com/mcp",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.jonasfuchss:mcp:x402-trust-mcp",
+        "displayName": "x402-trust-mcp",
+        "type": "application/mcp-server",
+        "url": "https://x402.fuchss.app",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:api.delx.ai:api:openapi-x402",
+        "displayName": "Delx paid OpenAPI x402 (996 products)",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://api.delx.ai/openapi.x402.json",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.fablerlabs:mcp:x402-tools",
+        "displayName": "Fabler x402 Tools",
+        "type": "application/mcp-server",
+        "url": "https://x402.fablerlabs.com/mcp",
+        "score": 42,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      }
+    ]
+  }
+}
