@@ -64,7 +64,7 @@ export const RETRACTED_READINGS: readonly RetractedReading[] = [
     weeks: ["2026-W36"],
     checks: ["payto-payable", "amount-atomic", "transfer-method-signable"],
     why:
-      "The checks this verdict rested on were retracted on 2026-09-04: until that day this desk resolved every CAIP-2 namespace it did not recognise to its Ethereum branch, so a correct XRPL, Stellar or Algorand payTo was reported unpayable and those rails' amounts were judged by a convention that is not theirs. This door offered such a rail, so the reading is withdrawn rather than published. It is NOT a finding that the door is fine — we are saying we do not have a verdict, and the next weekly walk reads it with the corrected instrument.",
+      "The checks this verdict rested on have since been retracted: until that day this desk resolved every CAIP-2 namespace it did not recognise to its Ethereum branch, so a correct XRPL, Stellar or Algorand payTo was reported unpayable and those rails' amounts were judged by a convention that is not theirs. This door offered such a rail, so the reading is withdrawn rather than published. It is NOT a finding that the door is fine — we are saying we do not have a verdict, and the next weekly walk reads it with the corrected instrument.",
     affects: (networks) =>
       networks.some((network) => UNREADABLE_BEFORE_2026_09_04.includes(familyOf(network))),
   },

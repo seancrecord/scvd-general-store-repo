@@ -26,67 +26,61 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- ⚑ **RULINGS WAITING ON YOUR PEN (09-06).** Everything on
-  `claude/402signal-x402-payment-6n12hk` that is taste or policy
-  rather than arithmetic, in one place. All are one edit to undo;
-  the file and symbol are named so none of it needs archaeology.
+- **RULED 2026-09-06 — all ten, approved as shipped.** The rulings
+  that were waiting on your pen are decided; nothing below needs
+  work, and this row is the record rather than a queue. Each is one
+  edit to reverse if you change your mind, and the file and symbol
+  are named.
 
-  **What strangers read.** `src/services/outreach.ts`:
-  1. The broken-door note's SUBJECT, for a door that answered:
-     was "your x402 endpoint at X is turning buyers away", now
-     "a failed readiness check on your x402 endpoint at X". A door
-     that gave no answer at all keeps the old subject. `draftNote`.
-  2. Its FINDING: was "got a response that no x402 buyer can pay:
-     <checks>", now "got an answer that did not pass our readiness
-     check. What failed, by name: <checks>", with the check
-     definitions linked. This is the sentence Ross wrote back
-     about. `draftNote`.
-  3. The re-check line names the MOMENT ("re-checked live at 22:41
-     UTC on 2026-09-05") rather than "seconds before this note was
-     sent", which stopped being true once the hand road could send
-     an hour later. `draftNote`.
-  4. The welcome still opens "our weekly pass" though it now dates
-     by the knock rather than the seal. Fine as is, or reword.
-     `draftWelcome`.
+  APPROVED, in `src/services/outreach.ts` — the words strangers read:
+  1. The broken-door note's subject, for a door that ANSWERED, is
+     "a failed readiness check on your x402 endpoint at …" (was "is
+     turning buyers away"). A door that gave no answer at all keeps
+     the old subject, which is still true of it. `draftNote`.
+  2. Its finding is "got an answer that did not pass our readiness
+     check. What failed, by name: …", with the check definitions
+     linked (was "a response that no x402 buyer can pay"). This is
+     the sentence Ross wrote back about. `draftNote`.
+  3. The re-check line names the moment rather than "seconds before
+     this note was sent", which stopped being true once the hand
+     road could send an hour after the probe. `draftNote`.
+  4. The welcome KEEPS its "our weekly pass" opening. It dates by
+     the knock now rather than the seal, which was the actual defect
+     TensorFeed named; the phrasing was offered for a reword and you
+     kept it. `draftWelcome`.
 
-  **What a public page says — the big one.** `src/store/retracted-readings.ts`:
-  5. A passport whose latest row failed ONLY checks we have since
-     retracted no longer publishes `not-ready`. It refuses as
-     `retracted-reading`, names the correction that withdrew it,
-     and says there is no current verdict. It never upgrades to
-     ready — we withdrew our reason, we did not acquire a new
-     verdict. This changes what scvd.store says in public about a
-     named host, which is why it is yours and not mine. The rule
-     is narrow by construction: only the 2026-W36 round, only
-     `payto-payable` / `amount-atomic` / `transfer-method-signable`,
-     and only where the row's own recorded rails show the old
-     reader could not have judged it.
+  APPROVED, in `src/store/retracted-readings.ts` — what a public page
+  says about a named host:
+  5. A passport whose latest row failed ONLY checks this store has
+     since retracted no longer publishes `not-ready`. It refuses as
+     `retracted-reading`, names the correction that withdrew it, and
+     never upgrades to ready — we withdrew our reason, we did not
+     acquire a verdict. Narrow by construction: round 2026-W36 only,
+     three checks only, and only where the row's own recorded rails
+     show the pre-correction reader could not have judged it.
 
-  **The artifact.** `src/services/badge-svg.ts` (`CHIP_LAYOUT` holds
-  the geometry; the palette is the block above `CHIP_PALETTE`):
-  6. THE ASPECT CHANGED — the chip is a 400x110 card, not a 300x56
-     ribbon. A chip anyone already pasted renders squashed until
-     they re-copy the snippet. Both snippets emit the new size on
-     their own. This is the only change on the branch with a cost
-     to somebody outside, and it is reversible.
-  7. The ground is forest-black with a foil frame and seal, a
-     bevelled rim, bold type, and YOUR DINO in the seal instead of
-     the letters SCVD (one path, drawn from `favicon.ts`, so the
-     mark cannot drift). The share card follows onto the same
-     ground with the same mark.
-  8. The chip's eyebrow reads `ENDPOINT PASSPORT`; the store's name
-     is carried by the seal's arc legend now.
-  9. An `indeterminate` tier prints only its fraction on the face
-     ("1/1 round ready"), never the word — the word is about how
-     many rounds WE hold, not about their door, and it had been
-     the loudest thing on a chip whose own decision was READY. The
-     whole line still rides in the alt text and on the page.
-  10. The freshness glosses were cut to fit the larger record line:
-      "inside one census cadence", "older than one cadence", "too
-      old to rely on". `CHIP_STATE`.
+  APPROVED, in `src/services/badge-svg.ts` — the artifact:
+  6. The chip is a 400x110 card, not a 300x56 ribbon. THE ASPECT
+     CHANGED, so a chip anyone pasted before 09-06 renders squashed
+     until they re-copy the snippet. Both snippets emit the new size
+     from `CHIP_LAYOUT` on their own. This is the only ruling with a
+     cost to somebody outside.
+  7. Forest-black ground, foil frame and seal, bevelled rim, bold
+     type, and the store's dinosaur in the seal — drawn from the
+     favicon's own path so the mark cannot drift between the two.
+  8. The eyebrow reads `ENDPOINT PASSPORT`; the store's name is
+     carried by the seal's arc legend.
+  9. An `indeterminate` tier prints only its fraction on the face,
+     never the word — the word is about how many rounds WE hold, not
+     about their door, and it had been the loudest thing on a chip
+     whose own decision was READY. The whole line still rides in the
+     alt text and on the page.
+  10. The freshness glosses are cut to fit the larger record line:
+      "inside one census cadence", "older than one cadence", "too old
+      to rely on". `CHIP_STATE`.
 
-  **Numbers, if any are wrong.** A live reading arms a note for
-  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read both
+  AND THE NUMBERS, approved with them: a live reading arms a note for
+  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read each
   press ten at a time (`VERIFY_BATCH_CAP`, `AUDIT_BATCH_CAP`).
 
 - ⚑ **402signal.com / tensorfeed.ai — replied by your hand
