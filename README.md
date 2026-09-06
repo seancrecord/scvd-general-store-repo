@@ -12,6 +12,20 @@ mcp-name: store.scvd/general-store
 [![Vouch Protocol agent trust grade for scvd.store: A (100)](docs/badges/vouch-agent-trust.svg)](https://vouch-protocol.com)
 [![DOI of the corpus](https://zenodo.org/badge/DOI/10.5281/zenodo.22284887.svg)](https://doi.org/10.5281/zenodo.22284887)
 
+Every badge above is somebody else's reading of this store. This one is
+ours, about ourselves, and it is set apart from that row on purpose —
+it is the same artifact we ask operators to paste beside their own
+doors, pointed back at us, and it says SELF-OBSERVED on its face
+because the weekly census structurally cannot probe its own host:
+
+[![scvd.store passport for scvd.store: SELF-OBSERVED — the subject and the observer are the same party, dated, gaps counted against the observer](https://scvd.store/badges/passport/scvd.store.svg)](https://scvd.store/passport/scvd.store)
+
+It goes dark rather than stale-green: it renders only while every
+self-module agrees, and any disagreement renders the passport
+indeterminate and refuses the chip. Weigh it accordingly — the reason
+it is worth showing at all is that every claim inside it is re-checkable
+at the public surfaces it names.
+
 **scvd.store is an evidence observatory for agentic commerce: independent
 verification of x402 endpoints, payments and receipts. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
