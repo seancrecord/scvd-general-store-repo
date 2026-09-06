@@ -173,20 +173,29 @@ function isOutsideSale(event: MetricEvent | null | undefined): event is MetricEv
  * The decline desk (lib/declines.ts) reads its index AND the raw
  * stream behind it, because a decline is rare and the desk is a page
  * the keeper opens on purpose. This is the front door, and the same
- * shape priced differently: the tail is a 200-key scan plus a bulk
+ * shape priced differently: the tail was a 200-key scan plus a bulk
  * read of the BUSIEST prefix in the store, on every render of the page
  * a crawler hits for free — the cost services/stats.ts moved the rail
- * split off this render to avoid, arriving by another door. Measured
- * 2026-09-06: it put roughly twenty minutes on CI's Tests step.
+ * split off this render to avoid, arriving by another door.
  *
  * And it bought nothing. `evt:` carries every price check and every
  * corpus read, so 200 rows back is minutes of traffic, not days of
  * sales — a settle from before the index shipped is essentially never
- * inside that window. The store paid for a scan whose hit rate was
- * zero. So the window reads the prefix where every key is a sale, at a
- * cost bounded by how many sales exist rather than by how busy the
- * store is, and the pre-index settles simply are not in it. They are
- * in the books at /stats, which is where a count belongs.
+ * inside that window. The store would have paid that cost on every
+ * render for a scan whose hit rate is, in production, zero. So the
+ * window reads the prefix where every key is a sale, at a cost bounded
+ * by how many sales exist rather than by how busy the store is, and
+ * the pre-index settles simply are not in it. They are in the books at
+ * /stats, which is where a count belongs.
+ *
+ * A CORRECTION ABOUT WHY THIS WAS CUT, kept because the reasoning is
+ * the part worth trusting. The tail was removed on 2026-09-06 on the
+ * strength of a CI reading — the Tests step running about twice its
+ * usual length — and that reading did not belong to this code. Eleven
+ * workflow runs across five branches were in flight on the account at
+ * the time, and every one of them was slow. The per-render cost above
+ * is real and measurable on its own terms; the CI number was not
+ * evidence of it, and is not claimed here as if it were.
  *
  * WHAT THIS MEANS ON THE DAY IT SHIPS: an empty window until the next
  * sale, and the copy already says that plainly. A shop window shows
