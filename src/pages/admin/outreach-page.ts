@@ -3,13 +3,14 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import {
   gmailComposeFor,
   splitDraft,
-  AUDIT_BATCH_CAP,
+  AUDIT_PRESS_CAP,
   LIVE_READING_FRESH_HOURS,
   OUTREACH_STATUSES,
   VERIFY_BATCH_CAP,
   WIRE_PAUSED_SINCE,
   auditedNotes,
   contactEmail,
+  draftCorrection,
   draftWelcome,
   handDraftFor,
   liveReadingFor,
@@ -452,12 +453,34 @@ export function renderOutreachPage(
   notice?: string,
   welcomes: Welcome[] = [],
   citations: CitationWatchReport | null = null,
+  showAll = false,
 ): string {
   const noticeBlock = notice
     ? `<section><p><strong>${escapeHtml(notice)}</strong></p></section>`
     : "";
-  const fresh = prospects.filter((p) => !ledger.hosts[p.host]?.status);
-  const worked = prospects.filter((p) => ledger.hosts[p.host]?.status);
+  /*
+   * ONLY DOORS YOU CAN ACTUALLY WRITE TO (2026-09-06). The card lists
+   * used to render every broken and every ready door on the round,
+   * hundreds of them, most with nowhere to send anything — the
+   * keeper: "if no contact is listed i dont want it muddying up my
+   * screen". So a card is drawn when the scout found an address, and
+   * the rest are counted, named as a count, and one link away. They
+   * are NOT dropped from the derivation: the scout still walks them,
+   * the queue still ranks them, and the moment one publishes an
+   * address it appears here. Hiding a row from a screen is not the
+   * same as deciding it does not exist, and this desk has to be able
+   * to say how many it is not showing.
+   */
+  const reachableHost = (host: string): boolean =>
+    contactEmail(ledger.hosts[host]) !== null;
+  const keep = <T extends { host: string }>(rows: T[]): T[] =>
+    showAll ? rows : rows.filter((row) => reachableHost(row.host));
+  const allFresh = prospects.filter((p) => !ledger.hosts[p.host]?.status);
+  const allWorked = prospects.filter((p) => ledger.hosts[p.host]?.status);
+  const fresh = keep(allFresh);
+  const worked = keep(allWorked);
+  const hiddenFresh = allFresh.length - fresh.length;
+  const hiddenWorked = allWorked.length - worked.length;
   const freshShown = fresh.slice(0, FRESH_RENDER_CAP);
   const workedShown = worked.slice(0, WORKED_RENDER_CAP);
   const healedBlock = healed.length
@@ -477,19 +500,61 @@ export function renderOutreachPage(
     (entry) => entry.status === "sent" || entry.status === "replied",
   ).length;
   const audits = auditedNotes(round, ledger);
-  const disagreeing = audits.filter((row) => row.disagrees);
+  const ours = audits.filter((row) => row.finding.call === "ours");
+  const look = audits.filter((row) => row.finding.call === "look");
+  const reading = (verdict: string, failed: string[]): string =>
+    `${verdict}${failed.length ? ` (${failed.join(", ")})` : ""}`;
   const auditRow = (row: (typeof audits)[number]): string => {
-    const said = row.row
-      ? `${row.row.verdict}${row.row.failed.length ? ` (${row.row.failed.join(", ")})` : ""}`
-      : "no row this round";
-    const live = `${row.audit.verdict}${row.audit.failed.length ? ` (${row.audit.failed.join(", ")})` : ""}`;
-    return `<li><strong>${escapeHtml(row.host)}</strong> — ${escapeHtml(row.status)} ${escapeHtml((row.status_at ?? "").slice(0, 10))} · the row says <code>${escapeHtml(said)}</code> · re-read ${escapeHtml(row.audit.at.slice(0, 16).replace("T", " "))} UTC says <code>${escapeHtml(live)}</code>${row.disagrees ? " · <strong>disagree — healed since, or ours: look, and write if it is ours</strong>" : " · agree"}</li>`;
+    const said = row.claim
+      ? reading(row.claim.verdict, row.claim.failed)
+      : "not recorded";
+    /*
+     * WHERE THE BASELINE CAME FROM, SAID ON THE ROW. A note stamped
+     * before the claim was frozen is compared against the census row
+     * instead, which is a weaker question; a row that does not say so
+     * would read as the strong answer.
+     */
+    const from =
+      row.baseline === "note"
+        ? ""
+        : row.baseline === "round"
+          ? ` <span class="menu-meta">(from the census row — this note predates the frozen claim)</span>`
+          : "";
+    const live = reading(row.audit.verdict, row.audit.failed);
+    const call =
+      row.finding.call === "agree"
+        ? " · agree"
+        : row.finding.call === "ours"
+          ? " · <strong>OURS — a correction is owed</strong>"
+          : " · <strong>changed — healed since, or ours: look</strong>";
+    const correction = draftCorrection(row, base);
+    const email = contactEmail(ledger.hosts[row.host]);
+    const send =
+      correction && email
+        ? `<p>${handDeliverLink(email, correction, "the correction")}</p>
+      <details><summary>read the correction</summary><textarea readonly rows="14" style="width:100%;max-width:60em">${escapeHtml(splitDraft(correction).body)}</textarea></details>`
+        : correction
+          ? `<details><summary>read the correction — this host published no address, so it goes by hand</summary><textarea readonly rows="14" style="width:100%;max-width:60em">${escapeHtml(splitDraft(correction).body)}</textarea></details>`
+          : "";
+    return `<li><strong>${escapeHtml(row.host)}</strong> — ${escapeHtml(row.status)} ${escapeHtml((row.status_at ?? "").slice(0, 10))} · the note claimed <code>${escapeHtml(said)}</code>${from} · re-read ${escapeHtml(row.audit.at.slice(0, 16).replace("T", " "))} UTC says <code>${escapeHtml(live)}</code>${call}
+    <br><span class="menu-meta">${escapeHtml(row.finding.why)}</span>${send}</li>`;
   };
   const auditBlock = written
     ? `<section id="audit"><h2>Doors we wrote to, re-read (${audits.length} of ${written})</h2>
-    <p class="menu-desc">A note is a claim with a date on it, and the reply that corrects it arrives on the operator's schedule. This press knocks again, ten doors at a time, oldest re-read first, by the instrument as it is now, and lays the answer beside the row the note came from. Sends nothing.
-    <form method="post" action="/admin/outreach/audit-sent" style="display:inline"><button type="submit"><strong>Re-read the next ${Math.min(AUDIT_BATCH_CAP, written)}</strong></button></form></p>
-    ${disagreeing.length ? `<p class="menu-desc"><strong>${disagreeing.length} disagree${disagreeing.length === 1 ? "s" : ""}</strong> with the row the note came from — the list a correction may be owed on:</p>` : audits.length ? `<p class="menu-meta">Every door re-read so far agrees with its row.</p>` : ""}
+    <p class="menu-desc">A note is a claim with a date on it, and the reply that corrects it arrives on the operator's schedule. Every door a note went to is knocked on again — <strong>automatically, five a pass on the half-hourly tick, each door at most once a day</strong> — and the answer is held against <em>what that note actually claimed</em>, not against this week's census row. Sends nothing, ever.
+    <form method="post" action="/admin/outreach/audit-sent" style="display:inline"><button type="submit"><strong>Re-read now — up to ${AUDIT_PRESS_CAP} in one press</strong></button></form>
+    <span class="menu-meta"> — you do not have to: the sweep reaches every door within a day and pages you when one disagrees. This is for when you want the answer before then.</span></p>
+    ${
+      ours.length
+        ? `<p class="menu-desc"><strong>${ours.length} ${ours.length === 1 ? "is" : "are"} OURS</strong> — every check ${ours.length === 1 ? "that note" : "those notes"} named has since been retracted by this store, so the finding rests on an instrument we withdrew. Not a judgement call: it is derived from the correction ledger. The correction is written below each row; your press sends it.</p>`
+        : ""
+    }
+    ${
+      look.length
+        ? `<p class="menu-desc"><strong>${look.length} changed</strong> and nothing here derives why — healed since, or ours. The desk will not guess between those two (a guard that cannot fail argues for the lie); you look.</p>`
+        : ""
+    }
+    ${!ours.length && !look.length && audits.length ? `<p class="menu-meta">Every note re-read so far still holds at its door.</p>` : ""}
     <ul>${audits.map(auditRow).join("\n")}</ul></section>`
     : "";
   const unscouted = [...prospects, ...welcomes].filter(
@@ -502,8 +567,21 @@ export function renderOutreachPage(
     if (entry?.status === "sent" || entry?.status === "replied") return false;
     return contactEmail(entry) !== null;
   }).length;
-  const freshWelcomes = welcomes.filter((w) => !ledger.hosts[w.host]?.status);
+  const allFreshWelcomes = welcomes.filter((w) => !ledger.hosts[w.host]?.status);
+  const freshWelcomes = keep(allFreshWelcomes);
+  const hiddenWelcomes = allFreshWelcomes.length - freshWelcomes.length;
   const welcomesShown = freshWelcomes.slice(0, WELCOME_RENDER_CAP);
+  const hidden = hiddenFresh + hiddenWelcomes + hiddenWorked;
+  /*
+   * The count is the honesty. A filtered page that does not say what
+   * it filtered is a page that lies by omission every time the scout
+   * falls behind.
+   */
+  const hiddenLine = showAll
+    ? `<p class="menu-meta"><strong>Showing every door, address or not.</strong> <a href="/admin/outreach">Back to the doors you can write to</a>.</p>`
+    : hidden > 0
+      ? `<p class="menu-meta">${hidden} door${hidden === 1 ? "" : "s"} on this round ${hidden === 1 ? "is" : "are"} not drawn below — ${hidden === 1 ? "it has" : "they have"} no published address, so there is nothing to press. ${hidden === 1 ? "It is" : "They are"} still on the round, still ranked, and still in line for the scout — and ${hidden === 1 ? "it appears" : "they appear"} here the moment one publishes an address. <a href="/admin/outreach?all=1">Show them anyway</a>.</p>`
+      : "";
   const renderedHosts = new Set([
     ...freshShown.map((p) => p.host),
     ...workedShown.map((p) => p.host),
@@ -562,8 +640,10 @@ export function renderOutreachPage(
 
   ${citationBlock(citations)}
 
+  ${hiddenLine}
+
   <h2>Fresh (${fresh.length}${fresh.length > freshShown.length ? `, top ${freshShown.length} shown` : ""})</h2>
-  ${freshShown.map((p) => prospectCard(p, ledger, base)).join("\n") || "<p class='empty'>Nothing fresh — every broken door already has a status.</p>"}
+  ${freshShown.map((p) => prospectCard(p, ledger, base)).join("\n") || `<p class='empty'>${hiddenFresh > 0 ? `No unstamped broken door on this round has published an address (${hiddenFresh} without one).` : "Nothing fresh — every broken door already has a status."}</p>`}
   ${
     fresh.length > freshShown.length
       ? `<p class="menu-meta">…and ${fresh.length - freshShown.length} more below these, in the same four-tier ranking. Work the top and stamp as you go — stamped cards leave this queue and the next ${FRESH_RENDER_CAP} rise. Every row (data, not drafts) is in the JSON twin: <code>Accept: application/json</code> on this URL.</p>`
@@ -572,7 +652,7 @@ export function renderOutreachPage(
 
   <h2>Ready doors — a page to hand them (${freshWelcomes.length}${freshWelcomes.length > welcomesShown.length ? `, top ${welcomesShown.length} shown` : ""})</h2>
   <p class="menu-desc">The other half of the seller loop: doors that answered READY this round, newly listed first. Nothing here is a finding against anyone, so the note is a welcome — their passport page, the colophon to paste, the free self-check, the standing-note offer, and one priced line. Hand-delivered and stamped; the wire never carries these. Scout contacts reads their security.txt the same as the broken doors', and a found address puts an open-in-mail link on the card.</p>
-  ${welcomesShown.map((w) => welcomeCard(w, ledger, base)).join("\n") || "<p class='empty'>No fresh ready doors — every one already has a stamp, or the round found none.</p>"}
+  ${welcomesShown.map((w) => welcomeCard(w, ledger, base)).join("\n") || `<p class='empty'>${hiddenWelcomes > 0 ? `No unstamped ready door on this round has published an address (${hiddenWelcomes} without one).` : "No fresh ready doors — every one already has a stamp, or the round found none."}</p>`}
 
   ${
     worked.length
