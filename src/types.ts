@@ -47,6 +47,8 @@ export interface Env {
   TRADE_NONCES?: DurableObjectNamespace<
     import("@/services/trade-nonces").TradeNonceStore
   >;
+  /** Storage prerequisite; purchase routes do not use it until BUY-037 ships. */
+  PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
   /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the
    * probes read when a target fails, to tell our outage from theirs.

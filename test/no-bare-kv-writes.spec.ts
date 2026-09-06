@@ -28,6 +28,22 @@ const sources = import.meta.glob("/src/**/*.ts", {
 
 const BARE_PUT = /(?:c\.)?env\.(?:ORDERS|GUESTBOOK|COUNTERS|PATRONS)\.put\(/g;
 
+// These two reviewed writes are DurableObjectTransaction.put, not
+// KVNamespace.put. Do not exempt the file or every receiver named txn:
+// a KV alias in the same service must still fail this guard.
+const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
+  "/src/services/paid-recovery.ts": [
+    'await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);',
+    'await txn.put("attempt", { ...prior, response });',
+  ],
+};
+
+function unguardedAliasWrite(path: string, line: string): boolean {
+  return Boolean(line.match(/^\s*(?:await\s+)?[a-z][A-Za-z]*\.put\(/)) &&
+    !line.includes("kvPut(") && !line.includes("withKvRetry") &&
+    !DURABLE_TRANSACTION_WRITES[path]?.includes(line.trim());
+}
+
 describe("no bare KV writes anywhere in src/", () => {
   it("every put rides the retry, or names itself here and justifies it", () => {
     const offenders: string[] = [];
@@ -58,14 +74,34 @@ describe("no bare KV writes anywhere in src/", () => {
       const lines = text.split("\n");
       lines.forEach((line, index) => {
         if (
-          line.match(/^\s*(?:await\s+)?[a-z][A-Za-z]*\.put\(/) &&
-          !line.includes("kvPut(") &&
-          !line.includes("withKvRetry")
+          unguardedAliasWrite(path, line)
         ) {
           offenders.push(`${path}:${index + 1}  ${line.trim().slice(0, 80)}`);
         }
       });
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
+  });
+});
+
+describe("the Durable Object exception does not exempt KV aliases", () => {
+  it("permits only the reviewed transaction writes at their reviewed source", () => {
+    for (const [path, writes] of Object.entries(DURABLE_TRANSACTION_WRITES)) {
+      for (const line of writes) {
+        expect(sources[path], "a reviewed exception went stale").toContain(line);
+        expect(unguardedAliasWrite(path, line)).toBe(false);
+        expect(unguardedAliasWrite("/src/services/other.ts", line)).toBe(true);
+      }
+    }
+  });
+
+  it("still catches new aliases in the recovery service, including one named txn", () => {
+    const path = "/src/services/paid-recovery.ts";
+    for (const line of [
+      'await kv.put("receipt", value);',
+      'await txn.put("receipt", value);',
+      'namespace.put("receipt", value);',
+    ]) expect(unguardedAliasWrite(path, line), line).toBe(true);
+    expect('await env.COUNTERS.put("receipt", value);'.match(BARE_PUT)).not.toBeNull();
   });
 });
