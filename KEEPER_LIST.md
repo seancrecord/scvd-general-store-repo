@@ -838,12 +838,12 @@ Do not relitigate without you.
 ### Directory and listings (press is yours, rule 30)
 
 - **ARD Registry account submission (2026-09-06).**
-  https://ardregistry.org/submit redirects to sign-in. Sign in and submit
-  `scvd.store` after the corrected manifest is live; then verify SCVD
-  appears in its search. Its current homepage no longer exposes the
-  reported unauthenticated "Run discovery" button; provide the direct
-  check URL if available. Neuronto and WellKnown already return SCVD
-  from their own indexes; their public refresh APIs need no account.
+  Keeper-provided submission-screen output confirms live discovery,
+  v1.0 schema/formats and did:web verification passed for all 21 entries.
+  The INDEX step explicitly says dry-run. Remaining press at
+  https://ardregistry.org/submit: add request description, Confirm & Submit
+  for review, then verify SCVD appears in its public search.
+  Neuronto and WellKnown already return SCVD from their own indexes.
   Evidence and publication status: `docs/ARD_DISCOVERY_2026-09-06.md`.
   Weekly discovery checking is scheduled in the active task.
 

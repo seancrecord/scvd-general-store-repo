@@ -166,3 +166,19 @@ Both links are present with Accept `text/html` or `*/*`:
 [three response checks](ard-discovery/2026-09-06/query-coverage-paths-before.json).
 The fix is in the detector's representation choice; the store's JSON
 homepage remains available to callers that ask for it.
+
+## ARD Registry discovery confirmed by keeper
+
+The keeper supplied the submission screen's successful live discovery
+output on 2026-09-06. This supersedes the missing-validator status above.
+It resolved `https://scvd.store/.well-known/ai-catalog.json`, passed v1.0
+schema and format validation, fetched `/.well-known/did.json`, and reported
+the cryptographic identity `did:web:scvd.store` verified. It then reported
+`(Dry-run) Validated compatibility of 21 entries` and `Validation Checks
+Passed`. This is keeper-provided evidence, not a separately repeated
+browser run by this task.
+
+The screen requests a description and Confirm & Submit for review.
+The requested registry discovery check is now confirmed passed; formal
+submission, acceptance and search indexing are not established by this
+dry-run output. KEEPER_LIST retains those remaining steps.
