@@ -75,8 +75,30 @@ export interface McpTool {
   annotations?: McpToolAnnotations;
   /** S1: the uniform listing spec; conforming clients ignore extras. */
   spec?: ListingSpec;
-  /** Listing specs per item for a cluster tool, keyed by item_id. */
-  specs?: Record<string, ListingSpec>;
+  /**
+   * WHERE THE PER-ITEM LISTING SPECS LIVE, rather than the specs
+   * themselves (2026-09-06).
+   *
+   * This field used to carry the full ListingSpec for every item a
+   * cluster tool sells. Measured on the live door: tools/list was
+   * 234 KB for fifteen tools, and `specs` was 115 KB of it — 49% of
+   * everything every client downloads on every session. buy_observation
+   * alone carried 77 KB, more than half its own 109 KB.
+   *
+   * The file's own note says "an MCP client ignores a key it does not
+   * know", and that is true of PARSING and false of COST: most hosts
+   * serialize the whole tool object into the model's context, so the
+   * bytes are paid in tokens by every session whether or not a single
+   * key is read. September's counts: ~2,057 sessions against ~185 free
+   * tool calls and ~38 paid ones. Thousands of connects, dozens of
+   * calls.
+   *
+   * Nothing is lost. Each spec was already served, per item and in
+   * full, at /menu/{item_id} — JSON or markdown by Accept — and the
+   * item ids are right here in `itemIds`. A reader that wants one
+   * fetches one, instead of every reader downloading all of them.
+   */
+  specsUrlTemplate?: string;
   /**
    * WHAT THIS TOOL READS, stated rather than inferred (rule 57.5).
    * Required on every free tool by the guard, and derived from the
@@ -714,10 +736,6 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
     shared.length > 0
       ? ` (${shared.map((item) => item.id).join(" and ")} also sell${shared.length === 1 ? "s" : ""} at the front counter, buy_simple — the same item through either door, same price, same certificate; either tool is correct.)`
       : "";
-  const specs: Record<string, ListingSpec> = {};
-  for (const item of items) {
-    specs[item.id] = listingSpec(item, base);
-  }
   return {
     name: cluster.name,
     /**
@@ -740,7 +758,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
       idempotentHint: false,
       openWorldHint: true,
     },
-    specs,
+    specsUrlTemplate: `${base}/menu/{item_id}`,
     itemIds: items.map((item) => item.id),
   };
 }
@@ -1289,10 +1307,6 @@ function frontCounterTool(base: string): McpTool {
         `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}`,
     )
     .join("\n");
-  const specs: Record<string, ListingSpec> = {};
-  for (const item of items) {
-    specs[item.id] = listingSpec(item, base);
-  }
   return {
     name: "buy_simple",
     /**
@@ -1359,7 +1373,7 @@ function frontCounterTool(base: string): McpTool {
       idempotentHint: false,
       openWorldHint: true,
     },
-    specs,
+    specsUrlTemplate: `${base}/menu/{item_id}`,
     itemIds: items.map((item) => item.id),
   };
 }

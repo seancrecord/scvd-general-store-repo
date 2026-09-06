@@ -1,4 +1,5 @@
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
+import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
 import {
   TRADE_EXAMPLE_SHARE_BPS,
@@ -24,7 +25,7 @@ import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputSchema, requiredParamsNote } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
@@ -167,6 +168,27 @@ catalogRoutes.get("/menu.json", async (c) => {
         : {}),
       price_tiers_usdc: priceTiersUsdc(item),
       /*
+       * WHAT THIS DOOR CANNOT BE SERVED WITHOUT (2026-09-06). The
+       * catalog is the document a planning agent reads, and for
+       * seventeen items it named a price and a buy_url and never that
+       * the door needs an input. agents.md told agents this document
+       * carried "every item id, price, and input schema"; it carried
+       * two of the three. The item PAGE has always had it; nobody
+       * fetches thirty-two pages to plan one purchase. Same keys the
+       * 402 body uses, from the same schema.
+       *
+       * TWO EMITTERS, ON PURPOSE, NOTED 2026-09-06 SO THE NEXT READER
+       * DOES NOT "TIDY" ONE AWAY. buyerLinks above sets
+       * required_params on EVERY item, empty array included, so a
+       * machine reads one key with one type and never has to tell
+       * "absent" from "needs nothing". This call adds the SENTENCE,
+       * and only where there is something to say. Both read
+       * buyInputSchema(item).required, so the value cannot differ
+       * between them; delete either and one of those two audiences
+       * loses something.
+       */
+      ...requiredParamsNote(item),
+      /*
        * ADDED 2026-08-30. The catalogue named a buy_url and no way to
        * read ABOUT the item — an agent holding menu.json had to build
        * this URL itself to reach the door's expected outcome, error
@@ -228,6 +250,28 @@ catalogRoutes.get("/menu.json", async (c) => {
       llms_txt: `${base}/llms.txt`,
       skill_md: `${base}/skill.md`,
       openapi: `${base}/openapi.json`,
+      /*
+       * THE FREE INSTRUMENTS, NAMED WHERE THE READER STANDS (2026-09-06).
+       *
+       * /openapi-tools.json has existed since 2026-09-03: the store's
+       * free read-only doors as function-calling definitions, ~13 KB,
+       * one worked call each. The atlas, the developers page and the
+       * small-context quick start named it; this block — the catalog
+       * a planning agent reads — named only /openapi.json, ~650 KB of
+       * every header, status and schema. An agent that wanted to CALL
+       * an instrument had to swallow the whole contract to find one.
+       * Same shape as the versioned preflight: the cheaper path
+       * existed and was not findable from where the reader stood.
+       *
+       * THE NOTE IS NOT DECORATION. It is here because the obvious
+       * summary of this pointer — "the same doors, smaller" — is
+       * FALSE, and a buying agent that believed it would look for the
+       * shelf in a document that carries no paid door at all. The
+       * wording lives in routes/openapi-tools beside the document it
+       * describes, so the claim and the thing cannot drift.
+       */
+      openapi_tools: `${base}/openapi-tools.json`,
+      openapi_tools_note: OPENAPI_TOOLS_NOTE,
       x402_discovery: `${base}/.well-known/x402.json`,
       coverage: `${base}/.well-known/coverage.json`,
       coverage_alias: `${base}/coverage.json`,

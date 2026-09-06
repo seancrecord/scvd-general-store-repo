@@ -96,20 +96,32 @@ build, it is on the roadmap.
      says whether the corrected instrument still agrees; any host
      that reads ready now got a note it should not have.
 
-- ⚑ **PRESS — re-read every door we wrote to (09-05).** Your ask,
-  after two corrections in one afternoon: how the desk catches the
-  next wrong note before its operator does. `/admin/outreach` now
-  carries **Doors we wrote to, re-read** — one press knocks again
-  on ten hosts a note went to, oldest first, by the instrument as
-  it is now, and lays the answer beside the row the note came
-  from. It sends nothing. Hosts where the two disagree are named
-  at the top: that is either a door healed since, or a note of
-  ours that was wrong, and no arithmetic can tell those apart —
-  only you can. YOUR HANDS: press it until the queue is exhausted
-  (the notice says how many remain), then for each disagreement
-  decide healed-or-ours, and write by your hand where it is ours.
-  Any host that reads ready now and got a "your door is broken"
-  note is owed the same reply Ross got.
+- ⚑ **LOOK — the re-read now runs itself (09-05, automatic 09-06).**
+  Your ask, after two corrections in one afternoon: how the desk
+  catches the next wrong note before its operator does. It no
+  longer needs your press. Five doors a pass on the half-hourly
+  tick, each door at most once a day, held against **what that
+  note actually claimed** — frozen on the ledger when it went out,
+  not against whatever this week's census says — and compared on
+  the **checks the note named**, not on the ready/not-ready bit.
+  It sends nothing, ever. `/admin/outreach#audit` still has a
+  press for when you want the answer now; it walks up to forty in
+  one go. Rows split three ways:
+
+  - **OURS** — derived, not judged: every check that note named has
+    since been retracted by this store, so the finding rests on an
+    instrument we withdrew. The correction email is already written
+    on the row; your press sends it. This is the 402signal shape.
+  - **changed** — the claim no longer holds and nothing derives why.
+    Healed since, or ours. The desk will not guess between those
+    two and never will; **this is the list only you can work.**
+  - **agree** — the note still holds at its door. Nothing to do.
+
+  YOUR HANDS: you get paged when a row leaves `agree`, with the
+  host named and the correction attached where there is one. Send
+  the OURS corrections; decide healed-or-ours on the rest. Any host
+  that reads ready now and got a "your door is broken" note is owed
+  the same reply Ross got.
 
 - **TEST — flip the doors (09-05).** You ruled the split; it is
   built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a

@@ -21,6 +21,22 @@ claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
 
+## 2026-09-06 — AWS registry cleanup
+
+Read the primary [AWS registry overview](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry.html)
+and [registry concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-concepts.html)
+for the remaining ROADMAP C3 and delegated-agent decision 4 cleanup.
+AWS describes a catalog created in an AWS account, with authorization
+and approval configured by its administrator. That supports a named
+customer integration; it does not establish the general public listing
+press the old rows assumed. Those rows now withdraw that assumption.
+The store's existing ARD endpoint remains built.
+
+Gaps: these primary pages were returned by web search; no AWS console,
+customer registry, or publication flow was exercised. This read does not
+verify the earlier entry's launch date or future cross-organization
+roadmap, and does not turn other secondhand venue notes into primary reads.
+
 ## 2026-09-06 — the listing and discovery surfaces, read under rule 61
 
 The read that motivated rule 61, recorded first so the rule ships with
@@ -87,7 +103,7 @@ here should be re-read from a primary source before anything is built
 on it, and the WebMCP list in particular is a list of names to go and
 look at, not a set of confirmed listings.
 
-## 2026-09-06, third pass — A2A's URL, AWS withdrawn, the browser door's listings
+## 2026-09-06, third pass — A2A's URL and the browser door's listings
 
 Three reads the register itself asked for, plus one lesson that cost a
 morning's work and belongs on the record.
@@ -105,20 +121,17 @@ missing. `a2a-agent-card` is now its own row, sourced at the
 versionless site because the specification is versioned and a pinned
 URL would rot.
 
-**AWS AGENT REGISTRY: WITHDRAWN, NOT DEFERRED.** The keeper supplied
-the documentation URL; it is egress-blocked from the build sandbox, so
-this stays secondhand, but every source agrees on the shape. It is a
-private catalog a customer creates inside their own AWS account, with
-records published by its owner, shared across accounts via AWS RAM,
-and browsed by that organisation. There is no public AWS-hosted
-directory a third party lists in; cross-organisational discovery is
-announced future work. `ROADMAP.md` C3 and the delegated-agent plan
-both carried "an AWS Agent Registry entry (his press)" as open work.
-There is no entry to make. The AWS-aligned move is ARD — the open
-specification AWS itself published — and `/.well-known/ard.json` has
-served it since 2026-09-04. Both rows are corrected rather than
-deleted: a withdrawn recommendation that leaves no trace gets
-re-proposed.
+**AWS: SUPERSEDED BY THE PRIMARY READ ABOVE.** This pass reached the
+same conclusion from search results while another session reached the
+AWS documentation itself ("AWS registry cleanup", above, which cites
+the registry overview and concepts pages). Theirs is the primary read
+and this one defers to it rather than restating it: two entries saying
+the same thing from different evidence is how a register starts
+disagreeing with itself. The ROADMAP C3 and decision-4 rows carry
+their wording, not this session's. What stands from here: the spec
+watch's `aws-ard` row, and the point that ARD — the open specification
+AWS itself published — is the discovery move, already served at
+`/.well-known/ard.json`.
 
 **THE BROWSER DOOR HAS EXTERNAL RECORDS AT LAST.** The keeper supplied
 four URLs, closing the gap found this morning — the store had served
