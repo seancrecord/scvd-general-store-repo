@@ -127,6 +127,66 @@ describe("the shop window", () => {
     ).toEqual(["A Signed Hello"]);
   });
 
+  /**
+   * THE TWO-HOUR HANG, AS A TEST (2026-09-06).
+   *
+   * The first draft of this window paged KV by hand: it advanced
+   * `cursor = page.cursor` and counted only the rows a page returned.
+   * KV may answer with `list_complete: false` and NO cursor, and on an
+   * empty page that pair is a spin — no rows to count, so the cap never
+   * moves; no cursor, so the next request is the same request. It ran
+   * inside a GET on the front page, and it held CI's Tests step for two
+   * hours before anybody could see why.
+   *
+   * The reading now goes through lib/kv-list.ts, which has always had
+   * the missing `if (!cursor) break`. This pins that: a namespace that
+   * answers exactly that way must be walked away from, not argued with.
+   * Bounded by vitest's own timeout so a regression FAILS in seconds
+   * rather than hanging the suite the way the bug did.
+   */
+  it("walks away from a list that never completes and hands back no cursor", async () => {
+    /*
+     * THE STUB THROWS RATHER THAN LETTING IT SPIN, and that detail is
+     * the lesson. The first version of this test just called the
+     * spinning namespace and leaned on vitest's per-test timeout — and
+     * a tight `while (await ...)` over an immediately-resolved promise
+     * never yields to the macrotask queue, so no timer ever fires. The
+     * test hung for ten minutes instead of failing in ten seconds,
+     * which is precisely how the bug hid on CI in the first place. A
+     * guard that reproduces the failure's worst property is not a
+     * guard. So the namespace counts calls and throws, and a
+     * regression fails here with a sentence rather than a stopwatch.
+     */
+    const CALL_CEILING = 50;
+    let listCalls = 0;
+    const spinning = {
+      list: async () => {
+        listCalls += 1;
+        if (listCalls > CALL_CEILING) {
+          throw new Error(
+            "the shop window asked KV for the same page forever: the walk is spinning again",
+          );
+        }
+        // The exact shape that hung it: not complete, and no way on.
+        return { keys: [], list_complete: false, cursor: undefined };
+      },
+      get: async () => null,
+      put: async () => undefined,
+      delete: async () => undefined,
+    };
+    const spinningEnv = { COUNTERS: spinning } as unknown as Env;
+
+    const glass = await readShopWindow(spinningEnv);
+    expect(glass.sales).toEqual([]);
+    expect(glass.reached_back_to).toBeNull();
+    /*
+     * Two prefixes, one bounded list each: the sale index and the raw
+     * tail. A handful of calls is the walk being capped; the ceiling
+     * above is the spin coming back.
+     */
+    expect(listCalls).toBeLessThan(10);
+  });
+
   it("hangs the rows in the storefront's own HTML, with no script involved", async () => {
     await recordSettlement(testEnv, "/api/buy/daily_fortune", {
       paidUsdc: 0.01,

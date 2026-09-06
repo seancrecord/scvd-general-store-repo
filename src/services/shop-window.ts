@@ -1,6 +1,6 @@
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvList } from "@/lib/kv-retry";
+import { listKeys } from "@/lib/kv-list";
 import type { MetricEvent } from "@/lib/metrics";
 import { getAlmanacEntry } from "@/store/almanac";
 import { getMenuItem } from "@/store";
@@ -75,15 +75,13 @@ export interface ShopWindow {
 export const WINDOW_SIZE = 5;
 
 /**
- * The ceiling on either scan. Small on purpose: this runs on the front
- * page and on a poll, and the index prefix means a small cap already
- * reaches months of sales. The raw-stream tail below gets the same cap
- * and reaches far less, which is exactly why the index exists.
+ * The ceiling on either scan, named once and handed to the helper that
+ * enforces it. Small on purpose: this runs on the front page and on a
+ * poll, and the index prefix means a small cap already reaches months
+ * of sales. The raw-stream tail below gets the same cap and reaches far
+ * less, which is exactly why the index exists.
  */
 const SCAN_CAP = 200;
-
-/** KV's page size for the two walks. */
-const LIST_PAGE = 100;
 
 /**
  * ONE SETTLE, NAMED THE WAY A PERSON WOULD NAME IT.
@@ -198,39 +196,44 @@ export async function readShopWindow(
     rows.push(event);
   };
 
+  /**
+   * ONE CAPPED LIST, THEN ONE BULK READ, THROUGH THE HOUSE HELPER —
+   * and the first draft of this hand-rolled the paging instead, which
+   * hung CI for two hours on 2026-09-06.
+   *
+   * The loop it replaced advanced `cursor = page.cursor` and counted
+   * only the rows a page actually returned. KV may answer a page with
+   * `list_complete: false` AND no cursor, and on an EMPTY page that
+   * combination is a spin: nothing to count, so the row cap never
+   * moves, and no cursor, so the next request is the same request.
+   * Forever, silently, inside a GET on the front page.
+   *
+   * lib/kv-list.ts has had the missing line since it was written
+   * (`cursor = page.cursor; if (!cursor) break;`) and its own header
+   * says why every list in this store goes through it. This one now
+   * does. Termination is the helper's property rather than this
+   * function's, and the cap is stated once instead of reassembled out
+   * of a page size and a row counter.
+   */
   const walk = async (prefix: string): Promise<void> => {
-    let cursor: string | undefined;
-    let scanned = 0;
-    while (scanned < SCAN_CAP && rows.length < limit) {
-      const listed = await kvList(env.COUNTERS, {
-        prefix,
-        limit: LIST_PAGE,
-        ...(cursor ? { cursor } : {}),
-      });
-      const names = listed.keys.map((key) => key.name);
-      const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
-      for (const name of names) {
-        if (rows.length >= limit) {
-          break;
-        }
-        scanned += 1;
-        const event = values.get(name);
-        if (!event) {
-          continue;
-        }
-        // Every row the scan READ sets the floor, sale or not: it is
-        // how far back the window can honestly claim to have looked.
-        if (!oldest || event.at < oldest) {
-          oldest = event.at;
-        }
-        if (isOutsideSale(event)) {
-          take(event);
-        }
+    const listed = await listKeys(env.COUNTERS, { prefix, cap: SCAN_CAP });
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, listed.names);
+    for (const name of listed.names) {
+      if (rows.length >= limit) {
+        return;
       }
-      if (listed.list_complete) {
-        break;
+      const event = values.get(name);
+      if (!event) {
+        continue;
       }
-      cursor = listed.cursor;
+      // Every row the scan READ sets the floor, sale or not: it is
+      // how far back the window can honestly claim to have looked.
+      if (!oldest || event.at < oldest) {
+        oldest = event.at;
+      }
+      if (isOutsideSale(event)) {
+        take(event);
+      }
     }
   };
 
