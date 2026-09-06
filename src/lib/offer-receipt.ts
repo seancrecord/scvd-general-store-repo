@@ -127,10 +127,23 @@ export async function signJws(
   env: Env,
   payload: Record<string, unknown>,
 ): Promise<string> {
+  return signSerializedJws(env, JSON.stringify(payload));
+}
+
+/** RFC 7515 Appendix F: sign the supplied bytes, then omit the payload. */
+export async function signDetachedJws(env: Env, payload: string): Promise<string> {
+  const compact = await signSerializedJws(env, payload);
+  const [header, , signature] = compact.split(".");
+  return `${header}..${signature}`;
+}
+
+// Keep serialization outside this primitive: x402 uses JSON.stringify;
+// ARD uses RFC 8785. The key, kid and JWS signing input stay identical.
+async function signSerializedJws(env: Env, payload: string): Promise<string> {
   const header = base64UrlFromString(
     JSON.stringify({ alg: "EdDSA", kid: await kidFor(env) }),
   );
-  const body = base64UrlFromString(JSON.stringify(payload));
+  const body = base64UrlFromString(payload);
   const signingInput = `${header}.${body}`;
   const signature = await ed25519.signAsync(
     new TextEncoder().encode(signingInput),

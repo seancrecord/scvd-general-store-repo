@@ -1,0 +1,27 @@
+{
+  "registry": "desvela",
+  "url": "https://registry.desvela.dev/search",
+  "request": {
+    "query": {
+      "text": "x402"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:32:53.173972+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:quicknode.com:api:agent",
+        "displayName": "Quicknode Agent API",
+        "type": "application/openapi+json",
+        "url": "https://www.quicknode.com/openapi.json",
+        "description": "OpenAPI description for agent subscription provisioning and x402 discovery.",
+        "score": 85,
+        "source": "https://registry.desvela.dev/"
+      }
+    ]
+  }
+}

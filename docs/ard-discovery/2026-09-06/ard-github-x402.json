@@ -1,0 +1,57 @@
+{
+  "registry": "github",
+  "url": "https://agentfinder.github.com/api/v1/search",
+  "request": {
+    "query": {
+      "text": "x402"
+    },
+    "pageSize": 20,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:41:21.005574+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "capabilities": [
+          "sign in",
+          "check balances",
+          "send usdc",
+          "send eth",
+          "send pol",
+          "send sol",
+          "trade tokens",
+          "fund the wallet",
+          "use x402 payment"
+        ],
+        "description": "Crypto wallet operations via the awal CLI - sign in, check balances, send USDC/ETH/POL/SOL, trade tokens, fund the wallet, and use the x402 payment...",
+        "displayName": "Agentic Wallet",
+        "identifier": "urn:ai:github.com:coinbase:agentic-wallet-skills:agentic-wallet",
+        "mediaType": "application/ai-skill",
+        "metadata": {
+          "repoPath": "skills/agentic-wallet/SKILL.md",
+          "sourceSet": "coinbase/agentic-wallet-skills"
+        },
+        "representativeQueries": [
+          "how to sign in to my crypto wallet",
+          "check my wallet balance",
+          "send ETH to another address",
+          "trade tokens in my wallet",
+          "fund my crypto wallet with USDC"
+        ],
+        "score": 80,
+        "source": "launch-augment-set",
+        "tags": [
+          "crypto wallet",
+          "usdc",
+          "eth",
+          "pol",
+          "sol",
+          "token trading"
+        ],
+        "type": "application/ai-skill",
+        "url": "https://github.com/coinbase/agentic-wallet-skills/blob/main/skills/agentic-wallet/SKILL.md"
+      }
+    ]
+  }
+}

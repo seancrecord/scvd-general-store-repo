@@ -1,0 +1,149 @@
+{
+  "registry": "github",
+  "url": "https://agentfinder.github.com/api/v1/search",
+  "request": {
+    "query": {
+      "text": "scvd.store"
+    },
+    "pageSize": 20,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:41:21.005253+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "capabilities": [
+          "web search",
+          "page extraction",
+          "structured commerce",
+          "retrieve social data",
+          "retrieve business data"
+        ],
+        "description": "Web search, page extraction and structured commerce, social and business data for AI agents",
+        "displayName": "Scavio",
+        "identifier": "urn:ai:api.mcp.github.com:io.github.scavio-ai:scavio-mcp",
+        "mediaType": "application/mcp-server+json",
+        "metadata": {
+          "approvalSource": "https://api.mcp.github.com/oss/v0.1/servers",
+          "publicId": "cf104d8e-ad25-49c6-951a-e57162a22f4d",
+          "serverName": "io.github.scavio-ai/scavio-mcp",
+          "sourceSet": "github-mcp-oss",
+          "version": "0.13.1"
+        },
+        "representativeQueries": [
+          "search the web using Scavio",
+          "extract content from a webpage",
+          "get structured data for e-commerce"
+        ],
+        "score": 90,
+        "source": "launch-augment-set",
+        "tags": [
+          "web search",
+          "page extraction",
+          "structured commerce",
+          "ai agents",
+          "social data",
+          "business data"
+        ],
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/oss/v0.1/servers/io.github.scavio-ai%2Fscavio-mcp/versions/latest"
+      },
+      {
+        "capabilities": [
+          "estimate cell state transitions",
+          "infer trajectory directions",
+          "compute latent variables"
+        ],
+        "description": "RNA velocity analysis with scVelo. Estimate cell state transitions from unspliced/spliced mRNA dynamics, infer trajectory directions, compute latent...",
+        "displayName": "Scvelo",
+        "identifier": "urn:ai:github.com:k-dense-ai:scientific-agent-skills:scvelo",
+        "mediaType": "application/ai-skill",
+        "metadata": {
+          "repoPath": "skills/scvelo/SKILL.md",
+          "sourceSet": "k-dense-ai/scientific-agent-skills"
+        },
+        "representativeQueries": [
+          "perform RNA velocity analysis",
+          "analyze mRNA dynamics with scVelo",
+          "infer cell state transitions using scVelo"
+        ],
+        "score": 90,
+        "source": "launch-augment-set",
+        "tags": [
+          "rna velocity",
+          "scvelo",
+          "cell state transitions",
+          "mrna dynamics",
+          "trajectory inference"
+        ],
+        "type": "application/ai-skill",
+        "url": "https://github.com/k-dense-ai/scientific-agent-skills/blob/main/skills/scvelo/SKILL.md"
+      },
+      {
+        "capabilities": [
+          "build ecommerce storefronts",
+          "implement best practices for ui/ux",
+          "optimize for seo",
+          "ensure mobile responsiveness"
+        ],
+        "description": "Comprehensive skills for building ecommerce storefronts with best practices for UI/UX, SEO, and mobile responsiveness",
+        "displayName": "Ecommerce Storefront",
+        "identifier": "urn:ai:github.com:medusajs:medusa-agent-skills:ecommerce-storefront",
+        "mediaType": "application/vnd.github.copilot-plugin",
+        "metadata": {
+          "repoPath": "plugins/ecommerce-storefront/.claude-plugin/plugin.json",
+          "sourceSet": "medusajs/medusa-agent-skills"
+        },
+        "representativeQueries": [
+          "how to build an ecommerce storefront",
+          "what are the best practices for ecommerce UI/UX",
+          "how to optimize an ecommerce site for SEO",
+          "ensure mobile responsiveness for ecommerce storefronts"
+        ],
+        "score": 60,
+        "source": "launch-augment-set",
+        "tags": [
+          "ecommerce",
+          "ui/ux",
+          "seo",
+          "mobile responsiveness"
+        ],
+        "type": "application/vnd.github.copilot-plugin",
+        "url": "https://github.com/medusajs/medusa-agent-skills/blob/main/plugins/ecommerce-storefront"
+      },
+      {
+        "capabilities": [
+          "use deep generative models",
+          "perform probabilistic batch correction",
+          "execute transfer learning",
+          "conduct differential expression analyses"
+        ],
+        "description": "Deep generative models for single-cell omics. Use when you need probabilistic batch correction (scVI), transfer learning, differential expression with..",
+        "displayName": "Scvi Tools",
+        "identifier": "urn:ai:github.com:k-dense-ai:scientific-agent-skills:scvi-tools",
+        "mediaType": "application/ai-skill",
+        "metadata": {
+          "repoPath": "skills/scvi-tools/SKILL.md",
+          "sourceSet": "k-dense-ai/scientific-agent-skills"
+        },
+        "representativeQueries": [
+          "how to correct batch effects in single-cell omics",
+          "perform transfer learning with Scvi Tools",
+          "analyze differential expression using generative models"
+        ],
+        "score": 50,
+        "source": "launch-augment-set",
+        "tags": [
+          "single-cell omics",
+          "generative models",
+          "probabilistic batch correction",
+          "transfer learning",
+          "differential expression"
+        ],
+        "type": "application/ai-skill",
+        "url": "https://github.com/k-dense-ai/scientific-agent-skills/blob/main/skills/scvi-tools/SKILL.md"
+      }
+    ]
+  }
+}
