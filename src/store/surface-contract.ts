@@ -34,6 +34,8 @@ export interface DoorError {
   /** Stable across versions. The thing a small model matches on. */
   code: string;
   http: number;
+  /** Omitted on pre-payment refusals; null explicitly means unknown. */
+  charged?: boolean | null;
   means: string;
   /** Not what it is — what the caller should DO. */
   what_to_do: string;
@@ -235,6 +237,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
     code: "delivery_failed",
     http: 500,
+    charged: true,
     means:
       "your payment settled and the delivery then failed on our side. Money moved; the goods did not leave. The body carries the transaction and the recovery path",
     what_to_do:
@@ -285,6 +288,7 @@ export interface RpcRefusal {
   code: string;
   /** The JSON-RPC code on the envelope. Several refusals share one. */
   jsonrpc: number;
+  charged?: boolean | null;
   means: string;
   what_to_do: string;
 }
@@ -365,6 +369,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
         // A 400 there is -32602 here; everything else, the owned
         // post-settlement failure included, is -32000.
         jsonrpc: door.http === 400 ? -32602 : -32000,
+        ...(door.charged !== undefined ? { charged: door.charged } : {}),
         means: door.means,
         what_to_do: door.what_to_do,
       };
@@ -516,12 +521,12 @@ function whatYouCanUseItFor(task: string | undefined): string {
  * which names the specific parameter.
  */
 function doorErrors(): (DoorError & {
-  charged: boolean;
+  charged: boolean | null;
   code_on_the_wire: boolean;
 })[] {
   const refusals = BUY_REFUSAL_CODES.map((refusal) => ({
     ...refusal,
-    charged: false,
+    charged: refusal.charged === undefined ? false : refusal.charged,
     code_on_the_wire: true,
   }));
   return [

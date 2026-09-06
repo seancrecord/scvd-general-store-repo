@@ -29,7 +29,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-014 — P1: a spent payment without its original key does not retrieve the receipt** — open.
 - [ ] **BUY-015 — P1: payment expiry blocks receipt replay, and the suggested replacement key can charge again** — open.
 - [ ] **BUY-016 — P1: concurrent fresh authorizations bypass the same-key safeguard** — open.
-- [x] **BUY-018 — P1: a Solana signer can claim an EVM payer's cached receipt** — fixed locally; commit included in this commit; not deployed.
+- [x] **BUY-018 — P1: a Solana signer can claim an EVM payer's cached receipt** — fixed locally; commit 005df923; not deployed.
 - [ ] **BUY-019 — P1: malformed Solana settlement IDs are signed into receipts** — regression verified locally; separate commit pending.
 - [ ] **BUY-020 — P2: OpenAPI budget guidance quotes an obsolete range** — open.
 - [ ] **BUY-021 — P2: purchase receipts recommend a four-tenths-cent good for one-tenth cent** — open.
@@ -47,7 +47,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
 - [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — open.
 - [ ] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — open.
-- [ ] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — regression verified locally; separate commit pending.
+- [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit included in this commit; not deployed.
 
 ## Verification and scope
 

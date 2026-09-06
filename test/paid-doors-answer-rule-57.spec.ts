@@ -192,7 +192,7 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
       expect(
         error.charged,
         `${error.code} on ${id} does not say whether it charged`,
-      ).toBe(false);
+      ).toBe(error.code === "delivery_failed" ? true : false);
     }
   });
 
