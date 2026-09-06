@@ -600,9 +600,13 @@ LORE & TRADITION
     somebody's behalf about money, and a browser till is the one
     place a bug spends a real person's funds.
 
-    The store never asks anyone to run code, install anything, or
-    hand over credentials or key material. A wallet SIGNATURE
-    request is not that, and the distinction is exact: the wallet
+    Reconciled 2026-09-06 with rule 17's 2026-08-27 amendment:
+    nothing from this store can act without the visitor's decision,
+    and we never ask for credentials, keys, or wallet secrets. The
+    former blanket ban on running code or installing anything was
+    superseded by that amendment; its history remains in rule 17.
+    A visitor-approved wallet SIGNATURE request preserves that
+    boundary, and the distinction is exact: the wallet
     signs and returns a signature; the key never leaves it. That
     is bit-for-bit what every agent buying here already does. If
     it were a violation, the entire product would be one.
