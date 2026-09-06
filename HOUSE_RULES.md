@@ -519,9 +519,23 @@ LORE & TRADITION
     independent enough to embarrass each other.
 
 
-52. A LOOKUP THAT CANNOT SEE EVERYTHING MUST NOT ANSWER "NO".
+52. A LOOKUP THAT CANNOT SEE EVERYTHING MUST NOT ANSWER "NO" —
+    OR "OK".
     (2026-08-25, after six instances of the same defect surfaced in
-    a single day. Enforced by test/bounded-read-honesty.spec.ts.)
+    a single day. Enforced by test/bounded-read-honesty.spec.ts.
+    AMENDED 2026-09-06: the second half of the title. The rule was
+    written about absence and its body already said the flattering
+    answer is the one you get, but the title named only "no", and a
+    check that examined nothing and reported OK reads as compliant
+    to anyone skimming for the word. Two instances, two days apart,
+    in two different instruments: ours judged chains it could not
+    read and published `not_ready` for 63 hosts (the wrongful no),
+    and 0200project's decoder reported `drainer_blacklist: ok` for
+    a payee that was never in the set it screened, on every
+    facilitator-relayed settlement (the wrongful ok). Each was
+    found from outside. A clearance is a claim about what was
+    looked at, and a check that looked at nothing has none to
+    make: it says `not_applicable`, or it says what it skipped.)
 
     A bounded read publishes its own incompleteness beside its
     result, or it does not publish. `listKeys` takes a cap and
