@@ -46,14 +46,14 @@ import type { Env } from "@/types";
 const READERS = [ETHEREUM_EVM, ARBITRUM_EVM, OPTIMISM_EVM, AVALANCHE_EVM];
 
 describe("the chain constants", () => {
-  it("are six, distinct in key, CAIP-2 and contract, every contract lowercase", () => {
-    expect(EVM_CHAINS).toHaveLength(6);
+  it("are distinct in key, CAIP-2 and contract, every contract lowercase", () => {
+    expect(EVM_CHAINS.map(chain => chain.key)).toEqual(["base", "polygon", "ethereum", "arbitrum", "optimism", "avalanche", "world"]);
     const keys = EVM_CHAINS.map((chain) => chain.key);
     const caip2s = EVM_CHAINS.map((chain) => chain.caip2);
     const contracts = EVM_CHAINS.map((chain) => chain.usdc);
-    expect(new Set(keys).size).toBe(6);
-    expect(new Set(caip2s).size).toBe(6);
-    expect(new Set(contracts).size).toBe(6);
+    expect(new Set(keys).size).toBe(EVM_CHAINS.length);
+    expect(new Set(caip2s).size).toBe(EVM_CHAINS.length);
+    expect(new Set(contracts).size).toBe(EVM_CHAINS.length);
     for (const chain of EVM_CHAINS) {
       expect(chain.caip2).toMatch(/^eip155:\d+$/);
       expect(chain.usdc).toMatch(/^0x[0-9a-f]{40}$/);

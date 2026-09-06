@@ -1,3 +1,4 @@
+import { publicationCollections } from "@/lib/publication-checkout";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
 import { CAPABILITY_QUERY } from "@/store/spec";
@@ -84,6 +85,7 @@ export function compactCatalog(base: string, rawPage = "0") {
   if (!/^\d{1,6}$/.test(rawPage) || Number(rawPage) >= pages) return null;
   const page = Number(rawPage);
   return {
+    publications: publicationCollections(base),
     total: MENU_ITEMS.length,
     page,
     pages,

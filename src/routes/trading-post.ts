@@ -1,3 +1,4 @@
+import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
@@ -70,6 +71,7 @@ function issueIndexEntry(
     price_usdc: PENNY_PAGE_USDC,
     contributors: issue.contributors.map((contributor) => contributor.name),
     url: `${base}/gazette/issue-${issue.issue_number}`,
+    ...publicationLinks(`${base}/gazette/issue-${issue.issue_number}`),
   };
 }
 
@@ -119,7 +121,11 @@ tradingPostRoutes.get("/gazette", async (c) => {
       }),
     );
   }
+  const page = publicationPage(issues.map(issue => issueIndexEntry(issue, base)), `${base}/gazette`, c.req.query("page"));
+  if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
   return c.json({
+    checkout: publicationCheckout(base),
+    ...(c.req.query("view") === "compact" ? page?.pagination : {}),
     gazette:
       "The shop's paper of record: weekly editions set from the store's own books, plus dispatches from reviewed Trading Post tips. A penny a copy.",
     district: "The Red Clay Exchange",
@@ -136,7 +142,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
         }
       : {}),
     leave_a_tip: `POST ${base}/api/tip with { "tip": "...", "contributor_name": "(optional)" }. ${TIP_DISCLOSURE}`,
-    issues: issues.map((issue) => issueIndexEntry(issue, base)),
+    issues: c.req.query("view") === "compact" ? page!.rows : issues.map((issue) => issueIndexEntry(issue, base)),
   });
 });
 

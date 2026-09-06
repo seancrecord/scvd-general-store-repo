@@ -1,3 +1,4 @@
+import { paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
 import { catalogLastUpdated } from "@/lib/freshness";
@@ -100,6 +101,7 @@ import type { GuestbookEntry } from "@/types";
  */
 
 export interface StorefrontData {
+  paymentConfig?: PaymentNetworkConfig;
   /** Origin, for the offer URLs in the structured data. */
   base?: string;
   weekNote: string;
@@ -500,7 +502,7 @@ function freeServicesJsonLd(base: string): string {
   });
 }
 
-function productListJsonLd(base: string): string {
+function productListJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -512,14 +514,14 @@ function productListJsonLd(base: string): string {
       item: {
         "@type": "Product",
         name: item.name,
-        description: `${item.description} Paid in USDC over x402, on Base, Polygon, or Solana.`,
+        description: `${item.description} ${paymentMethod(paymentConfig)}.`,
         url: `${base}/menu/${item.id}`,
         image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
         offers: {
           "@type": "Offer",
           price: String(item.price_usdc),
-          ...offerCurrencyFields(),
+          ...offerCurrencyFields(paymentConfig),
           /**
            * THE ITEM PAGE, NOT THE BUY DOOR. This read /api/buy/{id}
            * until 2026-08-18, which hands every crawler that honors
@@ -623,7 +625,7 @@ function postalAddress(): object {
  * `publisher` joins the two nodes rather than repeating the
  * Organization's fields, which would be a second copy free to drift.
  */
-function webSiteJsonLd(base: string): string {
+function webSiteJsonLd(base: string, paymentConfig?: PaymentNetworkConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -632,12 +634,12 @@ function webSiteJsonLd(base: string): string {
     alternateName: ALTERNATE_NAMES,
     url: `${base}/`,
     inLanguage: "en",
-    description: COPY.metaDescription,
+    description: `${COPY.metaDescription} ${paymentMethod(paymentConfig)}.`,
     publisher: organizationRef(base),
   });
 }
 
-function organizationJsonLd(base: string, stats?: StoreStats | null): string {
+function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConfig?: PaymentNetworkConfig): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -807,7 +809,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
       description:
         SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
       price: String(item.price_usdc),
-      ...offerCurrencyFields(),
+      ...offerCurrencyFields(paymentConfig),
       availability: offerAvailability(item),
       url: `${base}/menu/${item.id}`,
     })),
@@ -862,7 +864,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <meta name="description" content="${COPY.metaDescription}">
+  <meta name="description" content="${escapeHtml(`${COPY.metaDescription} ${paymentMethod(data.paymentConfig)}.`)}">
   <link rel="canonical" href="${data.base ?? "https://scvd.store"}/">
   <link rel="alternate" type="text/markdown" href="${data.base ?? "https://scvd.store"}/index.md">
   <!--
@@ -892,7 +894,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
   ${ardLinkTags(data.base ?? "https://scvd.store")}
-  <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
+  <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats, data.paymentConfig)}</script>
   <!--
     ARD ENTRIES AS IN-PAGE MARKUP (spec section 5.1, mechanism two).
     The same entries the well-known manifest carries, each naming the
@@ -901,8 +903,8 @@ export function renderStorefront(data: StorefrontData): string {
     job is saying what this origin offers.
   -->
   <script type="application/ld+json">${jsonLdBody(ardInPageEntries(data.base ?? "https://scvd.store"))}</script>
-  <script type="application/ld+json">${webSiteJsonLd(data.base ?? "https://scvd.store")}</script>
-  <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
+  <script type="application/ld+json">${webSiteJsonLd(data.base ?? "https://scvd.store", data.paymentConfig)}</script>
+  <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store", data.paymentConfig)}</script>
   <script type="application/ld+json">${freeServicesJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
@@ -936,7 +938,7 @@ ${webmcpOriginTrialTags()}
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
-      <p class="pay-rails">${COPY.payRails} ${COPY.booksLink} <a href="/stats">/stats</a>.</p>
+      <p class="pay-rails">${escapeHtml(paymentMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>.</p>
     </header>
 
     <div class="gauges">

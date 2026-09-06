@@ -17,7 +17,7 @@
  *   - `wrapFetchWithPayment` (@x402/fetch) builds ONE payload, sends
  *     it, and retries only when a hook returns `{recovered: true}`.
  *     There is no loop over the remaining accepts. If the chosen rail
- *     fails, the other two are never attempted.
+ *     fails, the remaining networks are never attempted.
  *
  * So for an unconfigured buyer the rail is not a choice and not a
  * fallback: it is Base, or nothing. The sentence was wider than what
@@ -40,4 +40,4 @@
  * about reading order contained the words "takes the first".
  */
 export const STOCK_CLIENT_RAIL_NOTE =
-  "All three rails carry the same tiers, and a client that chooses can take any of them. A STOCK CLIENT DOES NOT CHOOSE: @x402/core selects the first accept that survives its spend controls — Base, because we list it first on purpose — and @x402/fetch pays once. It does not try the other rails if that payment fails. Three rails is a choice we offer, not a fallback you get for free; configure your client's selector if you want a different one.";
+  "All enabled checkout networks carry the same tiers, and a client that chooses can take any of them. A STOCK CLIENT DOES NOT CHOOSE: @x402/core selects the first accept that survives its spend controls — Base, because we list it first on purpose — and @x402/fetch pays once. It does not try the other rails if that payment fails. Multiple networks are a choice we offer, not a fallback you get for free; configure your client's selector if you want a different one.";

@@ -1,3 +1,4 @@
+import { BASE_NETWORK, POLYGON_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 
@@ -20,13 +21,13 @@ import { outboundHeaders } from "@/lib/identity";
 export const BASE_USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 
 /** CAIP-2 for Base mainnet, the same string the 402s advertise. */
-export const BASE_CHAIN = "eip155:8453";
+export const BASE_CHAIN = BASE_NETWORK;
 
 /** Native USDC on Polygon PoS (Circle's, not the bridged USDC.e). */
 export const POLYGON_USDC = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359";
 
 /** CAIP-2 for Polygon PoS, the same string the 402s advertise. */
-export const POLYGON_CHAIN = "eip155:137";
+export const POLYGON_CHAIN = POLYGON_NETWORK;
 
 /**
  * THE EVM CHAIN, AS A PARAMETER (the third-rail parity ruling,
@@ -36,7 +37,7 @@ export const POLYGON_CHAIN = "eip155:137";
  * call site moved when Polygon arrived — the same shape as the
  * shopping run's rail map. USDC keeps six decimals on both.
  */
-export type EvmChainKey = "base" | "polygon" | "ethereum" | "arbitrum" | "optimism" | "avalanche";
+export type EvmChainKey = "base" | "polygon" | "ethereum" | "arbitrum" | "optimism" | "avalanche" | "world";
 
 export interface EvmChain {
   key: EvmChainKey;
@@ -188,7 +189,7 @@ export const ETHEREUM_EVM: EvmChain = {
 };
 
 export const ARBITRUM_USDC = "0xaf88d065e77c8cc2239327c5edb3a432268e5831";
-export const ARBITRUM_CHAIN = "eip155:42161";
+export const ARBITRUM_CHAIN = ARBITRUM_NETWORK;
 export const ARBITRUM_EVM: EvmChain = {
   key: "arbitrum",
   label: "Arbitrum One",
@@ -234,6 +235,16 @@ export const AVALANCHE_EVM: EvmChain = {
 };
 
 /** Every EVM chain this store can read USDC on. Base first, the default; Polygon second, the other accepted rail; then the readers. */
+/** Circle native USDC; domain name USDC/version 2 read on-chain 2026-09-06. */
+export const WORLD_USDC = "0x79a02482a880bce3f13e09da970dc34db4cd24d1";
+export const WORLD_EVM: EvmChain = {
+  key: "world", label: "World", caip2: WORLD_NETWORK, usdc: WORLD_USDC,
+  blocksPerHour: 1800, envPrefix: "WORLD",
+  defaultRpc: "https://worldchain-mainnet.g.alchemy.com/public",
+  fallbacks: ["https://worldchain-mainnet.g.alchemy.com/public", "https://worldchain-mainnet.gateway.tenderly.co"],
+  logSpan: 500,
+};
+
 export const EVM_CHAINS: readonly EvmChain[] = [
   BASE_EVM,
   POLYGON_EVM,
@@ -241,14 +252,13 @@ export const EVM_CHAINS: readonly EvmChain[] = [
   ARBITRUM_EVM,
   OPTIMISM_EVM,
   AVALANCHE_EVM,
+  WORLD_EVM,
 ];
 
 /**
- * The chains this store's own money moves on, and therefore the ones
- * the bank walk and the inflow census walk every hour. A reader chain
- * is read when somebody names it; a walked chain is read whether or
- * not anybody asks, on an invocation budget that six chains would
- * exhaust. Widening this list is a cost decision, not a constant.
+ * The fixed scope of the external inflow census and wide attestation walk.
+ * Store-bank reconciliation separately selects each configured checkout rail.
+ * Widening this external census costs RPC calls for every observed wallet.
  */
 export const WALKED_EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
 
@@ -1035,4 +1045,10 @@ export function authorizationNonces(
 /** USDC has six decimals; the attestation reports both. */
 export function usdcFromUnits(units: bigint): number {
   return Number(units) / 1_000_000;
+}
+
+
+/** Input help derives from the readers, independently of checkout enablement. */
+export function inspectionNetworkGuide(): string {
+  return `Inspect USDC on ${EVM_CHAINS.map(chain => `${chain.label} (${chain.caip2})`).join(", ")}, or Solana (network=solana). Base is the default. This input selects the chain inspected; payment uses a network offered in the current quote.`;
 }

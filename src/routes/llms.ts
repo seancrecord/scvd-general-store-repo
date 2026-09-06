@@ -1,3 +1,4 @@
+import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
@@ -84,16 +85,18 @@ function pricedDoorCount(): number {
 export const llmsRoutes = new Hono<HonoEnv>();
 
 /** The whole front door as text. The MCP read_store_guide tool serves this too. */
-export function storeGuideText(base: string): string {
+export function storeGuideText(base: string, paymentConfig?: PaymentNetworkConfig): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
 
+${paymentConfig ? `Current checkout networks: ${paymentNetworkNames(paymentConfig)}.` : ""}
+
 > ${POSITION_OPENING}
-> ${POSITION_NOT}
-> ${ALSO_A_STORE}
 > Everything this store signs verifies free, forever, at
 > \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit,
 > verifiable offline without asking us.
+> ${POSITION_NOT}
+> ${ALSO_A_STORE}
 
 ${firstScreenPaths(base)}
 
@@ -484,10 +487,9 @@ observatory checks), scvd://when (which door answers which question),
 scvd://fresh-set (this week's routing data) — plus two ui:// card
 templates (MCP Apps) that render the preflight and verify readings in
 hosts that support them; hosts that don't get the same JSON as ever.
-WebMCP, for the agent in a visitor's browser: the storefront at
-${base}/ registers the same free evidence instruments on
-document.modelContext (script at ${base}/webmcp.js, read-only by
-derivation — nothing registered can act or spend on your behalf).
+WebMCP: ${base}/webmcp.js registers free instruments, quote_store_purchase
+(free) and complete_store_purchase (buyer-signed payment, consequential).
+A compatible wallet/client signs externally. Details: ${base}/mcp.md.
 A2A agent card: ${base}/.well-known/a2a.json (also served at
 /.well-known/agent-card.json and /.well-known/agent.json). Since
 2026-09-03 it is the evidence agent's card, not a catalog: three
@@ -547,10 +549,9 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on Base (eip155:8453), Polygon
-(eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)
-over the ${STORE_METADATA.protocol} protocol, version 2. Base entries
-come first in every 402 as a compatibility promise. It goes like this:
+We take ${STORE_METADATA.currency} on a network offered in the current
+payment quote over the ${STORE_METADATA.protocol} protocol, version 2.
+The quote is the source of current payment terms. It goes like this:
 
   1. GET \`${base}/api/buy/{item_id}\`
   2. We answer 402. The payment requirements, amount, asset, our address,
@@ -682,8 +683,7 @@ them: cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
 not the tip), asset, network, payer, and settlement_tx. The payer is
 the paying wallet address — chain-verifiable by anyone, unlike the
 optional name, which is whatever the buyer chose. settlement_tx is the
-on-chain transaction, so the certificate and a chain explorer — Base
-or Solana, whichever rail the payment settled on — are the same fact
+on-chain transaction, so the certificate and an explorer for the chain the payment settled on are the same fact
 checked two ways rather than two separate claims. Any field
 shown but NOT covered by a signature is named as such in the verify
 response; certificates issued before 2026-07-31 predate the payment
@@ -1583,7 +1583,7 @@ machine-readable stance stays at ${base}/.well-known/trust.json.
 ## Where the money settles, drawn
 
 ${base}/rails charts this store's organic settlements by chain —
-Base, Polygon, Solana — month by month, derived live from the same
+by recorded settlement network — month by month, derived live from the same
 books as ${base}/stats, house traffic excluded at the till. The table
 always rides beside the picture, and the JSON twin serves the same
 numbers to machines.
@@ -1693,29 +1693,29 @@ Los endpoints y los precios son los mismos en todos los idiomas.
 ES. Somos una pequeña tienda general para agentes autónomos: amuletos
 de la suerte en custodia, notas firmadas, una llamada telefónica
 humana de verdad.
-Se paga en USDC sobre Base o Solana con x402 v2. Catálogo: ${base}/menu.json.
+Se paga en USDC con x402 v2; elige una red ofrecida en la cotización actual. Catálogo: ${base}/menu.json.
 El libro de visitas es gratis y nos alegra cada firma.
 
 PT-BR. Uma pequena loja de conveniência para agentes autônomos:
 amuletos da sorte sob custódia, bilhetes assinados, uma ligação
-telefônica humana de verdade. Pagamento em USDC na Base ou Solana via x402 v2. Catálogo:
+telefônica humana de verdade. Pagamento em USDC via x402 v2; escolha uma rede oferecida na cotação atual. Catálogo:
 ${base}/menu.json. O livro de visitas é grátis.
 
 JA: 自律エージェントのための小さな雑貨店です。預かりのお守り、署名入りの手紙、
-本物の人間による電話一本。支払いは Base または Solana 上の USDC、x402 v2 経由。
+本物の人間による電話一本。支払いは x402 v2 経由の USDC。現在の見積もりにあるネットワークを選んでください。
 カタログは ${base}/menu.json。芳名帳は無料です。
 
 KO: 자율 에이전트를 위한 작은 잡화점입니다. 보관 중인 행운의 부적, 서명된 쪽지,
-진짜 사람이 거는 전화 한 통. 결제는 Base 또는 Solana의 USDC, x402 v2 프로토콜.
+진짜 사람이 거는 전화 한 통. 결제는 x402 v2의 USDC입니다. 현재 견적에 표시된 네트워크를 선택하세요.
 카탈로그: ${base}/menu.json. 방명록은 무료입니다.
 
 ZH: 一家为自主智能体开的小杂货铺：代管的幸运物、亲笔签名的便条、
-一通真人电话。用 Base 或 Solana 链上的 USDC 经 x402 v2 付款。
+一通真人电话。通过 x402 v2 使用 USDC 付款，选择当前报价中提供的网络。
 菜单在 ${base}/menu.json。留言簿免费。
 
 RU: Небольшая лавка для автономных агентов: талисманы на хранении,
 подписанные записки, один настоящий телефонный звонок от человека.
-Оплата в USDC на Base или Solana по x402 v2. Каталог: ${base}/menu.json.
+Оплата в USDC по x402 v2; выберите сеть из текущего предложения. Каталог: ${base}/menu.json.
 Гостевая книга бесплатна.
 
 Safe travels. Tell the other agents where you got your luck.
@@ -2003,8 +2003,8 @@ ${others}
  * 30,000-character recommendation with room to spare, and every
  * sentence in it is the same sentence it was yesterday.
  */
-export function llmsIndex(base: string): string {
-  const { preamble, sections } = splitGuide(storeGuideText(base));
+export function llmsIndex(base: string, paymentConfig?: PaymentNetworkConfig): string {
+  const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
   const kept = INDEX_SECTIONS.map((heading) =>
     sections.find((section) => section.heading === heading),
   ).filter((section): section is GuideSection => section !== undefined);
@@ -2034,12 +2034,12 @@ Every one of those areas is also a room a person can read: drop the
 }
 
 /** GET /{area}/llms.txt — one area's sections, whole. */
-export function llmsForArea(base: string, slug: string): string | null {
+export function llmsForArea(base: string, slug: string, paymentConfig?: PaymentNetworkConfig): string | null {
   const area = LLMS_AREAS.find((entry) => entry.slug === slug);
   if (!area) {
     return null;
   }
-  const { preamble, sections } = splitGuide(storeGuideText(base));
+  const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
   const mine = sections.filter(
     (section) => SECTION_AREAS[section.heading] === slug,
   );
@@ -2050,7 +2050,7 @@ ${area.blurb}
 ${mine.map((section) => section.text).join("")}${whereTheRestIs(base, slug)}`;
 }
 
-llmsRoutes.get("/llms.txt", (c) => c.text(llmsIndex(c.env.STORE_BASE_URL)));
+llmsRoutes.get("/llms.txt", (c) => c.text(llmsIndex(c.env.STORE_BASE_URL, c.env)));
 
 /**
  * The llms-full.txt convention: sites whose llms.txt is an index serve
@@ -2059,7 +2059,7 @@ llmsRoutes.get("/llms.txt", (c) => c.text(llmsIndex(c.env.STORE_BASE_URL)));
  * always served, now with a llms.txt that is genuinely different.
  */
 llmsRoutes.get("/llms-full.txt", (c) =>
-  c.text(storeGuideText(c.env.STORE_BASE_URL)),
+  c.text(storeGuideText(c.env.STORE_BASE_URL, c.env)),
 );
 
 /**
@@ -2071,7 +2071,7 @@ llmsRoutes.get("/llms-full.txt", (c) =>
  */
 for (const area of LLMS_AREAS) {
   llmsRoutes.get(`${area.path}/llms.txt`, (c) => {
-    const body = llmsForArea(c.env.STORE_BASE_URL, area.slug);
+    const body = llmsForArea(c.env.STORE_BASE_URL, area.slug, c.env);
     return c.text(body ?? "", body ? 200 : 404);
   });
 }

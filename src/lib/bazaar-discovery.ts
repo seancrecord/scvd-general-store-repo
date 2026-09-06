@@ -1,3 +1,4 @@
+import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
@@ -253,12 +254,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["wallet"] = {
       type: "string",
       description:
-        "The wallet to state: a 0x EVM address on Base or Polygon, a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
+        "The wallet to state: a 0x address on the selected EVM network, a base58 pubkey on Solana. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
     };
     properties["network"] = {
       type: "string",
       description:
-        'Which rail to read: "eip155:8453" (Base, the default), "eip155:137" (Polygon), or "solana" (Solana mainnet, USDC). One chain per statement.',
+        inspectionNetworkGuide(),
     };
     properties["hours"] = {
       type: "string",
@@ -271,12 +272,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["wallet"] = {
       type: "string",
       description:
-        "Your receiving address: a 0x EVM address on Base or Polygon, a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
+        "Your receiving address: a 0x address on the selected EVM network, a base58 pubkey on Solana. For 30 days the store's rounds read every USDC transfer in and out of it four times a day, each pass signed alone, payers counted — one chain per statement, named on every pass.",
     };
     properties["network"] = {
       type: "string",
       description:
-        'Which rail to read: "eip155:8453" (Base, the default), "eip155:137" (Polygon), or "solana" (Solana mainnet, USDC). One chain per statement.',
+        inspectionNetworkGuide(),
     };
     required.push("wallet");
   }

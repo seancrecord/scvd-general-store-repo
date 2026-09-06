@@ -109,7 +109,7 @@ ${item.description}
 - **id:** \`${item.id}\`
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
-- **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on Base, Polygon, or Solana)
+- **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on a network offered in the current quote)
 ${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${
     artifactClassForItem(item.id)
       ? `- **does not prove:** ${artifactClassForItem(item.id)!.does_not_prove}\n`

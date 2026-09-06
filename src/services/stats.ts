@@ -130,6 +130,8 @@ export interface StoreStats {
   organic_by_rail?: {
     base: number;
     polygon: number;
+    arbitrum?: number;
+    world?: number;
     solana: number;
     rail_not_recorded: number;
     computed_at: string;
@@ -316,6 +318,8 @@ export async function computeStatsDiagnosed(
   const recordedBase = (split?.base ?? 0) + (till?.base ?? 0) + singleRailUnplaced;
   const recordedSolana = (split?.solana ?? 0) + (till?.solana ?? 0);
   const recordedPolygon = (split?.polygon ?? 0) + (till?.polygon ?? 0);
+  const railArbitrum = (split?.arbitrum ?? 0) + (till?.arbitrum ?? 0);
+  const railWorld = (split?.world ?? 0) + (till?.world ?? 0);
   /**
    * THE HAND-PLACED SALES fill the remainder the records left, and only
    * that: they are evidence about sales the till counted with no rail,
@@ -331,13 +335,13 @@ export async function computeStatsDiagnosed(
   const handSolana = RAILS_ENTERED_BY_HAND.solana.length;
   const handTotal = handBase + handPolygon + handSolana;
   const remainderBeforeHand =
-    organicSettlements - (recordedBase + recordedPolygon + recordedSolana);
+    organicSettlements - (recordedBase + recordedPolygon + recordedSolana + railArbitrum + railWorld);
   const handApplies = handTotal > 0 && remainderBeforeHand >= handTotal;
   const railBase = recordedBase + (handApplies ? handBase : 0);
   const railSolana = recordedSolana + (handApplies ? handSolana : 0);
   const railPolygon = recordedPolygon + (handApplies ? handPolygon : 0);
   const haveRails = split !== null || till !== null;
-  const railTotal = railBase + railPolygon + railSolana;
+  const railTotal = railBase + railPolygon + railSolana + railArbitrum + railWorld;
   const overshoot = railTotal > organicSettlements;
   const stats: StoreStats = {
     operating_since: OPERATING_SINCE,
@@ -353,6 +357,8 @@ export async function computeStatsDiagnosed(
           organic_by_rail: {
             base: railBase,
             polygon: railPolygon,
+            ...(railArbitrum > 0 ? { arbitrum: railArbitrum } : {}),
+            ...(railWorld > 0 ? { world: railWorld } : {}),
             solana: railSolana,
             rail_not_recorded: organicSettlements - railTotal,
             computed_at: split?.computed_at ?? new Date().toISOString(),
@@ -406,7 +412,8 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
       ? ` and ${rail.rail_not_recorded} settled before this store recorded the rail at the till, on a page that mints no certificate to carry one — a closed set that nothing can join`
       : "";
   const polygon = rail.polygon > 0 ? `, ${rail.polygon} in USDC on Polygon` : "";
-  return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${tail}.`;
+  const additional = `${rail.arbitrum ? `, ${rail.arbitrum} in USDC on Arbitrum` : ""}${rail.world ? `, ${rail.world} in USDC on World` : ""}`;
+  return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${additional}${tail}.`;
 }
 
 /**
@@ -429,7 +436,7 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
 export function storefrontLedgerLine(stats: StoreStats): string {
   const sales = `${stats.organic_settlements} organic ${stats.organic_settlements === 1 ? "sale" : "sales"}`;
   const rail = stats.organic_by_rail;
-  if (!rail || rail.base + rail.polygon + rail.solana === 0) {
+  if (!rail || rail.base + rail.polygon + rail.solana + (rail.arbitrum ?? 0) + (rail.world ?? 0) === 0) {
     return `${sales}, from wallets we don't control.`;
   }
   /**
@@ -443,6 +450,8 @@ export function storefrontLedgerLine(stats: StoreStats): string {
   const parts = [
     ...(rail.base > 0 ? [`${rail.base} on Base`] : []),
     ...(rail.polygon > 0 ? [`${rail.polygon} on Polygon`] : []),
+    ...(rail.arbitrum ? [`${rail.arbitrum} on Arbitrum`] : []),
+    ...(rail.world ? [`${rail.world} on World`] : []),
     ...(rail.solana > 0 ? [`${rail.solana} on Solana`] : []),
     ...(rail.rail_not_recorded > 0
       ? [`${rail.rail_not_recorded} from before we logged the rail`]

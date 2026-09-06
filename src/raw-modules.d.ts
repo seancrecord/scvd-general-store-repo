@@ -44,3 +44,9 @@ declare module "*/till/till.js" {
   const contents: string;
   export default contents;
 }
+
+/** Browser purchase module, served as source and tested by Node. */
+declare module "*/webmcp/purchase.js" {
+  const contents: string;
+  export default contents;
+}

@@ -153,7 +153,7 @@ export const STOREFRONT_COPY = {
    * which is the actual fix and is now counted in that register.
    */
   metaDescription:
-    "An evidence observatory for agentic commerce: preflight an x402 door before paying, free conformance checks on the signed receipt after, a Bitcoin-anchored corpus over time. USDC on Base, Polygon, Solana. Dated 2026-09-01.",
+    "An evidence observatory for agentic commerce: preflight an x402 door before paying, free conformance checks on the signed receipt after, a Bitcoin-anchored corpus over time.",
   /*
    * 2026-09-01 (roadmap N2): the social card carries the keeper's
    * sixty words verbatim, derived, so the sentence a share unfurls is
@@ -178,7 +178,7 @@ export const STOREFRONT_COPY = {
    * last thing carried away.
    */
   organizationDescription:
-    `An evidence observatory for agentic commerce: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base, Polygon, or Solana; every purchase publicly checkable. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything this store signs verifies free, forever.`,
+    `An evidence observatory for agentic commerce: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over x402 on a network offered in the current quote; every purchase publicly checkable. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything this store signs verifies free, forever.`,
   /**
    * THE H1'S DESCRIPTIVE TAIL (2026-08-21; rebuilt 2026-08-26). The
    * sign spells the store out in letters that flicker on their own
@@ -259,7 +259,7 @@ export const STOREFRONT_COPY = {
   whatThisIsPassport:
     'Was your x402 door observed? Look it up at <a href="/passport">/passport</a>. A dated page of what the census saw, what it did not, and when the reading goes stale. Not a badge, not a pass mark.',
   whatThisIsShop:
-    "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base, Polygon, or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
+    "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC over x402 on a network offered in the current quote, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
     `\u2026and more on the menu, from ${CHEAPEST_ON_THE_SHELF} on up. Send the keeper a note if something catches; he'll work with you.`,
@@ -324,18 +324,18 @@ export const STOREFRONT_COPY = {
   termNoteTry: "# building a client? practice on us",
   termNoteUseWhen: "# which shelf for which situation",
   termNoteRequest: "# want something we don't stock?",
-  termPayLine: "USDC on Base, Polygon, or Solana \u00B7 x402 v2 \u00B7 goods first, settle after",
+  termPayLine: "USDC over x402 on a network offered in the current payment quote \u00B7 x402 v2 \u00B7 goods first, settle after",
   wallHead: "SIGNED THE WALL",
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",
   /**
    * THE RAIL NOTE, and why it moved to the human half of the page.
-   * "USDC on Base, Polygon, or Solana" has been true since the second rail
+   * "USDC on Base, Polygon, or Solana" had been true since the second rail
    * opened and appeared in exactly one place: inside the agent door,
    * in a terminal font, under a column of HTTP verbs. A person working
    * out whether they can pay here never read it.
    */
-  payRails: "USDC on Base, Polygon, or Solana, over x402.",
+  payRails: "USDC over x402 on a network offered in the current quote.",
   /** Where the paragraph went. The front of the store keeps the number. */
   booksLink: "The whole ledger, and what counts as organic, is at",
   finePrintVerify:

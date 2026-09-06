@@ -55,7 +55,7 @@ export function identityLead(): string {
 
 /** The store, second, intact. */
 export function storeLead(): string {
-  return `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on Base, Polygon or Solana. The cheapest thing on the shelf is ${cheapestLabel()}.`;
+  return `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on a network offered in the current quote. The cheapest thing on the shelf is ${cheapestLabel()}.`;
 }
 
 /** Both paragraphs, in the order the canary enforces. */

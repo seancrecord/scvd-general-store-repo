@@ -338,3 +338,26 @@ Optimism and Avalanche were absent from both reads. Sources and gaps
 are recorded in `docs/SPEC_READS.md`, "machine-readable checkout and
 the chain boundary" (2026-09-06). Payment expansion remains separate
 from the reader addition and from the quote Worker's Polygon repair.
+
+
+### 2026-09-06 — Arbitrum and World integration, disabled until configured
+
+Checkout supports separate `ARBITRUM_PAY_TO` and `WORLD_PAY_TO` flags.
+Each requires its own explicit EVM recipient setting on both the store
+Worker and scvd-doors. Neither falls back to Base's recipient. Leave
+both absent until production activation is approved. Confirm that HTTP
+quotes, MCP quotes, catalog networks and visible payment copy agree after
+setting them; a read-only quote is not proof of a live settlement.
+
+Both use Circle native USDC. Arbitrum uses the SDK's USD Coin/version 2
+mapping; World uses an explicit atomic asset amount and USDC/version 2,
+verified from the public contract. Their receipts and revenue counters
+retain the selected network. Their hourly bank walks use separate
+recipients, cursors and outcomes; Arbitrum's block allowance accounts for
+its faster cadence. The external inflow census retains its existing scope.
+
+Ethereum, Optimism and Avalanche remain available for inspection; the
+current CDP exact facilitator does not advertise them for checkout.
+The existing ambiguous-settlement rescue remains Base-only and fails
+closed on other chains. No live payment was made during this integration.
+Current primary references and the World contract read are in SPEC_READS.

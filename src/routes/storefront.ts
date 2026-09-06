@@ -82,7 +82,7 @@ storefrontRoutes.get("/", async (c) => {
    * serve one caller's dialect to another.
    */
   if (c.req.query("mode") === "agent") {
-    return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+    return c.text(agentsMd(c.env.STORE_BASE_URL, c.env), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
       Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
@@ -96,7 +96,7 @@ storefrontRoutes.get("/", async (c) => {
     });
   }
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
-    return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+    return c.text(agentsMd(c.env.STORE_BASE_URL, c.env), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
       Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
@@ -198,6 +198,7 @@ storefrontRoutes.get("/", async (c) => {
   );
   return c.html(
     renderStorefront({
+      paymentConfig: c.env,
       base: c.env.STORE_BASE_URL,
       weekNote: weekNote || DEFAULT_WEEK_NOTE,
       bellCount: bellCountRaw ? parseInt(bellCountRaw, 10) : 0,
@@ -234,7 +235,7 @@ storefrontRoutes.get("/", async (c) => {
  * a duplicate to adjudicate.
  */
 storefrontRoutes.get("/index.md", (c) =>
-  c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+  c.text(agentsMd(c.env.STORE_BASE_URL, c.env), 200, {
     "content-type": MARKDOWN_MEDIA_TYPE,
     /*
      * Vary on Accept even though this path does not negotiate: it is

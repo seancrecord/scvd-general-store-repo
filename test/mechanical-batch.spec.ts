@@ -1,4 +1,4 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { EXTERNAL_RECORDS } from "@/store/trust-signals";
 import { STANDARDS_POSTURE } from "@/store/standards";
@@ -11,7 +11,7 @@ import { WBA_KEY_IN_SERVICE_FROM } from "@/lib/web-bot-auth";
 import { agentsMd } from "@/routes/agents-md";
 import { MENU_ITEMS } from "@/store";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
-import { isRecord } from "@/types";
+import { isRecord, type Env } from "@/types";
 
 const BASE = "https://scvd.store";
 
@@ -192,7 +192,7 @@ describe("3. /index.md is the markdown root", () => {
     // Byte-identical, because it is the same function and not a copy.
     const body = await direct.text();
     expect(body).toBe(await negotiated.text());
-    expect(body).toBe(agentsMd(BASE));
+    expect(body).toBe(agentsMd(BASE, env as unknown as Env));
   });
 
   it("points its canonical at the root rather than at itself", async () => {

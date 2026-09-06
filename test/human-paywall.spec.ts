@@ -156,28 +156,19 @@ describe("no paid door serves a stranger's page", () => {
     ).toEqual([]);
   });
 
-  /**
-   * THE BUY DOOR'S BYTES ARE UNCHANGED. Factoring the chrome out of
-   * three copies is exactly the kind of edit that quietly reflows
-   * published copy, and this door's words shipped and have been read.
-   */
-  it("keeps the buy door's published wording byte for byte", () => {
-    const routes = buildRoutesConfig(testEnv) as Record<
-      string,
-      { customPaywallHtml?: string }
-    >;
-    expect(routes["GET /api/buy/hello"]?.customPaywallHtml).toBe(
-      `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>That shelf is for agents</title></head>
-<body style="font-family: Georgia, serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem;">
-<h1>That shelf is for agents, friend.</h1>
-<p>&ldquo;A Signed Hello&rdquo; is bought over the x402 protocol &mdash; your agent
-will know what to do with the 402 this page came with.</p>
-<p>You're welcome to browse the <a href="${testEnv.STORE_BASE_URL}/">front of the store</a>
-like a regular person. The guestbook's free.</p>
-</body></html>`,
-    );
+  it("explains payment instead of assuming the arriving agent knows x402", () => {
+    const routes = buildRoutesConfig(testEnv) as Record<string, { customPaywallHtml?: string }>;
+    for (const key of ["GET /api/buy/hello", "GET /almanac/:slug"]) {
+      const page = routes[key]?.customPaywallHtml ?? "";
+      expect(page).toContain("PAYMENT-REQUIRED");
+      expect(page).toContain("PAYMENT-SIGNATURE");
+      expect(page).toContain("/agents.md");
+      expect(page).toContain("/try");
+      expect(page).not.toContain("will know what to do");
+      expect(page).not.toContain("thing your agent knows");
+    }
   });
+
 });
 
 /**

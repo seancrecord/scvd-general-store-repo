@@ -61,7 +61,7 @@ function definitions(): ResourceDefinition[] {
       description:
         "What this store is, what it sells, what it refuses to claim, and how to transact — the full prose briefing an agent reads before deciding whether to spend anything here. The same bytes as GET /llms.txt.",
       mimeType: "text/markdown",
-      read: (_env, base) => storeGuideText(base),
+      read: (env, base) => storeGuideText(base, env),
     },
     {
       uri: `${SCHEME}://manual`,
@@ -70,7 +70,7 @@ function definitions(): ResourceDefinition[] {
       description:
         "The step-by-step x402 purchase flow: how a 402 arrives, which fields to sign, how to retry with payment, and what comes back. For an agent executing rather than evaluating. The same bytes as GET /agents.md.",
       mimeType: "text/markdown",
-      read: (_env, base) => agentsMd(base),
+      read: (env, base) => agentsMd(base, env),
     },
     {
       uri: `${SCHEME}://catalog`,

@@ -511,7 +511,7 @@ export async function callFreeTool(
   args: Record<string, unknown>,
 ): Promise<Record<string, unknown> | string> {
   if (name === "read_store_guide") {
-    return { guide: storeGuideText(c.env.STORE_BASE_URL) };
+    return { guide: storeGuideText(c.env.STORE_BASE_URL, c.env) };
   }
   if (name === "ring_bell") {
     const who =

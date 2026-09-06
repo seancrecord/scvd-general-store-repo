@@ -113,7 +113,7 @@ const HOW_MONEY_WORKS = {
     "Our labour on the record. Never the record itself: the corpus, the battery, the vocabulary and every published observation are free forever and are not behind any payment. A purchase buys a fresh look, a longer look, a look aimed somewhere specific, or a signed artifact you can hand to a third party.",
   what_money_never_buys:
     "A verdict. Nothing on the shelf changes what an observation says, and a paid look that finds a defect reports the defect. If money could move a reading, every reading would be worth nothing.",
-  rails: "USDC over x402, on Base, Polygon or Solana.",
+  rails: "USDC over x402 on a network offered in the current payment quote.",
   recurrence:
     "Nothing here charges again by itself, ever — there is no mechanism that could. Some items cover a term of days for one payment; when the term ends it stops, and a further purchase is a decision you make.",
   refunds:

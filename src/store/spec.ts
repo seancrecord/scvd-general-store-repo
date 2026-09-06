@@ -198,7 +198,12 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * counted, never a renewal. MINOR: a reader holding 3.14.0 has a
  * shelf one door short and a use_when list that does not name it.
  */
-export const SKILL_VERSION = "3.15.0";
+/*
+ * 3.16.0 (2026-09-06): explicit browser purchases and payment instructions
+ * for readers that predate x402. Checkout networks come from the current
+ * quote; product inspection networks are a separate input.
+ */
+export const SKILL_VERSION = "3.16.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

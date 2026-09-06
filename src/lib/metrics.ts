@@ -1,3 +1,4 @@
+import { ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
 import { canonicalAddress } from "@/lib/addresses";
 import { listKeys } from "@/lib/kv-list";
 import { sendAlert } from "@/lib/alerts";
@@ -707,7 +708,7 @@ export interface SettlementSignals extends EventSignals {
  * unbounded key is one a stranger could mint without limit. "other"
  * is a real answer and gets its own counter rather than being dropped.
  */
-export type SettlementRail = "base" | "polygon" | "solana" | "other";
+export type SettlementRail = "base" | "polygon" | "solana" | "arbitrum" | "world" | "other";
 
 export function railOf(network: string | undefined): SettlementRail | null {
   if (!network) {
@@ -724,6 +725,8 @@ export function railOf(network: string | undefined): SettlementRail | null {
    * gets its own bucket; every OTHER eip155 network keeps the legacy
    * mapping, because that is what the stored history already means.
    */
+  if (network === ARBITRUM_NETWORK) return "arbitrum";
+  if (network === WORLD_NETWORK) return "world";
   if (network === "eip155:137") {
     return "polygon";
   }

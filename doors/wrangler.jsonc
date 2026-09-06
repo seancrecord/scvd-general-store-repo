@@ -21,7 +21,10 @@
    * (`npx wrangler secret put <NAME> -c doors/wrangler.jsonc`):
    * SIGNING_KEY, PAY_TO_ADDRESS, and — so the facilitator's supported
    * kinds can be refreshed when KV has none — CDP_API_KEY_ID and
-   * CDP_API_KEY_SECRET. Until SIGNING_KEY and PAY_TO_ADDRESS are set,
+   * CDP_API_KEY_SECRET. Optional checkout secrets POLYGON_PAY_TO,
+   * ARBITRUM_PAY_TO and WORLD_PAY_TO must match the store Worker:
+   * configure both Workers together, then compare their unpaid quotes.
+   * Until SIGNING_KEY and PAY_TO_ADDRESS are set,
    * src/doors.ts answers nothing itself and hands every knock to the
    * store: the first deploy is a pass-through, not a change.
    */

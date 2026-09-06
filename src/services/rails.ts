@@ -87,6 +87,8 @@ export interface RailSplit {
    * and absent from snapshots stored before the field was born, which
    * read as zero rather than invalid. */
   polygon?: number;
+  arbitrum?: number;
+  world?: number;
   /** Pre-seam, certificate-backed: settled on a Solana network. */
   solana: number;
   /** Pre-seam, certificate-backed, network unrecognised. */
@@ -111,6 +113,8 @@ export interface RailSplit {
 export interface RailCounts {
   base: number;
   polygon: number;
+  arbitrum?: number;
+  world?: number;
   solana: number;
   other: number;
 }
@@ -125,7 +129,7 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
     (await kvGet(env.COUNTERS, KV_KEYS.railMeterStart)) ?? undefined;
   const { taxRows } = await import("@/services/tax-export");
   const { rows, truncated } = await taxRows(env);
-  const split = {
+  const split: Omit<RailSplit, "computed_at" | "truncated"> = {
     base: 0,
     polygon: 0,
     solana: 0,
@@ -148,7 +152,9 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
     if (rail === "base") {
       split.base += 1;
     } else if (rail === "polygon") {
-      split.polygon += 1;
+      split.polygon = (split.polygon ?? 0) + 1;
+    } else if (rail === "arbitrum" || rail === "world") {
+      split[rail] = (split[rail] ?? 0) + 1;
     } else if (rail === "solana") {
       split.solana += 1;
     } else {
@@ -218,10 +224,12 @@ export async function readRailCounters(env: Env): Promise<RailCounts> {
       if (
         rail === "base" ||
         rail === "polygon" ||
+        rail === "arbitrum" ||
+        rail === "world" ||
         rail === "solana" ||
         rail === "other"
       ) {
-        counts[rail] += value;
+        counts[rail] = (counts[rail] ?? 0) + value;
       }
     }
   }
@@ -250,6 +258,8 @@ export interface RailMonth {
   month: string;
   base: number;
   polygon: number;
+  arbitrum?: number;
+  world?: number;
   solana: number;
   other: number;
   /**
@@ -304,15 +314,17 @@ export async function readRailCountersByMonth(env: Env): Promise<RailMonth[]> {
       if (
         rail === "base" ||
         rail === "polygon" ||
+        rail === "arbitrum" ||
+        rail === "world" ||
         rail === "solana" ||
         rail === "other"
       ) {
-        row[rail] += value;
+        row[rail] = (row[rail] ?? 0) + value;
       }
     }
     // A truncated month rides even at zero: its zeros are suspect,
     // and omitting it would hide exactly the row that needs the flag.
-    if (row.truncated || row.base + row.polygon + row.solana + row.other > 0) {
+    if (row.truncated || row.base + row.polygon + row.solana + row.other + (row.arbitrum ?? 0) + (row.world ?? 0) > 0) {
       months.push(row);
     }
   }

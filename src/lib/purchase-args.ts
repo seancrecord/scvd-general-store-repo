@@ -1,3 +1,4 @@
+import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -340,7 +341,7 @@ export async function checkPurchaseArgs(
           "bad_request",
           rail.key === "solana"
             ? `This needs a ${field} — your receiving address, a Solana pubkey (base58, 32 bytes), because network=solana was asked for. No address, no charge.`
-            : `This needs a ${field} — your receiving address, a 0x EVM address, 40 hex characters, on ${rail.label}. USDC on Base by default, Polygon with network=eip155:137, Ethereum, Arbitrum, Optimism or Avalanche with network=<that name>, or Solana with network=solana and a base58 pubkey. No address, no charge.`,
+            : `This needs a ${field} — your receiving address, a 0x EVM address, 40 hex characters, on ${rail.label}. ${inspectionNetworkGuide()} Solana needs a base58 pubkey. No address, no charge.`,
           { input_field: "wallet" },
         );
       }
@@ -349,7 +350,7 @@ export async function checkPurchaseArgs(
         "bad_request",
         rail.key === "solana"
           ? `This needs a ${field} — a Solana pubkey (base58, 32 bytes), because network=solana was asked for; an EVM address has no history there. No wallet, no charge.`
-          : `This needs a ${field} — a 0x EVM address, 40 hex characters, on ${rail.label}. This statement reads USDC on Base by default, Polygon with network=eip155:137, Ethereum, Arbitrum, Optimism or Avalanche with network=<that name>, or Solana with network=solana and a base58 pubkey (an EVM address has no history there). No wallet, no charge.`,
+          : `This needs a ${field} — a 0x EVM address, 40 hex characters, on ${rail.label}. ${inspectionNetworkGuide()} Solana needs a base58 pubkey (an EVM address has no history there). No wallet, no charge.`,
         { input_field: "wallet" },
       );
     }
