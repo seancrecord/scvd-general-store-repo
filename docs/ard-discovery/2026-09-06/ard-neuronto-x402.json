@@ -1,0 +1,2891 @@
+{
+  "registry": "neuronto",
+  "url": "https://neuronto.com/search",
+  "request": {
+    "query": {
+      "text": "x402"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:32:52.634739+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:com.devvizion:mcp:x402-research",
+        "displayName": "Money-Engine x402 Research",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.devvizion.com/mcp",
+        "description": "Free agent discovery + paid x402 research (outline 0.01 / brief 0.02 USDC Base).",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "free agent discovery + paid x402 research (outline 0",
+          "money-engine x402 research for this task"
+        ],
+        "version": "0.1.1",
+        "score": 100,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201549,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "x402_sample_outline",
+          "description": "FREE research teaser (3 bullets). Convert ladder: this tool \u2192 paid x402_research_outline 0.01 USDC \u2192 x402_research_brief 0.02 USDC Base. Body {topic?} default x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.mcpscores:mcp:x402-market-intelligence",
+        "displayName": "MCPFax Bazaar Intelligence",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcpfax-intel.bowling-anthony.workers.dev/mcp",
+        "description": "Seller ranks, trends and demand in the x402 economy. USDC figures are read off Base, not claimed.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "agent-economy market reports, seller ranks & trends",
+          "mcpfax bazaar intelligence for this task",
+          "seller ranks, trends and demand in the x402 economy"
+        ],
+        "version": "1.0.8",
+        "score": 98,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "x402_trending_services",
+          "description": "Which x402 services are growing right now, by observed inflow across comparable windows. Price: $0.01 USDC per successful call."
+        }
+      },
+      {
+        "identifier": "urn:air:com.alpha402x:mcp:research",
+        "displayName": "alpha402x Equity Research",
+        "type": "application/mcp-server",
+        "url": "https://alpha402x.com/mcp",
+        "description": "Cited equity research, payable per call via x402: profiles, WACC builds, live 10-Q highlights.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "cited equity research, payable per call via x402: profiles, wacc builds, live 10-q highlights",
+          "alpha402x equity research for this task",
+          "cited, filing-grounded equity research via x402, per call: graded quarterly cards, wacc, 10-q"
+        ],
+        "version": "1.1.0",
+        "score": 96,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201546,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "how_to_pay_x402",
+          "description": "The x402 payment flow for these products, the client libraries that automate it, and where the authoritative terms live."
+        }
+      },
+      {
+        "identifier": "urn:air:com.ontarioprotocol:mcp:ontario-protocol",
+        "displayName": "Ontario Protocol",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ontarioprotocol.com/mcp",
+        "description": "x402 trust scans, readiness checks, and pre-payment verification for agents calling paid APIs.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402 trust scans, readiness checks, and pre-payment verification for agents calling paid apis",
+          "ontario protocol for this task",
+          "find and verify x402 tools before paying; route by task, budget, network, and readiness",
+          "verify x402 endpoints and prepare agent-catalog listings before agents pay",
+          "verify x402 endpoints before payment or publish service profiles for agent discovery"
+        ],
+        "version": "1.0.3",
+        "score": 94,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201763,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "x402_launch_kit",
+          "description": "Generate a validated listing payload, x402 resource draft, MCP descriptor, GitHub readiness workflow, README snippet, and registry copy for one paid endpoint."
+        }
+      },
+      {
+        "identifier": "urn:air:com.borisinc:mcp:aegis",
+        "displayName": "aegis",
+        "type": "application/mcp-server",
+        "url": "https://aegis-mcp.borisinc.com/mcp",
+        "description": "Trust layer for the x402 economy - check any service before you pay. Scores, discovery, routing.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "trusted agent-commerce hub: discover, trust-check, and route x402 payments with failover",
+          "com.borisinc/aegis for this task",
+          "trusted x402 hub: discover verified services, trust-check before you pay, route with failover",
+          "trust layer for the x402 economy - check any service before you pay"
+        ],
+        "version": "1.2.0",
+        "score": 93,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "trust_check",
+          "description": "Verification-backed trust score + signals for a service before you pay it. Paid $0.01 via x402 (_meta['x402/payment'])."
+        }
+      },
+      {
+        "identifier": "urn:air:com.borisinc:mcp:gamedatakit",
+        "displayName": "gamedatakit",
+        "type": "application/mcp-server",
+        "url": "https://mcp.borisinc.com/mcp",
+        "description": "Live Steam market data for AI agents: top sellers, deals, player counts. Paid per call via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "live steam market data for ai agents: top sellers, deals, player counts",
+          "com.borisinc/gamedatakit for this task"
+        ],
+        "version": "1.0.0",
+        "score": 92,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "tools": 5
+        },
+        "matchedTool": {
+          "name": "steam_top_sellers",
+          "description": "Current top-selling games on Steam by region. Paid: $0.005 per call via x402 (payment in _meta['x402/payment'])."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.dripmetrics:mcp:mcp",
+        "displayName": "DripMetrics",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.dripmetrics.ai/mcp",
+        "description": "Crypto market microstructure, options, and on-chain metrics. Free discovery; $0.05/call via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "crypto market microstructure, options, and on-chain metrics",
+          "dripmetrics for this task"
+        ],
+        "version": "1.0.0",
+        "score": 90,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "get_metric",
+          "description": "Paid via x402 (up to $0.25 per request; exact price per metric in list_metrics). Fetches any GET metric by id with query parameters. Without payment this returns the x402 challenge in _meta[\"x402/error\"]; x402-capable clients (e.g. withX402Client) sign it and retry with _meta[\"x402/payment\"] automat"
+        }
+      },
+      {
+        "identifier": "urn:air:app.surewhynot.quartermaster:mcp:quartermaster",
+        "displayName": "app.surewhynot.quartermaster/quartermaster",
+        "type": "application/mcp-server-card+json",
+        "url": "https://quartermaster.surewhynot.app/mcp",
+        "description": "x402 toolkit for AI agents: paid web, AI, and Base chain tools per call in USDC. Free tools too.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402 toolkit for ai agents: paid web, ai, and base chain tools per call in usdc",
+          "app.surewhynot.quartermaster/quartermaster for this task"
+        ],
+        "version": "1.6.0",
+        "score": 89,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201543,
+          "reachable": true,
+          "tools": 49
+        },
+        "matchedTool": {
+          "name": "x402_test_vector",
+          "description": "[x402] Free: example x402 payment-requirement objects with field explanations."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.jessegdotio:mcp:hermes-plant",
+        "displayName": "Hermes Plant \u2014 Deterministic Finance & Safety APIs",
+        "type": "application/mcp-server",
+        "url": "https://mcp.hermesplant.com/mcp",
+        "score": 88,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201771,
+          "reachable": true,
+          "tools": 25
+        },
+        "matchedTool": {
+          "name": "get_x402_manifest",
+          "description": "Return the live x402 manifest with paid endpoint prices, Bazaar metadata, and buyer policy checks"
+        }
+      },
+      {
+        "identifier": "urn:air:com.jpyc-service:mcp:ec-storefront",
+        "displayName": "com.jpyc-service/ec-storefront",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ec.jpyc-service.com/mcp",
+        "description": "JPYC (JPY stablecoin) EC platform MCP: product search, x402 gasless checkout, order status.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "jpyc (jpy stablecoin) ec platform mcp: product search, x402 gasless checkout, order status",
+          "com.jpyc-service/ec-storefront for this task"
+        ],
+        "version": "0.1.0",
+        "score": 86,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201759,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "quote_checkout",
+          "description": "\u30ab\u30fc\u30c8\u306e\u5185\u5bb9\u3067 x402 \u30c1\u30a7\u30c3\u30af\u30a2\u30a6\u30c8\u306e 1 \u56de\u76ee\u3092\u5b9f\u884c\u3059\u308b\u3002\u5728\u5eab\u3092 5 \u5206\u9593\u4eee\u62bc\u3055\u3048\u3057\u3001\u5c0f\u8a08\u30fb\u5272\u5f15\u30fb\u9001\u6599\u30fb\u5408\u8a08\uff08JPYC\uff09\u3068 reservation_id\u3001\u304a\u3088\u3073\u7f72\u540d\u5bfe\u8c61\u306e x402 PAYMENT-REQUIRED \u30c1\u30e3\u30ec\u30f3\u30b8\uff08base64url\uff09\u3092\u8fd4\u3059\u3002\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306f\u3053\u306e\u30c1\u30e3\u30ec\u30f3\u30b8\u3092\u81ea\u5206\u306e\u30a6\u30a9\u30ec\u30c3\u30c8\u3067 EIP-3009 TransferWithAuthorization \u7f72\u540d\u3057\u3001submit_payment \u306b\u6e21\u3059\u3002\u5168 item \u306f\u540c\u4e00\u30b7\u30e7\u30c3\u30d7\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308b\u3002\u914d\u9001\u304c\u5fc5\u8981\u306a\u5546\u54c1\u304c\u3042\u308c\u3070 shipping \u3092\u3001\u8d08\u7b54\u306a\u3089 gift_recipient \u3092\u5fc5\u305a\u6e21\u3059\u3053\u3068\u3002"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.sentedge:mcp:idea-machine",
+        "displayName": "SentEdge Idea Machine",
+        "type": "application/mcp-server-card+json",
+        "url": "https://sentedge.ai/mcp",
+        "description": "Buy adversarially-debated AI product ideas over x402: $0.10 pulls, $1 buyouts, USDC on Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "buy adversarially-debated ai product ideas over x402: $0",
+          "sentedge idea machine for this task"
+        ],
+        "version": "1.0.0",
+        "score": 86,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201541,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "how_to_pay",
+          "description": "Free: the complete guide to buying Idea Machine ideas \u2014 pricing, x402 flow, endpoints, and recommended clients."
+        }
+      },
+      {
+        "identifier": "urn:air:com.lionx402:mcp:lion-x402",
+        "displayName": "LION - keyless attested data for AI agents",
+        "type": "application/mcp-server-card+json",
+        "url": "https://lionx402.com/api/mcp",
+        "description": "Keyless x402 compliance for agents: screen a counterparty, get a portable signed compliance receipt.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "keyless attested agent data: cpg/retail prices, ofac+eu vat compliance, enrichment",
+          "com.lionx402/lion-x402 for this task",
+          "keyless base token risk tools for agents",
+          "keyless x402 compliance for agents: screen a counterparty, get a portable signed compliance receipt",
+          "lion - keyless attested compliance & data for ai agents for this task",
+          "keyless x402 ofac sanctions + counterparty compliance screening for agents; portable signed receipt",
+          "keyless ed25519-attested x402 token-safety & data tools for ai agents on base (usdc)",
+          "lion x402 - keyless attested enrichment & signals for ai agents for this task",
+          "keyless x402 compliance on base: $0",
+          "lion \u2014 verified company & compliance data for this task",
+          "keyless company + web enrichment by domain",
+          "lion - keyless x402 data + rpc for agents for this task",
+          "keyless multi-chain rpc (base+ethereum) for agents - ed25519-attested, from $0",
+          "lion - keyless multi-chain rpc + attested data for agents for this task",
+          "keyless enrichment (firmographics, compliance, web)",
+          "lion keyless enrichment for agents for this task",
+          "keyless cpg/retail + enrichment + social signals for agents",
+          "lion - keyless data for ai agents: cpg, enrichment, social (attested) for this task",
+          "keyless x402 mcp: attested company/cpg/token data + multi-chain reads",
+          "lion - keyless x402 data + rpc for ai agents for this task",
+          "keyless attested data for ai agents: company enrichment, token risk, onchain reads",
+          "lion - keyless attested data for ai agents for this task"
+        ],
+        "version": "1.9.0",
+        "score": 85,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201760,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "lion_company_enrich",
+          "description": "Firmographics only (name, employees, country, industry, website). Not a web-research pack \u2014 use lion_company_research for that. $0.04 Base USDC. [x402 paid: GET /api/x402/company-enrich]"
+        }
+      },
+      {
+        "identifier": "urn:air:com.run402:mcp:mcp",
+        "displayName": "Run402",
+        "type": "application/mcp-server",
+        "url": "https://mcp.run402.com/mcp",
+        "description": "x402 pay-per-call infra for agents: $0.03 image generation, Postgres, auth, storage, functions.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402 pay-per-call infra for agents: $0",
+          "run402 for this task"
+        ],
+        "version": "4.16.0",
+        "score": 85,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "x402_price_check",
+          "description": "Inspect any https URL for x402 pricing: performs an unpaid request and decodes the 402 challenge (price, network, asset, recipient). Free \u2014 no payment is made."
+        }
+      },
+      {
+        "identifier": "urn:air:com.apiacre:mcp:api-acre",
+        "displayName": "API Acre",
+        "type": "application/mcp-server-card+json",
+        "url": "https://apiacre.com/mcp",
+        "description": "68 x402-paid Base APIs with MCP tools, free discovery, samples, workflows, and Pixel Acre inventory.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "34 pay-per-call web, document, sec, developer, data, and evm tools paid via x402 on base",
+          "api acre for this task",
+          "35 pay-per-call web, document, sec, developer, data, and evm tools paid via x402 on base",
+          "47 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "48 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "49 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "50 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "51 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "52 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "53 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "36 x402-paid web, document, sec, developer, data, and evm tools on base, plus free workflows",
+          "61 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "62 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "63 x402-paid apis on base with mcp tools, plus free discovery, handoff, samples, and workflows",
+          "65 x402-paid apis on base with mcp tools, plus free discovery, handoff, samples, and workflows",
+          "37 x402-paid web, document, sec, developer, data, and evm tools on base, plus free workflows",
+          "66 x402-paid apis on base with mcp tools, plus free discovery, handoff, samples, and workflows",
+          "68 x402-paid apis on base with mcp tools, plus free discovery, handoff, samples, and workflows",
+          "68 x402-paid base apis with mcp tools, free discovery, samples, workflows, and pixel acre inventory",
+          "69 x402-paid base apis with mcp tools, free discovery, samples, workflows, and pixel acre inventory",
+          "70 x402-paid base apis with mcp tools, free discovery, samples, workflows, and pixel acre inventory",
+          "39 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "40 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "41 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "42 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "43 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "44 x402-paid web, document, research, developer, data, and evm tools on base, plus free workflows",
+          "73 x402-paid base and solana apis with free discovery, samples, workflows, and pixel acre"
+        ],
+        "version": "0.1.9",
+        "score": 84,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201546,
+          "reachable": true,
+          "tools": 73
+        },
+        "matchedTool": {
+          "name": "developer.x402-preflight",
+          "description": "Probe a public endpoint without paying, grade its x402 v2 challenge, check exact-host x402-list presence and traction, and optionally rank licensed market matches with buyer-concentration caveats."
+        }
+      },
+      {
+        "identifier": "urn:air:com.anywaypossible:mcp:agent-utilities",
+        "displayName": "Anyway Possible Paid Agent Utilities",
+        "type": "application/mcp-server-card+json",
+        "url": "https://anywaypossible.com/api/registry-mcp",
+        "description": "Eight account-free x402 tools for merchant intelligence, Base payment safety, and web evidence.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "eight account-free x402 tools for merchant intelligence, base payment safety, and web evidence",
+          "anyway possible paid agent utilities for this task"
+        ],
+        "version": "1.2.0",
+        "score": 83,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788554694,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "payment_guard",
+          "description": "Validate a live x402 challenge, price, Base network, USDC asset, recipient, funding, gas reserve, and destination immediately before signing."
+        }
+      },
+      {
+        "identifier": "urn:air:app.agentbit:mcp:mcp",
+        "displayName": "AgentBIT",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agentbit.app/mcp",
+        "description": "Paid x402 tools over MCP: search, FX, LEI, company research, risk. Pay-per-call USDC on Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "paid x402 tools over mcp: search, fx, lei, company research, risk",
+          "agentbit for this task"
+        ],
+        "version": "1.0.0",
+        "score": 83,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788708835,
+          "reachable": true,
+          "tools": 37
+        },
+        "matchedTool": {
+          "name": "agentbit.x402_intelligence",
+          "description": "Market analytics for the x402 ecosystem: search indexed resources, trending, seller reports with on-chain trend, price history over time, full market overview (sources, categories, price distribution, on-chain leaders), competition stats and scored opportunities. Built from continuously scanned publ"
+        }
+      },
+      {
+        "identifier": "urn:air:com.borisinc:mcp:tools",
+        "displayName": "com.borisinc/tools",
+        "type": "application/mcp-server-card+json",
+        "url": "https://tools.borisinc.com/mcp/",
+        "description": "Pay-per-call AI tools over x402: web research, summarization, structured extraction (USDC, Base).",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call ai tools over x402: web research, summarization, structured extraction (usdc, base)",
+          "com.borisinc/tools for this task"
+        ],
+        "version": "1.0.0",
+        "score": 82,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "web_research",
+          "description": "Web research: searches the web and returns a concise cited brief answering your query. LLM-synthesized on independent hardware. Paid: $0.02 per call via x402 (payment in _meta['x402/payment'])."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.intuitek.the-stall:mcp:the-stall",
+        "displayName": "The Stall",
+        "type": "application/mcp-server-card+json",
+        "url": "https://the-stall.intuitek.ai/mcp",
+        "description": "38 x402 tools: crypto, DeFi, stocks, macro, flights, Reddit intel, prediction markets. USDC on Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402 mcp chassis \u2014 26 pay-per-call tools: finance, market data, ai utilities",
+          "the stall for this task",
+          "28 pay-per-call tools: finance, macro, commodities, market data, ai utilities",
+          "29 pay-per-call x402 tools: stocks, macro, sec edgar, crypto, defi, commodities, ai",
+          "31 pay-per-call x402 tools: crypto, defi, stocks, sec edgar, macro, commodities, ai",
+          "32 x402 tools: crypto, defi, stocks, sec edgar, sports, macro, commodities, ai",
+          "41 x402 ai tools: markets, defi, btc mining, page intel, stocks, reddit",
+          "42 x402 ai tools: markets, defi, btc mining, ip intel, page intel, stocks",
+          "44 x402 ai tools: markets, defi, btc mining, ip/dns intel, rss, stocks",
+          "46 x402 ai tools: markets, defi, ip/dns, geocode, security headers, rss",
+          "48 x402 ai tools: markets, defi, ssl cert, geocode, ip/dns, timezone, rss",
+          "53 x402 ai tools: markets, defi, clinical trials, portfolio, geocode, ip/dns, rss",
+          "55 x402 ai tools: markets, defi, clinical trials, portfolio, code tests, rag prep",
+          "58 x402 ai tools: markets, defi, whois, email verify, regex, rag prep",
+          "59 x402 ai tools: markets, defi, whois, email, regex, policy analysis",
+          "33 x402 tools: crypto, defi, stocks, flights, sec edgar, sports, macro, ai",
+          "60 x402 ai tools: markets, defi, whois, citations, regex, policy analysis",
+          "62 x402 ai tools: markets, defi, scores, fiber optics, citations, policy",
+          "64 x402 ai tools: markets, defi, legal search, citations, policy",
+          "66 x402 ai tools: markets, defi, legal, books, unit convert, citations",
+          "68 x402 ai tools: markets, defi, legal, us gov votes, json extract, books",
+          "70 x402 ai tools: markets, defi, legal, strategy signals, company intel",
+          "71 x402 ai tools: markets, defi, yield farming, legal, strategy signals",
+          "72 x402 ai tools: market movers, defi, yield farming, legal, strategy signals",
+          "73 x402 ai tools: btc game theory, defi, market movers, legal, strategy signals",
+          "74 x402 ai tools: btc game theory, defi, stock briefs, market movers, legal, strategy signals",
+          "34 x402 tools: crypto, defi, stocks, flights, macro, web monitoring, ai",
+          "75 x402 ai tools: btc systems theory, defi, stock briefs, market movers, legal, strategy signals",
+          "76 x402 ai tools: btc/defi, world bank data, stock briefs, market movers, legal, strategy signals",
+          "77 x402 ai tools: btc/defi, world bank, research papers, stock briefs, market movers, legal",
+          "78 x402 ai tools: us stocks, btc/defi, world bank, research papers, market movers, legal",
+          "78 x402 ai tools: base chain, us stocks, btc/defi, world bank, research papers, legal",
+          "78 ai tools: stocks, defi, token security, macro, prediction markets, research & more",
+          "79 ai tools via x402 usdc micropayments",
+          "80 ai tools via x402 usdc micropayments",
+          "81 ai tools via x402 usdc micropayments",
+          "35 x402 tools: crypto, defi, stocks, flights, macro, prediction markets, monitoring",
+          "83 ai tools via x402 usdc micropayments",
+          "84 pay-per-call tools via x402 usdc",
+          "86 pay-per-call tools via x402 usdc",
+          "88 pay-per-call tools via x402 usdc",
+          "89 pay-per-call tools via x402 usdc",
+          "90 pay-per-call tools via x402 usdc",
+          "92 pay-per-call tools via x402 usdc",
+          "36 x402 tools: crypto, defi, stocks, block intel, flights, macro, prediction markets",
+          "93 pay-per-call tools via x402 usdc",
+          "95 pay-per-call data tools via x402 usdc",
+          "96 pay-per-call data tools via x402 usdc",
+          "97 x402 pay-per-call tools: stocks, defi, crypto, research, image gen, macro & more",
+          "98 x402 pay-per-call tools: stocks, defi, crypto, research, gas, image gen & more",
+          "99 x402 pay-per-call tools: stocks, defi, crypto, earnings, gas, image gen & more",
+          "100 x402 pay-per-call tools: stocks, defi, crypto, whale-radar, gas, image gen & more",
+          "101 x402 pay-per-call tools: stocks, defi, crypto, nft metadata, whale-radar & more",
+          "102 x402 pay-per-call tools: stocks, defi, crypto, nft, on-chain intel, roast & more",
+          "37 x402 tools: crypto, defi, stocks, macro, flights, reddit intel, block data",
+          "103 x402 pay-per-call tools: stocks, defi, crypto, nft, on-chain intel, roast & more",
+          "104 x402 pay-per-call tools: stocks, defi, crypto, nft, on-chain intel, fact-check & more",
+          "105 x402 pay-per-call tools: stocks, defi, crypto, sec filings, nft, on-chain intel & more",
+          "106 x402 pay-per-call tools: stocks, defi, crypto, sec filings, nft, on-chain intel & more",
+          "108 x402 pay-per-call tools: stocks, defi, crypto, sec insider trades, nft & more",
+          "109 x402 pay-per-call tools: stocks, defi, crypto, sec, nft, intel-pack & more",
+          "109 x402 pay-per-call tools: stocks, defi, crypto, prediction markets, seam packs & more",
+          "110 x402 pay-per-call tools: stocks, defi, crypto, sec, short interest & more",
+          "111 x402 pay-per-call tools: stocks, ohlcv, defi, crypto, sec, short interest & more",
+          "112 x402 pay-per-call tools: stocks, ohlcv, defi, crypto, sec, short interest & more",
+          "38 x402 tools: crypto, defi, stocks, macro, flights, reddit intel, prediction markets",
+          "113 x402 pay-per-call tools: stocks, ohlcv, defi, crypto, sec, short interest & more",
+          "114 x402 pay-per-call tools: stocks, ohlcv, defi, crypto, wallets, sec & more",
+          "115 x402 pay-per-call tools: stocks, ohlcv, defi, crypto, wallets, sec & more",
+          "116 x402 pay-per-call tools: stocks, defi, crypto, wallets, address risk & more",
+          "117 x402 pay-per-call tools: stocks, defi, crypto, wallets, swap quotes & more",
+          "118 x402 pay-per-call tools: stocks, defi, crypto, social profiles & more",
+          "119 x402 pay-per-call tools: stocks, defi, crypto, ens, social profiles & more",
+          "120 x402 pay-per-call tools: stocks, defi, crypto, ens, huggingface & more",
+          "121 x402 pay-per-call tools: stocks, defi, crypto, ens, huggingface & more",
+          "122 x402 pay-per-call tools: stocks, defi, lbo model, crypto, ens & more",
+          "39 x402 ai tools: market data, defi, stocks, reddit intel, db perf intelligence",
+          "123 x402 pay-per-call tools: stocks, defi, lbo model, crypto, ens & more",
+          "124 x402 pay-per-call tools: stocks, defi, drug intel, crypto, ens & more",
+          "125 x402 pay-per-call tools: stocks, defi, polymarket accuracy, drug intel, crypto & more",
+          "126 x402 pay-per-call tools: stocks, defi, kimchi premium, drug intel, crypto & more",
+          "127 x402 pay-per-call tools: stocks, defi, polymarket, drug intel, crypto & more",
+          "128 x402 pay-per-call tools: stocks, defi, polymarket, drug intel, gov contracts & more",
+          "129 x402 pay-per-call tools: stocks, options intel, defi, polymarket, gov contracts & more",
+          "130 x402 pay-per-call tools: stocks, options intel, defi, fda recalls, gov contracts & more",
+          "40 x402 ai tools: markets, defi, btc mining economics, stocks, reddit intel",
+          "131 x402 pay-per-call tools: stocks, treasury yields, defi, fda recalls, gov contracts & more",
+          "132 x402 pay-per-call tools: stocks, credit spreads, defi, fda recalls, gov contracts & more",
+          "133 x402 pay-per-call tools: stocks, labor market, credit spreads, defi, fda recalls & more",
+          "134 x402 pay-per-call tools: macro ai brief, stocks, labor market, credit spreads, defi & more",
+          "135 x402 pay-per-call tools: equity ai brief, macro ai brief, stocks, insider trades, defi & more",
+          "136 x402 pay-per-call tools: housing ai brief, equity ai brief, macro brief, stocks, defi & more",
+          "137 x402 pay-per-call tools: consumer ai brief, housing ai brief, macro brief, stocks, defi & more",
+          "138 x402 pay-per-call data tools: labor, consumer, housing & macro ai briefs, stocks, defi",
+          "139 x402 pay-per-call data tools: energy, labor, consumer, housing & macro ai briefs",
+          "140 x402 pay-per-call data tools: energy, labor, consumer, housing & macro ai briefs",
+          "141 x402 pay-per-call data tools: energy, labor, consumer, housing, manufacturing & macro ai briefs",
+          "142 x402 pay-per-call data tools: imf forecasts, macro/sector ai briefs, crypto, finance",
+          "153 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "154 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "155 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "156 pay-per-call tools: finance, macro, defi, crypto, x402 intel",
+          "157 pay-per-call tools: finance, macro, defi, crypto, x402 intel",
+          "158 pay-per-call tools: finance, macro, defi, crypto, x402 intel",
+          "159 pay-per-call tools: finance, macro, defi, crypto, korean market movers",
+          "160 pay-per-call tools: finance, macro, defi, crypto, job search, korean markets",
+          "162 pay-per-call tools: finance, macro, defi, crypto, job search, korean markets",
+          "163 pay-per-call tools: finance, macro, defi, crypto, job search, agent trust (kya)",
+          "143 x402 pay-per-call data tools: global indices, imf forecasts, macro/sector ai briefs",
+          "165 pay-per-call tools: finance, macro, defi, crypto, air quality, fec donors",
+          "166 pay-per-call tools: finance, macro, defi, crypto, ofac sanctions, air quality",
+          "168 pay-per-call tools: finance, options chain, insider trades, defi, crypto, ofac, macro",
+          "170 pay-per-call tools: finance, options chain, insider trades, defi, crypto, npi, weather",
+          "171 pay-per-call tools: finance, options, defi, crypto, clinical trials, earthquakes",
+          "172 pay-per-call tools: finance, defi, crypto, solana tx, options, clinical trials",
+          "173 pay-per-call tools: us stocks, defi, crypto, polymarket, sanctions \u2014 usdc on base",
+          "174 pay-per-call tools: us stocks, defi, crypto, polymarket, sanctions \u2014 usdc on base",
+          "144 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "175 pay-per-call tools: us stocks, defi, crypto, global news, sanctions \u2014 usdc on base",
+          "177 pay-per-call ai data tools: stocks, defillama tvl, defi, crypto, news, sanctions",
+          "178 pay-per-call ai data tools: stocks, defillama pack, defi, crypto, news, sanctions",
+          "182 pay-per-call ai tools: us+intl stocks, defi, crypto, news, sanctions",
+          "183 pay-per-call ai tools: stocks, defi, crypto, social momentum, news, sanctions",
+          "184 pay-per-call ai tools: stocks, defi, crypto, social momentum, news, sanctions",
+          "185 pay-per-call ai tools: stocks, defi, crypto, moderation, social momentum, news",
+          "146 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "186 pay-per-call ai tools: stocks, korean crypto momentum, defi, news, moderation",
+          "187 pay-per-call ai tools: stocks, defi, github org intel, news, crypto, moderation",
+          "188 pay-per-call ai tools: stocks, defi strategy, crypto, news, github intel",
+          "189 pay-per-call ai tools: stocks, ohlcv history, defi, crypto, news, github intel",
+          "190 pay-per-call ai tools: cve/vuln intel, stocks, defi, crypto, news, github",
+          "191 pay-per-call ai tools: wayback machine, cve intel, stocks, defi, crypto, news",
+          "192 pay-per-call ai tools: wayback machine, cve intel, stocks, defi, crypto, news",
+          "193 pay-per-call ai data tools: content analysis, stocks, defi, crypto, news",
+          "194 pay-per-call ai data tools: income statements, stocks, defi, crypto, news",
+          "195 pay-per-call ai data tools: audio transcription, stocks, defi, crypto, news",
+          "147 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "196 pay-per-call ai data tools: currency formatting, audio, stocks, defi, crypto",
+          "197 pay-per-call ai data tools: domain availability, currency, audio, stocks, defi, crypto",
+          "198 pay-per-call ai data tools: historical fx rates, domain availability, stocks, defi, crypto",
+          "199 pay-per-call ai data tools: stocks, crypto, defi, insider trades, form 144, forex",
+          "200 pay-per-call ai data tools: stocks, crypto, defi, insider trades, form 144, cron",
+          "201 pay-per-call ai tools: stocks, crypto, defi, youtube, web, news, infra",
+          "202 pay-per-call ai tools: stocks, crypto, defi, polymarket whales, web, news, infra",
+          "203 pay-per-call ai tools: stocks, crypto, defi, polymarket, aviation wx, web, news",
+          "204 pay-per-call ai tools: stocks, crypto, defi, stack overflow, aviation wx, news",
+          "205 pay-per-call ai tools: stocks, crypto, defi, historical weather, stack overflow, news",
+          "149 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "206 pay-per-call ai tools: stocks, crypto, defi, weather, vision analysis, news",
+          "207 pay-per-call ai tools: stocks, crypto/defi, gex, weather, vision, news",
+          "208 pay-per-call ai tools: stocks, crypto/defi, gex, weather, vision, news",
+          "209 pay-per-call ai tools: stocks, crypto/defi, gex, solana memes, weather, news",
+          "211 pay-per-call ai tools + risk retainer plans ($8/$25): stocks, crypto, gex, news",
+          "212 pay-per-call ai tools + risk retainer plans ($8/$25): stocks, crypto, gex, news",
+          "210 pay-per-call ai tools + risk retainer plans ($8/$25): stocks, crypto, gex, news",
+          "236 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, defi, research",
+          "239 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, defi, research",
+          "240 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, defi, fred, research",
+          "241 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, defi, fred, research",
+          "242 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, huggingface, fred",
+          "243 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, huggingface, fred",
+          "244 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, huggingface, fred, pypi",
+          "245 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, equity, fred, pypi",
+          "246 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, edgar 13d/13g, pypi",
+          "247 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, edgar 13d/13g/m&a",
+          "248 pay-per-call ai tools + retainer plans ($10/$25): stocks, crypto, edgar/form-d, m&a",
+          "249 pay-per-call ai tools: stocks, crypto, edgar, m&a, uspto patents, retainer plans",
+          "250 pay-per-call ai tools: stocks, crypto, edgar, m&a, patents, gov contracts",
+          "252 pay-per-call ai tools: stocks, crypto, edgar, m&a, patents, gov contracts, nonprofit 990s",
+          "253 pay-per-call ai tools: stocks, crypto, edgar, m&a, patents, gov contracts, fdic banks",
+          "254 pay-per-call ai tools: stocks, crypto, edgar, m&a, patents, fdic banks, pubmed",
+          "255 pay-per-call ai tools: stocks, crypto, sec, patents, fdic, pubmed, food/nutrition",
+          "257 pay-per-call ai tools: stocks, crypto, sec, tv shows, patents, fdic, pubmed",
+          "259 pay-per-call ai tools: stocks, crypto, sec, wallet intel, patents, fdic, pubmed",
+          "150 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "151 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "152 pay-per-call tools: finance, macro, defi, crypto, legal, weather",
+          "260 pay-per-call ai tools: stocks, crypto, sec, wallet intel, yt niche, fdic, pubmed",
+          "261 pay-per-call ai tools: stocks, crypto, sec form 4 insider trades, wallet intel, usdc base",
+          "262 pay-per-call ai tools: stocks, crypto, sec insider trades, options flow, wallet intel",
+          "263 pay-per-call ai tools: stocks, crypto, fund holdings, insider trades, options flow, defi",
+          "264 pay-per-call ai tools: stocks, short-squeeze risk, crypto, fund holdings, insider trades, defi",
+          "265 pay-per-call ai tools: stocks, app store intel, short-interest, crypto, fund holdings, defi",
+          "266 pay-per-call ai tools: stocks, guidance quality, app store intel, short-interest, crypto, defi",
+          "267 pay-per-call mcp tools: stocks, youtube analytics, crypto, defi, options, macro",
+          "268 pay-per-call mcp tools: stocks, youtube analytics, crypto, defi, options, macro, cpi inflation",
+          "269 pay-per-call mcp tools: youtube keyword research, stocks, crypto, defi, options, macro",
+          "277 pay-per-call mcp tools: youtube keyword research, stocks, crypto, defi, options, macro"
+        ],
+        "version": "v4.82.0",
+        "score": 81,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 301
+        },
+        "matchedTool": {
+          "name": "gas-estimate",
+          "description": "PAID MCP TOOL \u2014 $0.059 USDC per successful call via native x402. Discovery is free. Multi-chain gas price oracle: fast/standard/slow Gwei + USD cost for a transfer. Chains: ethereum, base, polygon, arbitrum, bsc. Seam: x402node/myceliasignal gas feeds."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.firmbrain:mcp:x402-services",
+        "displayName": "ai.firmbrain/x402-services",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402-services-production.up.railway.app/mcp",
+        "description": "77 pay-per-call x402 tools for AI trading & on-chain agents: prices, sniping, perps, RH Chain, MEV",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "77 pay-per-call x402 tools for ai trading & on-chain agents: prices, sniping, perps, rh chain, mev",
+          "x402 trading & on-chain intelligence for this task",
+          "the only x402 mcp server for robinhood chain (chainid 4663) - 147 onchain, trading & ai tools",
+          "ai.firmbrain/x402-services for this task"
+        ],
+        "version": "1.0.1",
+        "score": 80,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 159
+        },
+        "matchedTool": {
+          "name": "scout_service",
+          "description": "Bazaar Scout: detailed health report + probe history for one x402 service. [x402 paid tool \u2014 price $0.005; GET /api/scout/service]"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.animicaorg:mcp:animica",
+        "displayName": "animica",
+        "type": "application/mcp-server",
+        "url": "https://mcp.animica.org/mcp",
+        "score": 78,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201771,
+          "reachable": true,
+          "tools": 22
+        },
+        "matchedTool": {
+          "name": "animica_x402_products",
+          "description": "Discover Animica's pay-per-request x402 APIs (USDC on Base): price, availability."
+        }
+      },
+      {
+        "identifier": "urn:air:com.hergertsynthora:mcp:synthora-x402",
+        "displayName": "SYNTHORA x402 Intelligence Mesh",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.hergertsynthora.com/mcp",
+        "description": "Keyless x402 crypto intel + pre-trade safety: signed SAFE/CAUTION/BLOCK, $0.02. 222 tools, Base",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pre-trade safety for ai payment agents: signed safe/caution/block verdict + 220 x402 tools",
+          "com.hergertsynthora/synthora-x402 for this task",
+          "keyless x402 crypto intel + pre-trade safety: signed safe/caution/block, $0",
+          "calibrated intelligence via x402 (usdc base)",
+          "synthora x402 intelligence mesh for this task"
+        ],
+        "version": "1.1.2",
+        "score": 77,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201758,
+          "reachable": true,
+          "tools": 30
+        },
+        "matchedTool": {
+          "name": "market_sentiment",
+          "description": "Get real-time market sentiment signals via x402 M2M API. Signed x402 call. 0.03 USDC on Base."
+        }
+      },
+      {
+        "identifier": "urn:air:com.midax402:mcp:mcp",
+        "displayName": "com.midax402/mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.midax402.com/mcp",
+        "description": "Pay-per-query x402 business intelligence on Base, settled in USDC via the native 402 payment flow.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-query x402 business intelligence on base, settled in usdc via the native 402 payment flow",
+          "com.midax402/mcp for this task"
+        ],
+        "version": "1.0.0",
+        "score": 76,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "get_market_verdict",
+          "description": "Runs a paid MIDAX402 analysis tier. Payment is x402-native: called WITHOUT payment_signature it returns the HTTP 402 payment requirements (decoded + raw PAYMENT-REQUIRED header) for your x402-capable wallet to sign; call again WITH payment_signature (the signed payment proof, as sent in the PAYMENT-"
+        }
+      },
+      {
+        "identifier": "urn:air:com.agentgrade:mcp:mcp-server",
+        "displayName": "AgentGrade",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agentgrade.com/mcp",
+        "description": "Scan any website for AI agent readiness, payment protocols, and discovery endpoints",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "scan any website for ai agent readiness, payment protocols, and discovery endpoints",
+          "agentgrade for this task"
+        ],
+        "version": "1.0.0",
+        "score": 76,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "validate_x402_json",
+          "description": "Validate x402.json content against expected schema. Returns errors, warnings, and suggestions. No network requests \u2014 pure validation."
+        }
+      },
+      {
+        "identifier": "urn:air:biz.nibiashara:mcp:shelves",
+        "displayName": "Ni Biashara Shelves \u2014 Africa FX, freight & compliance checks (x402)",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agents.nibiashara.biz/mcp",
+        "description": "African FX data (official + street rates, history) and services, paid per call via x402 USDC.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "african fx data (official + street rates, history) and services, paid per call via x402 usdc",
+          "ni biashara shelves \u2014 africa fx data & services (x402) for this task",
+          "africa fx, us carrier/broker checks, ofac screening \u2014 paid per call via x402",
+          "ni biashara shelves \u2014 africa fx, freight & compliance checks (x402) for this task"
+        ],
+        "version": "1.5.0",
+        "score": 75,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201543,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "buy_shelf",
+          "description": "Creates a Coinbase checkout for one shelf and returns: x402_url (pay it with any x402 client \u2014 gasless USDC on Base), pay_url (for a human), and claim_url (GET it after paying to receive the delivery). Does not move money itself."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.bakyang2:mcp:kr-crypto-intelligence",
+        "displayName": "kr-crypto-intelligence",
+        "type": "application/mcp-server",
+        "url": "https://mcp.printmoneylab.com/mcp",
+        "score": 75,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201767,
+          "reachable": true,
+          "tools": 18
+        },
+        "matchedTool": {
+          "name": "get_fx_rate",
+          "description": "Get current USD/KRW exchange rate. Essential for converting between Korean Won and US Dollar prices.\n\n\ud83d\udcb0 Price: $0.001 USDC per call\n\ud83d\udcb3 Payment: x402 micropayment on Base, Polygon, or Solana\n\ud83d\udd27 Client: AgentCash, Pay.sh, or any x402 SDK\n\ud83d\udcd6 Docs: https://api.printmoneylab.com/.well-known/x402"
+        }
+      },
+      {
+        "identifier": "urn:air:co.fingersai:mcp:fingers",
+        "displayName": "co.fingersai/fingers",
+        "type": "application/mcp-server-card+json",
+        "url": "https://fingersai.co/mcp",
+        "description": "Ask what you can't be sure of. Read-only checks on tokens, NFTs, wallets and contracts.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ask what you can't be sure of",
+          "fingers for this task",
+          "the honest trust index for x402: check who you're paying before your agent pays",
+          "co.fingersai/fingers for this task"
+        ],
+        "version": "1.0.1",
+        "score": 75,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 50
+        },
+        "matchedTool": {
+          "name": "x402_leaderboard",
+          "description": "The honest x402 trust index: merchants ranked by real unique payers (facilitator-verified), not raw volume. Free, keyless."
+        }
+      },
+      {
+        "identifier": "urn:air:cloud.fetcher:mcp:fetcher",
+        "displayName": "cloud.fetcher/fetcher",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.fetcher.cloud/mcp",
+        "description": "The web capability layer for AI agents: render, extract, DNS, SSL, WHOIS & more via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "18 pay-per-call ai tools: render, screenshots, dns, ssl & whois",
+          "cloud.fetcher/fetcher for this task",
+          "the web capability layer for ai agents: render, extract, dns, ssl, whois & more via x402"
+        ],
+        "version": "1.1.3",
+        "score": 74,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 19
+        },
+        "matchedTool": {
+          "name": "find_favicon",
+          "description": "Find a site's best icon/logo. (web-intel; $0.002/call in USDC via x402, 50 free/day)."
+        }
+      },
+      {
+        "identifier": "urn:air:com.resetparatodos:mcp:verifica",
+        "displayName": "RESET Verifica",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.resetparatodos.com/mcp",
+        "description": "Deterministic Mexican/LatAm verification + sanctions & PEP screening for AI agents. Pay via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "deterministic mexican verification for ai agents: company, cfdi, spei, tax, law",
+          "reset verifica for this task",
+          "deterministic mexican/latam verification + sanctions & pep screening for ai agents"
+        ],
+        "version": "1.0.1",
+        "score": 74,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201765,
+          "reachable": true,
+          "tools": 30
+        },
+        "matchedTool": {
+          "name": "crear_fondeo_x402",
+          "description": "Crea una orden de fondeo pagadera con x402 (USDC en la red Base). Regresa los requisitos de pago (monto exacto en USDC, direccion y referencia). Paga con tu wallet x402 y luego liquida en POST /v1/wallet/fondeos/{referencia}/x402 con el header X-PAYMENT. monto_mxn: multiplo de 100, minimo 100."
+        }
+      },
+      {
+        "identifier": "urn:air:com.agentsgetpaidmore:mcp:agents-get-paid-kit",
+        "displayName": "Agents Get Paid Kit \u2014 x402 MCP + Unlock ($49)",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agentsgetpaidmore.com/mcp",
+        "description": "Call get_quote, then buy_kit (49 USDC Base x402). Humans keep #pay.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "call get_quote, then buy_kit (49 usdc base x402)",
+          "agents get paid kit \u2014 x402 mcp + unlock ($49) for this task"
+        ],
+        "version": "0.1.2",
+        "score": 73,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "get_quote",
+          "description": "Free quote, then buy_kit: 49 USDC on Base x402. Humans #pay. Caps + AUP. Not auto-income. SPIRAL $0."
+        }
+      },
+      {
+        "identifier": "urn:air:com.esimtabby:mcp:esimtabby",
+        "displayName": "eSIM Tabby",
+        "type": "application/mcp-server-card+json",
+        "url": "https://esimtabby.com/mcp",
+        "description": "Buy and manage travel eSIM data plans in the conversation. Pay by card (Stripe) or USDC over x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "find, buy, and manage prepaid travel esim data plans without leaving the conversation",
+          "esim tabby for this task",
+          "buy and manage travel esim data plans in the conversation"
+        ],
+        "version": "0.1.3",
+        "score": 73,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201550,
+          "reachable": true,
+          "tools": 11
+        },
+        "matchedTool": {
+          "name": "pay_order",
+          "description": "Pay for an order in USDC over x402, without opening a browser.\n\nOnly for an MCP client that signs x402 payments itself: call it once for the\npayment requirements, then repeat the call carrying the signed payment in\n_meta['x402/payment'] and it settles and starts the eSIM. If your wallet is a\nseparat"
+        }
+      },
+      {
+        "identifier": "urn:air:br.app.classificado:mcp:meta-agent-tools",
+        "displayName": "br.app.classificado/meta-agent-tools",
+        "type": "application/mcp-server-card+json",
+        "url": "https://classificado.app.br/mcp",
+        "description": "Registry of MCP servers, agent skills and plugins: search, filter, comments, likes, publish.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "registry of mcp servers, agent skills and plugins: search, filter, comments, likes, publish",
+          "br.app.classificado/meta-agent-tools for this task"
+        ],
+        "version": "1.0.0",
+        "score": 71,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788576685,
+          "reachable": true,
+          "tools": 12
+        },
+        "matchedTool": {
+          "name": "billing",
+          "description": "Pre\u00e7os e rede x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.agentalog:mcp:meta-agent-tools",
+        "displayName": "com.agentalog/meta-agent-tools",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agentalog.com/mcp",
+        "description": "Registry of MCP servers, agent skills and plugins: search, filter, comments, likes, publish.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "registry of mcp servers, agent skills and plugins: search, filter, comments, likes, publish",
+          "com.agentalog/meta-agent-tools for this task"
+        ],
+        "version": "1.0.0",
+        "score": 71,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788643153,
+          "reachable": true,
+          "tools": 12
+        },
+        "matchedTool": {
+          "name": "billing",
+          "description": "x402 prices and network."
+        }
+      },
+      {
+        "identifier": "urn:air:com.ai-rook.agents:mcp:trading-mcp",
+        "displayName": "com.ai-rook.agents/trading-mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agents.ai-rook.com/mcp",
+        "description": "Pay-per-call trading APIs via x402 (USDC on Base): signals, order flow, AI analysis, backtests.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call trading apis via x402 (usdc on base): signals, order flow, ai analysis, backtests",
+          "com.ai-rook.agents/trading-mcp for this task",
+          "22 pay-per-call agent apis on x402: trading, web, ai, image gen",
+          "72 x402 endpoints: trading, ai inference, blockchain, escrow"
+        ],
+        "version": "1.1.0",
+        "score": 69,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201546,
+          "reachable": true,
+          "tools": 10
+        },
+        "matchedTool": {
+          "name": "call_paid_endpoint",
+          "description": "Get payment instructions + live quote for any paid AI Rook endpoint. Returns exact USDC price, x402 payment flow (EIP-3009 sign \u2192 retry with X-Payment header), and current measured latency. Does NOT execute the endpoint \u2014 use this to plan, then pay via x402 at the endpoint URL. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.eamondidier-ux:mcp:agent-utility-api",
+        "displayName": "Agent Utility API",
+        "type": "application/mcp-server",
+        "url": "https://agent-api-production-169b.up.railway.app/mcp/mcp",
+        "score": 69,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "transcribe_youtube",
+          "description": "YouTube video -> structured transcript + timestamped summary. $0.10/call via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.oobeprotocol.sap.mcp:mcp:sap-mcp",
+        "displayName": "SAP MCP Server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.sap.oobeprotocol.ai/mcp",
+        "description": "Solana-native MCP gateway for SAP, DeFi tools, SNS identity, and x402 payments.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "solana-native mcp gateway for sap, defi tools, sns identity, and x402 payments",
+          "sap mcp server for this task"
+        ],
+        "version": "0.7.1",
+        "score": 69,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 382
+        },
+        "matchedTool": {
+          "name": "sap_x402_fetch_escrow",
+          "description": "Fetch raw x402 escrow account data using SDK X402Registry.fetchEscrow. Resolves V2 first, then V1 fallback. SAP MCP context: Payment and settlement flow. Estimate or fetch state before creating escrows or settling calls; write operations require an enabled signer mode and MCP policy approval.\n\nSAP M"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.astafford8488:mcp:pitchiq-mcp",
+        "displayName": "pitchiq-mcp",
+        "type": "application/mcp-server",
+        "url": "https://pitchiq-mcp-production.up.railway.app/mcp",
+        "score": 69,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201767,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "pitchiq_v1_commerce_quote_action",
+          "description": "Get a firm x402 price + payment requirements for any Commerce tool BEFORE committing \u2014 so an agent (or its spend policy) can budget. Returns the USD price, pricing class, network, and the x402 'accepts' block to construct the payment. x402-payable (read class)."
+        }
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:x402.clashofcoins.app-mcp-0",
+        "displayName": "x402.clashofcoins.app MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.clashofcoins.app/mcp",
+        "description": "Model Context Protocol server for x402.clashofcoins.app. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "trustManifest": {
+          "identity": "did:web:ora.ai"
+        },
+        "score": 68,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788404816,
+          "reachable": true,
+          "tools": 15
+        },
+        "matchedTool": {
+          "name": "get_chain_info",
+          "description": "Read chain and payment metadata for the enabled x402 shop runtime."
+        }
+      },
+      {
+        "identifier": "urn:air:com.khotem:mcp:khotem-witness",
+        "displayName": "KHOTEM \u2014 Cryptographic Witness",
+        "type": "application/mcp-server-card+json",
+        "url": "https://khotem.com/mcp",
+        "description": "Paid cryptographic witness for agents: seal, attest, receipts. x402 USDC/Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "paid cryptographic witness for agents: seal, attest, receipts",
+          "khotem \u2014 cryptographic witness for this task"
+        ],
+        "version": "1.9.9",
+        "score": 67,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201760,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "khotem_catalog",
+          "description": "FREE. Full catalog of paid KHOTEM services with prices (USD) and how to pay (x402 direct, USDC on Base)."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.palmyr:mcp:palmyr",
+        "displayName": "Palmyr",
+        "type": "application/mcp-server",
+        "url": "https://palmyr.ai/mcp",
+        "description": "Agent infra: email, phone, social, domains, VPS, wallets. Paid per-action via x402, no API key.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "agent infra: email, phone, social, domains, vps, wallets",
+          "palmyr for this task"
+        ],
+        "version": "1.0.0",
+        "score": 67,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 33
+        },
+        "matchedTool": {
+          "name": "i402_plan",
+          "description": "State an intent, get a priced execution plan. The i402 orchestrator turns a natural-language outcome into an ordered list of x402 calls your agent signs and runs. Costs 0.10 USDC per plan, paid per-action via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:app.netlify.micropay-test-suite:mcp:micropay-test-suite",
+        "displayName": "app.netlify.micropay-test-suite/micropay-test-suite",
+        "type": "application/mcp-server-card+json",
+        "url": "https://micropay-test-suite.netlify.app/api/mcp",
+        "description": "Verify your agent's x402 payment flow for free on Base Sepolia testnet before real money moves.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "verify your agent's x402 payment flow for free on base sepolia testnet before real money moves",
+          "app.netlify.micropay-test-suite/micropay-test-suite for this task"
+        ],
+        "version": "1.0.0",
+        "score": 67,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "tools": 1
+        },
+        "matchedTool": {
+          "name": "check_payment_flow",
+          "description": "Verifies an agent's x402 payment flow against a free Base Sepolia testnet endpoint. Call with no arguments first to get back the payment-required challenge (price, network, payTo). Sign it with your x402 client, then call again passing paymentSignature as the encoded PAYMENT-SIGNATURE header value t"
+        }
+      },
+      {
+        "identifier": "urn:air:com.mart402:mcp:extract",
+        "displayName": "com.mart402/extract",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mart402.com/mcp",
+        "description": "Web extraction, OCR (Japanese-strong), invoice and company data for AI agents. x402, no API key.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "web content extraction for ai agents",
+          "com.mart402/extract for this task",
+          "web extraction, ocr (japanese-strong), invoice and company data for ai agents"
+        ],
+        "version": "0.2.0",
+        "score": 67,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "tools": 35
+        },
+        "matchedTool": {
+          "name": "search_x402_services",
+          "description": "Search the Market402 verified index of the whole x402 economy by capability (e.g. 'ocr', 'market-data'). Every result is a real, probed resource with a measured 402 Score. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:com.fablerlabs:mcp:x402-tools",
+        "displayName": "Fabler x402 Tools",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.fablerlabs.com/mcp",
+        "description": "Free catalog for Fabler's USDC-paid x402 agent tools on Base; no account or wallet required.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "free catalog for fabler's usdc-paid x402 agent tools on base; no account or wallet required",
+          "fabler x402 tools for this task",
+          "free catalog and 2,048-character secret-scan preview for fabler's x402 agent tools on base"
+        ],
+        "version": "1.0.5",
+        "score": 66,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201551,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "fabler_list_products",
+          "description": "List Fabler Labs' x402 products with their current per-call USDC price on Base. Free, no wallet or payment required. Note: this MCP endpoint (Streamable HTTP, mounted directly on the store at /mcp) exposes this catalog plus a free bounded secret-scan preview. The paid tools (full secret scanning, ag"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.saascloud:mcp:cryptopulse",
+        "displayName": "CryptoPulse Data API",
+        "type": "application/mcp-server-card+json",
+        "url": "https://cryptopulse.saascloud.ai/mcp",
+        "description": "Pay-per-call crypto market intelligence for AI agents. USDC on Base via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call crypto market intelligence for ai agents",
+          "cryptopulse data api for this task"
+        ],
+        "version": "1.0.0",
+        "score": 66,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 11
+        },
+        "matchedTool": {
+          "name": "trending",
+          "description": "[$0.002 USDC per call via x402] Top trending cryptocurrencies right now (most-searched coins, with rank, price and 24h change)."
+        }
+      },
+      {
+        "identifier": "urn:air:com.blackwalltier:mcp:blackwall-x402-guardrail",
+        "displayName": "com.blackwalltier/blackwall-x402-guardrail",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.blackwalltier.com",
+        "description": "Pre-signature x402 payment verdict (GO/HOLD/STOP) for AI agents, with a verifiable signed receipt.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pre-signature x402 payment verdict (go/hold/stop) for ai agents, with a verifiable signed receipt",
+          "com.blackwalltier/blackwall-x402-guardrail for this task",
+          "keyless hosted mcp: pre-signature x402 payment verdict (go/hold/stop) with a signed receipt"
+        ],
+        "version": "0.1.2",
+        "score": 65,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "tools": 1
+        },
+        "matchedTool": {
+          "name": "forecast_payment",
+          "description": "Pre-signature x402 payment verdict: GO / HOLD / STOP for paying a counterparty, from settlement reputation, price-anomaly (quoted vs the payee's own median), and OFAC sanctions \u2014 with a third-party-verifiable Ed25519 signed receipt. Verdict only; never takes custody. Free under $10 at risk; over tha"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.foomworks:mcp:agent-web",
+        "displayName": "agent-web",
+        "type": "application/mcp-server",
+        "url": "https://agent-web.foomworks.workers.dev/mcp",
+        "score": 65,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": true,
+          "tools": 5
+        },
+        "matchedTool": {
+          "name": "render_pdf",
+          "description": "PAID (x402): returns x402 payment instructions for a PDF render of a publicly reachable URL, via a real, robots-respecting headless browser. Currently soft-skips 503 until Cloudflare Browser Rendering is provisioned."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.injprotocol:mcp:sentinel-compliance",
+        "displayName": "SENTINEL Compliance Intelligence",
+        "type": "application/mcp-server",
+        "url": "https://mru-oracle.com/mcp",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201770,
+          "reachable": true,
+          "tools": 22
+        },
+        "matchedTool": {
+          "name": "govdata_search",
+          "description": "Search 812+ Mauritius government datasets. Costs $0.001 USDC via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.clawfetch:mcp:mcp",
+        "displayName": "ai.clawfetch/mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.clawfetch.ai/mcp",
+        "description": "Web intelligence for AI agents: fetch, render, extract, research. x402 micropayments, no API keys.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "web intelligence for ai agents: fetch, render, extract, research",
+          "ai.clawfetch/mcp for this task"
+        ],
+        "version": "0.2.2",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 10
+        },
+        "matchedTool": {
+          "name": "health_check",
+          "description": "Check the ClawFetch API health status. Free \u2014 no x402 payment required."
+        }
+      },
+      {
+        "identifier": "urn:air:com.lvlltd:mcp:skill-market",
+        "displayName": "com.lvlltd/skill-market",
+        "type": "application/mcp-server-card+json",
+        "url": "https://lvlltd.com/api/mcp",
+        "description": "x402 skill catalog on lvlltd.com \u2014 search, quote, pay with Base USDC, unlock sealed packs.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402 skill catalog on lvlltd",
+          "com.lvlltd/skill-market for this task"
+        ],
+        "version": "1.5.0",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201760,
+          "reachable": true,
+          "tools": 56
+        },
+        "matchedTool": {
+          "name": "quote_skill",
+          "description": "Alias of quote_price / get_payment_challenge \u2014 live x402 quote. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:dev.coinop:mcp:longwatch",
+        "displayName": "longwatch",
+        "type": "application/mcp-server",
+        "url": "https://longwatch.dev/mcp",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201771,
+          "reachable": true,
+          "tools": 18
+        },
+        "matchedTool": {
+          "name": "watch_x402_endpoint",
+          "description": "Monitor an x402 endpoint for downtime and changes to its payment challenge, price, network, scheme, or recipient. Target probes do not attach payment. Includes 7 days of polling. Costs $0.005 USDC per call via x402 (Base) \u2014 no API key, no account. Calling without payment returns 402 with the payment"
+        }
+      },
+      {
+        "identifier": "urn:air:com.mudko:mcp:agent-ready-kit",
+        "displayName": "com.mudko/agent-ready-kit",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mudko.com/api/mcp",
+        "description": "Free 18-check agent-readiness scanner, robots.txt + llms.txt generator, managed agent enablement.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "free 18-check agent-readiness scanner, robots",
+          "com.mudko/agent-ready-kit for this task",
+          "agent-readiness scanner (0-5 score), robots"
+        ],
+        "version": "1.0.3",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201762,
+          "reachable": true,
+          "tools": 26
+        },
+        "matchedTool": {
+          "name": "validate_x402_endpoint",
+          "description": "Use this FREE utility (any agent or seller) to check whether an x402-payable HTTPS endpoint is configured to be indexed by the Coinbase x402 Bazaar. Probes the URL live via CDP's read-only validator (no payment is made, nothing is indexed) and returns per-check preflight results (returns_402, x402 v"
+        }
+      },
+      {
+        "identifier": "urn:air:com.openwakeword:mcp:wake-word-training",
+        "displayName": "com.openwakeword/wake-word-training",
+        "type": "application/mcp-server-card+json",
+        "url": "https://openwakeword.com/mcp",
+        "description": "Train custom wake words from your agent: estimator, GPU training, benchmarks. Card or crypto.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "train custom wake words from your agent: estimator, gpu training, benchmarks",
+          "com.openwakeword/wake-word-training for this task"
+        ],
+        "version": "1.0.0",
+        "score": 64,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201763,
+          "reachable": true,
+          "tools": 13
+        },
+        "matchedTool": {
+          "name": "settle_x402_payment",
+          "description": "After paying an x402 spec on-chain (USDC on Polygon to the payTo address), submit the transaction hash to settle. Needs >=3 confirmations."
+        }
+      },
+      {
+        "identifier": "urn:air:com.clinkforge:mcp:clink-forge",
+        "displayName": "Clink Forge",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.clinkforge.com/mcp",
+        "description": "Pay-per-call government data over x402: provenance chains, Ed25519 attestations, no API keys.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call government data over x402: provenance chains, ed25519 attestations, no api keys",
+          "clink forge for this task"
+        ],
+        "version": "1.0.1",
+        "score": 63,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "tools": 24
+        },
+        "matchedTool": {
+          "name": "state_population_lookup",
+          "description": "US Census Bureau population estimate for one state, with vintage and series identifiers. $0.01 per call via x402 (USDC on Base); response includes a provenance chain and an Ed25519 attestation."
+        }
+      },
+      {
+        "identifier": "urn:air:com.exviv:mcp:competitive-intelligence",
+        "displayName": "EXVIV Competitive Intelligence",
+        "type": "application/mcp-server-card+json",
+        "url": "https://exviv.com/api/agent/v1/mcp",
+        "description": "Reviewed competitor pricing, offer comparisons, and market-change evidence with x402 payments.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "reviewed competitor pricing, offer comparisons, and market-change evidence with x402 payments",
+          "exviv competitive intelligence for this task"
+        ],
+        "version": "1.0.0",
+        "score": 63,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201551,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "get_exviv_catalog",
+          "description": "List EXVIV competitive-intelligence products, current x402 commerce status, reviewed company inputs, markets, prices, and evidence coverage. This tool is free."
+        }
+      },
+      {
+        "identifier": "urn:air:com.canienter:mcp:visa-check",
+        "displayName": "com.canienter/visa-check",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.canienter.com/mcp",
+        "description": "Visa & entry requirements for 199 passports, cited to official sources and re-verified daily.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "visa & entry requirements for 199 passports, cited to official sources and re-verified daily",
+          "com.canienter/visa-check for this task"
+        ],
+        "version": "1.0.1",
+        "score": 61,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "evaluate_trip",
+          "description": "Premium evaluation of a whole trip in one call: multiple passports (best passport per leg), documents held, multi-leg itineraries with transit legs, dates and purpose \u2014 with structured why[] explanations, conditions[], and verification states per decision. PAID endpoint: the call returns HTTP 402 x4"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:server:general-store",
+        "displayName": "SCVD General Store \u2014 MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://scvd.store/.well-known/mcp",
+        "description": "The store as a Model Context Protocol server over streamable HTTP. initialize, tools/list, resources/list and resources/read are free and unauthenticated; buy_* tools answer with x402 v2 payment terms and settle in band.",
+        "tags": [
+          "x402",
+          "signed-artifacts",
+          "verification",
+          "agent-memory",
+          "human-labor"
+        ],
+        "capabilities": [
+          "read_store_guide",
+          "ring_bell",
+          "sign_guestbook",
+          "preflight_endpoint",
+          "check_before_you_pay",
+          "check_conformance",
+          "verify_artifact",
+          "buy_simple",
+          "buy_signed_record",
+          "buy_human_task",
+          "buy_observation",
+          "buy_memory_anchor",
+          "buy_small_pleasure"
+        ],
+        "representativeQueries": [
+          "Ask what the observatory already knows about an x402 host \u2014 signed, from its books, before I spend anything at that door",
+          "Prove to a third party that a payment actually settled on chain",
+          "Settle a real x402 payment for the smallest amount possible",
+          "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+          "Say the thing once, anonymously, to a counter that keeps it"
+        ],
+        "trustManifest": {
+          "identity": "did:web:scvd.store"
+        },
+        "score": 61,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201773,
+          "reachable": true,
+          "tools": 13
+        },
+        "matchedTool": {
+          "name": "read_store_guide",
+          "description": "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint \u2014 to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns th"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.ai-akari:mcp:agent-trust-receipt",
+        "displayName": "AI\uff89\u30a2\u30ab\u30ea\u2606 Agent Trust Receipt",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ai-akari.ai/mcp-trust",
+        "description": "Read-only Remote MCP for externally grounded AI agent trust receipts.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read-only remote mcp for externally grounded ai agent trust receipts",
+          "ai\uff89\u30a2\u30ab\u30ea\u2606 agent trust receipt for this task"
+        ],
+        "version": "1.1.0",
+        "score": 61,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201538,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "audit_result_claim_x402",
+          "description": "Paid deterministic audit for AI result claims. Price is $0.01 USDC on Base. Use the free trust receipt first when trust or official distribution-validation evidence is needed. After price approval, an unsigned call returns HTTP 402; an x402-aware client signs and retries the same MCP call. Settlemen"
+        }
+      },
+      {
+        "identifier": "urn:air:co.ainumbers:mcp:tools",
+        "displayName": "AINumbers Fintech Intelligence Suite",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.ainumbers.co/mcp",
+        "description": "420+ client-side fintech tools (ISO 20022, AML, DORA, agentic payments) as MCP widgets. Zero PII.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "420+ client-side fintech tools (iso 20022, aml, dora, agentic payments) as mcp widgets",
+          "ainumbers fintech intelligence suite for this task",
+          "530 mcp tools across 561 fintech tools: chaingraph ap2 decisions, execution_hash",
+          "327 mcp tools across 532 fintech tools: chaingraph ap2 decisions, execution_hash",
+          "376 mcp tools across 501 fintech tools + 85 guides",
+          "457 mcp tools across 521 fintech tools + 99 guides",
+          "462 mcp tools across 521 fintech tools + 99 guides",
+          "476 mcp tools across 557 fintech tools: chaingraph ap2 decisions, execution_hash"
+        ],
+        "version": "0.4.8",
+        "score": 61,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 400
+        },
+        "matchedTool": {
+          "name": "decode_x402_payment",
+          "description": "Decode an x402 payment header or lint an exact-scheme PaymentPayload, and describe the HTTP-402 verify/settle flow. Use when a developer is integrating x402 and needs to inspect a header, check a payload shape, or understand the flow. Renders the interactive AINumbers tool as a widget; inputs are ap"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.hunterzai16z:mcp:ai-hunterz",
+        "displayName": "AI HUNTERZ \u2014 Autonomous Crypto Intelligence",
+        "type": "application/mcp-server",
+        "url": "https://ai-hunterz-mcp.hunterzai.workers.dev",
+        "score": 60,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201767,
+          "reachable": true,
+          "tools": 9
+        },
+        "matchedTool": {
+          "name": "alpha_signals",
+          "description": "Get DeFi alpha opportunities \u2014 airdrops, yield farms, protocol incentives from DeFiLlama. Price: $0.10/call via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.pythonanywhere.baseusdcearn:mcp:mcp",
+        "displayName": "Crypto Market Pulse & Base USDC Stats",
+        "type": "application/mcp-server-card+json",
+        "url": "https://baseusdcearn.pythonanywhere.com/mcp",
+        "description": "Pay-per-call agent tools on Base: market pulse, USDC stats, crypto prices, JSON repair, DNS, URLs.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call crypto market data on base via x402 usdc micropayments",
+          "crypto market pulse & base usdc stats for this task",
+          "pay-per-call agent tools on base: market pulse, usdc stats, json repair, dns, urls",
+          "crypto prices btc/eth/sol/usdc, base stats, json repair, dns",
+          "pay-per-call agent tools on base: market pulse, usdc stats, crypto prices, json repair, dns, urls"
+        ],
+        "version": "1.4.0",
+        "score": 60,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "extract_urls",
+          "description": "Extract all unique http(s) URLs from arbitrary text. Payment: $0.001 USDC on Base via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.ruscrape:mcp:russia-access",
+        "displayName": "Russian Web Data Access for AI Agents",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ruscrape.com/mcp",
+        "description": "Fetch any Russian website or API via a Russian IP \u2014 flagship tool fetch_ru. Pay x402/RUB.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "fetch any russian website or api via a russian ip \u2014 flagship tool fetch_ru",
+          "russian web data access for ai agents for this task"
+        ],
+        "version": "1.0.0",
+        "score": 60,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": true,
+          "tools": 9
+        },
+        "matchedTool": {
+          "name": "topup_balance",
+          "description": "Top up agent balance. rail: usdc (x402) or rub (YooKassa). Returns pay_url to complete payment."
+        }
+      },
+      {
+        "identifier": "urn:air:com.commsharbor:mcp:commsharbor",
+        "displayName": "com.commsharbor/commsharbor",
+        "type": "application/mcp-server-card+json",
+        "url": "https://commsharbor.com/mcp",
+        "description": "Transactional e-mail and permission-based campaigns, multi-tenant, with a full audit trail.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "transactional e-mail and permission-based campaigns, multi-tenant, with a full audit trail",
+          "com.commsharbor/commsharbor for this task"
+        ],
+        "version": "1.0.0",
+        "score": 60,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788576686,
+          "reachable": true,
+          "tools": 141
+        },
+        "matchedTool": {
+          "name": "commsharbor_billing_catalog",
+          "description": "Read plans, prices and x402 network."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.haiyunsky:mcp:hpsilab-quant-finance-mcp",
+        "displayName": "HPSILab Quant Finance",
+        "type": "application/mcp-server",
+        "url": "https://api.hpsilab.com/mcp",
+        "score": 59,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201772,
+          "reachable": true,
+          "tools": 10
+        },
+        "matchedTool": {
+          "name": "get_pretrade_risk_scan",
+          "description": "Full pre-trade risk scan JSON for a stock. Pro tool ($0.15/call via x402\n    for anonymous callers; free within plan limits for signed-in accounts).\n\n    Signed-in hpsilab users call this within their plan's free rate limits.\n    Anonymous / tokenless agents pay per call via x402 (USDC on Base) when"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.signalnodus:mcp:sec-filings",
+        "displayName": "Signal Nodus SEC Filings",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.signalnodus.ai/",
+        "description": "Year-over-year 10-K diffs, 8-K events, insider trades, 13F, IPOs, XBRL. Pay per call, key or x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read sec 10-k and 10-q sections as clean text and diff them year over year",
+          "signal nodus sec filings for this task",
+          "sentence-level yoy diffs of 10-k/10-q sections, pinned to accession numbers",
+          "sec filing diffs, 8-k events, 13d stakes, insider trades, ipos, federal contracts",
+          "year-over-year 10-k diffs, 8-k events, insider trades, 13f, ipos, xbrl",
+          "amendment-safe 10-k/10-q section diffs, claim checks vs xbrl, 8-k events"
+        ],
+        "version": "1.6.0",
+        "score": 59,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201541,
+          "reachable": true,
+          "tools": 31
+        },
+        "matchedTool": {
+          "name": "x402_audit",
+          "description": "Experimental (outside the core SEC path; not covered by the published accuracy eval, may change or be withdrawn): Inspect one public HTTPS x402 endpoint and report the 402 challenge it returns to an anonymous caller: HTTP status, payment rails (scheme, network, asset, recipient), WWW-Authenticate he"
+        }
+      },
+      {
+        "identifier": "urn:air:com.vevang:mcp:agents",
+        "displayName": "agents",
+        "type": "application/mcp-server",
+        "url": "https://mcp.vevang.com/mcp",
+        "score": 58,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201768,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "make_marketing_video",
+          "description": "Produce a finished, on-brand short marketing video from one prompt. Paid: $12 USDC via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.pythonanywhere.cryptopulse:mcp:json-repair",
+        "displayName": "JSON Repair & Agent Utilities",
+        "type": "application/mcp-server-card+json",
+        "url": "https://cryptopulse.pythonanywhere.com/mcp-json",
+        "description": "Repair malformed JSON, DNS lookup, extract URLs, base64, case, hash, time. Pay per call USDC Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "repair malformed json, dns lookup, extract urls",
+          "json repair & agent utilities for this task",
+          "repair malformed json, dns lookup, extract urls, base64, case, hash, time"
+        ],
+        "version": "1.1.0",
+        "score": 58,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "extract_urls",
+          "description": "Extract all unique http(s) URLs from arbitrary text. Payment: $0.001 USDC on Base via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.pythonanywhere.cryptopulse:mcp:mcp",
+        "displayName": "Crypto Market Pulse",
+        "type": "application/mcp-server-card+json",
+        "url": "https://cryptopulse.pythonanywhere.com/mcp",
+        "description": "Crypto market prices BTC/ETH/SOL/USDC, Base stats, JSON repair, DNS. Pay per call USDC on Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "crypto market prices btc/eth/sol/usdc, base stats, json repair, dns",
+          "crypto market pulse & base usdc stats for this task",
+          "pay-per-call crypto data on base: market pulse, prices, chain snapshot, usdc stats",
+          "crypto market pulse for this task"
+        ],
+        "version": "1.4.0",
+        "score": 58,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "extract_urls",
+          "description": "Extract all unique http(s) URLs from arbitrary text. Payment: $0.001 USDC on Base via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:com.dropwatchhq:mcp:patent-gap",
+        "displayName": "com.dropwatchhq/patent-gap",
+        "type": "application/mcp-server-card+json",
+        "url": "https://patentgap.dropwatchhq.com/mcp",
+        "description": "Off-patent opportunity feed: expiring design patents, recall + supplier screened, for sellers.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "off-patent opportunity feed: expiring design patents, recall + supplier screened, for sellers",
+          "com.dropwatchhq/patent-gap for this task"
+        ],
+        "version": "1.0.0",
+        "score": 58,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201550,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "category_opportunity_report",
+          "description": "PAID (x402, $0.03 USDC on Base). Full off-patent opportunity report for a category slug (see list_categories): every newly-expirable design patent with computed expiry, CPSC recall-safety band, and OFAC/OIG supplier screen, ranked by actionability. Free callers get a preview + x402 challenge."
+        }
+      },
+      {
+        "identifier": "urn:air:com.robbiegeorgephotography:mcp:naturepedia",
+        "displayName": "Naturepedia Canonical Discovery",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.robbiegeorgephotography.com/mcp",
+        "description": "Search and resolve Naturepedia, Robbie's Razor, and GC-MRD-v2.0 canonical resources.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "search and resolve naturepedia, robbie's razor, and gc-mrd-v2",
+          "naturepedia canonical discovery for this task"
+        ],
+        "version": "0.1.2",
+        "score": 58,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201765,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "about_naturepedia",
+          "description": "Describe Naturepedia, its canonical authority structure, and its machine-readable discovery and x402 access layers."
+        }
+      },
+      {
+        "identifier": "urn:air:com.agenticpaywall:mcp:composer",
+        "displayName": "composer",
+        "type": "application/mcp-server",
+        "url": "https://composer.agenticpaywall.com/mcp",
+        "description": "Composes + runs multi-step external-data workflows for one quoted USDC price (x402).",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "composes + runs multi-step external-data workflows for one quoted usdc price (x402)",
+          "com.agenticpaywall/composer for this task"
+        ],
+        "version": "1.0.1",
+        "score": 57,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "run_workflow",
+          "description": "Run a workflow Composer planned for you and get the synthesized result. PAID\nvia x402 \u2014 one payment replaces the multi-step work you'd otherwise do yourself.\n\nPass the `plan_id` from plan_workflow. This call is payment-gated: it returns an\nx402 402 carrying the final live-checked price (normally \u2248 p"
+        }
+      },
+      {
+        "identifier": "urn:air:com.doseplot:mcp:agent-api",
+        "displayName": "DosePlot Agent API",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.doseplot.com/mcp",
+        "description": "PK serum simulation, reconstitution math and compound data for agents. Paid tools $0.01 via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pk serum simulation, reconstitution math and compound data for agents",
+          "doseplot agent api for this task"
+        ],
+        "version": "1.0.0",
+        "score": 56,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788382826,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "simulate",
+          "description": "Paid: $0.01 USDC per call via x402 (payment in _meta[\"x402/payment\"]). Pharmacokinetic serum curve for one compound at one dose and one cadence, over a requested horizon. Exactly one dose field must be present; unknown fields are rejected rather than ignored. Outputs are for relay to a human decisio"
+        }
+      },
+      {
+        "identifier": "urn:air:cloud.verifi:mcp:human-verification",
+        "displayName": "Verifi",
+        "type": "application/mcp-server-card+json",
+        "url": "https://verifi.cloud/mcp",
+        "description": "Get a real human to verify, decide, or improve an AI agent's work.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "get a real human to verify, decide, or improve an ai agent's work",
+          "verifi for this task"
+        ],
+        "version": "2.0.0",
+        "score": 56,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "unlock_verify",
+          "description": "Pass gate 2 for a ready chain and return the human result.\n\n    This gate costs 2.90 USDC. Omit payment_signature first: standard x402-aware\n    MCP clients handle the payment request and retry through MCP metadata\n    automatically. Generic clients can pass the resulting x402 signature\n    manually"
+        }
+      },
+      {
+        "identifier": "urn:air:com.agentictotem:mcp:web-extractor",
+        "displayName": "AgenticTotem Web Extractor",
+        "type": "application/mcp-server",
+        "url": "https://agentictotem.com/mcp",
+        "description": "AI web extraction: send URLs + a JSON Schema, get clean structured data. Pay-per-use via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ai web extraction: send urls + a json schema, get clean structured data",
+          "agentictotem web extractor for this task"
+        ],
+        "version": "1.0.5",
+        "score": 55,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 1
+        },
+        "matchedTool": {
+          "name": "web_extract",
+          "description": "Extract structured data from web pages. Send 1-10 URLs and a JSON Schema describing the data shape you want. Returns extracted data for each URL. Costs $0.01 USDC per URL via x402 or MPP."
+        }
+      },
+      {
+        "identifier": "urn:air:com.obsmetrics.paygent:mcp:agents",
+        "displayName": "agents",
+        "type": "application/mcp-server",
+        "url": "https://paygent.obsmetrics.com/mcp",
+        "description": "Pay-per-call safety guards for AI agents: injection, tool-call, signing, secret, x402-trust.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pay-per-call safety guards for ai agents: injection, tool-call, signing, secret, x402-trust",
+          "com.obsmetrics.paygent/agents for this task"
+        ],
+        "version": "0.0.8",
+        "score": 55,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201762,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "x402-trust-audit",
+          "description": "Vet an x402 counterparty before settling USDC: scores the advertised payment requirements AND (when supplied) the EIP-3009 authorization you are about to sign. Returns a machine-enforceable trust verdict (per-entry scores, coverage-honest trustScore, spend-constraint + tamper-evident fingerprint) fo"
+        }
+      },
+      {
+        "identifier": "urn:air:app.iomarkets:mcp:topup",
+        "displayName": "app.iomarkets/topup",
+        "type": "application/mcp-server-card+json",
+        "url": "https://iomarkets.app/mcp",
+        "description": "Airtime, data, eSIMs and payouts in 150+ countries, paid per order in USDC on Algorand via x402",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "airtime, data, esims and payouts in 150+ countries, paid per order in usdc on algorand via x402",
+          "app.iomarkets/topup for this task",
+          "mobile airtime and data top-ups in 150+ countries, paid per order in usdc on algorand via x402",
+          "travel esims for 197 destinations and airtime top-ups in 150+ countries, paid in usdc via x402"
+        ],
+        "version": "0.2.5",
+        "score": 54,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "tools": 8
+        },
+        "matchedTool": {
+          "name": "buy",
+          "description": "Get the x402 payment challenge for a quote. This hosted server holds no wallet, so it does NOT spend your money: it returns the exact amount, asset, payTo address and facilitator for you to pay from your own Algorand wallet, then you POST the quote again with your payment signature. Requires prior h"
+        }
+      },
+      {
+        "identifier": "urn:air:app.netlify.gleaming-cassata-d41682:mcp:lion-mcp",
+        "displayName": "LION - Trend Intent MCP + Marketplace Visibility Audit",
+        "type": "application/mcp-server-card+json",
+        "url": "https://gleaming-cassata-d41682.netlify.app/api/mcp?src=mcpregistry_domain_v1_1",
+        "description": "x402-paid MCP data: trend feed + visibility audit. USDC/Base. No API key. No PII.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "x402-paid mcp data: trend feed + visibility audit",
+          "lion - trend intent mcp + marketplace visibility audit for this task"
+        ],
+        "version": "1.1.1",
+        "score": 54,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "tools": 5
+        },
+        "matchedTool": {
+          "name": "lion_payment_attempt_readiness_audit",
+          "description": "Pre-spend payment-term trust check for x402 endpoints. Before your agent signs a Payment-Signature, call this with a target x402/MCP service URL: LION extracts the target live 402 payment terms (payTo, amount, asset, network, scheme), cross-checks them for drift across public discovery surfaces, and"
+        }
+      },
+      {
+        "identifier": "urn:air:cash.forage:mcp:forage",
+        "displayName": "cash.forage/forage",
+        "type": "application/mcp-server-card+json",
+        "url": "https://forage.cash/mcp",
+        "description": "Web search and URL-to-markdown for agents. Pay per call in USDC on Base, no signup.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "web search and url-to-markdown for agents",
+          "cash.forage/forage for this task"
+        ],
+        "version": "1.0.0",
+        "score": 54,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "web_search",
+          "description": "Google web search \u2014 organic results, answer box, knowledge graph as JSON. Free 20/day, then pay-per-call via x402."
+        }
+      },
+      {
+        "identifier": "urn:air:app.vercel.ora-x402-gateway:mcp:sensations-mergulho",
+        "displayName": "app.vercel.ora-x402-gateway/sensations-mergulho",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ywabnlhkmhbyewqhbsjm.supabase.co/functions/v1/sensations-mergulho",
+        "description": "MCP server for 0001SENSATIONS: 107-level textual descent, append-only trace logging",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "mcp server for 0001sensations: 107-level textual descent, append-only trace logging",
+          "app.vercel.ora-x402-gateway/sensations-mergulho for this task"
+        ],
+        "version": "0.3.0",
+        "score": 53,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788554694,
+          "reachable": true,
+          "tools": 6
+        },
+        "matchedTool": {
+          "name": "prepare_visual_consultation",
+          "description": "Read the x402 payment requirement for one level without paying, signing, settling, or receiving the private image."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.aislabs:mcp:gateway",
+        "displayName": "AIS Gateway \u2014 the campus front desk for AIS MCP buildings",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.aislabs.ai/mcp",
+        "description": "Daily CVE priorities ranked by real exploitation (KEV+EPSS) for AI agents; free teaser, paid full",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "daily cve priorities (kev+epss) + agent flight recorder: dead-man alerts & resume for ai agents",
+          "ais gateway \u2014 cve prioritization + agent flight recorder for ai agents for this task",
+          "daily cve priorities ranked by real exploitation (kev+epss) for ai agents; free teaser, paid full",
+          "ais gateway \u2014 daily cve prioritization for ai agents for this task",
+          "front desk for the ais mcp campus: lists our buildings (cve, flight recorder), prices, how to pay",
+          "ais gateway \u2014 the campus front desk for ais mcp buildings for this task"
+        ],
+        "version": "0.5.1",
+        "score": 53,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201538,
+          "reachable": true,
+          "tools": 10
+        },
+        "matchedTool": {
+          "name": "about_aislabs",
+          "description": "FREE. What AIS sells (tested code libraries, CVE intelligence), how agents can buy over x402, and where this data comes from."
+        }
+      },
+      {
+        "identifier": "urn:air:io.dwelldata:mcp:real-estate-data",
+        "displayName": "real-estate-data",
+        "type": "application/mcp-server",
+        "url": "https://dwelldata.io/mcp",
+        "score": 53,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201772,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "how_to_buy",
+          "description": "Free: x402 payment instructions \u2014 endpoints, prices in USDC on Base mainnet, and the discovery documents."
+        }
+      },
+      {
+        "identifier": "urn:air:com.acjlabs:mcp:x402-listing-monitor",
+        "displayName": "x402 Bazaar Listing Monitor",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402-listing-monitor.acjlabs.com/mcp",
+        "description": "Checks x402 Bazaar resource listings against the public discovery catalog and flags drops.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "checks x402 bazaar resource listings against the public discovery catalog and flags drops",
+          "x402 bazaar listing monitor for this task"
+        ],
+        "version": "0.1.0",
+        "score": 52,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 1
+        },
+        "matchedTool": {
+          "name": "check_listing_health",
+          "description": "Checks whether a seller's x402 Bazaar resources are currently listed under the given payTo address in the public discovery catalog. Flags each resource as listed or missing \u2014 the same per-seller diff the registered poller runs on a schedule, run once on demand for a payTo/resources pair whether or n"
+        }
+      },
+      {
+        "identifier": "urn:air:com.getcims:mcp:mcp",
+        "displayName": "com.getcims/mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.getcims.com/functions/v1/mcp",
+        "description": "Manage 230M+ influencers, track campaigns, and access real-time CIMS analytics via AI agents",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "manage 230m+ influencers, track campaigns, and access real-time cims analytics via ai agents",
+          "com.getcims/mcp for this task"
+        ],
+        "version": "2.0.0",
+        "score": 52,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201757,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "get_creators",
+          "description": "Search the CIMS creator database. When shown as a paid stub, calling this tool returns x402 payment requirements for the REST endpoint."
+        }
+      },
+      {
+        "identifier": "urn:air:com.fiatdock:mcp:fiatdock-mcp",
+        "displayName": "FiatDock",
+        "type": "application/mcp-server-card+json",
+        "url": "https://fiatdock.com/mcp",
+        "description": "MCP marketplace: agents pay per call in USDC via x402. Plus Base chain data and a USDC<->bank ramp.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "non-custodial usdc <-> bank for ai agents via x402 + transak",
+          "fiatdock for this task",
+          "mcp marketplace: agents pay per call in usdc via x402",
+          "cash out an ai agent's usdc to a real bank account (non-custodial)"
+        ],
+        "version": "1.8.0",
+        "score": 52,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201551,
+          "reachable": true,
+          "tools": 18
+        },
+        "matchedTool": {
+          "name": "usdc_balance",
+          "description": "PAID ($0.001 USDC via x402). The USDC balance of any address on Base (the settlement asset for x402), in atomic units and USDC. Without payment this returns the 402 challenge; the fiatdock-mcp npm package pays automatically. An invalid address returns 400 and is NOT charged; on any RPC failure it re"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.tunnelmind:mcp:data",
+        "displayName": "TunnelMind Data API",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp-data.tunnelmind.ai/mcp",
+        "description": "Tracker / Sigil / Cross-lens \u2014 every TunnelMind Data API operation as one MCP surface.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "tracker / sigil / cross-lens \u2014 every tunnelmind data api operation as one mcp surface",
+          "tunnelmind data api for this task"
+        ],
+        "version": "1.0.1",
+        "score": 52,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201541,
+          "reachable": true,
+          "tools": 93
+        },
+        "matchedTool": {
+          "name": "x402_echo",
+          "description": "Validates an agent's x402 v1 client implementation against a TunnelMind\nsurface end-to-end. Two operating modes:\n\n- `mode: \"demo\"` \u2014 HMAC over a nonce against a publicly-published secret.\n  Does not move USDC. Smoke proves the WIRE works, not money movement.\n- `mode: \"x402\"` \u2014 real Coinbase facilita"
+        }
+      },
+      {
+        "identifier": "urn:air:com.professorsausages:mcp:sausage-finance",
+        "displayName": "Professor Sausages \u2014 Finance",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.professorsausages.com/mcp/finance",
+        "description": "SEC filings, insider trades, 13F, IPO calendar, macro & FX MCP tools via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "sec filings, insider trades, 13f, ipo calendar, macro & fx mcp tools via x402",
+          "com.professorsausages/sausage-finance for this task",
+          "professor sausages \u2014 finance for this task"
+        ],
+        "version": "1.0.1",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 12
+        },
+        "matchedTool": {
+          "name": "pricing",
+          "description": "Every endpoint this server fronts, with its exact per-call USD price (x402, USDC on Base) and a one-line summary, read live from the route table. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:com.professorsausages:mcp:sausage-trust",
+        "displayName": "Professor Sausages \u2014 Trust & Verification",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.professorsausages.com/mcp/trust",
+        "description": "Email, phone, domain, URL & OFAC verification; phishing and IBAN checks via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "email, phone, domain, url & ofac verification; phishing and iban checks via x402",
+          "professor sausages \u2014 trust & verification for this task"
+        ],
+        "version": "1.0.1",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 12
+        },
+        "matchedTool": {
+          "name": "pricing",
+          "description": "Every endpoint this server fronts, with its exact per-call USD price (x402, USDC on Base) and a one-line summary, read live from the route table. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.popdot:mcp:popdot-mcp",
+        "displayName": "Popdot AI",
+        "type": "application/mcp-server-card+json",
+        "url": "https://popdot.ai/api/mcp",
+        "description": "Rent verified subdomains by the hour, day, or month. Free 24h trials, x402 USDC on Base.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "rent verified subdomains by the hour, day, or month",
+          "popdot ai for this task"
+        ],
+        "version": "2.0.0",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "rent_domain",
+          "description": "Rent a subdomain, paying per-transaction with USDC on Base (x402). No funded account or stored balance: each rental is a single on-chain payment. Requires agent authentication. Two phases: call once with intentMandateId, domainId, subdomain, duration, and the payerAddress + payerProof for the wallet"
+        }
+      },
+      {
+        "identifier": "urn:air:cloud.kodshop:mcp:catalog",
+        "displayName": "KodShop catalog",
+        "type": "application/mcp-server",
+        "url": "https://kodshop.cloud/mcp",
+        "description": "Read-only catalog of gift cards, service top-ups and travel eSIMs sold by KodShop.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read-only catalog of gift cards, service top-ups and travel esims sold by kodshop",
+          "kodshop catalog for this task"
+        ],
+        "version": "0.1.0",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "buy_product",
+          "description": "Buy a gift card, service top-up or travel eSIM and receive the delivery. Paid in USDC on Base (x402), no account and no browser. Call it twice: first with the order arguments to get payment requirements and an order_id (nothing is charged), then with that order_id plus the signed x402 payment payloa"
+        }
+      },
+      {
+        "identifier": "urn:air:com.blinkcodes:mcp:catalog",
+        "displayName": "BlinkCodes catalog",
+        "type": "application/mcp-server-card+json",
+        "url": "https://blinkcodes.com/mcp",
+        "description": "Read-only catalog of gift cards, service top-ups and travel eSIMs sold by BlinkCodes.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read-only catalog of gift cards, service top-ups and travel esims sold by blinkcodes",
+          "blinkcodes catalog for this task"
+        ],
+        "version": "0.1.1",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "tools": 3
+        },
+        "matchedTool": {
+          "name": "buy_product",
+          "description": "Buy a gift card, service top-up or travel eSIM and receive the delivery. Paid in USDC on Base (x402), no account and no browser. Call it twice: first with the order arguments to get payment requirements and an order_id (nothing is charged), then with that order_id plus the signed x402 payment payloa"
+        }
+      },
+      {
+        "identifier": "urn:air:com.decision-anchor:mcp:da",
+        "displayName": "Decision Anchor",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.decision-anchor.com/mcp",
+        "description": "Fixes payment and delegation boundaries externally. When two agents disagree, DA proves both sides.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "economic infrastructure for ai agents \u2014 record decisions, build trajectories, trade tools",
+          "decision anchor for this task",
+          "non-judgmental external anchoring for ai agent decisions",
+          "external decision records and accountability proof for ai agents",
+          "external accountability proof for agent payments, delegation, disputes",
+          "fixes payment and delegation boundaries externally",
+          "external anchoring layer: records ai agent accountability boundaries on both sides"
+        ],
+        "version": "1.3.42",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201550,
+          "reachable": true,
+          "tools": 30
+        },
+        "matchedTool": {
+          "name": "purchase_tool",
+          "description": "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402; Trial does not cover this route."
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.attestagents:mcp:attest-mcp",
+        "displayName": "Attest",
+        "type": "application/mcp-server",
+        "url": "https://attestagent.org/api/mcp",
+        "score": 51,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201768,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "attest_scan",
+          "description": "Scan an agent payment endpoint (x402 / HTTP 402) and return a letter grade A to F with a safety verdict before paying."
+        }
+      },
+      {
+        "identifier": "urn:air:com.professorsausages:mcp:sausage-web",
+        "displayName": "Professor Sausages \u2014 Web & Documents",
+        "type": "application/mcp-server-card+json",
+        "url": "https://x402.professorsausages.com/mcp/web",
+        "description": "Read pages & files to text, news, weather, market holidays and timezones via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read pages & files to text, news, weather, market holidays and timezones via x402",
+          "professor sausages \u2014 web & documents for this task"
+        ],
+        "version": "1.0.1",
+        "score": 50,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201764,
+          "reachable": true,
+          "tools": 12
+        },
+        "matchedTool": {
+          "name": "pricing",
+          "description": "Every endpoint this server fronts, with its exact per-call USD price (x402, USDC on Base) and a one-line summary, read live from the route table. Free."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.aislabs:mcp:cve",
+        "displayName": "AIS CVE Priorities \u2014 daily exploit-ranked patch list for AI agents",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.aislabs.ai/cve/mcp",
+        "description": "Daily CVE priorities ranked by real exploitation (KEV+EPSS) for AI agents; free teaser, paid full",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "daily cve priorities ranked by real exploitation (kev+epss) for ai agents; free teaser, paid full",
+          "ais cve priorities \u2014 daily exploit-ranked patch list for ai agents for this task"
+        ],
+        "version": "0.1.0",
+        "score": 50,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788225651,
+          "reachable": true,
+          "tools": 4
+        },
+        "matchedTool": {
+          "name": "cve_verdict",
+          "description": "PAID \u2014 unlock with an AIS Gateway key (https://aislabs.ai/gateway) or x402 $0.005. One CVE's priority verdict from today's AIS ranked set."
+        }
+      },
+      {
+        "identifier": "urn:air:com.stratalize:mcp:crypto",
+        "displayName": "Stratalize Crypto and DeFi Intelligence",
+        "type": "application/mcp-server",
+        "url": "https://stratalize.com/api/mcp-public?vertical=crypto",
+        "score": 50,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201767,
+          "reachable": true,
+          "tools": 9
+        },
+        "matchedTool": {
+          "name": "get_gas_benchmark",
+          "description": "Live gas price benchmarks for Ethereum, Base, and Solana. Returns Gwei, USD cost per transfer type, congestion category, and x402 agent economy context. Base vs ETH savings comparison. Source: public chain RPCs. Zero API key required. | x402 SLA: $0.10 USDC per call. Returns HTTP 503 (no charge) whe"
+        }
+      },
+      {
+        "identifier": "urn:air:in.fastdb.md:mcp:chainpulse",
+        "displayName": "chainpulse \u2014 real-time crypto data for AI agents",
+        "type": "application/mcp-server",
+        "url": "https://md.fastdb.in/pulse/mcp",
+        "score": 49,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201767,
+          "reachable": true,
+          "tools": 7
+        },
+        "matchedTool": {
+          "name": "defi_tvl",
+          "description": "Current total value locked (USD) for DeFi protocols by DefiLlama slug (e.g. uniswap, aave, lido). Paid tool: $0.001 per call via x402 (USDC on Base)."
+        }
+      },
+      {
+        "identifier": "urn:air:ai.satohub:mcp:onchain-agents",
+        "displayName": "Sato Hub: Onchain Agents",
+        "type": "application/mcp-server-card+json",
+        "url": "https://satohub.ai/api/mcp",
+        "description": "Search scored onchain-agent tooling: frameworks, MCP servers, wallets, x402 rails, deploy specs.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "search scored onchain-agent tooling: frameworks, mcp servers, wallets, x402 rails, deploy specs",
+          "sato hub: onchain agents for this task"
+        ],
+        "version": "1.1.0",
+        "score": 49,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788225651,
+          "reachable": true,
+          "tools": 14
+        },
+        "matchedTool": {
+          "name": "onchain_agent_search_agents",
+          "description": "Search REGISTERED onchain agents in the Sato Agent Registry \u2014 running agents whose creators registered them for a Sato Agent Passport (distinct from the resource directory, which lists the things agents are built FROM). Filter by free-text query, chain, agent_type, or x402_only. Only human-review-li"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.jobero:mcp:job-search",
+        "displayName": "Jobero job search",
+        "type": "application/mcp-server-card+json",
+        "url": "https://jobero.ai/mcp",
+        "description": "Paid job search: 7 matched roles, each with a tailored CV and cover letter.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "paid job search: 7 matched roles, each with a tailored cv and cover letter",
+          "jobero job search for this task"
+        ],
+        "version": "1.0.0",
+        "score": 49,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 5
+        },
+        "matchedTool": {
+          "name": "start_job_search",
+          "description": "Spend one credit to run a full search: 7 roles matched to the profile, each with a tailored CV and cover letter returned as markdown by get_search_status and emailed as PDFs. Requires an API key. With no credit left it returns an x402 PaymentRequired; retry the same call with the signed payment in _"
+        }
+      },
+      {
+        "identifier": "urn:air:com.editalmd:mcp:editalmd",
+        "displayName": "com.editalmd/editalmd",
+        "type": "application/mcp-server-card+json",
+        "url": "https://editalmd.com/mcp",
+        "description": "Brazilian public procurement (PNCP): search, deadlines, tender markdown, alerts and watches.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "brazilian public procurement (pncp): search, deadlines, tender markdown, alerts and watches",
+          "com.editalmd/editalmd for this task"
+        ],
+        "version": "1.0.0",
+        "score": 49,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788576686,
+          "reachable": true,
+          "tools": 19
+        },
+        "matchedTool": {
+          "name": "credito_recarregar",
+          "description": "Recarrega cr\u00e9dito: paga uma vez com x402 (pacotes de 1, 5, 10 ou 25 d\u00f3lares) e devolve o token que desconta em qualquer API da casa."
+        }
+      },
+      {
+        "identifier": "urn:air:com.immersivecommons:mcp:floor10",
+        "displayName": "Immersive Commons",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.immersivecommons.com/api/mcp",
+        "description": "Members-run AI builder space on Floor 10, Frontier Tower SF. 138 tools: events, news, directory.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "members-run ai builder space on floor 10, frontier tower sf",
+          "immersive commons for this task"
+        ],
+        "version": "1.0.0",
+        "score": 49,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201758,
+          "reachable": true,
+          "tools": 190
+        },
+        "matchedTool": {
+          "name": "ic_donate",
+          "description": "Support Immersive Commons with an on-chain USDC donation over x402 (HTTP 402 + USDC on Base). No auth required. Returns the donation tiers, the receiving wallet (payTo), the asset + network, and the donate URL. MCP can't run the in-band 402 handshake itself, so to donate: POST https://www.immersivec"
+        }
+      },
+      {
+        "identifier": "urn:air:com.gradientdecisions:mcp:merchant-check",
+        "displayName": "x402 Merchant Check",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.gradientdecisions.com/mcp",
+        "description": "Checks merchant trust tier and price fairness before an x402 purchase, using on-chain history.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "checks merchant trust tier and price fairness before an x402 purchase, using on-chain history",
+          "merchant check for this task",
+          "context for agentic buying decisions: merchant trust and price fairness via x402 history",
+          "x402 merchant check for this task",
+          "checks merchant trust and price fairness before x402 purchases on base or solana",
+          "pre-payment merchant trust checks for x402 agents on base and solana"
+        ],
+        "version": "1.0.0",
+        "score": 48,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201757,
+          "reachable": true,
+          "tools": 1
+        },
+        "matchedTool": {
+          "name": "check_merchant",
+          "description": "Before paying an unfamiliar merchant via x402, including one just discovered through a marketplace like Coinbase's x402 Bazaar, call this for a machine-readable assessment of their observable on-chain payment behavior, on Base or Solana. Returns a `recommendation` (PROCEED / CAUTION / INSUFFICIENT_S"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.safe4:mcp:safe4",
+        "displayName": "ai.safe4/safe4",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.safe4.ai/mcp/",
+        "description": "Tests an AI agent's purchase against the task it was given. Paid per call in USDC via x402.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "tests an ai agent's purchase against the task it was given",
+          "ai.safe4/safe4 for this task"
+        ],
+        "version": "1.0.0",
+        "score": 48,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 2
+        },
+        "matchedTool": {
+          "name": "safe4_price",
+          "description": "Price and accepted payment networks for one Safe4 decision.\n\nFree to call. Returns the same x402 terms the HTTP endpoint advertises,\nso an agent can see the cost before committing to a paid call.\n"
+        }
+      }
+    ],
+    "queryMatch": {
+      "coverage": 1.0,
+      "confidence": "high",
+      "matchedTerms": [
+        "x402"
+      ],
+      "queryTerms": [
+        "x402"
+      ],
+      "note": "each result's `score` is relative to the best hit in this response, so the top result always scores near 100 even when nothing matched. `coverage` is absolute: the fraction of the query's content words the top result's own text, including the tool that matched, accounts for. It measures overlap, not correctness, and it is never a trust or safety rating."
+    }
+  }
+}

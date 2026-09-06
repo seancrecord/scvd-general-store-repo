@@ -1,5 +1,50 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-06 — ARD trust-manifest signing
+
+Read the [current ARD specification §4.5–5.1](https://agenticresourcediscovery.org/spec/),
+the [entry schema](https://raw.githubusercontent.com/ards-project/ard-spec/main/spec/schemas/ard-entry.schema.json),
+[RFC 7515 Appendix F](https://www.rfc-editor.org/rfc/rfc7515#appendix-F), and
+[RFC 8785](https://www.rfc-editor.org/rfc/rfc8785).
+The current ARD text delegates signing bytes and verification to
+`trustSchema`; it does not itself prescribe JWS/JCS. This store declares
+the requested EdDSA detached-JWS / RFC 8785 profile at
+`/attestation#ard_trust_manifest`. Its payload is the trust envelope
+minus `signature`. A signed `provenance.sourceDigest` binds the full catalog
+after omitting only `host.trustManifest` and each `entries[].trustManifest`:
+SHA-256 of its JCS UTF-8 bytes, lowercase hex prefixed with `sha256:`.
+Without this binding a genuine identity envelope could be copied onto
+forged entries without the signing key. Both the JWS and the catalog digest
+must verify. Detailed limits and the anchor check live on the linked
+governance page because the older schema rejects custom trust fields.
+`type` and the parent
+AI Catalog's `mediaType` are both emitted from one entry type.
+
+Repository evidence: the existing DID document publishes the certificate
+key as an OKP JWK. `/.well-known/scvd-signing-key` is a hex-key directory
+with history and a DID link, not a JWK Set. No new key or key endpoint
+is needed. The anchor log commits snapshots with SHA-256 links and OTS;
+the handover announcements, separately, are signed by outgoing keys.
+The verifier must check both succession and external Bitcoin evidence,
+including continuity from a previously trusted checkpoint. Neither a
+same-origin key nor a claimed `existed_by.status` authenticates itself.
+
+Also read [the client guide](https://agenticresourcediscovery.org/how_to_build_a_client/)
+and [interoperability](https://agenticresourcediscovery.org/interoperability/).
+For future ecosystem research: query an operator-approved registry with
+`POST /search`, verify trust, then connect through the resource's native
+protocol. Publishing once permits independent indexing; it does not prove
+any registry has indexed us. The guide advertises connectors for Claude,
+ChatGPT, GitHub Copilot, Microsoft Copilot and Gemini; their installation,
+registry coverage and discovery of this store were not exercised.
+
+Gaps: the legacy `trust_manifest/` page and raw `spec/ai-catalog.md` could
+not be retrieved. The current normative text and entry schema were read;
+no live anchor proof or production signature was verified in this build.
+Workers handling was checked against the [current best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and installed types. The signing path adds no binding, runtime dependency, network
+request or KV write.
+
 **THIS FILE IS NOW LOAD-BEARING (rule 61, 2026-09-06).** It was a
 register of positions kept out of good practice; it is now the
 evidence any work that turns on an outside fact has to cite. A read
@@ -20,6 +65,29 @@ coverage and Circle's own announcement posts, dated below. Byte-level
 claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
+
+## 2026-09-06 — ARD catalog envelope and live registry discovery
+
+Read [the published proposal](https://agenticresourcediscovery.org/spec/)
+and both upstream schemas at [commit aa3e598bb775](https://github.com/ards-project/ard-spec/tree/aa3e598bb7752a9175897823234311216acfa864/spec/schemas).
+The proposal remains v0.91; the catalog envelope's `specVersion` enum is
+`1.0`. These are separate version namespaces, not a new v1.0 proposal.
+The catalog schema rejects extra root properties: our root `updatedAt`
+and `trustManifest` must go. Entry timestamps and identity remain legal.
+`host` is optional in that schema, but when supplied requires displayName;
+the reported registry validator also requires host. Its optional fields are
+identifier, documentationUrl, logoUrl and trustManifest. The host identifier
+can reuse our published DID; signing remains separate work. Optional
+representativeQueries has a 2–5 constraint in the catalog schema; all five
+query-bearing entries already satisfy it. Entry updatedAt must be date-time,
+so normalize the existing date-only catalog date to midnight UTC without
+claiming a fresh observation. The newer entry schema permits
+additional envelope properties and relaxes query counts; validate both.
+
+Fixtures preserve upstream bytes. Live indexing and submission evidence is
+recorded in `docs/ARD_DISCOVERY_2026-09-06.md`; publication alone is not indexing.
+Gaps: schema validity cannot establish signature verification, registry
+admission, or search visibility. Those require separate live observations.
 
 ## 2026-09-06 — AWS registry cleanup
 
@@ -406,3 +474,8 @@ Receipt links: [Arbitrum's builder directory](https://arbitrum.io/build-app) nam
 Receiving-account preflight, 2026-09-06: the public Base and Polygon offers name the same receiving account. Read-only Arbitrum and World calls confirmed each chain ID, no deployed code at that recipient, and code at the listed native USDC contract. This checks account shape and contract presence; it does not prove a live settlement or authorize production activation.
 
 World RPC fallback: [World's node-provider directory](https://docs.world.org/world-chain/providers/nodes) names Tenderly. Read-only calls to its World mainnet endpoint returned chain ID 480 and a complete 500-block native-USDC log window. The World reader keeps both Alchemy and Tenderly fallbacks; no timeout allowance or fallback test was relaxed.
+
+
+### 2026-09-06 — five-network quote header budget
+
+Re-read `https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md`, sections 2, 4.1 and 6.1: the signed-offer extension is optional and its response-body placement remains usable when a duplicate header copy exceeds transport limits. All accepts and all signed offers remain available. Stock Node fetch reproduced `UND_ERR_HEADERS_OVERFLOW` after five networks were enabled; the all-network regression reproduces oversized menu and publication quotes before the fix. The optional signed-offer header mirror is now capped at 12 KiB, reserving 4 KiB of the common 16 KiB header allowance for other headers and edge additions.

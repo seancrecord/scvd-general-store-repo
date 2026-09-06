@@ -1,0 +1,161 @@
+{
+  "scope": "Bounded first-page queries, federation none; lack of matches is not proof of global absence. WellKnown caps the requested 100 at 50; Hugging Face and GitHub queried at 20.",
+  "observations": [
+    {
+      "registry": "ardregistry",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:32:52.533818+00:00",
+      "http_status": 200,
+      "returned": 100,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": "eyJvZmZzZXQiOjEwMH0=",
+      "error": null,
+      "evidence": "ard-ardregistry-scvd-store.json"
+    },
+    {
+      "registry": "ardregistry",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:32:52.533994+00:00",
+      "http_status": 200,
+      "returned": 100,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": "eyJvZmZzZXQiOjEwMH0=",
+      "error": null,
+      "evidence": "ard-ardregistry-x402.json"
+    },
+    {
+      "registry": "huggingface",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:41:21.005839+00:00",
+      "http_status": 200,
+      "returned": 0,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-huggingface-scvd-store.json"
+    },
+    {
+      "registry": "huggingface",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:41:21.005920+00:00",
+      "http_status": 200,
+      "returned": 0,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-huggingface-x402.json"
+    },
+    {
+      "registry": "neuronto",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:32:52.534330+00:00",
+      "http_status": 200,
+      "returned": 100,
+      "scvd_matches": 3,
+      "identifiers": [
+        "urn:air:scvd.store:server:general-store",
+        "urn:air:scvd.store:skill:general-store",
+        "urn:air:scvd.store:agent:general-store"
+      ],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-neuronto-scvd-store.json"
+    },
+    {
+      "registry": "neuronto",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:32:52.634739+00:00",
+      "http_status": 200,
+      "returned": 100,
+      "scvd_matches": 1,
+      "identifiers": [
+        "urn:air:scvd.store:server:general-store"
+      ],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-neuronto-x402.json"
+    },
+    {
+      "registry": "wellknown",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:32:52.638822+00:00",
+      "http_status": 200,
+      "returned": 50,
+      "scvd_matches": 5,
+      "identifiers": [
+        "urn:air:scvd.store:skill:general-store",
+        "urn:air:scvd.store:agent:general-store",
+        "urn:air:scvd.store:server:general-store",
+        "urn:air:scvd.store:api:http",
+        "urn:air:scvd.store:skill:execution-contract"
+      ],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-wellknown-scvd-store.json"
+    },
+    {
+      "registry": "wellknown",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:32:52.969466+00:00",
+      "http_status": 200,
+      "returned": 50,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-wellknown-x402.json"
+    },
+    {
+      "registry": "desvela",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:32:53.064825+00:00",
+      "http_status": 200,
+      "returned": 6,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-desvela-scvd-store.json"
+    },
+    {
+      "registry": "desvela",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:32:53.173972+00:00",
+      "http_status": 200,
+      "returned": 1,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-desvela-x402.json"
+    },
+    {
+      "registry": "github",
+      "query": "scvd.store",
+      "checked_at": "2026-09-06T20:41:21.005253+00:00",
+      "http_status": 200,
+      "returned": 4,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-github-scvd-store.json"
+    },
+    {
+      "registry": "github",
+      "query": "x402",
+      "checked_at": "2026-09-06T20:41:21.005574+00:00",
+      "http_status": 200,
+      "returned": 1,
+      "scvd_matches": 0,
+      "identifiers": [],
+      "page_token": null,
+      "error": null,
+      "evidence": "ard-github-x402.json"
+    }
+  ]
+}

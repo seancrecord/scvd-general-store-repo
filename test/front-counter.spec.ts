@@ -149,7 +149,7 @@ describe("the front counter has a door a weak model can find", () => {
     ).toBe("buy_simple");
   });
 
-  it("asks for item_id and nothing else", async () => {
+  it("requires only item_id and advertises its optional receipt fields", async () => {
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
@@ -159,10 +159,8 @@ describe("the front counter has a door a weak model can find", () => {
       allOf?: unknown[];
     };
     expect(schema.required).toEqual(["item_id"]);
-    expect(Object.keys(schema.properties).sort()).toEqual([
-      "agent_name",
-      "item_id",
-    ]);
+    const fields = new Set(["item_id", ...frontCounterItems().flatMap(item => Object.keys(buyInputSchema(item).properties))]);
+    expect(Object.keys(schema.properties).sort()).toEqual([...fields].sort());
     // The whole point: no conditional branch to resolve. This is the
     // capability cliff the cold-agent pass identified, removed rather
     // than documented.

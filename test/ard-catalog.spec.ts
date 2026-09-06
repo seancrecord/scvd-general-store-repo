@@ -1,3 +1,7 @@
+import { Ajv2020 } from "ajv/dist/2020";
+import catalogSchema from "./fixtures/ard/ai-catalog.schema.json";
+import entrySchema from "./fixtures/ard/ard-entry.schema.json";
+import { STORE_SERVICE_NAME } from "@/store";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
@@ -374,32 +378,30 @@ describe("all four mechanisms this origin can serve, and the fifth named", () =>
 });
 
 describe("the manifest carries its envelope, not only its entries", () => {
-  it("specVersion, trustManifest and updatedAt ride beside entries", async () => {
-    /*
-     * Scanner finding, 2026-08-28: "ard.json invalid — missing
-     * specVersion." Checked against the spec's own schema first
-     * (ard-entry.schema.json defines ArdManifest): `entries` is the
-     * ONLY required field and specVersion appears NOWHERE in the
-     * spec — the scanner validates a field the spec never defined.
-     * But the schema says additionalProperties: true and the spec
-     * calls extra members "transport-defined", so declaring the
-     * revision we publish against is legal, true, and free — and
-     * trustManifest/updatedAt were already being computed and then
-     * dropped on the floor, which was just a leak.
-     */
-    const { ardManifest, ARD_SPEC_VERSION } = await import(
-      "@/lib/ard-catalog"
-    );
-    const manifest = ardManifest("https://scvd.store") as unknown as Record<
-      string,
-      unknown
-    >;
-    expect(manifest["specVersion"]).toBe(ARD_SPEC_VERSION);
-    expect(manifest["trustManifest"]).toEqual({
-      identity: "did:web:scvd.store",
-    });
-    expect(typeof manifest["updatedAt"]).toBe("string");
-    expect(Array.isArray(manifest["entries"])).toBe(true);
+  it("serves the 1.0 catalog envelope and conformant ARD entries at both paths", async () => {
+    // Full upstream schemas, not a second handwritten approximation of them.
+    // Formats are checked separately below; AJV's optional format plugin is absent.
+    const ajv = new Ajv2020({ strict: false, allErrors: true, validateFormats: false });
+    const catalog = ajv.compile(catalogSchema);
+    const entry = ajv.compile(entrySchema);
+    const unsigned = ardManifest(BASE);
+    expect(catalog(unsigned), JSON.stringify(catalog.errors)).toBe(true);
+    for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH]) {
+      const response = await fetchManifest(path);
+      expect(response.status).toBe(200);
+      const manifest = await response.json() as Record<string, unknown>;
+      expect(catalog(manifest), JSON.stringify(catalog.errors)).toBe(true);
+      expect(manifest.specVersion).toBe("1.0");
+      expect(manifest.host).toMatchObject({
+        displayName: STORE_SERVICE_NAME,
+        identifier: "did:web:scvd.store",
+      });
+      for (const resource of manifest.entries as Record<string, unknown>[]) {
+        expect(entry(resource), JSON.stringify(entry.errors)).toBe(true);
+        expect(new URL(resource.url as string).protocol).toBe("https:");
+        expect(new Date(resource.updatedAt as string).toISOString()).toBe(resource.updatedAt);
+      }
+    }
   });
 });
 

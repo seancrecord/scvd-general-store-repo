@@ -445,6 +445,17 @@ facilitator and all current client libraries speak v2.
 | `/admin` | The keeper's back room (Basic Auth, username `keeper`) |
 | `/admin/digest` | The weekly digest, compiled Sundays 7am ET by cron |
 
+The ARD manifest at `/.well-known/ard.json` (also served at
+`/.well-known/ai-catalog.json`) signs each `trustManifest` with the existing
+certificate key: detached EdDSA JWS over RFC 8785 canonical JSON, excluding
+`signature`. The entries carry both `type` and `mediaType` from one value.
+Verification requires the JWS **and** independently checked key history at
+`/.well-known/anchor-log.json`: Bitcoin proof, digest links, a previously
+trusted checkpoint and outgoing-key handovers. A status label alone is not
+proof. Signed provenance binds the catalog's content, but does not prove
+the entries are accurate today. The in-page ARD copies remain unsigned identity
+declarations. The full boundary is at `/attestation#ard_trust_manifest`.
+
 ## Where the code lives
 
 Single Worker, Hono for routing, KV for storage. No React, no build

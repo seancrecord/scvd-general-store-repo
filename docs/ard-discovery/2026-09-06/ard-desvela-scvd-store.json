@@ -1,0 +1,71 @@
+{
+  "registry": "desvela",
+  "url": "https://registry.desvela.dev/search",
+  "request": {
+    "query": {
+      "text": "scvd.store"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:32:53.064825+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:apify.com:api:store-search",
+        "displayName": "Apify Store search",
+        "type": "application/json",
+        "url": "https://api.apify.com/v2/store",
+        "description": "Search endpoint over the 68,000+ Actors published on Apify Store. Query by the platform or product a tool works with rather than the end goal, filter by category or pricing model, and get back the tools that do the job.",
+        "score": 88,
+        "source": "https://registry.desvela.dev/"
+      },
+      {
+        "identifier": "urn:air:apify.com:doc:store",
+        "displayName": "Apify Store",
+        "type": "text/markdown",
+        "url": "https://apify.com/store.md",
+        "description": "Markdown index of Apify Store: the most-used Actors overall and per use case, and how to search the full catalog of thousands of tools from an agent.",
+        "score": 88,
+        "source": "https://registry.desvela.dev/"
+      },
+      {
+        "identifier": "urn:air:www.lelo.com:skill:store-locator",
+        "displayName": "LELO Store Locator",
+        "type": "text/markdown",
+        "url": "https://www.lelo.com/.well-known/agent-skills/store-locator/SKILL.md",
+        "description": "Find physical retail stores that stock LELO products near a location. Use when a shopper asks where they can buy LELO in person or wants nearby stockists.",
+        "score": 86,
+        "source": "https://registry.desvela.dev/"
+      },
+      {
+        "identifier": "urn:air:hostinger.com:api:ecommerce",
+        "displayName": "Hostinger Ecommerce API",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://developers.hostinger.com/openapi/openapi.json",
+        "description": "Creates and manages Hostinger-hosted online stores: store creation, digital and physical product listings, sales channels (including custom storefronts), shipping configuration, and store readiness metadata.",
+        "score": 48,
+        "source": "https://registry.desvela.dev/"
+      },
+      {
+        "identifier": "urn:air:neon.com:skill:neon-object-storage",
+        "type": "application/agent-skills+md",
+        "url": "https://neon.com/.well-known/agent-skills/neon-object-storage/SKILL.md",
+        "description": "S3-compatible object storage that branches with your Neon project, so files and the database stay in sync across every branch. Use when a user wants object storage, a bucket, blob/file storage, or somewhere to put uploads, images, documents, avatars, or user-generated files for their app or agent \u2014 especially when they already use (or are setting up) Lakebase Postgres and don't want to add a separate storage provider like AWS S3, Cloudflare R2, or Supabase Storage. Triggers include \"object storage\", \"bucket\", \"blob storage\", \"file storage\", \"store uploads/images/files\", \"S3-compatible storage\", \"presigned URL\", \"where do I put files\", \"storage logs\", \"bucket logs\", \"CDN in front of object storage\", \"Neon Object Storage\", \"Neon Storage\", and \"storage that branches with my database\".",
+        "score": 31,
+        "source": "https://registry.desvela.dev/"
+      },
+      {
+        "identifier": "urn:air:publica.la:mcp:docs",
+        "displayName": "publica.la documentation MCP server",
+        "type": "application/json",
+        "url": "https://docs.publica.la/mcp",
+        "description": "MCP server run by the publica.la documentation site (docs.publica.la), not by this website. Answers questions about the per-store platform REST API v3: content, orders, auth tokens, webhooks and ONIX 3.0 intake. Use it for a publisher's own catalog and readers; use the website server for questions about publica.la itself.",
+        "score": 31,
+        "source": "https://registry.desvela.dev/"
+      }
+    ]
+  }
+}

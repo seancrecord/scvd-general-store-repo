@@ -1,6 +1,6 @@
 # Buyer repair checklist
 
-Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. All payment tests use local fixtures. The initial six repairs are published in [PR #540](https://github.com/seancrecord/scvd-general-store-repo/pull/540), with auto-merge enabled after required checks; production deployment is a separate status.
+Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. All payment tests use local fixtures. The initial six repairs are published in [PR #540](https://github.com/seancrecord/scvd-general-store-repo/pull/540), merged into main; production deployment is a separate status.
 
 The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-001, BUY-005, and BUY-028; the other three require durable payment and delivery recovery.
 
@@ -11,18 +11,18 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — open.
-- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repair in `f8f8d34f`; remains open until interrupted reconstruction and retained older purchases can recover safely.
+- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
 
 ## Remaining findings
 
 - [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
-- [ ] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — open.
-- [ ] **BUY-004 — P2: over-limit purpose silently truncates after payment** — open.
+- [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
+- [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
 - [ ] **BUY-007 — P1: Solana retries bypass the purchase cache** — open.
 - [ ] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — open.
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
-- [ ] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — open.
+- [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
 - [ ] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — open.
 - [ ] **BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit** — open.
 - [ ] **BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling** — open.
@@ -70,3 +70,13 @@ The completed substeps passed 206 focused tests across nine files, typechecking,
 Completed-result follow-up: four public MCP regressions failed at receipt replay on the prior code (Base/Polygon, cache loss/completion-response loss); all pass with authenticated durable reads. Final focused gate: 212 tests across nine files, typecheck, and both dry-run bundles. This does not cover a crash before the complete result is saved. PR #541 remains draft while recovery gaps and its Cloudflare preview build failure are unresolved.
 
 BUY-038: all 30 new failure-injection cases were observed red before the repair and green afterward. Coverage includes Base/Polygon/Solana, legacy/standard payment profiles, tool text/JSON-RPC/modern envelope encoding, and EVM cached replay. Identical EVM retries return the original verifiable artifact without settlement, and only an encoded response closes its delivery row. The final related gate passed 236 tests across seven files, typecheck, and both dry-run builds. Solana retry recovery remains BUY-007; partial fulfillment remains BUY-034/037.
+
+## Input-contract repairs
+
+BUY-003: non-text JSON is refused for every advertised string field before quoting or verification. The public-door matrix covers all 32 current products, five invalid JSON types, and signed controls for five buyer fields on every offered rail. All 37 new tests failed on unchanged source. The repaired gate passed 70 tests across four files and typechecking. The full suite remains delegated to GitHub.
+
+BUY-004: the schema and validator share one purpose limit. Both doors reject excess length before quoting or verification; accepted text is signed exactly as sent, with Unicode code-point counting and no post-payment truncation. All 44 new controls were observed red before the fix. The related gate passed 105 tests across four files, typecheck, and both Worker dry-run bundles. This also fixes purpose-specific whitespace/Unicode loss; BUY-009 and BUY-026 remain open for their other affected fields.
+
+BUY-010: buy_simple now derives all optional receipt fields from its eligible products, keeping only item_id required and no conditional branches. The served-schema and three-rail literal-buyer controls all failed before the fix; they now verify purpose survival and price agreement through both simple and theme shelves. The final combined gate for BUY-003/004/010 passed 112 tests across six files, typecheck and both Worker dry-run builds. BUY-002 remains open: changing bare HTTP purchase URLs from discovery probes to strict purchase requests requires a coordinated discovery/client transition.
+
+Recovery release prerequisite: PR #542 adds only the coordinator storage class/binding/migration. Cloudflare preview error 10211 requires this additive migration to be applied by main's regular deployment before #541's preview can upload. PR #542 merged as `e00307bd` and its production Worker build succeeded (version `6c3ac7a3-4ce7-4f9d-88e2-84e169f32673`). The consumer preview is being rechecked after merging main. This release prerequisite does not close BUY-037.
