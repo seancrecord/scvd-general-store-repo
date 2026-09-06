@@ -30,7 +30,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-015 — P1: payment expiry blocks receipt replay, and the suggested replacement key can charge again** — open.
 - [ ] **BUY-016 — P1: concurrent fresh authorizations bypass the same-key safeguard** — open.
 - [x] **BUY-018 — P1: a Solana signer can claim an EVM payer's cached receipt** — fixed locally; commit 005df923; not deployed.
-- [x] **BUY-019 — P1: malformed Solana settlement IDs are signed into receipts** — fixed locally; commit included in this commit; not deployed.
+- [x] **BUY-019 — P1: malformed Solana settlement IDs are signed into receipts** — fixed locally; commit 1a0b3827; not deployed.
 - [ ] **BUY-020 — P2: OpenAPI budget guidance quotes an obsolete range** — open.
 - [ ] **BUY-021 — P2: purchase receipts recommend a four-tenths-cent good for one-tenth cent** — open.
 - [ ] **BUY-022 — P2: the purchased blessing and fortune text is not signed** — open.
@@ -54,3 +54,5 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 Every repair gets a separate commit. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
 
 The broad untracked audit probes intentionally fail for unresolved findings. They remain separate from the normal regression gate; they have not been deleted or relabeled as passing.
+
+Final validation on the repaired current-main snapshot covered 552 test files: 551 passed, with one outdated source-inspection assertion failing (5,244 tests passed, one failed, one skipped). The assertion was corrected to recognize an awaited assigned result, with negative controls for unawaited writes. Its final recheck and the affected receipt/discovery suites passed all 22 tests across three files. Typechecking and both Worker dry-run builds passed. No production source changed after the full run. See the [verification record](buyer-repair-progress-2026-09-06.md).
