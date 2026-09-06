@@ -256,6 +256,17 @@ function buildEvent(
   return event;
 }
 
+/** A decline's second home: a prefix where every key is a decline. */
+async function writeDeclineIndex(env: Env, event: MetricEvent): Promise<void> {
+  const key = KV_KEYS.declineEvent(
+    invertedTimestamp(Date.now()),
+    Math.random().toString(36).slice(2, 8),
+  );
+  await kvPut(env.COUNTERS, key, JSON.stringify(event), {
+    expirationTtl: EVENT_TTL_SECONDS,
+  });
+}
+
 async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
   const key = `evt:${invertedTimestamp(Date.now())}:${Math.random().toString(36).slice(2, 8)}`;
   await kvPut(env.COUNTERS, key, JSON.stringify(event), {
@@ -470,6 +481,15 @@ export async function recordPaymentDecline(
     ),
   );
   await writeEvent(env, event);
+  /*
+   * INDEXED AS WELL AS LOGGED, and strictly AFTER the canonical row.
+   * The evt: row is the fact; declevt: is a finding aid — see
+   * KV_KEYS.declineEvent for the scan cap it exists to defeat. Writing
+   * the index first made it possible for a reader to find a decline
+   * whose own event row had not landed yet, which is a desk that can
+   * show a row the books do not have. The order is the invariant.
+   */
+  await writeDeclineIndex(env, event);
   await raiseFirstOutsideSignature(env, event, "declined");
   if (!event.house) {
     // RAISE A HAND. An outside decline is the rarest and most valuable
