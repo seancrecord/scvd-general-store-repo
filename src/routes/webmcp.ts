@@ -74,6 +74,8 @@ export const TOOL_ENDPOINTS: Readonly<
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
   /* The poll half of the async job, for an agent in a browser holding an order id: free, read-only, the store's own books. */
   check_order: { method: "GET", path: "/api/order/{order_id}" },
+  /* The shelf, searchable: the first two steps of the journey a browser agent is most likely to be on. */
+  find_in_catalog: { method: "GET", path: "/api/catalog/v1" },
 };
 
 /** Free and read-only, derived — the only tools the browser surface may carry. */
@@ -159,14 +161,28 @@ export function webmcpScript(): string {
   }
   function call(endpoint, args, signal) {
     // Every {placeholder} in the door's path is the argument of that
-    // name, URL-encoded; a GET door carries its input in the path.
+    // name, URL-encoded. Anything left over rides the query string on
+    // a GET, because a GET door has nowhere else to carry an input —
+    // before this, a GET tool's arguments reached the server only if
+    // the path happened to name them.
+    var used = {};
     var path = endpoint.path.replace(/\{([a-z_]+)\}/g, function (_m, name) {
+      used[name] = true;
       return encodeURIComponent(String(args[name] || ""));
     });
     var init = { method: endpoint.method };
     if (endpoint.method === "POST") {
       init.headers = { "Content-Type": "application/json" };
       init.body = JSON.stringify(args || {});
+    } else {
+      var query = [];
+      Object.keys(args || {}).forEach(function (key) {
+        if (used[key]) return;
+        var value = args[key];
+        if (value === undefined || value === null || value === "") return;
+        query.push(encodeURIComponent(key) + "=" + encodeURIComponent(String(value)));
+      });
+      if (query.length) path += (path.indexOf("?") === -1 ? "?" : "&") + query.join("&");
     }
     // A cancelled call aborts the request too, not only the promise.
     if (signal) init.signal = signal;

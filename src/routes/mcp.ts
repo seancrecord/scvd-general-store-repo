@@ -643,6 +643,28 @@ export async function callFreeTool(
     );
     return outcome.verdict as unknown as Record<string, unknown>;
   }
+  if (name === "find_in_catalog") {
+    /*
+     * The same derivation the HTTP door serves (routes/catalog.ts), so
+     * the shelf cannot read differently on the two doors. A refusal
+     * comes back as the search's own words, uncharged: this is free.
+     */
+    const { searchCatalog } = await import("@/routes/catalog");
+    const found = searchCatalog(c.env.STORE_BASE_URL, {
+      q: typeof args["q"] === "string" ? args["q"] : undefined,
+      maxPriceUsdc:
+        typeof args["max_price_usdc"] === "number" ||
+        typeof args["max_price_usdc"] === "string"
+          ? args["max_price_usdc"]
+          : undefined,
+      itemId: typeof args["item_id"] === "string" ? args["item_id"] : undefined,
+    });
+    if (found.status !== 200) {
+      return String(found.body["error"] ?? "The shelf could not be read.");
+    }
+    deferBookkeeping(c, recordPorchVisit(c.env, "catalog:mcp", mcpSignals(c)));
+    return found.body;
+  }
   if (name === "check_order") {
     /*
      * The same record and the same derivation the HTTP poll serves

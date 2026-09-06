@@ -1179,6 +1179,71 @@ const FREE_TOOLS: McpTool[] = [
       openWorldHint: false,
     },
   },
+  {
+    /*
+     * THE FIRST TWO STEPS OF THE JOURNEY (2026-09-06).
+     *
+     * The shelf could always be BOUGHT from over MCP and never
+     * SHOPPED: buy_* asks for an item_id the caller was expected to
+     * already know, the catalogue was a resource most hosts hide, and
+     * read_store_guide answers with the whole guide as prose. So an
+     * agent asking "what can I buy here for under a cent" had one
+     * move, which was to read everything. A WebMCP audit named the
+     * same gap in its own words — tools should map to a visitor's
+     * journey rather than to endpoints — and the journey this store
+     * has always had is find the thing, read what it costs and what
+     * it delivers, buy it. The third step was a tool; now the first
+     * two are.
+     *
+     * It is a different JOB from read_store_guide, which is the test
+     * the 27-to-5 consolidation set: that returns the store's prose,
+     * this returns rows a caller can filter and compare. Nothing here
+     * ranks, scores or recommends.
+     */
+    name: "find_in_catalog",
+    reads: "made_here",
+    description:
+      "Search this store's shelf and read one item's listing. Returns compact rows — id, name, price in USDC, instant or human-fulfilled, and what the item reads — filtered by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free, read-only, no payment and no account. This is how to learn WHICH item to buy before a buy_* tool, which needs an item_id. Nothing is ranked or recommended: the order is the shelf's own and the filter is a stated rule, printed beside what it matched and what it matched from. NOT a purchase and NOT a stock check.",
+    summary:
+      "Searches this store's shelf and returns compact rows: id, name, price in USDC, instant or human-fulfilled, and what each item reads. Filters by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free and read-only. Nothing is ranked or recommended.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        q: str("Words to match against an item's id, name, subtitle and description.", 120),
+        max_price_usdc: {
+          type: "number",
+          minimum: 0,
+          description: "A ceiling in USDC. Items at or below it match.",
+        },
+        item_id: str("One item's id. The answer carries that item alone, in full.", 60),
+      },
+      additionalProperties: false,
+      examples: [{ max_price_usdc: 0.01 }, { q: "watch" }, { item_id: "spot_check" }],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "object", description: "The filter that was applied, echoed." },
+        matched: { type: "number", description: "How many items matched." },
+        of: { type: "number", description: "How many are on the shelf, the denominator." },
+        items: {
+          type: "array",
+          description: "The rows, in the shelf's own order.",
+          items: { type: "object" },
+        },
+        how_this_was_ordered: str("That the order is the shelf's own and nothing is ranked."),
+        whole_catalogue: str("The full catalogue, for a caller that wants every field."),
+      },
+      required: ["matched", "of", "items"],
+    },
+    annotations: {
+      title: "Find Something on the Shelf",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
 ];
 
 /**

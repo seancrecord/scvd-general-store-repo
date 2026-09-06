@@ -164,7 +164,7 @@ not for connecting to it.)
 
 ### Tools
 
-Fifteen tools, all listed free by `tools/list`; the `buy_*` tools
+Sixteen tools, all listed free by `tools/list`; the `buy_*` tools
 are x402-paid in-band. Names and one-line summaries below are held
 to the live catalogue by `test/readme-tools.spec.ts`; the full
 descriptions and input schemas are what the server sends.
@@ -176,6 +176,7 @@ descriptions and input schemas are what the server sends.
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
 | `check_order` | Poll a human-queue order by its order_id: status, the promised window, the deliverable once completed. Free. |
+| `find_in_catalog` | Search the shelf and read one item's listing: compact rows filtered by price ceiling or text, or one item in full. Free. |
 | `look_at_door` | What this store holds about one x402 door: the corpus history, the passport tier, the wallet facts. |
 | `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
 | `ring_bell` | Ring the store bell; free. |
@@ -746,7 +747,7 @@ are not:
   with its own quality scan: descriptions, parameter descriptions and
   output schemas at full marks. Its annotations reading (0 of 27)
   describes the 27-tool catalog this store retired on 2026-08-02 —
-  the live catalog is 15 tools, every one carrying all four MCP
+  the live catalog is 16 tools, every one carrying all four MCP
   behavior hints through `tools/list` — and refreshes on its next
   scan rather than being argued with.
 - **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)

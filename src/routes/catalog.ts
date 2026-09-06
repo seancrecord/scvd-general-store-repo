@@ -19,7 +19,7 @@ import {
 } from "@/services/menu-markdown";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { escapeHtml } from "@/lib/sanitize";
+import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, offerCurrencyFields, organizationRef } from "@/lib/jsonld";
 import { firstPartyScriptCsp } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
@@ -831,3 +831,168 @@ catalogRoutes.get("/menu/", serveMenuIndex);
 
 catalogRoutes.get("/menu/:item_id", serveMenuItem);
 catalogRoutes.get("/menu/:item_id/", serveMenuItem);
+
+/**
+ * GET /api/catalog/v1 — THE SHELF, SEARCHABLE AND COMPACT
+ * (2026-09-06, at the keeper's go-ahead).
+ *
+ * WHY A DOOR WHEN /menu.json EXISTS. The full catalogue is 32 items
+ * of per-item prose, and every surface that carried it carried all of
+ * it: an agent asking "what can I buy here for under a cent" had to
+ * fetch the lot and filter it itself, and an agent in a browser had no
+ * tool for the question at all. A WebMCP audit put the same finding in
+ * its own words — tools should map to a visitor's JOURNEY rather than
+ * to endpoints — and the journey this store has always had is: find
+ * the thing, read what it costs and what it delivers, buy it. The
+ * third step was a tool and the first two were prose.
+ *
+ * COMPACT BY CONSTRUCTION, because the caller pays for every token.
+ * A search answers with rows and no descriptions; naming one item
+ * answers with that item's description and its at-a-glance block. The
+ * two shapes are the two questions, and neither is a truncation of
+ * the other — nothing here is cut mid-sentence to fit.
+ *
+ * IT INVENTS NOTHING. Every field is read off MENU_ITEMS or a
+ * derivation the shelf already uses (price tiers, the buy and listing
+ * URLs, the at-a-glance block /menu.json serves). No ranking, no
+ * relevance score, no recommendation: the filter is a stated rule and
+ * the order is the shelf's own.
+ */
+interface CatalogRow {
+  id: string;
+  name: string;
+  subtitle?: string;
+  price_usdc: number;
+  price_tiers_usdc: number[];
+  cadence: string;
+  fulfillment: string;
+  reads: string;
+  buy_url: string;
+  listing_url: string;
+}
+
+function catalogRow(item: MenuItem, base: string): CatalogRow {
+  return {
+    id: item.id,
+    name: item.name,
+    ...(item.subtitle ? { subtitle: item.subtitle } : {}),
+    price_usdc: item.price_usdc,
+    price_tiers_usdc: priceTiersUsdc(item),
+    cadence: item.cadence,
+    fulfillment: item.fulfillment,
+    reads: item.reads,
+    buy_url: `${base}/api/buy/${item.id}`,
+    listing_url: `${base}/menu/${item.id}`,
+  };
+}
+
+/** Case-insensitive substring over the fields a shopper would type into. */
+function matchesQuery(item: MenuItem, needle: string): boolean {
+  const haystack = [item.id, item.name, item.subtitle ?? "", item.description]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+}
+
+/**
+ * ONE DERIVATION, TWO DOORS. The HTTP route below and the MCP tool
+ * `find_in_catalog` both call this, so a browser agent, an MCP client
+ * and a plain fetch cannot be told different things about the shelf.
+ * Returns the status beside the body, the shape `preflightUrl` uses.
+ */
+export function searchCatalog(
+  base: string,
+  input: { q?: string; maxPriceUsdc?: string | number; itemId?: string },
+): { status: 200 | 400 | 404; body: Record<string, unknown> } {
+  const rawQuery = sanitizeText(String(input.q ?? ""), 120) ?? "";
+  const needle = rawQuery.trim().toLowerCase();
+  const itemId = sanitizeText(String(input.itemId ?? ""), 60) ?? "";
+  const rawCap = input.maxPriceUsdc;
+
+  /*
+   * A CAP THAT DOES NOT PARSE IS A REFUSAL, not a silent "no cap".
+   * Dropping it would answer a narrower question than the caller
+   * asked with the whole shelf, which reads as an answer and is not.
+   */
+  let cap: number | undefined;
+  if (rawCap !== undefined && rawCap !== "" && rawCap !== null) {
+    const parsed = Number(rawCap);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return {
+        status: 400,
+        body: {
+          error: "max_price_usdc has to be a number of USDC, zero or more.",
+          received: String(rawCap).slice(0, 40),
+          cheapest_on_the_shelf: Math.min(...MENU_ITEMS.map((item) => item.price_usdc)),
+        },
+      };
+    }
+    cap = parsed;
+  }
+
+  if (itemId) {
+    const item = MENU_ITEMS.find((entry) => entry.id === itemId);
+    if (!item) {
+      // Rule 52: a thing we do not have is named beside the things we do.
+      return {
+        status: 404,
+        body: {
+          error: `No item by that id on the shelf: ${itemId}`,
+          known_ids: MENU_ITEMS.map((entry) => entry.id),
+        },
+      };
+    }
+    return {
+      status: 200,
+      body: {
+        query: { item_id: itemId },
+        matched: 1,
+        of: MENU_ITEMS.length,
+        items: [
+          {
+            ...catalogRow(item, base),
+            description: item.description,
+            at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
+          },
+        ],
+        whole_listing: `${base}/menu/${item.id}`,
+      },
+    };
+  }
+
+  const matched = MENU_ITEMS.filter(
+    (item) =>
+      (!needle || matchesQuery(item, needle)) &&
+      (cap === undefined || item.price_usdc <= cap),
+  );
+  return {
+    status: 200,
+    body: {
+      query: {
+        ...(rawQuery ? { q: rawQuery } : {}),
+        ...(cap === undefined ? {} : { max_price_usdc: cap }),
+      },
+      matched: matched.length,
+      of: MENU_ITEMS.length,
+      items: matched.map((item) => catalogRow(item, base)),
+      /*
+       * The order is the shelf's own and the filter is a stated rule.
+       * Saying so is the difference between a list and a ranking, and
+       * this store does not publish the second kind.
+       */
+      how_this_was_ordered:
+        "The shelf's own order, filtered by the stated rule. Nothing here is ranked, scored or recommended.",
+      one_item_in_full: `${base}/api/catalog/v1?item_id={id}`,
+      whole_catalogue: `${base}/menu.json`,
+    },
+  };
+}
+
+catalogRoutes.get("/api/catalog/v1", (c) => {
+  const found = searchCatalog(c.env.STORE_BASE_URL, {
+    q: c.req.query("q"),
+    maxPriceUsdc: c.req.query("max_price_usdc"),
+    itemId: c.req.query("item_id"),
+  });
+  return c.json(found.body, found.status);
+});

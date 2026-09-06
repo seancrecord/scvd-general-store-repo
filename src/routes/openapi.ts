@@ -6992,6 +6992,81 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       ...buyPaths(c.env, MENU_ITEMS),
+      "/api/catalog/v1": {
+        get: {
+          ...returns(
+            freeOp(
+              "Search the shelf, or read one item",
+              "The catalogue in compact rows — id, name, price in USDC, the price tiers, instant or human-fulfilled, what the item reads, and where to buy it or read its listing. `q` matches an item's id, name, subtitle and description; `max_price_usdc` is a ceiling items match at or below; `item_id` returns that one item with its description and at-a-glance block instead of a list. No filter answers with the whole shelf. Every answer carries what matched and what it matched from, and states that the order is the shelf's own: nothing here is ranked, scored or recommended. A cap that does not parse is a 400 rather than a silently wider answer, and an id the shelf does not carry is a 404 naming the ids it does. Free.",
+            ),
+            {
+              type: "object",
+              required: ["matched", "of", "items"],
+              properties: {
+                query: {
+                  type: "object",
+                  description: "The filter that was applied, echoed back.",
+                },
+                matched: { type: "integer", description: "How many items matched." },
+                of: {
+                  type: "integer",
+                  description: "How many are on the shelf. The denominator travels with the count.",
+                },
+                items: {
+                  type: "array",
+                  description:
+                    "The rows, in the shelf's own order. A single-item answer carries description and at_a_glance beside them.",
+                  items: {
+                    type: "object",
+                    required: ["id", "name", "price_usdc", "fulfillment", "buy_url"],
+                    properties: {
+                      id: { type: "string" },
+                      name: { type: "string" },
+                      subtitle: { type: "string" },
+                      price_usdc: { type: "number" },
+                      price_tiers_usdc: { type: "array", items: { type: "number" } },
+                      cadence: { type: "string" },
+                      fulfillment: { type: "string" },
+                      reads: { type: "string" },
+                      buy_url: { type: "string", format: "uri" },
+                      listing_url: { type: "string", format: "uri" },
+                      description: { type: "string" },
+                      at_a_glance: { type: "object" },
+                    },
+                  },
+                },
+                how_this_was_ordered: { type: "string" },
+                whole_catalogue: { type: "string", format: "uri" },
+              },
+            },
+          ),
+          parameters: [
+            {
+              name: "q",
+              in: "query",
+              required: false,
+              schema: { type: "string", maxLength: 120 },
+              description: "Words matched against an item's id, name, subtitle and description.",
+            },
+            {
+              name: "max_price_usdc",
+              in: "query",
+              required: false,
+              schema: { type: "number", minimum: 0 },
+              example: 0.01,
+              description: "A ceiling in USDC. Items priced at or below it match.",
+            },
+            {
+              name: "item_id",
+              in: "query",
+              required: false,
+              schema: { type: "string", maxLength: 60 },
+              description:
+                "One item's id. The answer carries that item alone with its description; an unknown id answers 404 naming the ids the shelf holds.",
+            },
+          ],
+        },
+      },
       "/api/order/{order_id}": {
         get: {
           ...freeOp(
