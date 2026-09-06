@@ -37,11 +37,14 @@ Ordered 2026-09-03 under his lens: value or potential value
 if the market takes off, not ROI now ("think of it as tech
 in 0% interest rate times"). A1–A3, the next three moves of
 his delegated-agent memo of the same evening
-(`docs/DELEGATED_AGENT_PLAN_2026-09.md`), are built and sit
-under DONE; what they wait on is his press and his four
-rulings in that document. The rest of the memo and his
-channel list sit under LATER as C1–C7. One PR
-at a time; draft copy goes in chat, not on a flag.
+(`docs/DELEGATED_AGENT_PLAN_2026-09.md`), and channels C1–C7
+are built and have DONE rows. Corrected 2026-09-06: the
+memo's original decisions are not four outstanding rulings;
+package naming and the A2A endpoint shape are implemented.
+Remaining publication and submission actions live on
+KEEPER_LIST. The channel reference below records completed
+work and the named asks that would reopen it. One PR at a
+time; draft copy goes in chat, not on a flag.
 
 ---
 
@@ -88,7 +91,9 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L11 | Cross-protocol evidence desk | Same as L3, grown up. "First attestation authority" is not the goal; cheap readers are. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
 
-### The channels — how an agent or a developer meets the store (his list and his memo, 2026-09-03)
+---
+
+## Built channels — reference, not a build queue
 
 Seven ways a stranger arrives, each with what already stands and
 what is missing, ordered under the takeoff lens. The memo's parts
@@ -98,15 +103,15 @@ shipped 2026-09-03 on his "take them in your order". C5 shipped whole the same
 evening, C7, C6 and C3 the next morning. Every channel on this table
 is built; what remains on each is his press or a named ask.
 
-| # | Channel | How they arrive | What stands today | What is missing | Order |
+| # | Channel | How they arrive | What stands today | Remaining action or trigger | Original order |
 | --- | --- | --- | --- | --- | --- |
-| C2 | Framework templates | Developers copy examples from OpenAI Agents, Vercel AI SDK, LangChain/LangGraph, CrewAI, PydanticAI, AutoGen, Claude Code / Cursor, Copilot | DONE 2026-09-03 (row below): `examples/`, eight frameworks over one shared module in two languages, tested in CI against recorded readings. | One `examples/` directory, one operational workflow per framework (an agent is about to pay; it calls preflight; it reads network, asset, recipient and the defect state; it decides), each runnable against the live free doors and tested in CI against fixtures. | 1 |
-| C1 | Runtime workflow | An agent hits an x402 failure, a payment ambiguity, or a receipt-verification task | DONE 2026-09-03 (row below): `buyer_hint` on every class, `remediation` on the report and the audit, `next_action` and `documentation_url` on refusals, the CLI and the Action rendering the server's rows. | A `remediation` per defect class (what the operator does, what the buyer does) on the vocabulary, the preflight report and the audit; error bodies carrying `documentation_url`, `verification_url` and `next_action` on the doors, the CLI and the Action — only where SCVD is a legitimate remedy. Small. | 2 |
-| C4 | OpenAPI / API tool calling | Developers wrap the API in their own agents or frameworks | DONE 2026-09-03 (row below): `/openapi-tools.json`, the free instruments as function-calling tools with one worked call each, derived. | `/openapi-tools.json`: only the free deterministic doors with function-calling-shaped schemas and one worked call each, derived from the contract, never a second typed list. Small. | 3 |
+| C2 | Framework templates | Developers copy examples from OpenAI Agents, Vercel AI SDK, LangChain/LangGraph, CrewAI, PydanticAI, AutoGen, Claude Code / Cursor, Copilot | DONE 2026-09-03 (row below): `examples/`, eight frameworks over one shared module in two languages, tested in CI against recorded readings. | Nothing to build until a developer names a missing framework or workflow. | 1 |
+| C1 | Runtime workflow | An agent hits an x402 failure, a payment ambiguity, or a receipt-verification task | DONE 2026-09-03 (row below): `buyer_hint` on every class, `remediation` on the report and the audit, `next_action` and `documentation_url` on refusals, the CLI and the Action rendering the server's rows. | Nothing to build until a concrete refusal or defect exposes a missing remedy. | 2 |
+| C4 | OpenAPI / API tool calling | Developers wrap the API in their own agents or frameworks | DONE 2026-09-03 (row below): `/openapi-tools.json`, the free instruments as function-calling tools with one worked call each, derived. | Nothing to build until a caller names a missing free tool or schema field. | 3 |
 | C5 | Code dependencies | Developers install packages, examples, CLIs, GitHub Actions | DONE 2026-09-03 (C5a and C5b below): `x402-verify` 1.1, `x402-sign`, `scvd-cli` 0.2.0, `scvd-tab`, the preflight Action, the ClawHub skill, `examples/`, and the four new packages. Publish is his button. | Nothing on this row until a package is asked for by name. | 4 |
 | C6 | Retrieval / data, and the corpus as a feed | Agents discover the research during a factual task, or subscribe | DONE 2026-09-04 (row below): `/corpus/latest.json`, `/corpus/changes/{week}.json`, Last-Modified beside the ETag, the subscribe example, the notebook. | Nothing on this row until a subscriber asks for a shape that is not served. | 5 |
 | C7 | Other agents | Agents link to, invoke, reproduce and discuss useful tools | DONE 2026-09-04 (row below): `/fixtures.json` and `/fixtures/{set}/{name}.json` with sha256, a `cite` line on the signed documents and pages. | Nothing on this row until another instrument asks for a set that is not served. | 6 |
-| C3 | Agent-resource catalogs | Agent platforms discover MCP, A2A, API, skill and nested catalog records | DONE 2026-09-04 (row below): `/.well-known/ard.json` and `/.well-known/ai-catalog.json` name every record — both MCP doors, the evidence card, the contract, the tools document, every dataset, every feed, the skills — and the RFC 9727 api-catalog knows each URL first. | An AWS Agent Registry entry (his press, KEEPER_LIST). | 7 |
+| C3 | Agent-resource catalogs | Agent platforms discover MCP, A2A, API, skill and nested catalog records | DONE 2026-09-04 (row below): `/.well-known/ard.json` and `/.well-known/ai-catalog.json` name every record — both MCP doors, the evidence card, the contract, the tools document, every dataset, every feed, the skills — and the RFC 9727 api-catalog knows each URL first. | No general AWS listing press. See docs/SPEC_READS.md, 2026-09-06 AWS registry cleanup; reopen for a named customer registry integration. | 7 |
 
 What not to chase, per the memo, recorded so the next intake does
 not reopen them: more generic directories; a marketplace identity;

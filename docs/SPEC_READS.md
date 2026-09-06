@@ -21,6 +21,22 @@ claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
 
+## 2026-09-06 — AWS registry cleanup
+
+Read the primary [AWS registry overview](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry.html)
+and [registry concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-concepts.html)
+for the remaining ROADMAP C3 and delegated-agent decision 4 cleanup.
+AWS describes a catalog created in an AWS account, with authorization
+and approval configured by its administrator. That supports a named
+customer integration; it does not establish the general public listing
+press the old rows assumed. Those rows now withdraw that assumption.
+The store's existing ARD endpoint remains built.
+
+Gaps: these primary pages were returned by web search; no AWS console,
+customer registry, or publication flow was exercised. This read does not
+verify the earlier entry's launch date or future cross-organization
+roadmap, and does not turn other secondhand venue notes into primary reads.
+
 ## 2026-09-06 — the listing and discovery surfaces, read under rule 61
 
 The read that motivated rule 61, recorded first so the rule ships with
