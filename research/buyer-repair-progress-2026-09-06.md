@@ -153,3 +153,25 @@ The earlier probe timing/cleanup test repair is commit `b4f9936f`. Each buyer fi
 - BUY-019: `1a0b3827`.
 
 The checklist checks off only these six findings. BUY-017, BUY-034, and BUY-037 remain unchecked. All fixes are local on `codex/buyer-repairs`; nothing was pushed or deployed. Settlement in every repair regression was simulated, with no real funds moved. Historical Markdown audit reports are preserved alongside the log; raw JSON captures and exploratory scripts/specs remain local and are not part of this commit.
+
+## PR publication and BUY-037 continuation
+
+Sean requested a PR with auto-merge and asked to leave the full suite to GitHub. The initial repair branch was pushed as [PR #540](https://github.com/seancrecord/scvd-general-store-repo/pull/540), with merge commits selected so the individual fix hashes survive. Auto-merge is enabled and required checks remain the gate. No local full-suite rerun was made for publication.
+
+Follow-up work is isolated on `codex/buyer-mcp-recovery` at `/private/tmp/scvd-buyer-mcp-recovery`. Commit `f8f8d34f` is a bounded BUY-037 repair; the finding remains open.
+
+The new MCP path verifies the payment before recovery, checks its payer, network, path and complete canonical input digest against the original delivery record, and uses the saved payment facts without calling settlement again. The original truncated desk preview remains a preview, never a recovery identity. Incomplete certificate reads, changed inputs and an already-minted partial delivery return a paid failure without new payment terms or a false delivery claim.
+
+An explicit concurrency control reproduced two certificates from one payment in the first candidate. `PaidRecoveryStore`, one Durable Object per network/transaction, now records a claim before reconstruction and saves its response afterward. Overlapping requests cannot claim a second mint. The binding and SQLite class migration are included in the Worker configuration. A missing coordinator fails closed for reconstruction and leaves ordinary purchases unchanged.
+
+An unfinished claim never expires into permission to mint again. This prevents duplicates after a crash, but recovery of that interrupted attempt remains unfinished. Likewise, older delivery records without the complete digest cannot safely be reconstructed from their truncated input previews. These limits are why BUY-037 remains unchecked, alongside BUY-017 and BUY-034.
+
+Validation:
+
+- The final 24 serial/refusal/dialect tests failed on unchanged source; source files were restored afterward. They include all 18 reported product × EVM rail × mint-failure combinations.
+- A simultaneous same-payment retry failed on the first candidate by producing two different certificate IDs. After durable coordination it returns one certificate; a concurrent paid refusal can retrieve that same certificate on the next retry, without a second settlement.
+- Final focused run: nine files, 206 tests passed, including 25 public-door recovery cases and three real Durable Object coordination tests.
+- Typechecking and both Worker dry-run builds passed.
+- GitHub will run the full suite. Every payment is a local fixture; no real funds moved.
+
+The follow-up is kept separate from PR #540 and will remain a draft while the remaining recovery states are addressed. Completed substeps are checked off separately from the overall SEV-1 finding.
