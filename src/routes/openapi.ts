@@ -3635,31 +3635,29 @@ const API_CATALOG_SCHEMA: OpenApiObject = {
   },
 };
 
-/**
- * THE AGENT-READY DISCOVERY MANIFEST, served at two paths for two
- * dialects of the same young spec (ARD v0.91). `entries` is the only
- * field the spec itself requires; the rest are ours, and the shared
- * schema is the honest way to say the two documents are one document.
- */
+/** The 1.0 catalog envelope; both well-known paths serve one document. */
 const ARD_MANIFEST_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["entries"],
+  required: ["specVersion", "host", "entries"],
+  additionalProperties: false,
   properties: {
     specVersion: {
       type: "string",
-      description:
-        "The ARD revision this follows. Not a field the spec defines — added because a reader of a young spec needs to know which revision they are holding.",
+      description: "The catalog envelope version; distinct from the ARD proposal revision.",
     },
-    updatedAt: { type: "string" },
-    trustManifest: {
+    host: {
       type: "object",
-      description: "The did:web identity behind the entries.",
+      required: ["displayName", "identifier"],
+      properties: {
+        displayName: { type: "string" },
+        identifier: { type: "string", description: "The publisher's did:web identity." },
+        trustManifest: { type: "object", description: "Publisher identity and trust evidence; verification procedure at its governanceUri." },
+      },
     },
     entries: {
       type: "array",
       items: { type: "object" },
-      description:
-        "The store's callable surfaces. The one field ARD v0.91 requires.",
+      description: "The store's published resources, with per-entry timestamps and identity.",
     },
   },
 };

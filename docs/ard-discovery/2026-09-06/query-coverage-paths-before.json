@@ -1,0 +1,29 @@
+[
+  {
+    "accept": "*/*",
+    "status": 200,
+    "contentType": "text/html; charset=UTF-8",
+    "headPresent": true,
+    "ardLinks": [
+      "<link rel=\"ard\" href=\"https://scvd.store/.well-known/ard.json\">",
+      "<link rel=\"ai-catalog\" href=\"https://scvd.store/.well-known/ai-catalog.json\">"
+    ]
+  },
+  {
+    "accept": "text/html",
+    "status": 200,
+    "contentType": "text/html; charset=UTF-8",
+    "headPresent": true,
+    "ardLinks": [
+      "<link rel=\"ard\" href=\"https://scvd.store/.well-known/ard.json\">",
+      "<link rel=\"ai-catalog\" href=\"https://scvd.store/.well-known/ai-catalog.json\">"
+    ]
+  },
+  {
+    "accept": "application/json,*/*",
+    "status": 200,
+    "contentType": "application/json",
+    "headPresent": false,
+    "ardLinks": []
+  }
+]

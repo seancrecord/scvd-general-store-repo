@@ -1,0 +1,2267 @@
+{
+  "registry": "neuronto",
+  "url": "https://neuronto.com/search",
+  "request": {
+    "query": {
+      "text": "scvd.store"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T22:10:04.803808+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:scvd.store:server:general-store",
+        "displayName": "SCVD General Store \u2014 MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://scvd.store/.well-known/mcp",
+        "description": "The store as a Model Context Protocol server over streamable HTTP. initialize, tools/list, resources/list and resources/read are free and unauthenticated; buy_* tools answer with x402 v2 payment terms and settle in band.",
+        "tags": [
+          "x402",
+          "signed-artifacts",
+          "verification",
+          "agent-memory",
+          "human-labor"
+        ],
+        "capabilities": [
+          "read_store_guide",
+          "ring_bell",
+          "sign_guestbook",
+          "preflight_endpoint",
+          "check_before_you_pay",
+          "check_conformance",
+          "verify_artifact",
+          "buy_simple",
+          "buy_signed_record",
+          "buy_human_task",
+          "buy_observation",
+          "buy_memory_anchor",
+          "buy_small_pleasure",
+          "look_at_door",
+          "check_order",
+          "find_in_catalog"
+        ],
+        "representativeQueries": [
+          "Ask what the observatory already knows about an x402 host \u2014 signed, from its books, before I spend anything at that door",
+          "Prove to a third party that a payment actually settled on chain",
+          "Settle a real x402 payment for the smallest amount possible",
+          "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
+          "Say the thing once, anonymously, to a counter that keeps it",
+          "Read the same line every other agent gets today"
+        ],
+        "trustManifest": {
+          "identity": "did:web:scvd.store"
+        },
+        "score": 100,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201773,
+          "reachable": true,
+          "tools": 13
+        },
+        "matchedTool": {
+          "name": "verify_artifact",
+          "description": "Verify anything scvd.store has ever signed \u2014 certificates, visit stamps, context anchors \u2014 by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this chec"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:server:x402-verifier",
+        "displayName": "SCVD x402 Verifier \u2014 MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://scvd.store/mcp/verifier",
+        "description": "A second MCP door (scvd-x402-verifier) serving only read-only x402 verification tools under task-shaped names, on the same handlers as the store's full door, with no paid tool reachable. For a client that should never see a shelf.",
+        "tags": [
+          "x402",
+          "signed-artifacts",
+          "verification",
+          "agent-memory",
+          "human-labor"
+        ],
+        "capabilities": [
+          "preflight_x402_endpoint",
+          "verify_x402_receipt",
+          "lookup_endpoint_readiness",
+          "get_defect_definition",
+          "verify_scvd_artifact"
+        ],
+        "representativeQueries": [
+          "preflight an x402 endpoint",
+          "verify an x402 receipt",
+          "look up an endpoint's readiness history",
+          "what does this x402 defect class mean"
+        ],
+        "trustManifest": {
+          "identity": "did:web:scvd.store"
+        },
+        "score": 50,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:scvd.store:api:function-calling-tools",
+        "displayName": "SCVD General Store \u2014 the free instruments as function-calling tools",
+        "type": "application/json;profile=function-calling-tools",
+        "url": "https://scvd.store/openapi-tools.json",
+        "description": "The free, read-only instruments in the common function-calling shape, one worked call each, derived from the same catalog the MCP door serves. No paid door appears.",
+        "trustManifest": {
+          "identity": "did:web:scvd.store"
+        },
+        "score": 49,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.adrianhomelab:mcp:mall-directory",
+        "displayName": "Mall Store Directory",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mall-mcp.adrianhomelab.com/mcp",
+        "description": "Search 6,926 mall stores across 49 malls in RO, US, UK, HU by city, operator, or category.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "search 6,926 mall stores across 49 malls in ro, us, uk, hu by city, operator, or category",
+          "mall store directory for this task"
+        ],
+        "version": "1.0.0",
+        "score": 47,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201545,
+          "reachable": true,
+          "tools": 6
+        }
+      },
+      {
+        "identifier": "urn:air:com.mystoq:mcp:storefront",
+        "displayName": "storefront",
+        "type": "application/mcp-server",
+        "url": "https://mystoq.com/api/mcp",
+        "description": "Discover Algerian COD stores on Mystoq, or manage your own: products, prices, shipping/fraud tools.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "discover algerian cod stores on mystoq + cod, shipping and fraud calculators",
+          "com.mystoq/storefront for this task",
+          "discover algerian cod stores on mystoq, or manage your own: products, prices, shipping/fraud tools"
+        ],
+        "version": "1.1.0",
+        "score": 46,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201762,
+          "reachable": true,
+          "tools": 12
+        }
+      },
+      {
+        "identifier": "urn:air:hostinger.com:api:ecommerce",
+        "displayName": "Hostinger Ecommerce API",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://developers.hostinger.com/openapi/openapi.json",
+        "description": "Creates and manages Hostinger-hosted online stores: store creation, digital and physical product listings, sales channels (including custom storefronts), shipping configuration, and store readiness metadata.",
+        "capabilities": [
+          "create_store",
+          "create_product",
+          "manage_sales_channels",
+          "set_store_shipping",
+          "get_store_metadata",
+          "delete_store"
+        ],
+        "representativeQueries": [
+          "create a new online store",
+          "add a physical product to my store",
+          "set up shipping for my ecommerce store"
+        ],
+        "trustManifest": {
+          "identity": "{\"legalName\": \"Hosting Hostinger\", \"domain\": \"hostinger.com\", \"sameAs\": [\"https://en.wikipedia.org/wiki/Hostinger\", \"https://www.wikidata.org/wiki/Q55613975\"]}"
+        },
+        "score": 46,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.agishub:mcp:agent-memory",
+        "displayName": "agent-memory",
+        "type": "application/mcp-server",
+        "url": "https://api.agishub.com/mcp/memory",
+        "description": "Persistent semantic memory for AI agents: store and recall text by meaning (RAG, Vectorize). x402",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "persistent semantic memory for ai agents: store and recall text by meaning (rag, vectorize)",
+          "com.agishub/agent-memory for this task",
+          "persistent semantic memory for ai agents: store and recall text by meaning (rag)"
+        ],
+        "version": "2.1.2",
+        "score": 45,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "tools": 2
+        }
+      },
+      {
+        "identifier": "urn:air:com.appskyline:mcp:appskyline",
+        "displayName": "com.appskyline/appskyline",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.appskyline.com/mcp",
+        "description": "Track app-store rankings, history, listing metadata, reviews and competitors across four stores.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "track app-store rankings, history, listing metadata, reviews and competitors across four stores",
+          "com.appskyline/appskyline for this task"
+        ],
+        "version": "0.1.1",
+        "score": 45,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "tools": 14
+        }
+      },
+      {
+        "identifier": "urn:air:com.expandingweb:mcp:nord-trail-store",
+        "displayName": "com.expandingweb/nord-trail-store",
+        "type": "application/mcp-server-card+json",
+        "url": "https://ready.expandingweb.com/mcp",
+        "description": "Reference agent-ready storefront: search, look up and price a real Magento catalog.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "reference agent-ready storefront: search, look up and price a real magento catalog",
+          "com.expandingweb/nord-trail-store for this task"
+        ],
+        "version": "1.0.0",
+        "score": 44,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788270991,
+          "reachable": true,
+          "tools": 6
+        }
+      },
+      {
+        "identifier": "urn:air:com.rankcusp:mcp:aso",
+        "displayName": "rankcusp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://rankcusp.com/api/mcp",
+        "description": "App Store keyword ranks, the 11-30 cusp band, metadata audits and rival positions.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "app store keyword ranks, the 11-30 cusp band, metadata audits and rival positions",
+          "rankcusp for this task"
+        ],
+        "version": "1.0.0",
+        "score": 44,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201765,
+          "reachable": true,
+          "tools": 9
+        }
+      },
+      {
+        "identifier": "urn:air:com.myappstoreranking:mcp:myappstoreranking",
+        "displayName": "My App Store Ranking",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.myappstoreranking.com/mcp",
+        "description": "Access to your Apple App Store and Google Play Store rankings, competitors and chart moves.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "access to your apple app store and google play store rankings, competitors and chart moves",
+          "my app store ranking for this task"
+        ],
+        "version": "1.0.1",
+        "score": 44,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201762,
+          "reachable": true,
+          "tools": 9
+        }
+      },
+      {
+        "identifier": "urn:air:com.gotcashback:mcp:gotcashback",
+        "displayName": "GotCashback",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.gotcashback.com",
+        "description": "Compare cashback rates across portals and discounted gift cards for stores in 30+ countries.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "compare cashback rates across portals and discounted gift cards for stores in 30+ countries",
+          "gotcashback for this task"
+        ],
+        "version": "1.1.0",
+        "score": 43,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788554694,
+          "reachable": true,
+          "tools": 18
+        }
+      },
+      {
+        "identifier": "urn:air:ai.inxy:mcp:seo-audit",
+        "displayName": "ai.inxy/seo-audit",
+        "type": "application/mcp-server-card+json",
+        "url": "https://inxy.ai/api/mcp",
+        "description": "Free SEO & AI-search (AEO) audits for any site or Shopify store, with emailed weekly score reports.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "score any site or shopify store for aeo/geo/llmo readiness \u2014 how likely ai search is to cite it",
+          "ai.inxy/seo-audit for this task",
+          "free seo & ai-search (aeo) audits for any site or shopify store, with emailed weekly score reports"
+        ],
+        "version": "1.4.0",
+        "score": 43,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:ai.rightcard:mcp:mcp",
+        "displayName": "RightCard",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.rightcard.ai/mcp",
+        "description": "Which of your credit cards to use at any store, from verified bank data. No bank login.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "which of your credit cards to use at any store, from verified bank data",
+          "rightcard for this task"
+        ],
+        "version": "0.1.2",
+        "score": 43,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:com.getappniche:mcp:mcp",
+        "displayName": "com.getappniche/mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.getappniche.com/mcp",
+        "description": "Live App Store & Google Play data for AI agents: app discovery, ASO keywords, reviews.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "live app store & google play data for ai agents: app discovery, aso keywords, reviews",
+          "com.getappniche/mcp for this task"
+        ],
+        "version": "1.2.0",
+        "score": 42,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201757,
+          "reachable": true,
+          "tools": 7
+        }
+      },
+      {
+        "identifier": "urn:air:com.appscreenshotstudio:mcp:mcp",
+        "displayName": "com.appscreenshotstudio/mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://registry.modelcontextprotocol.io/v0/servers?search=com.appscreenshotstudio/mcp",
+        "description": "Generate App Store and Play Store screenshots from your coding agent, at exact store sizes.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "generate app store and play store screenshots from your coding agent, at exact store sizes",
+          "com.appscreenshotstudio/mcp for this task"
+        ],
+        "version": "0.6.3",
+        "score": 42,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:github.com:Shopify:Shopify-AI-Toolkit:shopify-hydrogen",
+        "displayName": "Shopify Hydrogen",
+        "type": "application/ai-skill",
+        "url": "https://github.com/Shopify/Shopify-AI-Toolkit/blob/main/skills/shopify-hydrogen/SKILL.md",
+        "description": "Hydrogen storefront implementation cookbooks.",
+        "tags": [
+          "shopify",
+          "hydrogen",
+          "storefront",
+          "implementation",
+          "cookbooks"
+        ],
+        "capabilities": [
+          "implement hydrogen storefronts",
+          "provide storefront implementation cookbooks"
+        ],
+        "representativeQueries": [
+          "how to implement a Hydrogen storefront",
+          "what are some cookbooks for Hydrogen storefront implementation"
+        ],
+        "score": 42,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:github.com:Shopify:Shopify-AI-Toolkit:shopify-onboarding-merchant",
+        "displayName": "Shopify Onboarding Merchant",
+        "type": "application/ai-skill",
+        "url": "https://github.com/Shopify/Shopify-AI-Toolkit/blob/main/skills/shopify-onboarding-merchant/SKILL.md",
+        "description": "Set up and connect a Shopify store from your AI assistant.",
+        "tags": [
+          "shopify",
+          "onboarding",
+          "ecommerce"
+        ],
+        "capabilities": [
+          "set up a shopify store",
+          "connect a shopify store"
+        ],
+        "representativeQueries": [
+          "how to set up a Shopify store",
+          "connect my Shopify store",
+          "what is involved in Shopify onboarding"
+        ],
+        "score": 41,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.mareaalcalina:mcp:storefront",
+        "displayName": "Marea \u2014 Storefront Backend for Agents",
+        "type": "application/mcp-server",
+        "url": "https://mcp.mareaalcalina.com/mcp",
+        "description": "Hosted storefront backend for AI agents: products, cart, Stripe + PayPal, delivery, order tracking.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "hosted storefront backend for ai agents: products, cart, stripe + paypal, delivery, order tracking",
+          "marea \u2014 storefront backend for agents for this task"
+        ],
+        "version": "1.0.1",
+        "score": 41,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:apify.com:api:store-search",
+        "displayName": "Apify Store search",
+        "type": "application/json",
+        "url": "https://api.apify.com/v2/store",
+        "description": "Search endpoint over the 65,000+ Actors published on Apify Store. Query by the platform or product a tool works with rather than the end goal, filter by category or pricing model, and get back the tools that do the job.",
+        "tags": [
+          "search",
+          "discovery",
+          "actors",
+          "apify-store",
+          "marketplace"
+        ],
+        "representativeQueries": [
+          "find a ready-made tool that collects product data from an online store",
+          "which Apify tool extracts data from Google Maps"
+        ],
+        "trustManifest": {
+          "identity": "https://apify.com"
+        },
+        "score": 41,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:agentready.market:audit:scan-api",
+        "displayName": "Store agent-readiness scan (public API)",
+        "type": "application/json",
+        "url": "https://www.agentready.market/api/scan",
+        "description": "GET https://www.agentready.market/api/scan?url=<store>&vertical=<vertical> returns score /100, grade, per-pillar checks, fixes, scan_id and a shareable report_url.",
+        "representativeQueries": [
+          "is this online store ready for AI shopping agents",
+          "score an e-commerce site's agent readiness",
+          "can an AI agent find, understand and buy on this store",
+          "audit a shop's structured data for AI agents"
+        ],
+        "score": 40,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:apify.com:doc:store",
+        "displayName": "Apify Store",
+        "type": "text/markdown",
+        "url": "https://apify.com/store.md",
+        "description": "Markdown index of Apify Store: the most-used Actors overall and per use case, and how to search the full catalog of thousands of tools from an agent.",
+        "tags": [
+          "actors",
+          "apify-store",
+          "tools-for-ai",
+          "web-data"
+        ],
+        "representativeQueries": [
+          "what tool can extract data from LinkedIn",
+          "find a tool that collects TikTok comments"
+        ],
+        "trustManifest": {
+          "identity": "https://apify.com"
+        },
+        "score": 40,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:www.lelo.com:skill:store-locator",
+        "displayName": "LELO Store Locator",
+        "type": "text/markdown",
+        "url": "https://www.lelo.com/.well-known/agent-skills/store-locator/SKILL.md",
+        "description": "Find physical retail stores that stock LELO products near a location. Use when a shopper asks where they can buy LELO in person or wants nearby stockists.",
+        "representativeQueries": [
+          "where can I buy LELO products near me",
+          "find a physical store that stocks LELO in Berlin"
+        ],
+        "score": 40,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.medplum:mcp:mcp",
+        "displayName": "mcp",
+        "type": "application/mcp-server",
+        "url": "https://api.medplum.com/mcp/stream",
+        "description": "Securely access and manage FHIR healthcare data stored in Medplum.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "securely access and manage fhir healthcare data stored in medplum",
+          "com.medplum/mcp for this task"
+        ],
+        "version": "1.0.0",
+        "score": 39,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:build.uplink:mcp:uplink",
+        "displayName": "Uplink",
+        "type": "application/mcp-server",
+        "url": "https://docs.uplink.build",
+        "description": "Automate a real, logged-in browser on your own device \u2014 no stored credentials, no bot detection.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "pair a real phone or laptop and run agentic automation in its live, logged-in browser session",
+          "uplink for this task",
+          "automate a real, logged-in browser on your own device \u2014 no stored credentials, no bot detection"
+        ],
+        "version": "0.1.4",
+        "score": 39,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:publica.la:mcp:docs",
+        "displayName": "publica.la documentation MCP server",
+        "type": "application/json",
+        "url": "https://docs.publica.la/mcp",
+        "description": "MCP server run by the publica.la documentation site (docs.publica.la), not by this website. Answers questions about the per-store platform REST API v3: content, orders, auth tokens, webhooks and ONIX 3.0 intake. Use it for a publisher's own catalog and readers; use the website server for questions about publica.la itself.",
+        "representativeQueries": [
+          "How do I upload a book through the publica.la Content API v3?",
+          "Which webhooks does a publica.la store send on a purchase?",
+          "How do I sign a reader into a publica.la store from my own system?"
+        ],
+        "trustManifest": {
+          "identity": "https://publica.la"
+        },
+        "version": "1.0.0",
+        "score": 39,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:built2winweb.com:services:ecommerce",
+        "displayName": "Ecommerce Website Development",
+        "type": "text/html",
+        "url": "https://built2winweb.com/ecommerce-website/",
+        "description": "Custom PHP ecommerce stores with Stripe or PayPal \u2013 no Shopify fees.",
+        "representativeQueries": [
+          "how to build a custom ecommerce site",
+          "how to avoid Shopify fees"
+        ],
+        "score": 38,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:built2winweb.com:portfolio",
+        "displayName": "Portfolio / Gallery",
+        "type": "text/html",
+        "url": "https://built2winweb.com/portfolio/",
+        "description": "Showcase of custom PHP websites, ecommerce stores, and SaaS platforms built for clients.",
+        "representativeQueries": [
+          "what kind of websites has BuiltToWinWeb built",
+          "see examples of custom PHP development"
+        ],
+        "score": 38,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:built2winweb.com:pricing",
+        "displayName": "Pricing & Packages",
+        "type": "text/html",
+        "url": "https://built2winweb.com/pricing/",
+        "description": "Flat\u2011fee pricing for custom PHP websites, ecommerce stores, and SaaS applications.",
+        "representativeQueries": [
+          "how much does a custom PHP website cost",
+          "what are the pricing plans for ecommerce",
+          "is there a monthly fee"
+        ],
+        "score": 38,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.mamanida:mcp:mamanida-mcp",
+        "displayName": "Mamanida Maternity Catalogue",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mamanida.com/mcp",
+        "description": "Public read-only MCP server to discover and compare maternity and nursing fashion.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "public read-only mcp server to discover and compare maternity and nursing fashion",
+          "mamanida maternity catalogue for this task"
+        ],
+        "version": "1.0.0",
+        "score": 37,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:com.getbooyah:mcp:booyah-index",
+        "displayName": "Booyah Index",
+        "type": "application/mcp-server-card+json",
+        "url": "https://getbooyah.com/api/mcp",
+        "description": "AI-readable directory + commerce layer: 3,500+ SEA businesses, plus products from verified stores.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ai-readable directory of bangkok restaurants and what each one is known for",
+          "booyah index for this task",
+          "ai-readable directory of bangkok places \u2014 restaurants, shops & local businesses",
+          "ai-readable directory of local businesses across 8 southeast asian cities",
+          "ai-readable directory of 3,500+ local businesses across 14 southeast asian cities",
+          "ai-readable directory + commerce layer: 3,500+ sea businesses, plus products from verified stores"
+        ],
+        "version": "0.5.0",
+        "score": 37,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201757,
+          "reachable": true,
+          "tools": 6
+        }
+      },
+      {
+        "identifier": "urn:air:com.mcpscores:mcp:cheapest-grocery-basket",
+        "displayName": "Cheapest Grocery Basket",
+        "type": "application/mcp-server-card+json",
+        "url": "https://grocery-basket.bowling-anthony.workers.dev/mcp",
+        "description": "Where to buy a whole grocery list today: local prices, per-unit and cross-store comparison.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "where to buy a whole grocery list today: local prices, per-unit and cross-store comparison",
+          "cheapest grocery basket for this task"
+        ],
+        "version": "1.0.3",
+        "score": 37,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:com.expandingweb:mcp:agentic-commerce-readiness",
+        "displayName": "com.expandingweb/agentic-commerce-readiness",
+        "type": "application/mcp-server-card+json",
+        "url": "https://expandingweb.com/mcp",
+        "description": "Score a Magento or Adobe Commerce store on eight AI agent-readiness checks.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "score a magento or adobe commerce store on eight ai agent-readiness checks",
+          "com.expandingweb/agentic-commerce-readiness for this task"
+        ],
+        "version": "1.0.0",
+        "score": 37,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788270991,
+          "reachable": true,
+          "tools": 7
+        }
+      },
+      {
+        "identifier": "urn:air:com.gocdkeys:mcp:gocdkeys",
+        "displayName": "GoCDKeys",
+        "type": "application/mcp-server-card+json",
+        "url": "https://gocdkeys.com/agent/mcp",
+        "description": "Game prices across verified stores, with price history and a buy-now-or-wait verdict.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "game prices across verified stores, with price history and a buy-now-or-wait verdict",
+          "gocdkeys for this task"
+        ],
+        "version": "1.0.0",
+        "score": 36,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201757,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:github.com:astronomer:agents:airflow-state-store",
+        "displayName": "Airflow State Store",
+        "type": "application/ai-skill",
+        "url": "https://github.com/astronomer/agents/blob/main/skills/airflow-state-store/SKILL.md",
+        "description": "Persists task and asset state across retries and DAG runs using Airflow 3.3's AIP-103 key/value stores (`task_state_store`, `asset_state_store`) and...",
+        "tags": [
+          "airflow",
+          "state persistence",
+          "task management"
+        ],
+        "capabilities": [
+          "persist task state",
+          "persist asset state",
+          "support retries",
+          "support dag runs"
+        ],
+        "representativeQueries": [
+          "how to persist task state in Airflow",
+          "what is the asset state store in Airflow",
+          "how does Airflow handle retries for tasks"
+        ],
+        "score": 36,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.asoatlas:mcp:mcp",
+        "displayName": "ASO Atlas",
+        "type": "application/mcp-server-card+json",
+        "url": "https://asoatlas.com/mcp",
+        "description": "App Store keyword research, rank tracking and App Store Connect performance for your iOS apps.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "app store keyword research, rank tracking and app store connect performance for your ios apps",
+          "aso atlas for this task"
+        ],
+        "version": "1.0.0",
+        "score": 36,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.dukonai:mcp:billz",
+        "displayName": "Dukon AI \u2014 BILLZ store analytics",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.dukonai.com/mcp",
+        "description": "BILLZ (Billz) retail store analytics: revenue, profit, stock, top products, customers, reports",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ask your billz retail store about revenue, stock, top products and customers in plain words",
+          "dukon ai \u2014 billz store analytics for this task",
+          "billz (billz) retail store analytics: revenue, profit, stock, top products, customers, reports"
+        ],
+        "version": "1.1.0",
+        "score": 35,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201550,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:app.bestappify:mcp:shopify-app-store",
+        "displayName": "BestAppify \u2014 Shopify App Store Intelligence",
+        "type": "application/mcp-server-card+json",
+        "url": "https://bestappify.app/api/mcp",
+        "description": "Shopify App Store intelligence: keyword ranks, competitors, reviews, revenue. Free tier.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "shopify app store intelligence: keyword ranks, competitors, reviews, revenue",
+          "bestappify \u2014 shopify app store intelligence for this task"
+        ],
+        "version": "1.0.0",
+        "score": 35,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:ai.clize:mcp:storefront",
+        "displayName": "Agent Storefront",
+        "type": "application/mcp-server-card+json",
+        "url": "https://registry.modelcontextprotocol.io/v0/servers?search=ai.clize/storefront",
+        "description": "Let your AI agent run a real store: checkout, orders, refunds, shipping and support.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "let your ai agent run a real store: checkout, orders, refunds, shipping and support",
+          "agent storefront for this task"
+        ],
+        "version": "0.35.5",
+        "score": 35,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201539,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:vtex.local:api:headless-cms-api",
+        "displayName": "VTEX Headless CMS",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/vtex/openapi-schemas/master/VTEX - Headless CMS API.json",
+        "description": "The VTEX Headless CMS is a no-code management system for storefront content.  That means you can store your content as structured data in a layer decoupled from the frontend and  use the VTEX Headless CMS to access and deliver your content to your storefront project.  Notice that the VTEX Headless CMS typically works with **FastStore** projects only. In this case, you can use this API to fetch data using SSR (NextJS and Gatsby v4+) or SSG (NextJS).  **Servers** - `https://{account}.myvtex.com/` - `https://{workspace}--{account}.myvtex.com/`  **Server variables** - `accountName`: Name of...",
+        "tags": [
+          "api",
+          "headless-cms-api",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the vtex headless cms",
+          "vtex headless cms api",
+          "the vtex headless cms is a no-code management system for storefront content"
+        ],
+        "version": "0.31.2",
+        "score": 34,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:registry.modelcontextprotocol.io:com.getappniche:mcp",
+        "displayName": "com.getappniche/mcp",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/v0.1/servers/com.getappniche%2Fmcp/versions/1.2.0",
+        "description": "Live App Store & Google Play data for AI agents: app discovery, ASO keywords, reviews.",
+        "tags": [
+          "ai-agents",
+          "app-store",
+          "aso",
+          "claude",
+          "cursor",
+          "google-play",
+          "mcp",
+          "mcp-server",
+          "model-context-protocol"
+        ],
+        "version": "1.2.0",
+        "score": 34,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201773,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.jumpseller:mcp:admin-mcp",
+        "displayName": "Jumpseller",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.jumpseller.com/",
+        "description": "Manage your Jumpseller store with AI. Products, orders, customers, and more.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "manage your jumpseller store with ai",
+          "jumpseller for this task"
+        ],
+        "version": "1.0.0",
+        "score": 34,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201759,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.attribloom:mcp:mcp",
+        "displayName": "Attribloom",
+        "type": "application/mcp-server-card+json",
+        "url": "https://registry.modelcontextprotocol.io/v0/servers?search=com.attribloom/mcp",
+        "description": "Affiliate attribution and commission data for iOS (StoreKit 2) and Shopify",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "affiliate attribution and commission data for ios (storekit 2) and shopify",
+          "attribloom for this task"
+        ],
+        "version": "0.1.0",
+        "score": 33,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:ai.openaso:mcp:openaso",
+        "displayName": "openaso",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.openaso.ai/mcp",
+        "description": "App Store Optimization for AI agents: keyword ranks, suggestions, popularity, competitors, reviews",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "app store optimization for ai agents: keyword ranks, suggestions, popularity, competitors, reviews",
+          "openaso for this task"
+        ],
+        "version": "0.3.0",
+        "score": 33,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:app.screenies:mcp:screenies",
+        "displayName": "Screenies",
+        "type": "application/mcp-server-card+json",
+        "url": "https://screenies.app/mcp",
+        "description": "Generate designed, localized App Store screenshot sets from your raw app captures.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "generate designed, localized app store screenshot sets from your raw app captures",
+          "screenies for this task"
+        ],
+        "version": "1.0.0",
+        "score": 33,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201543,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.app-dex:mcp:appdex",
+        "displayName": "com.app-dex/appdex",
+        "type": "application/mcp-server-card+json",
+        "url": "https://registry.modelcontextprotocol.io/v0/servers?search=com.app-dex/appdex",
+        "description": "iOS App Store revenue & download estimates with confidence labels",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ios app store revenue & download estimates with confidence labels",
+          "com.app-dex/appdex for this task"
+        ],
+        "version": "1.1.1",
+        "score": 33,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:commerce.delx.ai:agent:commerce",
+        "displayName": "Delx Commerce A2A agent",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://commerce.delx.ai/.well-known/agent-card.json",
+        "description": "A2A agent card for Delx Commerce machine storefront and product discovery.",
+        "tags": [
+          "a2a",
+          "commerce",
+          "agents"
+        ],
+        "capabilities": [
+          "ProductDiscovery",
+          "IntentRouting"
+        ],
+        "representativeQueries": [
+          "agent card for Delx Commerce x402 store",
+          "A2A discovery for Delx paid micro-utils"
+        ],
+        "score": 33,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:adyen.com:api:storedvalueservice",
+        "displayName": "Adyen Stored Value API",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Adyen/adyen-openapi/main/json/StoredValueService-v46.json",
+        "description": "A set of API endpoints to manage stored value products.",
+        "tags": [
+          "api",
+          "openapi",
+          "payment",
+          "spec-not-recently-updated",
+          "storedvalueservice"
+        ],
+        "representativeQueries": [
+          "use the adyen stored value api",
+          "adyen stored value api api",
+          "a set of api endpoints to manage stored value products",
+          "payment api"
+        ],
+        "version": "46",
+        "score": 33,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:cloud.freebase:mcp:freebase",
+        "displayName": "freebase.cloud",
+        "type": "application/mcp-server-card+json",
+        "url": "https://freebase.cloud/api/mcp/{token}",
+        "description": "Free cloud databases over MCP: query, store, list and annotate across 15 engines.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "free cloud databases over mcp: query, store, list and annotate across 15 engines",
+          "freebase.cloud for this task"
+        ],
+        "version": "1.0.0",
+        "score": 32,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201544,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.asoskill:mcp:aso-skill",
+        "displayName": "ASO Skill",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.asoskill.com/mcp",
+        "description": "Current App Store rankings, keyword metrics, app metadata, and credit balances for AI agents.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "current app store rankings, keyword metrics, app metadata, and credit balances for ai agents",
+          "aso skill for this task"
+        ],
+        "version": "1.6.2",
+        "score": 32,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788382826,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.globalenvisionproductions:mcp:ai-power-grid",
+        "displayName": "AI Power Grid",
+        "type": "application/mcp-server-card+json",
+        "url": "https://aipowergrid.globalenvisionproductions.com/mcp",
+        "description": "Persistent AI capability reservoir for charging, storing, drawing, and reusing authorized AI work.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "persistent ai capability reservoir for charging, storing, drawing, and reusing authorized ai work",
+          "ai power grid for this task"
+        ],
+        "version": "1.0.0",
+        "score": 32,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201758,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.appstorecopilot:mcp:appstorecopilot",
+        "displayName": "AppStore Copilot",
+        "type": "application/mcp-server-card+json",
+        "url": "https://appstorecopilot.com/api/mcp",
+        "description": "AI-agent operations for App Store Connect and Google Play, with approval before live publishing.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "ai-agent operations for app store connect and google play, with approval before live publishing",
+          "appstore copilot for this task"
+        ],
+        "version": "1.0.0",
+        "score": 32,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788203724,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.chrome-stats:mcp:chrome-stats",
+        "displayName": "Chrome-Stats",
+        "type": "application/mcp-server-card+json",
+        "url": "https://chrome-stats.com/api/mcp",
+        "description": "Extension and app analytics across Chrome, Edge, Firefox, Google Play, and the Apple App Store.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "extension and app analytics across chrome, edge, firefox, google play, and the apple app store",
+          "chrome-stats for this task"
+        ],
+        "version": "1.0.0",
+        "score": 32,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201548,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.replyargus:mcp:reply-argus",
+        "displayName": "Reply Argus",
+        "type": "application/mcp-server-card+json",
+        "url": "https://www.replyargus.com/api/mcp",
+        "description": "Stop drowning in app reviews: auto-reply on App Store & Google Play, on-brand, 100+ languages.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "stop drowning in app reviews: auto-reply on app store & google play, on-brand, 100+ languages",
+          "reply argus for this task"
+        ],
+        "version": "1.0.0",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201765,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:app.lance:mcp:app-manager",
+        "displayName": "app.lance/app-manager",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.lance.app/mcp",
+        "description": "App Store Connect operator for AI agents: icons, TestFlight builds, listings, IAP, rejection fixes.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "app store connect operator for ai agents: icons, testflight builds, listings, iap, rejection fixes",
+          "app.lance/app-manager for this task"
+        ],
+        "version": "0.1.0",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:build.arca.mcp:mcp:arca-mcp-server",
+        "displayName": "Arca",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.arca.build",
+        "description": "Arca is a private data vault where your AI stores your structured data, semantic memory and skills. ",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "arca is a private data vault where your ai stores your structured data, semantic memory and skills",
+          "arca for this task"
+        ],
+        "version": "0.0.1",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201543,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.mambabuilt:mcp:mcp-ecommerce-platform-profiler",
+        "displayName": "com.mambabuilt/mcp-ecommerce-platform-profiler",
+        "type": "application/mcp-server-card+json",
+        "url": "https://registry.modelcontextprotocol.io/v0/servers?search=com.mambabuilt/mcp-ecommerce-platform-profiler",
+        "description": "Detect the ecommerce platform, payment providers and catalogue size behind a storefront.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "detect the ecommerce platform, payment providers and catalogue size behind a storefront",
+          "com.mambabuilt/mcp-ecommerce-platform-profiler for this task"
+        ],
+        "version": "1.0.0",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201761,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.apify:mcp:apify-mcp-server",
+        "displayName": "com.apify/apify-mcp-server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.apify.com/",
+        "description": "Extract data from any website with thousands of scrapers, crawlers, and automations on Apify Store \u26a1",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "extract data from any website with thousands of scrapers, crawlers, and automations on apify store \u26a1",
+          "com.apify/apify-mcp-server for this task",
+          "apify mcp server providing access to thousands of web scraping and automation tools from apify store",
+          "apify mcp server provides access to a marketplace for web scraping and data extraction tools"
+        ],
+        "version": "0.9.9",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201546,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:ai.smithery:mcp:feeefapp-mcp",
+        "displayName": "ai.smithery/feeefapp-mcp",
+        "type": "application/mcp-server-card+json",
+        "url": "https://server.smithery.ai/@feeefapp/mcp/mcp",
+        "description": "Enable AI assistants to interact seamlessly with Feeef e-commerce stores, products, and orders usi\u2026",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "enable ai assistants to interact seamlessly with feeef e-commerce stores, products, and orders usi\u2026",
+          "ai.smithery/feeefapp-mcp for this task"
+        ],
+        "version": "1.0.0",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201541,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:ai.vortexiq:mcp:vortex-iq",
+        "displayName": "ai.vortexiq/vortex-iq",
+        "type": "application/mcp-server-card+json",
+        "url": "https://app.vortexiq.ai/mcp",
+        "description": "Read-only access to your VortexIQ store data: audits, KPIs, alerts, Brand DNA, reports, Ask VIQ.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "read-only access to your vortexiq store data: audits, kpis, alerts, brand dna, reports, ask viq",
+          "ai.vortexiq/vortex-iq for this task"
+        ],
+        "version": "1.0.0",
+        "score": 31,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201542,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:com.royashbrook:mcp:hush",
+        "displayName": "hush",
+        "type": "application/mcp-server-card+json",
+        "url": "https://royashbrook.com/hush",
+        "description": "A secret store for AI agents: the agent never sees the plaintext.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "a secret store for ai agents: the agent never sees the plaintext",
+          "hush for this task"
+        ],
+        "version": "1.3.0",
+        "score": 30,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": true,
+          "tools": 1
+        }
+      },
+      {
+        "identifier": "urn:air:api.delx.ai:catalog:commerce",
+        "displayName": "Delx Commerce catalog (nested)",
+        "type": "application/ai-catalog+json",
+        "url": "https://commerce.delx.ai/.well-known/ai-catalog.json",
+        "description": "Nested ARD catalog for the Commerce storefront.",
+        "tags": [
+          "ard",
+          "nested",
+          "commerce"
+        ],
+        "score": 30,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:agentready.market:audit:mcp",
+        "displayName": "Agent-readiness check (MCP server)",
+        "type": "application/json",
+        "url": "https://www.agentready.market/mcp",
+        "description": "MCP Streamable-HTTP server: check_merchant_readiness(host) and get_readiness_report(host) answer 'can an AI agent buy on this store?' before a purchase attempt. Docs: https://www.agentready.market/api",
+        "representativeQueries": [
+          "can an AI agent buy on this online store",
+          "check a merchant's agent readiness before checkout"
+        ],
+        "score": 30,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:huggingface.co:skill:space:atara57769:RAG_Knowledge_Assistant",
+        "displayName": "RAG Knowledge Assistant",
+        "type": "application/ai-skill",
+        "url": "https://huggingface-hf-discover.hf.space/skills/huggingface/atara57769/RAG_Knowledge_Assistant/SKILL.md",
+        "description": "Chat with Maya to get store policy and product answers",
+        "tags": [
+          "huggingface",
+          "space",
+          "gradio",
+          "Chatbots",
+          "region:us"
+        ],
+        "score": 30,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:delx.ai:catalog:commerce",
+        "displayName": "Delx Commerce catalog (nested)",
+        "type": "application/ai-catalog+json",
+        "url": "https://commerce.delx.ai/.well-known/ai-catalog.json",
+        "description": "Nested ARD catalog for the pay-per-result Commerce storefront (500 x402 products).",
+        "tags": [
+          "ard",
+          "nested",
+          "commerce",
+          "x402"
+        ],
+        "score": 30,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:registry.modelcontextprotocol.io:io.github.microsoft:awesome-copilot",
+        "displayName": "Awesome Copilot MCP Server",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/v0.1/servers/io.github.microsoft%2Fawesome-copilot/versions/1.0.2026083107",
+        "description": "An MCP server that stores Copilot customizations from the Awesome Copilot repository",
+        "tags": [
+          "dotnet",
+          "mcp",
+          "mcp-client",
+          "mcp-server"
+        ],
+        "version": "1.0.2026083107",
+        "score": 30,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201773,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:amazonaws.com:api:sagemaker-featurestore-runtime",
+        "displayName": "Amazon SageMaker Feature Store Runtime",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/sagemaker-featurestore-runtime-2020-07-01.normal.json",
+        "description": "<p>Contains all data plane API operations and data types for the Amazon SageMaker Feature Store. Use this API to put, delete, and retrieve (get) features from a feature store.</p> <p>Use the following operations to configure your <code>OnlineStore</code> and <code>OfflineStore</code> features, and to create and manage feature groups:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateFeatureGroup.html\">CreateFeatureGroup</a> </p> </li> <li> <p> <a...",
+        "tags": [
+          "api",
+          "cloud",
+          "openapi",
+          "sagemaker-featurestore-runtime",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the amazon sagemaker feature store runtime",
+          "amazon sagemaker feature store runtime api",
+          "<p>contains all data plane api operations and data types for the amazon sagemaker feature store",
+          "cloud api"
+        ],
+        "version": "2020-07-01",
+        "score": 30,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:registry.modelcontextprotocol.io:com.apify:apify-mcp-server",
+        "displayName": "com.apify/apify-mcp-server",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/v0.1/servers/com.apify%2Fapify-mcp-server/versions/0.15.3",
+        "description": "Extract data from any website with thousands of scrapers, crawlers, and automations on Apify Store \u26a1",
+        "tags": [
+          "agents",
+          "ai",
+          "mcp",
+          "mcp-server"
+        ],
+        "version": "0.15.3",
+        "score": 29,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201773,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:vtex.local:api:pricing-hub",
+        "displayName": "Pricing Hub",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/vtex/openapi-schemas/master/VTEX - Pricing Hub.json",
+        "description": "> This feature is in closed beta, available only for selected customers. If you have any questions, contact our [Support](https://support.vtex.com/hc/en-us/requests). \r \r  In the B2B scenario, it is common for stores to have personalized prices per customer and complex pricing systems that require external integrations. Pricing Hub is a system developed for the B2B context that works as an intermediary between VTEX and external pricing systems.\r \r  In VTEX, B2B stores have the option to use our internal pricing system or an external one. If the store chooses to operate with an external...",
+        "tags": [
+          "api",
+          "openapi",
+          "pricing-hub",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the pricing hub",
+          "pricing hub api",
+          "> this feature is in closed beta, available only for selected customers"
+        ],
+        "version": "1.0",
+        "score": 29,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:agenticdealernetwork.com:page:dealer-onboarding",
+        "displayName": "Dealer onboarding",
+        "type": "text/html",
+        "url": "https://agenticdealernetwork.com/onboard/",
+        "description": "Self-serve SFTP credentialing for franchised dealerships joining the network: submit the form, confirm your email, and per-store feed credentials are issued automatically.",
+        "score": 29,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:huggingface.co:skill:space:VIDraft:MOUSE-Workflow",
+        "displayName": "MOUSE Workflow",
+        "type": "application/ai-skill",
+        "url": "https://huggingface-hf-discover.hf.space/skills/huggingface/VIDraft/MOUSE-Workflow/SKILL.md",
+        "description": "Run custom Python code stored in a secret and view its output",
+        "tags": [
+          "huggingface",
+          "space",
+          "gradio",
+          "Other",
+          "gradio-custom-component",
+          "SimpleTextbox",
+          "workflow",
+          "builder",
+          "editor",
+          "region:us"
+        ],
+        "score": 29,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:extpose.com:api:extpose",
+        "displayName": "Extpose",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://extpose.com/openapi.yaml",
+        "description": "Extpose \u2014 in\u2011store performance analytics and optimization tool for Chrome extensions. [https://extpose.com](https://extpose.com)",
+        "tags": [
+          "api",
+          "developer_tools",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the extpose",
+          "extpose api",
+          "extpose \u2014 in\u2011store performance analytics and optimization tool for chrome extensions",
+          "developer_tools api"
+        ],
+        "version": "1.0.0",
+        "score": 29,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:adyen.com:api:payoutservice",
+        "displayName": "Adyen Payout API",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Adyen/adyen-openapi/main/json/PayoutService-v68.json",
+        "description": "A set of API endpoints that allow you to store payout details, confirm, or decline a payout.  For more information, refer to [Online payouts](https://docs.adyen.com/online-payments/online-payouts). ## Authentication To use the Payout API, you need to have [two API credentials](https://docs.adyen.com/online-payments/online-payouts#payouts-to-bank-accounts-and-wallets): one for storing payout details and submitting payouts, and another one for confirming or declining payouts. If you don't have the required API credentials, contact our [Support...",
+        "tags": [
+          "api",
+          "openapi",
+          "payment",
+          "payoutservice",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the adyen payout api",
+          "adyen payout api api",
+          "a set of api endpoints that allow you to store payout details, confirm, or decline a payout",
+          "payment api"
+        ],
+        "version": "68",
+        "score": 29,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.ambermem:mcp:amber",
+        "displayName": "Amber",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.ambermem.com",
+        "description": "Long-term memory for AI assistants. Store facts, search by meaning, auto-categorize.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "long-term memory for ai assistants",
+          "com.ambermem/amber for this task",
+          "amber for this task"
+        ],
+        "version": "1.1.1164",
+        "score": 28,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201546,
+          "reachable": true,
+          "authRequired": true,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:amazonaws.com:api:healthlake",
+        "displayName": "Amazon HealthLake",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/healthlake-2017-07-01.normal.json",
+        "description": "Amazon HealthLake is a HIPAA eligibile service that allows customers to store, transform, query, and analyze their FHIR-formatted data in a consistent fashion in the cloud.",
+        "tags": [
+          "api",
+          "cloud",
+          "healthlake",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the amazon healthlake",
+          "amazon healthlake api",
+          "cloud api"
+        ],
+        "version": "2017-07-01",
+        "score": 28,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:apify.com:skill:apify-generate-output-schema",
+        "displayName": "apify-generate-output-schema",
+        "type": "application/ai-skill+md",
+        "url": "https://apify.com/.well-known/agent-skills/apify-generate-output-schema/SKILL.md",
+        "description": "Generate output schemas (dataset_schema.json, output_schema.json, key_value_store_schema.json) for an Apify Actor by analyzing its source code. Use when creating or updating Actor output schemas.",
+        "tags": [
+          "skill",
+          "agent-skills"
+        ],
+        "trustManifest": {
+          "identity": "https://apify.com"
+        },
+        "score": 28,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:azure.com:api:datalake-store-filesystem",
+        "displayName": "DataLakeStoreFileSystemManagementClient",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/datalake-store/data-plane/Microsoft.DataLakeStore/stable/2016-11-01/filesystem.json",
+        "description": "Creates an Azure Data Lake Store filesystem client.",
+        "tags": [
+          "api",
+          "cloud",
+          "datalake-store-filesystem",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the datalakestorefilesystemmanagementclient",
+          "datalakestorefilesystemmanagementclient api",
+          "creates an azure data lake store filesystem client",
+          "cloud api"
+        ],
+        "version": "2016-11-01",
+        "score": 28,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:huggingface.co:skill:space:Agents-MCP-Hackathon:memvid-mcp",
+        "displayName": "\ud83c\udfa5 Memvid MCP Server - Video-based AI Memory Storage",
+        "type": "application/ai-skill",
+        "url": "https://huggingface-hf-discover.hf.space/skills/huggingface/Agents-MCP-Hackathon/memvid-mcp/SKILL.md",
+        "description": "Store and search memories in video files",
+        "tags": [
+          "huggingface",
+          "space",
+          "gradio",
+          "Video Generation",
+          "mcp-server-track",
+          "Agents-MCP-Hackathon",
+          "model-context-protocol",
+          "video-memory",
+          "semantic-search",
+          "ai-agents",
+          "memvid",
+          "faiss",
+          "mcp-server",
+          "region:us"
+        ],
+        "score": 28,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:adyen.com:api:tfmapiservice",
+        "displayName": "POS Terminal Management API",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Adyen/adyen-openapi/main/json/TfmAPIService-v1.json",
+        "description": "This API provides endpoints for managing your point-of-sale (POS) payment terminals. You can use the API to obtain information about a specific terminal, retrieve overviews of your terminals and stores, and assign terminals to a merchant account or store.  For more information, refer to [Assign terminals](https://docs.adyen.com/point-of-sale/automating-terminal-management/assign-terminals-api).  ## Authentication Each request to the Terminal Management API must be signed with an API key. For this, obtain an API Key from your Customer Area, as described in [How to get the API...",
+        "tags": [
+          "api",
+          "openapi",
+          "payment",
+          "spec-not-recently-updated",
+          "tfmapiservice"
+        ],
+        "representativeQueries": [
+          "use the pos terminal management api",
+          "pos terminal management api api",
+          "this api provides endpoints for managing your point-of-sale (pos) payment terminals",
+          "payment api"
+        ],
+        "version": "1",
+        "score": 28,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:com.dropwatchhq:mcp:legit-check",
+        "displayName": "Vendor Legit Check",
+        "type": "application/mcp-server-card+json",
+        "url": "https://legit.dropwatchhq.com/mcp",
+        "description": "Screen a vendor, store, or group-buy for legitimacy: reputation, red flags, Reddit sentiment.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "screen a vendor, store, or group-buy for legitimacy: reputation, red flags, reddit sentiment",
+          "vendor legit check for this task"
+        ],
+        "version": "1.0.0",
+        "score": 27,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201550,
+          "reachable": true,
+          "tools": 1
+        }
+      },
+      {
+        "identifier": "urn:air:api.mcp.github.com:io.github.jagoff:memo",
+        "displayName": "memo",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/oss/v0.1/servers/io.github.jagoff%2Fmemo/versions/latest",
+        "description": "Memory for AI agents \u2014 MLX (Apple Silicon) or CPU (Linux), sqlite-vec + BM25, zero cloud.",
+        "tags": [
+          "memory",
+          "ai",
+          "local storage",
+          "semantic memory"
+        ],
+        "capabilities": [
+          "store memories",
+          "hybrid search",
+          "detect contradictions",
+          "time-travel",
+          "sync across machines"
+        ],
+        "representativeQueries": [
+          "how does memo store memories?",
+          "what is the time travel feature of memo?",
+          "how can I sync my memories across devices?",
+          "what are the contradictions detection capabilities of memo?"
+        ],
+        "score": 27,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:api.mcp.github.com:com.apify:apify-mcp-server",
+        "displayName": "Apify",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/oss/v0.1/servers/com.apify%2Fapify-mcp-server/versions/latest",
+        "description": "Extract data from any website with thousands of scrapers, crawlers, and automations on Apify Store \u26a1",
+        "tags": [
+          "data extraction",
+          "web scraping",
+          "automation"
+        ],
+        "capabilities": [
+          "extract data from any website",
+          "use scrapers and crawlers",
+          "automate web tasks"
+        ],
+        "representativeQueries": [
+          "extract data from a website",
+          "scrape product information from an e-commerce site",
+          "automate data collection from social media"
+        ],
+        "score": 27,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201766,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:azure.com:api:datalake-store-account",
+        "displayName": "DataLakeStoreAccountManagementClient",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/datalake-store/resource-manager/Microsoft.DataLakeStore/stable/2016-11-01/account.json",
+        "description": "Creates an Azure Data Lake Store account management client.",
+        "tags": [
+          "api",
+          "cloud",
+          "datalake-store-account",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the datalakestoreaccountmanagementclient",
+          "datalakestoreaccountmanagementclient api",
+          "creates an azure data lake store account management client",
+          "cloud api"
+        ],
+        "version": "2016-11-01",
+        "score": 27,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:relaystation.ai:recipes:storage-handoff",
+        "displayName": "Recipe: Storage & Handoff",
+        "type": "text/html",
+        "url": "https://relaystation.ai/recipes/storage-handoff",
+        "description": "Store files, hand off state, and collaborate \u2014 no accounts, the wallet is the identity. Batons cover file drops, burn-after-read passes, shared scratchpads, state checkpoints, and tamper-evident ledgers.",
+        "tags": [
+          "recipe",
+          "workflow",
+          "x402",
+          "pay-per-call"
+        ],
+        "representativeQueries": [
+          "hand a file from one agent to another without shared credentials",
+          "checkpoint my agent state so another session can resume it"
+        ],
+        "score": 27,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:ai.offerhopper.mcp:mcp:german-grocery-assistant",
+        "displayName": "offerhopper.ai \u2014 AI Supermarket & Drugstore Shopping Assistant for Germany",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.offerhopper.ai/mcp",
+        "description": "Live prices, deals & optimal multi-stop shopping routes for German grocery & drug stores.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "live prices, deals & optimal multi-stop shopping routes for german grocery & drug stores",
+          "offerhopper.ai \u2014 ai supermarket & drugstore shopping assistant for germany for this task"
+        ],
+        "version": "1.0.3",
+        "score": 27,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201540,
+          "reachable": true,
+          "tools": 1
+        }
+      },
+      {
+        "identifier": "urn:air:com.thenextgennexus:mcp:ecommerce-intelligence-mcp-server",
+        "displayName": "ecommerce-intelligence-mcp-server",
+        "type": "application/mcp-server",
+        "url": "https://nexgendata-mcp-proxy.steve-corbeil.workers.dev/ecommerce-intelligence-mcp-server/mcp",
+        "score": 27,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201769,
+          "reachable": true,
+          "tools": 2
+        }
+      },
+      {
+        "identifier": "urn:air:neon.com:skill:neon-object-storage",
+        "displayName": "neon-object-storage",
+        "type": "application/agent-skills+md",
+        "url": "https://neon.com/.well-known/agent-skills/neon-object-storage/SKILL.md",
+        "description": "S3-compatible object storage that branches with your Neon project, so files and the database stay in sync across every branch. Use when a user wants object storage, a bucket, blob/file storage, or somewhere to put uploads, images, documents, avatars, or user-generated files for their app or agent \u2014 especially when they already use (or are setting up) Lakebase Postgres and don't want to add a separate storage provider like AWS S3, Cloudflare R2, or Supabase Storage. Triggers include \"object storage\", \"bucket\", \"blob storage\", \"file storage\", \"store uploads/images/files\", \"S3-compatible storage\", \"presigned URL\", \"where do I put files\", \"storage logs\", \"bucket logs\", \"CDN in front of object storage\", \"Neon Object Storage\", \"Neon Storage\", and \"storage that branches with my database\".",
+        "score": 27,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:ai.trendsmcp:mcp:app-store",
+        "displayName": "App Store Trends MCP",
+        "type": "application/mcp-server-card+json",
+        "url": "https://app-store.api.trendsmcp.ai/mcp",
+        "description": "App Store and Play downloads and charts over time, Android uses bundle ID. Free key at trendsmcp.ai",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "app store and play downloads and charts over time, android uses bundle id",
+          "app store trends mcp for this task"
+        ],
+        "version": "1.0.6",
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201541,
+          "reachable": true,
+          "tools": 3
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.agentready-market:mcp:audit",
+        "displayName": "audit",
+        "type": "application/mcp-server",
+        "url": "https://www.agentready.market/mcp",
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201770,
+          "reachable": true,
+          "tools": 3
+        }
+      },
+      {
+        "identifier": "urn:air:com.jojapi:mcp:similarweb",
+        "displayName": "com.jojapi/similarweb",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.jojapi.com/similarweb",
+        "description": "Similarweb: Similarweb API allows you to access powerful insights into web analytics and online.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "similarweb: similarweb api allows you to access powerful insights into web analytics and online",
+          "com.jojapi/similarweb for this task"
+        ],
+        "version": "1.0.0",
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201759,
+          "reachable": true,
+          "tools": 20
+        }
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:molinoycata.com-mcp-0",
+        "displayName": "molinoycata.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://molinoycata.com/mcp",
+        "description": "Model Context Protocol server for molinoycata.com, exposing 5 tools.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [
+          "recommend_olive_oil",
+          "search_products",
+          "get_product",
+          "list_services",
+          "store_info"
+        ],
+        "trustManifest": {
+          "identity": "did:web:ora.ai"
+        },
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788382827,
+          "reachable": true,
+          "tools": 5
+        }
+      },
+      {
+        "identifier": "urn:air:com.bolotstudio:mcp:store",
+        "displayName": "store",
+        "type": "application/mcp-server",
+        "url": "https://bolotstudio.com/api/mcp",
+        "description": "Custom metal-print storefront: catalog search, product details, shipping, reviews. Read-only.",
+        "tags": [
+          "mcp",
+          "mcp-registry"
+        ],
+        "representativeQueries": [
+          "custom metal-print storefront: catalog search, product details, shipping, reviews",
+          "com.bolotstudio/store for this task"
+        ],
+        "version": "1.0.0",
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788201547,
+          "reachable": true,
+          "tools": 11
+        }
+      },
+      {
+        "identifier": "urn:air:amazonaws.com:api:identitystore",
+        "displayName": "AWS SSO Identity Store",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/identitystore-2020-06-15.normal.json",
+        "description": "<p>The Identity Store service used by AWS IAM Identity Center (successor to AWS Single Sign-On) provides a single place to retrieve all of your identities (users and groups). For more information, see the <a href=\"https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html\">IAM Identity Center User Guide</a>.</p> <pre><code> &lt;note&gt; &lt;p&gt;Although AWS Single Sign-On was renamed, the &lt;code&gt;sso&lt;/code&gt; and &lt;code&gt;identitystore&lt;/code&gt; API namespaces will continue to retain their original name for backward compatibility purposes. For more information,...",
+        "tags": [
+          "api",
+          "cloud",
+          "identitystore",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the aws sso identity store",
+          "aws sso identity store api",
+          "cloud api"
+        ],
+        "version": "2020-06-15",
+        "score": 26,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:api.mcp.github.com:io.github.tambo-ai:charming",
+        "displayName": "Charming",
+        "type": "application/mcp-server+json",
+        "url": "https://api.mcp.github.com/oss/v0.1/servers/io.github.tambo-ai%2Fcharming/versions/latest",
+        "description": "Build personal interactive apps with real URLs and persistent storage, using any AI.",
+        "tags": [
+          "interactive apps",
+          "persistent storage",
+          "ai"
+        ],
+        "capabilities": [
+          "build personal interactive apps",
+          "generate live urls",
+          "store persistent data"
+        ],
+        "representativeQueries": [
+          "how to build an interactive app using AI",
+          "create a personal app with real URLs",
+          "generate an app with persistent storage"
+        ],
+        "score": 26,
+        "source": "https://neuronto.com",
+        "verification": {
+          "checked": 1788620415,
+          "reachable": false,
+          "tools": 0
+        }
+      },
+      {
+        "identifier": "urn:air:azure.com:api:cognitiveservices-anomalydetector",
+        "displayName": "Anomaly Detector Client",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/cognitiveservices/data-plane/AnomalyDetector/preview/v1.0/AnomalyDetector.json",
+        "description": "The Anomaly Detector API detects anomalies automatically in time series data. It supports two kinds of mode, one is for stateless using, another is for stateful using. In stateless mode, there are three functionalities. Entire Detect is for detecting the whole series with model trained by the time series, Last Detect is detecting last point with model trained by points before. ChangePoint Detect is for detecting trend changes in time series. In stateful mode, user can store time series, the stored time series will be used for detection anomalies. Under this mode, user can still use the...",
+        "tags": [
+          "api",
+          "cloud",
+          "cognitiveservices-anomalydetector",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the anomaly detector client",
+          "anomaly detector client api",
+          "the anomaly detector api detects anomalies automatically in time series data",
+          "cloud api"
+        ],
+        "version": "1.0",
+        "score": 25,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:www.pathwren.workers.dev:agent:lint",
+        "displayName": "MCP Endpoint Conformance \u2014 AI Crawler Index",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://www.pathwren.workers.dev/c/ard/a2a/lint/.well-known/agent-card.json",
+        "description": "A2A v1.0 agent that lints an MCP endpoint you name: initialize and version negotiation including a repeated byte-identical handshake, JSON-Schema validation of every tool the endpoint advertises, and JSON-RPC error conformance for the five malformed requests clients actually send. Reports what your endpoint answered, stores nothing, needs no key, and runs against a built-in broken fixture when called with no arguments.",
+        "tags": [
+          "a2a",
+          "lint",
+          "crawlers",
+          "agents"
+        ],
+        "representativeQueries": [
+          "does my MCP server negotiate the protocol version correctly",
+          "check my MCP endpoint's tool schemas for JSON-Schema faults",
+          "does my MCP server return -32601 or an HTML 500 for an unknown method",
+          "is my MCP handshake idempotent",
+          "lint an MCP endpoint for spec conformance"
+        ],
+        "score": 25,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:microsoft.com:api:cognitiveservices-localsearch",
+        "displayName": "Local Search Client",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/cognitiveservices/data-plane/LocalSearch/stable/v1.0/LocalSearch.json",
+        "description": "The Local Search client lets you send a search query to Bing and get back search results that include local businesses such as restaurants, hotels, retail stores, or other local businesses. The query can specify the name of the local business or it can ask for a list (for example, restaurants near me).",
+        "tags": [
+          "api",
+          "cloud",
+          "cognitiveservices-localsearch",
+          "developer_tools",
+          "openapi",
+          "spec-not-recently-updated"
+        ],
+        "representativeQueries": [
+          "use the local search client",
+          "local search client api",
+          "developer_tools api",
+          "cloud api"
+        ],
+        "version": "1.0",
+        "score": 25,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:www.pathwren.workers.dev:agent:triage",
+        "displayName": "Crawler Log Triage \u2014 AI Crawler Index",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://www.pathwren.workers.dev/c/ard/a2a/triage/.well-known/agent-card.json",
+        "description": "A2A v1.0 agent that turns pasted access-log lines into who crawled you: every line classified by operator and category, a rollup with hits and bytes per operator, the lines whose user-agent claims an operator from an address outside every range that operator publishes, and \u2014 from the file you actually served \u2014 a robots.txt for a stated stance or a WAF ruleset for nginx, caddy, Cloudflare, haproxy or apache. Deterministic, no key, nothing stored.",
+        "tags": [
+          "a2a",
+          "triage",
+          "crawlers",
+          "agents"
+        ],
+        "representativeQueries": [
+          "which AI bots are in my access log",
+          "is something impersonating Googlebot in my logs",
+          "summarise my crawler traffic by operator",
+          "make a robots.txt from what actually crawled my site",
+          "generate nginx rules to block the bots hitting my server"
+        ],
+        "score": 25,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:www.pathwren.workers.dev:agent:score",
+        "displayName": "MCP Endpoint Score Card \u2014 AI Crawler Index",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://www.pathwren.workers.dev/c/ard/a2a/score/.well-known/agent-card.json",
+        "description": "A2A v1.0 agent that scores an MCP endpoint out of 100 in one call \u2014 handshake 30, tool schemas 30, error conformance 25, discovery 15 \u2014 with a letter grade, every finding by severity and the full per-section detail. Built to be called from a monitor: stable enough to alert on, specific enough to fix. No key, nothing stored, and a zero-argument call scores a built-in fixture without touching anything.",
+        "tags": [
+          "a2a",
+          "score",
+          "crawlers",
+          "agents"
+        ],
+        "representativeQueries": [
+          "score my MCP endpoint out of 100",
+          "grade an MCP server for spec conformance",
+          "give me one alertable number for my MCP endpoint's health",
+          "what is wrong with my MCP server and how bad is it",
+          "monitor an MCP endpoint for conformance regressions"
+        ],
+        "score": 25,
+        "source": "https://neuronto.com"
+      },
+      {
+        "identifier": "urn:air:rapidapi.com:api:dynamicdocs",
+        "displayName": "DynamicDocs",
+        "type": "application/vnd.oai.openapi+json",
+        "url": "https://advicement.io/open_api_spec/dynamicdocs.json",
+        "description": "ADVICEment's [DynamicDocs API automates your document generation](https://advicement.io/dynamic-documents-api) and creates dynamic, optimized, interactive PDFs. Write your templates in LaTeX and call the API with JSON data to get your PDFs in seconds.  The template files are stored in your dashboard and can be edited, tested and published online. Document templates can contain dynamic text using logic statements, include tables stretching multiple pages and show great-looking charts based on the underlying data. LaTeX creates crisp, high-quality documents where every detail is...",
+        "tags": [
+          "api",
+          "developer_tools",
+          "dynamicdocs",
+          "openapi",
+          "spec-not-recently-updated",
+          "text"
+        ],
+        "representativeQueries": [
+          "use the dynamicdocs",
+          "dynamicdocs api",
+          "advicement's [dynamicdocs api automates your document generation](https://advicement",
+          "text api",
+          "developer_tools api"
+        ],
+        "version": "1.0",
+        "score": 25,
+        "source": "https://neuronto.com"
+      }
+    ],
+    "queryMatch": {
+      "coverage": 1.0,
+      "confidence": "high",
+      "matchedTerms": [
+        "scvd",
+        "store"
+      ],
+      "queryTerms": [
+        "scvd",
+        "store"
+      ],
+      "note": "each result's `score` is relative to the best hit in this response, so the top result always scores near 100 even when nothing matched. `coverage` is absolute: the fraction of the query's content words the top result's own text, including the tool that matched, accounts for. It measures overlap, not correctness, and it is never a trust or safety rating."
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { ROOMS } from "@/store/rooms";
 import { FEEDS } from "@/routes/feeds";
 import { EVIDENCE_TASKS } from "@/services/a2a-evidence";
 import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
+import type { ArdTrustManifest } from "@/store/ard-trust";
 
 /**
  * AGENTIC RESOURCE DISCOVERY (ARD) — /.well-known/ard.json, and the
@@ -63,13 +64,14 @@ import { VERIFIER_SERVER_NAME, VERIFIER_TITLE, VERIFIER_TOOLS } from "@/routes/m
  * WHAT IS DELIBERATELY NOT CLAIMED. No entry carries a rating, a
  * score, an endorsement or a certification, because none exists — the
  * same rule the JSON-LD on the item pages follows. `trustManifest`
- * carries only `identity`, the did:web this store already publishes
- * and already signs with, which is exactly the publisher-authority
- * binding §4.5.1 asks for and no more.
+ * carries the existing did:web identity. The HTTP manifests add a
+ * detached signature and anchor-log evidence through ard-signing.ts;
+ * the in-page declarations remain unsigned. Neither form attests
+ * resource accuracy. The signing boundary is on /attestation.
  */
 
-/** The revision these entries are written against. */
-export const ARD_SPEC_VERSION = "v0.91";
+/** Catalog envelope version, distinct from the v0.91 ARD proposal revision. */
+export const ARD_SPEC_VERSION = "1.0";
 
 /** Where a conformant consumer MUST look (ARD §5.1). */
 export const ARD_WELL_KNOWN_PATH = "/.well-known/ard.json";
@@ -109,6 +111,8 @@ export interface ArdEntry {
   identifier: string;
   displayName: string;
   type: string;
+  /** Parent AI Catalog dialect; emitted from type, never maintained separately. */
+  mediaType?: string;
   url: string;
   description?: string;
   representativeQueries?: string[];
@@ -116,23 +120,18 @@ export interface ArdEntry {
   tags?: string[];
   version?: string;
   updatedAt?: string;
-  trustManifest?: { identity: string };
+  trustManifest?: { identity: string } | ArdTrustManifest;
 }
 
 export interface ArdManifest {
-  /**
-   * NOT A SPEC FIELD, AND SAID SO (scanner finding, 2026-08-28). A
-   * scanner reported the manifest "invalid: missing specVersion" —
-   * checked against the spec's own ard-entry.schema.json, `entries`
-   * is the ONLY required member and specVersion appears nowhere in
-   * ARD at all. But the schema sets additionalProperties: true and
-   * §5.1 calls extra members "transport-defined", so declaring the
-   * revision we publish against is legal, true, and free. The value
-   * is the spec document's own version header.
-   */
+  // The 1.0 catalog envelope is closed; timestamps belong on entries.
+  // Checked against both upstream schemas, docs/SPEC_READS.md 2026-09-06.
   specVersion: string;
-  updatedAt: string;
-  trustManifest: { identity: string };
+  host: {
+    displayName: string;
+    identifier: string;
+    trustManifest?: { identity: string } | ArdTrustManifest;
+  };
   entries: ArdEntry[];
 }
 
@@ -179,7 +178,8 @@ export function ardManifest(base: string): ArdManifest {
    */
   const identity = `did:web:${host}`;
   const trustManifest = { identity };
-  const updatedAt = catalogLastUpdated();
+  // Catalog dates have day precision; the schema requires a date-time.
+  const updatedAt = `${catalogLastUpdated()}T00:00:00.000Z`;
 
   const entries: ArdEntry[] = [
     {
@@ -234,6 +234,10 @@ export function ardManifest(base: string): ArdManifest {
       url: `${base}/openapi-tools.json`,
       description:
         "The free, read-only instruments in the common function-calling shape, one worked call each, derived from the same catalog the MCP door serves. No paid door appears.",
+      representativeQueries: [
+        "get JSON function-calling definitions for free x402 verification tools",
+        "find worked function-calling examples for x402 preflight and receipt verification",
+      ],
       updatedAt,
       trustManifest,
     },
@@ -243,6 +247,7 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_DATASET,
       url: `${base}${dataset.path}`,
       description: `${dataset.description} ${dataset.caution}`,
+      representativeQueries: dataset.representativeQueries,
       updatedAt,
       trustManifest,
     })),
@@ -252,6 +257,7 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_FEED,
       url: `${base}${feed.path}`,
       description: `${feed.what} ${feed.cadence}.`,
+      representativeQueries: feed.representativeQueries,
       updatedAt,
       trustManifest,
     })),
@@ -292,16 +298,21 @@ export function ardManifest(base: string): ArdManifest {
       type: TYPE_SKILL,
       url: `${base}/skills/execution-contract.md`,
       description:
-        "The store's published execution-contract skill: what an agent may rely on when it spends money here, and what it may not.",
+        "A free behavioral contract for autonomous work: success criteria, bounded retries, terminal states and an evidence ledger.",
+      representativeQueries: [
+        "stop an autonomous agent from retrying without progress",
+        "define evidence requirements and terminal states for an agent task",
+      ],
       updatedAt,
       trustManifest,
     },
   ];
 
-  // The envelope was being computed and dropped — trustManifest and
-  // updatedAt existed right here and never left the function. See the
-  // interface for why specVersion joins them.
-  return { specVersion: ARD_SPEC_VERSION, updatedAt, trustManifest, entries };
+  return {
+    specVersion: ARD_SPEC_VERSION,
+    host: { displayName: STORE_SERVICE_NAME, identifier: identity },
+    entries: entries.map((entry) => ({ ...entry, mediaType: entry.type })),
+  };
 }
 
 /**

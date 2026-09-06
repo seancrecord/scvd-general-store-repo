@@ -837,6 +837,17 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **ARD Registry account submission (2026-09-06).**
+  Keeper-provided submission-screen output confirms live discovery,
+  v1.0 schema/formats and did:web verification passed for all 21 entries.
+  The INDEX step explicitly says dry-run. Remaining press at
+  https://ardregistry.org/submit: add request description, Confirm & Submit
+  for review, then verify SCVD appears in its public search.
+  Neuronto and WellKnown already return SCVD from their own indexes.
+  Evidence and publication status: `docs/ARD_DISCOVERY_2026-09-06.md`.
+  Weekly discovery checking is scheduled in the active task.
+
+
 - **The ChatGPT plugin in review is the wrong shape by your own
   memo (2026-09-03 evening).** "SCVD General Store" was submitted
   that morning; the memo says submit "SCVD x402 Verifier" with five

@@ -1,0 +1,38 @@
+
+> scvd-general-store@0.1.0 test
+> vitest run test/ard-catalog.spec.ts -t gives every published entry
+
+(node:87685) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.11 /Users/seanrecord/scvd-general-store-repo
+
+Using secrets defined in .env
+stdout | test/ard-catalog.spec.ts > it cannot disagree with what the store already declares > gives every published entry 2-5 representative queries
+{"knock":1,"cold":true,"age":0,"req":10,"method":"GET","path":"/.well-known/ard.json","status":200,"ua":""}
+
+stdout | test/ard-catalog.spec.ts > it cannot disagree with what the store already declares > gives every published entry 2-5 representative queries
+{"knock":1,"cold":false,"age":0,"req":3,"method":"GET","path":"/.well-known/ai-catalog.json","status":200,"ua":""}
+
+ ❯ test/ard-catalog.spec.ts (23 tests | 1 failed | 22 skipped) 25ms
+     × gives every published entry 2-5 representative queries 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/ard-catalog.spec.ts > it cannot disagree with what the store already declares > gives every published entry 2-5 representative queries
+AssertionError: urn:air:scvd.store:api:function-calling-tools: expected 0 to be greater than or equal to 2
+ ❯ test/ard-catalog.spec.ts:250:9
+    248|         queries.length,
+    249|         entry.identifier,
+    250|       ).toBeGreaterThanOrEqual(2);
+       |         ^
+    251|       expect(
+    252|         queries.length,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 22 skipped (23)
+   Start at  18:23:06
+   Duration  4.70s (transform 1.97s, setup 0ms, import 4.46s, tests 25ms, environment 0ms)

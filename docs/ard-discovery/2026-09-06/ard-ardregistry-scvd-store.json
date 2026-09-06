@@ -1,0 +1,2376 @@
+{
+  "registry": "ardregistry",
+  "url": "https://ardregistry.org/api/search",
+  "request": {
+    "query": {
+      "text": "scvd.store"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:32:52.533818+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-vercel-storage",
+        "displayName": "vercel-storage",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"vercel-storage\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 69,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:browser-use.com-browser-use-browser-harness-js-cdp",
+        "displayName": "cdp",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/browser-use/browser-harness-js",
+        "data": null,
+        "description": "Agent skill \"cdp\" published by browser-use.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "browser-use.github.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-vue",
+        "displayName": "vue",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"vue\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-review-and-ship",
+        "displayName": "review-and-ship",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"review-and-ship\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-emulate-vercel",
+        "displayName": "vercel",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/emulate",
+        "data": null,
+        "description": "Agent skill \"vercel\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-svix-agent-skills-svix-quickstart",
+        "displayName": "svix-quickstart",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/svix-agent-skills",
+        "data": null,
+        "description": "Agent skill \"svix-quickstart\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-ai-svix-quickstart",
+        "displayName": "svix-quickstart",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/ai",
+        "data": null,
+        "description": "Agent skill \"svix-quickstart\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-deploy-to-vercel",
+        "displayName": "deploy-to-vercel",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"deploy-to-vercel\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-vercel-deploy",
+        "displayName": "vercel-deploy",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"vercel-deploy\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 67,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-shadcn-svelte",
+        "displayName": "shadcn-svelte",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"shadcn-svelte\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-vercel-vercel-cli",
+        "displayName": "vercel-cli",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/vercel",
+        "data": null,
+        "description": "Agent skill \"vercel-cli\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-vercel-sandbox",
+        "displayName": "vercel-sandbox",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"vercel-sandbox\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-devtools",
+        "displayName": "devtools",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"devtools\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-svix-agent-skills-svix-new-integration",
+        "displayName": "svix-new-integration",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/svix-agent-skills",
+        "data": null,
+        "description": "Agent skill \"svix-new-integration\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-vector-js-upstash-vector-js",
+        "displayName": "upstash-vector-js",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/vector-js",
+        "data": null,
+        "description": "Agent skill \"upstash-vector-js\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-skills-upstash-vector-js",
+        "displayName": "upstash-vector-js",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/skills",
+        "data": null,
+        "description": "Agent skill \"upstash-vector-js\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-vercel-react-view-transitions",
+        "displayName": "vercel-react-view-transitions",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"vercel-react-view-transitions\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cloudflare.com-cloudflare-vinext-migrate-to-vinext",
+        "displayName": "migrate-to-vinext",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cloudflare/vinext",
+        "data": null,
+        "description": "Agent skill \"migrate-to-vinext\" published by cloudflare.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "cloudflare.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-vector-js-upstash-vector-typescript-sdk-skil",
+        "displayName": "upstash/vector typescript sdk skil",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/vector-js",
+        "data": null,
+        "description": "Agent skill \"upstash/vector typescript sdk skil\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-svelte",
+        "displayName": "svelte",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"svelte\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-vercel-cli-with-tokens",
+        "displayName": "vercel-cli-with-tokens",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"vercel-cli-with-tokens\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-deployments-cicd",
+        "displayName": "deployments-cicd",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"deployments-cicd\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-cursor-sdk",
+        "displayName": "cursor-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"cursor-sdk\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 66,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-vercel-plugin-shadcn",
+        "displayName": "shadcn",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"shadcn\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-shadcn",
+        "displayName": "shadcn",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"shadcn\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-shadcn",
+        "displayName": "shadcn",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"shadcn\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-flags-flags-sdk",
+        "displayName": "flags-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/flags",
+        "data": null,
+        "description": "Agent skill \"flags-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-vercel-plugin-vercel-connect",
+        "displayName": "vercel-connect",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"vercel-connect\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:loyaltyvip.com-mcp-0",
+        "displayName": "loyaltyvip.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://loyaltyvip.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for loyaltyvip.com, exposing 4 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "search_casinos",
+          "get_casino",
+          "list_rewards_programs",
+          "player_action"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "loyaltyvip.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-ai-receiving-webhooks",
+        "displayName": "receiving-webhooks",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/ai",
+        "data": null,
+        "description": "Agent skill \"receiving-webhooks\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-svix-agent-skills-receiving-webhooks",
+        "displayName": "receiving-webhooks",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/svix-agent-skills",
+        "data": null,
+        "description": "Agent skill \"receiving-webhooks\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:resend.com-resend-design-skills-resend-brand",
+        "displayName": "resend-brand",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/resend/design-skills",
+        "data": null,
+        "description": "Agent skill \"resend-brand\" published by resend.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "resend.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-marketplace",
+        "displayName": "marketplace",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"marketplace\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:planetscale.com-planetscale-database-skills-vitess",
+        "displayName": "vitess",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/planetscale/database-skills",
+        "data": null,
+        "description": "Agent skill \"vitess\" published by planetscale.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "planetscale.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:planetscale.com-planetscale-vscode-agent-plugin-vitess",
+        "displayName": "vitess",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/planetscale/vscode-agent-plugin",
+        "data": null,
+        "description": "Agent skill \"vitess\" published by planetscale.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "planetscale.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-next.js-next-dev-loop",
+        "displayName": "next-dev-loop",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/next.js",
+        "data": null,
+        "description": "Agent skill \"next-dev-loop\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-nextjs-skills-next-cache-components",
+        "displayName": "next-cache-components",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/nextjs-skills",
+        "data": null,
+        "description": "Agent skill \"next-cache-components\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-next-cache-components",
+        "displayName": "next-cache-components",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"next-cache-components\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-2",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://vercel.com/docs/frameworks/backend/xmcp",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-3",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://vercel.com/docs/mcp/deploy-mcp-servers-to-vercel",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-5",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://vercel.com/docs/agent-resources/vercel-mcp/tools",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-1",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://vercel.com/docs/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-4",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://vercel.com/docs/agent-resources/vercel-mcp",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-ai-ai-sdk",
+        "displayName": "ai-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/ai",
+        "data": null,
+        "description": "Agent skill \"ai-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-vercel-plugin-ai-sdk",
+        "displayName": "ai-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"ai-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-ai-sdk",
+        "displayName": "ai-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"ai-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-cvi-ui",
+        "displayName": "tavus-cvi-ui",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-cvi-ui\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vercel.com-mcp-0",
+        "displayName": "vercel.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.vercel.com",
+        "data": null,
+        "description": "Model Context Protocol server for vercel.com. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-tdd",
+        "displayName": "tdd",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"tdd\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-svix-agent-skills-svix-best-practices",
+        "displayName": "svix-best-practices",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/svix-agent-skills",
+        "data": null,
+        "description": "Agent skill \"svix-best-practices\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-ai-svix-best-practices",
+        "displayName": "svix-best-practices",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/ai",
+        "data": null,
+        "description": "Agent skill \"svix-best-practices\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-vercel-optimize",
+        "displayName": "vercel-optimize",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"vercel-optimize\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-dev3000-d3k",
+        "displayName": "d3k",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/dev3000",
+        "data": null,
+        "description": "Agent skill \"d3k\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-microfrontends-vercel-microfrontends",
+        "displayName": "vercel-microfrontends",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/microfrontends",
+        "data": null,
+        "description": "Agent skill \"vercel-microfrontends\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-turbopack",
+        "displayName": "turbopack",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"turbopack\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-cvi-quickstart",
+        "displayName": "tavus-cvi-quickstart",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-cvi-quickstart\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-image",
+        "displayName": "image",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"image\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:klaviyo.com-mcp-1",
+        "displayName": "klaviyo.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://developers.klaviyo.com/en/docs/klaviyo_mcp_server",
+        "data": null,
+        "description": "Model Context Protocol server for klaviyo.com.",
+        "tags": [
+          "mcp",
+          "docs"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "klaviyo.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-video-gen",
+        "displayName": "tavus-video-gen",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-video-gen\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:debridge.com-mcp-1",
+        "displayName": "debridge.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://agents.debridge.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for debridge.com, exposing 5 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "get_instructions",
+          "search_tokens",
+          "get_supported_chains",
+          "create_tx",
+          "transaction_same_chain_swap"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "debridge.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-next.js-next-cache-components-adoption",
+        "displayName": "next-cache-components-adoption",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/next.js",
+        "data": null,
+        "description": "Agent skill \"next-cache-components-adoption\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-redux",
+        "displayName": "redux",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"redux\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-remotion",
+        "displayName": "remotion",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"remotion\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:crew-1rndckoag-crew-ai-5d7600d3.vercel.app-mcp-0",
+        "displayName": "crew-1rndckoag-crew-ai-5d7600d3.vercel.app MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://crew-1rndckoag-crew-ai-5d7600d3.vercel.app/.well-known/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for crew-1rndckoag-crew-ai-5d7600d3.vercel.app.",
+        "tags": [
+          "mcp"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.app"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-vercel-agent",
+        "displayName": "vercel-agent",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"vercel-agent\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-next.js-next-cache-components-optimizer",
+        "displayName": "next-cache-components-optimizer",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/next.js",
+        "data": null,
+        "description": "Agent skill \"next-cache-components-optimizer\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-env-vars",
+        "displayName": "env-vars",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"env-vars\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:resend.com-resend-resend-skills-resend-cli",
+        "displayName": "resend-cli",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/resend/resend-skills",
+        "data": null,
+        "description": "Agent skill \"resend-cli\" published by resend.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "resend.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:resend.com-resend-resend-cli-resend-cli",
+        "displayName": "resend-cli",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/resend/resend-cli",
+        "data": null,
+        "description": "Agent skill \"resend-cli\" published by resend.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "resend.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:vocab.voyage-mcp-0",
+        "displayName": "vocab.voyage MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://gponcrussdahcdyrlhcr.supabase.co/functions/v1/mcp-server",
+        "data": null,
+        "description": "Model Context Protocol server for vocab.voyage, exposing 31 tools.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [
+          "get_word_of_the_day",
+          "get_definition",
+          "generate_quiz",
+          "get_course_word_list",
+          "list_courses",
+          "explain_word_in_context",
+          "study_plan_preview",
+          "get_flashcards",
+          "get_my_progress",
+          "play_game",
+          "record_word_result",
+          "record_session_complete",
+          "award_game_xp",
+          "mark_word_known",
+          "mark_word_difficult",
+          "update_adaptive_level",
+          "file_support_ticket",
+          "get_recent_mistakes",
+          "get_session_detail",
+          "get_pending_invites",
+          "nudge_child",
+          "resend_pending_invite",
+          "get_class_standing",
+          "get_sparkle_guidance",
+          "set_persona",
+          "get_recommended_next_action",
+          "list_starter_prompts",
+          "get_session_trends",
+          "get_class_session_trends",
+          "get_child_session_detail",
+          "get_study_plan_recommendation"
+        ],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 65,
+        "source": "vocab.voyage"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:workos.com-workos-skills-workos-vault",
+        "displayName": "workos-vault",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/workos/skills",
+        "data": null,
+        "description": "Agent skill \"workos-vault\" published by workos.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "workos.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-eval-frontend-design",
+        "displayName": "frontend-design",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-eval",
+        "data": null,
+        "description": "Agent skill \"frontend-design\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-svix-agent-skills-svix-integration-plan",
+        "displayName": "svix-integration-plan",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/svix-agent-skills",
+        "data": null,
+        "description": "Agent skill \"svix-integration-plan\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:svix.com-svix-ai-svix-integration-plan",
+        "displayName": "svix-integration-plan",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/svix/ai",
+        "data": null,
+        "description": "Agent skill \"svix-integration-plan\" published by svix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "svix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-qstash-js-qstash-js",
+        "displayName": "qstash-js",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/qstash-js",
+        "data": null,
+        "description": "Agent skill \"qstash-js\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-chat-sdk",
+        "displayName": "chat-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"chat-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-chat-chat-sdk",
+        "displayName": "chat-sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/chat",
+        "data": null,
+        "description": "Agent skill \"chat-sdk\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:resend.com-resend-design-skills-resend-design-system",
+        "displayName": "resend-design-system",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/resend/design-skills",
+        "data": null,
+        "description": "Agent skill \"resend-design-system\" published by resend.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "resend.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-vercel-functions",
+        "displayName": "vercel-functions",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"vercel-functions\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:skyvern.com-mcp-0",
+        "displayName": "skyvern.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.skyvern.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for skyvern.com. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "skyvern.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-skills-upstash-qstash-js",
+        "displayName": "upstash-qstash-js",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/skills",
+        "data": null,
+        "description": "Agent skill \"upstash-qstash-js\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:supabase.com-supabase-supabase-vitest",
+        "displayName": "vitest",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/supabase/supabase",
+        "data": null,
+        "description": "Agent skill \"vitest\" published by supabase.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "supabase.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-streamdown-streamdown",
+        "displayName": "streamdown",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel/streamdown",
+        "data": null,
+        "description": "Agent skill \"streamdown\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:klaviyo.com-mcp-0",
+        "displayName": "klaviyo.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://mcp.klaviyo.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for klaviyo.com. Requires authentication.",
+        "tags": [
+          "mcp",
+          "product"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "klaviyo.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:firecrawl.dev-firecrawl-firecrawl-workflows-firecrawl-shop",
+        "displayName": "firecrawl-shop",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/firecrawl/firecrawl-workflows",
+        "data": null,
+        "description": "Agent skill \"firecrawl-shop\" published by firecrawl.dev.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "firecrawl.dev"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:coralogix.com-coralogix-cx-cli-cx-data-pipeline",
+        "displayName": "cx-data-pipeline",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/coralogix/cx-cli",
+        "data": null,
+        "description": "Agent skill \"cx-data-pipeline\" published by coralogix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "coralogix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-bootstrap",
+        "displayName": "bootstrap",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"bootstrap\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-json-render-directives",
+        "displayName": "directives",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/json-render",
+        "data": null,
+        "description": "Agent skill \"directives\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cartesia.ai-cartesia-ai-skills-cartesia-api",
+        "displayName": "cartesia-api",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cartesia-ai/skills",
+        "data": null,
+        "description": "Agent skill \"cartesia-api\" published by cartesia.ai.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "cartesia.ai"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-cvi-interactions",
+        "displayName": "tavus-cvi-interactions",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-cvi-interactions\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:tavus.io-tavus-engineering-tavus-skills-tavus-cvi-knowledge",
+        "displayName": "tavus-cvi-knowledge",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/tavus-engineering/tavus-skills",
+        "data": null,
+        "description": "Agent skill \"tavus-cvi-knowledge\" published by tavus.io.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.893Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "tavus.io"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-vercel-plugin-runtime-cache",
+        "displayName": "runtime-cache",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/vercel-plugin",
+        "data": null,
+        "description": "Agent skill \"runtime-cache\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-skills-video-download",
+        "displayName": "video-download",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/skills",
+        "data": null,
+        "description": "Agent skill \"video-download\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:upstash.com-upstash-search-js-upstash-search-typescript-sdk",
+        "displayName": "upstash/search typescript sdk",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/upstash/search-js",
+        "data": null,
+        "description": "Agent skill \"upstash/search typescript sdk\" published by upstash.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "upstash.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:vercel.com-vercel-labs-agent-skills-vercel-react-best-practices",
+        "displayName": "vercel-react-best-practices",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/vercel-labs/agent-skills",
+        "data": null,
+        "description": "Agent skill \"vercel-react-best-practices\" published by vercel.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.891Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "vercel.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:coralogix.com-coralogix-cx-cli-cx-alerts",
+        "displayName": "cx-alerts",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/coralogix/cx-cli",
+        "data": null,
+        "description": "Agent skill \"cx-alerts\" published by coralogix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "coralogix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:coralogix.com-coralogix-cx-cli-cx-cases",
+        "displayName": "cx-cases",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/coralogix/cx-cli",
+        "data": null,
+        "description": "Agent skill \"cx-cases\" published by coralogix.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "coralogix.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:heygen.com-heygen-com-skills-avatar-video",
+        "displayName": "avatar-video",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/heygen-com/skills",
+        "data": null,
+        "description": "Agent skill \"avatar-video\" published by heygen.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "heygen.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:skill:cursor.com-cursor-plugins-deslop",
+        "displayName": "deslop",
+        "type": "application/ai-skill+md",
+        "url": "https://github.com/cursor/plugins",
+        "data": null,
+        "description": "Agent skill \"deslop\" published by cursor.com.",
+        "tags": [
+          "skill"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "cursor.com"
+      },
+      {
+        "identifier": "urn:air:ora.ai:mcp:optiqcode.com-mcp-0",
+        "displayName": "optiqcode.com MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://api.optiqcode.com/mcp",
+        "data": null,
+        "description": "Model Context Protocol server for optiqcode.com.",
+        "tags": [
+          "mcp",
+          "other"
+        ],
+        "capabilities": [],
+        "version": null,
+        "updatedAt": "2026-07-07T19:12:41.892Z",
+        "metadata": {
+          "isVerified": false
+        },
+        "trustManifest": {
+          "identity": "did:web:ora.ai",
+          "identityType": "did"
+        },
+        "score": 64,
+        "source": "optiqcode.com"
+      }
+    ],
+    "referrals": [],
+    "pageToken": "eyJvZmZzZXQiOjEwMH0="
+  }
+}

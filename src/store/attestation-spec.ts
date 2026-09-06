@@ -33,6 +33,7 @@
 import { CERT_FIELDS } from "@/lib/signing";
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 import { RETIRED_KEYS } from "@/store/key-registry";
+import { ARD_TRUST_LIMITS, ARD_TRUST_SIGNS } from "@/store/ard-trust";
 
 /**
  * Who you are trusting when a signature checks out. Ordered weakest to
@@ -84,6 +85,14 @@ export interface ArtifactClass {
 }
 
 export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
+  {
+    id: "ard_trust_manifest",
+    name: "ARD trust manifest",
+    trust_model: "self_signed",
+    signs: ARD_TRUST_SIGNS,
+    does_not_prove: ARD_TRUST_LIMITS,
+    verify_url: "/.well-known/ard.json",
+  },
   {
     id: "certificate",
     name: "Certificates of purchase",
