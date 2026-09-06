@@ -17,17 +17,20 @@ const BASE = "https://scvd.store";
  * diagnoses, opposite fixes, identical ask-counts.
  */
 
+/** Both homes of an event row: a decline is also written under declevt:. */
 async function clearEvents(): Promise<void> {
-  let cursor: string | undefined;
-  for (;;) {
-    const listed = await testEnv.COUNTERS.list({
-      prefix: "evt:",
-      limit: 1000,
-      ...(cursor ? { cursor } : {}),
-    });
-    for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
-    if (listed.list_complete) break;
-    cursor = listed.cursor;
+  for (const prefix of ["evt:", "declevt:"]) {
+    let cursor: string | undefined;
+    for (;;) {
+      const listed = await testEnv.COUNTERS.list({
+        prefix,
+        limit: 1000,
+        ...(cursor ? { cursor } : {}),
+      });
+      for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+      if (listed.list_complete) break;
+      cursor = listed.cursor;
+    }
   }
 }
 

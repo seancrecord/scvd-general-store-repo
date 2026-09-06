@@ -1,5 +1,7 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { readPorchLedger } from "@/lib/metrics";
+import type { Env } from "@/types";
 import receiptValid from "../verifier/fixtures/receipt-valid.json";
 import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS, verifierToolCatalog } from "@/routes/mcp-verifier";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
@@ -30,6 +32,22 @@ async function rpc(method: string, params: Record<string, unknown> = {}, id = 1)
   });
   return (await response.json()) as Record<string, any>;
 }
+
+describe("the porch counts this door", () => {
+  it("books a handshake and a named tool call under mcp-verifier:, and nothing for a name not on the door", async () => {
+    const testEnv = env as unknown as Env;
+    const before = await readPorchLedger(testEnv);
+    const listBefore = before.surfaces["mcp-verifier:tools/list"]?.["organic:mcp"] ?? 0;
+    const toolBefore = before.surfaces["mcp-verifier:tool:get_defect_definition"]?.["organic:mcp"] ?? 0;
+    await rpc("tools/list");
+    await rpc("tools/call", { name: "get_defect_definition", arguments: {} });
+    await rpc("tools/call", { name: "buy_observation", arguments: {} });
+    const after = await readPorchLedger(testEnv);
+    expect(after.surfaces["mcp-verifier:tools/list"]?.["organic:mcp"]).toBe(listBefore + 1);
+    expect(after.surfaces["mcp-verifier:tool:get_defect_definition"]?.["organic:mcp"]).toBe(toolBefore + 1);
+    expect(after.surfaces["mcp-verifier:tool:buy_observation"]).toBeUndefined();
+  });
+});
 
 describe("tools/list", () => {
   it("serves exactly five read-only tools under task-shaped names and no buy", async () => {

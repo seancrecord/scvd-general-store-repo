@@ -226,6 +226,12 @@ export const STOREFRONT_COPY = {
    */
   gaugeRecord: "The record",
   /**
+   * THE TRADE COUNTER'S GAUGE (2026-09-05, the keeper: "how do we
+   * display any trades on the home page"). Live deliveries on account
+   * this month, from the door's own counters, beside the record.
+   */
+  gaugeTrade: "On account",
+  /**
    * WHAT THIS IS, BEFORE WHAT IT SELLS (2026-08-10). Five outside
    * models were asked "what is scvd.store"; the three that leaned on
    * third-party directories called it a novelty shop, and none of the

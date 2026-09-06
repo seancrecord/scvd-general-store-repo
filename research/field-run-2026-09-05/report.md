@@ -50,6 +50,8 @@ A 402 is **spec_conformant** when its challenge carries `x402Version` and an `ac
 
 Chain transfers from the wallet between blocks 50918927 and 50918979: 34 for $0.0350. Ledger settled: 34 for $0.0350. Matched: 34. On chain only: 0. Ledger only: 0. Gap: $0.0000.
 
+**What that gap establishes, and what it does not.** It establishes that this record agrees with the chain over this block range. It does not establish independence: the ledger and the reconciliation are one party's tooling reading one declared wallet in one run, so a defect common to both would survive a gap of zero unchanged. The stronger claim is a second instrument re-deriving these rows from the chain on its own, and this is not that. Every settled row carries its transaction hash, and rows whose receipt named none carry the authorization nonce the settlement spent, so anyone can be that second instrument without asking us for anything.
+
 ## What this is not
 
 Dated observations of what each door did with one real payment at one moment, from one declared wallet. Not a score on any operator, not a ranking, not a statement about any other moment or any other buyer (rule 43).

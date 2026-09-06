@@ -119,12 +119,15 @@ describe("the standing correction moves walkers by behaviour", () => {
   // The cases above compare before/after on a shared month; these
   // count exact rows, so each starts from an empty book.
   beforeEach(async () => {
-    let cursor: string | undefined;
-    for (;;) {
-      const listed = await testEnv.COUNTERS.list({ prefix: "evt:", limit: 1000, ...(cursor ? { cursor } : {}) });
-      for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
-      if (listed.list_complete) break;
-      cursor = listed.cursor;
+    // Both homes of an event row: a decline is also written under declevt:.
+    for (const prefix of ["evt:", "declevt:"]) {
+      let cursor: string | undefined;
+      for (;;) {
+        const listed = await testEnv.COUNTERS.list({ prefix, limit: 1000, ...(cursor ? { cursor } : {}) });
+        for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+        if (listed.list_complete) break;
+        cursor = listed.cursor;
+      }
     }
   });
 

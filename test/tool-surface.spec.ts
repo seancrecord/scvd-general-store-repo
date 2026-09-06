@@ -124,8 +124,14 @@ describe("the catalog stays inside a context budget", () => {
     0,
   );
 
-  it("keeps the whole tools/list description payload under 32k characters", () => {
-    expect(total).toBeLessThan(32_000);
+  it("keeps the whole tools/list description payload under 33k characters", () => {
+    /*
+     * Raised from 32k on 2026-09-05, on purpose, in this commit: the
+     * fifteenth tool (check_order, the poll half of the async job on
+     * this door) took the catalog from 31.9k to 32.5k. Nothing was
+     * padded; the ceiling was already within one tool of the shelf.
+     */
+    expect(total).toBeLessThan(33_000);
   });
 
   it("keeps any single tool under half the payload", () => {

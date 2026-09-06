@@ -279,6 +279,22 @@ describe("the legacy handshake is untouched, and negotiates by the old rule", ()
     expect(modernAsk["protocolVersion"]).toBe(DEFAULT_PROTOCOL);
   });
 
+  it("the modern version in the header alone, on a legacy body, is served as legacy — never a 400 (2026-09-05)", async () => {
+    /*
+     * A ChatGPT-driven journey quoted this store's own manifest
+     * (`spec: 2026-07-28`) back as the header on a plain tools/list
+     * and got 400 -32020 three times before falling back to
+     * initialize. The body decides the era; a header the body does not
+     * back is not a mismatch, it is a legacy request wearing a badge.
+     */
+    for (const method of ["tools/list", "resources/list"]) {
+      const { status, body } = await post(method, {}, { "MCP-Protocol-Version": LATEST_PROTOCOL });
+      expect(status, method).toBe(200);
+      expect(body["error"], method).toBeUndefined();
+      expect(result(body)["resultType"]).toBeUndefined();
+    }
+  });
+
   it("a legacy client's MCP-Protocol-Version header on later requests is honoured, not mistaken for modern", async () => {
     const { status, body } = await post(
       "tools/list",

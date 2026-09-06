@@ -40,7 +40,7 @@ export interface SimplePageOptions {
    * has a next step worth declaring — the till pages — and nowhere by
    * default: the script feature-detects document.modelContext and
    * no-ops everywhere else, the token is inert data, and a page that
-   * opts in must also send FIRST_PARTY_SCRIPT_CSP (the P7 ruling's
+   * opts in must also send firstPartyScriptCsp() (the P7 ruling's
    * condition on any first-party script).
    */
   webmcp?: boolean;
@@ -154,9 +154,11 @@ export function renderSimplePage(options: SimplePageOptions): string {
   // One origin-trial tag per browser vendor, derived from the same
   // list the storefront emits — a third trial is one entry there, not
   // an edit in two files that can disagree.
-  const webmcp = options.webmcp
-    ? `\n${webmcpOriginTrialTags()}\n  <script src="/webmcp.js" defer></script>`
-    : "";
+  // On every room since 2026-09-05 (arrival is discovery only where
+  // the door is); a room may still opt out with webmcp: false.
+  const webmcp = options.webmcp === false
+    ? ""
+    : `\n${webmcpOriginTrialTags()}\n  <script src="/webmcp.js" defer></script>`;
   const markdownAlt = options.markdownAlt
     ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
     : "";

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import { isHouseWallet } from "@/lib/channel";
+import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
@@ -2088,8 +2089,41 @@ adminRoutes.get("/admin/buyers", async (c) => {
 
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
-  const { freeInstrumentUsage } = await import("@/services/instruments");
-  return c.html(renderInstrumentsPage(freeInstrumentUsage(await computeObservatory(c.env))));
+  const { computePulse } = await import("@/services/pulse");
+  const { freeInstrumentUsage, handoffs, readInstrumentReading, readMonthEvents, splitUnknown, writeInstrumentReading } =
+    await import("@/services/instruments");
+  const now = new Date();
+  const month = metricsMonth(now);
+  // One wave: the observatory, the funnel's counts, the last reading
+  // and the month's event rows read disjoint keys. The funnel figures
+  // and everything off the rows are decorations; any failing leaves
+  // the page standing with the field null and said so.
+  const [observatory, pulse, last, rows] = await Promise.all([
+    computeObservatory(c.env, now),
+    computePulse(c.env).catch(() => null),
+    readInstrumentReading(c.env),
+    readMonthEvents(c.env, month).catch(() => null),
+  ]);
+  const settled: Record<string, number> = {};
+  const rechecks: Record<string, number> = {};
+  const declines: Record<string, number> = {};
+  for (const window of pulse?.months ?? []) {
+    if (!window.month) continue;
+    settled[window.month] = window.organic_settled;
+    rechecks[window.month] = window.organic_rechecks;
+    declines[window.month] = window.organic_declines;
+  }
+  let selfHost = "";
+  try {
+    selfHost = new URL(c.env.STORE_BASE_URL).host;
+  } catch {
+    selfHost = "";
+  }
+  const unknown = rows ? splitUnknown(rows.events, month, rows.rows_scanned, rows.complete, selfHost) : null;
+  const handoff = rows ? handoffs(rows.events, month) : null;
+  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, declines, last, unknown, handoff });
+  deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
+  return c.html(renderInstrumentsPage(usage));
 });
 
 adminRoutes.get("/admin/census", async (c) => {

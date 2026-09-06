@@ -200,6 +200,8 @@ export type PorchSurfaceKind =
 const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["item:", "storefront"],
   ["mcp:", "instrument"],
+  ["mcp-verifier:", "instrument"],
+  ["mcp-docs:", "instrument"],
   ["preflight", "instrument"],
   ["conformance", "instrument"],
   ["before-you-pay", "instrument"],
@@ -304,10 +306,57 @@ export function porchSurfaceKind(surface: string): PorchSurfaceKind {
   return "room";
 }
 
+/**
+ * THE VERSIONED DOORS, and the gap they sat in until 2026-09-06.
+ *
+ * The map matched /api/preflight exactly and nothing else, while every
+ * sentence the store publishes sends agents to /api/preflight/v1 — the
+ * MCP instructions handed to every session, the free-instruments line
+ * in llms.txt, the census finding's "reproducible by anyone via the
+ * free checker at POST /api/preflight/v1", the FAQ. So the door the
+ * store ADVERTISES was the one door it did not count, and the porch
+ * recorded only the handful of callers who guessed the unversioned
+ * path. The conformance desk had been spared this by one line
+ * (/api/conformance/v1 was in the map from the start), which is
+ * exactly why conformance looked like the busy instrument and
+ * preflight like the quiet one. It was never a fact about demand.
+ *
+ * BUCKETED TO THE BASE SURFACE, following the conformance line's own
+ * precedent: /api/preflight/v1 and /api/preflight/v2 both count as
+ * "preflight". A per-version surface would be bounded too, and it
+ * would answer which battery agents reach for — but it would also
+ * split a series the observatory has been carrying since August, and
+ * a number that changes meaning without changing name is the thing
+ * this file exists to prevent. The version stays legible in the
+ * route; the count stays comparable across months.
+ */
+const VERSIONED_INSTRUMENTS: readonly string[] = [
+  "/api/preflight",
+  "/api/before-you-pay",
+  "/api/look",
+  "/api/conformance",
+  "/api/discovery",
+  "/api/onpage",
+];
+
+/** /api/preflight/v2 → /api/preflight, for a bare vN segment only. Never a stranger's string. */
+function versionedInstrument(path: string): string | undefined {
+  const cut = path.lastIndexOf("/v");
+  if (cut < 0) return undefined;
+  const version = path.slice(cut + 2);
+  if (version.length === 0 || !/^[0-9]+$/.test(version)) return undefined;
+  const base = path.slice(0, cut);
+  return VERSIONED_INSTRUMENTS.includes(base) ? base : undefined;
+}
+
 export function porchSurface(path: string, method: string): string | undefined {
   const exact = PORCH_EXACT.get(path);
   if (exact) {
     return exact;
+  }
+  const versioned = versionedInstrument(path);
+  if (versioned) {
+    return PORCH_EXACT.get(versioned);
   }
   if (path.startsWith("/.well-known/")) {
     return "well-known";

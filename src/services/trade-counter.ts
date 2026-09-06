@@ -464,6 +464,28 @@ export async function tradeMonthCount(env: Env, partner: TradePartner, month: st
   return Number.isFinite(count) ? count : 0;
 }
 
+/**
+ * THE FRONT PAGE'S GAUGE (2026-09-05, "how do we display any trades on
+ * the home page"): live deliveries this calendar month across every
+ * live account, from the month counters the door already keeps — one
+ * KV get per live account, never a row walk on the storefront. The
+ * counter is bumped on write and lives on eventually consistent
+ * storage, so it is a count, not a ledger; the ledger is the rows.
+ */
+export async function tradeMonthGauge(
+  env: Env,
+  now: Date = new Date(),
+): Promise<{ month: string; deliveries: number; live_accounts: number }> {
+  const month = utcMonth(now);
+  const live = TRADE_PARTNERS.filter((partner) => partner.mode === "live");
+  const counts = await Promise.all(live.map((partner) => tradeMonthCount(env, partner, month)));
+  return {
+    month,
+    deliveries: counts.reduce((sum, count) => sum + count, 0),
+    live_accounts: live.length,
+  };
+}
+
 /** The share this account earns on its next delivery: the ladder against the month so far. */
 export async function shareForNextDelivery(env: Env, partner: TradePartner, now: Date = new Date()): Promise<number> {
   if (!partner.share_ladder || partner.share_ladder.length === 0) {

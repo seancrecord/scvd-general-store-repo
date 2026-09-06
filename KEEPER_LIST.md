@@ -674,12 +674,13 @@ Do not relitigate without you.
   reconciliation is their seller dashboard against
   `/api/trade/hal/statement`, and each payout you receive is
   recorded by hand at `/admin/trade`.
-- **⚑ WATCH — the credit ceiling is $250 of unpaid net.** At the
-  certificate's $24 net that is about ten deliveries before the
-  door refuses `credit_ceiling_reached` and Hal refunds a real
-  buyer. Record Hal's payouts promptly, or raise
-  `credit_ceiling_usd` on the hal row to match their payout cadence.
-  Which wallet receives the sats, and whose custody, is still yours.
+- **⚑ WATCH — the credit ceiling is $2,500 of unpaid net** (raised
+  from $250 on 2026-09-05). Past it the door refuses
+  `credit_ceiling_reached` and Hal refunds a real buyer, so record
+  each payout at `/admin/trade` as the sats arrive. The figure is a
+  dial on the account row, not a rule; raise it again if Hal's payout
+  cadence is slower than the sales rate. Which wallet receives the
+  sats, and whose custody, is still yours.
 - **RULE** — `TRADE_UPLIFT_BPS` (20% over retail, net) is the
   opening figure. Yours to move.
 - **Your press (rule 30), nothing else pending on the counter** —
