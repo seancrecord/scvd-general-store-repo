@@ -457,3 +457,32 @@ describe("the enumeration layer rides alongside", () => {
     );
   });
 });
+
+describe("a row's own read time outranks the seal (2026-09-05)", () => {
+  it("dates first/last observed and the timeline row by the probe's stamp, falling back to taken_at", async () => {
+    /*
+     * The walk knocks in hourly batches and the snapshot is taken at
+     * the seal, so taken_at can sit days from the knock. The passport
+     * that reads this history said "observed 09-01" of a row a note
+     * dated 09-05; the operator pointed at the gap. Stamped rows date
+     * by the knock; older rows keep the seal, which is all they hold.
+     */
+    const stamped = host("stamped.example", "ready");
+    stamped.observed_at = "2026-08-30T09:15:00.000Z";
+    await chain(
+      [round("2026-W35", [stamped, host("plain.example", "ready")])],
+      [new Date("2026-09-01T13:27:08.998Z")],
+    );
+    const withStamp = await subjectHistory(testEnv, "stamped.example", BASE);
+    expect(withStamp.first_observed).toBe("2026-08-30T09:15:00.000Z");
+    expect(withStamp.last_observed).toBe("2026-08-30T09:15:00.000Z");
+    const row = withStamp.timeline.find((entry) => entry.probed)!;
+    expect(row.observed_at).toBe("2026-08-30T09:15:00.000Z");
+    // The seal is still the round's own time; it is not rewritten.
+    expect(row.taken_at).toBe("2026-09-01T13:27:08.998Z");
+
+    const without = await subjectHistory(testEnv, "plain.example", BASE);
+    expect(without.last_observed).toBe("2026-09-01T13:27:08.998Z");
+    expect(without.timeline.find((entry) => entry.probed)!.observed_at).toBeUndefined();
+  });
+});

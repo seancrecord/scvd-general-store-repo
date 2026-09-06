@@ -340,6 +340,15 @@ passportRoutes.get("/passport/:host", async (c) => {
            * learn it must not act. */
           decision: decisionOf("indeterminate"),
           decision_meaning: DECISION_MEANING["INDETERMINATE"],
+          /* The correction that withdrew the reading, so a reader who
+           * gets `retracted-reading` can go straight to the dated
+           * entry rather than take the sentence's word for it. */
+          ...(passportOrRefusal.correction_date
+            ? {
+                correction_date: passportOrRefusal.correction_date,
+                corrections_url: `${base}/corrections`,
+              }
+            : {}),
         },
         status,
       );

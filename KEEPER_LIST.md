@@ -26,6 +26,97 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- ⚑ **RULINGS WAITING ON YOUR PEN (09-06).** Everything on
+  `claude/402signal-x402-payment-6n12hk` that is taste or policy
+  rather than arithmetic, in one place. All are one edit to undo;
+  the file and symbol are named so none of it needs archaeology.
+
+  **What strangers read.** `src/services/outreach.ts`:
+  1. The broken-door note's SUBJECT, for a door that answered:
+     was "your x402 endpoint at X is turning buyers away", now
+     "a failed readiness check on your x402 endpoint at X". A door
+     that gave no answer at all keeps the old subject. `draftNote`.
+  2. Its FINDING: was "got a response that no x402 buyer can pay:
+     <checks>", now "got an answer that did not pass our readiness
+     check. What failed, by name: <checks>", with the check
+     definitions linked. This is the sentence Ross wrote back
+     about. `draftNote`.
+  3. The re-check line names the MOMENT ("re-checked live at 22:41
+     UTC on 2026-09-05") rather than "seconds before this note was
+     sent", which stopped being true once the hand road could send
+     an hour later. `draftNote`.
+  4. The welcome still opens "our weekly pass" though it now dates
+     by the knock rather than the seal. Fine as is, or reword.
+     `draftWelcome`.
+
+  **What a public page says — the big one.** `src/store/retracted-readings.ts`:
+  5. A passport whose latest row failed ONLY checks we have since
+     retracted no longer publishes `not-ready`. It refuses as
+     `retracted-reading`, names the correction that withdrew it,
+     and says there is no current verdict. It never upgrades to
+     ready — we withdrew our reason, we did not acquire a new
+     verdict. This changes what scvd.store says in public about a
+     named host, which is why it is yours and not mine. The rule
+     is narrow by construction: only the 2026-W36 round, only
+     `payto-payable` / `amount-atomic` / `transfer-method-signable`,
+     and only where the row's own recorded rails show the old
+     reader could not have judged it.
+
+  **The artifact.** `src/services/badge-svg.ts` (`CHIP_LAYOUT` holds
+  the geometry; the palette is the block above `CHIP_PALETTE`):
+  6. THE ASPECT CHANGED — the chip is a 400x110 card, not a 300x56
+     ribbon. A chip anyone already pasted renders squashed until
+     they re-copy the snippet. Both snippets emit the new size on
+     their own. This is the only change on the branch with a cost
+     to somebody outside, and it is reversible.
+  7. The ground is forest-black with a foil frame and seal, a
+     bevelled rim, bold type, and YOUR DINO in the seal instead of
+     the letters SCVD (one path, drawn from `favicon.ts`, so the
+     mark cannot drift). The share card follows onto the same
+     ground with the same mark.
+  8. The chip's eyebrow reads `ENDPOINT PASSPORT`; the store's name
+     is carried by the seal's arc legend now.
+  9. An `indeterminate` tier prints only its fraction on the face
+     ("1/1 round ready"), never the word — the word is about how
+     many rounds WE hold, not about their door, and it had been
+     the loudest thing on a chip whose own decision was READY. The
+     whole line still rides in the alt text and on the page.
+  10. The freshness glosses were cut to fit the larger record line:
+      "inside one census cadence", "older than one cadence", "too
+      old to rely on". `CHIP_STATE`.
+
+  **Numbers, if any are wrong.** A live reading arms a note for
+  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read both
+  press ten at a time (`VERIFY_BATCH_CAP`, `AUDIT_BATCH_CAP`).
+
+- ⚑ **402signal.com / tensorfeed.ai — replied by your hand
+  (09-06).** Both notes answered; nothing owed on either. What is
+  left is not correspondence:
+  1. LOOK, Sunday after 11:00 UTC: `/passport/402signal.com`.
+     Until the walk re-reads with the corrected instrument it now
+     refuses as `retracted-reading` naming the 09-04 correction,
+     rather than asserting not-ready. After the walk it should
+     issue. If it still refuses, paste the row here.
+  2. LOOK: the outreach ledger's other hand-delivered W36 rows.
+     Each got its note from a stored row. The re-read press below
+     says whether the corrected instrument still agrees; any host
+     that reads ready now got a note it should not have.
+
+- ⚑ **PRESS — re-read every door we wrote to (09-05).** Your ask,
+  after two corrections in one afternoon: how the desk catches the
+  next wrong note before its operator does. `/admin/outreach` now
+  carries **Doors we wrote to, re-read** — one press knocks again
+  on ten hosts a note went to, oldest first, by the instrument as
+  it is now, and lays the answer beside the row the note came
+  from. It sends nothing. Hosts where the two disagree are named
+  at the top: that is either a door healed since, or a note of
+  ours that was wrong, and no arithmetic can tell those apart —
+  only you can. YOUR HANDS: press it until the queue is exhausted
+  (the notice says how many remain), then for each disagreement
+  decide healed-or-ours, and write by your hand where it is ours.
+  Any host that reads ready now and got a "your door is broken"
+  note is owed the same reply Ross got.
+
 - **TEST — flip the doors (09-05).** You ruled the split; it is
   built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a
   656 KB Worker (the store is 3.5 MB) that answers the unpaid

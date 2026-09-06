@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
-import { fitCell, type CardLine } from "@/lib/pixel-card";
+import type { CardContent } from "@/lib/pixel-card";
+import { CHIP_LAYOUT } from "@/services/badge-svg";
 import {
   DECISION_MEANING,
   DECISION_RULE,
@@ -237,17 +238,18 @@ export function colophonText(passport: EndpointPassport, base: string): string {
  * large, and a card that said READY would be the badge rules 43 and
  * 54 forbid. The host line shrinks to fit; nothing is truncated.
  */
-export function cardLines(passport: EndpointPassport): CardLine[] {
+export function cardLines(passport: EndpointPassport): CardContent {
   const s = passport.payload.summary;
   const observed = s.observed_at ? s.observed_at.slice(0, 10) : "undated";
   const host = passport.payload.host.toLowerCase();
-  return [
-    { text: "observed by scvd.store", cell: 8 },
-    { text: `on ${observed}`, cell: 6 },
-    { text: host, cell: fitCell(host, 9) },
-    { text: `stale after ${s.valid_until.slice(0, 10)}`, cell: 6 },
-    { text: "gaps counted against the observer", cell: 4 },
-  ];
+  return {
+    eyebrow: "scvd general store · oak city",
+    title: "endpoint passport",
+    host,
+    observed: `observed ${observed}`,
+    stale: `stale after ${s.valid_until.slice(0, 10)}`,
+    footer: "gaps counted against the observer",
+  };
 }
 
 /**
@@ -289,7 +291,7 @@ export function passportEmbedFor(rawHost: string, base: string): PassportEmbed {
   return {
     chip_svg: chip,
     markdown: `[![${alt}](${chip})](${url})`,
-    html: `<a href="${url}"><img src="${chip}" alt="${alt}" width="300" height="56"></a>`,
+    html: `<a href="${url}"><img src="${chip}" alt="${alt}" width="${CHIP_LAYOUT.width}" height="${CHIP_LAYOUT.height}"></a>`,
     note:
       "The chip re-renders from the same dates this page carries, wears the tier with its fraction, and stops rendering when the door leaves the ready side — a pasted chip can go dark, never stale-green. Six-hour edge cache.",
   };
@@ -302,7 +304,7 @@ export function colophonBlock(passport: EndpointPassport, base: string): string 
   return `<section>
     <h2>To paste beside your door</h2>
     <p class="menu-desc">The chip: the tier with its fraction on its face, the observation date, a link to this page. ${escapeHtml(embed.note)}</p>
-    <p><a href="${escapeHtml(url)}"><img src="${escapeHtml(embed.chip_svg)}" alt="${escapeHtml(`scvd.store passport chip for ${passport.payload.host}`)}" width="300" height="56"></a></p>
+    <p><a href="${escapeHtml(url)}"><img src="${escapeHtml(embed.chip_svg)}" alt="${escapeHtml(`scvd.store passport chip for ${passport.payload.host}`)}" width="${CHIP_LAYOUT.width}" height="${CHIP_LAYOUT.height}"></a></p>
     <p class="menu-meta">Markdown, for a README:</p>
     <pre class="menu-desc"><code>${escapeHtml(embed.markdown)}</code></pre>
     <p class="menu-meta">HTML, for a page:</p>
@@ -364,7 +366,13 @@ table.summary td:first-child { white-space: nowrap; font-family: monospace; }
  */
 export function refusalCard(input: {
   host: string;
-  reason: "never-observed" | "not-ready";
+  /**
+   * `retracted-reading` (2026-09-05) reads INDETERMINATE, never
+   * NOT_READY: the checks that verdict rested on are withdrawn, and
+   * rendering a withdrawn finding as a refusal about the host would
+   * be publishing the retracted claim in a smaller font.
+   */
+  reason: "never-observed" | "not-ready" | "retracted-reading";
   detail: string;
 }): string {
   const decision = input.reason === "not-ready" ? "NOT_READY" : "INDETERMINATE";

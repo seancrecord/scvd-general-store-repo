@@ -112,6 +112,12 @@ export interface SubjectRound {
    * name a door we never visited.
    */
   url?: string;
+  /**
+   * The moment the probe read this row (2026-09-05), where it wrote
+   * one down; `taken_at` above is when the round sealed. Absent on
+   * rows walked before the probe stamped its time.
+   */
+  observed_at?: string;
   verdict?: WardHostResult["verdict"];
   failed?: string[];
   advisories?: string[];
@@ -274,11 +280,20 @@ export async function subjectHistory(
 
     if (entry && entry.verdict !== "not_probed" && !degradedRow) {
       probed += 1;
-      firstObserved ??= snapshot.taken_at;
-      lastObserved = snapshot.taken_at;
+      /*
+       * THE ROW'S OWN MOMENT (2026-09-05). The walk knocks in hourly
+       * batches and the snapshot is taken when the round seals, so
+       * `taken_at` can sit days from the knock — the passport said
+       * "observed 09-01" of a row a note dated 09-05, and an operator
+       * pointed at the gap. Rows the probe stamped date by the knock;
+       * older rows keep the seal, the only time their record holds.
+       */
+      const observedAt = entry.observed_at ?? snapshot.taken_at;
+      firstObserved ??= observedAt;
+      lastObserved = observedAt;
       if (previousVerdict !== null && previousVerdict !== entry.verdict) {
         changes.push({
-          at: snapshot.taken_at,
+          at: observedAt,
           week: snapshot.week,
           from: previousVerdict,
           to: entry.verdict,
@@ -309,6 +324,7 @@ export async function subjectHistory(
         probed: true,
         coverage_suspect: false,
         url: entry.url,
+        ...(entry.observed_at ? { observed_at: entry.observed_at } : {}),
         verdict: entry.verdict,
         failed: entry.failed,
         ...(entry.battery ? { battery: entry.battery } : {}),

@@ -1,5 +1,6 @@
 import { inkParamsFromSignature } from "@/lib/ink";
 import { escapeHtml } from "@/lib/sanitize";
+import { dinoMark } from "@/services/favicon";
 import { STORE_METADATA } from "@/store";
 
 /**
@@ -29,6 +30,69 @@ export interface PatronBadgeOptions {
 /** SVG text doesn't wrap; long names get trimmed to fit the label. */
 function fitName(name: string, max: number): string {
   return name.length > max ? `${name.slice(0, max - 1)}\u2026` : name;
+}
+
+/**
+ * HOW WIDE THAT WILL DRAW, IN PIXELS (2026-09-05).
+ *
+ * SVG text does not wrap and a Worker cannot measure a glyph, so
+ * every label in this file placed its text at hand-picked
+ * coordinates and hoped. The passport chip stopped hoping in public:
+ * a tier word on the left and a date on the right were drawn at the
+ * same baseline with no budget between them, so `SCVD PASSPORT \u00b7
+ * INDETERMINATE` ran straight through `FRESH \u2022 2026-09-01`, and the
+ * host ran through a verify URL on the line below. It was the one
+ * artifact we ask operators to paste in their README.
+ *
+ * A COUNT OF CHARACTERS CANNOT FIX IT, which is why the old
+ * `fitName(host, 34)` did not: `WWW.EXAMPLE.COM` and `illinois.io`
+ * are the same length and nowhere near the same width. So this
+ * estimates by glyph class \u2014 Georgia's caps are near 0.7em, its
+ * lowercase near 0.5, digits 0.55, and punctuation a third of that \u2014
+ * and every string on the chip is fitted to a stated budget before
+ * it is drawn. The estimate runs slightly WIDE on purpose: erring
+ * long costs an ellipsis, erring short costs an overlap, and only
+ * one of those ends up on somebody's front page.
+ */
+function glyphEm(ch: string): number {
+  if (ch === " ") return 0.25;
+  if (/[.,:;'`!|]/.test(ch)) return 0.28;
+  if (/[\u00b7\u2022\u2013\u2014]/.test(ch)) return 0.5;
+  if (/[ilj]/.test(ch)) return 0.31;
+  if (/[tfr]/.test(ch)) return 0.4;
+  if (/[mw]/.test(ch)) return 0.82;
+  if (/[MW]/.test(ch)) return 0.95;
+  if (/[IJ]/.test(ch)) return 0.42;
+  if (/[A-Z]/.test(ch)) return 0.72;
+  if (/[0-9]/.test(ch)) return 0.56;
+  return 0.52;
+}
+
+export function textWidth(text: string, fontSize: number, letterSpacing = 0): number {
+  let em = 0;
+  for (const ch of text) em += glyphEm(ch);
+  return em * fontSize + Math.max(0, [...text].length - 1) * letterSpacing;
+}
+
+/**
+ * The longest prefix of `text` that draws inside `maxWidth`, with an
+ * ellipsis when anything was dropped. Returns "" rather than a bare
+ * ellipsis when even one glyph will not fit: a lone "\u2026" in a label is
+ * noise pretending to be information.
+ */
+export function fitToWidth(
+  text: string,
+  fontSize: number,
+  maxWidth: number,
+  letterSpacing = 0,
+): string {
+  if (textWidth(text, fontSize, letterSpacing) <= maxWidth) return text;
+  const chars = [...text];
+  for (let take = chars.length - 1; take > 0; take -= 1) {
+    const candidate = `${chars.slice(0, take).join("").trimEnd()}\u2026`;
+    if (textWidth(candidate, fontSize, letterSpacing) <= maxWidth) return candidate;
+  }
+  return "";
 }
 
 export function renderPatronBadge(options: PatronBadgeOptions): string {
@@ -145,15 +209,63 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
 </svg>`;
 }
 
-/** The chip's freshness palette. Broken and indeterminate never
- * render — the route refuses them the way the passport door does. */
-const CHIP_STATE: Record<
+/**
+ * THE CHIP'S OWN INKS (2026-09-05). Warmer paper and a darker,
+ * browner black than the big badges use: the chip renders at 300px on
+ * somebody else's page, usually beside their own type, and the
+ * mid-brown that reads as aged paper at 400x300 reads as washed out
+ * at this size. Kept separate rather than moving the shared constants,
+ * because the patron badge and the audit badge are drawn for print
+ * proportions and were not the thing that looked cheap.
+ */
+/**
+ * THE PLAQUE'S INKS (2026-09-06, fifth pass).
+ *
+ * The keeper on the cream card: "I don't like the off white paper
+ * texture, I want premium... this shit I see on the page and I don't
+ * click, I scroll right past." That names the real failure, and it is
+ * not a taste one — a pale label sits at the same VALUE as the README
+ * around it, and equal value is exactly what an eye skips. So the
+ * ground goes dark, in the forest-black the store's own favicon badge
+ * is cut from, with the type in warm white and brass over it. A dark
+ * plaque is the one thing that holds its edge on a white page and a
+ * black one alike, which is the whole job.
+ *
+ * ACCESSIBILITY IS NOT A CASUALTY OF THAT. Every ink below clears
+ * 4.5:1 against the LIGHTER end of the ground's gradient, which is the
+ * worst case; test/chip-contrast.spec.ts walks them and fails the
+ * build under it. The tone this replaces, #6f6250 on cream, was itself
+ * the fix for a #8a7b64 that had been running at 3.69:1.
+ */
+const CHIP_GROUND_TOP = "#16261b";
+const CHIP_GROUND_BASE = "#0a130e";
+/** The lit rim and the shadowed one: the bevel is these two, offset. */
+const CHIP_BEVEL_LIT = "#3a5a43";
+const CHIP_BEVEL_DARK = "#050906";
+/** Foil — the rules, the seal, the eyebrow, the dino. */
+const CHIP_FOIL = "#cfa963";
+/** The subject, and the only thing set in near-white. */
+const CHIP_INK = "#f4f1e6";
+/** The record line. */
+const CHIP_MUTED = "#a9b8ac";
+
+/**
+ * The chip's freshness palette. Broken and indeterminate never
+ * render — the route refuses them the way the passport door does.
+ *
+ * PRINTER'S INKS, NOT TRAFFIC LIGHTS (2026-09-05): the old #2e7d32
+ * was a dashboard's success green and made the label read as a status
+ * pill. Deep forest, ochre and a grey that genuinely looks dead are
+ * the three a letterpress shop would have on the shelf, and the last
+ * one does the functional work of an expired chip looking expired.
+ */
+export const CHIP_STATE: Record<
   "fresh" | "aging" | "expired",
   { color: string; sub: string }
 > = {
-  fresh: { color: "#2e7d32", sub: "observed inside one census cadence" },
-  aging: { color: "#b26a00", sub: "older than one cadence — a refresh would say more" },
-  expired: { color: FADED, sub: "too old to rely on; agents should refuse it" },
+  fresh: { color: "#74d1a0", sub: "inside one census cadence" },
+  aging: { color: "#e6b862", sub: "older than one cadence" },
+  expired: { color: "#a7b2a8", sub: "too old to rely on" },
 };
 
 export interface PassportChipOptions {
@@ -201,30 +313,312 @@ export interface PassportChipOptions {
  * free/paid line maps onto the assurance ladder, not onto a paywall
  * invented for the chip.
  */
+/**
+ * THE CHIP'S GEOMETRY, STATED ONCE (2026-09-05). Every number the
+ * layout depends on lives here so the test can assert the budgets
+ * rather than re-measure a string of SVG — and so a later edit that
+ * moves the stamp has to move the budget that keeps text out of it.
+ */
+export const CHIP_LAYOUT = {
+  /**
+   * A CARD, NOT A BADGE (2026-09-06, fourth pass).
+   *
+   * The keeper's read of the ribbon: "second tier of five." Three
+   * things were holding it there. It was small — a 300px strip beside
+   * a row of shields, when this store's own copy calls it a COLOPHON
+   * to paste beside your door. It carried no craft: a rectangle, a
+   * circle and three lines of Georgia is what every SaaS card is. And
+   * it looked like nothing in particular, when the artifact is called
+   * a PASSPORT and a passport has one unmistakable visual language —
+   * the entry stamp.
+   *
+   * So: a card at 400x110, an engraved ground, a seal with its legend
+   * set around the arc, and the freshness struck across the corner as
+   * a stamp rather than printed as a word. The aspect changes, which
+   * old pasted embeds cannot follow; every generator here emits the
+   * new size and the keeper's desk carries the note.
+   */
+  width: 400,
+  height: 110,
+  /** The struck seal, with its legend around the arc. */
+  seal: { cx: 56, cy: 55, r: 28, arc: 21 },
+  /** The hairline between the seal and the setting. */
+  divider: 100,
+  /** Where the set lines begin. */
+  textX: 114,
+  /** The right edge the set lines stop at. */
+  textEnd: 382,
+  eyebrow: { y: 34, size: 8, spacing: 2.1 },
+  /** The entry stamp: the one loud thing, struck across the corner. */
+  stamp: { cx: 320, cy: 36, w: 112, h: 40, angle: -3.5 },
+  /**
+   * The host is what a reader came for, so it gets the room: one size
+   * down the ramp per step until it fits, and the subdomain muted so
+   * the eye lands on the registrable name.
+   */
+  host: { y: 79, sizes: [22, 20, 18, 16, 14, 12, 10.5] },
+  meta: { y: 94, size: 9.5 },
+} as const;
+
+/** Budgets derived from the geometry, never typed twice (AT_SCALE rule 1). */
+export const CHIP_BUDGETS = {
+  /** The eyebrow shares its band with the stamp, so it stops short of it. */
+  eyebrow:
+    CHIP_LAYOUT.stamp.cx - CHIP_LAYOUT.stamp.w / 2 - CHIP_LAYOUT.textX - 12,
+  /** The host and record rows run under the stamp, to the full width. */
+  full: CHIP_LAYOUT.textEnd - CHIP_LAYOUT.textX,
+  /** Inside the stamp's inner rule. */
+  stamp: CHIP_LAYOUT.stamp.w - 22,
+  /** Inside the seal's inner ring, where the house mark is struck. */
+  seal: (CHIP_LAYOUT.seal.arc - 4) * 2,
+  /**
+   * Along the seal's TOP arc. The legend rides the upper half only —
+   * text set around the bottom of a circle reads upside down, which is
+   * exactly how the first draft of this seal rendered it.
+   */
+  arc: Math.PI * CHIP_LAYOUT.seal.arc,
+} as const;
+
+/**
+ * The tier as the chip's face says it. The face used to print the
+ * tier word in caps beside the store's name, which put
+ * `INDETERMINATE` — a statement about how MANY rounds we have, not
+ * about the door — in the loudest position on a chip whose own
+ * decision was READY. A reader saw a scary word next to their
+ * hostname. So the face states the fraction, which is the part that
+ * means something at a glance, and names the tier only when the tier
+ * is a finding rather than an absence. The whole line stays in the
+ * accessible label and on the passport page.
+ * ⚑ Rule 7: the wording is the keeper's to keep or kill.
+ */
+/**
+ * A HOSTNAME, SPLIT WHERE A READER SPLITS IT.
+ *
+ * `api.long-subdomain.enterprise.example.com` truncated from the right
+ * loses the only part anybody recognises. So the chip sets the
+ * registrable name in ink and everything before it muted: the eye
+ * lands on `example.com`, and the path to it is still legible for
+ * anyone who wants it. The split is the last two labels, which is
+ * wrong for a handful of public suffixes (`co.uk` and its cousins) and
+ * harmless when it is — being wrong here mutes one label too few, it
+ * never hides the name.
+ */
+export function splitHost(host: string): { prefix: string; apex: string } {
+  const parts = host.split(".");
+  if (parts.length <= 2) return { prefix: "", apex: host };
+  const apex = parts.slice(-2).join(".");
+  return { prefix: host.slice(0, host.length - apex.length), apex };
+}
+
+export interface FittedHost {
+  prefix: string;
+  apex: string;
+  size: number;
+}
+
+/**
+ * The largest size on the ramp at which the whole name fits, and only
+ * when nothing on the ramp does, a cut — taken off the FRONT, where
+ * the subdomains are, so the registrable name survives. Shrinking
+ * before cutting is the elegant order: a name set two points smaller
+ * is still the name, and a name with its tail cut off is not.
+ */
+export function fitHost(
+  host: string,
+  sizes: readonly number[],
+  budget: number,
+): FittedHost {
+  const { prefix, apex } = splitHost(host);
+  for (const size of sizes) {
+    if (textWidth(host, size) <= budget) return { prefix, apex, size };
+  }
+  const size = sizes[sizes.length - 1]!;
+  // Keep the apex whole and eat the prefix from the left.
+  const apexWidth = textWidth(apex, size);
+  const room = budget - apexWidth - textWidth("…", size);
+  if (room <= 0) {
+    // Even the registrable name will not fit; fall back to the plain
+    // fitter rather than pretend the split bought us anything.
+    return { prefix: "", apex: fitToWidth(apex, size, budget), size };
+  }
+  const chars = [...prefix];
+  for (let drop = 1; drop <= chars.length; drop += 1) {
+    const tail = chars.slice(drop).join("");
+    if (textWidth(tail, size) <= room) return { prefix: `…${tail}`, apex, size };
+  }
+  return { prefix: "", apex, size };
+}
+
+export function chipTierFace(tier: { tier: string; ready: number; rounds: number }): string {
+  const fraction = `${tier.ready}/${tier.rounds} ${tier.rounds === 1 ? "round" : "rounds"} ready`;
+  /*
+   * Two tier words are dropped from the face rather than printed.
+   * `indeterminate` is a statement about how many rounds we hold, not
+   * about the door, and it was the loudest thing on a chip whose own
+   * decision was READY. `observed` is the entry tier, and the line it
+   * would sit on already opens "observed <date>" — the chip read
+   * "observed 2026-08-19 · observed · 1/1 round ready", which is a
+   * label stuttering at its reader. Both keep their full line in the
+   * accessible label and on the passport page.
+   */
+  return tier.tier === "indeterminate" || tier.tier === "observed"
+    ? fraction
+    : `${tier.tier} · ${fraction}`;
+}
+
+/**
+ * THE CHIP, AS A LETTERPRESS LABEL (redrawn 2026-09-05, second pass).
+ *
+ * The first pass fixed the overlap and the keeper looked at it: "at
+ * least they are aligned now, they still don't look premium." He was
+ * right, and the reasons were all craft rather than arithmetic —
+ * nested rounded rectangles read as a web widget, a supermarket green
+ * read as a status pill, three left-aligned rows of near-equal weight
+ * gave the eye nothing to land on, and a small italic sub-line at 7px
+ * is mud at any resolution.
+ *
+ * So: squared corners and ONE hairline frame, because engraving does
+ * not round its corners. A struck seal on the left, which is the
+ * house's own mark and gives the label an anchor the way a wax seal
+ * anchors a document. A hairline rule between the seal and the
+ * setting. Real hierarchy — tracked small caps over a large host over
+ * a quiet line of record. And one accent, in inks a printer would
+ * recognise (deep forest, ochre, a grey that reads dead) rather than
+ * the traffic-light greens a dashboard uses.
+ */
+/**
+ * HOW FAR OFF SQUARE THIS HOST'S SEAL SITS.
+ *
+ * A seal printed at exactly zero degrees is a logo; one a degree or
+ * two off is a mark somebody pressed. The angle is DERIVED from the
+ * hostname rather than random, so a chip is stable across every
+ * re-render — the same host always gets the same press — and no two
+ * neighbouring hosts sit at quite the same angle. Bounded to a few
+ * degrees: enough to read as struck, never enough to read as broken.
+ */
+export function sealAngleFor(host: string): number {
+  let hash = 0;
+  for (const ch of host) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
+  // -4.5 to +4.5 degrees, in tenths, so the string stays short.
+  return Math.round((((hash % 91) - 45) / 10) * 10) / 10;
+}
+
+/**
+ * THE ENGRAVED GROUND. Four sine lines at a whisper of opacity, the
+ * way a bond certificate lays a guilloche under its type — it is not
+ * meant to be looked at, only to be there when somebody looks closely,
+ * which is the difference between printed and produced. The phase is
+ * derived from the host, so no two chips carry quite the same weave.
+ */
+function guilloche(host: string, width: number, height: number): string {
+  let hash = 0;
+  for (const ch of host) hash = (hash * 131 + ch.codePointAt(0)!) >>> 0;
+  const lines: string[] = [];
+  for (let index = 0; index < 4; index += 1) {
+    const phase = ((hash >>> (index * 3)) % 36) / 6;
+    const midline = height * (0.22 + index * 0.19);
+    const amplitude = 5 + (index % 2) * 2.5;
+    const points: string[] = [];
+    for (let x = 0; x <= width; x += 5) {
+      const y = midline + Math.sin(x / 17 + phase + index) * amplitude;
+      points.push(`${x === 0 ? "M" : "L"}${x} ${y.toFixed(1)}`);
+    }
+    lines.push(points.join(" "));
+  }
+  return lines
+    .map(
+      (d) =>
+        `<path d="${d}" fill="none" stroke="${CHIP_FOIL}" stroke-opacity="0.10" stroke-width="0.7"/>`,
+    )
+    .join("\n  ");
+}
+
+/**
+ * The chip's inks, exported so the contrast guard can walk them.
+ * test/chip-contrast.spec.ts holds every one of these against the
+ * paper at the 4.5:1 WCAG asks for — the check that caught #8a7b64
+ * carrying both small runs at 3.69:1.
+ */
+export const CHIP_PALETTE = {
+  /** The worst case a light run must clear: the lit end of the ground. */
+  paper: CHIP_GROUND_TOP,
+  groundBase: CHIP_GROUND_BASE,
+  ink: CHIP_INK,
+  muted: CHIP_MUTED,
+  foil: CHIP_FOIL,
+} as const;
+
 export function renderPassportChip(options: PassportChipOptions): string {
+  const L = CHIP_LAYOUT;
   const state = CHIP_STATE[options.freshness];
   const date = options.observedAt.slice(0, 10);
-  const host = fitName(options.host, 34);
-  const sub = options.selfObserved
-    ? "self-read of our own catalogs at render, not a census probe"
-    : state.sub;
   const tier = options.selfObserved ? undefined : options.tier;
-  const label = options.selfObserved
-    ? "SCVD PASSPORT · SELF"
+  const serif = "Georgia, 'Times New Roman', serif";
+  /* "SELF-OBSERVED PASSPORT" did not fit the band beside the stamp and
+   * came out cut mid-word; the record line below carries the whole of
+   * what self-observed means anyway. */
+  const eyebrow = options.selfObserved ? "SELF-OBSERVED" : "ENDPOINT PASSPORT";
+  const host = fitHost(options.host, L.host.sizes, CHIP_BUDGETS.full);
+  const sealAngle = sealAngleFor(options.host);
+  /*
+   * The record line: the date, then ONE thing more. Three parts made a
+   * line that ellipsed on ordinary hosts, and a label whose last words
+   * are always "…" reads as broken rather than as brief.
+   */
+  const second = options.selfObserved
+    ? "self-read, not a census probe"
     : tier
-      ? `SCVD PASSPORT · ${tier.tier.toUpperCase()} ${tier.ready}/${tier.rounds}`
-      : "SCVD PASSPORT";
-  const labelColor = tier?.tier === "indeterminate" || tier?.tier === "broken" ? INK : FADED;
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}">
-  <rect width="300" height="56" fill="${PAPER}" rx="6"/>
-  <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
-  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="${tier ? 1 : 2}" fill="${labelColor}">${escapeHtml(label)}</text>
-  <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
-  <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
-  <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
-    <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
-  </a>
-  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a ranking</text>
+      ? chipTierFace(tier)
+      : state.sub;
+  const meta = `observed ${date}  ·  ${second}`;
+  const prefix = host.prefix
+    ? `<tspan fill="${CHIP_MUTED}">${escapeHtml(host.prefix)}</tspan>`
+    : "";
+  const legend = "SCVD GENERAL STORE";
+  const S = L.stamp;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${L.width}" height="${L.height}" viewBox="0 0 ${L.width} ${L.height}" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} — ${escapeHtml(options.decision)}, evidence ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}${tier ? `, tier ${escapeHtml(tier.line)}` : ""}. A dated observation, never a ranking. Verify at ${escapeHtml(options.passportUrl)}">
+  <defs>
+    <linearGradient id="chipFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${CHIP_GROUND_TOP}"/>
+      <stop offset="0.6" stop-color="${CHIP_GROUND_BASE}"/>
+      <stop offset="1" stop-color="#101d15"/>
+    </linearGradient>
+    <linearGradient id="chipFoil" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#f2dcaa"/>
+      <stop offset="0.45" stop-color="${CHIP_FOIL}"/>
+      <stop offset="1" stop-color="#8f6f37"/>
+    </linearGradient>
+    <clipPath id="chipField"><rect x="9" y="9" width="${L.width - 18}" height="${L.height - 18}" rx="2"/></clipPath>
+    <path id="chipArc" d="M ${L.seal.cx - L.seal.arc} ${L.seal.cy} A ${L.seal.arc} ${L.seal.arc} 0 0 1 ${L.seal.cx + L.seal.arc} ${L.seal.cy}"/>
+  </defs>
+  <rect width="${L.width}" height="${L.height}" fill="${CHIP_BEVEL_DARK}" rx="5"/>
+  <rect x="0" y="0" width="${L.width}" height="${L.height - 1.5}" fill="${CHIP_BEVEL_LIT}" rx="5"/>
+  <rect x="1.4" y="1.4" width="${L.width - 2.8}" height="${L.height - 3.4}" fill="url(#chipFace)" rx="4"/>
+  <path d="M 5 2.6 H ${L.width - 5}" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1"/>
+  <path d="M 5 ${L.height - 2.4} H ${L.width - 5}" stroke="#000000" stroke-opacity="0.45" stroke-width="1.2"/>
+  <g clip-path="url(#chipField)">
+  ${guilloche(options.host, L.width, L.height)}
+  </g>
+  <rect x="6.5" y="6.5" width="${L.width - 13}" height="${L.height - 13}" fill="none" stroke="url(#chipFoil)" stroke-width="1" rx="2.5"/>
+  <rect x="9.5" y="9.5" width="${L.width - 19}" height="${L.height - 19}" fill="none" stroke="${CHIP_FOIL}" stroke-width="0.35" stroke-opacity="0.45" rx="1.5"/>
+  <g transform="rotate(${sealAngle} ${L.seal.cx} ${L.seal.cy})">
+    <g stroke="url(#chipFoil)" fill="none">
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r}" stroke-width="1.4"/>
+      <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-dasharray="1.6 2.4"/>
+    </g>
+    <text font-family="${serif}" font-weight="bold" font-size="4.4" letter-spacing="0.5" fill="${CHIP_FOIL}"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
+    ${dinoMark(L.seal.cx - 15, L.seal.cy - 13, 30, "url(#chipFoil)")}
+  </g>
+  <line x1="${L.divider}" y1="24" x2="${L.divider}" y2="86" stroke="${CHIP_FOIL}" stroke-width="0.4" stroke-opacity="0.4"/>
+  <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-weight="bold" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_FOIL}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
+  <g transform="rotate(${S.angle} ${S.cx} ${S.cy})" fill="none" stroke="${state.color}">
+    <rect x="${S.cx - S.w / 2}" y="${S.cy - S.h / 2}" width="${S.w}" height="${S.h}" rx="2.5" stroke-width="1.9"/>
+    <rect x="${S.cx - S.w / 2 + 3.5}" y="${S.cy - S.h / 2 + 3.5}" width="${S.w - 7}" height="${S.h - 7}" rx="1.5" stroke-width="0.5"/>
+    <text x="${S.cx}" y="${S.cy - 2}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="12.5" letter-spacing="2.4" fill="${state.color}" stroke="none">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), 12.5, CHIP_BUDGETS.stamp, 2.4))}</text>
+    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="9" letter-spacing="1.3" fill="${state.color}" stroke="none">${escapeHtml(date)}</text>
+  </g>
+  <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-weight="bold" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
+  <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
 </svg>`;
 }
 
