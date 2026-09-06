@@ -160,19 +160,25 @@ Repair: separate machine discovery of terms from a purchase request whose requir
 
 ### BUY-003 — P2: MCP silently coerces wrong primitive types into text
 
-**Open · required-input audit.** Numeric/boolean required inputs reach paid text products as strings: 30 signed cases across five items. The artifacts exist, but the advertised string schema and runtime behavior disagree.
+**Repaired in the MCP string-type validation commit.** Runtime validation now preserves JSON types until the item's published schema judges them, rejects non-string values with the actual input field and received/expected types, and never verifies or settles those requests. All 37 new public-door regressions were observed red before the change; the repaired related gate passed 70 tests. This includes optional string fields and null/array/object values, beyond the original numeric/boolean controls.
+
+**Original required-input audit.** Numeric/boolean required inputs reach paid text products as strings: 30 signed cases across five items. The artifacts exist, but the advertised string schema and runtime behavior disagree.
 
 Repair: reject invalid types consistently before payment and return the actual field defect with `charged:false` and a machine code. `src/lib/purchase-args.ts:toolArgs`.
 
 ### BUY-004 — P2: over-limit purpose silently truncates after payment
 
-**Open · required-input audit.** 150 signed cases accept a purpose exceeding the published 280-character limit and sign a shortened value. Keep separate from BUY-009, which corrupts valid within-limit text.
+**Repaired in the purpose-boundary commit.** Every advertised product rejects over-limit purposes before HTTP/MCP quotes, and signed controls on every rail reach neither verification nor settlement. The runtime and schema share the limit, counted in Unicode code points. Allowed purpose text is carried verbatim into the certificate, including surrounding whitespace and whole emoji. All 44 new controls failed before the repair; 105 related tests, typecheck and both dry-run bundles pass afterward. BUY-009/026 remain open for non-purpose fields.
+
+**Original required-input audit.** 150 signed cases accept a purpose exceeding the published 280-character limit and sign a shortened value. Keep separate from BUY-009, which corrupts valid within-limit text.
 
 Repair: reject the over-limit value before payment; do not silently truncate a field promised verbatim.
 
 ### BUY-010 — P2: the first MCP purchase shelf forbids a supported field
 
-**Open · input-survival audit.** `buy_simple` omits `purpose` and declares `additionalProperties:false`, while the item schema and theme shelves advertise it and the runtime signs it. Eighteen canary observations across Hello, Small Blessing, Daily Fortune and three rails identify the mismatch. A literal schema-driven agent cannot send the supported field through the recommended first tool.
+**Repaired in the shared front-counter schema commit.** `buy_simple` derives its optional fields from the same product schema builder as the theme shelves. Its description no longer denies supported optional fields; only item_id is required, without conditionals. Four served-schema and cross-rail buyer regressions failed before the change and pass afterward, including exact signed-purpose survival and matching prices through both shelves. The combined input-contract gate passed 112 tests across six files, typecheck and both dry-run bundles.
+
+**Original input-survival audit.** `buy_simple` omits `purpose` and declares `additionalProperties:false`, while the item schema and theme shelves advertise it and the runtime signs it. Eighteen canary observations across Hello, Small Blessing, Daily Fortune and three rails identify the mismatch. A literal schema-driven agent cannot send the supported field through the recommended first tool.
 
 Repair: derive the tool's accepted optional properties from its eligible items and update the claim that these items take no other inputs. `src/lib/mcp-tools.ts:frontCounterTool`.
 
