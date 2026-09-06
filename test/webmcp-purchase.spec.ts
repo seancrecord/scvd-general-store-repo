@@ -19,6 +19,19 @@ describe("WebMCP exposes an explicit quote and signed-payment retry", () => {
     expect(response.headers.get("Content-Type")).toContain("javascript");
     expect(await response.text()).toContain("export function createPurchaseBridge");
   });
+  it("describes the quote handoff and delivery before a browser agent calls", () => {
+    const tools: Array<{ name: string; outputSchema?: { type: string; properties: Record<string, unknown> } }> = webmcpPurchaseTools();
+    const quote = tools.find(tool => tool.name === "quote_store_purchase")?.outputSchema;
+    const complete = tools.find(tool => tool.name === "complete_store_purchase")?.outputSchema;
+    expect(quote).toMatchObject({ type: "object", properties: {
+      quote_id: { type: "string" }, payment_required: { type: "object" },
+      idempotency_key: { type: "string" }, payment_sent: { const: false },
+    } });
+    expect(complete).toMatchObject({ type: "object", properties: {
+      status: { type: "integer" }, body: {}, payment_response: {},
+      idempotency_key: { type: "string" }, error: { type: "string" },
+    } });
+  });
 });
 
 

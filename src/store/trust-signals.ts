@@ -466,6 +466,55 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   },
   {
     /**
+     * THE BROWSER DOOR'S FIRST RECORDS (2026-09-06, the keeper's four
+     * URLs). The store has served /webmcp.js for weeks and the WebMCP
+     * door scores 5/5 in its own battery, while this list — the only
+     * listing record anyone can check — carried nothing for it at all.
+     * A capability with no external record is a claim, and SIX_DOORS
+     * argues that door at length.
+     *
+     * These are LISTINGS OF A BROWSER SURFACE, and the distinction
+     * from every MCP row here is worth keeping: what is indexed is
+     * that this origin declares tools to an agent arriving in a
+     * browser, which is a different fact from a server answering a
+     * handshake.
+     */
+    url: "https://webmcpdirectory.com/tool/scvd-store",
+    registry: "WebMCP Directory (webmcpdirectory.com)",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That a directory of WebMCP-enabled sites carries a page for this store's browser surface. Not an endorsement and not an audit: it proves the origin declares tools an in-browser agent can find, and says nothing about whether those tools return anything worth having.",
+  },
+  {
+    url: "https://webmcp.ora.ai/scvd.store",
+    registry: "Ora — WebMCP directory (webmcp.ora.ai)",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Ora's WebMCP directory carries this origin. Not an endorsement and not an audit: a directory page proves indexing. Their rows say HOW each site's support is known — a registry claim, tools observed live, or a full audit with its score — which is the same claim-versus-observation line this store draws in its own readings; what tier they give us is theirs to change and is deliberately not restated here.",
+  },
+  {
+    url: "https://directory.ora.ai/scvd.store",
+    registry: "Ora Directory (directory.ora.ai)",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Ora's wider agentic index of the web carries a page for this store. Not an endorsement and not an audit: a directory page proves indexing. Listed apart from their WebMCP directory above on purpose — being in an index of agent-usable sites is a different fact from declaring browser tools, and collapsing the two would count one listing twice.",
+  },
+  {
+    /**
+     * AN INSTRUMENT, NOT A DIRECTORY — the same separation the two
+     * Circle rows keep, for the same reason. A score is somebody
+     * running a battery against this origin; a listing is somebody
+     * holding a page about it. Filing them together would say a
+     * reading and a row are the same kind of evidence.
+     */
+    url: "https://ora.ai/score/scvd.store",
+    registry: "Ora — agent-readiness score",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Ora's scanner reaches this origin and grades how legible it is to an arriving agent. An instrument reading, not a listing and not an audit: it measures the shape of what we serve and never buys anything, so it says nothing about the goods behind the doors. The number is theirs and moves when they change the battery; this records that the reading exists, never what it says.",
+  },
+  {
+    /**
      * A DIRECTORY THIS TIME, NOT AN INSTRUMENT — and the wording below
      * keeps the two apart, because the entry above is also Circle's
      * and measures something. This one is a per-partner page in

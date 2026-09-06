@@ -235,6 +235,21 @@ export const KV_KEYS = {
    */
   declineEvent: (invertedTs: string, id: string): string => `declevt:${invertedTs}:${id}`,
   declineEventPrefix: "declevt:",
+  /**
+   * THE SALE INDEX (2026-09-06), and it is the decline index's lesson
+   * applied to the other end of the funnel. The front of the store now
+   * shows the last few things that sold, and every settle it reads
+   * lives in the same `evt:` stream as every corpus read and every
+   * price check — so a bounded scan for the newest sale spends its
+   * whole cap on traffic and reports an empty shop that sold something
+   * an hour ago. That exact failure was booked against the decline
+   * desk on 2026-09-05 and fixed the same way: a second key per row,
+   * under a prefix where EVERY key is a sale, so a small cap reaches
+   * months instead of minutes. Same TTL as the raw event, because a
+   * shop window is not an archive — the books at /stats are.
+   */
+  saleEvent: (invertedTs: string, id: string): string => `sellevt:${invertedTs}:${id}`,
+  saleEventPrefix: "sellevt:",
   porchSits: (day: string): string => `porch_sits:${day}`,
   porchTreats: (day: string): string => `porch_treats:${day}`,
   /** The keeper's last reading of /admin/instruments, rewritten on every render so the next one can print the slope. */

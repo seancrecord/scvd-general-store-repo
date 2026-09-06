@@ -29,6 +29,7 @@ import {
   practiceCounterRoutes,
   tillRoutes,
   webmcpRoutes,
+  shopWindowRoutes,
   mcpMdRoutes,
   requestRoutes,
   houseLedgerRoutes,
@@ -240,6 +241,7 @@ app.route("/", whatRoutes);
 app.route("/", practiceCounterRoutes);
 app.route("/", tillRoutes);
 app.route("/", webmcpRoutes);
+app.route("/", shopWindowRoutes);
 app.route("/", mcpMdRoutes);
 app.route("/", trustListRoutes);
 app.route("/", houseLedgerRoutes);

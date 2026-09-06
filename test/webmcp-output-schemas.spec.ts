@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { TOOL_ENDPOINTS, webmcpScript, webmcpTools } from "@/routes/webmcp";
+import { TOOL_ENDPOINTS, webmcpScript, webmcpTools, webmcpPurchaseTools } from "@/routes/webmcp";
 
 const BASE = "https://scvd.store";
 
@@ -102,6 +102,6 @@ describe("the browser surface says what comes back", () => {
     for (const tool of servedTools()) {
       expect(body).toContain(`"name": "${String(tool.name)}"`);
     }
-    expect(body.match(/"outputSchema"/g)?.length).toBe(servedTools().length);
+    expect(body.match(/"outputSchema"/g)?.length).toBe(servedTools().length + webmcpPurchaseTools().length);
   });
 });

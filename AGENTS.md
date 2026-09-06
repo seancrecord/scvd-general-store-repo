@@ -129,8 +129,10 @@ imports), and a green test suite can still fail the real deploy.
 
 ## Security constraints (hard)
 
-- The store never asks anyone to run code, install anything, or hand
-  over credentials or key material. Do not add a flow that does.
+- Nothing from the store can act without the visitor's decision, and
+  the store never asks for credentials, keys, or wallet secrets.
+  Rendered and executable surfaces follow HOUSE_RULES.md rule 17
+  (amended 2026-08-27); their shape alone is not a prohibition.
 - `SIGNING_KEY` (ed25519 seed), `CDP_API_KEY_SECRET`, `ADMIN_PASSWORD`,
   `PAY_TO_ADDRESS` are Worker secrets — never in the repo, never echoed.
 - Money fails closed; decoration fails open. Nothing that moves money

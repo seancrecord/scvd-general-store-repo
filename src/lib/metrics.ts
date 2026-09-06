@@ -266,6 +266,34 @@ async function writeDeclineIndex(env: Env, event: MetricEvent): Promise<void> {
   });
 }
 
+/**
+ * A SALE'S SECOND HOME, for the same reason a decline has one: a
+ * prefix where every key is a sale.
+ *
+ * The shop window on the front page ("what people are buying") reads
+ * the newest few settles. Read out of the raw `evt:` stream that is a
+ * lottery — the stream carries every price check and every corpus
+ * read, so a bounded scan can spend its whole cap without reaching a
+ * sale that happened this morning, and print an empty window over a
+ * shop that is trading. The decline desk was caught by exactly that on
+ * 2026-09-05; this is the same fix, pointed the other way.
+ *
+ * The WHOLE event is stored, not a display row. It costs the same as a
+ * trimmed one and it keeps this function out of the business of
+ * deciding what the front page may say — the window reads the same
+ * object every other desk reads, and what it chooses to show is the
+ * window's business, changeable without touching the till.
+ */
+async function writeSaleIndex(env: Env, event: MetricEvent): Promise<void> {
+  const key = KV_KEYS.saleEvent(
+    invertedTimestamp(Date.now()),
+    Math.random().toString(36).slice(2, 8),
+  );
+  await kvPut(env.COUNTERS, key, JSON.stringify(event), {
+    expirationTtl: EVENT_TTL_SECONDS,
+  });
+}
+
 async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
   const key = `evt:${invertedTimestamp(Date.now())}:${Math.random().toString(36).slice(2, 8)}`;
   await kvPut(env.COUNTERS, key, JSON.stringify(event), {
@@ -865,6 +893,9 @@ export async function recordSettlement(
     );
   }
   pending.push(writeEvent(env, event));
+  // The second key, in the wave with the rest: the shop window's own
+  // prefix, so it never has to go hunting through the raw stream.
+  pending.push(writeSaleIndex(env, event));
   pending.push(raiseFirstOutsideSignature(env, event, "settled"));
   if (signals.payer) {
     pending.push(recordPayerSeen(env, signals.payer));
