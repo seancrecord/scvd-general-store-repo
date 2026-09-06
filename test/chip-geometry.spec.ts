@@ -235,6 +235,15 @@ describe("what the chip says", () => {
       expect(record.text, host).not.toContain("…");
       expect(record.text, host).toContain("4/4 rounds ready");
     }
+    // And on the rows with no tier, where a freshness gloss stands in —
+    // the glosses are written to fit the line, not left to the fitter.
+    for (const freshness of ["fresh", "aging", "expired"] as const) {
+      const svg = chip({ freshness });
+      const record = drawnText(svg).find((run) => run.y === CHIP_LAYOUT.meta.y)!;
+      expect(record.text, freshness).not.toContain("…");
+    }
+    const self = chip({ host: "scvd.store", selfObserved: true });
+    expect(drawnText(self).find((run) => run.y === CHIP_LAYOUT.meta.y)!.text).not.toContain("…");
   });
 
   it("keeps the house line on the artifact, where the face has no room for it", () => {

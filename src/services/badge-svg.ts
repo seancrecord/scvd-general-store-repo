@@ -219,7 +219,16 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
  */
 const CHIP_PAPER = "#f7f2e6";
 const CHIP_INK = "#241d16";
-const CHIP_MUTED = "#8a7b64";
+/**
+ * ACCESSIBILITY, NOT TASTE (2026-09-06). The muted tone was #8a7b64,
+ * which is 3.69:1 against this paper — under the 4.5:1 WCAG asks for,
+ * and it was carrying BOTH small runs on the chip. A chip is an image
+ * of text, so the ratio binds here exactly as it does in a page; the
+ * one it was failing is the criterion an operator's own accessibility
+ * audit would fail them on for embedding it. #6f6250 is the same warm
+ * grey four steps darker, at 5.31:1.
+ */
+const CHIP_MUTED = "#6f6250";
 
 /**
  * The chip's freshness palette. Broken and indeterminate never
@@ -231,13 +240,13 @@ const CHIP_MUTED = "#8a7b64";
  * the three a letterpress shop would have on the shelf, and the last
  * one does the functional work of an expired chip looking expired.
  */
-const CHIP_STATE: Record<
+export const CHIP_STATE: Record<
   "fresh" | "aging" | "expired",
   { color: string; sub: string }
 > = {
-  fresh: { color: "#1f4d33", sub: "observed inside one census cadence" },
-  aging: { color: "#7a4a0e", sub: "older than one cadence — a refresh says more" },
-  expired: { color: "#6b6154", sub: "too old to rely on; agents should refuse it" },
+  fresh: { color: "#1f4d33", sub: "inside one census cadence" },
+  aging: { color: "#7a4a0e", sub: "older than one cadence" },
+  expired: { color: "#5d5548", sub: "too old to rely on" },
 };
 
 export interface PassportChipOptions {
@@ -320,7 +329,7 @@ export const CHIP_LAYOUT = {
   textX: 114,
   /** The right edge the set lines stop at. */
   textEnd: 382,
-  eyebrow: { y: 34, size: 7, spacing: 2.2 },
+  eyebrow: { y: 34, size: 8, spacing: 2.1 },
   /** The entry stamp: the one loud thing, struck across the corner. */
   stamp: { cx: 320, cy: 36, w: 112, h: 40, angle: -3.5 },
   /**
@@ -329,7 +338,7 @@ export const CHIP_LAYOUT = {
    * the eye lands on the registrable name.
    */
   host: { y: 79, sizes: [22, 20, 18, 16, 14, 12, 10.5] },
-  meta: { y: 94, size: 8 },
+  meta: { y: 94, size: 9.5 },
 } as const;
 
 /** Budgets derived from the geometry, never typed twice (AT_SCALE rule 1). */
@@ -505,6 +514,18 @@ function guilloche(host: string, width: number, height: number): string {
     .join("\n  ");
 }
 
+/**
+ * The chip's inks, exported so the contrast guard can walk them.
+ * test/chip-contrast.spec.ts holds every one of these against the
+ * paper at the 4.5:1 WCAG asks for — the check that caught #8a7b64
+ * carrying both small runs at 3.69:1.
+ */
+export const CHIP_PALETTE = {
+  paper: CHIP_PAPER,
+  ink: CHIP_INK,
+  muted: CHIP_MUTED,
+} as const;
+
 export function renderPassportChip(options: PassportChipOptions): string {
   const L = CHIP_LAYOUT;
   const state = CHIP_STATE[options.freshness];
@@ -523,7 +544,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
    * are always "…" reads as broken rather than as brief.
    */
   const second = options.selfObserved
-    ? "self-read of our own catalogs, not a census probe"
+    ? "self-read, not a census probe"
     : tier
       ? chipTierFace(tier)
       : state.sub;
@@ -550,9 +571,9 @@ export function renderPassportChip(options: PassportChipOptions): string {
       <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.r - 3}" stroke-width="0.4" stroke-dasharray="1.6 2.4"/>
       <circle cx="${L.seal.cx}" cy="${L.seal.cy}" r="${L.seal.arc - 5}" stroke-width="0.5"/>
     </g>
-    <text font-family="${serif}" font-size="4.4" letter-spacing="0.5" fill="${CHIP_INK}" fill-opacity="0.85"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
+    <text font-family="${serif}" font-size="4.4" letter-spacing="0.5" fill="${CHIP_INK}"><textPath href="#chipArc" startOffset="50%" text-anchor="middle">${escapeHtml(legend)}</textPath></text>
     <text x="${L.seal.cx}" y="${L.seal.cy + 3.4}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="10" letter-spacing="1.4" fill="${CHIP_INK}">SCVD</text>
-    <text x="${L.seal.cx}" y="${L.seal.cy + L.seal.arc - 1}" text-anchor="middle" font-family="${serif}" font-size="5" fill="${CHIP_INK}" fill-opacity="0.75">◆</text>
+    <path d="M ${L.seal.cx} ${L.seal.cy + L.seal.arc - 6} l 2.6 2.6 l -2.6 2.6 l -2.6 -2.6 z" fill="${CHIP_INK}"/>
   </g>
   <line x1="${L.divider}" y1="24" x2="${L.divider}" y2="86" stroke="${CHIP_INK}" stroke-width="0.4" stroke-opacity="0.4"/>
   <text x="${L.textX}" y="${L.eyebrow.y}" font-family="${serif}" font-size="${L.eyebrow.size}" letter-spacing="${L.eyebrow.spacing}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(eyebrow, L.eyebrow.size, CHIP_BUDGETS.eyebrow, L.eyebrow.spacing))}</text>
@@ -560,7 +581,7 @@ export function renderPassportChip(options: PassportChipOptions): string {
     <rect x="${S.cx - S.w / 2}" y="${S.cy - S.h / 2}" width="${S.w}" height="${S.h}" rx="2.5" stroke-width="1.6"/>
     <rect x="${S.cx - S.w / 2 + 3.5}" y="${S.cy - S.h / 2 + 3.5}" width="${S.w - 7}" height="${S.h - 7}" rx="1.5" stroke-width="0.5"/>
     <text x="${S.cx}" y="${S.cy - 2}" text-anchor="middle" font-family="${serif}" font-weight="bold" font-size="12.5" letter-spacing="2.4" fill="${state.color}" stroke="none">${escapeHtml(fitToWidth(options.freshness.toUpperCase(), 12.5, CHIP_BUDGETS.stamp, 2.4))}</text>
-    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-size="8.4" letter-spacing="1.3" fill="${state.color}" fill-opacity="0.9" stroke="none">${escapeHtml(date)}</text>
+    <text x="${S.cx}" y="${S.cy + 12}" text-anchor="middle" font-family="${serif}" font-size="9" letter-spacing="1.3" fill="${state.color}" stroke="none">${escapeHtml(date)}</text>
   </g>
   <text x="${L.textX}" y="${L.host.y}" font-family="${serif}" font-size="${host.size}" fill="${CHIP_INK}">${prefix}${escapeHtml(host.apex)}</text>
   <text x="${L.textX}" y="${L.meta.y}" font-family="${serif}" font-size="${L.meta.size}" fill="${CHIP_MUTED}">${escapeHtml(fitToWidth(meta, L.meta.size, CHIP_BUDGETS.full))}</text>
