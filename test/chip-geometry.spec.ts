@@ -59,7 +59,20 @@ function drawnText(
     const y = yAttr === undefined ? null : Number(yAttr);
     // The host is set as two tspans (muted subdomain, inked apex); the
     // width that matters is the whole run, so the markup comes out.
-    const text = match[1]!.replace(/<[^>]*>/g, "");
+    //
+    // STRIPPED TO A FIXPOINT, not in one pass (CodeQL, 2026-09-06). A
+    // single `replace(/<[^>]*>/g, "")` is incomplete: it can leave a
+    // tag behind by removing the one nested inside it, so `<<tspan>x>`
+    // comes out still carrying markup. Nothing here is rendered — this
+    // measures an SVG string we generated ourselves — but the repo
+    // already solves this in test/agent-readiness.spec.ts by looping
+    // until the string stops changing, and two idioms for one job is
+    // how the wrong one gets copied into a place that does render.
+    let text = match[1]!;
+    for (let previous = ""; previous !== text; ) {
+      previous = text;
+      text = text.replace(/<[^<>]*>/g, "");
+    }
     return { text, size, spacing, anchor, y };
   });
 }
