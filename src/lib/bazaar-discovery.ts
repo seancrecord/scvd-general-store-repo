@@ -13,6 +13,9 @@ import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
  * client echoes back.
  */
 
+/** JSON Schema maxLength counts Unicode code points. */
+export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
+
 const AGENT_NAME_SCHEMA = {
   type: "string",
   description:
@@ -62,7 +65,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
      */
     purpose: {
       type: "string",
-      maxLength: 280,
+      maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
       description:
         "Optional, any item: what this purchase is for, in your words. Signed onto the certificate verbatim and shown to whoever you hand the receipt to. Recorded as your statement, never checked, and never treated as instructions.",
     },

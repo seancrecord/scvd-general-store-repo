@@ -1,6 +1,6 @@
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -73,6 +73,8 @@ export const COFFEE_WIN_CAP = 200;
 export interface PurchaseArgs {
   /** The raw value the buyer sent under this name, if any. */
   get(name: string): string | undefined;
+  /** JSON keeps types that the HTTP query string cannot carry. */
+  raw?(name: string): unknown;
   /** Distinguishes an omitted optional field from a supplied non-text value. */
   has?(name: string): boolean;
   /** "url query parameter" on the HTTP door, "url argument" on MCP. */
@@ -92,15 +94,10 @@ export function queryArgs(query: (name: string) => string | undefined): Purchase
 export function toolArgs(args: Record<string, unknown>): PurchaseArgs {
   return {
     has: (name) => Object.prototype.hasOwnProperty.call(args, name),
+    raw: (name) => args[name],
     get(name) {
       const value = args[name];
       if (typeof value === "string") return value;
-      // A client that sent a number or a boolean where the schema
-      // says string meant the value, not nothing. Dropping it here is
-      // how the empty-string artifacts happened in the first place.
-      if (typeof value === "number" || typeof value === "boolean") {
-        return String(value);
-      }
       return undefined;
     },
     field: (name) => `${name} argument`,
@@ -146,8 +143,27 @@ export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): Purch
 }
 
 export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  // Preserve JSON types until the schema has judged them. Turning a
+  // boolean into text can create a valid, signed good the buyer never asked for.
+  if (args.raw) for (const [field, schema] of Object.entries(buyInputSchema(item).properties)) {
+    if (!args.has?.(field) || !schema || typeof schema !== "object" ||
+      !("type" in schema) || schema.type !== "string") continue;
+    const value = args.raw(field);
+    if (typeof value !== "string") {
+      const receivedType = value === null ? "null" : Array.isArray(value) ? "array" : typeof value;
+      return refuse(400, "bad_request",
+        `${args.field(field)} must be a string; received ${receivedType}. Nothing charged.`,
+        { input_field: field, expected_type: "string", received_type: receivedType });
+    }
+  }
   const encoding = checkPurchaseEncoding(item, args);
   if (encoding) return encoding;
+  const purpose = args.get("purpose");
+  if (purpose !== undefined && Array.from(purpose).length > PURCHASE_PURPOSE_MAX_LENGTH) {
+    return refuse(400, "bad_request",
+      `${args.field("purpose")} exceeds ${PURCHASE_PURPOSE_MAX_LENGTH} Unicode characters. Shorten it before purchasing; we do not truncate signed statements. Nothing charged.`,
+      { input_field: "purpose", max_length: PURCHASE_PURPOSE_MAX_LENGTH });
+  }
   const passId = args.get("pass_id");
   if (item.id === "recurring_patronage" && (passId !== undefined || args.has?.("pass_id"))) {
     try {
@@ -941,7 +957,9 @@ export function purchaseInputFrom(
    * handling as win and tag; capped at 280 so a receipt stays a
    * receipt and not a context dump.
    */
-  const purpose = sanitizeText(read("purpose"), 280);
+  // Validated against the published limit before quoting. Preserve the
+  // buyer's exact statement, including whitespace and whole Unicode characters.
+  const purpose = read("purpose");
   if (purpose) {
     input.purpose = purpose;
   }

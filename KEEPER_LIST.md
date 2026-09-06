@@ -26,6 +26,13 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Arbitrum and World checkout activated (2026-09-06).** The keeper
+  entered `ARBITRUM_PAY_TO` and `WORLD_PAY_TO` on the store, using the
+  existing Rainbow receiving address. That saved version needed a
+  deploy; both settings were then mirrored to scvd-doors. Live store
+  discovery and MCP quotes confirmed the same recipient across the
+  four EVM checkout networks. No live payment or refund was made.
+
 - **RULED 2026-09-06 — all ten, approved as shipped.** The rulings
   that were waiting on your pen are decided; nothing below needs
   work, and this row is the record rather than a queue. Each is one
@@ -761,12 +768,6 @@ Do not relitigate without you.
 
 ### Decisions that unblock the roadmap
 
-- **RULE — enable Arbitrum and World checkout.** Their integration is
-  built behind `ARBITRUM_PAY_TO` and `WORLD_PAY_TO`. Decide whether to
-  use the existing EVM receiving wallet for each network, and mirror
-  the approved settings on the store and scvd-doors together. The
-  settings remain absent until approved; current quotes and copy must
-  agree after activation. No live purchase or refund test is implied.
 
 
 - **Rail run-through** (eleven checks, drafted against
