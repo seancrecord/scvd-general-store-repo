@@ -99,7 +99,6 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /trust/llms.txt",
   "GET /docs/llms.txt",
   "GET /api/llms.txt",
-  "GET /openapi-tools.json",
   "GET /sources.json",
   "GET /mcp-ward.json",
   "GET /fixtures.json",
@@ -129,6 +128,13 @@ const UNCOUNTED_TODAY: readonly string[] = [
    * gap that hid the verifier door for two days and the versioned
    * preflight for a month. Named here so the next reader inherits the
    * question instead of rediscovering it.
+   *
+   * ONE CAME OFF ON 2026-09-06: /openapi-tools.json. It is the ~13 KB
+   * function-calling contract that sits beside the ~650 KB OpenAPI,
+   * and the catalog and the discovery document had named only the
+   * large one. Now they name both, and the small one is counted —
+   * because the only way to learn whether pointing at it works is to
+   * count who takes it.
    */
   "GET /api/conformance/v1/fixtures",
   "GET /feeds",

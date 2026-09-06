@@ -1,4 +1,3 @@
-import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -123,50 +122,6 @@ function refuse(
   extra: Record<string, unknown> = {},
 ): PurchaseRefusal {
   return { status, body: { charged: false, code, error, ...extra } };
-}
-
-/**
- * THE MACHINE-READABLE HALF OF A REFUSAL ON A DOOR WITH REQUIRED
- * INPUTS (2026-09-06).
- *
- * The prose here is good and stays exactly as written — "An anchor
- * needs a summary, the state you want remembered. No summary, no
- * charge." is a better sentence than any schema. But a caller that
- * reached this point has already signed: it read the challenge, it
- * did not learn the door needed an input, and now it holds a 400
- * whose only machine field is `code: "bad_request"`. That names the
- * class and not the cure, so the client cannot fix itself and retry.
- *
- * These three fields are the cure, beside the sentence: what the door
- * requires, which of those did not arrive, and the URL to retry. A
- * client that reads none of them is no worse off than before.
- */
-export function requiredInputFacts(
-  item: MenuItem,
-  present: Record<string, unknown>,
-  base?: string,
-): Record<string, unknown> {
-  const required = (buyInputSchema(item).required ?? []).filter(
-    (name) => name !== "agent_name",
-  );
-  if (required.length === 0) {
-    return {};
-  }
-  const missing = missingRequiredInputs(item, present).filter(
-    (name) => name !== "agent_name",
-  );
-  const query = required
-    .map((name) => {
-      const value = present[name];
-      const filled = value === undefined || value === null || String(value).trim() === "";
-      return `${name}=${filled ? `<${name}>` : encodeURIComponent(String(value))}`;
-    })
-    .join("&");
-  return {
-    required_params: required,
-    ...(missing.length > 0 ? { missing_params: missing } : {}),
-    ...(base ? { retry_url: `${base}/api/buy/${item.id}?${query}` } : {}),
-  };
 }
 
 /** The sentence. Both doors show it verbatim. */

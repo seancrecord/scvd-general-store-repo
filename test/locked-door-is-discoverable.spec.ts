@@ -2,7 +2,6 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buyInputSchema, requiredInputsExtension } from "@/lib/bazaar-discovery";
-import { requiredInputFacts } from "@/lib/purchase-args";
 import { MENU_ITEMS, getMenuItem } from "@/store";
 
 /**
@@ -67,7 +66,20 @@ describe("the requirement is in the catalog a planner reads", () => {
     };
     const blessing = menu.items.find((i) => i.id === "small_blessing");
     expect(blessing).toBeDefined();
-    expect(blessing?.required_params).toBeUndefined();
+    /*
+     * CHANGED 2026-09-06 with the merge that brought buyerLinks in:
+     * an ungated item now carries required_params as an EMPTY ARRAY
+     * rather than omitting the key, so a machine reads one key of one
+     * type across the whole shelf. What must stay absent is the
+     * SENTENCE — prose telling a buyer to supply something on a door
+     * that asks for nothing is the actual harm this test was written
+     * to catch.
+     */
+    expect(blessing?.required_params, "an ungated item should read as needing nothing, not as unknown").toEqual([]);
+    expect(
+      (blessing as Record<string, unknown>)["required_params_note"],
+      "a door that needs nothing is telling buyers to supply something",
+    ).toBeUndefined();
   });
 });
 
@@ -107,22 +119,50 @@ describe("the requirement is in the challenge, one level deep", () => {
 });
 
 describe("the refusal names the cure, not only the class", () => {
-  it("lists what is required, what is missing, and the URL to retry", () => {
-    const item = getMenuItem("settlement_attestation")!;
-    const facts = requiredInputFacts(item, {}, BASE);
-    expect(facts["required_params"]).toEqual(["tx_hash"]);
-    expect(facts["missing_params"]).toEqual(["tx_hash"]);
-    expect(facts["retry_url"]).toBe(`${BASE}/api/buy/settlement_attestation?tx_hash=<tx_hash>`);
+  /*
+   * REWRITTEN 2026-09-06, AFTER A MERGE. This file first asserted
+   * against requiredInputFacts(), a helper written here for the
+   * RECOVER moment. Main had meanwhile landed buyerInputRepair(),
+   * which answers the same question with more in it — a per-field
+   * issues[] naming required vs invalid and where it belongs, an
+   * input contract URL for the one item, and the sentence that says
+   * no charge was taken. The helper this file was built on is gone,
+   * and asserting on a function nothing calls would have been a
+   * passing test guarding nothing.
+   *
+   * So these go through the DOOR. A signature the facilitator will
+   * never honour is enough: the input check runs before the payment
+   * gate, which is the whole point of the design — the buyer is told
+   * what it needs while its money is still its own.
+   */
+  const SIGNED = { ...AS_AGENT, "PAYMENT-SIGNATURE": "not-a-real-signature" };
+
+  async function refusalFor(path: string) {
+    const response = await SELF.fetch(`${BASE}${path}`, { headers: SIGNED });
+    return { status: response.status, body: (await response.json()) as Record<string, unknown> };
+  }
+
+  it("lists what is required and which field failed, before taking money", async () => {
+    const { status, body } = await refusalFor("/api/buy/settlement_attestation");
+    expect(status).toBe(400);
+    expect(body["required_params"]).toEqual(["tx_hash"]);
+    expect(String(body["input_contract_url"])).toContain("/menu/settlement_attestation");
+    expect(body["issues"]).toEqual([{ field: "tx_hash", code: "required", location: "query" }]);
+    expect(String(body["next_action"]).toLowerCase()).toContain("no charge");
   });
 
-  it("keeps a value the caller did get right, so the retry URL is usable as-is", () => {
-    const item = getMenuItem("settlement_attestation")!;
-    const facts = requiredInputFacts(item, { tx_hash: "0xabc" }, BASE);
-    expect(facts["missing_params"]).toBeUndefined();
-    expect(facts["retry_url"]).toBe(`${BASE}/api/buy/settlement_attestation?tx_hash=0xabc`);
+  it("stops naming a field the caller did get right", async () => {
+    const { body } = await refusalFor("/api/buy/settlement_attestation?tx_hash=0xabc");
+    const issues = (body["issues"] ?? []) as { field: string; code: string }[];
+    expect(
+      issues.filter((issue) => issue.field === "tx_hash" && issue.code === "required"),
+      "the door still calls a supplied input missing",
+    ).toEqual([]);
   });
 
-  it("adds nothing to a refusal on a door that requires nothing", () => {
-    expect(requiredInputFacts(getMenuItem("small_blessing")!, {}, BASE)).toEqual({});
+  it("adds no input repair to a door that requires nothing", async () => {
+    const { body } = await refusalFor("/api/buy/small_blessing");
+    expect(body["required_params"], "a door needing no input still advertises inputs").toBeUndefined();
+    expect(body["issues"]).toBeUndefined();
   });
 });
