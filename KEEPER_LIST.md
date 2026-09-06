@@ -26,101 +26,81 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- ⚑ **402signal.com — his reply is right, and the note was ours
-  (09-05).** Ross McIntyre wrote back: the live door answers 402
-  with three payable accepts (Base / Solana / Algorand), our own
-  free preflight reads `ready` on both batteries, and the passport
-  still refuses on the W36 row. The row is the Algorand misread the
-  2026-09-04 correction retracted; the note went out by hand from
-  that stored row the day AFTER the fix, because the Gmail link
-  drafted from the round and only the paused wire ever re-probed
-  live. Built on `claude/402signal-x402-payment-6n12hk`: no live
-  reading, no note (the hand road now walks the wire's law), the
-  finding sentence says what the check saw, and the ledger entry
-  for 2026-09-05. YOUR HANDS:
-  1. Reply to Ross (the draft is in the session summary): he is
-     right, the reading was ours, the row stays in the chain as
-     walked, Sunday's walk re-reads with the corrected instrument,
-     nothing to change on his side. Then stamp `replied` on his
-     card at `/admin/outreach`.
-  2. LOOK, Sunday after 11:00 UTC: `/passport/402signal.com`
-     should issue. If it still refuses, paste the row here.
-  3. RULE (rule 7): the note's subject moved from "is turning
-     buyers away" to "a failed readiness check on your x402
-     endpoint at …" for doors that answered, and the finding from
-     "no x402 buyer can pay" to "did not pass our readiness check.
-     What failed, by name: …". Kill or keep; `draftNote` in
-     `src/services/outreach.ts`.
-  4. LOOK: the outreach ledger's other hand-delivered W36 rows.
-     Each got a note from a stored row; `verify live` on the card
-     says now whether the corrected instrument agrees. Any that
-     answer ready got a note they should not have — same reply as
-     Ross's, by your hand.
+- ⚑ **RULINGS WAITING ON YOUR PEN (09-06).** Everything on
+  `claude/402signal-x402-payment-6n12hk` that is taste or policy
+  rather than arithmetic, in one place. All are one edit to undo;
+  the file and symbol are named so none of it needs archaeology.
 
-- ⚑ **tensorfeed.ai — the welcome's date was the seal, not the
-  knock (09-05).** Their reply is friendly and right: the welcome
-  said "On 2026-09-05", the passport it linked said observed
-  09-01. Same branch: every row now carries the moment the probe
-  knocked (`observed_at`), and the note, the corpus row and the
-  passport date by it. They passed on the chip and the paid tiers
-  (their rule: no third-party grades in front of agents; not a
-  finding against us) and asked one question. YOUR HANDS:
-  1. Reply (draft in the session summary): thank them for the
-     date catch, say what changed; answer the question — `fuchss`
-     is x402.fuchss.app (x402 Trust), a free provider directory
-     with a page per host at `/provider/<host>`; `x402_list` is
-     x402-list.com, an open directory with per-row provenance
-     (`submitted`, `imported:bazaar`, `imported:x402scan`). Neither
-     needs anything from an operator; both are worth a look to
-     see what each says about their door. Stamp `replied`.
-  2. RULE (rule 7): the welcome's first line still says "our
-     weekly pass"; from the next round it dates by the knock. Fine
-     as is, or reword — `draftWelcome` in `src/services/outreach.ts`.
+  **What strangers read.** `src/services/outreach.ts`:
+  1. The broken-door note's SUBJECT, for a door that answered:
+     was "your x402 endpoint at X is turning buyers away", now
+     "a failed readiness check on your x402 endpoint at X". A door
+     that gave no answer at all keeps the old subject. `draftNote`.
+  2. Its FINDING: was "got a response that no x402 buyer can pay:
+     <checks>", now "got an answer that did not pass our readiness
+     check. What failed, by name: <checks>", with the check
+     definitions linked. This is the sentence Ross wrote back
+     about. `draftNote`.
+  3. The re-check line names the MOMENT ("re-checked live at 22:41
+     UTC on 2026-09-05") rather than "seconds before this note was
+     sent", which stopped being true once the hand road could send
+     an hour later. `draftNote`.
+  4. The welcome still opens "our weekly pass" though it now dates
+     by the knock rather than the seal. Fine as is, or reword.
+     `draftWelcome`.
 
-- ⚑ **RULE — the chip and the share card, redrawn (09-05).** Your
-  two looks: the chip overlapped itself and the card read like a
-  terminal dump. Both are rebuilt on `claude/402signal-x402-payment-6n12hk`,
-  and the geometry is now tested so neither can drift back.
-  THREE COPY CALLS ARE YOURS (rule 7), all reversible in one edit:
-  1. The chip's eyebrow reads `ENDPOINT PASSPORT` (was
-     `SCVD PASSPORT · <TIER> <n>/<n>`), with the store's name now
-     carried by the seal instead.
-  2. An `indeterminate` tier no longer prints its word on the face,
-     only its fraction (`1/1 round ready`) — the word is about how
-     many rounds we hold, not about their door, and it was the
-     loudest thing on a chip whose decision was READY. Full line
-     still in the alt text and on the page.
-  3. The card's lines: `SCVD GENERAL STORE · OAK CITY`, then
-     `ENDPOINT PASSPORT`, the host, the two dates, and `GAPS
-     COUNTED AGAINST THE OBSERVER`. No verdict word, as before.
-  4. The chip's left third is now a SPINE inked in the freshness
-     colour — deep forest fresh, burnt ochre aging, dead grey
-     expired — with the seal reversed out of it and struck at a
-     small angle derived from the hostname. That is the call most
-     worth your eye: it makes an expired chip look expired from
-     across the page, and it spends the one strong colour on
-     status rather than on the house red.
-  5. The chip is now a CARD at 400x110, not a 300x56 strip, and it
-     is drawn as what its name says: an engraved ground, a seal with
-     its legend around the arc, and the freshness struck across the
-     corner as an entry stamp with the date inside it. THE ASPECT
-     CHANGED, so a chip somebody already pasted will render squashed
-     until they re-copy the snippet. Both snippets on the passport
-     page emit the new size on their own. If that trade is wrong,
-     say so and it goes back to the ribbon — the geometry is one
-     constant (`CHIP_LAYOUT`).
-  6. AND THE GROUND WENT DARK (09-06), on your "I want premium /
-     I scroll right past": forest-black with a gradient and a
-     bevelled rim, foil frame and seal, bold type, and YOUR DINO in
-     the seal instead of the letters SCVD — the same path the
-     favicon draws, so there is one mark and not two. The share
-     card follows onto the same ground with the same dino. The
-     freshness inks moved to their bright-on-dark versions and were
-     re-checked at 4.5:1 first.
-  LOOK: `/badges/passport/{host}.svg` and
-  `/passport/card/{host}.png` after deploy. The card is now ~380 KB
-  (was ~95 KB) because the type is anti-aliased; still far under
-  any unfurler's ceiling.
+  **What a public page says — the big one.** `src/store/retracted-readings.ts`:
+  5. A passport whose latest row failed ONLY checks we have since
+     retracted no longer publishes `not-ready`. It refuses as
+     `retracted-reading`, names the correction that withdrew it,
+     and says there is no current verdict. It never upgrades to
+     ready — we withdrew our reason, we did not acquire a new
+     verdict. This changes what scvd.store says in public about a
+     named host, which is why it is yours and not mine. The rule
+     is narrow by construction: only the 2026-W36 round, only
+     `payto-payable` / `amount-atomic` / `transfer-method-signable`,
+     and only where the row's own recorded rails show the old
+     reader could not have judged it.
+
+  **The artifact.** `src/services/badge-svg.ts` (`CHIP_LAYOUT` holds
+  the geometry; the palette is the block above `CHIP_PALETTE`):
+  6. THE ASPECT CHANGED — the chip is a 400x110 card, not a 300x56
+     ribbon. A chip anyone already pasted renders squashed until
+     they re-copy the snippet. Both snippets emit the new size on
+     their own. This is the only change on the branch with a cost
+     to somebody outside, and it is reversible.
+  7. The ground is forest-black with a foil frame and seal, a
+     bevelled rim, bold type, and YOUR DINO in the seal instead of
+     the letters SCVD (one path, drawn from `favicon.ts`, so the
+     mark cannot drift). The share card follows onto the same
+     ground with the same mark.
+  8. The chip's eyebrow reads `ENDPOINT PASSPORT`; the store's name
+     is carried by the seal's arc legend now.
+  9. An `indeterminate` tier prints only its fraction on the face
+     ("1/1 round ready"), never the word — the word is about how
+     many rounds WE hold, not about their door, and it had been
+     the loudest thing on a chip whose own decision was READY. The
+     whole line still rides in the alt text and on the page.
+  10. The freshness glosses were cut to fit the larger record line:
+      "inside one census cadence", "older than one cadence", "too
+      old to rely on". `CHIP_STATE`.
+
+  **Numbers, if any are wrong.** A live reading arms a note for
+  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read both
+  press ten at a time (`VERIFY_BATCH_CAP`, `AUDIT_BATCH_CAP`).
+
+- ⚑ **402signal.com / tensorfeed.ai — replied by your hand
+  (09-06).** Both notes answered; nothing owed on either. What is
+  left is not correspondence:
+  1. LOOK, Sunday after 11:00 UTC: `/passport/402signal.com`.
+     Until the walk re-reads with the corrected instrument it now
+     refuses as `retracted-reading` naming the 09-04 correction,
+     rather than asserting not-ready. After the walk it should
+     issue. If it still refuses, paste the row here.
+  2. LOOK: the outreach ledger's other hand-delivered W36 rows.
+     Each got its note from a stored row. The re-read press below
+     says whether the corrected instrument still agrees; any host
+     that reads ready now got a note it should not have.
 
 - ⚑ **PRESS — re-read every door we wrote to (09-05).** Your ask,
   after two corrections in one afternoon: how the desk catches the
