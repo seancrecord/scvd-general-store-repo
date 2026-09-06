@@ -1,5 +1,6 @@
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
@@ -125,6 +126,20 @@ function refuse(
   return { status, body: { charged: false, code, error, ...extra } };
 }
 
+export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): PurchaseRefusal | undefined {
+  // Fulfillment used to remove NUL after validation, including the entire
+  // value of a required field. Refuse it before quoting instead of selling
+  // either an empty good or silently changed text. Derive the buyer fields.
+  for (const field of Object.keys(buyInputSchema(item).properties)) {
+    if (args.get(field)?.includes("\0")) {
+      return refuse(400, "bad_request",
+        `${args.field(field)} contains an unsupported U+0000 character. Remove it before purchasing. Nothing charged.`,
+        { input_field: field });
+    }
+  }
+  return undefined;
+}
+
 /** The sentence. Both doors show it verbatim. */
 export function refusalMessage(refusal: PurchaseRefusal): string {
   return String(refusal.body["error"]);
@@ -204,6 +219,9 @@ export async function checkPurchaseArgs(
   args: PurchaseArgs,
 ): Promise<PurchaseRefusal | undefined> {
   const read = (name: string) => args.get(name);
+
+  const encoding = checkPurchaseEncoding(item, args);
+  if (encoding) return encoding;
 
   if (item.id === "context_anchor") {
     const summary = read("summary");
