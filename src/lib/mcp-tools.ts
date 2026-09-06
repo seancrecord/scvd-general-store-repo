@@ -1273,7 +1273,7 @@ const FREE_TOOLS: McpTool[] = [
           description: "A ceiling in USDC. Items at or below it match.",
         },
         item_id: str(
-          "One item's id, from an earlier answer's rows. Supplying it switches the tool out of search: q and max_price_usdc are not applied, and the answer is that one item in full.",
+          "One item's id. It replaces search rather than narrowing it: q and max_price_usdc are not applied, and the answer is that one item in full.",
           60,
         ),
       },
