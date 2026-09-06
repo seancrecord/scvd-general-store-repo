@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { searchCatalog } from "@/routes/catalog";
+import { CATALOG_ROW_SCHEMA, searchCatalog } from "@/routes/catalog";
 import { findMcpTool } from "@/lib/mcp-tools";
 import { webmcpTools, TOOL_ENDPOINTS, webmcpScript } from "@/routes/webmcp";
 import { MENU_ITEMS } from "@/store";
@@ -114,6 +114,67 @@ describe("the tool, on both doors", () => {
     expect(String(bad.error.message)).toContain("max_price_usdc");
     const unknown = await tool({ item_id: "carry_on_suitcase" });
     expect(String(unknown.error.message)).toContain("carry_on_suitcase");
+  });
+
+  it("says what a row holds, so a planner can chain from it", () => {
+    /*
+     * The answer schema declared `items: array of object` and stopped.
+     * An agent could see that rows come back and not that a row
+     * carries the `id` a buy_* call or an item_id lookup takes next,
+     * which is the whole reason to search a shelf rather than read it.
+     */
+    const row = CATALOG_ROW_SCHEMA.properties as Record<string, unknown>;
+    expect(row.id).toBeTruthy();
+    expect(CATALOG_ROW_SCHEMA.required).toContain("id");
+    expect(row.buy_url).toBeTruthy();
+    expect(row.price_usdc).toBeTruthy();
+  });
+
+  it("the row schema names every field a real row carries", () => {
+    /*
+     * CatalogRow is a compile-time type and vanishes at runtime, so
+     * the schema is its runtime twin and nothing but this walk keeps
+     * the two honest. A field added to catalogRow and not to the
+     * schema is a field an agent is never told about.
+     */
+    const found = searchCatalog("https://scvd.store", {});
+    const rows = (found.body.items ?? []) as Array<Record<string, unknown>>;
+    expect(rows.length).toBeGreaterThan(0);
+    const declared = new Set(Object.keys(CATALOG_ROW_SCHEMA.properties));
+    const undeclared = [
+      ...new Set(rows.flatMap((entry) => Object.keys(entry))),
+    ].filter((key) => !declared.has(key));
+    expect(
+      undeclared,
+      `a row carries fields its schema never mentions:\n${undeclared.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("the contract, the MCP schema and the row itself agree", async () => {
+    /*
+     * Three doors described the same row and only one of them was
+     * built from it: /openapi.json restated the fields by hand, the
+     * MCP output schema said "objects", and catalogRow was the only
+     * place that knew. All three now read the one schema, and the
+     * OpenAPI copy may add only the two fields the item_id branch
+     * carries on top.
+     */
+    const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
+      paths: Record<string, Record<string, { responses: Record<string, unknown> }>>;
+    };
+    const contract = JSON.stringify(spec.paths["/api/catalog/v1"]);
+    for (const field of Object.keys(CATALOG_ROW_SCHEMA.properties)) {
+      expect(contract, `${field} is in the answer but not in the contract`).toContain(
+        `"${field}"`,
+      );
+    }
+    const tool = findMcpTool("find_in_catalog", BASE);
+    const answer = tool?.outputSchema as
+      | { properties?: { items?: { items?: { properties?: unknown } } } }
+      | undefined;
+    expect(answer?.properties?.items?.items?.properties).toEqual(
+      CATALOG_ROW_SCHEMA.properties,
+    );
   });
 
   it("sends a GET tool's arguments as a query string in the browser", () => {

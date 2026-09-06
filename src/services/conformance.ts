@@ -186,11 +186,22 @@ export interface ConformanceCheck {
   advisory?: boolean;
 }
 
+export {
+  CONFORMANCE_VERDICTS,
+  CONFORMANCE_KINDS,
+  KEY_RESOLUTIONS,
+} from "@/store/conformance-vocabulary";
+import {
+  CONFORMANCE_VERDICTS,
+  CONFORMANCE_KINDS,
+  KEY_RESOLUTIONS,
+} from "@/store/conformance-vocabulary";
+
 export interface ConformanceVerdict {
   /** Frozen contract marker. See CONFORMANCE_VERSION. */
   version: string;
-  verdict: "conforms" | "does_not_conform" | "could_not_check";
-  kind: "offer" | "receipt" | null;
+  verdict: (typeof CONFORMANCE_VERDICTS)[number];
+  kind: (typeof CONFORMANCE_KINDS)[number] | null;
   checks: ConformanceCheck[];
   /**
    * LIVENESS IS A SEPARATE QUESTION FROM CONFORMANCE, and it gets its
@@ -209,7 +220,7 @@ export interface ConformanceVerdict {
    */
   live: boolean | null;
   liveness: string;
-  key_resolution: "offline" | "did:web" | "not_attempted" | "budget_exhausted";
+  key_resolution: (typeof KEY_RESOLUTIONS)[number];
   /**
    * Present only when the artifact's issuer is THIS STORE. Additive to
    * the frozen v1 contract. Cloudflare refuses a Worker's subrequest

@@ -924,6 +924,9 @@ interface CatalogRow {
   listing_url: string;
 }
 
+export { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
+import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
+
 function catalogRow(item: MenuItem, base: string): CatalogRow {
   return {
     id: item.id,
