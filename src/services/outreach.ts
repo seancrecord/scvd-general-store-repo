@@ -3,6 +3,7 @@ import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import { getMenuItem } from "@/store/menu";
 import { passportEmbedFor } from "@/pages/passport-card";
+import { retractionFor } from "@/store/retracted-readings";
 import type {
   WardHostResult,
   WardRound,
@@ -106,6 +107,43 @@ export interface OutreachEntry {
    * it is, before its operator has to write back.
    */
   audit?: NoteAudit;
+  /**
+   * WHAT THE NOTE ACTUALLY CLAIMED (2026-09-06), stamped at the
+   * moment it went out and never touched again.
+   *
+   * The re-read used to compare the door against the LATEST ward
+   * round's row for that host, and called it "the row the note came
+   * from". That is only the same thing until the next census runs.
+   * After it, the audit was comparing this week's census against a
+   * live probe — a staleness check on the census, which is a fine
+   * thing to have and is not the question the audit exists to ask.
+   * The question is whether the sentence we mailed a stranger still
+   * holds, so the sentence's own reading is written down here.
+   *
+   * `networks` rides along because a retraction is re-derived from
+   * the door's OWN offered rails (retracted-readings.ts), and the
+   * rails a door offered in August are not necessarily the rails it
+   * offers today. Absent on notes stamped before this field: those
+   * fall back to the round row, and the desk says so on the row
+   * rather than pretending it knows.
+   */
+  claimed?: ClaimedNote;
+}
+
+/**
+ * The reading a note was drafted from, frozen. Not a LiveReading:
+ * that one expires and is cleared when a door heals, because its job
+ * is to arm a draft. This one outlives everything — it is what we
+ * said, and what we said does not expire.
+ */
+export interface ClaimedNote {
+  at: string;
+  /** The round in which the claim was made; the retraction ledger is keyed by week. */
+  week?: string;
+  verdict: "not_ready" | "unreachable";
+  failed: string[];
+  /** The rails the door offered when we read it. */
+  networks?: string[];
 }
 
 /**
@@ -183,6 +221,13 @@ export interface Prospect {
   week: string;
   observed_at: string;
   claim?: WardVolumeClaim;
+  /**
+   * The rails this door's own 402 offered when we read it, carried so
+   * a note's claim can be frozen with them (see ClaimedNote). The
+   * retraction ledger asks what the door offered THEN, and by the
+   * time anyone asks, the round that knew has been replaced.
+   */
+  networks?: string[];
   /** Ready last round, broken this one — the freshest kind of lead. */
   newly_failing: boolean;
   /** The ranking said out loud, so the order is auditable. */
@@ -236,6 +281,7 @@ export function deriveProspects(
       // the seal time only for rows walked before it did.
       observed_at: entry.observed_at ?? latest.at,
       ...(claim ? { claim } : {}),
+      ...(entry.offer?.networks ? { networks: entry.offer.networks } : {}),
       newly_failing: newlyFailing,
       reason,
     };
@@ -766,16 +812,223 @@ export interface NoteAudit {
   battery?: string;
 }
 
+/** One automated pass. Bounded so a stalled door cannot eat a cron tick. */
 export const AUDIT_BATCH_CAP = 10;
+
+/**
+ * One keeper press. Larger than a pass because a human waiting on a
+ * page will happily wait ten seconds and will NOT press the same
+ * button five times; the daily sweep drains whatever this leaves.
+ */
+export const AUDIT_PRESS_CAP = 40;
+
+/**
+ * How long a re-read stands before the automated sweep knocks again.
+ * Twenty-three, not twenty-four, for the reason the conformance
+ * watch uses it: a 24-hour floor on an hourly tick silently becomes
+ * 25 and then drifts a day a month.
+ *
+ * THE TRADE THIS MAKES, SAID OUT LOUD. The census law is one GET per
+ * declared host per week — indexer cadence, deliberately gentle. This
+ * is seven times that, on a small set: hosts we mailed an unsolicited
+ * claim about their own door. The reasoning is that we spent their
+ * attention first, so an extra GET a day is our cost against their
+ * cost of standing wrongly accused for a week. It is a POLICY call,
+ * not a derived one (rule 7 — the keeper's to dial): raise this
+ * number and the sweep is gentler and slower to catch us out.
+ */
+export const AUDIT_FRESH_HOURS = 23;
+
+/** How many doors one automated sweep knocks on. Small; it runs every tick. */
+export const AUDIT_SWEEP_CAP = 5;
+
+/**
+ * WHAT THE RE-READ IS COMPARED AGAINST, AND WHERE IT CAME FROM.
+ *
+ * `note` is the claim the note itself made, stamped when it went out
+ * — the only baseline that answers the question the audit asks.
+ * `round` is the fallback for notes stamped before that field
+ * existed: the census row, which is what the audit used to compare
+ * against for everything. It is named on the row so a reader can
+ * tell a real answer from a best-available one.
+ */
+export type AuditBaseline = "note" | "round" | "none";
+
+/**
+ * THE CALL ON A RE-READ.
+ *
+ * `agree` — the sentence we mailed still holds at this door.
+ *
+ * `ours` — DERIVED, not guessed: every check the note named has since
+ * been retracted by this store (retracted-readings.ts), so the note's
+ * finding rests entirely on an instrument we have withdrawn. There is
+ * nothing to weigh; a correction is owed and the desk drafts it.
+ *
+ * `look` — the claim no longer holds and nothing here derives why.
+ * "Healed since" and "ours" are the same shape from outside a door
+ * (rule 46: a guard that cannot fail argues for the lie), so the desk
+ * stops and the keeper decides. This list is much shorter than it was
+ * — the retraction case walked out of it — but it is never empty by
+ * arithmetic.
+ */
+export type AuditCall = "agree" | "ours" | "look";
+
+export interface AuditFinding {
+  call: AuditCall;
+  /** One line, for the desk and the alert. */
+  why: string;
+  /** Present on `ours`: the correction that withdrew the note's checks. */
+  correction_date?: string;
+}
+
+/**
+ * Does the sentence we sent still hold?
+ *
+ * THE OLD RULE WAS READINESS-ONLY: `(claim.ready) !== (audit.ready)`.
+ * A door that failed `payto-payable` when the note went out and fails
+ * `amount-atomic` today read AGREE under it, because both are
+ * not-ready — so a note whose named finding is now wrong sat in the
+ * agree pile, invisible, which is the exact failure the audit was
+ * built to catch. The note names checks, so the audit compares
+ * checks.
+ */
+export function callAudit(
+  claim: ClaimedNote | null,
+  audit: NoteAudit,
+): AuditFinding {
+  if (!claim) {
+    return {
+      call: "look",
+      why: "no record of what this note claimed — read the note and the door by hand",
+    };
+  }
+  const retraction = retractionFor(claim.week, claim.failed, claim.networks);
+  const withdrawn = (why: string): AuditFinding => ({
+    call: "ours",
+    why: `${why} Every check it named (${claim.failed.join(", ")}) has since been retracted — correction dated ${retraction!.correction_date}. The finding rests on an instrument this store has withdrawn.`,
+    correction_date: retraction!.correction_date,
+  });
+
+  if (audit.verdict === "ready") {
+    const why = "The note said this door failed a readiness check; it answers ready now.";
+    return retraction
+      ? withdrawn(why)
+      : { call: "look", why: `${why} Healed since, or ours — nothing here derives which.` };
+  }
+  if (claim.verdict === "unreachable" || audit.verdict === "unreachable") {
+    /*
+     * Unreachable is a claim about our vantage as much as their door
+     * (3.4/B6). A pair that swaps into or out of it is never called
+     * from here — an outage at either end reads identically.
+     */
+    if (claim.verdict === audit.verdict) {
+      return { call: "agree", why: "Still no usable answer at this door." };
+    }
+    const why =
+      claim.verdict === "unreachable"
+        ? "The note said this door gave no usable answer; it answers now, and fails a check."
+        : "The note named a failed check; the door gives no usable answer now.";
+    return { call: "look", why: `${why} Reachability moved, which our own vantage can also do.` };
+  }
+  const gone = claim.failed.filter((check) => !audit.failed.includes(check));
+  if (gone.length === 0) {
+    return {
+      call: "agree",
+      why: claim.failed.length
+        ? `Still failing what the note named: ${claim.failed.join(", ")}.`
+        : "Still not ready, and the note named no check.",
+    };
+  }
+  const why = `The note named ${claim.failed.join(", ")}; ${gone.join(", ")} ${gone.length === 1 ? "no longer fails" : "no longer fail"} (the door now fails ${audit.failed.join(", ") || "nothing we name"}).`;
+  return retraction ? withdrawn(why) : { call: "look", why: `${why} Healed since, or ours — nothing here derives which.` };
+}
+
+/**
+ * The claim to hold the re-read against, and how good a baseline it
+ * is. A note stamped before `claimed` existed falls back to the round
+ * row — the old behaviour, kept because a weak comparison beats none,
+ * and labelled so nobody reads it as the strong one.
+ */
+export function claimFor(
+  entry: OutreachEntry,
+  door: WardHostResult | undefined,
+  week: string | undefined,
+): { claim: ClaimedNote | null; baseline: AuditBaseline } {
+  if (entry.claimed) return { claim: entry.claimed, baseline: "note" };
+  if (door && door.verdict !== "not_probed" && door.verdict !== "ready") {
+    return {
+      claim: claimFrom(
+        { at: door.observed_at ?? "", verdict: door.verdict, failed: door.failed },
+        week,
+        door.offer?.networks,
+      ),
+      baseline: "round",
+    };
+  }
+  return { claim: null, baseline: "none" };
+}
+
+/**
+ * The claim a note going out RIGHT NOW makes, frozen off the live
+ * reading it was drafted from, with the round row supplying only the
+ * two things a probe does not carry: which week it is, and what
+ * rails the door offered.
+ */
+export function claimFrom(
+  reading: { at?: string; verdict: "not_ready" | "unreachable"; failed: string[] },
+  week: string | undefined,
+  networks: readonly string[] | undefined,
+): ClaimedNote {
+  return {
+    at: reading.at ?? "",
+    ...(week ? { week } : {}),
+    verdict: reading.verdict,
+    failed: reading.failed,
+    ...(networks?.length ? { networks: [...networks] } : {}),
+  };
+}
+
+/**
+ * THE CLAIM A HAND-DELIVERED NOTE MADE, frozen when the keeper stamps
+ * the row sent. The wire freezes its own (it drafted from a probe it
+ * took); the hand road drafts from `entry.live`, so that is the
+ * reading the stamp preserves.
+ *
+ * NEVER OVERWRITES an existing claim. A row stamped sent, then
+ * replied, then sent again still made ONE claim, and it was the
+ * first one. Returns null when the desk cannot tell what was said —
+ * `callAudit` reads that as "look", which is the honest answer.
+ */
+export function claimAtStamp(
+  entry: OutreachEntry,
+  prospect: Prospect | undefined,
+): ClaimedNote | null {
+  if (entry.claimed) return entry.claimed;
+  if (entry.live) {
+    return claimFrom(entry.live, prospect?.week, prospect?.networks);
+  }
+  if (prospect) {
+    return claimFrom(
+      { at: prospect.observed_at, verdict: prospect.verdict, failed: prospect.failed },
+      prospect.week,
+      prospect.networks,
+    );
+  }
+  return null;
+}
 
 export interface NoteAuditRow {
   host: string;
   status: OutreachStatus;
   status_at?: string;
-  /** What the round's row says now — the reading a note would have been drafted from. */
+  /** What the note claimed, or the best available stand-in. */
+  claim: ClaimedNote | null;
+  baseline: AuditBaseline;
+  /** What the round's row says now. Context, no longer the comparison. */
   row: { verdict: WardHostResult["verdict"]; failed: string[] } | null;
   audit: NoteAudit;
-  /** The live reading and the row disagree on readiness: the keeper looks. */
+  finding: AuditFinding;
+  /** The claim no longer holds: the row rises to the top of the desk. */
   disagrees: boolean;
 }
 
@@ -785,6 +1038,51 @@ export interface NoteAuditReport {
   no_door: string[];
   /** Eligible hosts the cap left for the next press. */
   remaining: number;
+}
+
+/**
+ * THE CORRECTION, WRITTEN BY THE DESK (2026-09-06).
+ *
+ * The keeper's ask was for the fix to be automatic, and this is as
+ * far as automatic can honestly go: when the re-read derives `ours`,
+ * the desk writes the correction from the two readings it already
+ * holds — what we said, what the door says now, and which of our own
+ * checks we withdrew — and leaves it one press from sending. The
+ * press stays human for the two reasons it always has: the wire is
+ * paused (WIRE_PAUSED_SINCE), and rule 30 does not relax because the
+ * email happens to be an apology.
+ *
+ * It leads with the retraction and never asks for anything. A
+ * correction with a sales line at the bottom is not a correction.
+ * ⚑ Rule 7: the keeper kills or keeps this wording.
+ */
+export function draftCorrection(
+  row: NoteAuditRow,
+  base: string,
+): string | null {
+  if (row.finding.call !== "ours" || !row.claim) return null;
+  const said = row.claim.failed.join(", ");
+  const sentOn = (row.status_at ?? row.claim.at).slice(0, 10);
+  const nowReads =
+    row.audit.verdict === "ready"
+      ? "passes every check in that battery"
+      : `fails ${row.audit.failed.join(", ") || "nothing we name"} — a different finding from the one you were sent`;
+  return `Subject: correcting what we sent you about ${row.host}
+
+Hello — I run ${base.replace("https://", "")}. On ${sentOn} we wrote to you about ${row.host} and told you it failed ${said}.
+
+We were wrong, and the fault is ours, not a change at your end. We have since retracted those checks: the correction is at ${base}/corrections, dated ${row.finding.correction_date}. Read against the door you were running that day, our instrument could not have judged it.
+
+Re-read today at ${row.audit.at.slice(0, 16).replace("T", " ")} UTC, your door ${nowReads}.
+
+What we have done about it:
+- The passport at ${base}/passport/${row.host} no longer publishes a verdict derived from that reading. It says there is no verdict and links the correction, rather than showing a soft no.
+- The signed weekly record keeps the row as it was walked — it is hash-chained and we do not edit it — and the correction sits beside it, dated.
+- Re-check it yourself, free, no account:
+    curl -X POST ${base}/api/preflight -H 'Content-Type: application/json' -d '{"url":"https://${row.host}/"}'
+
+Sorry for the noise. No reply needed, and there is nothing to buy here.
+`;
 }
 
 /** Sent or replied hosts, never audited first, then oldest audit first. */
@@ -800,17 +1098,32 @@ export async function auditSentNotes(
   round: WardRound,
   ledger: OutreachLedger,
   now: Date = new Date(),
+  opts: { cap?: number; staleOnly?: boolean } = {},
 ): Promise<NoteAuditReport> {
+  const cap = opts.cap ?? AUDIT_BATCH_CAP;
   const doors = new Map(round.hosts.map((entry) => [entry.host, entry]));
   const ordered = auditOrder(ledger);
-  const eligible = ordered.filter((host) => doors.has(host));
+  let eligible = ordered.filter((host) => doors.has(host));
+  if (opts.staleOnly) {
+    /*
+     * THE SWEEP ONLY KNOCKS ON DOORS NOBODY HAS KNOCKED ON TODAY. A
+     * pass that re-read the same five every half hour would spend
+     * forty-eight knocks a day on five doors and never reach the
+     * sixth — and each knock is somebody's server.
+     */
+    const floor = now.getTime() - AUDIT_FRESH_HOURS * 3_600_000;
+    eligible = eligible.filter((host) => {
+      const at = ledger.hosts[host]?.audit?.at;
+      return !at || new Date(at).getTime() < floor;
+    });
+  }
   const report: NoteAuditReport = {
     rows: [],
     no_door: ordered.filter((host) => !doors.has(host)),
-    remaining: Math.max(0, eligible.length - AUDIT_BATCH_CAP),
+    remaining: Math.max(0, eligible.length - cap),
   };
   const { probeHost } = await import("@/services/ward-round");
-  for (const host of eligible.slice(0, AUDIT_BATCH_CAP)) {
+  for (const host of eligible.slice(0, cap)) {
     const door = doors.get(host)!;
     const probe = await probeHost(env, door.url);
     const audit: NoteAudit = {
@@ -821,18 +1134,84 @@ export async function auditSentNotes(
     };
     const entry = ledger.hosts[host]!;
     entry.audit = audit;
-    const row =
-      door.verdict === "not_probed" ? null : { verdict: door.verdict, failed: door.failed };
-    report.rows.push({
-      host,
-      status: entry.status!,
-      ...(entry.status_at ? { status_at: entry.status_at } : {}),
-      row,
-      audit,
-      disagrees: row !== null && (row.verdict === "ready") !== (audit.verdict === "ready"),
+    report.rows.push(auditRowFor(host, entry, door, round.week, audit));
+  }
+  /*
+   * The sweep runs every half hour and most passes have nothing stale
+   * to knock on. Writing the ledger back unchanged forty-eight times
+   * a day buys nothing and burns the one key every surface on this
+   * desk reads.
+   */
+  if (report.rows.length > 0) await writeOutreachLedger(env, ledger);
+  return report;
+}
+
+/** One row, built the same way for the press, the sweep and the page. */
+function auditRowFor(
+  host: string,
+  entry: OutreachEntry,
+  door: WardHostResult | undefined,
+  week: string | undefined,
+  audit: NoteAudit,
+): NoteAuditRow {
+  const { claim, baseline } = claimFor(entry, door, week);
+  const finding = callAudit(claim, audit);
+  return {
+    host,
+    status: entry.status!,
+    ...(entry.status_at ? { status_at: entry.status_at } : {}),
+    claim,
+    baseline,
+    row:
+      door && door.verdict !== "not_probed"
+        ? { verdict: door.verdict, failed: door.failed }
+        : null,
+    audit,
+    finding,
+    disagrees: finding.call !== "agree",
+  };
+}
+
+/**
+ * THE SWEEP: the re-read, on a clock, so a wrong note is found by the
+ * desk rather than by the operator it went to.
+ *
+ * Rides the half-hourly tick and paces itself daily per door
+ * (AUDIT_FRESH_HOURS). It knocks and it pages; it never sends,
+ * stamps, or resolves anything — rule 30 is not relaxed by putting a
+ * cron in front of it, and the healed-or-ours call it cannot derive
+ * is still the keeper's. What changed is that he no longer has to
+ * remember to go and look.
+ */
+export async function auditSweep(
+  env: Env,
+  now: Date = new Date(),
+): Promise<NoteAuditReport | null> {
+  const { latestWardRound } = await import("@/services/ward-round");
+  const round = await latestWardRound(env);
+  if (!round) return null;
+  const ledger = await readOutreachLedger(env);
+  const report = await auditSentNotes(env, round, ledger, now, {
+    cap: AUDIT_SWEEP_CAP,
+    staleOnly: true,
+  });
+  const { sendAlert } = await import("@/lib/alerts");
+  for (const row of report.rows) {
+    if (row.finding.call === "agree") continue;
+    /*
+     * Keyed per host and per call, so a standing disagreement is one
+     * page rather than one a day — and a row that moves from `look`
+     * to `ours` pages again, because that is news.
+     */
+    await sendAlert(env, {
+      condition: "worker_health",
+      key: `note-audit:${row.finding.call}:${row.host}`,
+      detail:
+        row.finding.call === "ours"
+          ? `A note this desk sent to ${row.host} is owed a correction. ${row.finding.why} The correction is drafted and waiting on /admin/outreach#audit — one press sends it.`
+          : `A note this desk sent to ${row.host} no longer holds. ${row.finding.why} Nothing here derives healed-from-ours; look at /admin/outreach#audit.`,
     });
   }
-  await writeOutreachLedger(env, ledger);
   return report;
 }
 
@@ -842,22 +1221,16 @@ export async function auditSentNotes(
  */
 export function auditedNotes(round: WardRound, ledger: OutreachLedger): NoteAuditRow[] {
   const doors = new Map(round.hosts.map((entry) => [entry.host, entry]));
+  const rank: Record<AuditCall, number> = { ours: 0, look: 1, agree: 2 };
   return Object.entries(ledger.hosts)
     .filter(([, entry]) => entry.audit && (entry.status === "sent" || entry.status === "replied"))
-    .map(([host, entry]) => {
-      const door = doors.get(host);
-      const row =
-        door && door.verdict !== "not_probed" ? { verdict: door.verdict, failed: door.failed } : null;
-      return {
-        host,
-        status: entry.status!,
-        ...(entry.status_at ? { status_at: entry.status_at } : {}),
-        row,
-        audit: entry.audit!,
-        disagrees: row !== null && (row.verdict === "ready") !== (entry.audit!.verdict === "ready"),
-      };
-    })
-    .sort((a, b) => Number(b.disagrees) - Number(a.disagrees) || a.host.localeCompare(b.host));
+    .map(([host, entry]) =>
+      auditRowFor(host, entry, doors.get(host), round.week, entry.audit!),
+    )
+    .sort(
+      (a, b) =>
+        rank[a.finding.call] - rank[b.finding.call] || a.host.localeCompare(b.host),
+    );
 }
 
 /**
@@ -996,6 +1369,18 @@ export async function deliverWireNote(
   const body = draftNote(fresh, env.STORE_BASE_URL, {
     firstSeenWeek: prospect.week,
   });
+  /*
+   * WHAT THIS NOTE CLAIMS, FROZEN BEFORE IT LEAVES (2026-09-06). The
+   * re-read holds the door against THIS, not against whatever the
+   * census says months from now.
+   */
+  const claimed: ClaimedNote = {
+    at: verifiedAt,
+    week: prospect.week,
+    verdict: fresh.verdict,
+    failed: fresh.failed,
+    ...(prospect.networks ? { networks: prospect.networks } : {}),
+  };
   const [subjectLine, ...rest] = body.split("\n");
   const subject = subjectLine!.replace(/^Subject:\s*/, "");
   const text = rest.join("\n").trimStart();
@@ -1037,6 +1422,7 @@ export async function deliverWireNote(
     wired: true,
     sent_to: to,
     verified_at: verifiedAt,
+    claimed,
   };
   await writeOutreachLedger(env, ledger);
   return { sent: true, to, verified_at: verifiedAt };
