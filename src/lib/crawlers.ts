@@ -51,6 +51,44 @@ export const NAMED_AI_CRAWLERS: readonly string[] = [
   // from; a store that sells evidence wants to be inside those.
   "Diffbot",
   "Timpibot",
+  /*
+   * THE FIELD, WALKED AGAIN 2026-09-06, at the keeper's ask to account
+   * for every major reader rather than the ones we happened to name
+   * first. Each of these was already welcome under the wildcard; what
+   * was missing was the store SAYING so by name, which is the only
+   * form of permission a crawler reads.
+   */
+  // Google's two crawlers that are not Googlebot and not the
+  // AI-training token: GoogleOther is the generic non-search fetch,
+  // Google-CloudVertexBot grounds a Vertex customer's own app.
+  "GoogleOther",
+  "Google-CloudVertexBot",
+  // Meta's user-initiated fetcher, the twin of Meta-ExternalAgent:
+  // one page, because a person in a Meta product asked for it.
+  "Meta-ExternalFetcher",
+  // The answer engines that were missing from the roster.
+  "DuckAssistBot",
+  "YouBot",
+  "PetalBot",
+  // The Allen Institute's open academic corpus.
+  "AI2Bot",
+  /*
+   * xAI, AND THE REASON THIS ENTRY IS DIFFERENT FROM THE OTHERS.
+   *
+   * Every other name above comes from a vendor's own published bots
+   * page. xAI has none: these three strings circulate in third-party
+   * crawler directories, and operators report that what actually
+   * arrives carries an iPhone user-agent instead. So this is a
+   * permission stated to a name we cannot confirm anyone reads, which
+   * is worth doing anyway — the alternative is a major model builder
+   * with no line addressed to it at all — and worth writing down
+   * rather than leaving for someone to discover in a log. It is also
+   * why none of the three is a markdown reader below: a purpose the
+   * vendor never published is not a purpose this store can class on.
+   */
+  "GrokBot",
+  "xAI-Grok",
+  "Grok-DeepSearch",
 ];
 
 /**
@@ -105,6 +143,21 @@ export const MARKDOWN_READERS: readonly string[] = [
   "ChatGPT-User",
   "Perplexity-User",
   "MistralAI-User",
+  "Meta-ExternalFetcher",
+  /*
+   * The Allen Institute's crawler builds an open academic corpus,
+   * which is the training case by its own description.
+   *
+   * WHO IS DELIBERATELY NOT HERE, of the names added the same day:
+   * GoogleOther and Google-CloudVertexBot, whose published purposes
+   * are broad enough to include grounding an answer; DuckAssistBot,
+   * YouBot and PetalBot, which are answer and search engines and want
+   * the page's structured data; and all three xAI strings, which
+   * carry no published purpose at all. Unsure is an indexer here, on
+   * purpose: an indexer handed markdown loses the JSON-LD it came
+   * for, while a reader handed the page still gets every word.
+   */
+  "AI2Bot",
 ];
 
 /**
