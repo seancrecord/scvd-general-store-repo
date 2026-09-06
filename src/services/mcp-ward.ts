@@ -231,7 +231,7 @@ export const MCP_SOURCE_ROSTER: readonly McpRosterEntry[] = [
     what: what!,
     readiness: {
       state: "unread" as const,
-      why: "Named in the handshake census in registry/directory-blitz.md; no enumeration endpoint documented and no response shape captured, and the host is unreachable from every sandbox this store is built in.",
+      why: "Named in the 2026-09-02 handshake census (docs/archive/DIRECTORY_BLITZ_2026-09-06.md); no enumeration endpoint documented and no response shape captured, and the host is unreachable from every sandbox this store is built in.",
       unblock: "One hand-run read of whatever list it serves, saved as a fixture, exactly like every feed before it. Scores and rankings, where it publishes them, are dropped at the parse; only a host list would enter.",
     },
   })),

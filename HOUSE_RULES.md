@@ -898,6 +898,51 @@ LORE & TRADITION
     and llms.txt. Two phrasings of a value proposition are two
     propositions, and the reader who meets both trusts neither.
 
+61. AGENT-ECOSYSTEM FACTS EXPIRE. READ BEFORE YOU BUILD. (Adopted
+    2026-09-06, after two listings in this repository were found
+    stale on the same afternoon and an agent repeated both from the
+    written record rather than the live one.)
+
+    Anything about a protocol revision, a host's behaviour, a
+    directory's process, a client's capabilities, or how agents
+    discover and buy — the whole surface this store sells into — is
+    presumed stale until a primary source dated inside the window
+    says otherwise. Recall is not a read, and neither is a note in
+    this repository written on an earlier date. Before work begins on
+    any item that turns on such a fact, read the primary source,
+    record it in `docs/SPEC_READS.md` with its date and what could not
+    be reached, and cite that entry in the work. Where the primary
+    source is unreachable, say so and label the fact secondhand (rule
+    55) rather than proceeding as if it were settled. This binds AEO
+    and discovery work the same as wire format: how a model finds and
+    quotes this store changes faster than the payment rails do.
+
+    61.1 WHY THIS RULE EXISTS AT ALL. A model's training ends long
+    before the session does, and in this market that gap is measured
+    in protocol revisions. The failure is not ignorance, which
+    announces itself, but confident recall of something that was true
+    once — which reads exactly like knowledge. An agent that has not
+    read today cannot tell the two apart from the inside, so the
+    check cannot be its own judgement. It has to be a dated entry
+    somebody else can check.
+
+    61.1a THE CLOCK. `npm run specs:check` carries one row per outside
+    fact this store encodes — the source to open and what in the tree
+    is wrong the day it moves — and goes red when one has gone ninety
+    days unread. It probes nothing and cannot: no fetch tells you
+    whether the paragraph you depend on still says what you thought.
+    It says when somebody last looked. `--review=<id>` marks a read
+    and is deliberately the only thing it does, so a tick can never be
+    a side effect of a scheduled job.
+
+    61.2 THE REGISTER IS THE EVIDENCE, NOT THE INTENTION.
+    `docs/SPEC_READS.md` already carried this practice as a sentence
+    ("any build that touches wire format re-reads the primary spec
+    first") and it bound nothing, because nothing pointed at it. A
+    read that is not written down did not happen. Name the source,
+    the date, and the parts that stayed secondhand; a read with no
+    gaps declared is the one to distrust.
+
     60.3 THE ROOM EARNS ITS PAGE AND ITS SCHEMA. Title, description,
     one h1, a canonical, a WebPage node, AND a typed schema.org node
     for what the thing is (a Service, a HowTo, a Dataset, an

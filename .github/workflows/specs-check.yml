@@ -1,0 +1,65 @@
+# The spec watch, read monthly (2026-09-06, house rule 61).
+#
+# The store encodes dozens of outside facts — a header name, a default
+# spend cap, an extension identifier, a submission rule — and each was
+# true when it was written. Nothing told us when one stopped being
+# true, and the failure is silent: the code keeps running and the
+# claim keeps being served.
+#
+# THIS JOB PROBES NOTHING. No fetch can tell you whether the paragraph
+# you depend on still says what you think, so it keeps the clock
+# instead: every fact in scripts/lib/spec-watch.mjs names its primary
+# source and the day somebody last opened it. A red run means a fact
+# has gone ninety days unread, never that it has changed.
+#
+# Monthly rather than weekly, because the remedy is a person reading a
+# specification. A job that asks more often than the work can be done
+# is a job that gets muted.
+name: The spec watch
+
+on:
+  schedule:
+    # The 1st at 09:30 UTC, after the Saturday jobs have had their week.
+    - cron: "30 9 1 * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/specs-check.mjs"
+      - "scripts/specs-check.test.mjs"
+      - "scripts/lib/spec-watch.mjs"
+      - "docs/spec-watch/observation.json"
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # NO `npm ci`: the register and its tests use Node builtins and
+      # nothing else, and this job makes no network request at all.
+      - name: The register's own tests
+        run: npm run specs:test
+      # pipefail, so tee cannot swallow the exit code that IS the alert.
+      # On a push the register is a report: a fact going overdue is not
+      # a fact about the commit, and must not redden a pull request.
+      - name: Read the register
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            npm run specs:check | tee spec-watch-reading.txt || true
+          else
+            npm run specs:check | tee spec-watch-reading.txt
+          fi
+      - name: Keep the reading
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: spec-watch-reading
+          path: spec-watch-reading.txt
+          retention-days: 90

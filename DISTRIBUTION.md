@@ -226,8 +226,19 @@ only number this will ever produce.
 
 ## 5. Other client directories (lower priority, same shape)
 
-- Cursor: directory driven by docs.cursor.com MCP listings; community
-  cursor.directory accepts submissions.
+**WHERE THE STORE IS LISTED IS NOT ANSWERED HERE.**
+`src/store/trust-signals.ts` is the record: served at `/trust`, one
+dated row per venue, and the only one a reader can check. This file
+is doctrine and open work. When the two disagree, trust-signals is
+right and this file is stale — that has now happened twice
+(2026-09-06: Cursor below, and mcpbeat in the venue list that was
+archived the same day).
+
+- Cursor: LISTED. `cursor.directory/plugins/scvd-general-store-repo`,
+  generated from this repository's own Agent Plugins package. The row
+  is in `src/store/trust-signals.ts`; this line said "accepts
+  submissions" until 2026-09-06, which is what a hand-kept venue list
+  does when a directory indexes you without asking.
 - Perplexity connectors: developer-program submission; wants the
   privacy policy and a remote MCP endpoint — the same two gates as
   Claude's, both met.
