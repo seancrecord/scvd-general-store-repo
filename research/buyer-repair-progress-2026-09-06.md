@@ -161,3 +161,17 @@ The public-door fixture lets the local processor settle once, then replaces the 
 Unresolved outcomes now throw `SettlementUnknown`, return `charged:null` and `payment_state:unknown`, and retain the existing reconciliation reference when it writes. HTTP uses 503; legacy MCP returns a protocol error and standard MCP sets `isError:true`. Neither offers a fresh payment as a remedy. An invalid Solana receipt retains its distinct existing code under the same unknown-state boundary. The decline log is reserved for answered refusals; unresolved attempts stay in the reconciliation queue.
 
 The related gate passed 137 of 140 assertions; three obsolete expectations across two files were updated for the new uncertainty response and rechecked separately: all 11 tests in those files passed. Typecheck and both Worker dry-run builds passed. This is response correctness, not complete recovery: stable intent/status storage, old-input binding, cross-rail reconciliation and eventual fulfillment remain open under BUY-017/034/037. No real payments were made and no full suite was run locally.
+
+## BUY-011: confirmed refusals survive MCP transport
+
+All menu items were exercised over Base, Polygon and Solana through both MCP payment profiles, paired with HTTP. All 192 tests failed on the prior response handling: the legacy result was not marked as a tool error, while the standard result substituted a new challenge and lost the actual refusal. Every case proves both calls reached verification/settlement before checking the response, and checks that no certificate or order was created. A separate served-discovery assertion also failed before the change.
+
+The shared refusal body now records `payment_declined.reason`, `code:payment_declined`, `charged:false` and `payment_state:not_settled`. MCP returns it as `isError:true` on both profiles. Discovery can describe a tool-result failure without inventing a JSON-RPC error code. Uncertainty remains a distinct error path; no new payment is requested to resolve an ambiguous settlement.
+
+The first related gate passed 278 of 279 checks; the source guard required updating to recognize inherited/shared payment errors. The final protocol recheck passed all 35 tests across three files, typecheck, and both dry-run builds. The full suite stays on GitHub; no real funds moved.
+
+### Independent publication against main
+
+The two settlement-response fixes were extracted from draft #541 onto `codex/buyer-settlement-outcomes`, based on main `4f086c26`. The BUY-017 substep is `8c7606ca`; extraction includes the source guard's recognition of the shared unknown-state error class. This branch contains no reconstruction consumer from the draft. On the main-based branch, typecheck and 53 unknown-state/receipt/discovery tests passed, followed by 279 refusal/catalog/protocol/deliver-first checks in seven files and both Worker dry-run builds. GitHub runs the full suite.
+
+The storage prerequisite #542 merged and its production build succeeded. Draft #541's subsequent preview upload also passed (`81caaaf3-9d55-4dc0-a614-df81548b1566`), closing the migration-order blocker. BUY-017/034/037 remain open for their listed recovery obligations.

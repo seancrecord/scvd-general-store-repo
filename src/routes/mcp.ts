@@ -1016,15 +1016,14 @@ async function callPurchaseTool(
       return rpcError(id, -32000, message, data);
     }
     if (error instanceof SettlementDeclined) {
+      const body: unknown = await error.response.clone().json();
+      const refusal = isRecord(body) ? body : { error: body };
+      // This is the processor's answered refusal. A replacement challenge
+      // would discard its reason and look like a new request for payment.
       if (standardPayment(c)) {
-        const challenge = { ...await readMcpPaymentChallenge(c.env, item.id), error: "Settlement failed" };
-        return rpcResult(id, standardPaymentResult(c, item, challenge, idempotencyKey));
+        return rpcResult(id, standardPaymentResult(c, item, refusal, idempotencyKey));
       }
-      const body: unknown = await error.response
-        .clone()
-        .json()
-        .catch(() => ({ error: "payment declined at settlement" }));
-      return rpcResult(id, toolText(isRecord(body) ? body : { error: body }));
+      return rpcResult(id, { ...toolText(refusal) as Record<string, unknown>, isError: true });
     }
     /**
      * MONEY MOVED AND THE GOODS DID NOT (2026-09-04, CV's second

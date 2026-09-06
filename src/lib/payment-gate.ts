@@ -101,7 +101,7 @@ import {
 } from "@/lib/payments";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { SettledPayment } from "@/lib/payments";
-import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 import {
   extractPaymentNonce,
   getSpentNonce,
@@ -1441,16 +1441,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           throw new SettlementDeclined(
             respondWithInstructions(c, {
               ...settlement.response,
-              body: {
-                ...settlement.response.body,
-                payment_declined: {
-                  reason: settlement.errorReason,
-                  ...(settlement.errorMessage
-                    ? { message: settlement.errorMessage }
-                    : {}),
-                  note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
-                },
-              },
+              body: settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage),
             }),
           );
         }
