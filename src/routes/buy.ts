@@ -18,6 +18,7 @@ import {
 } from "@/lib/purchase-args";
 import { fulfillPurchase } from "@/services/fulfillment";
 import { getOrder } from "@/services/orders";
+import { InvalidPatronageTarget } from "@/services/patronage";
 import { getMenuItem, VOICE } from "@/store";
 import { orderStatusBody } from "@/lib/order-status";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -112,6 +113,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   try {
     return c.json(await fulfillPurchase(c.env, item, watched, input));
   } catch (error) {
+    if (!settled && error instanceof InvalidPatronageTarget) return c.json(error.body, 400);
     if (error instanceof SettlementDeclined) return error.response;
     /**
      * MONEY MOVED AND THE GOODS DID NOT (2026-09-04). The global

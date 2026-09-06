@@ -1,4 +1,4 @@
-import { newPassId } from "@/lib/ids";
+import { isPassId, newPassId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { signMessage } from "@/lib/signing";
@@ -29,12 +29,32 @@ export interface PassInput {
   agentName?: string;
 }
 
+/** A renewal names an existing good. It must never turn into a new sale. */
+export class InvalidPatronageTarget extends Error {
+  readonly body = {
+    code: "bad_request",
+    charged: false,
+    input_field: "pass_id",
+    error: "pass_id must identify an existing patronage pass. Copy the exact ID from your pass receipt. Omit pass_id only to buy a new pass. Nothing charged.",
+  };
+
+  constructor() {
+    super("Patronage renewal target is missing or invalid");
+  }
+}
+
+export async function requireRenewalPass(env: Env, passId: string): Promise<PatronagePass> {
+  const pass = isPassId(passId) ? await getPass(env, passId) : null;
+  if (!pass) throw new InvalidPatronageTarget();
+  return pass;
+}
+
 export async function createOrRenewPass(
   env: Env,
   input: PassInput,
 ): Promise<PassResult> {
   const now = Date.now();
-  if (input.passId) {
+  if (input.passId !== undefined) {
     const existing = await getPass(env, input.passId);
     if (existing) {
       const currentExpiry = Date.parse(existing.expires_at);
@@ -55,6 +75,9 @@ export async function createOrRenewPass(
         passUrl: `${env.STORE_BASE_URL}/api/patronage/${existing.pass_id}`,
       };
     }
+    // This service may run after settlement. Do not label its failure
+    // "uncharged"; the purchase door owns that state and recovery response.
+    throw new Error("The purchased patronage renewal target is no longer available");
   }
   const pass: PatronagePass = {
     pass_id: newPassId(),

@@ -1,6 +1,7 @@
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
@@ -72,6 +73,8 @@ export const COFFEE_WIN_CAP = 200;
 export interface PurchaseArgs {
   /** The raw value the buyer sent under this name, if any. */
   get(name: string): string | undefined;
+  /** Distinguishes an omitted optional field from a supplied non-text value. */
+  has?(name: string): boolean;
   /** "url query parameter" on the HTTP door, "url argument" on MCP. */
   field(name: string): string;
 }
@@ -80,6 +83,7 @@ export interface PurchaseArgs {
 export function queryArgs(query: (name: string) => string | undefined): PurchaseArgs {
   return {
     get: query,
+    has: (name) => query(name) !== undefined,
     field: (name) => `${name} query parameter`,
   };
 }
@@ -87,6 +91,7 @@ export function queryArgs(query: (name: string) => string | undefined): Purchase
 /** The MCP door's reader: tools/call `arguments`, named the way it reads there. */
 export function toolArgs(args: Record<string, unknown>): PurchaseArgs {
   return {
+    has: (name) => Object.prototype.hasOwnProperty.call(args, name),
     get(name) {
       const value = args[name];
       if (typeof value === "string") return value;
@@ -135,6 +140,21 @@ export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): Purch
       return refuse(400, "bad_request",
         `${args.field(field)} contains an unsupported U+0000 character. Remove it before purchasing. Nothing charged.`,
         { input_field: field });
+    }
+  }
+  return undefined;
+}
+
+export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  const encoding = checkPurchaseEncoding(item, args);
+  if (encoding) return encoding;
+  const passId = args.get("pass_id");
+  if (item.id === "recurring_patronage" && (passId !== undefined || args.has?.("pass_id"))) {
+    try {
+      await requireRenewalPass(env, passId ?? "");
+    } catch (error) {
+      if (error instanceof InvalidPatronageTarget) return { status: 400, body: error.body };
+      throw error;
     }
   }
   return undefined;
@@ -220,8 +240,8 @@ export async function checkPurchaseArgs(
 ): Promise<PurchaseRefusal | undefined> {
   const read = (name: string) => args.get(name);
 
-  const encoding = checkPurchaseEncoding(item, args);
-  if (encoding) return encoding;
+  const safety = await checkPurchaseInputSafety(env, item, args);
+  if (safety) return safety;
 
   if (item.id === "context_anchor") {
     const summary = read("summary");
@@ -910,8 +930,8 @@ export function purchaseInputFrom(
     // The counter shows the keeper the tag alongside the queue.
     input.detail = input.tag;
   }
-  const passId = sanitizeText(read("pass_id"), 40);
-  if (passId) {
+  const passId = read("pass_id");
+  if (passId !== undefined) {
     input.passId = passId;
   }
   /**

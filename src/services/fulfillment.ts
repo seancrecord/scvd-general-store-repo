@@ -1,4 +1,5 @@
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
+import { requireRenewalPass } from "@/services/patronage";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { storeIdentity } from "@/lib/identity";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
@@ -517,6 +518,11 @@ export async function fulfillPurchase(
    * which is the cheap direction. A failure BELOW is the one case the
    * delivery audit still exists for.
    */
+  // Admission may have preceded slow verification or observation. Check the
+  // named renewal again at the last point where refusal costs nothing.
+  if (item.id === "recurring_patronage" && input.passId !== undefined) {
+    await requireRenewalPass(env, input.passId);
+  }
   const payment = await pending.settle();
   if (payment.payer) {
     mintOptions.payer = payment.payer;

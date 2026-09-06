@@ -32,7 +32,7 @@ import {
  */
 import {
   checkPurchaseArgs,
-  checkPurchaseEncoding,
+  checkPurchaseInputSafety,
   queryArgs,
 } from "@/lib/purchase-args";
 import { stockedShelfCount } from "@/services/stock";
@@ -347,7 +347,7 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const args = queryArgs((name) => c.req.query(name));
   const refusal = isBuying(c)
     ? await checkPurchaseArgs(c.env, item, args)
-    : checkPurchaseEncoding(item, args);
+    : await checkPurchaseInputSafety(c.env, item, args);
   if (refusal) {
     c.set("inputRefusal", refusal.body);
     return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);

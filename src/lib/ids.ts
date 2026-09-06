@@ -41,8 +41,17 @@ export function newAnchorId(): string {
   return `anchor_${randomToken(10)}`;
 }
 
+const PASS_PREFIX = "pass_";
+const PASS_TOKEN_LENGTH = 10;
+
 export function newPassId(): string {
-  return `pass_${randomToken(10)}`;
+  return `${PASS_PREFIX}${randomToken(PASS_TOKEN_LENGTH)}`;
+}
+
+export function isPassId(value: string): boolean {
+  return value.startsWith(PASS_PREFIX)
+    && value.length === PASS_PREFIX.length + PASS_TOKEN_LENGTH
+    && [...value.slice(PASS_PREFIX.length)].every(character => ALPHABET.includes(character));
 }
 
 export function newCheckId(): string {
