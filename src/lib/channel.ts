@@ -101,6 +101,22 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
   "entropy-daemon", "apistrust", "coinbasebazaardiscovery", "radar-x402",
   "indexer", "mpp32", "trustindex", "x402stats", "brick.blue",
   "healthbot", "contact-discovery",
+  /**
+   * Fourth pass, 2026-09-06, off the census's walkers-still-organic
+   * table read live. Five clients whose own names say LOOKING, each
+   * walking six or more doors inside a minute with no wallet ever
+   * opened. One of them writes its intention into its user-agent:
+   * x402-band-hunt-b/1.0 (+dry-only; no-pay).
+   *
+   * A validator validates, a verifier verifies, an observatory
+   * observes, a report rates — none of those verbs is buying, and a
+   * client doing them at catalog speed is the noise floor. The
+   * generic strings walking beside them (curl, node, axios, Deno,
+   * undici, the bare no-user-agent row) are still deliberately NOT
+   * here, for the reason the block above gives.
+   */
+  "validator", "verifier", "observatory", "no-pay", "dry-only",
+  "agenteconomyreport", "band-hunt",
 ];
 
 export interface ChannelSignals {
@@ -197,6 +213,19 @@ export const HOUSE_AGENTS = [
   // pages to the keeper's phone for the store's own testing.
   "cv-handrolled",
   "cv-mcp-hand",
+  /**
+   * THE STORE'S OWN COLD READ, caught 2026-09-06 off the census: 288
+   * asks in twelve hours, all 32 doors, sitting in ORGANIC DIRECT.
+   *
+   * scripts/cold-read.mjs measures what the first knock after a deploy
+   * costs, and it must knock from OUTSIDE to measure the cold path —
+   * so .github/workflows/cold-read.yml deliberately sends no house
+   * secret, and the wallet test has no payer to match because the
+   * canary never pays. Both existing house tests were blind at once,
+   * exactly as they were for CV's hand-rolled clients above, and the
+   * store's own latency canary read as its busiest customer.
+   */
+  "scvd-cold-read",
 ] as const;
 
 /** The agent test alone, for a surface reading rows already stamped. */

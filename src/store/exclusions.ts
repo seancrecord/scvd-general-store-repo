@@ -100,6 +100,15 @@ export const EXCLUSION_CHANGES: readonly ExclusionChange[] = [
     house_wallets: 11,
     crawler_names: 65,
   },
+  {
+    date: "2026-09-06",
+    what_changed:
+      "Seven names for looking (validator, verifier, observatory, no-pay, dry-only, agenteconomyreport, band-hunt) joined the crawler table off the census's walkers-still-organic page, read live: five clients — AgentEconomyReport/1.0, the402-validator/0.2, nsgoods-payability-observatory/1.0, Dexter-Verifier/1.0 and x402-band-hunt-b/1.0 (+dry-only; no-pay) — each walked six or more doors inside a minute, never opened a wallet, and named its own job in its user-agent; the last writes its intention into the string. The generic clients walking beside them (curl, node, axios, Deno, undici, the bare no-user-agent row) were deliberately left out, because a generic string promoted here is misclassified forever. AND THE STORE'S OWN COLD READ, scvd-cold-read, joined the house agents: scripts/cold-read.mjs must knock from outside to measure the cold path, so its workflow carries no house secret, and it never pays, so there was no payer to match — both house tests blind at once, exactly as they were for the field run and CV's hand-rolled clients. It had walked all 32 doors, 288 asks in twelve hours, as the store's busiest organic client.",
+    effect:
+      "The organic 402 count falls by those five clients' asks and by the cold read's 288 — the largest single subtraction this register has recorded, and most of it is the store reading itself. Every conversion denominator computed from organic asks deflates accordingly, which moves the published rates UP without a single new sale. No settle moved: none of these six ever paid.",
+    house_wallets: 11,
+    crawler_names: 72,
+  },
 ];
 
 export interface NamedExclusions {

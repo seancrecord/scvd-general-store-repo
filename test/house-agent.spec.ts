@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { isHouseTraffic } from "@/lib/channel";
+import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import { listAlerts } from "@/lib/alerts";
 import { recordPaymentDecline } from "@/lib/metrics";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
@@ -28,6 +28,58 @@ const testEnv = env as unknown as Env;
 
 const FIELD_RUN_UA =
   "scvd-walkabout/1.0 (+https://scvd.store/what) x402-field-research";
+
+/**
+ * THE COLD READ, 2026-09-06 — the same blind spot, third client.
+ *
+ * scripts/cold-read.mjs measures what the first knock after a deploy
+ * costs. To measure the COLD path it must knock from outside, so its
+ * workflow sends no house secret, and it never pays, so there is no
+ * payer to match. The census caught it walking all 32 doors, 288 asks
+ * in twelve hours, in the ORGANIC DIRECT column: the store's own
+ * latency canary reading as its busiest customer.
+ */
+const COLD_READ_UA = "scvd-cold-read/1 (+https://scvd.store)";
+
+describe("the store's own cold read is family too", () => {
+  it("knows the canary with no payer and no secret, exactly as it knocks", () => {
+    expect(isHouseTraffic(testEnv, { userAgent: COLD_READ_UA })).toBe(true);
+  });
+
+  it("does not swallow a stranger who merely mentions a cold read", () => {
+    expect(isHouseTraffic(testEnv, { userAgent: "some-buyer/1.0 (cold start)" })).toBe(false);
+  });
+});
+
+/**
+ * THE WALKERS THE TABLE STILL CALLED ORGANIC, promoted 2026-09-06 off
+ * the census's own list. Each names its job in its user-agent and each
+ * walked six or more doors inside a minute without ever opening a
+ * wallet; one writes "no-pay" into the string. The generic SDK strings
+ * beside them stay OUT, and this test says so, because promoting one
+ * of those would misclassify a real buyer forever.
+ */
+describe("clients that name their own job read as machinery", () => {
+  const NAMED_MACHINERY = [
+    "AgentEconomyReport/1.0 (rating CCC, up from CC this week; https://agenteconomy.report/s/scvd.store)",
+    "the402-validator/0.2 (+https://the402.dev)",
+    "nsgoods-payability-observatory/1.0 (+https://payable.nsgoods.org)",
+    "Dexter-Verifier/1.0",
+    "x402-band-hunt-b/1.0 (+dry-only; no-pay)",
+  ];
+
+  for (const userAgent of NAMED_MACHINERY) {
+    it(`reads ${userAgent.split("/")[0]} as infrastructure`, () => {
+      expect(inferChannel({ userAgent })).toBe("infrastructure");
+    });
+  }
+
+  it("leaves a real buyer's SDK alone, which is the whole reason the list is names and not habits", () => {
+    for (const userAgent of ["curl/8.18.0", "node", "axios/1.18.1", "Deno/2.7.4", "undici"]) {
+      expect(inferChannel({ userAgent })).toBe("direct");
+    }
+  });
+});
 
 describe("the store's own agents are family, envelope or no envelope", () => {
   it("knows the field run with no payer and no secret — the exact blind spot", () => {
