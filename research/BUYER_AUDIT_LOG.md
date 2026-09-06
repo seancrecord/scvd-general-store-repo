@@ -160,7 +160,9 @@ Repair: separate machine discovery of terms from a purchase request whose requir
 
 ### BUY-003 — P2: MCP silently coerces wrong primitive types into text
 
-**Open · required-input audit.** Numeric/boolean required inputs reach paid text products as strings: 30 signed cases across five items. The artifacts exist, but the advertised string schema and runtime behavior disagree.
+**Repaired in the MCP string-type validation commit.** Runtime validation now preserves JSON types until the item's published schema judges them, rejects non-string values with the actual input field and received/expected types, and never verifies or settles those requests. All 37 new public-door regressions were observed red before the change; the repaired related gate passed 70 tests. This includes optional string fields and null/array/object values, beyond the original numeric/boolean controls.
+
+**Original required-input audit.** Numeric/boolean required inputs reach paid text products as strings: 30 signed cases across five items. The artifacts exist, but the advertised string schema and runtime behavior disagree.
 
 Repair: reject invalid types consistently before payment and return the actual field defect with `charged:false` and a machine code. `src/lib/purchase-args.ts:toolArgs`.
 

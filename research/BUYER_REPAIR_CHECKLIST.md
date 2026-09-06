@@ -16,7 +16,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 ## Remaining findings
 
 - [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
-- [ ] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — open.
+- [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in the MCP string-type validation commit.
 - [ ] **BUY-004 — P2: over-limit purpose silently truncates after payment** — open.
 - [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
 - [ ] **BUY-007 — P1: Solana retries bypass the purchase cache** — open.
@@ -56,3 +56,7 @@ Every repair gets a separate commit. The focused regressions exercise the public
 The broad untracked audit probes intentionally fail for unresolved findings. They remain separate from the normal regression gate; they have not been deleted or relabeled as passing.
 
 Final validation on the repaired current-main snapshot covered 552 test files: 551 passed, with one outdated source-inspection assertion failing (5,244 tests passed, one failed, one skipped). The assertion was corrected to recognize an awaited assigned result, with negative controls for unawaited writes. Its final recheck and the affected receipt/discovery suites passed all 22 tests across three files. Typechecking and both Worker dry-run builds passed. No production source changed after the full run. See the [verification record](buyer-repair-progress-2026-09-06.md).
+
+## Input-contract repairs
+
+BUY-003: non-text JSON is refused for every advertised string field before quoting or verification. The public-door matrix covers all 32 current products, five invalid JSON types, and signed controls for five buyer fields on every offered rail. All 37 new tests failed on unchanged source. The repaired gate passed 70 tests across four files and typechecking. The full suite remains delegated to GitHub.
