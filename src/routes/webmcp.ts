@@ -62,11 +62,38 @@ export function webmcpUnhandledTools(): string[] {
 }
 
 export function webmcpPurchaseTools() {
+  const resultProperties = {
+    error: { type: "string", description: "A refusal or recovery instruction; no automatic retry is made." },
+    status: { type: "integer", description: "HTTP status when the store returned a response." },
+    body: { description: "The store's JSON response or delivered page text." },
+    buy_url: { type: "string", format: "uri" },
+    idempotency_key: { type: "string", description: "Reuse this key with the original URL and signed payment for recovery." },
+  };
   return [
     {
       name: "quote_store_purchase",
       description: "A free x402 v2 quote for a catalog buy_url or paid publication URL, including query inputs. Returns offered networks, atomic USDC amounts, a quote_id and retry key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
       inputSchema: { type: "object", properties: { buy_url: { type: "string", description: "A buy_url on this store with the required query inputs filled in." } }, required: ["buy_url"], additionalProperties: false },
+      outputSchema: { type: "object", properties: {
+        ...resultProperties,
+        quote_id: { type: "string", description: "Pass this page-local identifier to complete_store_purchase." },
+        expires_at: { type: "string", format: "date-time" },
+        payment_required: { type: "object", description: "Decoded x402 v2 terms to give the buyer's wallet or payment client.", properties: {
+          x402Version: { type: "integer", const: 2 },
+          resource: { type: "object" },
+          accepts: { type: "array", items: { type: "object", properties: {
+            scheme: { type: "string", const: "exact" },
+            network: { type: "string" },
+            amount: { type: "string", description: "Atomic USDC; copy unchanged." },
+            asset: { type: "string" },
+            payTo: { type: "string" },
+            maxTimeoutSeconds: { type: "number" },
+            extra: { type: "object" },
+          } } },
+        } },
+        payment_sent: { type: "boolean", const: false },
+        next: { type: "string" },
+      } },
       annotations: { readOnlyHint: true, consequentialHint: false },
       operation: "quote",
     },
@@ -74,6 +101,10 @@ export function webmcpPurchaseTools() {
       name: "complete_store_purchase",
       description: "Submits a buyer-authorized, already-signed x402 v2 payment for a quote from this page. May transfer USDC. Returns the goods or order, HTTP status and payment receipt. Requires a compatible external wallet/client; never accepts private keys or wallet secrets. Retries reuse the quote's original URL and key. Cancellation does not prove settlement stopped.",
       inputSchema: { type: "object", properties: { quote_id: { type: "string" }, signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." } }, required: ["quote_id", "signed_payment"], additionalProperties: false },
+      outputSchema: { type: "object", properties: {
+        ...resultProperties,
+        payment_response: { type: ["string", "null"], description: "The PAYMENT-RESPONSE header, when supplied by the store." },
+      } },
       annotations: { readOnlyHint: false, consequentialHint: true },
       operation: "complete",
     },

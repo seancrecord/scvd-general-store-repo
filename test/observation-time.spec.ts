@@ -1,3 +1,4 @@
+// Worker bindings load the app; initialize them before the timed probe assertions.
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { captureWatchEvidence } from "@/services/watch-evidence";

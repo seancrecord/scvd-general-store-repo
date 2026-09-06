@@ -149,6 +149,21 @@ export const FACTS = Object.freeze([
     reviewed_at: "2026-09-06",
   },
   {
+    /*
+     * SPLIT OUT 2026-09-06, answering this register's own caveat: the
+     * A2A specification's URL was written down nowhere in the tree, so
+     * the store served an agent card at three paths against a shape it
+     * could not cite. It can now, and the card was right all along —
+     * the gap was in the record, not the behaviour.
+     */
+    id: "a2a-agent-card",
+    protocol: "A2A",
+    fact: "The agent card's shape and its well-known location. A2A was donated to the Linux Foundation by Google in June 2025 for neutral governance and reached v1.0 in 2026; the spec recommends the card at /.well-known/agent-card.json under RFC 8615, which is where this store serves it.",
+    source: "https://a2a-protocol.org/",
+    depends: "src/services/a2a-evidence.ts, the card at /.well-known/agent-card.json and its aliases, and the read-only tasks that card advertises",
+    caveat: "The source is the versionless site on purpose: the specification is versioned (v0.3.0 was current when this was written) and a pinned URL would rot on the next release. The reference repository is github.com/a2aproject/A2A. Secondhand — neither was opened from here.",
+  },
+  {
     id: "llms-txt",
     protocol: "Discovery / AEO",
     fact: "llms.txt and agents.md are still the conventions a model reaches for first, in the shapes we serve them.",
@@ -158,10 +173,10 @@ export const FACTS = Object.freeze([
   {
     id: "well-known-catalogs",
     protocol: "Discovery",
-    fact: "The RFC 9727 api-catalog, the ARD document and ai-catalog still name records in the shapes those specifications define, and the A2A agent card still matches its own.",
+    fact: "The RFC 9727 api-catalog and the ARD document still name records in the shapes those specifications define.",
     source: "https://www.rfc-editor.org/info/rfc9727",
-    depends: "/.well-known/api-catalog, /.well-known/ard.json, /.well-known/ai-catalog.json, /.well-known/a2a.json and its two aliases",
-    caveat: "THREE SPECIFICATIONS, ONE SOURCE, WHICH IS NOT ENOUGH. RFC 9727 is the only one with a URL this repository has recorded. ARD's is an AWS blog post rather than a specification host, and the A2A spec's canonical URL is written down NOWHERE in this tree — the card is served against a shape nobody here can cite. Establishing that URL is the first read this row is due, and the row should be split again once it exists.",
+    depends: "/.well-known/api-catalog, /.well-known/ard.json, /.well-known/ai-catalog.json",
+    caveat: "TWO SPECIFICATIONS, ONE SOURCE. RFC 9727 has a specification host; ARD's is an AWS blog post, which is where an open specification announced by one vendor starts and not where it should stay. Split this row if ARD gains its own. The A2A half moved out on 2026-09-06, the day its URL was established — this caveat's own first read, answered.",
   },
 ]);
 

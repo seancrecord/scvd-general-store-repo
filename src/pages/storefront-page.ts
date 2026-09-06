@@ -83,6 +83,7 @@ export function webmcpOriginTrialTags(indent = "  "): string {
 import { ENTITY_PROFILES, EXTERNAL_RECORDS, KEEPER_SOCIAL, OPERATOR } from "@/store/trust-signals";
 import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
+import type { ShopWindow } from "@/services/shop-window";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import { verificationMetaTags } from "@/store/site-verification";
@@ -144,6 +145,19 @@ export interface StorefrontData {
    * nothing more.
    */
   trade?: { month: string; deliveries: number; live_accounts: number } | null;
+  /**
+   * THE SHOP WINDOW: the last few things a stranger bought, newest
+   * first, rendered into the HTML rather than fetched by the page.
+   *
+   * The server draws it so a reader with no JavaScript, a crawler and
+   * an answer engine all get the same rows; /shop-window.js only keeps
+   * them moving while somebody is looking. Null when the read failed —
+   * the section then reads exactly as it does on a quiet day, which is
+   * the same fail-soft every other gauge here takes, because a window
+   * is decoration and decoration fails open. A KV hiccup and a quiet
+   * afternoon look alike here on purpose: neither is a claim.
+   */
+  shopWindow?: ShopWindow | null;
 }
 
 /**
@@ -175,6 +189,42 @@ function tradeGaugeHtml(trade: StorefrontData["trade"]): string {
   }
   const accounts = `${trade.live_accounts} marketplace${trade.live_accounts === 1 ? "" : "s"}`;
   return `<span class="led"><em class="led-num">${trade.deliveries}</em> on account this month <span class="led-sep">\u00B7</span> <a href="/trade">${accounts}</a> <span class="led-sep">\u00B7</span> <a href="/api/trade/ledger">the books</a></span>`;
+}
+
+/**
+ * THE WINDOW, SET AS A TILL ROLL rather than as a list of statistics.
+ *
+ * Rows are the item's own shelf name and how long ago it went — no
+ * wallet, no price, no total, and nothing a reader is invited to add
+ * up (services/shop-window.ts says why each of those is missing). The
+ * <ul> carries the data attributes /shop-window.js reads: the hook it
+ * looks for, and the empty line it needs when a poll comes back with
+ * nothing, so the one piece of copy the script can print still lives
+ * in the keeper's copy file rather than inside a string of JavaScript.
+ *
+ * aria-live="polite" because the point of the section is that it
+ * changes underneath the reader; the script only redraws on an actual
+ * change, so a screen reader hears a sale and never hears a repaint.
+ *
+ * IT HANGS UNDER THE SHELF, not up in the gauges, and that placement
+ * is the argument. "A Small Blessing, four minutes ago" means nothing
+ * to somebody who has not yet seen the shelf it came off; read
+ * straight after the six cards, it is the one line on this page that
+ * says somebody else already decided. The gauges are instruments and
+ * this is merchandising, so it sits with what it is selling.
+ */
+function shopWindowHtml(glass: ShopWindow | null | undefined): string {
+  const rows =
+    glass && glass.sales.length > 0
+      ? glass.sales
+          .map(
+            (sale) => `<li class="sold-row"><a class="sold-what" href="${escapeHtml(sale.href)}">${escapeHtml(sale.name)}</a><span class="sold-when">${escapeHtml(sale.when)}</span></li>`,
+          )
+          .join("\n        ")
+      : `<li class="sold-none">${escapeHtml(COPY.soldEmpty)}</li>`;
+  return `<ul class="sold-list" data-shop-window data-empty="${escapeHtml(COPY.soldEmpty)}" aria-live="polite">
+        ${rows}
+      </ul>`;
 }
 
 function firstDollarHtml(firstDollar: FirstDollar | null | undefined): string {
@@ -924,6 +974,13 @@ export function renderStorefront(data: StorefrontData): string {
   -->
 ${webmcpOriginTrialTags()}
   <script src="/webmcp.js" defer></script>
+  <!--
+    THE SHOP WINDOW'S SECOND HALF. The rows above are already in the
+    HTML; this keeps them current while the tab is open and does
+    nothing at all if it never loads. routes/shop-window.ts carries
+    the reasoning and the whole of the script.
+  -->
+  <script src="/shop-window.js" defer></script>
 </head>
 <body class="night">
   <div class="stars"></div>
@@ -986,6 +1043,13 @@ ${webmcpOriginTrialTags()}
       <p class="shelf-more">${COPY.shelvesMore}
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
       <p class="shelf-till"><a class="door-cta" href="/menu">${escapeHtml(COPY.shelvesTillCta)}</a> — ${escapeHtml(COPY.shelvesTillBody)}</p>
+    </section>
+
+    <section class="sold">
+      <h2 class="night-head"><span class="sold-live" aria-hidden="true"></span>${COPY.soldHead}</h2>
+      <p class="sold-lead">${escapeHtml(COPY.soldLine)}</p>
+      ${shopWindowHtml(data.shopWindow)}
+      <p class="menu-meta">${COPY.soldFootnote}</p>
     </section>
 
     <section class="what-this-is promise">

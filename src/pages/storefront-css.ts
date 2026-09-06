@@ -208,6 +208,69 @@ html { overflow-x: clip; }
   font-style: italic; font-size: 0.85rem; color: var(--night-faded);
 }
 
+/* ---- the shop window: the last few things over the counter ----
+   A till roll, not a leaderboard: rows on a torn strip, the newest one
+   lit, the rest cooling off down the tape. The times are set in the
+   same mono the instruments use, because they are a reading and not
+   prose. Nothing here is a number anybody is meant to add up. */
+.sold {
+  max-width: 560px; margin: 0 auto 2.7rem;
+  padding: 1.1rem 1.25rem 0.9rem;
+  border: 1px solid var(--line); border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px),
+    linear-gradient(180deg, rgba(28,22,38,0.8), rgba(14,11,21,0.8));
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+}
+.sold .night-head { text-align: center; margin-bottom: 0.45rem; }
+/* The counter's pilot light: on, and saying so without saying it. */
+.sold-live {
+  display: inline-block; vertical-align: 0.18em;
+  width: 7px; height: 7px; margin-right: 0.5rem; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px rgba(93,230,200,0.9), 0 0 18px rgba(93,230,200,0.35);
+  animation: sold-pulse 2.6s ease-in-out infinite;
+}
+@keyframes sold-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.32; } }
+.sold-lead {
+  text-align: center; margin-bottom: 0.95rem;
+  font-size: 0.82rem; line-height: 1.5; color: var(--night-faded);
+}
+.sold-list { list-style: none; }
+.sold-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.9rem; padding: 0.52rem 0.15rem;
+  border-top: 1px dashed var(--line);
+}
+.sold-row:first-child { border-top: none; }
+.sold-what {
+  font-size: 0.95rem; color: var(--night-text); text-decoration: none;
+  border-bottom: 1px solid rgba(93,230,200,0.22);
+}
+.sold-what:hover { color: var(--neon-hot); border-bottom-color: var(--neon-hot); }
+/* The freshest row is the one somebody just carried out. */
+.sold-row:first-child .sold-what {
+  color: var(--paper); text-shadow: 0 0 14px rgba(244,234,216,0.22);
+}
+.sold-when {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--night-faded); white-space: nowrap;
+}
+.sold-none {
+  padding: 0.5rem 0; text-align: center;
+  font-style: italic; color: var(--night-faded);
+}
+.sold .menu-meta {
+  margin-top: 0.85rem; text-align: center;
+  font-size: 0.76rem; line-height: 1.5; color: var(--night-faded);
+}
+.sold .menu-meta a { color: var(--teal); text-decoration: none; border-bottom: 1px solid rgba(93,230,200,0.22); }
+.sold .menu-meta a:hover { border-bottom-color: var(--neon-hot); }
+@media (prefers-reduced-motion: reduce) {
+  .sold-live { animation: none; }
+}
+
 /* ---- the readerboard: this week's note, letters set by hand ---- */
 .board {
   max-width: 560px; margin: 0 auto 2.7rem;

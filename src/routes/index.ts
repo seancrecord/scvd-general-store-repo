@@ -25,6 +25,7 @@ export { porchRoutes } from "@/routes/porch";
 export { practiceCounterRoutes } from "@/routes/practice-counter";
 export { tillRoutes } from "@/routes/till";
 export { webmcpRoutes } from "@/routes/webmcp";
+export { shopWindowRoutes } from "@/routes/shop-window";
 export { mcpMdRoutes } from "@/routes/mcp-md";
 export { houseLedgerRoutes } from "@/routes/house-ledger";
 export { neighboursRoutes } from "@/routes/neighbours";

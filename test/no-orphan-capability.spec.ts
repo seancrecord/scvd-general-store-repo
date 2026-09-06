@@ -116,6 +116,11 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/till.js":
     "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
 
+  "/shop-window.js":
+    "the front page's own refresh loop: a page asset a browser fetches from the <script> tag on /, never a door an agent calls. Same reasoning as /till.js above — naming a JavaScript file on an agent surface would advertise a capability an agent cannot use",
+  "/shop-window.json":
+    "what /shop-window.js polls, and the rows it carries are already in the storefront's HTML, which every surface names. An agent asking what this store sells reads /menu.json; an agent asking what it has SOLD reads /stats. Listing this would advertise a third answer with no contract behind it — and whether \"what other agents are buying\" becomes a published instrument in its own right is the keeper's call, not a side effect of putting a window on the front page",
+
   // ---- the trade counter's per-account doors: the probe drops the
   // account segment, so the listed paths never match it ----
   "/api/trade/check":
