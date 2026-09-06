@@ -489,10 +489,11 @@ cli/              # scvd: the official command line over the store's
                   # set, the corpus, the RFC 9727 catalog, the version
                   # table. One file, zero deps, its own tests
                   # (npm run cli:test). It holds no key and cannot
-                  # sign a payment, on purpose. Not on npm until the
-                  # keeper publishes it (DISTRIBUTION.md §4b); every
-                  # surface that names it reads CLI_PUBLISHED in
-                  # src/store/cli.ts and says so until then.
+                  # sign a payment, on purpose. On npm since
+                  # 2026-08-28 (DISTRIBUTION.md §4b); every surface
+                  # that names it reads CLI_PUBLISHED in
+                  # src/store/cli.ts rather than asserting a
+                  # publication state of its own.
 ```
 
 ### Editing the Town Directory
