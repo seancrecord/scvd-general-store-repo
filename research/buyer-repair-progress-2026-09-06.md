@@ -8,6 +8,16 @@ Sean authorized rebasing on main and beginning implementation. Work is local; pe
 - Created `codex/buyer-repairs` from the existing checkout and rebased successfully. Its pre-existing listing-record commit was replayed as `9f6a73f8`; that unrelated change remains intact.
 - Four untracked paths now tracked on main were preserved under `/private/tmp/scvd-pre-rebase-20260906/` before rebasing: `docs/THE_MAP_2026-09.md`, `src/lib/buyer-contract.ts`, `test/machine-buyer-entrypoints.spec.ts`, and `test/purchase-refusal-fields.spec.ts`. The refusal-fields file was identical; the other local versions remain in that backup. Main's versions are in the checkout. All other untracked audit work was retained.
 
+## BUY-034 — preserve incomplete paid deliveries (partial)
+
+The HTTP spent-payment lane used a found certificate as proof of fulfillment and deleted the delivery-intent row. Certificates precede orders and product storage, so this removed the very obligation needed to finish a failed purchase. A throwing certificate lookup also escaped to the generic HTTP error response, losing the confirmed charge state.
+
+The gate now retains the original row, refuses another mint, and returns the published `delivery_failed` outcome with `charged:true`, `charged_again:false`, original transaction/network and a specific recovery reason. A certificate link identifies the receipt without claiming the purchased work exists. Valid cache replays and pre-mint reconstruction are unchanged. BUY-034 remains open for actual reconstruction.
+
+The new public-door spec injects persistent product writes after confirmed settlement for Context Anchor, Service Audit, Aura Walk and The Collab over Base and Polygon. All 24 cases failed before repair; retries with a found certificate, unavailable lookup and incomplete lookup now preserve the exact obligation through two attempts with no new settlement or certificate. The related recovery gate passed 63 tests across four files, typecheck and both Worker bundles. A final four-case control restored the original gate, reproduced failure, and restored the repair automatically. Full-suite validation remains on GitHub.
+
+The independent main-based release gate also passed all 75 tests across five files, typecheck and both Worker dry-run bundles. It includes existing paid-failure, cache-authentication and discovery tests.
+
 ## BUY-018 — fixed locally
 
 The verified payment's envelope now determines whether EVM authorization fields may identify a payer. Only exact-EVM v2 payments can supply that identity. A Solana transaction's unsigned adjacent `authorization` object cannot open another wallet's receipt cache or consume an EVM nonce.

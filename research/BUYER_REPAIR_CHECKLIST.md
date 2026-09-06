@@ -10,7 +10,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; not deployed.
 - [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; not deployed.
-- [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — open.
+- [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: HTTP retries preserve the owed-delivery record and report the confirmed charge when only a certificate exists or lookup fails. Reconstructing missing orders/artifacts remains open.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
 
 ## Remaining findings
