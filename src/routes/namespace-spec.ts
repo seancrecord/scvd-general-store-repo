@@ -8,6 +8,7 @@ import {
   TRUST_MODELS,
 } from "@/store/attestation-spec";
 import type { HonoEnv } from "@/types";
+import { ARD_TRUST_SIGNS, ARD_TRUST_LIMITS } from "@/store/ard-trust";
 
 /**
  * /spec/scvd-attestation/v1 — THE NAMESPACE DOC (the corpus strategy's
@@ -56,11 +57,19 @@ function doc(base: string) {
         "Artifacts do not carry this spec's version; they are dated, and the spec states its rules as of those dates (the certificate's legacy form below is the worked example). A verifier should key on the artifact's served fields, not on an assumed vintage.",
     },
     signing: {
+      external_envelopes: {
+        ard_trust_manifest: {
+          signs: ARD_TRUST_SIGNS,
+          does_not_prove: ARD_TRUST_LIMITS,
+          profile: `${base}/attestation#ard_trust_manifest`,
+          note: "ARD uses its declared detached-JWS profile instead of the house hex signature and dual-emit rules below.",
+        },
+      },
       algorithm: "ed25519",
       encoding:
         "signature and public_key are lowercase hex strings; the message is the UTF-8 encoding of the canonical form; digests are lowercase hex sha256 unless stated otherwise.",
       the_uniform_rule:
-        "For every artifact that carries its own signature, the signed message is the JSON serialization of the artifact's fields IN THE ORDER SERVED, stopping above `signature` — JSON.stringify of exactly those fields, no whitespace, no re-sorting. Fields absent from the artifact are omitted entirely, never null (the certificate's canonical form skips undefined fields). Where a wrapper serves the artifact (the certificate, the context anchor), the response also carries signed_payload: the exact string the signature covers, so nothing has to be rebuilt — prefer the served bytes; the recipe here is for when you only kept the artifact.",
+        "Except for the external_envelopes declared above, for every artifact that carries its own signature, the signed message is the JSON serialization of the artifact's fields IN THE ORDER SERVED, stopping above `signature` — JSON.stringify of exactly those fields, no whitespace, no re-sorting. Fields absent from the artifact are omitted entirely, never null (the certificate's canonical form skips undefined fields). Where a wrapper serves the artifact (the certificate, the context anchor), the response also carries signed_payload: the exact string the signature covers, so nothing has to be rebuilt — prefer the served bytes; the recipe here is for when you only kept the artifact.",
       verification_steps: [
         `1. Obtain the key: the live and retired keys, with service dates, at ${base}/.well-known/scvd-signing-key. Match the artifact's public_key against that history; a key not in the history did not sign for this store.`,
         "2. Reconstruct the message per the artifact's canonical form below (or take signed_payload verbatim where served).",
@@ -80,7 +89,7 @@ function doc(base: string) {
       relation_to_jcs_rfc8785:
         "This namespace's PRIMARY canonical form is DECLARED-FIELD-ORDER serialization, not RFC 8785 (JCS). JCS derives byte order by sorting keys; this spec derives it from the field lists published on this page, which are part of the contract. The two disciplines are equally deterministic and NOT byte-compatible: re-canonicalizing an scvd artifact's primary signature through JCS produces different bytes and a failed verification. This is deliberate and permanent for artifacts already issued — this store's signatures are forever, and migrating a preimage discipline would orphan every one of them (the frozen_prefix rule below is the same commitment at field level).",
       jcs_dual_emit:
-        "SINCE 2026-08-18 every artifact minted here ALSO carries `signature_jcs`: a second ed25519 signature, same key, same field subset, over the RFC 8785 (JCS) canonicalization — sorted keys, ECMAScript number and string serialization, no whitespace. Verify it with any RFC 8785 implementation: jcs(signed_fields_as_object) -> utf8 bytes -> ed25519_verify against the same public_key. The primary signature remains the authoritative one; signature_jcs is interop, so any tool that verifies raw RFC 8785 bytes can check scvd artifacts without knowing our field lists. That is the JCS byte primitive only: the IETF receipt drafts that build on RFC 8785 add pre-canonicalisation rules our artifacts do not meet (integer-millisecond timestamps, NFC strings), and none of them assigns a role to an ed25519 signature, so signature_jcs verifies under RFC 8785, not under any draft — see relation_to_other_x402_receipt_work. Artifacts minted before 2026-08-18 carry no signature_jcs, exactly the way certificates minted before 2026-07-30 lack later fields: history, not a defect. Where served, signature_jcs_covers states this in place, and /api/verify reports the JCS signature's own validity separately from the primary's — never collapsed into one boolean.",
+        "SINCE 2026-08-18 every house-format artifact minted here ALSO carries `signature_jcs`: a second ed25519 signature, same key, same field subset, over the RFC 8785 (JCS) canonicalization — sorted keys, ECMAScript number and string serialization, no whitespace. Verify it with any RFC 8785 implementation: jcs(signed_fields_as_object) -> utf8 bytes -> ed25519_verify against the same public_key. The primary signature remains the authoritative one; signature_jcs is interop, so any tool that verifies raw RFC 8785 bytes can check scvd artifacts without knowing our field lists. That is the JCS byte primitive only: the IETF receipt drafts that build on RFC 8785 add pre-canonicalisation rules our artifacts do not meet (integer-millisecond timestamps, NFC strings), and none of them assigns a role to an ed25519 signature, so signature_jcs verifies under RFC 8785, not under any draft — see relation_to_other_x402_receipt_work. Artifacts minted before 2026-08-18 carry no signature_jcs, exactly the way certificates minted before 2026-07-30 lack later fields: history, not a defect. Where served, signature_jcs_covers states this in place, and /api/verify reports the JCS signature's own validity separately from the primary's — never collapsed into one boolean.",
       /**
        * THE THREE DRAFTS, READ IN FULL (2026-09-03, CV at the keeper's
        * request; the prompt is docs/bylines/CV_PROMPT_IETF_2026-09.md).

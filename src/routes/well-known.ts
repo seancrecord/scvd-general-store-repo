@@ -14,8 +14,8 @@ import {
   ARD_LINK_REL,
   ARD_PREDECESSOR_PATH,
   ARD_WELL_KNOWN_PATH,
-  ardManifest,
 } from "@/lib/ard-catalog";
+import { signedArdManifest } from "@/lib/ard-signing";
 import {
   DEFAULT_PROTOCOL,
   LATEST_PROTOCOL,
@@ -945,7 +945,7 @@ for (const path of [
  * says a publisher has no NEED to, never that it must not.
  */
 for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH] as const) {
-  wellKnownRoutes.get(path, (c) => {
+  wellKnownRoutes.get(path, async (c) => {
     const base = c.env.STORE_BASE_URL;
     /*
      * The link relation §5.1 makes normative for consumers, on the
@@ -954,7 +954,7 @@ for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH] as const) {
      * one is rather than left on it.
      */
     c.header("Link", `<${base}${ARD_WELL_KNOWN_PATH}>; rel="${ARD_LINK_REL}"`);
-    return c.json(ardManifest(base));
+    return c.json(await signedArdManifest(c.env));
   });
 }
 

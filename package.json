@@ -84,6 +84,7 @@
     "@cloudflare/workers-types": "^5.20260829.1",
     "@types/node": "^26.2.0",
     "@x402/fetch": "^2.24.0",
+    "ajv": "^8.20.0",
     "dotenv": "^17.4.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",

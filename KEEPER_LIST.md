@@ -836,6 +836,17 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **ARD Registry account submission (2026-09-06).**
+  https://ardregistry.org/submit redirects to sign-in. Sign in and submit
+  `scvd.store` after the corrected manifest is live; then verify SCVD
+  appears in its search. Its current homepage no longer exposes the
+  reported unauthenticated "Run discovery" button; provide the direct
+  check URL if available. Neuronto and WellKnown already return SCVD
+  from their own indexes; their public refresh APIs need no account.
+  Evidence and publication status: `docs/ARD_DISCOVERY_2026-09-06.md`.
+  Weekly discovery checking is scheduled in the active task.
+
+
 - **The ChatGPT plugin in review is the wrong shape by your own
   memo (2026-09-03 evening).** "SCVD General Store" was submitted
   that morning; the memo says submit "SCVD x402 Verifier" with five

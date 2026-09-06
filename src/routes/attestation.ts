@@ -27,6 +27,7 @@ import {
 } from "@/store/key-continuity";
 import { ITEM_MAKER_MARK, MAKER_MARKS } from "@/store/provenance";
 import type { HonoEnv } from "@/types";
+import { ARD_ANCHOR_CHECK, ardTrustDeclaration } from "@/store/ard-trust";
 
 /**
  * /attestation — what gets signed, who holds the key, whose word you
@@ -166,6 +167,10 @@ attestationRoutes.get("/attestation", (c) => {
     why_signed_payload: WHY_SIGNED_PAYLOAD,
     key_continuity: keyContinuity(base),
     trust_models: TRUST_MODELS,
+    ard_trust_verification: {
+      ...ardTrustDeclaration(base),
+      anchor_check: ARD_ANCHOR_CHECK,
+    },
     artifact_classes: ARTIFACT_CLASSES.map((entry) => ({
       ...entry,
       trust_model_name: TRUST_MODELS[entry.trust_model].name,
@@ -201,10 +206,10 @@ attestationRoutes.get("/attestation", (c) => {
     .join("\n");
 
   const classes = ARTIFACT_CLASSES.map(
-    (entry) => `<tr>
+    (entry) => `<tr id="${escapeHtml(entry.id)}">
       <td><strong>${escapeHtml(entry.name)}</strong></td>
       <td>${escapeHtml(TRUST_MODELS[entry.trust_model].name)}</td>
-      <td><small>${escapeHtml(entry.signs)}</small></td>
+      <td><small>${escapeHtml(entry.signs)}${entry.id === "ard_trust_manifest" ? `<br>${escapeHtml(ARD_ANCHOR_CHECK)}<br><a href="/.well-known/anchor-log.json">Anchor log</a> · <a href="/.well-known/scvd-signing-key">Key history</a>` : ""}</small></td>
       <td><small>${escapeHtml(entry.does_not_prove)}</small></td>
     </tr>`,
   ).join("\n");

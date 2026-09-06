@@ -1,0 +1,968 @@
+{
+  "registry": "wellknown",
+  "url": "https://wellknownhq.com/registry/search",
+  "request": {
+    "query": {
+      "text": "scvd.store"
+    },
+    "pageSize": 100,
+    "limit": 100,
+    "federation": "none"
+  },
+  "checked_at": "2026-09-06T20:32:52.638822+00:00",
+  "status": 200,
+  "body": {
+    "results": [
+      {
+        "identifier": "urn:air:scvd.store:skill:general-store",
+        "displayName": "SCVD General Store \u2014 the store skill",
+        "type": "application/ai-skill+md",
+        "url": "https://scvd.store/skill.md",
+        "score": 80,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:agent:general-store",
+        "displayName": "SCVD General Store \u2014 A2A agent card",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://scvd.store/.well-known/a2a.json",
+        "score": 77,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:server:general-store",
+        "displayName": "SCVD General Store \u2014 MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://scvd.store/.well-known/mcp",
+        "score": 76,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:api:http",
+        "displayName": "SCVD General Store \u2014 HTTP API",
+        "type": "application/openapi+json;version=3.1",
+        "url": "https://scvd.store/openapi.json",
+        "score": 68,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:scvd.store:skill:execution-contract",
+        "displayName": "Execution contract",
+        "type": "application/ai-skill+md",
+        "url": "https://scvd.store/skills/execution-contract.md",
+        "score": 56,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:ai:2s.io:api:store",
+        "displayName": "2s.io Store",
+        "type": "application/openapi+json",
+        "url": "https://2s.io/api/openapi?group=store",
+        "score": 55,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.appscreenshotstudio:mcp:mcp",
+        "displayName": "mcp",
+        "type": "application/mcp-server",
+        "url": null,
+        "score": 54,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.convexvalue:mcp:cvserver",
+        "displayName": "cvserver",
+        "type": "application/mcp-server",
+        "url": "https://tap.convexvalue.com/api/data/mcp",
+        "score": 54,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.myappstoreranking:mcp:myappstoreranking",
+        "displayName": "My App Store Ranking",
+        "type": "application/mcp-server",
+        "url": "https://mcp.myappstoreranking.com/mcp",
+        "score": 54,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:appstore.fetcher.sh:api:openapi",
+        "displayName": "fetcher.sh \u2014 App Store OpenAPI 3.1",
+        "type": "application/vnd.oai.openapi+json;version=3.1.0",
+        "url": "https://appstore.fetcher.sh/openapi.json",
+        "score": 53,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "A",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.giancarloerra:mcp:socraticode",
+        "displayName": "socraticode",
+        "type": "application/mcp-server",
+        "url": "https://github.com/giancarloerra/socraticode",
+        "score": 53,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:cloud.nttzen.secdb:mcp:zen-secdb",
+        "displayName": "ZEN SecDB",
+        "type": "application/mcp-server",
+        "url": "https://secdb.nttzen.cloud/mcp",
+        "score": 53,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:dev.reapx:mcp:shopify-stores",
+        "displayName": "reapx Shopify - store products and app listings",
+        "type": "application/mcp-server",
+        "url": "https://mcp.apify.com/?actors=reapx/shopify-store-products-scraper,reapx/shopify-app-store-scraper",
+        "score": 53,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.francisco-perez-sorrosal:mcp:cv",
+        "displayName": "cv",
+        "type": "application/mcp-server",
+        "url": "https://github.com/francisco-perez-sorrosal/cv",
+        "score": 52,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.gjeltep:mcp:app-store-connect-mcp",
+        "displayName": "app-store-connect-mcp",
+        "type": "application/mcp-server",
+        "url": "https://github.com/gjeltep/app-store-connect-mcp",
+        "score": 52,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.aiwerk:mcp:mcp-server-vault",
+        "displayName": "mcp-server-vault",
+        "type": "application/mcp-server",
+        "url": "https://github.com/AIWerk/mcp-server-vault",
+        "score": 52,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.gurkang:mcp:shipshots",
+        "displayName": "Shipshots",
+        "type": "application/mcp-server",
+        "url": "https://shipshots.app",
+        "score": 52,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:appskyline.com:plugin:appskyline",
+        "displayName": "AppSkyline",
+        "type": "application/agent-plugins+json",
+        "url": "https://www.appskyline.com/.well-known/agent-plugins/appskyline/plugin.json",
+        "score": 51,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.blackfoil:mcp:claude-token-saver-mcp",
+        "displayName": "claude-token-saver-mcp",
+        "type": "application/mcp-server",
+        "url": "https://github.com/BlackFoil/claude-token-saver-mcp",
+        "score": 51,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:appstore.fetcher.sh:server:mcp",
+        "displayName": "fetcher.sh \u2014 App Store MCP",
+        "type": "application/mcp-server-card+json",
+        "url": "https://appstore.fetcher.sh/.well-known/mcp/server-card.json",
+        "score": 51,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "A",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.devinder1:mcp:tridentchain-security",
+        "displayName": "TridentChain Security",
+        "type": "application/mcp-server",
+        "url": "https://github.com/DevInder1/supply-chain-scanner-public",
+        "score": 51,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:in.elytron:mcp:pollen-store",
+        "displayName": "Pollen Store Catalog",
+        "type": "application/mcp-server",
+        "url": "https://pollen.elytron.in/mcp/store/{shop}",
+        "score": 50,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.cdrn:mcp:sigil",
+        "displayName": "sigil",
+        "type": "application/mcp-server",
+        "url": "https://github.com/cdrn/sigil",
+        "score": 50,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.hrtips:mcp:cvx",
+        "displayName": "cvx",
+        "type": "application/mcp-server",
+        "url": "https://github.com/hrtips/cvx",
+        "score": 50,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:appstore.fetcher.sh:agent:http",
+        "displayName": "fetcher.sh \u2014 App Store",
+        "type": "application/a2a-agent-card+json",
+        "url": "https://appstore.fetcher.sh/.well-known/agent-card.json",
+        "score": 49,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "A",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.edithatogo:mcp:sourceright",
+        "displayName": "Sourceright",
+        "type": "application/mcp-server",
+        "url": "https://github.com/edithatogo/sourceright",
+        "score": 49,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:app.scfcontrolsplatform:mcp:mcp-server-scf",
+        "displayName": "mcp-server-scf",
+        "type": "application/mcp-server",
+        "url": "https://scfcontrolsplatform.com",
+        "score": 49,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.anthesiallc:mcp:storesignal",
+        "displayName": "storesignal",
+        "type": "application/mcp-server",
+        "url": "https://github.com/anthesiallc/storesignal-mcp",
+        "score": 49,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:appstore.fetcher.sh:skill:appstore-fetcher-sh",
+        "displayName": "appstore-fetcher-sh",
+        "type": "application/agent-skills+md",
+        "url": "https://appstore.fetcher.sh/skill.md",
+        "score": 48,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "A",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.git-akki:mcp:sendpookie",
+        "displayName": "sendpookie",
+        "type": "application/mcp-server",
+        "url": "https://github.com/git-akki/sendpookie",
+        "score": 48,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:dev.docmancer:mcp:docmancer",
+        "displayName": "Docmancer",
+        "type": "application/mcp-server",
+        "url": "https://docmancer.dev/docs",
+        "score": 48,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.beautyfree:mcp:app-store-connect",
+        "displayName": "app-store-connect",
+        "type": "application/mcp-server",
+        "url": "https://github.com/beautyfree/appstore-connect-mcp",
+        "score": 48,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.forgeopslabs:mcp:appstore-mcp",
+        "displayName": "App Store Connect",
+        "type": "application/mcp-server",
+        "url": "https://github.com/forgeopslabs/appstore-mcp",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.kn0wbot:mcp:clavis",
+        "displayName": "clavis",
+        "type": "application/mcp-server",
+        "url": "https://github.com/KN0WBOT/clavis-mcp",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:alice51849.github.io:mcp:lumi-app-finder",
+        "displayName": "Lumi App Finder",
+        "type": "application/mcp-server-card+json",
+        "url": "https://alice51849.github.io/.well-known/lumi-app-finder.mcp.json",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.cyanheads:mcp:osv-advisory-mcp-server",
+        "displayName": "osv-advisory-mcp-server",
+        "type": "application/mcp-server",
+        "url": "https://github.com/cyanheads/osv-advisory-mcp-server",
+        "score": 47,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.thenextgennexus:mcp:social-content-mcp-server",
+        "displayName": "social-content-mcp-server",
+        "type": "application/mcp-server",
+        "url": "https://nexgendata-mcp-proxy.steve-corbeil.workers.dev/social-content-mcp-server/mcp",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.evanciel:mcp:stellavault",
+        "displayName": "stellavault",
+        "type": "application/mcp-server",
+        "url": "https://github.com/Evanciel/stellavault#mcp-integration-21-tools",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.prometheusagency:mcp:shopify-app-store-scraper",
+        "displayName": "shopify-app-store-scraper",
+        "type": "application/mcp-server",
+        "url": "https://mcp.apify.com/?actors=prometheusagency/shopify-app-store-scraper",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.dukonai:mcp:billz",
+        "displayName": "Dukon AI \u2014 BILLZ store analytics",
+        "type": "application/mcp-server",
+        "url": "https://mcp.dukonai.com/mcp",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:forcedream.ai:agent:security-scan-v1",
+        "displayName": "Security Vulnerability Scanner",
+        "type": "application/a2a-agent+json",
+        "url": "https://api.forcedream.ai/v1/a2a/agents/security-scan-v1/.well-known/agent-card.json",
+        "score": 46,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:ai.trendsmcp:mcp:app-store",
+        "displayName": "App Store Trends MCP",
+        "type": "application/mcp-server",
+        "url": "https://app-store.api.trendsmcp.ai/mcp",
+        "score": 45,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.cryptolibertus:mcp:myvideogift",
+        "displayName": "myvideogift",
+        "type": "application/mcp-server",
+        "url": "https://github.com/CryptoLibertus/myvideogift",
+        "score": 45,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:dev.reapx:mcp:app-store-reviews",
+        "displayName": "reapx App Store reviews - ratings and review history",
+        "type": "application/mcp-server",
+        "url": "https://mcp.apify.com/?actors=reapx/app-store-reviews-scraper",
+        "score": 45,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.171county:mcp:modwrench",
+        "displayName": "ModWrench",
+        "type": "application/mcp-server",
+        "url": "https://github.com/171county/modwrench",
+        "score": 45,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:peppolstatus.com:mcp:product",
+        "displayName": "PeppolStatus Product MCP server",
+        "type": "application/mcp-server-card+json",
+        "url": "https://peppolstatus.com/.well-known/mcp/server-card.json",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:truepane.dev:skill:truepane-screenshot-workflow",
+        "displayName": "Truepane screenshot workflow",
+        "type": "application/agent-skills+md",
+        "url": "https://truepane.dev/.well-known/agent-skills/truepane-screenshot-workflow/SKILL.md",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "B",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:com.eveoy:mcp:mcp",
+        "displayName": "Eveoy \u2014 Verified In-Store Foot Traffic ($24.99/customer)",
+        "type": "application/mcp-server",
+        "url": "https://mcp.eveoy.com/mcp",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:io.github.rocketech-software-development:mcp:formacv",
+        "displayName": "formacv",
+        "type": "application/mcp-server",
+        "url": "https://github.com/Rocketech-Software-Development/formacv-mcp",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": null,
+          "com.wellknownhq/federatedFrom": "registry.modelcontextprotocol.io",
+          "com.wellknownhq/provenance": "federated",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      },
+      {
+        "identifier": "urn:air:agentready.market:audit:scan-api",
+        "displayName": "Store agent-readiness scan (public API)",
+        "type": "application/json",
+        "url": "https://www.agentready.market/api/scan",
+        "score": 44,
+        "source": "https://wellknownhq.com/registry/",
+        "_meta": {
+          "com.wellknownhq/conformanceGrade": "F",
+          "com.wellknownhq/federatedFrom": null,
+          "com.wellknownhq/provenance": "published",
+          "com.wellknownhq/provisioning": null,
+          "com.wellknownhq/relatedParty": null,
+          "com.wellknownhq/scopes": null,
+          "com.wellknownhq/verification": "crawled",
+          "com.wellknownhq/vertical": null,
+          "com.wellknownhq/visibility": "public"
+        }
+      }
+    ]
+  }
+}
