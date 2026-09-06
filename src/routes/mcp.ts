@@ -1,3 +1,4 @@
+import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { decodeBase64Json } from "@/lib/base64-json";
 import { priceLine } from "@/services/menu-markdown";
@@ -57,6 +58,7 @@ import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
   idempotencyScope,
+  sha256Hex,
   lookupIdempotentWithBucketGrace,
   replayNote,
   SUGGESTED_KEY_BUCKET_SECONDS,
@@ -898,6 +900,7 @@ async function callPurchaseTool(
       );
     }
   }
+  const inputDigest = await sha256Hex(jcsCanonicalize(args));
   const outcome = await runMcpPayment(
     c.env,
     item.id,
@@ -911,6 +914,7 @@ async function callPurchaseTool(
     // after settlement can still be finished by hand. The payment
     // rides _meta, never arguments, so nothing here is a credential.
     Object.keys(args).length > 0 ? JSON.stringify(args).slice(0, 600) : undefined,
+    inputDigest,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
@@ -919,6 +923,15 @@ async function callPurchaseTool(
    */
   if (outcome.kind === "replay") {
     return rpcResult(id, purchaseResult(outcome.body));
+  }
+  if (outcome.kind === "delivery-failed") {
+    const body = deliveryFailedBody(c.env.STORE_BASE_URL, item, outcome.payment);
+    const failure = { ...body, recovery_reason: outcome.reason, charged_again: false };
+    if (standardPayment(c)) {
+      return rpcResult(id, { ...toolText(failure) as Record<string, unknown>, isError: true });
+    }
+    const { error: message, ...data } = failure;
+    return rpcError(id, -32000, message, data);
   }
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
@@ -999,7 +1012,26 @@ async function callPurchaseTool(
    */
   let response: Record<string, unknown>;
   try {
-    response = await fulfillPurchase(c.env, item, outcome.pending, input);
+    if (outcome.recovered) {
+      const payment = outcome.settledSoFar()!;
+      const namespace = c.env.PAID_RECOVERIES;
+      if (!namespace) throw new Error("Paid recovery coordinator unavailable");
+      const stub = namespace.get(namespace.idFromName(`${payment.network}:${payment.transaction}`));
+      const claim = await stub.begin(inputDigest);
+      if (claim.kind === "unavailable") throw new Error("Paid recovery already in progress or interrupted");
+      if (claim.kind === "replay") {
+        const saved: unknown = JSON.parse(claim.response);
+        if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
+        response = saved;
+      } else {
+        response = await fulfillPurchase(c.env, item, outcome.pending, input);
+        if (!await stub.complete(claim.token, JSON.stringify(response))) {
+          throw new Error("Paid recovery claim is not writable");
+        }
+      }
+    } else {
+      response = await fulfillPurchase(c.env, item, outcome.pending, input);
+    }
   } catch (error) {
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
@@ -1070,6 +1102,7 @@ async function callPurchaseTool(
     await recordDeliveredSettlement(c.env, settled.transaction);
   }
   const flat = flattenPurchase(response);
+  if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
   // Preserve the actual protocol receipt across an idempotent retry. Never
   // reconstruct it from the current challenge or a guessed default rail.
   const encodedReceipt = settled && Object.entries(settled.settleHeaders)

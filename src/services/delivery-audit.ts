@@ -1,3 +1,4 @@
+import type { SettledPayment } from "@/lib/payments";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -69,6 +70,8 @@ export const DELIVERY_GRACE_MINUTES = 10;
 export const DELIVERY_SCAN_CAP = 500;
 
 export interface DeliveryIntent {
+  /** MCP retry identity is complete even when the desk's query preview is cut. */
+  mcp_retry?: { input_digest: string; payment: SettledPayment };
   /** The route that took the money. */
   path: string;
   /**

@@ -53,11 +53,12 @@ function jsonDeclineResponse(body: unknown): Response {
 }
 import {
   extractPaymentNonce,
-  isNonceSpent,
+  getSpentNonce,
   payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
-import { openDeliveryIntent } from "@/services/delivery-audit";
+import { certIdForSettlement } from "@/services/settlement-records";
+import { getOpenDeliveryIntent, openDeliveryIntent } from "@/services/delivery-audit";
 import { isRecord } from "@/types";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
 import { withSignedOffers } from "@/lib/offer-receipt";
@@ -121,6 +122,7 @@ export type McpPaymentOutcome =
        * what actually happened, for the bookkeeping afterwards.
        */
       kind: "authorized";
+      recovered?: true;
       pending: PendingPayment;
       settledSoFar: () => SettledPayment | null;
       /**
@@ -137,7 +139,8 @@ export type McpPaymentOutcome =
    * A cached purchase, returned instead of settling. Reached only from
    * the verified seam below, never from the caller's raw meta.
    */
-  | { kind: "replay"; body: Record<string, unknown> };
+  | { kind: "replay"; body: Record<string, unknown> }
+  | { kind: "delivery-failed"; payment: SettledPayment; reason: string };
 
 /**
  * Asked once, at the ONE moment the payer is known to be real: after
@@ -218,6 +221,8 @@ export async function runMcpPayment(
    * door's equivalent, capped by the caller.
    */
   askedFor?: string,
+  /** SHA-256 of the complete canonical arguments, not the truncated desk preview. */
+  inputDigest?: string,
 ): Promise<McpPaymentOutcome> {
   const path = `/api/buy/${itemId}`;
   const stack = getPaymentStack(env);
@@ -377,9 +382,45 @@ export async function runMcpPayment(
     }
   }
 
-  // Verified. Same replay guard as the HTTP door.
+  // Authentication still precedes every recovery read. A spent payment
+  // may finish its own missing mint; it cannot buy different inputs.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  if (nonce && (await isNonceSpent(env, nonce))) {
+  const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
+  const spent = nonce ? await getSpentNonce(env, nonce) : null;
+  if (spent) {
+    if (spent.path === path && spent.transaction && verifiedPayer) {
+      const open = await getOpenDeliveryIntent(env, spent.transaction);
+      const retry = open?.intent.mcp_retry;
+      if (open && retry && open.intent.path === path &&
+        retry.payment.transaction === spent.transaction &&
+        retry.payment.payer?.toLowerCase() === verifiedPayer.toLowerCase() &&
+        retry.payment.network === result.paymentRequirements.network) {
+        const failed = (reason: string): McpPaymentOutcome => ({
+          kind: "delivery-failed", payment: retry.payment, reason,
+        });
+        if (!inputDigest || retry.input_digest !== inputDigest) return failed("original_inputs_required");
+        try {
+          const lookup = await certIdForSettlement(env, spent.transaction);
+          // A certificate alone is not proof of completed fulfillment. Keep
+          // the obligation open rather than re-minting or claiming delivery.
+          if (lookup.certId) return failed("certificate_already_minted");
+          if (!lookup.certain) return failed("certificate_lookup_incomplete");
+        } catch {
+          return failed("recovery_lookup_unavailable");
+        }
+        return {
+          kind: "authorized", recovered: true, verifiedPayer,
+          pending: {
+            paidUsdc: retry.payment.paidUsdc,
+            tipUsdc: retry.payment.tipUsdc,
+            payer: verifiedPayer,
+            settle: async () => retry.payment,
+          },
+          settledSoFar: () => retry.payment,
+          deliveryKeySoFar: () => open.key,
+        };
+      }
+    }
     return {
       kind: "payment-required",
       status: 402,
@@ -582,6 +623,9 @@ export async function runMcpPayment(
    */
   deliveryKey = await openDeliveryIntent(env, {
     path,
+    ...(inputDigest && verifiedPayer ? {
+      mcp_retry: { input_digest: inputDigest, payment: { ...payment, payer: verifiedPayer } },
+    } : {}),
     ...(askedFor ? { query: askedFor.slice(0, 600) } : {}),
     ...(settledFacts.transaction ? { transaction: settledFacts.transaction } : {}),
     ...(payer ? { payer } : {}),
@@ -592,7 +636,6 @@ export async function runMcpPayment(
   return payment;
   };
 
-  const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
   const pending: PendingPayment = {
     paidUsdc: paidUsdcQuoted,
     tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),

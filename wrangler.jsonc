@@ -106,11 +106,13 @@
    */
   "durable_objects": {
     "bindings": [
-      { "name": "TRADE_NONCES", "class_name": "TradeNonceStore" }
+      { "name": "TRADE_NONCES", "class_name": "TradeNonceStore" },
+      { "name": "PAID_RECOVERIES", "class_name": "PaidRecoveryStore" }
     ]
   },
   "migrations": [
-    { "tag": "v1-trade-nonces", "new_sqlite_classes": ["TradeNonceStore"] }
+    { "tag": "v1-trade-nonces", "new_sqlite_classes": ["TradeNonceStore"] },
+    { "tag": "v2-paid-recovery", "new_sqlite_classes": ["PaidRecoveryStore"] }
   ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",

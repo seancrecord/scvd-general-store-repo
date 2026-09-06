@@ -34,7 +34,7 @@ export interface Env {
   STORE?: Fetcher;
   ORDERS: KVNamespace;
   /**
-   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the one binding in
+   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — a binding in
    * this store that is neither KV nor R2, and the reason is stated in
    * services/trade-nonces.ts: a replay guard with no on-chain backstop
    * cannot live on an eventually consistent store. OPTIONAL and
@@ -47,6 +47,8 @@ export interface Env {
   TRADE_NONCES?: DurableObjectNamespace<
     import("@/services/trade-nonces").TradeNonceStore
   >;
+  /** One durable reconstruction attempt per already-settled payment. */
+  PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
   /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the
    * probes read when a target fails, to tell our outage from theirs.
