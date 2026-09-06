@@ -7,7 +7,7 @@ import {
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { CATALOG_ROW_SCHEMA } from "@/routes/catalog";
+import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import {
   frontCounterItems,
   FRONT_COUNTER_PROMISE,
@@ -25,7 +25,7 @@ import {
   CONFORMANCE_KINDS,
   CONFORMANCE_VERDICTS,
   KEY_RESOLUTIONS,
-} from "@/services/conformance";
+} from "@/store/conformance-vocabulary";
 import { ORDER_STATUSES } from "@/types";
 import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";

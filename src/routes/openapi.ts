@@ -6,7 +6,7 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
-import { CATALOG_ROW_SCHEMA } from "@/routes/catalog";
+import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import { ASKED_FOR_SENTENCE } from "@/store/copy/asked-for";
 import { ASYNC_JOB, COLLECTIONS } from "@/lib/collection-semantics";
 import { ORDER_STATUSES, TERMINAL_ORDER_STATUSES } from "@/types";
