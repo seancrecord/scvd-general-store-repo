@@ -36,7 +36,7 @@ function unknownHtml(u: UnknownSplit): string {
   const hosts = u.referrer_hosts.map((h) => `<code>${escapeHtml(h.host)}</code> ${h.visits}`).join(", ") || "none";
   const surfaces = u.no_user_agent_by_surface.map((s) => `<code>${escapeHtml(s.surface)}</code> ${s.visits}`).join(", ") || "none";
   return `<p><strong>What "unknown" is this month</strong>, off the event rows (${u.rows_scanned} newest rows scanned${u.complete ? ", the whole month" : ", cap hit: a floor"}):
-    no user-agent at all <strong>${u.no_user_agent}</strong> (a scraper's signature) · referred from our own pages <strong>${u.self_referred}</strong> (a reader following the store's links) · a referrer the inferrer does not name <strong>${u.referred}</strong> (somebody linking here).</p>
+    no user-agent at all <strong>${u.no_user_agent}</strong> (caller type unknown) · referred from our own pages <strong>${u.self_referred}</strong> (a reader following the store's links) · a referrer the inferrer does not name <strong>${u.referred}</strong> (somebody linking here).</p>
     <p><small>Referring hosts: ${hosts}.<br>No-user-agent visits by surface: ${surfaces}.</small></p>`;
 }
 
@@ -97,8 +97,8 @@ export function renderInstrumentsPage(usage: InstrumentUsage): string {
     <h2>Free instruments</h2>
     <p><small>What agents use this store for without paying: the preflight, the look, the conformance desk, the verify
     endpoint, the corpus reads, and the free MCP tools — off <a href="/observatory">the observatory</a>'s own counts,
-    sorted into free and paid so the ratio is a line. Counts are porch floors with the porch's caveats; tools called
-    with arguments are the part of the traffic crawlers cannot fake. Computed ${escapeHtml(usage.computed_at)}.</small></p>
+    sorted into free and paid so the ratio is a line. Counts are porch floors with the porch's caveats; calls
+    with arguments can also be automated. An invocation does not establish buyer intent or conversion. Computed ${escapeHtml(usage.computed_at)}.</small></p>
     <p><small><strong>Read the gaps as gaps.</strong> The porch began counting surfaces on ${escapeHtml(usage.porch_counting_since)};
     the interactive doors (preflight, look, before-you-pay, verify-receipt, bot-auth check, the desk page) got their lines
     on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}, the documentation door's on ${escapeHtml(usage.docs_logged_since)}.

@@ -1,5 +1,14 @@
 # DISTRIBUTION.md — the agent-native channels, and exactly how to enter each
 
+**Version rule, refreshed 2026-09-06:** older numbered versions and
+package counts below belong to their dated readings. At a publish,
+read each version from that package's `package.json`, the actual
+package set from `.github/workflows/publish-npm.yml`, and ClawHub's
+receipt from `registry/clawhub/published.json`; compare the resulting
+registry artifact before recording completion. KEEPER_LIST is the
+current press queue. A build or old receipt does not establish today's
+registry state.
+
 Written 2026-08-21, the night the strategy was ruled: agents don't
 browse, they inherit. An agent reaches this store through four doors —
 its config (MCP connectors, skills), its model's memory (AEO, shipped),

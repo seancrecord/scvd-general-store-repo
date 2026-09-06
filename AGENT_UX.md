@@ -11,13 +11,16 @@ of those is a real cost paid by a real caller.
 
 ## Why this file exists
 
-Every instrument this store has measures agents who ALREADY COMMITTED.
-The census counts who walked, the decline desk counts who tried and
-failed to pay, `/pulse` counts who was offered a price, the recount
-reconciles what settled. All of them start at or after the moment
-somebody decided we were worth engaging.
+The original motivation was the gap before commitment: the decline
+desk, `/pulse` and settlement recount could not show where a cold
+reader hesitated or misunderstood a door.
 
-Nothing measured the thirty seconds before that decision.
+**Updated 2026-09-06:** `/observatory` and `/admin/instruments` now count
+free reads, argument-bearing instrument calls and bounded handoff
+proxies. They measure activity before payment; they do not recover a
+reader's reasoning, prove buyer intent or attribute a sale causally.
+The cold passes still supply the transcripts those counters cannot.
+The dated readings below retain their original scope and dates.
 
 That is the same shape as the Bazaar attribution gap found on
 2026-08-02 — a question our instruments structurally cannot answer —

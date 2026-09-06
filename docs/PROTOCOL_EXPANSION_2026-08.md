@@ -1,5 +1,14 @@
 # PROTOCOL_EXPANSION_2026-08.md — hands in every pot
 
+> **Operational correction, 2026-09-06.** This is the dated August
+> protocol reading, not a current build or submission queue. ROADMAP
+> records the A2A evidence agent and MPP readers as built; held payment
+> rails remain held. KEEPER_LIST records Circle submitted 09-01 and
+> listed 09-04, and Bazaar missing/stale doors on 09-02. Those records
+> supersede the earlier §7.8 statuses and §9 submission shortlist.
+> They are dated observations, not a fresh check of either directory.
+> Current code/publication state is mapped in THE_MAP_2026-09.md.
+
 **A read of the whole agentic-payment surface on 2026-08-30, sized against
 this store's own intake rule, product by product.**
 
@@ -251,8 +260,11 @@ settlement, amortising gas to nothing. Floor $0.000001. Mainnet since
    than requiring a settled payment first.
 4. Circle's x402 issue #447 tells sellers, in Circle's own voice, *"do not
    trust `/verify`; only begin processing once `/settle` has completed."*
-   **We already do exactly that** (rule 9 as amended: deliver first, settle
-   at the last moment before signing; nothing mints on `/verify`).
+   **Correction 2026-09-06:** that is not the same processing order as
+   ours. Rule 9 completes fallible goods generation before settlement,
+   then signs; nothing mints on `/verify`. A prospective rail must be
+   reconciled with that rule in its run-through. This note does not
+   authorize changing the payment order or enabling Gateway.
 
 *The cost, stated plainly:* Gateway is a **trusted third party with a TEE**
 holding an off-chain balance we must later withdraw. That is a receivable
@@ -538,8 +550,8 @@ run wastes a week:
 
 | Surface | How you get in | Our state |
 |---|---|---|
-| **CDP Bazaar** | **Earned**: one settled payment per endpoint, `paymentPayload.resource` set. No form, no override | In, whole shelf (the 08-04 registration run) |
-| **Circle Agent Marketplace** | **Submitted + reviewed**: live 402 door, published OpenAPI, payout address sanctions-screened | **Not submitted. We already meet every stated prerequisite.** Keeper's hand |
+| **CDP Bazaar** | **Earned**: one settled payment per endpoint, `paymentPayload.resource` set. No form, no override | 08-04 registration run was recorded as whole-shelf. Superseded for current planning by the 09-02 missing/stale-door reading in KEEPER_LIST; recheck the affected listing before a press |
+| **Circle Agent Marketplace** | **Submitted + reviewed**: live 402 door, published OpenAPI, payout address sanctions-screened | Submitted 09-01; listed 09-04, per KEEPER_LIST. Listing is not Gateway payment support or evidence of buyer use |
 | **`mpp.dev/services`** | **Curated list** of live MPP services | Not eligible without D2 |
 | **Agent Almanac** | Cross-protocol public reference (x402, MPP, ACP, UCP, AP2, A2A, MCP) | Not listed; the most on-thesis directory in the file |
 | **`.well-known/x402.json`** | **Self-hosted.** x402#2582 proposes origin-hosted discovery explicitly because facilitator discovery is payment-gated and client-echoed — *and cites MPP's merchant manifests as the precedent* | **We already serve it.** We are early on a proposal others are drafting |

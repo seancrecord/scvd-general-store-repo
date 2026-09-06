@@ -228,8 +228,13 @@ without us." This file makes the same instrument point inward on a
 schedule, and the output is a dated artifact about our own reachability
 that almost nobody else in this market can produce.
 
+**Path correction, 2026-09-06:** `/doors` already serves the external
+census (`src/routes/doors.ts`). That is not the self-reading proposed
+here and does not resolve its keeper decision.
+
 ⚑ **For the keeper, and deliberately not built:** whether this
-reading becomes a public room at `/doors`. The argument for is that it
+self-reading becomes a public room, at a path that does not collide
+with the existing external census. The argument for is that it
 is the most on-brand thing imaginable — the observatory publishing its
 own misses, counted against itself, at the moment every operator is
 being asked whether they are agent-ready. The argument against is rule

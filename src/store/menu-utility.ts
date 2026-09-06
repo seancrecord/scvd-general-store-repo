@@ -131,14 +131,14 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     reads: "subject_fetch",
     fulfillment: "instant",
     description:
-      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the current v2 verdict this series now cites (the same battery the weekly census applies), the same probe scored under the frozen v1 battery beside it (the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
+      "Name an x402 endpoint (the url query parameter) and the store probes it, runs the published preflight battery with additional rail and cross-surface reads, and signs the whole readout: the current v2 verdict this series now cites (the same battery the weekly census applies), the same probe scored under the frozen v1 battery beside it (the two can disagree, and the report says when they do), every check, every advisory, dated. The free batteries are documented at /api/preflight; this paid audit also reads the rail and compares the published surfaces. What this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One bounded audit, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
     /* #31: the free specimen, so nobody buys a document sight unseen. */
     sample_url: "/samples/once-over.json",
     note_402:
       "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
     constraints: [
       "Give the endpoint in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
-      "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
+      "A bounded endpoint probe with rail and cross-surface reads, signed; never a monitor — the week-long look is The Night Watch",
       "The cited criteria are the v2 battery (GET /api/preflight/v2), the same battery the weekly census applies; also_under carries the frozen v1 score so a reader can see the overlap. Reports signed before 2026-09-01 cite v1 and keep that citation forever",
       "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
       "The report URL is free to read forever",
@@ -206,8 +206,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "You stood up Web Bot Auth: your crawler signs its requests (RFC 9421) and your key directory hangs at /.well-known/http-message-signatures-directory. This is somebody who is not you saying it actually works. Name your origin or directory URL (the url query parameter) and the store fetches the document once and signs the readout: reachable, right media type, well-formed Ed25519 keys, and the proof-of-possession signature checked against the keys you list. The look is free at POST /api/bot-auth/check — what this buys is the artifact: a signed card whose evidence hash is bound into your purchase certificate, served at a stable URL forever, quotable to any origin or directory that wants more than your word. One fetch, one moment. Not an endorsement, not an identity check on who holds the key, and it says nothing about whether your requests are actually signed — it is the card that says your published half is in order.",
-    note_402:
-      "Two dollars. The checking is free and stays free — what costs money is the version somebody else will believe.",
+    get note_402(): string {
+      return `$${this.price_usdc}. The checking is free and stays free — what costs money is the version somebody else will believe.`;
+    },
     constraints: [
       "Give your origin or directory URL in the url query parameter: https, default port, on the public internet",
       "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given",
@@ -384,8 +385,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "Name a wallet (the wallet query parameter — yours, your agent's, a counterparty's; all the same to the chain) an optional window in hours, and optionally which rail (network=eip155:137 for Polygon, network=ethereum, arbitrum, optimism or avalanche for those chains, network=solana for Solana; Base is the default), and the store reads every USDC transfer in and out of it over that window, straight off the chain: counts, totals, and the transfers themselves, each with its transaction hash, counterparty, amount, and block. The whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. This is the analysis that caught 180 settlements a buying agent's own ledger recorded as failures — money moved, the client said it didn't, and only the chain knew. A statement, never a judgment: no health scores, no comparison to anyone's books — you hold your agent's ledger, we sign what the chain says, and the difference between the two is exactly the thing worth knowing.",
-    note_402:
-      "Two dollars. Your agent says what it spent; the chain says what moved. This is the chain's side, signed.",
+    get note_402(): string {
+      return `$${this.price_usdc}. Your agent says what it spent; the chain says what moved. This is the chain's side, signed.`;
+    },
     constraints: [
       "Give the wallet in the wallet query parameter: a 0x EVM address on any of the six EVM chains, a base58 pubkey on Solana. USDC on Base by default, Polygon with network=eip155:137, Ethereum, Arbitrum, Optimism or Avalanche with network=<that name or its CAIP-2>, Solana with network=solana — one chain per statement, named on the artifact with the unit its window counts in (blocks, or slots on Solana); other assets and chains are outside it and it says so on itself",
       "The window is hours back from the chain head: default 6, maximum 11 — the block range (slot range on Solana) on the artifact is the entire coverage claim",
