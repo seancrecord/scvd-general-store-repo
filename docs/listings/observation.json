@@ -1,0 +1,267 @@
+{
+  "base": "https://scvd.store",
+  "read_at": "2026-09-06T18:25:02.080Z",
+  "sixty_words_probe": "before an agent pays an x402 endpoint, we check that it can be paid.",
+  "mirrors": [
+    {
+      "url": "https://github.com/seancrecord/scvd-general-store-repo",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://mcppedia.org/s/store-scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://www.getmcp.es/servers/general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://lightnow.ai/servers/store.scvd/general-store/versions",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://mcplookup.com/server/store.scvd/general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://socketcat.com/servers/store.scvd/general-store",
+      "status": 200,
+      "generation": "august"
+    },
+    {
+      "url": "https://tracevero.com/mcp/store-scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://signal402.com/services/scvd-store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+      "status": 200,
+      "generation": "july"
+    },
+    {
+      "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://agentic.market/services/scvd-store",
+      "status": 200,
+      "generation": "july"
+    },
+    {
+      "url": "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://glama.ai/mcp/connectors/store.scvd/general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://mcpindex.ai/server/store-scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+      "status": 200,
+      "generation": "july"
+    },
+    {
+      "url": "https://x402.fuchss.app/provider/scvd.store",
+      "status": 200,
+      "generation": "july"
+    },
+    {
+      "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+      "status": 200,
+      "generation": "august"
+    },
+    {
+      "url": "https://skills.sh/seancrecord/scvd-general-store-repo",
+      "status": 404,
+      "generation": "unreachable"
+    },
+    {
+      "url": "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://partners.circle.com/partner/scvdstore",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+      "status": 200,
+      "generation": "july"
+    },
+    {
+      "url": "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+      "status": 403,
+      "generation": "unreachable"
+    },
+    {
+      "url": "https://mcpbeat.com/mcp-servers/scvd/tab/",
+      "status": 403,
+      "generation": "unreachable"
+    },
+    {
+      "url": "https://catalog.agentage.io/mcp/store-scvd-general-store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://catalog.agentage.io/mcp/store-scvd-tab",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://mcpservers.org/servers/scvd-store-llms-txt",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://mcp-marketplace.io/server/store-scvd-general-store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+      "status": 429,
+      "generation": "unreachable"
+    },
+    {
+      "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+      "status": 200,
+      "generation": "august"
+    },
+    {
+      "url": "https://cursor.directory/plugins/scvd-general-store-repo",
+      "status": 429,
+      "generation": "unreachable"
+    },
+    {
+      "url": "https://smithery.ai/servers/seancrecord/scvd-general-store",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://mcp.so/servers/scvd-store",
+      "status": 200,
+      "generation": "current"
+    },
+    {
+      "url": "https://x.com/keeper_scvd",
+      "status": 200,
+      "generation": "september"
+    },
+    {
+      "url": "https://www.linkedin.com/showcase/scvd-general-store/",
+      "status": 200,
+      "generation": "unknown"
+    },
+    {
+      "url": "https://www.crunchbase.com/organization/scvd-general-store",
+      "status": 403,
+      "generation": "unreachable"
+    }
+  ]
+}
