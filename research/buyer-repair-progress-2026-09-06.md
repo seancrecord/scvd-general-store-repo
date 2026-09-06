@@ -22,6 +22,8 @@ Regression evidence:
 - Added hostile controls preserve separate buyers' receipts under the same key and ignore forged adjacent payer metadata; unrelated transaction signatures cannot retrieve a cached good. Parallel cached requests exercise request-local identity isolation.
 - Typecheck and both Worker dry-run builds passed. The full suite remains assigned to GitHub, as requested.
 
+The pre-existing HTTP discovery source guard also needed to follow `paymentIdentityUnavailableBody()` into its shared helper. Its invented-code check failed before that correction; the corrected listing guard and the complete Solana replay matrix passed all 445 tests, plus typecheck. No production behavior changed in that follow-up.
+
 The existing 24-hour cache and verification prerequisite remain. This repair does not close expired/spent verification, stock checks preceding replay, simultaneous first-purchase races, cache persistence loss, or the three remaining SEV-1 recovery findings.
 
 ## BUY-018 — fixed locally

@@ -16,7 +16,7 @@ import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
 // a literal in its own module.
 import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 import PAYMENT_GATE_SOURCE from "../src/lib/payment-gate.ts?raw";
-import { INVALID_SETTLEMENT_RECEIPT_CODE } from "@/lib/payments";
+import { INVALID_SETTLEMENT_RECEIPT_CODE, paymentIdentityUnavailableBody } from "@/lib/payments";
 
 const BASE = "https://scvd.store";
 
@@ -83,6 +83,8 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
+    ...(/paymentIdentityUnavailableBody\(/.test(PAYMENT_GATE_SOURCE)
+      ? [paymentIdentityUnavailableBody().code] : []),
     ...(PAYMENT_GATE_SOURCE.includes("error instanceof InvalidSettlementReceipt")
       ? [INVALID_SETTLEMENT_RECEIPT_CODE] : []),
     ...[...`${BUY_SOURCE}\n${DOOR_CHECKS_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
