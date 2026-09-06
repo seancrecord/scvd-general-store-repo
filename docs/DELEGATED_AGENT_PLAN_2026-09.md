@@ -37,7 +37,7 @@ never a chat agent that duplicates the site.
 
 | Part | What stands | What is missing | Filed as |
 | --- | --- | --- | --- |
-| 3. Discovery set | `/.well-known/x402.json`, `/.well-known/api-catalog`, `/.well-known/agent-instructions`, `/.well-known/a2a.json`, `/agents.md`, `/llms.txt`, `/openapi.json`, `/mcp`, `/skill.md`, `/corpus`; the mirrors and versions watched weekly (V4). | `/.well-known/agent-card.json` (A2) and `/.well-known/ai-catalog.json` naming every record from one document; an AWS Agent Registry entry once the card exists (his press). | C3 |
+| 3. Discovery set | `/.well-known/x402.json`, `/.well-known/api-catalog`, `/.well-known/agent-instructions`, `/.well-known/a2a.json`, `/agents.md`, `/llms.txt`, `/openapi.json`, `/mcp`, `/skill.md`, `/corpus`; the mirrors and versions watched weekly (V4). | `/.well-known/agent-card.json` (A2) and `/.well-known/ai-catalog.json` naming every record from one document; the AWS Agent Registry entry that stood here was withdrawn 2026-09-06 — it is a private per-account catalog, not a directory anyone lists in (decision 4 below). | C3 |
 | 4. Make yourself a dependency | `x402-verify`, `x402-sign`, `scvd-cli`, `scvd-tab`, the preflight Action, the ClawHub skill. | `x402-preflight` as a package (the Action's `preflight.mjs` is already dependency-free; the package is the same file with a README and fixtures); `scvd-corpus-client` as the CLI's library half; `scvd-defects` (the vocabulary and its fixtures as a package); an MCP starter template. Each with a tiny README, one copy-paste example, fixtures, a licence, a versioning line. | C5 |
 | 5. The failure-path default | Every defect class has a definition page with scope and detection rule; fixtures live in the tree; free inspection doors exist. | Per defect family, the four artifacts together: the definition page gains a remediation and links to a code example (TypeScript, Python), a fixture served at a public URL, and the tool route. The remediation line is C1; the served fixtures are C7; the code examples ride C2. | C1, C2, C7 |
 | 6. Runtime handoffs | Rule 57 errors on every probe door; the CLI's exit law; the Action prints every check by name. | Error bodies that carry `documentation_url` (the defect page), `verification_url` and `next_action` on the doors, the CLI and the Action — only where SCVD is a legitimate remedy, never on unrelated errors. Rides C1. | C1 |
@@ -63,8 +63,13 @@ never a chat agent that duplicates the site.
    `message/send`, or the plain POST the memo sketches. Recommendation:
    the spec's shape at `/a2a`, with the memo's artifact as the task's
    result, so a framework's A2A client works without a custom adapter.
-4. **AWS Agent Registry.** Worth an entry once the card exists; the
-   listing is his press.
+4. **AWS Agent Registry. WITHDRAWN 2026-09-06 — there is nothing to
+   submit, and the recommendation was written on a wrong assumption
+   about what the product is.** AWS Agent Registry is a PRIVATE catalog a customer creates in their own AWS account — records published by its owner, shared across accounts with AWS RAM, browsed by that organisation. There is no public AWS-hosted directory a third party lists in, and cross-organisational discovery is announced future work rather than shipped. So there is no entry for this store to make: the AWS-aligned discovery move is ARD, the open specification AWS itself published, and /.well-known/ard.json has served it since 2026-09-04. What would put this store in somebody's registry is a customer publishing our record into theirs, which is a sales outcome and belongs under the named-counterparty trigger.
+   Read under rule 61, filed in `docs/SPEC_READS.md`. The AWS
+   documentation is egress-blocked from the build sandbox, so the
+   reading is secondhand (rule 55); the spec watch's `aws-ard` row
+   carries it forward.
 
 ## Order, and what is queued
 
