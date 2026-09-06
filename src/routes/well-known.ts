@@ -1,4 +1,6 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
+import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
 import { evidenceAgentCard } from "@/services/a2a-evidence";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { organizationRef } from "@/lib/jsonld";
@@ -792,6 +794,57 @@ function mcpManifest(base: string) {
      * same thing in the third place a reader might look.
      */
     prompts: [],
+    /**
+     * THE SIBLING DOORS, NAMED WHERE A HOST LOOKS (2026-09-06).
+     *
+     * This origin runs three MCP servers, and until now this manifest
+     * described one. The verifier (2026-09-03) and the documentation
+     * door (2026-09-05) were on the atlas, in llms.txt, in the API
+     * catalog and on /mcp.md — every surface except the one a client
+     * reads to find an MCP server at all. A door reachable only by
+     * somebody who already read the prose is the orphan-capability
+     * failure the store's own guard exists to catch, and that guard
+     * walks the discovery surfaces rather than this card.
+     *
+     * `endpoint` above is unchanged and still the full store: a
+     * client that reads one field and stops is served exactly as
+     * before. This is the second field, for the client that can
+     * choose — and choosing is the point, since the whole reason the
+     * verifier exists is that some clients must never see a shelf.
+     *
+     * Derived from each door's own catalogue, so a tool added or
+     * retired moves this count on the same deploy.
+     */
+    servers: [
+      {
+        name: "scvd-general-store",
+        endpoint: `${base}/mcp`,
+        transport: "streamable-http",
+        role: "the store",
+        tools: mcpToolCatalog(base).length,
+        sells: true,
+        what: "Every instrument, free and paid: the evidence tools, the readable shelves, and the x402 buy_* tools that settle in-band.",
+      },
+      {
+        name: VERIFIER_SERVER_NAME,
+        endpoint: `${base}/mcp/verifier`,
+        transport: "streamable-http",
+        role: "read-only tools, no shelf",
+        tools: VERIFIER_TOOLS.length,
+        sells: false,
+        what: "The same handlers under task-shaped names, with nothing paid on the door. For a client that must never see a tool that can spend.",
+      },
+      {
+        name: DOCS_SERVER_NAME,
+        endpoint: `${base}/mcp/docs`,
+        transport: "streamable-http",
+        role: "documentation only",
+        tools: docsToolCatalog().length,
+        sells: false,
+        what: `The reference material as an MCP server: the resources this card already lists, plus ${DOCS_TOOL_NAME}, which returns any of them by name for a host that hides resources. Also answers POST on ${base}/mcp.md, whose GET is the page about which door to use.`,
+      },
+    ],
+    which_door: `${base}/mcp.md`,
     documentation: `${base}/developers`,
     openapi: `${base}/openapi.json`,
   };
