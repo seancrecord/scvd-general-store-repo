@@ -1365,6 +1365,11 @@ const FREE_TOOLS: McpTool[] = [
  */
 function frontCounterTool(base: string): McpTool {
   const items = frontCounterItems();
+  // Optional receipt fields come from the same item schemas as every
+  // other shelf; a literal client must not have to guess a forbidden field.
+  const inputSchema = clusterInputSchema(items);
+  const properties = inputSchema["properties"] as Record<string, Schema>;
+  properties["item_id"]!["description"] = "Which item to buy. No other field is required.";
   const lines = items
     .map(
       (item) =>
@@ -1382,26 +1387,8 @@ function frontCounterTool(base: string): McpTool {
      * possible. The reciprocal sentence rides on each overlapping
      * shelf, derived from the same eligibility predicate.
      */
-    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE} Every item here also sells on its theme shelf (another buy_* tool); this counter is a second door to the same goods, not a different product — same item_id, same price, same signed certificate through either. If unsure which tool to use, use this one.\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. On cadence, for all of the above: ${NEVER_AUTO_RENEWS}. ${RETRY_SAFETY_MCP_LINE}`,
-    inputSchema: {
-      type: "object",
-      properties: {
-        item_id: {
-          type: "string",
-          enum: items.map((item) => item.id),
-          description:
-            "Which one to buy. That is the only decision here; none of these take any other input.",
-        },
-        agent_name: {
-          type: "string",
-          description:
-            "Optional name to put on the certificate and patron badge, up to 80 characters.",
-        },
-      },
-      required: ["item_id"],
-      additionalProperties: false,
-      examples: items.slice(0, 2).map((item) => ({ item_id: item.id })),
-    },
+    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE} Every item here also sells on its theme shelf (another buy_* tool); this counter is a second door to the same goods, not a different product — same item_id, same price, same signed certificate through either. If unsure which tool to use, use this one.\n\nPass one of these as item_id. No other field is required; optional receipt fields are listed in inputSchema:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. On cadence, for all of the above: ${NEVER_AUTO_RENEWS}. ${RETRY_SAFETY_MCP_LINE}`,
+    inputSchema,
     /*
      * THE ONE TOOL THAT WAS TELLING A MODEL NOTHING ABOUT ITS RETURN
      * (found 2026-08-27 in the tool-surface audit). Every cluster

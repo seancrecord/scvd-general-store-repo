@@ -176,7 +176,9 @@ Repair: reject the over-limit value before payment; do not silently truncate a f
 
 ### BUY-010 — P2: the first MCP purchase shelf forbids a supported field
 
-**Open · input-survival audit.** `buy_simple` omits `purpose` and declares `additionalProperties:false`, while the item schema and theme shelves advertise it and the runtime signs it. Eighteen canary observations across Hello, Small Blessing, Daily Fortune and three rails identify the mismatch. A literal schema-driven agent cannot send the supported field through the recommended first tool.
+**Repaired in the shared front-counter schema commit.** `buy_simple` derives its optional fields from the same product schema builder as the theme shelves. Its description no longer denies supported optional fields; only item_id is required, without conditionals. Four served-schema and cross-rail buyer regressions failed before the change and pass afterward, including exact signed-purpose survival and matching prices through both shelves. The combined input-contract gate passed 112 tests across six files, typecheck and both dry-run bundles.
+
+**Original input-survival audit.** `buy_simple` omits `purpose` and declares `additionalProperties:false`, while the item schema and theme shelves advertise it and the runtime signs it. Eighteen canary observations across Hello, Small Blessing, Daily Fortune and three rails identify the mismatch. A literal schema-driven agent cannot send the supported field through the recommended first tool.
 
 Repair: derive the tool's accepted optional properties from its eligible items and update the claim that these items take no other inputs. `src/lib/mcp-tools.ts:frontCounterTool`.
 
