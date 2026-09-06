@@ -213,3 +213,7 @@ All menu items were exercised over Base, Polygon and Solana through both MCP pay
 The shared refusal body now records `payment_declined.reason`, `code:payment_declined`, `charged:false` and `payment_state:not_settled`. MCP returns it as `isError:true` on both profiles. Discovery can describe a tool-result failure without inventing a JSON-RPC error code. Uncertainty remains a distinct error path; no new payment is requested to resolve an ambiguous settlement.
 
 The first related gate passed 278 of 279 checks; the source guard required updating to recognize inherited/shared payment errors. The final protocol recheck passed all 35 tests across three files, typecheck, and both dry-run builds. The full suite stays on GitHub; no real funds moved.
+
+## PR #549 — CI contract assertions corrected
+
+GitHub completed 5,548 passing tests and 34 failures across two older contract specs. The HTTP source guard did not recognize the inherited unknown-settlement class or the shared refusal helper, and every listing assertion still required `charged:false` for `settlement_unknown`. The standard MCP entrypoint test still expected fresh payment terms after a confirmed settlement refusal. Updated those assertions to the implemented contract without changing production behavior: unknown remains null, confirmed refusal remains false, and no replacement challenge is offered. The affected specs plus both new runtime matrices pass all 370 tests; typecheck passes. GitHub runs the full suite again after this commit.

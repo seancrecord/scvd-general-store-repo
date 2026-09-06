@@ -106,8 +106,12 @@ describe("a standard x402 MCP reader can see the quote without interpreting pros
         "x402/payment": buildPaymentSignature(accepted),
       } })).body.result);
       expect(result.isError).toBe(true);
-      expect(obj(result.structuredContent).x402Version).toBe(2);
-      expect(Array.isArray(obj(result.structuredContent).accepts)).toBe(true);
+      expect(obj(result.structuredContent)).toMatchObject({
+        code: "payment_declined", charged: false, payment_state: "not_settled",
+      });
+      expect(obj(obj(result.structuredContent).payment_declined).reason).toBeTruthy();
+      expect(obj(result.structuredContent).accepts).toBeUndefined();
+      expect(obj(result._meta)["x402/payment-required"]).toBeUndefined();
       expect(JSON.parse(String(obj((result.content as unknown[])[0]).text))).toEqual(result.structuredContent);
       expect(obj(result.structuredContent).cert_id).toBeUndefined();
       expect(obj(result._meta)["x402/payment-response"]).toBeUndefined();

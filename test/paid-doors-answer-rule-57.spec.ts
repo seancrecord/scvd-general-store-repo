@@ -16,7 +16,7 @@ import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
 // a literal in its own module.
 import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 import PAYMENT_GATE_SOURCE from "../src/lib/payment-gate.ts?raw";
-import { INVALID_SETTLEMENT_RECEIPT_CODE } from "@/lib/payments";
+import { INVALID_SETTLEMENT_RECEIPT_CODE, SettlementUnknown, settlementDeclinedBody } from "@/lib/payments";
 
 const BASE = "https://scvd.store";
 
@@ -83,8 +83,12 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
-    ...(PAYMENT_GATE_SOURCE.includes("error instanceof InvalidSettlementReceipt")
+    ...(/error instanceof (?:InvalidSettlementReceipt|SettlementUnknown)/.test(PAYMENT_GATE_SOURCE)
       ? [INVALID_SETTLEMENT_RECEIPT_CODE] : []),
+    ...(PAYMENT_GATE_SOURCE.includes("error instanceof SettlementUnknown")
+      ? [String(new SettlementUnknown("fixture:rail").body().code)] : []),
+    ...(/settlementDeclinedBody\(/.test(PAYMENT_GATE_SOURCE)
+      ? [String(settlementDeclinedBody({}, "fixture").code)] : []),
     ...[...`${BUY_SOURCE}\n${DOOR_CHECKS_SOURCE}\n${DELIVERY_FAILED_SOURCE}`.matchAll(/code: "([a-z_]+)"/g)].map((match) => match[1]!),
     // The shared law's refuse(status, code, sentence) builder.
     ...[...PURCHASE_ARGS_SOURCE.matchAll(/\brefuse\(\s*\d{3},\s*"([a-z_]+)"/g)].map(
@@ -190,14 +194,14 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
         `${id} does not publish ${shelfGate}, which the shelf gate can send before the parameter check ever runs`,
       ).toContain(shelfGate);
     }
-    // Confirmed delivery failure is charged; an invalid processor receipt
-    // leaves payment unknown. Only pre-payment refusals promise no charge.
+    // Confirmed delivery failure is charged. Invalid receipts and lost
+    // settlement acknowledgements remain unknown, never a safe refusal.
     for (const error of errors) {
       expect(
         error.charged,
         `${error.code} on ${id} does not say whether it charged`,
       ).toBe(error.code === "delivery_failed" ? true
-        : error.code === INVALID_SETTLEMENT_RECEIPT_CODE ? null : false);
+        : [INVALID_SETTLEMENT_RECEIPT_CODE, new SettlementUnknown("fixture:rail").body().code].includes(error.code) ? null : false);
     }
   });
 
