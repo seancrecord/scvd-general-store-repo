@@ -1,3 +1,7 @@
+import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
+import { decodeBase64Json } from "@/lib/base64-json";
+import { priceLine } from "@/services/menu-markdown";
+import { CAPABILITY_QUERY } from "@/store/spec";
 import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
 import { ASKED_FOR_SENTENCE } from "@/store/copy/asked-for";
 import {
@@ -9,7 +13,7 @@ import {
 } from "@/lib/mcp-apps";
 import { Hono } from "hono";
 import type { Context } from "hono";
-import { runMcpPayment } from "@/lib/mcp-payment";
+import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementDeclined } from "@/lib/payments";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
@@ -20,7 +24,7 @@ import {
   POSITION_NOT,
   POSITION_OPENING,
 } from "@/store/copy/position";
-import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
+import { mcpToolCatalog, purchaseTool, specShapedTool, type McpTool } from "@/lib/mcp-tools";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { EventSignals } from "@/lib/metrics";
 import {
@@ -29,7 +33,7 @@ import {
   recordPorchVisit,
   recordVerifyCall,
 } from "@/lib/metrics";
-import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { factBlockText } from "@/lib/listing-spec";
 /**
  * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the HTTP
@@ -204,8 +208,9 @@ function rpcRefusal(
   jsonrpc: number,
   code: string,
   message: string,
+  details: Record<string, unknown> = {},
 ): Response {
-  return rpcError(id, jsonrpc, message, { code, charged: false });
+  return rpcError(id, jsonrpc, message, { ...details, code, charged: false });
 }
 
 function rpcError(
@@ -432,7 +437,7 @@ const CACHEABLE_METHODS = new Set([
 async function modernize(
   response: Response,
   method: string,
-  base: string,
+  identity: Record<string, unknown>,
 ): Promise<Response> {
   if (
     response.status === 202 ||
@@ -451,7 +456,7 @@ async function modernize(
       ...(CACHEABLE_METHODS.has(method)
         ? { ttlMs: LIST_TTL_MS, cacheScope: "public" }
         : {}),
-      _meta: { ...meta, [META_SERVER_INFO]: serverInfo(base) },
+      _meta: { ...meta, [META_SERVER_INFO]: identity },
     };
   } else if (isRecord(body["error"])) {
     const error = body["error"];
@@ -797,13 +802,7 @@ async function callPurchaseTool(
     // was refused, and the funnel must see it. Only the 400s book,
     // exactly as there.
     if (refusal.status === 400 && paying) {
-      const required = buyInputSchema(item).required ?? [];
-      const reason =
-        missing.length > 0
-          ? `local:input_missing:${missing[0]}`
-          : required.length > 0
-            ? `local:input_invalid:${required[0]}`
-            : "local:refused_before_gate";
+      const reason = purchaseInputDeclineReason(item, args, refusal.body);
       await recordPaymentDecline(
         c.env,
         `/api/buy/${item.id}`,
@@ -816,6 +815,7 @@ async function callPurchaseTool(
       refusalRpcCode(refusal),
       refusalCode(refusal),
       refusalMessage(refusal),
+      { ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", refusal.body) : {}) },
     );
   }
   /**
@@ -903,7 +903,7 @@ async function callPurchaseTool(
     paymentMeta,
     // The ask row says which required inputs were absent, so a 402 to
     // a caller that could not have bought reads as a locked door.
-    { ...mcpSignals(c), ...(missing.length > 0 ? { missingRequired: missing } : {}) },
+    { ...mcpSignals(c), missingRequired: missing },
     replayCheck,
     // What the buyer asked for, for the delivery intent: same purpose
     // as the HTTP gate recording its query string, so a mint that dies
@@ -917,11 +917,17 @@ async function callPurchaseTool(
    * the original purchase without settling anything.
    */
   if (outcome.kind === "replay") {
-    return rpcResult(id, toolText(outcome.body));
+    return rpcResult(id, purchaseResult(outcome.body));
   }
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
     const base = c.env.STORE_BASE_URL;
+    if (standardPayment(c)) {
+      const challenge = isRecord(outcome.challenge)
+        ? outcome.challenge
+        : { ...await readMcpPaymentChallenge(c.env, item.id), error: "Invalid payment" };
+      return rpcResult(id, standardPaymentResult(c, item, challenge, idempotencyKey));
+    }
     return rpcError(
       id,
       402,
@@ -995,6 +1001,10 @@ async function callPurchaseTool(
     response = await fulfillPurchase(c.env, item, outcome.pending, input);
   } catch (error) {
     if (error instanceof SettlementDeclined) {
+      if (standardPayment(c)) {
+        const challenge = { ...await readMcpPaymentChallenge(c.env, item.id), error: "Settlement failed" };
+        return rpcResult(id, standardPaymentResult(c, item, challenge, idempotencyKey));
+      }
       const body: unknown = await error.response
         .clone()
         .json()
@@ -1045,6 +1055,19 @@ async function callPurchaseTool(
     await recordDeliveredSettlement(c.env, settled.transaction);
   }
   const flat = flattenPurchase(response);
+  // Preserve the actual protocol receipt across an idempotent retry. Never
+  // reconstruct it from the current challenge or a guessed default rail.
+  const encodedReceipt = settled && Object.entries(settled.settleHeaders)
+    .find(([name]) => name.toLowerCase() === "payment-response")?.[1];
+  if (encodedReceipt) {
+    try {
+      const receipt = decodeBase64Json(encodedReceipt);
+      if (isRecord(receipt)) flat[CACHED_PAYMENT_RESPONSE] = receipt;
+    } catch {
+      // The goods have already settled: missing receipt metadata must not
+      // turn a delivered purchase into another payment attempt.
+    }
+  }
   /**
    * Stored under the VERIFIED payer the pipeline carried out, not the
    * address the caller claimed. The two are the same for an honest
@@ -1062,22 +1085,102 @@ async function callPurchaseTool(
       settled?.transaction,
     );
   }
-  return rpcResult(id, toolText(flat));
+  return rpcResult(id, purchaseResult(flat));
 }
 
+
+/** A fixed query selects a payment dialect; protocol age alone cannot identify it. */
+function standardPayment(c: Context<HonoEnv>): boolean {
+  return c.req.query("payment") === MCP_TOOL_RESULT_PAYMENT;
+}
+
+function requestTools(c: Context<HonoEnv>): McpTool[] {
+  const selected = c.req.query("item_id");
+  if (selected !== undefined) {
+    const item = getMenuItem(selected);
+    if (!item) return [];
+    const tool = purchaseTool(item, c.env.STORE_BASE_URL);
+    if (c.req.query("view") === "compact") {
+      tool.description = `${CAPABILITY_QUERY[item.id] ?? item.name}. ${priceLine(item)}. ${item.fulfillment === "instant" ? "Goods in the response." : "Returns an order for human fulfillment."} Required fields are in inputSchema. The unpaid call returns payment terms; payment is supplied by the host in _meta['x402/payment']. Full contract: ${c.env.STORE_BASE_URL}/menu/${item.id}.`;
+    }
+    tool.description = tool.description.replace("poll it with check_order on this door, free", "GET its order_url to poll, free");
+    return [paymentProfileTool(c, tool)];
+  }
+  return mcpToolCatalog(c.env.STORE_BASE_URL).map(tool => paymentProfileTool(c, tool));
+}
+
+function paymentProfileTool(c: Context<HonoEnv>, tool: McpTool): McpTool {
+  if (!standardPayment(c)) return tool;
+  return { ...tool, description: tool.description
+    .replaceAll("error 402 with the payment requirements in error.data", "isError:true with the payment requirements in result.structuredContent")
+    .replaceAll("error 402 with the terms in error.data", "isError:true with the payment requirements in result.structuredContent")
+    .replaceAll("idempotency.suggested_key from the 402", "result._meta['x402/idempotency-key'] from the quote") };
+}
+
+function standardPaymentResult(
+  c: Context<HonoEnv>,
+  item: MenuItem,
+  challenge: Record<string, unknown>,
+  retryKey?: string | null,
+): Record<string, unknown> {
+  return {
+    isError: true,
+    structuredContent: challenge,
+    content: [{ type: "text", text: JSON.stringify(challenge) }],
+    _meta: {
+      "x402/idempotency-key": retryKey ?? suggestedIdempotencyKey(item.id),
+      "scvd/required-params": buyInputSchema(item).required ?? [],
+      "scvd/input-contract": `${c.env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
+    },
+  };
+}
+
+const CACHED_PAYMENT_RESPONSE = "scvd_cached_payment_response";
+function purchaseResult(body: Record<string, unknown>): Record<string, unknown> {
+  const { [CACHED_PAYMENT_RESPONSE]: receipt, ...goods } = body;
+  return {
+    ...toolText(goods) as Record<string, unknown>,
+    ...(isRecord(receipt) ? { _meta: { "x402/payment-response": receipt } } : {}),
+  };
+}
 
 async function handleRpc(
   c: Context<HonoEnv>,
   request: JsonRpcRequest,
 ): Promise<Response> {
+  if (c.req.query("payment") !== undefined && !standardPayment(c)) {
+    return rpcRefusal(request.id ?? null, -32602, "bad_request", "Unknown payment profile. Use payment=tool-result or omit payment for the legacy RPC error profile.");
+  }
+  if (c.req.query("item_id") !== undefined && !getMenuItem(c.req.query("item_id")!)) {
+    return rpcRefusal(request.id ?? null, -32602, "unknown_item", "No item by that identifier; read /menu.json?view=compact.");
+  }
   const era = requestEra(c, request);
   if (era instanceof Response) {
     return era;
   }
   const answer = await dispatchRpc(c, request, era.modern);
   return era.modern
-    ? modernize(answer, request.method, c.env.STORE_BASE_URL)
+    ? modernize(answer, request.method, serverInfo(c.env.STORE_BASE_URL))
     : answer;
+}
+
+/** Every MCP server negotiates and renders the same revision rules. */
+export async function withMcpProtocol(
+  c: Context<HonoEnv>,
+  body: Record<string, unknown>,
+  identity: Record<string, unknown>,
+  dispatch: () => Promise<Response>,
+): Promise<Response> {
+  const request: JsonRpcRequest = {
+    jsonrpc: "2.0",
+    id: typeof body["id"] === "string" || typeof body["id"] === "number" ? body["id"] : null,
+    method: String(body["method"]),
+    params: isRecord(body["params"]) ? body["params"] : {},
+  };
+  const era = requestEra(c, request);
+  if (era instanceof Response) return era;
+  const response = await dispatch();
+  return era.modern ? modernize(response, request.method, identity) : response;
 }
 
 async function dispatchRpc(
@@ -1157,7 +1260,7 @@ async function dispatchRpc(
           : DEFAULT_PROTOCOL,
         capabilities: serverCapabilities(),
         serverInfo: serverInfo(c.env.STORE_BASE_URL),
-        instructions: INSTRUCTIONS,
+        instructions: `${standardPayment(c) ? INSTRUCTIONS.replace("402 terms in error.data", "payment terms in result.structuredContent (isError: true)") : INSTRUCTIONS} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
       });
     }
     /**
@@ -1173,7 +1276,7 @@ async function dispatchRpc(
       return rpcResult(id, {
         supportedVersions: [...PROTOCOL_VERSIONS],
         capabilities: serverCapabilities(),
-        instructions: INSTRUCTIONS,
+        instructions: `${standardPayment(c) ? INSTRUCTIONS.replace("402 terms in error.data", "payment terms in result.structuredContent (isError: true)") : INSTRUCTIONS} ${buyerQuickStart(c.env.STORE_BASE_URL)}`,
         // The modern envelope (resultType, cache hint, serverInfo in
         // _meta) is added by modernize() for modern callers; a legacy
         // caller gets the bare result plus the identity below, which
@@ -1251,13 +1354,14 @@ async function dispatchRpc(
       );
     case "tools/list":
       return rpcResult(id, {
-        tools: mcpToolCatalog(c.env.STORE_BASE_URL).map(
+        tools: requestTools(c).map(
           ({ itemId: _itemId, ...tool }) => {
             // MCP Apps: the two free evidence tools carry the card
             // pointer; uiMetaFor returns undefined for everything
             // else, buy_* by design (a test pins that).
             const ui = uiMetaFor(tool.name);
-            return ui ? { ...tool, _meta: ui } : tool;
+            const view = c.req.query("view") === "compact" ? specShapedTool(tool) : tool;
+            return ui ? { ...view, _meta: ui } : view;
           },
         ),
       });
@@ -1265,7 +1369,7 @@ async function dispatchRpc(
       const params = isRecord(request.params) ? request.params : {};
       const name = typeof params["name"] === "string" ? params["name"] : "";
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
-      const tool = findMcpTool(name, c.env.STORE_BASE_URL);
+      const tool = requestTools(c).find(tool => tool.name === name);
       if (!tool) {
         return rpcRefusal(
           id,
@@ -1375,7 +1479,7 @@ async function dispatchRpc(
         return callPurchaseTool(
           c,
           item,
-          args,
+          { ...args, item_id: item.id },
           meta,
           id,
           typeof idempotencyKey === "string" ? idempotencyKey : undefined,

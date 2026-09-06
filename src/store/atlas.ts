@@ -1,3 +1,4 @@
+import { buyerLinks } from "@/lib/buyer-contract";
 import { MENU_ITEMS } from "@/store/menu";
 import { PUBLISHED_DATASETS } from "@/store/datasets";
 import { ROOMS } from "@/store/rooms";
@@ -359,6 +360,7 @@ export function buildAtlas(base: string): Record<string, unknown> {
          * sample_url (the specimen roster) and verify (the one door),
          * the same derivation menu.json carries. */
         ...shoppingFields(item.id, base),
+        ...buyerLinks(item, base),
       })),
       /* Derived from the dataset roster, cautions and all. */
       data: PUBLISHED_DATASETS.map((dataset) => ({

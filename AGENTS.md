@@ -24,8 +24,9 @@ the gaps it could not see, counted against itself.
 Not an escrow, a guarantor, or a dispute court: those absorb risk and
 need a balance sheet. We observe the gap and sign what we saw.
 
-It is also a general store selling small signed goods over x402 (USDC
-on Base or Solana), which is where most of the shelf still lives.
+It is also a general store selling small signed goods over x402 in USDC.
+Checkout rails come from `acceptedNetworks()` in `src/lib/payments.ts`;
+chain-reading support is broader. `PAYMENT_RAILS.md` distinguishes them.
 
 ## Commands
 

@@ -25,15 +25,17 @@ function reasonsHtml(reasons: Record<string, number>): string {
 }
 
 function rowHtml(row: ItemFunnel): string {
-  const tone = row.verdict.startsWith("REAL INTENT")
+  const tone = row.declines_organic > 0
     ? "#8c2f1b"
-    : row.verdict.startsWith("Converting")
+    : row.settles_organic > 0
       ? "#2f6b2f"
       : "#555";
   return `<tr>
     <td><strong>${escapeHtml(row.item)}</strong>${row.verification_tier ? " ⚑" : ""}</td>
     <td>${row.asks_organic}</td>
-    <td>${row.wallets_opened}</td>
+    <td>${row.input_refusals_organic}</td>
+    <td>${row.payment_declines_organic}</td>
+    <td>${row.settlement_declines_organic}</td>
     <td>${row.settles_organic}</td>
     <td style="max-width:34em"><span style="color:${tone}">${escapeHtml(row.verdict)}</span>
     ${reasonsHtml(row.decline_reasons)}</td>
@@ -48,13 +50,11 @@ export function renderFunnelPage(
   const rest = report.items.filter((row) => !row.verification_tier);
   const body = `
   <h1>The funnel — where the asks go</h1>
-  <p>An <strong>ask</strong> is a 402 issued to organic traffic. A
-  <strong>wallet opened</strong> is a signed payment actually presented —
-  settled or refused, either way somebody tried. The gap between those
-  two columns is the whole diagnosis: refused wallets mean the FLOW is
-  the wall and the reasons name the brick; zero wallets against a pile
-  of asks means nobody tried, and the wall is upstream — the pitch, the
-  price framing, or a required input reading as work.</p>
+  <p>An <strong>ask</strong> is a 402 issued to organic traffic.
+  Refusals are counted by the recorded stage: input checks, payment
+  parsing or verification, and settlement. These are event counts;
+  retries can appear more than once. They are not joined buyer journeys,
+  and missing outcomes do not establish intent or a reason for leaving.</p>
   <p><small>${escapeHtml(report.window_note)}</small></p>
 
   <h2>⚑ The verification tier — the shelf the strategy rides on</h2>
@@ -62,7 +62,7 @@ export function renderFunnelPage(
     tier.length === 0
       ? "<p>No organic asks on the verification tier in the scanned window.</p>"
       : `<table border="1" cellpadding="4">
-    <tr><th>item</th><th>asks</th><th>wallets opened</th><th>settles</th><th>the reading</th></tr>
+    <tr><th>item</th><th>asks</th><th>input refusals</th><th>payment refusals</th><th>settlement refusals</th><th>settles</th><th>the reading</th></tr>
     ${tier.map(rowHtml).join("\n")}
   </table>`
   }
@@ -72,7 +72,7 @@ export function renderFunnelPage(
     rest.length === 0
       ? "<p>Nothing else drew an organic ask in the window.</p>"
       : `<table border="1" cellpadding="4">
-    <tr><th>item</th><th>asks</th><th>wallets opened</th><th>settles</th><th>the reading</th></tr>
+    <tr><th>item</th><th>asks</th><th>input refusals</th><th>payment refusals</th><th>settlement refusals</th><th>settles</th><th>the reading</th></tr>
     ${rest.map(rowHtml).join("\n")}
   </table>`
   }

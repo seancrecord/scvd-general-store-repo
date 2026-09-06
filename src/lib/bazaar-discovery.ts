@@ -705,3 +705,45 @@ export function pennyPageDiscoveryExtensions(
     },
   });
 }
+
+/** A repair a small reader can follow without extracting field names from prose. */
+export function buyerInputRepair(
+  item: MenuItem,
+  args: Record<string, unknown>,
+  base: string,
+  location: "query" | "arguments",
+  refusalBody?: Record<string, unknown>,
+) {
+  return {
+    required_params: [...(buyInputSchema(item).required ?? [])],
+    input_contract_url: `${base}/menu/${item.id}?view=compact`,
+    issues: purchaseInputIssues(item, args, location, refusalBody),
+    next_action: "Read the input contract, correct the inputs, then retry the same purchase. No charge was taken.",
+  };
+}
+
+function purchaseInputIssues(
+  item: MenuItem,
+  args: Record<string, unknown>,
+  location: "query" | "arguments",
+  refusalBody?: Record<string, unknown>,
+) {
+  const missing = missingRequiredInputs(item, args);
+  const failed = typeof refusalBody?.input_field === "string" ? refusalBody.input_field : undefined;
+  // The validator's first failed check comes first. A missing required
+  // field elsewhere must not replace an invalid optional field it rejected.
+  const fields = [...new Set([...(failed ? [failed] : []), ...missing])];
+  return fields.map(field => ({ field, code: missing.includes(field) ? "required" : "invalid", location }));
+}
+
+/** The buyer's repair and the ledger's diagnosis name the same failed check. */
+export function purchaseInputDeclineReason(
+  item: MenuItem,
+  args: Record<string, unknown>,
+  refusalBody?: Record<string, unknown>,
+): string {
+  const first = purchaseInputIssues(item, args, "arguments", refusalBody)[0];
+  return first
+    ? `local:input_${first.code === "required" ? "missing" : "invalid"}:${first.field}`
+    : "local:refused_before_gate";
+}

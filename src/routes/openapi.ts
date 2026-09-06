@@ -1,3 +1,4 @@
+import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
@@ -4464,6 +4465,28 @@ const ID_LIST: OpenApiObject = { type: "array", items: { type: "string" } };
  * imagined: the spec beside this one fetches /menu.json and fails if
  * any field named here stopped arriving.
  */
+const COMPACT_BUYER_LINKS: OpenApiObject = {
+  required_params: { type: "array", items: { type: "string" } },
+  input_contract_url: { type: "string", format: "uri" },
+  mcp_url: { type: "string", format: "uri" },
+};
+const COMPACT_MENU_ROW_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["id", "required_params", "input_contract_url", "mcp_url", "price_usdc"],
+  properties: {
+    id: { type: "string" },
+    name: { type: "string" },
+    task: { type: "string" },
+    price_usdc: { type: "number" },
+    pricing: { type: "string", enum: ["fixed", "pay_what_it_deserves"] },
+    price_tiers_usdc: { type: "array", items: { type: "number" } },
+    cadence: { type: "string" },
+    term_days: { type: "number", description: "Present for term purchases." },
+    buy_url: { type: "string", format: "uri" },
+    ...COMPACT_BUYER_LINKS,
+  },
+};
+
 const MENU_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["as_of", "checked_at", "description", "store", "items"],
@@ -5349,24 +5372,64 @@ openapiRoutes.get("/openapi.json", async (c) => {
     },
     paths: {
       "/menu.json": {
-        get: returns(
-          freeOp(
-            "The catalog",
-            "Machine-readable menu with prices, buy URLs, and pointers to every free shelf. Serves markdown when the Accept header prefers text/markdown.",
+        get: {
+          ...returns(
+            freeOp(
+              "The catalog",
+              "Prices, buy URLs and discovery links. view=compact returns a bounded JSON page with required_params and a one-item MCP URL; follow next. Omit view for the full menu (markdown when requested).",
+            ),
+            {
+              type: "object",
+              properties: MENU_SCHEMA.properties,
+              oneOf: [MENU_SCHEMA, {
+                type: "object",
+                required: ["items", "total", "page", "pages", "next", "checkout"],
+                properties: {
+                  items: { type: "array", maxItems: COMPACT_CATALOG_PAGE_SIZE, items: COMPACT_MENU_ROW_SCHEMA },
+                  total: { type: "integer" },
+                  page: { type: "integer" },
+                  pages: { type: "integer" },
+                  next: { type: ["string", "null"] },
+                  checkout: { type: "object" },
+                },
+              }],
+            },
           ),
-          MENU_SCHEMA,
-        ),
+          parameters: [
+            { name: "view", in: "query", schema: { type: "string", enum: ["full", "compact"] } },
+            {
+              name: "page", in: "query", "x-view": "compact",
+              description: "Zero-based compact page; out-of-range or malformed values return 400.",
+              schema: { type: "integer", minimum: 0, maximum: Math.ceil(MENU_ITEMS.length / COMPACT_CATALOG_PAGE_SIZE) - 1 },
+            },
+          ],
+        },
       },
       "/menu/{item_id}": {
         get: {
           ...returns(
             freeOp(
               "One item, up close",
-              "A single menu item as JSON, or markdown when the Accept header prefers text/markdown, or a readable page when it prefers text/html. The HTML dialect carries a browser till: with an EVM wallet present it signs an EIP-3009 authorization and completes the purchase in the page. JSON is what a wildcard Accept and a bare fetch still get, unchanged.",
+              "One item as JSON, markdown or HTML. view=compact always returns a small JSON input contract with required_params, input_schema, prices, fulfillment, one-item mcp_url and step-by-step checkout instructions. The full HTML page includes a wallet till.",
             ),
-            MENU_ITEM_SCHEMA,
+            {
+              type: "object",
+              properties: MENU_ITEM_SCHEMA.properties,
+              oneOf: [MENU_ITEM_SCHEMA, {
+                type: "object",
+                required: ["id", "required_params", "input_schema", "mcp_url", "checkout"],
+                properties: {
+                  ...COMPACT_MENU_ROW_SCHEMA.properties as OpenApiObject,
+                  input_schema: { type: "object" },
+                  checkout: { type: "object" },
+                },
+              }],
+            },
           ),
-          parameters: [pathParam("item_id", "The item id from /menu.json.")],
+          parameters: [
+            pathParam("item_id", "The item id from /menu.json."),
+            { name: "view", in: "query", schema: { type: "string", enum: ["full", "compact"] } },
+          ],
         },
       },
       "/what": {
@@ -6927,7 +6990,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/mcp": {
-        post: returns(
+        post: {
+          ...returns(
   postOp(
             "The MCP door",
             "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET with Accept: text/event-stream opens the listening channel (a keepalive-only stream; the server sends nothing unprompted); any other GET answers 405 with Allow: POST and the whole handshake in the body.",
@@ -6958,6 +7022,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
             MCP_RPC_SCHEMA,
           ),
+          parameters: [
+            { name: "item_id", in: "query", description: "Expose just this item's buy tool, with required inputs at the schema root.", schema: { type: "string", enum: MENU_ITEMS.map(item => item.id) } },
+            { name: "view", in: "query", description: "compact omits store extensions; with item_id it also shortens the description.", schema: { type: "string", enum: ["full", "compact"] } },
+            { name: "payment", in: "query", description: "tool-result uses x402 MCP isError:true + structuredContent for challenges; omission preserves error 402. Supply payment in params._meta['x402/payment']; success receipt is result._meta['x402/payment-response'].", schema: { type: "string", enum: ["tool-result"] } },
+          ],
+        },
       },
       "/zodiac": {
         get: returns(

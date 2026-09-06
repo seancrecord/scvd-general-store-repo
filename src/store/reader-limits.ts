@@ -53,7 +53,17 @@ export interface MachineSurfaceCeiling {
  * PROBLEMS #25 named the four after OpenAPI. OpenAPI sits on
  * the list so the ceiling is derived, not restated beside it.
  */
+/** Local engineering targets for progressive discovery, not a claim about every host's context window. */
+export const COMPACT_CATALOG_BUDGET_BYTES = 16_000;
+export const SINGLE_ITEM_TOOL_BUDGET_BYTES = 10_000;
+
 export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
+  {
+    path: "/menu.json?view=compact",
+    budget: COMPACT_CATALOG_BUDGET_BYTES,
+    fetchCap: SCANNER_FETCH_CAP_BYTES,
+    kind: "json",
+  },
   {
     path: "/openapi.json",
     budget: SCANNER_BUDGET_BYTES,

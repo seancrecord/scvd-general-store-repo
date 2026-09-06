@@ -1,3 +1,4 @@
+import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
 import {
   TRADE_EXAMPLE_SHARE_BPS,
@@ -130,6 +131,10 @@ function varyOnAccept(c: { header: (name: string, value: string) => void }): voi
 catalogRoutes.get("/menu.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   varyOnAccept(c);
+  if (c.req.query("view") === "compact") {
+    const page = compactCatalog(base, c.req.query("page"));
+    return page ? c.json(page) : c.json({ code: "bad_page", charged: false }, 400);
+  }
   if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
     return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
   }
@@ -145,6 +150,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     MENU_ITEMS.map(async (item) => ({
       ...item,
       buy_url: `${base}/api/buy/${item.id}`,
+      ...buyerLinks(item, base),
       ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
       ...(item.subtitle ? { subtitle: item.subtitle } : {}),
       /*
@@ -190,6 +196,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     })),
   );
   return c.json({
+    compact_catalog_url: `${base}/menu.json?view=compact`,
     ...freshness(),
     /**
      * A DESCRIPTION AT THE ROOT, for resolvers that do not descend.
@@ -642,6 +649,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
       404,
     );
   }
+  if (c.req.query("view") === "compact") return c.json(compactItemContract(item, base));
   /**
    * A CANONICAL SAYS SO, EVEN ON JSON. These pages are in the sitemap
    * and content-negotiate two bodies at one URL, and a JSON page has
@@ -716,6 +724,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   c.header("Link", canonical.Link);
   return c.json({
     ...item,
+    ...buyerLinks(item, base),
     buy_url: `${base}/api/buy/${item.id}`,
     ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
     price_tiers_usdc: priceTiersUsdc(item),

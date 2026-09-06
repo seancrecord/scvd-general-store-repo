@@ -3,7 +3,7 @@ import { findMcpTool, type McpTool } from "@/lib/mcp-tools";
 import { runEvidenceTask } from "@/services/a2a-evidence";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { recordPorchVisit } from "@/lib/metrics";
-import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
+import { withMcpProtocol, MODERN_PROTOCOL_VERSIONS, DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, callFreeTool, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { DEFECT_CLASSES, DEFECT_VOCABULARY_VERSION, defectClass } from "@/store/defect-vocabulary";
@@ -154,22 +154,34 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
   if (!isRecord(body) || body["jsonrpc"] !== "2.0" || typeof body["method"] !== "string") {
     return rpcError(null, -32700, "That wasn't JSON-RPC. The door takes 2.0.");
   }
+  return withMcpProtocol(c, body, serverInfo(base), () => dispatch(c, body));
+}
+
+async function dispatch(c: Context<HonoEnv>, body: Record<string, unknown>): Promise<Response> {
+  const base = c.env.STORE_BASE_URL;
   const id = body["id"] ?? null;
-  const method = body["method"];
+  const method = String(body["method"]);
   const params = isRecord(body["params"]) ? body["params"] : {};
-  if (method === "initialize" || method === "tools/list") {
+  if (method === "initialize" || method === "tools/list" || method === "server/discover") {
     deferBookkeeping(c, recordPorchVisit(c.env, `mcp-verifier:${method}`, mcpSignals(c)));
   }
   switch (method) {
     case "initialize": {
       const requested = String(params["protocolVersion"] ?? "");
       return rpcResult(id, {
-        protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : DEFAULT_PROTOCOL,
+        protocolVersion: PROTOCOL_VERSIONS.includes(requested) && !MODERN_PROTOCOL_VERSIONS.includes(requested) ? requested : DEFAULT_PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: serverInfo(base),
         instructions: INSTRUCTIONS,
       });
     }
+    case "server/discover":
+      return rpcResult(id, {
+        supportedVersions: [...PROTOCOL_VERSIONS],
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: serverInfo(base),
+        instructions: INSTRUCTIONS,
+      });
     case "ping":
       return rpcResult(id, {});
     case "tools/list":

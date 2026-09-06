@@ -76,7 +76,7 @@ describe("a signed request refused for a missing input is a decline", () => {
     const row = declines.find((r) => r.item === "settlement_attestation");
     expect(row, "the refusal left no row in the books").toBeDefined();
     expect(row?.reason).toBe("local:input_missing:tx_hash");
-    expect(row?.stage).toBe("verify");
+    expect(row?.stage).toBe("input");
   });
 
   it("books tx_hash invalid when one arrived in the wrong shape", async () => {
@@ -122,6 +122,8 @@ describe("an ask that could not have bought is marked as such", () => {
     const row = await funnelRowFor("settlement_attestation");
     expect(row.asks_organic).toBe(1);
     expect(row.asks_locked).toBe(0);
+    expect(row.asks_inputs_present).toBe(1);
+    expect(row.asks_inputs_unknown).toBe(0);
     expect(row.verdict).not.toContain("LOCKED DOOR");
   });
 
@@ -129,7 +131,23 @@ describe("an ask that could not have bought is marked as such", () => {
     await SELF.fetch(`${BASE}/api/buy/small_blessing`, { headers: OUTSIDE });
     const row = await funnelRowFor("small_blessing");
     expect(row.asks_locked).toBe(0);
+    expect(row.asks_inputs_present).toBe(1);
+    expect(row.asks_inputs_unknown).toBe(0);
     expect(row.verdict).not.toContain("LOCKED DOOR");
+  });
+
+  it("records present required inputs on the MCP ask row", async () => {
+    await SELF.fetch(`${BASE}/mcp`, {
+      method: "POST",
+      headers: { ...OUTSIDE, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0", id: 1, method: "tools/call",
+        params: { name: "buy_observation", arguments: { item_id: "settlement_attestation", tx_hash: `0x${"ab".repeat(32)}` } },
+      }),
+    });
+    const row = await funnelRowFor("settlement_attestation");
+    expect(row.asks_inputs_present).toBe(1);
+    expect(row.asks_inputs_unknown).toBe(0);
   });
 
   it("stamps the MCP ask row from the tool's arguments", async () => {

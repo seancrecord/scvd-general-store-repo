@@ -1,3 +1,4 @@
+import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
 import { TRADE_FOR_MONEY, TRADE_PROPOSITION } from "@/store/trade-counter";
 import { SCORERS_FOR_MONEY, SCORERS_PROPOSITION } from "@/store/copy/scorers";
@@ -2015,7 +2016,9 @@ export function llmsIndex(base: string): string {
       }\n  ${area.blurb}`,
   ).join("\n\n");
 
-  return `${preamble}${kept.map((section) => section.text).join("")}## The rest of this file, by area
+  return `${preamble}${buyerQuickStart(base)}
+
+${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
 This is the index. The store's full prose is long on purpose — the
 evidence is the product — so it is served in one document at

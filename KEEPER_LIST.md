@@ -133,11 +133,23 @@ build, it is on the roadmap.
   3. Set the secrets on the doors Worker:
      `npx wrangler secret put SIGNING_KEY -c doors/wrangler.jsonc`,
      then PAY_TO_ADDRESS, CDP_API_KEY_ID, CDP_API_KEY_SECRET,
-     the same values the store holds. From the next knock the
+     the same values the store holds. Also mirror `POLYGON_PAY_TO`
+     when that rail is enabled on the store. From the next knock the
      doors answer the 402 themselves.
   4. `npm run doors:live -- --doors=https://scvd-doors.seancrecord.workers.dev`
      reads every door at both hosts and prints agrees/differs
-     per door. All agree, or stop and paste it here.
+     per door, including agreement with discovery's advertised
+     payment offers. All agree, or stop and paste it here.
+     FOLLOW-UP 2026-09-06: discovery advertises Polygon, but live
+     unsigned quotes omit it; a read of secret names confirms
+     `POLYGON_PAY_TO` is absent on the doors Worker. Mirror the
+     store's configured value there, then repeat this check. The
+     repaired checker catches this even when both URLs hit the
+     same Worker. APPROVED 2026-09-06: mirror the existing recipient,
+     independently matched between discovery and the store MCP quote.
+     Cloudflare refused the direct update because the latest uploaded
+     Worker version was not deployed; apply it with the reviewed
+     release deployment, then rerun this check. No payment was made.
   5. Workers Builds → create a second project on this repo
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.

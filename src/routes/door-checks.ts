@@ -17,7 +17,7 @@
  */
 import type { MiddlewareHandler } from "hono";
 import { gateSignals, paymentGate } from "@/lib/payment-gate";
-import { buyInputSchema, missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
 import { waitlistHowToJoin } from "@/routes/requests";
 import {
@@ -302,6 +302,8 @@ export const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * So: one wrapper, ahead of every check, that books the refusal as
  * the decline it is. The check's own body still goes out unchanged.
  */
+// Request-local evidence from the validator; no response parsing or extra KV
+// read is needed to tell the books which check actually refused this buyer.
 export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   if (c.res.status !== 400 || !isBuying(c)) {
@@ -313,14 +315,7 @@ export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next)
   if (!item) {
     return;
   }
-  const missing = missingRequiredInputs(item, c.req.query());
-  const required = buyInputSchema(item).required ?? [];
-  const reason =
-    missing.length > 0
-      ? `local:input_missing:${missing[0]}`
-      : required.length > 0
-        ? `local:input_invalid:${required[0]}`
-        : "local:refused_before_gate";
+  const reason = purchaseInputDeclineReason(item, c.req.query(), c.get("inputRefusal"));
   await recordPaymentDecline(c.env, c.req.path, reason, gateSignals(c)).catch(
     () => undefined,
   );
@@ -353,7 +348,8 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     queryArgs((name) => c.req.query(name)),
   );
   if (refusal) {
-    return c.json(refusal.body, refusal.status);
+    c.set("inputRefusal", refusal.body);
+    return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);
   }
   await next();
 };
