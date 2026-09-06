@@ -57,6 +57,7 @@ import {
   payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
+import { KV_KEYS } from "@/lib/kv-keys";
 import { certIdForSettlement } from "@/services/settlement-records";
 import { getOpenDeliveryIntent, openDeliveryIntent } from "@/services/delivery-audit";
 import { isRecord } from "@/types";
@@ -123,6 +124,7 @@ export type McpPaymentOutcome =
        */
       kind: "authorized";
       recovered?: true;
+      savedResponse?: string;
       pending: PendingPayment;
       settledSoFar: () => SettledPayment | null;
       /**
@@ -389,6 +391,28 @@ export async function runMcpPayment(
   const spent = nonce ? await getSpentNonce(env, nonce) : null;
   if (spent) {
     if (spent.path === path && spent.transaction && verifiedPayer) {
+      // A completed durable result outlives both the KV replay cache and
+      // the open delivery row. Authenticate its owner before returning it;
+      // a globally indexed nonce is not proof of ownership.
+      const namespace = env.PAID_RECOVERIES;
+      const saved = namespace && await namespace.get(namespace.idFromName(
+        `${result.paymentRequirements.network}:${spent.transaction}`,
+      )).readCompleted({
+        path, payer: verifiedPayer, network: result.paymentRequirements.network,
+        transaction: spent.transaction,
+      }).catch(() => null);
+      if (saved) {
+        if (!inputDigest || saved.digest !== inputDigest) return {
+          kind: "delivery-failed", payment: saved.payment, reason: "original_inputs_required",
+        };
+        return {
+          kind: "authorized", recovered: true, savedResponse: saved.response, verifiedPayer,
+          pending: { paidUsdc: saved.payment.paidUsdc, tipUsdc: saved.payment.tipUsdc,
+            payer: verifiedPayer, settle: async () => saved.payment },
+          settledSoFar: () => saved.payment,
+          deliveryKeySoFar: () => KV_KEYS.deliveryIntent(saved.payment.transaction),
+        };
+      }
       const open = await getOpenDeliveryIntent(env, spent.transaction);
       const retry = open?.intent.mcp_retry;
       if (open && retry && open.intent.path === path &&

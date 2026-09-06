@@ -61,7 +61,10 @@ Final validation on the repaired current-main snapshot covered 552 test files: 5
 
 - [x] Reconstruct the reproduced pre-certificate failures using the original verified payer, chain, amount, receipt and full input digest — `f8f8d34f`.
 - [x] Prevent overlapping recoveries from minting competing certificates, using a durable per-transaction claim — `f8f8d34f`.
+- [x] Retrieve an already completed durable response after cache loss or a connection failure after the completion write; authenticate its saved owner, chain, transaction, product and full inputs — this change.
 - [ ] Resume a recovery that itself stops after its durable claim, including crashes and partial writes, without guessing whether another certificate exists.
 - [ ] Recover retained purchases that predate the complete input binding. Never infer their original inputs from a truncated desk preview.
 
 The completed substeps passed 206 focused tests across nine files, typechecking, and both Worker dry-run builds. The full suite is delegated to GitHub as requested. The three SEV-1 findings BUY-017/034/037 stay unchecked; successful first reconstruction is not the complete durable-recovery guarantee.
+
+Completed-result follow-up: four public MCP regressions failed at receipt replay on the prior code (Base/Polygon, cache loss/completion-response loss); all pass with authenticated durable reads. Final focused gate: 212 tests across nine files, typecheck, and both dry-run bundles. This does not cover a crash before the complete result is saved. PR #541 remains draft while recovery gaps and its Cloudflare preview build failure are unresolved.

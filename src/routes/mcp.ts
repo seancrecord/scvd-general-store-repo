@@ -1012,12 +1012,16 @@ async function callPurchaseTool(
    */
   let response: Record<string, unknown>;
   try {
-    if (outcome.recovered) {
+    if (outcome.savedResponse !== undefined) {
+      const saved: unknown = JSON.parse(outcome.savedResponse);
+      if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
+      response = saved;
+    } else if (outcome.recovered) {
       const payment = outcome.settledSoFar()!;
       const namespace = c.env.PAID_RECOVERIES;
       if (!namespace) throw new Error("Paid recovery coordinator unavailable");
       const stub = namespace.get(namespace.idFromName(`${payment.network}:${payment.transaction}`));
-      const claim = await stub.begin(inputDigest);
+      const claim = await stub.begin(inputDigest, { path: `/api/buy/${item.id}`, payment });
       if (claim.kind === "unavailable") throw new Error("Paid recovery already in progress or interrupted");
       if (claim.kind === "replay") {
         const saved: unknown = JSON.parse(claim.response);

@@ -57,6 +57,23 @@ beforeAll(() => {
     }
     return response;
   });
+  const recoveries = testEnv.PAID_RECOVERIES!;
+  testEnv.PAID_RECOVERIES = new Proxy(recoveries, { get(target, property) {
+    if (property === "get") return (...args: Parameters<typeof recoveries.get>) => {
+      const stub = target.get(...args);
+      return new Proxy(stub, { get(inner, method) {
+        if (method === "complete") return async (token: string, response: string) => {
+          const saved = await inner.complete(token, response);
+          trip("checkpoint");
+          return saved;
+        };
+        const member = Reflect.get(inner, method);
+        return typeof member === "function" ? (...args: unknown[]) => Reflect.apply(member, inner, args) : member;
+      } });
+    };
+    const member = Reflect.get(target, property);
+    return typeof member === "function" ? member.bind(target) : member;
+  } });
   const patrons = testEnv.PATRONS;
   testEnv.PATRONS = new Proxy(patrons, { get(target, property) {
     const member = Reflect.get(target, property);
@@ -247,3 +264,35 @@ it("concurrent same-payment recovery returns one certificate", async () => {
   expect(again.body.cert_id).toBe(delivered[0]!.body.cert_id);
   expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(1);
 });
+
+for (const network of [BASE_NETWORK, POLYGON_NETWORK]) for (const lostAt of ["cache", "checkpoint"]) {
+  it(`${network}: retrieves a completed recovery after losing the ${lostAt} response`, async () => {
+    const summary = `SCVD-E2E-saved-${crypto.randomUUID()}`;
+    const buying = await purchase("context_anchor", { summary }, network);
+    fault.kind = "generation";
+    expect((await buying.send()).charged).toBe(true);
+    fault.kind = lostAt === "checkpoint" ? "checkpoint" : "none";
+    const reconstructed = await buying.send();
+    expect(reconstructed.protocolError).toBe(lostAt === "checkpoint");
+    const certs = (await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys;
+    expect(certs).toHaveLength(1);
+    const cache = await sourceEnv.COUNTERS.list({ prefix: "idem:" });
+    for (const entry of cache.keys) await sourceEnv.COUNTERS.delete(entry.name);
+    if (lostAt === "cache") {
+      expect(await sourceEnv.ORDERS.get(KV_KEYS.deliveryIntent(String(transfers[0]!.transaction)))).toBeNull();
+    }
+    fault.kind = "none";
+    const changed = await buying.send({ summary: `${summary}-changed` });
+    expect(changed.body.cert_id).toBeUndefined();
+    const replay = await buying.send();
+    expect(replay.protocolError).toBe(false);
+    expect(replay.body.cert_id).toBe(certs[0]!.name.slice(KV_KEYS.certPrefix.length));
+    expect(replay.body).toMatchObject({ charged: true, charged_again: false, paid_retry: true });
+    const artifact = object(await (await request(String(replay.body.anchor_url))).json());
+    expect(object(artifact.anchor).summary).toBe(summary);
+    expect(replay.settles).toBe(0);
+    expect(await sourceEnv.ORDERS.get(KV_KEYS.deliveryIntent(String(transfers[0]!.transaction)))).toBeNull();
+    expect(transfers).toHaveLength(1);
+    expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(1);
+  });
+}

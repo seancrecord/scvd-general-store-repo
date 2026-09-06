@@ -175,3 +175,11 @@ Validation:
 - GitHub will run the full suite. Every payment is a local fixture; no real funds moved.
 
 The follow-up is kept separate from PR #540 and will remain a draft while the remaining recovery states are addressed. Completed substeps are checked off separately from the overall SEV-1 finding.
+
+### Completed durable MCP responses remain retrievable
+
+A finished recovery previously became unreachable after its delivery row closed and the KV replay cache disappeared. An interruption immediately after the durable completion write also hit the existing-certificate refusal. Added a read-only lookup bound to the saved verified payer, chain, transaction, product and full input digest. It retrieves the exact saved response without claiming or minting again, and closes a remaining delivery row only after successful reply preparation. Older records without owner metadata are not inferred.
+
+Four public-door regressions were observed failing before the fix (`/private/tmp/buyer-037-completed-red.log`). Final focused gate passed 212 tests in nine files; typecheck and both dry-run bundles passed. No full local rerun, as requested. The coordinator authorization tests independently reject other owners/products/chains/transactions. BUY-037 remains open for interrupted partial writes and older unbound purchases.
+
+PR #540 has auto-merge enabled and is awaiting GitHub CI. PR #541 is draft. Its main Cloudflare preview build failed; the separate doors build passed. The dashboard requires login and the existing Wrangler OAuth session receives 403 for the Builds logs API. The new Durable Object migration may explain the preview-upload failure, but that cause has not been confirmed from its log. No deployment or build settings were changed to bypass the gate.
