@@ -387,6 +387,41 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   },
   {
     /**
+     * THE SECOND COLD READ, and it checked a different thing than
+     * Cairn did. Cairn walked the STORE — bought, verified, watched
+     * the ledger move. 0200project re-derived a FIELD WALK: they took
+     * the 2026-09-05 ledger, went to a public Base node without our
+     * tooling, and rebuilt the settlement set from the chain itself.
+     *
+     * IT BEGAN AS TWO FINDINGS AGAINST US, which is why it belongs
+     * here rather than in a testimonial. They caught the walk ledger
+     * publishing an EIP-3009 authorization nonce under prose calling
+     * it a transaction hash (/corrections, 2026-09-04), then caught
+     * the overcorrection — our "no node will ever answer it", when
+     * AuthorizationUsed is indexed and answers exactly that
+     * (/corrections, 2026-09-05). The convergence below is the third
+     * round of a thread whose first two rounds we lost.
+     *
+     * AND THE SHARPEST LINE IN IT WAS ABOUT OUR OWN INSTRUMENT: our
+     * reconciliation's "gap $0.00" was this store's tooling agreeing
+     * with itself, where a second instrument agreeing with the chain
+     * is the different and stronger claim. The walk report now states
+     * that beside the number on every run, because they said it.
+     *
+     * WEAKER THAN CAIRN'S IN ONE RESPECT, said here rather than left
+     * for a reader to notice: Cairn published on their own domain. This
+     * lives in their comments on our issue tracker — text we can
+     * neither author nor edit, on a host we control and could delete.
+     */
+    url: "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
+    registry:
+      "0200project (base-tx-explain) — an independent re-derivation of a field walk, published in thread",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That on 2026-09-06 an outside operator re-derived this store's 2026-09-05 field walk from a public Base node using none of our tooling: 34 chain transfers totalling $0.0350 against 34 settled ledger rows, all 31 rows carrying a transaction hash agreeing with the chain on amount and recipient, and the 3 rows whose receipts named no transaction recovered from their authorization nonce. Zero disagreements. Their own decoder separately read one of those transactions and agreed with our row on every field both instruments hold. Not an endorsement and not an audit: one run, one day, 34 settlements on the simplest shape either instrument handles, and it establishes nothing about the paid audits, watches or attestations. The same thread carries two findings against this store, both on /corrections, and one the other operator disclosed against their own product.",
+  },
+  {
+    /**
      * AN INSTRUMENT, NOT A DIRECTORY — the same care as the Circle
      * entry below, and one more: probe402 is the nearest thing to this
      * store's own house style anywhere in the field (named operator,
