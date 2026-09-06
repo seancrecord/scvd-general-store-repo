@@ -267,3 +267,49 @@ CHECK an x401 challenge's shape on other people's endpoints — reading
 the protocol is our lane even when we don't speak it; (b) if agentic
 marketplaces begin requiring it merchant-side, revisit. Nothing in
 our current copy references x401.
+
+
+## 2026-09-06 — machine-readable checkout and the chain boundary
+
+Read for the machine-readiness release, under rule 61. Primary sources
+were reachable directly in this session:
+
+- [Foundation HTTP transport](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/transports-v2/http.md):
+  v2 uses the PAYMENT-REQUIRED header for the challenge and
+  PAYMENT-SIGNATURE for the signed retry; amounts are atomic strings.
+- [Foundation MCP transport](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/transports-v2/mcp.md):
+  payment challenges are tool results with isError true, identical
+  structuredContent and JSON text; payments and settlement receipts
+  use x402/payment and x402/payment-response metadata. The store's
+  payment=tool-result URL is an explicit compatibility selector of
+  our own, not a query parameter prescribed by the spec. The existing
+  RPC-error profile remains available for existing callers.
+- [MCP 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28):
+  the current revision is available; docs and verifier connections
+  use the main server's negotiation and metadata handling.
+- [CDP facilitator](https://docs.cdp.coinbase.com/x402/seller/facilitator):
+  its current production-network table lists Base, Polygon, Arbitrum,
+  World and Solana. Ethereum, Optimism and Avalanche are absent.
+  The live store's cached facilitator capability list was also read
+  through KV: v2 exact includes those five production networks and
+  their listed testnets. This is a cached observation, not a new
+  authenticated supported call: the local CDP credential loader had
+  neither credential, so a direct authenticated refresh did not run.
+- [Cloudflare service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
+  and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/):
+  the quote Worker is a separate deployment. Its configuration must
+  agree with the store; a service binding does not copy secrets.
+
+**The distinction the keeper asked about.** The September 3 addition
+of Ethereum, Arbitrum, Optimism and Avalanche was reader support
+(PAYMENT_RAILS Part F); it did not add checkout rails. The till still
+registers Base, flag-enabled Polygon and flag-enabled Solana. A
+statement's network argument chooses the evidence chain, not the
+payment chain. The compact contract now says that at checkout.
+
+**Gaps.** These reads do not prove every MCP host implements the new
+payment profile, nor that an arbitrary older x402 SDK can pay v2.
+No live settlement was made. Adding Arbitrum or another checkout rail
+still requires the receiving-address decision, settlement integration,
+receipt/refund/reconciliation coverage and payment tests; a matching
+SDK or reader enum alone does not establish those properties.

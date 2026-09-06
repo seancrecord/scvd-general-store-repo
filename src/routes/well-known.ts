@@ -1,3 +1,4 @@
+import { buyerLinks, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
 import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
@@ -255,6 +256,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
   return c.json({
     version: 1,
     resources: await structuredPaidResources(c.env),
+    compact_catalog_url: `${base}/menu.json?view=compact`,
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
@@ -324,6 +326,7 @@ async function structuredPaidResources(env: Env) {
     // 2026-07-27: a catalog scoring us on "input schema" was finding
     // nothing here to score.
     inputSchema: { type: "object", ...buyInputSchema(item) },
+    ...buyerLinks(item, base),
     spec: listingSpec(item, base),
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
@@ -382,6 +385,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     // S3 mirror: the scheduling-signals layer, when to reach for the store.
     when_to_use: SCHEDULING_SIGNALS,
     resources: await structuredPaidResources(c.env),
+    compact_catalog_url: `${base}/menu.json?view=compact`,
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
     stats: `${base}/stats`,
@@ -674,6 +678,11 @@ function mcpManifest(base: string) {
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.
     endpoint: `${base}/mcp`,
+    compact_catalog_url: `${base}/menu.json?view=compact`,
+    payment_profiles: [
+      { id: "legacy-rpc-error", endpoint: `${base}/mcp`, challenge: "error.data['x402/payment-required']" },
+      { id: MCP_TOOL_RESULT_PAYMENT, endpoint: `${base}/mcp?payment=${MCP_TOOL_RESULT_PAYMENT}`, challenge: "result.structuredContent", receipt: "result._meta['x402/payment-response']" },
+    ],
     /**
      * `url` beside `endpoint`, because the two names are both in the
      * wild and a client reading for one and finding only the other

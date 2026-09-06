@@ -80,6 +80,17 @@ describe("every collection says how it ends", () => {
       const get = paths[path]!["get"] as Record<string, unknown>;
       const parameters = (get["parameters"] ?? []) as Array<Record<string, unknown>>;
       for (const parameter of parameters) {
+        // A small-context view can page a finite catalog while the default
+        // still returns the entire bounded set. The scope must be explicit.
+        if (parameter["name"] === "page" && parameter["x-view"] === "compact") {
+          const view = parameters.find(entry => entry["name"] === "view");
+          expect((view?.["schema"] as Record<string, unknown>)["enum"]).toContain("compact");
+          const schema = parameter["schema"] as Record<string, unknown>;
+          expect(schema["type"]).toBe("integer");
+          expect(schema["minimum"]).toBe(0);
+          expect(Number.isInteger(schema["maximum"])).toBe(true);
+          continue;
+        }
         expect(String(parameter["name"]), `${path}`).not.toMatch(/^(cursor|page|offset)$/);
       }
     }

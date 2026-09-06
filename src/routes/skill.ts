@@ -1,3 +1,4 @@
+import { buyerQuickStart } from "@/lib/buyer-contract";
 import {
   CHEAPEST_ON_THE_SHELF,
   POSITION_NOT,
@@ -76,6 +77,8 @@ metadata:
 ---
 
 # ${STORE_METADATA.name}
+
+${buyerQuickStart(base)}
 
 ${POSITION_OPENING}
 

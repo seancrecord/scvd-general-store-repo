@@ -1,3 +1,4 @@
+import { buyerQuickStart } from "@/lib/buyer-contract";
 import { Hono } from "hono";
 import { askedForBlock } from "@/store/copy/asked-for";
 import { OPERATED_BY } from "@/store/copy/position";
@@ -98,6 +99,8 @@ contract: "${base}/openapi.json"
 ---
 
 # ${STORE_METADATA.name}
+
+${buyerQuickStart(base)}
 
 > ${POSITION_OPENING}
 > ${POSITION_NOT}

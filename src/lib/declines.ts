@@ -31,8 +31,16 @@ import { KV_KEYS } from "@/lib/kv-keys";
 const SCAN_CAP = 3000;
 const LIST_PAGE = 1000;
 
-/** Where in the flow it died. The two failures are not the same failure. */
-export type DeclineStage = "verify" | "settle";
+/** Local input refusal precedes payment parsing/verification and settlement. */
+export type DeclineStage = "input" | "verify" | "settle";
+
+export function declineStage(reason: string): DeclineStage {
+  if (reason.startsWith("settle:")) return "settle";
+  if (reason.startsWith("local:input_missing:") ||
+      reason.startsWith("local:input_invalid:") ||
+      reason === "local:refused_before_gate") return "input";
+  return "verify";
+}
 
 /**
  * Whose problem it is. Deliberately coarse — buckets a keeper can act
@@ -488,7 +496,7 @@ export async function readDeclines(
     // The settle-side path prefixes with "settle:"; strip it for the
     // reading but keep the stage, because verifying and settling are
     // different failures with different owners.
-    const stage: DeclineStage = raw.startsWith("settle:") ? "settle" : "verify";
+    const stage = declineStage(raw);
     const bare = raw.startsWith("settle:") ? raw.slice(7) : raw;
     const { fault, reading } = readReason(bare);
 

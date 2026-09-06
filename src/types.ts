@@ -254,7 +254,10 @@ export interface SettledPaymentVariables {
 
 export type HonoEnv = {
   Bindings: Env;
-  Variables: SettledPaymentVariables;
+  Variables: SettledPaymentVariables & {
+    /** The failed input check, carried only within this request. */
+    inputRefusal?: Record<string, unknown>;
+  };
 };
 
 export type ItemPricing = "fixed" | "pay_what_it_deserves";

@@ -495,7 +495,7 @@ const PURPOSE_LINES: Record<string, string> = {
  * shelf copy, and the guarantee split verbatim — exactly the shape a
  * planning model copies into its own risk assessment.
  */
-function purchaseTool(item: MenuItem, base: string): McpTool {
+export function purchaseTool(item: MenuItem, base: string): McpTool {
   const purpose = PURPOSE_LINES[item.id];
   return {
     name: `buy_${item.id}`,

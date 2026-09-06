@@ -83,7 +83,7 @@ export const BASE_NETWORK = "eip155:8453";
  */
 export const SOLANA_NETWORK = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 export const PENNY_PAGE_USDC = 0.01;
-const USDC_DECIMALS = 6;
+export const USDC_DECIMALS = 6;
 
 /** Base58, 32-44 chars: the only shape a Solana pubkey comes in. A
  * malformed address stays OUT of the 402 rather than minting offers

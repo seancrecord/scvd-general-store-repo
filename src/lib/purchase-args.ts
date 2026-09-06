@@ -111,7 +111,10 @@ export interface PurchaseRefusal {
   body: Record<string, unknown>;
 }
 
-/** rule 57.4: the fact an agent needs first, machine-readable. */
+/**
+ * Rule 57.4. Input checks attach input_field at the rejection itself, so
+ * the buyer and the books never have to infer a field from the message.
+ */
 function refuse(
   status: 400 | 403 | 503,
   code: string,
@@ -170,15 +173,15 @@ function targetVerdict(
   ownHostRefusal: string,
 ): PurchaseRefusal | undefined {
   if (!isValidHttpUrl(raw)) {
-    return refuse(400, "bad_request", missing);
+    return refuse(400, "bad_request", missing, { input_field: "url" });
   }
   const url = new URL(raw!);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return refuse(400, "target_refused", `${verdict.reason} Nothing charged.`);
+    return refuse(400, "target_refused", `${verdict.reason} Nothing charged.`, { input_field: "url" });
   }
   if (url.host.toLowerCase() === new URL(env.STORE_BASE_URL).host.toLowerCase()) {
-    return refuse(400, "target_refused", ownHostRefusal);
+    return refuse(400, "target_refused", ownHostRefusal, { input_field: "url" });
   }
   return undefined;
 }
@@ -210,7 +213,7 @@ export async function checkPurchaseArgs(
         `An anchor needs a ${args.field("summary")}, the state you want remembered. No summary, no charge.`,
         // The one moment a buyer is actually composing the field, so
         // the checklist goes HERE and not only on the listing.
-        { before_you_file: ANCHOR_CHECKLIST },
+        { before_you_file: ANCHOR_CHECKLIST, input_field: "summary" },
       );
     }
     if (summary.length > ANCHOR_SUMMARY_CAP) {
@@ -218,6 +221,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `That summary runs past the ledger margin. ${ANCHOR_SUMMARY_CAP} characters, tops. Nothing charged.`,
+        { input_field: "summary" },
       );
     }
   }
@@ -324,6 +328,7 @@ export async function checkPurchaseArgs(
         item.id === "the_statement"
           ? `${NETWORK_VOCABULARY}. An unrecognized network is refused rather than silently read as Base — the statement must be about the chain you asked about. Nothing charged.`
           : `${NETWORK_VOCABULARY}. An unrecognized network is refused rather than silently read as Base. Nothing charged.`,
+        { input_field: "network" },
       );
     }
     const wallet = read("wallet") ?? "";
@@ -336,6 +341,7 @@ export async function checkPurchaseArgs(
           rail.key === "solana"
             ? `This needs a ${field} — your receiving address, a Solana pubkey (base58, 32 bytes), because network=solana was asked for. No address, no charge.`
             : `This needs a ${field} — your receiving address, a 0x EVM address, 40 hex characters, on ${rail.label}. USDC on Base by default, Polygon with network=eip155:137, Ethereum, Arbitrum, Optimism or Avalanche with network=<that name>, or Solana with network=solana and a base58 pubkey. No address, no charge.`,
+          { input_field: "wallet" },
         );
       }
       return refuse(
@@ -344,6 +350,7 @@ export async function checkPurchaseArgs(
         rail.key === "solana"
           ? `This needs a ${field} — a Solana pubkey (base58, 32 bytes), because network=solana was asked for; an EVM address has no history there. No wallet, no charge.`
           : `This needs a ${field} — a 0x EVM address, 40 hex characters, on ${rail.label}. This statement reads USDC on Base by default, Polygon with network=eip155:137, Ethereum, Arbitrum, Optimism or Avalanche with network=<that name>, or Solana with network=solana and a base58 pubkey (an EVM address has no history there). No wallet, no charge.`,
+        { input_field: "wallet" },
       );
     }
     if (item.id === "the_statement") {
@@ -355,6 +362,7 @@ export async function checkPurchaseArgs(
             400,
             "bad_request",
             "hours must be a whole number from 1 to 11 (default 6). The window ceiling keeps the read bounded; a longer history is several statements. Nothing charged.",
+            { input_field: "hours" },
           );
         }
       }
@@ -368,6 +376,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Nothing to record, no charge. Put the claimed instructions in the ${args.field("mandate")} — up to 2000 characters, recorded verbatim: what this agent is authorized to do, as the submitter claims it.`,
+        { input_field: "mandate" },
       );
     }
     if (text.length > 2000) {
@@ -375,6 +384,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "The mandate text caps at 2000 characters — a mandate is instructions, not a contract's appendix. Nothing charged.",
+        { input_field: "mandate" },
       );
     }
     const as = read("submitted_as");
@@ -383,6 +393,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         'submitted_as must be "agent" (the agent submitting its own claimed instructions — the default) or "principal" (the human\'s own client submitting them). It is recorded as a claim either way. Nothing charged.',
+        { input_field: "submitted_as" },
       );
     }
     const capRaw = read("declared_cap_usdc");
@@ -393,6 +404,7 @@ export async function checkPurchaseArgs(
           400,
           "bad_request",
           "declared_cap_usdc must be a positive number — the claimed spending ceiling in USDC. Declared, never enforced by us, and the record says so. Nothing charged.",
+          { input_field: "declared_cap_usdc" },
         );
       }
     }
@@ -402,6 +414,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "expires_at must be an ISO 8601 date (e.g. 2026-09-01T00:00:00Z) — the claimed expiry of the authorization. Declared, never enforced by us. Nothing charged.",
+        { input_field: "expires_at" },
       );
     }
   }
@@ -424,6 +437,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "That mandate_id resolves to no mandate this store holds, so it cannot ride a certificate — a signed authorization link that points at nothing would be worse than none. Record the mandate first at /api/buy/the_mandate, then cite the id it returns. Nothing charged.",
+        { input_field: "mandate_id" },
       );
     }
   }
@@ -435,6 +449,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `A confession needs a ${args.field("confession")}, the thing itself, 500 characters. Nothing to hear, no charge.`,
+        { input_field: "confession" },
       );
     }
     if (confession.length > 500) {
@@ -442,6 +457,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free. Nothing charged.",
+        { input_field: "confession" },
       );
     }
   }
@@ -453,6 +469,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Give a ${args.field("tx_hash")} — 0x followed by 64 hex characters for Base or Polygon, or a base58 Solana signature. The shape picks the chain. No hash, no charge.`,
+        { input_field: "tx_hash" },
       );
     }
     const claim = read("claim");
@@ -461,6 +478,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `claim is ${claim.length} characters; the file stores up to ${CASE_FILE_CLAIM_CAP}, verbatim. Shorten it — nothing is truncated on your behalf and nothing was charged.`,
+        { input_field: "claim" },
       );
     }
     const amountRaw = read("expected_amount_usdc");
@@ -471,6 +489,7 @@ export async function checkPurchaseArgs(
           400,
           "bad_request",
           "expected_amount_usdc has to be a positive number of USDC below a billion, or left off. It is recorded as declared, never as observed. Nothing charged.",
+          { input_field: "expected_amount_usdc" },
         );
       }
     }
@@ -480,6 +499,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "url has to be an http(s) URL — the endpoint the purchase was made at — or left off. Nothing charged.",
+        { input_field: "url" },
       );
     }
   }
@@ -491,6 +511,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `This coffee needs a ${args.field("win")}, the thing you closed. No win, no charge.`,
+        { input_field: "win" },
       );
     }
     if (win.length > COFFEE_WIN_CAP) {
@@ -498,6 +519,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part. Nothing charged.`,
+        { input_field: "win" },
       );
     }
   }
@@ -509,6 +531,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Give a bare hostname in the ${args.field("host")} — example.com, not a URL. We read our own books about it; no host, no charge.`,
+        { input_field: "host" },
       );
     }
   }
@@ -520,6 +543,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Give a receiving address in the ${args.field("address")} — an EVM address (0x + 40 hex) or a Solana pubkey (base58). We read the signed chain about it; no address, no charge. Your own address is free: GET /api/provenance/self?address= for the challenge.`,
+        { input_field: "address" },
       );
     }
   }
@@ -531,6 +555,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Nothing to spray. Put your mark in the ${args.field("tag")}, up to 140 characters. No tag, no charge.`,
+        { input_field: "tag" },
       );
     }
     if (tag.length > TAG_CAP) {
@@ -538,6 +563,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `The side of a train holds ${TAG_CAP} characters. Anything longer is a letter, and the mailbox is free at /api/letter. Nothing charged.`,
+        { input_field: "tag" },
       );
     }
     if (tagHasUrl(tag)) {
@@ -545,6 +571,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "No URLs on the train. A tag is a mark, not a billboard — the wall is public and permanent, which is exactly what link spam wants. Say it without the link. Nothing charged.",
+        { input_field: "tag" },
       );
     }
   }
@@ -555,6 +582,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `No dilemma, no charge. Put the question itself in the ${args.field("detail")} — 600 characters tops, one question in, one verdict out.`,
+        { input_field: "detail" },
       );
     }
   }
@@ -566,6 +594,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Nothing to look up. Give a ${args.field("tx_hash")} — a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58) — and we will read that chain once and sign what is there. No hash, no charge.`,
+        { input_field: "tx_hash" },
       );
     }
     const solana = isSolanaSignature(txHash);
@@ -574,6 +603,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "That is not a transaction identifier we can read. Base wants 0x followed by 64 hex characters; Solana wants the base58 transaction signature. Nothing charged; send the real one.",
+        { input_field: "tx_hash" },
       );
     }
     /**
@@ -588,6 +618,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "nonce is an EIP-3009 facility and exists on the EVM rails only — a Solana observation cannot check one, and we will not sign an artifact that silently skipped a check you asked for. Drop the nonce, or send the EVM transaction hash instead. Nothing charged.",
+        { input_field: "nonce" },
       );
     }
   }
@@ -599,6 +630,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Give a ${args.field("tx_hash")} — 0x followed by 64 hex characters. We read that Base receipt once and sign what moved against what ceiling was in force. No hash, no charge.`,
+        { input_field: "tx_hash" },
       );
     }
     const rawCap = read("declared_cap_usdc");
@@ -616,6 +648,7 @@ export async function checkPurchaseArgs(
           400,
           "bad_request",
           "declared_cap_usdc has to be a positive number of USDC below a billion. Leave it off entirely if you have no ceiling to declare — an unparseable one would otherwise read as 'no cap declared', which is a different answer. Nothing charged.",
+          { input_field: "declared_cap_usdc" },
         );
       }
     }
@@ -628,6 +661,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Nothing to look up. Give tx_hashes — ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} Base transaction hashes, comma-separated — and we read each once and sign what is there. No hashes, no charge. One hash wants the single attestation at /api/buy/settlement_attestation.`,
+        { input_field: "tx_hashes" },
       );
     }
     const hashes = raw.split(",").map((hash) => hash.trim()).filter(Boolean);
@@ -636,6 +670,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `The sheaf takes ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} hashes; you sent ${hashes.length}. ${hashes.length < BUNDLE_MIN_HASHES ? "One hash wants the single attestation at /api/buy/settlement_attestation, four tenths of a cent." : "Split it into two purchases."} Nothing charged.`,
+        { input_field: "tx_hashes" },
       );
     }
     const bad = hashes.find((hash) => !TX_HASH.test(hash));
@@ -644,6 +679,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `"${bad.slice(0, 80)}" is not a transaction hash. Base wants 0x followed by 64 hex characters, for every hash in the sheaf. Nothing charged; fix it and resend.`,
+        { input_field: "tx_hashes" },
       );
     }
     if (new Set(hashes.map((hash) => hash.toLowerCase())).size !== hashes.length) {
@@ -651,6 +687,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "The sheaf has a duplicate hash in it. Refused rather than quietly deduplicated — you would be paying for observations you already had. Nothing charged; send each hash once.",
+        { input_field: "tx_hashes" },
       );
     }
   }
@@ -662,6 +699,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         `Nothing to anchor. Give a ${args.field("digest")} — 64 hex characters, a sha256 you computed over bytes you keep — and it goes to a Bitcoin-anchored timestamp. No digest, no charge. If you want the store to hash something FOR you, that is not this item: we deliberately never see your bytes.`,
+        { input_field: "digest" },
       );
     }
     if (!SHA256_HEX.test(digest)) {
@@ -669,6 +707,7 @@ export async function checkPurchaseArgs(
         400,
         "bad_request",
         "That is not a sha256 digest. 64 hex characters, no 0x prefix. Nothing charged; hash your bytes and send the digest itself.",
+        { input_field: "digest" },
       );
     }
   }
