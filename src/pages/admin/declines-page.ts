@@ -115,7 +115,9 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
   const body = `
   <section>
     <h2>The decline desk</h2>
-    <p><strong>${r.rows_scanned}</strong> rows read${r.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
+    <p><strong>${r.index_rows}</strong> read from the decline index${r.index_complete ? " — every decline it holds, so nothing here is hidden by a cap" : " (index scan hit its cap: there are more)"},
+    plus <strong>${r.rows_scanned}</strong> raw rows${r.capped ? " (that scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.
+    <small>The index carries one key per decline and began on 2026-09-06; the raw stream carries every event ever booked, so a decline older than the index is only found if the capped scan reaches it. Before the index, a busy month could spend the whole cap on corpus reads and leave this desk reporting none while the funnel counted refusals.</small>
     <strong>${outside.length}</strong> outside decline${outside.length === 1 ? "" : "s"} from
     <strong>${r.outside_clients.length}</strong> client${r.outside_clients.length === 1 ? "" : "s"}.</p>
     ${verdict}

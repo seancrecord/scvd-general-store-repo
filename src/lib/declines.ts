@@ -2,6 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { KV_KEYS } from "@/lib/kv-keys";
 
 /**
  * THE DECLINE DESK.
@@ -59,6 +60,10 @@ export interface DeclineRow {
 export interface DeclineReport {
   rows_scanned: number;
   capped: boolean;
+  /** Rows read from the dense decline index, where every key is a decline. */
+  index_rows: number;
+  /** True when the index was read to its end: the declines it holds are ALL of them, cap or no cap. */
+  index_complete: boolean;
   declines: DeclineRow[];
   /** Outside declines only — the house testing is not a lost sale. */
   outside_count: number;
@@ -461,6 +466,8 @@ export async function readDeclines(
   const report: DeclineReport = {
     rows_scanned: 0,
     capped: false,
+    index_rows: 0,
+    index_complete: false,
     declines: [],
     outside_count: 0,
     outside_clients: [],
@@ -468,7 +475,81 @@ export async function readDeclines(
     unspecified: 0,
   };
   const clients = new Set<string>();
+  const seen = new Set<string>();
 
+  /** One decline row, folded into the report. Deduped: the index and the raw stream both carry it. */
+  const take = (event: MetricEvent): void => {
+    if (event.kind !== "decline") return;
+    const raw = event.note ?? "unspecified";
+    const identity = `${event.at}|${event.item}|${raw}`;
+    if (seen.has(identity)) return;
+    seen.add(identity);
+
+    // The settle-side path prefixes with "settle:"; strip it for the
+    // reading but keep the stage, because verifying and settling are
+    // different failures with different owners.
+    const stage: DeclineStage = raw.startsWith("settle:") ? "settle" : "verify";
+    const bare = raw.startsWith("settle:") ? raw.slice(7) : raw;
+    const { fault, reading } = readReason(bare);
+
+    report.declines.push({
+      at: event.at,
+      item: event.item,
+      reason: raw,
+      stage,
+      fault,
+      reading,
+      ...(event.user_agent ? { user_agent: event.user_agent } : {}),
+      channel: event.channel,
+      house: event.house,
+    });
+
+    if (!event.house) {
+      report.outside_count += 1;
+      report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
+      clients.add(event.user_agent ?? "(no user-agent)");
+      if (bare === "unspecified") {
+        report.unspecified += 1;
+      }
+    }
+  };
+
+  /**
+   * THE INDEX FIRST, and it is the whole point of this pass. Every key
+   * under declevt: IS a decline, so the cap buys 3000 DECLINES here
+   * where in the raw stream it bought 3000 rows of mostly corpus
+   * reads. On 2026-09-05 that difference read as "nobody has ever been
+   * turned away" in a month the funnel counted refusals in.
+   */
+  let indexCursor: string | undefined;
+  while (report.index_rows < scanCap) {
+    const listed = await kvList(env.COUNTERS, {
+      prefix: KV_KEYS.declineEventPrefix,
+      limit: LIST_PAGE,
+      ...(indexCursor ? { cursor: indexCursor } : {}),
+    });
+    const names = listed.keys.map((key) => key.name);
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    for (const name of names) {
+      if (report.index_rows >= scanCap) break;
+      const event = values.get(name);
+      if (!event) continue;
+      report.index_rows += 1;
+      take(event);
+    }
+    if (listed.list_complete || report.index_rows >= scanCap) {
+      report.index_complete = listed.list_complete;
+      break;
+    }
+    indexCursor = listed.cursor;
+  }
+
+  /**
+   * THEN THE RAW STREAM, unchanged and still capped. The index began
+   * on 2026-09-06; every decline booked before it exists only here,
+   * and only as deep as the cap reaches. Kept so this desk never shows
+   * less than it did before the index existed.
+   */
   let cursor: string | undefined;
   while (report.rows_scanned < scanCap) {
     const listed = await kvList(env.COUNTERS, {
@@ -486,38 +567,7 @@ export async function readDeclines(
       const event = values.get(name);
       if (!event) continue;
       report.rows_scanned += 1;
-      if (event.kind !== "decline") continue;
-
-      const raw = event.note ?? "unspecified";
-      // The settle-side path prefixes with "settle:"; strip it for the
-      // reading but keep the stage, because verifying and settling are
-      // different failures with different owners.
-      const stage: DeclineStage = raw.startsWith("settle:")
-        ? "settle"
-        : "verify";
-      const bare = raw.startsWith("settle:") ? raw.slice(7) : raw;
-      const { fault, reading } = readReason(bare);
-
-      report.declines.push({
-        at: event.at,
-        item: event.item,
-        reason: raw,
-        stage,
-        fault,
-        reading,
-        ...(event.user_agent ? { user_agent: event.user_agent } : {}),
-        channel: event.channel,
-        house: event.house,
-      });
-
-      if (!event.house) {
-        report.outside_count += 1;
-        report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
-        clients.add(event.user_agent ?? "(no user-agent)");
-        if (bare === "unspecified") {
-          report.unspecified += 1;
-        }
-      }
+      take(event);
     }
     if (listed.list_complete || report.rows_scanned >= scanCap) {
       report.capped = report.capped || !listed.list_complete;
@@ -526,6 +576,8 @@ export async function readDeclines(
     cursor = listed.cursor;
   }
 
+  // Two sources, one order: newest first, as the desk has always shown them.
+  report.declines.sort((a, b) => b.at.localeCompare(a.at));
   report.outside_clients = [...clients];
   return report;
 }

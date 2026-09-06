@@ -224,6 +224,17 @@ export const KV_KEYS = {
   bellRing: (who: string, day: string): string => `bell_ring:${who}:${day}`,
   lettersReceived: "letters_received",
   lettersAnswered: "letters_answered",
+  /**
+   * THE DECLINE INDEX (2026-09-06). Declines are the rarest and most
+   * valuable row the store books and they live in the same evt: stream
+   * as every corpus read, so the desk's bounded scan buries them: on
+   * 2026-09-05 the funnel counted refusals for the month while the
+   * desk, having spent its whole cap on newer traffic, reported none.
+   * A second key per decline gives the desk a prefix where every row
+   * is a decline, so its scan reaches months instead of hours.
+   */
+  declineEvent: (invertedTs: string, id: string): string => `declevt:${invertedTs}:${id}`,
+  declineEventPrefix: "declevt:",
   porchSits: (day: string): string => `porch_sits:${day}`,
   porchTreats: (day: string): string => `porch_treats:${day}`,
   /** The keeper's last reading of /admin/instruments, rewritten on every render so the next one can print the slope. */

@@ -25,13 +25,21 @@ async function funnelRowFor(item: string) {
   });
 }
 
+/**
+ * Both homes of an event row. A decline is written twice — evt: for the
+ * fact, declevt: as the desk's finding aid (see KV_KEYS.declineEvent) —
+ * so clearing only the first leaves the desk reading declines this test
+ * did not book.
+ */
 async function clearEvents(): Promise<void> {
-  let cursor: string | undefined;
-  for (;;) {
-    const listed = await testEnv.COUNTERS.list({ prefix: "evt:", limit: 1000, ...(cursor ? { cursor } : {}) });
-    for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
-    if (listed.list_complete) break;
-    cursor = listed.cursor;
+  for (const prefix of ["evt:", "declevt:"]) {
+    let cursor: string | undefined;
+    for (;;) {
+      const listed = await testEnv.COUNTERS.list({ prefix, limit: 1000, ...(cursor ? { cursor } : {}) });
+      for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
+      if (listed.list_complete) break;
+      cursor = listed.cursor;
+    }
   }
 }
 beforeEach(clearEvents);

@@ -39,6 +39,56 @@ function decline(partial: Partial<MetricEvent>): MetricEvent {
  * instrument went in and rendered nowhere until 2026-07-28, which is
  * how a real buyer bounced three times with nobody able to see why.
  */
+/**
+ * THE DECLINE INDEX (2026-09-06). The desk used to scan the raw evt:
+ * stream newest-first, where a decline is one row in thousands of
+ * corpus reads — so on a busy month the cap ran out before any decline
+ * was reached and the desk reported "nobody has ever been turned away"
+ * while the funnel counted refusals for the same month. Declines now
+ * get a second key under a prefix where every row is a decline.
+ */
+describe("the decline index", () => {
+  async function seedIndexRow(event: MetricEvent): Promise<void> {
+    seq += 1;
+    const inverted = String(10_000_000_000_000 - (Date.now() + seq)).padStart(14, "0");
+    await testEnv.COUNTERS.put(
+      `declevt:${inverted}:${seq.toString(36).padStart(6, "0")}`,
+      JSON.stringify(event),
+    );
+  }
+
+  it("finds a decline the raw scan never reaches, because the cap was spent on other rows", async () => {
+    const buried = decline({ note: "insufficient_funds", item: "buried-by-the-cap", user_agent: "late-buyer/1" });
+    await seedIndexRow(buried);
+    // A cap of one row: the raw stream cannot reach anything, as on the live desk.
+    const report = await readDeclines(testEnv, 1);
+    expect(report.declines.some((d) => d.item === "buried-by-the-cap")).toBe(true);
+    expect(report.index_rows).toBeGreaterThan(0);
+    expect(report.by_reason["insufficient_funds"]).toBeGreaterThanOrEqual(1);
+  });
+
+  it("counts a decline once when it is in both the index and the raw stream", async () => {
+    const both = decline({
+      note: "double_booked_reason",
+      item: "in-both-places",
+      at: new Date(Date.now() - 1000).toISOString(),
+      user_agent: "twice/1",
+    });
+    await seedIndexRow(both);
+    await seedRow(both);
+    const report = await readDeclines(testEnv);
+    const rows = report.declines.filter((d) => d.item === "in-both-places");
+    expect(rows).toHaveLength(1);
+    expect(report.by_reason["double_booked_reason"]).toBe(1);
+  });
+
+  it("says whether the index was read to its end, so an empty desk is never mistaken for an empty till", async () => {
+    const report = await readDeclines(testEnv);
+    expect(typeof report.index_complete).toBe("boolean");
+    expect(report.index_rows).toBeGreaterThanOrEqual(0);
+  });
+});
+
 describe("reading a decline", () => {
   it("keeps the facilitator's reason verbatim, never paraphrased", async () => {
     await seedRow(
