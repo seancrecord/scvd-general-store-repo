@@ -101,6 +101,25 @@ export interface ValueCheck {
   name: string;
   ok: boolean;
   detail: string;
+  /**
+   * WHAT THIS CHECK DID NOT LOOK AT, AS DATA (2026-09-06, rule 52's
+   * "ok" half). Present and non-empty only when `ok` is true and some
+   * entry was skipped rather than passed.
+   *
+   * The gap it closes: `ok: true` already named its unjudged entries
+   * — inside an English sentence in `detail`. So a reader parsing the
+   * boolean got a clean pass, and the coverage was recoverable only
+   * by parsing prose. In the limit every entry is unjudged and the
+   * check still reports true, which is a clearance nobody earned.
+   *
+   * We were told this by 0200project on issue #188, about their own
+   * decoder: `drainer_blacklist: ok` for a payee that was never in
+   * the screened set, coverage visible only in the summary text. We
+   * gave them the fix — publish the examined set as data — and then
+   * found this file doing the same thing in the same week. A
+   * consumer now reads coverage instead of reconstructing it.
+   */
+  not_judged?: readonly string[];
 }
 
 /**
@@ -202,6 +221,7 @@ export function l3bChecks(
             payToUnjudged.length === 0
               ? "every accepts entry names a payable address for its own network"
               : `every accepts entry this desk can read names a payable address for its own network. Not judged, on rails this desk does not read: ${payToUnjudged.join("; ")}`,
+          ...(payToUnjudged.length > 0 ? { not_judged: payToUnjudged } : {}),
         }
       : {
           name: "payto-payable",
@@ -216,6 +236,7 @@ export function l3bChecks(
             amountUnjudged.length === 0
               ? "every accepts amount is a non-negative integer string of atomic units"
               : `every accepts amount this desk judges is a non-negative integer string of atomic units. Not judged: ${amountUnjudged.join("; ")}`,
+          ...(amountUnjudged.length > 0 ? { not_judged: amountUnjudged } : {}),
         }
       : {
           name: "amount-atomic",

@@ -238,9 +238,115 @@ describe("a lookup that cannot see every chain must not answer no", () => {
     }
   });
 
-  it("still says no, loudly, on the rails it does read", () => {
-    // The rule forbids guessing, not judging. A guard that cleared
-    // everything would be the same defect wearing the fix's clothes.
-    expect(true).toBe(true);
+  /**
+   * THIS TEST USED TO BE `expect(true).toBe(true)` (fixed 2026-09-06).
+   *
+   * It carried the right comment — "a guard that cleared everything
+   * would be the same defect wearing the fix's clothes" — and then
+   * asserted nothing, so the thing it warned about could happen
+   * freely. readPayTo could have regressed to returning null for
+   * every input and this whole describe would still have gone green,
+   * because every other case here only forbids `false`.
+   *
+   * A check that examines nothing and reports pass, inside the guard
+   * for the rule against exactly that. It is the seventh instance's
+   * twin and it was ours, in this file, for twelve days.
+   */
+  it("still says no, loudly, on the rails it does read", async () => {
+    const { readPayTo } = await import("@/lib/pay-to");
+    const readable: [string, string][] = [
+      ["not-a-base58-address!!", "eip155:8453"],
+      ["0xdeadbeef", "eip155:8453"],
+      ["", "eip155:1"],
+    ];
+    for (const [value, network] of readable) {
+      expect(
+        readPayTo(value, network).payable,
+        `readPayTo(${value}, ${network}) declined to judge a rail this desk DOES read`,
+      ).toBe(false);
+    }
+  });
+});
+
+/**
+ * THE "OK" HALF OF RULE 52 (2026-09-06).
+ *
+ * The rule's title covered the wrongful "no" until this week, and its
+ * enforcement still does: every property above forbids a `false` the
+ * desk cannot support. Nothing forbade the flattering direction — a
+ * check reporting a PASS about something it never examined.
+ *
+ * WE WERE HANDED THE CLASS BY THE PARTY WHOSE PRODUCT HAD IT.
+ * 0200project disclosed, unprompted on issue #188, that their
+ * decoder returned `drainer_blacklist: ok` for a payee that was never
+ * in the set it screened — on every facilitator-relayed settlement,
+ * which is the whole shape of x402. The coverage was real and lived
+ * only in the summary prose.
+ *
+ * AND THEN THIS FILE'S OWN SUBJECT WAS DOING IT. `payto-payable`
+ * returned `ok: true` with its unjudged entries named inside an
+ * English sentence in `detail`. A consumer reading the boolean got a
+ * clean pass; in the limit, every entry unjudged and the check still
+ * true. The fix is the one we recommended to them: publish what was
+ * examined as data. `not_judged` is that field, and this is its
+ * guard.
+ */
+describe("a check that judged nothing must not report a clean pass", () => {
+  /*
+   * A chain nobody has built, chosen deliberately over xrpl:0 — which
+   * this desk READS now, and returns payable: true for. A fixture
+   * that is quietly judged would make every assertion below vacuous,
+   * which is the failure this whole file is about.
+   */
+  const UNJUDGEABLE = { network: "animica:1", amount: "0.01", asset: "X", payTo: "whatever-this-chain-uses" };
+
+  it("names its unjudged entries as data, not only in prose", async () => {
+    const { l3bChecks } = await import("@/lib/value-checks");
+    const { readPayTo } = await import("@/lib/pay-to");
+    const checks = l3bChecks([UNJUDGEABLE], readPayTo);
+    const payTo = checks.find((c) => c.name === "payto-payable")!;
+    expect(payTo.ok, "an unreadable rail is not a failure").toBe(true);
+    expect(
+      payTo.not_judged,
+      "payto-payable passed having judged nothing, and said so only in prose",
+    ).toHaveLength(1);
+    expect(payTo.not_judged![0]).toContain("animica:1");
+    // The prose still says it too — the field is an addition, not a
+    // replacement, so a human reading `detail` loses nothing.
+    expect(payTo.detail).toContain("Not judged");
+  });
+
+  it("a pass that judged everything carries no coverage field at all", async () => {
+    // The other half of the property. A `not_judged: []` on every
+    // check would satisfy a careless test and tell a reader nothing;
+    // absent means "nothing was skipped", present means "read me".
+    const { l3bChecks } = await import("@/lib/value-checks");
+    const { readPayTo } = await import("@/lib/pay-to");
+    const checks = l3bChecks(
+      [{ network: "eip155:8453", amount: "1000", asset: "USDC", payTo: "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F" }],
+      readPayTo,
+    );
+    for (const check of checks) {
+      if (!check.ok) continue;
+      expect(
+        check.not_judged,
+        `${check.name} carries an empty coverage field, which is noise`,
+      ).toBeUndefined();
+    }
+  });
+
+  it("every passing check with a coverage field is non-empty", async () => {
+    // A structural property over both shapes above: the field exists
+    // to carry names. Present-and-empty is the failure mode that
+    // would let this whole guard pass while saying nothing.
+    const { l3bChecks } = await import("@/lib/value-checks");
+    const { readPayTo } = await import("@/lib/pay-to");
+    for (const entry of [UNJUDGEABLE, { network: "eip155:8453", amount: "1000", asset: "USDC", payTo: "0x404018C829a4e5AC5F703D1eB0B942Ae7852017F" }]) {
+      for (const check of l3bChecks([entry], readPayTo)) {
+        if (check.not_judged === undefined) continue;
+        expect(check.not_judged.length, `${check.name} published an empty not_judged`).toBeGreaterThan(0);
+        expect(check.ok, `${check.name} carries coverage on a FAILING check`).toBe(true);
+      }
+    }
   });
 });
