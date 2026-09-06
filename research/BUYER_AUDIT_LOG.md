@@ -168,7 +168,9 @@ Repair: reject invalid types consistently before payment and return the actual f
 
 ### BUY-004 — P2: over-limit purpose silently truncates after payment
 
-**Open · required-input audit.** 150 signed cases accept a purpose exceeding the published 280-character limit and sign a shortened value. Keep separate from BUY-009, which corrupts valid within-limit text.
+**Repaired in the purpose-boundary commit.** Every advertised product rejects over-limit purposes before HTTP/MCP quotes, and signed controls on every rail reach neither verification nor settlement. The runtime and schema share the limit, counted in Unicode code points. Allowed purpose text is carried verbatim into the certificate, including surrounding whitespace and whole emoji. All 44 new controls failed before the repair; 105 related tests, typecheck and both dry-run bundles pass afterward. BUY-009/026 remain open for non-purpose fields.
+
+**Original required-input audit.** 150 signed cases accept a purpose exceeding the published 280-character limit and sign a shortened value. Keep separate from BUY-009, which corrupts valid within-limit text.
 
 Repair: reject the over-limit value before payment; do not silently truncate a field promised verbatim.
 

@@ -1,6 +1,6 @@
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -158,6 +158,12 @@ export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: P
   }
   const encoding = checkPurchaseEncoding(item, args);
   if (encoding) return encoding;
+  const purpose = args.get("purpose");
+  if (purpose !== undefined && Array.from(purpose).length > PURCHASE_PURPOSE_MAX_LENGTH) {
+    return refuse(400, "bad_request",
+      `${args.field("purpose")} exceeds ${PURCHASE_PURPOSE_MAX_LENGTH} Unicode characters. Shorten it before purchasing; we do not truncate signed statements. Nothing charged.`,
+      { input_field: "purpose", max_length: PURCHASE_PURPOSE_MAX_LENGTH });
+  }
   const passId = args.get("pass_id");
   if (item.id === "recurring_patronage" && (passId !== undefined || args.has?.("pass_id"))) {
     try {
@@ -951,7 +957,9 @@ export function purchaseInputFrom(
    * handling as win and tag; capped at 280 so a receipt stays a
    * receipt and not a context dump.
    */
-  const purpose = sanitizeText(read("purpose"), 280);
+  // Validated against the published limit before quoting. Preserve the
+  // buyer's exact statement, including whitespace and whole Unicode characters.
+  const purpose = read("purpose");
   if (purpose) {
     input.purpose = purpose;
   }

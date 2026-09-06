@@ -16,8 +16,8 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 ## Remaining findings
 
 - [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
-- [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in the MCP string-type validation commit.
-- [ ] **BUY-004 — P2: over-limit purpose silently truncates after payment** — open.
+- [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
+- [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in the purpose-boundary commit.
 - [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
 - [ ] **BUY-007 — P1: Solana retries bypass the purchase cache** — open.
 - [ ] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — open.
@@ -60,3 +60,5 @@ Final validation on the repaired current-main snapshot covered 552 test files: 5
 ## Input-contract repairs
 
 BUY-003: non-text JSON is refused for every advertised string field before quoting or verification. The public-door matrix covers all 32 current products, five invalid JSON types, and signed controls for five buyer fields on every offered rail. All 37 new tests failed on unchanged source. The repaired gate passed 70 tests across four files and typechecking. The full suite remains delegated to GitHub.
+
+BUY-004: the schema and validator share one purpose limit. Both doors reject excess length before quoting or verification; accepted text is signed exactly as sent, with Unicode code-point counting and no post-payment truncation. All 44 new controls were observed red before the fix. The related gate passed 105 tests across four files, typecheck, and both Worker dry-run bundles. This also fixes purpose-specific whitespace/Unicode loss; BUY-009 and BUY-026 remain open for their other affected fields.
