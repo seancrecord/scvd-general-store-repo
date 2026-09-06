@@ -6,6 +6,7 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
+import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import { ASKED_FOR_SENTENCE } from "@/store/copy/asked-for";
 import { ASYNC_JOB, COLLECTIONS } from "@/lib/collection-semantics";
 import { ORDER_STATUSES, TERMINAL_ORDER_STATUSES } from "@/types";
@@ -7086,22 +7087,27 @@ openapiRoutes.get("/openapi.json", async (c) => {
                   type: "array",
                   description:
                     "The rows, in the shelf's own order. A single-item answer carries description and at_a_glance beside them.",
+                  /*
+                   * THE SAME ROW THE SHELF BUILDS, not a second
+                   * description of it. This block restated the ten
+                   * fields by hand, so a field added to catalogRow
+                   * appeared in the answer, in the MCP output schema,
+                   * and nowhere in the contract. The two extras are
+                   * added here because only the item_id branch
+                   * carries them.
+                   */
                   items: {
-                    type: "object",
-                    required: ["id", "name", "price_usdc", "fulfillment", "buy_url"],
+                    ...CATALOG_ROW_SCHEMA,
                     properties: {
-                      id: { type: "string" },
-                      name: { type: "string" },
-                      subtitle: { type: "string" },
-                      price_usdc: { type: "number" },
-                      price_tiers_usdc: { type: "array", items: { type: "number" } },
-                      cadence: { type: "string" },
-                      fulfillment: { type: "string" },
-                      reads: { type: "string" },
-                      buy_url: { type: "string", format: "uri" },
-                      listing_url: { type: "string", format: "uri" },
-                      description: { type: "string" },
-                      at_a_glance: { type: "object" },
+                      ...CATALOG_ROW_SCHEMA.properties,
+                      description: {
+                        type: "string",
+                        description: "The item's full description; item_id answers only.",
+                      },
+                      at_a_glance: {
+                        type: "object",
+                        description: "The at-a-glance block; item_id answers only.",
+                      },
                     },
                   },
                 },

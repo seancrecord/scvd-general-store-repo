@@ -62,11 +62,38 @@ export function webmcpUnhandledTools(): string[] {
 }
 
 export function webmcpPurchaseTools() {
+  const resultProperties = {
+    error: { type: "string", description: "A refusal or recovery instruction; no automatic retry is made." },
+    status: { type: "integer", description: "HTTP status when the store returned a response." },
+    body: { description: "The store's JSON response or delivered page text." },
+    buy_url: { type: "string", format: "uri" },
+    idempotency_key: { type: "string", description: "Reuse this key with the original URL and signed payment for recovery." },
+  };
   return [
     {
       name: "quote_store_purchase",
       description: "A free x402 v2 quote for a catalog buy_url or paid publication URL, including query inputs. Returns offered networks, atomic USDC amounts, a quote_id and retry key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
       inputSchema: { type: "object", properties: { buy_url: { type: "string", description: "A buy_url on this store with the required query inputs filled in." } }, required: ["buy_url"], additionalProperties: false },
+      outputSchema: { type: "object", properties: {
+        ...resultProperties,
+        quote_id: { type: "string", description: "Pass this page-local identifier to complete_store_purchase." },
+        expires_at: { type: "string", format: "date-time" },
+        payment_required: { type: "object", description: "Decoded x402 v2 terms to give the buyer's wallet or payment client.", properties: {
+          x402Version: { type: "integer", const: 2 },
+          resource: { type: "object" },
+          accepts: { type: "array", items: { type: "object", properties: {
+            scheme: { type: "string", const: "exact" },
+            network: { type: "string" },
+            amount: { type: "string", description: "Atomic USDC; copy unchanged." },
+            asset: { type: "string" },
+            payTo: { type: "string" },
+            maxTimeoutSeconds: { type: "number" },
+            extra: { type: "object" },
+          } } },
+        } },
+        payment_sent: { type: "boolean", const: false },
+        next: { type: "string" },
+      } },
       annotations: { readOnlyHint: true, consequentialHint: false },
       operation: "quote",
     },
@@ -74,6 +101,10 @@ export function webmcpPurchaseTools() {
       name: "complete_store_purchase",
       description: "Submits a buyer-authorized, already-signed x402 v2 payment for a quote from this page. May transfer USDC. Returns the goods or order, HTTP status and payment receipt. Requires a compatible external wallet/client; never accepts private keys or wallet secrets. Retries reuse the quote's original URL and key. Cancellation does not prove settlement stopped.",
       inputSchema: { type: "object", properties: { quote_id: { type: "string" }, signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." } }, required: ["quote_id", "signed_payment"], additionalProperties: false },
+      outputSchema: { type: "object", properties: {
+        ...resultProperties,
+        payment_response: { type: ["string", "null"], description: "The PAYMENT-RESPONSE header, when supplied by the store." },
+      } },
       annotations: { readOnlyHint: false, consequentialHint: true },
       operation: "complete",
     },
@@ -91,6 +122,17 @@ function registrations(): string {
         // tool without one is refused by test, never served long.
         description: tool.summary ?? tool.description,
         inputSchema: tool.inputSchema,
+        /*
+         * WHAT COMES BACK, not only how to ask (2026-09-06). Every
+         * catalogue row has carried an outputSchema since the surface
+         * contract; this serializer dropped it, so a browser agent
+         * had to call a tool to learn what a call returns — the one
+         * cost the schema exists to remove — and a planner could not
+         * see that find_in_catalog hands back the id the next tool
+         * takes. Passed through, never restated: one schema, both
+         * doors, no way for them to drift.
+         */
+        outputSchema: tool.outputSchema,
         annotations: tool.annotations,
         endpoint: TOOL_ENDPOINTS[tool.name],
       })),
@@ -190,6 +232,7 @@ export function webmcpScript(): string {
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema,
+      outputSchema: tool.outputSchema,
       annotations: tool.annotations,
       // (input, { signal }): the second argument carries the host's
       // AbortSignal; an already-aborted call never touches the network.
@@ -214,7 +257,20 @@ export const webmcpRoutes = new Hono<HonoEnv>();
 
 webmcpRoutes.get("/webmcp.js", (c) => {
   c.header("Content-Type", "text/javascript; charset=utf-8");
+  /*
+   * Five minutes, and the conditional-GET layer supplies the ETag
+   * that makes each re-check cost a header rather than 12KB. Short
+   * because a tool registered today should reach an already-open tab
+   * today; the validator is what makes short cheap.
+   */
   c.header("Cache-Control", "public, max-age=300");
+  /*
+   * No sniffing. The till has said this since it shipped and this
+   * script did not, which was an inconsistency rather than a
+   * decision: a script served without it is a script somebody else's
+   * browser guessed the type of.
+   */
+  c.header("X-Content-Type-Options", "nosniff");
   return c.body(webmcpScript());
 });
 

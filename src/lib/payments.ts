@@ -527,7 +527,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     // catalogs. Declaring none of them is why our entries in someone
     // else's index have been anonymous URLs with prices on them.
     ...storeServiceMetadata(env),
-    extensions: buyDiscoveryExtensions(item),
+    extensions: buyDiscoveryExtensions(item, env.STORE_BASE_URL),
     customPaywallHtml: browserPaywallHtml(item, env),
     unpaidResponseBody: async () => ({
       contentType: "application/json",

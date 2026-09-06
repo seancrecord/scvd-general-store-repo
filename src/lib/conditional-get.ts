@@ -24,8 +24,9 @@ import type { HonoEnv } from "@/types";
  * useless thing to trust us about. The signed artifacts carry
  * ed25519 signatures; those are a different claim entirely.
  *
- * THE BOUNDARY: GET, answered 200, a machine-readable document body,
- * outside /admin, and never on a response marked no-store. Money
+ * THE BOUNDARY: GET, answered 200, a machine-readable document body
+ * or one of this store's own scripts, outside /admin, and never on a
+ * response marked no-store. Money
  * paths are marked no-store and stay outside — a 304 on a payment
  * challenge would hand a client a stale nonce, which is the one
  * failure this whole idea could cause.
@@ -40,9 +41,40 @@ import type { HonoEnv } from "@/types";
  * all of them — have no CORS layer at all and get the whole benefit.
  */
 
-/** The same document class the cross-origin allowance derives. */
+/**
+ * The document class the cross-origin allowance also names. It is
+ * copied rather than shared, and since 2026-09-06 the two are no
+ * longer identical: see FIRST_PARTY_SCRIPT below for what this leg
+ * covers that the CORS leg deliberately does not.
+ */
 const READABLE_DOCUMENT =
   /^(application\/(json|xml|[\w.+-]+\+json)|text\/(markdown|plain|xml))\b/;
+
+/**
+ * THE SCRIPTS ARE DOCUMENTS TOO — just ones a browser executes
+ * rather than parses.
+ *
+ * /webmcp.js is how a browser agent discovers this store has tools
+ * at all, and it is 12KB behind max-age=300: an agent with a tab
+ * open re-downloaded it twelve times an hour to be told nothing had
+ * changed. /till.js asked for `must-revalidate` while carrying no
+ * validator to revalidate against, which is a header requesting a
+ * conversation the door could not have.
+ *
+ * Both spellings, because this store serves both: RFC 9239 settled
+ * on text/javascript and the till still answers the obsolete
+ * application/javascript. A rule that covered only the modern
+ * spelling would silently miss half its own scripts.
+ *
+ * THE CORS LEG IS NOT WIDENED TO MATCH, and that asymmetry is the
+ * point rather than an oversight. Caching asks "may a holder skip
+ * re-reading these bytes"; the cross-origin allowance asks "may a
+ * stranger's page read these bytes with our name on the request".
+ * A `<script src>` needs no CORS header to run, so nothing is lost
+ * by leaving JavaScript out of the allowance, and a class widened
+ * for a caching reason would be a cross-origin decision nobody made.
+ */
+const FIRST_PARTY_SCRIPT = /^(text|application)\/javascript\b/;
 
 function hex(bytes: ArrayBuffer): string {
   return [...new Uint8Array(bytes)]
@@ -85,7 +117,8 @@ export const conditionalGet: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.res.headers.has("ETag")) return;
   const cacheControl = c.res.headers.get("Cache-Control") ?? "";
   if (cacheControl.includes("no-store")) return;
-  if (!READABLE_DOCUMENT.test(c.res.headers.get("Content-Type") ?? "")) return;
+  const type = c.res.headers.get("Content-Type") ?? "";
+  if (!READABLE_DOCUMENT.test(type) && !FIRST_PARTY_SCRIPT.test(type)) return;
 
   const body = await c.res.arrayBuffer();
   const etag = `"${hex(await crypto.subtle.digest("SHA-256", body)).slice(0, 32)}"`;

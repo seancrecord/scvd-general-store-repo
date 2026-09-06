@@ -1,3 +1,5 @@
+// Worker bindings load the app; initialize them before the timed probe assertions.
+import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { captureWatchEvidence } from "@/services/watch-evidence";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
@@ -144,7 +146,6 @@ describe("the round writes down what only it can see", () => {
       ),
     );
     const { probeHost } = await import("@/services/ward-round");
-    const { env } = await import("cloudflare:test");
     const row = await probeHost(env as never, "https://door.example/api/buy/thing");
     expect(row.signer_kids).toEqual(["did:web:door.example#key-1"]);
     expect(typeof row.latency_ms).toBe("number");
@@ -169,7 +170,6 @@ describe("the round writes down what only it can see", () => {
       ),
     );
     const { probeHost } = await import("@/services/ward-round");
-    const { env } = await import("cloudflare:test");
     const row = await probeHost(env as never, "https://bare.example/api/buy/thing");
     expect(row.signer_kids).toEqual([]);
     vi.unstubAllGlobals();

@@ -120,6 +120,13 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/operators", "operators"],
   ["/directory", "directory"],
   ["/openapi.json", "openapi.json"],
+  /*
+   * COUNTED FROM 2026-09-06, the day the catalog and the discovery
+   * document started naming it. The whole point of pointing at the
+   * small contract is to find out whether anyone takes it, and an
+   * uncounted door cannot answer that.
+   */
+  ["/openapi-tools.json", "openapi-tools"],
   ["/llms-full.txt", "llms-full.txt"],
   ["/index.md", "index.md"],
   ["/mcp.md", "mcp.md"],

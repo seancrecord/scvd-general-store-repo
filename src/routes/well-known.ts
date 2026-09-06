@@ -1,6 +1,7 @@
 import { publicationCheckout, publicationCollections, publicationLinks } from "@/lib/publication-checkout";
 import { pennyPageTiersUsdc } from "@/lib/payments";
 import { buyerLinks, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
+import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { DOCS_SERVER_NAME, DOCS_TOOL_NAME, docsToolCatalog } from "@/routes/mcp-docs";
 import { VERIFIER_SERVER_NAME, VERIFIER_TOOLS } from "@/routes/mcp-verifier";
@@ -274,6 +275,16 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
      * catalog exists beside it.
      */
     catalog: `${base}/.well-known/x402.json`,
+    /*
+     * NAMING THE CONTRACT AT ALL (2026-09-06). This document is where
+     * a client arrives to learn how to call us, and it named no
+     * contract of any kind: a reader had to find /openapi.json
+     * somewhere else. Both are named now, largest last, with the note
+     * that says which answers which question. See routes/catalog.
+     */
+    openapi_tools: `${base}/openapi-tools.json`,
+    openapi_tools_note: OPENAPI_TOOLS_NOTE,
+    openapi: `${base}/openapi.json`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
     trust: `${base}/.well-known/trust.json`,
     did: `${base}/.well-known/did.json`,
@@ -395,6 +406,9 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
     openapi: `${base}/openapi.json`,
+    // The same doors, small enough to read: see the note in routes/catalog.
+    openapi_tools: `${base}/openapi-tools.json`,
+    openapi_tools_note: OPENAPI_TOOLS_NOTE,
     catalog: `${base}/menu.json`,
     stats: `${base}/stats`,
     practice_counter: `${base}/try`,
@@ -865,6 +879,8 @@ function mcpManifest(base: string) {
     which_door: `${base}/mcp.md`,
     documentation: `${base}/developers`,
     openapi: `${base}/openapi.json`,
+    openapi_tools: `${base}/openapi-tools.json`,
+    openapi_tools_note: OPENAPI_TOOLS_NOTE,
   };
 }
 
