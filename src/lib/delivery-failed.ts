@@ -25,7 +25,7 @@ export const DELIVERY_FAILED_CODE = "delivery_failed";
 
 export function deliveryFailedBody(
   base: string,
-  item: MenuItem,
+  item: Pick<MenuItem, "name">,
   settled: SettledPayment,
 ): Record<string, unknown> & { error: string } {
   return {
