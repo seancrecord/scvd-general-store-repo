@@ -178,6 +178,28 @@ function decodeChallengeHeader(headers: Record<string, string>): unknown {
 }
 
 /**
+ * A fresh, unsigned quote for a protocol error envelope. Unlike runMcpPayment,
+ * this does not book a second ask or decline. The SDK still owns the offered
+ * rails and amounts; a malformed payload never reaches verify or settle here.
+ */
+export async function readMcpPaymentChallenge(env: Env, itemId: string): Promise<Record<string, unknown>> {
+  const path = `/api/buy/${itemId}`;
+  const stack = getPaymentStack(env);
+  await stack.initialized;
+  const result = await stack.httpServer.processHTTPRequest({
+    adapter: new McpBuyAdapter(`${env.STORE_BASE_URL}${path}`, path, undefined, "mcp-client"),
+    path,
+    method: "GET",
+  });
+  if (result.type !== "payment-error" || result.response.status !== 402) {
+    throw new Error("MCP quote did not produce payment requirements");
+  }
+  const challenge = await withSignedOffers(env, result.response.headers, decodeChallengeHeader(result.response.headers));
+  if (!isRecord(challenge)) throw new Error("MCP quote has no readable payment requirements");
+  return challenge;
+}
+
+/**
  * Run the full payment pipeline for one MCP purchase. Returns either
  * the 402 challenge to relay or a settled payment ready to fulfill.
  */

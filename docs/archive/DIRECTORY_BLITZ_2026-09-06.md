@@ -1,4 +1,38 @@
-# THE DIRECTORY BLITZ — every venue worth a listing, one page
+# THE DIRECTORY BLITZ — archived 2026-09-06
+
+Moved here from `registry/directory-blitz.md`. An old citation to
+that path resolves to this file. Not the desk. Do not update it.
+
+**WHY IT WAS ARCHIVED.** It had become a third record of where the
+store is listed, disagreeing with the other two. Its "Not yet
+opened" table still carried **mcpbeat.com** while
+`src/store/trust-signals.ts` had carried mcpbeat pages for both the
+store and the tab, and the README named them. Its own 2026-08-19
+note above pointed at a `DISTRIBUTION.md` in `docs/archive/`; that
+file has been back at the repository root since. Two stale rows out
+of a hand-maintained list is the rule 10 failure this file could not
+avoid: a venue list decays every time a crawler finds us, and this
+one had no test behind it.
+
+**WHAT SUPERSEDES IT, by question.**
+
+- *Where is the store actually listed?* `src/store/trust-signals.ts`
+  — the only record that is served, dated per row, and read by
+  `/trust`. It is the answer to any listing question.
+- *What is left to submit, and what needs the keeper's hand?*
+  `KEEPER_LIST.md` under "Directory and listings", which now carries
+  the unopened handshake venues inline rather than by reference here.
+- *What is the doctrine for a listing?* `DISTRIBUTION.md`.
+- *Which crawlers knocked, and what are they?* `src/services/mcp-ward.ts`
+  holds the ones that matter to the ward; the one-month census below
+  is the 2026-09-02 read it came from, kept as history.
+
+Everything below is the file as it stood. The procedure is still
+sound; every count, version and listing state in it is history.
+
+---
+
+## The header as it stood
 
 > NOTE 2026-08-19: partially superseded — ClawHub is at v3.x per
 > registry/clawhub/published.json (the "republish to 2.0.0 pending"

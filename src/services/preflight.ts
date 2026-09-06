@@ -508,6 +508,12 @@ export interface PreflightCheck {
   name: string;
   ok: boolean;
   detail: string;
+  /**
+   * What this check did not look at, as data rather than prose. Set
+   * only on a passing check that skipped something — see ValueCheck
+   * in lib/value-checks.ts for why it exists and who found it.
+   */
+  not_judged?: readonly string[];
 }
 
 /** Advisory: true and worth knowing, never folded into the verdict. */
@@ -1911,8 +1917,8 @@ export async function preflightUrl(
    * NOT run here: this free door's load-bearing promise is one
    * outbound request, held by test as a count, and an eth_call with
    * transport retries is several. It runs on the paid single-door
-   * audit, where the five dollars is the meter and the probe runs
-   * post-settle — the response's signed_report pointer says so.
+   * audit, where the price covers the extra reads. Fallible report generation
+   * finishes before pending.settle(); signing follows settlement.
    */
 
   /*

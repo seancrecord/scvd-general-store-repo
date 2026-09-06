@@ -1,8 +1,8 @@
 # PUBLISHING A PACKAGE TO npm, FROM THE ACTIONS TAB.
 #
-# Four packages live in this repo — scvd (cli/), scvd-tab (tab/),
-# x402-verify (verifier/) and x402-sign (signer/) — and until now every
-# one of them was published by hand from a laptop. That worked, and it
+# The package choices below are the current publishable set. This
+# workflow began with cli/, tab/, verifier/ and signer/; before it,
+# packages were published by hand from a laptop. That worked, and it
 # cost two things worth having:
 #
 #   1. PROVENANCE. A hand publish is an unsigned assertion that a
@@ -17,7 +17,7 @@
 #      greps this directory for a publishing workflow and reported
 #      "packaging workflow not detected" — accurately. It cannot see
 #      npm; it can only see whether releases are automated from CI. The
-#      three published packages were invisible to it.
+#      published packages were invisible to it.
 #
 # RULE 30 IS INTACT, AND THAT IS DELIBERATE. workflow_dispatch ONLY:
 # never on push, never on a tag, never on a merge, never on a schedule.
@@ -34,8 +34,8 @@
 #
 # ONE-TIME SETUP (browser; a phone is fine):
 #   1. npmjs.com → your avatar → Access Tokens → Generate New Token →
-#      Granular Access Token. Give it Read and write on the four
-#      packages (or on the whole account), and an expiry you will
+#      Granular Access Token. Give it Read and write only on the
+#      packages you intend to publish, and an expiry you will
 #      actually remember to rotate.
 #   2. This repo → Settings → Secrets and variables → Actions →
 #      New repository secret. Name: NPM_TOKEN. Paste the token.

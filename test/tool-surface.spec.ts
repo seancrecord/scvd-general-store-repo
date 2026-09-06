@@ -124,14 +124,22 @@ describe("the catalog stays inside a context budget", () => {
     0,
   );
 
-  it("keeps the whole tools/list description payload under 33k characters", () => {
+  it("keeps the whole tools/list description payload under 34k characters", () => {
     /*
-     * Raised from 32k on 2026-09-05, on purpose, in this commit: the
-     * fifteenth tool (check_order, the poll half of the async job on
-     * this door) took the catalog from 31.9k to 32.5k. Nothing was
-     * padded; the ceiling was already within one tool of the shelf.
+     * Raised from 32k on 2026-09-05 for the fifteenth tool
+     * (check_order), and from 33k on 2026-09-06 for the sixteenth
+     * (find_in_catalog, the shelf made searchable). Both are real
+     * jobs no other tool expressed, and both descriptions were cut
+     * before the ceiling was moved rather than after.
+     *
+     * TWO RAISES IN TWO DAYS IS ITSELF THE READING. This is a
+     * tripwire, not a target, and the thing it is watching for is a
+     * catalog that grows because nobody is counting. The next raise
+     * should come with a reason to believe the shelf grew a job
+     * rather than a paragraph — and if it cannot, the answer is to
+     * cut, not to move the line again.
      */
-    expect(total).toBeLessThan(33_000);
+    expect(total).toBeLessThan(34_000);
   });
 
   it("keeps any single tool under half the payload", () => {

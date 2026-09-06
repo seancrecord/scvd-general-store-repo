@@ -448,7 +448,7 @@ export async function issuePassport(
         issued: false,
         reason: "retracted-reading",
         correction_date: retraction.correction_date,
-        detail: `${host} has no current verdict from this store. Its latest observation failed only ${retraction.checks.join(", ")}, and ${retraction.why} The correction is at ${base}/corrections, dated ${retraction.correction_date}. Treat this as no evidence rather than as a soft no — the free self-check is POST ${base}/api/preflight, and it needs no account.`,
+        detail: `${host} has no current verdict from this store. Its latest observation failed only ${retraction.checks.join(", ")}. ${retraction.why} The correction is at ${base}/corrections, dated ${retraction.correction_date}. Treat this as no evidence rather than as a soft no — the free self-check is POST ${base}/api/preflight, and it needs no account.`,
       };
     }
     return {

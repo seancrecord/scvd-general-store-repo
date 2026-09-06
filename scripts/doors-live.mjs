@@ -18,8 +18,9 @@
  *   npm run doors:live -- --doors=https://scvd-doors.<account>.workers.dev
  *
  * AFTER, the same command reads the pair through the route (the store
- * side is then reached over the doors' own hand-over, marked by the
- * X-Scvd-Doors header, and the table says which Worker answered).
+ * side may also be the doors Worker). The comparison therefore also
+ * checks each quote against the store's discovery accepts: two equally
+ * misconfigured quote Workers must never count as parity.
  *
  * READ-ONLY: unpaid GETs and nothing else. Exit 0 when every door
  * agrees, 1 when any differs, 2 when the shelf could not be read.
@@ -45,14 +46,15 @@ async function paidDoors() {
   const res = await fetch(`${STORE}/.well-known/x402`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(TIMEOUT_MS) });
   if (!res.ok) throw new Error(`discovery answered ${res.status}`);
   const doc = await res.json();
-  const paths = [];
+  const resources = new Map();
   for (const r of doc.resources ?? []) {
     const url = typeof r.resource === "string" ? r.resource : (r.resourceUrl ?? r.resource?.url);
     if (typeof url !== "string" || (r.method ?? "GET").toUpperCase() !== "GET") continue;
     const path = new URL(url).pathname;
-    if (path.startsWith("/api/buy/")) paths.push(path);
+    if (path.startsWith("/api/buy/")) resources.set(path, { path, accepts: r.accepts ?? null });
   }
-  return [...new Set(paths)];
+  if (resources.size === 0) throw new Error("discovery contains no paid doors to compare");
+  return [...resources.values()];
 }
 
 async function knock(base, path) {
@@ -83,9 +85,9 @@ try {
   process.exit(2);
 }
 const rows = [];
-for (const path of paths) {
+for (const { path, accepts } of paths) {
   const [a, b] = await Promise.all([knock(STORE, path), knock(DOORS, path)]);
-  rows.push({ path, ...compareAnswers(a, b), store: a.handed ?? null, doors: b.handed ?? null });
+  rows.push({ path, ...compareAnswers(a, b, accepts), store: a.handed ?? null, doors: b.handed ?? null });
 }
 const differs = rows.filter((r) => r.verdict !== "agrees").length;
 if (json) {

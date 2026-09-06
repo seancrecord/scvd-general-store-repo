@@ -12,8 +12,10 @@
  * first organic settle. That gate exists for one reason, stated in the
  * spec: we cannot be the trust anchor for a FLOW WE HAVE NEVER
  * COMPLETED WITH A STRANGER. It guards the paid-transaction claim, and
- * it still does — no origin appears below as a completed x402 purchase
- * except this store, and none will until a stranger buys something.
+ * the entry roster still needs its own observed delivery evidence.
+ * Correction 2026-09-06: this old gate rationale is not a current sales
+ * count. Later sale records live in the books; they do not automatically
+ * add a transacted entry to this hand-maintained list.
  *
  * What v1 adds is a SECOND, WEAKER CLASS OF ENTRY that the gate was
  * never about: services the keeper used, that did the thing they said
@@ -152,7 +154,7 @@ export const TRUST_LIST_ATTESTS =
  * receipt. It is not promoted into this list.
  */
 export const TRUST_LIST_SCOPE_NOTE =
-  "The list grows by hand, one origin at a time, and only after the keeper has personally done the thing. It is not a crawl and there is no scoring. One hard limit remains: this store is the only origin listed as a completed x402 purchase, and it will stay that way until a stranger buys something here — a trust anchor for a flow we have never finished with someone we don't know would be worth nothing. Unpaid entries carry no such gate and are marked plainly as unpaid.";
+  "The list grows by hand, one origin at a time, and only after the keeper has personally done the thing. It is not a crawl and there is no scoring. The sell-side gate was ruled on 2026-07-29; this list does not report whether that sales milestone has since been met. Each paid entry still needs its own dated delivery evidence and the keeper's decision. Sales elsewhere in the books do not automatically add an origin here. Unpaid entries are marked plainly as unpaid.";
 
 /** How an origin gets considered. Never automatic, never for money. */
 export const TRUST_LIST_SUBMISSION_NOTE =

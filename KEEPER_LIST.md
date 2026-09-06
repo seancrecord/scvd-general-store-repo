@@ -26,67 +26,61 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- ⚑ **RULINGS WAITING ON YOUR PEN (09-06).** Everything on
-  `claude/402signal-x402-payment-6n12hk` that is taste or policy
-  rather than arithmetic, in one place. All are one edit to undo;
-  the file and symbol are named so none of it needs archaeology.
+- **RULED 2026-09-06 — all ten, approved as shipped.** The rulings
+  that were waiting on your pen are decided; nothing below needs
+  work, and this row is the record rather than a queue. Each is one
+  edit to reverse if you change your mind, and the file and symbol
+  are named.
 
-  **What strangers read.** `src/services/outreach.ts`:
-  1. The broken-door note's SUBJECT, for a door that answered:
-     was "your x402 endpoint at X is turning buyers away", now
-     "a failed readiness check on your x402 endpoint at X". A door
-     that gave no answer at all keeps the old subject. `draftNote`.
-  2. Its FINDING: was "got a response that no x402 buyer can pay:
-     <checks>", now "got an answer that did not pass our readiness
-     check. What failed, by name: <checks>", with the check
-     definitions linked. This is the sentence Ross wrote back
-     about. `draftNote`.
-  3. The re-check line names the MOMENT ("re-checked live at 22:41
-     UTC on 2026-09-05") rather than "seconds before this note was
-     sent", which stopped being true once the hand road could send
-     an hour later. `draftNote`.
-  4. The welcome still opens "our weekly pass" though it now dates
-     by the knock rather than the seal. Fine as is, or reword.
-     `draftWelcome`.
+  APPROVED, in `src/services/outreach.ts` — the words strangers read:
+  1. The broken-door note's subject, for a door that ANSWERED, is
+     "a failed readiness check on your x402 endpoint at …" (was "is
+     turning buyers away"). A door that gave no answer at all keeps
+     the old subject, which is still true of it. `draftNote`.
+  2. Its finding is "got an answer that did not pass our readiness
+     check. What failed, by name: …", with the check definitions
+     linked (was "a response that no x402 buyer can pay"). This is
+     the sentence Ross wrote back about. `draftNote`.
+  3. The re-check line names the moment rather than "seconds before
+     this note was sent", which stopped being true once the hand
+     road could send an hour after the probe. `draftNote`.
+  4. The welcome KEEPS its "our weekly pass" opening. It dates by
+     the knock now rather than the seal, which was the actual defect
+     TensorFeed named; the phrasing was offered for a reword and you
+     kept it. `draftWelcome`.
 
-  **What a public page says — the big one.** `src/store/retracted-readings.ts`:
-  5. A passport whose latest row failed ONLY checks we have since
-     retracted no longer publishes `not-ready`. It refuses as
-     `retracted-reading`, names the correction that withdrew it,
-     and says there is no current verdict. It never upgrades to
-     ready — we withdrew our reason, we did not acquire a new
-     verdict. This changes what scvd.store says in public about a
-     named host, which is why it is yours and not mine. The rule
-     is narrow by construction: only the 2026-W36 round, only
-     `payto-payable` / `amount-atomic` / `transfer-method-signable`,
-     and only where the row's own recorded rails show the old
-     reader could not have judged it.
+  APPROVED, in `src/store/retracted-readings.ts` — what a public page
+  says about a named host:
+  5. A passport whose latest row failed ONLY checks this store has
+     since retracted no longer publishes `not-ready`. It refuses as
+     `retracted-reading`, names the correction that withdrew it, and
+     never upgrades to ready — we withdrew our reason, we did not
+     acquire a verdict. Narrow by construction: round 2026-W36 only,
+     three checks only, and only where the row's own recorded rails
+     show the pre-correction reader could not have judged it.
 
-  **The artifact.** `src/services/badge-svg.ts` (`CHIP_LAYOUT` holds
-  the geometry; the palette is the block above `CHIP_PALETTE`):
-  6. THE ASPECT CHANGED — the chip is a 400x110 card, not a 300x56
-     ribbon. A chip anyone already pasted renders squashed until
-     they re-copy the snippet. Both snippets emit the new size on
-     their own. This is the only change on the branch with a cost
-     to somebody outside, and it is reversible.
-  7. The ground is forest-black with a foil frame and seal, a
-     bevelled rim, bold type, and YOUR DINO in the seal instead of
-     the letters SCVD (one path, drawn from `favicon.ts`, so the
-     mark cannot drift). The share card follows onto the same
-     ground with the same mark.
-  8. The chip's eyebrow reads `ENDPOINT PASSPORT`; the store's name
-     is carried by the seal's arc legend now.
-  9. An `indeterminate` tier prints only its fraction on the face
-     ("1/1 round ready"), never the word — the word is about how
-     many rounds WE hold, not about their door, and it had been
-     the loudest thing on a chip whose own decision was READY. The
-     whole line still rides in the alt text and on the page.
-  10. The freshness glosses were cut to fit the larger record line:
-      "inside one census cadence", "older than one cadence", "too
-      old to rely on". `CHIP_STATE`.
+  APPROVED, in `src/services/badge-svg.ts` — the artifact:
+  6. The chip is a 400x110 card, not a 300x56 ribbon. THE ASPECT
+     CHANGED, so a chip anyone pasted before 09-06 renders squashed
+     until they re-copy the snippet. Both snippets emit the new size
+     from `CHIP_LAYOUT` on their own. This is the only ruling with a
+     cost to somebody outside.
+  7. Forest-black ground, foil frame and seal, bevelled rim, bold
+     type, and the store's dinosaur in the seal — drawn from the
+     favicon's own path so the mark cannot drift between the two.
+  8. The eyebrow reads `ENDPOINT PASSPORT`; the store's name is
+     carried by the seal's arc legend.
+  9. An `indeterminate` tier prints only its fraction on the face,
+     never the word — the word is about how many rounds WE hold, not
+     about their door, and it had been the loudest thing on a chip
+     whose own decision was READY. The whole line still rides in the
+     alt text and on the page.
+  10. The freshness glosses are cut to fit the larger record line:
+      "inside one census cadence", "older than one cadence", "too old
+      to rely on". `CHIP_STATE`.
 
-  **Numbers, if any are wrong.** A live reading arms a note for
-  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read both
+  AND THE NUMBERS, approved with them: a live reading arms a note for
+  four hours (`LIVE_READING_FRESH_HOURS`); verify and re-read each
   press ten at a time (`VERIFY_BATCH_CAP`, `AUDIT_BATCH_CAP`).
 
 - ⚑ **402signal.com / tensorfeed.ai — replied by your hand
@@ -102,20 +96,32 @@ build, it is on the roadmap.
      says whether the corrected instrument still agrees; any host
      that reads ready now got a note it should not have.
 
-- ⚑ **PRESS — re-read every door we wrote to (09-05).** Your ask,
-  after two corrections in one afternoon: how the desk catches the
-  next wrong note before its operator does. `/admin/outreach` now
-  carries **Doors we wrote to, re-read** — one press knocks again
-  on ten hosts a note went to, oldest first, by the instrument as
-  it is now, and lays the answer beside the row the note came
-  from. It sends nothing. Hosts where the two disagree are named
-  at the top: that is either a door healed since, or a note of
-  ours that was wrong, and no arithmetic can tell those apart —
-  only you can. YOUR HANDS: press it until the queue is exhausted
-  (the notice says how many remain), then for each disagreement
-  decide healed-or-ours, and write by your hand where it is ours.
-  Any host that reads ready now and got a "your door is broken"
-  note is owed the same reply Ross got.
+- ⚑ **LOOK — the re-read now runs itself (09-05, automatic 09-06).**
+  Your ask, after two corrections in one afternoon: how the desk
+  catches the next wrong note before its operator does. It no
+  longer needs your press. Five doors a pass on the half-hourly
+  tick, each door at most once a day, held against **what that
+  note actually claimed** — frozen on the ledger when it went out,
+  not against whatever this week's census says — and compared on
+  the **checks the note named**, not on the ready/not-ready bit.
+  It sends nothing, ever. `/admin/outreach#audit` still has a
+  press for when you want the answer now; it walks up to forty in
+  one go. Rows split three ways:
+
+  - **OURS** — derived, not judged: every check that note named has
+    since been retracted by this store, so the finding rests on an
+    instrument we withdrew. The correction email is already written
+    on the row; your press sends it. This is the 402signal shape.
+  - **changed** — the claim no longer holds and nothing derives why.
+    Healed since, or ours. The desk will not guess between those
+    two and never will; **this is the list only you can work.**
+  - **agree** — the note still holds at its door. Nothing to do.
+
+  YOUR HANDS: you get paged when a row leaves `agree`, with the
+  host named and the correction attached where there is one. Send
+  the OURS corrections; decide healed-or-ours on the rest. Any host
+  that reads ready now and got a "your door is broken" note is owed
+  the same reply Ross got.
 
 - **TEST — flip the doors (09-05).** You ruled the split; it is
   built on `claude/x402-list-latency-vegdlq`: `src/doors.ts`, a
@@ -139,11 +145,23 @@ build, it is on the roadmap.
   3. Set the secrets on the doors Worker:
      `npx wrangler secret put SIGNING_KEY -c doors/wrangler.jsonc`,
      then PAY_TO_ADDRESS, CDP_API_KEY_ID, CDP_API_KEY_SECRET,
-     the same values the store holds. From the next knock the
+     the same values the store holds. Also mirror `POLYGON_PAY_TO`
+     when that rail is enabled on the store. From the next knock the
      doors answer the 402 themselves.
   4. `npm run doors:live -- --doors=https://scvd-doors.seancrecord.workers.dev`
      reads every door at both hosts and prints agrees/differs
-     per door. All agree, or stop and paste it here.
+     per door, including agreement with discovery's advertised
+     payment offers. All agree, or stop and paste it here.
+     FOLLOW-UP 2026-09-06: discovery advertises Polygon, but live
+     unsigned quotes omit it; a read of secret names confirms
+     `POLYGON_PAY_TO` is absent on the doors Worker. Mirror the
+     store's configured value there, then repeat this check. The
+     repaired checker catches this even when both URLs hit the
+     same Worker. APPROVED 2026-09-06: mirror the existing recipient,
+     independently matched between discovery and the store MCP quote.
+     Cloudflare refused the direct update because the latest uploaded
+     Worker version was not deployed; apply it with the reviewed
+     release deployment, then rerun this check. No payment was made.
   5. Workers Builds → create a second project on this repo
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.
@@ -351,8 +369,11 @@ build, it is on the roadmap.
 - The Aura Walk (S11) is on the shelf at $150 as
   `aura_walk`, your number and your model rule
   (2026-09-02): keeper-time answers to two doors now.
-  Human queue, a week's promise, one a week. The row copy
-  is inked (2026-09-03, the ink sheet). Skill bundle 3.14.0.
+  Human queue, a week's promise. Capacity is the later 09-04 ruling
+  above, implemented in `aura_walk.weekly_inventory` in `src/store/menu.ts`.
+  The row copy is inked (2026-09-03, the ink sheet). The original
+  bundle was 3.14.0; the current publish receipt is
+  `registry/clawhub/published.json`. Corrected 2026-09-06.
 - Rule 59 inked 2026-09-01. Ceilings live in
   `src/store/reader-limits.ts`.
 - Circle Agent Marketplace: submitted 2026-09-01, listed
@@ -532,8 +553,10 @@ Do not relitigate without you.
   2026-10-02" an agent wrote here was struck 2026-09-03
   ("i dont wait i decide yes/no/later"); nothing on this
   list waits on a calendar.
-- **The Aura Walk cap, 2026-09-02.** One a week; two after
-  the first three ship inside the window.
+- **The Aura Walk cap, 2026-09-02 (superseded 09-04).** The original
+  one-slot limit and conditional increase are historical; the 09-04
+  ruling above and `aura_walk.weekly_inventory` are current.
+  Cross-reference corrected 2026-09-06.
 - **The next builds, 2026-09-02, "On do that then."** After
   the SOON/LATER review: L6 (the look) first, then L7 (the
   CI check for our fixtures). L6 shipped the same day. The
@@ -701,6 +724,25 @@ Do not relitigate without you.
 
 ### Presses waiting (2026-09-03, evening)
 
+- **RECORD THE LISTINGS AND ROSTER BASELINES — after PR 525 merges.**
+  The Saturday job gained a third battery that re-reads all forty-nine
+  venue rows served at `/.well-known/trust.json`, and it has nothing to
+  compare against until a baseline exists. From a clone on a machine
+  with ordinary internet — NOT the agent's sandbox, which reads 43 of
+  49 as unreachable and would bake that in as truth:
+
+      git checkout main && git pull
+      npm run listings:check -- --record
+      git add docs/listings/ && git commit -m "Record the listings and roster baselines" && git push
+
+  No `npm install` needed; the battery is Node builtins and fetch.
+  Writes `docs/listings/observation.json` (mirrors) and
+  `docs/listings/roster.json` (the roster). Expect some rows to read
+  `silent` on the first pass and do NOT read those as delistings — a
+  venue that renders in JavaScript serves HTML naming nobody. The
+  first recording freezes what is true; the alarm only fires when a
+  row later moves DOWN from what it recorded.
+
 - **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
   before-you-pay, month, feeds, the FIX lines (roadmap C5). The
   Saturday listings read will say the registry differs from the
@@ -849,13 +891,21 @@ Do not relitigate without you.
   `general-store`, or the bare `/mcp` URL — their probe
   (`sasame-audit`) did connect. https://srl-sasame.com
 - **The handshake census venues.** LOOK, five minutes each,
-  in order of handshake volume; the list with what each is
-  lives in `registry/directory-blitz.md` under "Handshake
-  census". Unopened as of 2026-09-02: glimind.com (286
-  handshakes, the most of anyone), mcpbeat.com,
-  proofbench.dev, mcphq.ai, hultra.link, golemreach.com,
-  mcpplaygroundonline.com/mcp-checker, factanker.com,
-  orank.ai.
+  in handshake order. A handshake is one `clientInfo.name` the
+  MCP door recorded at `initialize`, so every name here is a
+  crawler that found us unprompted and is likely already
+  carrying an unclaimed row. Unopened, re-checked against
+  `src/store/trust-signals.ts` on 2026-09-06: glimind.com
+  (286 handshakes, the most of anyone; opt-out at
+  glimind.com/opt-out), proofbench.dev (11), factanker.com
+  (7), orank.ai (7), mcpplaygroundonline.com/mcp-checker (7),
+  modc2.com/mcpscan (6), golemreach.com (2), mcphq.ai (2),
+  donnees.hultra.link (2). **mcpbeat.com left this list
+  2026-09-06: it carries both servers and has been a trust
+  signal for some time — the census had gone stale against
+  the served record.** The full 2026-09-02 read, with what
+  each venue is, is history in
+  `docs/archive/DIRECTORY_BLITZ_2026-09-06.md`.
 - **endpoint.x402jp.com.** LOOK, five minutes, browser only
   (the sandbox cannot reach it). An x402 host index that
   found us on its own; we are row 50 of 1,031. Its row says
@@ -863,9 +913,9 @@ Do not relitigate without you.
   same day says 39 at 0.99. Find whether it reads the Bazaar
   or the well-known file and whether a listing can be
   claimed or refreshed; nothing that wants a token. The
-  full read and the table live in
-  `registry/directory-blitz.md` §5 and
-  `research/x402-pulse.md` under 2026-09-03.
+  full read and the table live in `research/x402-pulse.md`
+  under 2026-09-03, and in §5 of
+  `docs/archive/DIRECTORY_BLITZ_2026-09-06.md`.
 
 - **ClawHub republish.** 3.15.0 went out 2026-09-02 by
   your hand (done), carrying everything since 3.8.0: the

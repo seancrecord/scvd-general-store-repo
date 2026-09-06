@@ -208,11 +208,9 @@ export interface MetricEvent {
   /** decline events: the facilitator's reason, kept, not discarded. */
   note?: string;
   /**
-   * challenge events: the required inputs this request arrived
-   * WITHOUT. A 402 issued to a request that could not have bought —
-   * settlement_attestation with no tx_hash — is a scanner at a locked
-   * door, not a price-check with intent, and the funnel needs to tell
-   * the two apart. Absent when nothing was missing.
+   * Required fields absent at the challenge. [] means checked present;
+   * an absent annotation is unknown, including rows written before
+   * presence checks were recorded. Presence does not prove validity.
    */
   missing_required?: string[];
 }
@@ -250,7 +248,7 @@ function buildEvent(
   if (signals.signatureAgent) {
     event.signature_agent_claim = signals.signatureAgent.slice(0, 200);
   }
-  if (signals.missingRequired && signals.missingRequired.length > 0) {
+  if (signals.missingRequired !== undefined) {
     event.missing_required = signals.missingRequired.slice(0, 4);
   }
   return event;

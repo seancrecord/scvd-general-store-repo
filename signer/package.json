@@ -32,7 +32,6 @@
     "did-web",
     "usdc",
     "agent-payments",
-    "trust-layer",
     "signed-receipts"
   ],
   "license": "MIT",

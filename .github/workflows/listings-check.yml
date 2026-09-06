@@ -8,6 +8,13 @@
 # live shelf (scripts/lib/listing-versions.mjs). Drift there is
 # invisible from every surface the store serves.
 #
+# A THIRD QUESTION since 2026-09-06 (scripts/lib/listing-roster.mjs):
+# does every venue this store CLAIMS at /.well-known/trust.json still
+# name it? Forty-nine rows, each a claim on somebody else's page, and
+# nothing re-read them until a hand-kept venue list was found calling
+# a listed directory "not yet opened". A row that stops naming us is
+# our own served surface gone quietly false.
+#
 # READ-ONLY. Nothing here writes to any index; press is the keeper's
 # (rule 30). A red run is the alert: a mirror that moved backwards or
 # a registry that no longer matches the repository.
@@ -24,6 +31,7 @@ on:
       - "scripts/listings-check.test.mjs"
       - "scripts/lib/listings.mjs"
       - "scripts/lib/listing-versions.mjs"
+      - "scripts/lib/listing-roster.mjs"
 
 permissions:
   contents: read

@@ -2,20 +2,14 @@ import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { recordChallengeIssued, recordPaymentDecline, recordSettlement } from "@/lib/metrics";
 import { auditFunnel, VERIFICATION_TIER } from "@/services/funnel";
+import { readDeclines } from "@/lib/declines";
+import { renderFunnelPage } from "@/pages/admin/funnel-page";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
-/**
- * THE FUNNEL — the instrument for the ledger's sharpest number: 703
- * organic asks on settlement_attestation, one settle, that one
- * refunded. The question it exists to answer is WHICH WALL, and the
- * split it rides on is the decline row: a decline means a wallet was
- * actually opened, so silence divides into "tried and was refused"
- * (fix the flow) and "never tried" (fix the pitch) — opposite
- * diagnoses, opposite fixes, identical ask-counts.
- */
+/** Retained events are evidence of requests, not a joined buyer journey. */
 
 /** Both homes of an event row: a decline is also written under declevt:. */
 async function clearEvents(): Promise<void> {
@@ -43,8 +37,8 @@ beforeEach(clearEvents);
  */
 const organic = { userAgent: "buyer-client/1.0" };
 
-describe("the two opposite silences", () => {
-  it("calls a pile of asks with ZERO wallets window-shopping, and points upstream", async () => {
+describe("readings bounded by retained evidence", () => {
+  it("reports asks without recorded outcomes without inferring abandonment", async () => {
     for (let i = 0; i < 12; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", organic);
     }
@@ -52,14 +46,14 @@ describe("the two opposite silences", () => {
     const row = report.items.find((r) => r.item === "settlement_attestation")!;
     expect(row.asks_organic).toBe(12);
     expect(row.wallets_opened).toBe(0);
-    expect(row.verdict).toContain("WINDOW-SHOPPING");
-    expect(row.verdict).toContain("nobody tried");
+    expect(row.verdict).toContain("PRICE-ASKS ONLY");
+    expect(row.verdict).not.toContain("nobody tried");
     // The honest caveat rides the verdict itself: an ask is a 402
     // issued, not a human with intent.
     expect(row.verdict.toLowerCase()).toContain("crawlers");
   });
 
-  it("calls asks WITH refused wallets blocked intent, and names the brick", async () => {
+  it("reports refusal events and their reasons", async () => {
     for (let i = 0; i < 8; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/standing_watch", organic);
     }
@@ -74,21 +68,13 @@ describe("the two opposite silences", () => {
     const report = await auditFunnel(testEnv);
     const row = report.items.find((r) => r.item === "standing_watch")!;
     expect(row.wallets_opened).toBe(3);
-    expect(row.verdict).toContain("REAL INTENT HIT A WALL");
+    expect(row.verdict).toContain("REFUSALS RECORDED");
     expect(row.verdict).toContain("insufficient_funds");
     // The desk's reading rides along so the fix is legible in place.
     expect(row.verdict).toContain("fault:");
   });
 
-  /**
-   * ONE WALL OR A SCATTER, 2026-09-04. Both live rows below were on
-   * the same page and the verdict said the same thing about them:
-   * small_blessing, 8 refusals, 7 of them one code — a brick with one
-   * fix. settlement_attestation, 5 refusals, 4 distinct codes, the
-   * largest ×2 — four problems, and the top row named a transport
-   * failure while three buyer-side shape errors went unmentioned.
-   */
-  it("calls a concentrated pile ONE WALL and stands behind the one fix", async () => {
+  it("reports concentrated reasons without claiming one cause or fix", async () => {
     for (let i = 0; i < 20; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     }
@@ -109,9 +95,9 @@ describe("the two opposite silences", () => {
     const report = await auditFunnel(testEnv);
     const row = report.items.find((r) => r.item === "small_blessing")!;
     expect(row.declines_organic).toBe(8);
-    expect(row.verdict).toContain("ONE WALL");
-    expect(row.verdict).toContain("the pitch");
-    expect(row.verdict).not.toContain("NO SINGLE WALL");
+    expect(row.verdict).toContain("CONCENTRATED REASONS");
+    expect(row.verdict).toContain("do not establish a single cause");
+    expect(row.verdict).not.toContain("MIXED REASONS");
   });
 
   it("refuses to call a scatter a wall, and lists every reason it found", async () => {
@@ -142,7 +128,7 @@ describe("the two opposite silences", () => {
       (r) => r.item === "settlement_attestation",
     )!;
     expect(row.declines_organic).toBe(5);
-    expect(row.verdict).toContain("NO SINGLE WALL");
+    expect(row.verdict).toContain("MIXED REASONS");
     // The claim that one fix clears it is exactly what must not appear.
     expect(row.verdict).not.toContain("one fix clears most of it");
     // Every reason, not just the top one — the three that used to vanish.
@@ -151,7 +137,7 @@ describe("the two opposite silences", () => {
     }
   });
 
-  it("names the asks that never presented a signature, not just the refusals", async () => {
+  it("does not subtract unjoined event counts to invent abandoned buyers", async () => {
     for (let i = 0; i < 20; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/standing_watch", organic);
     }
@@ -163,9 +149,11 @@ describe("the two opposite silences", () => {
     );
     const report = await auditFunnel(testEnv);
     const row = report.items.find((r) => r.item === "standing_watch")!;
-    // 20 asked, 1 opened a wallet: the refusal is the smaller half.
-    expect(row.verdict).toContain("19 of 20");
-    expect(row.verdict).toContain("never presented a signature");
+    expect(row.asks_organic).toBe(20);
+    expect(row.declines_organic).toBe(1);
+    expect(row.verdict).not.toContain("19 of 20");
+    expect(row.verdict).not.toContain("never presented a signature");
+    expect(row.verdict).toContain("not joined buyer journeys");
   });
 
   it("states whose problem ALL of them were, not only the top row's", async () => {
@@ -193,12 +181,7 @@ describe("the two opposite silences", () => {
     expect(row.verdict).toContain("1 unknown");
   });
 
-  /**
-   * THE LOCKED DOOR (2026-09-04). settlement_attestation needs
-   * ?tx_hash=; a scanner arriving without one could not have bought at
-   * any price. The verdict used to fold those into "window-shopping".
-   */
-  it("separates the asks that could not have bought from the ones that walked", async () => {
+  it("separates missing input evidence from unannotated requests", async () => {
     for (let i = 0; i < 6; i += 1) {
       await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
         ...organic,
@@ -211,9 +194,9 @@ describe("the two opposite silences", () => {
     expect(row.asks_locked).toBe(6);
     expect(row.locked_inputs).toEqual({ tx_hash: 6 });
     expect(row.verdict).toContain("LOCKED DOOR: 6 of the 7 asks");
-    expect(row.verdict).toContain("could not have bought at any price");
-    // And the one who could is the one to read the silence against.
-    expect(row.verdict).toContain("against the 1 who could have");
+    expect(row.asks_inputs_unknown).toBe(1);
+    expect(row.verdict).toContain("1 unknown");
+    expect(row.verdict).not.toContain("could have");
   });
 
   it("says nothing about locks on a row with none", async () => {
@@ -225,14 +208,14 @@ describe("the two opposite silences", () => {
     expect(row.verdict).not.toContain("LOCKED DOOR");
   });
 
-  it("carries the locked clause on a REAL INTENT row too", async () => {
+  it("carries the missing input evidence on a refusal row too", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", {
       ...organic,
       missingRequired: ["tx_hash"],
     });
     await recordPaymentDecline(testEnv, "/api/buy/settlement_attestation", "verify_error:timeout", organic);
     const row = (await auditFunnel(testEnv)).items.find((r) => r.item === "settlement_attestation")!;
-    expect(row.verdict).toContain("REAL INTENT HIT A WALL");
+    expect(row.verdict).toContain("REFUSALS RECORDED");
     expect(row.verdict).toContain("LOCKED DOOR");
   });
 
@@ -256,7 +239,7 @@ describe("the two opposite silences", () => {
     expect(hello.asks_organic).toBe(0);
     expect(hello.asks_walked).toBe(1);
     expect(hello.verdict).toContain("WALKED ONLY");
-    expect(hello.verdict).toContain("Nothing here is a lost sale");
+    expect(hello.verdict).toContain("Purchase intent is unknown");
     expect(report.walk_rule.min_items).toBe(4);
   });
 
@@ -272,7 +255,7 @@ describe("the two opposite silences", () => {
     expect(row.declines_organic).toBe(1);
   });
 
-  it("calls settles-with-no-declines converting, which is the quiet good news", async () => {
+  it("reports settlements with no refusals in the retained records", async () => {
     await recordChallengeIssued(testEnv, "/api/buy/small_blessing", organic);
     await recordSettlement(testEnv, "/api/buy/small_blessing", {
       ...organic,
@@ -282,7 +265,7 @@ describe("the two opposite silences", () => {
     const report = await auditFunnel(testEnv);
     const row = report.items.find((r) => r.item === "small_blessing")!;
     expect(row.settles_organic).toBe(1);
-    expect(row.verdict).toContain("Converting");
+    expect(row.verdict).toContain("SETTLEMENTS RECORDED");
   });
 });
 
@@ -366,7 +349,7 @@ describe("the window note tells the truth at the exact cap boundary", () => {
     await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
     const report = await auditFunnel(testEnv, { scanCap: 100, pageSize: 4 });
     expect(report.capped).toBe(false);
-    expect(report.window_note).toContain("Every event row on record");
+    expect(report.window_note).toContain("Every retained event row read");
   });
 });
 
@@ -400,5 +383,50 @@ describe("the next move — the funnel's pitch fix on the purchase response", ()
     // The buyer's own settlement, not a sample: the hash in the URL is
     // the one on the certificate.
     expect(offer.url).toContain(block.certificate.settlement_tx);
+  });
+});
+
+
+describe("recorded evidence, without invented buyer journeys", () => {
+  it("keeps checked-present inputs separate from unknown historical annotations", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", organic);
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", { ...organic, missingRequired: [] });
+    await recordChallengeIssued(testEnv, "/api/buy/settlement_attestation", { ...organic, missingRequired: ["tx_hash"] });
+    const row = (await auditFunnel(testEnv)).items[0]!;
+    expect(row.asks_organic).toBe(3);
+    expect(row.asks_inputs_present).toBe(1);
+    expect(row.asks_inputs_unknown).toBe(1);
+    expect(row.asks_locked).toBe(1);
+    expect(row.verdict).toContain("1 unknown");
+    expect(row.verdict).not.toContain("could have bought");
+  });
+
+  it("separates input, payment, and settlement refusal events without claiming signatures or intent", async () => {
+    for (const reason of ["local:input_invalid:hours", "local:payload_not_an_object", "settle:insufficient_funds"]) {
+      await recordPaymentDecline(testEnv, "/api/buy/the_statement", reason, organic);
+    }
+    const report = await auditFunnel(testEnv);
+    const row = report.items[0]!;
+    expect(row.input_refusals_organic).toBe(1);
+    expect(row.payment_declines_organic).toBe(1);
+    expect(row.settlement_declines_organic).toBe(1);
+    const { declines } = await readDeclines(testEnv);
+    expect(declines.find(r => r.reason === "local:input_invalid:hours")?.stage).toBe("input");
+    expect(row.verdict).not.toMatch(/signed payments|REAL INTENT|one fix|never presented a signature/);
+    const html = renderFunnelPage(report);
+    expect(html).toContain("input refusals");
+    expect(html).not.toMatch(/nobody tried|somebody tried|wallets opened/);
+  });
+
+  it("publishes observed timestamps without claiming a complete capture window", async () => {
+    for (const [suffix, at] of [["a", "2026-09-01T00:00:00.000Z"], ["b", "2026-09-02T00:00:00.000Z"]]) {
+      await testEnv.COUNTERS.put(`evt:test-${suffix}`, JSON.stringify({ kind: "challenge", item: "hello", at, channel: "direct", house: false }));
+    }
+    const report = await auditFunnel(testEnv);
+    expect(report.observed_from).toBe("2026-09-01T00:00:00.000Z");
+    expect(report.observed_through).toBe("2026-09-02T00:00:00.000Z");
+    expect(report.what_this_cannot_see.join(" ")).toContain("not joined");
+    expect(report.what_this_cannot_see.join(" ")).not.toContain("proves nobody");
+    expect(report.window_note).toContain("retained");
   });
 });

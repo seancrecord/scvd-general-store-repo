@@ -1,5 +1,14 @@
 # DISTRIBUTION.md — the agent-native channels, and exactly how to enter each
 
+**Version rule, refreshed 2026-09-06:** older numbered versions and
+package counts below belong to their dated readings. At a publish,
+read each version from that package's `package.json`, the actual
+package set from `.github/workflows/publish-npm.yml`, and ClawHub's
+receipt from `registry/clawhub/published.json`; compare the resulting
+registry artifact before recording completion. KEEPER_LIST is the
+current press queue. A build or old receipt does not establish today's
+registry state.
+
 Written 2026-08-21, the night the strategy was ruled: agents don't
 browse, they inherit. An agent reaches this store through four doors —
 its config (MCP connectors, skills), its model's memory (AEO, shipped),
@@ -226,8 +235,19 @@ only number this will ever produce.
 
 ## 5. Other client directories (lower priority, same shape)
 
-- Cursor: directory driven by docs.cursor.com MCP listings; community
-  cursor.directory accepts submissions.
+**WHERE THE STORE IS LISTED IS NOT ANSWERED HERE.**
+`src/store/trust-signals.ts` is the record: served at `/trust`, one
+dated row per venue, and the only one a reader can check. This file
+is doctrine and open work. When the two disagree, trust-signals is
+right and this file is stale — that has now happened twice
+(2026-09-06: Cursor below, and mcpbeat in the venue list that was
+archived the same day).
+
+- Cursor: LISTED. `cursor.directory/plugins/scvd-general-store-repo`,
+  generated from this repository's own Agent Plugins package. The row
+  is in `src/store/trust-signals.ts`; this line said "accepts
+  submissions" until 2026-09-06, which is what a hand-kept venue list
+  does when a directory indexes you without asking.
 - Perplexity connectors: developer-program submission; wants the
   privacy policy and a remote MCP endpoint — the same two gates as
   Claude's, both met.

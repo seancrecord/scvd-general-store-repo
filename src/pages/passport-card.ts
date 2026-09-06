@@ -287,7 +287,20 @@ export function passportEmbedFor(rawHost: string, base: string): PassportEmbed {
   const host = rawHost.toLowerCase();
   const chip = `${base}/badges/passport/${host}.svg`;
   const url = `${base}/passport/${host}`;
-  const alt = `scvd.store passport for ${host}: observed, dated, gaps counted against the observer`;
+  /*
+   * THE ALT TEXT TELLS THE TRUTH ABOUT WHO LOOKED (2026-09-06).
+   * "observed ... gaps counted against the observer" is right for a
+   * census host and wrong for exactly one host: our own, whose
+   * passport the census structurally cannot probe and which is
+   * self-read at render. The chip's own face has said SELF-OBSERVED
+   * since it was redrawn; the snippet we hand out beside it still
+   * described the self chip as observed, which is the one place a
+   * reader could take a self-issued artifact for a census one.
+   */
+  const self = host === new URL(base).host.toLowerCase();
+  const alt = self
+    ? `scvd.store passport for ${host}: SELF-OBSERVED — the subject and the observer are the same party, dated, gaps counted against the observer`
+    : `scvd.store passport for ${host}: observed, dated, gaps counted against the observer`;
   return {
     chip_svg: chip,
     markdown: `[![${alt}](${chip})](${url})`,

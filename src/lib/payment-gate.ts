@@ -557,15 +557,11 @@ async function recordReferralFor(
 /** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
 export function gateSignals(c: Context<HonoEnv>): EventSignals {
   const signals: EventSignals = {};
-  // Which required inputs this request lacks, for the ask row: a 402
-  // to a request that could not have bought is a locked door, not a
-  // price-check. Computed here so every event this gate books gets it.
+  // Record presence even when nothing is missing, so readers can
+  // distinguish an explicit check from unannotated historical rows.
   const item = getMenuItem(itemKeyFromPath(c.req.path));
   if (item) {
-    const missing = missingRequiredInputs(item, c.req.query());
-    if (missing.length > 0) {
-      signals.missingRequired = missing;
-    }
+    signals.missingRequired = missingRequiredInputs(item, c.req.query());
   }
   const userAgent = c.req.header("User-Agent");
   if (userAgent) {

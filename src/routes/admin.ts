@@ -22,6 +22,11 @@ import {
   reconcileSettles,
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
+import type {
+  ClaimedNote,
+  OutreachEntry,
+  Prospect,
+} from "@/services/outreach";
 import { renderTakePage } from "@/pages/admin/take-page";
 import { recountFromRows } from "@/lib/recount";
 import { computeStats } from "@/services/stats";
@@ -2254,6 +2259,7 @@ adminRoutes.get("/admin/outreach", async (c) => {
       c.req.query("notice"),
       welcomes,
       citations,
+      c.req.query("all") === "1",
     ),
   );
 });
@@ -2427,29 +2433,46 @@ adminRoutes.post("/admin/outreach/verify-many", async (c) => {
 });
 
 /**
- * THE RE-READ OF EVERY DOOR WE WROTE TO (2026-09-05): ten per press,
- * oldest audit first, nothing sent. The notice names the doors where
- * the instrument as it is now disagrees with the row the note came
- * from — the keeper's list of who may be owed a correction.
+ * THE RE-READ OF EVERY DOOR WE WROTE TO (2026-09-05; the press
+ * widened and the call sharpened 2026-09-06).
+ *
+ * One press now walks up to AUDIT_PRESS_CAP doors rather than ten,
+ * because the keeper's ask was a button, not a ritual — and whatever
+ * this leaves, the half-hourly sweep drains on its own within a day.
+ * Every re-read is held against WHAT THE NOTE CLAIMED, not against
+ * whatever the census happens to say today, and the rows split three
+ * ways: agree, `ours` (derived from the retraction ledger — a
+ * correction is owed and already drafted), and `look` (the keeper's,
+ * because healed-from-ours is not derivable and never will be).
+ * Nothing is sent.
  */
 adminRoutes.post("/admin/outreach/audit-sent", async (c) => {
   const { latestWardRound } = await import("@/services/ward-round");
-  const { auditSentNotes, readOutreachLedger } = await import("@/services/outreach");
+  const { AUDIT_PRESS_CAP, auditSentNotes, readOutreachLedger } = await import(
+    "@/services/outreach"
+  );
   const round = await latestWardRound(c.env);
   if (!round) return c.redirect("/admin/outreach");
   const ledger = await readOutreachLedger(c.env);
-  const report = await auditSentNotes(c.env, round, ledger);
+  const report = await auditSentNotes(c.env, round, ledger, new Date(), {
+    cap: AUDIT_PRESS_CAP,
+  });
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(report);
   }
-  const disagree = report.rows.filter((row) => row.disagrees).map((row) => row.host);
+  const ours = report.rows.filter((row) => row.finding.call === "ours").map((row) => row.host);
+  const look = report.rows.filter((row) => row.finding.call === "look").map((row) => row.host);
   const parts = [
     `Re-read ${report.rows.length} door${report.rows.length === 1 ? "" : "s"} we wrote to.`,
-    disagree.length
-      ? `Disagree with the row the note came from: ${disagree.join(", ")} — healed since, or ours; look.`
-      : "Every re-read agrees with its row.",
+    ours.length
+      ? `OURS, correction drafted and waiting: ${ours.join(", ")}.`
+      : "",
+    look.length
+      ? `Changed, and not derivable from here: ${look.join(", ")} — healed since, or ours; look.`
+      : "",
+    !ours.length && !look.length ? "Every note re-read still holds at its door." : "",
     report.no_door.length ? `${report.no_door.length} written-to host${report.no_door.length === 1 ? "" : "s"} not on this round; nothing to knock on.` : "",
-    report.remaining > 0 ? `${report.remaining} more — press again.` : "",
+    report.remaining > 0 ? `${report.remaining} more — press again, or leave them to the daily sweep.` : "",
   ].filter(Boolean);
   return c.redirect(`/admin/outreach?notice=${encodeURIComponent(parts.join(" "))}`);
 });
@@ -2494,6 +2517,35 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
  * more — no status value transmits anything to anyone. "fresh"
  * un-stamps a card (the 2026-08-19 misreading's per-card undo).
  */
+
+/**
+ * The current round's queue, by host, for freezing a claim at stamp
+ * time. Returns an empty map rather than throwing when no round
+ * exists: a stamp must never fail because the census has not run.
+ */
+async function stampProspects(
+  env: HonoEnv["Bindings"],
+): Promise<Map<string, Prospect>> {
+  const { latestWardRound, previousWardRound } = await import("@/services/ward-round");
+  const { deriveProspects } = await import("@/services/outreach");
+  const round = await latestWardRound(env);
+  if (!round) return new Map();
+  const previous = await previousWardRound(env);
+  return new Map(deriveProspects(round, previous).map((p) => [p.host, p]));
+}
+
+async function claimForStampedHost(
+  env: HonoEnv["Bindings"],
+  host: string,
+  entry: OutreachEntry,
+): Promise<ClaimedNote | null> {
+  const { claimAtStamp } = await import("@/services/outreach");
+  if (entry.claimed) return entry.claimed;
+  // Only pay for the round read when there is no live reading to
+  // freeze and the round is the only place a claim could come from.
+  const prospects = entry.live ? new Map<string, Prospect>() : await stampProspects(env);
+  return claimAtStamp(entry, prospects.get(host));
+}
 adminRoutes.post("/admin/outreach/status", async (c) => {
   const form = await c.req.parseBody();
   const host = typeof form["host"] === "string" ? form["host"].toLowerCase() : "";
@@ -2514,6 +2566,16 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
   if (status) {
     entry.status = status;
     entry.status_at = new Date().toISOString();
+    /*
+     * FREEZE WHAT THE NOTE CLAIMED (2026-09-06). A hand-delivered
+     * note is drafted from `entry.live`; the stamp is the last moment
+     * that reading is still around to be written down, and the
+     * re-read compares against it forever after.
+     */
+    if (status === "sent" || status === "replied") {
+      const claim = await claimForStampedHost(c.env, host, entry);
+      if (claim) entry.claimed = claim;
+    }
   } else {
     delete entry.status;
     delete entry.status_at;
@@ -2562,10 +2624,18 @@ adminRoutes.post("/admin/outreach/stamp-many", async (c) => {
   }
   const ledger = await readOutreachLedger(c.env);
   const at = new Date().toISOString();
+  const claiming = status === "sent" || status === "replied";
+  // One round read for the whole batch, not one per ticked row.
+  const prospects = claiming ? await stampProspects(c.env) : new Map();
+  const { claimAtStamp } = await import("@/services/outreach");
   for (const host of hosts) {
     const entry = ledger.hosts[host] ?? {};
     entry.status = status;
     entry.status_at = at;
+    if (claiming) {
+      const claim = claimAtStamp(entry, prospects.get(host));
+      if (claim) entry.claimed = claim;
+    }
     ledger.hosts[host] = entry;
   }
   await writeOutreachLedger(c.env, ledger);

@@ -688,6 +688,41 @@ const worker: ExportedHandler<Env> = {
           ),
       ),
     );
+    /**
+     * THE RE-READ OF EVERY DOOR WE WROTE TO, ON A CLOCK (2026-09-06).
+     *
+     * It was a button, and a button is a thing somebody has to
+     * remember. Two operators found our own wrong notes before we
+     * did, in one afternoon, and the keeper's answer to that was
+     * that this should not need a press. So it rides the tick: five
+     * doors a pass, each door at most once a day (AUDIT_FRESH_HOURS),
+     * held against WHAT THE NOTE CLAIMED rather than against this
+     * week's census. A note whose finding rests entirely on checks
+     * this store has since retracted is derived `ours` and pages
+     * with its correction already drafted; one that merely changed
+     * pages as `look`, because healed-from-ours cannot be derived
+     * from outside a door and a guard that cannot fail argues for
+     * the lie (rule 46).
+     *
+     * IT STILL SENDS NOTHING. The cron knocks and pages; the press
+     * stays the keeper's (rule 30), and the wire is paused besides.
+     * A failure alerts rather than passing quietly, for the reason
+     * every watch here does: a sweep that stopped reads exactly like
+     * a desk with no wrong notes in it.
+     */
+    ctx.waitUntil(
+      import("@/services/outreach").then(({ auditSweep }) =>
+        auditSweep(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "note-audit-sweep-failed",
+              detail: `The re-read of doors we wrote to failed: ${String(error)}. Notes already sent are not being checked against their doors; press "Re-read" on /admin/outreach#audit by hand until this clears.`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {

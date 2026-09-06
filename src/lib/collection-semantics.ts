@@ -113,7 +113,7 @@ export const COLLECTIONS: Record<string, CollectionSemantics> = {
   "/menu.json": {
     bound: "bounded",
     reason:
-      "The shelf. Every item this store sells, in one document, because a catalog a buyer has to paginate is a catalog they will not finish reading.",
+      "The full shelf is served in one document by default. The explicit view=compact projection pages the same finite shelf for readers with limited context; follow its next URL until null.",
     bounded_by: "MENU_ITEMS, the shelf itself",
   },
 };

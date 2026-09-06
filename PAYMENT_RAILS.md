@@ -320,3 +320,21 @@ to expect that. The first operator who buys a statement on one of
 these chains measures what nobody here could; `test/evm-rails.spec.ts`
 holds what can be held without the network.
 
+
+
+### 2026-09-06 — reader support is not checkout support
+
+The keeper recalled the four-reader expansion as four new ways to pay.
+The September 3 change described above did not enable those payment
+rails. A statement's `network` input selects the chain inspected;
+checkout chooses one of the current challenge's `accepts[].network`
+values. The compact buyer contract now carries this distinction.
+
+The current CDP documentation and the store's cached supported kinds
+also include Arbitrum and World, beyond the store's existing Base,
+Polygon and Solana configuration. That makes them candidates for a
+payment integration, not rails this store already settles. Ethereum,
+Optimism and Avalanche were absent from both reads. Sources and gaps
+are recorded in `docs/SPEC_READS.md`, "machine-readable checkout and
+the chain boundary" (2026-09-06). Payment expansion remains separate
+from the reader addition and from the quote Worker's Polygon repair.

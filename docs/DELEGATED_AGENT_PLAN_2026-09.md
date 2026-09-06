@@ -1,5 +1,19 @@
 # The delegated agent — SCVD as a specialist another agent hands work to (2026-09-03)
 
+> **Status corrected 2026-09-06, against main at `5563bb51`.** The
+> tables below retain the 09-03 intake, not today's missing-work queue.
+> A1–A3 and C1–C7 are built (see ROADMAP DONE and THE_MAP_2026-09.md
+> §4). A1's front door is in `verifier/` under the existing `x402-verify`
+> name, with its version in `verifier/package.json`; A2 serves JSON-RPC
+> `message/send` at `/a2a`; A3 serves the focused `/mcp/verifier` tools.
+> Package publication and the ChatGPT submission choice are separate
+> keeper actions. This correction makes no new external status claim.
+>
+> C1 remediation, C2 examples, C3 catalogs, C4 API tools, C5 packages,
+> C6 feeds/conditional reads and C7 public fixtures are also present.
+> Use their ROADMAP DONE rows and tests, not the historical “missing”
+> column below, to decide whether code remains to be written.
+
 The keeper's memo of 2026-09-03 evening, filed as a plan: each of its
 ten parts against what already stands in the tree, what is missing,
 and the three moves it names first. The lens is the same one he set
@@ -11,7 +25,7 @@ SCVD is the obvious callable tool, dataset, package or specialist
 agent for that task. Never a trust score, never a recommendation,
 never a chat agent that duplicates the site.
 
-## The next three moves, in his order
+## The original three moves, in his order (09-03 intake)
 
 | # | Move | What stands | What is missing | Size |
 | --- | --- | --- | --- | --- |
@@ -32,29 +46,34 @@ never a chat agent that duplicates the site.
 | 9. The corpus as an operational feed | `/corpus.json`, `/corpus/{n}.json`, `/corpus/round/{week}`, `/corpus/host/{host}.json`, `/corpus/diff.json`, `/corpus/month/{YYYY-MM}`, the four Atom feeds (V2). | `/corpus/latest.json` as a stable alias; `/corpus/changes/{week}.json` naming additions, removals, recoveries, changed payment routes and changed defect state in plain fields with a plain-English changelog; `ETag`, `Last-Modified` and conditional GET on the corpus routes; a "subscribe" example (every Monday: fetch, verify, diff, alert only if a door you use changed state). | C6 |
 | What not to chase | — | More generic directories; a marketplace identity; "trust layer" positioning; an A2A chat agent; paid mentions; awesome-list follow-ups; a giant overlapping tool catalog. Recorded so the next intake does not reopen them. | — |
 
-## Decisions only the keeper can make
+## Decisions recorded at intake (current disposition below)
 
 1. **The ChatGPT submission.** A plugin named "SCVD General Store" is in
    review as of today. The memo says submit "SCVD x402 Verifier" with
    five read-only tools instead. Withdraw and resubmit, let the review
    run and submit the verifier as a second plugin, or keep the one in
-   review. Press is his either way; the tool subset is a small build
-   once he chooses.
-2. **Package naming.** The verification front door as `x402-verify`
+   review. Press is his either way. **09-06 correction:** the tool subset is
+   already built; only the submission choice remains here.
+2. **Package naming — implemented under `x402-verify`; not an open build decision.** Historical choice: The verification front door as `x402-verify`
    1.1 (the name already on npm, unscoped, 1.0.2) or as a new scoped
    `@scvd/x402-receipt-verify`. Recommendation: 1.1 of the name that
    exists, so the install line people already have keeps working, and
    the scoped name only if the `@scvd` scope is wanted for the family.
-3. **The A2A task endpoint's shape.** JSON-RPC per the A2A spec's
+3. **The A2A task endpoint's shape — implemented as JSON-RPC `message/send`.** Historical choice: JSON-RPC per the A2A spec's
    `message/send`, or the plain POST the memo sketches. Recommendation:
    the spec's shape at `/a2a`, with the memo's artifact as the task's
    result, so a framework's A2A client works without a custom adapter.
-4. **AWS Agent Registry.** Worth an entry once the card exists; the
-   listing is his press.
+4. **AWS Agent Registry — original listing assumption withdrawn 2026-09-06.**
+   The intake proposed an entry once the card existed. The primary read
+   in `docs/SPEC_READS.md` ("AWS registry cleanup") describes a catalog
+   created in an AWS account, with configured access and approval.
+   A named customer's registry may be an integration request; this is
+   not a general public-directory submission waiting on his press.
 
 ## Order, and what is queued
 
-A1, A2, A3 are queued on ROADMAP NOW in the memo's order; the rest
-sits under LATER as C1–C7 (the channel list of the same evening)
-with the memo's parts mapped onto them. One PR at a time; draft copy
-in chat.
+**Corrected 2026-09-06:** A1–A3 and C1–C7 have DONE rows in ROADMAP.
+Their original order above is history. The living build queue is
+ROADMAP; publication, listing and submission actions remain in
+KEEPER_LIST. Built, published, independently used and paid remain
+separate states; none follows automatically from the preceding one.

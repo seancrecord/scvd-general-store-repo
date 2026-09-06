@@ -130,6 +130,30 @@ describe("the passport stops publishing a withdrawn reading", () => {
     expect(((await standing.json()) as { reason: string }).reason).toBe("not-ready");
   });
 
+  it("reads as sentences, and prints the correction's date exactly once", async () => {
+    /*
+     * SHIPPED BROKEN 2026-09-06, caught by the keeper on the live page:
+     * the detail spliced the reason on with ", and ", so the page read
+     * "failed only payto-payable, and The checks this verdict rested
+     * on were retracted" — a capital mid-sentence. The date was also
+     * printed twice, once hand-typed into the reason's prose and once
+     * interpolated from `correction_date`, which is rule 1's exact
+     * shape: a value that lives in code, typed again beside it.
+     */
+    await seedRound([row("retracted.example", ["payto-payable"], [ALGORAND, BASE_CHAIN])]);
+    const body = (await (
+      await SELF.fetch(`${BASE}/passport/retracted.example`, { headers: { Accept: "application/json" } })
+    ).json()) as { detail: string; correction_date: string };
+
+    expect(body.detail).not.toMatch(/,\s+and\s+[A-Z]/);
+    // The date is the entry's, interpolated, and said once.
+    expect(body.detail.split(body.correction_date).length - 1).toBe(1);
+    // Every sentence starts with a capital and the joins are full stops.
+    for (const sentence of body.detail.split(". ")) {
+      expect(sentence.trim().length).toBeGreaterThan(0);
+    }
+  });
+
   it("still issues no chip for a withdrawn reading — silence, not a green chip", async () => {
     await seedRound([row("retracted.example", ["payto-payable"], [ALGORAND, BASE_CHAIN])]);
     const chip = await SELF.fetch(`${BASE}/badges/passport/retracted.example.svg`);

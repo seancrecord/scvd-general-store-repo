@@ -1,8 +1,11 @@
+import { compactItemContract } from "@/lib/buyer-contract";
+import { getMenuItem, MENU_ITEMS } from "@/store";
+import { listingSpec } from "@/lib/listing-spec";
 import { Hono, type Context } from "hono";
 import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import { recordPorchVisit } from "@/lib/metrics";
-import { DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, mcpSignals, toolText } from "@/routes/mcp";
+import { withMcpProtocol, MODERN_PROTOCOL_VERSIONS, DEFAULT_PROTOCOL, MCP_SERVER_VERSION, PROTOCOL_VERSIONS, mcpSignals, toolText } from "@/routes/mcp";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import type { HonoEnv } from "@/types";
@@ -99,6 +102,8 @@ export function docsToolCatalog(): Record<string, unknown>[] {
       inputSchema: {
         type: "object",
         properties: {
+          item_id: { type: "string", enum: MENU_ITEMS.map(item => item.id), description: "With name=catalog, read only this item's contract." },
+          view: { type: "string", enum: ["compact", "full"], description: "For one catalog item: compact keeps the input schema and payment recipe; full includes its complete listing spec." },
           name: {
             type: "string",
             enum: shelf.map((r) => r.name),
@@ -143,9 +148,19 @@ async function callDocsTool(
   }
   const shelf = mcpResourceCatalog();
   const wanted = typeof args["name"] === "string" ? args["name"].trim() : "";
-  if (!wanted) {
+  if (!wanted && args["item_id"] === undefined && args["view"] === undefined) {
     return { shelf: shelf.map(({ uri, name: n, title, mimeType }) => ({ uri, name: n, title, mimeType })) };
   }
+  if (args["item_id"] !== undefined) {
+    if (wanted !== "catalog" || typeof args["item_id"] !== "string") return "item_id requires name=catalog and an item identifier.";
+    if (args["view"] !== undefined && args["view"] !== "compact" && args["view"] !== "full") return "view must be compact or full.";
+    const item = getMenuItem(args["item_id"]);
+    if (!item) return "No catalog item by that identifier.";
+    return args["view"] === "full"
+      ? { ...compactItemContract(item, c.env.STORE_BASE_URL), spec: listingSpec(item, c.env.STORE_BASE_URL) }
+      : compactItemContract(item, c.env.STORE_BASE_URL);
+  }
+  if (args["view"] !== undefined) return "view requires name=catalog and item_id.";
   const entry = shelf.find((resource) => resource.name === wanted);
   const found = entry ? await readMcpResource(c.env, c.env.STORE_BASE_URL, entry.uri) : null;
   if (!found) {
@@ -166,8 +181,13 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
   if (!isRecord(body) || body["jsonrpc"] !== "2.0" || typeof body["method"] !== "string") {
     return rpcError(null, -32700, "That wasn't JSON-RPC. The door takes 2.0.");
   }
+  return withMcpProtocol(c, body, serverInfo(base), () => dispatch(c, body));
+}
+
+async function dispatch(c: Context<HonoEnv>, body: Record<string, unknown>): Promise<Response> {
+  const base = c.env.STORE_BASE_URL;
   const id = body["id"] ?? null;
-  const method = body["method"];
+  const method = String(body["method"]);
   const params = isRecord(body["params"]) ? body["params"] : {};
   if (COUNTED_METHODS.has(method)) {
     deferBookkeeping(c, recordPorchVisit(c.env, `mcp-docs:${method}`, mcpSignals(c)));
@@ -176,7 +196,7 @@ async function handle(c: Context<HonoEnv>): Promise<Response> {
     case "initialize": {
       const requested = String(params["protocolVersion"] ?? "");
       return rpcResult(id, {
-        protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : DEFAULT_PROTOCOL,
+        protocolVersion: PROTOCOL_VERSIONS.includes(requested) && !MODERN_PROTOCOL_VERSIONS.includes(requested) ? requested : DEFAULT_PROTOCOL,
         capabilities: {
           tools: { listChanged: false },
           resources: { subscribe: false, listChanged: false },

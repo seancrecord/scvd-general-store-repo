@@ -31,6 +31,21 @@ import type { HonoEnv } from "@/types";
  */
 export const openapiToolsRoutes = new Hono<HonoEnv>();
 
+/**
+ * WHAT THE POINTER SAYS, WRITTEN ONCE (2026-09-06).
+ *
+ * The catalog and the x402 discovery document now name this file, and
+ * a pointer that oversells it is worse than no pointer: the first
+ * draft of those said "the same doors, smaller", which would have
+ * sent a buying agent to a 13 KB document that contains NO PAID DOOR
+ * AT ALL and let it conclude the shelf was empty. This note is the
+ * honest version, and it lives beside the document it describes so
+ * the two cannot drift apart in different files.
+ */
+export const OPENAPI_TOOLS_NOTE =
+  "The store's FREE read-only instruments as function-calling tool definitions, one worked call each — small enough to hand a model whole. It is NOT a smaller copy of the contract: no paid door appears in it. For the whole contract, paid doors included, read openapi. To choose something to buy, read the compact catalog.";
+
+
 /** The free instruments: read-only by derivation, and an HTTP door under /api. */
 export function instrumentTools(): McpTool[] {
   return webmcpTools().filter((tool) => TOOL_ENDPOINTS[tool.name]?.path.startsWith("/api/"));
@@ -38,10 +53,17 @@ export function instrumentTools(): McpTool[] {
 
 function curlFor(base: string, endpoint: { method: "GET" | "POST"; path: string }, example: Record<string, unknown>): string {
   if (endpoint.method === "GET") {
-    const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) =>
-      encodeURIComponent(String(example[name] ?? "")),
-    );
-    return `curl -sS ${base}${path}`;
+    const used = new Set<string>();
+    const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) => {
+      used.add(name);
+      return encodeURIComponent(String(example[name] ?? ""));
+    });
+    // Anything the path did not consume rides the query string, the
+    // same rule the browser surface follows.
+    const query = Object.entries(example)
+      .filter(([key, value]) => !used.has(key) && value !== undefined && value !== "")
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+    return `curl -sS ${base}${path}${query.length ? `?${query.join("&")}` : ""}`;
   }
   return `curl -sS -X POST ${base}${endpoint.path} -H 'content-type: application/json' -d '${JSON.stringify(example)}'`;
 }

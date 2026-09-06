@@ -1,5 +1,12 @@
 # Spec reads — the store's positions on adjacent protocols
 
+**THIS FILE IS NOW LOAD-BEARING (rule 61, 2026-09-06).** It was a
+register of positions kept out of good practice; it is now the
+evidence any work that turns on an outside fact has to cite. A read
+that is not written here did not happen. Name the source, the date,
+and the parts that stayed secondhand — a read with no gaps declared
+is the one to distrust.
+
 One dated entry per read. These are POSITIONS, not implementations:
 what the protocol is, what it would cost us to speak it, and what we
 say about it until we do. The standards-boundary law applies to every
@@ -13,6 +20,151 @@ coverage and Circle's own announcement posts, dated below. Byte-level
 claims (header names, envelope fields) are therefore NOT settled facts
 here — any build that touches wire format re-reads the primary spec
 first. Positions and boundaries below don't depend on those bytes.
+
+## 2026-09-06 — AWS registry cleanup
+
+Read the primary [AWS registry overview](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry.html)
+and [registry concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-concepts.html)
+for the remaining ROADMAP C3 and delegated-agent decision 4 cleanup.
+AWS describes a catalog created in an AWS account, with authorization
+and approval configured by its administrator. That supports a named
+customer integration; it does not establish the general public listing
+press the old rows assumed. Those rows now withdraw that assumption.
+The store's existing ARD endpoint remains built.
+
+Gaps: these primary pages were returned by web search; no AWS console,
+customer registry, or publication flow was exercised. This read does not
+verify the earlier entry's launch date or future cross-organization
+roadmap, and does not turn other secondhand venue notes into primary reads.
+
+## 2026-09-06 — the listing and discovery surfaces, read under rule 61
+
+The read that motivated rule 61, recorded first so the rule ships with
+its own evidence rather than as an instruction nobody has followed yet.
+Occasioned by two listings in this repository being found stale on the
+same afternoon: `DISTRIBUTION.md` called the Cursor directory a place
+that "accepts submissions" while `trust-signals.ts` had carried its
+page, and the archived venue list called mcpbeat "not yet opened" while
+the same file carried two of its pages. Both errors were repeated aloud
+from the written record before anyone read the live one.
+
+**REACHED, and what each settled.**
+
+- **OpenAI plugins.** The App Directory folded into the Plugin
+  Directory on 2026-07-09; a plugin bundles an app (a remote MCP
+  server), skills and app templates, and is submitted at
+  platform.openai.com/plugins. Domain control is proved by a bare
+  token at `/.well-known/openai-apps-challenge` on the ORIGIN ROOT —
+  the `/mcp` subpath is stripped server-side. Their scan opens a GET
+  expecting `text/event-stream` before it POSTs anything. Commerce is
+  physical-goods only: "selling digital products or services —
+  including subscriptions, digital content, tokens, or credits — is
+  not allowed, whether offered directly or indirectly." Filed as
+  DISTRIBUTION §5b; both wire facts are now built and tested.
+- **Claude connectors.** Submission is through the portal in a Team or
+  Enterprise organisation's settings on claude.ai. A personal Pro
+  account cannot reach it. The two technical gates the store already
+  meets — a public privacy policy and a remote streamable-HTTP server
+  — are not the blocker; the organisation is.
+- **Perplexity.** THERE IS NO DIRECTORY TO SUBMIT TO, which corrects
+  what DISTRIBUTION §5 said. Two paths exist and neither is an
+  application: any Pro, Max or Enterprise user adds a custom remote
+  connector by pasting the MCP URL (remote MCP URLs launched there
+  2026-03-13), and built-in connectors are business-development
+  partnerships (Semrush, 2026-06). The action is documentation, not a
+  form.
+- **AWS Agent Registry.** GA 2026-08 as part of Bedrock AgentCore, and
+  it is a PRIVATE catalog a customer creates in their own AWS account,
+  shared across accounts by AWS RAM. There is no public AWS-hosted
+  directory a third party lists in for discovery; cross-organisational
+  discovery is announced future work. The AWS-aligned discovery move is
+  the open ARD specification, which this store already serves at
+  `/.well-known/ard.json`. A keeper-list row that read "an AWS Agent
+  Registry entry" was written on the opposite assumption.
+- **WebMCP directories.** At least six list sites — webmcp.com (email
+  and URL, human review), webmcp.cool (nekuda; a scanner verifies the
+  tools are live), webmcpdirectory.com, webmcplist.com, webmcp.ora.ai
+  (which grades each row as a registry claim, tools observed live, or a
+  full audit), and webmcp-registry.dev (DNS TXT proof of control).
+  Four more audit rather than list: webmcpaudit.com,
+  webmcpvalidator.com, webmcp-checker.com, and Discovered Labs'
+  agentic-browsing-checker. NONE appears in `trust-signals.ts`, though
+  the store has served `webmcp.js` for weeks.
+
+**NOT REACHED, and therefore secondhand (rule 55).** Every one of
+these domains is egress-blocked from the build sandbox:
+developers.openai.com, help.openai.com, learn.chatgpt.com,
+community.openai.com, docs.aws.amazon.com, www.perplexity.ai, and all
+ten WebMCP hosts above. The findings are assembled from search results
+and secondary coverage. The two OpenAI wire facts are the exception and
+are NOT secondhand — the challenge path and the SSE probe were proved
+against the live portal, which failed and then passed. Everything else
+here should be re-read from a primary source before anything is built
+on it, and the WebMCP list in particular is a list of names to go and
+look at, not a set of confirmed listings.
+
+## 2026-09-06, later — the register's own sources, challenged and corrected
+
+The keeper's question, hours after rule 61 was adopted: are those the
+right sources, and is Amazon not doing WebMCP work? Both halves earned
+a change, and the first one caught a row that was wrong on its opening
+day — which is the register working, not the register failing.
+
+**THE x402 SPEC HAD ALREADY MOVED, AND TWO ROWS POINTED AT A FORK.**
+Governance went to the x402 Foundation: announced with Cloudflare
+2025-09-23, formalised under the Linux Foundation 2026-04-02 with 22
+launch members (AWS, Circle, Google, Mastercard, Stripe, Visa among
+them). The repository is `github.com/x402-foundation/x402`;
+`coinbase/x402` is now a development fork. `x402-wire`,
+`offer-receipt` and `x402-client-defaults` all cited the fork.
+`docs/PROTOCOL_EXPANSION_2026-08.md` had recorded the foundation in
+August and the spec URL was never moved with it — a fact known in one
+file and stale in another, which is the same shape as the listing
+drift that started this whole thread.
+
+**WEBMCP: THE SOURCE IS RIGHT, THE FACT MAY NOT BE.** The W3C Web
+Machine Learning Community Group draft is the spec of record — a Draft
+Community Group Report, not on the standards track, edited by Google
+and Microsoft engineers, most recent revision reported 2026-07-21, API
+surface still changing between drafts. So the row's source stands. But
+this repository records `document.modelContext` as the surface with
+`navigator.modelContext` deprecated, and sources read today still show
+`navigator.modelContext.registerTool()` in the @mcp-b polyfill. A
+moved spec with a lagging polyfill explains both; so does our note
+being wrong. Nobody here has opened the draft. The row now asks the
+question instead of asserting the answer, and it is the read to do
+before anything touches `/webmcp.js`.
+
+**GOOGLE, YES. AMAZON, NOT IN WEBMCP.** Google moved WebMCP from
+prototype to public origin trial at I/O 2026, with Gemini as the
+in-browser agent and the trial reported as Chrome 149 to 156; Edge
+ships it behind a flag. That makes Chrome the browser door's landlord
+and its trial window a date this store depends on, so the row now
+carries the window rather than a vague "unexpired". On Amazon: no
+WebMCP standards work found. What exists is adjacent and easy to
+conflate — AWS shipped a managed MCP server (GA, OAuth 2.1 through
+AWS Sign-In since July), AgentCore has a browser tool, AWS is a launch
+member of the x402 Foundation, and Alex Nahas built MCPB, WebMCP's
+precursor, while at Amazon. Real proximity, no specification work.
+Recorded so the next intake does not re-open it on the same hunch.
+
+**ROW 14 WAS ONE ROW DOING FIVE JOBS,** covering llms.txt, agents.md,
+RFC 9727, ARD, ai-catalog and the A2A card against a single source
+that describes one of them. Split into `llms-txt` and
+`well-known-catalogs`. The second carries the sharper finding: **the
+A2A specification's canonical URL is written down nowhere in this
+tree.** The store serves an agent card at three paths against a shape
+it cannot cite. Establishing that URL is the first read that row is
+due.
+
+**EVERY SOURCE ABOVE IS SECONDHAND (rule 55).** github.com,
+developer.chrome.com, the W3C hosts and aws.amazon.com are all
+egress-blocked from the build sandbox; this is assembled from search
+results, and not one of the primaries was opened. Five rows now carry
+a `caveat` field saying what is unsettled about the row itself, and
+`npm run specs:check` prints them under a ⚑. A register whose own rows
+are presumed sound is the failure rule 61 describes, so the doubt
+travels with the row.
 
 ## 2026-08-30 — the cross-protocol re-read (supersedes the sourcing caveat above, in part)
 
@@ -131,3 +283,49 @@ CHECK an x401 challenge's shape on other people's endpoints — reading
 the protocol is our lane even when we don't speak it; (b) if agentic
 marketplaces begin requiring it merchant-side, revisit. Nothing in
 our current copy references x401.
+
+
+## 2026-09-06 — machine-readable checkout and the chain boundary
+
+Read for the machine-readiness release, under rule 61. Primary sources
+were reachable directly in this session:
+
+- [Foundation HTTP transport](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/transports-v2/http.md):
+  v2 uses the PAYMENT-REQUIRED header for the challenge and
+  PAYMENT-SIGNATURE for the signed retry; amounts are atomic strings.
+- [Foundation MCP transport](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/transports-v2/mcp.md):
+  payment challenges are tool results with isError true, identical
+  structuredContent and JSON text; payments and settlement receipts
+  use x402/payment and x402/payment-response metadata. The store's
+  payment=tool-result URL is an explicit compatibility selector of
+  our own, not a query parameter prescribed by the spec. The existing
+  RPC-error profile remains available for existing callers.
+- [MCP 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28):
+  the current revision is available; docs and verifier connections
+  use the main server's negotiation and metadata handling.
+- [CDP facilitator](https://docs.cdp.coinbase.com/x402/seller/facilitator):
+  its current production-network table lists Base, Polygon, Arbitrum,
+  World and Solana. Ethereum, Optimism and Avalanche are absent.
+  The live store's cached facilitator capability list was also read
+  through KV: v2 exact includes those five production networks and
+  their listed testnets. This is a cached observation, not a new
+  authenticated supported call: the local CDP credential loader had
+  neither credential, so a direct authenticated refresh did not run.
+- [Cloudflare service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
+  and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/):
+  the quote Worker is a separate deployment. Its configuration must
+  agree with the store; a service binding does not copy secrets.
+
+**The distinction the keeper asked about.** The September 3 addition
+of Ethereum, Arbitrum, Optimism and Avalanche was reader support
+(PAYMENT_RAILS Part F); it did not add checkout rails. The till still
+registers Base, flag-enabled Polygon and flag-enabled Solana. A
+statement's network argument chooses the evidence chain, not the
+payment chain. The compact contract now says that at checkout.
+
+**Gaps.** These reads do not prove every MCP host implements the new
+payment profile, nor that an arbitrary older x402 SDK can pay v2.
+No live settlement was made. Adding Arbitrum or another checkout rail
+still requires the receiving-address decision, settlement integration,
+receipt/refund/reconciliation coverage and payment tests; a matching
+SDK or reader enum alone does not establish those properties.

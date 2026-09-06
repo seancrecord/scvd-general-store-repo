@@ -24,8 +24,9 @@ the gaps it could not see, counted against itself.
 Not an escrow, a guarantor, or a dispute court: those absorb risk and
 need a balance sheet. We observe the gap and sign what we saw.
 
-It is also a general store selling small signed goods over x402 (USDC
-on Base or Solana), which is where most of the shelf still lives.
+It is also a general store selling small signed goods over x402 in USDC.
+Checkout rails come from `acceptedNetworks()` in `src/lib/payments.ts`;
+chain-reading support is broader. `PAYMENT_RAILS.md` distinguishes them.
 
 ## Commands
 
@@ -37,6 +38,18 @@ on Base or Solana), which is where most of the shelf still lives.
 - The six doors: `npm run doors:check` (reads the live store down
   all six roads an agent can take — SIX_DOORS.md; read-only, and
   `--record` is a human's hand)
+- The seventh road is a browser, and `.mcp.json` is how you drive it.
+  It declares two servers: `chrome-devtools` (pinned
+  `chrome-devtools-mcp@1.8.0`) to load a page in real Chrome and read
+  what `document.modelContext` actually registered, and `scvd-store`
+  (the live `/mcp` door) to ask the server the same questions. The
+  WebMCP surface is derived from the MCP tool catalogue, so the two
+  answers disagreeing is a defect the unit tests cannot see — they
+  read the same source. Both are read-only in practice: `tools/list`
+  is free and every `buy_*` needs a signed payment that no agent here
+  has. Chrome not on the default path takes
+  `--executablePath=<path>`; a container with no display takes
+  `--headless`.
 
 Run `npm run typecheck && npm test` before committing. `npm run
 build:check` when touching imports, config, or non-`.ts` modules — the

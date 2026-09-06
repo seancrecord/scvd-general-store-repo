@@ -64,7 +64,7 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
     summary:
       "Send a URL; we GET it once and report whether it answers a well-formed x402 v2 payment challenge: a 402 status, a parseable base64 PAYMENT-REQUIRED header, accepts entries a client can actually sign against, and structurally valid signed offers if declared. Free, no account. One probe, one moment — a shape check, never an uptime claim.",
     method: "POST",
-    url: `${base}/api/preflight/${PREFLIGHT_VERSION}`,
+    url: `${base}/api/preflight/${battery}`,
     request: {
       url: "REQUIRED. The https URL a buyer would GET expecting your 402 — your buy endpoint, not your homepage.",
     },
@@ -94,7 +94,7 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
       after_verify_failures: `Facilitator codes like invalid_exact_evm_payload_signature or settle_exact_failed_onchain happen AFTER the challenge stage, at verify/settle time, and depend on the specific payment attempt — a preflight cannot catch them and this one does not pretend to. For the artifact half (do the signed offers verify against the issuer's published key), use POST ${base}/api/conformance/v1.`,
     },
     what_it_cannot_check: [
-      "Delivery. Whether anything real happens after payment is a fact about the world; the paid behavioral rung of this ladder is standing_watch.",
+      "Delivery. This unpaid probe cannot observe a purchase. The launch_check rung records one bounded paid attempt and what was delivered; even that is not a guarantee about future purchases.",
       "Reliability. One probe is one moment; this is not a monitor and its output is not an uptime claim.",
       "Verify/settle-time failures — wallet state, signatures over a specific payment, on-chain conditions. Those belong to the payment attempt, not the endpoint's shape.",
     ],
@@ -108,20 +108,25 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
     the_ladder: {
       free_first: {
         artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
-        endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool. Free.`,
+        endpoint: `${base}/api/preflight/${battery} — this tool. Free.`,
         the_buyer_side: `${base}/api/before-you-pay/v1 — whether YOUR client would actually pay it. Free.`,
-        a_sample_of_the_paid_one: `${base}/samples/once-over.json — every field the $5 artifact carries, unsigned, so you can see it before buying it.`,
+        a_sample_of_the_paid_one: `${base}/samples/once-over.json — a specimen of the signed report, unsigned, so you can see it before buying it.`,
       },
       paid: [
         ladderRung(
           base,
+          "launch_check",
+          "one bounded paid purchase attempt with the response and blind spots recorded; for checking what happens beyond the unpaid challenge",
+        ),
+        ladderRung(
+          base,
           "service_audit",
-          "these exact checks, signed and bound into a certificate at a permanent URL: for when you need to hand somebody the readout rather than run it",
+          "the current battery with its frozen comparison, plus rail and cross-surface reads, signed and bound into a certificate at a permanent URL; the paid audit has a wider scope than this free probe",
         ),
         ladderRung(
           base,
           "conformance_watch",
-          "these exact checks once a day, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week",
+          `the frozen ${PREFLIGHT_VERSION} battery once a day, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week`,
         ),
         ladderRung(
           base,

@@ -83,7 +83,7 @@ export const BASE_NETWORK = "eip155:8453";
  */
 export const SOLANA_NETWORK = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 export const PENNY_PAGE_USDC = 0.01;
-const USDC_DECIMALS = 6;
+export const USDC_DECIMALS = 6;
 
 /** Base58, 32-44 chars: the only shape a Solana pubkey comes in. A
  * malformed address stays OUT of the 402 rather than minting offers
@@ -559,7 +559,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     // catalogs. Declaring none of them is why our entries in someone
     // else's index have been anonymous URLs with prices on them.
     ...storeServiceMetadata(env),
-    extensions: buyDiscoveryExtensions(item),
+    extensions: buyDiscoveryExtensions(item, env.STORE_BASE_URL),
     customPaywallHtml: browserPaywallHtml(item, env),
     unpaidResponseBody: async () => ({
       contentType: "application/json",

@@ -9,6 +9,15 @@ import {
   visibleText,
   walk,
 } from "./lib/listings.mjs";
+import {
+  ageInDays,
+  compareRoster,
+  namesTheStore,
+  readRoster,
+  rosterFrom,
+  staleRows,
+  stateOf,
+} from "./lib/listing-roster.mjs";
 
 const SIXTY =
   "scvd.store is an evidence observatory for agentic commerce. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt.";
@@ -195,4 +204,118 @@ test("the versions walk reads every index once, never throws on a dead one, and 
   assert.equal(walked.rows.find((r) => r.index === "clawhub").state, "unreachable");
   assert.equal(walked.rows.find((r) => r.index === "x402-list").state, "unreachable");
   assert.equal(seen.filter((u) => new URL(u).host === "registry.modelcontextprotocol.io").length, 1);
+});
+
+/**
+ * THE ROSTER BATTERY (2026-09-06). Every row in trust-signals is a
+ * claim on somebody else's page; these hold the reading of them.
+ */
+
+test("a page that still names the store holds; one that answers but does not is silent", () => {
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>SCVD General Store — an evidence observatory</p>" }), "holds");
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>store.scvd/general-store</p>" }), "holds");
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>Kept by Sean-Claude Van Damme</p>" }), "holds");
+  // A live page that no longer mentions us at all: the delisting case.
+  assert.equal(stateOf({ ok: true, status: 200, text: "<p>No such server. Browse the directory.</p>" }), "silent");
+  // A marker hidden in a script tag does not count; visible text only.
+  assert.equal(stateOf({ ok: true, status: 200, text: "<script>var a='scvd'</script><p>nothing</p>" }), "silent");
+  assert.equal(stateOf({ ok: false, status: 404, text: "" }), "unreachable");
+  assert.equal(stateOf({ ok: false, status: 0, text: "", error: "timeout" }), "unreachable");
+});
+
+test("the marker match is case-insensitive and needs no exact spelling", () => {
+  assert.equal(namesTheStore("SCVD.STORE"), true);
+  assert.equal(namesTheStore("@scvd/defects on npm"), true);
+  assert.equal(namesTheStore("a directory of MCP servers"), false);
+  assert.equal(namesTheStore(""), false);
+  assert.equal(namesTheStore(undefined), false);
+});
+
+test("the roster comes from trust.json's external_records, and a document without one yields nothing", () => {
+  const rows = rosterFrom({
+    external_records: [
+      { url: "https://a.example/x", registry: "A", confirmed: "2026-09-01" },
+      { url: "not-a-url", registry: "B", confirmed: "2026-09-01" },
+      { registry: "C" },
+      { url: "https://d.example", confirmed: null },
+    ],
+  });
+  assert.deepEqual(rows, [
+    { url: "https://a.example/x", registry: "A", confirmed: "2026-09-01" },
+    { url: "https://d.example", registry: "", confirmed: null },
+  ]);
+  assert.deepEqual(rosterFrom({}), []);
+  assert.deepEqual(rosterFrom(null), []);
+});
+
+test("a confirmed date ages in whole days; an undated or unparseable row never goes stale", () => {
+  const now = new Date("2026-09-06T12:00:00Z");
+  assert.equal(ageInDays("2026-09-06", now), 0);
+  assert.equal(ageInDays("2026-09-01", now), 5);
+  assert.equal(ageInDays(null, now), null);
+  assert.equal(ageInDays("last Tuesday", now), null);
+  const fresh = {
+    records: [
+      { url: "https://old.example", registry: "Old", age_days: 400 },
+      { url: "https://mid.example", registry: "Mid", age_days: 200 },
+      { url: "https://new.example", registry: "New", age_days: 3 },
+      { url: "https://undated.example", registry: "Undated", age_days: null },
+    ],
+  };
+  assert.deepEqual(staleRows(fresh).map((r) => r.registry), ["Old", "Mid"]);
+});
+
+test("a roster row that stops naming us is a regression; climbing back is news; a new row is neither", () => {
+  const baseline = {
+    records: [
+      { url: "https://gone.example", state: "holds" },
+      { url: "https://back.example", state: "unreachable" },
+      { url: "https://same.example", state: "holds" },
+    ],
+  };
+  const fresh = {
+    records: [
+      { url: "https://gone.example", registry: "Gone", state: "silent" },
+      { url: "https://back.example", registry: "Back", state: "holds" },
+      { url: "https://same.example", registry: "Same", state: "holds" },
+      { url: "https://brand.example", registry: "Brand new", state: "silent" },
+    ],
+  };
+  const { regressions, advances } = compareRoster(baseline, fresh);
+  assert.deepEqual(regressions, [{ url: "https://gone.example", registry: "Gone", was: "holds", now: "silent" }]);
+  assert.deepEqual(advances, [{ url: "https://back.example", registry: "Back", was: "unreachable", now: "holds" }]);
+  // With no baseline at all, the first reading alarms nobody.
+  assert.deepEqual(compareRoster(null, fresh).regressions, []);
+});
+
+test("the walk reads trust.json, then one page per row, and says so when the roster could not be read", async () => {
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(url);
+    if (url.endsWith("/.well-known/trust.json")) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({
+            external_records: [
+              { url: "https://holds.example", registry: "Holds", confirmed: "2026-09-01" },
+              { url: "https://silent.example", registry: "Silent", confirmed: "2025-01-01" },
+            ],
+          }),
+      };
+    }
+    if (url === "https://holds.example") return { ok: true, status: 200, text: async () => "<p>scvd.store</p>" };
+    return { ok: true, status: 200, text: async () => "<p>nobody here</p>" };
+  };
+  const roster = await readRoster("https://scvd.store", fetchImpl, new Date("2026-09-06T00:00:00Z"));
+  assert.equal(roster.roster_read, true);
+  assert.deepEqual(calls, ["https://scvd.store/.well-known/trust.json", "https://holds.example", "https://silent.example"]);
+  assert.deepEqual(roster.records.map((r) => r.state), ["holds", "silent"]);
+  assert.equal(roster.records[1].age_days, 613);
+
+  // An unreadable or non-JSON trust.json is silence, not a false empty roster.
+  const broken = await readRoster("https://scvd.store", async () => ({ ok: true, status: 200, text: async () => "<html>" }));
+  assert.equal(broken.roster_read, false);
+  assert.deepEqual(broken.records, []);
 });

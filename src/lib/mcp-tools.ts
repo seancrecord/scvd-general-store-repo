@@ -7,6 +7,7 @@ import {
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import {
   frontCounterItems,
   FRONT_COUNTER_PROMISE,
@@ -20,6 +21,12 @@ import {
   priceLine,
 } from "@/services/menu-markdown";
 import { MENU_ITEMS, getMenuItem } from "@/store";
+import {
+  CONFORMANCE_KINDS,
+  CONFORMANCE_VERDICTS,
+  KEY_RESOLUTIONS,
+} from "@/store/conformance-vocabulary";
+import { ORDER_STATUSES } from "@/types";
 import { GUARANTEE_BLOCK_TEXT, SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
@@ -75,8 +82,30 @@ export interface McpTool {
   annotations?: McpToolAnnotations;
   /** S1: the uniform listing spec; conforming clients ignore extras. */
   spec?: ListingSpec;
-  /** Listing specs per item for a cluster tool, keyed by item_id. */
-  specs?: Record<string, ListingSpec>;
+  /**
+   * WHERE THE PER-ITEM LISTING SPECS LIVE, rather than the specs
+   * themselves (2026-09-06).
+   *
+   * This field used to carry the full ListingSpec for every item a
+   * cluster tool sells. Measured on the live door: tools/list was
+   * 234 KB for fifteen tools, and `specs` was 115 KB of it — 49% of
+   * everything every client downloads on every session. buy_observation
+   * alone carried 77 KB, more than half its own 109 KB.
+   *
+   * The file's own note says "an MCP client ignores a key it does not
+   * know", and that is true of PARSING and false of COST: most hosts
+   * serialize the whole tool object into the model's context, so the
+   * bytes are paid in tokens by every session whether or not a single
+   * key is read. September's counts: ~2,057 sessions against ~185 free
+   * tool calls and ~38 paid ones. Thousands of connects, dozens of
+   * calls.
+   *
+   * Nothing is lost. Each spec was already served, per item and in
+   * full, at /menu/{item_id} — JSON or markdown by Accept — and the
+   * item ids are right here in `itemIds`. A reader that wants one
+   * fetches one, instead of every reader downloading all of them.
+   */
+  specsUrlTemplate?: string;
   /**
    * WHAT THIS TOOL READS, stated rather than inferred (rule 57.5).
    * Required on every free tool by the guard, and derived from the
@@ -290,6 +319,23 @@ const str = (description: string, maxLength?: number): Schema => ({
   ...(maxLength ? { maxLength } : {}),
 });
 
+/**
+ * A STRING WHOSE VALUES ARE A CLOSED SET (2026-09-06).
+ *
+ * Several fields spelled their vocabulary into the description —
+ * "offer | receipt", "queued | completed" — which reads fine and
+ * validates against nothing. A WebMCP scan named one of them; the
+ * others were the same defect on quieter fields. The values are
+ * always passed in from the runtime constant the code branches on,
+ * never retyped here, so a word added to the code cannot go missing
+ * from what callers are told.
+ */
+const choice = (description: string, values: readonly string[]): Schema => ({
+  type: "string",
+  description,
+  enum: [...values],
+});
+
 function purchaseOutputSchema(item: MenuItem): Schema {
   const common: Record<string, Schema> = {
     message: str("The store's confirmation line."),
@@ -495,7 +541,7 @@ const PURPOSE_LINES: Record<string, string> = {
  * shelf copy, and the guarantee split verbatim — exactly the shape a
  * planning model copies into its own risk assessment.
  */
-function purchaseTool(item: MenuItem, base: string): McpTool {
+export function purchaseTool(item: MenuItem, base: string): McpTool {
   const purpose = PURPOSE_LINES[item.id];
   return {
     name: `buy_${item.id}`,
@@ -714,10 +760,6 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
     shared.length > 0
       ? ` (${shared.map((item) => item.id).join(" and ")} also sell${shared.length === 1 ? "s" : ""} at the front counter, buy_simple — the same item through either door, same price, same certificate; either tool is correct.)`
       : "";
-  const specs: Record<string, ListingSpec> = {};
-  for (const item of items) {
-    specs[item.id] = listingSpec(item, base);
-  }
   return {
     name: cluster.name,
     /**
@@ -740,7 +782,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
       idempotentHint: false,
       openWorldHint: true,
     },
-    specs,
+    specsUrlTemplate: `${base}/menu/{item_id}`,
     itemIds: items.map((item) => item.id),
   };
 }
@@ -858,7 +900,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "preflight_endpoint",
     summary:
-      "Probes one x402 endpoint unpaid and returns whether it serves a well-formed x402 v2 payment challenge right now: the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. A shape check at one moment, not an uptime or delivery claim. Free and rate limited; the ceiling travels with the result.",
+      "Is this door's x402 challenge well-formed right now? One unpaid probe returns the verdict, the level reached on the L0–L6 evidence ladder, each check's tri-state result, and what a single probe cannot establish. Shape at one moment: not uptime, not delivery, and not this store's record of the host, which look_at_door holds. Free and rate limited; the ceiling travels with the result.",
     reads: "subject_fetch",
     description:
       "x402 endpoint preflight, free. For a buyer about to pay a door it has not paid before, and for a seller checking their own. Check any x402 endpoint's door before paying it: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
@@ -907,7 +949,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "look_at_door",
     summary:
-      "Returns what the store holds about one x402 door: one unpaid probe now, folded with the signed weekly record of that host — rounds probed of rounds since first seen, the passport tier with its fraction, the last probed round's failed checks, and whether the door answers now the way the last signed round saw it. Not a score or a rank; counts carry their denominators. Free.",
+      "What has this store recorded about the host over time? One unpaid probe now, folded with the signed weekly record: rounds probed of rounds since first seen, the passport tier with its fraction, the last probed round's failed checks, and whether the door answers now the way the last signed round saw it. History, not a fresh shape check and not a score; counts carry their denominators. Free.",
     reads: "subject_fetch",
     description:
       "What this store holds about an x402 door, now and before now, in one free call. One unpaid probe (the same single probe as preflight_endpoint, same budget) folded with what the signed chain holds about the host: rounds probed out of rounds since we first met it, the passport tier with its fraction and its rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact. Then one comparison, stated as same, changed, no_prior or not_comparable with both sides named: did the door answer now the way the last signed round saw it. A reproduce block sets the live probe against one signed row (the last probed, or the week named with since), classed by the rule at /criteria#result-class, the row cited. Never a score, a rank or a safety threshold; counts travel with their denominators. A host the chain never met comes back as never met. Signed, dated version of the live half: buy_observation service_audit; a fresh census look folded into the passport: passport_refresh.",
@@ -915,7 +957,16 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         url: str("The https x402 door you are asking about.", 2048),
-        since: str("Optional. A signed week, e.g. 2026-W34, to reproduce against that week's row.", 8),
+        since: {
+          type: "string",
+          description:
+            "Optional. A signed week, to reproduce against that week's row.",
+          // ISO 8601 week date. The shape lived only in the "e.g."
+          // until a scan pointed out that an example is not a format.
+          pattern: "^\\d{4}-W\\d{2}$",
+          maxLength: 8,
+          examples: ["2026-W34"],
+        },
       },
       required: ["url"],
       additionalProperties: false,
@@ -958,7 +1009,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "check_before_you_pay",
     summary:
-      "Probes one x402 door unpaid and replays the stock @x402/core client selection over the accepts it returned, under the caller's own profile. Returns which accept a stock client would sign — network, asset, amount, signing window — or that it would refuse locally before signing, with the stage and the setting that decided it. Free; nothing is signed and nothing is paid.",
+      "Would a stock x402 client sign anything this door offers? One unpaid probe, then the @x402/core selection replayed over the accepts under the caller's own profile. Returns which accept would be signed — network, asset, amount, signing window — or that the client refuses locally first, with the stage and the setting that decided it. A wallet question, not a door-shape one. Free; nothing is signed and nothing is paid.",
     reads: "subject_fetch",
     description:
       "For a buyer whose client has its own rules, to learn before signing whether this door meets them. Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
@@ -1056,7 +1107,10 @@ const FREE_TOOLS: McpTool[] = [
           "The signed offer or receipt as a compact JWS: header.payload.signature, base64url.",
           9000,
         ),
-        kind: str("Optional: offer | receipt. Detected from the artifact when absent."),
+        kind: choice(
+          "Optional. The artifact kind; detected from the artifact when absent.",
+          CONFORMANCE_KINDS,
+        ),
         public_key_hex: str(
           "Optional ed25519 public key, hex. Supplying it makes the check fully offline.",
           64,
@@ -1074,15 +1128,20 @@ const FREE_TOOLS: McpTool[] = [
     outputSchema: {
       type: "object",
       properties: {
-        verdict: str("conforms | does_not_conform | could_not_check."),
-        kind: str("offer | receipt, or null when undetectable."),
+        verdict: choice("The desk's finding on the artifact.", CONFORMANCE_VERDICTS),
+        kind: {
+          type: ["string", "null"],
+          description: "The artifact kind, or null when it could not be detected.",
+          enum: [...CONFORMANCE_KINDS, null],
+        },
         live: {
           description:
             "Separate from conformance: an expired offer can conform and not be payable. Null for receipts.",
           type: ["boolean", "null"],
         },
-        key_resolution: str(
-          "offline | did:web | not_attempted | budget_exhausted.",
+        key_resolution: choice(
+          "How the issuer's key was obtained, or why it was not.",
+          KEY_RESOLUTIONS,
         ),
       },
       required: ["verdict", "kind"],
@@ -1156,7 +1215,7 @@ const FREE_TOOLS: McpTool[] = [
         order_id: str("The order polled."),
         item_id: str("What was bought."),
         item_name: str("Its name on the shelf."),
-        status: str("queued | completed. Completed is terminal."),
+        status: choice("Where the order stands. Completed is terminal.", ORDER_STATUSES),
         created_at: str("When the order was taken, ISO 8601."),
         sla_hours: { type: "number", description: "The delivery promise, in hours from created_at." },
         patron_number: { type: "number", description: "Your sequential patron number." },
@@ -1166,13 +1225,101 @@ const FREE_TOOLS: McpTool[] = [
         message: str("The store's word on where things stand."),
         window_breached: {
           type: "object",
-          description: "Present only past the promised window: due_at, hours_late, kind, owed_usdc, and how the refund gets paid (by the keeper's hand, never automatically).",
+          description:
+            "Present only past the promised window. The store counting a missed promise against itself, in full.",
+          properties: {
+            due_at: str("When the window closed, ISO 8601."),
+            hours_late: { type: "number", description: "How far past it, in hours." },
+            kind: choice(
+              "Whether it arrived late or has still not arrived.",
+              ["delivered_late", "still_open"],
+            ),
+            owed_usdc: { type: "number", description: "What is owed back, in USDC." },
+            note: str("What the promise says about this case, in plain words."),
+            how_it_gets_paid: str(
+              "That the keeper pays refunds by hand, with a transaction hash on the record.",
+            ),
+            verify: str("The order's own URL, for checking this independently."),
+          },
+          required: ["due_at", "hours_late", "kind", "owed_usdc"],
         },
       },
       required: ["order_id", "item_id", "status", "created_at", "sla_hours", "message"],
     },
     annotations: {
       title: "Check an Order",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    /*
+     * THE FIRST TWO STEPS OF THE JOURNEY (2026-09-06).
+     *
+     * The shelf could always be BOUGHT from over MCP and never
+     * SHOPPED: buy_* asks for an item_id the caller was expected to
+     * already know, the catalogue was a resource most hosts hide, and
+     * read_store_guide answers with the whole guide as prose. So an
+     * agent asking "what can I buy here for under a cent" had one
+     * move, which was to read everything. A WebMCP audit named the
+     * same gap in its own words — tools should map to a visitor's
+     * journey rather than to endpoints — and the journey this store
+     * has always had is find the thing, read what it costs and what
+     * it delivers, buy it. The third step was a tool; now the first
+     * two are.
+     *
+     * It is a different JOB from read_store_guide, which is the test
+     * the 27-to-5 consolidation set: that returns the store's prose,
+     * this returns rows a caller can filter and compare. Nothing here
+     * ranks, scores or recommends.
+     */
+    name: "find_in_catalog",
+    reads: "made_here",
+    description:
+      "Search this store's shelf and read one item's listing. Returns compact rows — id, name, price in USDC, instant or human-fulfilled, and what the item reads — filtered by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free, read-only, no payment and no account. This is how to learn WHICH item to buy before a buy_* tool, which needs an item_id. Nothing is ranked or recommended: the order is the shelf's own and the filter is a stated rule, printed beside what it matched and what it matched from. NOT a purchase and NOT a stock check.",
+    summary:
+      "Searches this store's shelf and returns compact rows: id, name, price in USDC, instant or human-fulfilled, and what each item reads. Filters by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free and read-only. Nothing is ranked or recommended.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        q: str("Words to match against an item's id, name, subtitle and description.", 120),
+        max_price_usdc: {
+          type: "number",
+          minimum: 0,
+          description: "A ceiling in USDC. Items at or below it match.",
+        },
+        item_id: str(
+          "One item's id. It replaces search rather than narrowing it: q and max_price_usdc are not applied, and the answer is that one item in full.",
+          60,
+        ),
+      },
+      additionalProperties: false,
+      examples: [{ max_price_usdc: 0.01 }, { q: "watch" }, { item_id: "spot_check" }],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "object", description: "The filter that was applied, echoed." },
+        matched: { type: "number", description: "How many items matched." },
+        of: { type: "number", description: "How many are on the shelf, the denominator." },
+        items: {
+          type: "array",
+          description: "The rows, in the shelf's own order.",
+          // The row's own shape, from the one function that builds a
+          // row. Untyped, this said only "objects come back" — and an
+          // agent could not see that a row carries the `id` a buy_*
+          // call takes next, which is the whole reason to search.
+          items: CATALOG_ROW_SCHEMA,
+        },
+        how_this_was_ordered: str("That the order is the shelf's own and nothing is ranked."),
+        whole_catalogue: str("The full catalogue, for a caller that wants every field."),
+      },
+      required: ["matched", "of", "items"],
+    },
+    annotations: {
+      title: "Find Something on the Shelf",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -1224,10 +1371,6 @@ function frontCounterTool(base: string): McpTool {
         `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}`,
     )
     .join("\n");
-  const specs: Record<string, ListingSpec> = {};
-  for (const item of items) {
-    specs[item.id] = listingSpec(item, base);
-  }
   return {
     name: "buy_simple",
     /**
@@ -1294,7 +1437,7 @@ function frontCounterTool(base: string): McpTool {
       idempotentHint: false,
       openWorldHint: true,
     },
-    specs,
+    specsUrlTemplate: `${base}/menu/{item_id}`,
     itemIds: items.map((item) => item.id),
   };
 }

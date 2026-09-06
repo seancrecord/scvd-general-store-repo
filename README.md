@@ -12,6 +12,20 @@ mcp-name: store.scvd/general-store
 [![Vouch Protocol agent trust grade for scvd.store: A (100)](docs/badges/vouch-agent-trust.svg)](https://vouch-protocol.com)
 [![DOI of the corpus](https://zenodo.org/badge/DOI/10.5281/zenodo.22284887.svg)](https://doi.org/10.5281/zenodo.22284887)
 
+Every badge above is somebody else's reading of this store. This one is
+ours, about ourselves, and it is set apart from that row on purpose —
+it is the same artifact we ask operators to paste beside their own
+doors, pointed back at us, and it says SELF-OBSERVED on its face
+because the weekly census structurally cannot probe its own host:
+
+[![scvd.store passport for scvd.store: SELF-OBSERVED — the subject and the observer are the same party, dated, gaps counted against the observer](https://scvd.store/badges/passport/scvd.store.svg)](https://scvd.store/passport/scvd.store)
+
+It goes dark rather than stale-green: it renders only while every
+self-module agrees, and any disagreement renders the passport
+indeterminate and refuses the chip. Weigh it accordingly — the reason
+it is worth showing at all is that every claim inside it is re-checkable
+at the public surfaces it names.
+
 **scvd.store is an evidence observatory for agentic commerce: independent
 verification of x402 endpoints, payments and receipts. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
@@ -164,7 +178,7 @@ not for connecting to it.)
 
 ### Tools
 
-Fifteen tools, all listed free by `tools/list`; the `buy_*` tools
+Sixteen tools, all listed free by `tools/list`; the `buy_*` tools
 are x402-paid in-band. Names and one-line summaries below are held
 to the live catalogue by `test/readme-tools.spec.ts`; the full
 descriptions and input schemas are what the server sends.
@@ -176,6 +190,7 @@ descriptions and input schemas are what the server sends.
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
 | `check_order` | Poll a human-queue order by its order_id: status, the promised window, the deliverable once completed. Free. |
+| `find_in_catalog` | Search the shelf and read one item's listing: compact rows filtered by price ceiling or text, or one item in full. Free. |
 | `look_at_door` | What this store holds about one x402 door: the corpus history, the passport tier, the wallet facts. |
 | `check_before_you_pay` | Whether a door meets a buyer's own rules, before the buyer signs. |
 | `ring_bell` | Ring the store bell; free. |
@@ -746,7 +761,7 @@ are not:
   with its own quality scan: descriptions, parameter descriptions and
   output schemas at full marks. Its annotations reading (0 of 27)
   describes the 27-tool catalog this store retired on 2026-08-02 —
-  the live catalog is 15 tools, every one carrying all four MCP
+  the live catalog is 16 tools, every one carrying all four MCP
   behavior hints through `tools/list` — and refreshes on its next
   scan rather than being argued with.
 - **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)

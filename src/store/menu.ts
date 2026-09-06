@@ -39,15 +39,11 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
      * keeper-time answers to since the 2026-08-20 curation, and the
      * only labor item that is also an instrument. Price $150 and the
      * model rule are his (2026-09-02: "aura_walk, $150, Claude sonnet
-     * or opus 5 or at request lower models"). ⚑ Keeper's pen on the
-     * copy below; the numbers are his already.
+     * or opus 5 or at request lower models"). Copy inked 2026-09-03.
      *
-     * ONE A WEEK, his ruling (2026-09-02, "agreed"): six passes with
-     * transcripts is more of a week than the collab's made thing, and
-     * the bench's own argument (queue-capacity.ts) is that a labor
-     * door with no per-item rate is a door that can be sold ten weeks
-     * of work in an afternoon. Raise it to two after the first three
-     * ship inside the window, and only by his hand.
+     * Capacity was revised by the keeper on 2026-09-04; the current
+     * weekly_inventory below supersedes the original one-slot limit
+     * and its conditional increase. The waitlist still handles overflow.
      */
     id: "aura_walk",
     listed_week: "2026-W36",

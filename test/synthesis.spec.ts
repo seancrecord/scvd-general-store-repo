@@ -167,10 +167,26 @@ describe("C1 + C3 on the MCP door", () => {
       "Guaranteed: signature validity forever; verification free forever; price as displayed; delivery format as specified.",
     );
     expect(description).toContain("Not guaranteed:");
-    // S1 survives grouping: each item keeps its uniform listing spec,
-    // now keyed by item_id on the shelf.
-    const specs = shelf?.["specs"] as Record<string, Record<string, unknown>>;
-    expectCanonicalKeyOrder(specs["hello"]!);
+    /*
+     * S1 SURVIVES GROUPING, AND MOVED (2026-09-06). Each item keeps
+     * its uniform listing spec; the shelf tool no longer carries a
+     * COPY of every one of them. Embedded, they were 115 KB of a
+     * 234 KB tools/list that every session downloads before doing
+     * anything — see test/mcp-tool-catalog-budget.spec.ts. The shelf
+     * now points, per item, and the spec it points at is the same
+     * spec in the same canonical key order. That is what this asserts:
+     * not that the pointer exists, but that following it still yields
+     * the S1 contract.
+     */
+    expect(shelf?.["specs"], "the shelf re-embedded its specs").toBeUndefined();
+    const template = String(shelf?.["specsUrlTemplate"]);
+    expect((shelf?.["itemIds"] as string[]).includes("hello")).toBe(true);
+    const page = await SELF.fetch(template.replace("{item_id}", "hello"), {
+      headers: { "User-Agent": "synthesis-spec/1.0", Accept: "application/json" },
+    });
+    expect(page.status).toBe(200);
+    const listed = (await page.json()) as Record<string, unknown>;
+    expectCanonicalKeyOrder(listed["spec"] as Record<string, unknown>);
   });
 });
 
