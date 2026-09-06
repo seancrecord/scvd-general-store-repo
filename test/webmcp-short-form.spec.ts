@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { webmcpTools, webmcpScript } from "@/routes/webmcp";
+import { webmcpTools, webmcpPurchaseTools, webmcpScript } from "@/routes/webmcp";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 
 /**
@@ -112,7 +112,7 @@ function describedFields(
 describe("the browser surface's parameter descriptions", () => {
   it("stay under Chrome's guidance and never command the reader", () => {
     let checked = 0;
-    for (const tool of webmcpTools()) {
+    for (const tool of [...webmcpTools(), ...webmcpPurchaseTools()]) {
       for (const field of describedFields(tool.inputSchema as Record<string, unknown>)) {
         checked += 1;
         const where = `${tool.name}.${field.path}`;

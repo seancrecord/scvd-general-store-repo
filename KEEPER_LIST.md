@@ -161,7 +161,9 @@ build, it is on the roadmap.
      independently matched between discovery and the store MCP quote.
      Cloudflare refused the direct update because the latest uploaded
      Worker version was not deployed; apply it with the reviewed
-     release deployment, then rerun this check. No payment was made.
+     release deployment, then rerun this check. COMPLETED 2026-09-06:
+     the approved recipient was mirrored, both Workers deployed, and
+     all 32 live quotes agreed with discovery. No payment was made.
   5. Workers Builds → create a second project on this repo
      with deploy command `npx wrangler deploy -c
      doors/wrangler.jsonc`, so a push to main deploys both.
@@ -759,6 +761,14 @@ Do not relitigate without you.
 
 ### Decisions that unblock the roadmap
 
+- **RULE — enable Arbitrum and World checkout.** Their integration is
+  built behind `ARBITRUM_PAY_TO` and `WORLD_PAY_TO`. Decide whether to
+  use the existing EVM receiving wallet for each network, and mirror
+  the approved settings on the store and scvd-doors together. The
+  settings remain absent until approved; current quotes and copy must
+  agree after activation. No live purchase or refund test is implied.
+
+
 - **Rail run-through** (eleven checks, drafted against
   `docs/PROTOCOL_EXPANSION_2026-08.md`) and the
   `PAYMENT_RAILS` vs cheap-door intake collision. The eleven
@@ -921,8 +931,10 @@ Do not relitigate without you.
   your hand (done), carrying everything since 3.8.0: the
   fortune, the doctrine sentence, the passport tier, the
   case file, the aura walk, the operator's statement. The
-  tree and the registry agree at 3.15.0; the next press is
-  due when `SKILL_VERSION` moves again.
+  tree now holds 3.16.0 (2026-09-06): explicit browser purchases and
+  quote-led payment instructions for older agents. That new bundle
+  is ready for your publish press; the registry record remains 3.15.0
+  until that press is observed.
 - **x402-list owner update, round five (09-02).** Submitted
   by your hand: the five doors listed W35-W36 and the
   description. Their token is served at

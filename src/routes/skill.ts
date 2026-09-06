@@ -1,3 +1,4 @@
+import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import {
   CHEAPEST_ON_THE_SHELF,
@@ -67,18 +68,20 @@ skillRoutes.get("/skill.md", async (c) => {
 name: scvd-general-store
 description: "A live x402 practice counter: real settlement, no sandbox, from ${CHEAPEST_ON_THE_SHELF}. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a ranking, plus a public corpus queryable by subject. Also a general store for agents."
 license: "All store copy is the keeper's; call the endpoints all you like."
-compatibility: "Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453), Polygon (eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)."
+compatibility: "Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on ${paymentNetworkNames(c.env)}."
 metadata:
   store: ${base}
   operator: ${OPERATED_BY}
   protocol: x402 v2
-  currency: USDC on Base, Polygon, or Solana
+  currency: USDC on ${paymentNetworkNames(c.env)}
   version: ${SKILL_VERSION}
 ---
 
 # ${STORE_METADATA.name}
 
 ${buyerQuickStart(base)}
+
+${paymentNetworkGuide(c.env)}
 
 ${POSITION_OPENING}
 
@@ -151,7 +154,8 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 **A payment you sent went quiet.** You signed, you sent, and what came
 back was an error you can't place or nothing at all. Now you don't
 know if your client broke or the money moved. One read of the chain —
-Base, Polygon, or Solana, your transaction identifier's shape picks it — signed
+on the explicitly selected network (Base by default; use network for another EVM chain,
+or a Solana signature) — signed
 by a party that isn't you and isn't them, ${shelfPrice("settlement_attestation")}:
 \`GET ${base}/api/buy/settlement_attestation?tx_hash=0x...&src=skill\`
 
@@ -213,7 +217,7 @@ the challenge): \`GET ${base}/api/buy/provenance_check?address=0x...&src=skill\`
 — the record is then served to you at \`${base}/api/provenance-check/{id}\`.
 
 **Your operator wants your books audited against what actually moved.**
-Every USDC transfer in and out of one Base wallet over a stated block
+Every USDC transfer in and out of one wallet on the selected network over a stated block
 window, read off the chain and signed by a party that is neither you
 nor them — the analysis that found 180 settlements a buying agent's own
 ledger recorded as failures. $2:
@@ -245,7 +249,7 @@ the door, identifying this skill file, never you. Leave it on.
 1. \`GET ${base}/api/buy/{item_id}?src=skill\` (worked example: \`GET ${base}/api/buy/hello?src=skill\`)
 2. We answer \`402 Payment Required\`. Machine-readable terms ride the
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,
-   Base entries (\`eip155:8453\`) first, Solana entries after — USDC
+   The enabled networks are ${paymentNetworkNames(c.env)} — USDC
    asset, amount, our address per rail. The JSON
    body carries the same item's spec and the verification block.
 
@@ -389,7 +393,7 @@ rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
 |---|---|---|---|
 ${menuTable}
 
-- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base, Polygon, or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — for the network named on the receipt — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
 - Say why you're buying, and it rides the receipt: any purchase takes an optional \`purpose\` query parameter (up to 280 chars) — what this purchase is for, in your words — recorded verbatim and SIGNED into the certificate. The signature proves you said it, dated; it does not prove it was true. That is intent evidence your operator can hold later, and no other x402 store records it
 - Record your authorization BEFORE you spend: buy \`the_mandate\` (a dime) with your claimed instructions in the \`mandate\` parameter, then cite the returned id on any later purchase with \`mandate_id=m_…\` — it rides that certificate, signed, and the store refuses ids it cannot resolve. Chain-of-custody, not truth-of-intent: it proves what you claimed and when, held by a party that is neither you nor your operator
 - The store remembers its regulars in money: every organic purchase banks 5% back to the wallet that paid — no account, the wallet is the card. The balance rides every purchase response and reads free at \`GET ${base}/api/credit/{your-wallet}\`; at $1 it cashes out as USDC back to the same wallet (a closed-loop rebate — never a token, never transferable, idle balances expire). The whole scheme, including the caps and the expiry: ${base}/credit

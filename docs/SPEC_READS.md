@@ -329,3 +329,26 @@ No live settlement was made. Adding Arbitrum or another checkout rail
 still requires the receiving-address decision, settlement integration,
 receipt/refund/reconciliation coverage and payment tests; a matching
 SDK or reader enum alone does not establish those properties.
+
+## 2026-09-06 — checkout copy, browser purchases, and additional EVM rails
+
+Read for the payment/discovery follow-through under rule 61:
+
+- Google Search Central, [AI features and your website](https://developers.google.com/search/docs/appearance/ai-features): ordinary SEO remains applicable; visible text and structured data must agree. No special AI schema or additional AI text file is required. This work corrects the existing surfaces rather than promising ranking or indexing.
+- [WebMCP draft, 4 September 2026](https://webmachinelearning.github.io/webmcp/): document.modelContext registers tools; ToolAnnotations includes consequentialHint for consequential actions. Execute receives input plus an AbortSignal. The draft defines neither a wallet signer nor x402 payment metadata. The browser purchase bridge will therefore explicitly accept a buyer-signed x402 payload; it will not infer wallet support or collect key material. Browser-host compatibility still requires testing; this is a community draft, not a W3C Standard.
+- [x402 HTTP transport](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/transports-v2/http.md): the challenge and settlement result travel in PAYMENT-REQUIRED and PAYMENT-RESPONSE; signed retries use PAYMENT-SIGNATURE. These remain the protocol source for publication purchases as well as menu items.
+- [CDP facilitator](https://docs.cdp.coinbase.com/x402/seller/facilitator): production v2 exact includes Base, Polygon, Arbitrum, World and Solana. The supported endpoint remains the programmatic capability source; the list alone is not evidence of an enabled store recipient or successful settlement.
+- [Circle USDC contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses): canonical Arbitrum and World contracts were read directly. The installed EVM SDK has an Arbitrum dollar-price mapping but no World mapping; World must use an explicit asset amount with independently verified token metadata. The attempted World mainnet documentation URL was unavailable; no RPC fact is inferred from it.
+- [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/): request configuration stays local; both Worker deployments need the enabled recipient settings.
+
+No live payment was made during these reads. Existing buyer-audit findings are owned by another task and excluded from this follow-through.
+
+World follow-up, 2026-09-06: [network configuration](https://docs.world.org/world-chain/quick-start/info) supplies chain 480, a two-second block cadence and the public Alchemy RPC. Read-only calls to Circle's listed native USDC contract returned chainId 480, name `USDC`, version `2`, decimals `6`. Its domain name differs from Base/Polygon's `USD Coin`; copying that domain would be incorrect. No wallet was loaded and no transaction submitted.
+
+Implementation evidence: publication indexes expose paged HTTP purchase instructions and receipt semantics; discovery tiers derive from the same penny-page tiers as the gate. WebMCP adds an explicit free quote and buyer-signed submission, using September 4's `consequentialHint`. The actual served module is exercised under Node with fabricated payments, including cancellation, changed accepts, duplicate calls, lost responses and expired quotes. Browser-native signing support remains absent from the draft; a compatible external wallet/client is required.
+
+Receipt links: [Arbitrum's builder directory](https://arbitrum.io/build-app) names Arbiscan as its primary explorer; [WorldScan's own description](https://info.worldscan.org/what-is-worldscan/) identifies worldscan.org as the World Chain explorer. Receipt pages now select their explorer from the recorded checkout network; unknown networks get no guessed link.
+
+Receiving-account preflight, 2026-09-06: the public Base and Polygon offers name the same receiving account. Read-only Arbitrum and World calls confirmed each chain ID, no deployed code at that recipient, and code at the listed native USDC contract. This checks account shape and contract presence; it does not prove a live settlement or authorize production activation.
+
+World RPC fallback: [World's node-provider directory](https://docs.world.org/world-chain/providers/nodes) names Tenderly. Read-only calls to its World mainnet endpoint returned chain ID 480 and a complete 500-block native-USDC log window. The World reader keeps both Alchemy and Tenderly fallbacks; no timeout allowance or fallback test was relaxed.

@@ -82,7 +82,7 @@ export const ITEM_ASKED_FOR: Record<string, string> = {
   the_mandate: "signed, dated record of what an agent is authorized to do",
   bitcoin_anchor: "Bitcoin timestamp for a hash, for under a cent",
   settlement_attestation:
-    "signed settlement attestation for an x402 payment on Base, Polygon or Solana",
+    "signed settlement attestation for an x402 payment on a supported network selected in the input contract",
   settlement_reconciliation:
     "reconcile an agent's authorized spend against what settled on chain, signed",
   the_case_file: "signed case file for one agent purchase, payment through delivery",
@@ -194,7 +194,7 @@ export function askedForFaq(base: string): { question: string; answer: string }[
     },
     {
       question: "Who provides proof of what happened in an agentic commerce transaction?",
-      answer: `For x402, this store. A settlement attestation reads the chain once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED, on Base, Polygon or Solana. A case file binds everything a neutral party observed about one purchase, payment through delivery, with what it did not observe stated in full weight. Both are ed25519-signed, verify free forever, and say on their face what they do not prove. The shelf is at ${base}/menu.json.`,
+      answer: `For x402, this store. A settlement attestation reads the chain once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED, on a supported network selected in the input contract. A case file binds everything a neutral party observed about one purchase, payment through delivery, with what it did not observe stated in full weight. Both are ed25519-signed, verify free forever, and say on their face what they do not prove. The shelf is at ${base}/menu.json.`,
     },
     {
       question: "Which companies independently verify agent-facing APIs?",

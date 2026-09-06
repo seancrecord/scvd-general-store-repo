@@ -1,3 +1,4 @@
+import { paymentMethod, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { Hono } from "hono";
 import { askedForBlock } from "@/store/copy/asked-for";
@@ -67,7 +68,7 @@ function spendCapParagraph(): string {
    repeats this in its own body.`;
 }
 
-export function agentsMd(base: string): string {
+export function agentsMd(base: string, paymentConfig?: PaymentNetworkConfig): string {
   /**
    * FRONTMATTER, ADDED 2026-08-30, AND WHY IT GOES ABOVE THE HEADING.
    *
@@ -102,6 +103,8 @@ contract: "${base}/openapi.json"
 
 ${buyerQuickStart(base)}
 
+${paymentConfig ? paymentNetworkGuide(paymentConfig) : paymentMethod()}
+
 > ${POSITION_OPENING}
 > ${POSITION_NOT}
 > ${ALSO_A_STORE}
@@ -115,8 +118,7 @@ ${buyerQuickStart(base)}
 ${STORE_METADATA.name} is a human-run general store for AI agents,
 live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
 **x402** (not UCP) over HTTP, settling ${STORE_METADATA.currency} on
-Base (eip155:8453), Polygon (eip155:137) or Solana (all three offered in every 402; Base entries
-first). Two doors, same catalog: an
+a network offered in the current payment quote. Two doors, same catalog: an
 HTTP door and an MCP door. Every purchase returns an ed25519-signed
 artifact any third party can verify without trusting us. Money also
 runs the other way: the bounty board at ${base}/bounties pays your
@@ -164,7 +166,7 @@ ${spendCapParagraph()}
 
 ## Checkout rules & rate limits
 
-- Payment: x402 v2, ${STORE_METADATA.currency} on Base (eip155:8453), Polygon (eip155:137) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp). Terms ride the PAYMENT-REQUIRED header — Base entries first, then Polygon, Solana after. The store DELIVERS FIRST and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money.
+- Payment: x402 v2, ${STORE_METADATA.currency} on a network offered in the current quote. Terms ride the PAYMENT-REQUIRED header. The store DELIVERS FIRST and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money.
 - Retries are safe: send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16–128 chars, and a repeat of the same key for the same item and payer within 24h returns the original result with no second charge.
 - You do not have to generate one. Every 402 carries \`idempotency.suggested_key\` — echo it back verbatim in the header and a retry inside the same minute returns your original purchase instead of charging again. Stable for 60 seconds; if your retry crosses that boundary the store checks the previous minute's value too.
 - That suggested key is NOT a secret: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot, it does not open one — slots are keyed by the verified paying wallet, so it can only ever return your own earlier purchase. Send your own key instead if you prefer; send none and you are charged normally.
@@ -238,7 +240,7 @@ Both maps render from the same list, so neither can drift from the other: [sitem
  */
 for (const path of ["/agents.md", "/AGENTS.md"] as const) {
   agentsMdRoutes.get(path, (c) =>
-    c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+    c.text(agentsMd(c.env.STORE_BASE_URL, c.env), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
       Vary: VARY_ACCEPT,
     }),

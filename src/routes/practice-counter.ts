@@ -1,3 +1,4 @@
+import { acceptedNetworks, paymentNetworkNames, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -94,10 +95,10 @@ function cheapest(): CheapDoorRow | undefined {
   });
 }
 
-function steps(base: string, cheapestId: string): string[] {
+function steps(base: string, cheapestId: string, paymentConfig: PaymentNetworkConfig): string[] {
   return [
     `GET ${base}/api/buy/${cheapestId}?src=try`,
-    `We answer 402 Payment Required. The machine-readable terms ride the PAYMENT-REQUIRED response header (base64 JSON): scheme "exact", the USDC asset, the amount, our address — Base entries (eip155:8453) first, Solana entries after; pay on either rail. The body carries the item's spec, the verification block, and our full signing key.`,
+    `We answer 402 Payment Required. The machine-readable terms ride the PAYMENT-REQUIRED response header (base64 JSON): scheme "exact", the USDC asset, the amount, our address — ${paymentNetworkNames(paymentConfig)}. Select an offered entry by network; the order is not a fallback promise. The body carries the item's spec, the verification block, and our public verification key.`,
     `Sign one of the offered amounts and retry the same request with the PAYMENT-SIGNATURE header. We verify the authorization and produce the goods before settling at the last moment before signing. Then we hand over the goods and a signed certificate with an id you can check at ${base}/api/verify/{cert_id}.`,
   ];
 }
@@ -117,6 +118,7 @@ function practiceHowToJsonLd(
   base: string,
   flow: readonly string[],
   cheapest: { id: string; price_usdc: number } | undefined,
+  paymentConfig: PaymentNetworkConfig,
 ): string {
   return jsonLdScript({
     "@context": "https://schema.org",
@@ -138,7 +140,7 @@ function practiceHowToJsonLd(
     supply: [
       {
         "@type": "HowToSupply",
-        name: "A wallet holding USDC on Base (eip155:8453) or Solana",
+        name: `A wallet holding USDC on ${paymentNetworkNames(paymentConfig)}`,
       },
     ],
     tool: [
@@ -159,7 +161,7 @@ practiceCounterRoutes.get("/try", (c) => {
   const base = c.env.STORE_BASE_URL;
   const shelf = cheapDoor();
   const low = cheapest();
-  const flow = steps(base, low?.id ?? "hello");
+  const flow = steps(base, low?.id ?? "hello", c.env);
 
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const list = (lines: readonly string[]): string =>
@@ -352,7 +354,7 @@ practiceCounterRoutes.get("/try", (c) => {
           ${list(COPY.honest)}
           <p class="menu-desc">${escapeHtml(COPY.closer)}</p>
         </section>
-        ${practiceHowToJsonLd(base, flow, low ? { id: low.id, price_usdc: low.price_usdc } : undefined)}`,
+        ${practiceHowToJsonLd(base, flow, low ? { id: low.id, price_usdc: low.price_usdc } : undefined, c.env)}`,
       }),
     );
   }
@@ -364,6 +366,7 @@ practiceCounterRoutes.get("/try", (c) => {
       name: STORE_METADATA.protocol,
       version: "2",
       network: "eip155:8453",
+      networks: acceptedNetworks(c.env),
       currency: STORE_METADATA.currency,
       sandbox: false,
       note: "No test mode. The same code path serves everyone, which is what makes it worth testing against.",

@@ -1,3 +1,4 @@
+import { settlementExplorer } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
@@ -329,9 +330,7 @@ function receiptPageHtml(
         ? `Trade account — ${cert.trade_partner ?? "a marketplace"} collected its customer's payment; none reached this store`
         : "Free shelf — no payment moved";
   const explorer = cert.settlement_tx
-    ? cert.network && cert.network.startsWith("solana")
-      ? `https://solscan.io/tx/${cert.settlement_tx}`
-      : `https://basescan.org/tx/${cert.settlement_tx}`
+    ? settlementExplorer(cert.network, cert.settlement_tx)
     : null;
   const row = (label: string, value: string) =>
     `<p class="menu-desc"><strong>${escapeHtml(label)}</strong> — ${value}</p>`;
@@ -350,7 +349,7 @@ function receiptPageHtml(
       ${cert.saw ? row("Catalog surface", `<code>${escapeHtml(cert.saw)}</code> <span class="menu-meta">(sha256 of the route, list price, and required inputs this receipt was minted against)</span>`) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
-      ${explorer ? row("On-chain settlement", `<a href="${explorer}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
+      ${explorer ? row("On-chain settlement", `<a href="${escapeHtml(explorer)}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
       ${cert.settled_via ? row("How it was paid for", `Trade account <strong>${escapeHtml(cert.trade_partner ?? "")}</strong>${cert.settled_via === "trade_account_test" ? " (test mode: nothing booked)" : ""}, listed trade price $${escapeHtml(String(cert.trade_price_usd ?? ""))}. <span class="menu-meta">The marketplace collected its customer's payment; this store saw none and names no chain. Refunds go through the account holder, who took the payment. Instruction digest <code>${escapeHtml(cert.trade_instruction ?? "")}</code>.</span>`) : ""}
       ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
       ${existence ? row("Existed by", existence.existed_by ? `Bitcoin block ${existence.existed_by.block_height}${existence.existed_by.block_time ? ` (mined ${escapeHtml(existence.existed_by.block_time.slice(0, 10))})` : ""} <span class="menu-meta">${escapeHtml(existence.verdict)}</span>` : `<span class="menu-meta">${escapeHtml(existence.verdict)}</span>`) : ""}

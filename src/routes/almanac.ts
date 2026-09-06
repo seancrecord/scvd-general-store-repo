@@ -1,3 +1,4 @@
+import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
@@ -43,6 +44,7 @@ function indexEntry(entry: AlmanacEntry, base: string): Record<string, unknown> 
     teaser: entry.teaser,
     price_usdc: PENNY_PAGE_USDC,
     url: `${base}/almanac/${entry.slug}`,
+    ...publicationLinks(`${base}/almanac/${entry.slug}`),
   };
 }
 
@@ -76,13 +78,17 @@ almanacRoutes.get("/almanac", async (c) => {
       }),
     );
   }
+  const page = publicationPage(entries.map(entry => indexEntry(entry, base)), `${base}/almanac`, c.req.query("page"));
+  if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
   return c.json({
+    checkout: publicationCheckout(base),
+    ...(c.req.query("view") === "compact" ? page?.pagination : {}),
     almanac:
       "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",
     price_usdc: PENNY_PAGE_USDC,
     how_to_buy:
       "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",
-    entries: entries.map((entry) => indexEntry(entry, base)),
+    entries: c.req.query("view") === "compact" ? page!.rows : entries.map((entry) => indexEntry(entry, base)),
   });
 });
 

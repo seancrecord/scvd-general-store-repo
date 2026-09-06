@@ -10,7 +10,7 @@
    */
   "rules": [
     { "type": "Text", "globs": ["**/*.md"], "fallthrough": true },
-    { "type": "Text", "globs": ["**/till/till.js"], "fallthrough": true }
+    { "type": "Text", "globs": ["**/till/till.js", "**/webmcp/purchase.js"], "fallthrough": true }
   ],
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "scvd-general-store-repo",

@@ -1,3 +1,4 @@
+import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
@@ -234,6 +235,8 @@ catalogRoutes.get("/menu.json", async (c) => {
     description: STORE_METADATA.description,
     store: {
       ...STORE_METADATA,
+      chains: checkoutNetworks(c.env).map(row => row.key),
+      payment_networks: acceptedNetworks(c.env),
       // THE NAMING LAW, tier 2: the spread carries the tier-3 full
       // name, which is retired from metadata. Overridden here so this
       // field matches serviceName and x402.json character for character.
@@ -414,6 +417,7 @@ function itemServiceJsonLd(
   item: MenuItem,
   base: string,
   state: FulfillmentState,
+  paymentConfig?: PaymentNetworkConfig,
 ): string {
   /*
    * Availability derived from the live shelf rather than asserted.
@@ -448,7 +452,7 @@ function itemServiceJsonLd(
        * JSONLD_PRICE_CURRENCY in lib/jsonld.ts has the 2026-09-02
        * reversal. The 402 and menu.json still say USDC.
        */
-      ...offerCurrencyFields(),
+      ...offerCurrencyFields(paymentConfig),
       ...(item.pricing === "fixed"
         ? { price: String(item.price_usdc) }
         : {
@@ -525,6 +529,7 @@ function renderItemPage(
   specimen: SampleEnvelope<unknown> | undefined,
   /* Roadmap S7: how much signed history stands behind the item, when it sells history. */
   depth: string | undefined = undefined,
+  paymentConfig?: PaymentNetworkConfig,
 ): string {
   const required = (buyInputSchema(item).required ?? []).filter(
     (name) => name !== "agent_name",
@@ -663,7 +668,7 @@ function renderItemPage(
         <p class="menu-desc">Every purchase here ends in an ed25519-signed certificate with a permanent verify URL. That check is free, needs no account, and answers for anyone you show it to — not only for you.</p>
         <p class="menu-meta">Verify: <code>${escapeHtml(verifyPattern(base))}</code> \u2022 this item as JSON: <code>${escapeHtml(`${base}/menu/${item.id}`)}</code> with <code>Accept: application/json</code> \u2022 the whole shelf: <a href="/menu.json"><code>/menu.json</code></a></p>
       </section>
-      ${itemServiceJsonLd(item, base, state)}`,
+      ${itemServiceJsonLd(item, base, state, paymentConfig)}`,
   });
 }
 
@@ -761,6 +766,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
               .then((wide) => depthLine(wide))
               .catch(() => undefined)
           : undefined,
+        c.env,
       ),
     );
   }
@@ -1007,6 +1013,7 @@ export function searchCatalog(
         items: [
           {
             ...catalogRow(item, base),
+            ...compactItemContract(item, base),
             description: item.description,
             at_a_glance: atAGlance(item, base, artifactClassForItem(item.id)),
           },

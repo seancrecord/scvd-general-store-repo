@@ -875,7 +875,7 @@ const worker: ExportedHandler<Env> = {
      * check here that does not depend on our own writes — so it is the
      * only one that can see a payment our own pipeline never recorded.
      *
-     * BOTH EVM RAILS, one read of the certificate drawer between them
+     * Configured EVM rails share one read of the certificate drawer
      * (parity build, 2026-08-21): the drawer's answer is the same for
      * Base and Polygon, and buying that 2,000-key scan twice an hour
      * is a real line on a real invoice for one fact.

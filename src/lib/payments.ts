@@ -1,3 +1,6 @@
+import { publicationCheckout } from "@/lib/publication-checkout";
+import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
+export { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 import { createFacilitatorConfig } from "@coinbase/x402";
 import {
   HTTPFacilitatorClient,
@@ -5,7 +8,7 @@ import {
   x402ResourceServer,
 } from "@x402/core/server";
 import type { PaymentOption, RouteConfig, RoutesConfig } from "@x402/core/http";
-import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
+import { BASE_USDC, POLYGON_USDC, ARBITRUM_USDC, WORLD_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { ExactSvmScheme } from "@x402/svm/exact/server";
@@ -65,72 +68,9 @@ import { decodeBase64Json } from "@/lib/base64-json";
  */
 export const PAYMENT_VARY = "PAYMENT-SIGNATURE, X-PAYMENT";
 
-export const BASE_NETWORK = "eip155:8453";
-/**
- * THE SECOND RAIL (2026-08-04): USDC on Solana mainnet, CAIP-2 form —
- * the genesis-hash network id the CDP facilitator's own supported
- * list names. Gate history in PAYMENT_RAILS.md: Part A audit passed
- * for both rails, `npm run supported:kinds` confirmed the facilitator
- * the store ALREADY trusts settles solana-exact, so this rail reuses
- * the whole existing verify/settle path — one more accepts[] entry,
- * zero new buyer-facing branches, exactly the shape MPP failed to be.
- *
- * FLAG-GATED ON SOLANA_PAY_TO: with the var unset, nothing about any
- * 402 changes. Set it (the keeper's receive-address ceremony: key
- * generated offline, seed on paper, only the PUBLIC address deployed)
- * and every priced route offers every live rail, Base entries first so a
- * client that blindly signs accepts[0] behaves exactly as before.
- */
-export const SOLANA_NETWORK = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+
 export const PENNY_PAGE_USDC = 0.01;
 export const USDC_DECIMALS = 6;
-
-/** Base58, 32-44 chars: the only shape a Solana pubkey comes in. A
- * malformed address stays OUT of the 402 rather than minting offers
- * nobody can pay. */
-export function solanaPayTo(env: Env): string | null {
-  const address = env.SOLANA_PAY_TO?.trim();
-  return address && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
-    ? address
-    : null;
-}
-
-/**
- * THE THIRD RAIL (2026-08-20): USDC on Polygon PoS, same facilitator.
- *
- * The gates that opened Solana both stand open wider here. Demand:
- * Token Terminal's 30-day read has Polygon carrying 5.6M of 14M x402
- * transfers — the second-biggest rail in the economy, invisible from
- * our census because the Base-centric registry we probe doesn't list
- * it. Door cost: LOWER than Solana's was — the CDP facilitator
- * announced Polygon support, @x402/evm already carries the Polygon
- * USDC deployment in its own table, the scheme is the same
- * ExactEvmScheme the Base rail runs, and an EVM pay-to address works
- * on Polygon as-is. Flag-gated on POLYGON_PAY_TO exactly as Solana is
- * on SOLANA_PAY_TO: unset, the store is byte-identical to before the
- * rail existed.
- *
- * Deliberately a SEPARATE variable from PAY_TO_ADDRESS even though
- * the keeper will almost certainly set the same 0x address: lighting
- * a rail is a decision, and inferring it from a variable set for a
- * different chain would be the store deciding for him.
- */
-export const POLYGON_NETWORK = "eip155:137";
-
-/** 0x + 40 hex, the only shape an EVM address comes in. Same rule as
- * the Solana gate: malformed stays OUT of the 402. */
-export function polygonPayTo(env: Env): string | null {
-  const address = env.POLYGON_PAY_TO?.trim();
-  return address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
-}
-
-/** Every rail the till currently accepts, for the discovery documents. */
-export function acceptedNetworks(env: Env): string[] {
-  const networks = [BASE_NETWORK];
-  if (polygonPayTo(env)) networks.push(POLYGON_NETWORK);
-  if (solanaPayTo(env)) networks.push(SOLANA_NETWORK);
-  return networks;
-}
 
 /**
  * THE RECONCILIATION CAP (the ruling PAYMENT_RAILS.md required before
@@ -223,6 +163,10 @@ export async function recordPolygonSettle(
 /** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
 const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
 
+export function pennyPageTiersUsdc(): number[] {
+  return PWID_TIER_MULTIPLIERS.map(multiplier => Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100);
+}
+
 export function priceTiersUsdc(item: MenuItem): number[] {
   if (item.pricing !== "pay_what_it_deserves") {
     return [item.price_usdc];
@@ -299,17 +243,27 @@ ${bodyHtml}
  * Shown when a human wanders into a buy URL with a browser. We don't run a
  * wallet paywall; humans get pointed back to the front porch.
  *
- * The words are unchanged from the day they shipped; only the chrome
- * around them was factored out, so this page's bytes are the same
- * bytes. A test pins that, because the cheapest way to break published
- * copy is to "tidy" it while refactoring something else.
+ * Readers may predate x402: the gate explains the protocol and points
+ * to the same browser tools and instructions as the rest of the store.
  */
+function paymentHelpHtml(env: Env): string {
+  return `<p>Request this URL with Accept: application/json for a free quote. Decode the
+PAYMENT-REQUIRED header as base64 JSON, choose an offered network and atomic USDC
+amount within your budget, and have your wallet or payment client sign those terms.
+Retry the same URL with that signed payload in PAYMENT-SIGNATURE and one unique
+Idempotency-Key reused for this purchase's retries. Without a compatible signer,
+stop before payment; never send wallet secrets.</p>
+<p><a href="${env.STORE_BASE_URL}/agents.md">Payment instructions</a> explain the protocol.
+<a href="${env.STORE_BASE_URL}/try">Browser checkout tools</a> can submit an already-signed
+payment in a compatible browser. An interrupted response does not prove payment failed.</p>`;
+}
+
 function browserPaywallHtml(item: MenuItem, env: Env): string {
   return humanPaywallPage(
     "That shelf is for agents",
     `<h1>That shelf is for agents, friend.</h1>
-<p>&ldquo;${item.name}&rdquo; is bought over the x402 protocol &mdash; your agent
-will know what to do with the 402 this page came with.</p>
+<p>&ldquo;${item.name}&rdquo; is bought over x402 v2.</p>
+${paymentHelpHtml(env)}
 <p>You're welcome to browse the <a href="${env.STORE_BASE_URL}/">front of the store</a>
 like a regular person. The guestbook's free.</p>`,
   );
@@ -326,8 +280,8 @@ function pennyPagePaywallHtml(exampleTitle: string, env: Env): string {
     "A penny, friend",
     `<h1>That'll be a penny, friend.</h1>
 <p>&ldquo;${exampleTitle}&rdquo; is a page from the keeper's own writing, and it
-costs <strong>one cent</strong> &mdash; paid over the x402 protocol, which is a
-thing your agent knows how to do and your browser does not.</p>
+costs <strong>one cent</strong> &mdash; paid over x402 v2.</p>
+${paymentHelpHtml(env)}
 <p>If you're reading this yourself: the <a href="${env.STORE_BASE_URL}/almanac">almanac's
 index</a> is free, and so is most of the store. The penny is for the page, and it
 goes to the keeper, who wrote it.</p>
@@ -459,6 +413,18 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
       });
     }
   }
+  for (const [network, payTo] of [[ARBITRUM_NETWORK, arbitrumPayTo(env)], [WORLD_NETWORK, worldPayTo(env)]] as const) {
+    if (!payTo) continue;
+    for (const tier of tiersUsdc) accepts.push({
+      scheme: "exact", network, payTo,
+      // World is absent from this SDK's dollar-price table. Its native token
+      // also has a different EIP-712 name, read on-chain rather than guessed.
+      price: network === WORLD_NETWORK
+        ? { amount: usdcToAtomic(tier), asset: WORLD_USDC, extra: { name: "USDC", version: "2" } }
+        : `$${tier}`,
+      maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
+    });
+  }
   const solana = solanaPayTo(env);
   if (solana) {
     for (const tierUsdc of tiersUsdc) {
@@ -501,6 +467,8 @@ export interface ManifestAccept {
 const USDC_ASSET_BY_NETWORK: Record<string, string> = {
   [BASE_NETWORK]: BASE_USDC,
   [POLYGON_NETWORK]: POLYGON_USDC,
+  [ARBITRUM_NETWORK]: ARBITRUM_USDC,
+  [WORLD_NETWORK]: WORLD_USDC,
   [SOLANA_NETWORK]: SOLANA_USDC_MINT,
 };
 
@@ -514,12 +482,12 @@ export function manifestAccepts(
     const entry: ManifestAccept = {
       scheme: "exact",
       network,
-      amount: usdcToAtomic(usdc),
+      amount: typeof option.price === "object" ? option.price.amount : usdcToAtomic(usdc),
       asset: USDC_ASSET_BY_NETWORK[network] ?? "",
       payTo: String(option.payTo),
     };
     if (network.startsWith("eip155:")) {
-      entry.extra = { name: "USD Coin", version: "2" };
+      entry.extra = { name: network === WORLD_NETWORK ? "USDC" : "USD Coin", version: "2" };
     }
     return entry;
   });
@@ -644,9 +612,7 @@ function pennyPageRouteConfig(
   const config: RouteConfig = {
     accepts: railAccepts(
       env,
-      PWID_TIER_MULTIPLIERS.map(
-        (multiplier) => Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100,
-      ),
+      pennyPageTiersUsdc(),
     ),
     description,
     mimeType: "text/markdown",
@@ -657,6 +623,7 @@ function pennyPageRouteConfig(
       contentType: "application/json",
       body: {
         error: note402,
+        checkout: publicationCheckout(env.STORE_BASE_URL),
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
         price_usdc: PENNY_PAGE_USDC,
         pricing: "fixed",
@@ -1288,6 +1255,8 @@ export function getPaymentStack(env: Env): PaymentStack {
       // the door is open: an unset flag is byte-identical to before.
       resourceServer.register(POLYGON_NETWORK, new ExactEvmScheme());
     }
+    if (arbitrumPayTo(env)) resourceServer.register(ARBITRUM_NETWORK, new ExactEvmScheme());
+    if (worldPayTo(env)) resourceServer.register(WORLD_NETWORK, new ExactEvmScheme());
     if (solanaPayTo(env)) {
       // The scheme server maps "$X" to the USDC mint and carries the
       // facilitator's feePayer through — the buyer stays gasless on

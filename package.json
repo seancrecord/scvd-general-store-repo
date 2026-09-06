@@ -35,7 +35,7 @@
     "agentic:check": "node scripts/agentic-market-check.mjs",
     "probe:dead-mcp": "node scripts/dead-mcp-probe.mjs",
     "tab:test": "node --test tab/tab.test.mjs",
-    "till:test": "node --test till/till.test.mjs",
+    "till:test": "node --test till/till.test.mjs webmcp/purchase.test.mjs",
     "cli:test": "node --test cli/cli.test.mjs",
     "action:test": "node --test action/preflight/preflight.test.mjs",
     "examples:test": "for f in examples/*/agent.mjs examples/shared/decide.mjs; do node --check \"$f\" || exit 1; done && python3 -m py_compile examples/*/agent.py examples/shared/decide.py && node --test examples/shared/decide.test.mjs && (cd examples/shared && python3 -m unittest -q test_decide)",

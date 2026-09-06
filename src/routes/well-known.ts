@@ -1,3 +1,5 @@
+import { publicationCheckout, publicationCollections, publicationLinks } from "@/lib/publication-checkout";
+import { pennyPageTiersUsdc } from "@/lib/payments";
 import { buyerLinks, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
@@ -194,7 +196,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
     refund_policy: REFUND_POLICY,
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
-      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base, Polygon, or Solana explorer — whichever rail settled — without asking us.`,
+      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on an explorer for the network named on the receipt — without asking us.`,
       /**
        * The answer to the obvious objection to the line above: the key
        * history is OUR page, and our page is editable. This one is not
@@ -257,6 +259,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
   return c.json({
     version: 1,
     resources: await structuredPaidResources(c.env),
+    publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
@@ -341,31 +344,35 @@ async function structuredPaidResources(env: Env) {
     spec: listingSpec(item, base),
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
-    accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
+    accepts: manifestAccepts(env, pennyPageTiersUsdc()),
     resource: `${base}/almanac/${entry.slug}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/almanac/${entry.slug}`,
+    ...publicationLinks(`${base}/almanac/${entry.slug}`),
     method: "GET",
     x402Version: 2,
     description: `Keeper's Almanac, "${entry.title}" (${entry.date}).`,
     mimeType: "text/markdown",
-    price_usdc_options: [PENNY_PAGE_USDC],
+    price_usdc_options: pennyPageTiersUsdc(),
+    checkout: publicationCheckout(base),
     pricing: "fixed",
     fulfillment: "instant",
   }));
   const issues = await listIssues(env).catch(() => []);
   const gazetteResources = issues.map((issue) => ({
-    accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
+    accepts: manifestAccepts(env, pennyPageTiersUsdc()),
     resource: `${base}/gazette/issue-${issue.issue_number}`,
     type: "http",
     lastUpdated,
     resourceUrl: `${base}/gazette/issue-${issue.issue_number}`,
+    ...publicationLinks(`${base}/gazette/issue-${issue.issue_number}`),
     method: "GET",
     x402Version: 2,
     description: `The Gazette. Issue no. ${issue.issue_number}: ${issue.title}`,
     mimeType: "text/markdown",
-    price_usdc_options: [PENNY_PAGE_USDC],
+    price_usdc_options: pennyPageTiersUsdc(),
+    checkout: publicationCheckout(base),
     pricing: "fixed",
     fulfillment: "instant",
   }));
@@ -396,6 +403,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     // S3 mirror: the scheduling-signals layer, when to reach for the store.
     when_to_use: SCHEDULING_SIGNALS,
     resources: await structuredPaidResources(c.env),
+    publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
     openapi: `${base}/openapi.json`,
     // The same doors, small enough to read: see the note in routes/catalog.
@@ -692,6 +700,7 @@ function mcpManifest(base: string) {
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.
     endpoint: `${base}/mcp`,
+    publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
     payment_profiles: [
       { id: "legacy-rpc-error", endpoint: `${base}/mcp`, challenge: "error.data['x402/payment-required']" },

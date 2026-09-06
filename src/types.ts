@@ -102,6 +102,12 @@ export interface Env {
    * the keeper's decision, never an inference.
    */
   POLYGON_PAY_TO?: string;
+  /** Explicit checkout enablement; never inferred from another chain. */
+  ARBITRUM_PAY_TO?: string;
+  WORLD_PAY_TO?: string;
+  WORLD_RPC_URL?: string;
+  WORLD_RPC_URL_PRIMARY?: string;
+  WORLD_RPC_URL_SECONDARY?: string;
   /** Coinbase Developer Platform facilitator credentials. Secrets. */
   CDP_API_KEY_ID: string;
   CDP_API_KEY_SECRET: string;

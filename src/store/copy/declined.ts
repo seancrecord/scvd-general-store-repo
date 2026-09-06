@@ -45,7 +45,7 @@ export function declinedPositions(base: string): DeclinedPosition[] {
     },
     {
       heading: "WebMCP and MCP Apps, exactly as far as they go",
-      body: `WebMCP is live: ${base}/webmcp.js registers ${browserTools.length} free, read-only tools (${browserTools.join(", ")}) on document.modelContext for agents resident in the visitor's browser. The set derives from the MCP catalog's read-only tools, so nothing that writes and nothing that can take money can appear there; a test pins it. MCP Apps: ${uiResourceCatalog().length} display-only cards are served over the MCP door for hosts that support them, nothing that moves money carries one, and the keeper's G2 ruling governs the family. No browser surface can act or spend — the till is the only page code that touches money, and it signs nothing without your wallet's own prompt.`,
+      body: `WebMCP: ${base}/webmcp.js registers ${browserTools.length} free instruments (${browserTools.join(", ")}), derived from MCP, plus quote_store_purchase (free) and complete_store_purchase (consequential). The latter submits only a payment already signed by the buyer's wallet/client; it never signs or retries by itself. MCP Apps remain ${uiResourceCatalog().length} display-only cards, with no payment tools attached. Browser availability depends on WebMCP support and permissions; without a compatible signer, an agent can browse but cannot pay. ${base}/mcp.md describes the doors.`,
     },
     {
       heading: "x402 is the protocol here; UCP, ACP, AP2 and MPP are not",

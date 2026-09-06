@@ -63,6 +63,8 @@ export interface NetStatement {
    * ships (observed_since null says so out loud, the same way Solana
    * did before its walk). */
   polygon: ChainNet;
+  arbitrum?: ChainNet;
+  world?: ChainNet;
   solana: ChainNet;
   /** When the till started booking revenue by rail. Null: not yet. */
   booked_since: string | null;
@@ -88,7 +90,7 @@ function microToUsdc(raw: string | null | undefined): number {
 
 export async function computeNetStatement(env: Env): Promise<NetStatement> {
   const months = monthsSinceOpening();
-  const chains = ["base", "polygon", "solana"] as const;
+  const chains = ["base", "polygon", "solana", "arbitrum", "world"] as const;
   /**
    * Every key is constructed, none listed: the key shapes are ours and
    * the months are enumerable, so this is one bulk read rather than a
@@ -144,7 +146,11 @@ export async function computeNetStatement(env: Env): Promise<NetStatement> {
     };
   };
 
+  const arbitrum = chainNet("arbitrum");
+  const world = chainNet("world");
   return {
+    ...(env.ARBITRUM_PAY_TO || arbitrum.observed_since || arbitrum.months.length ? { arbitrum } : {}),
+    ...(env.WORLD_PAY_TO || world.observed_since || world.months.length ? { world } : {}),
     base: chainNet("base"),
     polygon: chainNet("polygon"),
     solana: chainNet("solana"),

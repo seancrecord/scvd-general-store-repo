@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
+import type { Env } from "@/types";
+import { paymentMethod } from "@/lib/payment-networks";
 import { describe, expect, it } from "vitest";
 import {
   JSONLD_ACCEPTED_PAYMENT,
@@ -69,7 +71,7 @@ describe("JSON-LD money fields", { timeout: 120_000 }, () => {
             // trade counter's statement (2026-09-03) — the one priced
             // Offer here that is not paid over x402 and must not say so.
             expect(
-              [JSONLD_ACCEPTED_PAYMENT, JSONLD_TRADE_ACCEPTED_PAYMENT],
+              [JSONLD_ACCEPTED_PAYMENT, paymentMethod(env as unknown as Env), JSONLD_TRADE_ACCEPTED_PAYMENT],
               `${url}: priced Offer without the asset in words`,
             ).toContain(node["acceptedPaymentMethod"]);
           }

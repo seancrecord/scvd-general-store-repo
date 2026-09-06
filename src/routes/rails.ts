@@ -1,3 +1,4 @@
+import { acceptedNetworks, paymentNetworkGuide } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
@@ -31,15 +32,14 @@ import type { HonoEnv } from "@/types";
 export const railsRoutes = new Hono<HonoEnv>();
 
 /**
- * The rail palette, validated (dataviz six-checks, dark surface
- * #1b1526, 2026-08-21): lightness band, chroma floor, CVD separation
- * (worst adjacent ΔE 12.9 tritan), normal-vision floor, contrast.
- * Fixed order — Base, Polygon, Solana — assigned to the entity
- * forever, never re-dealt when a series is empty.
+ * Stable colors per rail. Labels, tooltips and the numeric table carry
+ * every value independently of color, including the new checkout rails.
  */
 const RAIL_SERIES = [
   { key: "base" as const, label: "Base", color: "#cf7f38" },
   { key: "polygon" as const, label: "Polygon", color: "#8a70cf" },
+  { key: "arbitrum" as const, label: "Arbitrum", color: "#72a7da" },
+  { key: "world" as const, label: "World", color: "#c484a4" },
   { key: "solana" as const, label: "Solana", color: "#2ea892" },
 ];
 
@@ -60,7 +60,7 @@ const PAD_TOP = 10;
 function railChartSvg(months: RailMonth[]): string {
   const max = Math.max(
     1,
-    ...months.map((m) => m.base + m.polygon + m.solana + m.other),
+    ...months.map((m) => m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0)),
   );
   const plotH = CHART_H - PAD_BOTTOM - PAD_TOP;
   const slot = (CHART_W - PAD_LEFT) / months.length;
@@ -69,9 +69,9 @@ function railChartSvg(months: RailMonth[]): string {
   months.forEach((m, i) => {
     const x = PAD_LEFT + slot * i + (slot - barW) / 2;
     let yCursor = CHART_H - PAD_BOTTOM;
-    const total = m.base + m.polygon + m.solana + m.other;
+    const total = m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0);
     for (const series of RAIL_SERIES) {
-      const value = m[series.key];
+      const value = m[series.key] ?? 0;
       if (value === 0) continue;
       const h = Math.max(2, (value / max) * plotH);
       yCursor -= h;
@@ -136,7 +136,7 @@ railsRoutes.get("/rails", async (c) => {
   const payload = {
     what_this_is:
       "Where this store's organic settlements actually land, by chain, month by month — the same books /stats serves, drawn. Organic only: house traffic is excluded at the till, never filtered afterwards.",
-    rails_accepted: ["eip155:8453", "eip155:137", "solana"],
+    rails_accepted: acceptedNetworks(c.env),
     all_time: rail ?? null,
     by_month_from_the_till: months,
     method:
@@ -150,7 +150,7 @@ railsRoutes.get("/rails", async (c) => {
 
   const tableRows = months
     .map(
-      (m) => `<tr><td>${escapeHtml(m.month)}${m.truncated ? " *" : ""}</td><td>${m.base}</td><td>${m.polygon}</td><td>${m.solana}</td><td>${m.base + m.polygon + m.solana + m.other}</td></tr>`,
+      (m) => `<tr><td>${escapeHtml(m.month)}${m.truncated ? " *" : ""}</td>${RAIL_SERIES.map(series => `<td>${m[series.key] ?? 0}</td>`).join("")}<td>${m.base + m.polygon + m.solana + m.other + (m.arbitrum ?? 0) + (m.world ?? 0)}</td></tr>`,
     )
     .join("\n");
   // Truncation is visible or it is lying-by-cap: a month whose key
@@ -162,7 +162,7 @@ railsRoutes.get("/rails", async (c) => {
   const tiles = rail
     ? `<table border="1" cellpadding="6">
         <tr><th>all-time</th>${RAIL_SERIES.map((series) => `<th>${series.label}</th>`).join("")}<th>before the till kept rails</th></tr>
-        <tr><td>${stats.organic_settlements} organic</td><td>${rail.base}</td><td>${rail.polygon}</td><td>${rail.solana}</td><td>${rail.rail_not_recorded}</td></tr>
+        <tr><td>${stats.organic_settlements} organic</td>${RAIL_SERIES.map(series => `<td>${rail[series.key] ?? 0}</td>`).join("")}<td>${rail.rail_not_recorded}</td></tr>
       </table>`
     : `<p class="menu-desc">The split is withheld right now rather than shown wrong — the books refuse to print a split that doesn't sum to the organic count.</p>`;
 
@@ -170,10 +170,10 @@ railsRoutes.get("/rails", async (c) => {
     renderSimplePage({
       title: "Where the money settles",
       description:
-        "Organic x402 settlements at this store by chain — Base, Polygon, and Solana — month by month, drawn from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
+        "Organic x402 settlements at this store by chain — by recorded settlement network — month by month, drawn from the same live books as /stats. House traffic excluded at the till. With the method and the honest gaps named.",
       path: "/rails",
       bodyHtml: `<section>
-        <p class="menu-desc"><strong>Three rails, one till.</strong> Every door here quotes USDC on Base (eip155:8453), Polygon (eip155:137), and Solana in the same 402 — same prices on every rail, the buyer's wallet picks. This page is where the money has actually landed, drawn live from the same books as <a href="/stats">/stats</a>.</p>
+        <p class="menu-desc"><strong>One till.</strong> ${escapeHtml(paymentNetworkGuide(c.env))} Same prices on every offered network; the buyer chooses. This page is where the money has actually landed, drawn live from the same books as <a href="/stats">/stats</a>.</p>
         <p class="menu-meta">Organic settlements only — the proprietors' own test traffic is excluded at the till, structurally, not filtered afterwards. The count is small and shown at its true size; it grows on its own or not at all.</p>
       </section>
       <section>
@@ -185,7 +185,7 @@ railsRoutes.get("/rails", async (c) => {
         ${
           months.length > 0
             ? `<table border="1" cellpadding="6">
-          <tr><th>month</th><th>Base</th><th>Polygon</th><th>Solana</th><th>total</th></tr>
+          <tr><th>month</th>${RAIL_SERIES.map(series => `<th>${series.label}</th>`).join("")}<th>total</th></tr>
           ${tableRows}
         </table>
         <p class="menu-meta">Till-era months only — sales settled before the till kept rails are in the all-time row below, where the method note explains their placement.</p>${truncationNote}`
@@ -211,30 +211,18 @@ railsRoutes.get("/rails", async (c) => {
         "@type": "Dataset",
         name: "Where the money settles — organic x402 settlements by chain at scvd.store",
         description:
-          "Monthly counts of organic x402 settlements at scvd.store by settlement chain (Base, Polygon, Solana), derived live from the store's public books with house traffic excluded at the till.",
+          "Monthly counts of organic x402 settlements at scvd.store by settlement chain (by recorded settlement network), derived live from the store's public books with house traffic excluded at the till.",
         url: `${base}/rails`,
         license: "https://creativecommons.org/licenses/by/4.0/",
         isAccessibleForFree: true,
         creator: organizationRef(base),
         ...(rail
           ? {
-              variableMeasured: [
-                {
-                  "@type": "PropertyValue",
-                  name: "organic settlements on Base (all time)",
-                  value: rail.base,
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "organic settlements on Polygon (all time)",
-                  value: rail.polygon,
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "organic settlements on Solana (all time)",
-                  value: rail.solana,
-                },
-              ],
+              variableMeasured: RAIL_SERIES.map(series => ({
+                "@type": "PropertyValue",
+                name: `organic settlements on ${series.label} (all time)`,
+                value: rail[series.key] ?? 0,
+              })),
               dateModified: rail.computed_at,
             }
           : {}),

@@ -1,4 +1,4 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
   HTML_INDEXERS,
@@ -8,6 +8,7 @@ import {
   isMarkdownReader,
 } from "@/lib/crawlers";
 import { prefersMarkdown, statesNoPreference } from "@/lib/accept";
+import type { Env } from "@/types";
 import { agentsMd } from "@/routes/agents-md";
 
 /**
@@ -132,14 +133,14 @@ describe("the front door, probed as the scan probed it", () => {
     const reader = await fetchAs("/", "GPTBot/1.2", "*/*");
     expect(reader.status).toBe(200);
     expect(contentType(reader)).toBe("text/markdown");
-    expect(await reader.text()).toBe(agentsMd(BASE));
+    expect(await reader.text()).toBe(agentsMd(BASE, env as unknown as Env));
     expect(reader.headers.get("vary") ?? "").toContain("User-Agent");
 
     const browser = await fetchAs("/", "Mozilla/5.0 (Macintosh) Chrome/128", BROWSER);
     expect(contentType(browser)).toBe("text/html");
     const html = await browser.text();
     expect(html).toContain("<title>");
-    expect(html).not.toBe(agentsMd(BASE));
+    expect(html).not.toBe(agentsMd(BASE, env as unknown as Env));
   });
 
   it("changes nothing for an indexer, a stated preference, or an unnamed agent", async () => {

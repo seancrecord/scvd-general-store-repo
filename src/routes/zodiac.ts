@@ -1,3 +1,4 @@
+import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
 import { currentWeekKey } from "@/lib/kv-keys";
@@ -70,18 +71,21 @@ zodiacRoutes.get("/zodiac", (c) => {
 zodiacRoutes.get("/zodiac/archive", (c) => {
   const base = c.env.STORE_BASE_URL;
   const weeks = archiveWeeks();
+  const entries = weeks.flatMap(week => ZODIAC_SIGNS.map(sign => ({
+    sign: sign.name,
+    week,
+    url: `${base}/zodiac/archive/${sign.id}/week-${week}`,
+    ...publicationLinks(`${base}/zodiac/archive/${sign.id}/week-${week}`),
+  })));
+  const page = publicationPage(entries, `${base}/zodiac/archive`, c.req.query("page"));
+  if (c.req.query("view") === "compact" && !page) return c.json({ error: "Invalid publication page." }, 400);
   return c.json({
-    archive:
-      "Past weeks of the Systems Almanac, Season One. A penny a page over x402, like any page of the keeper's almanac. The current week is free at /zodiac/{address}.",
+    archive: "Past weeks of the Systems Almanac, Season One. The current week is free at /zodiac/{address}.",
+    checkout: publicationCheckout(base),
     price_usdc: PENNY_PAGE_USDC,
     season_weeks_elapsed: weeks.length,
-    pages: weeks.flatMap((week) =>
-      ZODIAC_SIGNS.map((sign) => ({
-        sign: sign.name,
-        week,
-        url: `${base}/zodiac/archive/${sign.id}/week-${week}`,
-      })),
-    ),
+    ...(c.req.query("view") === "compact" ? page?.pagination : {}),
+    pages: c.req.query("view") === "compact" ? page!.rows : entries,
   });
 });
 

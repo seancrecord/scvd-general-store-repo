@@ -1,3 +1,4 @@
+import { paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { STORE_SERVICE_NAME } from "@/store/metadata";
 
 /**
@@ -44,7 +45,7 @@ export const JSONLD_PRICE_CURRENCY = "USD";
 
 /** The settlement asset, stated in words on every priced Offer. */
 export const JSONLD_ACCEPTED_PAYMENT =
-  "USDC over x402 v2 on Base, Polygon or Solana";
+  paymentMethod();
 
 /**
  * THE ONE PRICED OFFER THAT IS NOT PAID OVER x402 (2026-09-03): the
@@ -58,13 +59,13 @@ export const JSONLD_TRADE_ACCEPTED_PAYMENT =
   "Billed to a marketplace trade account on a statement (scvd.store/trade); not paid over x402";
 
 /** The fields every priced Offer carries: an ISO code and the asset in words. */
-export function offerCurrencyFields(): {
+export function offerCurrencyFields(env?: PaymentNetworkConfig): {
   priceCurrency: string;
   acceptedPaymentMethod: string;
 } {
   return {
     priceCurrency: JSONLD_PRICE_CURRENCY,
-    acceptedPaymentMethod: JSONLD_ACCEPTED_PAYMENT,
+    acceptedPaymentMethod: env ? paymentMethod(env) : JSONLD_ACCEPTED_PAYMENT,
   };
 }
 

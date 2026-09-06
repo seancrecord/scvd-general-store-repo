@@ -856,15 +856,15 @@ export const DOORS = [
       },
       {
         id: "declarations_derive_from_the_mcp_door",
-        asks: "Are the browser's tool names the same objects the MCP door serves, or a second hand-typed list?",
-        how: "compare the names in /webmcp.js against the names in the MCP tools/list answer",
+        asks: "Do the free browser instruments derive from the MCP catalog?",
+        how: "compare the free instrument names in /webmcp.js against MCP tools/list; browser purchase transport tools are separate",
         read(snap) {
           const scriptMiss = reached(snap, "webmcpScript");
           if (scriptMiss) return scriptMiss;
           const mcpMiss = reached(snap, "mcpTools");
           if (mcpMiss) return mcpMiss;
           const declared = new Set(
-            (snap.webmcpScript.text?.match(/"name":\s*"([a-z_]+)"/g) ?? []).map(
+            ((snap.webmcpScript.text?.match(/var TOOLS = ([\s\S]*?);/)?.[1] ?? snap.webmcpScript.text)?.match(/"name":\s*"([a-z_]+)"/g) ?? []).map(
               (match) => /"name":\s*"([a-z_]+)"/.exec(match)[1],
             ),
           );
@@ -879,7 +879,7 @@ export const DOORS = [
             );
           }
           return met(
-            `${declared.size} browser tools, every one a read-only tool the MCP door also serves`,
+            `${declared.size} free browser instruments, every one also served by MCP`,
           );
         },
       },

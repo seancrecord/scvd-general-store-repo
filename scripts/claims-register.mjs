@@ -233,7 +233,7 @@ export const REGISTER = [
   {
     id: "declined.browser-surfaces",
     file: "src/store/copy/declined.ts",
-    match: "on document.modelContext for agents resident in the visitor's browser",
+    match: "quote_store_purchase (free) and complete_store_purchase (consequential)",
     resolution: "derived",
     from: "webmcpTools() and uiResourceCatalog() — the tool list, its count, and the card count render from the same derivations the surfaces serve",
     why: "The first draft nearly said 'scoped, not built' against a surface another desk shipped the same week; the sentence now reads the live catalog so the next release cannot falsify it.",

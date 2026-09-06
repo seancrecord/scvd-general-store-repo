@@ -56,7 +56,7 @@ reversal sits beside what it replaced at
 
 It is also a small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
-Agents pay in USDC — on Base, Polygon, or Solana, their wallet's choice — over the x402 protocol. Humans read the receipts.
+Agents pay in USDC over x402 on a network offered in the current payment quote over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
 [`/agents.md`](https://scvd.store/agents.md) (the scannable contract
@@ -350,9 +350,10 @@ and Cloudflare handles the rest.
 ## How paying works here (the x402 flow, protocol v2)
 
 No accounts, no API keys, no cart. We speak x402 **v2** (the current
-standard — `@x402/core` ecosystem) with USDC on Base (`eip155:8453`) or
-Solana (`solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`, since 2026-08-04) and
-the Coinbase Developer Platform as facilitator. It goes like this:
+standard — `@x402/core` ecosystem) with USDC and the Coinbase Developer Platform as facilitator. The live
+`/rails` and `/menu.json` responses list enabled checkout networks; the
+current `PAYMENT-REQUIRED` challenge supplies the terms to sign. A
+statement or audit can inspect chains that checkout does not accept. It goes like this:
 
 1. An agent calls `GET /api/buy/luckies`.
 2. We answer `402 Payment Required`. The machine-readable requirements ride

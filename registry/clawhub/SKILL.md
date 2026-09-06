@@ -60,7 +60,10 @@ bought down another.
    carry `data-item`, so a selector written today survives a redesign.
    Navigation is plain links; nothing needs JavaScript to click.
 5. **WebMCP** — tools registered into the agent already running in the
-   browser. Details below.
+   browser. Free instruments plus `quote_store_purchase` (free) and
+   `complete_store_purchase` (may transfer USDC). The latter requires a
+   payment already signed by a buyer-authorized wallet/client; no keys
+   or automatic payments. Details below.
 6. **The site's own assistant** — deliberately not built. There is no
    chat box here, because you are the visitor and a hosted model
    between you and the shelf would be a second opinion nobody asked
@@ -387,8 +390,8 @@ not need this store today. Take a free stamp on the way past.
 1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`
 2. The store answers `402 Payment Required`; machine-readable terms
    ride the `PAYMENT-REQUIRED` response header (base64 JSON) — scheme
-   `exact`, Base entries (`eip155:8453`) first, then Polygon
-   (`eip155:137`), then Solana — USDC on any rail, same tiers, your
+   `exact`, with the enabled checkout networks listed in `accepts`.
+   Choose an offered network — USDC, same tiers, your
    wallet's choice — amount, the store's address. The JSON body carries the item's spec and the store's
    verification block (signing key, live sample artifact).
 3. Sign one of the offered amounts with your own wallet and retry the
@@ -755,12 +758,16 @@ the rooms where agents actually arrive and registers read-only
 instruments through `document.modelContext.registerTool()`:
 
 `read_store_guide` · `preflight_endpoint` · `check_before_you_pay` ·
-`check_conformance` · `verify_artifact`
+`check_conformance` · `verify_artifact` · `look_at_door` · `check_order` ·
+`find_in_catalog`
 
-**Every one of those mirrors a public endpoint, and nothing that moves
-money is registered.** That is not a roadmap gap; it is the house rule
-at the top of this file expressed in code. A browser tool that could
-spend would be a tool that acts without your decision.
+**Those instruments mirror free public endpoints.** The browser also
+registers `quote_store_purchase` for a free quote and
+`complete_store_purchase` for an already-signed x402 v2 payment.
+The latter is consequential: it may transfer USDC. A compatible
+buyer-authorized wallet/client signs externally; the bridge takes no keys
+and never signs or retries by itself. The quote fixes the URL and retry
+key. A lost response requires recovery with that same identity.
 
 The conformance desk at `https://scvd.store/conformance` goes one
 further and annotates its own form declaratively — `toolname`,
@@ -768,8 +775,8 @@ further and annotates its own form declaratively — `toolname`,
 agent can fill and read it as a tool without us shipping a line of
 JavaScript for it. **`toolautosubmit` is deliberately absent.** The
 agent can fill the form; a human presses the button. That is the
-ruling, and it is the same one that keeps the buy tools off the
-browser surface.
+ruling for that declarative form. The payment tool requires the buyer's
+already-signed authorization.
 
 Two practical notes, because this is a road still being paved:
 
@@ -873,8 +880,8 @@ artifact from the same key as any other route in.
   it: `cert_id`, `item`, `patron_number`, `date`, `paid_usdc` (the
   TOTAL settled, not the tip), `asset`, `network`, `payer` (the paying
   wallet — chain-verifiable, unlike the optional name you choose), and
-  `settlement_tx`, the on-chain transaction, so the receipt and a
-  chain explorer — Base, Polygon, or Solana, whichever rail settled — are one
+  `settlement_tx`, the on-chain transaction, so the receipt and the
+  explorer for the recorded settlement network are one
   fact checked twice. Any field shown but not covered
   by the signature is named as such in the verify response.
 - What you own once you buy it: `https://scvd.store/rights`. Yours

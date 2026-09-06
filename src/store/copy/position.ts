@@ -214,7 +214,7 @@ export const deliveryOrderRegister = (base: string): string =>
  * was the whole finding of the AEO audit: an entity resolver files
  * you under your first clause.
  */
-export const ALSO_A_STORE = `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on Base, Polygon or Solana. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}.`;
+export const ALSO_A_STORE = `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 on a network offered in the current payment quote. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}.`;
 
 /**
  * INDEPENDENCE, stated where diligence looks (2026-08-18). The x402

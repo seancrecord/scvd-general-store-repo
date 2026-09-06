@@ -1,3 +1,4 @@
+import { WORLD_NETWORK } from "@/lib/payment-networks";
 /**
  * SUBJECT DIMENSIONS — the ONE registry of what an observation is
  * about (ledger M2; spec §2a). The subject of every observation is
@@ -142,6 +143,7 @@ export const KNOWN_CHAINS: readonly string[] = [
   "eip155:42161", // Arbitrum One
   "eip155:10", // OP Mainnet
   "eip155:43114", // Avalanche C-Chain
+  WORLD_NETWORK, // World Chain
 ] as const;
 
 /** Assets a rail may settle in. One entry today, and that is the

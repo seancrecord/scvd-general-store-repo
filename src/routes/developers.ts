@@ -283,7 +283,7 @@ function developersMarkdown(base: string): string {
 
 > Build against ${base}. No account, no API key, no SDK required.
 > Free endpoints are plain HTTPS; paid ones take a signed x402 v2
-> payment in USDC on Base, Polygon or Solana, per request.
+> payment in USDC over x402 on a network offered in the current payment quote, per request.
 
 ${sections}
 
@@ -338,7 +338,7 @@ function developersHtml(base: string): string {
   return `
     <p class="lede">Build against <code>${escapeHtml(base)}</code>. No account,
     no API key, no SDK. Free endpoints are plain HTTPS; paid ones take a signed
-    x402 v2 payment in USDC on Base, Polygon or Solana, one payment per request.</p>
+    x402 v2 payment in USDC over x402 on a network offered in the current payment quote, one payment per request.</p>
     ${sections}
     <h2>Conventions</h2>
     ${rules}

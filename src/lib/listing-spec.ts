@@ -158,7 +158,7 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
         "settlement_tx",
       ],
       certificate_binds_note:
-        "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and a Base explorer are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+        "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
       rights: `${base}/rights`,
       // Storewide, and the reason any of the rest is worth anything:
       // the signature is the store's, not the holder's.
@@ -171,7 +171,7 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
       pricing: item.pricing,
       tiers_usdc: priceTiersUsdc(item),
       currency: "USDC",
-      network: "Base (eip155:8453)",
+      network: "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
       protocol: "x402 v2",
     },
   };

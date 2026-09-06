@@ -1,4 +1,5 @@
-import { SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
+import type { Env } from "@/types";
 import { describe, expect, it } from "vitest";
 import {
   guideHeadings,
@@ -835,8 +836,10 @@ const BASE = "https://scvd.store";
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
+// 2026-09-06: configured checkout names and current-quote instructions replace
+// stale payment lists. The HTTP and MCP copies now share the same configuration.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "dc4cb5c33088c850baa1708e53e9d95b30ddc7866bb1021ab7c03177e3711819";
+  "e3e022a66669e9cfb972bd51fa757151a16653a6da9f5116ee3b0f5368238227";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -876,7 +879,7 @@ describe("nothing was rewritten", () => {
      * thing, not the index — the split is a WEB convention, and a tool
      * call is not a crawler.
      */
-    expect(await body("/llms-full.txt")).toBe(storeGuideText(BASE));
+    expect(await body("/llms-full.txt")).toBe(storeGuideText(BASE, env as unknown as Env));
   });
 });
 
@@ -886,7 +889,7 @@ describe("the index is an index", () => {
     expect(index.length).toBeLessThan(INDEX_CHARACTER_BUDGET);
     // And is genuinely smaller than what it replaced, not trimmed to
     // the line: the whole guide is over 89,000 characters.
-    expect(index.length).toBeLessThan(storeGuideText(BASE).length / 3);
+    expect(index.length).toBeLessThan(storeGuideText(BASE, env as unknown as Env).length / 3);
   });
 
   it("is no longer the same document as /llms-full.txt", async () => {
@@ -997,7 +1000,7 @@ describe("every section is filed exactly once", () => {
     // an entry pointing at a slug nobody serves.
     const slugs = new Set(LLMS_AREAS.map((area) => area.slug));
     for (const area of LLMS_AREAS) {
-      expect(llmsForArea(BASE, area.slug), area.slug).toBeTruthy();
+      expect(llmsForArea(BASE, area.slug, env as unknown as Env), area.slug).toBeTruthy();
     }
     expect(llmsForArea(BASE, "not-an-area")).toBeNull();
     expect(slugs.size).toBe(LLMS_AREAS.length);
@@ -1009,7 +1012,7 @@ describe("every section is filed exactly once", () => {
      * other end: an area file must contain its sections VERBATIM as
      * the full document renders them, not a paraphrase of them.
      */
-    const full = storeGuideText(BASE);
+    const full = storeGuideText(BASE, env as unknown as Env);
     const sections = full.split(/^## /m).slice(1);
     for (const area of LLMS_AREAS) {
       const text = await body(`${area.path}/llms.txt`);

@@ -154,18 +154,19 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   const rail = stats.organic_by_rail;
   if (
     rail &&
-    rail.base + rail.polygon + rail.solana + rail.rail_not_recorded !==
+    rail.base + rail.polygon + rail.solana + (rail.arbitrum ?? 0) + (rail.world ?? 0) + rail.rail_not_recorded !==
       stats.organic_settlements
   ) {
     breaches.push(
-      `rail-identity: published split ${rail.base}+${rail.polygon}+${rail.solana}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
+      `rail-identity: published split ${rail.base}+${rail.polygon}+${rail.solana}+${rail.arbitrum ?? 0}+${rail.world ?? 0}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
     );
   }
 
   // 4. Booked-but-never-arrived, per chain, completed fully-metered months only.
   const net = await computeNetStatement(env);
   const currentMonth = new Date().toISOString().slice(0, 7);
-  for (const chain of ["base", "solana"] as const) {
+  for (const chain of ["base", "polygon", "solana", "arbitrum", "world"] as const) {
+    if (!net[chain]) continue;
     const side = net[chain];
     if (!side.observed_since || !net.booked_since) {
       continue; // A meter that has not started cannot convict anybody.

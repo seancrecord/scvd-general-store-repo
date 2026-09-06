@@ -206,20 +206,17 @@ The lineup's argument is that WebMCP keeps all three properties — your
 agent, no configuration, real named actions. For a store that takes
 money, there is a fourth: **can the action actually complete?**
 
-Ours cannot, and the reason is structural rather than an oversight.
-Every browser tool we register is free and read-only, by derivation
-and pinned by a test. A purchase needs an x402 payment signed by a
-wallet the page does not hold and must never ask for (rule 17), so the
-buy tools live on the MCP door and the browser door stops at the
-threshold.
+Since 2026-09-06, the browser door can submit a buyer-signed payment.
+The free instruments still derive from MCP. `quote_store_purchase`
+reads a free quote; `complete_store_purchase` takes that quote's id
+and an x402 payload already signed by the buyer's wallet/client.
+It is marked consequential, fixes the URL and retry key, and never
+signs or retries by itself. WebMCP supplies no wallet or key material.
 
-WebMCP's session-is-the-authority model does not solve payment; it
-solves *login*, and those are the same problem only for sites that
-bill a stored card. The honest statement of our position: **the
-browser door is our best discovery surface and cannot be our checkout,
-and the two will not merge until an agentic payment surface exists in
-the browser that we would be willing to touch.** That is a thing to
-watch, not a thing to build.
+The browser session does not authorize a payment. The buyer's compatible
+wallet/client must approve and sign the quoted terms before completion.
+A browser agent without a signer can discover products and read quotes;
+it cannot complete checkout. Browser support remains a separate prerequisite.
 
 ### 3. Being reachable down all six is a claim we can prove and others cannot
 

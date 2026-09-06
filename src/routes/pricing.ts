@@ -189,8 +189,7 @@ payload above.
 
 ## How you pay
 
-Every priced door is x402 v2, settled in USDC on Base, Polygon or
-Solana. Call once, read the terms out of the 402, sign one of the
+Every priced door is x402 v2, settled in USDC on a network offered in the current quote. Call once, read the terms out of the 402, sign one of the
 accepts, call again. The whole procedure is at ${base}/auth.md, and
 there is no account to open first.
 

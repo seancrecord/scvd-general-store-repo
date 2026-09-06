@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { checkoutNetworks } from "@/lib/payment-networks";
+import type { Env } from "@/types";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { storeGuideText } from "@/routes/llms";
 import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
@@ -41,7 +43,7 @@ const RETIRED = "your wallet's choice";
 async function surfaces(): Promise<{ name: string; text: string }[]> {
   const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
   return [
-    { name: "/llms-full.txt", text: storeGuideText(BASE) },
+    { name: "/llms-full.txt", text: storeGuideText(BASE, env as unknown as Env) },
     { name: "/skill.md", text: skill },
   ];
 }
@@ -105,11 +107,12 @@ describe("the store stops crediting the buyer with a choice the client makes", (
     }
   }, 20_000);
 
-  it("still offers all three rails, because that part was never the problem", async () => {
+  it("still describes every configured checkout rail", async () => {
     for (const { name, text } of await surfaces()) {
-      expect(text, `${name} lost a rail`).toContain("eip155:8453");
-      expect(text, `${name} lost Solana`).toMatch(/solana:/i);
+      for (const rail of checkoutNetworks(env as unknown as Env)) {
+        expect(text, `${name} lost ${rail.label}`).toContain(rail.label);
+      }
     }
-    expect(storeGuideText(BASE)).toContain("eip155:137");
   }, 20_000);
+
 });

@@ -111,6 +111,8 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "badge_url rides the stamp-minting response; a badge URL with no stamp behind it is a 404",
 
   // ---- a browser asset, not a capability ----
+  "/webmcp-purchase.js":
+    "the purchase transport module is loaded by the discoverable /webmcp.js tools; agents call the registered quote and completion tools, not this JavaScript asset",
   "/till.js":
     "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
 

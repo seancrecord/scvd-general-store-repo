@@ -1,52 +1,15 @@
+import purchaseSource from "../../webmcp/purchase.js";
+import { MENU_ITEMS } from "@/store";
 import { Hono } from "hono";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
 import type { McpTool } from "@/lib/mcp-tools";
 import type { HonoEnv } from "@/types";
 
 /**
- * THE WEBMCP DOOR (P7, unblocked 2026-08-27; design doc §10 and §12).
- *
- * WebMCP is the browser's own tool surface: a page registers tools on
- * `document.modelContext` (or `navigator.modelContext`, the trial's
- * older root, read second) and an agent RESIDENT IN THE VISITOR'S
- * BROWSER — Chrome/Edge origin trials, ChatGPT Desktop, Brave Leo —
- * discovers them by arriving. Since 2026-09-05 the script rides EVERY
- * room, not only the storefront and the till pages: arrival is
- * discovery only if the door is wherever the agent arrives, and the
- * script fence (lib/csp.ts) rides every HTML answer for the same
- * reason. Handlers answer in the spec's shape — MCP's content array,
- * one compact text block — take the host's AbortSignal, and pass it
- * to the fetch so a cancelled call cancels the request. No server connection, no directory, no
- * auth beyond the browsing session itself. API shape read from the
- * spec repo first-hand (webmachinelearning/webmcp, 2026-08-27):
- * `document.modelContext.registerTool({name, description, inputSchema,
- * execute})`, secure context, gated by the `tools` permissions policy.
- *
- * THE BUILD CONSTRAINT, from the keeper's ruling: not small enough to
- * be wrong about — smart enough not to create risk or headache, which
- * measured as two questions with construction answers:
- *
- * CAN IT ACT? No. The registered set derives from the MCP catalog's
- * free, read-only tools (readOnlyHint === true, no itemId/itemIds),
- * so nothing that writes and nothing that can take money can appear
- * here — the same class of guard as the MCP Apps payment-surface
- * test, and a test pins this one too. Every handler is a fetch to a
- * public endpoint this store already serves; the script holds no
- * keys, no wallet code, and asks the visitor for nothing. Rule 17's
- * property, on the store's second executable surface.
- *
- * CAN IT DRIFT? No. Names, input schemas and annotations are the
- * MCP catalog's own objects, and the description is the catalog
- * row's own short form (McpTool.summary), serialized into the script
- * at request time — one source for both doors, the MENU_ITEMS/ROOMS pattern.
- * A tool renamed or retired on the MCP door changes here on the same
- * deploy without anyone editing a list. The only hand-written part
- * is the endpoint map below, and webmcpUnhandledTools() lets a test
- * refuse the build when derivation outruns it.
- *
- * P7 TRACKING: every fetch the handlers make carries ?src=webmcp —
- * the same designed self-identification the skill uses — and
- * inferChannel names it as its own channel.
+ * Browser tools derive the free instruments from MCP. The purchase bridge is
+ * explicit: a free quote, then an already-signed buyer authorization. The
+ * September 4 WebMCP draft provides consequentialHint, not a wallet API.
+ * See docs/SPEC_READS.md, 2026-09-06. Nothing signs or retries by itself.
  */
 
 /**
@@ -78,7 +41,7 @@ export const TOOL_ENDPOINTS: Readonly<
   find_in_catalog: { method: "GET", path: "/api/catalog/v1" },
 };
 
-/** Free and read-only, derived — the only tools the browser surface may carry. */
+/** The free instrument set, derived from MCP; purchase tools are defined below. */
 export function webmcpTools(): McpTool[] {
   return mcpToolCatalog("https://scvd.store").filter(
     (tool) =>
@@ -96,6 +59,25 @@ export function webmcpUnhandledTools(): string[] {
   return webmcpTools()
     .map((tool) => tool.name)
     .filter((name) => !TOOL_ENDPOINTS[name]);
+}
+
+export function webmcpPurchaseTools() {
+  return [
+    {
+      name: "quote_store_purchase",
+      description: "A free x402 v2 quote for a catalog buy_url or paid publication URL, including query inputs. Returns offered networks, atomic USDC amounts, a quote_id and retry key. No wallet is opened and no payment is sent. The compact catalog is /menu.json?view=compact.",
+      inputSchema: { type: "object", properties: { buy_url: { type: "string", description: "A buy_url on this store with the required query inputs filled in." } }, required: ["buy_url"], additionalProperties: false },
+      annotations: { readOnlyHint: true, consequentialHint: false },
+      operation: "quote",
+    },
+    {
+      name: "complete_store_purchase",
+      description: "Submits a buyer-authorized, already-signed x402 v2 payment for a quote from this page. May transfer USDC. Returns the goods or order, HTTP status and payment receipt. Requires a compatible external wallet/client; never accepts private keys or wallet secrets. Retries reuse the quote's original URL and key. Cancellation does not prove settlement stopped.",
+      inputSchema: { type: "object", properties: { quote_id: { type: "string" }, signed_payment: { type: "object", description: "The signed x402 v2 JSON payload from the buyer's wallet/client, containing x402Version, accepted and payload." } }, required: ["quote_id", "signed_payment"], additionalProperties: false },
+      annotations: { readOnlyHint: false, consequentialHint: true },
+      operation: "complete",
+    },
+  ];
 }
 
 /** The registrations, serialized for the script: catalog objects verbatim. */
@@ -131,14 +113,12 @@ function registrations(): string {
 /**
  * The served script. Plain ES module, no dependencies, no build step —
  * the till's pattern. Feature-detects and no-ops in a browser without
- * the API; registers the derived read-only set in one that has it.
+ * the API; registers free instruments and the explicit purchase bridge.
  */
 export function webmcpScript(): string {
   return `/*
- * scvd.store WebMCP surface — the store's free evidence instruments,
- * registered for the agent in YOUR browser. Read-only by derivation:
- * every tool here mirrors a public endpoint, nothing can act on your
- * behalf, and nothing that moves money is registered. House rule:
+ * scvd.store WebMCP surface — free instruments and an explicit buyer-signed
+ * purchase bridge for the agent in YOUR browser. House rule:
  * nothing from this store can act without your decision, and we never
  * ask for credentials, keys, or wallet secrets.
  */
@@ -153,6 +133,14 @@ export function webmcpScript(): string {
   if (!mc || typeof mc.registerTool !== "function") return;
 
   var TOOLS = ${registrations()};
+  var PURCHASE_TOOLS = ${JSON.stringify(webmcpPurchaseTools(), null, 2)};
+  var purchaseBridge;
+  function bridge() {
+    if (!purchaseBridge) purchaseBridge = import("/webmcp-purchase.js").then(function (module) {
+      return module.createPurchaseBridge({ origin: location.origin, itemIds: ${JSON.stringify(MENU_ITEMS.map(item => item.id))} });
+    });
+    return purchaseBridge;
+  }
 
   // Every fetch self-identifies as the WebMCP channel (?src=webmcp),
   // the same designed marker the skill uses. It tags the store's own
@@ -208,7 +196,7 @@ export function webmcpScript(): string {
     });
   }
 
-  TOOLS.forEach(function (tool) {
+  TOOLS.concat(PURCHASE_TOOLS).forEach(function (tool) {
     var registration = {
       name: tool.name,
       description: tool.description,
@@ -220,6 +208,9 @@ export function webmcpScript(): string {
       execute: function (args, opts) {
         var signal = opts && opts.signal ? opts.signal : undefined;
         if (signal && typeof signal.throwIfAborted === "function") signal.throwIfAborted();
+        if (tool.operation) return bridge().then(function (purchase) {
+          return purchase[tool.operation](args || {}, signal);
+        });
         return call(tool.endpoint, args || {}, signal);
       },
     };
@@ -251,3 +242,9 @@ webmcpRoutes.get("/webmcp.js", (c) => {
   c.header("X-Content-Type-Options", "nosniff");
   return c.body(webmcpScript());
 });
+
+webmcpRoutes.get("/webmcp-purchase.js", (c) => c.body(purchaseSource, 200, {
+  "Content-Type": "text/javascript; charset=utf-8",
+  "Cache-Control": "public, max-age=300, must-revalidate",
+  "X-Content-Type-Options": "nosniff",
+}));

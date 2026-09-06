@@ -82,7 +82,7 @@ either is not us.
 \`tools/list\` and \`resources/list\` are free and unauthenticated.
 
 - **${free.length} free tools:** ${free.map((t) => `\`${t.name}\``).join(", ")}
-- **${paid.length} paid shelves** (x402 in-band, USDC on Base, Polygon or Solana): ${paid.map((t) => `\`${t.name}\``).join(", ")}
+- **${paid.length} paid shelves** (x402 in-band, USDC over x402 on a network offered in the current payment quote): ${paid.map((t) => `\`${t.name}\``).join(", ")}
 - **${shelves} readable resources** (no tool call spent): ${mcpResourceCatalog().map((r) => `\`${r.uri}\``).join(", ")}
 - **${cards} \`ui://\` card templates** (MCP Apps, SEP-1865) for hosts that render them.
 
@@ -157,13 +157,16 @@ on \`document.modelContext\` with no connection to configure.
 Discovery is arrival.
 
 **Registered:** ${browser.map((n) => `\`${n}\``).join(", ")} — derived
-from the catalog above, filtered to free AND read-only. Nothing that
-writes and nothing that can take money is registered there, by
-construction rather than by list, and a test holds it that way.
+from the catalog above, filtered to free AND read-only. Two purchase tools
+are also registered: \`quote_store_purchase\` gets a free x402 quote;
+\`complete_store_purchase\` submits a payment already signed by the buyer's
+wallet or payment client. It may transfer USDC and is marked consequential.
+The browser API itself supplies no wallet. No keys, automatic signing or
+automatic retries; the quote fixes the URL, inputs and retry key.
 
-Chrome 149–156 and Edge 150 gate the API behind an origin trial; we
-carry a token, so it is live for those. ChatGPT Desktop and Brave Leo
-support it directly. Any browser without the API loads a no-op.
+Availability depends on the browser's WebMCP support and permissions.
+The page carries origin-trial tokens for participating browsers. A browser
+without the API loads a no-op; ordinary HTTP and remote MCP remain available.
 
 ## 4. No MCP at all
 

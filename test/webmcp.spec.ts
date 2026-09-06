@@ -12,15 +12,14 @@ import { WEBMCP_ORIGIN_TRIAL_TOKENS } from "@/pages/storefront-page";
 /**
  * THE WEBMCP SURFACE (P7, 2026-08-27). The store's second executable
  * surface, and the same two construction guarantees the ruling asked
- * for are what this file pins: the registered set CANNOT ACT (free +
- * read-only by derivation, nothing that writes, nothing that takes
- * money) and CANNOT DRIFT (the definitions are the MCP catalog's own
- * objects; a handler map that falls behind derivation fails here).
+ * for are what this file pins for the free subset: read-only and
+ * derived from MCP. The explicit buyer-signed purchase bridge is
+ * exercised separately in webmcp/purchase.test.mjs.
  */
 
 const BASE = "https://scvd.store";
 
-describe("the derived tool set cannot act", () => {
+describe("the free instrument subset remains read-only", () => {
   it("registers only free, read-only tools", () => {
     for (const tool of webmcpTools()) {
       expect(tool.itemId, `${tool.name} is paid`).toBeUndefined();
@@ -32,7 +31,7 @@ describe("the derived tool set cannot act", () => {
     }
   });
 
-  it("nothing that can take money reaches the browser surface", () => {
+  it("paid MCP shelves remain outside the derived free instrument subset", () => {
     const registered = new Set(webmcpTools().map((tool) => tool.name));
     for (const tool of mcpToolCatalog(BASE)) {
       if (tool.itemId || tool.itemIds || tool.name.startsWith("buy_")) {
@@ -48,7 +47,7 @@ describe("the derived tool set cannot act", () => {
     expect(registered.has("sign_guestbook")).toBe(false);
   });
 
-  it("the script holds no payment plumbing or key vocabulary", () => {
+  it("the registration script delegates payment to the separately tested bridge and holds no keys", () => {
     const script = webmcpScript();
     // Descriptions may NAME the paid doors (the preflight points at
     // buy_observation, the guide explains _meta['x402/payment']); no
@@ -122,13 +121,9 @@ describe("the door itself", () => {
 
   it("the till pages carry the declaration too — the room where the verb lives", async () => {
     /*
-     * P8 (2026-08-28): the storefront had the declaration and the
-     * till did not — the one page whose whole point is a browser
-     * agent's next step. Same script, same read-only set, same CSP
-     * fence; the purchase tool P8 sketched stays OFF this surface,
-     * blocked not by the API but by the P7 ruling and the no-money
-     * pin two tests up — overturning a ruling is the keeper's pen,
-     * not a trailer.
+     * The till and storefront register the same instruments and purchase
+     * bridge. Signing stays with the buyer's wallet/client; the browser
+     * tool only submits that signed authorization under the same CSP.
      */
     for (const path of ["/try", "/menu/hello"]) {
       const response = await SELF.fetch(`${BASE}${path}`, {

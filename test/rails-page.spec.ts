@@ -1,5 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { acceptedNetworks } from "@/lib/payment-networks";
 import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -9,7 +10,7 @@ const testEnv = env as unknown as Env;
  * /rails — the books' split, drawn (2026-08-21, the night the third
  * rail lit). What these pin: the page derives from the till's own
  * counters (seeded here, read back drawn), the table always rides
- * beside the picture so no reader depends on SVG, the three rails
+ * beside the picture so no reader depends on SVG, the supported rails
  * are named in fixed order, and the JSON twin serves the same data.
  */
 describe("/rails draws the books", () => {
@@ -21,12 +22,12 @@ describe("/rails draws the books", () => {
       await SELF.fetch(`${BASE}/rails`, { headers: { Accept: "text/html" } })
     ).text();
     expect(page).toContain("<svg");
-    // Fixed series order, all three named — legend + table headers.
-    for (const label of ["Base", "Polygon", "Solana"]) {
+    // Fixed series order, all supported rails named — legend + table headers.
+    for (const label of ["Base", "Polygon", "Arbitrum", "World", "Solana"]) {
       expect(page).toContain(label);
     }
     // The table carries the same numbers as the picture.
-    expect(page).toContain("<td>2026-08</td><td>3</td><td>2</td><td>1</td>");
+    expect(page).toContain("<td>2026-08</td><td>3</td><td>2</td><td>0</td><td>0</td><td>1</td>");
     // Native tooltips ride the marks.
     expect(page).toContain("organic settlement");
   });
@@ -49,7 +50,7 @@ describe("/rails draws the books", () => {
     });
     expect(response.status).toBe(200);
     const body = (await response.json()) as Record<string, unknown>;
-    expect(body.rails_accepted).toEqual(["eip155:8453", "eip155:137", "solana"]);
+    expect(body.rails_accepted).toEqual(acceptedNetworks(testEnv));
     expect(String(body.method)).toContain("till");
   });
 });

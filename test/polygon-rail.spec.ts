@@ -103,9 +103,9 @@ describe("the books know the difference", () => {
     expect(railOf("eip155:8453")).toBe("base");
     expect(railOf(SOLANA_NETWORK)).toBe("solana");
     // Legacy behavior for every other EVM network is preserved: the
-    // stored history was written under it and must keep meaning what
-    // it meant.
-    expect(railOf("eip155:42161")).toBe("base");
+    // Historical counters stay in place; new Arbitrum settlements use
+    // their own bucket now that checkout can offer that chain.
+    expect(railOf("eip155:42161")).toBe("arbitrum");
   });
 });
 
