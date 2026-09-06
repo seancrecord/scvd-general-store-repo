@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "11";
+export const DEFECT_VOCABULARY_VERSION = "12";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -146,6 +146,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "this store, roadmap V3 PR 1 (the second wire, read only), on the keeper's rulings of 2026-09-04: the x402 verdict keeps its meaning permanently, protocols_spoken carries the union, and implementation gets bolder",
     what_changed:
       "Added the Machine Payments Protocol's challenge classes, one per Tier 0 check of the MPP battery that can fail (mpp-challenge-id through mpp-challenge-over-http), each unpaid-detectable and each sourced to the specification's own MUSTs in github.com/tempoxyz/mpp-specs at draft-00 — this store is the registrar, not the author. mpp-challenge-present is a check and not a class: a door with no Payment challenge is not defective, it speaks another wire. The MPP advisories (testnet default, unregistered intent, body not problem+json, x402-and-mpp) are advisories, not classes: none is a defect. Additive only; no x402 class moved.",
+  },
+  {
+    version: "12",
+    date: "2026-09-06",
+    at_the_instigation_of:
+      "0200project (github.com/0200project), who named the class by finding it in their own product and disclosing it unprompted; this store registers it as source, not author, at their agreement",
+    what_changed:
+      "Added cleared-not-examined to EVIDENCE_LABELS, the second such label and the first since Cairn's. It goes there rather than among the defect classes on the register's own distinction: a defect class is a property of an ENDPOINT, an evidence label is the PROVENANCE OF A CLAIM about one, and this is a claim whose backing check never looked at the subject. Registered the same week this store found two instances of the same shape in its own instrument — a guard asserting `expect(true).toBe(true)` and a `payto-payable` naming its unjudged entries only in prose (both fixed, PR 527) — and stated here because a register carrying a class its registrar was exhibiting would be worth nothing. It also cost this store a house rule: 52 covered only the wrongful \"no\" until 2026-09-06, and the \"ok\" half is theirs.",
   },
 ];
 
@@ -264,6 +272,19 @@ export const EVIDENCE_LABELS: readonly EvidenceLabel[] = [
     authored_by:
       "Cairn (cairnwake.com), verbatim on 2026-08-24 but for the schema-name substitution in falsified_by, confirmed back to them",
     registered: "2026-08-24",
+  },
+  {
+    id: "cleared-not-examined",
+    title: "Cleared, not examined",
+    asserts:
+      "A claim carrying a check's passing status about a subject that was never in the set that check examined. The status is true OF THE CHECK — it ran, it loaded its sources, it reported — and says nothing whatever about the subject, because the subject was never compared to anything. It arises wherever the set a check assembles is derived from the shape of a transaction rather than from the subject a reader cares about. In the case that named it: a settlement where the SUBMITTER IS NOT THE PAYER, so a payee never enters a set built from movements originating with the transaction sender — the ordinary facilitator-relayed case, and the whole shape of x402.",
+    does_not_assert:
+      "Nothing about the subject, in either direction. The subject is unscreened, not suspect: it was not found clean and it was not found dirty, and reading the label as a negative finding inverts it exactly as far as reading the status as a clearance did. Nor does it assert that the instrument is broken in general — on shapes where the subject does enter the examined set, the same status means precisely what it says. This is a statement about one claim's coverage, never about the instrument's competence or its operator.",
+    falsified_by:
+      "Reading the check's own published coverage set — `checks.assessed_for` in the instrument that named the class — and finding the subject present in it. Any subject absent from that set is unscreened whatever the status beside it says. Exact on the three settlement shapes its author tested (plain, relayed, batched); it OVER-FIRES ON APPROVALS, where a spender is screened without any movement being involved, and that boundary is part of the finding rather than a caveat on it. Where an instrument publishes no coverage set at all, this label cannot be retired by reading its output — the absence of the field is the condition the label describes.",
+    authored_by:
+      "0200project (github.com/0200project), who found the class in their own product, disclosed it unprompted to a party that had not bought it, and then withdrew two of their own published falsifiers before the one above stood. Registered as source at their agreement on 2026-09-06; wording is this store's at their explicit invitation, and the falsifier is theirs. THE TWO WITHDRAWN VERSIONS ARE DELIBERATELY NOT RECORDED HERE — they asked that the version that stands carry their name rather than the first one, which is the whole discipline this register is for. This store has not run the falsifier: we do not consume that instrument, and registering a class is not a claim to have tested it.",
+    registered: "2026-09-06",
   },
 ];
 
