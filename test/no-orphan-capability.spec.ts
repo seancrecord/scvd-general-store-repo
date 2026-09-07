@@ -33,6 +33,8 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  "/webhooks/desvela-registry":
+    "private Desvela Registry Watch ingress authenticated by a per-watch HMAC secret; registered separately by the keeper, documented in docs/DESVELA_REGISTRY_WATCH.md, and reviewed at /admin/desvela-registry.json. It is not a shopping or discovery capability for visiting agents",
   // ---- keeper-ruled redirects, not rooms (they 301 to real pages;
   // listing them would advertise nine doors that are one door) ----
   "/about": "redirect to a real room; listing it would double-count the destination",

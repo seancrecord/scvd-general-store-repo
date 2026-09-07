@@ -49,6 +49,13 @@ export const REVIEW_EVERY_DAYS = 90;
  */
 export const FACTS = Object.freeze([
   {
+    id: "desvela-registry-watch",
+    protocol: "Desvela Registry Watch",
+    fact: "Registry Watch signs raw-body HMAC-SHA256 with the per-watch secret, batches changes weekly, and uses the six documented event types and four surface kinds.",
+    source: "https://desvela.dev/registry-watch",
+    depends: "src/routes/desvela-registry.ts, src/services/desvela-registry.ts and docs/DESVELA_REGISTRY_WATCH.md",
+  },
+  {
     id: "mcp-revisions",
     protocol: "MCP",
     fact: "The protocol revisions this server negotiates are current, and no newer revision has landed that callers expect us to speak.",

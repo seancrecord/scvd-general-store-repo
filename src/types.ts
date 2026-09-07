@@ -73,6 +73,8 @@ export interface Env {
    * Set with: wrangler secret put GLAMA_CLAIM
    */
   GLAMA_CLAIM?: string;
+  /** Registry Watch HMAC secret; set via wrangler secret put. Absent means 401. */
+  DESVELA_REGISTRY_SECRET?: string;
   GUESTBOOK: KVNamespace;
   COUNTERS: KVNamespace;
   PATRONS: KVNamespace;
