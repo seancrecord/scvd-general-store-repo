@@ -99,7 +99,8 @@ Recovery release prerequisite: PR #542 adds only the coordinator storage class/b
 - [x] Commit an alarm with the catalogue purchase before settlement, independently of the legacy reconciliation row; recover original Context Anchors and unstocked human orders once payment is established.
 - [x] Reconcile ambiguous Base/Polygon/Arbitrum/World catalogue payments using finalized receipts matching payer, nonce, recipient, token and amount, then expose the checkpointed good through HTTP/MCP private status. Re-scan bounded windows for delayed RPC indexing; outages retain scheduled retries.
 - [ ] Extend capture to commission/publication doors and recover a lost status handle after payment verification expires.
-- [ ] Extend checkpointed recovery to the remaining products and establish ambiguous Solana settlement independently of the lost facilitator receipt. Confirmed Solana anchors and unstocked human orders can use the same scheduled delivery path.
+- [x] Establish ambiguous Solana settlement independently of the lost facilitator receipt for newly captured purchases; recover supported anchors and unstocked human orders through the existing scheduled delivery path.
+- [ ] Extend checkpointed recovery to the remaining products and recover pre-capture Solana obligations without retained message evidence.
 
 The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.
 
@@ -133,3 +134,16 @@ Validation: all 39 new scheduled-recovery cases failed on the prior source and p
 - [x] Restore the suggested retry key beside the MCP repeat-charge warning; keep the standard payment profile's quote location consistent; render the private status URL template as inline code so crawlers cannot follow a literal placeholder.
 
 All three GitHub failures reproduced locally before these copy repairs; 62 focused discovery checks and typecheck passed afterward. This is integration cleanup for #559, not closure of a parent SEV-1. The full suite remains on GitHub.
+
+## 2026-09-07 — Solana settlement ambiguity
+
+- [x] Retain a digest of the verified transaction message before settlement, without retaining executable signed payment bytes. Legacy and v0 messages remain identifiable after the facilitator adds its signature.
+- [x] Walk bounded pages of finalized payer history on a genesis-checked mainnet RPC; require the exact original message and transaction identity, successful execution and quoted USDC balance changes for both payer and recipient.
+- [x] Resume the original anchor or human order through HTTP and both MCP payment profiles after a lost acknowledgement, shelf closure or quote expiry. Preserve original input, certificate chain/transaction, purchase time and completed human work.
+- [x] Keep missing, malformed, unfinalized, unrelated and wrong-chain/token/amount/recipient/payer evidence unknown and scheduled; never submit another payment during lookup.
+
+All 30 new buyer regressions failed without the production fix and passed with it. The adjacent Solana gate passed 622 cases across six files; the retained-purchase gate passed 101 cases across three files. Typecheck and both Worker dry-run builds passed. Full CI remains on GitHub; no real money was sent.
+
+BUY-017/034/037 remain open for uncheckpointed products, commission/publication capture, legacy obligations and loss of the private recovery handle. Existing Solana purchase records without the message digest are not silently treated as reconcilable. These checked substeps do not change the 15/39 completed finding count or claim production deployment.
+
+Implementation references: [Solana transaction format](https://solana.com/docs/core/transactions), [finalized transaction lookup](https://solana.com/docs/rpc/http/gettransaction), [paged address history](https://solana.com/docs/rpc/http/getsignaturesforaddress), and [Solana CAIP-2 genesis identification](https://namespaces.chainagnostic.org/solana/caip2).

@@ -8,6 +8,7 @@ import { sha256Hex } from "@/lib/idempotency";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { purchaseInputFrom, queryArgs, toolArgs } from "@/lib/purchase-args";
 import { fulfillPurchase } from "@/services/fulfillment";
+import { reconcileSolanaPurchase } from "@/services/solana-purchase-reconciliation";
 
 /** Find a real timestamp boundary, not an estimate based on another chain's block rate. */
 async function firstBlock(env: Env, chain: EvmChain, head: number, since: number): Promise<number> {
@@ -25,6 +26,7 @@ async function firstBlock(env: Env, chain: EvmChain, head: number, since: number
 /** A nonce event alone does not prove that this buyer paid these terms. */
 export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promise<Pick<PurchaseIntent, "payment" | "reconciliation">> {
   if (record.state !== "unknown") return {};
+  if (record.solana) return reconcileSolanaPurchase(env, record);
   const chain = evmChainOf(record.terms.network);
   if (!chain || !record.authorization || !isSameAddress(chain.usdc, record.terms.asset)) return {};
   let head = await getFinalizedBlockNumber(env, chain);

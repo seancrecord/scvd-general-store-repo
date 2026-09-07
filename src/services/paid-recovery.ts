@@ -102,7 +102,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     // Unsupported goods/unknown rails retain their record for the delivery
     // desk. Do not schedule an endless no-op for every successful sale.
     if (record.state === "settled" && !supportsArtifactRecovery(record.item)) return;
-    if (record.state === "unknown" && (!record.authorization || !evmChainOf(record.terms.network))) return;
+    if (record.state === "unknown" && !record.solana && (!record.authorization || !evmChainOf(record.terms.network))) return;
     // Re-arm BEFORE external I/O: an outage or interrupted execution cannot
     // exhaust the platform's finite automatic retries and abandon the buyer.
     await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));

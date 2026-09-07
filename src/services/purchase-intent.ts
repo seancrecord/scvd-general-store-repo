@@ -4,6 +4,7 @@ import { sha256Hex } from "@/lib/idempotency";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { SettlementDeclined, SettlementUnknown, type SettledPayment } from "@/lib/payments";
 import { isRecord, type Env, type MenuItem } from "@/types";
+import { solanaPaymentEvidence } from "@/lib/solana-payment-evidence";
 
 export const PURCHASE_RECORD_CODES = {
   unavailable: "purchase_record_unavailable",
@@ -24,10 +25,11 @@ export interface PurchaseIntent {
   item?: MenuItem;
   created_at: string;
   authorization?: { nonce: string; valid_after: string; valid_before: string };
+  solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
   payment?: SettledPayment;
   reconciliation_reference?: string;
-  reconciliation?: { start_block?: number; next_block?: number; checked_at: string };
+  reconciliation?: { start_block?: number; next_block?: number; before_signature?: string; checked_at: string };
   delivery?: Record<string, unknown>;
 
 }
@@ -113,10 +115,13 @@ export async function beginPurchaseIntent(env: Env, input: {
     const payload = isRecord(input.payload) && isRecord(input.payload.payload) ? input.payload.payload : {};
     const auth = isRecord(payload.authorization) ? payload.authorization : {};
     const nonce = extractPaymentNonce(input.payload);
+    const solana = input.terms.network.startsWith("solana:")
+      ? await solanaPaymentEvidence(String(payload.transaction)) : null;
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 1, id,
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
+      ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(input.item ? { item: input.item } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;

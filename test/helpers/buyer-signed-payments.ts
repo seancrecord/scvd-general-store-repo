@@ -51,14 +51,15 @@ export async function associated(owner: string, mint: string): Promise<Uint8Arra
 // Legacy transaction with an isolated fee payer, standard compute-budget
 // instructions and TransferChecked. Keys are real; balances and recent blockhash
 // are fixture state. Both signatures are generated locally, never submitted.
-export async function solPayment(o: ChallengeRequirement, change: { mint?: string; recipient?: string; amount?: bigint; unrelatedSignature?: boolean; buyerKey?: CryptoKeyPair } = {}): Promise<Obj> {
+export async function solPayment(o: ChallengeRequirement, change: { mint?: string; recipient?: string; amount?: bigint; unrelatedSignature?: boolean; buyerKey?: CryptoKeyPair; versioned?: boolean } = {}): Promise<Obj> {
   const buyerKey = change.buyerKey ?? solKey;
   const buyer = encodeBase58(new Uint8Array((await crypto.subtle.exportKey("raw", buyerKey.publicKey)) as ArrayBuffer));
   const mint = change.mint ?? o.asset;
   const amount = new Uint8Array(8); new DataView(amount.buffer).setBigUint64(0, change.amount ?? BigInt(o.amount), true);
   const limit = new Uint8Array(4); new DataView(limit.buffer).setUint32(0, 20000, true);
   const price = new Uint8Array(8); price[0] = 1;
-  const msg = concat(Uint8Array.of(2, 1, 3, 7), bytes(solFeePayer), bytes(buyer), await associated(buyer, mint), await associated(change.recipient ?? o.payTo, mint), bytes(mint), bytes(TOKEN_PROGRAM_ADDRESS), bytes("ComputeBudget111111111111111111111111111111"), crypto.getRandomValues(new Uint8Array(32)), Uint8Array.of(3, 6, 0, 5, 2), limit, Uint8Array.of(6, 0, 9, 3), price, Uint8Array.of(5, 4, 2, 4, 3, 1, 10, 12), amount, Uint8Array.of(6));
+  const legacy = concat(Uint8Array.of(2, 1, 3, 7), bytes(solFeePayer), bytes(buyer), await associated(buyer, mint), await associated(change.recipient ?? o.payTo, mint), bytes(mint), bytes(TOKEN_PROGRAM_ADDRESS), bytes("ComputeBudget111111111111111111111111111111"), crypto.getRandomValues(new Uint8Array(32)), Uint8Array.of(3, 6, 0, 5, 2), limit, Uint8Array.of(6, 0, 9, 3), price, Uint8Array.of(5, 4, 2, 4, 3, 1, 10, 12), amount, Uint8Array.of(6));
+  const msg = change.versioned ? concat(Uint8Array.of(128), legacy, Uint8Array.of(0)) : legacy;
   const signed = msg.slice(); if (change.unrelatedSignature) signed[signed.length - 2] = signed[signed.length - 2]! ^ 1;
   const feeSig = new Uint8Array(await crypto.subtle.sign("Ed25519", feeKey.privateKey, msg));
   const buyerSig = new Uint8Array(await crypto.subtle.sign("Ed25519", buyerKey.privateKey, signed));
@@ -67,11 +68,12 @@ export async function solPayment(o: ChallengeRequirement, change: { mint?: strin
 export async function solFacts(w: Obj): Promise<{ valid: boolean; payer: string; recipientAccount: string; mint: string; amount: bigint; tx: string; feePayer: string }> {
   const raw = Uint8Array.from(atob(String(object(w.payload).transaction)), c => c.charCodeAt(0));
   if (raw[0] !== 2 || raw.length < 400) throw new Error("unsupported fixture transaction shape");
-  const msg = raw.slice(129), accounts = Array.from({ length: msg[3]! }, (_, i) => msg.slice(4 + 32 * i, 36 + 32 * i));
+  const signedMessage = raw.slice(129);
+  const msg = signedMessage[0] === 128 ? signedMessage.slice(1) : signedMessage, accounts = Array.from({ length: msg[3]! }, (_, i) => msg.slice(4 + 32 * i, 36 + 32 * i));
   let valid = true;
   for (let i = 0; i < 2; i++) {
     const key = await crypto.subtle.importKey("raw", accounts[i]!, { name: "Ed25519" }, false, ["verify"]);
-    valid = valid && await crypto.subtle.verify("Ed25519", key, raw.slice(1 + i * 64, 65 + i * 64), msg);
+    valid = valid && await crypto.subtle.verify("Ed25519", key, raw.slice(1 + i * 64, 65 + i * 64), signedMessage);
   }
   let cursor = 4 + 32 * accounts.length + 32;
   const count = msg[cursor++]!;
