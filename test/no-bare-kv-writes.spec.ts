@@ -42,6 +42,8 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],
   "/src/services/paid-recovery.ts": [
+    'await txn.put("purchase", proposal);',
+    'await txn.put("purchase", { ...prior, ...update });',
     'await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);',
     'await txn.put("attempt", { ...prior, response });',
     'await txn.put("artifact", record);',

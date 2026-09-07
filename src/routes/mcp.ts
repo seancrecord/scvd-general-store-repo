@@ -1,4 +1,5 @@
 import { freeA2ACheck } from "@/lib/a2a-admission";
+import { readPurchaseStatus } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
@@ -937,7 +938,7 @@ async function callPurchaseTool(
     // as the HTTP gate recording its query string, so a mint that dies
     // after settlement can still be finished by hand. The payment
     // rides _meta, never arguments, so nothing here is a credential.
-    Object.keys(args).length > 0 ? JSON.stringify(args).slice(0, 600) : undefined,
+    JSON.stringify(args),
     inputDigest,
     admitPurchase,
   );
@@ -946,6 +947,11 @@ async function callPurchaseTool(
    * verified payer holding a key it has served before, and returned
    * the original purchase without settling anything.
    */
+  if (outcome.kind === "purchase-status") {
+    if (standardPayment(c)) return rpcResult(id, { ...toolText(outcome.body) as Record<string, unknown>, isError: true });
+    const { error: message, ...data } = outcome.body;
+    return rpcError(id, -32000, message, data);
+  }
   if (outcome.kind === "admission-refused") {
     return rpcRefusal(id, -32000, outcome.refusal.code, outcome.refusal.message, outcome.refusal.details);
   }
@@ -1605,6 +1611,10 @@ async function dispatchRpc(
           typeof idempotencyKey === "string" ? idempotencyKey : undefined,
           renderResponse,
         );
+      }
+      if (name === "check_purchase") {
+        const status = await readPurchaseStatus(c.env, args.purchase_id, args.status_token);
+        return rpcResult(id, { ...toolText(status.body) as Record<string, unknown>, ...(status.status !== 200 ? { isError: true } : {}) });
       }
       const result = await callFreeTool(c, name, args);
       if (typeof result === "string") {

@@ -84,6 +84,7 @@ export type SettlementUnknownState =
 
 export interface SettlementUnknownRow {
   version: 1;
+  purchase_id?: string;
   state: SettlementUnknownState;
   path: string;
   door: "http" | "mcp";
@@ -126,6 +127,7 @@ function deepFind(value: unknown, key: string): unknown {
 }
 
 export interface SettlementUnknownInput {
+  purchaseId?: string;
   path: string;
   door: "http" | "mcp";
   reason: string;
@@ -157,6 +159,7 @@ export async function recordSettlementUnknown(
     const validBefore = Number(validBeforeRaw);
     const row: SettlementUnknownRow = {
       version: 1,
+      ...(input.purchaseId ? { purchase_id: input.purchaseId } : {}),
       state: "open",
       path: input.path,
       door: input.door,

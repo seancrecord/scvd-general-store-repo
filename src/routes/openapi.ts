@@ -5284,6 +5284,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
      * inlined a thousand times between them.
      */
     components: {
+      securitySchemes: { purchaseStatusToken: { type: "http", scheme: "bearer",
+        description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
@@ -5585,6 +5587,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
             }),
           ),
           parameters: [pathParam("anchor_id", "From the purchase response; starts banchor_.")],
+        },
+      },
+      "/api/purchase-status/{purchase_id}": {
+        get: {
+          ...freeOp("Read a retained purchase status", "A free, read-only status for catalogue purchases with a retained recovery handle. Use recovery.status_url and send the private recovery.status_token as Authorization: Bearer <status_token>. This does not verify or submit a payment; an expired payment authorization does not expire this read. The record preserves original request and terms, but settlement evidence alone does not establish delivery. Automatic fulfillment after reconciliation is not yet implemented."),
+          security: [{ purchaseStatusToken: [] }],
+          parameters: [pathParam("purchase_id", "The purchase_id in the recovery response.")],
+          responses: {
+            ...COMMON_RESPONSES,
+            "200": { description: "Original purchase request, terms, and recorded payment state", content: { "application/json": { schema: {
+              type: "object", required: ["purchase_id", "payment_state", "charged", "request", "terms", "delivery_state"],
+              properties: { purchase_id: { type: "string" }, payment_state: { type: "string", enum: ["unknown", "settled", "not_settled"] },
+                charged: { type: ["boolean", "null"] }, request: { type: "string" }, terms: { type: "object" },
+                delivery_state: { const: "not_established_by_this_record" } },
+            } } } },
+            "404": { description: "Unknown purchase or invalid/missing status credential" },
+            "503": { description: "Status storage unavailable; no payment submitted by this read" },
+          },
         },
       },
       "/api/reconciliation/{reconciliation_id}": {

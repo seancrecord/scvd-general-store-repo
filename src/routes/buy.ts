@@ -1,3 +1,4 @@
+import { readPurchaseStatus } from "@/services/purchase-intent";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { Hono } from "hono";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
@@ -148,4 +149,14 @@ buyRoutes.get("/api/order/:order_id", async (c) => {
   }
   // One derivation with the MCP door's check_order (lib/order-status).
   return c.json(orderStatusBody(c.env.STORE_BASE_URL, order));
+});
+
+// A random bearer capability opens this record; a public wallet/transaction or
+// guessed idempotency key does not. Status reads never verify or settle money.
+buyRoutes.get("/api/purchase-status/:purchase_id", async (c) => {
+  c.header("Cache-Control", "no-store");
+  c.header("Referrer-Policy", "no-referrer");
+  const status = await readPurchaseStatus(c.env, c.req.param("purchase_id"),
+    c.req.header("Authorization")?.match(/^Bearer ([a-f0-9]{64})$/)?.[1]);
+  return c.json(status.body, status.status);
 });

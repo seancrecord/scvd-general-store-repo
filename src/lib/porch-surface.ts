@@ -490,6 +490,7 @@ export function porchSurface(path: string, method: string): string | undefined {
     return "waitlist";
   }
   /* A buyer reading back their own order, commission or refund. */
+  if (path.startsWith("/api/purchase-status/")) return "purchase-status";
   if (path.startsWith("/api/order/")) {
     return "order:read";
   }

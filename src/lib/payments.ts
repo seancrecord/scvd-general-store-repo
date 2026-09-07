@@ -1411,6 +1411,7 @@ export const INVALID_SETTLEMENT_RECEIPT_CODE = "invalid_settlement_receipt";
 
 export class SettlementUnknown extends Error {
   reconciliationReference: string | null = null;
+  purchaseRecovery?: { purchase_id: string; status_url: string; status_token: string; status_auth: string };
 
   constructor(readonly network: string) {
     super("settlement outcome unknown");
@@ -1425,6 +1426,7 @@ export class SettlementUnknown extends Error {
       payment_state: "unknown",
       network: this.network,
       recovery: {
+        ...this.purchaseRecovery,
         reference: this.reconciliationReference,
         recorded: this.reconciliationReference !== null,
         retry: "Keep the original signed payment and idempotency key. Retry only the identical request with that same payment and key; do not sign a new payment while this one is unresolved.",

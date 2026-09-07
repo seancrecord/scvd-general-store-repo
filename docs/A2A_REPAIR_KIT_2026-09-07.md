@@ -123,3 +123,26 @@ the item page and actual WebMCP registration. Paid delivery, signatures,
 rechecks and the finite watch are verified with mocked settlement and
 injected clocks. No live $49 purchase or elapsed seven-day history is
 claimed by this release.
+
+
+## Integration with buyer recovery
+
+PR #559 reached main during release verification. The branch incorporates
+its protected purchase-status route and tool, original-request retention,
+payment-profile guidance and payment/delivery distinction. Both free tools
+remain in the catalogue. Shared security and validation wording is shorter
+without changing those claims; the combined catalogue measures 139,647
+bytes against the unchanged 140,000-byte ceiling. The guide review digest
+includes both the A2A desk and the protected purchase-status instructions.
+
+The integrated focused checks passed the A2A and purchase-intent behavior,
+and both Worker bundles build. Complete integrated results and deployment
+status are available in the release PR's checks. A preview upload was
+reproduced through Wrangler and returned Cloudflare error 10211: the new
+Durable Object migration requires a normal deployment.
+
+The complete integrated local suite subsequently passed: 579 files,
+6,495 tests passed, one existing skipped test, zero failures and exit 0.
+The earlier page-sweep timeout cases passed in that full run without
+changes to their assertions or timeout. Typecheck, generated-runner
+freshness and both integrated Worker bundles also passed.

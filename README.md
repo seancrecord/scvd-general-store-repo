@@ -200,6 +200,7 @@ descriptions and input schemas are what the server sends.
 | `check_a2a_card` | Free A2A 0.3.0 card checks, bounded evidence and suggested repairs. Runtime testing and signed rechecks are available in the repair kit. |
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
+| `check_purchase` | Read retained payment status and original terms with purchase_id and the private status_token. Free, including after payment authorization expiry. |
 | `check_order` | Poll a human-queue order by its order_id: status, the promised window, the deliverable once completed. Free. |
 | `find_in_catalog` | Search the shelf and read one item's listing: compact rows filtered by price ceiling or text, or one item in full. Free. |
 | `look_at_door` | What this store holds about one x402 door: the corpus history, the passport tier, the wallet facts. |

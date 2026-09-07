@@ -135,9 +135,9 @@ export function securityBlock(
     what_this_does_in_your_name: parts.does_in_your_name,
     what_it_stores_about_you: parts.stores,
     what_we_never_do:
-      "No account, no cookie, no caller identifier, and no allocation of our budgets by IP — the buckets bound our cost rather than ranking callers, which is a trade we would rather state than hide. We do not sell, share or publish what any caller asked us about; the weekly census is a separate instrument that walks public discovery feeds, never this door's traffic.",
+      "No account, cookie, caller identifier or IP-based budget. Budgets bound our cost, not caller rank. Requests are never sold, shared or published. The weekly census reads public discovery feeds, never these requests.",
     standards:
-      "Disclosure is private-first and symmetric: an operator hears from us before the public does, and the same rule binds us when the defect is ours. Corrections are dated and public, never silent edits. Every signed artifact verifies offline against a published key, so you never have to ask us whether a document of ours is real.",
+      "Disclosure is private-first and symmetric: notify the operator before publication, including our own defects. Corrections are dated and public. Signed artifacts verify offline against our published key.",
     reporting: `${base}/.well-known/security.txt for a vulnerability, ${base}/corrections for something we got wrong.`,
   };
 }
@@ -262,13 +262,28 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
       "Read payment_declined.reason before retrying. Both MCP profiles return isError:true with the refusal in structuredContent; it is not a successful purchase or a new quote.",
   },
   {
+    code: "purchase_record_unavailable", http: 503, charged: null,
+    means: "purchase storage unavailable; no submission this time, earlier payment unresolved",
+    what_to_do: "Retry the same payment/key when storage returns.",
+  },
+  {
+    code: "purchase_recovery_pending", http: 503, charged: true,
+    means: "payment confirmed; delivery recovery pending",
+    what_to_do: "Read recovery.status_url with Bearer status_token. No new payment.",
+  },
+  {
+    code: "purchase_not_settled", http: 503, charged: false,
+    means: "retained payment was definitively refused",
+    what_to_do: "Read retained status and correct the refusal. No payment this retry.",
+  },
+  {
     code: "settlement_unknown",
     http: 503,
     charged: null,
     means:
       "the payment processor did not provide a confirmed outcome and no on-chain rescue established settlement. Money may have moved; this is not a confirmed refusal",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original payment/key; avoid a new authorization. Read recovery.status_url with Bearer status_token, or check_purchase(purchase_id,status_token), even after expiry. Standard MCP: isError:true.",
   },
   {
     code: "invalid_settlement_receipt",
@@ -277,7 +292,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     means:
       "the processor reported success but returned an invalid settlement receipt. Payment is unknown, not declined; no valid purchase receipt was issued",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original payment/key; avoid a new authorization. Read recovery.status_url with Bearer status_token, or check_purchase(purchase_id,status_token), even after expiry. Standard MCP: isError:true.",
   },
   {
     code: "sold_out",
@@ -335,9 +350,9 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     code: "bad_request",
     jsonrpc: -32602,
     means:
-      "the arguments did not match the tool's inputSchema, or a required one was missing. The message names which",
+      "arguments violate inputSchema or omit a required field; the message names it",
     what_to_do:
-      "Read inputSchema on the tool and resend. Nothing was charged: the check runs before any payment is taken.",
+      "Fix the named field against inputSchema and resend. Nothing charged; validation precedes payment.",
   },
   {
     code: "unknown_item",
@@ -385,7 +400,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     jsonrpc: -32602,
     means: "no tool by that name is on the shelf",
     what_to_do:
-      "Call tools/list, which is free and unauthenticated, and read the names. Nothing was charged.",
+      "Read the names in free, unauthenticated tools/list. Nothing charged.",
   },
   {
     code: "no_such_resource",
@@ -404,7 +419,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

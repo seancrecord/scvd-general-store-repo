@@ -1,3 +1,4 @@
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody } from "@/lib/delivery-failed";
@@ -1294,6 +1295,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
+  if (c.req.path.startsWith("/api/buy/")) {
+    const unresolved = await unresolvedPurchase(c.env, result.paymentRequirements.network,
+      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload);
+    if (unresolved) return c.json(unresolved, 503);
+  }
+
   // Existing paid goods are owed even when the shelf has since closed.
   // Only a new sale reaches these checks, before any settlement is possible.
   const admissionRefusal = await c.get("purchaseAdmission")?.();
@@ -1362,6 +1369,16 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
 
   async function performSettlement(): Promise<SettledPayment> {
+    // Only catalogue purchases have a complete request at this seam. Commission
+    // quotes and publication doors require their own original-input capture.
+    const menuItem = c.req.path.startsWith("/api/buy/") ? getMenuItem(itemKeyFromPath(c.req.path)) : undefined;
+    const query = new URL(c.req.url).searchParams;
+    query.delete("payment_payload");
+    const purchase = menuItem ? await beginPurchaseIntent(c.env, {
+      path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
+      payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
+      request: query.toString(), item: menuItem,
+    }) : undefined;
     let settlement: Awaited<
       ReturnType<typeof stack.httpServer.processSettlement>
     >;
@@ -1384,6 +1401,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       const reference = await recordSettlementUnknown(c.env, {
         path: c.req.path,
         door: "http",
+        ...(purchase ? { purchaseId: purchase.id } : {}),
         reason: `threw:${String(error).slice(0, 200)}`,
         network: verifiedRequirements.network,
         ...(paymentHeaderOf(c)
@@ -1392,6 +1410,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       });
       const unknown = error instanceof SettlementUnknown ? error : new SettlementUnknown(verifiedRequirements.network);
       unknown.reconciliationReference = reference;
+      if (purchase) await notePurchaseUnknown(c.env, purchase, reference, unknown);
       await sendAlert(c.env, {
         condition: "settlement_failure",
         detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
@@ -1440,6 +1459,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           const reference = await recordSettlementUnknown(c.env, {
             path: c.req.path,
             door: "http",
+            ...(purchase ? { purchaseId: purchase.id } : {}),
             reason: `settle:${settlement.errorReason}`.slice(0, 300),
             network: verifiedRequirements.network,
             ...(paymentHeaderOf(c)
@@ -1448,8 +1468,10 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           });
           const unknown = new SettlementUnknown(verifiedRequirements.network);
           unknown.reconciliationReference = reference;
+          if (purchase) await notePurchaseUnknown(c.env, purchase, reference, unknown);
           throw unknown;
         }
+        if (purchase) await purchaseIntentStore(c.env, purchase.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
         await recordPaymentDecline(
           c.env,
           c.req.path,
@@ -1480,6 +1502,14 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         payer: rescued.payer,
         headers: {},
       };
+    }
+    if (purchase) {
+      const confirmed = { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
+        transaction: till.settled.transaction, network: verifiedRequirements.network,
+        payer: purchase.payer, settleHeaders: till.settled.headers };
+      // The intent already exists. A failed status update must not interrupt
+      // delivery after confirmed payment; its saved state remains uncertain.
+      await purchaseIntentStore(c.env, purchase.id).updatePurchase({ state: "settled", payment: confirmed }).catch(() => undefined);
     }
     if (nonce) {
       // The transaction rides the spent-nonce row: it is the link the
