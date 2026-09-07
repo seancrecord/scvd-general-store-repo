@@ -28,7 +28,7 @@ const sources = import.meta.glob("/src/**/*.ts", {
 
 const BARE_PUT = /(?:c\.)?env\.(?:ORDERS|GUESTBOOK|COUNTERS|PATRONS)\.put\(/g;
 
-// These two reviewed writes are DurableObjectTransaction.put, not
+// These reviewed writes are DurableObjectTransaction.put, not
 // KVNamespace.put. Do not exempt the file or every receiver named txn:
 // a KV alias in the same service must still fail this guard.
 const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
@@ -38,6 +38,9 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   "/src/services/paid-recovery.ts": [
     'await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);',
     'await txn.put("attempt", { ...prior, response });',
+    'await txn.put("artifact", record);',
+    'await txn.put(key, proposal);',
+    'await txn.put("artifact:credit_started", true);',
   ],
 };
 

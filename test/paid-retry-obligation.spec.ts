@@ -1,4 +1,12 @@
+import { runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
+
+// This suite deliberately models purchases made before durable artifact/order journals.
+vi.mock("@/services/fulfillment", async (original) => {
+  const actual = await original<typeof import("@/services/fulfillment")>();
+  return { ...actual, fulfillPurchase: (...args: Parameters<typeof actual.fulfillPurchase>) =>
+    actual.fulfillPurchase(args[0], args[1], args[2], args[3]) };
+});
 
 const fault = vi.hoisted(() => ({ kind: "none", confirmed: false, hits: 0 }));
 vi.mock("@/services/settlement-records", async (original) => {
@@ -72,6 +80,12 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
       const tx = String(transfers[0]!.transaction), intentKey = KV_KEYS.deliveryIntent(tx);
       const before = await sourceEnv.ORDERS.get(intentKey);
       expect(before).not.toBeNull();
+      if (id === "context_anchor") {
+        // Legacy sales have a certificate but no recoverable artifact manifest.
+        const namespace = sourceEnv.PAID_RECOVERIES!;
+        await runInDurableObject(namespace.get(namespace.idFromName(`${network}:${tx}`)),
+          async (_instance, state) => state.storage.deleteAll());
+      }
       fault.kind = after;
       for (let attempt = 0; attempt < 2; attempt++) {
         const retry = await call(item, "http", args, undefined, payment, key);

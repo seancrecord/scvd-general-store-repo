@@ -1,3 +1,5 @@
+import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
+import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { decodeBase64Json } from "@/lib/base64-json";
 import { priceLine } from "@/services/menu-markdown";
@@ -15,6 +17,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
+import { KV_KEYS } from "@/lib/kv-keys";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
@@ -57,6 +60,7 @@ import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
   idempotencyScope,
+  sha256Hex,
   lookupIdempotentWithBucketGrace,
   replayNote,
   SUGGESTED_KEY_BUCKET_SECONDS,
@@ -72,7 +76,9 @@ import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
-import { getOrder } from "@/services/orders";
+import { getOrder, remainingInventory } from "@/services/orders";
+import { waitlistHowToJoin } from "@/routes/requests";
+import { capacityVerdict } from "@/services/queue-capacity";
 import { InvalidPatronageTarget } from "@/services/patronage";
 import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -763,7 +769,8 @@ async function callPurchaseTool(
   args: Record<string, unknown>,
   paymentMeta: unknown,
   id: number | string | null,
-  rawIdempotencyKey?: string,
+  rawIdempotencyKey: string | undefined,
+  renderResponse: (response: Response) => Promise<Response>,
 ): Promise<Response> {
   /**
    * THE SAME PRE-PAYMENT LAW THE HTTP DOOR RUNS, out of the same
@@ -862,6 +869,7 @@ async function callPurchaseTool(
         .map(([key, value]): [string, string] => [key, String(value)]),
     ),
   );
+  let replayedTransaction: string | undefined;
   const replayCheck = idempotencyKey
     ? async (verifiedPayer: string) => {
         const replay = await lookupIdempotentWithBucketGrace(
@@ -871,33 +879,47 @@ async function callPurchaseTool(
           idempotencyKey,
           item.id,
         );
+        if (replay) replayedTransaction = replay.transaction;
         return replay
           ? { ...replay.body, ...replayNote(replay.first_served_at) }
           : null;
       }
     : undefined;
-  // Sold out honestly, same as the HTTP door: bare stocked shelves
-  // never issue terms nobody can settle.
-  if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
-    return rpcRefusal(
-      id,
-      -32000,
-      "sold_out",
-      `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
-    );
-  }
-  // The shutter, same as the HTTP door: no money for absent labor.
-  if (await requiresPresentKeeper(c.env, item)) {
-    const state = await shutterState(c.env);
-    if (state.closed) {
-      return rpcRefusal(
-        id,
-        -32000,
-        "shelf_closed",
-        "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
-      );
+  const admitPurchase = async () => {
+    const remaining = await remainingInventory(c.env, item);
+    if (remaining !== null && remaining <= 0) return {
+      code: "sold_out",
+      message: VOICE.soldOut,
+      details: waitlistHowToJoin(c.env.STORE_BASE_URL, item.id),
+    };
+    if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
+      return {
+        code: "sold_out",
+        message: `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
+      };
     }
+    if (await requiresPresentKeeper(c.env, item)) {
+      const state = await shutterState(c.env);
+      if (state.closed) return {
+        code: "shelf_closed",
+        message: "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
+      };
+    }
+    const capacity = await capacityVerdict(c.env, item);
+    if (!capacity.ok) return {
+      code: "capacity_unavailable",
+      message: capacity.reason,
+      details: { open_orders: capacity.open, cap: capacity.cap },
+    };
+    return null;
+  };
+  // Quotes must be fulfillable. Signed requests authenticate and look for a
+  // prior purchase first; only a fresh sale runs the same admission callback.
+  if (paymentMeta === undefined || paymentMeta === null) {
+    const unavailable = await admitPurchase();
+    if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message, unavailable.details);
   }
+  const inputDigest = await sha256Hex(jcsCanonicalize(args));
   const outcome = await runMcpPayment(
     c.env,
     item.id,
@@ -911,14 +933,48 @@ async function callPurchaseTool(
     // after settlement can still be finished by hand. The payment
     // rides _meta, never arguments, so nothing here is a credential.
     Object.keys(args).length > 0 ? JSON.stringify(args).slice(0, 600) : undefined,
+    inputDigest,
+    admitPurchase,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
    * verified payer holding a key it has served before, and returned
    * the original purchase without settling anything.
    */
+  if (outcome.kind === "admission-refused") {
+    return rpcRefusal(id, -32000, outcome.refusal.code, outcome.refusal.message, outcome.refusal.details);
+  }
   if (outcome.kind === "replay") {
-    return rpcResult(id, purchaseResult(outcome.body));
+    try {
+      const answer = await renderResponse(rpcResult(id, purchaseResult(outcome.body)));
+      if (replayedTransaction) {
+        await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(replayedTransaction)).catch(() => undefined);
+        await recordDeliveredSettlement(c.env, replayedTransaction);
+      }
+      return answer;
+    } catch {
+      // This cache is read only after payer verification. Its original
+      // transaction is an existing purchase, never a new unpaid request.
+      const failure = {
+        error: "Your purchase is already paid, but we could not encode its saved response. Retry the identical request with the same payment and idempotency key to retrieve it without another charge.",
+        code: "delivery_failed", charged: true, charged_again: false,
+        ...(replayedTransaction ? { transaction: replayedTransaction } : {}),
+        ...(typeof outcome.body.paid_usdc === "number" ? { paid_usdc: outcome.body.paid_usdc } : {}),
+        ...(typeof outcome.body.verify_url === "string" ? { verify_url: outcome.body.verify_url } : {}),
+      };
+      if (standardPayment(c)) return rpcResult(id, { ...toolText(failure) as Record<string, unknown>, isError: true });
+      const { error: message, ...data } = failure;
+      return rpcError(id, -32000, message, data);
+    }
+  }
+  if (outcome.kind === "delivery-failed") {
+    const body = deliveryFailedBody(c.env.STORE_BASE_URL, item, outcome.payment);
+    const failure = { ...body, recovery_reason: outcome.reason, charged_again: false };
+    if (standardPayment(c)) {
+      return rpcResult(id, { ...toolText(failure) as Record<string, unknown>, isError: true });
+    }
+    const { error: message, ...data } = failure;
+    return rpcError(id, -32000, message, data);
   }
   if (outcome.kind === "payment-unavailable") {
     if (standardPayment(c)) return rpcResult(id, { ...toolText(outcome.body) as Record<string, unknown>, isError: true });
@@ -1003,7 +1059,89 @@ async function callPurchaseTool(
    */
   let response: Record<string, unknown>;
   try {
-    response = await fulfillPurchase(c.env, item, outcome.pending, input);
+    if (outcome.savedResponse !== undefined) {
+      const saved: unknown = JSON.parse(outcome.savedResponse);
+      if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
+      response = saved;
+    } else if (outcome.recovered && !outcome.artifactRecovery) {
+      const payment = outcome.settledSoFar()!;
+      const namespace = c.env.PAID_RECOVERIES;
+      if (!namespace) throw new Error("Paid recovery coordinator unavailable");
+      const stub = namespace.get(namespace.idFromName(`${payment.network}:${payment.transaction}`));
+      const claim = await stub.begin(inputDigest, { path: `/api/buy/${item.id}`, payment });
+      if (claim.kind === "unavailable") throw new Error("Paid recovery already in progress or interrupted");
+      if (claim.kind === "replay") {
+        const saved: unknown = JSON.parse(claim.response);
+        if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
+        response = saved;
+      } else {
+        response = await fulfillPurchase(c.env, item, outcome.pending, input);
+        if (!await stub.complete(claim.token, JSON.stringify(response))) {
+          throw new Error("Paid recovery claim is not writable");
+        }
+      }
+    } else {
+      response = await fulfillPurchase(c.env, item, outcome.pending, input,
+        supportsArtifactRecovery(item) ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
+      );
+    }
+    const settled = outcome.settledSoFar();
+    const flat = flattenPurchase(response);
+    if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
+    // Preserve the actual protocol receipt across an idempotent retry. Never
+    // reconstruct it from the current challenge or a guessed default rail.
+    const encodedReceipt = settled && Object.entries(settled.settleHeaders)
+      .find(([name]) => name.toLowerCase() === "payment-response")?.[1];
+    if (encodedReceipt) {
+      try {
+        const receipt = decodeBase64Json(encodedReceipt);
+        if (isRecord(receipt)) flat[CACHED_PAYMENT_RESPONSE] = receipt;
+      } catch {
+        // The goods have already settled: missing receipt metadata must not
+        // turn a delivered purchase into another payment attempt.
+      }
+    }
+    /**
+     * Stored under the VERIFIED payer the pipeline carried out, not the
+     * address the caller claimed. The two are the same for an honest
+     * client and only diverge for a dishonest one, which is the case
+     * worth being right about: a cache written under an asserted
+     * address would be a cache another wallet could later collect.
+     */
+    if (idempotencyKey && outcome.verifiedPayer && settled) {
+      await storeIdempotent(
+        c.env,
+        idempotencySurface,
+        outcome.verifiedPayer,
+        idempotencyKey,
+        flat,
+        settled?.transaction,
+      );
+    }
+    // Encoding, including the negotiated protocol envelope, is part of
+    // delivery. A cached good can survive a failed response; an unencoded
+    // good must not close the delivery desk's obligation.
+    const answer = await renderResponse(rpcResult(id, purchaseResult(flat)));
+    /**
+     * GOODS WENT OUT, so the delivery-intent row stops existing — the
+     * MCP door's equivalent of the HTTP gate's 2xx seam (task #85).
+     * Reached only after goods and their final response encode: a decline
+     * unwound above, a throw propagated, and in both of those cases the
+     * row stays behind as the trace that money may have moved without
+     * delivery. Closing never fails the response; a row left open on a
+     * failed delete is a false alarm the keeper can dismiss.
+     */
+    const deliveryKey = outcome.deliveryKeySoFar();
+    if (settled && deliveryKey) {
+      await closeDeliveryIntent(c.env, deliveryKey).catch(() => undefined);
+    }
+    if (settled) {
+      // The chain walk's record that this money BOUGHT SOMETHING — same
+      // write, same seam as the HTTP door, so reconciliation never
+      // depends on which door a buyer came through.
+      await recordDeliveredSettlement(c.env, settled.transaction);
+    }
+    return answer;
   } catch (error) {
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
@@ -1048,62 +1186,13 @@ async function callPurchaseTool(
         item,
         failedAfterSettle,
       );
+      if (standardPayment(c)) {
+        return rpcResult(id, { ...toolText({ error: message, ...data }) as Record<string, unknown>, isError: true });
+      }
       return rpcError(id, -32000, message, data);
     }
     throw error;
   }
-  const settled = outcome.settledSoFar();
-  /**
-   * GOODS WENT OUT, so the delivery-intent row stops existing — the
-   * MCP door's equivalent of the HTTP gate's 2xx seam (task #85).
-   * Reached only when fulfillPurchase returned goods: a decline
-   * unwound above, a throw propagated, and in both of those cases the
-   * row stays behind as the trace that money may have moved without
-   * delivery. Closing never fails the response; a row left open on a
-   * failed delete is a false alarm the keeper can dismiss.
-   */
-  const deliveryKey = outcome.deliveryKeySoFar();
-  if (settled && deliveryKey) {
-    await closeDeliveryIntent(c.env, deliveryKey).catch(() => undefined);
-  }
-  if (settled) {
-    // The chain walk's record that this money BOUGHT SOMETHING — same
-    // write, same seam as the HTTP door, so reconciliation never
-    // depends on which door a buyer came through.
-    await recordDeliveredSettlement(c.env, settled.transaction);
-  }
-  const flat = flattenPurchase(response);
-  // Preserve the actual protocol receipt across an idempotent retry. Never
-  // reconstruct it from the current challenge or a guessed default rail.
-  const encodedReceipt = settled && Object.entries(settled.settleHeaders)
-    .find(([name]) => name.toLowerCase() === "payment-response")?.[1];
-  if (encodedReceipt) {
-    try {
-      const receipt = decodeBase64Json(encodedReceipt);
-      if (isRecord(receipt)) flat[CACHED_PAYMENT_RESPONSE] = receipt;
-    } catch {
-      // The goods have already settled: missing receipt metadata must not
-      // turn a delivered purchase into another payment attempt.
-    }
-  }
-  /**
-   * Stored under the VERIFIED payer the pipeline carried out, not the
-   * address the caller claimed. The two are the same for an honest
-   * client and only diverge for a dishonest one, which is the case
-   * worth being right about: a cache written under an asserted
-   * address would be a cache another wallet could later collect.
-   */
-  if (idempotencyKey && outcome.verifiedPayer && settled) {
-    await storeIdempotent(
-      c.env,
-      idempotencySurface,
-      outcome.verifiedPayer,
-      idempotencyKey,
-      flat,
-      settled?.transaction,
-    );
-  }
-  return rpcResult(id, purchaseResult(flat));
 }
 
 
@@ -1176,10 +1265,17 @@ async function handleRpc(
   if (era instanceof Response) {
     return era;
   }
-  const answer = await dispatchRpc(c, request, era.modern);
-  return era.modern
-    ? modernize(answer, request.method, serverInfo(c.env.STORE_BASE_URL))
-    : answer;
+  // Paid handlers render inside their payment-aware boundary. Other
+  // responses use the same renderer here, exactly once per response.
+  let rendered: Response | undefined;
+  const renderResponse = async (response: Response): Promise<Response> => {
+    rendered = era.modern
+      ? await modernize(response, request.method, serverInfo(c.env.STORE_BASE_URL))
+      : response;
+    return rendered;
+  };
+  const answer = await dispatchRpc(c, request, era.modern, renderResponse);
+  return answer === rendered ? answer : renderResponse(answer);
 }
 
 /** Every MCP server negotiates and renders the same revision rules. */
@@ -1205,6 +1301,7 @@ async function dispatchRpc(
   c: Context<HonoEnv>,
   request: JsonRpcRequest,
   modern: boolean,
+  renderResponse: (response: Response) => Promise<Response>,
 ): Promise<Response> {
   const id = request.id ?? null;
   if (
@@ -1501,6 +1598,7 @@ async function dispatchRpc(
           meta,
           id,
           typeof idempotencyKey === "string" ? idempotencyKey : undefined,
+          renderResponse,
         );
       }
       const result = await callFreeTool(c, name, args);

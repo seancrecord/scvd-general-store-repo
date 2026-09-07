@@ -1,6 +1,26 @@
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
-import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { OrderMutation, ManagedOrderState } from "@/services/managed-orders";
+import type { OrderRecord, Env } from "@/types";
+
+export interface ArtifactPurchase {
+  digest: string;
+  purchase: { path: string; payment: SettledPayment };
+}
+export interface RecoveryIdentity {
+  path: string; payer: string; network: string; transaction: string;
+}
+export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment";
+
+function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
+  const payer = purchase.payment.payer;
+  const samePayer = identity.network.startsWith("eip155:")
+    ? payer?.toLowerCase() === identity.payer.toLowerCase() : payer === identity.payer;
+  return samePayer && purchase.path === identity.path &&
+    purchase.payment.network === identity.network && purchase.payment.transaction === identity.transaction;
+}
 
 interface RecoveryAttempt {
   digest: string;
@@ -14,7 +34,8 @@ export type RecoveryClaim =
   | { kind: "unavailable" };
 
 /**
- * One coordinator per settled transaction. KV alone cannot authorize a
+ * Transaction instances coordinate fulfillment; order-prefixed instances
+ * serialize mutable order state. KV alone cannot authorize a
  * re-mint: two edges can both read "no certificate" before either writes.
  * The claim is durable before fulfillment starts and never expires into
  * permission to mint again. An interrupted recovery without a saved result
@@ -24,6 +45,7 @@ export type RecoveryClaim =
 export class PaidRecoveryStore extends DurableObject<Env> {
   async begin(digest: string, purchase?: RecoveryAttempt["purchase"]): Promise<RecoveryClaim> {
     return this.ctx.storage.transaction(async (txn) => {
+      if (await txn.get("artifact")) return { kind: "unavailable" };
       const prior = await txn.get<RecoveryAttempt>("attempt");
       if (prior) {
         if (prior.digest === digest && prior.response !== undefined) {
@@ -61,4 +83,89 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return true;
     });
   }
+
+  /** Immutable goods use checkpoints; legacy unfinished claims remain closed. */
+  async openArtifact(record: ArtifactPurchase): Promise<boolean> {
+    const network = record.purchase.payment.network;
+    if (!network || !record.purchase.payment.transaction || !record.purchase.payment.payer) return false;
+    return this.ctx.storage.transaction(async (txn) => {
+      if (await txn.get("attempt")) return false;
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (prior) return prior.digest === record.digest && owns(prior.purchase, {
+        path: record.purchase.path, payer: record.purchase.payment.payer ?? "",
+        network, transaction: record.purchase.payment.transaction,
+      });
+      await txn.put("artifact", record);
+      return true;
+    });
+  }
+
+  async readArtifact(identity: RecoveryIdentity): Promise<ArtifactPurchase | null> {
+    const prior = await this.ctx.storage.get<ArtifactPurchase>("artifact");
+    return prior && owns(prior.purchase, identity) ? prior : null;
+  }
+
+  /** First committed bytes win. Callers must publish the returned value. */
+  async artifactStage(digest: string, stage: ArtifactStage, proposal?: string): Promise<string | null> {
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (!prior || prior.digest !== digest) return null;
+      const key = `artifact:${stage}`;
+      const saved = await txn.get<string>(key);
+      if (saved !== undefined) return saved;
+      if (proposal === undefined) return null;
+      JSON.parse(proposal);
+      await txn.put(key, proposal);
+      return proposal;
+    });
+  }
+
+  /** Credit already fails soft; interruption must never award it twice. */
+  async claimArtifactCredit(digest: string): Promise<boolean> {
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (!prior || prior.digest !== digest) return false;
+      if (await txn.get("artifact:credit_started")) return false;
+      await txn.put("artifact:credit_started", true);
+      return true;
+    });
+  }
+
+  async readOrder(): Promise<ManagedOrderState | null> {
+    return await this.ctx.storage.get<ManagedOrderState>("order") ?? null;
+  }
+
+  /**
+   * Per-order instances serialize both state changes and their KV publication.
+   * KV I/O yields: without this gate an old queued write could finish AFTER
+   * a human's completion. No callback/network work runs inside this gate.
+   */
+  async writeOrder(seed: OrderRecord, mutation?: OrderMutation): Promise<ManagedOrderState | null> {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      try {
+        if (!seed.managed_order) return null;
+        let state = await this.ctx.storage.get<ManagedOrderState>("order");
+        if (!state) state = { order: seed, completion: 0 };
+        if (state.order.order_id !== seed.order_id || state.order.cert_id !== seed.cert_id) return null;
+        if (mutation?.kind === "acknowledge") state.order.acknowledged_at = mutation.at;
+        if (mutation?.kind === "complete") {
+          state.order.status = "completed";
+          state.order.deliverable = mutation.deliverable;
+          state.order.completed_at = mutation.at;
+          delete state.order.webhook;
+          state.completion++;
+        }
+        if (mutation?.kind === "webhook" && mutation.completion === state.completion) {
+          state.order.webhook = mutation.result;
+        }
+        await this.ctx.storage.put("order", state);
+        await kvPut(this.env.ORDERS, KV_KEYS.order(state.order.order_id), JSON.stringify(state.order));
+        return state;
+      } catch {
+        // Keep the committed state for retry without resetting the object.
+        return null;
+      }
+    });
+  }
+
 }

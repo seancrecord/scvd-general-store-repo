@@ -1,3 +1,5 @@
+import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
+import { currentOrder, hydrateOrders, writeManagedOrder } from "@/services/managed-orders";
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { markLaborClosed, markLaborOpen } from "@/services/queue-capacity";
@@ -7,7 +9,7 @@ import type { Env, MenuItem, OrderRecord } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
-/** Ceiling on a inventory counters scan. An unnamed cap is a silent one. */
+/** Ceiling on inventory scans. An unnamed cap is a silent one. */
 const INVENTORY_CAP = 2000;
 
 /** Ceiling on a orders scan. Named because an unnamed cap is a silent one. */
@@ -18,6 +20,8 @@ const ORDER_CAP = 1000;
  */
 
 export interface CreateOrderOptions {
+  /** Original acceptance time, retained when paid fulfillment is resumed. */
+  createdAt?: string;
   item: MenuItem;
   paidUsdc: number;
   tipUsdc: number;
@@ -45,13 +49,14 @@ export interface CreateOrderOptions {
 export async function createOrder(
   env: Env,
   options: CreateOrderOptions,
+  checkpoint?: ArtifactCheckpoint,
 ): Promise<OrderRecord> {
-  const order: OrderRecord = {
+  let order: OrderRecord = {
     order_id: newOrderId(),
     item_id: options.item.id,
     item_name: options.item.name,
     status: "queued",
-    created_at: new Date().toISOString(),
+    created_at: options.createdAt ?? new Date().toISOString(),
     sla_hours: options.slaHours ?? options.item.sla_hours ?? 168,
     paid_usdc: options.paidUsdc,
     tip_usdc: options.tipUsdc,
@@ -82,13 +87,20 @@ export async function createOrder(
   if (options.referrer) {
     order.referrer = options.referrer;
   }
-  await kvPut(env.ORDERS, KV_KEYS.order(order.order_id), JSON.stringify(order));
+  if (checkpoint) {
+    order.managed_order = true;
+    order = await checkpoint.save("order", order);
+    order = (await writeManagedOrder(env, order)).order;
+  } else {
+    await kvPut(env.ORDERS, KV_KEYS.order(order.order_id), JSON.stringify(order));
+  }
   /*
    * INDEX IT IF IT IS LABOR, so the bench can count what is promised
    * without walking every order the store has ever taken. The order
    * above is the truth; this is only how the bench finds it.
    */
-  await markLaborOpen(env, order);
+  if (order.status === "completed") await markLaborClosed(env, order.order_id);
+  else await markLaborOpen(env, order);
   return order;
 }
 
@@ -96,17 +108,34 @@ export async function getOrder(
   env: Env,
   orderId: string,
 ): Promise<OrderRecord | null> {
-  return kvGetJson<OrderRecord>(env.ORDERS, KV_KEYS.order(orderId), "json");
+  return currentOrder(env, orderId, await kvGetJson<OrderRecord>(env.ORDERS, KV_KEYS.order(orderId), "json"));
 }
 
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
+  /*
+   * A SHORT ORDER LIST IS NOT AN ANSWER (2026-09-07).
+   *
+   * Nothing deletes an `order:` key, so this prefix only grows and
+   * ORDER_CAP is a ceiling the store reaches rather than a number
+   * chosen above any possible count. Every reader of this list
+   * publishes a figure off it — the SLA guard decides which queued
+   * orders are overdue, the weekly digest and /admin count them, the
+   * fulfillment log and the claims door read them back — and a
+   * truncated read makes all of those quietly too low, with the
+   * oldest queued orders the first to disappear.
+   *
+   * So it refuses, the same way soldInventory below refuses. This is
+   * louder than the alternative on purpose: the alternative is a
+   * number that is simply wrong forever and never says so.
+   */
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.orderPrefix, cap: ORDER_CAP });
+  if (listed.truncated) throw new Error("Order scan incomplete");
   const values = await bulkGetJson<OrderRecord>(
     env.ORDERS,
     listed.names,
   );
   const orders: OrderRecord[] = [];
-  for (const order of values.values()) {
+  for (const order of (await hydrateOrders(env, values)).values()) {
     if (order) {
       orders.push(order);
     }
@@ -124,6 +153,9 @@ export async function acknowledgeOrder(
   if (!order) {
     return null;
   }
+  if (order.managed_order) return (await writeManagedOrder(env, order, {
+    kind: "acknowledge", at: new Date().toISOString(),
+  })).order;
   order.acknowledged_at = new Date().toISOString();
   await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
   return order;
@@ -148,14 +180,23 @@ export async function completeOrder(
   deliverable: string,
   callbackTimeoutMs: number = ORDER_CALLBACK_TIMEOUT_MS,
 ): Promise<OrderRecord | null> {
-  const order = await getOrder(env, orderId);
+  let order = await getOrder(env, orderId);
   if (!order) {
     return null;
   }
-  order.status = "completed";
-  order.deliverable = deliverable;
-  order.completed_at = new Date().toISOString();
-  await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
+  let completion = 0;
+  if (order.managed_order) {
+    const saved = await writeManagedOrder(env, order, {
+      kind: "complete", deliverable, at: new Date().toISOString(),
+    });
+    order = saved.order;
+    completion = saved.completion;
+  } else {
+    order.status = "completed";
+    order.deliverable = deliverable;
+    order.completed_at = new Date().toISOString();
+    await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
+  }
   // Finished work stops occupying the bench. A missed delete only ever
   // over-refuses, and the next bench read sweeps it.
   await markLaborClosed(env, orderId);
@@ -194,7 +235,11 @@ export async function completeOrder(
       order.webhook =
         "attempted once, your endpoint was unreachable — not retried; the deliverable stays at this order URL forever";
     }
-    await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
+    if (order.managed_order) {
+      order = (await writeManagedOrder(env, order, { kind: "webhook", completion, result: order.webhook })).order;
+    } else {
+      await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
+    }
   }
   return order;
 }
@@ -211,35 +256,37 @@ export async function remainingInventory(
     return null;
   }
   const key = KV_KEYS.inventory(item.id, currentWeekKey());
-  const sold = await kvGet(env.COUNTERS, key);
-  return Math.max(0, item.weekly_inventory - (sold ? parseInt(sold, 10) : 0));
+  return Math.max(0, item.weekly_inventory - await soldInventory(env, key));
 }
 
 /**
- * Returns the post-sale sold count (null for unstocked items) so the
- * caller can notice an oversell. THE RACE THIS CANNOT PREVENT, said
- * plainly (Part A audit, 2026-08-03, CV's predicted finding confirmed
- * by code read): this is a read-modify-write against KV with no
- * coordination, and the stock gate runs BEFORE the payment gate — two
- * concurrent buyers at remaining=1 both pass the check, both settle,
- * both land here. KV has no transactions, so the honest design is not
- * pretending to prevent the race but refusing to let it be SILENT:
- * the caller compares the returned count against the ceiling and
- * flags the oversold order for the keeper's refund hand. Money taken
- * past the ceiling becomes a loud, tracked event instead of a quiet
- * (N+1)th order in the queue. The count itself can also UNDERCOUNT
- * under the same race (lost increment), which makes the returned
- * number a floor — one more reason detection lives at the caller
- * with the ceiling in hand, not buried in a counter nobody rereads.
+ * New order sales have one immutable marker each; a lost acknowledgement
+ * or concurrent retry cannot increment the same sale twice. Old counters
+ * still contribute to the total. This is bookkeeping, not a reservation:
+ * two buyers can still pass the last-unit gate before either sale appears
+ * in KV. A truncated scan refuses to guess how much inventory remains.
  */
+async function soldInventory(env: Env, key: string): Promise<number> {
+  const legacy = await kvGet(env.COUNTERS, key);
+  const sales = await listKeys(env.COUNTERS, { prefix: `${key}:`, cap: INVENTORY_CAP });
+  if (sales.truncated) throw new Error("Inventory sale scan incomplete");
+  return (legacy ? parseInt(legacy, 10) : 0) + sales.names.length;
+}
+
 export async function recordInventorySale(
   env: Env,
   item: MenuItem,
+  order?: Pick<OrderRecord, "order_id" | "created_at">,
 ): Promise<number | null> {
   if (item.weekly_inventory === undefined) {
     return null;
   }
-  const key = KV_KEYS.inventory(item.id, currentWeekKey());
+  const key = KV_KEYS.inventory(item.id, order ? currentWeekKey(new Date(order.created_at)) : currentWeekKey());
+  if (order) {
+    const saleKey = `${key}:${order.order_id}`;
+    if (await kvGet(env.COUNTERS, saleKey) === null) await kvPut(env.COUNTERS, saleKey, "1");
+    return soldInventory(env, key);
+  }
   const sold = await kvGet(env.COUNTERS, key);
   const now = (sold ? parseInt(sold, 10) : 0) + 1;
   await kvPut(env.COUNTERS, key, String(now));
@@ -247,8 +294,25 @@ export async function recordInventorySale(
 }
 
 export async function resetWeeklyInventory(env: Env): Promise<void> {
-  const listed = await listKeys(env.COUNTERS, { prefix: `inventory:`, cap: INVENTORY_CAP });
-  for (const name of listed.names) {
-    await env.COUNTERS.delete(name);
+  /*
+   * This one clears the prefix, so stopping at the cap would leave
+   * counters behind and report the reset as done. It walks instead:
+   * the cap bounds each page, the cursor carries it to the end, and
+   * the loop finishes only when listKeys says nothing was left.
+   */
+  let cursor: string | undefined;
+  for (;;) {
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: `inventory:`,
+      cap: INVENTORY_CAP,
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const name of listed.names) {
+      await env.COUNTERS.delete(name);
+    }
+    if (!listed.truncated || !listed.cursor) {
+      return;
+    }
+    cursor = listed.cursor;
   }
 }

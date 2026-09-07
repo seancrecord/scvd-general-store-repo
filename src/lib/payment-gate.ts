@@ -1,3 +1,5 @@
+import { KV_KEYS } from "@/lib/kv-keys";
+import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody } from "@/lib/delivery-failed";
 import { archiveDepthFor } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
@@ -922,6 +924,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   if (result.type === "payment-error") {
+    // Failed authentication may return new terms; a closed shelf cannot quote.
+    const unavailable = await c.get("purchaseAdmission")?.();
+    if (unavailable) return unavailable;
     if (result.response.status === 402) {
       /*
        * Challenge issued. The monthly gap between these and settlements
@@ -1169,6 +1174,33 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
        * we already charged.
        */
       if (spent.transaction && spent.path === c.req.path) {
+        const payer = payerOfVerifiedPayload(result.paymentPayload);
+        const namespace = c.env.PAID_RECOVERIES;
+        const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
+          await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
+            .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
+              transaction: spent.transaction }).catch(() => null);
+        if (artifact) {
+          const payment = artifact.purchase.payment;
+          c.header("Cache-Control", "no-store");
+          if (artifact.digest !== await httpArtifactDigest(c.req.url)) {
+            return c.json({
+              ...deliveryFailedBody(c.env.STORE_BASE_URL, getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, payment),
+              charged_again: false, recovery_reason: "original_inputs_required",
+            }, 500);
+          }
+          c.set("payment", payment);
+          c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
+            payer: payment.payer, settle: async () => payment });
+          await next();
+          if (c.res.status < 300) {
+            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
+            await recordDeliveredSettlement(c.env, payment.transaction);
+            for (const [name, value] of Object.entries(payment.settleHeaders)) c.res.headers.set(name, value);
+          }
+          c.res.headers.set("Paid-Retry", "true");
+          return c.res;
+        }
         const open = await getOpenDeliveryIntent(c.env, spent.transaction);
         if (open) {
           const retryMinimum = minimumUsdcForPath(c.req.path);
@@ -1261,6 +1293,11 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       );
     }
   }
+
+  // Existing paid goods are owed even when the shelf has since closed.
+  // Only a new sale reaches these checks, before any settlement is possible.
+  const admissionRefusal = await c.get("purchaseAdmission")?.();
+  if (admissionRefusal) return admissionRefusal;
 
   /**
    * DELIVER FIRST, SETTLE AFTER — rule 9, amended by the keeper

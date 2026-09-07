@@ -182,6 +182,42 @@ The earlier probe timing/cleanup test repair is commit `b4f9936f`. Each buyer fi
 
 The checklist checks off only these six findings. BUY-017, BUY-034, and BUY-037 remain unchecked. All fixes are local on `codex/buyer-repairs`; nothing was pushed or deployed. Settlement in every repair regression was simulated, with no real funds moved. Historical Markdown audit reports are preserved alongside the log; raw JSON captures and exploratory scripts/specs remain local and are not part of this commit.
 
+## PR publication and BUY-037 continuation
+
+Sean requested a PR with auto-merge and asked to leave the full suite to GitHub. The initial repair branch was pushed as [PR #540](https://github.com/seancrecord/scvd-general-store-repo/pull/540), with merge commits selected so the individual fix hashes survive. Auto-merge is enabled and required checks remain the gate. No local full-suite rerun was made for publication.
+
+Follow-up work is isolated on `codex/buyer-mcp-recovery` at `/private/tmp/scvd-buyer-mcp-recovery`. Commit `f8f8d34f` is a bounded BUY-037 repair; the finding remains open.
+
+The new MCP path verifies the payment before recovery, checks its payer, network, path and complete canonical input digest against the original delivery record, and uses the saved payment facts without calling settlement again. The original truncated desk preview remains a preview, never a recovery identity. Incomplete certificate reads, changed inputs and an already-minted partial delivery return a paid failure without new payment terms or a false delivery claim.
+
+An explicit concurrency control reproduced two certificates from one payment in the first candidate. `PaidRecoveryStore`, one Durable Object per network/transaction, now records a claim before reconstruction and saves its response afterward. Overlapping requests cannot claim a second mint. The binding and SQLite class migration are included in the Worker configuration. A missing coordinator fails closed for reconstruction and leaves ordinary purchases unchanged.
+
+An unfinished claim never expires into permission to mint again. This prevents duplicates after a crash, but recovery of that interrupted attempt remains unfinished. Likewise, older delivery records without the complete digest cannot safely be reconstructed from their truncated input previews. These limits are why BUY-037 remains unchecked, alongside BUY-017 and BUY-034.
+
+Validation:
+
+- The final 24 serial/refusal/dialect tests failed on unchanged source; source files were restored afterward. They include all 18 reported product × EVM rail × mint-failure combinations.
+- A simultaneous same-payment retry failed on the first candidate by producing two different certificate IDs. After durable coordination it returns one certificate; a concurrent paid refusal can retrieve that same certificate on the next retry, without a second settlement.
+- Final focused run: nine files, 206 tests passed, including 25 public-door recovery cases and three real Durable Object coordination tests.
+- Typechecking and both Worker dry-run builds passed.
+- GitHub will run the full suite. Every payment is a local fixture; no real funds moved.
+
+The follow-up is kept separate from PR #540 and will remain a draft while the remaining recovery states are addressed. Completed substeps are checked off separately from the overall SEV-1 finding.
+
+### Completed durable MCP responses remain retrievable
+
+A finished recovery previously became unreachable after its delivery row closed and the KV replay cache disappeared. An interruption immediately after the durable completion write also hit the existing-certificate refusal. Added a read-only lookup bound to the saved verified payer, chain, transaction, product and full input digest. It retrieves the exact saved response without claiming or minting again, and closes a remaining delivery row only after successful reply preparation. Older records without owner metadata are not inferred.
+
+Four public-door regressions were observed failing before the fix (`/private/tmp/buyer-037-completed-red.log`). Final focused gate passed 212 tests in nine files; typecheck and both dry-run bundles passed. No full local rerun, as requested. The coordinator authorization tests independently reject other owners/products/chains/transactions. BUY-037 remains open for interrupted partial writes and older unbound purchases.
+
+PR #540 has auto-merge enabled and is awaiting GitHub CI. PR #541 is draft. Its main Cloudflare preview build failed; the separate doors build passed. The dashboard requires login and the existing Wrangler OAuth session receives 403 for the Builds logs API. The new Durable Object migration may explain the preview-upload failure, but that cause has not been confirmed from its log. No deployment or build settings were changed to bypass the gate.
+
+### BUY-038: paid response encoding reports the settled state
+
+Moved response flattening, cached receipt construction, tool text encoding, JSON-RPC encoding, and modern protocol rendering inside the payment-aware exception boundary. The modern response is rendered exactly once per request. Cached purchase encoding failures use the stored transaction and explicitly say the purchase is paid; standard payment clients receive `isError:true`. Delivery rows close only after successful encoding, including the successful cache retry after an earlier encoding failure.
+
+All 30 raw public-door controls failed on the prior source (`/private/tmp/buyer-038-red.log`) and passed afterward. Cases cover every offered rail, both MCP payment profiles, and all three encoding stages. EVM cases also exercise an already-cached purchase and verify the recovered certificate, original transaction, canary artifact and absence of another settlement. Solana retries are deliberately left to BUY-007. The final related gate passed 236 tests across seven files (`/private/tmp/buyer-038-focused.log`), typecheck and both dry-run builds. BUY-038 is checked off; BUY-017/034/037 remain open. The full suite remains on GitHub as requested.
+
 ## BUY-017: truthful unknown settlement responses (partial)
 
 The public-door fixture lets the local processor settle once, then replaces the acknowledgement with a throw, persistent transport failure, or a failed response naming the transaction. The inline chain reader has no event yet. All 27 Base/Polygon/Solana × HTTP/legacy-MCP/standard-MCP × failure cases were red before the response repair; each also checks an identical retry. The shared discovery guard independently failed before the new code was advertised.
@@ -208,8 +244,63 @@ The storage prerequisite #542 merged and its production build succeeded. Draft #
 
 GitHub completed 5,548 passing tests and 34 failures across two older contract specs. The HTTP source guard did not recognize the inherited unknown-settlement class or the shared refusal helper, and every listing assertion still required `charged:false` for `settlement_unknown`. The standard MCP entrypoint test still expected fresh payment terms after a confirmed settlement refusal. Updated those assertions to the implemented contract without changing production behavior: unknown remains null, confirmed refusal remains false, and no replacement challenge is offered. The affected specs plus both new runtime matrices pass all 370 tests; typecheck passes. GitHub runs the full suite again after this commit.
 
+## BUY-034/037: Context Anchor publication can resume (partial)
+
+New Context Anchor purchases through HTTP and MCP checkpoint the purchase identity, full input digest, certificate identity, signed certificate, signed anchor, and final response in the per-settlement Durable Object. Each stage commits before publication; concurrent workers publish the returned committed bytes. An interrupted KV write or lost acknowledgement therefore resumes the same certificate and anchor instead of minting a replacement. The response checkpoint survives cache loss and a closed delivery row. HTTP digesting includes the complete ordered query values, excluding the payment payload; neither door persists the buyer's signature in this journal.
+
+The new public-door matrix covers Base and Polygon, both doors, certificate/index/anchor publication failures, and failed or acknowledged-but-lost certificate/anchor/response checkpoints. It checks changed input beyond the desk preview, concurrent retries, repeated retrieval without an idempotency key, exact canary survival, public certificate verification, one certificate, one anchor, and exactly one mocked transfer. All 44 cases pass. The related durable coordination and legacy recovery gate passed 110 tests across five files. The signed MCP fixture now returns its actual signed sender in the mock settlement, matching its verification result rather than the generic mock's unrelated wallet.
+
+This is not closure of BUY-034 or BUY-037. Human orders, observation products, purchases without the new journal, failures before journal creation, expired-authentication recovery and Solana recovery remain outside this completed substep. Patron numbering retains the existing cross-edge KV allocation limitation; the journal reuses its original candidate/identity, but does not turn the shared counter into an atomic allocator. Optional credit retains its existing fail-soft policy and is claimed at most once per journal, so an interrupted recovery cannot repeatedly award it. Mutable orders, inventory and external side effects must not be replayed as immutable records.
+
+Final verification for this increment: the 20 publication controls all failed again after restoring the prior production source (`/private/tmp/context-anchor-recovery-final-red.log`), then the repaired tree passed 347 focused tests across 13 files (`/private/tmp/context-anchor-final-gate.log`), typecheck, and both Worker dry-run builds (`/private/tmp/context-anchor-build.log`). The final gate includes all 44 new cases plus paid response serialization, certificate/anchor signing, store credit, paid-flow/retry behavior and both payment-discovery guards. The full suite remains delegated to GitHub.
+
+## BUY-034/037: human-order recovery preserves completed work (partial)
+
+Unstocked human-queue purchases now use the paid artifact journal through both HTTP and MCP. The journal retains the brief, sale-time catalogue terms, original acceptance time, certificate and chosen order ID. Order creation, acknowledgement, completion and callback-result updates are serialized by an order-specific instance of the existing coordinator. KV is the listing projection; order retrieval, listings, queue counting and refund-window reads resolve coordinated records against their current state. A delayed queued-order publication cannot replace completed work, and a late callback result cannot replace the result for a newer completion.
+
+Inventory records one immutable sale marker per order in its original purchase week, alongside legacy counters. Repeated and concurrent retries count that order once; inventory reset clears both forms and the admin condition display sums the markers. This does not reserve inventory or solve last-unit admission races or KV visibility lag.
+
+The new public-door matrix covers the Aura Walk and Collab through HTTP/MCP on Base/Polygon: order, inventory, queue-index and response-checkpoint failures, including lost acknowledgements. Each case completes the original work before retry, refuses changed briefs, runs concurrent retries, retrieves the completed deliverable through HTTP and MCP, verifies the certificate, checks one order/one sale/one simulated transfer, and confirms a failed callback is attempted only once. Four additional cases change the catalogue SLA and advance the clock between mint failure and recovery; the original SLA and acceptance time survive. These 68 cases are supplemented by direct concurrency, stale-projection, late-callback, inventory-reset and purchase-week controls.
+
+Legacy certificate-only obligations stay open and are tested as legacy purchases explicitly. The paid-flow fixture now gives distinct authorizations distinct settlement transaction IDs and resets both inventory forms; its former fixed transaction incorrectly made independent sales look like retries of the same purchase. After that correction, completion and sell-out checks passed. The broader integration gate passed 169 tests across 12 files before the final acceptance-time assertion was added.
+
+BUY-034 and BUY-037 remain unchecked: older purchases without complete journals, failures before durable purchase capture, other products' partial side effects, admission gates that block an already-paid retry, expired authorization, and Solana recovery remain outside this completed substep. BUY-017's settlement-uncertainty recovery is unchanged. No real payment, real callback or production deployment was made.
+
+Final human-order verification: 52 public order/inventory/queue/SLA controls failed with the prior production source restored (`/private/tmp/human-recovery-final-red.log`); the repaired tree passed 422 focused tests across 18 files (`/private/tmp/human-recovery-final-gate.log`), including all 68 new public cases and the late-callback controls. Typecheck and both Worker dry-run builds passed (`/private/tmp/human-recovery-build.log`). The full suite remains on GitHub. The checklist marks the human-order substep complete while retaining all three SEV-1 findings as open.
+
+After merging current main (`d108b861`, including #551), the combined Solana replay, human/Context Anchor recovery, payment-discovery and settlement-error gate passed 822 tests across nine files (`/private/tmp/human-recovery-main-merge.log`). Typecheck and both Worker dry-run bundles passed again (`/private/tmp/human-recovery-main-build.log`). The merge preserves verified Solana payer identity alongside durable recovery. New managed orders treat Durable Object state as authoritative, so a rollback must retain coordinator-aware order readers and writers; KV alone is a listing projection.
+
+## BUY-008: paid retrieval precedes new-sale admission
+
+HTTP keeps unknown/retired-item and input checks at the door, but defers weekly inventory, stocked-shelf, shutter and capacity admission for signed requests. The payment gate authenticates and checks cached or recoverable purchases first. A fresh sale then runs the deferred checks before settlement. MCP similarly moves its existing stocked-shelf and shutter checks behind verified replay. Unpaid quotes retain admission checks, and failed verification cannot offer replacement terms for a closed shelf. This changes no inventory reservation or quote-honoring policy.
+
+The public-door regression enumerates both current unstocked human products. It closes the shutter, exhausts weekly stock or fills the HTTP queue after the first purchase; it retrieves cached goods on Base/Polygon/Solana and interrupted human orders on Base/Polygon without another settlement. Both MCP payment profiles are covered. Fresh valid payments are still refused, changed briefs/forged signatures do not disclose goods, the original brief survives, and the certificate verifies. The initial inventory fixture used the wrong KV namespace; it was corrected and now asserts zero remaining inventory before attempting retrieval. Only the corrected old-source run is the negative-control evidence.
+
+BUY-008 is checked off separately. Missing MCP weekly/queue admission (BUY-012/013), missing capacity refusal fields (BUY-036), concurrent reservations (BUY-035), expired verification (BUY-015), and broader durable/legacy recovery (BUY-017/034/037) remain open. No real payment or deployment was made.
+
+All 50 final public-door controls failed with the prior production source restored (`/private/tmp/paid-admission-final-red.log`), each at the refusal that blocked the authenticated retry. The proof restored every source change exactly afterward. Typecheck and both final Worker dry-run builds passed (`/private/tmp/paid-admission-final-build.log`).
+
+Final integration verification covered 673 checks across 13 files. The first run passed 671 but timed out in one human-order case, followed by a callback-count failure in its next case (`/private/tmp/paid-admission-final-gate.log`). With no code or timeout changes, the affected file passed all 68 tests alone (`/private/tmp/paid-admission-human-recheck.log`); the other 12 files had already passed, including all 50 admission cases. This is recorded as a timeout/recheck, not an uninterrupted green run. The full suite remains on GitHub. PR #549 merged while this repair was being verified.
 ## PR #549 — merge conflicts with Solana replay repair resolved
 
 Merged current main (`d108b861`, #551) into the settlement-outcomes branch. Discovery retains the confirmed-refusal and unknown-settlement codes alongside the new verified-payer refusal; the source guard recognizes all shared helpers. The checklist records #551 as merged while leaving #549 pending CI. No recovery consumer from draft #541 was introduced.
 
 Validation: 676 payment-outcome, Solana replay and discovery checks across five files passed (`/private/tmp/pr549-merge-tests.log`), plus 36 standard-entrypoint, receipt-integrity and deliver-first checks across three files (`/private/tmp/pr549-merge-entrypoints.log`). Typecheck and both Worker dry-run bundles passed (`/private/tmp/pr549-merge-build.log`). GitHub runs the full suite; all payment fixtures are local.
+
+After BUY-008 commit `7be46000`, merged main `d99d8ccb` (#549 settlement responses and #556 A2A compliance). Conflict resolution retained the recovery KV import and both progress records; the paid route/payment source files match the tested BUY-008 commit exactly. The combined admission/A2A/write-discipline gate passed 92 tests across six files (`/private/tmp/paid-admission-main-gate.log`), typecheck, and both Worker dry-run bundles (`/private/tmp/paid-admission-main-build.log`).
+
+## 2026-09-07 — BUY-012: MCP respects weekly stock
+
+Preserved the separately pushed bounded-read repair `7d5bc39b`, then merged main through `9eda8b46` (33 sync checks and typecheck passed). MCP now calls the existing weekly inventory reader in the admission callback: before quoting unpaid requests, and after authenticated replay but before any new settlement for signed requests. The refusal carries the same waitlist URL, POST method and body instructions as HTTP. Served MCP discovery now describes weekly exhaustion as well as premade stock.
+
+All 40 public oversell cases failed on prior production source (`/private/tmp/mcp-weekly-red.log`); they purchase every catalog-derived slot rather than faking the sold-out counter. Coverage includes Aura Walk/Collab, both MCP payment profiles, unpaid/held-signed offers, and Base/Polygon/Arbitrum/World/Solana. A separate served-description control also failed (`/private/tmp/mcp-weekly-discovery-red.log`). The final gate passed 234 tests across four files (`/private/tmp/mcp-weekly-final.log`), typecheck, and both Worker dry-run bundles (`/private/tmp/mcp-weekly-build.log`). Paid receipt replay still returns its original certificate/order without another settlement.
+
+BUY-012 is checked off; backlog capacity, concurrent slot reservations, expired verification and the broader recovery findings remain separate. All payments were disposable local signed fixtures. No production deployment or full local suite was run; GitHub owns that suite.
+
+## 2026-09-07 — BUY-013: MCP respects outstanding work
+
+Both MCP payment profiles now run the HTTP door's capacity verdict in new-purchase admission. The existing verdict rejects a full per-item queue, a full house queue, and a truncated count; weekly availability is separately checked and cannot stand in for outstanding work from a previous week. Existing paid cache/recovery reads remain ahead of this admission check. The MCP refusal carries capacity_unavailable, charged:false, open_orders and cap, with the verdict's reason and a served discovery entry explaining safe retry.
+
+All 120 new public refusal cases failed before repair: both current human products, both profiles, all five checkout rails, unsigned quotes and signed outstanding quotes, per-item/global saturation and an injected incomplete count. Twenty additional paid-retry cases and the discovery check also failed, while the 50 existing replay controls passed (`/private/tmp/mcp-capacity-red.log`). The repaired final gate passed 257 tests across five files (`/private/tmp/mcp-capacity-green.log`), typecheck and both Worker bundles (`/private/tmp/mcp-capacity-build.log`). It includes machine-shelf controls, weekly-stock enforcement and preserved cached/interrupted paid retrieval.
+
+BUY-013 is checked off. BUY-036 remains partial because HTTP and commission capacity refusals still lack these machine-readable fields. No slot reservation was introduced: concurrent buyers remain BUY-035. The three broader SEV-1 recovery findings remain unchecked. All payments and failure injection are local fixtures; GitHub runs the full suite.

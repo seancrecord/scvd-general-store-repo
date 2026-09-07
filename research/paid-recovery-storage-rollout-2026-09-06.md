@@ -16,3 +16,5 @@ This resolves the deployment-order prerequisite; it does not close BUY-037 or an
 Local validation for this slice: typecheck, coordinator tests and both Worker dry-run bundles. The full suite runs on GitHub as requested. The dry run cannot prove namespace provisioning or preview upload success against the live account.
 
 Reference: https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/
+
+Rollout update: #542 merged at 2026-09-06 22:02 UTC (`e00307bd`). The main Worker build succeeded as `27b2be72-f149-4bae-b243-38c0a12e33bd`, version `6c3ac7a3-4ce7-4f9d-88e2-84e169f32673`. The recovery branch incorporates main through `4f086c26`, preserving both input-contract and recovery checklist entries. Typecheck, 153 focused tests across seven files, and both dry-run builds passed. Consumer preview success is still checked separately.

@@ -1,3 +1,4 @@
+import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { caseFileNote, storeCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -151,6 +152,7 @@ export async function deliverInstantGoods(
   env: Env,
   item: MenuItem,
   input: InstantGoodsInput,
+  checkpoint?: ArtifactCheckpoint,
 ): Promise<InstantGoods> {
   switch (item.id) {
     case "dibs":
@@ -170,7 +172,7 @@ export async function deliverInstantGoods(
       if (input.agentName) {
         anchorInput.agentName = input.agentName;
       }
-      const created = await createAnchor(env, anchorInput);
+      const created = await createAnchor(env, anchorInput, checkpoint);
       return {
         deliverable: anchorNote(),
         extras: {

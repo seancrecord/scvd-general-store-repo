@@ -34,7 +34,7 @@ export interface Env {
   STORE?: Fetcher;
   ORDERS: KVNamespace;
   /**
-   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the one binding in
+   * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — a binding in
    * this store that is neither KV nor R2, and the reason is stated in
    * services/trade-nonces.ts: a replay guard with no on-chain backstop
    * cannot live on an eventually consistent store. OPTIONAL and
@@ -47,7 +47,7 @@ export interface Env {
   TRADE_NONCES?: DurableObjectNamespace<
     import("@/services/trade-nonces").TradeNonceStore
   >;
-  /** Storage prerequisite; purchase routes do not use it until BUY-037 ships. */
+  /** One durable reconstruction attempt per already-settled payment. */
   PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
   /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
@@ -269,6 +269,8 @@ export type HonoEnv = {
   Variables: SettledPaymentVariables & {
     /** The failed input check, carried only within this request. */
     inputRefusal?: Record<string, unknown>;
+    /** Availability checks for a new sale, after authenticated paid replay. */
+    purchaseAdmission?: () => Promise<Response | void>;
   };
 };
 
@@ -417,6 +419,8 @@ export const TERMINAL_ORDER_STATUSES = ["completed"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export interface OrderRecord {
+  /** This order's mutable state is coordinated; KV is its listing projection. */
+  managed_order?: true;
   order_id: string;
   item_id: string;
   item_name: string;
