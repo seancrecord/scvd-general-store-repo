@@ -143,6 +143,7 @@ describe("the storefront", () => {
       // onto the utility shelf — same tie, same stable ladder order.
       "passport_refresh",
       "graffiti_on_a_train",
+      "a2a_repair_kit",
       "standing_watch",
       // $5 ties hold LADDER order too: the audit and the conformance
       // watch are listed right after the Night Watch on the utility

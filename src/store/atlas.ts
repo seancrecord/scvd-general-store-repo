@@ -208,6 +208,7 @@ const JOURNEYS: readonly AtlasJourney[] = [
  * requires is the gap the rule was written to close.
  */
 export const FREE_DOORS: readonly AtlasDoor[] = [
+  { path: "/api/a2a/check", name: "A2A card check", access: "free", method: "POST", purpose: "Check an A2A 0.3.0 agent card and get evidence with suggested repairs; instructions at /a2a-desk.", caution: "One bounded GET, no runtime task. Unsupported versions and untested capabilities remain unassessed. Rate limited; no credentials." },
   {
     path: "/api/preflight/v2",
     name: "Preflight",

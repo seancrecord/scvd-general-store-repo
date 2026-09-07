@@ -1,3 +1,4 @@
+import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
 import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
@@ -212,6 +213,7 @@ export const BUNDLE_MAX_HASHES = 20;
  */
 const PROBE_ITEMS = [
   "service_audit",
+  "a2a_repair_kit",
   "conformance_watch",
   "passport_refresh",
   "good_buyer",
@@ -291,6 +293,11 @@ export async function checkPurchaseArgs(
     if (refusal) return refusal;
   }
 
+  if (item.id === "a2a_repair_kit") {
+    const error = await a2aAdmission(env, read("url"));
+    if (error) return refuse(error === "budget_exhausted" ? 503 : 400, error, "A2A setup incomplete: " + error + ". Read /a2a-desk.json for the exact authorization fixture and supported scope. Nothing charged.", { input_field: "url" });
+    return undefined;
+  }
   if (PROBE_ITEMS.includes(item.id)) {
     const refusal = targetVerdict(
       env,
@@ -819,6 +826,7 @@ export function purchaseInputFrom(
       "phantom_check",
       "standing_watch",
       "service_audit",
+      "a2a_repair_kit",
       "conformance_watch",
       "passport_refresh",
       "good_buyer",

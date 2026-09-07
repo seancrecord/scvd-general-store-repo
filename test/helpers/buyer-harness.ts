@@ -1,4 +1,4 @@
-import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
+import { createExecutionContext, env, runInDurableObject, waitOnExecutionContext } from "cloudflare:test";
 import { afterAll, beforeAll, beforeEach, expect, vi } from "vitest";
 import { app } from "@/index";
 import { MENU_ITEMS } from "@/store";
@@ -8,6 +8,7 @@ import { acceptedNetworks, POLYGON_NETWORK } from "@/lib/payments";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./facilitator-mock";
 import { buildPaymentSignature, type ChallengeRequirement } from "./payment";
+import { AGENT, CARD_URL, fixture as a2aFixture } from "./a2a-fixture";
 
 // An acceptance audit, intentionally stricter than the existing probe rule.
 // No production validator or argument mapper is used as the test's oracle.
@@ -77,7 +78,7 @@ export const values: Obj = {
 export function baseline(item: Item): Obj {
   return Object.fromEntries((item.spec.inputs.required ?? []).map(field => {
     if (!(field in values)) throw new Error(`No independent valid input for new required field ${item.id}.${field}`);
-    return [field, values[field]];
+    return [field, item.id === "a2a_repair_kit" && field === "url" ? CARD_URL : values[field]];
   }));
 }
 export function signature(offer: ChallengeRequirement): string {
@@ -111,6 +112,9 @@ export async function call(item: Item, door: Door, args: Obj, tool?: Tool, payme
     offers: (challenge.accepts ?? []) as ChallengeRequirement[] };
 }
 export async function clean(): Promise<void> {
+  // The clock is fixed across cases; each buyer gets a fresh admission budget.
+  const budget = sourceEnv.A2A_KITS!.get(sourceEnv.A2A_KITS!.idFromName("a2a-free-budget"));
+  await runInDurableObject(budget, async (_instance, state) => state.storage.deleteAll());
   for (const ns of [sourceEnv.ORDERS, sourceEnv.PATRONS, sourceEnv.GUESTBOOK, sourceEnv.COUNTERS]) {
     let cursor: string | undefined;
     do {
@@ -136,6 +140,9 @@ beforeAll(async () => {
   const inner = globalThis.fetch;
   vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+    // A2A includes deliberately invalid JSON. Handle its operator-owned fixture
+    // before the chain-RPC parser so the test observes the protocol's response.
+    if (url.origin === AGENT) return a2aFixture().fetchImpl(url.href, init);
     if (url.pathname.endsWith("/x402/supported")) {
       const response = await inner(input, init);
       const supported = object(await response.json());

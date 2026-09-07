@@ -132,6 +132,10 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "a2a_repair_kit") {
+    properties["url"] = { type: "string", format: "uri", description: "Your full public A2A 0.3.0 agent-card URL, without query or fragment. Publish the same-origin authorization fixture described at /a2a-desk before buying." };
+    required.push("url");
+  }
   if (item.id === "service_audit") {
     properties["url"] = {
       type: "string",
@@ -512,6 +516,7 @@ export function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "standing_watch") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
+  if (item.id === "a2a_repair_kit") example["url"] = "https://your-agent.example/.well-known/agent-card.json";
   if (item.id === "service_audit") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }

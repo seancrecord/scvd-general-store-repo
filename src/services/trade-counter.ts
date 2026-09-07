@@ -34,7 +34,7 @@ import { getCertificate } from "@/services/certificates";
 
 /** The certificate record as the reader returns it; the type is not exported from there. */
 type CertificateRecord = NonNullable<Awaited<ReturnType<typeof getCertificate>>>;
-import { READS_SENTENCE } from "@/store/surface-contract";
+import { itemReadsSentence } from "@/store/surface-contract";
 import { isRecord, type Env, type MenuItem, type TradeSettlement } from "@/types";
 
 /**
@@ -976,7 +976,7 @@ export function tradeCatalog(base: string, shareBps: number = TRADE_EXAMPLE_SHAR
       name: item.name,
       ...(item.subtitle ? { subtitle: item.subtitle } : {}),
       description: item.description,
-      what_it_reads: READS_SENTENCE[item.reads],
+      what_it_reads: itemReadsSentence(item),
       ...(item.constraints ? { constraints: item.constraints } : {}),
       cadence: item.cadence,
       ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),

@@ -70,7 +70,7 @@ describe("every item that mints an artifact class prints the class's limit", () 
 describe("the specimen on the page is the JSON, byte for byte", () => {
   it("every specimen, each on its item page, each equal to its JSON", async () => {
     expect(SAMPLES.map((entry) => entry.item).sort()).toEqual(
-      ["conformance_watch", "launch_check", "service_audit", "settlement_attestation", "standing_watch", "the_case_file"],
+      ["a2a_repair_kit", "conformance_watch", "launch_check", "service_audit", "settlement_attestation", "standing_watch", "the_case_file"],
     );
     for (const listing of SAMPLES) {
       const item = getMenuItem(listing.item)!;

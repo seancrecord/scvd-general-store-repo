@@ -32,6 +32,12 @@ const BARE_PUT = /(?:c\.)?env\.(?:ORDERS|GUESTBOOK|COUNTERS|PATRONS)\.put\(/g;
 // KVNamespace.put. Do not exempt the file or every receiver named txn:
 // a KV alias in the same service must still fail this guard.
 const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
+  "/src/services/a2a-kit.ts": [
+    'await txn.put("budget", { minute, used: used + 1 }); return true;',
+    'await txn.put("kit", kit);',
+    'await txn.put("pass:0", { slot: 0, report: prepared.report } satisfies WatchPass);',
+    'await txn.put("recheck", { status: "running" } satisfies RecheckResult); return true;',
+  ],
   "/src/services/a2a-tasks.ts": [
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],

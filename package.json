@@ -69,7 +69,10 @@
     "cold:test": "node --test scripts/cold-read.test.mjs",
     "cold:local": "node scripts/cold-local.mjs",
     "deploy:doors": "wrangler deploy -c doors/wrangler.jsonc",
-    "doors:live": "node scripts/doors-live.mjs"
+    "doors:live": "node scripts/doors-live.mjs",
+    "a2a:runner:build": "node scripts/a2a-runner-build.mjs",
+    "a2a:runner:check": "node scripts/a2a-runner-build.mjs --check",
+    "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

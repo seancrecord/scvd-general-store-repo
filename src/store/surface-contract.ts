@@ -1,3 +1,4 @@
+import { A2A_ACTIONS } from "@/store/a2a-repair";
 import type { MenuItem } from "@/types";
 
 /**
@@ -134,9 +135,9 @@ export function securityBlock(
     what_this_does_in_your_name: parts.does_in_your_name,
     what_it_stores_about_you: parts.stores,
     what_we_never_do:
-      "No account, no cookie, no caller identifier, and no allocation of our budgets by IP — the buckets bound our cost rather than ranking callers, which is a trade we would rather state than hide. We do not sell, share or publish what any caller asked us about; the weekly census is a separate instrument that walks public discovery feeds, never this door's traffic.",
+      "No account, cookie, caller identifier or IP-based budget. Budgets bound our cost, not caller rank. Requests are never sold, shared or published. The weekly census reads public discovery feeds, never these requests.",
     standards:
-      "Disclosure is private-first and symmetric: an operator hears from us before the public does, and the same rule binds us when the defect is ours. Corrections are dated and public, never silent edits. Every signed artifact verifies offline against a published key, so you never have to ask us whether a document of ours is real.",
+      "Disclosure is private-first and symmetric: notify the operator before publication, including our own defects. Corrections are dated and public. Signed artifacts verify offline against our published key.",
     reporting: `${base}/.well-known/security.txt for a vulnerability, ${base}/corrections for something we got wrong.`,
   };
 }
@@ -349,9 +350,9 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     code: "bad_request",
     jsonrpc: -32602,
     means:
-      "the arguments did not match the tool's inputSchema, or a required one was missing. The message names which",
+      "arguments violate inputSchema or omit a required field; the message names it",
     what_to_do:
-      "Read inputSchema on the tool and resend. Nothing was charged: the check runs before any payment is taken.",
+      "Fix the named field against inputSchema and resend. Nothing charged; validation precedes payment.",
   },
   {
     code: "unknown_item",
@@ -399,7 +400,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
     jsonrpc: -32602,
     means: "no tool by that name is on the shelf",
     what_to_do:
-      "Call tools/list, which is free and unauthenticated, and read the names. Nothing was charged.",
+      "Read the names in free, unauthenticated tools/list. Nothing charged.",
   },
   {
     code: "no_such_resource",
@@ -617,6 +618,10 @@ function doorErrors(): (DoorError & {
  * entry so the deeper contract is one hop from the shelf, which is
  * what 57.1 asks for.
  */
+export function itemReadsSentence(item: MenuItem): string {
+  return item.id === "a2a_repair_kit" ? A2A_ACTIONS : READS_SENTENCE[item.reads];
+}
+
 export function paidDoorContract(
   item: MenuItem,
   schema: { properties?: Record<string, unknown>; required?: string[] },
@@ -629,7 +634,7 @@ export function paidDoorContract(
     expected_outcome: expectedOutcome(item, facts),
     errors: doorErrors(),
     security: securityBlock(base, {
-      does_in_your_name: `${READS_SENTENCE[facts.reads]} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
+      does_in_your_name: `${itemReadsSentence(item)} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
       stores: `The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. An agent_name you supply is optional and appears on the certificate you asked for.${facts.humanQueue ? " A callback_url, if you give one, is used to tell you the work is done and for nothing else. Anything you write in `detail` is recorded exactly as written and read by a human, never treated as instructions to a machine." : ""}`,
     }),
   };
