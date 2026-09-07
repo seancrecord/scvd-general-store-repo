@@ -140,6 +140,8 @@ Evidence: survival `replay` rows. `src/lib/replay-guard.ts:payerOfVerifiedPayloa
 
 ### BUY-008 — P1: HTTP stock checks block recovery of an already-paid order
 
+**Repair completed locally, release pending in #541.** HTTP defers weekly-stock, stocked-shelf, shutter and capacity checks until after authenticated cache/recovery lookup; MCP defers its stocked-shelf and shutter checks to the same point in its payment flow. New sales still face admission before settlement, and closed shelves do not issue replacement quotes after failed verification. Regression coverage includes both current human products, all checkout rails for cached replay, and Base/Polygon interrupted-order recovery. The original audit record follows.
+
 **Open · input-survival audit.** After the two available Collab slots are purchased, replay either request over HTTP: `409 sold_out`, `charged:false`, no original receipt. Six cases across three rails. Base and Polygon MCP replays retrieve the purchase successfully. No new payment on the failed HTTP retries, but a buyer who lost the first response cannot recover using the promised identical request.
 
 The equivalence audit additionally reproduces the same failure for Aura Walk after buying all of its advertised slots. Both finite weekly-inventory products are now covered, with six paired recovery cases (one per product/rail); the earlier six cases were two Collab requests per rail.

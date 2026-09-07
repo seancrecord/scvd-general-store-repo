@@ -111,7 +111,10 @@ class McpBuyAdapter implements HTTPAdapter {
   }
 }
 
+export type McpAdmissionRefusal = { code: string; message: string };
+
 export type McpPaymentOutcome =
+  | { kind: "admission-refused"; refusal: McpAdmissionRefusal }
   | { kind: "payment-unavailable"; body: ReturnType<typeof paymentIdentityUnavailableBody> }
   | { kind: "payment-required"; status: number; body: unknown; challenge?: unknown }
   /**
@@ -230,6 +233,8 @@ export async function runMcpPayment(
   askedFor?: string,
   /** SHA-256 of the complete canonical arguments, not the truncated desk preview. */
   inputDigest?: string,
+  /** Checks new sales after verified replay, and prevents quotes on closed shelves. */
+  admitPurchase?: () => Promise<McpAdmissionRefusal | null>,
 ): Promise<McpPaymentOutcome> {
   const path = `/api/buy/${itemId}`;
   const stack = getPaymentStack(env);
@@ -290,6 +295,10 @@ export async function runMcpPayment(
     throw new Error(`MCP purchase path unexpectedly ungated: ${path}`);
   }
   if (result.type === "payment-error") {
+    if (paymentHeader) {
+      const unavailable = await admitPurchase?.();
+      if (unavailable) return { kind: "admission-refused", refusal: unavailable };
+    }
     if (result.response.status === 402) {
       await recordChallengeIssued(env, path, signals);
     }
@@ -472,6 +481,9 @@ export async function runMcpPayment(
       },
     };
   }
+
+  const admissionRefusal = await admitPurchase?.();
+  if (admissionRefusal) return { kind: "admission-refused", refusal: admissionRefusal };
 
   /*
    * DELIVER FIRST HERE TOO — rule 9 as amended 2026-08-10. The MCP

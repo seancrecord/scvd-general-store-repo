@@ -144,6 +144,12 @@ describe("a refusal on the wire carries the code and the charge", () => {
         (match) => match[1]!,
       ),
     );
+    // Availability codes are returned by the callback and relayed after replay.
+    if (MCP_SOURCE.includes('outcome.kind === "admission-refused"')) {
+      const admission = MCP_SOURCE.match(/const admitPurchase = async \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? "";
+      expect(admission.length).toBeGreaterThan(0);
+      for (const match of admission.matchAll(/code: "([a-z_]+)"/g)) emitted.add(match[1]!);
+    }
     // Plus the one branch that picks its code from a ternary.
     if (/sells \? "wrong_shelf" : "unknown_item"/.test(MCP_SOURCE)) {
       emitted.add("wrong_shelf");

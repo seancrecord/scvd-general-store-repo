@@ -267,6 +267,8 @@ export type HonoEnv = {
   Variables: SettledPaymentVariables & {
     /** The failed input check, carried only within this request. */
     inputRefusal?: Record<string, unknown>;
+    /** Availability checks for a new sale, after authenticated paid replay. */
+    purchaseAdmission?: () => Promise<Response | void>;
   };
 };
 

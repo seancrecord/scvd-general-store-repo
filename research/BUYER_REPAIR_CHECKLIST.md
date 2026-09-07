@@ -1,6 +1,6 @@
 # Buyer repair checklist
 
-Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PRs #540, #544, #551 and #552 have merged; #541 remains a draft and #549 has its own release gate. All payment tests use local fixtures.
+Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PRs #540, #544, #549, #551 and #552 have merged; #541 remains a draft. All payment tests use local fixtures.
 
 The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-001, BUY-005, and BUY-028; the other three require durable payment and delivery recovery.
 
@@ -20,7 +20,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
 - [x] **BUY-007 — P1: Solana retries bypass the purchase cache** — repaired on `codex/buyer-solana-replay`: verified Solana payer scopes cached retries; missing identity safely refuses settlement. Merged in PR #551; production release is a separate status.
-- [ ] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — open.
+- [x] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — authenticated cached/recoverable purchases now precede weekly stock, shutter and capacity admission. MCP also preserves paid replay when its shutter closes; new sales still run their admission checks.
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
 - [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
 - [x] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — repaired: both MCP profiles return an error tool result with the same refusal reason and no-charge state as HTTP.

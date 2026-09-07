@@ -883,27 +883,27 @@ async function callPurchaseTool(
           : null;
       }
     : undefined;
-  // Sold out honestly, same as the HTTP door: bare stocked shelves
-  // never issue terms nobody can settle.
-  if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
-    return rpcRefusal(
-      id,
-      -32000,
-      "sold_out",
-      `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
-    );
-  }
-  // The shutter, same as the HTTP door: no money for absent labor.
-  if (await requiresPresentKeeper(c.env, item)) {
-    const state = await shutterState(c.env);
-    if (state.closed) {
-      return rpcRefusal(
-        id,
-        -32000,
-        "shelf_closed",
-        "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
-      );
+  const admitPurchase = async () => {
+    if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
+      return {
+        code: "sold_out",
+        message: `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
+      };
     }
+    if (await requiresPresentKeeper(c.env, item)) {
+      const state = await shutterState(c.env);
+      if (state.closed) return {
+        code: "shelf_closed",
+        message: "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
+      };
+    }
+    return null;
+  };
+  // Quotes must be fulfillable. Signed requests authenticate and look for a
+  // prior purchase first; only a fresh sale runs the same admission callback.
+  if (paymentMeta === undefined || paymentMeta === null) {
+    const unavailable = await admitPurchase();
+    if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message);
   }
   const inputDigest = await sha256Hex(jcsCanonicalize(args));
   const outcome = await runMcpPayment(
@@ -920,12 +920,16 @@ async function callPurchaseTool(
     // rides _meta, never arguments, so nothing here is a credential.
     Object.keys(args).length > 0 ? JSON.stringify(args).slice(0, 600) : undefined,
     inputDigest,
+    admitPurchase,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
    * verified payer holding a key it has served before, and returned
    * the original purchase without settling anything.
    */
+  if (outcome.kind === "admission-refused") {
+    return rpcRefusal(id, -32000, outcome.refusal.code, outcome.refusal.message);
+  }
   if (outcome.kind === "replay") {
     try {
       const answer = await renderResponse(rpcResult(id, purchaseResult(outcome.body)));

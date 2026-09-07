@@ -7,7 +7,8 @@
  * counter, a full queue, malformed inputs, then the payment gate that
  * writes the 402. They moved here, unchanged, because a second Worker
  * now answers the unpaid knock on `/api/buy/*` (src/doors.ts) and it
- * must give the same answer the store gives, byte for byte. The only
+ * must give the same answer the store gives, byte for byte. Signed
+ * requests defer availability until after authenticated paid replay. The only
  * way to promise that is to run the same functions in the same order
  * from one list, so `doorChecks` below is that list and both Workers
  * register it. Nothing in this file delivers: fulfillment stays in
@@ -83,11 +84,11 @@ export function retirementHeaders(
 }
 
 /**
- * Turns away retired items, unknown items (logged as market research)
- * and sold-out shelves.
+ * Turns away retired and unknown items (logged as market research).
+ * Stock admission is separate so an existing paid purchase remains retrievable.
  *
- * ALL THREE REFUSE BEFORE ANY MONEY MOVES and all three shipped
- * without `code` or `charged` — this whole middleware was missed by
+ * These two refusals and the stock refusal originally shipped
+ * without `code` or `charged` — this middleware was missed by
  * the sweep that coded the other forty-two, because not one of its
  * three sentences contains the words "nothing charged". A boundary
  * drawn by a grep, not by a decision: a buyer turned away at the
@@ -154,6 +155,13 @@ export const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       404,
     );
   }
+  await next();
+};
+
+/** Weekly stock constrains new sales, never retrieval of an existing purchase. */
+const inventoryCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const item = getMenuItem(buyItemId(c));
+  if (!item) return next();
   const remaining = await remainingInventory(c.env, item);
   if (remaining !== null && remaining <= 0) {
     return c.json(
@@ -356,16 +364,31 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 /**
- * The order the store has always refused in. A knock that survives all
- * eight has paid, and only the store may serve it.
+ * A payment header is only a request to authenticate, never permission to
+ * bypass availability. The gate runs this callback after its verified replay
+ * lanes and before authorizing a fresh sale. Unpaid discovery checks it now.
  */
+export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const check = async (): Promise<Response | void> => {
+    for (const guard of [inventoryCheck, stockCheck, shutterCheck, capacityCheck]) {
+      const refusal = await guard(c, async () => {});
+      if (refusal) return refusal;
+    }
+  };
+  if (isBuying(c)) c.set("purchaseAdmission", check);
+  else {
+    const refusal = await check();
+    if (refusal) return refusal;
+  }
+  await next();
+};
+
+/** Both Workers share discovery checks; authenticated replay lives in the gate. */
 export const doorChecks: readonly MiddlewareHandler<HonoEnv>[] = [
   noStore,
   shelfCheck,
   bookRefusalBeforeGate,
-  stockCheck,
-  shutterCheck,
-  capacityCheck,
+  admissionCheck,
   argCheck,
   paymentGate,
 ];

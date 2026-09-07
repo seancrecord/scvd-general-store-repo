@@ -924,6 +924,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   if (result.type === "payment-error") {
+    // Failed authentication may return new terms; a closed shelf cannot quote.
+    const unavailable = await c.get("purchaseAdmission")?.();
+    if (unavailable) return unavailable;
     if (result.response.status === 402) {
       /*
        * Challenge issued. The monthly gap between these and settlements
@@ -1290,6 +1293,11 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       );
     }
   }
+
+  // Existing paid goods are owed even when the shelf has since closed.
+  // Only a new sale reaches these checks, before any settlement is possible.
+  const admissionRefusal = await c.get("purchaseAdmission")?.();
+  if (admissionRefusal) return admissionRefusal;
 
   /**
    * DELIVER FIRST, SETTLE AFTER — rule 9, amended by the keeper
