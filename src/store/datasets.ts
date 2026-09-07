@@ -28,6 +28,8 @@
 export interface PublishedDataset {
   /** Where it lives. JSON on the same URL, by Accept header. */
   path: string;
+  /** The machine representation; JSON-LD in an HTML twin does not count. */
+  mediaType: "application/json" | "application/ld+json";
   /** What a reader calls it. */
   name: string;
   /** One line: what it is, before anyone parses a field. */
@@ -46,6 +48,7 @@ export interface PublishedDataset {
 export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   {
     path: "/fixtures.json",
+    mediaType: "application/ld+json",
     name: "The fixtures",
     description:
       "The recorded 402 doors, MPP challenges and signed-artifact vectors this store tests its own instruments against, at stable URLs with the sha256 of the bytes served, so another instrument can cite the exact bytes.",
@@ -59,6 +62,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   },
   {
     path: "/corpus.json",
+    mediaType: "application/ld+json",
     name: "The signed corpus",
     description:
       "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw. Hash-chained, ed25519-signed, Bitcoin-anchored.",
@@ -72,6 +76,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   },
   {
     path: "/registry",
+    mediaType: "application/ld+json",
     name: "State of the registry",
     description:
       "A weekly running tally of the public x402 discovery list: how many listed doors answer a well-formed payment challenge, how many serve structurally valid signed offers, what the market charges, how concentrated it is.",
@@ -85,6 +90,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   },
   {
     path: "/inflows",
+    mediaType: "application/ld+json",
     name: "Inflows to advertised payment addresses",
     description:
       "What arrived at the payment addresses public x402 doors advertise in their own 402 challenges, read from Base and Polygon over roughly a day per round.",
@@ -98,6 +104,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   },
   {
     path: "/fresh-set",
+    mediaType: "application/json",
     name: "The fresh set",
     description:
       "The doors that answered a spec-conformant x402 challenge in the latest census, named, with the rails and cheapest USDC ask each door's own 402 offered.",
@@ -111,6 +118,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
   },
   {
     path: "/defects.json",
+    mediaType: "application/json",
     name: "The defect vocabulary",
     description:
       "The named defect classes this store's instruments report, so separate tools can compare notes about the same failure in the same words.",
@@ -132,6 +140,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
      * level up.
      */
     path: "/doors.json",
+    mediaType: "application/json",
     name: "Every door the census has met",
     description:
       "One entry per host the weekly ward round has ever carried, alphabetical, with the most recent dated verdict, the week it was taken, how many rounds carried the host and how many reached a real verdict, and the URL of its full signed history.",
@@ -151,6 +160,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
      * about anyone else, which is why its caution is about floors.
      */
     path: "/observatory",
+    mediaType: "application/json",
     name: "The observatory — what gets read here, counted",
     description:
       "Per month and per surface, how many times each agent-read surface of this store was fetched: organic visits beside the house and infrastructure buckets kept out of them, and the channel split inside the organic count. In name order, never by count.",
@@ -167,6 +177,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
      * The state of x402 by month, 2026-09-03 (roadmap V5).
      */
     path: "/corpus/month",
+    mediaType: "application/json",
     name: "The state of x402, by month",
     description:
       "One derived reading per calendar month of signed rounds: doors named, probed, payable and not at the month's closing week; every round's counts summed as door-weeks, labelled apart; defects by registered name in door-weeks; the month before beside it. A stable address per month at /corpus/month/{YYYY-MM}.",
@@ -186,6 +197,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
      * its subtitle.
      */
     path: "/feeds",
+    mediaType: "application/json",
     name: "Feeds — the record, as Atom",
     description:
       "Four Atom feeds derived at fetch from the same record the pages read: the week's doors (one entry per signed week), the corpus chain (one per signed snapshot), the corrections and the disagreements. Every entry links the page it came from.",
