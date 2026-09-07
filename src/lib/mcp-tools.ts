@@ -685,12 +685,12 @@ function clusterCompletion(items: MenuItem[]): string {
   const shapes: string[] = [];
   if (hasInstant) {
     shapes.push(
-      "instant items complete in one call, the result carrying deliverable, cert_id and patron_number",
+      "instant items return deliverable, cert_id and patron_number in one call",
     );
   }
   if (hasQueue) {
     shapes.push(
-      "human-fulfilled items return order_id and order_url instead of the goods, and the completed order carries the deliverable",
+      "human items return order_id and order_url; completed orders carry the deliverable",
     );
   }
   return `Choose item_id. ${shapes.join("; ")}. x402 payment: _meta['x402/payment']. Without payment: error 402 with the terms in error.data. Closed or empty shelves refuse before quoting. ${RETRY_SAFETY_MCP_LINE}`;
@@ -791,7 +791,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "check_purchase", reads: "our_books",
     summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; submits no payment.",
-    description: "Read the same retained purchase status as GET /api/purchase-status/{purchase_id}. Supply recovery.purchase_id and recovery.status_token from the purchase response. Keep the token private. Free, read-only, and usable after payment authorization expiry. Saved fulfillment contains a recovered anchor or human order when available; human work remains pending until completed. Payment state alone is not proof of delivery.",
+    description: "Use recovery.purchase_id and private recovery.status_token to read payment, original terms and available fulfillment, even after payment expiry. Free; submits no payment. Fulfillment may contain a recovered anchor or human order; human work remains pending until completed. Payment alone is not proof of delivery.",
     inputSchema: { type: "object", properties: {
       purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
       status_token: str("The private recovery.status_token from the purchase response.", 64),
