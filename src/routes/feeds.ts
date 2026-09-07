@@ -47,6 +47,8 @@ export interface FeedDescription {
   what: string;
   /** How often a poller can expect a new entry. */
   cadence: string;
+  /** Requests this feed serves, shared with the ARD catalog. */
+  representativeQueries: string[];
 }
 
 export const FEEDS: readonly FeedDescription[] = [
@@ -55,24 +57,40 @@ export const FEEDS: readonly FeedDescription[] = [
     name: "The Week's Doors",
     what: "One entry per signed week: doors named, probed, payable and not, defects by name, the gaps counted against the observer. Each entry links the week's stable page.",
     cadence: "weekly, after the Sunday round",
+    representativeQueries: [
+      "subscribe to weekly x402 endpoint census summaries",
+      "follow weekly counts of x402 doors probed and payment challenges observed",
+    ],
   },
   {
     path: "/feeds/corpus.xml",
     name: "The corpus chain",
     what: "One entry per signed snapshot appended to the corpus, with its sequence, week and digest. Each entry links the snapshot's JSON, the bytes a signature covers.",
     cadence: "weekly, after the Sunday round",
+    representativeQueries: [
+      "subscribe to new signed x402 corpus snapshots",
+      "follow additions to the x402 observation chain with snapshot digests",
+    ],
   },
   {
     path: "/feeds/corrections.xml",
     name: "Corrections",
     what: "One entry per correction this store has published against itself: what was wrong, how long, who found it, what changed.",
     cadence: "when we get something wrong",
+    representativeQueries: [
+      "subscribe to corrections SCVD publishes about its own work",
+      "get an Atom update when SCVD fixes a reported mistake",
+    ],
   },
   {
     path: "/feeds/disagreements.xml",
     name: "Disagreements",
     what: "One entry per divergence between this store's reading and another instrument's, with its state; both readings live on the page the entry links.",
     cadence: "from a named trigger, never on a timer",
+    representativeQueries: [
+      "follow disagreements between SCVD and other verification instruments",
+      "subscribe to published differences between x402 endpoint observations",
+    ],
   },
 ];
 

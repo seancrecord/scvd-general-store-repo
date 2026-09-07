@@ -31,12 +31,12 @@ export const PRACTICE_COUNTER_COPY = {
    * route appends the /menu link so this constant stays plain text.
    */
   plainWords:
-    "In plain words: this room is for people building software that pays for things on its own. Buying something yourself takes no code — every item's page has a Pay button, one signature, no gas fee. The shelf is at",
+    "In plain words: this room is for people building software that pays for things on its own. Buying something yourself takes no code — with a compatible EVM wallet extension, item pages show a Pay button: one signature, no gas fee. The shelf is at",
 
   whyHead: "Why practice here",
   why: [
     "It's a real store, so it's a real settlement: USDC on a network offered in the current x402 v2 quote, no sandbox, no mock facilitator, no test-mode branch that behaves differently than production.",
-    "Half a cent is the cheapest door. You can exercise the whole flow, end to end, for less than the gas you'd spend thinking about it.",
+    `The shelf starts at ${CHEAPEST_ON_THE_SHELF}. The fast path below selects the cheapest item that needs no additional inputs; the full list states which cheaper items need them.`,
     "Every purchase ends in a signed artifact with a stable URL, so your test has something to assert on besides a 200.",
     "The 402 body carries the item's full spec and the verification block, so a client can be checked against a contract instead of a vibe.",
   ],
@@ -58,10 +58,10 @@ export const PRACTICE_COUNTER_COPY = {
    */
   retryHead: "Before you write the retry loop",
   retry: [
-    "A retry that fires twice pays twice, and a test harness is where that happens. The 402 body carries an idempotency block with a suggested_key: send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP) with your payment, and a second attempt inside the same minute returns your ORIGINAL purchase from cache. No settlement, no second charge.",
-    "It cannot refuse a purchase. Send your own key instead (16-128 characters, kept private) and it holds for 24 hours rather than a minute; send none and you are charged normally, exactly as before. There is no mode here to get wrong.",
+    "A retry that signs a new authorization can create a second purchase, and a test harness is where that happens. The 402 body carries an idempotency block with a suggested_key: send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP) with your payment, and a second attempt inside the same minute returns your ORIGINAL purchase from cache. No settlement, no second charge.",
+    "Keep the original URL, inputs, signed payment and Idempotency-Key for a retry. Send your own key (16-128 characters, kept private) when starting a purchase. If the outcome is unknown, follow the recovery instructions before creating a new payment; a changed key or authorization is not the same retry.",
     "The suggested key is not a secret and is not meant to be: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot rather than opening one — slots are keyed by the VERIFIED paying wallet, so echoing the key can only ever reach your own earlier purchase, never somebody else's.",
-    "Worth exercising deliberately while you are here. Buy the same item twice with the same key and assert you were charged once: it is the cheapest test of your own retry path you will run, and it costs half a cent to prove.",
+    "Worth exercising deliberately while you are here. Repeat the original request with the same key and signed payment, then assert that the original purchase returns without a second charge.",
   ],
 
   cheapHead: "The cheap door, in order",
@@ -88,7 +88,7 @@ export const PRACTICE_COUNTER_COPY = {
     `settlement_attestation answers that one question and nothing else: give it your transaction identifier — an EVM hash (read on Base, then Polygon) or a Solana signature; the shape picks the rail — and it reads that chain once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. One read, no poll, no retry, and nobody looked at it on our end.`,
     "It is not a check on your signing. It is the check for after your signing, when you need a third party's dated statement about whether a transfer exists on chain — which is exactly what you cannot get from the client that just failed you.",
     "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
-    "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — the same door with your own settlement transaction already in the URL, whichever rail you paid on. Finishing the practice run with a signed third-party statement that your payment landed is the full loop: sign, settle, and hold a receipt that does not depend on either of us being honest.",
+    "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — a link with your settlement transaction already in the URL. Check the observation tool's network coverage first: its automatic lookup covers Base, Polygon and Solana, which is narrower than checkout. For other networks, use the explorer for the network recorded in your certificate.",
   ],
 
   /**
@@ -138,7 +138,7 @@ export const PRACTICE_COUNTER_COPY = {
   honestHead: "The honest part",
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",
-    "We deliver first and settle after (changed 2026-08-10; the store settled first until then). The goods are produced, then the payment is presented at the last moment before the artifact is signed \u2014 so a delivery that fails takes no money at all. A payment that fails to settle mints nothing, consumes nothing, and leaves no order behind.",
+    "We deliver first and settle after (changed 2026-08-10; the store settled first until then). The goods are produced, then the payment is presented at the last moment before the artifact is signed \u2014 so a delivery that fails takes no money at all. A definitive settlement failure does not produce a paid certificate. An interrupted response can leave the outcome unknown; preserve the original payment and retry key.",
     // AT_SCALE rule 5b: a published account of how a store fails has to
     // name the failure that costs a buyer money, not only the clean one.
     // The line above is the EASY case — nobody is out anything. This is
@@ -152,7 +152,7 @@ export const PRACTICE_COUNTER_COPY = {
     // publishes without a hand — but the copy was claiming an
     // automatic loop the code does not close, on the page whose whole
     // job is saying what this store actually does.
-    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against both chains themselves. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
+    "The other direction is the one that costs you: a payment that settled and nothing came back. Producing goods first reduces that risk, but signing, storage or response delivery can still fail after settlement. A delivery audit looks for settlements with no artifact behind them, and the configured chain walks compare our books against on-chain transfers and report gaps. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: nothing from this store can act without your decision, and we never ask for credentials, keys, or wallet secrets. Anything that does either is not us.",
   ],

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { USE_WHEN } from "@/store/spec";
 import { OPERATOR } from "@/store/trust-signals";
 import { CLI_PACKAGE, CLI_PUBLISHED } from "@/store/cli";
+import readmeText from "../README.md?raw";
 
 /**
  * THE LIBRARY WAS ALWAYS OPEN. NOBODY COULD FIND THE DOOR.
@@ -158,6 +159,29 @@ describe("the three paths a developer types", () => {
         expect(
           prose.includes(stale),
           `the CLI is published and /developers still says "${stale}"`,
+        ).toBe(false);
+      }
+    }
+
+    /*
+     * THE README IS A SURFACE TOO (2026-09-06). The guard above only
+     * ever read /developers, so the repo's own front page went on
+     * saying "Not on npm until the keeper publishes it" for nine days
+     * after the registry served the package — seven lines below a
+     * link to that same live package. An outside reader found it, not
+     * a test. Static prose cannot read CLI_PUBLISHED at runtime, so
+     * the flag polices the prose instead, and goes quiet again if the
+     * flag is ever flipped back.
+     */
+    for (const stale of [
+      "Not on npm until",
+      "not on npm until",
+      "not yet on npm",
+    ]) {
+      if (CLI_PUBLISHED) {
+        expect(
+          readmeText.includes(stale),
+          `the CLI is published and README.md still says "${stale}"`,
         ).toBe(false);
       }
     }

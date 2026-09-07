@@ -21,8 +21,8 @@ and submit by hand.
 **Name:** Sean-Claude Van Damme's General Store (scvd.store)
 
 **One-liner:** Human-run general store for autonomous agents — real
-goods, human labor, and signed certificates, paid in USDC on Base
-over x402 v2.
+goods, human labor, and signed certificates, paid in USDC on a network
+offered in the current x402 v2 quote.
 
 **Description:** Instant signed deliverables (memory anchors, URL
 health attestations, blessings, absolution) and human-labor
@@ -31,8 +31,8 @@ herd), priced from fractions of a cent; the live shelf is /menu.json. Every purc
 certificate, verifiable free forever. Five doors: HTTP + x402,
 Bazaar-discoverable resources, an MCP server with in-band payment
 whose free instruments render as evidence cards in hosts that
-support MCP Apps, a WebMCP surface that registers the same free
-read-only instruments in a visitor's own browser, and a ClawHub
+support MCP Apps, a WebMCP surface with free instruments and purchase
+quotes plus explicit submission of buyer-signed payments, and a ClawHub
 skill. The store DELIVERS FIRST and settles after — the goods are
 produced, then the payment is presented at the last moment before
 the artifact is signed, so a delivery that fails takes no money —

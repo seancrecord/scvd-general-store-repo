@@ -1,8 +1,8 @@
 /**
  * WHAT A STOCK CLIENT ACTUALLY DOES WITH THREE RAILS (task #89).
  *
- * This store offers Base, Polygon and Solana in every 402, at the same
- * tiers, and said so in a way that credited the BUYER with picking
+ * When this check was written, the store offered Base, Polygon and
+ * Solana at the same tiers, and credited the BUYER with picking
  * among them: "same tiers on every rail, your wallet's choice."
  *
  * A stock client does not pick, and does not fall back. Read in the

@@ -172,14 +172,6 @@ export const REGISTER = [
     why: "Bought is bought. A licence that follows you home is a second price nobody mentioned at the till.",
   },
   {
-    id: "try.no-wrong-mode",
-    file: "src/store/copy/practice-counter.ts",
-    match: "There is no mode here to get wrong",
-    resolution: "dated",
-    asOf: "2026-08-25",
-    why: "The practice counter has one path. A 'test mode' would be a different door pretending to be this one.",
-  },
-  {
     id: "units.atomic-example.payment-gate",
     file: "src/lib/payment-gate.ts",
     match: "5000 atomic is $0.005",

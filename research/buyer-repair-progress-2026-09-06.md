@@ -16,6 +16,8 @@ The gate now retains the original row, refuses another mint, and returns the pub
 
 The new public-door spec injects persistent product writes after confirmed settlement for Context Anchor, Service Audit, Aura Walk and The Collab over Base and Polygon. All 24 cases failed before repair; retries with a found certificate, unavailable lookup and incomplete lookup now preserve the exact obligation through two attempts with no new settlement or certificate. The related recovery gate passed 63 tests across four files, typecheck and both Worker bundles. A final four-case control restored the original gate, reproduced failure, and restored the repair automatically. Full-suite validation remains on GitHub.
 
+The independent main-based release gate also passed all 75 tests across five files, typecheck and both Worker dry-run bundles. It includes existing paid-failure, cache-authentication and discovery tests.
+
 ## BUY-018 — fixed locally
 
 The verified payment's envelope now determines whether EVM authorization fields may identify a payer. Only exact-EVM v2 payments can supply that identity. A Solana transaction's unsigned adjacent `authorization` object cannot open another wallet's receipt cache or consume an EVM nonce.

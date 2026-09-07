@@ -39,6 +39,8 @@ export interface PublishedDataset {
   caution: string;
   /** How often it changes, so a poller knows what is reasonable. */
   cadence: string;
+  /** Requests this dataset can answer, for semantic discovery. */
+  representativeQueries: string[];
 }
 
 export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
@@ -50,6 +52,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Test material, not observations of live doors, and not signed: a recorded fixture is bytes kept verbatim to test an instrument against; a synthetic one is built from a specification's own examples and says so.",
     cadence: "appended when a fixture joins the tree",
+    representativeQueries: [
+      "find recorded x402 payment challenges for testing a parser",
+      "get signed-artifact conformance test vectors",
+    ],
   },
   {
     path: "/corpus.json",
@@ -59,6 +65,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Dated observations of moments, never a ranking. A verdict is what one probe saw from one vantage at one time; anything derived from the rows carries its rule and its denominator.",
     cadence: "weekly, appended",
+    representativeQueries: [
+      "find signed weekly observations of x402 endpoints",
+      "get historical x402 conformance snapshots with hashes and timestamps",
+    ],
   },
   {
     path: "/registry",
@@ -68,6 +78,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Aggregates only, no names. 'Answering' is challenge shape from one vantage — not a claim any door delivers goods, and signatures are parsed rather than verified.",
     cadence: "weekly, by the keeper's hand",
+    representativeQueries: [
+      "how many x402 endpoints answered valid payment challenges in the latest registry census",
+      "what prices did x402 endpoints advertise in the weekly registry census",
+    ],
   },
   {
     path: "/inflows",
@@ -77,6 +91,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "NOT sales and NOT revenue. An inflow at an advertised address can be treasury movement, a shared wallet, or an operator funding itself, and nothing here can tell those apart.",
     cadence: "weekly, by the keeper's hand",
+    representativeQueries: [
+      "what USDC transfers reached advertised x402 payment addresses",
+      "inspect Base and Polygon inflows to addresses advertised by x402 endpoints",
+    ],
   },
   {
     path: "/fresh-set",
@@ -86,6 +104,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Routing data, not a ranking. A row is a dated fact that a door was answering correctly, never a promise about delivery and never a verdict on its operator.",
     cadence: "weekly, with the census",
+    representativeQueries: [
+      "find x402 endpoints that answered valid payment challenges in the latest census",
+      "which payment networks and USDC prices did those x402 endpoints offer",
+    ],
   },
   {
     path: "/defects.json",
@@ -95,6 +117,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "A vocabulary, not a severity ranking. A named defect describes what was observed, not how much it matters to you.",
     cadence: "changes when a class is added or retired",
+    representativeQueries: [
+      "what does an x402 conformance defect class mean",
+      "find a shared vocabulary for x402 endpoint failures",
+    ],
   },
   {
     /*
@@ -112,6 +138,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Not a scoreboard and not a ranking. Each entry is ONE observation with the date it was taken; rounds_scored is published as a denominator so you can see the weight behind a row, and the division that would turn it into a score is deliberately not performed.",
     cadence: "weekly, with the ward round",
+    representativeQueries: [
+      "find the observation history of an x402 host",
+      "look up the last recorded verdict for an x402 endpoint and when it was observed",
+    ],
   },
   {
     /*
@@ -127,6 +157,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Every count is a floor — the porch drops writes past a per-minute budget and the ledger scans a capped number of keys, both stated on the page — and a visit is a fetch, not a visitor. Not a ranking of our own rooms; no rate is served.",
     cadence: "live, in monthly buckets",
+    representativeQueries: [
+      "how often are SCVD data surfaces fetched each month",
+      "see organic agent fetch counts separately from SCVD infrastructure traffic",
+    ],
   },
   {
     /*
@@ -139,6 +173,10 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "Two kinds of number, never divided into a share: the closing week is the state at month end, door-weeks count a door once per round it was probed in. No host is named and nothing is ranked; the month before is a reading beside this one, and the direction is the reader's.",
     cadence: "weekly, as the Sunday round appends a week to the month",
+    representativeQueries: [
+      "compare monthly readings of the x402 ecosystem",
+      "find monthly x402 endpoint counts and observed defect totals",
+    ],
   },
   {
     /*
@@ -154,5 +192,9 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     caution:
       "A feed entry is a pointer with a summary, never the record itself: the derivation and the denominator are on the linked page. Entries are in date order because feed readers expect it, not because any door is ranked.",
     cadence: "weekly for the two corpus feeds; the other two when something happens",
+    representativeQueries: [
+      "subscribe to x402 observations and SCVD corrections in an Atom reader",
+      "find Atom feed URLs for the signed corpus and published disagreements",
+    ],
   },
 ] as const;
