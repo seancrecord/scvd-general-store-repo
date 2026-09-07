@@ -49,6 +49,8 @@ export interface Env {
   >;
   /** Storage prerequisite; purchase routes do not use it until BUY-037 ships. */
   PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
+  /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
+  A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
   /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the
    * probes read when a target fails, to tell our outage from theirs.

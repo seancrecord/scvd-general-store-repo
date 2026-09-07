@@ -1,0 +1,622 @@
+{
+  "target": "https://scvd.store",
+  "scope": "Unsigned live discovery and one free corpus lookup; schema formats not validated; no payments, streaming or push callbacks.",
+  "officialSchemaSource": "https://raw.githubusercontent.com/a2aproject/A2A/v0.3.0/specification/json/a2a.json",
+  "officialSchemaSha256": "97d6e2435336836cd1d41dffacf83a1a97902b62b826ef14ec5704db85c95f17",
+  "rows": [
+    {
+      "observedAt": "2026-09-07T00:20:57.787Z",
+      "path": "/a2a.json",
+      "request": null,
+      "status": 404,
+      "contentType": "application/json",
+      "sha256": "8f48250e18ccb08840b8800eac4c7c86ddeb937141840971bdd26b7ecd5e1a24",
+      "body": {
+        "error": "That aisle doesn't exist. The whole store fits on one page:",
+        "menu_url": "https://scvd.store/menu.json",
+        "front_door": "https://scvd.store/llms.txt",
+        "where_to_look_next": [
+          {
+            "url": "https://scvd.store/llms.txt",
+            "what": "the front door: what this store is, in full"
+          },
+          {
+            "url": "https://scvd.store/agents.md",
+            "what": "the operational manual: how to transact here"
+          },
+          {
+            "url": "https://scvd.store/menu.json",
+            "what": "the catalog: every item, price and input contract"
+          },
+          {
+            "url": "https://scvd.store/openapi.json",
+            "what": "the OpenAPI 3.1 contract for every endpoint"
+          },
+          {
+            "url": "https://scvd.store/developers",
+            "what": "the developer portal"
+          },
+          {
+            "url": "https://scvd.store/sitemap.xml",
+            "what": "every public URL this store serves"
+          }
+        ]
+      },
+      "checkerSchema": false,
+      "officialSchema": false,
+      "officialErrors": [
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "capabilities"
+          },
+          "message": "must have required property 'capabilities'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "defaultInputModes"
+          },
+          "message": "must have required property 'defaultInputModes'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "defaultOutputModes"
+          },
+          "message": "must have required property 'defaultOutputModes'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "description"
+          },
+          "message": "must have required property 'description'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "name"
+          },
+          "message": "must have required property 'name'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "protocolVersion"
+          },
+          "message": "must have required property 'protocolVersion'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "skills"
+          },
+          "message": "must have required property 'skills'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "url"
+          },
+          "message": "must have required property 'url'"
+        },
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "version"
+          },
+          "message": "must have required property 'version'"
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-09-07T00:20:57.822Z",
+      "path": "/.well-known/a2a.json",
+      "request": null,
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "5f8db9a724aff3cebf4581eeb8d9ade38eeddafb44db77b6fa6b2562469bc593",
+      "body": {
+        "protocolVersion": "0.3.0",
+        "name": "SCVD Evidence Agent",
+        "description": "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself. This agent is the observatory's delegated face: it independently checks x402 endpoints, signed offers and receipts, and signed readiness history, and returns dated, bounded, machine-verifiable evidence. Three read-only tasks, free, no account, no conversation. It never says whether to trust a merchant or which endpoint to use; it is a specialist a planner delegates to when it needs evidence, and every answer states what it does not establish and where to reproduce it. Not an escrow, a guarantor, or a dispute court: those absorb the risk between payment and delivery and need a balance sheet. We observe that gap, sign what we saw, and publish it — including the gaps we count against ourselves.",
+        "url": "https://scvd.store/a2a",
+        "preferredTransport": "JSONRPC",
+        "additionalInterfaces": [
+          {
+            "url": "https://scvd.store/a2a",
+            "transport": "JSONRPC"
+          },
+          {
+            "url": "https://scvd.store/mcp",
+            "transport": "MCP"
+          },
+          {
+            "url": "https://scvd.store/llms.txt",
+            "transport": "HTTP+x402"
+          }
+        ],
+        "supportedInterfaces": [
+          {
+            "url": "https://scvd.store/a2a",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "0.3.0"
+          },
+          {
+            "url": "https://scvd.store/mcp",
+            "protocolBinding": "https://modelcontextprotocol.io",
+            "protocolVersion": "2026-07-28"
+          },
+          {
+            "url": "https://scvd.store/llms.txt",
+            "protocolBinding": "https://www.x402.org",
+            "protocolVersion": "2"
+          }
+        ],
+        "provider": {
+          "organization": "Record Creative Co. LLC",
+          "url": "https://scvd.store"
+        },
+        "version": "1.0.0",
+        "documentationUrl": "https://scvd.store/a2a",
+        "capabilities": {
+          "streaming": false,
+          "pushNotifications": false,
+          "stateTransitionHistory": false,
+          "extendedAgentCard": false
+        },
+        "defaultInputModes": [
+          "application/json"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "preflight_endpoint",
+            "name": "x402 endpoint preflight",
+            "description": "Preflight an x402 endpoint: one unpaid probe answering whether the URL serves a well-formed x402 v2 challenge a stock client could sign, with every check named and defined defects by name. A shape check at one moment; never an uptime or delivery claim.",
+            "tags": [
+              "x402",
+              "preflight",
+              "endpoint",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"preflight_endpoint\",\"url\":\"https://example.com/api/paid-answer\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "verify_receipt",
+            "name": "x402 receipt verification",
+            "description": "Verify an x402 signed offer or receipt: structure, signature against the issuer's key (supplied or resolved from its did:web), liveness; a verdict with every check named. Establishes the bytes and the key, never settlement or delivery.",
+            "tags": [
+              "x402",
+              "receipt",
+              "offer",
+              "signature",
+              "ed25519",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"verify_receipt\",\"receipt\":\"eyJ…\",\"public_key_hex\":\"…optional…\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "get_endpoint_readiness",
+            "name": "x402 endpoint-readiness dataset",
+            "description": "Read what the signed weekly corpus holds about one host: rounds probed of rounds since first sighting, the last signed verdict, the tier with its fraction, the gaps counted against the observer. From the chain, not a live probe; a host never met comes back as never met.",
+            "tags": [
+              "x402",
+              "readiness",
+              "corpus",
+              "history",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"get_endpoint_readiness\",\"host\":\"example.com\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          }
+        ],
+        "supportsAuthenticatedExtendedCard": false,
+        "security": [],
+        "securitySchemes": {},
+        "x_scvd_note": "Read-only and free. The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at https://scvd.store/menu.json and are not A2A tasks. Never a ranking, and never a verdict without its derivation and denominator beside it."
+      },
+      "checkerSchema": true,
+      "officialSchema": true,
+      "officialErrors": null
+    },
+    {
+      "observedAt": "2026-09-07T00:20:57.853Z",
+      "path": "/.well-known/agent-card.json",
+      "request": null,
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "5f8db9a724aff3cebf4581eeb8d9ade38eeddafb44db77b6fa6b2562469bc593",
+      "body": {
+        "protocolVersion": "0.3.0",
+        "name": "SCVD Evidence Agent",
+        "description": "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself. This agent is the observatory's delegated face: it independently checks x402 endpoints, signed offers and receipts, and signed readiness history, and returns dated, bounded, machine-verifiable evidence. Three read-only tasks, free, no account, no conversation. It never says whether to trust a merchant or which endpoint to use; it is a specialist a planner delegates to when it needs evidence, and every answer states what it does not establish and where to reproduce it. Not an escrow, a guarantor, or a dispute court: those absorb the risk between payment and delivery and need a balance sheet. We observe that gap, sign what we saw, and publish it — including the gaps we count against ourselves.",
+        "url": "https://scvd.store/a2a",
+        "preferredTransport": "JSONRPC",
+        "additionalInterfaces": [
+          {
+            "url": "https://scvd.store/a2a",
+            "transport": "JSONRPC"
+          },
+          {
+            "url": "https://scvd.store/mcp",
+            "transport": "MCP"
+          },
+          {
+            "url": "https://scvd.store/llms.txt",
+            "transport": "HTTP+x402"
+          }
+        ],
+        "supportedInterfaces": [
+          {
+            "url": "https://scvd.store/a2a",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "0.3.0"
+          },
+          {
+            "url": "https://scvd.store/mcp",
+            "protocolBinding": "https://modelcontextprotocol.io",
+            "protocolVersion": "2026-07-28"
+          },
+          {
+            "url": "https://scvd.store/llms.txt",
+            "protocolBinding": "https://www.x402.org",
+            "protocolVersion": "2"
+          }
+        ],
+        "provider": {
+          "organization": "Record Creative Co. LLC",
+          "url": "https://scvd.store"
+        },
+        "version": "1.0.0",
+        "documentationUrl": "https://scvd.store/a2a",
+        "capabilities": {
+          "streaming": false,
+          "pushNotifications": false,
+          "stateTransitionHistory": false,
+          "extendedAgentCard": false
+        },
+        "defaultInputModes": [
+          "application/json"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "preflight_endpoint",
+            "name": "x402 endpoint preflight",
+            "description": "Preflight an x402 endpoint: one unpaid probe answering whether the URL serves a well-formed x402 v2 challenge a stock client could sign, with every check named and defined defects by name. A shape check at one moment; never an uptime or delivery claim.",
+            "tags": [
+              "x402",
+              "preflight",
+              "endpoint",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"preflight_endpoint\",\"url\":\"https://example.com/api/paid-answer\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "verify_receipt",
+            "name": "x402 receipt verification",
+            "description": "Verify an x402 signed offer or receipt: structure, signature against the issuer's key (supplied or resolved from its did:web), liveness; a verdict with every check named. Establishes the bytes and the key, never settlement or delivery.",
+            "tags": [
+              "x402",
+              "receipt",
+              "offer",
+              "signature",
+              "ed25519",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"verify_receipt\",\"receipt\":\"eyJ…\",\"public_key_hex\":\"…optional…\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          },
+          {
+            "id": "get_endpoint_readiness",
+            "name": "x402 endpoint-readiness dataset",
+            "description": "Read what the signed weekly corpus holds about one host: rounds probed of rounds since first sighting, the last signed verdict, the tier with its fraction, the gaps counted against the observer. From the chain, not a live probe; a host never met comes back as never met.",
+            "tags": [
+              "x402",
+              "readiness",
+              "corpus",
+              "history",
+              "free"
+            ],
+            "examples": [
+              "{\"task\":\"get_endpoint_readiness\",\"host\":\"example.com\"}"
+            ],
+            "inputModes": [
+              "application/json"
+            ],
+            "outputModes": [
+              "application/json"
+            ]
+          }
+        ],
+        "supportsAuthenticatedExtendedCard": false,
+        "security": [],
+        "securitySchemes": {},
+        "x_scvd_note": "Read-only and free. The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at https://scvd.store/menu.json and are not A2A tasks. Never a ranking, and never a verdict without its derivation and denominator beside it."
+      },
+      "checkerSchema": true,
+      "officialSchema": true,
+      "officialErrors": null
+    },
+    {
+      "observedAt": "2026-09-07T00:20:58.311Z",
+      "path": "/a2a",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": "scvd-audit-send",
+        "method": "message/send",
+        "params": {
+          "message": {
+            "kind": "message",
+            "role": "user",
+            "messageId": "scvd-audit-2026-09-07",
+            "parts": [
+              {
+                "kind": "data",
+                "data": {
+                  "task": "get_endpoint_readiness",
+                  "host": "a2a-audit.invalid"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "aa67b6619f744ec31f601445d57e3f6f946522aa5fabb21edccf8c8a71fc951a",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": "scvd-audit-send",
+        "result": {
+          "id": "task_3abfd429-27ba-4cc5-a3fa-a9c4f8bab95d",
+          "status": {
+            "state": "completed",
+            "timestamp": "2026-09-07T00:20:57.897Z"
+          },
+          "artifacts": [
+            {
+              "artifactId": "artifact_4a7a3f4e-1042-423c-9c91-e603e7fa344d",
+              "name": "get_endpoint_readiness",
+              "parts": [
+                {
+                  "kind": "data",
+                  "data": {
+                    "task": "get_endpoint_readiness",
+                    "observed_at": "2026-09-07T00:20:57.897Z",
+                    "result": "never_met",
+                    "scope": "The signed chain has no round that met a2a-audit.invalid. A fact about this store's coverage, not about the door.",
+                    "verification_url": "https://scvd.store/corpus/host/a2a-audit.invalid.json",
+                    "artifact_url": "https://scvd.store/passport/a2a-audit.invalid",
+                    "key_url": "https://scvd.store/.well-known/scvd-signing-key",
+                    "evidence": {
+                      "host": "a2a-audit.invalid",
+                      "never_met": true,
+                      "rounds_in_chain": 5,
+                      "rounds_since_first_sighting": 0,
+                      "rounds_probed": 0,
+                      "rounds_gapped": 0,
+                      "first_observed": null,
+                      "last_observed": null,
+                      "gaps_by_reason": {
+                        "before_first_sighting": 5,
+                        "not_listed": 0,
+                        "listed_not_walked": 0,
+                        "possibly_beyond_cap": 0,
+                        "instrument_degraded": 0
+                      },
+                      "tier": {
+                        "tier": "indeterminate",
+                        "line": "indeterminate — 0 of 0, no rounds",
+                        "fraction": {
+                          "ready": 0,
+                          "rounds": 0,
+                          "first_week": null,
+                          "last_week": null,
+                          "weeks": "no rounds"
+                        },
+                        "rule": "fewer rounds than the rule needs, or our coverage of this host was suspect in the window",
+                        "latest": {
+                          "verdict": null,
+                          "observed_at": null,
+                          "source": null
+                        },
+                        "coverage_suspect": false,
+                        "window": {
+                          "rounds": 0,
+                          "established_needs": 4,
+                          "standing_needs": 8
+                        },
+                        "rows": [],
+                        "criteria_url": "https://scvd.store/criteria"
+                      },
+                      "passport": {
+                        "decision": "INDETERMINATE",
+                        "freshness": "indeterminate",
+                        "observed_at": null,
+                        "verdict": null,
+                        "source": null,
+                        "url": "https://scvd.store/passport/a2a-audit.invalid"
+                      },
+                      "last_probed_round": null,
+                      "verdict_changes": 0,
+                      "what_this_cannot_see": [
+                        "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
+                        "Why a verdict changed. We record what a probe saw, never the cause.",
+                        "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
+                        "A bare figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed and printing the quotient alone would be a verdict without its derivation, which the house sentence forbids. Every dated observation is here; a derived reading of them is published elsewhere only with its rule, its denominator and its rows.",
+                        "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
+                        "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
+                        "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did."
+                      ],
+                      "rows_url": "https://scvd.store/corpus/host/a2a-audit.invalid.json",
+                      "derived_at": "2026-09-07T00:20:57.897Z",
+                      "held_for_seconds": 600
+                    },
+                    "does_not_establish": [
+                      "whether the door answers now (that is the preflight task)",
+                      "whether the door delivers after payment",
+                      "anything about a host the chain never met, beyond that it never met it",
+                      "whether to pay"
+                    ],
+                    "never_a_ranking": "Never a ranking, and never a verdict without its derivation and denominator beside it."
+                  }
+                }
+              ]
+            }
+          ],
+          "history": [],
+          "kind": "task"
+        }
+      },
+      "checkerTaskSchema": true,
+      "officialTaskSchema": false,
+      "officialErrors": [
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "contextId"
+          },
+          "message": "must have required property 'contextId'"
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-09-07T00:20:58.339Z",
+      "path": "/a2a",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": "tasks/get",
+        "method": "tasks/get",
+        "params": {
+          "id": "task_3abfd429-27ba-4cc5-a3fa-a9c4f8bab95d"
+        }
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "58f0d47b3f9417463ee8563522727d0b7a5ba4f97471ca0806b09a1dfd687bd3",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": "tasks/get",
+        "error": {
+          "code": -32001,
+          "message": "Task not found: this agent keeps no task state. Every message/send completes in the same response, and the artifact it returns is the whole record."
+        }
+      }
+    },
+    {
+      "observedAt": "2026-09-07T00:20:58.365Z",
+      "path": "/a2a",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": "tasks/cancel",
+        "method": "tasks/cancel",
+        "params": {
+          "id": "task_3abfd429-27ba-4cc5-a3fa-a9c4f8bab95d"
+        }
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "sha256": "1521394eab5adf54b3a6b433b3e2a511dc4636cd14c27e944bbfe173c4063cab",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": "tasks/cancel",
+        "error": {
+          "code": -32001,
+          "message": "Task not found: this agent keeps no task state. Every message/send completes in the same response, and the artifact it returns is the whole record."
+        }
+      }
+    },
+    {
+      "observedAt": "2026-09-07T00:20:58.396Z",
+      "path": "/a2a",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": "scvd-audit-null-part",
+        "method": "message/send",
+        "params": {
+          "message": {
+            "kind": "message",
+            "role": "user",
+            "messageId": "scvd-audit-null",
+            "parts": [
+              null
+            ]
+          }
+        }
+      },
+      "status": 500,
+      "contentType": "application/json",
+      "sha256": "2722ecf590f0323f1eab6ecc11e53e8a21e1fe2940ae3fc890aca96e914227ae",
+      "body": {
+        "error": "Something fell off a shelf back here. Give us a minute and try again, no charge for the noise.",
+        "front_door": "https://scvd.store",
+        "menu_url": "https://scvd.store/menu.json"
+      }
+    }
+  ]
+}

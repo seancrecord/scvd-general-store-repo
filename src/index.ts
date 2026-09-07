@@ -1133,3 +1133,4 @@ export { app };
  */
 export { TradeNonceStore } from "@/services/trade-nonces";
 export { PaidRecoveryStore } from "@/services/paid-recovery";
+export { A2ATaskStore } from "@/services/a2a-tasks";

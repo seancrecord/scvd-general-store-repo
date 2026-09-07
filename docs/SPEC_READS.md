@@ -1,5 +1,37 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-06 — A2A live compliance and the checker itself
+
+Follow-through, same sitting: re-read the versioned request definitions and
+Cloudflare's [SQLite storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and [alarms](https://developers.cloudflare.com/durable-objects/api/alarms/)
+references. A result and its expiry alarm commit in one Durable Object
+transaction; task retrieval checks expiry even before cleanup runs. KV
+was not selected because cross-edge read-after-write is required. The
+runtime validators are generated from the retained official schema with
+the existing Ajv development dependency; the Worker does no dynamic code
+generation. No new production dependency or secret. The A2A task binding
+uses a new SQLite class migration, applied by deployment, not version upload.
+
+Read the [official A2A 0.3.0 specification](https://a2a-protocol.org/v0.3.0/specification/)
+and [versioned JSON schema](https://raw.githubusercontent.com/a2aproject/A2A/v0.3.0/specification/json/a2a.json),
+especially Task.contextId and core task retrieval/cancellation. Ran
+`@a2a-compliance/cli@0.3.3` against the live store: mandatory gate exits 0,
+but a successful task fails the official schema (missing contextId), the
+same task cannot be fetched, and a null part produces HTTP 500. The
+checker's published schema makes contextId optional; its version mapping
+also differs from the official spec. Do not adjust our wire to flatter it.
+Exact readings, versions, reproduction and gaps:
+`docs/A2A_COMPLIANCE_2026-09-06.md` and `research/a2a-2026-09-06/`.
+
+Read the [checker README](https://github.com/UltraSkye/a2a-compliance) and
+its cited [issue #1755](https://github.com/a2aproject/A2A/issues/1755).
+The near-zero claim is an OpenClaw research agent's reported 50-agent
+sample, not verified here as a statement by protocol maintainers. The raw
+sample was not reproduced. Official structural validation disabled format
+checks; no TCK, Inspector, authentication, streaming, paid call or third-party
+task was exercised. L11 is the future battery, not a new product build.
+
 ## 2026-09-06 — ARD search-query coverage
 
 Read [Neuronto's publishing guide](https://www.neuronto.com/publish) and

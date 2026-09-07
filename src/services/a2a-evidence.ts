@@ -6,6 +6,9 @@ import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import { POSITION_LINE, POSITION_NOT } from "@/store/copy/position";
 import { OPERATOR } from "@/store/trust-signals";
 import type { Env } from "@/types";
+import { A2A_PROTOCOL_VERSION, validateSendMessageRequest, validateGetTaskRequest, validateCancelTaskRequest } from "@/lib/a2a-validation.js";
+export { A2A_PROTOCOL_VERSION } from "@/lib/a2a-validation.js";
+import { A2A_STATE_DESCRIPTION, A2A_TASK_TTL_SECONDS, A2A_REQUEST_MAX_BYTES, A2A_TASK_MAX_BYTES, type EvidenceTaskRecord } from "@/services/a2a-tasks";
 
 /**
  * THE EVIDENCE AGENT (2026-09-03, roadmap A2, the keeper's memo).
@@ -22,15 +25,14 @@ import type { Env } from "@/types";
  * THE WIRE is A2A's JSON-RPC: `message/send` with one data part
  * carrying `{ task, ...input }`, answered with a Task in the
  * `completed` state whose single artifact is the bounded result. The
- * agent keeps no task state, so `tasks/get` answers that plainly
- * rather than pretending; streaming and push are declared off on the
+ * agent retains terminal results for the declared window so tasks/get
+ * can retrieve them; streaming and push are declared off on the
  * card. The card at /.well-known/agent-card.json names the tasks by
  * their plain nouns — x402 endpoint preflight, x402 receipt
  * verification, x402 endpoint-readiness dataset — never house names.
  */
 
-export const A2A_PROTOCOL_VERSION = "0.3.0";
-export const A2A_AGENT_VERSION = "1.0.0";
+export const A2A_AGENT_VERSION = "1.0.1";
 
 export type EvidenceTask = "preflight_endpoint" | "verify_receipt" | "get_endpoint_readiness";
 export const EVIDENCE_TASKS: readonly EvidenceTask[] = ["preflight_endpoint", "verify_receipt", "get_endpoint_readiness"];
@@ -296,7 +298,7 @@ export function evidenceAgentCard(base: string): Record<string, unknown> {
     supportsAuthenticatedExtendedCard: false,
     security: [],
     securitySchemes: {},
-    x_scvd_note: `Read-only and free. The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at ${base}/menu.json and are not A2A tasks. ${NEVER_A_RANKING_SENTENCE}`,
+    x_scvd_note: `Read-only and free. ${A2A_STATE_DESCRIPTION} The paid instruments (signed audits, watches, settlement attestations) are x402 doors listed at ${base}/menu.json and are not A2A tasks. ${NEVER_A_RANKING_SENTENCE}`,
   };
 }
 
@@ -317,15 +319,17 @@ function dataPartOf(message: unknown): Record<string, unknown> | null {
   const parts = (message as { parts?: unknown } | null)?.parts;
   if (!Array.isArray(parts)) return null;
   for (const part of parts) {
+    if (!isRecord(part)) continue;
     const p = part as Record<string, unknown>;
-    if ((p["kind"] === "data" || p["type"] === "data") && p["data"] && typeof p["data"] === "object") return p["data"] as Record<string, unknown>;
+    if (p["kind"] === "data" && isRecord(p["data"])) return p["data"];
   }
   for (const part of parts) {
+    if (!isRecord(part)) continue;
     const p = part as Record<string, unknown>;
-    if ((p["kind"] === "text" || p["type"] === "text") && typeof p["text"] === "string") {
+    if (p["kind"] === "text" && typeof p["text"] === "string") {
       try {
         const parsed = JSON.parse(p["text"]);
-        if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+        if (isRecord(parsed)) return parsed;
       } catch {
         // A text part that is not JSON is not a task for this agent.
       }
@@ -338,24 +342,67 @@ function taskId(): string {
   return `task_${crypto.randomUUID()}`;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function validId(value: unknown): value is string | number {
+  return typeof value === "string" || (typeof value === "number" && Number.isSafeInteger(value));
+}
+
 /** One JSON-RPC request in, one response out. Never throws on input; the errors are JSON-RPC's. */
 export async function handleA2aRequest(env: Env, body: unknown, now: Date = new Date()): Promise<{ status: number; body: Record<string, unknown> }> {
+  try {
+    return await handleA2aRequestChecked(env, body, now);
+  } catch {
+    // Storage or instrument failure is ours, never a malformed artifact or a
+    // task-not-found finding. The exception may contain a URL or input bytes.
+    const id = isRecord(body) && validId(body["id"]) ? body["id"] : null;
+    return { status: 200, body: rpcError(id, -32603, "Internal error: the evidence task could not be completed or retrieved. Retry later.") };
+  }
+}
+
+async function handleA2aRequestChecked(env: Env, body: unknown, now: Date): Promise<{ status: number; body: Record<string, unknown> }> {
   const base = env.STORE_BASE_URL;
-  const request = (typeof body === "object" && body !== null ? body : {}) as JsonRpcRequest;
-  const id = request.id ?? null;
-  if (request.jsonrpc !== "2.0" || typeof request.method !== "string") {
+  const request = (isRecord(body) ? body : {}) as JsonRpcRequest;
+  const id = validId(request.id) ? request.id : null;
+  if (request.jsonrpc !== "2.0" || typeof request.method !== "string" || !validId(request.id)) {
     return { status: 400, body: rpcError(id, -32600, 'Invalid request: send JSON-RPC 2.0 with a method; this agent answers "message/send".') };
   }
-  if (request.method === "tasks/get" || request.method === "tasks/cancel" || request.method === "tasks/resubscribe") {
-    return {
-      status: 200,
-      body: rpcError(id, -32001, "Task not found: this agent keeps no task state. Every message/send completes in the same response, and the artifact it returns is the whole record."),
-    };
+  const params = isRecord(request.params) ? request.params : {};
+  if (request.method === "tasks/get" || request.method === "tasks/cancel") {
+    const validates = request.method === "tasks/get" ? validateGetTaskRequest : validateCancelTaskRequest;
+    if (!validates(body) || (typeof params["historyLength"] === "number" && params["historyLength"] < 0)) {
+      return { status: 200, body: rpcError(id, -32602, "Invalid params: provide a task id and, for retrieval, an optional nonnegative historyLength.") };
+    }
+    // Reject IDs outside our generated shape before contacting storage.
+    // A syntactically valid unknown ID still requires one object read.
+    const target = String(params["id"]);
+    if (!/^task_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(target)) {
+      return { status: 200, body: rpcError(id, -32001, "Task not found.") };
+    }
+    if (!env.A2A_TASKS) throw new Error("A2A storage unavailable");
+    const task = await env.A2A_TASKS.getByName(target).read(now.getTime());
+    if (!task) return { status: 200, body: rpcError(id, -32001, "Task not found or retention expired.") };
+    if (request.method === "tasks/cancel") return { status: 200, body: rpcError(id, -32002, "Task cannot be canceled: it is already terminal.") };
+    return { status: 200, body: { jsonrpc: "2.0", id, result: task } };
   }
+  if (request.method === "message/stream" || request.method === "tasks/resubscribe") return { status: 200, body: rpcError(id, -32004, "Streaming is not supported.") };
+  if (request.method.startsWith("tasks/pushNotificationConfig/")) return { status: 200, body: rpcError(id, -32003, "Push notifications are not supported.") };
   if (request.method !== "message/send") {
     return { status: 200, body: rpcError(id, -32601, `Method not found: ${request.method}. This agent answers message/send; streaming and push are off on its card at ${base}/.well-known/agent-card.json.`) };
   }
-  const params = (typeof request.params === "object" && request.params !== null ? request.params : {}) as Record<string, unknown>;
+  if (!validateSendMessageRequest(body)) return { status: 200, body: rpcError(id, -32602, "Invalid params: message must conform to A2A 0.3.0 (kind, role, messageId and valid parts).") };
+  const message = params["message"] as Record<string, unknown>;
+  const configuration = params["configuration"] as Record<string, unknown> | undefined;
+  if (configuration?.["pushNotificationConfig"] !== undefined) return { status: 200, body: rpcError(id, -32003, "Push notifications are not supported.") };
+  if (typeof configuration?.["historyLength"] === "number" && configuration["historyLength"] < 0) return { status: 200, body: rpcError(id, -32602, "historyLength must be nonnegative.") };
+  const outputModes = configuration?.["acceptedOutputModes"] as string[] | undefined;
+  if (outputModes?.length && !outputModes.includes("application/json")) return { status: 200, body: rpcError(id, -32005, "Only application/json output is supported.") };
+  if (message["taskId"] !== undefined) {
+    const prior = await handleA2aRequestChecked(env, { jsonrpc: "2.0", id, method: "tasks/get", params: { id: message["taskId"] } }, now);
+    return prior.body["error"] ? prior : { status: 200, body: rpcError(id, -32004, "Terminal tasks cannot be restarted. Send a new message without taskId.") };
+  }
   const data = dataPartOf(params["message"]);
   if (!data) {
     return {
@@ -367,12 +414,13 @@ export async function handleA2aRequest(env: Env, body: unknown, now: Date = new 
   if (typeof task !== "string" || !(EVIDENCE_TASKS as readonly string[]).includes(task)) {
     return { status: 200, body: rpcError(id, -32602, `Unknown task ${JSON.stringify(task)}.`, { tasks: EVIDENCE_TASKS }) };
   }
+  if (!env.A2A_TASKS) throw new Error("A2A storage unavailable");
   const outcome = await runEvidenceTask(env, task as EvidenceTask, data, now);
-  const contextId = typeof params["contextId"] === "string" ? (params["contextId"] as string) : (typeof (params["message"] as Record<string, unknown> | undefined)?.["contextId"] === "string" ? String((params["message"] as Record<string, unknown>)["contextId"]) : undefined);
+  const contextId = typeof message["contextId"] === "string" && message["contextId"] ? message["contextId"] : crypto.randomUUID();
   const stamp = now.toISOString();
-  const taskRecord = {
+  const taskRecord: EvidenceTaskRecord = {
     id: taskId(),
-    ...(contextId ? { contextId } : {}),
+    contextId,
     status: { state: outcome.status === 200 ? "completed" : "failed", timestamp: stamp },
     artifacts: [
       {
@@ -381,9 +429,10 @@ export async function handleA2aRequest(env: Env, body: unknown, now: Date = new 
         parts: [{ kind: "data", data: outcome.artifact }],
       },
     ],
-    history: [],
     kind: "task",
+    metadata: { expiresAt: new Date(now.getTime() + A2A_TASK_TTL_SECONDS * 1000).toISOString() },
   };
+  if (!await env.A2A_TASKS.getByName(taskRecord.id).save(taskRecord)) throw new Error("A2A result could not be retained");
   return { status: 200, body: { jsonrpc: "2.0", id, result: taskRecord } };
 }
 
@@ -404,14 +453,16 @@ export function a2aDoc(base: string): Record<string, unknown> {
       jsonrpc: "2.0",
       id: 1,
       method: "message/send",
-      params: { message: { role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "preflight_endpoint", url: "https://example.com/api/paid-answer" } }] } },
+      params: { message: { kind: "message", role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "preflight_endpoint", url: "https://example.com/api/paid-answer" } }] } },
     },
     what_it_cannot_tell_you: [
       "Whether to pay, or which door to use. The reader draws that line; this agent does not.",
       "Whether a merchant can be trusted. It returns evidence about bytes, a probe and a chain, never a judgment about a person or a company.",
       "Anything a free read cannot: settlement and delivery are paid instruments on the shelf, sold as x402 doors, not as tasks here.",
     ],
-    state: "This agent keeps no task state: tasks/get answers 'not found' by design, and the artifact returned by message/send is the whole record.",
+    state: A2A_STATE_DESCRIPTION,
+    limits: { request_bytes: A2A_REQUEST_MAX_BYTES, retained_task_bytes: A2A_TASK_MAX_BYTES, retention_seconds: A2A_TASK_TTL_SECONDS },
+    methods: ["message/send", "tasks/get", "tasks/cancel"],
     never_a_ranking: NEVER_A_RANKING_SENTENCE,
   };
 }
