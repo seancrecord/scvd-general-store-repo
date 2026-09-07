@@ -1,3 +1,4 @@
+import { deliveryFailedBody } from "@/lib/delivery-failed";
 import { archiveDepthFor } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
@@ -1157,11 +1158,10 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
        * the SAME path the money bought, and the delivery intent for
        * that settle is STILL OPEN — money taken, goods never left.
        *
-       * If a certificate already names the settle, the crash landed
-       * between mint and response: goods are real, the buyer never
-       * saw them. Point at the artifact rather than minting a second
-       * one against the same payment — a re-mint here would be the
-       * double-count rule 13 exists to make impossible.
+       * If a certificate already names the settle, the crash may have
+       * preceded the actual order or product write. Keep the delivery
+       * open and identify the certificate without claiming fulfillment
+       * or minting another one against the same payment.
        *
        * Books are deliberately NOT rewritten on this lane: the
        * original settle already recorded the sale once. Nothing here
@@ -1171,62 +1171,44 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       if (spent.transaction && spent.path === c.req.path) {
         const open = await getOpenDeliveryIntent(c.env, spent.transaction);
         if (open) {
-          const lookup = await certIdForSettlement(c.env, spent.transaction);
-          const existingCert = lookup.certId;
-          /*
-           * A LOOKUP THAT COULD NOT SEE EVERYTHING IS NOT A "NO".
-           *
-           * Before 2026-08-25 this answer came from a scan capped at
-           * 2000 cert: rows that discarded its own `truncated` flag,
-           * so past the cap it said "no certificate" for settlements
-           * that had one — and this lane answers a false no by
-           * minting a SECOND signed certificate with a second patron
-           * number against one payment, and accruing credit twice on
-           * the same money. Certificates have no TTL; the set only
-           * grows, so that was a defect with a date on it rather than
-           * a possibility.
-           *
-           * Refusing here costs a buyer one manual message in the
-           * rare case; minting costs a double-counted sale in the
-           * books and two certificates that both verify.
-           */
-          if (!existingCert && !lookup.certain) {
-            c.header("Cache-Control", "no-store");
-            c.header("Paid-Retry", "unverifiable");
-            return c.json(
-              {
-                error:
-                  "this authorization settled, and we cannot yet confirm whether its goods already minted — so nothing is minted again here",
-                settlement_tx: spent.transaction,
-                what_to_do:
-                  "write to the keeper with this settlement_tx; the goods are owed and will be handed over by hand. Nothing was charged again.",
-              },
-              503,
-            );
-          }
-          if (existingCert) {
-            await closeDeliveryIntent(c.env, open.key).catch(() => undefined);
-            c.header("Cache-Control", "no-store");
-            c.header("Paid-Retry", "already-delivered");
-            return c.json({
-              already_delivered: true,
-              settlement_tx: spent.transaction,
-              certificate_id: existingCert,
-              verify_url: `${c.env.STORE_BASE_URL}/api/verify/${existingCert}`,
-              note: "This authorization settled once and its goods DID mint — the response just never reached you. The certificate above is yours; nothing was charged again.",
-            });
-          }
           const retryMinimum = minimumUsdcForPath(c.req.path);
+          const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
           const retryPayment: SettledPayment = {
             paidUsdc: open.intent.paid_usdc,
             tipUsdc: tipFromPaid(open.intent.paid_usdc, retryMinimum),
             transaction: spent.transaction,
+            network: result.paymentRequirements.network,
+            ...(retryPayer ? { payer: retryPayer } : {}),
             settleHeaders: {},
           };
-          const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
-          if (retryPayer) {
-            retryPayment.payer = retryPayer;
+          const incomplete = (reason: string, certId?: string) => {
+            c.header("Cache-Control", "no-store");
+            c.header("Paid-Retry", "incomplete");
+            return c.json({
+              ...deliveryFailedBody(c.env.STORE_BASE_URL,
+                getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, retryPayment),
+              error: "Your payment settled, but this retry cannot confirm that the purchased work was delivered. The delivery remains open; nothing was charged again.",
+              charged_again: false,
+              recovery_reason: reason,
+              settlement_tx: spent.transaction,
+              ...(certId ? {
+                certificate_id: certId,
+                verify_url: `${c.env.STORE_BASE_URL}/api/verify/${certId}`,
+                certificate_note: "This verifies the payment certificate. It does not establish that the purchased order or artifact was delivered.",
+              } : {}),
+            }, 500);
+          };
+          let lookup: Awaited<ReturnType<typeof certIdForSettlement>>;
+          try {
+            lookup = await certIdForSettlement(c.env, spent.transaction);
+          } catch {
+            return incomplete("recovery_lookup_unavailable");
           }
+          // A certificate is written BEFORE the order or product. Finding it
+          // must not erase the owed delivery or authorize another mint. Keep
+          // the original obligation until the actual good can be recovered.
+          if (lookup.certId) return incomplete("certificate_already_minted", lookup.certId);
+          if (!lookup.certain) return incomplete("certificate_lookup_incomplete");
           c.set("payment", retryPayment);
           /*
            * THE RETRY LANE SETTLES NOTHING, and under rule 9 as

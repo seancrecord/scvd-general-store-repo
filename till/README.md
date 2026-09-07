@@ -78,7 +78,7 @@ block and at no other byte.
 
 ## Known limits
 
-- **EVM only.** `window.ethereum` covers Base and Polygon in one path.
+- **EVM only.** `window.ethereum` covers the EVM networks offered in the current quote in one path.
   Solana / Phantom is a second pass and is not pretended at; a
   Solana-only offer is skipped with its reason shown.
 - **EIP-1193 via `window.ethereum` only.** EIP-6963 multi-wallet

@@ -1,4 +1,3 @@
-import { BASE_CHAIN, BASE_USDC } from "@/lib/base-rpc";
 
 /**
  * WHAT THIS STORE RESTS ON, AND WHAT BREAKS WHEN EACH PIECE DOES.
@@ -52,36 +51,36 @@ export const STACK_DEPENDENCIES: readonly StackDependency[] = [
     name: "The Coinbase Developer Platform facilitator",
     role: "Verifies and settles every payment this store takes. We are a service, never the facilitator — we never hold your funds and never move them ourselves.",
     when_it_fails:
-      "Nothing here can be bought. Not slowly, not partially: the gate settles before it hands over goods, so a facilitator outage means every paid door answers 402 and no artifact is minted. No amount of our own code fixes it.",
+      "New payments cannot complete normally. The store verifies the authorization and produces the goods before attempting settlement, then signs the certificate. A settlement timeout can leave the outcome unknown; keep the original payment and retry key while it is reconciled.",
     what_you_lose:
-      "Nothing you paid for. A payment that does not settle mints nothing, consumes nothing, and leaves no order behind — that ordering is deliberate and it is the one guarantee that holds through an outage.",
+      "An unsigned quote moves no money. A definitive refusal and an unknown settlement outcome are different: an unknown result is not permission to sign a new purchase. The recovery instructions and delivery audit cover that gap; refunds remain a human action.",
     how_to_check:
       "Every 402 this store issues names the scheme and network it will accept; the facilitator is the party that answers a verify call for them.",
     substitutable: "with work",
   },
   {
-    name: "Base",
-    role: "The chain the money moves on. Every settlement is a real on-chain USDC transfer.",
+    name: "The selected settlement network",
+    role: "The network chosen from the current quote, listed at /rails. Every settlement is a real on-chain USDC transfer.",
     when_it_fails:
-      "Settlement stops. Reads stop too, which means settlement_attestation — the one item that queries the chain — cannot answer and will say so rather than guess.",
+      "Settlement and chain reads on the affected network may stop. Statements and settlement observations name their own coverage and unreadable results. Another offered network is a new buyer choice, never an automatic fallback.",
     what_you_lose:
-      "Nothing already bought. Certificates verify against our signing key rather than against the chain, so every artifact this store has ever issued still verifies with Base down.",
-    how_to_check: `Our 402s advertise ${BASE_CHAIN}, and every settlement is a transaction anyone can look up.`,
+      "Nothing already bought. Certificates verify against our signing key rather than against the chain, so a saved artifact still verifies with its settlement network down.",
+    how_to_check: "Our 402s name each offered network, and the certificate records the network and transaction that actually settled.",
     substitutable: "no",
   },
   {
-    name: "USDC (Base, Polygon, and Solana)",
-    role: "The only asset this store prices in, on either rail, at the contract or mint address published in every challenge.",
+    name: "Native USDC",
+    role: "The only asset this store prices in, on the selected network, at the contract or mint address published in every challenge.",
     when_it_fails:
       "A depeg or a contract pause stops payment. The prices here are small enough that a depeg is an accounting curiosity rather than a business event, but a pause is a hard stop.",
     what_you_lose:
       "Nothing retroactive. Past settlements are past; this is a forward-looking dependency only.",
-    how_to_check: `The asset in every 402 is ${BASE_USDC} on the Base entries; the Solana entries carry the USDC mint for that rail.`,
+    how_to_check: "Each 402 entry gives its own network and native USDC contract or mint. Read that entry unchanged; a token symbol alone does not identify the asset.",
     substitutable: "with work",
   },
   {
     name: "Cloudflare Workers",
-    role: "The whole store, one Worker. Every page, every door, every counter.",
+    role: "The store and its quote Worker. Every page, every door, every counter.",
     when_it_fails:
       "The store is gone from the internet for the duration. Not degraded — absent.",
     what_you_lose:

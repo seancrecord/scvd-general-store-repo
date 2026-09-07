@@ -841,10 +841,11 @@ const BASE = "https://scvd.store";
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
-// 2026-09-06: configured checkout names and current-quote instructions replace
-// stale payment lists. The HTTP and MCP copies now share the same configuration.
+// 2026-09-06: secondary checkout/reader copy corrected, including receipt
+// identity, discovery descriptions, and the public correction. Re-read the
+// generated guide when taking this digest; HTTP/MCP equality is checked below.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3b7158595016d86f8b783644af074f96af5294e532aba3adaf0a88cb0d95a875";
+  "4d872e07aa4b532f8887f29ede1e516ef1da642c8c0698b223a1d9d5835f81c5";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

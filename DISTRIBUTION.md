@@ -327,18 +327,23 @@ server implements the extension, correctly, and the wire is
 verifiable in one `resources/list` call.
 
 **WebMCP.** SAY: the storefront registers the free read-only
-instruments on `document.modelContext`, so a browser-resident agent
-finds them by arriving. Chrome origin-trial token is registered
+instruments, `quote_store_purchase`, and `complete_store_purchase`
+on `document.modelContext`, so a browser-resident agent finds them
+by arriving. The quote is free; completion requires a buyer-authorized,
+already-signed x402 v2 payment from a compatible external client.
+The page never receives wallet keys. Chrome origin-trial token is registered
 through 2026-11-17. DO NOT SAY: any adoption or usage figure — the
 channel is instrumented (`?src=webmcp` in the ledger) and has no
 history worth quoting yet. "The surface exists" is the whole claim
 until the numbers do.
 
-**Neither is a payment surface, and that is the point worth
-submitting.** No `buy_*` tool carries ui metadata; nothing that
-writes or spends reaches the browser surface; both facts are held by
-tests rather than by intention. For directories that ask about agent
-safety, this is the strongest true sentence we have.
+**MCP Apps cards remain display-only; WebMCP has an explicit payment
+submission tool.** No `buy_*` tool carries ui metadata. The derived
+free WebMCP subset stays read-only; the separate completion bridge can
+submit a payment the buyer already signed. Registration and unsigned
+refusal were exercised in Chrome; paid WebMCP completion remains
+unverified. The keeper's browser-till purchase is a separate test,
+recorded with its limits in `docs/BROWSER_CHECKOUT_2026-09-06.md`.
 
 ## What was verified tonight
 

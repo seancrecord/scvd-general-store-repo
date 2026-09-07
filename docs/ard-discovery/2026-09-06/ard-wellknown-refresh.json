@@ -1,0 +1,39 @@
+{
+  "registry": "wellknown",
+  "url": "https://wellknownhq.com/registry/submit",
+  "request": {
+    "domain": "scvd.store"
+  },
+  "checked_at": "2026-09-06T22:09:56.215296+00:00",
+  "status": 200,
+  "body": {
+    "conformance_grade": "C",
+    "domain": "scvd.store",
+    "identifiers": [
+      "urn:air:scvd.store:server:general-store",
+      "urn:air:scvd.store:agent:evidence",
+      "urn:air:scvd.store:server:x402-verifier",
+      "urn:air:scvd.store:api:function-calling-tools",
+      "urn:air:scvd.store:dataset:fixtures",
+      "urn:air:scvd.store:dataset:corpus",
+      "urn:air:scvd.store:dataset:registry",
+      "urn:air:scvd.store:dataset:inflows",
+      "urn:air:scvd.store:dataset:fresh-set",
+      "urn:air:scvd.store:dataset:defects",
+      "urn:air:scvd.store:dataset:doors",
+      "urn:air:scvd.store:dataset:observatory",
+      "urn:air:scvd.store:dataset:corpus-month",
+      "urn:air:scvd.store:dataset:feeds",
+      "urn:air:scvd.store:feed:brief",
+      "urn:air:scvd.store:feed:corpus",
+      "urn:air:scvd.store:feed:corrections",
+      "urn:air:scvd.store:feed:disagreements",
+      "urn:air:scvd.store:api:http",
+      "urn:air:scvd.store:skill:general-store",
+      "urn:air:scvd.store:skill:execution-contract"
+    ],
+    "indexed": 21,
+    "search_url": "https://wellknownhq.com/registry/search",
+    "verification": "crawled"
+  }
+}

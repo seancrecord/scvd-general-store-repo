@@ -21,8 +21,8 @@ export function priceLabel(item: MenuItem): string {
   const suffix = item.pricing === "fixed" ? "" : "+";
   if (item.price_usdc < 0.01) {
     const cents = item.price_usdc * 100;
-    // Half a cent is the cheapest thing in the store and gets the
-    // fraction it earned; anything else in this range reads in cents.
+    // Half a cent keeps its familiar fraction; anything else in this
+    // range reads in decimal cents.
     const written = cents === 0.5 ? "½" : String(cents);
     return `${written}¢${suffix}`;
   }

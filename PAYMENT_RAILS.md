@@ -1,5 +1,29 @@
 # PAYMENT_RAILS.md — the second-rail work order, and the audit that gates it
 
+## Current status — 2026-09-06
+
+Checkout is live on Base, Polygon, Arbitrum, World, and Solana, in native
+USDC over x402 v2. `acceptedNetworks()` in `src/lib/payment-networks.ts`
+derives the enabled set from recipient configuration; the current quote
+is the authority for a purchase. Arbitrum and World recipients are set
+on both the store Worker and scvd-doors. Earlier dark-rail and candidate
+notes below are dated history, superseded by this activation.
+
+Statement readers additionally cover Ethereum, Optimism and Avalanche.
+This does not add checkout support for those chains. Each observation
+instrument declares its own coverage; the settlement attestation's
+automatic lookup still reads Base, Polygon and Solana.
+
+Browser-till signing uses a compatible EVM wallet extension and selects
+an offer on the wallet's current network. Solana requires a compatible
+external payment client. WebMCP exposes quotes and submission of an
+already-signed payment, not a wallet signer. The keeper's successful
+Base browser-till test is recorded in
+`docs/BROWSER_CHECKOUT_2026-09-06.md`; it does not prove paid WebMCP
+completion, every chain, or every browser/extension combination.
+
+## Historical work orders and decisions
+
 CV's MPP integration spec (2026-08-03), revised by the desk the same
 day with the amendments evidence demanded, and adopted as the standing
 process for EVERY future rail — MPP, Solana-exact, whatever arrives.

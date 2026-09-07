@@ -99,3 +99,86 @@ failed, one skipped. Every failing file is a pre-existing untracked
 buyer-audit spec; all tracked tests and the new ARD/signing tests passed.
 The full run is not green. No buyer-audit source was changed here.
 Live publication and refresh results follow below.
+
+
+## Live publication and refresh — 22:07–22:11 UTC
+
+[PR #547](https://github.com/seancrecord/scvd-general-store-repo/pull/547)
+merged at 22:05:59 UTC as `4f086c26e2ad072f7996b72a78963309b184a859`.
+Both clean GitHub CI runs passed, including the tracked full suite; the
+local untracked buyer-audit failures above did not reproduce in that clean
+checkout. Both public manifest URLs now return the same catalog: version
+1.0, SCVD General Store host, and 21 entries. Both upstream schemas pass.
+The live detached signature, catalog digest and existing certificate-key
+match also verify. The anchor chain recomputes and contains the key; the
+smoke check did not independently verify Bitcoin inclusion or continuity
+from a trusted checkpoint. Exact readings are beside the earlier evidence.
+
+Two unauthenticated refresh requests completed with HTTP 200:
+
+- **Neuronto:** fetched `/.well-known/ard.json`, counted 21 manifest
+  entries, and reports `status: indexed`, 22 resources indexed, 17 newly
+  added. Its resource count is not the manifest's entry count. Receipt
+  [8551796491cb](https://neuronto.com/submit/status/8551796491cb) and
+  [publisher page](https://neuronto.com/ard-publishers/scvd.store).
+- **WellKnown:** returned all 21 current identifiers, `indexed: 21`,
+  `verification: crawled`, and its own `conformance_grade: C`.
+
+Follow-up searches used federation none and the same bounded first-page
+requests. [Exact results and identifiers](ard-discovery/2026-09-06/search-after-summary.json):
+Neuronto returned three current SCVD identifiers among 100 domain results,
+and one among 100 x402 results. WellKnown returned nine current SCVD
+identifiers plus one stale A2A identifier among 50 domain results, and one
+current x402-verifier entry among 50 x402 results. Current WellKnown rows
+now carry grade C; the old `urn:air:scvd.store:agent:general-store` row still
+carries F. No stale-row deletion mechanism was established. The new
+execution-contract skill and x402 verifier are now visible in that index.
+These results establish actual search discovery, not complete retrieval of
+all indexed entries or registry verification of the publisher signature.
+
+ARD Registry still returned no SCVD match among 100 results for either
+query. Its account-only submission and missing Run discovery URL remain
+keeper follow-ups. Its requested discovery validation has **not** been
+completed. Weekly checks will revisit indexing, stale rows and intake
+changes without treating a submission receipt as a search result.
+
+## Search-query coverage follow-up
+
+The keeper's Neuronto scorecard exposed a separate gap after the signing
+release: only five of the 21 entries carried representativeQueries.
+A [fresh audit](ard-discovery/2026-09-06/query-coverage-audit-before.json)
+reproduced D, 38/100, with zero errors and 16 warnings. Every counted
+warning was missing queries; media-type allowlist notices were informational.
+
+Queries now describe each dataset, feed, the function-calling definitions
+and the execution-contract skill. The source declarations own them, so
+the ARD catalog does not maintain a second path-to-query roster. The
+execution-contract description also now names its actual behavioral
+instructions. A regression checks every entry on both manifest URLs and
+in-page markup; the old test skipped entries missing the very field it
+claimed to guard. Its [before-fix failure](ard-discovery/2026-09-06/query-coverage-red.txt)
+is recorded. Publication and a new score still require the follow-up release.
+
+The missing HTML-link finding has a separate, reproduced cause. Neuronto's
+public audit code requests the homepage with Accept `application/json,*/*`
+and then scans for HTML links. The store returns the requested JSON.
+Both links are present with Accept `text/html` or `*/*`:
+[three response checks](ard-discovery/2026-09-06/query-coverage-paths-before.json).
+The fix is in the detector's representation choice; the store's JSON
+homepage remains available to callers that ask for it.
+
+## ARD Registry discovery confirmed by keeper
+
+The keeper supplied the submission screen's successful live discovery
+output on 2026-09-06. This supersedes the missing-validator status above.
+It resolved `https://scvd.store/.well-known/ai-catalog.json`, passed v1.0
+schema and format validation, fetched `/.well-known/did.json`, and reported
+the cryptographic identity `did:web:scvd.store` verified. It then reported
+`(Dry-run) Validated compatibility of 21 entries` and `Validation Checks
+Passed`. This is keeper-provided evidence, not a separately repeated
+browser run by this task.
+
+The screen requests a description and Confirm & Submit for review.
+The requested registry discovery check is now confirmed passed; formal
+submission, acceptance and search indexing are not established by this
+dry-run output. KEEPER_LIST retains those remaining steps.

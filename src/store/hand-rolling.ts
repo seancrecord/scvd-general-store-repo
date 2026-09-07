@@ -42,7 +42,7 @@ export const HAND_ROLLING = {
   heading: "If you're hand-rolling the client",
 
   standfirst:
-    "Most of what breaks a first x402 client on Base breaks quietly: the request is well-formed, the signature is well-formed, and it verifies nowhere. These are the values that have to be exact. Read them before you spend an evening.",
+    "The EVM example below is specifically for Base; other networks have their own quote terms. Most of what breaks a first x402 client on Base breaks quietly: the request is well-formed, the signature is well-formed, and it verifies nowhere. These are the values that have to be exact. Read them before you spend an evening.",
 
   /** The trap, stated first because it is the one that costs a night. */
   domain_warning:
@@ -140,7 +140,7 @@ export const HAND_ROLLING = {
     "Everything above is also in the 402 itself: the PAYMENT-REQUIRED header is base64 JSON, and its accepts[].extra carries name and version for exactly this reason. If you read extra rather than hardcoding, none of this can bite you — and any SDK client refuses to sign without it.",
 
   practice:
-    "Practise against /api/buy/small_blessing at half a cent. It is a real settlement on Base against production; there is no sandbox and no test mode, which is the point. If it fails, /try explains what the store saw.",
+    "Practise against /api/buy/small_blessing at half a cent. Select a network from the current quote for a real settlement against production; there is no sandbox and no test mode, which is the point. If it fails, /try explains what the store saw.",
 
   honest_limit:
     "Two different limits, and they are worth telling apart. What WE refuse — a requirement that doesn't match what we offered — we now name field by field in the 402, because we hold both objects and can see the disagreement. What the FACILITATOR refuses we mostly cannot explain: verification happens there and on chain, not here, and a failed verify often tells us only that it failed. Everything above is our whole side of the wire, stated exactly, so anything left is on yours and you know where to look.",
