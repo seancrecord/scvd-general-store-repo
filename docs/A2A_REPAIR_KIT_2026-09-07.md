@@ -103,7 +103,8 @@ red after temporarily removing the desk route and key validation checks;
 those source changes were then restored.
 
 Primary reads are recorded in `docs/SPEC_READS.md` under this date.
-Release candidate: `codex/a2a-repair-kit`. Typecheck, both Worker bundles,
+Release PR: [#563](https://github.com/seancrecord/scvd-general-store-repo/pull/563),
+`codex/a2a-repair-kit`. Typecheck, both Worker bundles,
 download freshness and executable-runner tests, browser payment bridges,
 package checks, scalability audit and claims register passed. The existing
 A2A schema/lifecycle gate passed 31 tests.
@@ -113,8 +114,9 @@ between the new checker and OpenAPI; the route now derives the ID through
 the existing document builder. Its follow-up full run passed 577 files /
 6,445 tests (one existing skip), but one Worker pool process timed out
 before starting, so that run is not claimed as a clean full-suite pass.
-The corrected checker and final A2A files are rerun directly; clean CI is
-the full-suite merge gate. No timeouts or assertions were relaxed.
+The corrected checker and final A2A files passed 52 tests; the actual
+download passed its four executable tests and its byte-freshness check.
+Clean CI is the full-suite merge gate. No timeouts or assertions were relaxed.
 
 Browser review exercised the desk and its free-check form, the specimen,
 the item page and actual WebMCP registration. Paid delivery, signatures,
