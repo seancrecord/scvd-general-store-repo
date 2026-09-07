@@ -1,3 +1,4 @@
+import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import { Hono } from "hono";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import {
@@ -112,7 +113,9 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     },
   };
   try {
-    return c.json(await fulfillPurchase(c.env, item, watched, input));
+    return c.json(await fulfillPurchase(c.env, item, watched, input,
+      item.id === "context_anchor" ? { path: c.req.path, digest: await httpArtifactDigest(c.req.url) } : undefined,
+    ));
   } catch (error) {
     if (!settled && error instanceof InvalidPatronageTarget) return c.json(error.body, 400);
     if (error instanceof SettlementUnknown) return error.response();

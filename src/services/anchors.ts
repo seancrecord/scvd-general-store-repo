@@ -1,3 +1,4 @@
+import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { newAnchorId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -41,7 +42,20 @@ export interface CreateAnchorInput {
 export async function createAnchor(
   env: Env,
   input: CreateAnchorInput,
+  checkpoint?: ArtifactCheckpoint,
 ): Promise<CreatedAnchor> {
+  let created = checkpoint ? await checkpoint.read<CreatedAnchor>("anchor") : null;
+  if (!created) {
+    created = await prepareAnchor(env, input);
+    if (checkpoint) created = await checkpoint.save("anchor", created);
+  }
+  await kvPut(env.PATRONS,
+    KV_KEYS.anchor(created.record.anchor.anchor_id), JSON.stringify(created.record),
+  );
+  return created;
+}
+
+async function prepareAnchor(env: Env, input: CreateAnchorInput): Promise<CreatedAnchor> {
   const anchor: ContextAnchor = {
     anchor_id: newAnchorId(),
     patron_number: input.patronNumber,
@@ -60,10 +74,6 @@ export async function createAnchor(
     signature,
     public_key: publicKey,
   };
-  await kvPut(env.PATRONS, 
-    KV_KEYS.anchor(anchor.anchor_id),
-    JSON.stringify(record),
-  );
   return {
     record,
     anchorUrl: `${env.STORE_BASE_URL}/api/anchor/${anchor.anchor_id}`,

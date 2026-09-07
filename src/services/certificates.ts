@@ -1,3 +1,4 @@
+import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -44,15 +45,20 @@ const PATRON_CLAIM_RETRIES = 8;
 async function claimPatronNumber(
   env: Env,
   record: Omit<PatronRecord, "patron_number">,
+  checkpoint?: ArtifactCheckpoint,
 ): Promise<number> {
   const current = await kvGet(env.COUNTERS, KV_KEYS.patronNumber);
   let candidate = (current ? parseInt(current, 10) : 0) + 1;
+  if (checkpoint) candidate = await checkpoint.save("patron_start", candidate);
 
   for (let attempt = 0; attempt < PATRON_CLAIM_RETRIES; attempt += 1) {
     const existing = await kvGetJson<PatronRecord>(env.PATRONS, 
       KV_KEYS.patron(candidate),
       "json",
     );
+    // A lost write acknowledgement must reclaim this purchase's own slot,
+    // not allocate from a counter that other sales have since advanced.
+    if (checkpoint && existing?.cert_id === record.cert_id) return candidate;
     if (existing && existing.cert_id !== record.cert_id) {
       candidate += 1;
       continue;
@@ -143,9 +149,37 @@ export const WITNESS_NOTE = "Witness to first week of availability.";
 export async function mintCertificate(
   env: Env,
   options: MintOptions,
+  checkpoint?: ArtifactCheckpoint,
 ): Promise<MintedCertificate> {
-  const certId = newCertId();
-  const date = new Date().toISOString();
+  let minted = checkpoint ? await checkpoint.read<MintedCertificate>("certificate") : null;
+  if (!minted) {
+    minted = await prepareCertificate(env, options, checkpoint);
+    if (checkpoint) minted = await checkpoint.save("certificate", minted);
+  }
+  // All publishers use the committed bytes, including after a lost KV ack.
+  const { certificate, signature, signatureJcs, publicKey } = minted;
+  const certRecord: CertificateRecord = {
+    certificate, signature, public_key: publicKey, signature_jcs: signatureJcs,
+  };
+  await kvPut(env.PATRONS, KV_KEYS.cert(certificate.cert_id), JSON.stringify(certRecord));
+  if (certificate.settlement_tx) {
+    await kvPut(env.PATRONS,
+      KV_KEYS.settlementCert(certificate.settlement_tx.toLowerCase()),
+      certificate.cert_id,
+    );
+  }
+  return minted;
+}
+
+async function prepareCertificate(
+  env: Env,
+  options: MintOptions,
+  checkpoint?: ArtifactCheckpoint,
+): Promise<MintedCertificate> {
+  let identity = { certId: newCertId(), date: new Date().toISOString(), options };
+  if (checkpoint) identity = await checkpoint.save("identity", identity);
+  const { certId, date } = identity;
+  options = identity.options;
 
   const patronStub: Omit<PatronRecord, "patron_number"> = {
     cert_id: certId,
@@ -154,7 +188,11 @@ export async function mintCertificate(
     ...(options.agentName ? { name: options.agentName } : {}),
     ...(options.patronage ? { patronage: true } : {}),
   };
-  const patronNumber = await claimPatronNumber(env, patronStub);
+  let patronNumber = checkpoint ? await checkpoint.read<number>("patron_number") : null;
+  if (patronNumber === null) {
+    patronNumber = await claimPatronNumber(env, patronStub, checkpoint);
+    if (checkpoint) patronNumber = await checkpoint.save("patron_number", patronNumber);
+  }
 
   const certificate: Certificate = {
     cert_id: certId,
@@ -262,22 +300,6 @@ export async function mintCertificate(
     certificateSignedSubset(certificate),
     env.SIGNING_KEY,
   );
-  const certRecord: CertificateRecord = {
-    certificate,
-    signature,
-    public_key: publicKey,
-    signature_jcs: signatureJcs,
-  };
-  await kvPut(env.PATRONS, KV_KEYS.cert(certId), JSON.stringify(certRecord));
-  // The reverse index the paid-retry lane reads, so "did this
-  // settlement already mint?" is one lookup rather than a capped scan
-  // that silently stops seeing older records.
-  if (certificate.settlement_tx) {
-    await kvPut(env.PATRONS, 
-      KV_KEYS.settlementCert(certificate.settlement_tx.toLowerCase()),
-      certId,
-    );
-  }
 
   return {
     certificate,

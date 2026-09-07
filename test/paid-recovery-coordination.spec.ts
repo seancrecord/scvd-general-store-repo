@@ -63,3 +63,52 @@ it("does not infer an owner for older completed records without purchase metadat
   expect(await stub.readCompleted({ path: "/api/buy/context_anchor", payer: "0xaBcD",
     network: "eip155:8453", transaction: "fixture-tx" })).toBeNull();
 });
+
+function artifactPurchase(network = "eip155:8453", payer = "0xaBcD") {
+  return { digest: "full-original-input", purchase: { path: "/api/buy/context_anchor", payment: {
+    network, payer, transaction: "fixture-artifact-tx", paidUsdc: 0.001, tipUsdc: 0, settleHeaders: {},
+  } } };
+}
+
+it("concurrent artifact publishers all receive the same committed bytes", async () => {
+  const stub = coordinator(), record = artifactPurchase();
+  expect(await stub.openArtifact(record)).toBe(true);
+  const results = await Promise.all(Array.from({ length: 8 }, (_, i) =>
+    stub.artifactStage(record.digest, "anchor", JSON.stringify({ id: `anchor-${i}`, summary: "original" }))));
+  expect(new Set(results).size).toBe(1);
+  expect(await stub.artifactStage(record.digest, "anchor")).toBe(results[0]);
+  expect(await stub.artifactStage("other-input", "anchor", '"different-good"')).toBeNull();
+  expect(await stub.artifactStage(record.digest, "anchor")).toBe(results[0]);
+  expect(await stub.openArtifact({ ...record, digest: "different-input" })).toBe(false);
+});
+
+it("legacy claims and artifact checkpoints cannot authorize each other's side effects", async () => {
+  const legacy = coordinator(), modern = coordinator(), record = artifactPurchase();
+  await legacy.begin(record.digest);
+  expect(await legacy.openArtifact(record)).toBe(false);
+  await modern.openArtifact(record);
+  expect(await modern.begin(record.digest)).toEqual({ kind: "unavailable" });
+});
+
+it("artifact lookup binds product, rail, transaction and payer with chain-appropriate casing", async () => {
+  for (const network of ["eip155:8453", "solana:fixture"]) {
+    const stub = coordinator(), record = artifactPurchase(network, "AbCd");
+    const payment = record.purchase.payment;
+    const identity = { path: record.purchase.path, network, payer: payment.payer, transaction: payment.transaction };
+    await stub.openArtifact(record);
+    expect(await stub.readArtifact(identity)).toEqual(record);
+    for (const change of [{ path: "/api/buy/other" }, { transaction: "other-tx" },
+      { network: "other-chain" }, { payer: "another-wallet" }]) {
+      expect(await stub.readArtifact({ ...identity, ...change })).toBeNull();
+    }
+    expect(await stub.readArtifact({ ...identity, payer: "abcd" })).toEqual(network.startsWith("eip155:") ? record : null);
+  }
+});
+
+it("repeated and concurrent recovery can claim the optional rebate at most once", async () => {
+  const stub = coordinator(), record = artifactPurchase();
+  await stub.openArtifact(record);
+  const claims = await Promise.all(Array.from({ length: 8 }, () => stub.claimArtifactCredit(record.digest)));
+  expect(claims.filter(Boolean)).toHaveLength(1);
+  expect(await stub.claimArtifactCredit(record.digest)).toBe(false);
+});

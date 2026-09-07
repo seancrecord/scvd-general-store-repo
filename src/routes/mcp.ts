@@ -1040,7 +1040,7 @@ async function callPurchaseTool(
       const saved: unknown = JSON.parse(outcome.savedResponse);
       if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
       response = saved;
-    } else if (outcome.recovered) {
+    } else if (outcome.recovered && !outcome.artifactRecovery) {
       const payment = outcome.settledSoFar()!;
       const namespace = c.env.PAID_RECOVERIES;
       if (!namespace) throw new Error("Paid recovery coordinator unavailable");
@@ -1058,7 +1058,9 @@ async function callPurchaseTool(
         }
       }
     } else {
-      response = await fulfillPurchase(c.env, item, outcome.pending, input);
+      response = await fulfillPurchase(c.env, item, outcome.pending, input,
+        item.id === "context_anchor" ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
+      );
     }
     const settled = outcome.settledSoFar();
     const flat = flattenPurchase(response);

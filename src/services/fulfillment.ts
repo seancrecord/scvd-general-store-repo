@@ -1,3 +1,4 @@
+import { artifactCheckpoint, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { requireRenewalPass } from "@/services/patronage";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
@@ -197,6 +198,7 @@ export async function fulfillPurchase(
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
+  recovery?: { digest: string; path: string },
 ): Promise<Record<string, unknown>> {
   const mintOptions: Parameters<typeof mintCertificate>[1] = {
     itemId: item.id,
@@ -544,9 +546,22 @@ export async function fulfillPurchase(
   if (payment.trade) {
     mintOptions.trade = payment.trade;
   }
+  let checkpoint: ArtifactCheckpoint | undefined;
+  const recoveryPayer = payment.payer ?? pending.payer;
+  if (item.id === "context_anchor" && recovery && payment.transaction && payment.network && recoveryPayer) {
+    const namespace = env.PAID_RECOVERIES;
+    if (!namespace) throw new Error("Paid artifact coordinator unavailable");
+    const stub = namespace.get(namespace.idFromName(`${payment.network}:${payment.transaction}`));
+    if (!await stub.openArtifact({ digest: recovery.digest, purchase: { path: recovery.path, payment: { ...payment, payer: recoveryPayer } } })) {
+      throw new Error("Paid artifact purchase mismatch or legacy claim");
+    }
+    checkpoint = artifactCheckpoint(env, payment.network, payment.transaction, recovery.digest);
+    const saved = await checkpoint.read<Record<string, unknown>>("response");
+    if (saved) return saved;
+  }
   let minted: Awaited<ReturnType<typeof mintCertificate>>;
   try {
-    minted = await mintCertificate(env, mintOptions);
+    minted = await mintCertificate(env, mintOptions, checkpoint);
   } catch (error) {
     await sendAlert(env, {
       condition: "signing_failure",
@@ -563,13 +578,18 @@ export async function fulfillPurchase(
    * accrued and nothing said — a rebate a buyer cannot have is not a
    * thing to advertise at them.
    */
-  const storeCredit = minted.certificate.payer
+  const creditClaimed = !checkpoint || await checkpoint.claimCredit();
+  let storeCredit = minted.certificate.payer && creditClaimed
     ? await accrueCredit(
         env,
         minted.certificate.payer,
         minted.certificate.paid_usdc ?? item.price_usdc,
       ).catch(() => null)
     : null;
+  if (checkpoint) {
+    if (creditClaimed) storeCredit = await checkpoint.save("credit", storeCredit);
+    else storeCredit = await checkpoint.read<typeof storeCredit>("credit");
+  }
 
   /**
    * The public key and the signed bytes ride the purchase response, not
@@ -785,8 +805,8 @@ export async function fulfillPurchase(
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.
     goodsInput.certId = minted.certificate.cert_id;
-    const goods = await deliverInstantGoods(env, item, goodsInput);
-    return {
+    const goods = await deliverInstantGoods(env, item, goodsInput, checkpoint);
+    const response = {
       message: VOICE.instantThanks,
       item_id: item.id,
       deliverable: goods.deliverable,
@@ -816,6 +836,7 @@ export async function fulfillPurchase(
       ...(goods.extras ?? {}),
       ...patronBlock,
     };
+    return checkpoint ? await checkpoint.save("response", response) : response;
   }
 
   const orderOptions: Parameters<typeof createOrder>[1] = {

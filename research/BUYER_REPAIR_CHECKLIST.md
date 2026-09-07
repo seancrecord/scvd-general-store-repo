@@ -62,6 +62,7 @@ Final validation on the repaired current-main snapshot covered 552 test files: 5
 - [x] Reconstruct the reproduced pre-certificate failures using the original verified payer, chain, amount, receipt and full input digest — `f8f8d34f`.
 - [x] Prevent overlapping recoveries from minting competing certificates, using a durable per-transaction claim — `f8f8d34f`.
 - [x] Retrieve an already completed durable response after cache loss or a connection failure after the completion write; authenticate its saved owner, chain, transaction, product and full inputs — `3ce5d0bc`.
+- [x] Resume checkpointed Context Anchor certificate/anchor publication and final-response failures through HTTP/MCP on Base/Polygon, preserving the exact signed good across concurrent retries. See the Context Anchor entry in the progress log.
 - [ ] Resume a recovery that itself stops after its durable claim, including crashes and partial writes, without guessing whether another certificate exists.
 - [ ] Recover retained purchases that predate the complete input binding. Never infer their original inputs from a truncated desk preview.
 

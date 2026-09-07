@@ -1,3 +1,4 @@
+import { runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 
 const fault = vi.hoisted(() => ({ kind: "none", confirmed: false, hits: 0 }));
@@ -72,6 +73,12 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
       const tx = String(transfers[0]!.transaction), intentKey = KV_KEYS.deliveryIntent(tx);
       const before = await sourceEnv.ORDERS.get(intentKey);
       expect(before).not.toBeNull();
+      if (id === "context_anchor") {
+        // Legacy sales have a certificate but no recoverable artifact manifest.
+        const namespace = sourceEnv.PAID_RECOVERIES!;
+        await runInDurableObject(namespace.get(namespace.idFromName(`${network}:${tx}`)),
+          async (_instance, state) => state.storage.deleteAll());
+      }
       fault.kind = after;
       for (let attempt = 0; attempt < 2; attempt++) {
         const retry = await call(item, "http", args, undefined, payment, key);

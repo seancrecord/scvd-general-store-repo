@@ -1,3 +1,4 @@
+import { runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 
 const fault = vi.hoisted(() => ({ kind: "none", confirmed: false, hits: 0 }));
@@ -53,7 +54,11 @@ beforeAll(() => {
     const response = await inner(input, init);
     if (url.pathname.endsWith("/x402/settle")) {
       const receipt = object(await response.clone().json());
+      // The signed fixture's sender, not the generic mock's unrelated wallet.
+      const wire = object(object(JSON.parse(String(init?.body))).paymentPayload);
+      if (receipt.success) receipt.payer = object(object(wire.payload).authorization).from;
       if (receipt.success) { transfers.push(receipt); fault.confirmed = true; }
+      return Response.json(receipt, { status: response.status, headers: response.headers });
     }
     return response;
   });
@@ -62,6 +67,11 @@ beforeAll(() => {
     if (property === "get") return (...args: Parameters<typeof recoveries.get>) => {
       const stub = target.get(...args);
       return new Proxy(stub, { get(inner, method) {
+        if (method === "artifactStage") return async (...args: Parameters<typeof inner.artifactStage>) => {
+          const saved = await inner.artifactStage(...args);
+          if (args[1] === "response" && args[2] !== undefined) trip("checkpoint");
+          return saved;
+        };
         if (method === "complete") return async (token: string, response: string) => {
           const saved = await inner.complete(token, response);
           trip("checkpoint");
@@ -183,6 +193,10 @@ for (const point of ["lookup_incomplete", "lookup_error"]) {
     const buying = await purchase("context_anchor", { summary: "SCVD-E2E-uncertain-recovery" });
     fault.kind = "generation";
     await buying.send();
+    // A purchase from before artifact checkpoints still needs a certain lookup.
+    const namespace = sourceEnv.PAID_RECOVERIES!;
+    await runInDurableObject(namespace.get(namespace.idFromName(`${BASE_NETWORK}:${transfers[0]!.transaction}`)),
+      async (_instance, state) => state.storage.deleteAll());
     fault.kind = point;
     const retry = await buying.send();
     expect(retry.protocolError).toBe(true);
@@ -196,12 +210,16 @@ for (const point of ["lookup_incomplete", "lookup_error"]) {
   });
 }
 
-it("does not call an existing certificate a delivered good or mint another against its payment", async () => {
+it("does not call a legacy certificate a delivered good or mint another against its payment", async () => {
   const buying = await purchase("context_anchor", { summary: "SCVD-E2E-missing-anchor" });
   fault.kind = "artifact";
   const first = await buying.send();
   expect(fault.hits).toBeGreaterThan(0);
   expect(first.charged).toBe(true);
+  // Reproduce the old certificate-only state without an immutable manifest.
+  const namespace = sourceEnv.PAID_RECOVERIES!;
+  await runInDurableObject(namespace.get(namespace.idFromName(`${BASE_NETWORK}:${transfers[0]!.transaction}`)),
+    async (_instance, state) => state.storage.deleteAll());
   fault.kind = "none";
   const retry = await buying.send();
   expect(retry.protocolError).toBe(true);

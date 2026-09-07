@@ -124,6 +124,7 @@ export type McpPaymentOutcome =
        */
       kind: "authorized";
       recovered?: true;
+      artifactRecovery?: true;
       savedResponse?: string;
       pending: PendingPayment;
       settledSoFar: () => SettledPayment | null;
@@ -395,6 +396,23 @@ export async function runMcpPayment(
       // the open delivery row. Authenticate its owner before returning it;
       // a globally indexed nonce is not proof of ownership.
       const namespace = env.PAID_RECOVERIES;
+      const artifact = path === "/api/buy/context_anchor" && namespace && await namespace.get(namespace.idFromName(
+        `${result.paymentRequirements.network}:${spent.transaction}`,
+      )).readArtifact({ path, payer: verifiedPayer, network: result.paymentRequirements.network,
+        transaction: spent.transaction }).catch(() => null);
+      if (artifact) {
+        const payment = artifact.purchase.payment;
+        if (!inputDigest || artifact.digest !== inputDigest) return {
+          kind: "delivery-failed", payment, reason: "original_inputs_required",
+        };
+        return {
+          kind: "authorized", recovered: true, artifactRecovery: true, verifiedPayer,
+          pending: { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
+            payer: verifiedPayer, settle: async () => payment },
+          settledSoFar: () => payment,
+          deliveryKeySoFar: () => KV_KEYS.deliveryIntent(payment.transaction),
+        };
+      }
       const saved = namespace && await namespace.get(namespace.idFromName(
         `${result.paymentRequirements.network}:${spent.transaction}`,
       )).readCompleted({

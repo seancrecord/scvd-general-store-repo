@@ -2,6 +2,23 @@ import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
 import type { Env } from "@/types";
 
+export interface ArtifactPurchase {
+  digest: string;
+  purchase: { path: string; payment: SettledPayment };
+}
+export interface RecoveryIdentity {
+  path: string; payer: string; network: string; transaction: string;
+}
+export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit";
+
+function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
+  const payer = purchase.payment.payer;
+  const samePayer = identity.network.startsWith("eip155:")
+    ? payer?.toLowerCase() === identity.payer.toLowerCase() : payer === identity.payer;
+  return samePayer && purchase.path === identity.path &&
+    purchase.payment.network === identity.network && purchase.payment.transaction === identity.transaction;
+}
+
 interface RecoveryAttempt {
   digest: string;
   token: string;
@@ -24,6 +41,7 @@ export type RecoveryClaim =
 export class PaidRecoveryStore extends DurableObject<Env> {
   async begin(digest: string, purchase?: RecoveryAttempt["purchase"]): Promise<RecoveryClaim> {
     return this.ctx.storage.transaction(async (txn) => {
+      if (await txn.get("artifact")) return { kind: "unavailable" };
       const prior = await txn.get<RecoveryAttempt>("attempt");
       if (prior) {
         if (prior.digest === digest && prior.response !== undefined) {
@@ -61,4 +79,52 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return true;
     });
   }
+
+  /** Immutable goods use checkpoints; legacy unfinished claims remain closed. */
+  async openArtifact(record: ArtifactPurchase): Promise<boolean> {
+    const network = record.purchase.payment.network;
+    if (!network || !record.purchase.payment.transaction || !record.purchase.payment.payer) return false;
+    return this.ctx.storage.transaction(async (txn) => {
+      if (await txn.get("attempt")) return false;
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (prior) return prior.digest === record.digest && owns(prior.purchase, {
+        path: record.purchase.path, payer: record.purchase.payment.payer ?? "",
+        network, transaction: record.purchase.payment.transaction,
+      });
+      await txn.put("artifact", record);
+      return true;
+    });
+  }
+
+  async readArtifact(identity: RecoveryIdentity): Promise<ArtifactPurchase | null> {
+    const prior = await this.ctx.storage.get<ArtifactPurchase>("artifact");
+    return prior && owns(prior.purchase, identity) ? prior : null;
+  }
+
+  /** First committed bytes win. Callers must publish the returned value. */
+  async artifactStage(digest: string, stage: ArtifactStage, proposal?: string): Promise<string | null> {
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (!prior || prior.digest !== digest) return null;
+      const key = `artifact:${stage}`;
+      const saved = await txn.get<string>(key);
+      if (saved !== undefined) return saved;
+      if (proposal === undefined) return null;
+      JSON.parse(proposal);
+      await txn.put(key, proposal);
+      return proposal;
+    });
+  }
+
+  /** Credit already fails soft; interruption must never award it twice. */
+  async claimArtifactCredit(digest: string): Promise<boolean> {
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<ArtifactPurchase>("artifact");
+      if (!prior || prior.digest !== digest) return false;
+      if (await txn.get("artifact:credit_started")) return false;
+      await txn.put("artifact:credit_started", true);
+      return true;
+    });
+  }
+
 }
