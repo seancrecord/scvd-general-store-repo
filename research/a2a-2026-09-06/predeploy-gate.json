@@ -1,0 +1,83 @@
+{
+  "target": "https://scvd.store",
+  "specVersion": "0.3.0",
+  "startedAt": "2026-09-07T00:32:10.134Z",
+  "finishedAt": "2026-09-07T00:32:12.420Z",
+  "checks": [
+    {
+      "id": "card:/.well-known/agent-card.json",
+      "status": "pass"
+    },
+    {
+      "id": "card:/.well-known/a2a.json",
+      "status": "pass"
+    },
+    {
+      "id": "alias:/.well-known/a2a.json",
+      "status": "pass"
+    },
+    {
+      "id": "card:/.well-known/agent.json",
+      "status": "pass"
+    },
+    {
+      "id": "alias:/.well-known/agent.json",
+      "status": "pass"
+    },
+    {
+      "id": "protocol-version",
+      "status": "pass",
+      "detail": "declared 0.3.0"
+    },
+    {
+      "id": "send-envelope",
+      "status": "pass"
+    },
+    {
+      "id": "successful-task-schema",
+      "status": "fail",
+      "detail": [
+        {
+          "instancePath": "",
+          "schemaPath": "#/required",
+          "keyword": "required",
+          "params": {
+            "missingProperty": "contextId"
+          },
+          "message": "must have required property 'contextId'"
+        }
+      ]
+    },
+    {
+      "id": "successful-task-state",
+      "status": "pass"
+    },
+    {
+      "id": "tasks/get",
+      "status": "fail"
+    },
+    {
+      "id": "tasks/cancel",
+      "status": "fail"
+    },
+    {
+      "id": "unknown-task",
+      "status": "pass"
+    },
+    {
+      "id": "null-part",
+      "status": "fail"
+    },
+    {
+      "id": "invalid-trailing-part",
+      "status": "fail"
+    }
+  ],
+  "pass": false,
+  "gaps": [
+    "Structural schemas only; schema formats are not validated",
+    "One free SCVD readiness task; other skills, auth, streaming and push are not exercised",
+    "Retention expiry is tested locally, not by waiting 24 hours",
+    "Unsigned operational reading; not comprehensive protocol certification"
+  ]
+}

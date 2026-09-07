@@ -252,6 +252,24 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
       "Do not buy again — that is a second charge. The keeper is paged with your transaction and finishes it by hand or refunds it; the verify URL answers for any certificate that was minted, and the trust page lists it for your wallet.",
   },
   {
+    code: "payment_declined",
+    http: 402,
+    charged: false,
+    means:
+      "the payment verified but the processor refused settlement. No money moved; payment_declined.reason carries the machine-readable reason",
+    what_to_do:
+      "Read payment_declined.reason before retrying. Both MCP profiles return isError:true with the refusal in structuredContent; it is not a successful purchase or a new quote.",
+  },
+  {
+    code: "settlement_unknown",
+    http: 503,
+    charged: null,
+    means:
+      "the payment processor did not provide a confirmed outcome and no on-chain rescue established settlement. Money may have moved; this is not a confirmed refusal",
+    what_to_do:
+      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+  },
+  {
     code: "invalid_settlement_receipt",
     http: 503,
     charged: null,
@@ -300,15 +318,16 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
  * the resource door — because a third vocabulary for the same
  * refusals is exactly what this file exists to prevent.
  */
-export interface RpcRefusal {
-  /** The stable string a caller branches on, in error.data.code. */
+export type RpcRefusal = {
+  /** The stable string in error.data.code or result.structuredContent.code. */
   code: string;
-  /** The JSON-RPC code on the envelope. Several refusals share one. */
-  jsonrpc: number;
   charged?: boolean | null;
   means: string;
   what_to_do: string;
-}
+} & (
+  | { jsonrpc: number; tool_result?: never }
+  | { tool_result: true; jsonrpc?: never }
+);
 
 export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
   {
@@ -375,12 +394,16 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "invalid_settlement_receipt", "payment_identity_unavailable"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {
         throw new Error(`the buy doors' table no longer names ${code}`);
       }
+      if (code === "payment_declined") return {
+        code, tool_result: true, charged: false,
+        means: door.means, what_to_do: door.what_to_do,
+      };
       return {
         code,
         // A 400 there is -32602 here; everything else, the owned

@@ -78,6 +78,20 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
+    registry: "Licium",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Licium lists the store's MCP endpoint and publishes its endpoint history. Not an endorsement and not an audit of purchases: a directory record does not prove successful payment or delivery.",
+  },
+  {
+    url: "https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c",
+    registry: "Zero.xyz — SCVD Signature Agent Card",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Zero.xyz carries a service listing for SCVD Signature Agent Card. Not an endorsement and not an audit of its output: the listing is a discovery record, not evidence that anyone invoked the service or bought it.",
+  },
+  {
     url: "https://neuronto.com/ard-publishers/scvd.store",
     registry: "Neuronto ARD Registry",
     confirmed: "2026-09-06",

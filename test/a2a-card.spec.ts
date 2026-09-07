@@ -60,7 +60,7 @@ describe("the A2A agent card", () => {
         jsonrpc: "2.0",
         id: 1,
         method: "message/send",
-        params: { message: { role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "get_endpoint_readiness", host: "never-met.example" } }] } },
+        params: { message: { kind: "message", role: "user", messageId: "m-1", parts: [{ kind: "data", data: { task: "get_endpoint_readiness", host: "never-met.example" } }] } },
       }),
     });
     const answer = (await response.json()) as Record<string, any>;

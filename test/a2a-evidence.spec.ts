@@ -31,7 +31,7 @@ function rpc(data: Record<string, unknown>, id: number | string = 1) {
     jsonrpc: "2.0",
     id,
     method: "message/send",
-    params: { message: { role: "user", messageId: `m-${id}`, parts: [{ kind: "data", data }] } },
+    params: { message: { kind: "message", role: "user", messageId: `m-${id}`, parts: [{ kind: "data", data }] } },
   };
 }
 
@@ -114,7 +114,7 @@ describe("message/send", () => {
     const noPart = await send({ jsonrpc: "2.0", id: 6, method: "message/send", params: { message: { role: "user", parts: [{ kind: "text", text: "hello" }] } } });
     expect(noPart.json.error.code).toBe(-32602);
     const method = await send({ jsonrpc: "2.0", id: 7, method: "message/stream", params: {} });
-    expect(method.json.error.code).toBe(-32601);
+    expect(method.json.error.code).toBe(-32004);
     const state = await send({ jsonrpc: "2.0", id: 8, method: "tasks/get", params: { id: "task_x" } });
     expect(state.json.error.code).toBe(-32001);
     const notRpc = await SELF.fetch(`${BASE}/a2a`, { method: "POST", body: "{" });
@@ -122,7 +122,7 @@ describe("message/send", () => {
   });
 
   it("accepts the task as JSON in a text part too, and serves its own document on GET", async () => {
-    const { json } = await send({ jsonrpc: "2.0", id: 9, method: "message/send", params: { message: { role: "user", parts: [{ kind: "text", text: JSON.stringify({ task: "get_endpoint_readiness", url: "https://never-met-two.example/api/x" }) }] } } });
+    const { json } = await send({ jsonrpc: "2.0", id: 9, method: "message/send", params: { message: { kind: "message", messageId: "text-example", role: "user", parts: [{ kind: "text", text: JSON.stringify({ task: "get_endpoint_readiness", url: "https://never-met-two.example/api/x" }) }] } } });
     expect(json.result.artifacts[0].parts[0].data.result).toBe("never_met");
     const doc = (await (await SELF.fetch(`${BASE}/a2a`)).json()) as Record<string, any>;
     expect(doc.card).toBe(`${BASE}/.well-known/agent-card.json`);
