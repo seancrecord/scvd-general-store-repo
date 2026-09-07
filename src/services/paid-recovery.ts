@@ -1,3 +1,8 @@
+import { recordDeliveredSettlement } from "@/services/settlement-records";
+import { closeDeliveryIntent } from "@/services/delivery-audit";
+import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
+import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
+import { evmChainOf } from "@/lib/base-rpc";
 import type { PurchaseIntent } from "@/services/purchase-intent";
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
@@ -48,8 +53,13 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
-      if (prior) return { started: false, record: JSON.stringify(prior) };
+      if (prior) {
+        if (!prior.delivery && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+        return { started: false, record: JSON.stringify(prior) };
+      }
       await txn.put("purchase", proposal);
+      // The obligation and its wake-up commit together, before settlement.
+      await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
       return { started: true, record: JSON.stringify(proposal) };
     });
   }
@@ -75,6 +85,55 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       if (prior.state !== "unknown" && update.state) return;
       await txn.put("purchase", { ...prior, ...update });
     });
+  }
+
+  async schedulePurchaseRecovery(): Promise<void> {
+    await this.ctx.storage.transaction(async (txn) => {
+      const record = await txn.get<PurchaseIntent>("purchase");
+      if (record && !record.delivery && record.state !== "not_settled" && !await txn.getAlarm()) {
+        await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+      }
+    });
+  }
+
+  async alarm(): Promise<void> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    if (!record || record.delivery || record.state === "not_settled") return;
+    // Unsupported goods/unknown rails retain their record for the delivery
+    // desk. Do not schedule an endless no-op for every successful sale.
+    if (record.state === "settled" && !supportsArtifactRecovery(record.item)) return;
+    if (record.state === "unknown" && (!record.authorization || !evmChainOf(record.terms.network))) return;
+    // Re-arm BEFORE external I/O: an outage or interrupted execution cannot
+    // exhaust the platform's finite automatic retries and abandon the buyer.
+    await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
+    try {
+      const { reconcilePurchase, deliverRecordedPurchase } = await import("@/services/purchase-reconciliation");
+      const update = await reconcilePurchase(this.env, record);
+      if (update.payment) await this.updatePurchase({ state: "settled", payment: update.payment });
+      if (update.reconciliation) await this.ctx.storage.transaction(async (txn) => {
+        const latest = await txn.get<PurchaseIntent>("purchase");
+        if (latest) {
+          await txn.put("purchase", { ...latest, reconciliation: update.reconciliation });
+        }
+      });
+      const latest = await this.ctx.storage.get<PurchaseIntent>("purchase");
+      if (!latest || latest.state !== "settled") return;
+      const delivery = await deliverRecordedPurchase(this.env, latest);
+      if (!delivery) return;
+      await this.ctx.storage.transaction(async (txn) => {
+        const current = await txn.get<PurchaseIntent>("purchase");
+        if (!current || current.state !== "settled") return;
+        await txn.put("purchase", { ...current, delivery });
+        await txn.deleteAlarm();
+      });
+      // The status handle now retrieves the good. Clear the old desk only
+      // after that durable result exists; bookkeeping cannot block retrieval.
+      await recordDeliveredSettlement(this.env, latest.payment?.transaction);
+      if (latest.payment?.transaction) await closeDeliveryIntent(this.env, KV_KEYS.deliveryIntent(latest.payment.transaction)).catch(() => undefined);
+    } catch {
+      // No raw error or buyer input in logs. The durable obligation remains
+      // unresolved and the scheduled retry resumes the same artifact journal.
+    }
   }
 
   async begin(digest: string, purchase?: RecoveryAttempt["purchase"]): Promise<RecoveryClaim> {

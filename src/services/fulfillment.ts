@@ -199,7 +199,7 @@ export async function fulfillPurchase(
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
-  recovery?: { digest: string; path: string },
+  recovery?: { digest: string; path: string; purchasedAt?: string },
 ): Promise<Record<string, unknown>> {
   let mintOptions: Parameters<typeof mintCertificate>[1] = {
     itemId: item.id,
@@ -560,7 +560,7 @@ export async function fulfillPurchase(
     checkpoint = artifactCheckpoint(env, payment.network, payment.transaction, recovery.digest);
     // Retain the brief and sale-time terms even if the catalogue changes
     // before an interrupted mint can create the order.
-    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: new Date().toISOString() });
+    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: recovery.purchasedAt ?? new Date().toISOString() });
     purchaseCreatedAt = original.purchasedAt;
     item = original.item;
     input = original.input;

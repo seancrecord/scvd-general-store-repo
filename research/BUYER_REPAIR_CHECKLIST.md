@@ -96,8 +96,10 @@ Recovery release prerequisite: PR #542 adds only the coordinator storage class/b
 - [x] Report thrown/lost settlement acknowledgements and unconfirmed transaction claims as `charged:null`, `payment_state:unknown`, with the existing reconciliation reference and same-payment guidance. HTTP returns 503; both MCP profiles signal errors. The discovery contract names the state too.
 - [x] Persist the full catalogue request, item snapshot and selected payment terms before settlement on HTTP and both MCP profiles. A failed capture submits no payment; concurrent identical authorizations share one durable attempt.
 - [x] Retain a protected purchase status handle across ambiguous retries, changed inputs, closed shelves and authorization expiry. Status reads submit no payment; existing paid cache/artifact recovery still runs first.
-- [ ] Extend capture to commission/publication doors, recover a lost handle after payment verification expires, and connect durable intents to reconciliation even if the worker stops before writing the legacy reconciliation row.
-- [ ] Complete the original good once settlement is established, including rails without an immediate chain rescue.
+- [x] Commit an alarm with the catalogue purchase before settlement, independently of the legacy reconciliation row; recover original Context Anchors and unstocked human orders once payment is established.
+- [x] Reconcile ambiguous Base/Polygon/Arbitrum/World catalogue payments using finalized receipts matching payer, nonce, recipient, token and amount, then expose the checkpointed good through HTTP/MCP private status. Re-scan bounded windows for delayed RPC indexing; outages retain scheduled retries.
+- [ ] Extend capture to commission/publication doors and recover a lost status handle after payment verification expires.
+- [ ] Extend checkpointed recovery to the remaining products and establish ambiguous Solana settlement independently of the lost facilitator receipt. Confirmed Solana anchors and unstocked human orders can use the same scheduled delivery path.
 
 The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.
 
@@ -118,3 +120,11 @@ All 192 catalog × three-rail × two-profile public-door comparisons failed befo
 - [x] Assert that malformed Solana receipts retain unknown status without submitting the payment again. Automatic Solana ambiguity resolution remains open.
 
 GitHub exposed these integration gaps in both runs of #559. All 260 focused cases across the 12 affected files pass, plus typecheck and both dry-run bundles; the full suite remains delegated to GitHub. This repair changes no SEV-1 completion claim.
+
+## 2026-09-07 — scheduled delivery from retained purchases
+
+The next increment resumes the original signed anchor or creates the original human order without another payment submission. It retains the purchase time/SLA across shelf closure and catalogue changes, serves completed human work through the protected status doors, and resumes after an interruption between artifact publication and purchase-status publication. Wrong-chain/token/recipient/amount/payer/nonce evidence, failed transactions, unavailable finality and RPC failures leave payment unknown and recovery scheduled.
+
+This does not close BUY-017/034/037: unknown Solana receipts, uncheckpointed products, pre-capture/legacy obligations and missing handles remain. The long human-detail truncation observed while building the fixture is still an input-survival defect; these recovery assertions use valid briefs within the current limit. All payment/chain evidence is local fixture data, not a live payment test.
+
+Validation: all 39 new scheduled-recovery cases failed on the prior source and passed after restoration. The related gate passed 215 cases across nine files, plus typecheck and both Worker dry-run bundles. The full suite runs on GitHub.

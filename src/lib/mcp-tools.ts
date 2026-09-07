@@ -791,7 +791,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "check_purchase", reads: "our_books",
     summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; submits no payment.",
-    description: "Read the same retained purchase status as GET /api/purchase-status/{purchase_id}. Supply recovery.purchase_id and recovery.status_token from the purchase response. Keep the token private. Free, read-only, and usable after payment authorization expiry. A settled status alone does not establish delivery; automatic fulfillment after reconciliation is not yet implemented.",
+    description: "Read the same retained purchase status as GET /api/purchase-status/{purchase_id}. Supply recovery.purchase_id and recovery.status_token from the purchase response. Keep the token private. Free, read-only, and usable after payment authorization expiry. Saved fulfillment contains a recovered anchor or human order when available; human work remains pending until completed. Payment state alone is not proof of delivery.",
     inputSchema: { type: "object", properties: {
       purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
       status_token: str("The private recovery.status_token from the purchase response.", 64),
@@ -801,7 +801,8 @@ const FREE_TOOLS: McpTool[] = [
       purchase_id: str("The original purchase identifier."),
       payment_state: choice("The recorded payment outcome.", ["unknown", "settled", "not_settled"]),
       charged: { type: ["boolean", "null"] }, request: str("The full original request."),
-      terms: { type: "object" }, delivery_state: str("This payment record alone does not establish delivery."),
+      terms: { type: "object" }, delivery_state: str("Whether the good is delivered, a human order exists, or delivery is not yet established."),
+      fulfillment: { type: "object", description: "Recovered purchase response, when available." },
     } },
     annotations: { title: "Check purchase status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },

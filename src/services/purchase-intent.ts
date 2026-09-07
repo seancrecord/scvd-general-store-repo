@@ -27,6 +27,9 @@ export interface PurchaseIntent {
   state: "unknown" | "settled" | "not_settled";
   payment?: SettledPayment;
   reconciliation_reference?: string;
+  reconciliation?: { start_block?: number; next_block?: number; checked_at: string };
+  delivery?: Record<string, unknown>;
+
 }
 
 export function purchaseIntentStore(env: Env, id: string) {
@@ -49,7 +52,8 @@ export function purchaseStatus(record: PurchaseIntent) {
     transaction: record.payment?.transaction ?? null,
     // A saved settlement is not evidence of delivery. Artifact recovery follows
     // the existing transaction journal; this status never calls a cert a good.
-    delivery_state: "not_established_by_this_record",
+    delivery_state: record.delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
+    ...(record.delivery ? { fulfillment: record.delivery } : {}),
     reconciliation_reference: record.reconciliation_reference ?? null,
     retry: "Keep the original signed payment and idempotency key. Do not sign a new payment while this purchase is unresolved.",
   };
@@ -137,7 +141,17 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
   try {
     const saved = await purchaseIntentStore(env, id).readPurchase(token);
     if (!saved) return missing;
-    return { status: 200, body: purchaseStatus(JSON.parse(saved) as PurchaseIntent) };
+    const record = JSON.parse(saved) as PurchaseIntent;
+    const body = purchaseStatus(record);
+    if (record.item?.fulfillment === "human_queue" && typeof record.delivery?.order_id === "string") {
+      const { getOrder } = await import("@/services/orders");
+      const order = await getOrder(env, record.delivery.order_id);
+      if (!order) throw new Error("Purchased order unavailable");
+      body.delivery_state = order.status === "completed" ? "delivered" : "order_created";
+      body.fulfillment = { ...record.delivery, status: order.status,
+        ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
+    }
+    return { status: 200, body };
   } catch {
     return { status: 503, body: { code: "purchase_status_unavailable", charged: null, error: "Purchase status is temporarily unavailable. No payment was submitted by this status check." } };
   }
