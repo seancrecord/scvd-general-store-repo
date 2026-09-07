@@ -114,6 +114,8 @@ Evidence: `settle-decline` rows in [door-equivalence evidence](buyer-door-equiva
 
 ### BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit
 
+**Repaired locally 2026-09-07; release pending in #541.** Both MCP profiles check the same inventory reader as HTTP before unpaid quotes and fresh settlement. Existing paid replay precedes this check. Forty public cases fill both products through sequential fixture purchases on Base, Polygon, Arbitrum, World and Solana, then prove unpaid and signed refusals, waitlist parity, no extra order/certificate/settlement and original receipt replay. All forty and the served-discovery control failed before their fixes. Original audit follows.
+
 **Open · HTTP/MCP equivalence audit.** Sequentially purchase every advertised weekly slot, then request one more order with a fresh payment/key. HTTP refuses both the quote and signed request with `sold_out`; MCP quotes, calls settlement successfully, creates another queued order and issues a valid certificate. Six paired cases establish this for Aura Walk and Collab on Base, Polygon and Solana. This is a sequential bypass, not a race. An oversell alert after purchase does not prevent the sale. The audit does not establish a missed delivery deadline, so this is not classified as an observed missing-good SEV-1.
 
 Repair: enforce the same weekly inventory and labor-admission rules on both purchase doors before new payment, while allowing authenticated recovery of an existing purchase. Keep this separate from BUY-008: one is accepting a new order, the other is recovering an old one.

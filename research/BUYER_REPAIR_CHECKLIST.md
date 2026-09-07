@@ -24,7 +24,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
 - [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
 - [x] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — repaired: both MCP profiles return an error tool result with the same refusal reason and no-charge state as HTTP.
-- [ ] **BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit** — open.
+- [x] **BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit** — MCP now checks the shared weekly inventory before quotes or new settlement; authenticated paid replay remains available. Both payment profiles return the HTTP waitlist instructions.
 - [ ] **BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling** — open.
 - [ ] **BUY-014 — P1: a spent payment without its original key does not retrieve the receipt** — open.
 - [ ] **BUY-015 — P1: payment expiry blocks receipt replay, and the suggested replacement key can charge again** — open.

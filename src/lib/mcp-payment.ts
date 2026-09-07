@@ -111,7 +111,7 @@ class McpBuyAdapter implements HTTPAdapter {
   }
 }
 
-export type McpAdmissionRefusal = { code: string; message: string };
+export type McpAdmissionRefusal = { code: string; message: string; details?: Record<string, unknown> };
 
 export type McpPaymentOutcome =
   | { kind: "admission-refused"; refusal: McpAdmissionRefusal }

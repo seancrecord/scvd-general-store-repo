@@ -76,7 +76,8 @@ import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
-import { getOrder } from "@/services/orders";
+import { getOrder, remainingInventory } from "@/services/orders";
+import { waitlistHowToJoin } from "@/routes/requests";
 import { InvalidPatronageTarget } from "@/services/patronage";
 import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -884,6 +885,12 @@ async function callPurchaseTool(
       }
     : undefined;
   const admitPurchase = async () => {
+    const remaining = await remainingInventory(c.env, item);
+    if (remaining !== null && remaining <= 0) return {
+      code: "sold_out",
+      message: VOICE.soldOut,
+      details: waitlistHowToJoin(c.env.STORE_BASE_URL, item.id),
+    };
     if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
       return {
         code: "sold_out",
@@ -903,7 +910,7 @@ async function callPurchaseTool(
   // prior purchase first; only a fresh sale runs the same admission callback.
   if (paymentMeta === undefined || paymentMeta === null) {
     const unavailable = await admitPurchase();
-    if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message);
+    if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message, unavailable.details);
   }
   const inputDigest = await sha256Hex(jcsCanonicalize(args));
   const outcome = await runMcpPayment(
@@ -928,7 +935,7 @@ async function callPurchaseTool(
    * the original purchase without settling anything.
    */
   if (outcome.kind === "admission-refused") {
-    return rpcRefusal(id, -32000, outcome.refusal.code, outcome.refusal.message);
+    return rpcRefusal(id, -32000, outcome.refusal.code, outcome.refusal.message, outcome.refusal.details);
   }
   if (outcome.kind === "replay") {
     try {
