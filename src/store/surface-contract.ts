@@ -261,13 +261,28 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
       "Read payment_declined.reason before retrying. Both MCP profiles return isError:true with the refusal in structuredContent; it is not a successful purchase or a new quote.",
   },
   {
+    code: "purchase_record_unavailable", http: 503, charged: null,
+    means: "durable purchase storage could not be read or written; this request submitted no payment, but an earlier attempt may still be unresolved",
+    what_to_do: "Retain the original payment and key. Retry when storage is available; do not use a new authorization to bypass this check.",
+  },
+  {
+    code: "purchase_recovery_pending", http: 503, charged: true,
+    means: "this payment has a durable confirmed settlement record, but the current request did not recover a deliverable",
+    what_to_do: "Read recovery.status_url using Authorization: Bearer <status_token>. Keep the original payment and key; no additional settlement was attempted.",
+  },
+  {
+    code: "purchase_not_settled", http: 503, charged: false,
+    means: "this authorization already received a definitive settlement refusal; the retained purchase was not charged",
+    what_to_do: "Read the retained status. Correct the original refusal before starting another purchase; this retry submitted no payment.",
+  },
+  {
     code: "settlement_unknown",
     http: 503,
     charged: null,
     means:
       "the payment processor did not provide a confirmed outcome and no on-chain rescue established settlement. Money may have moved; this is not a confirmed refusal",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Catalogue purchases also return recovery.status_url and a private status_token: GET that URL with Authorization: Bearer <status_token> to read status without submitting payment, even after authorization expiry. MCP clients can call check_purchase with purchase_id and status_token on this connection. Standard MCP payment mode reports this with isError:true in the tool result.",
   },
   {
     code: "invalid_settlement_receipt",
@@ -276,7 +291,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     means:
       "the processor reported success but returned an invalid settlement receipt. Payment is unknown, not declined; no valid purchase receipt was issued",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Catalogue purchases also return recovery.status_url and a private status_token: GET that URL with Authorization: Bearer <status_token> to read status without submitting payment, even after authorization expiry. MCP clients can call check_purchase with purchase_id and status_token on this connection. Standard MCP payment mode reports this with isError:true in the tool result.",
   },
   {
     code: "sold_out",
@@ -403,7 +418,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

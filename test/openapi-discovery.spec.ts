@@ -50,8 +50,14 @@ describe("the spec, as a registry reads it", () => {
           expect(op.security, `${method} ${path} is paid`).toBeUndefined();
         } else {
           free += 1;
-          // "security": [] is how a spec says "no paywall here."
-          expect(op.security, `${method} ${path} is free`).toEqual([]);
+          // Price and authentication are different: the private purchase
+          // status is free but requires the buyer's retained capability.
+          if (path === "/api/purchase-status/{purchase_id}") {
+            expect(op.security).toEqual([{ purchaseStatusToken: [] }]);
+            const components = isRecord(body.components) ? body.components : {};
+            const schemes = isRecord(components.securitySchemes) ? components.securitySchemes : {};
+            expect(schemes.purchaseStatusToken).toMatchObject({ type: "http", scheme: "bearer" });
+          } else expect(op.security, `${method} ${path} is free`).toEqual([]);
         }
       }
     }

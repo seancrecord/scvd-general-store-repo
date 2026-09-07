@@ -19,7 +19,7 @@ import type { HonoEnv } from "@/types";
  * function-calling document cannot name different doors for one tool.
  */
 export const TOOL_ENDPOINTS: Readonly<
-  Record<string, { method: "GET" | "POST"; path: string }>
+  Record<string, { method: "GET" | "POST"; path: string; bearerArgument?: string }>
 > = {
   read_store_guide: { method: "GET", path: "/llms.txt" },
   preflight_endpoint: { method: "POST", path: "/api/preflight/v2" },
@@ -36,6 +36,7 @@ export const TOOL_ENDPOINTS: Readonly<
   check_conformance: { method: "POST", path: "/api/conformance/v1" },
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
   /* The poll half of the async job, for an agent in a browser holding an order id: free, read-only, the store's own books. */
+  check_purchase: { method: "GET", path: "/api/purchase-status/{purchase_id}", bearerArgument: "status_token" },
   check_order: { method: "GET", path: "/api/order/{order_id}" },
   /* The shelf, searchable: the first two steps of the journey a browser agent is most likely to be on. */
   find_in_catalog: { method: "GET", path: "/api/catalog/v1" },
@@ -201,6 +202,10 @@ export function webmcpScript(): string {
       return encodeURIComponent(String(args[name] || ""));
     });
     var init = { method: endpoint.method };
+    if (endpoint.bearerArgument) {
+      used[endpoint.bearerArgument] = true;
+      init.headers = { Authorization: "Bearer " + String(args[endpoint.bearerArgument] || "") };
+    }
     if (endpoint.method === "POST") {
       init.headers = { "Content-Type": "application/json" };
       init.body = JSON.stringify(args || {});

@@ -1,3 +1,4 @@
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { getMenuItem } from "@/store";
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
@@ -114,6 +115,7 @@ class McpBuyAdapter implements HTTPAdapter {
 export type McpAdmissionRefusal = { code: string; message: string; details?: Record<string, unknown> };
 
 export type McpPaymentOutcome =
+  | { kind: "purchase-status"; body: Record<string, unknown> & { error: string } }
   | { kind: "admission-refused"; refusal: McpAdmissionRefusal }
   | { kind: "payment-unavailable"; body: ReturnType<typeof paymentIdentityUnavailableBody> }
   | { kind: "payment-required"; status: number; body: unknown; challenge?: unknown }
@@ -228,7 +230,7 @@ export async function runMcpPayment(
    * can still be finished by hand (the 2026-08-10 lesson: the one
    * fact needed to produce the artifact was the one fact nobody
    * kept). The HTTP door records its query string; this is the MCP
-   * door's equivalent, capped by the caller.
+   * door's complete equivalent; only the legacy desk preview is capped.
    */
   askedFor?: string,
   /** SHA-256 of the complete canonical arguments, not the truncated desk preview. */
@@ -482,6 +484,9 @@ export async function runMcpPayment(
     };
   }
 
+  const unresolved = await unresolvedPurchase(env, result.paymentRequirements.network, verifiedPayer, result.paymentPayload);
+  if (unresolved) return { kind: "purchase-status", body: unresolved };
+
   const admissionRefusal = await admitPurchase?.();
   if (admissionRefusal) return { kind: "admission-refused", refusal: admissionRefusal };
 
@@ -504,6 +509,9 @@ export async function runMcpPayment(
 
   const settle = async (): Promise<SettledPayment> => {
     if (alreadySettled) return alreadySettled;
+    const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer,
+      terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
+      request: askedFor ?? "{}", item: getMenuItem(itemId) });
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
     // Same one-retry-on-5xx as the HTTP door: the MCP till must not
@@ -521,12 +529,14 @@ export async function runMcpPayment(
     const reference = await recordSettlementUnknown(env, {
       path,
       door: "mcp",
+      purchaseId: purchase.id,
       reason: `threw:${String(error).slice(0, 200)}`,
       network: verifiedRequirementsForSettle.network,
       ...(paymentHeader ? { paymentHeader } : {}),
     });
     const unknown = error instanceof SettlementUnknown ? error : new SettlementUnknown(verifiedRequirementsForSettle.network);
     unknown.reconciliationReference = reference;
+    await notePurchaseUnknown(env, purchase, reference, unknown);
     await sendAlert(env, {
       condition: "settlement_failure",
       detail: `MCP processSettlement threw for ${itemId}: ${String(error)}`,
@@ -570,14 +580,17 @@ export async function runMcpPayment(
         const reference = await recordSettlementUnknown(env, {
           path,
           door: "mcp",
+          purchaseId: purchase.id,
           reason: `settle:${settlement.errorReason}`.slice(0, 300),
           network: verifiedRequirementsForSettle.network,
           ...(paymentHeader ? { paymentHeader } : {}),
         });
         const unknown = new SettlementUnknown(verifiedRequirementsForSettle.network);
         unknown.reconciliationReference = reference;
+        await notePurchaseUnknown(env, purchase, reference, unknown);
         throw unknown;
       }
+      await purchaseIntentStore(env, purchase.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
       await recordPaymentDecline(
         env,
         path,
@@ -608,6 +621,12 @@ export async function runMcpPayment(
       ...(settlement.payer ? { payer: settlement.payer } : {}),
     };
   }
+  // Status-write failure after payment must not prevent delivery.
+  await purchaseIntentStore(env, purchase.id).updatePurchase({ state: "settled", payment: {
+      paidUsdc: paidUsdcQuoted, tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),
+      transaction: settledFacts.transaction, network: verifiedRequirementsForSettle.network,
+      payer: purchase.payer, settleHeaders: settledFacts.headers,
+    } }).catch(() => undefined);
   if (nonce) {
     /*
      * THE TRANSACTION RIDES THE ROW, same as the HTTP door — the link

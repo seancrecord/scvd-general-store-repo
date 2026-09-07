@@ -8,7 +8,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 - [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; PR #540.
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
-- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired in `8c7606ca` (merged #549); durable intent/recovery after reconciliation remains open.
+- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired in `8c7606ca` (merged #549); catalogue intent capture and protected status are built on `codex/buyer-durable-intent`; reconciliation-driven delivery and remaining doors stay open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: HTTP retries preserve the owed-delivery record and report the confirmed charge when only a certificate exists or lookup fails. Checkpointed human orders now reconstruct with stable IDs, original briefs/terms and preserved completed work; legacy purchases and other artifacts remain open.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
@@ -94,7 +94,9 @@ Recovery release prerequisite: PR #542 adds only the coordinator storage class/b
 ## BUY-017 progress (finding remains open)
 
 - [x] Report thrown/lost settlement acknowledgements and unconfirmed transaction claims as `charged:null`, `payment_state:unknown`, with the existing reconciliation reference and same-payment guidance. HTTP returns 503; both MCP profiles signal errors. The discovery contract names the state too.
-- [ ] Preserve a durable purchase intent and stable buyer status handle across ambiguity and retries.
+- [x] Persist the full catalogue request, item snapshot and selected payment terms before settlement on HTTP and both MCP profiles. A failed capture submits no payment; concurrent identical authorizations share one durable attempt.
+- [x] Retain a protected purchase status handle across ambiguous retries, changed inputs, closed shelves and authorization expiry. Status reads submit no payment; existing paid cache/artifact recovery still runs first.
+- [ ] Extend capture to commission/publication doors, recover a lost handle after payment verification expires, and connect durable intents to reconciliation even if the worker stops before writing the legacy reconciliation row.
 - [ ] Complete the original good once settlement is established, including rails without an immediate chain rescue.
 
 The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.

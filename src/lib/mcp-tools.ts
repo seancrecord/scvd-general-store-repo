@@ -789,6 +789,23 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
 
 const FREE_TOOLS: McpTool[] = [
   {
+    name: "check_purchase", reads: "our_books",
+    summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; never submits payment.",
+    description: "Read the same retained purchase status as GET /api/purchase-status/{purchase_id}. Supply recovery.purchase_id and recovery.status_token from the purchase response. Keep the token private. Free, read-only, and usable after payment authorization expiry. A settled status alone does not establish delivery; automatic fulfillment after reconciliation is not yet implemented.",
+    inputSchema: { type: "object", properties: {
+      purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
+      status_token: str("Your private recovery.status_token; never a wallet key or payment signature.", 64),
+    }, required: ["purchase_id", "status_token"], additionalProperties: false,
+      examples: [{ purchase_id: "0".repeat(64), status_token: "0".repeat(64) }] },
+    outputSchema: { type: "object", properties: {
+      purchase_id: str("The original purchase identifier."),
+      payment_state: choice("The recorded payment outcome.", ["unknown", "settled", "not_settled"]),
+      charged: { type: ["boolean", "null"] }, request: str("The full original request."),
+      terms: { type: "object" }, delivery_state: str("This payment record alone does not establish delivery."),
+    } },
+    annotations: { title: "Check purchase status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
     name: "read_store_guide",
     summary:
       "Returns the store's guide as plain text: the catalog with prices, how x402 payment works here, the free instruments, and the house promises. Free; no purchase is made and nothing is stored.",

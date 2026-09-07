@@ -51,9 +51,10 @@ export function instrumentTools(): McpTool[] {
   return webmcpTools().filter((tool) => TOOL_ENDPOINTS[tool.name]?.path.startsWith("/api/"));
 }
 
-function curlFor(base: string, endpoint: { method: "GET" | "POST"; path: string }, example: Record<string, unknown>): string {
+function curlFor(base: string, endpoint: (typeof TOOL_ENDPOINTS)[string], example: Record<string, unknown>): string {
   if (endpoint.method === "GET") {
     const used = new Set<string>();
+    if (endpoint.bearerArgument) used.add(endpoint.bearerArgument);
     const path = endpoint.path.replace(/\{([a-z_]+)\}/g, (_match, name: string) => {
       used.add(name);
       return encodeURIComponent(String(example[name] ?? ""));
@@ -63,7 +64,7 @@ function curlFor(base: string, endpoint: { method: "GET" | "POST"; path: string 
     const query = Object.entries(example)
       .filter(([key, value]) => !used.has(key) && value !== undefined && value !== "")
       .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
-    return `curl -sS ${base}${path}${query.length ? `?${query.join("&")}` : ""}`;
+    return `curl -sS ${base}${path}${query.length ? `?${query.join("&")}` : ""}${endpoint.bearerArgument ? ` -H 'Authorization: Bearer ${String(example[endpoint.bearerArgument] ?? "")}'` : ""}`;
   }
   return `curl -sS -X POST ${base}${endpoint.path} -H 'content-type: application/json' -d '${JSON.stringify(example)}'`;
 }
@@ -82,7 +83,8 @@ export function openapiToolsDocument(base: string): Record<string, unknown> {
       },
       "x-scvd": {
         title: tool.title ?? tool.annotations?.title ?? tool.name,
-        http: { method: endpoint.method, url: `${base}${endpoint.path}` },
+        http: { method: endpoint.method, url: `${base}${endpoint.path}`,
+          ...(endpoint.bearerArgument ? { bearer_argument: endpoint.bearerArgument } : {}) },
         operation_id: operationIdFor(endpoint.method, endpoint.path),
         worked_call: { arguments: example, curl: curlFor(base, endpoint, example) },
         reads: tool.reads ?? null,
