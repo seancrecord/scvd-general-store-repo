@@ -14,7 +14,7 @@ import {
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
-import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
@@ -1008,7 +1008,7 @@ async function callPurchaseTool(
     if (!outcome.settledSoFar() && error instanceof InvalidPatronageTarget) {
       return rpcRefusal(id, -32602, error.body.code, error.body.error, error.body);
     }
-    if (error instanceof InvalidSettlementReceipt) {
+    if (error instanceof SettlementUnknown) {
       const body = error.body();
       if (standardPayment(c)) {
         return rpcResult(id, {
@@ -1020,15 +1020,14 @@ async function callPurchaseTool(
       return rpcError(id, -32000, message, data);
     }
     if (error instanceof SettlementDeclined) {
+      const body: unknown = await error.response.clone().json();
+      const refusal = isRecord(body) ? body : { error: body };
+      // This is the processor's answered refusal. A replacement challenge
+      // would discard its reason and look like a new request for payment.
       if (standardPayment(c)) {
-        const challenge = { ...await readMcpPaymentChallenge(c.env, item.id), error: "Settlement failed" };
-        return rpcResult(id, standardPaymentResult(c, item, challenge, idempotencyKey));
+        return rpcResult(id, standardPaymentResult(c, item, refusal, idempotencyKey));
       }
-      const body: unknown = await error.response
-        .clone()
-        .json()
-        .catch(() => ({ error: "payment declined at settlement" }));
-      return rpcResult(id, toolText(isRecord(body) ? body : { error: body }));
+      return rpcResult(id, { ...toolText(refusal) as Record<string, unknown>, isError: true });
     }
     /**
      * MONEY MOVED AND THE GOODS DID NOT (2026-09-04, CV's second

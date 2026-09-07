@@ -1409,18 +1409,18 @@ type SettlementArgs = Parameters<x402HTTPResourceServer["processSettlement"]>;
 /** A success claim with an unusable receipt does not establish non-payment. */
 export const INVALID_SETTLEMENT_RECEIPT_CODE = "invalid_settlement_receipt";
 
-export class InvalidSettlementReceipt extends Error {
+export class SettlementUnknown extends Error {
   reconciliationReference: string | null = null;
 
   constructor(readonly network: string) {
-    super("invalid settlement receipt");
-    this.name = "InvalidSettlementReceipt";
+    super("settlement outcome unknown");
+    this.name = "SettlementUnknown";
   }
 
   body(): Record<string, unknown> & { error: string } {
     return {
-      error: "The payment processor reported success, but its settlement receipt could not be validated. Money may have moved; no valid purchase receipt has been issued.",
-      code: INVALID_SETTLEMENT_RECEIPT_CODE,
+      error: "The payment processor did not provide a confirmed settlement outcome. Money may have moved; no valid purchase receipt has been issued.",
+      code: "settlement_unknown",
       charged: null,
       payment_state: "unknown",
       network: this.network,
@@ -1437,6 +1437,23 @@ export class InvalidSettlementReceipt extends Error {
       status: 503,
       headers: { "Cache-Control": "no-store" },
     });
+  }
+}
+
+/** A success claim with an unusable receipt is also an unresolved payment. */
+export class InvalidSettlementReceipt extends SettlementUnknown {
+  constructor(network: string) {
+    super(network);
+    this.name = "InvalidSettlementReceipt";
+    this.message = "invalid settlement receipt";
+  }
+
+  override body(): Record<string, unknown> & { error: string } {
+    return {
+      ...super.body(),
+      code: INVALID_SETTLEMENT_RECEIPT_CODE,
+      error: "The payment processor reported success, but its settlement receipt could not be validated. Money may have moved; no valid purchase receipt has been issued.",
+    };
   }
 }
 
@@ -1623,7 +1640,7 @@ export interface PendingPayment {
    *
    * THROWS `SettlementDeclined` if the money does not move. The gate
    * catches it and returns the decline; a handler does not have to.
-   * `InvalidSettlementReceipt` instead means payment is unresolved,
+   * `SettlementUnknown` (including `InvalidSettlementReceipt`) means payment is unresolved,
    * so the buyer must not be told to authorize a new purchase.
    */
   settle: () => Promise<SettledPayment>;
@@ -1635,6 +1652,20 @@ export interface PendingPayment {
  * done its work does not have to carry decline-handling code it would
  * get wrong; the gate unwinds to this and serves `response`.
  */
+export function settlementDeclinedBody(body: unknown, reason: string, message?: string): Record<string, unknown> {
+  return {
+    ...(isRecord(body) ? body : { error: "Payment declined at settlement." }),
+    code: "payment_declined",
+    charged: false,
+    payment_state: "not_settled",
+    payment_declined: {
+      reason,
+      ...(message ? { message } : {}),
+      note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+    },
+  };
+}
+
 export class SettlementDeclined extends Error {
   readonly response: Response;
 

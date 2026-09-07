@@ -181,3 +181,35 @@ The earlier probe timing/cleanup test repair is commit `b4f9936f`. Each buyer fi
 - BUY-019: `1a0b3827`.
 
 The checklist checks off only these six findings. BUY-017, BUY-034, and BUY-037 remain unchecked. All fixes are local on `codex/buyer-repairs`; nothing was pushed or deployed. Settlement in every repair regression was simulated, with no real funds moved. Historical Markdown audit reports are preserved alongside the log; raw JSON captures and exploratory scripts/specs remain local and are not part of this commit.
+
+## BUY-017: truthful unknown settlement responses (partial)
+
+The public-door fixture lets the local processor settle once, then replaces the acknowledgement with a throw, persistent transport failure, or a failed response naming the transaction. The inline chain reader has no event yet. All 27 Base/Polygon/Solana × HTTP/legacy-MCP/standard-MCP × failure cases were red before the response repair; each also checks an identical retry. The shared discovery guard independently failed before the new code was advertised.
+
+Unresolved outcomes now throw `SettlementUnknown`, return `charged:null` and `payment_state:unknown`, and retain the existing reconciliation reference when it writes. HTTP uses 503; legacy MCP returns a protocol error and standard MCP sets `isError:true`. Neither offers a fresh payment as a remedy. An invalid Solana receipt retains its distinct existing code under the same unknown-state boundary. The decline log is reserved for answered refusals; unresolved attempts stay in the reconciliation queue.
+
+The related gate passed 137 of 140 assertions; three obsolete expectations across two files were updated for the new uncertainty response and rechecked separately: all 11 tests in those files passed. Typecheck and both Worker dry-run builds passed. This is response correctness, not complete recovery: stable intent/status storage, old-input binding, cross-rail reconciliation and eventual fulfillment remain open under BUY-017/034/037. No real payments were made and no full suite was run locally.
+
+## BUY-011: confirmed refusals survive MCP transport
+
+All menu items were exercised over Base, Polygon and Solana through both MCP payment profiles, paired with HTTP. All 192 tests failed on the prior response handling: the legacy result was not marked as a tool error, while the standard result substituted a new challenge and lost the actual refusal. Every case proves both calls reached verification/settlement before checking the response, and checks that no certificate or order was created. A separate served-discovery assertion also failed before the change.
+
+The shared refusal body now records `payment_declined.reason`, `code:payment_declined`, `charged:false` and `payment_state:not_settled`. MCP returns it as `isError:true` on both profiles. Discovery can describe a tool-result failure without inventing a JSON-RPC error code. Uncertainty remains a distinct error path; no new payment is requested to resolve an ambiguous settlement.
+
+The first related gate passed 278 of 279 checks; the source guard required updating to recognize inherited/shared payment errors. The final protocol recheck passed all 35 tests across three files, typecheck, and both dry-run builds. The full suite stays on GitHub; no real funds moved.
+
+### Independent publication against main
+
+The two settlement-response fixes were extracted from draft #541 onto `codex/buyer-settlement-outcomes`, based on main `4f086c26`. The BUY-017 substep is `8c7606ca`; extraction includes the source guard's recognition of the shared unknown-state error class. This branch contains no reconstruction consumer from the draft. On the main-based branch, typecheck and 53 unknown-state/receipt/discovery tests passed, followed by 279 refusal/catalog/protocol/deliver-first checks in seven files and both Worker dry-run builds. GitHub runs the full suite.
+
+The storage prerequisite #542 merged and its production build succeeded. Draft #541's subsequent preview upload also passed (`81caaaf3-9d55-4dc0-a614-df81548b1566`), closing the migration-order blocker. BUY-017/034/037 remain open for their listed recovery obligations.
+
+## PR #549 — CI contract assertions corrected
+
+GitHub completed 5,548 passing tests and 34 failures across two older contract specs. The HTTP source guard did not recognize the inherited unknown-settlement class or the shared refusal helper, and every listing assertion still required `charged:false` for `settlement_unknown`. The standard MCP entrypoint test still expected fresh payment terms after a confirmed settlement refusal. Updated those assertions to the implemented contract without changing production behavior: unknown remains null, confirmed refusal remains false, and no replacement challenge is offered. The affected specs plus both new runtime matrices pass all 370 tests; typecheck passes. GitHub runs the full suite again after this commit.
+
+## PR #549 — merge conflicts with Solana replay repair resolved
+
+Merged current main (`d108b861`, #551) into the settlement-outcomes branch. Discovery retains the confirmed-refusal and unknown-settlement codes alongside the new verified-payer refusal; the source guard recognizes all shared helpers. The checklist records #551 as merged while leaving #549 pending CI. No recovery consumer from draft #541 was introduced.
+
+Validation: 676 payment-outcome, Solana replay and discovery checks across five files passed (`/private/tmp/pr549-merge-tests.log`), plus 36 standard-entrypoint, receipt-integrity and deliver-first checks across three files (`/private/tmp/pr549-merge-entrypoints.log`). Typecheck and both Worker dry-run bundles passed (`/private/tmp/pr549-merge-build.log`). GitHub runs the full suite; all payment fixtures are local.

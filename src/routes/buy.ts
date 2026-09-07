@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
 import {
   SettlementDeclined,
+  SettlementUnknown,
   type SettledPayment,
 } from "@/lib/payments";
 import { sanitizeText } from "@/lib/sanitize";
@@ -114,6 +115,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     return c.json(await fulfillPurchase(c.env, item, watched, input));
   } catch (error) {
     if (!settled && error instanceof InvalidPatronageTarget) return c.json(error.body, 400);
+    if (error instanceof SettlementUnknown) return error.response();
     if (error instanceof SettlementDeclined) return error.response;
     /**
      * MONEY MOVED AND THE GOODS DID NOT (2026-09-04). The global

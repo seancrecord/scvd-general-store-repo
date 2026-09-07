@@ -180,7 +180,8 @@ describe("the chain machines can ask about an X-PAYMENT buyer", () => {
     const declined = await SELF.fetch(`${BASE}${path}`, {
       headers: { "X-PAYMENT": envelope },
     });
-    expect(declined.status).toBe(402);
+    expect(declined.status).toBe(503);
+    expect(await declined.json()).toMatchObject({ code: "settlement_unknown", charged: null });
 
     const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows).toHaveLength(1);

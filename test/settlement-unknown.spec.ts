@@ -120,7 +120,8 @@ describe("capture: the ambiguous seam writes the row, the answered one does not"
     const declined = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(declined.status).toBe(402);
+    expect(declined.status).toBe(503);
+    expect(await declined.json()).toMatchObject({ code: "settlement_unknown", charged: null });
 
     const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows).toHaveLength(1);

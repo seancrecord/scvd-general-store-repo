@@ -104,7 +104,7 @@ import {
 } from "@/lib/payments";
 import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { SettledPayment } from "@/lib/payments";
-import { InvalidSettlementReceipt, SettlementDeclined } from "@/lib/payments";
+import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 import {
   extractPaymentNonce,
   getSpentNonce,
@@ -1353,14 +1353,13 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           ? { paymentHeader: paymentHeaderOf(c) }
           : {}),
       });
-      if (error instanceof InvalidSettlementReceipt) {
-        error.reconciliationReference = reference;
-      }
+      const unknown = error instanceof SettlementUnknown ? error : new SettlementUnknown(verifiedRequirements.network);
+      unknown.reconciliationReference = reference;
       await sendAlert(c.env, {
         condition: "settlement_failure",
         detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
       });
-      throw error;
+      throw unknown;
     }
     await persistBazaarObservations(c.env, c.req.path);
     /**
@@ -1394,22 +1393,14 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           : {}),
       });
       if (!rescued) {
-        // Verified but didn't settle — and the chain agrees, or the
-        // question didn't apply. Same instrument, settle-side reason.
-        //
-        // MACHINE 1 (#56): when the rescue was ATTEMPTED and came back
-        // empty, the state may still be genuinely unknown — the RPC
-        // could have been down, the rail may have no inline reader, or
-        // the burn may land seconds later. The decline is served (money
-        // fails closed for delivery NOW), and the row keeps the
-        // question open for the hourly resolver. A plain verdict
-        // decline (insufficient_funds and kin) is ANSWERED and writes
-        // no row.
+        // A missing chain event may be lag or an unavailable reader. Keep
+        // the row and return uncertainty; only an answered refusal enters
+        // the decline path below.
         if (
           isTransientSettleFailure(settlement.errorReason) ||
           settlement.transaction
         ) {
-          await recordSettlementUnknown(c.env, {
+          const reference = await recordSettlementUnknown(c.env, {
             path: c.req.path,
             door: "http",
             reason: `settle:${settlement.errorReason}`.slice(0, 300),
@@ -1418,6 +1409,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
               ? { paymentHeader: paymentHeaderOf(c) }
               : {}),
           });
+          const unknown = new SettlementUnknown(verifiedRequirements.network);
+          unknown.reconciliationReference = reference;
+          throw unknown;
         }
         await recordPaymentDecline(
           c.env,
@@ -1435,16 +1429,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           throw new SettlementDeclined(
             respondWithInstructions(c, {
               ...settlement.response,
-              body: {
-                ...settlement.response.body,
-                payment_declined: {
-                  reason: settlement.errorReason,
-                  ...(settlement.errorMessage
-                    ? { message: settlement.errorMessage }
-                    : {}),
-                  note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
-                },
-              },
+              body: settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage),
             }),
           );
         }
@@ -1632,7 +1617,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
      * already built and carries the facilitator's reason; serving it
      * here is what spares every handler its own decline branch.
      */
-    if (error instanceof InvalidSettlementReceipt) return error.response();
+    if (error instanceof SettlementUnknown) return error.response();
     if (error instanceof SettlementDeclined) return error.response;
     /*
      * Any other throw is a DELIVERY failure, and under this rule a
@@ -1655,7 +1640,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * for the case where it does propagate.
    */
   const raised = c.error;
-  if (raised instanceof InvalidSettlementReceipt) {
+  if (raised instanceof SettlementUnknown) {
     c.error = undefined;
     c.res = raised.response();
     return;
@@ -1690,7 +1675,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     } catch (error) {
       // Assigned rather than returned — see the note above. A refused
       // card must not be served as a delivered sale.
-      if (error instanceof InvalidSettlementReceipt) {
+      if (error instanceof SettlementUnknown) {
         c.res = error.response();
         return;
       }

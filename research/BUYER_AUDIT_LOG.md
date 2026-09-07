@@ -82,6 +82,8 @@ Repair: serialize or atomically claim a purchase intent before settlement, and g
 
 ### BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”
 
+**Partial repair:** the unknown settlement response now carries `charged:null`, a reconciliation reference when recorded, and instructions to retain the original payment/key. Both HTTP and MCP distinguish uncertainty from a confirmed refusal. Full input-bound intent, stable status and post-reconciliation delivery remain open.
+
 **Open · injected payment-ambiguity audit, not a verified live incident.** The simulated transfer lands, the facilitator acknowledgement is replaced with transport failures, and the immediate chain lookup has no visible event. On Base/Polygon, the purchase and identical retry provide no certificate while claiming no charge. The audit also checks persisted certificate keys. Base's positive control rescues and fulfills when the event is visible. Polygon does not invoke that immediate rescue even when the fixture would expose the event.
 
 Repair: distinguish confirmed rejection from unresolved settlement in the buyer response. Preserve the purchase intent and give a stable status/recovery handle; complete delivery when settlement is established. Do not advise an unqualified fresh payment. The repository already records settlement-unknown rows and has later reconciliation/alerts; those defenses do not make the immediate “No charge” statement true or deliver the good during these tests. Eventual reconciliation is not claimed tested here.
@@ -101,6 +103,8 @@ Evidence: `capacity-fills` rows in the [quote-to-fulfillment report](buyer-quote
 ## Recovery and artifact integrity
 
 ### BUY-011 — P1: MCP returns a settlement refusal as a successful tool result
+
+**Repaired:** HTTP and both MCP payment profiles now return the same confirmed refusal reason and explicit no-charge state. MCP marks the tool result `isError:true`; the standard profile no longer substitutes a fresh quote. The 192 public-door comparisons and discovery guard were observed failing before this repair.
 
 **Open · HTTP/MCP equivalence audit.** The same `insufficient_funds` settlement refusal is a failed HTTP response with `payment_declined.reason`; MCP returns a normal JSON-RPC tool result, no `isError`, and only an English error sentence. Reproduced for all 32 products through all 35 applicable MCP shelf memberships on three rails: 105 paired refusal cases. A capable reader can infer refusal from the sentence, but a literal client receives neither the protocol failure signal nor the machine-readable reason available over HTTP. No money settles in this fixture.
 
