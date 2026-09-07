@@ -91,19 +91,16 @@ export const ARD_PREDECESSOR_PATH = "/.well-known/ai-catalog.json";
 export const ARD_LINK_REL = "ard";
 
 /**
- * Artifact types, as IANA media types (ARD §3.3). These four are the
- * strings the specification itself uses; none is invented here, and
- * the spec's own note says the two card types are de-facto community
- * standards still tracking towards formal registration.
+ * ARD §3.3's artifact types. The card types are de-facto community
+ * conventions still tracking towards formal registration.
  */
 const TYPE_MCP_SERVER = "application/mcp-server-card+json";
 const TYPE_A2A_AGENT = "application/a2a-agent-card+json";
 const TYPE_SKILL = "application/ai-skill+md";
 /** Not from ARD: the de-facto OpenAPI type the api-catalog already uses. */
 const TYPE_OPENAPI = "application/openapi+json;version=3.1";
-const TYPE_DATASET = "application/ld+json;profile=dataset";
 const TYPE_FEED = "application/atom+xml";
-const TYPE_TOOLS = "application/json;profile=function-calling-tools";
+const TYPE_TOOLS = "application/json";
 
 export interface ArdEntry {
   /** Present only on in-page copies — see ardInPageEntries. */
@@ -244,7 +241,7 @@ export function ardManifest(base: string): ArdManifest {
     ...PUBLISHED_DATASETS.map((dataset) => ({
       identifier: urn(host, "dataset", dataset.path.replace(/^\//, "").replace(/\.json$/, "").replace(/[^a-z0-9]+/gi, "-")),
       displayName: `${dataset.name} — dataset`,
-      type: TYPE_DATASET,
+      type: dataset.mediaType,
       url: `${base}${dataset.path}`,
       description: `${dataset.description} ${dataset.caution}`,
       representativeQueries: dataset.representativeQueries,

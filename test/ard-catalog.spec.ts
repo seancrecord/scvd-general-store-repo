@@ -436,9 +436,53 @@ describe("every record the store publishes is in the manifest (2026-09-04, roadm
     expect(card.capabilities).toEqual([...EVIDENCE_TASKS]);
   });
 
-  it("names the function-calling tools document", () => {
+  it("names the function-calling tools document as ordinary JSON", async () => {
     const tools = ardManifest(BASE).entries.find((entry) => entry.url === `${BASE}/openapi-tools.json`)!;
     expect(tools.identifier).toBe(`urn:air:${new URL(BASE).host}:api:function-calling-tools`);
+    expect(tools.type).toBe("application/json");
+    expect(tools.mediaType).toBe(tools.type);
+    expect(tools.description).toContain("function-calling");
+    const response = await SELF.fetch(tools.url, { headers: { Accept: tools.type } });
+    expect(response.status).toBe(200);
+    const body = await response.json() as { tools: Array<{ type: string; function: { name: string; parameters: unknown } }> };
+    expect(body.tools.length).toBeGreaterThan(0);
+    for (const tool of body.tools) {
+      expect(tool.type).toBe("function");
+      expect(tool.function.name).toBeTruthy();
+      expect(tool.function.parameters).toBeTruthy();
+    }
+  });
+
+  it("declares each dataset's served format without a homemade profile", async () => {
+    const manifest = await (await fetchManifest(ARD_WELL_KNOWN_PATH)).json() as ReturnType<typeof ardManifest>;
+    for (const dataset of PUBLISHED_DATASETS) {
+      const entry = manifest.entries.find((row) => row.url === `${BASE}${dataset.path}`)!;
+      // Inspect the actual machine representation, not JSON-LD embedded in its HTML twin.
+      const response = await SELF.fetch(entry.url, { headers: { Accept: "application/json" } });
+      expect(response.status, dataset.path).toBe(200);
+      const body = await response.json() as Record<string, unknown>;
+      const format = body["@context"] ? "application/ld+json" : "application/json";
+      expect.soft(entry.type, dataset.path).toBe(format);
+      expect.soft(entry.mediaType, dataset.path).toBe(format);
+      if (format === "application/ld+json") {
+        expect(body["@context"], dataset.path).toBe("https://schema.org");
+        expect(body["@type"], dataset.path).toBe("Dataset");
+      }
+      const negotiated = await SELF.fetch(entry.url, { headers: { Accept: format } });
+      expect(negotiated.status, dataset.path).toBe(200);
+      const negotiatedBody = await negotiated.json() as Record<string, unknown>;
+      expect(Object.keys(negotiatedBody).sort(), dataset.path).toEqual(Object.keys(body).sort());
+    }
+  });
+
+  it("keeps the OpenAPI version parameter and serves that version", async () => {
+    const entry = ardManifest(BASE).entries.find((row) => row.url === `${BASE}/openapi.json`)!;
+    expect(entry.type).toBe("application/openapi+json;version=3.1");
+    expect(entry.mediaType).toBe(entry.type);
+    const response = await SELF.fetch(entry.url, { headers: { Accept: entry.type } });
+    expect(response.status).toBe(200);
+    const body = await response.json() as { openapi: string };
+    expect(body.openapi).toMatch(/^3\.1\./);
   });
 
   it("names every published dataset and every feed, one entry each, from the rosters", () => {
