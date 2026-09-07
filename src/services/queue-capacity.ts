@@ -1,3 +1,4 @@
+import { hydrateOrders } from "@/services/managed-orders";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -203,7 +204,7 @@ async function countFromIndex(
     env.ORDERS,
     index.ids.map((id) => KV_KEYS.order(id)),
   );
-  const counted = tally(orders.values(), now);
+  const counted = tally((await hydrateOrders(env, orders)).values(), now);
   if (counted.openIds.length !== index.ids.length) {
     await kvPut(env.ORDERS, 
       KV_KEYS.openLaborIndex,
@@ -231,7 +232,7 @@ async function countByWalkingEveryOrder(
     cap: QUEUE_SCAN_CAP,
   });
   const orders = await bulkGetJson<OrderRecord>(env.ORDERS, keys.names);
-  const counted = tally(orders.values(), now);
+  const counted = tally((await hydrateOrders(env, orders)).values(), now);
   return {
     open_total: counted.open_total,
     open_by_item: counted.open_by_item,
@@ -254,7 +255,7 @@ export async function rebuildOpenLaborIndex(env: Env): Promise<number> {
     cap: QUEUE_SCAN_CAP,
   });
   const orders = await bulkGetJson<OrderRecord>(env.ORDERS, keys.names);
-  const open = tally(orders.values(), new Date()).openIds;
+  const open = tally((await hydrateOrders(env, orders)).values(), new Date()).openIds;
   /*
    * built_at is set ONLY when the walk was complete. Marking a
    * truncated rebuild authoritative would bake the undercount in

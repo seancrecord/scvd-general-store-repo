@@ -1,3 +1,4 @@
+import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { decodeBase64Json } from "@/lib/base64-json";
@@ -1059,7 +1060,7 @@ async function callPurchaseTool(
       }
     } else {
       response = await fulfillPurchase(c.env, item, outcome.pending, input,
-        item.id === "context_anchor" ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
+        supportsArtifactRecovery(item) ? { digest: inputDigest, path: `/api/buy/${item.id}` } : undefined,
       );
     }
     const settled = outcome.settledSoFar();

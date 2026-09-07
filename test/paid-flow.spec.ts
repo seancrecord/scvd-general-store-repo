@@ -1,5 +1,6 @@
+import { resetWeeklyInventory } from "@/services/orders";
 import { SELF, env } from "cloudflare:test";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "@/types";
 import { getMenuItem } from "@/store";
 import { priceTiersUsdc, usdcToAtomic } from "@/lib/payments";
@@ -16,7 +17,6 @@ import { priceTiersUsdc, usdcToAtomic } from "@/lib/payments";
  */
 const COLLAB_TIERS = priceTiersUsdc(getMenuItem("the_collab")!);
 const COLLAB_ATOMIC = COLLAB_TIERS.map(usdcToAtomic);
-import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import {
   installFacilitatorMock,
@@ -36,6 +36,16 @@ let facilitator: FacilitatorMockState;
 
 beforeAll(async () => {
   facilitator = installFacilitatorMock();
+  const inner = globalThis.fetch;
+  vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+    const response = await inner(input, init);
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    if (!url.endsWith("/x402/settle")) return response;
+    const receipt = await response.json() as Record<string, unknown>;
+    // Distinct authorizations settle as distinct transactions, not one shared fixture sale.
+    if (receipt.success) receipt.transaction = `0x${crypto.randomUUID().replace(/-/g, "").repeat(2)}`;
+    return Response.json(receipt, { status: response.status, headers: response.headers });
+  });
   await markKeeperPresent(testEnv);
 });
 
@@ -204,9 +214,7 @@ describe("weekly inventory", () => {
   beforeEach(async () => {
     const orders = await testEnv.ORDERS.list({ prefix: "order:" });
     for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
-    await testEnv.COUNTERS.delete(
-      KV_KEYS.inventory("the_collab", currentWeekKey()),
-    );
+    await resetWeeklyInventory(testEnv);
   });
   it("declines waitlist entries while the shelf is stocked", async () => {
     const response = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
@@ -263,9 +271,7 @@ describe("the keeper's completion flow", () => {
   beforeEach(async () => {
     const orders = await testEnv.ORDERS.list({ prefix: "order:" });
     for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
-    await testEnv.COUNTERS.delete(
-      KV_KEYS.inventory("the_collab", currentWeekKey()),
-    );
+    await resetWeeklyInventory(testEnv);
   });
 
   const auth = {

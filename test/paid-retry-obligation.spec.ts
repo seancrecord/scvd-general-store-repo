@@ -1,6 +1,13 @@
 import { runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 
+// This suite deliberately models purchases made before durable artifact/order journals.
+vi.mock("@/services/fulfillment", async (original) => {
+  const actual = await original<typeof import("@/services/fulfillment")>();
+  return { ...actual, fulfillPurchase: (...args: Parameters<typeof actual.fulfillPurchase>) =>
+    actual.fulfillPurchase(args[0], args[1], args[2], args[3]) };
+});
+
 const fault = vi.hoisted(() => ({ kind: "none", confirmed: false, hits: 0 }));
 vi.mock("@/services/settlement-records", async (original) => {
   const actual = await original<typeof import("@/services/settlement-records")>();

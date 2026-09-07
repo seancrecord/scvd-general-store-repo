@@ -1,3 +1,4 @@
+import { hydrateOrders } from "@/services/managed-orders";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -158,7 +159,7 @@ export async function auditRefundWindows(
   const breaches: WindowBreach[] = [];
   let checked = 0;
 
-  for (const order of orders.values()) {
+  for (const order of (await hydrateOrders(env, orders)).values()) {
     if (!order?.created_at || !order.sla_hours) continue;
     checked += 1;
     const created = Date.parse(order.created_at);

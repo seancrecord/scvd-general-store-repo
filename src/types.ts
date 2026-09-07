@@ -413,6 +413,8 @@ export const TERMINAL_ORDER_STATUSES = ["completed"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export interface OrderRecord {
+  /** This order's mutable state is coordinated; KV is its listing projection. */
+  managed_order?: true;
   order_id: string;
   item_id: string;
   item_name: string;

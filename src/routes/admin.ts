@@ -1235,7 +1235,7 @@ adminRoutes.get("/admin/testing", async (c) => {
       const item = name.split(":")[1] ?? name;
       const sold = Number.parseInt(counts.get(name) ?? "0", 10);
       if (Number.isFinite(sold) && sold > 0) {
-        inventory[item] = sold;
+        inventory[item] = (inventory[item] ?? 0) + sold;
       }
     }
   } catch {

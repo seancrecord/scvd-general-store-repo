@@ -1,5 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
-import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
+import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody } from "@/lib/delivery-failed";
 import { archiveDepthFor } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
@@ -1167,7 +1167,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       if (spent.transaction && spent.path === c.req.path) {
         const payer = payerOfVerifiedPayload(result.paymentPayload);
         const namespace = c.env.PAID_RECOVERIES;
-        const artifact = c.req.path === "/api/buy/context_anchor" && payer && namespace &&
+        const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
           await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
             .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
               transaction: spent.transaction }).catch(() => null);

@@ -1,6 +1,9 @@
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
-import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { OrderMutation, ManagedOrderState } from "@/services/managed-orders";
+import type { OrderRecord, Env } from "@/types";
 
 export interface ArtifactPurchase {
   digest: string;
@@ -9,7 +12,7 @@ export interface ArtifactPurchase {
 export interface RecoveryIdentity {
   path: string; payer: string; network: string; transaction: string;
 }
-export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit";
+export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment";
 
 function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
   const payer = purchase.payment.payer;
@@ -31,7 +34,8 @@ export type RecoveryClaim =
   | { kind: "unavailable" };
 
 /**
- * One coordinator per settled transaction. KV alone cannot authorize a
+ * Transaction instances coordinate fulfillment; order-prefixed instances
+ * serialize mutable order state. KV alone cannot authorize a
  * re-mint: two edges can both read "no certificate" before either writes.
  * The claim is durable before fulfillment starts and never expires into
  * permission to mint again. An interrupted recovery without a saved result
@@ -124,6 +128,43 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       if (await txn.get("artifact:credit_started")) return false;
       await txn.put("artifact:credit_started", true);
       return true;
+    });
+  }
+
+  async readOrder(): Promise<ManagedOrderState | null> {
+    return await this.ctx.storage.get<ManagedOrderState>("order") ?? null;
+  }
+
+  /**
+   * Per-order instances serialize both state changes and their KV publication.
+   * KV I/O yields: without this gate an old queued write could finish AFTER
+   * a human's completion. No callback/network work runs inside this gate.
+   */
+  async writeOrder(seed: OrderRecord, mutation?: OrderMutation): Promise<ManagedOrderState | null> {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      try {
+        if (!seed.managed_order) return null;
+        let state = await this.ctx.storage.get<ManagedOrderState>("order");
+        if (!state) state = { order: seed, completion: 0 };
+        if (state.order.order_id !== seed.order_id || state.order.cert_id !== seed.cert_id) return null;
+        if (mutation?.kind === "acknowledge") state.order.acknowledged_at = mutation.at;
+        if (mutation?.kind === "complete") {
+          state.order.status = "completed";
+          state.order.deliverable = mutation.deliverable;
+          state.order.completed_at = mutation.at;
+          delete state.order.webhook;
+          state.completion++;
+        }
+        if (mutation?.kind === "webhook" && mutation.completion === state.completion) {
+          state.order.webhook = mutation.result;
+        }
+        await this.ctx.storage.put("order", state);
+        await kvPut(this.env.ORDERS, KV_KEYS.order(state.order.order_id), JSON.stringify(state.order));
+        return state;
+      } catch {
+        // Keep the committed state for retry without resetting the object.
+        return null;
+      }
     });
   }
 

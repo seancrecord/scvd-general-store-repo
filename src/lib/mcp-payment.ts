@@ -1,3 +1,5 @@
+import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
+import { getMenuItem } from "@/store";
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
 import { sendAlert } from "@/lib/alerts";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
@@ -396,7 +398,7 @@ export async function runMcpPayment(
       // the open delivery row. Authenticate its owner before returning it;
       // a globally indexed nonce is not proof of ownership.
       const namespace = env.PAID_RECOVERIES;
-      const artifact = path === "/api/buy/context_anchor" && namespace && await namespace.get(namespace.idFromName(
+      const artifact = supportsArtifactRecovery(getMenuItem(itemId)) && namespace && await namespace.get(namespace.idFromName(
         `${result.paymentRequirements.network}:${spent.transaction}`,
       )).readArtifact({ path, payer: verifiedPayer, network: result.paymentRequirements.network,
         transaction: spent.transaction }).catch(() => null);

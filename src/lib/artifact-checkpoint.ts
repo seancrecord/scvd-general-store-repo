@@ -1,6 +1,6 @@
 import { sha256Hex } from "@/lib/idempotency";
 import type { ArtifactStage } from "@/services/paid-recovery";
-import type { Env } from "@/types";
+import type { Env, MenuItem } from "@/types";
 
 export interface ArtifactCheckpoint {
   read<T>(stage: ArtifactStage): Promise<T | null>;
@@ -32,4 +32,9 @@ export async function httpArtifactDigest(url: string): Promise<string> {
   query.delete("payment_payload");
   query.sort();
   return sha256Hex(query.toString());
+}
+
+/** Stocked goods consume external inventory; their recovery needs a separate journal. */
+export function supportsArtifactRecovery(item: MenuItem | undefined): boolean {
+  return !!item && (item.id === "context_anchor" || (item.fulfillment === "human_queue" && !item.stocked));
 }
