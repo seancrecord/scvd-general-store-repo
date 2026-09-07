@@ -1,0 +1,82 @@
+[
+  {
+    "registry": "ardregistry",
+    "query": "scvd.store",
+    "checked_at": "2026-09-06T22:10:04.804252+00:00",
+    "status": 200,
+    "returned": 100,
+    "scvd_matches": 0,
+    "current_identifiers": [],
+    "stale_identifiers": []
+  },
+  {
+    "registry": "ardregistry",
+    "query": "x402",
+    "checked_at": "2026-09-06T22:10:05.131036+00:00",
+    "status": 200,
+    "returned": 100,
+    "scvd_matches": 0,
+    "current_identifiers": [],
+    "stale_identifiers": []
+  },
+  {
+    "registry": "neuronto",
+    "query": "scvd.store",
+    "checked_at": "2026-09-06T22:10:04.803808+00:00",
+    "status": 200,
+    "returned": 100,
+    "scvd_matches": 3,
+    "current_identifiers": [
+      "urn:air:scvd.store:server:general-store",
+      "urn:air:scvd.store:server:x402-verifier",
+      "urn:air:scvd.store:api:function-calling-tools"
+    ],
+    "stale_identifiers": []
+  },
+  {
+    "registry": "neuronto",
+    "query": "x402",
+    "checked_at": "2026-09-06T22:10:04.803978+00:00",
+    "status": 200,
+    "returned": 100,
+    "scvd_matches": 1,
+    "current_identifiers": [
+      "urn:air:scvd.store:server:general-store"
+    ],
+    "stale_identifiers": []
+  },
+  {
+    "registry": "wellknown",
+    "query": "scvd.store",
+    "checked_at": "2026-09-06T22:10:04.804159+00:00",
+    "status": 200,
+    "returned": 50,
+    "scvd_matches": 10,
+    "current_identifiers": [
+      "urn:air:scvd.store:skill:general-store",
+      "urn:air:scvd.store:server:general-store",
+      "urn:air:scvd.store:api:http",
+      "urn:air:scvd.store:api:function-calling-tools",
+      "urn:air:scvd.store:skill:execution-contract",
+      "urn:air:scvd.store:server:x402-verifier",
+      "urn:air:scvd.store:feed:corrections",
+      "urn:air:scvd.store:feed:disagreements",
+      "urn:air:scvd.store:dataset:defects"
+    ],
+    "stale_identifiers": [
+      "urn:air:scvd.store:agent:general-store"
+    ]
+  },
+  {
+    "registry": "wellknown",
+    "query": "x402",
+    "checked_at": "2026-09-06T22:10:04.804205+00:00",
+    "status": 200,
+    "returned": 50,
+    "scvd_matches": 1,
+    "current_identifiers": [
+      "urn:air:scvd.store:server:x402-verifier"
+    ],
+    "stale_identifiers": []
+  }
+]

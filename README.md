@@ -56,7 +56,7 @@ reversal sits beside what it replaced at
 
 It is also a small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
-Agents pay in USDC over x402 on a network offered in the current payment quote over the x402 protocol. Humans read the receipts.
+Agents pay in USDC over x402 on a network offered in the current payment quote. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
 [`/agents.md`](https://scvd.store/agents.md) (the scannable contract
@@ -68,8 +68,8 @@ index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 What people arrive here to do, and where each door is:
 
 - **Test an x402 payment** — a live practice counter with real USDC
-  settlement, no sandbox; the cheapest real test payment we know of,
-  $0.005: [scvd.store/try](https://scvd.store/try).
+  settlement, no sandbox; test payment prices and required inputs are
+  listed at [scvd.store/try](https://scvd.store/try).
 - **Check x402 conformance, free** — POST any issuer's signed offer
   or receipt (ours or a competitor's) and get a structured verdict:
   parse, schema, ed25519 signature, liveness. No account, no wallet:
@@ -108,7 +108,7 @@ What people arrive here to do, and where each door is:
   declared field wallet, recorded stage by stage and signed. Directories
   rank doors by whether they answer; this one pays them.
 - **Audit an agent's books against the chain** — `the_statement`: every
-  USDC transfer in and out of one Base wallet over a stated window,
+  USDC transfer in and out of a wallet on the supported network you select over a stated window,
   signed by a party that is neither the agent nor its operator.
 - **Read your month off the chain** — `operator_statement`: your
   receiving address, every USDC transfer in and out for 30 days, four
@@ -313,7 +313,7 @@ npx wrangler kv namespace create PATRONS
 
 ### The till and the keys (secrets)
 
-Five secrets, none of which ever go in the repo:
+Core secrets, none of which ever go in the repo:
 
 ```bash
 npx wrangler secret put PAY_TO_ADDRESS      # Base wallet that receives USDC
@@ -322,6 +322,12 @@ npx wrangler secret put CDP_API_KEY_SECRET  # ...and its secret
 npx wrangler secret put SIGNING_KEY         # ed25519 seed — see below
 npx wrangler secret put ADMIN_PASSWORD      # the keeper's back-room key
 ```
+
+Optional checkout recipients are `POLYGON_PAY_TO`, `ARBITRUM_PAY_TO`,
+`WORLD_PAY_TO`, and `SOLANA_PAY_TO`. Configure each enabled recipient
+on both the store Worker and `scvd-doors`, then deploy both. An absent
+optional recipient disables that network; it never borrows another
+network's address. See [PAYMENT_RAILS.md](PAYMENT_RAILS.md).
 
 The `SIGNING_KEY` signs every certificate and badge. Mint a fresh one with:
 
@@ -353,7 +359,18 @@ No accounts, no API keys, no cart. We speak x402 **v2** (the current
 standard — `@x402/core` ecosystem) with USDC and the Coinbase Developer Platform as facilitator. The live
 `/rails` and `/menu.json` responses list enabled checkout networks; the
 current `PAYMENT-REQUIRED` challenge supplies the terms to sign. A
-statement or audit can inspect chains that checkout does not accept. It goes like this:
+statement or audit can inspect chains that checkout does not accept.
+
+Checkout integration supports Base, Polygon, Arbitrum, World, and Solana;
+the enabled set is determined by recipient configuration, not this list.
+Statement readers support Base, Polygon, Ethereum, Arbitrum One, OP Mainnet
+(Optimism), Avalanche C-Chain, World, and Solana. Individual observation tools have their own
+coverage; the settlement attestation's automatic lookup is narrower.
+The browser till signs with a compatible EVM wallet extension. Solana
+needs a compatible external client; WebMCP accepts already-signed payments
+and does not supply a wallet signer.
+
+It goes like this:
 
 1. An agent calls `GET /api/buy/luckies`.
 2. We answer `402 Payment Required`. The machine-readable requirements ride
@@ -500,10 +517,11 @@ cli/              # scvd: the official command line over the store's
                   # set, the corpus, the RFC 9727 catalog, the version
                   # table. One file, zero deps, its own tests
                   # (npm run cli:test). It holds no key and cannot
-                  # sign a payment, on purpose. Not on npm until the
-                  # keeper publishes it (DISTRIBUTION.md §4b); every
-                  # surface that names it reads CLI_PUBLISHED in
-                  # src/store/cli.ts and says so until then.
+                  # sign a payment, on purpose. On npm since
+                  # 2026-08-28 (DISTRIBUTION.md §4b); every surface
+                  # that names it reads CLI_PUBLISHED in
+                  # src/store/cli.ts rather than asserting a
+                  # publication state of its own.
 ```
 
 ### Editing the Town Directory
@@ -796,6 +814,7 @@ signatures verify at our own URL, which is worth exactly as much as
 you trust the URL. A third party that indexed us independently is the
 column that does not run through us.
 
-- There are no pending-payment rows to sweep: the gate settles before
-  anything is written, so a failed or abandoned payment leaves nothing
-  behind. The Sunday cron remains digest-only on purpose.
+- Goods are produced before settlement and certificate signing. Delivery
+  intents, unknown-settlement records, and the delivery audit account for
+  failures around that boundary. An interrupted response is not proof that
+  no money moved; retain the original payment and retry key for recovery.

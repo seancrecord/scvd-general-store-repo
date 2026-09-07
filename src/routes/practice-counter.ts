@@ -247,9 +247,10 @@ practiceCounterRoutes.get("/try", (c) => {
          * arrives at the end, where the builder will still find it.
          */
         standfirst:
-          "Press a button and three things happen: the store quotes the exact price in USDC, your wallet opens once and asks for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. One check first: have your wallet's network set to Base or Polygon. If it is not, the till says so and nothing gets signed. Under the hood this is the same EIP-3009 flow as the three steps above — this button is the client you were about to write.",
+          "Press a button and three things happen: the store quotes the exact price in USDC, your wallet opens once and asks for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. One check first: have your wallet's network set to an EVM network offered in the current quote. If it is not, the till says so and nothing gets signed. Under the hood this is the same EIP-3009 flow as the three steps above — this button is the client you were about to write.",
         verifyHint: `${base}/api/verify/{cert_id}`,
       },
+      c.env,
     );
 
     // The WebMCP declaration reaches the room where the verb lives
@@ -362,6 +363,10 @@ practiceCounterRoutes.get("/try", (c) => {
   return c.json({
     title: COPY.title,
     summary: COPY.standfirst,
+    browser_checkout: {
+      wallet_limit: TILL_WALLET_LIMIT,
+      signing: 'The wallet signs; WebMCP submits an already-signed payment from a compatible external client.',
+    },
     protocol: {
       name: STORE_METADATA.protocol,
       version: "2",

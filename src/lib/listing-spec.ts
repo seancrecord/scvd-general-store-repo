@@ -179,12 +179,12 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
 
 function priceText(item: MenuItem): string {
   if (item.pricing === "fixed") {
-    return `$${item.price_usdc} USDC (x402, Base)`;
+    return `$${item.price_usdc} USDC (x402 v2; network from the current quote)`;
   }
   const tiers = priceTiersUsdc(item)
     .map((tier) => `$${tier}`)
     .join(" / ");
-  return `$${item.price_usdc} minimum USDC (x402, Base; tiers ${tiers}, above minimum records as a tip)`;
+  return `$${item.price_usdc} minimum USDC (x402 v2; network from the current quote; tiers ${tiers}, above minimum records as a tip)`;
 }
 
 /** C1: the spec-first fact block, canonical form, adapted per item. */

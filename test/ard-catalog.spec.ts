@@ -234,21 +234,26 @@ describe("it cannot disagree with what the store already declares", () => {
     );
   });
 
-  it("gives its discovery entries 2-5 representative queries", () => {
-    // §4.2: SHOULD contain 2-5. Not schema-enforced; the conformance
-    // tester flags a miss, and an entry without them cannot be found
-    // by search at all, which is the whole point of publishing one.
-    for (const entry of ardManifest(BASE).entries) {
-      if (!entry.representativeQueries) continue;
+  it("gives every published entry 2-5 representative queries", async () => {
+    // Optional in the schema, required by our discovery contract.
+    // The old guard skipped missing queries, hiding most of the catalog.
+    const catalogs = [ardManifest(BASE).entries, ardInPageEntries(BASE)];
+    for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH]) {
+      const body = await (await fetchManifest(path)).json() as ReturnType<typeof ardManifest>;
+      catalogs.push(body.entries);
+    }
+    for (const entry of catalogs.flat()) {
+      const queries = entry.representativeQueries ?? [];
       expect(
-        entry.representativeQueries.length,
+        queries.length,
         entry.identifier,
       ).toBeGreaterThanOrEqual(2);
       expect(
-        entry.representativeQueries.length,
+        queries.length,
         entry.identifier,
       ).toBeLessThanOrEqual(5);
-      for (const query of entry.representativeQueries) {
+      expect(new Set(queries).size, entry.identifier).toBe(queries.length);
+      for (const query of queries) {
         expect(query.length, entry.identifier).toBeGreaterThan(10);
       }
     }

@@ -1,6 +1,6 @@
 {
   "name": "scvd-defects",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation \u2014 plus recorded 402 door fixtures to test a client against. CC BY 4.0 names, MIT code.",
   "type": "module",
   "main": "./defects.js",

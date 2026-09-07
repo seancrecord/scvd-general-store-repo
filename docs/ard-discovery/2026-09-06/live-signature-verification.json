@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-06T22:07:21.407Z",
+  "signed": true,
+  "signatureVerified": true,
+  "catalogDigestVerified": true,
+  "certificateKeyMatches": true,
+  "aliasMatches": true,
+  "schemas": [
+    "ai-catalog.schema.json",
+    "ard-entry.schema.json"
+  ],
+  "entries": 21,
+  "kid": "did:web:scvd.store#key-2",
+  "digest": "sha256:c9994a1ac688c00e803985e79f3d8ab15dad3debc1c25fcde58ad2f5b550be05",
+  "keyHistory": {
+    "found": true,
+    "chain_ok": true,
+    "first_seen_sequence": 1,
+    "bitcoin_confirmed_reported": true
+  },
+  "limitation": "Bitcoin inclusion proof and trusted-checkpoint continuity were not independently verified in this live smoke check."
+}

@@ -1,0 +1,53 @@
+{
+  "registry": "neuronto",
+  "url": "https://neuronto.com/submit",
+  "request": {
+    "domain": "scvd.store"
+  },
+  "checked_at": "2026-09-06T22:09:55.094566+00:00",
+  "status": 200,
+  "body": {
+    "status": "indexed",
+    "domain": "scvd.store",
+    "manifest_path": "/.well-known/ard.json",
+    "resources_indexed": 22,
+    "newly_added": 17,
+    "page": "https://neuronto.com/ard-publishers/scvd.store",
+    "crawl": {
+      "considered": 1,
+      "crawled": 1,
+      "manifest": "/.well-known/ard.json",
+      "entries": 21
+    },
+    "submission": {
+      "id": "8551796491cb",
+      "kind": "domain",
+      "target": "scvd.store",
+      "status": "indexed",
+      "attempts": 1,
+      "created": 1788732595,
+      "updated": 1788732596,
+      "reason": "indexed",
+      "detail": "",
+      "evidence": null,
+      "status_url": "https://neuronto.com/submit/status/8551796491cb",
+      "entry_key": null,
+      "verified_tools": 22,
+      "note": "indexed"
+    },
+    "note": "fetched live from your domain, not taken from this form. Endpoint reachability is probed separately and is not a trust or safety rating",
+    "badge": {
+      "html": "<a href=\"https://neuronto.com/ard-publishers/scvd.store\" target=\"_blank\" rel=\"noopener\"><img src=\"https://neuronto.com/badge/scvd.store.svg\" alt=\"scvd.store on the Neuronto ARD Registry\" height=\"20\"></a>",
+      "markdown": "[![scvd.store on the Neuronto ARD Registry](https://neuronto.com/badge/scvd.store.svg)](https://neuronto.com/ard-publishers/scvd.store)",
+      "rst": ".. image:: https://neuronto.com/badge/scvd.store.svg\n   :alt: scvd.store on the Neuronto ARD Registry\n   :target: https://neuronto.com/ard-publishers/scvd.store",
+      "text_html": "<a href=\"https://neuronto.com/ard-publishers/scvd.store\" rel=\"noopener\">Verified on the Neuronto ARD Registry</a>",
+      "text_markdown": "[Verified on the Neuronto ARD Registry](https://neuronto.com/ard-publishers/scvd.store)",
+      "image": "https://neuronto.com/badge/scvd.store.svg",
+      "link": "https://neuronto.com/ard-publishers/scvd.store",
+      "alt": "scvd.store on the Neuronto ARD Registry",
+      "optional": "entirely optional and changes nothing about your indexing or ranking. It states what we verified, and it corrects itself when that changes",
+      "customise": "https://neuronto.com/badge?domain=scvd.store"
+    },
+    "next": "Last step: add the badge to your README or site. Markdown: [![scvd.store on the Neuronto ARD Registry](https://neuronto.com/badge/scvd.store.svg)](https://neuronto.com/ard-publishers/scvd.store) HTML and other formats: https://neuronto.com/badge?domain=scvd.store. It states what was observed, the verified tool count and whether your endpoint answered, corrects itself when that changes, is free, and changes nothing about your indexing or ranking."
+  }
+}
