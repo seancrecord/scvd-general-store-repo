@@ -3,6 +3,31 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.13.0 — 2026-09-07
+
+Vocabulary v13: `cleared-not-examined` keeps its assertion and loses
+its falsifier. No class moved, no other definition changed.
+
+v12 read `checks.assessed_for` as the check's published coverage set.
+It is the check's subject — the principals whose exposure the statuses
+describe, the payer rather than the sender on a relayed transfer. The
+examined set is derived from that field, not equal to it: the
+`assets_moved[].to` whose `.from` appears in `assessed_for`.
+
+The v12 rule misfired on ordinary transfers, where the recipient was
+screened but is absent from `assessed_for`, reporting unscreened about
+an address the check had examined. The correction is 0200project's,
+against the line in their own source, found by running the rule rather
+than reasoning about it. The v12 text stays readable in the vocabulary
+changelog, which is where withdrawn definitions live.
+
+The derivation holds on relayed settlements. Non-relayed transactions
+and any transaction carrying an approval are shapes it does not reach,
+stated in the entry rather than noted beside it.
+
+If you pinned 0.12.0 and built on that falsifier, this is the upgrade
+that matters.
+
 ## 0.12.0 — 2026-09-06
 
 Vocabulary v12: adds `cleared-not-examined`, the second evidence label
