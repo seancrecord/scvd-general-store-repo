@@ -3,6 +3,7 @@ import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
+import { A2A_STATE_DESCRIPTION } from "@/services/a2a-tasks";
 
 /**
  * GET /privacy — the privacy policy, as a real room.
@@ -25,6 +26,10 @@ import type { HonoEnv } from "@/types";
 export const privacyRoutes = new Hono<HonoEnv>();
 
 const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
+  {
+    head: "The A2A evidence agent",
+    body: [A2A_STATE_DESCRIPTION],
+  },
   {
     head: "What this store does not collect",
     body: [
