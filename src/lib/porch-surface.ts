@@ -98,6 +98,10 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/api/practice", "practice"],
   ["/api/bot-auth/check", "bot-auth:check"],
   ["/a2a", "a2a"],
+  ["/a2a-desk", "a2a:desk"],
+  ["/a2a-desk.json", "a2a:instructions"],
+  ["/api/a2a/check", "a2a:card-check"],
+  ["/api/a2a/runner.mjs", "a2a:runner"],
   ["/ask", "ask"],
   ["/conformance", "conformance:desk"],
   /* The human rooms past the storefront. */
@@ -266,6 +270,12 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   practice: "instrument",
   "x402-test": "instrument",
   a2a: "instrument",
+  "a2a:card-check": "instrument",
+  "a2a:recheck": "instrument",
+  "a2a:report": "evidence",
+  "a2a:runner": "storefront",
+  "a2a:instructions": "storefront",
+  "a2a:desk": "room",
   ask: "instrument",
   bell: "door",
   treat: "door",
@@ -363,6 +373,9 @@ function versionedInstrument(path: string): string | undefined {
 }
 
 export function porchSurface(path: string, method: string): string | undefined {
+  // One bucket per action, never one key per private report link.
+  if (path.startsWith("/api/a2a/kits/")) return method === "POST" && path.endsWith("/recheck") ? "a2a:recheck" : "a2a:report";
+  if (path === "/api/a2a/check" && method === "GET") return "a2a:instructions";
   const exact = PORCH_EXACT.get(path);
   if (exact) {
     return exact;

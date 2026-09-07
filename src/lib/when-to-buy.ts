@@ -68,6 +68,7 @@ export interface FreeInstrument {
 }
 
 export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
+  { name: "A2A card check", does: "One bounded read of an A2A 0.3.0 card, with per-check evidence, repair suggestions and unassessed scope stated.", reach: base => `MCP tool check_a2a_card, or POST ${base}/api/a2a/check; setup and limits at ${base}/a2a-desk`, isTool: true },
   {
     name: "Preflight",
     does:
@@ -135,6 +136,7 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
  * No ranking of demand or value is implied.
  */
 export const ROUTES: readonly Route[] = [
+  { job: "Find and repair failures in my A2A agent", free: "/a2a-desk", items: ["a2a_repair_kit"] },
   {
     job: "I am about to pay an endpoint I have never used. Is its door even shaped right?",
     free: "Preflight — the preflight_endpoint tool, one probe, free, no account. Or the look — look_at_door — the same probe folded with everything the signed chain holds about the host, free.",

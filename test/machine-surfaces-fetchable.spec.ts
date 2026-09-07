@@ -36,6 +36,7 @@ describe("machine surfaces stay inside the reader's limit", () => {
   it("measures every surface #25 still owed a ceiling", () => {
     const paths = SURFACES.map((surface) => surface.path);
     expect(paths).toEqual([
+      "/a2a-desk.json",
       "/menu.json?view=compact",
       "/menu.json",
       "/corpus.json",

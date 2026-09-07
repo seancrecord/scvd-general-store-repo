@@ -1,3 +1,4 @@
+import { deliverA2AKit, type PreparedA2AKit } from "@/services/a2a-kit";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { caseFileNote, storeCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
@@ -110,6 +111,7 @@ export interface InstantGoodsInput {
   anchorLabel?: string;
   /** service_audit only: the report, already made and signed. */
   serviceAudit?: SignedServiceAudit;
+  a2aKit?: PreparedA2AKit;
   /** good_buyer only: the dry run, already read and signed. */
   goodBuyer?: SignedGoodBuyerReading;
   /** signature_agent_card only: the card, already made and signed. */
@@ -601,6 +603,10 @@ export async function deliverInstantGoods(
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the report too. The report URL serves the record free, forever — blind spots printed on it.",
         },
       };
+    }
+    case "a2a_repair_kit": {
+      if (!input.a2aKit) throw new Error("A2A kit missing before delivery");
+      return deliverA2AKit(env, input.a2aKit, input.certId ?? "");
     }
     case "service_audit": {
       // Already observed and signed, upstream, so its evidence hash

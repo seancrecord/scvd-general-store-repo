@@ -1,3 +1,4 @@
+import { A2A_PRICE_USDC, A2A_MONEY, A2A_PROPOSITION } from "@/store/a2a-repair";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import type { MenuItem } from "@/types";
@@ -32,6 +33,15 @@ const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
  * human queue.
  */
 export const UTILITY_ITEMS: readonly MenuItem[] = [
+  // Demand tag: keeper request / desk reasoning, 2026-09-07. No paid demand observed.
+  {
+    id: "a2a_repair_kit", sample_url: "/samples/a2a-repair-kit.json", listed_week: "2026-W37", name: "The A2A Repair Kit",
+    subtitle: "tested failures, suggested fixes, a recheck and a week of card observations",
+    price_usdc: A2A_PRICE_USDC, pricing: "fixed", cadence: "one_off", reads: "subject_fetch", fulfillment: "instant",
+    description: `${A2A_PROPOSITION} ${A2A_MONEY} Supports public A2A 0.3.0 JSON-RPC endpoints with an operator-published safe test fixture. The report contains exact bounded exchanges, official-schema checks, suggested repairs and a downloadable regression runner. Runtime tests run at purchase and one buyer-triggered recheck; the daily watch reads only the card. Implementation in your repository is separately scoped. Free card checks and setup: /a2a-desk. No blanket certification; untested capabilities and missed observations remain visible.`,
+    note_402: A2A_MONEY,
+    constraints: ["url is the full public HTTPS agent-card URL; no query, fragment, credentials, private address or our own hostname", "Before purchase publish /.well-known/scvd-a2a-audit.json on the same origin, with the safe-to-repeat fixture and explicit permission described at /a2a-desk", "Only public test data; no secrets, credentials or wallet material", "One recheck within 30 days; keep the purchase token private. Removing or expiring the authorization file revokes runtime permission", "Seven days of card observations, ending automatically. No automatic renewal", "Repairs are suggestions, not source-inspected patches. Code implementation requires a separate quote"],
+  },
   /**
    * NAME KEEPER-CONFIRMED 2026-08-03 ("yeah thats the name"); the
    * description and note carry his chosen register — rule 7 keeps

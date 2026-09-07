@@ -163,6 +163,14 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/conformance-watch/{watch_id}",
   },
   {
+    id: "a2a_repair_kit",
+    name: "A2A repair-kit observations",
+    trust_model: "third_party_observation",
+    signs: "RFC 8785 canonical observation bytes: the card and endpoint URLs, moment, battery and protocol version, bounded exchanges, per-check states, counts and gaps. The purchase certificate binds the initial observation hash; each recheck and card-watch pass is signed separately.",
+    does_not_prove: "Complete A2A conformance, untested versions or transports, application correctness, safety, uptime, or that the suggested repairs were applied. The store authored the suggestions; implementation is separately scoped. Missing watch slots are counted against the observer.",
+    verify_url: "/api/a2a/kits/{kit_id}",
+  },
+  {
     id: "service_audit",
     name: "Service audit reports (the Once-Over)",
     trust_model: "third_party_observation",

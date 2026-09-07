@@ -1,3 +1,4 @@
+import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { ROOMS } from "@/store/rooms";
 import {
   SCORERS_FOR_MONEY,
@@ -82,6 +83,7 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  { id: "a2a_desk", name: "A2A checks and repair kits", room: "/a2a-desk", proposition: A2A_PROPOSITION, for_money: A2A_MONEY, free_first: A2A_FREE, doors: ["/a2a-desk.json", "/api/a2a/check", "/api/a2a/runner.mjs", "/api/a2a/kits/{kit_id}", "/api/a2a/kits/{kit_id}/recheck"], named_on: ["/operators", "/developers", "/conformance"], opened: "2026-09-07" },
   {
     id: "trade_counter",
     name: TRADE_COUNTER_NAME,

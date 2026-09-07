@@ -845,8 +845,10 @@ const BASE = "https://scvd.store";
 // identity, discovery descriptions, and the public correction. Re-read the
 // generated guide when taking this digest; HTTP/MCP equality is checked below.
 // A2A request requirements, retrieval and retention add four guide lines.
+// 2026-09-07: reviewed the A2A desk paragraph, kit menu/spec copy, and
+// derived price-ceiling counts introduced by the new paid item.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1df4733fb0aa9ac7ba161f4800a05f6ee45ea3deaab4a82ceb934ed2860d7198";
+  "cd78b50bb9c0a343a8523b527f6089f2ff6507c32a925d07e452b99856e307b6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

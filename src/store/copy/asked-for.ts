@@ -68,6 +68,7 @@ export const ALTERNATE_NAMES: readonly string[] = [...STORE_NAMES, ...ASKED_FOR_
 export const ITEM_ASKED_FOR: Record<string, string> = {
   conformance_watch: "x402 endpoint conformance monitoring, signed daily for a week",
   good_buyer: "test your x402 payment client against a real endpoint, signed",
+  a2a_repair_kit: "A2A agent checks, reproducible failures, repair guidance and a signed recheck",
   service_audit: "x402 conformance audit, signed, one endpoint at one moment",
   signature_agent_card: "Web Bot Auth key directory check, signed",
   onpage_audit: "machine-readability audit of a page, signed",

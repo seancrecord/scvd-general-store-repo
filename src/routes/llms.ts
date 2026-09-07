@@ -1,3 +1,4 @@
+import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { paymentNetworkNames, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { NEVER_A_RANKING } from "@/store/copy/doctrine";
@@ -288,6 +289,10 @@ needs to evaluate before it decides can do all of that without a
 wallet — and that evaluation layer is a real part of what this store
 is for, not a free sample of the shop. The shop is still a shop:
 signed goods, human labor, and a keeper who answers.
+
+A2A REPAIR DESK: ${base}/a2a-desk
+${A2A_PROPOSITION} ${A2A_MONEY} ${A2A_FREE}
+Setup, supported scope and limits: ${base}/a2a-desk.json.
 
 The one labor door that is also an instrument: aura_walk. Name your
 own x402 door and the keeper sends models of different strength

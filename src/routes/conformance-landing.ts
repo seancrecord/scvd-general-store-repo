@@ -94,7 +94,8 @@ function landingJson(base: string) {
  * the page (rule 18 — third-party text is never rendered as ours).
  */
 function deskFormHtml(): string {
-  return `<section>
+  return `<section><p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests, suggested fixes and signed rechecks.</p></section>
+    <section>
       <h2>Check one now</h2>
       <p class="menu-desc">Paste a signed offer or receipt — any issuer's, including ours. Free, no account, and the verdict says what it does not prove.</p>
       <form method="post" action="/conformance" class="desk-form"

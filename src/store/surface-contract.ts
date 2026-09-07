@@ -1,3 +1,4 @@
+import { A2A_ACTIONS } from "@/store/a2a-repair";
 import type { MenuItem } from "@/types";
 
 /**
@@ -602,6 +603,10 @@ function doorErrors(): (DoorError & {
  * entry so the deeper contract is one hop from the shelf, which is
  * what 57.1 asks for.
  */
+export function itemReadsSentence(item: MenuItem): string {
+  return item.id === "a2a_repair_kit" ? A2A_ACTIONS : READS_SENTENCE[item.reads];
+}
+
 export function paidDoorContract(
   item: MenuItem,
   schema: { properties?: Record<string, unknown>; required?: string[] },
@@ -614,7 +619,7 @@ export function paidDoorContract(
     expected_outcome: expectedOutcome(item, facts),
     errors: doorErrors(),
     security: securityBlock(base, {
-      does_in_your_name: `${READS_SENTENCE[facts.reads]} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
+      does_in_your_name: `${itemReadsSentence(item)} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
       stores: `The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. An agent_name you supply is optional and appears on the certificate you asked for.${facts.humanQueue ? " A callback_url, if you give one, is used to tell you the work is done and for nothing else. Anything you write in `detail` is recorded exactly as written and read by a human, never treated as instructions to a machine." : ""}`,
     }),
   };

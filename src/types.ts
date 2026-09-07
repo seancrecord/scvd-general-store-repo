@@ -50,6 +50,7 @@ export interface Env {
   /** One durable reconstruction attempt per already-settled payment. */
   PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
   /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
+  A2A_KITS?: DurableObjectNamespace<import("@/services/a2a-kit").A2AKitStore>;
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
   /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the

@@ -15,12 +15,12 @@ describe("the README tools table", () => {
   it("names exactly the tools the server lists", async () => {
     const readme = (await import("../README.md?raw")).default;
     const section = readme.split("### Tools")[1]?.split("**Evidence cards")[0] ?? "";
-    const named = [...section.matchAll(/^\| `([a-z_]+)` \|/gm)].map((m) => m[1]!);
+    const named = [...section.matchAll(/^\| `([a-z0-9_]+)` \|/gm)].map((m) => m[1]!);
     const live = mcpToolCatalog("https://scvd.store").map((t) => t.name);
     expect(named.length, "the table is empty or unparsed").toBeGreaterThan(0);
     expect([...named].sort()).toEqual([...live].sort());
     // Every row says something; a bare name is what the scanner already had.
-    for (const row of section.matchAll(/^\| `[a-z_]+` \| (.+) \|$/gm)) {
+    for (const row of section.matchAll(/^\| `[a-z0-9_]+` \| (.+) \|$/gm)) {
       expect(row[1]!.length).toBeGreaterThan(20);
     }
   });

@@ -121,6 +121,8 @@ async function handToStore(
 export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!doorsReady(c.env)) return handToStore(c, "not-ready");
   if (paymentHeaderOf(c)) return handToStore(c, "paid");
+  // This admission reads an operator fixture and uses the store-owned rate limiter.
+  if (c.req.path.replace(/\/+$/, "") === "/api/buy/a2a_repair_kit" && new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");
   if (c.req.raw.body !== null && !c.req.raw.bodyUsed) {
     pristine.set(c.req.raw, c.req.raw.clone());
   }

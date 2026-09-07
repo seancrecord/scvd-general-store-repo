@@ -1,3 +1,4 @@
+import { freeA2ACheck } from "@/lib/a2a-admission";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
@@ -633,6 +634,10 @@ export async function callFreeTool(
       recordPorchVisit(c.env, "before-you-pay:mcp", mcpSignals(c)),
     );
     return outcome.body as unknown as Record<string, unknown>;
+  }
+  if (name === "check_a2a_card") {
+    const outcome = await freeA2ACheck(c.env, args["url"]);
+    return outcome.status === 200 ? outcome.body : `A2A card check refused: ${String(outcome.body.error)}. Read /a2a-desk.json for the next step.`;
   }
   if (name === "check_conformance") {
     const outcome = await checkConformance(
