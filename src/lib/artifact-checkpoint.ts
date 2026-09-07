@@ -34,7 +34,15 @@ export async function httpArtifactDigest(url: string): Promise<string> {
   return sha256Hex(query.toString());
 }
 
+/** These goods have no inventory, timed service or external observation to
+ * reconstruct. Their selected text and certificate can be retained together.
+ * Keep this explicit: a new instant item is not automatically safe to resume.
+ */
+export function supportsSimpleInstantRecovery(item: MenuItem): boolean {
+  return item.fulfillment === "instant" && ["hello", "certificate_of_patronage", "small_blessing", "daily_fortune"].includes(item.id);
+}
+
 /** Stocked goods consume external inventory; their recovery needs a separate journal. */
 export function supportsArtifactRecovery(item: MenuItem | undefined): boolean {
-  return !!item && (item.id === "context_anchor" || (item.fulfillment === "human_queue" && !item.stocked));
+  return !!item && (supportsSimpleInstantRecovery(item) || item.id === "context_anchor" || (item.fulfillment === "human_queue" && !item.stocked));
 }

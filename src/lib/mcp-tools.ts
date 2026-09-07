@@ -791,7 +791,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "check_purchase", reads: "our_books",
     summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; submits no payment.",
-    description: "Use recovery.purchase_id and private recovery.status_token to read payment, original terms and available fulfillment, even after payment expiry. Free; submits no payment. Fulfillment may contain a recovered anchor or human order; human work remains pending until completed. Payment alone is not proof of delivery.",
+    description: "Use recovery.purchase_id and private recovery.status_token to read payment, original terms and available fulfillment, even after payment expiry. Free; submits no payment. Fulfillment may contain a recovered instant good or human order; human work remains pending until completed. Payment alone is not proof of delivery.",
     inputSchema: { type: "object", properties: {
       purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
       status_token: str("The private recovery.status_token from the purchase response.", 64),

@@ -79,6 +79,8 @@ import type { Env, MenuItem } from "@/types";
 
 export interface InstantGoodsInput {
   patronNumber: number;
+  /** Original purchase date for a fortune recovered after midnight. */
+  purchasedAt?: string;
   agentName?: string;
   /** The operator's statement: the receiving address and its rail, validated at the door. */
   statementWallet?: string;
@@ -159,11 +161,13 @@ export async function deliverInstantGoods(
       return { deliverable: dibsNote(input.patronNumber) };
     case "small_blessing":
       return { deliverable: await drawBlessing(env) };
-    case "daily_fortune":
+    case "daily_fortune": {
+      const date = input.purchasedAt ? new Date(input.purchasedAt) : new Date();
       return {
-        deliverable: dailyFortune(),
-        extras: { fortune_date: new Date().toISOString().slice(0, 10) },
+        deliverable: dailyFortune(date),
+        extras: { fortune_date: date.toISOString().slice(0, 10) },
       };
+    }
     case "context_anchor": {
       const anchorInput: Parameters<typeof createAnchor>[1] = {
         summary: input.summary ?? "",

@@ -1,5 +1,5 @@
 import { getOrder } from "@/services/orders";
-import { artifactCheckpoint, supportsArtifactRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
+import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
 import { requireRenewalPass } from "@/services/patronage";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
@@ -732,6 +732,7 @@ export async function fulfillPurchase(
   if (item.fulfillment === "instant") {
     const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
       patronNumber: minted.patronNumber,
+      purchasedAt: purchaseCreatedAt,
     };
     // The watches record it so a lost id is recoverable by proving
     // the wallet, rather than by buying the watch a second time.
@@ -823,7 +824,14 @@ export async function fulfillPurchase(
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.
     goodsInput.certId = minted.certificate.cert_id;
-    const goods = await deliverInstantGoods(env, item, goodsInput, checkpoint);
+    // A random blessing or dated fortune is the purchased text, not a fresh
+    // draw every time a response write is retried. First durable bytes win.
+    const retainGoods = checkpoint && supportsSimpleInstantRecovery(item) ? checkpoint : undefined;
+    let goods = await retainGoods?.read<Awaited<ReturnType<typeof deliverInstantGoods>>>("instant_goods");
+    if (!goods) {
+      goods = await deliverInstantGoods(env, item, goodsInput, checkpoint);
+      if (retainGoods) goods = await retainGoods.save("instant_goods", goods);
+    }
     const response = {
       message: VOICE.instantThanks,
       item_id: item.id,

@@ -147,3 +147,14 @@ All 30 new buyer regressions failed without the production fix and passed with i
 BUY-017/034/037 remain open for uncheckpointed products, commission/publication capture, legacy obligations and loss of the private recovery handle. Existing Solana purchase records without the message digest are not silently treated as reconcilable. These checked substeps do not change the 15/39 completed finding count or claim production deployment.
 
 Implementation references: [Solana transaction format](https://solana.com/docs/core/transactions), [finalized transaction lookup](https://solana.com/docs/rpc/http/gettransaction), [paged address history](https://solana.com/docs/rpc/http/getsignaturesforaddress), and [Solana CAIP-2 genesis identification](https://namespaces.chainagnostic.org/solana/caip2).
+
+## 2026-09-07 — recovery for simple instant goods
+
+- [x] Extend durable certificate and response recovery to the active Signed Hello, Certificate of Patronage, Small Blessing and Daily Fortune products.
+- [x] Retain the selected instant text before response publication, so repeated or concurrent recovery returns the same good with the same certificate and one settlement.
+- [x] Preserve the original purchase day when a fortune resumes after midnight, including an interruption before its text was selected.
+- [x] Exercise HTTP and both MCP profiles across all five supported rails after certificate publication, saved-text acknowledgement loss and response checkpoint failures; verify the recovered certificate and original buyer canaries through public status and verification doors.
+
+All 252 new cases passed with the fix and failed when the production changes were removed. The affected discovery group and adjacent fortune/delivery checks passed 72 cases, including the catalogue byte ceiling, retry-key guidance and both payment profiles. Full CI remains delegated to GitHub, and no real payments were submitted.
+
+This extends BUY-017/034/037 recovery without closing the parent findings. Inventory-consuming goods, term services, external observations, commission/publication capture and legacy/missing-handle recovery remain. The unsigned blessing/fortune-text finding (BUY-022) is separate and stays open: retaining a selected text does not itself bind that text into the certificate signature. The finding count remains 15 checked and 24 open; these additional recovery substeps are checked separately. The final shared recovery gate passed 396 cases across four files, followed by typecheck. Both Worker dry-run bundles passed.
