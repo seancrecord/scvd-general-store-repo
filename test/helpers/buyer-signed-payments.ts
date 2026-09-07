@@ -51,15 +51,17 @@ export async function associated(owner: string, mint: string): Promise<Uint8Arra
 // Legacy transaction with an isolated fee payer, standard compute-budget
 // instructions and TransferChecked. Keys are real; balances and recent blockhash
 // are fixture state. Both signatures are generated locally, never submitted.
-export async function solPayment(o: ChallengeRequirement, change: { mint?: string; recipient?: string; amount?: bigint; unrelatedSignature?: boolean } = {}): Promise<Obj> {
+export async function solPayment(o: ChallengeRequirement, change: { mint?: string; recipient?: string; amount?: bigint; unrelatedSignature?: boolean; buyerKey?: CryptoKeyPair } = {}): Promise<Obj> {
+  const buyerKey = change.buyerKey ?? solKey;
+  const buyer = encodeBase58(new Uint8Array((await crypto.subtle.exportKey("raw", buyerKey.publicKey)) as ArrayBuffer));
   const mint = change.mint ?? o.asset;
   const amount = new Uint8Array(8); new DataView(amount.buffer).setBigUint64(0, change.amount ?? BigInt(o.amount), true);
   const limit = new Uint8Array(4); new DataView(limit.buffer).setUint32(0, 20000, true);
   const price = new Uint8Array(8); price[0] = 1;
-  const msg = concat(Uint8Array.of(2, 1, 3, 7), bytes(solFeePayer), bytes(solBuyer), await associated(solBuyer, mint), await associated(change.recipient ?? o.payTo, mint), bytes(mint), bytes(TOKEN_PROGRAM_ADDRESS), bytes("ComputeBudget111111111111111111111111111111"), crypto.getRandomValues(new Uint8Array(32)), Uint8Array.of(3, 6, 0, 5, 2), limit, Uint8Array.of(6, 0, 9, 3), price, Uint8Array.of(5, 4, 2, 4, 3, 1, 10, 12), amount, Uint8Array.of(6));
+  const msg = concat(Uint8Array.of(2, 1, 3, 7), bytes(solFeePayer), bytes(buyer), await associated(buyer, mint), await associated(change.recipient ?? o.payTo, mint), bytes(mint), bytes(TOKEN_PROGRAM_ADDRESS), bytes("ComputeBudget111111111111111111111111111111"), crypto.getRandomValues(new Uint8Array(32)), Uint8Array.of(3, 6, 0, 5, 2), limit, Uint8Array.of(6, 0, 9, 3), price, Uint8Array.of(5, 4, 2, 4, 3, 1, 10, 12), amount, Uint8Array.of(6));
   const signed = msg.slice(); if (change.unrelatedSignature) signed[signed.length - 2] = signed[signed.length - 2]! ^ 1;
   const feeSig = new Uint8Array(await crypto.subtle.sign("Ed25519", feeKey.privateKey, msg));
-  const buyerSig = new Uint8Array(await crypto.subtle.sign("Ed25519", solKey.privateKey, signed));
+  const buyerSig = new Uint8Array(await crypto.subtle.sign("Ed25519", buyerKey.privateKey, signed));
   return { x402Version: 2, accepted: o, payload: { transaction: btoa(String.fromCharCode(...concat(Uint8Array.of(2), feeSig, buyerSig, msg))) } };
 }
 export async function solFacts(w: Obj): Promise<{ valid: boolean; payer: string; recipientAccount: string; mint: string; amount: bigint; tx: string; feePayer: string }> {
