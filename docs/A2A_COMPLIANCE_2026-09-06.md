@@ -50,6 +50,13 @@ copy of exactly the staged PR contents passes the full suite (564 files,
 builds, the scalability audit and the claims register. The unrelated
 untracked buyer-audit experiments were not copied into that release check.
 
+Main then advanced to `9031884c` during validation. The integration preserves
+both specification-read entries and passes 565 tracked test files (5,748
+tests passed, one skipped), typecheck, both builds and the remaining local
+CI commands. Only the exact untracked buyer-experiment paths were excluded.
+The Linux-specific startup script also passes with the installed Mac binary
+substituted in a temporary copy; the repository script remains unchanged.
+
 The keeper forwarded the store's null-kind alert at 00:20:58.409 UTC.
 The saved `scvd-audit-null-part` request began at 00:20:58.396 UTC, 13 ms
 earlier, tying that alert to this audit's intentional malformed-input probe.
@@ -63,7 +70,14 @@ expected checks; `research/a2a-2026-09-06/predeploy-gate.json` is that record.
 
 Deploy through the normal reviewed release, including the new
 `v3-a2a-tasks` SQLite migration. Like the existing recovery migration, it
-requires a deployment, not a version upload alone. Then run:
+requires a deployment, not a version upload alone.
+
+During PR #556, a preview upload of the tested bundle reproduced error
+10211: Cloudflare requires the Durable Object migration to be applied by
+a non-versioned deployment. No preview version or production deployment
+was created by that diagnostic attempt.
+
+After deployment, run:
 
 ```sh
 npm run a2a:live -- --out=/tmp/scvd-a2a-postdeploy.json

@@ -20,6 +20,8 @@
 import { canonicalAddress } from "@/lib/addresses";
 
 export const KV_KEYS = {
+  desvelaRegistryPrefix: "desvela_registry:",
+  desvelaRegistry: (digest: string): string => `desvela_registry:${digest}`,
   order: (orderId: string): string => `order:${orderId}`,
   waitlist: (itemId: string, timestamp: number): string =>
     `waitlist:${itemId}:${timestamp}`,

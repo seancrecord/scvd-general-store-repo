@@ -845,6 +845,15 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **Desvela Registry Watch activation (2026-09-06).** After the receiver
+  is deployed at `https://scvd.store/webhooks/desvela-registry`, register
+  the watch separately and install the returned secret with
+  `npx wrangler secret put DESVELA_REGISTRY_SECRET` on the store Worker.
+  Keep the manage_token privately. No watch was registered by this build.
+  Until setup, the receiver returns 401. First real delivery is the
+  remaining integration check; receipts are reviewable at
+  `/admin/desvela-registry.json`. See `docs/DESVELA_REGISTRY_WATCH.md`.
+
 - **ARD Registry account submission (2026-09-06).**
   Keeper-provided submission-screen output confirms live discovery,
   v1.0 schema/formats and did:web verification passed for all 21 entries.

@@ -10,7 +10,15 @@ mcp-name: store.scvd/general-store
 [![ora agent readiness score](https://ora.ai/api/badge/scvd.store)](https://ora.ai/scan/scvd.store)
 [![VerifyMCP trust score for SCVD General Store](https://verifymcp.io/badge/store-scvd-general-store/scvd.svg)](https://verifymcp.io/servers/store-scvd-general-store/scvd)
 [![Vouch Protocol agent trust grade for scvd.store: A (100)](docs/badges/vouch-agent-trust.svg)](https://vouch-protocol.com)
+[![Agent discovery on WellKnown](https://wellknownhq.com/badge/scvd.store.svg)](https://wellknownhq.com/d/scvd.store)
 [![DOI of the corpus](https://zenodo.org/badge/DOI/10.5281/zenodo.22284887.svg)](https://doi.org/10.5281/zenodo.22284887)
+
+Discovery records: [Neuronto](https://neuronto.com/ard-publishers/scvd.store)
+and [WellKnown](https://wellknownhq.com/d/scvd.store). The
+[Desvela checker](https://desvela.ai/check#domain=scvd.store) runs a check
+of this domain's discovery surfaces. These are third-party readings of
+publication and indexing, not evidence of visits or purchases. The
+WellKnown badge above is served live by WellKnown.
 
 Every badge above is somebody else's reading of this store. This one is
 ours, about ourselves, and it is set apart from that row on purpose —
