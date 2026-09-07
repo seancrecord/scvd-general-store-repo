@@ -13,8 +13,10 @@ mcp-name: store.scvd/general-store
 [![Agent discovery on WellKnown](https://wellknownhq.com/badge/scvd.store.svg)](https://wellknownhq.com/d/scvd.store)
 [![DOI of the corpus](https://zenodo.org/badge/DOI/10.5281/zenodo.22284887.svg)](https://doi.org/10.5281/zenodo.22284887)
 
-Discovery records: [Neuronto](https://neuronto.com/ard-publishers/scvd.store)
-and [WellKnown](https://wellknownhq.com/d/scvd.store). The
+Discovery records: [Neuronto](https://neuronto.com/ard-publishers/scvd.store),
+[WellKnown](https://wellknownhq.com/d/scvd.store),
+[Licium — MCP endpoint history](https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA),
+and [Zero.xyz — Signature Agent Card](https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c). The
 [Desvela checker](https://desvela.ai/check#domain=scvd.store) runs a check
 of this domain's discovery surfaces. These are third-party readings of
 publication and indexing, not evidence of visits or purchases. The
