@@ -97,13 +97,17 @@ for (const door of ["http", "mcp"] as const) {
       expect(certs.keys).toHaveLength(0);
 
       receiptOverride = null;
-      const recovered = await call(item, door, {}, tool, wire, key);
-      expect(idOf(recovered)).toBeTruthy();
+      const submissions = facilitator.settleCalls;
+      const retry = await call(item, door, {}, tool, wire, key);
+      // A retained unknown purchase is not permission to resubmit to the
+      // facilitator. The private status survives independently of its receipt.
+      expect(retry.body).toMatchObject({ code: "settlement_unknown", charged: null });
+      expect(object(retry.body.recovery).purchase_id).toBe(recovery.purchase_id);
+      expect(facilitator.settleCalls).toBe(submissions);
       expect(ledger.size).toBe(1);
-      const verification = await request(`/api/verify/${String(idOf(recovered))}`);
-      const checked = object(await verification.json());
-      expect(checked.valid).toBe(true);
-      expect(object(checked.certificate).settlement_tx).toBe([...ledger.values()][0]?.transaction);
+      const status = await request(String(recovery.status_url), { headers: { Authorization: `Bearer ${recovery.status_token}` } });
+      expect(status.status).toBe(200);
+      expect(await status.json()).toMatchObject({ payment_state: "unknown", charged: null });
     });
   }
 }

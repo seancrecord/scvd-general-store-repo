@@ -1,6 +1,6 @@
 # Buyer repair checklist
 
-Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PRs #540, #544, #549, #551 and #552 have merged; #541 remains a draft. All payment tests use local fixtures.
+Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PRs #540, #544, #549, #551 and #552 have merged; #541 has merged. All payment tests use local fixtures.
 
 The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-001, BUY-005, and BUY-028; the other three require durable payment and delivery recovery.
 
@@ -11,7 +11,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired in `8c7606ca` (merged #549); catalogue intent capture and protected status are built on `codex/buyer-durable-intent`; reconciliation-driven delivery and remaining doors stay open.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: HTTP retries preserve the owed-delivery record and report the confirmed charge when only a certificate exists or lookup fails. Checkpointed human orders now reconstruct with stable IDs, original briefs/terms and preserved completed work; legacy purchases and other artifacts remain open.
-- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in draft PR #541; interrupted partial writes and legacy input bindings remain open.
+- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in merged PR #541; interrupted partial writes and legacy input bindings remain open.
 
 ## Remaining findings
 
@@ -46,7 +46,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — open.
 - [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
 - [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — MCP now returns capacity_unavailable, charged:false and open_orders/cap; HTTP/commission refusal fields remain open.
-- [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (draft).
+- [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (merged).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.
 
 ## Verification and scope
@@ -69,7 +69,7 @@ Final validation on the repaired current-main snapshot covered 552 test files: 5
 
 The completed substeps passed 206 focused tests across nine files, typechecking, and both Worker dry-run builds. The full suite is delegated to GitHub as requested. The three SEV-1 findings BUY-017/034/037 stay unchecked; successful first reconstruction is not the complete durable-recovery guarantee.
 
-Completed-result follow-up: four public MCP regressions failed at receipt replay on the prior code (Base/Polygon, cache loss/completion-response loss); all pass with authenticated durable reads. Final focused gate: 212 tests across nine files, typecheck, and both dry-run bundles. This does not cover a crash before the complete result is saved. PR #541 remains draft while broader recovery gaps are unresolved. The storage prerequisite and earlier preview-upload failure were resolved; see the release prerequisite below.
+Completed-result follow-up: four public MCP regressions failed at receipt replay on the prior code (Base/Polygon, cache loss/completion-response loss); all pass with authenticated durable reads. Final focused gate: 212 tests across nine files, typecheck, and both dry-run bundles. This does not cover a crash before the complete result is saved. PR #541 is merged; the broader recovery findings remain open. The storage prerequisite and earlier preview-upload failure were resolved; see the release prerequisite below.
 
 BUY-038: all 30 new failure-injection cases were observed red before the repair and green afterward. Coverage includes Base/Polygon/Solana, legacy/standard payment profiles, tool text/JSON-RPC/modern envelope encoding, and EVM cached replay. Identical EVM retries return the original verifiable artifact without settlement, and only an encoded response closes its delivery row. The final related gate passed 236 tests across seven files, typecheck, and both dry-run builds. Solana retry recovery remains BUY-007; partial fulfillment remains BUY-034/037.
 
@@ -108,3 +108,13 @@ The 27 public-door fault cases were observed red before the repair, including id
 - [x] Describe the tool-result error in the served discovery contract.
 
 All 192 catalog × three-rail × two-profile public-door comparisons failed before the repair; each checks both HTTP and MCP reached settlement, the same machine-readable reason, and no certificate or order. They passed after the fix, along with the separately red discovery assertion. This closes BUY-011; it does not close the unknown-settlement or fulfillment-recovery findings.
+
+## 2026-09-07 — purchase status integration / PR #559
+
+- [x] Reconcile the README tool table, route telemetry and feature register with the protected purchase-status door.
+- [x] Keep recovery instructions within the existing MCP catalog budget; remove the duplicated, contradictory one-minute retry paragraph.
+- [x] Document private status retrieval in the buyer guide and retain its existing size limits.
+- [x] Teach the source guards where the shared purchase codes and Durable Object transaction writes live. Keep explicit unknown/charged/refused distinctions.
+- [x] Assert that malformed Solana receipts retain unknown status without submitting the payment again. Automatic Solana ambiguity resolution remains open.
+
+GitHub exposed these integration gaps in both runs of #559. All 260 focused cases across the 12 affected files pass, plus typecheck and both dry-run bundles; the full suite remains delegated to GitHub. This repair changes no SEV-1 completion claim.

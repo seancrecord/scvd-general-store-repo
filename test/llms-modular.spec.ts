@@ -845,8 +845,10 @@ const BASE = "https://scvd.store";
 // identity, discovery descriptions, and the public correction. Re-read the
 // generated guide when taking this digest; HTTP/MCP equality is checked below.
 // A2A request requirements, retrieval and retention add four guide lines.
+// 2026-09-07: the payment guide names the protected status read, its bearer token,
+// authorization expiry and the distinction between saved payment and delivery.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1df4733fb0aa9ac7ba161f4800a05f6ee45ea3deaab4a82ceb934ed2860d7198";
+  "7d61b0057adae6a9ae19ae927cdfa816be180a117c7718cb571da96fa26dd157";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

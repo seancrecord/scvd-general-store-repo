@@ -262,18 +262,18 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   },
   {
     code: "purchase_record_unavailable", http: 503, charged: null,
-    means: "durable purchase storage could not be read or written; this request submitted no payment, but an earlier attempt may still be unresolved",
-    what_to_do: "Retain the original payment and key. Retry when storage is available; do not use a new authorization to bypass this check.",
+    means: "purchase storage unavailable; no submission this time, earlier payment unresolved",
+    what_to_do: "Retry the same payment/key when storage returns.",
   },
   {
     code: "purchase_recovery_pending", http: 503, charged: true,
-    means: "this payment has a durable confirmed settlement record, but the current request did not recover a deliverable",
-    what_to_do: "Read recovery.status_url using Authorization: Bearer <status_token>. Keep the original payment and key; no additional settlement was attempted.",
+    means: "payment confirmed; delivery recovery pending",
+    what_to_do: "Read recovery.status_url with Bearer status_token. No new payment.",
   },
   {
     code: "purchase_not_settled", http: 503, charged: false,
-    means: "this authorization already received a definitive settlement refusal; the retained purchase was not charged",
-    what_to_do: "Read the retained status. Correct the original refusal before starting another purchase; this retry submitted no payment.",
+    means: "retained payment was definitively refused",
+    what_to_do: "Read retained status and correct the refusal. No payment this retry.",
   },
   {
     code: "settlement_unknown",
@@ -282,7 +282,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     means:
       "the payment processor did not provide a confirmed outcome and no on-chain rescue established settlement. Money may have moved; this is not a confirmed refusal",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Catalogue purchases also return recovery.status_url and a private status_token: GET that URL with Authorization: Bearer <status_token> to read status without submitting payment, even after authorization expiry. MCP clients can call check_purchase with purchase_id and status_token on this connection. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original payment/key; avoid a new authorization. Read recovery.status_url with Bearer status_token, or check_purchase(purchase_id,status_token), even after expiry. Standard MCP: isError:true.",
   },
   {
     code: "invalid_settlement_receipt",
@@ -291,7 +291,7 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     means:
       "the processor reported success but returned an invalid settlement receipt. Payment is unknown, not declined; no valid purchase receipt was issued",
     what_to_do:
-      "Keep the original signed payment and idempotency key. Retry only that identical request; do not sign a new payment while this one is unresolved. Retain recovery.reference when present. Catalogue purchases also return recovery.status_url and a private status_token: GET that URL with Authorization: Bearer <status_token> to read status without submitting payment, even after authorization expiry. MCP clients can call check_purchase with purchase_id and status_token on this connection. Standard MCP payment mode reports this with isError:true in the tool result.",
+      "Keep the original payment/key; avoid a new authorization. Read recovery.status_url with Bearer status_token, or check_purchase(purchase_id,status_token), even after expiry. Standard MCP: isError:true.",
   },
   {
     code: "sold_out",

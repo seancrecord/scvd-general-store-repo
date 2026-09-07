@@ -186,7 +186,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: OPERATORS_PROPOSITION,
     for_money: OPERATORS_FOR_MONEY,
     free_first: OPERATORS_FREE_FIRST,
-    doors: ["/api/declare-door"],
+    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}"],
     named_on: ["/scorers"],
     opened: OPERATORS_OPENED,
   },

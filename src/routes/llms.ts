@@ -440,11 +440,8 @@ derived from the MCP catalog: ${base}/openapi-tools.json
 Developer documentation, one index of all of it: ${base}/developers
 (also at /docs and /api). No account and no API key exists to obtain:
 free shelves are open, paid ones take a signed x402 payment per
-request. The page states the error model, the rate-limit headers and
-the deprecation policy in one place. HTML by default now — it served
-JSON to anything that sent "Accept: */*" until 2026-08-26, which is
-what curl and most crawlers send, so the one page whose whole job was
-being found read as a wall of JSON to half its readers.
+request. The page states the error model, rate-limit headers and deprecation policy.
+HTML by default; request application/json for its machine-readable twin.
 API catalog, RFC 9727: ${base}/.well-known/api-catalog — every API
 surface at this origin as an RFC 9264 linkset, at the fixed path a
 scanner is allowed to know without guessing.
@@ -592,6 +589,12 @@ affected 402 repeats it in its own body.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
+Uncertain payment: keep the original payment/key. Use recovery.purchase_id
+and private recovery.status_token with MCP check_purchase, or GET
+${base}/api/purchase-status/{purchase_id} with Authorization: Bearer
+<status_token>. Free after authorization expiry; payment status alone
+is not proof of delivery. Avoid a second authorization while unresolved.
+
 Idempotency. Send an Idempotency-Key header (16-128 characters) with a
 purchase — or _meta['x402/idempotency-key'] over MCP — and a repeat of
 the same key for the same item from the same wallet inside 24 hours
@@ -602,14 +605,9 @@ charge (and we say so in every tool's annotations); with one, the loop
 spins against a cache. Errors and 402s are never cached, only settled
 sales replay.
 
-YOU DO NOT HAVE TO INVENT ONE. Every 402 from this store carries an
-idempotency.suggested_key you can echo back verbatim, because an
-agent cannot send a header it does not know exists. Echo it and a
-retry inside the same minute returns your original purchase instead of
-charging you again. It is stable for 60 seconds — deliberately, since
-a key that changed on every fetch would be useless to a loop that
-re-fetches the challenge each pass — and if your retry straddles the
-boundary the store still checks the previous minute's value for you.
+Every 402 includes idempotency.suggested_key to echo back. It is stable
+for 60 seconds; retries crossing that boundary also check the previous
+minute's value for the original purchase, without another charge.
 
 The suggested key is NOT a secret and is not meant to be: it is
 derived from the item and the current minute, so anyone can compute

@@ -5,6 +5,12 @@ import { extractPaymentNonce } from "@/lib/replay-guard";
 import { SettlementDeclined, SettlementUnknown, type SettledPayment } from "@/lib/payments";
 import { isRecord, type Env, type MenuItem } from "@/types";
 
+export const PURCHASE_RECORD_CODES = {
+  unavailable: "purchase_record_unavailable",
+  pending: "purchase_recovery_pending",
+  refused: "purchase_not_settled",
+} as const;
+
 export interface PurchaseIntent {
   version: 1;
   id: string;
@@ -57,7 +63,7 @@ class RecordedPurchase extends SettlementUnknown {
   override body() {
     return { ...super.body(), ...purchaseStatus(this.record),
       error: "This payment already has a purchase record. No new settlement was attempted. Read its status; fulfillment recovery may still be required.",
-      code: this.record.state === "unknown" ? "settlement_unknown" : this.record.state === "settled" ? "purchase_recovery_pending" : "purchase_not_settled",
+      code: this.record.state === "unknown" ? "settlement_unknown" : this.record.state === "settled" ? PURCHASE_RECORD_CODES.pending : PURCHASE_RECORD_CODES.refused,
       recovery: { reference: this.reconciliationReference, recorded: true, ...purchaseRecovery(this.env, this.record),
         retry: "Keep the original signed payment and idempotency key; do not sign a new payment while this one is unresolved." },
     };
@@ -86,7 +92,7 @@ export async function unresolvedPurchase(env: Env, network: string, payer: strin
     return record.state === "unknown" ? new RecordedPurchase(env, record).body() : null;
   } catch {
     return { error: "Purchase status is unavailable. This request did not submit payment; an earlier attempt may remain unresolved.",
-      code: "purchase_record_unavailable", charged: null, settlement_attempted: false, payment_state: "unknown" };
+      code: PURCHASE_RECORD_CODES.unavailable, charged: null, settlement_attempted: false, payment_state: "unknown" };
   }
 }
 
@@ -111,7 +117,7 @@ export async function beginPurchaseIntent(env: Env, input: {
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;
   } catch {
-    throw new SettlementDeclined(Response.json({ code: "purchase_record_unavailable", charged: null, settlement_attempted: false,
+    throw new SettlementDeclined(Response.json({ code: PURCHASE_RECORD_CODES.unavailable, charged: null, settlement_attempted: false,
       payment_state: "unknown", error: "The purchase record is unavailable. This request did not submit payment; an earlier attempt may still be unresolved. Retry the same request with the same payment and key." },
       { status: 503, headers: { "Cache-Control": "no-store" } }));
   }
