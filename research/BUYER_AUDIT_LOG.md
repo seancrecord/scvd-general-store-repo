@@ -94,6 +94,8 @@ Evidence for BUY-014–017: [payment-ambiguity report](buyer-payment-ambiguity-2
 
 ### BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling
 
+**Repaired locally 2026-09-07; release pending in #541.** MCP now runs the same capacity verdict as HTTP after authenticated replay and before new settlement, and also checks it before issuing unpaid quotes. It refuses per-item saturation, global saturation and incomplete counts with capacity_unavailable, charged:false and the observed count/cap; discovery explains the outcome. The 120 five-rail public refusal cases, 20 added paid-retry/admission controls and one discovery check failed before the fix. Atomic reservation remains BUY-035. Original audit follows.
+
 **Open · quote-to-fulfillment audit.** Obtain a valid quote while the bench is empty, then fill the published open-labor ceiling with outstanding orders before presenting the payment. HTTP refuses before settlement. MCP settles and creates another labor order. This affects both current human-queue products across Base, Polygon and Solana. It is separate from BUY-012: open backlog is a capacity level; weekly sales inventory is a rate that resets.
 
 Repair: enforce the shared capacity verdict for new MCP purchases before payment, while preserving authenticated retrieval of an already-paid order. Keep concurrent admission/reservation races in scope for follow-up; this reproduction is sequential and does not prove a missed SLA or a second chain debit.

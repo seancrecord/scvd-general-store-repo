@@ -73,7 +73,7 @@ async function send(id: string, door: Door, args: Obj, payment?: Obj, key?: stri
 const certId = (body: Obj) => body.cert_id ?? object(body.certificate).cert_id;
 for (const { id } of MENU_ITEMS.filter(item => item.fulfillment === "human_queue" && !item.stocked))
 for (const door of ["http", "mcp", "mcp-standard"] as const) {
-  for (const closure of (door === "http" ? ["shutter", "inventory", "capacity"] : ["shutter"]) as Closure[]) {
+  for (const closure of (door === "http" ? ["shutter", "inventory", "capacity"] : ["shutter", "capacity"]) as Closure[]) {
     for (const recovery of [false, true]) for (const network of recovery ? [BASE_NETWORK, POLYGON_NETWORK] : [BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK]) {
       it(`${id} ${door} ${closure} ${network} ${recovery ? "interrupted" : "cached"}: paid retrieval survives admission closing`, async () => {
         const item = items.find(i => i.id === id)!;

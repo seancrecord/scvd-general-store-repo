@@ -363,6 +363,15 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
       "Nothing was charged. Follow the waitlist URL and POST instructions when supplied, or return after restocking. Keep the original payment and key to retrieve an existing purchase.",
   },
   {
+    code: "capacity_unavailable",
+    jsonrpc: -32000,
+    charged: false,
+    means:
+      "the outstanding human-work queue is at its limit, or the store cannot finish counting that queue; no new order or payment was accepted",
+    what_to_do:
+      "Read the refusal reason and open_orders/cap fields. Return after capacity is available. To retrieve an existing purchase, retain its original payment and idempotency key; retrieval does not require a new slot.",
+  },
+  {
     code: "shelf_closed",
     jsonrpc: -32000,
     means:

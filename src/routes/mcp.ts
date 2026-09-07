@@ -78,6 +78,7 @@ import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { waitlistHowToJoin } from "@/routes/requests";
+import { capacityVerdict } from "@/services/queue-capacity";
 import { InvalidPatronageTarget } from "@/services/patronage";
 import { orderStatusBody } from "@/lib/order-status";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -904,6 +905,12 @@ async function callPurchaseTool(
         message: "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
       };
     }
+    const capacity = await capacityVerdict(c.env, item);
+    if (!capacity.ok) return {
+      code: "capacity_unavailable",
+      message: capacity.reason,
+      details: { open_orders: capacity.open, cap: capacity.cap },
+    };
     return null;
   };
   // Quotes must be fulfillable. Signed requests authenticate and look for a

@@ -25,7 +25,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
 - [x] **BUY-011 — P1: MCP returns a settlement refusal as a successful tool result** — repaired: both MCP profiles return an error tool result with the same refusal reason and no-charge state as HTTP.
 - [x] **BUY-012 — P1: MCP accepts new labor orders after the weekly stock limit** — MCP now checks the shared weekly inventory before quotes or new settlement; authenticated paid replay remains available. Both payment profiles return the HTTP waitlist instructions.
-- [ ] **BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling** — open.
+- [x] **BUY-013 — P1: MCP sells labor after the open-work queue reaches its ceiling** — both MCP profiles now apply the shared per-item/global queue verdict before quotes or new settlement, including refusal when counting is incomplete. Paid recovery precedes admission.
 - [ ] **BUY-014 — P1: a spent payment without its original key does not retrieve the receipt** — open.
 - [ ] **BUY-015 — P1: payment expiry blocks receipt replay, and the suggested replacement key can charge again** — open.
 - [ ] **BUY-016 — P1: concurrent fresh authorizations bypass the same-key safeguard** — open.
@@ -45,7 +45,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [ ] **BUY-032 — P1: callback redirects are not confined to approved destinations** — open.
 - [ ] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — open.
 - [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
-- [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — open.
+- [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — MCP now returns capacity_unavailable, charged:false and open_orders/cap; HTTP/commission refusal fields remain open.
 - [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (draft).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.
 
