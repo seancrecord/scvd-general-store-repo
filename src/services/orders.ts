@@ -112,7 +112,24 @@ export async function getOrder(
 }
 
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
+  /*
+   * A SHORT ORDER LIST IS NOT AN ANSWER (2026-09-07).
+   *
+   * Nothing deletes an `order:` key, so this prefix only grows and
+   * ORDER_CAP is a ceiling the store reaches rather than a number
+   * chosen above any possible count. Every reader of this list
+   * publishes a figure off it — the SLA guard decides which queued
+   * orders are overdue, the weekly digest and /admin count them, the
+   * fulfillment log and the claims door read them back — and a
+   * truncated read makes all of those quietly too low, with the
+   * oldest queued orders the first to disappear.
+   *
+   * So it refuses, the same way soldInventory below refuses. This is
+   * louder than the alternative on purpose: the alternative is a
+   * number that is simply wrong forever and never says so.
+   */
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.orderPrefix, cap: ORDER_CAP });
+  if (listed.truncated) throw new Error("Order scan incomplete");
   const values = await bulkGetJson<OrderRecord>(
     env.ORDERS,
     listed.names,
@@ -277,8 +294,25 @@ export async function recordInventorySale(
 }
 
 export async function resetWeeklyInventory(env: Env): Promise<void> {
-  const listed = await listKeys(env.COUNTERS, { prefix: `inventory:`, cap: INVENTORY_CAP });
-  for (const name of listed.names) {
-    await env.COUNTERS.delete(name);
+  /*
+   * This one clears the prefix, so stopping at the cap would leave
+   * counters behind and report the reset as done. It walks instead:
+   * the cap bounds each page, the cursor carries it to the end, and
+   * the loop finishes only when listKeys says nothing was left.
+   */
+  let cursor: string | undefined;
+  for (;;) {
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: `inventory:`,
+      cap: INVENTORY_CAP,
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const name of listed.names) {
+      await env.COUNTERS.delete(name);
+    }
+    if (!listed.truncated || !listed.cursor) {
+      return;
+    }
+    cursor = listed.cursor;
   }
 }

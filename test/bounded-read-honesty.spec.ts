@@ -92,7 +92,22 @@ const KNOWN_UNACKNOWLEDGED = [
    * others declare themselves bounded instead of growing one.
    */
   "../src/services/letters.ts",
-  "../src/services/orders.ts",
+  /*
+   * orders.ts CAME OFF THIS LIST ON 2026-09-07, and all three of its
+   * bounded reads had to answer before it could, because this check
+   * works per file and would have taken one of them as the whole
+   * file's answer.
+   *
+   * soldInventory refuses a truncated sale scan rather than guess how
+   * much inventory is left. listOrders refuses too, for the same
+   * reason and a worse consequence: nothing deletes an `order:` key,
+   * so its cap is a ceiling the store reaches, and the SLA guard, the
+   * digest, /admin, the fulfillment log and the claims door all
+   * publish figures off that list — the oldest queued orders would
+   * have been the first to vanish from it. resetWeeklyInventory
+   * clears its prefix, so it walks the cursor to the end instead of
+   * stopping at the cap and calling the reset done.
+   */
   "../src/services/patron-anchors.ts",
   "../src/services/phantom.ts",
   "../src/services/refunds.ts",
