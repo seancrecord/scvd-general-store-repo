@@ -52,6 +52,8 @@ import { HOUSE_RULE, WALLET_SAFETY } from "@/store/wallet-safety";
 import {
   BASE_NETWORK,
   DECLINE_SLOT_KEY,
+  payerOfVerifiedRequest,
+  paymentIdentityUnavailableBody,
   SOLANA_NETWORK,
   POLYGON_NETWORK,
   recordPolygonSettle,
@@ -1114,8 +1116,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * nothing, which is the whole point.
    */
   const idempotencyPayer = idempotencyKey
-    ? payerOfVerifiedPayload(result.paymentPayload)
+    ? payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot)
     : undefined;
+  if (idempotencyKey && !idempotencyPayer) {
+    c.header("Cache-Control", "no-store");
+    return c.json(paymentIdentityUnavailableBody(), 503);
+  }
   if (idempotencyKey && idempotencyPayer) {
     // The scope carries the query, so `?tag=SECOND` cannot collect the
     // signed artifact minted for `?tag=FIRST`.

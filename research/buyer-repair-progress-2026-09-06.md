@@ -8,6 +8,24 @@ Sean authorized rebasing on main and beginning implementation. Work is local; pe
 - Created `codex/buyer-repairs` from the existing checkout and rebased successfully. Its pre-existing listing-record commit was replayed as `9f6a73f8`; that unrelated change remains intact.
 - Four untracked paths now tracked on main were preserved under `/private/tmp/scvd-pre-rebase-20260906/` before rebasing: `docs/THE_MAP_2026-09.md`, `src/lib/buyer-contract.ts`, `test/machine-buyer-entrypoints.spec.ts`, and `test/purchase-refusal-fields.spec.ts`. The refusal-fields file was identical; the other local versions remain in that backup. Main's versions are in the checkout. All other untracked audit work was retained.
 
+## BUY-007 — verified Solana purchase replay
+
+Worktree `codex/buyer-solana-replay` started independently from main `4f086c26` while PR #549 ran CI. The Solana payer is the token authority returned by successful facilitator verification, not the transaction fee payer or adjacent buyer-supplied metadata. The installed SVM SDK's `getTokenPayerFromTransaction` confirms that contract. A per-request slot carries this identity to both cache seams. Cache keys retain base58 case while preserving EVM address normalization.
+
+A valid idempotency key with no usable verified payer now refuses before settlement with a stable `payment_identity_unavailable` code. The HTTP listing and MCP tool catalog publish the refusal, and standard MCP marks the result as an error. A failed verification never opens a cached purchase.
+
+Regression evidence:
+
+- Before repair: 304 runtime failures, including every catalog product over HTTP, legacy MCP and standard MCP with identical-payment, fresh-payment and already-processed controls. A fresh transaction previously reached settlement again; rebroadcast of the same transaction does not by itself prove another debit.
+- Before discovery publication: both new served-contract checks failed because the code was absent.
+- After repair: 397 focused tests across nine files passed, including EVM replay authorization/scope, cross-rail identity, receipt integrity and discovery guards. All payment egress is mocked; disposable buyer and separate fee-payer signatures are independently verified by the fixture.
+- Added hostile controls preserve separate buyers' receipts under the same key and ignore forged adjacent payer metadata; unrelated transaction signatures cannot retrieve a cached good. Parallel cached requests exercise request-local identity isolation.
+- Typecheck and both Worker dry-run builds passed. The full suite remains assigned to GitHub, as requested.
+
+The pre-existing HTTP discovery source guard also needed to follow `paymentIdentityUnavailableBody()` into its shared helper. Its invented-code check failed before that correction; the corrected listing guard and the complete Solana replay matrix passed all 445 tests, plus typecheck. No production behavior changed in that follow-up.
+
+The existing 24-hour cache and verification prerequisite remain. This repair does not close expired/spent verification, stock checks preceding replay, simultaneous first-purchase races, cache persistence loss, or the three remaining SEV-1 recovery findings.
+
 ## BUY-034 — preserve incomplete paid deliveries (partial)
 
 The HTTP spent-payment lane used a found certificate as proof of fulfillment and deleted the delivery-intent row. Certificates precede orders and product storage, so this removed the very obligation needed to finish a failed purchase. A throwing certificate lookup also escaped to the generic HTTP error response, losing the confirmed charge state.
@@ -189,3 +207,9 @@ The storage prerequisite #542 merged and its production build succeeded. Draft #
 ## PR #549 — CI contract assertions corrected
 
 GitHub completed 5,548 passing tests and 34 failures across two older contract specs. The HTTP source guard did not recognize the inherited unknown-settlement class or the shared refusal helper, and every listing assertion still required `charged:false` for `settlement_unknown`. The standard MCP entrypoint test still expected fresh payment terms after a confirmed settlement refusal. Updated those assertions to the implemented contract without changing production behavior: unknown remains null, confirmed refusal remains false, and no replacement challenge is offered. The affected specs plus both new runtime matrices pass all 370 tests; typecheck passes. GitHub runs the full suite again after this commit.
+
+## PR #549 — merge conflicts with Solana replay repair resolved
+
+Merged current main (`d108b861`, #551) into the settlement-outcomes branch. Discovery retains the confirmed-refusal and unknown-settlement codes alongside the new verified-payer refusal; the source guard recognizes all shared helpers. The checklist records #551 as merged while leaving #549 pending CI. No recovery consumer from draft #541 was introduced.
+
+Validation: 676 payment-outcome, Solana replay and discovery checks across five files passed (`/private/tmp/pr549-merge-tests.log`), plus 36 standard-entrypoint, receipt-integrity and deliver-first checks across three files (`/private/tmp/pr549-merge-entrypoints.log`). Typecheck and both Worker dry-run bundles passed (`/private/tmp/pr549-merge-build.log`). GitHub runs the full suite; all payment fixtures are local.

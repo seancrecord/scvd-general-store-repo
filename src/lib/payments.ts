@@ -769,6 +769,8 @@ export interface DeclineReason {
  */
 export interface DeclineSlot {
   reason?: DeclineReason;
+  /** Set only by the successful verify hook, never decoded from buyer metadata. */
+  verifiedSolanaPayer?: { network: string; payer: string };
 }
 
 /** The property the gate hangs its slot on, and the hook reads back. */
@@ -797,6 +799,33 @@ function slotFrom(transportContext: unknown): DeclineSlot | undefined {
     return (request as MaybeSlotted)[DECLINE_SLOT_KEY];
   }
   return undefined;
+}
+
+/** Verification is a prerequisite; the slot belongs to this exact request. */
+export function payerOfVerifiedRequest(
+  payload: unknown,
+  network: string,
+  slot: DeclineSlot,
+): string | undefined {
+  if (
+    !isRecord(payload) || payload.x402Version !== 2 ||
+    !isRecord(payload.accepted) || payload.accepted.network !== network ||
+    payload.accepted.scheme !== "exact"
+  ) return undefined;
+  if (network === SOLANA_NETWORK) {
+    return slot.verifiedSolanaPayer?.network === network
+      ? slot.verifiedSolanaPayer.payer : undefined;
+  }
+  return payerOfVerifiedPayload(payload);
+}
+
+export function paymentIdentityUnavailableBody() {
+  return {
+    code: "payment_identity_unavailable",
+    charged: false,
+    error: "Payment verification did not identify the signer, so the store could not check your previous purchase. This request did not attempt settlement.",
+    retry: "Keep the original signed payment and idempotency key. Retry the identical request when verification is available; do not replace the key to bypass this check.",
+  };
 }
 
 const declineReasons = new Map<string, DeclineReason>();
@@ -1270,6 +1299,18 @@ export function getPaymentStack(env: Env): PaymentStack {
     // gate can put WHY into the 402 body and the books, instead of
     // discarding it (which it did, to the keeper's own confusion).
     resourceServer.onAfterVerify(async (context) => {
+      const slot = slotFrom(context.transportContext);
+      if (slot) {
+        delete slot.verifiedSolanaPayer;
+        const payer = context.result.payer;
+        if (
+          context.result.isValid === true && context.requirements.network === SOLANA_NETWORK &&
+          typeof payer === "string" && payer.length >= 32 && payer.length <= 44 &&
+          decodeBase58(payer)?.length === 32
+        ) {
+          slot.verifiedSolanaPayer = { network: context.requirements.network, payer };
+        }
+      }
       if (context.result.isValid === false) {
         rememberDecline(
           context.paymentPayload,

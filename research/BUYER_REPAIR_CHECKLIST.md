@@ -1,6 +1,6 @@
 # Buyer repair checklist
 
-Checked means the local repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PR #552 has merged; other release status is recorded with the corresponding repair. All payment tests use local fixtures.
+Checked means the local repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. Release status is recorded separately: PRs #540, #544, #551 and #552 have merged; #541 remains a draft; #549 is awaiting CI. All payment tests use local fixtures.
 
 The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-001, BUY-005, and BUY-028; the other three require durable payment and delivery recovery.
 
@@ -19,7 +19,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
-- [ ] **BUY-007 — P1: Solana retries bypass the purchase cache** — open.
+- [x] **BUY-007 — P1: Solana retries bypass the purchase cache** — repaired on `codex/buyer-solana-replay`: verified Solana payer scopes cached retries; missing identity safely refuses settlement. Merged in #551; production release is tracked separately.
 - [ ] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — open.
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
 - [x] **BUY-010 — P2: the first MCP purchase shelf forbids a supported field** — fixed in `df3b1e64`.
@@ -56,6 +56,14 @@ Every repair gets a separate commit. The focused regressions exercise the public
 The broad untracked audit probes intentionally fail for unresolved findings. They remain separate from the normal regression gate; they have not been deleted or relabeled as passing.
 
 Final validation on the repaired current-main snapshot covered 552 test files: 551 passed, with one outdated source-inspection assertion failing (5,244 tests passed, one failed, one skipped). The assertion was corrected to recognize an awaited assigned result, with negative controls for unawaited writes. Its final recheck and the affected receipt/discovery suites passed all 22 tests across three files. Typechecking and both Worker dry-run builds passed. No production source changed after the full run. See the [verification record](buyer-repair-progress-2026-09-06.md).
+
+## Solana retry repair
+
+BUY-007: HTTP and both MCP payment profiles now use the Solana token payer returned by successful verification, carried through request-local state. Valid same-key retries return the original cached good before settlement. Solana public-key case is preserved; EVM address normalization stays compatible. A missing or malformed verified payer refuses with `payment_identity_unavailable`, `charged:false`, and an instruction to retain the original payment and key; both discovery doors publish that outcome.
+
+The catalog-wide signed-fixture regression covers 32 products, three doors and three retry modes: identical transaction, fresh transaction, and a processor that rejects rebroadcast. The original 304 runtime checks and two discovery checks were observed red. The broader focused gate passed 397 tests across nine files, with typechecking and both Worker dry-run builds passing. Cross-buyer, tampered-signature and concurrent cached-retry controls preserve authentication. No live payment was submitted; the full suite runs on GitHub.
+
+This closes the missing Solana cache identity, not every retry failure. Stock admission before replay (BUY-008), unavailable/expired verification (BUY-015), concurrent initial charges (BUY-016), and durable recovery (BUY-017/034/037) remain open.
 
 ## Input-contract repairs
 

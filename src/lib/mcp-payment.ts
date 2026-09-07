@@ -22,6 +22,8 @@ import {
 } from "@/lib/metrics";
 import {
   DECLINE_SLOT_KEY,
+  payerOfVerifiedRequest,
+  paymentIdentityUnavailableBody,
   SOLANA_NETWORK,
   recordSolanaSettle,
   takeDeclineReason,
@@ -54,7 +56,6 @@ function jsonDeclineResponse(body: unknown): Response {
 import {
   extractPaymentNonce,
   isNonceSpent,
-  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import { openDeliveryIntent } from "@/services/delivery-audit";
@@ -107,6 +108,7 @@ class McpBuyAdapter implements HTTPAdapter {
 }
 
 export type McpPaymentOutcome =
+  | { kind: "payment-unavailable"; body: ReturnType<typeof paymentIdentityUnavailableBody> }
   | { kind: "payment-required"; status: number; body: unknown; challenge?: unknown }
   /**
    * `verifiedPayer` is the account the facilitator confirmed SIGNED,
@@ -367,14 +369,11 @@ export async function runMcpPayment(
    * knew the key. `result.paymentPayload` has been through the
    * facilitator, so this payer actually signed.
    */
+  const verifiedPayer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
   if (onVerifiedPayer) {
-    const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
-    if (verifiedPayer) {
-      const cached = await onVerifiedPayer(verifiedPayer);
-      if (cached) {
-        return { kind: "replay", body: cached };
-      }
-    }
+    if (!verifiedPayer) return { kind: "payment-unavailable", body: paymentIdentityUnavailableBody() };
+    const cached = await onVerifiedPayer(verifiedPayer);
+    if (cached) return { kind: "replay", body: cached };
   }
 
   // Verified. Same replay guard as the HTTP door.
@@ -594,7 +593,6 @@ export async function runMcpPayment(
   return payment;
   };
 
-  const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
   const pending: PendingPayment = {
     paidUsdc: paidUsdcQuoted,
     tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),
