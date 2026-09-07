@@ -958,6 +958,10 @@ async function callPurchaseTool(
     const { error: message, ...data } = failure;
     return rpcError(id, -32000, message, data);
   }
+  if (outcome.kind === "payment-unavailable") {
+    if (standardPayment(c)) return rpcResult(id, { ...toolText(outcome.body) as Record<string, unknown>, isError: true });
+    return rpcRefusal(id, -32000, "payment_identity_unavailable", outcome.body.error, outcome.body);
+  }
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
     const base = c.env.STORE_BASE_URL;

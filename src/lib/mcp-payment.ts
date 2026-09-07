@@ -24,6 +24,8 @@ import {
 } from "@/lib/metrics";
 import {
   DECLINE_SLOT_KEY,
+  payerOfVerifiedRequest,
+  paymentIdentityUnavailableBody,
   SOLANA_NETWORK,
   recordSolanaSettle,
   takeDeclineReason,
@@ -56,7 +58,6 @@ function jsonDeclineResponse(body: unknown): Response {
 import {
   extractPaymentNonce,
   getSpentNonce,
-  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -111,6 +112,7 @@ class McpBuyAdapter implements HTTPAdapter {
 }
 
 export type McpPaymentOutcome =
+  | { kind: "payment-unavailable"; body: ReturnType<typeof paymentIdentityUnavailableBody> }
   | { kind: "payment-required"; status: number; body: unknown; challenge?: unknown }
   /**
    * `verifiedPayer` is the account the facilitator confirmed SIGNED,
@@ -377,20 +379,16 @@ export async function runMcpPayment(
    * knew the key. `result.paymentPayload` has been through the
    * facilitator, so this payer actually signed.
    */
+  const verifiedPayer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
   if (onVerifiedPayer) {
-    const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
-    if (verifiedPayer) {
-      const cached = await onVerifiedPayer(verifiedPayer);
-      if (cached) {
-        return { kind: "replay", body: cached };
-      }
-    }
+    if (!verifiedPayer) return { kind: "payment-unavailable", body: paymentIdentityUnavailableBody() };
+    const cached = await onVerifiedPayer(verifiedPayer);
+    if (cached) return { kind: "replay", body: cached };
   }
 
   // Authentication still precedes every recovery read. A spent payment
   // may finish its own missing mint; it cannot buy different inputs.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
   const spent = nonce ? await getSpentNonce(env, nonce) : null;
   if (spent) {
     if (spent.path === path && spent.transaction && verifiedPayer) {

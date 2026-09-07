@@ -8,6 +8,24 @@ Sean authorized rebasing on main and beginning implementation. Work is local; pe
 - Created `codex/buyer-repairs` from the existing checkout and rebased successfully. Its pre-existing listing-record commit was replayed as `9f6a73f8`; that unrelated change remains intact.
 - Four untracked paths now tracked on main were preserved under `/private/tmp/scvd-pre-rebase-20260906/` before rebasing: `docs/THE_MAP_2026-09.md`, `src/lib/buyer-contract.ts`, `test/machine-buyer-entrypoints.spec.ts`, and `test/purchase-refusal-fields.spec.ts`. The refusal-fields file was identical; the other local versions remain in that backup. Main's versions are in the checkout. All other untracked audit work was retained.
 
+## BUY-007 — verified Solana purchase replay
+
+Worktree `codex/buyer-solana-replay` started independently from main `4f086c26` while PR #549 ran CI. The Solana payer is the token authority returned by successful facilitator verification, not the transaction fee payer or adjacent buyer-supplied metadata. The installed SVM SDK's `getTokenPayerFromTransaction` confirms that contract. A per-request slot carries this identity to both cache seams. Cache keys retain base58 case while preserving EVM address normalization.
+
+A valid idempotency key with no usable verified payer now refuses before settlement with a stable `payment_identity_unavailable` code. The HTTP listing and MCP tool catalog publish the refusal, and standard MCP marks the result as an error. A failed verification never opens a cached purchase.
+
+Regression evidence:
+
+- Before repair: 304 runtime failures, including every catalog product over HTTP, legacy MCP and standard MCP with identical-payment, fresh-payment and already-processed controls. A fresh transaction previously reached settlement again; rebroadcast of the same transaction does not by itself prove another debit.
+- Before discovery publication: both new served-contract checks failed because the code was absent.
+- After repair: 397 focused tests across nine files passed, including EVM replay authorization/scope, cross-rail identity, receipt integrity and discovery guards. All payment egress is mocked; disposable buyer and separate fee-payer signatures are independently verified by the fixture.
+- Added hostile controls preserve separate buyers' receipts under the same key and ignore forged adjacent payer metadata; unrelated transaction signatures cannot retrieve a cached good. Parallel cached requests exercise request-local identity isolation.
+- Typecheck and both Worker dry-run builds passed. The full suite remains assigned to GitHub, as requested.
+
+The pre-existing HTTP discovery source guard also needed to follow `paymentIdentityUnavailableBody()` into its shared helper. Its invented-code check failed before that correction; the corrected listing guard and the complete Solana replay matrix passed all 445 tests, plus typecheck. No production behavior changed in that follow-up.
+
+The existing 24-hour cache and verification prerequisite remain. This repair does not close expired/spent verification, stock checks preceding replay, simultaneous first-purchase races, cache persistence loss, or the three remaining SEV-1 recovery findings.
+
 ## BUY-034 — preserve incomplete paid deliveries (partial)
 
 The HTTP spent-payment lane used a found certificate as proof of fulfillment and deleted the delivery-intent row. Certificates precede orders and product storage, so this removed the very obligation needed to finish a failed purchase. A throwing certificate lookup also escaped to the generic HTTP error response, losing the confirmed charge state.
@@ -243,3 +261,5 @@ Legacy certificate-only obligations stay open and are tested as legacy purchases
 BUY-034 and BUY-037 remain unchecked: older purchases without complete journals, failures before durable purchase capture, other products' partial side effects, admission gates that block an already-paid retry, expired authorization, and Solana recovery remain outside this completed substep. BUY-017's settlement-uncertainty recovery is unchanged. No real payment, real callback or production deployment was made.
 
 Final human-order verification: 52 public order/inventory/queue/SLA controls failed with the prior production source restored (`/private/tmp/human-recovery-final-red.log`); the repaired tree passed 422 focused tests across 18 files (`/private/tmp/human-recovery-final-gate.log`), including all 68 new public cases and the late-callback controls. Typecheck and both Worker dry-run builds passed (`/private/tmp/human-recovery-build.log`). The full suite remains on GitHub. The checklist marks the human-order substep complete while retaining all three SEV-1 findings as open.
+
+After merging current main (`d108b861`, including #551), the combined Solana replay, human/Context Anchor recovery, payment-discovery and settlement-error gate passed 822 tests across nine files (`/private/tmp/human-recovery-main-merge.log`). Typecheck and both Worker dry-run bundles passed again (`/private/tmp/human-recovery-main-build.log`). The merge preserves verified Solana payer identity alongside durable recovery. New managed orders treat Durable Object state as authoritative, so a rollback must retain coordinator-aware order readers and writers; KV alone is a listing projection.

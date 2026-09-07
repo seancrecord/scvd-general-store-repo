@@ -180,7 +180,8 @@ async function kvKeyFor(
 ): Promise<string> {
   return KV_KEYS.idempotency(
     surface,
-    payer.toLowerCase(),
+    // EVM address case is presentation; Solana base58 case is identity.
+    /^0x[0-9a-fA-F]{40}$/.test(payer) ? payer.toLowerCase() : payer,
     await sha256Hex(idempotencyKey),
   );
 }
