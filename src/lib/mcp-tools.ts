@@ -693,7 +693,7 @@ function clusterCompletion(items: MenuItem[]): string {
       "human-fulfilled items return order_id and order_url instead of the goods, and the completed order carries the deliverable",
     );
   }
-  return `Pass item_id to choose. ${shapes.join("; ")}. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. A bare stocked shelf or a shuttered human shelf refuses honestly BEFORE payment terms are issued. ${RETRY_SAFETY_MCP_LINE}`;
+  return `Choose item_id. ${shapes.join("; ")}. x402 payment: _meta['x402/payment']. Without payment: error 402 with the terms in error.data. Closed or empty shelves refuse before quoting. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
 /**
@@ -736,12 +736,12 @@ function clusterRequiredFields(items: MenuItem[]): string {
     .map((item) => ({ id: item.id, required: buyInputSchema(item).required ?? [] }))
     .filter((entry) => entry.required.length > 0);
   if (needy.length === 0) {
-    return "No item on this shelf needs anything beyond item_id.";
+    return "Only item_id is required on this shelf.";
   }
   const listed = needy
     .map((entry) => `${entry.id} needs ${entry.required.join(" and ")}`)
     .join("; ");
-  return `Extra required fields, in plain language so you do not have to resolve the schema conditionals to find them: ${listed}. Every other item on this shelf takes item_id alone.`;
+  return `Required beyond item_id: ${listed}. Other items need only item_id.`;
 }
 
 function clusterTool(cluster: ShelfCluster, base: string): McpTool {
@@ -772,7 +772,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
      * so the escape hatch travels beside the warning: the 402 hands
      * you a key, echoing it makes the retry free.
      */
-    description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\nOn cadence, for all of the above: ${NEVER_AUTO_RENEWS}.\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
+    description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\nOn cadence, for all of the above: ${NEVER_AUTO_RENEWS}.\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT}`,
     inputSchema: clusterInputSchema(items),
     outputSchema: clusterOutputSchema(items),
     annotations: {
@@ -788,6 +788,23 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
 }
 
 const FREE_TOOLS: McpTool[] = [
+  {
+    name: "check_purchase", reads: "our_books",
+    summary: "Read a retained purchase's payment status and original terms using its private recovery handle. Free; submits no payment.",
+    description: "Read the same retained purchase status as GET /api/purchase-status/{purchase_id}. Supply recovery.purchase_id and recovery.status_token from the purchase response. Keep the token private. Free, read-only, and usable after payment authorization expiry. A settled status alone does not establish delivery; automatic fulfillment after reconciliation is not yet implemented.",
+    inputSchema: { type: "object", properties: {
+      purchase_id: str("The recovery.purchase_id from your purchase response.", 64),
+      status_token: str("The private recovery.status_token from the purchase response.", 64),
+    }, required: ["purchase_id", "status_token"], additionalProperties: false,
+      examples: [{ purchase_id: "0".repeat(64), status_token: "0".repeat(64) }] },
+    outputSchema: { type: "object", properties: {
+      purchase_id: str("The original purchase identifier."),
+      payment_state: choice("The recorded payment outcome.", ["unknown", "settled", "not_settled"]),
+      charged: { type: ["boolean", "null"] }, request: str("The full original request."),
+      terms: { type: "object" }, delivery_state: str("This payment record alone does not establish delivery."),
+    } },
+    annotations: { title: "Check purchase status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
   {
     name: "read_store_guide",
     summary:
@@ -1452,7 +1469,7 @@ const FREE_TOOL_CODES = new Set(["bad_request", "unknown_tool"]);
  */
 function doesInYourName(tool: McpTool): string {
   const trailer =
-    "This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.";
+    "This store never asks for a credential, private key, or wallet secret. Payment uses buyer-signed x402 authorizations.";
   if (tool.reads) {
     return `${READS_SENTENCE[tool.reads]} ${trailer}`;
   }
@@ -1512,8 +1529,8 @@ function underContract(tool: McpTool, base: string): McpTool {
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),
       stores: paid
-        ? "The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. No account, no cookie, no password; an agent_name you supply is optional and appears on the certificate you asked for."
-        : "Nothing keyed to you. The call is counted for rate limiting and for the store's own published traffic tallies, and there is no account, no cookie and no caller identifier to key it to.",
+        ? "Purchase inputs, terms, payment state, certificate and patron number are retained for delivery and recovery. Optional agent_name appears on the certificate. No account or cookie."
+        : "Calls contribute to rate limits and traffic counts. No caller account or cookie; private status reads require the purchase handle.",
     }),
   };
 }

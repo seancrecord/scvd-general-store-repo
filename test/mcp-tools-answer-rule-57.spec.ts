@@ -1,3 +1,5 @@
+import { PURCHASE_RECORD_CODES } from "@/services/purchase-intent";
+import MCP_PAYMENT_SOURCE from "../src/lib/mcp-payment.ts?raw";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -182,6 +184,7 @@ describe("a refusal on the wire carries the code and the charge", () => {
     if (/error instanceof SettlementDeclined/.test(MCP_SOURCE)) {
       emitted.add(String(settlementDeclinedBody({}, "fixture").code));
     }
+    if (MCP_PAYMENT_SOURCE.includes("beginPurchaseIntent(")) for (const code of Object.values(PURCHASE_RECORD_CODES)) emitted.add(code);
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
     expect(

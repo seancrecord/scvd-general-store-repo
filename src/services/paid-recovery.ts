@@ -1,3 +1,4 @@
+import type { PurchaseIntent } from "@/services/purchase-intent";
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
 import { kvPut } from "@/lib/kv-retry";
@@ -43,6 +44,39 @@ export type RecoveryClaim =
  * from safely starting the first reconstruction.
  */
 export class PaidRecoveryStore extends DurableObject<Env> {
+  async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
+    const proposal = JSON.parse(proposalJson) as PurchaseIntent;
+    return this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<PurchaseIntent>("purchase");
+      if (prior) return { started: false, record: JSON.stringify(prior) };
+      await txn.put("purchase", proposal);
+      return { started: true, record: JSON.stringify(proposal) };
+    });
+  }
+
+  /** Internal lookup: the gate has authenticated the payment identity. */
+  async existingPurchase(): Promise<string | null> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    return record ? JSON.stringify(record) : null;
+  }
+
+  async readPurchase(token: string): Promise<string | null> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    if (!record || token.length !== record.token.length) return null;
+    const bytes = new TextEncoder();
+    return crypto.subtle.timingSafeEqual(bytes.encode(token), bytes.encode(record.token)) ? JSON.stringify(record) : null;
+  }
+
+  async updatePurchase(update: { state?: PurchaseIntent["state"]; payment?: SettledPayment; reconciliation_reference?: string }): Promise<void> {
+    await this.ctx.storage.transaction(async (txn) => {
+      const prior = await txn.get<PurchaseIntent>("purchase");
+      if (!prior) throw new Error("Purchase record missing");
+      // Confirmed outcomes never regress to uncertainty on a delayed writer.
+      if (prior.state !== "unknown" && update.state) return;
+      await txn.put("purchase", { ...prior, ...update });
+    });
+  }
+
   async begin(digest: string, purchase?: RecoveryAttempt["purchase"]): Promise<RecoveryClaim> {
     return this.ctx.storage.transaction(async (txn) => {
       if (await txn.get("artifact")) return { kind: "unavailable" };

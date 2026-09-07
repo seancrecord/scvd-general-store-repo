@@ -27,7 +27,7 @@ export const WALLET_SAFETY = {
 
 /** The one-line version for tool descriptions, MCP channel form. */
 export const RETRY_SAFETY_MCP_LINE =
-  "Retries are safe with _meta['x402/idempotency-key'] (16-128 chars, keep it secret): repeating the same key for the same item and payer within 24h returns the original result with no second charge.";
+  "Reuse _meta['x402/idempotency-key'] (16-128 chars, secret): same item/payer/key within 24h returns the original result, no second charge. Use idempotency.suggested_key from the 402 when available. A fresh payment without a key can charge again.";
 
 /**
  * THE HOUSE RULE, and the reason it needs to be here rather than only

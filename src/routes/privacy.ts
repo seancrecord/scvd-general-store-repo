@@ -45,6 +45,7 @@ const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
     body: [
       "Paying over x402 reveals your wallet address and the settlement transaction — both already public on the chain you paid on. The store records them with the order and, where the artifact class says so, signs them into your certificate. Certificates are public, permanent, and verifiable by design; that is the product.",
       "Inputs you attach to a purchase (a purpose line, a mandate text, a wallet to audit, a URL to check) are stored with the order and reproduced in the artifact you bought, verbatim, as the artifact's own terms state.",
+      "Catalogue checkout retains the full purchase request and terms before submitting payment, so an interrupted purchase can be identified later. This recovery record has no automatic expiry. Its status is protected by a private bearer token; payment signatures are not retained in that record.",
       "Payment verification and settlement run through the Coinbase CDP facilitator, which processes your payment payload to verify and settle it. The store never holds your keys and cannot move your funds.",
     ],
   },
