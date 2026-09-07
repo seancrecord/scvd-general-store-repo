@@ -1,0 +1,81 @@
+{
+  "target": "https://scvd.store/",
+  "specVersion": "1.0",
+  "startedAt": "2026-09-07T00:21:14.402Z",
+  "finishedAt": "2026-09-07T00:21:14.489Z",
+  "checks": [
+    {
+      "id": "card.reachable",
+      "title": "Agent card reachable at /.well-known/agent-card.json",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 79.56454199999999,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Discovery",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card-discovery"
+      }
+    },
+    {
+      "id": "card.json",
+      "title": "Agent card body is valid JSON",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 1.788250000000005,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card"
+      }
+    },
+    {
+      "id": "card.schema",
+      "title": "Agent card conforms to A2A schema",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 1.6638750000000186,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Schema",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card"
+      }
+    },
+    {
+      "id": "card.contentType",
+      "title": "Content-Type is application/json",
+      "severity": "should",
+      "status": "pass",
+      "message": "got application/json",
+      "durationMs": 0,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Discovery",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card-discovery"
+      }
+    },
+    {
+      "id": "card.urlAbsolute",
+      "title": "card.url is absolute http(s) URL",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "card"
+    },
+    {
+      "id": "card.skillsNonEmpty",
+      "title": "card.skills has at least one entry",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "card"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "pass": 6,
+    "fail": 0,
+    "warn": 0,
+    "skip": 0,
+    "tier": "FULL_FEATURED"
+  }
+}

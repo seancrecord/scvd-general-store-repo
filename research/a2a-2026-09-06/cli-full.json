@@ -1,0 +1,225 @@
+{
+  "target": "https://scvd.store/",
+  "specVersion": "1.0",
+  "startedAt": "2026-09-07T00:20:14.194Z",
+  "finishedAt": "2026-09-07T00:20:14.836Z",
+  "checks": [
+    {
+      "id": "card.reachable",
+      "title": "Agent card reachable at /.well-known/agent-card.json",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 82.545667,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Discovery",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card-discovery"
+      }
+    },
+    {
+      "id": "card.json",
+      "title": "Agent card body is valid JSON",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 1.9439580000000092,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card"
+      }
+    },
+    {
+      "id": "card.schema",
+      "title": "Agent card conforms to A2A schema",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 1.5049159999999802,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Schema",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card"
+      }
+    },
+    {
+      "id": "card.contentType",
+      "title": "Content-Type is application/json",
+      "severity": "should",
+      "status": "pass",
+      "message": "got application/json",
+      "durationMs": 0,
+      "category": "card",
+      "specRef": {
+        "section": "Agent Card Discovery",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card-discovery"
+      }
+    },
+    {
+      "id": "card.urlAbsolute",
+      "title": "card.url is absolute http(s) URL",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "card"
+    },
+    {
+      "id": "card.skillsNonEmpty",
+      "title": "card.skills has at least one entry",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "card"
+    },
+    {
+      "id": "card.protocolVersion",
+      "title": "protocolVersion is a version a2a-compliance understands",
+      "severity": "should",
+      "status": "warn",
+      "message": "declared \"0.3.0\", known [0.3, 1.0] — probing with v1.0 method names",
+      "durationMs": 0,
+      "category": "spec",
+      "specRef": {
+        "section": "Agent Card",
+        "url": "https://a2a-protocol.org/latest/specification/#agent-card"
+      }
+    },
+    {
+      "id": "rpc.parseError",
+      "title": "Rejects invalid JSON with -32700 Parse error",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 25.85670799999997,
+      "category": "protocol",
+      "specRef": {
+        "section": "error_object",
+        "url": "https://www.jsonrpc.org/specification#error_object"
+      }
+    },
+    {
+      "id": "rpc.invalidRequest",
+      "title": "Rejects malformed JSON-RPC envelope with -32600 Invalid Request",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 276.536958,
+      "category": "protocol",
+      "specRef": {
+        "section": "error_object",
+        "url": "https://www.jsonrpc.org/specification#error_object"
+      }
+    },
+    {
+      "id": "rpc.methodNotFound",
+      "title": "Returns -32601 for unknown method",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 23.129500000000007,
+      "category": "protocol",
+      "specRef": {
+        "section": "error_object",
+        "url": "https://www.jsonrpc.org/specification#error_object"
+      }
+    },
+    {
+      "id": "rpc.tasksGet.notFound",
+      "title": "tasks/get returns TaskNotFoundError (-32001) for unknown task id",
+      "severity": "should",
+      "status": "pass",
+      "durationMs": 20.16562500000009,
+      "category": "methods"
+    },
+    {
+      "id": "rpc.tasksResubscribe.notFound",
+      "title": "tasks/resubscribe returns TaskNotFoundError (-32001) for unknown task id",
+      "severity": "should",
+      "status": "pass",
+      "durationMs": 20.064542000000074,
+      "category": "methods"
+    },
+    {
+      "id": "rpc.tasksCancel.notFound",
+      "title": "tasks/cancel rejects an unknown task id",
+      "severity": "should",
+      "status": "pass",
+      "durationMs": 22.069875000000025,
+      "category": "methods"
+    },
+    {
+      "id": "rpc.batch",
+      "title": "Handles a JSON-RPC batch request",
+      "severity": "should",
+      "status": "pass",
+      "message": "server rejects batch with -32600 — acceptable per spec",
+      "durationMs": 20.490957999999978,
+      "category": "protocol",
+      "specRef": {
+        "section": "batch",
+        "url": "https://www.jsonrpc.org/specification#batch"
+      }
+    },
+    {
+      "id": "rpc.messageSend.shape",
+      "title": "message/send returns a valid JSON-RPC response",
+      "severity": "must",
+      "status": "warn",
+      "message": "agent rejected probe with tolerated error -32602: Invalid params: message.parts must carry one data part { \"task\": \"…\", …input } (or a text part holding that JSON).",
+      "durationMs": 25.259374999999977,
+      "category": "methods",
+      "specRef": {
+        "section": "message/send",
+        "url": "https://a2a-protocol.org/latest/specification/#message-send"
+      }
+    },
+    {
+      "id": "rpc.messageStream.contentType",
+      "title": "message/stream responds with text/event-stream",
+      "severity": "should",
+      "status": "warn",
+      "message": "server returned JSON-RPC error -32601 instead of SSE — streaming may not be supported",
+      "durationMs": 23.493499999999926,
+      "category": "methods",
+      "specRef": {
+        "section": "message/stream",
+        "url": "https://a2a-protocol.org/latest/specification/#message-stream"
+      }
+    },
+    {
+      "id": "rpc.pushNotifications.capability",
+      "title": "Push notifications capability not declared — skipping",
+      "severity": "info",
+      "status": "skip",
+      "durationMs": 0,
+      "category": "methods"
+    },
+    {
+      "id": "sec.tls.https",
+      "title": "All URLs declared in the agent card use HTTPS",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "security"
+    },
+    {
+      "id": "sec.ssrf",
+      "title": "No agent-card URL resolves to private IP space",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 4.231415999999967,
+      "category": "security"
+    },
+    {
+      "id": "sec.cors.wildcardWithCreds",
+      "title": "Agent card does not allow wildcard origins with credentials",
+      "severity": "must",
+      "status": "pass",
+      "durationMs": 0,
+      "category": "security"
+    }
+  ],
+  "summary": {
+    "total": 20,
+    "pass": 16,
+    "fail": 0,
+    "warn": 3,
+    "skip": 1,
+    "tier": "MANDATORY"
+  }
+}

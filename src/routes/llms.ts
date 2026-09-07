@@ -348,6 +348,10 @@ speaks A2A — POST JSON-RPC message/send with one data part holding
 { task, ...input } — and answers three read-only tasks with one
 bounded artifact each: preflight_endpoint, verify_receipt,
 get_endpoint_readiness. Its card is ${base}/.well-known/agent-card.json.
+Each message needs kind "message", role "user", messageId and parts.
+GET ${base}/a2a carries the full request example, task retrieval and
+retention policy; tasks/get reads a returned task, tasks/cancel refuses
+one already finished.
 It never says whether to pay or whom to trust; it hands back evidence
 with what it does not establish stated.
 

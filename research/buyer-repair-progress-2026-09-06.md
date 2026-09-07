@@ -234,6 +234,12 @@ The shared refusal body now records `payment_declined.reason`, `code:payment_dec
 
 The first related gate passed 278 of 279 checks; the source guard required updating to recognize inherited/shared payment errors. The final protocol recheck passed all 35 tests across three files, typecheck, and both dry-run builds. The full suite stays on GitHub; no real funds moved.
 
+### Independent publication against main
+
+The two settlement-response fixes were extracted from draft #541 onto `codex/buyer-settlement-outcomes`, based on main `4f086c26`. The BUY-017 substep is `8c7606ca`; extraction includes the source guard's recognition of the shared unknown-state error class. This branch contains no reconstruction consumer from the draft. On the main-based branch, typecheck and 53 unknown-state/receipt/discovery tests passed, followed by 279 refusal/catalog/protocol/deliver-first checks in seven files and both Worker dry-run builds. GitHub runs the full suite.
+
+The storage prerequisite #542 merged and its production build succeeded. Draft #541's subsequent preview upload also passed (`81caaaf3-9d55-4dc0-a614-df81548b1566`), closing the migration-order blocker. BUY-017/034/037 remain open for their listed recovery obligations.
+
 ## PR #549 — CI contract assertions corrected
 
 GitHub completed 5,548 passing tests and 34 failures across two older contract specs. The HTTP source guard did not recognize the inherited unknown-settlement class or the shared refusal helper, and every listing assertion still required `charged:false` for `settlement_unknown`. The standard MCP entrypoint test still expected fresh payment terms after a confirmed settlement refusal. Updated those assertions to the implemented contract without changing production behavior: unknown remains null, confirmed refusal remains false, and no replacement challenge is offered. The affected specs plus both new runtime matrices pass all 370 tests; typecheck passes. GitHub runs the full suite again after this commit.
@@ -275,3 +281,10 @@ BUY-008 is checked off separately. Missing MCP weekly/queue admission (BUY-012/0
 All 50 final public-door controls failed with the prior production source restored (`/private/tmp/paid-admission-final-red.log`), each at the refusal that blocked the authenticated retry. The proof restored every source change exactly afterward. Typecheck and both final Worker dry-run builds passed (`/private/tmp/paid-admission-final-build.log`).
 
 Final integration verification covered 673 checks across 13 files. The first run passed 671 but timed out in one human-order case, followed by a callback-count failure in its next case (`/private/tmp/paid-admission-final-gate.log`). With no code or timeout changes, the affected file passed all 68 tests alone (`/private/tmp/paid-admission-human-recheck.log`); the other 12 files had already passed, including all 50 admission cases. This is recorded as a timeout/recheck, not an uninterrupted green run. The full suite remains on GitHub. PR #549 merged while this repair was being verified.
+## PR #549 — merge conflicts with Solana replay repair resolved
+
+Merged current main (`d108b861`, #551) into the settlement-outcomes branch. Discovery retains the confirmed-refusal and unknown-settlement codes alongside the new verified-payer refusal; the source guard recognizes all shared helpers. The checklist records #551 as merged while leaving #549 pending CI. No recovery consumer from draft #541 was introduced.
+
+Validation: 676 payment-outcome, Solana replay and discovery checks across five files passed (`/private/tmp/pr549-merge-tests.log`), plus 36 standard-entrypoint, receipt-integrity and deliver-first checks across three files (`/private/tmp/pr549-merge-entrypoints.log`). Typecheck and both Worker dry-run bundles passed (`/private/tmp/pr549-merge-build.log`). GitHub runs the full suite; all payment fixtures are local.
+
+After BUY-008 commit `7be46000`, merged main `d99d8ccb` (#549 settlement responses and #556 A2A compliance). Conflict resolution retained the recovery KV import and both progress records; the paid route/payment source files match the tested BUY-008 commit exactly. The combined admission/A2A/write-discipline gate passed 92 tests across six files (`/private/tmp/paid-admission-main-gate.log`), typecheck, and both Worker dry-run bundles (`/private/tmp/paid-admission-main-build.log`).

@@ -107,14 +107,16 @@
   "durable_objects": {
     "bindings": [
       { "name": "TRADE_NONCES", "class_name": "TradeNonceStore" },
-      { "name": "PAID_RECOVERIES", "class_name": "PaidRecoveryStore" }
+      { "name": "PAID_RECOVERIES", "class_name": "PaidRecoveryStore" },
+      { "name": "A2A_TASKS", "class_name": "A2ATaskStore" }
     ]
   },
   "migrations": [
     { "tag": "v1-trade-nonces", "new_sqlite_classes": ["TradeNonceStore"] },
     // Apply on main with wrangler deploy before consumer preview uploads.
     // versions upload cannot provision a new class (Cloudflare error 10211).
-    { "tag": "v2-paid-recovery", "new_sqlite_classes": ["PaidRecoveryStore"] }
+    { "tag": "v2-paid-recovery", "new_sqlite_classes": ["PaidRecoveryStore"] },
+    { "tag": "v3-a2a-tasks", "new_sqlite_classes": ["A2ATaskStore"] }
   ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",
