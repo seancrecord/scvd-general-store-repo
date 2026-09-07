@@ -24,6 +24,7 @@ export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
 export { practiceCounterRoutes } from "@/routes/practice-counter";
 export { tillRoutes } from "@/routes/till";
+export { desvelaRegistryRoutes } from "@/routes/desvela-registry";
 export { webmcpRoutes } from "@/routes/webmcp";
 export { shopWindowRoutes } from "@/routes/shop-window";
 export { mcpMdRoutes } from "@/routes/mcp-md";

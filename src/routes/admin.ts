@@ -419,6 +419,12 @@ adminRoutes.get("/admin/trade", async (c) => {
   return c.html(renderTradePage(statements));
 });
 
+adminRoutes.get("/admin/desvela-registry.json", async (c) => {
+  const { listDesvelaRegistry } = await import("@/services/desvela-registry");
+  c.header("Cache-Control", "no-store");
+  return c.json(await listDesvelaRegistry(c.env, c.req.query("cursor")));
+});
+
 adminRoutes.get("/admin/trade.json", async (c) => {
   const { TRADE_PARTNERS } = await import("@/store/trade-counter");
   const { tradeStatement } = await import("@/services/trade-counter");

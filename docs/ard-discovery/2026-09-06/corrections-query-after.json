@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-06T23:28:03.001Z",
+  "url": "https://neuronto.com/search",
+  "request": {
+    "query": {
+      "text": "subscribe to corrections SCVD publishes about its own work"
+    },
+    "federation": "none",
+    "pageSize": 20,
+    "limit": 20
+  },
+  "status": 200,
+  "scope": "Excerpt of the saved verification response: query metadata and SCVD result ranks only. Other publishers omitted.",
+  "saved_response_file_sha256": "734e15c39cdaa758537f6540a99872865fa6f94320f8967a9c09b0c48703b188",
+  "total_results_in_response": 20,
+  "scvd_results": [
+    {
+      "rank": 4,
+      "identifier": "urn:air:scvd.store:server:general-store"
+    }
+  ]
+}

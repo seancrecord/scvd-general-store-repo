@@ -1,5 +1,35 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-06 — Desvela Registry Watch and publisher records
+
+Read https://desvela.dev/registry-watch directly (the web-fetch cache
+missed; a direct HTTPS GET succeeded). Confirmed the six event types,
+four surface kinds, raw-body HMAC-SHA256 header, caller User-Agent,
+weekly change-only delivery, and optional platform_template flag.
+Read Cloudflare's current Workers best practices and Web Crypto docs;
+use native HMAC verification and await the private receipt write before
+acknowledging delivery. Existing trade-counter receipts, KV retry,
+bulk reads, and admin authentication supply the local pattern.
+
+Opened https://neuronto.com/ard-publishers/scvd.store and
+https://wellknownhq.com/d/scvd.store and confirmed the domain's publisher
+records. https://desvela.ai/check#domain=scvd.store is a checker link,
+not a publisher profile; it is labelled separately in the README.
+The keeper reported grades of A/100 from WellKnown and Desvela and B/83
+from Neuronto. No grade is frozen into public copy. The supplied
+impressions are index appearances, not unique visitors. The corrections
+query matches both saved September 6 registry-verification requests:
+22:51:23Z and 23:28:03Z, each returning the general-store server entry
+at rank 4. That is the exact count and rank in the supplied table; treat
+this row as verification traffic, not evidence of outside demand.
+Saved response excerpts: [before](ard-discovery/2026-09-06/corrections-query-before.json)
+and [after](ard-discovery/2026-09-06/corrections-query-after.json). The site's
+exclusion of its own probes does not establish exclusion of ours.
+
+Not performed: watch registration, secret generation, a real Desvela
+webhook delivery, or attribution of individual search requests.
+Operational contract: [Registry Watch receiver](DESVELA_REGISTRY_WATCH.md).
+
 ## 2026-09-06 — ARD search-query coverage
 
 Read [Neuronto's publishing guide](https://www.neuronto.com/publish) and
