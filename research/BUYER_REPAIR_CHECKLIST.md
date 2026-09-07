@@ -122,6 +122,12 @@ All 192 catalog × three-rail × two-profile public-door comparisons failed befo
 
 GitHub exposed these integration gaps in both runs of #559. All 260 focused cases across the 12 affected files pass, plus typecheck and both dry-run bundles; the full suite remains delegated to GitHub. This repair changes no SEV-1 completion claim.
 
+## Recovery import-guard integration
+
+- [x] Express the recovery-store binding with an explicit `import type`. The collector safety scanner mistook the inline TypeScript `import(...)` type expression for a runtime dependency on the payment signer. The unchanged safety test reproduced red and passed after this source-only clarification; TypeScript output contains no recovery-store import in either form.
+
+The safety and recovery gate passed 43 cases, typecheck and both Worker dry-run builds passed. This corrects the shared #560/#561 CI failure without relaxing signer isolation or closing a parent buyer finding.
+
 ## 2026-09-07 — scheduled delivery from retained purchases
 
 The next increment resumes the original signed anchor or creates the original human order without another payment submission. It retains the purchase time/SLA across shelf closure and catalogue changes, serves completed human work through the protected status doors, and resumes after an interruption between artifact publication and purchase-status publication. Wrong-chain/token/recipient/amount/payer/nonce evidence, failed transactions, unavailable finality and RPC failures leave payment unknown and recovery scheduled.

@@ -3,6 +3,7 @@
  * Every KV record shape and the Worker environment live here.
  */
 import type { MakerMark } from "@/store/provenance";
+import type { PaidRecoveryStore } from "@/services/paid-recovery";
 
 /**
  * WHAT A TRADE-ACCOUNT SALE SETTLED AS (services/trade-counter.ts).
@@ -48,7 +49,7 @@ export interface Env {
     import("@/services/trade-nonces").TradeNonceStore
   >;
   /** One durable reconstruction attempt per already-settled payment. */
-  PAID_RECOVERIES?: DurableObjectNamespace<import("@/services/paid-recovery").PaidRecoveryStore>;
+  PAID_RECOVERIES?: DurableObjectNamespace<PaidRecoveryStore>;
   /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
   /**
