@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    setupFiles: ["./test/setup-purchase-alarms.ts"],
     /**
      * The store's suite ONLY. The Tab (tab/) is a filesystem product
      * tested on Node's own runner (npm run tab:test, its own CI

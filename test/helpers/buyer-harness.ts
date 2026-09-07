@@ -81,8 +81,15 @@ export function baseline(item: Item): Obj {
   }));
 }
 export function signature(offer: ChallengeRequirement): string {
+  // The basic harness mocks verification, but the intent journal now reads
+  // real wire framing. Use a unique framed message instead of arbitrary text.
+  // Payment-valid signatures and instructions belong to buyer-signed-payments.
+  const solana = new Uint8Array(134);
+  solana[0] = 1;
+  solana.set([1, 0, 0, 1], 65);
+  solana.set(crypto.getRandomValues(new Uint8Array(32)), 101);
   return offer.network.startsWith("solana:")
-    ? btoa(JSON.stringify({ x402Version: 2, accepted: offer, payload: { transaction: btoa(`fixture-${crypto.randomUUID()}`) } }))
+    ? btoa(JSON.stringify({ x402Version: 2, accepted: offer, payload: { transaction: btoa(String.fromCharCode(...solana)) } }))
     : buildPaymentSignature(offer);
 }
 export async function call(item: Item, door: Door, args: Obj, tool?: Tool, payment?: string, key?: string): Promise<Reading> {

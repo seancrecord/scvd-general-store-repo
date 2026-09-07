@@ -96,8 +96,11 @@ Recovery release prerequisite: PR #542 adds only the coordinator storage class/b
 - [x] Report thrown/lost settlement acknowledgements and unconfirmed transaction claims as `charged:null`, `payment_state:unknown`, with the existing reconciliation reference and same-payment guidance. HTTP returns 503; both MCP profiles signal errors. The discovery contract names the state too.
 - [x] Persist the full catalogue request, item snapshot and selected payment terms before settlement on HTTP and both MCP profiles. A failed capture submits no payment; concurrent identical authorizations share one durable attempt.
 - [x] Retain a protected purchase status handle across ambiguous retries, changed inputs, closed shelves and authorization expiry. Status reads submit no payment; existing paid cache/artifact recovery still runs first.
-- [ ] Extend capture to commission/publication doors, recover a lost handle after payment verification expires, and connect durable intents to reconciliation even if the worker stops before writing the legacy reconciliation row.
-- [ ] Complete the original good once settlement is established, including rails without an immediate chain rescue.
+- [x] Commit an alarm with the catalogue purchase before settlement, independently of the legacy reconciliation row; recover original Context Anchors and unstocked human orders once payment is established.
+- [x] Reconcile ambiguous Base/Polygon/Arbitrum/World catalogue payments using finalized receipts matching payer, nonce, recipient, token and amount, then expose the checkpointed good through HTTP/MCP private status. Re-scan bounded windows for delayed RPC indexing; outages retain scheduled retries.
+- [ ] Extend capture to commission/publication doors and recover a lost status handle after payment verification expires.
+- [x] Establish ambiguous Solana settlement independently of the lost facilitator receipt for newly captured purchases; recover supported anchors and unstocked human orders through the existing scheduled delivery path.
+- [ ] Extend checkpointed recovery to the remaining products and recover pre-capture Solana obligations without retained message evidence.
 
 The 27 public-door fault cases were observed red before the repair, including identical retries after a simulated landed payment, on Base/Polygon/Solana through HTTP and both MCP profiles. The discovery guard separately failed before the code was advertised. These fixtures do not prove live settlement, automatic reconciliation delivery, or universal retry safety; the SEV-1 stays unchecked.
 
@@ -119,8 +122,34 @@ All 192 catalog × three-rail × two-profile public-door comparisons failed befo
 
 GitHub exposed these integration gaps in both runs of #559. All 260 focused cases across the 12 affected files pass, plus typecheck and both dry-run bundles; the full suite remains delegated to GitHub. This repair changes no SEV-1 completion claim.
 
+## Recovery import-guard integration
+
+- [x] Express the recovery-store binding with an explicit `import type`. The collector safety scanner mistook the inline TypeScript `import(...)` type expression for a runtime dependency on the payment signer. The unchanged safety test reproduced red and passed after this source-only clarification; TypeScript output contains no recovery-store import in either form.
+
+The safety and recovery gate passed 43 cases, typecheck and both Worker dry-run builds passed. This corrects the shared #560/#561 CI failure without relaxing signer isolation or closing a parent buyer finding.
+
+## 2026-09-07 — scheduled delivery from retained purchases
+
+The next increment resumes the original signed anchor or creates the original human order without another payment submission. It retains the purchase time/SLA across shelf closure and catalogue changes, serves completed human work through the protected status doors, and resumes after an interruption between artifact publication and purchase-status publication. Wrong-chain/token/recipient/amount/payer/nonce evidence, failed transactions, unavailable finality and RPC failures leave payment unknown and recovery scheduled.
+
+This does not close BUY-017/034/037: unknown Solana receipts, uncheckpointed products, pre-capture/legacy obligations and missing handles remain. The long human-detail truncation observed while building the fixture is still an input-survival defect; these recovery assertions use valid briefs within the current limit. All payment/chain evidence is local fixture data, not a live payment test.
+
+Validation: all 39 new scheduled-recovery cases failed on the prior source and passed after restoration. The related gate passed 215 cases across nine files, plus typecheck and both Worker dry-run bundles. The full suite runs on GitHub.
 ## Discovery integration follow-up
 
 - [x] Restore the suggested retry key beside the MCP repeat-charge warning; keep the standard payment profile's quote location consistent; render the private status URL template as inline code so crawlers cannot follow a literal placeholder.
 
 All three GitHub failures reproduced locally before these copy repairs; 62 focused discovery checks and typecheck passed afterward. This is integration cleanup for #559, not closure of a parent SEV-1. The full suite remains on GitHub.
+
+## 2026-09-07 — Solana settlement ambiguity
+
+- [x] Retain a digest of the verified transaction message before settlement, without retaining executable signed payment bytes. Legacy and v0 messages remain identifiable after the facilitator adds its signature.
+- [x] Walk bounded pages of finalized payer history on a genesis-checked mainnet RPC; require the exact original message and transaction identity, successful execution and quoted USDC balance changes for both payer and recipient.
+- [x] Resume the original anchor or human order through HTTP and both MCP payment profiles after a lost acknowledgement, shelf closure or quote expiry. Preserve original input, certificate chain/transaction, purchase time and completed human work.
+- [x] Keep missing, malformed, unfinalized, unrelated and wrong-chain/token/amount/recipient/payer evidence unknown and scheduled; never submit another payment during lookup.
+
+All 30 new buyer regressions failed without the production fix and passed with it. The adjacent Solana gate passed 622 cases across six files; the retained-purchase gate passed 101 cases across three files. Typecheck and both Worker dry-run builds passed. Full CI remains on GitHub; no real money was sent.
+
+BUY-017/034/037 remain open for uncheckpointed products, commission/publication capture, legacy obligations and loss of the private recovery handle. Existing Solana purchase records without the message digest are not silently treated as reconcilable. These checked substeps do not change the 15/39 completed finding count or claim production deployment.
+
+Implementation references: [Solana transaction format](https://solana.com/docs/core/transactions), [finalized transaction lookup](https://solana.com/docs/rpc/http/gettransaction), [paged address history](https://solana.com/docs/rpc/http/getsignaturesforaddress), and [Solana CAIP-2 genesis identification](https://namespaces.chainagnostic.org/solana/caip2).

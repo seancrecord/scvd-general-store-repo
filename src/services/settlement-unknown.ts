@@ -331,6 +331,13 @@ export async function resolveSettlementUnknowns(
   let touched = 0;
   let resolved = 0;
   for (const { key, row } of listing.rows) {
+    // Backfill wake-ups for intents captured before scheduled recovery shipped.
+    // The purchase reconciler checks the full payment; this legacy row's nonce
+    // reading is never promoted into proof that the quoted transfer occurred.
+    if (row.purchase_id && env.PAID_RECOVERIES) {
+      const namespace = env.PAID_RECOVERIES;
+      await namespace.get(namespace.idFromName(`purchase:${row.purchase_id}`)).schedulePurchaseRecovery().catch(() => undefined);
+    }
     if (row.state !== "open") continue;
     if (touched >= ROWS_PER_PASS) break;
     touched += 1;

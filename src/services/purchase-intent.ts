@@ -4,6 +4,7 @@ import { sha256Hex } from "@/lib/idempotency";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { SettlementDeclined, SettlementUnknown, type SettledPayment } from "@/lib/payments";
 import { isRecord, type Env, type MenuItem } from "@/types";
+import { solanaPaymentEvidence } from "@/lib/solana-payment-evidence";
 
 export const PURCHASE_RECORD_CODES = {
   unavailable: "purchase_record_unavailable",
@@ -24,9 +25,13 @@ export interface PurchaseIntent {
   item?: MenuItem;
   created_at: string;
   authorization?: { nonce: string; valid_after: string; valid_before: string };
+  solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
   payment?: SettledPayment;
   reconciliation_reference?: string;
+  reconciliation?: { start_block?: number; next_block?: number; before_signature?: string; checked_at: string };
+  delivery?: Record<string, unknown>;
+
 }
 
 export function purchaseIntentStore(env: Env, id: string) {
@@ -49,7 +54,8 @@ export function purchaseStatus(record: PurchaseIntent) {
     transaction: record.payment?.transaction ?? null,
     // A saved settlement is not evidence of delivery. Artifact recovery follows
     // the existing transaction journal; this status never calls a cert a good.
-    delivery_state: "not_established_by_this_record",
+    delivery_state: record.delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
+    ...(record.delivery ? { fulfillment: record.delivery } : {}),
     reconciliation_reference: record.reconciliation_reference ?? null,
     retry: "Keep the original signed payment and idempotency key. Do not sign a new payment while this purchase is unresolved.",
   };
@@ -109,10 +115,13 @@ export async function beginPurchaseIntent(env: Env, input: {
     const payload = isRecord(input.payload) && isRecord(input.payload.payload) ? input.payload.payload : {};
     const auth = isRecord(payload.authorization) ? payload.authorization : {};
     const nonce = extractPaymentNonce(input.payload);
+    const solana = input.terms.network.startsWith("solana:")
+      ? await solanaPaymentEvidence(String(payload.transaction)) : null;
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 1, id,
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
+      ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(input.item ? { item: input.item } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;
@@ -137,7 +146,17 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
   try {
     const saved = await purchaseIntentStore(env, id).readPurchase(token);
     if (!saved) return missing;
-    return { status: 200, body: purchaseStatus(JSON.parse(saved) as PurchaseIntent) };
+    const record = JSON.parse(saved) as PurchaseIntent;
+    const body = purchaseStatus(record);
+    if (record.item?.fulfillment === "human_queue" && typeof record.delivery?.order_id === "string") {
+      const { getOrder } = await import("@/services/orders");
+      const order = await getOrder(env, record.delivery.order_id);
+      if (!order) throw new Error("Purchased order unavailable");
+      body.delivery_state = order.status === "completed" ? "delivered" : "order_created";
+      body.fulfillment = { ...record.delivery, status: order.status,
+        ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
+    }
+    return { status: 200, body };
   } catch {
     return { status: 503, body: { code: "purchase_status_unavailable", charged: null, error: "Purchase status is temporarily unavailable. No payment was submitted by this status check." } };
   }

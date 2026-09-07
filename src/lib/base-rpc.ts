@@ -802,6 +802,17 @@ export async function getBlockNumber(
   return Number.parseInt(hex, 16);
 }
 
+/** A recovery cannot deliver against a receipt still outside the finalized chain. */
+export async function getFinalizedBlockNumber(env: Env, chain: EvmChain): Promise<number> {
+  const reportedChain = await rpc<string>(env, "eth_chainId", [], chain);
+  if (BigInt(reportedChain) !== BigInt(chain.caip2.split(":")[1]!)) throw new Error("Reconciliation chain mismatch");
+  const header = await rpc<{ number?: string } | null>(env, "eth_getBlockByNumber", ["finalized", false], chain);
+  if (!header?.number || !/^0x[0-9a-f]+$/i.test(header.number)) throw new Error("Finalized head unavailable");
+  const block = Number.parseInt(header.number, 16);
+  if (!Number.isSafeInteger(block)) throw new Error("Finalized head invalid");
+  return block;
+}
+
 /**
  * isBlacklisted(address) on the chain's canonical USDC contract —
  * FiatToken's own read, selector 0xfe575a87 (the depth pass,
