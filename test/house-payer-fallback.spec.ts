@@ -10,7 +10,7 @@ const testEnv = env as unknown as Env;
 let facilitator: ReturnType<typeof installFacilitatorMock>;
 
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  facilitator = installFacilitatorMock({ uniqueTransactions: true });
 });
 
 const CV_WALLET = HOUSE_WALLET_FILE.wallets.find(

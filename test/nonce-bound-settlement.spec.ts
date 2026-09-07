@@ -4,15 +4,15 @@ import { getSpentNonce } from "@/lib/replay-guard";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 import {
   installFacilitatorMock,
-  TEST_TRANSACTION,
 } from "./helpers/facilitator-mock";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
+let facilitator: ReturnType<typeof installFacilitatorMock>;
 beforeAll(() => {
-  installFacilitatorMock();
+  facilitator = installFacilitatorMock({ uniqueTransactions: true });
 });
 
 /**
@@ -55,7 +55,8 @@ describe("the spent-nonce row names the settlement, both doors", () => {
 
     const record = await getSpentNonce(testEnv, nonce);
     expect(record).not.toBeNull();
-    expect(record!.transaction).toBe(TEST_TRANSACTION);
+    expect(facilitator.settledTransactions.at(-1)).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(record!.transaction).toBe(facilitator.settledTransactions.at(-1));
   });
 
   it("MCP lane: the same row carries the same transaction (CV's gap, closed)", async () => {
@@ -95,6 +96,7 @@ describe("the spent-nonce row names the settlement, both doors", () => {
      */
     const record = await getSpentNonce(testEnv, nonce);
     expect(record).not.toBeNull();
-    expect(record!.transaction).toBe(TEST_TRANSACTION);
+    expect(facilitator.settledTransactions.at(-1)).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(record!.transaction).toBe(facilitator.settledTransactions.at(-1));
   });
 });

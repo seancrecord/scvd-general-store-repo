@@ -27,7 +27,7 @@ const adminAuth = {
 };
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installFacilitatorMock({ uniqueTransactions: true });
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

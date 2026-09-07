@@ -14,8 +14,9 @@ import { isRecord } from "@/types";
 const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
+let facilitator: ReturnType<typeof installFacilitatorMock>;
 beforeAll(() => {
-  installFacilitatorMock();
+  facilitator = installFacilitatorMock({ uniqueTransactions: true });
 });
 
 /**
@@ -75,8 +76,16 @@ describe("idempotency on the HTTP door", () => {
   });
 
   it("treats a guessably short key as absent — two calls, two real sales", async () => {
+    const settlesBefore = facilitator.settleCalls;
     const first = await buyHello("short");
     const second = await buyHello("short");
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(facilitator.settleCalls - settlesBefore).toBe(2);
+    const [firstTx, secondTx] = facilitator.settledTransactions.slice(-2);
+    expect(firstTx).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(secondTx).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(firstTx).not.toBe(secondTx);
     expect(second.body["idempotent_replay"]).toBeUndefined();
     expect(certIdOf(second.body)).not.toBe(certIdOf(first.body));
   });
@@ -136,11 +145,13 @@ describe("idempotency on the MCP door", () => {
 
   it("replays by _meta key: same cert, marked, no second settlement", async () => {
     const key = "mcp-loop-guard-key-0001";
+    const settlesBefore = facilitator.settleCalls;
     const first = await mcpBuy(key);
     expect(String(first["cert_id"])).toMatch(/^cert_/);
     const second = await mcpBuy(key);
     expect(second["idempotent_replay"]).toBe(true);
     expect(second["cert_id"]).toBe(first["cert_id"]);
+    expect(facilitator.settleCalls - settlesBefore).toBe(1);
   });
 });
 

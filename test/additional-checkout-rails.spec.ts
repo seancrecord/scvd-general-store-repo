@@ -58,7 +58,7 @@ describe("the SDK-backed gate can quote, deliver and receipt both new rails", ()
     const { installFacilitatorMock } = await import("./helpers/facilitator-mock");
     const { decodePaymentRequired, buildPaymentSignature } = await import("./helpers/payment");
     const { app } = await import("@/index");
-    const facilitator = installFacilitatorMock();
+    const facilitator = installFacilitatorMock({ uniqueTransactions: true });
     const original = globalThis.fetch;
     vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -71,7 +71,7 @@ describe("the SDK-backed gate can quote, deliver and receipt both new rails", ()
       if (url.endsWith("/x402/settle") && response.ok) {
         const request = JSON.parse(String(init?.body)) as { paymentPayload: { accepted: { network: string } } };
         const network = request.paymentPayload.accepted.network;
-        return Response.json({ ...await response.json() as object, network, transaction: `0x${(network === "eip155:480" ? "ac" : "ad").repeat(32)}` });
+        return Response.json({ ...await response.json() as object, network });
       }
       return response;
     });

@@ -8,7 +8,7 @@ import { MENU_ITEMS } from "@/store";
 const BASE = "https://scvd.store";
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installFacilitatorMock({ uniqueTransactions: true });
 });
 
 /**

@@ -24,7 +24,7 @@ const BASE = "https://scvd.store";
 let facilitator: FacilitatorMockState;
 
 beforeAll(async () => {
-  facilitator = installFacilitatorMock();
+  facilitator = installFacilitatorMock({ uniqueTransactions: true });
   await markKeeperPresent(testEnv);
 });
 
@@ -95,7 +95,7 @@ describe("Bazaar discovery (extensions.bazaar)", () => {
 });
 
 describe("replay guard", () => {
-  it("refuses a payment nonce that already settled", async () => {
+  it("returns the original good for a settled nonce without another charge", async () => {
     const url = `${BASE}/api/buy/hello`;
     const challenge = await SELF.fetch(url);
     const required = decodePaymentRequired(challenge);
@@ -111,13 +111,17 @@ describe("replay guard", () => {
     });
     expect(first.status).toBe(200);
 
+    const firstBody = await json(first);
+    const settlesBefore = facilitator.settleCalls;
     const patronsBefore = await testEnv.COUNTERS.get("patron_number");
     const replay = await SELF.fetch(url, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(replay.status).toBe(402);
+    expect(replay.status).toBe(200);
+    expect(replay.headers.get("Paid-Retry")).toBe("true");
     const body = await json(replay);
-    expect(body["error"]).toContain("once already");
+    expect(body).toEqual(firstBody);
+    expect(facilitator.settleCalls).toBe(settlesBefore);
     expect(await testEnv.COUNTERS.get("patron_number")).toBe(patronsBefore);
   });
 });

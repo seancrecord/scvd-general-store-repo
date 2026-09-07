@@ -78,7 +78,7 @@ describe("the RFC 8785 canonicalizer", () => {
 let facilitator: ReturnType<typeof installFacilitatorMock>;
 
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  facilitator = installFacilitatorMock({ uniqueTransactions: true });
 });
 
 async function buy(path: string): Promise<Record<string, any>> {

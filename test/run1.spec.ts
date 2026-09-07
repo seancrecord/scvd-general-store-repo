@@ -22,7 +22,7 @@ const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
 beforeAll(async () => {
-  installFacilitatorMock();
+  installFacilitatorMock({ uniqueTransactions: true });
   await markKeeperPresent(testEnv);
 });
 
