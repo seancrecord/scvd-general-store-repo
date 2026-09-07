@@ -118,3 +118,9 @@ All 192 catalog × three-rail × two-profile public-door comparisons failed befo
 - [x] Assert that malformed Solana receipts retain unknown status without submitting the payment again. Automatic Solana ambiguity resolution remains open.
 
 GitHub exposed these integration gaps in both runs of #559. All 260 focused cases across the 12 affected files pass, plus typecheck and both dry-run bundles; the full suite remains delegated to GitHub. This repair changes no SEV-1 completion claim.
+
+## Discovery integration follow-up
+
+- [x] Restore the suggested retry key beside the MCP repeat-charge warning; keep the standard payment profile's quote location consistent; render the private status URL template as inline code so crawlers cannot follow a literal placeholder.
+
+All three GitHub failures reproduced locally before these copy repairs; 62 focused discovery checks and typecheck passed afterward. This is integration cleanup for #559, not closure of a parent SEV-1. The full suite remains on GitHub.

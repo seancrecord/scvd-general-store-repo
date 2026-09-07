@@ -693,7 +693,7 @@ function clusterCompletion(items: MenuItem[]): string {
       "human-fulfilled items return order_id and order_url instead of the goods, and the completed order carries the deliverable",
     );
   }
-  return `Choose item_id. ${shapes.join("; ")}. x402 payment: _meta['x402/payment']. Without payment, error 402 carries terms in error.data. Closed or empty shelves refuse before quoting. ${RETRY_SAFETY_MCP_LINE}`;
+  return `Choose item_id. ${shapes.join("; ")}. x402 payment: _meta['x402/payment']. Without payment: error 402 with the terms in error.data. Closed or empty shelves refuse before quoting. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
 /**

@@ -848,7 +848,7 @@ const BASE = "https://scvd.store";
 // 2026-09-07: the payment guide names the protected status read, its bearer token,
 // authorization expiry and the distinction between saved payment and delivery.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7d61b0057adae6a9ae19ae927cdfa816be180a117c7718cb571da96fa26dd157";
+  "bd98f8329e269e7e4bc30fe17363892db6586bb4b21243d99df1ff297469c6a2";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

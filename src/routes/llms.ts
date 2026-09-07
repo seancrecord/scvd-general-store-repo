@@ -591,7 +591,7 @@ TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
 Uncertain payment: keep the original payment/key. Use recovery.purchase_id
 and private recovery.status_token with MCP check_purchase, or GET
-${base}/api/purchase-status/{purchase_id} with Authorization: Bearer
+\`${base}/api/purchase-status/{purchase_id}\` with Authorization: Bearer
 <status_token>. Free after authorization expiry; payment status alone
 is not proof of delivery. Avoid a second authorization while unresolved.
 
