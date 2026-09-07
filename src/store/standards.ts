@@ -21,7 +21,7 @@ export const STANDARDS_POSTURE = {
   summary:
     "This store implements open standards end to end: x402 v2 payments, the official x402 Signed Offers & Receipts extension (JWS, EdDSA over Ed25519), and did:web identity resolution. Nothing about verifying this store requires this store's cooperation — resolve the DID, extract the key, verify the JWS with any standard library.",
   what_is_implemented: [
-    "x402 v2 payment protocol: USDC on Base (eip155:8453), Polygon (eip155:137) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp), PAYMENT-REQUIRED / PAYMENT-RESPONSE headers, facilitator settlement before goods move.",
+    "x402 v2 payment protocol: native USDC on a network offered in the current quote (see /rails), PAYMENT-REQUIRED / PAYMENT-RESPONSE headers, goods produced before facilitator settlement and certificate signing.",
     "x402 Signed Offers & Receipts extension: every 402 challenge carries signed offers (one per accepts entry) committing to exact price, asset, payTo, and resource before money moves; every settled purchase returns a signed receipt in the PAYMENT-RESPONSE header.",
     "JWS compact serialization per RFC 7515, alg EdDSA, kid as a DID URL — no proprietary signature envelope anywhere in the offer/receipt path.",
     "did:web identity at /.well-known/did.json, with retired keys listed permanently and each rotation announced in an artifact signed by the OUTGOING key (live example: /api/verify/handover_1).",
@@ -39,7 +39,7 @@ export const STANDARDS_POSTURE = {
   },
   verify_without_trusting_us: [
     "1. Fetch https://scvd.store/.well-known/did.json and take the Ed25519 public key from verificationMethod (the kid names the KEY, permanently — retired keys stay listed with their service dates).",
-    "2. Take the JWS from extensions['offer-receipt'] in a 402's PAYMENT-REQUIRED header (offers) or a settled response's PAYMENT-RESPONSE header (receipt).",
+    "2. Take the JWS from extensions['offer-receipt'] in the 402 JSON body (offers; also mirrored in PAYMENT-REQUIRED when it fits) or a settled response's PAYMENT-RESPONSE header (receipt).",
     "3. Verify with any RFC 7515 / Ed25519 library: signing input is ASCII(base64url(header) + '.' + base64url(payload)). No scvd.store code or endpoint involved.",
   ],
   verifier_guidance:

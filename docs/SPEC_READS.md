@@ -506,3 +506,12 @@ World RPC fallback: [World's node-provider directory](https://docs.world.org/wor
 ### 2026-09-06 — five-network quote header budget
 
 Re-read `https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md`, sections 2, 4.1 and 6.1: the signed-offer extension is optional and its response-body placement remains usable when a duplicate header copy exceeds transport limits. All accepts and all signed offers remain available. Stock Node fetch reproduced `UND_ERR_HEADERS_OVERFLOW` after five networks were enabled; the all-network regression reproduces oversized menu and publication quotes before the fix. The optional signed-offer header mirror is now capped at 12 KiB, reserving 4 KiB of the common 16 KiB header allowance for other headers and edge additions.
+
+
+### 2026-09-06 — secondary checkout copy and browser test
+
+Read Coinbase's current [CDP Facilitator documentation](https://docs.cdp.coinbase.com/x402/seller/facilitator), including its supported-network table: the configured store checkout networks remain supported for exact v2 payments. The live store manifest and browser quote named the same networks. Reader coverage was checked separately against EVM_CHAINS and statement-rails; it does not widen checkout or the automatic settlement-attestation lookup.
+
+Read [Chrome's imperative API documentation](https://developer.chrome.com/docs/ai/webmcp/imperative-api), updated 2026-09-01: Chrome 152 executeTool takes JSON-string input. The current WebMCP draft instead specifies an object; using the draft call shape failed before tool execution, and using Chrome's documented shape passed for quoting and unsigned refusal. No signer or wallet extension was present in that session. The keeper's separate browser purchase and certificate check are recorded in BROWSER_CHECKOUT_2026-09-06.md; neither proves paid WebMCP completion.
+
+The World domain remains the USDC/version 2 mapping already read and tested during integration. Browser copy now compares the selected quote's domain instead of instructing every buyer to expect USD Coin. No new chain-contract read or payment was made in this copy task. [Wrangler command documentation](https://developers.cloudflare.com/workers/wrangler/commands/) was re-read for the existing dry-run bundle checks; no deployment configuration was changed.

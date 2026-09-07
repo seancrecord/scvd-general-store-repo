@@ -71,8 +71,8 @@
  *
  * KNOWN LIMITS, stated here rather than discovered later:
  *
- *   - EVM only. `window.ethereum` covers Base and Polygon in one code
- *     path; Solana / Phantom is a second pass and is not pretended at.
+ *   - EVM only. `window.ethereum` covers the EVM networks offered in
+ *     the current quote; Solana / Phantom is a second pass, not pretended at.
  *     A Solana-only offer is skipped with its reason shown.
  *   - EIP-1193 via `window.ethereum` only. EIP-6963 multi-wallet
  *     discovery is not implemented, so with several extensions
@@ -224,6 +224,7 @@ const CHAIN_NAMES = {
   56: "BNB Chain",
   137: "Polygon",
   8453: "Base",
+  480: "World",
   42161: "Arbitrum One",
   43114: "Avalanche",
 };

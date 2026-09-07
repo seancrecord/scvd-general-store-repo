@@ -651,6 +651,11 @@ Give `url`; optional `detail` for a model preference (Claude Sonnet 5
 or Opus 5 by default; a weaker model on request, which is a fair ask).
 Counts and quotations, never a grade. We refuse our own hostname.
 
+Checkout networks come from the current x402 v2 quote. The statement's
+`network` selects what to inspect, independently of how you pay. Browser
+wallet buttons support EVM signing; Solana requires a compatible external
+client. WebMCP's completion tool submits an already-signed payment.
+
 ### The Operator's Statement (3.15.0, 2026-09-02)
 
 `operator_statement` ($21) — a 30-day term on your receiving address:
@@ -661,8 +666,8 @@ history at `https://scvd.store/api/operator-statement/{statement_id}`
 derives at read how many distinct addresses paid you and the largest
 payer's transfers and USDC beside the totals they are part of — counts
 with their denominators, never a share — and counts the passes we
-missed against us. Give `wallet` (Base by default; `network=eip155:137`
-for Polygon). Ends on its date; `the_next_month` on the history is a
+missed against us. Give `wallet` and choose `network` from the item's
+current input contract (Base by default; supported EVM chains or Solana). Ends on its date; `the_next_month` on the history is a
 purchase, never a renewal.
 
 ### The passport tier (3.12.0, 2026-09-02)

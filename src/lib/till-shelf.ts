@@ -1,5 +1,5 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
-import { BASE_NETWORK, POLYGON_NETWORK } from "@/lib/payments";
+import { checkoutNetworks, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { HOUSE_RULE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
@@ -31,7 +31,7 @@ import type { MenuItem } from "@/types";
 /**
  * THE TILL'S WALLET LIMIT, WRITTEN WHERE THE BUYER READS (2026-08-27,
  * the keeper's own catch, and it is rule 53 applied to rule 53's own
- * fix). The store sells on Base, Polygon and Solana; the browser till
+ * fix). The store quotes its configured networks; the browser till
  * signs with an EVM wallet only, so a Solana-wallet visitor meets a
  * page that never explains why there is no button for them — and the
  * rule says a door gets a till OR the reason is written down. This is
@@ -52,10 +52,10 @@ import type { MenuItem } from "@/types";
  * way, because the checks are worth doing at any store.
  */
 export const TILL_SIGNATURE_WARNING =
-  'Your wallet may call this signature "suspicious." That warning is about the pattern, not this page: a gasless USDC authorization is also how wallet drainers strike, so wallets flag the shape from young domains on sight. Don’t trust the page or the flag — check three things yourself: the signing account is yours, the amount matches the shelf price, and the token domain reads "USD Coin". If any of them is off, press Cancel — cancelling is free and signs nothing.';
+  'Your wallet may call this signature "suspicious." That warning is about the pattern, not this page: a gasless USDC authorization is also how wallet drainers strike, so wallets flag the shape from young domains on sight. Don’t trust the page or the flag — check three things yourself: the signing account is yours, the amount matches the shelf price, and the token domain, network and recipient match the selected quote. If any of them is off, press Cancel — cancelling is free and signs nothing.';
 
 export const TILL_WALLET_LIMIT =
-  "The browser till takes EVM wallets only for now — Base or Polygon, one signature, no gas. Holding Solana USDC? Every agent client and the MCP door settle on Solana today; the browser till's Solana pass is planned and this sentence comes down when it ships.";
+  "The browser till needs a compatible EVM wallet extension, on an EVM network offered in the current quote: one signature, no gas fee. Solana signing is not built into this till; use an x402-compatible Solana client through HTTP or MCP when the quote offers Solana. WebMCP can submit a payment already signed by a compatible external client.";
 
 export interface TillShelfItem {
   id: string;
@@ -122,6 +122,7 @@ function safeJsonForScript(value: unknown): string {
 export function tillShelfHtml(
   items: readonly MenuItem[],
   options: TillShelfOptions,
+  paymentConfig?: PaymentNetworkConfig,
 ): string {
   const shelf = {
     heading: options.heading,
@@ -144,13 +145,13 @@ export function tillShelfHtml(
      * offers on, never retyped — but DISPLAY-ONLY on the other end:
      * the till's wallet line uses this to warn about a wrong network
      * before a button is pressed, while the money path keeps deciding
-     * from the live 402's accepts alone. The Polygon rail is
-     * flag-gated server-side; advertising it here when the flag is
-     * down costs a too-broad hint, never a wrong signature.
+     * from the live 402's accepts alone. The indicator follows enabled
+     * checkout networks so an optional rail is neither advertised while
+     * disabled nor called wrong while live.
      */
-    evm_chains: [BASE_NETWORK, POLYGON_NETWORK].map((network) =>
-      Number(network.split(":")[1]),
-    ),
+    evm_chains: (paymentConfig ? checkoutNetworks(paymentConfig) : [])
+      .filter(({ network }) => network.startsWith("eip155:"))
+      .map(({ network }) => Number(network.split(":")[1])),
     verify_hint: "/api/verify/{cert_id}",
     items: items.map(tillShelfItem),
   };

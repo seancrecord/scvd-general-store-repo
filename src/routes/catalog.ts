@@ -607,9 +607,9 @@ function renderItemPage(
       // Buyer words first, protocol after — same reasoning as /try's
       // standfirst (the keeper's first live walk, 2026-08-27).
       standfirst:
-        "Press the button and three things happen: the store quotes the exact price in USDC, your wallet opens once for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. Have your wallet's network set to Base or Polygon first; if it is not, the till says so and nothing gets signed.",
+        "Press the button and three things happen: the store quotes the exact price in USDC, your wallet opens once for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. Have your wallet's network set to an EVM network offered in the current quote first; if it is not, the till says so and nothing gets signed.",
       verifyHint: `${base}/api/verify/{cert_id}`,
-    }),
+    }, paymentConfig),
     bodyHtml: `<section>
         ${item.subtitle ? `<p class="menu-meta"><strong>${escapeHtml(item.subtitle)}</strong></p>` : ""}
         ${noun ? `<p class="menu-meta">${escapeHtml(noun)}.</p>` : ""}
