@@ -3,6 +3,10 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { buildTrustPanel } from "@/services/trust-panel";
 import { ASSURANCE_LADDER } from "@/store/assurance";
+import {
+  EXTERNAL_RECORDS,
+  RECORDS_NOT_LISTED,
+} from "@/store/trust-signals";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -29,6 +33,12 @@ trustRoutes.get("/trust", async (c) => {
     return c.json({
       ...panel,
       assurance_ladder: ASSURANCE_LADDER,
+      independent_records: {
+        count: EXTERNAL_RECORDS.length,
+        note: "Third-party records of this store, each confirmed by hand on the date given. No grade or score another instrument gave us is restated; the live reading is behind the link.",
+        records: EXTERNAL_RECORDS,
+        not_listed: RECORDS_NOT_LISTED,
+      },
       what_this_is_not:
         "Not an escrow, not a guarantor, not a dispute court, no chargebacks, no third-party audit. One operator, one live signing key (history Bitcoin-anchored). Treat artifacts as evidence to verify, never as institutional assurance.",
     });
@@ -41,6 +51,44 @@ trustRoutes.get("/trust", async (c) => {
       <td>${escapeHtml(level.not_claimed)}</td>
       <td>${level.examples.map((e) => `<code>${escapeHtml(e)}</code>`).join(", ")}</td>
     </tr>`,
+  ).join("\n");
+
+  /*
+   * THE RECORDS, IN HTML AT LAST (2026-09-07). Every confirmed
+   * third-party record existed only as `sameAs` in the storefront's
+   * JSON-LD and as JSON at /.well-known/trust.json — both of them
+   * surfaces a retrieval crawler has no reason to fetch. (No count is
+   * typed here or on the page: the figure is EXTERNAL_RECORDS.length
+   * at render, because a hand-typed total is the drift this store
+   * keeps finding in its own work.) The outside
+   * model that read this store as UNVERIFIED cited "no independent
+   * reputation footprint" while the footprint sat in a dot-file, and
+   * an answer engine reads the room, not the well-known directory.
+   *
+   * DERIVED FROM EXTERNAL_RECORDS, NEVER RETYPED, so this page and
+   * the machine document cannot disagree and an entry is still added
+   * in exactly one place.
+   *
+   * WHAT IT PROVES TRAVELS WITH EVERY ROW, and that field is the
+   * whole difference between a trust document and a logo wall: most
+   * of these prove we were indexed and nothing more, and each row
+   * says so in its own words. NO GRADE IS RESTATED HERE — several of
+   * these instruments scored us and some scored us well, but the
+   * number is theirs and moves when they change the battery, so the
+   * link carries the reading and this page carries only the fact that
+   * the reading exists. That is the same rule the store applies to
+   * everybody else's endpoints, applied to itself.
+   */
+  const recordRows = EXTERNAL_RECORDS.map(
+    (record) => `<div class="menu-item">
+      <div class="menu-line">
+        <span class="menu-name"><a href="${escapeHtml(record.url)}" rel="nofollow noopener">${escapeHtml(record.registry)}</a></span>
+        <span class="menu-dots"></span>
+        <span class="menu-price">confirmed ${escapeHtml(record.confirmed)}</span>
+      </div>
+      <p class="menu-desc">${escapeHtml(record.what_it_proves)}</p>
+      <p class="menu-meta"><code>${escapeHtml(record.url)}</code></p>
+    </div>`,
   ).join("\n");
 
   const galleryRows = panel.gallery.items.length
@@ -97,6 +145,22 @@ trustRoutes.get("/trust", async (c) => {
     </table>
   </section>
   <section>
+    <h2>Who else has a record of us</h2>
+    <p class="menu-desc">${EXTERNAL_RECORDS.length} third-party records, every
+    one a URL somebody here opened and read on the date beside it. What each
+    one actually proves is written underneath it, including where the honest
+    answer is <em>not much</em> — a directory listing proves this store was
+    indexed, never that a purchase settled or that anybody vouched for the
+    goods. Several of these instruments also scored us; none of those numbers
+    is copied onto this page, because the number is theirs and moves when they
+    change the battery. Follow the link for the live reading. Machine-readable
+    twin at <a href="/.well-known/trust.json"><code>/.well-known/trust.json</code></a>,
+    derived from the same list.</p>
+    ${recordRows}
+    <h3>What is deliberately not on this list</h3>
+    <p class="menu-desc">${escapeHtml(RECORDS_NOT_LISTED)}</p>
+  </section>
+  <section>
     <h2>The record, kept where you can check it</h2>
     <ul>
       <li><a href="${escapeHtml(panel.corrections.url)}">Corrections</a> —
@@ -113,8 +177,9 @@ trustRoutes.get("/trust", async (c) => {
       <li><a href="/stack">The stack</a> — every dependency we do not control
       and what breaks when it does.</li>
       <li><a href="/.well-known/trust.json">The machine trust list</a> —
-      third-party registries that have confirmed us, with dates, edges
-      stated; the surface indexers read beside the signing key.</li>
+      the JSON twin of the ${EXTERNAL_RECORDS.length} records above, with the
+      same dates and the same stated edges; the surface indexers read beside
+      the signing key.</li>
       <li><a href="/corrections">When we get it wrong</a> and
       <a href="/attestation">what we sign</a> — the standing terms.</li>
       <li><a href="/disagreements">Disagreements</a> — where our reading
@@ -131,7 +196,7 @@ trustRoutes.get("/trust", async (c) => {
     renderSimplePage({
       title: "The trust panel",
       description:
-        "Every trust surface in one place: the signing key and its Bitcoin-anchored history, the assurance ladder, real verifiable sample artifacts, corrections, books, and the corpus.",
+        "Every trust surface in one place: the signing key and its Bitcoin-anchored history, the assurance ladder, real verifiable sample artifacts, corrections, the corpus, and every independent third-party record of this store with what each one does and does not prove.",
       path: "/trust",
       bodyHtml,
     }),

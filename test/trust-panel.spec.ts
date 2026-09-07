@@ -2,6 +2,10 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { ASSURANCE_LADDER } from "@/store/assurance";
+import {
+  EXTERNAL_RECORDS,
+  RECORDS_NOT_LISTED,
+} from "@/store/trust-signals";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -87,5 +91,73 @@ describe("the panel and its room", () => {
     const urls = body.gallery.items.map((i) => i.verify_url).join(" ");
     expect(urls).not.toContain("scvd_stranger_gallery_1");
     expect(body.gallery.note).toContain("House purchases only");
+  });
+});
+
+/**
+ * THE INDEPENDENT RECORDS SECTION exists because the footprint was
+ * invisible to the readers it was written for: `sameAs` and a
+ * well-known JSON file are not surfaces a retrieval crawler fetches.
+ * These tests pin the two properties that keep it a trust document
+ * rather than a logo wall — it is DERIVED from EXTERNAL_RECORDS so it
+ * cannot drift from the machine twin, and it carries every row's
+ * stated edge plus the list's own omissions.
+ */
+describe("the independent records on the panel", () => {
+  it("renders every record from the constant, with its date and its edge", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.trustPanelCache);
+    const text = await (
+      await SELF.fetch(`${BASE}/trust`, { headers: { Accept: "text/html" } })
+    ).text();
+
+    expect(text).toContain("Who else has a record of us");
+    // Derived, not retyped: every confirmed record reaches the page.
+    for (const record of EXTERNAL_RECORDS) {
+      expect(text).toContain(record.url);
+    }
+    // And the edge travels with the row — the line that stops this
+    // being a wall of logos.
+    expect(text).toContain("Not an endorsement");
+    // The list states its own omissions.
+    expect(text).toContain("What is deliberately not on this list");
+    expect(text).toContain("none publishes a per-service page");
+  });
+
+  it("restates no third-party grade or score", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.trustPanelCache);
+    const text = await (
+      await SELF.fetch(`${BASE}/trust`, { headers: { Accept: "text/html" } })
+    ).text();
+    // House rule: the reading is theirs and lives behind the link.
+    // The page may say a score EXISTS; it may never carry the number.
+    const sectionStart = text.indexOf("Who else has a record of us");
+    const sectionEnd = text.indexOf("The record, kept where you can check it");
+    expect(sectionStart).toBeGreaterThan(-1);
+    expect(sectionEnd).toBeGreaterThan(sectionStart);
+    const section = text.slice(sectionStart, sectionEnd);
+    expect(section).toContain("none of those numbers");
+    // No AggregateRating anywhere on the room, ever.
+    expect(text).not.toContain("aggregateRating");
+    expect(text).not.toContain("AggregateRating");
+  });
+
+  it("serves the same records in the JSON dialect", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.trustPanelCache);
+    const body = (await (
+      await SELF.fetch(`${BASE}/trust`, {
+        headers: { Accept: "application/json" },
+      })
+    ).json()) as {
+      independent_records: {
+        count: number;
+        records: { url: string }[];
+        not_listed: string;
+      };
+    };
+    expect(body.independent_records.count).toBe(EXTERNAL_RECORDS.length);
+    expect(body.independent_records.records.map((r) => r.url)).toEqual(
+      EXTERNAL_RECORDS.map((r) => r.url),
+    );
+    expect(body.independent_records.not_listed).toBe(RECORDS_NOT_LISTED);
   });
 });
