@@ -78,6 +78,20 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://neuronto.com/ard-publishers/scvd.store",
+    registry: "Neuronto ARD Registry",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That Neuronto has indexed this store's published ARD resources and gives the domain a publisher page. Its search impressions count appearances in that index, not visitors or purchases; our own verification queries may appear among them. Not an endorsement and not an audit of the goods. The page carries its current observations rather than a grade copied here.",
+  },
+  {
+    url: "https://wellknownhq.com/d/scvd.store",
+    registry: "WellKnown",
+    confirmed: "2026-09-06",
+    what_it_proves:
+      "That WellKnown has indexed this store's discovery catalog and publishes a domain page with its own checks. Not an endorsement and not an audit of the goods: the grade describes what its discovery checker observed, not whether a purchase succeeds or an entry remains accurate. Its live page and README badge carry the current reading.",
+  },
+  {
     /**
      * THE SOURCE, AND THE ONE ENTRY THAT IS NOT A LISTING (added
      * 2026-08-26). Every other record here is somebody else's index

@@ -70,6 +70,9 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
 
 /** Rooms the porch does not count, by name, each under the reason it is not counted. */
 const UNCOUNTED_TODAY: readonly string[] = [
+  // Private signed monitoring delivery, not visitor demand. Its own
+  // receipt ledger is reviewed at /admin/desvela-registry.json.
+  "POST /webhooks/desvela-registry",
   /**
    * HUMAN AND LEGAL ROOMS. A person reading the terms is not an agent
    * using an instrument, and the question this porch asks — did anyone
