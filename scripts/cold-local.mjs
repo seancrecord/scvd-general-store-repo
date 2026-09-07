@@ -60,7 +60,8 @@ const DOORS_BUDGET = 1_000_000;
 const DELIVERY_FLOOR = "src/services/fulfillment.ts";
 
 const require = createRequire(import.meta.url);
-const workerd = require.resolve("@cloudflare/workerd-linux-64/bin/workerd");
+// The package resolves its installed native binary on both CI and the local host.
+const workerd = require("workerd").default;
 
 const dir = mkdtempSync(join(tmpdir(), "scvd-cold-local-"));
 try {
@@ -78,7 +79,10 @@ try {
       console.error(result.stdout, result.stderr);
       process.exit(2);
     }
-    const files = readdirSync(dirs[name]).filter((f) => f.endsWith(".js"));
+    // Wrangler keeps the source extension on Text modules, including the
+    // downloadable markdown-wrapped runner. Its generated README is not a module.
+    const files = readdirSync(dirs[name]).filter((f) =>
+      f !== "README.md" && (f.endsWith(".js") || f.endsWith(".md")));
     built[name] = {
       entry,
       textModules: files.filter((f) => f !== entry),
