@@ -78,6 +78,20 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://agenstry.com/agents/scvd.store",
+    registry: "Agenstry — agent directory",
+    confirmed: "2026-09-08",
+    what_it_proves:
+      "That Agenstry indexes the store's agent card and publishes its own observations and card history. Not an endorsement and not an audit by this store: Agenstry's grades and probe conclusions remain its own, and a listing does not establish successful purchases or delivery.",
+  },
+  {
+    url: "https://agenstry.com/mcp/store.scvd/general-store",
+    registry: "Agenstry — MCP directory",
+    confirmed: "2026-09-08",
+    what_it_proves:
+      "That Agenstry lists SCVD General Store's MCP server, names https://scvd.store/mcp as its primary URL and publishes tool and resource metadata. Not an endorsement and not an audit: the listing establishes that the server was indexed, not that the mirrored catalog is complete or current or that a purchase succeeded.",
+  },
+  {
     url: "https://mcpfind.org/servers/store-scvd-general-store",
     registry: "MCPFind",
     confirmed: "2026-09-08",
@@ -259,9 +273,9 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://agentpluginsdirectory.com/plugins/scvd-general-store",
     registry: "Agent Plugins Directory",
-    confirmed: "2026-09-03",
+    confirmed: "2026-09-08",
     what_it_proves:
-      "That one more plugin directory indexed the store's MCP server under its own page. A listing, which is evidence of being indexed and nothing else: not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check, not assumed here.",
+      "That Agent Plugins Directory indexes the repository's plugin bundle, names Record Creative Co. LLC as author, lists its skill and MCP servers, and publishes its own manifest-schema verification date. Not an endorsement and not an audit of runtime behavior: a manifest check does not prove client marketplace acceptance, installation support, purchases or delivery.",
   },
   {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",

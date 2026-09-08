@@ -120,6 +120,20 @@ settlement attestations. This is indexing, not connector acceptance
 or proof of a successful purchase. The shared trust record feeds the
 storefront's structured identity links and trust pages.
 
+Agenstry listings confirmed 2026-09-08: the [agent page](https://agenstry.com/agents/scvd.store)
+indexes the store's card and history; the [MCP page](https://agenstry.com/mcp/store.scvd/general-store)
+names the MCP endpoint and mirrors tool/resource metadata. Both clean
+URLs are in the shared trust record. These are directory records;
+Agenstry's grades, probe findings and catalog freshness remain its own.
+The keeper's decision, 2026-09-08: wait for Agenstry to refresh its
+assessment; its record cannot be edited from our side.
+
+Agent Plugins Directory was re-confirmed 2026-09-08 at its existing
+[scvd-general-store listing](https://agentpluginsdirectory.com/plugins/scvd-general-store).
+It lists the repository's plugin bundle, skill and MCP servers and
+publishes its own manifest-schema verification date. This is separate
+from acceptance into any client's marketplace or successful runtime use.
+
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
 Status of the review gates, checked 2026-08-21:
