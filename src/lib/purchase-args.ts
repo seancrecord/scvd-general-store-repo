@@ -1,3 +1,4 @@
+import { target as a2aTarget } from "@/lib/a2a-instrument";
 import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
@@ -240,6 +241,18 @@ function targetVerdict(
   return undefined;
 }
 
+function a2aSetupRefusal(error: string): PurchaseRefusal {
+  return refuse(error === "budget_exhausted" ? 503 : 400, error,
+    "A2A setup incomplete: " + error + ". Read /a2a-desk.json for the exact authorization fixture and supported scope. Nothing charged.", { input_field: "url" });
+}
+
+/** Live permission and capacity apply to a new sale, not retrieval of owed work. */
+export async function checkPurchaseAvailability(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  if (item.id !== "a2a_repair_kit") return undefined;
+  const error = await a2aAdmission(env, args.get("url"));
+  return error ? a2aSetupRefusal(error) : undefined;
+}
+
 /**
  * EVERY PRE-PAYMENT REFUSAL THAT DEPENDS ON WHAT THE BUYER SENT, in
  * the order the HTTP door's middleware chain ran them, because that
@@ -255,6 +268,7 @@ export async function checkPurchaseArgs(
   env: Env,
   item: MenuItem,
   args: PurchaseArgs,
+  options: { deferAvailability?: boolean } = {},
 ): Promise<PurchaseRefusal | undefined> {
   const read = (name: string) => args.get(name);
 
@@ -294,9 +308,9 @@ export async function checkPurchaseArgs(
   }
 
   if (item.id === "a2a_repair_kit") {
-    const error = await a2aAdmission(env, read("url"));
-    if (error) return refuse(error === "budget_exhausted" ? 503 : 400, error, "A2A setup incomplete: " + error + ". Read /a2a-desk.json for the exact authorization fixture and supported scope. Nothing charged.", { input_field: "url" });
-    return undefined;
+    try { a2aTarget(read("url"), new URL(env.STORE_BASE_URL).host); }
+    catch { return a2aSetupRefusal("target_refused"); }
+    return options.deferAvailability ? undefined : checkPurchaseAvailability(env, item, args);
   }
   if (PROBE_ITEMS.includes(item.id)) {
     const refusal = targetVerdict(
