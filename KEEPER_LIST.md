@@ -1004,6 +1004,17 @@ Do not relitigate without you.
   https://mcpfind.org/servers/store-scvd-general-store.
   Recorded in the trust signals and distribution docs; indexing
   only, not an endorsement or proof of purchases.
+- **Agenstry.** DONE 2026-09-08: both keeper-supplied pages were
+  fetched and read. Agent: https://agenstry.com/agents/scvd.store.
+  MCP: https://agenstry.com/mcp/store.scvd/general-store. Clean
+  URLs recorded in the discovery signals and distribution docs;
+  directory presence only, without adopting the directory's grades.
+  Keeper decision, 2026-09-08: wait for their assessment refresh;
+  their record cannot be edited from our side. No outreach requested.
+- **Agent Plugins Directory.** DONE 2026-09-08: existing listing
+  re-read at https://agentpluginsdirectory.com/plugins/scvd-general-store.
+  Confirmation date refreshed; the record now describes the plugin
+  bundle and the directory's manifest check, not only the MCP server.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.

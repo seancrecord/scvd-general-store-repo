@@ -266,11 +266,12 @@ export async function storeProvenanceCheck(
   env: Env,
   check: SignedProvenanceCheck,
   certId: string,
+  createdAt?: string,
 ): Promise<void> {
   await kvPut(
     env.PATRONS,
     KV_KEYS.provenanceCheck(check.record.provenance_id),
-    JSON.stringify({ check, cert_id: certId, created_at: new Date().toISOString() }),
+    JSON.stringify({ check, cert_id: certId, created_at: createdAt ?? new Date().toISOString() }),
   );
 }
 

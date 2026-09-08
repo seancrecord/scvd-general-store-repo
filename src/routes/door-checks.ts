@@ -33,6 +33,7 @@ import {
  */
 import {
   checkPurchaseArgs,
+  checkPurchaseAvailability,
   checkPurchaseInputSafety,
   queryArgs,
 } from "@/lib/purchase-args";
@@ -354,7 +355,7 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   const args = queryArgs((name) => c.req.query(name));
   const refusal = isBuying(c)
-    ? await checkPurchaseArgs(c.env, item, args)
+    ? await checkPurchaseArgs(c.env, item, args, { deferAvailability: true })
     : await checkPurchaseInputSafety(c.env, item, args);
   if (refusal) {
     c.set("inputRefusal", refusal.body);
@@ -373,6 +374,13 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     for (const guard of [inventoryCheck, stockCheck, shutterCheck, capacityCheck]) {
       const refusal = await guard(c, async () => {});
       if (refusal) return refusal;
+    }
+    const item = getMenuItem(buyItemId(c));
+    // A bare catalog probe still quotes its required inputs. A supplied
+    // A2A target must be available before new terms or settlement.
+    if (item && c.req.query("url")) {
+      const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
+      if (refusal) return c.json(refusal.body, refusal.status);
     }
   };
   if (isBuying(c)) c.set("purchaseAdmission", check);

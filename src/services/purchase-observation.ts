@@ -1,3 +1,6 @@
+import type { SignedSpotCheck } from "@/services/spot-check";
+import type { SignedProvenanceCheck } from "@/services/provenance-check";
+import type { PreparedA2AKit } from "@/services/a2a-kit";
 import type { SignedServiceAudit } from "@/services/service-audit";
 import type { SignedGoodBuyerReading } from "@/services/good-buyer";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
@@ -15,6 +18,9 @@ export interface PreparedObservation {
   goodBuyer?: SignedGoodBuyerReading;
   signatureAgentCard?: SignedSignatureAgentCard;
   onpageAudit?: SignedOnpageAudit;
+  a2aKit?: PreparedA2AKit;
+  spotCheck?: SignedSpotCheck;
+  provenanceCheck?: SignedProvenanceCheck;
   attests: string;
 }
 export interface ObservationCheckpoint {

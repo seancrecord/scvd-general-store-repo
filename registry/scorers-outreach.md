@@ -25,6 +25,7 @@ joins or leaves.
 | [ACE — Autonomous Commerce Engine by Black Knight Technologies](https://blackknightstech.com) | — |
 | [AEGIS](https://api.mcx-ventures.com/ui) | — |
 | [Aegis](https://borisinc.com) | — |
+| [Agenstry](https://agenstry.com/agents/scvd.store) | hello@agenstry.com |
 | [Agent Catalog](https://agentcatalog.com/publishers/scvd.store?q=) | — |
 | [Agent Identity Registry](https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR) | https://agentidentityregistry.org/contact |
 | [Agent Plugins Directory](https://agentpluginsdirectory.com/plugins/scvd-general-store) | info@ellelion.com |
