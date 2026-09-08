@@ -262,11 +262,12 @@ export async function storeWalletStatement(
   env: Env,
   statement: SignedWalletStatement,
   certId: string,
+  createdAt?: string,
 ): Promise<WalletStatementRecord> {
   const record: WalletStatementRecord = {
     statement,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.walletStatement(statement.statement_id),

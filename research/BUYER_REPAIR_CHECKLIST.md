@@ -8,10 +8,20 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 - [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; PR #540.
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
-- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: unknown-state responses repaired in `8c7606ca` (merged #549); catalogue intent capture and protected status are built on `codex/buyer-durable-intent`; reconciliation-driven delivery and remaining doors stay open.
+- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: verified purchase intents, truthful payment status and original-evidence recovery are implemented for the checked product families below. Remaining product families and historical obligations still need delivery recovery or explicit resolution.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
-- [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: HTTP retries preserve the owed-delivery record and report the confirmed charge when only a certificate exists or lookup fails. Checkpointed human orders now reconstruct with stable IDs, original briefs/terms and preserved completed work; legacy purchases and other artifacts remain open.
-- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial repairs `f8f8d34f` and `3ce5d0bc` in merged PR #541; interrupted partial writes and legacy input bindings remain open.
+- [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: new checkpointed human orders reconstruct with stable IDs, original briefs/terms and preserved completed work. Historical purchases missing retained briefs or durable order checkpoints remain open; unrelated instant-product work is not a prerequisite for closing this finding.
+- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial: HTTP and both MCP profiles recover the checked product families from authenticated purchase records. Uncheckpointed products and older purchases missing original input/evidence bindings remain open.
+
+## What still closes the three recovery SEV-1s
+
+The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
+
+- **BUY-017:** finish original-deliverable recovery for the remaining paid product families after an ambiguous settlement answer. A truthful unknown/settled status is necessary but does not itself deliver the good.
+- **BUY-034:** resolve historical human purchases that predate retained briefs and durable order checkpoints. New checkpointed human orders already reconstruct with stable IDs and preserve completed work; that completed work does not wait on unrelated instant products.
+- **BUY-037:** finish equivalent authenticated MCP recovery for the remaining products and older purchases whose original input/evidence was never retained. The original payment must not buy replacement evidence or trigger a second charge.
+
+Inventory and commission side effects need their own recovery proof before those products join the supported set. Missing private recovery handles and expired/rejected verification also remain tracked under BUY-014/015; they must not disappear merely because a product's reconstruction substep passes. Parent closure needs explicit evidence for the remaining obligation or a documented resolution, not an unchecked promise to reconstruct data the store never retained.
 
 ## Remaining findings
 
@@ -264,3 +274,16 @@ Final local validation passed all 588 files: 7,626 tests passed with one existin
 - [x] Exercise Base, Polygon and Solana subject chains through HTTP and both MCP profiles, checking the signed subject chain and the recipient's verification instructions together.
 
 All nine new recipient regressions failed without the correction and passed with it. The existing statement suite also passes; its assertion that the Base reading explains `eth_getLogs` remains intact. This correction is committed separately from durable chain-report recovery.
+
+## 2026-09-08 — Wallet statement and settlement reconciliation recovery
+
+- [x] Retain the original signed wallet statement and settlement reconciliation before settlement. Recovery restores the original IDs, subjects, chain, transfer rows, amounts, requested window and declared-versus-observed ceiling instead of reading the chain again.
+- [x] Preserve the original publication timestamps through certificate, report-storage and response-checkpoint failures; retrieve and verify the original reports through their public record URLs and protected purchase status.
+- [x] Exercise HTTP and both MCP profiles across all five configured payment rails. Separate Polygon and Solana statement cases pay on Base and prove the subject chain remains independent of the checkout rail.
+- [x] Exercise journal failures before settlement, lost settlement acknowledgements, concurrent requests, changed inputs, changed chain data and missing original observations. Missing original evidence remains an owed purchase without replacement or a second settlement.
+
+The recovery regression has 222 cases. RPC fixtures feed the real chain readers, report arithmetic and signing code; assertions require the purchased transaction rows and amounts, not an empty or merely well-shaped report. Ambiguous-settlement cases retain the actual confirmed fixture receipt and inject its confirmation to isolate original-evidence survival; they do not claim live chain-finality coverage. No live payment was submitted.
+
+BUY-017/034/037 remain open. Other observation, inventory and commission products still need recovery coverage; historical obligations that predate retained input/evidence still need safe resolution. The human-order reconstruction already completed is not being reopened by this increment. The parent count remains 15/39.
+
+All 231 new cases were observed failing with the production fixes removed. The focused gate passed all 222 recovery cases, and the recipient/statement gate passed 21 tests after preserving the existing Base RPC guidance. Final local validation passed all 590 files: 7,857 tests passed with one existing conditional key-continuity skip (791.84 seconds). Typecheck, both Worker dry-run builds, native Worker startup, A2A runner/schema checks, Tab/browser-bridge/Action/example/package tests, audit, claims and docs checks also passed. No test timeout or production money-safety guard was relaxed.

@@ -544,7 +544,7 @@ export async function deliverInstantGoods(
       if (!statement) {
         throw new Error("the_statement reached goods with no record");
       }
-      await storeWalletStatement(env, statement, input.certId ?? "");
+      await storeWalletStatement(env, statement, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: statementNote(statement.coverage),
         extras: {
@@ -683,7 +683,7 @@ export async function deliverInstantGoods(
           "settlement_reconciliation reached goods with no observation",
         );
       }
-      await storeReconciliation(env, reconciliation, input.certId ?? "");
+      await storeReconciliation(env, reconciliation, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: reconciliationNote(
           reconciliation.verdict,
