@@ -2,6 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { KV_KEYS, invertedTimestamp } from "@/lib/kv-keys";
 import { verifyMessageSignature } from "@/lib/signing";
+import { readProse, sanitizeText, stripTags } from "@/lib/sanitize";
 import {
   LETTER_CAP,
   LETTER_FOLLOW_UP_CAP,
@@ -322,5 +323,67 @@ describe("a letter is a conversation, and nothing in it is quietly dropped", () 
       body: JSON.stringify({ letter: "Hello?", in_reply_to: "letter_nope" }),
     });
     expect(response.status).toBe(404);
+  });
+});
+
+
+/**
+ * ONE PASS WAS NOT ENOUGH (2026-09-08, CodeQL on PR #577, high).
+ *
+ * The tag strip removed every tag it could see and assembled new ones
+ * out of the remains: `<<script>script>` came out as `script>` on the
+ * way to being a tag again. Latent in `sanitizeText` long before the
+ * mailbox work; the scanner saw it when this branch moved the line.
+ */
+describe("the tag strip cannot be used to build a tag", () => {
+  const bypasses = [
+    "<<script>script>alert(1)</script>",
+    "<<div>div>",
+    "<scr\u0000ipt>alert(1)</scr\u0000ipt>",
+    "<<<script>script>script>",
+  ];
+
+  it("leaves nothing tag-shaped behind, however it was nested", () => {
+    for (const attempt of bypasses) {
+      for (const cleaned of [stripTags(attempt), sanitizeText(attempt, 200)]) {
+        expect(cleaned).not.toMatch(/<[^>]*>/);
+        expect(cleaned.toLowerCase()).not.toContain("<script");
+      }
+    }
+  });
+
+  it("terminates on adversarial nesting, and is done when it says it is", () => {
+    // The contract is that nothing TAG-SHAPED survives, not that every
+    // angle bracket does — a lone ">" is text, and escaping handles it.
+    // What matters is that the result is a fixed point: running it
+    // again finds nothing more, so no later pass can assemble a tag
+    // out of what this one left behind.
+    const nested = "<".repeat(200) + "script>".repeat(200);
+    const cleaned = stripTags(nested);
+    expect(cleaned).not.toMatch(/<[^>]*>/);
+    expect(cleaned).not.toContain("<");
+    expect(stripTags(cleaned)).toBe(cleaned);
+  });
+
+  it("renders a letter, never runs it — the defence prose actually relies on", async () => {
+    const nasty = '<script>alert("xss")</script> and <img src=x onerror=alert(1)>';
+    const letterId = await postLetter("Angle Brackets", nasty);
+    const page = await (
+      await SELF.fetch(`${BASE}/admin/counter`, { headers: KEEPER })
+    ).text();
+    const card = page.slice(page.indexOf(letterId));
+    // Kept whole in the record, and escaped on the way to the page:
+    // the browser sees text, the keeper sees what they wrote.
+    expect(card).toContain("&lt;script&gt;");
+    expect(card).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    expect(card).not.toContain("<script>alert");
+    expect(card).not.toContain("<img src=x");
+  });
+
+  it("leaves ordinary prose alone, brackets and all", () => {
+    // The mailbox keeps what people wrote: a report saying a latency
+    // is under a threshold is not markup and must survive intact.
+    const prose = "latency < 200ms on door 3, and 5 > 2 either way";
+    expect(readProse(prose, 200).text).toBe(prose);
   });
 });
