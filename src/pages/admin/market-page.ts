@@ -6,9 +6,78 @@ import {
   type MarketAggregates,
 } from "@/services/market";
 import type { bountyBoard } from "@/services/bounty-board";
+import {
+  BOUNTY_BATCH_CAP,
+  BOUNTY_BATCH_DEFAULT_REWARD,
+  type BountyCandidate,
+} from "@/services/bounty-batch";
 import type { WardRound } from "@/services/ward-round";
 
 type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
+
+/**
+ * THE POSTING LIST (2026-09-08, the keeper: "i should probably do up
+ * to ten bounties and then like tracking what we are doing with it").
+ *
+ * The desk had one URL field, so ten bounties was ten trips with a
+ * URL hunt between each, and nothing on the page said which doors
+ * this store had already sent a walker to. The list is the week's own
+ * ready rows with OUR history beside each — never walked, open now,
+ * paid on a date, expired unclaimed — so the tenth press is as
+ * informed as the first.
+ *
+ * A BLOCKED DOOR IS SHOWN, DISABLED, WITH ITS REASON. Filtering it
+ * away would answer the keeper's question by hiding it, and he would
+ * ask it again next week.
+ */
+function candidatesHtml(candidates: readonly BountyCandidate[]): string {
+  if (candidates.length === 0) {
+    return `<h3>Post a round of bounties</h3>
+    <p class="menu-desc">No ready doors on the latest round to offer — the list is built from the round's own rows, never from anything a seller nominated.</p>`;
+  }
+  const rows = candidates
+    .map((candidate) => {
+      const history =
+        candidate.history.state === "never"
+          ? "<strong>never walked</strong>"
+          : candidate.history.state === "open"
+            ? `open since ${escapeHtml((candidate.history.at ?? "").slice(0, 10))}`
+            : candidate.history.state === "paid"
+              ? `<strong style="color:#2f6b2f">walked and paid</strong> ${escapeHtml((candidate.history.at ?? "").slice(0, 10))}`
+              : `expired unclaimed ${escapeHtml((candidate.history.at ?? "").slice(0, 10))}`;
+      const price =
+        candidate.min_usdc === undefined
+          ? "<small>price not read</small>"
+          : `$${candidate.min_usdc.toFixed(4)}`;
+      return `<tr>
+      <td><input type="checkbox" name="url" value="${escapeHtml(candidate.url)}"${candidate.blocked ? " disabled" : ""}></td>
+      <td>${escapeHtml(candidate.domain)}<br><small>${escapeHtml(candidate.url.slice(0, 70))}</small></td>
+      <td>${price}</td>
+      <td>${history}</td>
+      <td><small>${escapeHtml(candidate.blocked ?? "")}</small></td>
+    </tr>`;
+    })
+    .join("\n");
+  return `<h3>Post a round of bounties</h3>
+  <form method="POST" action="/admin/bounties/batch">
+    <table border="1" cellpadding="6">
+      <tr><th>post</th><th>door</th><th>its cheapest ask, last round</th><th>what we have done here</th><th></th></tr>
+      ${rows}
+    </table>
+    <p>
+      <label>Reward each (USD, on top of each door's own price)<br>
+        <input type="number" name="reward_usd" required min="0.01" max="0.25" step="0.01" value="${BOUNTY_BATCH_DEFAULT_REWARD.toFixed(2)}">
+      </label>
+    </p>
+    <p>
+      <label>Why these walks (optional — your words, shown verbatim on every bounty in this press)<br>
+        <textarea name="note" rows="2" cols="60" maxlength="500"></textarea>
+      </label>
+    </p>
+    <button type="submit"><strong>Post the checked doors</strong></button>
+    <p class="menu-desc">Up to ${BOUNTY_BATCH_CAP} a press. Each door is knocked on one at a time and its live 402 becomes the terms of record; a door that refuses to be posted comes back with its reason beside it and takes nothing else down. The week's budget and the one-per-domain-per-week rule are enforced where they always were.</p>
+  </form>`;
+}
 
 /**
  * THE BOUNTY DESK, on the market page because bounties ARE market
@@ -23,6 +92,7 @@ type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
 function bountyDeskHtml(
   board: BoardState | null,
   notice: string | undefined,
+  candidates: readonly BountyCandidate[],
 ): string {
   if (!board) {
     return `<section>
@@ -54,6 +124,8 @@ function bountyDeskHtml(
     </table>`
         : "<p class='menu-desc'>Nothing posted this week.</p>"
     }
+    ${candidatesHtml(candidates)}
+    <h3>Or post one door by hand</h3>
     <form method="POST" action="/admin/bounties">
       <p>
         <label>Door URL (the exact /api/... path a buyer pays)<br>
@@ -154,6 +226,8 @@ export function renderMarketPage(
   market: MarketAggregates,
   board: BoardState | null = null,
   bountyNotice: string | undefined = undefined,
+  /** The week's ready doors with this store's own history beside each. */
+  candidates: readonly BountyCandidate[] = [],
 ): string {
   const so = market.signed_offers;
   const rails = market.rails;
@@ -248,7 +322,7 @@ export function renderMarketPage(
   ${schemes ? `<section><h2>Schemes offered</h2><p class="menu-desc">${schemes}</p></section>` : ""}
   ${fieldsSection}
 
-  ${bountyDeskHtml(board, bountyNotice)}
+  ${bountyDeskHtml(board, bountyNotice, candidates)}
 
   <section>
     <h2>Publish to the public tally</h2>
