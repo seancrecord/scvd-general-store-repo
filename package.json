@@ -93,7 +93,7 @@
     "ajv": "^8.20.0",
     "dotenv": "^17.4.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.11",
+    "vitest": "^5.0.0",
     "wrangler": "^4.129.0"
   },
   "overrides": {
