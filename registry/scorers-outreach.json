@@ -75,6 +75,16 @@
       "cites_since": null
     },
     {
+      "name": "Agenstry",
+      "url": "https://agenstry.com/agents/scvd.store",
+      "what_it_scores": "Indexes agent cards and MCP servers and publishes its own conformance and probe observations.",
+      "contact": "hello@agenstry.com",
+      "found_on": "Keeper-supplied agent and MCP listings, fetched and read 2026-09-08; MCP page: https://agenstry.com/mcp/store.scvd/general-store",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "Agent Catalog",
       "url": "https://agentcatalog.com/publishers/scvd.store?q=",
       "what_it_scores": "Find an agent by what it does.",
@@ -99,7 +109,7 @@
       "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
       "what_it_scores": "Every Agent Plugin we can find for ChatGPT, Codex, Cursor, GitHub Copilot, VS Code and Kiro, each one verified against the official 1.0.0 schema.",
       "contact": "info@ellelion.com",
-      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "found_on": "Existing listing re-confirmed from the keeper-supplied URL on 2026-09-08; page names the plugin bundle, author, skill and MCP servers",
       "note_sent": null,
       "reply": null,
       "cites_since": null
