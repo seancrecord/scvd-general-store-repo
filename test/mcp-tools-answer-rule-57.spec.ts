@@ -1,3 +1,4 @@
+import { humanResolutionBody, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { PURCHASE_RECORD_CODES } from "@/services/purchase-intent";
 import MCP_PAYMENT_SOURCE from "../src/lib/mcp-payment.ts?raw";
 import { SELF } from "cloudflare:test";
@@ -185,6 +186,12 @@ describe("a refusal on the wire carries the code and the charge", () => {
       emitted.add(String(settlementDeclinedBody({}, "fixture").code));
     }
     if (MCP_PAYMENT_SOURCE.includes("beginPurchaseIntent(")) for (const code of Object.values(PURCHASE_RECORD_CODES)) emitted.add(code);
+    if (MCP_PAYMENT_SOURCE.includes("resolvedHumanPayment(")) emitted.add(String(humanResolutionBody({
+      statement: { version: 1, revision: 1, path: "/api/buy/aura_walk", transaction: "fixture", network: "fixture",
+        payer: "fixture", paid_usdc: 1, outcome: "refunded", recorded_at: "fixture", evidence: {} },
+      signed_payload: "", signature: "", public_key: "", request_digest: "",
+      intent: { path: "/api/buy/aura_walk", paid_usdc: 1, settled_at: "fixture" },
+    } satisfies HumanResolutionRecord).code));
     expect(emitted.size, "found no refusals in the source — the check is vacuous").toBeGreaterThan(3);
     const published = new Set(MCP_REFUSAL_CODES.map((refusal) => refusal.code));
     expect(

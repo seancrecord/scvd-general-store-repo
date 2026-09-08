@@ -17,9 +17,11 @@ import PURCHASE_ARGS_SOURCE from "../src/lib/purchase-args.ts?raw";
 // a literal in its own module.
 import DELIVERY_FAILED_SOURCE from "../src/lib/delivery-failed.ts?raw";
 import PAYMENT_GATE_SOURCE from "../src/lib/payment-gate.ts?raw";
+import HUMAN_RESOLUTION_SOURCE from "../src/services/human-resolution-record.ts?raw";
 import { INVALID_SETTLEMENT_RECEIPT_CODE, SettlementUnknown, settlementDeclinedBody, paymentIdentityUnavailableBody } from "@/lib/payments";
 
 const BASE = "https://scvd.store";
+const HUMAN_RESOLUTION_CODES = [...HUMAN_RESOLUTION_SOURCE.matchAll(/code: "([a-z_]+)"/g)].map(match => match[1]!);
 
 /** The two classes that knock on an endpoint the buyer named. */
 const FETCHES = new Set(["subject_fetch", "subject_purchase"]);
@@ -84,6 +86,7 @@ describe("the roster is the shelf, and it is not empty", () => {
  */
 describe("the documented codes are the codes the doors send", () => {
   const EMITTED = new Set([
+    ...(PAYMENT_GATE_SOURCE.includes("resolvedHumanPayment(") ? HUMAN_RESOLUTION_CODES : []),
     ...(PAYMENT_GATE_SOURCE.includes("beginPurchaseIntent(") ? Object.values(PURCHASE_RECORD_CODES) : []),
     ...(/paymentIdentityUnavailableBody\(/.test(PAYMENT_GATE_SOURCE)
       ? [paymentIdentityUnavailableBody().code] : []),
@@ -204,7 +207,7 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
       expect(
         error.charged,
         `${error.code} on ${id} does not say whether it charged`,
-      ).toBe(["delivery_failed", PURCHASE_RECORD_CODES.pending].includes(error.code) ? true
+      ).toBe(["delivery_failed", PURCHASE_RECORD_CODES.pending, ...HUMAN_RESOLUTION_CODES].includes(error.code) ? true
         : [PURCHASE_RECORD_CODES.unavailable, INVALID_SETTLEMENT_RECEIPT_CODE, new SettlementUnknown("fixture:rail").body().code].includes(error.code) ? null : false);
     }
   });

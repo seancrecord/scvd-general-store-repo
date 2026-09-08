@@ -1,3 +1,5 @@
+import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
+import { humanResolutionBody } from "@/services/human-resolution-record";
 import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
@@ -1123,6 +1125,18 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * authorization every pass by definition (ledger #16). It settles
    * nothing, which is the whole point.
    */
+  try {
+    const resolution = await resolvedHumanPayment(c.env, c.req.path, result.paymentRequirements.network,
+      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload);
+    if (resolution) {
+      c.header("Cache-Control", "no-store");
+      const work = resolvedHumanDelivery(resolution);
+      return work ? c.json(work) : c.json(humanResolutionBody(resolution), 409);
+    }
+  } catch {
+    return c.json({ code: "purchase_record_unavailable", charged: null, settlement_attempted: false,
+      error: "The retained purchase resolution could not be read. Keep this payment and retry; do not pay again." }, 503);
+  }
   const idempotencyPayer = idempotencyKey
     ? payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot)
     : undefined;

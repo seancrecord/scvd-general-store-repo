@@ -1,3 +1,4 @@
+import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
@@ -49,6 +50,51 @@ export type RecoveryClaim =
  * from safely starting the first reconstruction.
  */
 export class PaidRecoveryStore extends DurableObject<Env> {
+  async readHumanResolution(key: string): Promise<string | null> {
+    const record = await this.ctx.storage.get<HumanResolutionRecord>(`human-resolution:${key}`);
+    return record ? JSON.stringify(record) : null;
+  }
+
+  async findHumanResolution(transaction: string): Promise<string | null> {
+    const key = await this.ctx.storage.get<string>(`human-transaction:${transaction.startsWith("0x") ? transaction.toLowerCase() : transaction}`);
+    return key ? this.readHumanResolution(key) : null;
+  }
+
+  async saveHumanResolution(proposalJson: string, expectedRevision: number): Promise<string> {
+    const proposal = JSON.parse(proposalJson) as HumanResolutionRecord;
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const result = await this.ctx.storage.transaction(async txn => {
+        const statement = proposal.statement;
+        const key = humanResolutionKey(statement.network, statement.transaction);
+        const row = `human-resolution:${key}`;
+        const prior = await txn.get<HumanResolutionRecord>(row);
+        if (prior?.request_digest === proposal.request_digest) return { ok: true, record: prior };
+        if ((prior?.statement.revision ?? 0) !== expectedRevision || statement.revision !== expectedRevision + 1 ||
+          statement.previous_signature !== prior?.signature) return { ok: false, refusal: "The resolution changed. Read it before submitting a correction." };
+        if (statement.outcome === "refunded") {
+          const refund = statement.evidence.refund_tx;
+          if (typeof refund !== "string") return { ok: false, refusal: "Refund evidence is missing." };
+          const claim = `human-refund:${humanResolutionKey(statement.network, refund)}`;
+          const owner = await txn.get<string>(claim);
+          if (owner && owner !== key) return { ok: false, refusal: "That refund already resolves another purchase." };
+          await txn.put(claim, key);
+        }
+        const record = { ...proposal, ...(prior ? { previous: prior } : {}) };
+        await txn.put(row, record);
+        await txn.put(`human-transaction:${statement.transaction.startsWith("0x") ? statement.transaction.toLowerCase() : statement.transaction}`, key);
+        return { ok: true, record };
+      });
+      if (result.ok && result.record) {
+        const tx = result.record.statement.transaction;
+        await kvPut(this.env.ORDERS, `delivery_resolved:${tx}`, JSON.stringify({ ...result.record,
+          outcome: result.record.statement.outcome, at: result.record.statement.recorded_at,
+          corrected: result.record.statement.revision > 1 }));
+        await closeDeliveryIntent(this.env, KV_KEYS.deliveryIntent(tx));
+      }
+      return JSON.stringify(result);
+    });
+  }
+
   // First prepared bytes win, including simultaneous requests with one payment.
   // A mismatched question cannot replace them or use them to buy a different good.
   async retainObservation(path: string, digest: string, proposal?: string): Promise<string | null> {
@@ -141,6 +187,11 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       });
       const latest = await this.ctx.storage.get<PurchaseIntent>("purchase");
       if (!latest || latest.state !== "settled") return;
+      const { recordedHumanResolution } = await import("@/services/resolved-human-purchase");
+      if (await recordedHumanResolution(this.env, latest)) {
+        await this.ctx.storage.deleteAlarm();
+        return;
+      }
       const delivery = await deliverRecordedPurchase(this.env, latest);
       if (!delivery) return;
       await this.ctx.storage.transaction(async (txn) => {

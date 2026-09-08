@@ -1,3 +1,4 @@
+import { resolutionEvidenceFields } from "@/pages/admin/resolution-fields";
 import { renderAdminShell, EVERY_ROOM } from "@/pages/admin/layout";
 import { escapeHtml } from "@/lib/sanitize";
 import type { ShutterState } from "@/services/shutter";
@@ -145,8 +146,8 @@ export function renderToolsPage(data: ToolsPageData): string {
     <p>For when the money-in-vs-goods-out check on
     <a href="/admin/reconciliation">the books check</a> names a settle. Paste
     its settlement tx, say what you did about it by hand &mdash; fulfilled it,
-    refunded it, or absorbed it as house &mdash; and the audit stands down for
-    that sale. The record keeps the original intent inside it.</p>
+    refunded it, or absorbed it as house &mdash; and supply the evidence below for a human purchase. The audit stands down
+    only after the resolution is recorded with its original intent.</p>
     <form method="POST" action="/admin/delivery/resolve">
       <input type="text" name="transaction" placeholder="the settlement tx from the alert" required>
       <select name="outcome" required>
@@ -154,6 +155,7 @@ export function renderToolsPage(data: ToolsPageData): string {
         <option value="refunded">refunded</option>
         <option value="house_absorbed">house money, absorbed</option>
       </select>
+      ${resolutionEvidenceFields()}
       <button type="submit">Resolve it</button>
     </form>
   </section>

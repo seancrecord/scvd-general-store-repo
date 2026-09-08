@@ -267,6 +267,11 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     what_to_do: "Keep the payment/key. Follow recovery; do not buy again.",
   },
   {
+    code: "purchase_resolved", http: 409, charged: true,
+    means: "purchase resolved with signed evidence",
+    what_to_do: "Keep resolution and evidence. Do not pay again.",
+  },
+  {
     code: "purchase_recovery_pending", http: 503, charged: true,
     means: "payment confirmed; delivery recovery pending",
     what_to_do: "Read recovery.status_url with Bearer status_token. No new payment.",
@@ -419,7 +424,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled"] as const).map(
+  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled", "purchase_resolved"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

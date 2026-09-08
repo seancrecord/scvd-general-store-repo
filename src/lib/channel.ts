@@ -1,3 +1,4 @@
+import { canonicalAddress } from "@/lib/addresses";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
 import type { Channel, Env } from "@/types";
 
@@ -268,6 +269,14 @@ export function isHouseAgent(userAgent: string | undefined): boolean {
 }
 
 /** Family doesn't make the paper: true when a wallet is the house's own. */
+/** Money-resolution identity is stricter than the analytics exclusion rule:
+ * Solana case is meaningful, so a case variant cannot erase a buyer's claim. */
+export function isExactHouseWallet(env: Env, address: string): boolean {
+  const wanted = canonicalAddress(address);
+  return [...HOUSE_WALLET_FILE.wallets.map(entry => entry.address), ...(env.HOUSE_WALLETS ?? "").split(",")]
+    .some(wallet => wallet.trim().length > 0 && canonicalAddress(wallet) === wanted);
+}
+
 export function isHouseWallet(env: Env, address: string): boolean {
   return houseWallets(env).includes(address.toLowerCase());
 }

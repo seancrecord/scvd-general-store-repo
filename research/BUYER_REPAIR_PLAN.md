@@ -1,6 +1,6 @@
 # Buyer repair plan — September 6, 2026
 
-Status: six repairs are committed locally, each in a separate fix commit: BUY-001, BUY-005, BUY-028, BUY-018, BUY-019, and BUY-039. The [completion checklist](BUYER_REPAIR_CHECKLIST.md) records exact hashes and is the completion register. BUY-017, BUY-034, and BUY-037 remain open SEV-1s requiring durable payment and delivery recovery. [Repair progress](buyer-repair-progress-2026-09-06.md) records validation; the [finding log](BUYER_AUDIT_LOG.md) preserves evidence and scope. No fixes have been pushed or deployed, and no real payments were made.
+Current status is maintained in the [completion checklist](BUYER_REPAIR_CHECKLIST.md), which records individual repairs, commits and validation. BUY-034's human-order scope is repaired through durable reconstruction, legacy retrieval and evidence-backed manual resolution. BUY-017 and BUY-037 remain open for the remaining artifact families and historical nonhuman obligations. The plan below preserves the original sequence; [repair progress](buyer-repair-progress-2026-09-06.md) and the [finding log](BUYER_AUDIT_LOG.md) retain the evidence. All payment tests use local fixtures.
 
 ## Outcome
 
