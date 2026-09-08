@@ -2,7 +2,7 @@ import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
-import { deliveryFailedBody } from "@/lib/delivery-failed";
+import { deliveryFailedBody, legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
 import { archiveDepthFor } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
@@ -1220,8 +1220,20 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           c.res.headers.set("Paid-Retry", "true");
           return c.res;
         }
+        const legacyItem = getMenuItem(itemKeyFromPath(c.req.path));
+        if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
+          c.header("Cache-Control", "no-store");
+          return c.json(recorded.body, 503);
+        }
         const open = await getOpenDeliveryIntent(c.env, spent.transaction);
         if (open) {
+          if (legacyItem?.fulfillment === "human_queue") {
+            c.header("Cache-Control", "no-store");
+            c.header("Paid-Retry", "incomplete");
+            const failure = legacyHumanRecoveryFailure(c.env.STORE_BASE_URL, legacyItem,
+              open.intent, { path: c.req.path, transaction: spent.transaction, payer });
+            return c.json(failure, failure.charged === true ? 500 : 503);
+          }
           const retryMinimum = minimumUsdcForPath(c.req.path);
           const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
           const retryPayment: SettledPayment = {

@@ -1,6 +1,7 @@
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
+import { legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
 import { getMenuItem } from "@/store";
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
 import { sendAlert } from "@/lib/alerts";
@@ -457,8 +458,16 @@ export async function runMcpPayment(
           deliveryKeySoFar: () => KV_KEYS.deliveryIntent(saved.payment.transaction),
         };
       }
+      const legacyItem = getMenuItem(itemId);
+      if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
+        return { kind: "purchase-status", body: recorded.body };
+      }
       const open = await getOpenDeliveryIntent(env, spent.transaction);
       const retry = open?.intent.mcp_retry;
+      if (open && !retry?.input_digest && legacyItem?.fulfillment === "human_queue") {
+        return { kind: "purchase-status", body: legacyHumanRecoveryFailure(env.STORE_BASE_URL,
+          legacyItem, open.intent, { path, transaction: spent.transaction, payer: verifiedPayer }) };
+      }
       if (open && retry && open.intent.path === path &&
         retry.payment.transaction === spent.transaction &&
         retry.payment.payer?.toLowerCase() === verifiedPayer.toLowerCase() &&

@@ -110,6 +110,11 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
     }
     known = record;
     if (record.state === "unknown") return { kind: "pending", body: new RecordedPurchase(env, record).body() };
+    if (record.state === "settled" && !record.delivery && record.item?.fulfillment === "human_queue") {
+      // The complete brief predates the artifact journal. If that journal could
+      // not open, its alarm still owns reconstruction from these original terms.
+      return { kind: "pending", body: { ...new RecordedPurchase(env, record).body(), charged_again: false } };
+    }
     if (record.state !== "settled" || !record.delivery || !record.payment) return null;
     const digest = record.door === "mcp"
       ? await sha256Hex(jcsCanonicalize(JSON.parse(record.request)))

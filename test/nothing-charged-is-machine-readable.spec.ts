@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { BUY_REFUSAL_CODES } from "@/store/surface-contract";
 import buySource from "../src/routes/buy.ts?raw";
 // The refusals before the gate moved to routes/door-checks.ts
 // (2026-09-05, the doors Worker); their source is read beside buy.ts.
@@ -43,32 +44,11 @@ import deliveryFailedSource from "../src/lib/delivery-failed.ts?raw";
  * path should ever take when the goal is legibility.
  */
 
-/** The code set. Coarse on purpose: an agent branches, then reads. */
-const CODES = [
-  "target_refused",
-  "passport_refused",
-  "bad_request",
-  "upstream_unavailable",
-  "already_done",
-  /*
-   * THE SHELF GATE'S THREE, added 2026-08-30. The middleware that
-   * turns away a retired, unknown or sold-out item refuses before any
-   * money moves and carried neither field — missed by this sweep
-   * because not one of its three sentences contains the words
-   * "nothing charged", which is what the walk above matches on. A
-   * boundary drawn by a grep rather than by a decision. A buyer
-   * turned away at the shelf needs the same fact as one turned away
-   * at the parameter check.
-   */
-  "retired",
-  "unknown_item",
-  "sold_out",
-  /*
-   * THE ONE THAT MEANS MONEY MOVED (2026-09-04): served when delivery
-   * threw after settlement, carrying charged: TRUE.
-   */
-  "delivery_failed",
-] as const;
+/** Read the published contract; a second hand-maintained code set can drift. */
+const CODES = BUY_REFUSAL_CODES.map(entry => entry.code);
+const unpublishedCodes = (source: string) => [...new Set(
+  [...source.matchAll(/code: "([a-z_]+)"/g)].map(match => match[1]!),
+)].filter(code => !CODES.includes(code));
 
 /**
  * THE SOURCE IS WALKED, NOT A LIST OF ROUTES. A guard that checked the
@@ -157,14 +137,17 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
     ).toEqual([]);
   });
 
+  it("still rejects a source refusal absent from the published contract", () => {
+    expect(unpublishedCodes(`${deliveryFailedSource}\nreturn { code: "unpublished_fixture_refusal" };`))
+      .toEqual(["unpublished_fixture_refusal"]);
+  });
+
   it("gives every one of them a code from the published set", () => {
     const codes = [...`${buySource}\n${doorChecksSource}\n${deliveryFailedSource}`.matchAll(/code: "([a-z_]+)"/g)].map(
       (match) => match[1]!,
     );
     expect(codes.length).toBeGreaterThan(3);
-    const unknown = [...new Set(codes)].filter(
-      (code) => !CODES.includes(code as (typeof CODES)[number]),
-    );
+    const unknown = unpublishedCodes(`${buySource}\n${doorChecksSource}\n${deliveryFailedSource}`);
     expect(
       unknown,
       "a buy door emits a refusal code that is not in the published set, so a caller branching on codes meets one it has never seen",

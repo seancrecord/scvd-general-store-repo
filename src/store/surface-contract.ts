@@ -263,8 +263,8 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   },
   {
     code: "purchase_record_unavailable", http: 503, charged: null,
-    means: "purchase storage unavailable; no submission this time, earlier payment unresolved",
-    what_to_do: "Retry the same payment/key when storage returns.",
+    means: "purchase record unavailable or identity unconfirmed; payment unresolved",
+    what_to_do: "Keep the payment/key. Follow recovery; do not buy again.",
   },
   {
     code: "purchase_recovery_pending", http: 503, charged: true,

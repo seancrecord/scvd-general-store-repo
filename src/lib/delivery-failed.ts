@@ -1,6 +1,7 @@
 import { sendAlert } from "@/lib/alerts";
 import type { SettledPayment } from "@/lib/payments";
 import type { Env, MenuItem } from "@/types";
+import type { DeliveryIntent } from "@/services/delivery-audit";
 
 /**
  * MONEY MOVED AND THE GOODS DID NOT (2026-09-04, CV's second round).
@@ -22,6 +23,41 @@ import type { Env, MenuItem } from "@/types";
  * as the failure it is; what changed is that the buyer is told.
  */
 export const DELIVERY_FAILED_CODE = "delivery_failed";
+
+/** A legacy desk preview is not a complete, authenticated purchase brief. */
+export function legacyHumanRecoveryFailure(
+  base: string,
+  item: Pick<MenuItem, "name">,
+  intent: DeliveryIntent,
+  identity: { path: string; transaction: string; payer: string | undefined },
+): Record<string, unknown> & { error: string } {
+  const recovery = {
+    do_not_retry: "Do not make a new purchase to recover this one. Keep the original payment and any receipt.",
+    contact_url: `${base}/api/letter`,
+    how_it_gets_finished: "The keeper must check the retained payment and work records. If the original paid work cannot be recovered, the keeper must resolve the obligation or refund it by hand.",
+  };
+  // Spent nonces were globally indexed. Knowing one cannot disclose another
+  // buyer's order, and older rows sometimes did not retain their payer at all.
+  if (intent.path !== identity.path || intent.transaction !== identity.transaction ||
+    !identity.payer || !intent.payer || intent.payer.toLowerCase() !== identity.payer.toLowerCase()) {
+    return {
+      code: "purchase_record_unavailable", charged: null, charged_again: false,
+      settlement_attempted: false,
+      recovery,
+      error: "This older purchase record cannot be linked to your verified payment and requested item. No payment was submitted by this retry. Keep your original payment and contact the keeper to resolve its status; do not make another purchase to recover it.",
+    };
+  }
+  return {
+    ...deliveryFailedBody(base, item, { paidUsdc: intent.paid_usdc, tipUsdc: 0,
+      transaction: identity.transaction, payer: intent.payer, settleHeaders: {} }),
+    // The legacy row did not retain the chain. Today's selected offer cannot
+    // supply that missing fact about yesterday's settlement.
+    error: "Your payment is recorded, but the original human-work brief was not retained in a form this retry can authenticate. The delivery remains open for the keeper to resolve or refund. No new order or charge was created; keep your original payment and do not buy again to recover it.",
+    charged_again: false, settlement_attempted: false,
+    recovery_reason: "original_inputs_unavailable",
+    recovery,
+  };
+}
 
 export function deliveryFailedBody(
   base: string,

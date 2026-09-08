@@ -49,6 +49,19 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (merged).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.
 
+## 2026-09-08 — Legacy human-order audit
+
+- [x] Refuse to build a human order from the retry's brief when the old HTTP delivery record contains only a desk preview. Identical and changed briefs sharing the same 600-byte preview both leave the original obligation open.
+- [x] Give HTTP and both MCP payment profiles the same recorded-payment failure when an authenticated legacy human purchase has no complete input binding. Do not offer a fresh payment as recovery, create an order/certificate, or close the delivery row.
+- [x] Withhold purchase details when the old record's payer, product or transaction does not match. Report status as unknown rather than inventing payment identity, and never infer the historical chain from today's offer.
+- [x] Preserve automatic recovery when a newer purchase retained its complete brief but could not open the artifact journal. Return its protected status handle, then reconstruct from the original acceptance time, brief and terms without another settlement.
+- [ ] Recover an existing legacy order/certificate association when sufficient original records survive, preserving its brief, SLA, ID and completed work.
+- [ ] Establish explicit resolution evidence for records that cannot yield the original work; a truthful refusal alone does not close BUY-034.
+
+These are synthetic historical records, not evidence of unresolved production customers. The new public-door matrix exercises both human products through HTTP and both MCP profiles on Base and Polygon. The initial 72 cases failed before the guard; the additional 48 product/transaction mismatch cases failed before their identity checks. All 120 passed alongside the existing recovery controls. Six additional capture-before-artifact cases failed before preserving the newer purchase record; the resulting integration gate passed 267 cases across six files. The historical certificate-only fixture now removes the newer purchase journal and uses its actual signed payer; all 24 obligations remain covered. The final related gate passed 203 tests across six files. The shared recovery description stays within the unchanged MCP catalog budget; detailed instructions remain in the failure response. A separate full run caught one stale hand-maintained error-code list; its guard now reads the published contract and includes an unpublished-code negative control. Known legacy payment failures retain the contract's HTTP 500, and identity-unknown records use its HTTP 503. The completed guard does not claim to reconstruct a missing brief or to issue refunds automatically. BUY-034 remains open for the two concrete steps above; unrelated instant-product families do not gate it.
+
+Final local validation passed all 591 files: 7,766 tests passed with one existing conditional key-continuity skip (799.03 seconds). Typecheck, both Worker dry-run bundles, native Worker startup and the 203-case focused gate passed. The existing legacy-fixture, source-code-list and MCP catalog-size checks caught integration issues locally; their corrections preserve the money-safety assertions and the original catalog ceiling. No live payment was submitted.
+
 ## Verification and scope
 
 Every repair gets a separate commit. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
