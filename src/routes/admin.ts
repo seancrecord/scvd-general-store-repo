@@ -1446,6 +1446,42 @@ adminRoutes.get("/admin/export/tax.csv", async (c) => {
 });
 
 /**
+ * THE POSTING DIALS BOTH PRESSES SHARE (2026-09-08): how long the
+ * listing stands, what this store wants observed at the door, and
+ * whether it is a second walk that must go to a wallet this door has
+ * not already paid. Parsed once, in one shape, from a form or a JSON
+ * body alike — two parsers for one set of dials is how the single
+ * press and the batch press end up meaning different things by
+ * "sprint".
+ */
+interface PostingExtras {
+  tier?: "sprint" | "standard" | "long";
+  days?: number;
+  asks?: string[];
+  distinctPayer?: boolean;
+}
+
+function postingExtras(body: Record<string, unknown>): PostingExtras {
+  const out: PostingExtras = {};
+  const tier = String(body["tier"] ?? "");
+  if (tier === "sprint" || tier === "standard" || tier === "long") out.tier = tier;
+  const days = Number.parseInt(String(body["days"] ?? ""), 10);
+  if (Number.isFinite(days) && days > 0) out.days = days;
+  const asks = body["asks"];
+  if (Array.isArray(asks)) {
+    out.asks = asks.map(String);
+  } else if (typeof asks === "string" && asks.trim()) {
+    // The form's textarea: one ask a line.
+    out.asks = asks.split("\n").map((line) => line.trim()).filter(Boolean);
+  }
+  const second = body["distinct_payer"] ?? body["second_walk"];
+  if (second === true || second === "on" || second === "1" || second === "true") {
+    out.distinctPayer = true;
+  }
+  return out;
+}
+
+/**
  * THE KEEPER POSTS BOUNTIES — the board's one write door besides the
  * claim itself (BOUNTY_BOARD.md: doors are house-picked, never
  * self-nominated, which is the whole anti-farming design). Form or
@@ -1458,6 +1494,7 @@ adminRoutes.post("/admin/bounties", async (c) => {
   let url = "";
   let rewardUsd = Number.NaN;
   let note = "";
+  let extras: PostingExtras = {};
   const contentType = c.req.header("Content-Type") ?? "";
   if (contentType.includes("json")) {
     const body = (await c.req.json().catch(() => ({}))) as Record<
@@ -1467,11 +1504,13 @@ adminRoutes.post("/admin/bounties", async (c) => {
     url = String(body["url"] ?? "");
     rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
     note = typeof body["note"] === "string" ? body["note"] : "";
+    extras = postingExtras(body);
   } else {
     const form = await c.req.parseBody();
     url = String(form["url"] ?? "");
     rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
     note = typeof form["note"] === "string" ? form["note"] : "";
+    extras = postingExtras(form as Record<string, unknown>);
   }
   const wasForm = !contentType.includes("json");
   try {
@@ -1479,6 +1518,7 @@ adminRoutes.post("/admin/bounties", async (c) => {
       targetUrl: url,
       rewardUsd,
       ...(note ? { note } : {}),
+      ...extras,
     });
     if (wasForm) {
       // The stocking form's lesson: a redirect in silence reads
@@ -2263,31 +2303,34 @@ adminRoutes.post("/admin/bounties/batch", async (c) => {
     "@/services/bounty-batch"
   );
   const contentType = c.req.header("Content-Type") ?? "";
-  let urls: string[] = [];
-  let rewardUsd = Number.NaN;
-  let note = "";
-  if (contentType.includes("json")) {
-    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
-    urls = Array.isArray(body["urls"]) ? body["urls"].map(String) : [];
-    rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
-    note = typeof body["note"] === "string" ? body["note"] : "";
-  } else {
-    const form = await c.req.parseBody({ all: true });
-    const raw = form["url"];
-    urls = Array.isArray(raw) ? raw.map(String) : raw ? [String(raw)] : [];
-    rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
-    note = typeof form["note"] === "string" ? form["note"] : "";
-  }
+  /*
+   * ONE READ OF THE BODY. A request body is a stream: parsing it twice
+   * — once for the urls and once for the dials — is a press that
+   * silently drops half of what the keeper asked for.
+   */
+  const body: Record<string, unknown> = contentType.includes("json")
+    ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+    : ((await c.req.parseBody({ all: true })) as Record<string, unknown>);
+  const rawUrls = contentType.includes("json") ? body["urls"] : body["url"];
+  const urls: string[] = Array.isArray(rawUrls)
+    ? rawUrls.map(String)
+    : rawUrls
+      ? [String(rawUrls)]
+      : [];
+  const rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
+  const note = typeof body["note"] === "string" ? body["note"] : "";
   if (urls.length === 0) {
     const message = "Nothing was checked, so nothing was posted.";
     return contentType.includes("json")
       ? c.json({ error: message }, 400)
       : c.redirect(`/admin/market?bounty_batch=${encodeURIComponent(message)}`, 303);
   }
+  const extras = postingExtras(body);
   const result = await openBountyBatch(c.env, {
     urls,
     rewardUsd,
     ...(note ? { note } : {}),
+    ...extras,
   });
   if (contentType.includes("json")) {
     return c.json(result);

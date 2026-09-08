@@ -64,8 +64,91 @@ export const BOUNTY_WEEKLY_BUDGET_USD = 10;
 export const BOUNTY_AUTH_VALID_SECONDS = 7 * 24 * 3600;
 /** Verbatim observation cap — a claim, not a filesystem. */
 export const BOUNTY_OBSERVATION_CAP = 4000;
-/** Bounty listings live this long, then expire unclaimed. */
+/** Bounty listings live this long by default, then expire unclaimed. */
 export const BOUNTY_OPEN_DAYS = 7;
+
+/**
+ * HOW LONG A LISTING STANDS, TIERED (2026-09-08).
+ *
+ * Every bounty ran seven days because seven days was the only number
+ * in the file. Then ten listings were claimed inside twenty minutes by
+ * one automated walker, which said something the fixed number could
+ * not: the board's clock and the walkers' clock have nothing to do
+ * with each other. A door somebody will walk in a minute does not need
+ * a week of shelf life, and a door nobody has walked in a week is not
+ * helped by expiring on the eighth day.
+ *
+ * So the length is a posting decision with three names:
+ *
+ *   sprint   two days — a door we expect walked immediately; a short
+ *            fuse means the board's open list stays a live queue
+ *            rather than a backlog of things nobody wants.
+ *   standard seven days — the original, and still the default.
+ *   long     twenty-one days — a door worth waiting for a DIFFERENT
+ *            walker to find, which is the only way the crowd stops
+ *            being one wallet.
+ *
+ * The tier is stored on the record and published, so a walker reading
+ * the board knows whether they are looking at a queue or a shelf.
+ */
+export const BOUNTY_TIERS = {
+  sprint: 2,
+  standard: BOUNTY_OPEN_DAYS,
+  long: 21,
+} as const;
+export type BountyTier = keyof typeof BOUNTY_TIERS;
+/** A listing may not stand longer than this, whatever is asked for. */
+export const BOUNTY_MAX_OPEN_DAYS = 30;
+
+/**
+ * WHAT WE NEED BACK, PER BOUNTY (2026-09-08, the keeper: "be explicit
+ * about what we need back and make sure we do something with the
+ * data").
+ *
+ * Ten walks came in yesterday carrying fifty-one characters each —
+ * "HTTP 200; settlement verified for X." — and the store paid $0.25
+ * apiece for them. That is not the walker being lazy. Nothing on the
+ * board ever said what a useful report contains, so a report that
+ * says nothing is a report that met the whole stated standard.
+ *
+ * A bounty now carries its ASKS: the specific things this store wants
+ * observed at that door, published on the listing and repeated at the
+ * claim door. They are asks and not conditions — the reward still pays
+ * for the chain-verified settlement and nothing else, because a reward
+ * withheld over an unverifiable report would be this store grading a
+ * stranger's homework with money.
+ */
+export const BOUNTY_ASK_CAP = 6;
+export const BOUNTY_ASK_LENGTH = 160;
+
+/**
+ * THE STRUCTURED HALF OF A WALKER'S REPORT.
+ *
+ * Free text cannot be compared across walkers; these fields can. A
+ * body digest from two different wallets at the same door either
+ * agrees or does not, and neither walker has to be trusted for that
+ * comparison to mean something — which is the first thing on this
+ * board that upgrades a claim without the store pretending it
+ * verified it.
+ *
+ * Every field stays THEIR claim, recorded verbatim, tiered below
+ * anything the house walked. What changes is that two claims can now
+ * be held against each other.
+ */
+export interface WalkReport {
+  /** The paid request's HTTP status, as the walker saw it. */
+  status?: number;
+  /** Did the paid response carry a PAYMENT-RESPONSE receipt header? */
+  payment_response?: boolean;
+  /** sha256 of the response body, hex — comparable between walkers. */
+  body_sha256?: string;
+  /** Response size in bytes, as the walker measured it. */
+  bytes?: number;
+  /** Round trip of the paid request, milliseconds. */
+  latency_ms?: number;
+  /** The response's declared content type. */
+  content_type?: string;
+}
 
 export interface BountyRecord {
   bounty_id: string;
@@ -97,6 +180,25 @@ export interface BountyRecord {
    * it (door, captured price, reward, expiry, claim procedure).
    */
   note?: string;
+  /**
+   * WHAT THIS STORE WANTS OBSERVED HERE, in its own words, published
+   * on the listing. Asks, never conditions: the reward pays for the
+   * settlement whatever comes back beside it.
+   */
+  asks?: string[];
+  /** The tier the listing was posted under, when it was not standard. */
+  tier?: BountyTier;
+  /** How many days this listing was posted to stand. */
+  open_days?: number;
+  /**
+   * A SECOND WALK, BY SOMEBODY ELSE (2026-09-08). Set on a bounty
+   * posted to re-walk a door this store has already had walked: the
+   * claim is refused if it comes from a wallet that already paid a
+   * bounty at this domain. The evidence a second walk buys is
+   * precisely "a different buyer's money got the same answer", and a
+   * repeat by the same wallet buys none of it.
+   */
+  distinct_payer_required?: boolean;
   opened_block: number;
   expires_at: string;
   status: "open" | "paid" | "expired";
@@ -107,6 +209,13 @@ export interface BountyRecord {
     claimed_at: string;
     /** The shopper's report, verbatim. UNTRUSTED — labeled so. */
     observation?: string;
+    /**
+     * The comparable half of the same report, and the same tier: their
+     * claim, kept verbatim, never verified by this store. Its worth is
+     * that two walkers' answers at one door can be held against each
+     * other without trusting either.
+     */
+    report?: WalkReport;
     authorization_nonce: string;
     authorization_valid_before: string;
     /**
@@ -215,7 +324,18 @@ export class BountyRefused extends Error {}
  */
 export async function openBounty(
   env: Env,
-  input: { targetUrl: string; rewardUsd: number; note?: string },
+  input: {
+    targetUrl: string;
+    rewardUsd: number;
+    note?: string;
+    /** The tier's length, or a day count of the keeper's own. */
+    tier?: BountyTier;
+    days?: number;
+    /** What this store wants observed at this door. Asks, not conditions. */
+    asks?: readonly string[];
+    /** Refuse a claim from a wallet that already walked this domain. */
+    distinctPayer?: boolean;
+  },
   options: BountyBoardOptions = {},
 ): Promise<BountyRecord> {
   const fetchImpl = options.fetch ?? fetch;
@@ -351,6 +471,24 @@ export async function openBounty(
     );
   }
 
+  /*
+   * THE LENGTH IS CHOSEN, NOT INHERITED. An explicit day count wins
+   * over the tier's; both are bounded, and a length outside the bound
+   * is refused rather than clamped — a listing that stands a different
+   * time than the keeper asked for is a listing whose expiry nobody
+   * can predict from the press that made it.
+   */
+  const openDays = input.days ?? (input.tier ? BOUNTY_TIERS[input.tier] : BOUNTY_OPEN_DAYS);
+  if (!Number.isFinite(openDays) || openDays < 1 || openDays > BOUNTY_MAX_OPEN_DAYS) {
+    throw new BountyRefused(
+      `a listing stands between 1 and ${BOUNTY_MAX_OPEN_DAYS} days (asked for ${openDays})`,
+    );
+  }
+  const asks = (input.asks ?? [])
+    .map((ask) => ask.trim().slice(0, BOUNTY_ASK_LENGTH))
+    .filter((ask) => ask.length > 0)
+    .slice(0, BOUNTY_ASK_CAP);
+
   const record: BountyRecord = {
     bounty_id: `bty_${newEntryId()}`,
     target_url: input.targetUrl,
@@ -368,8 +506,12 @@ export async function openBounty(
     opened_block: await getBlockNumber(env, bountyChain ?? BASE_EVM),
     ...(bountyChain ? {} : { opened_slot: await getSlot(env) }),
     expires_at: new Date(
-      now.getTime() + BOUNTY_OPEN_DAYS * 24 * 3600 * 1000,
+      now.getTime() + openDays * 24 * 3600 * 1000,
     ).toISOString(),
+    open_days: openDays,
+    ...(input.tier ? { tier: input.tier } : {}),
+    ...(asks.length > 0 ? { asks } : {}),
+    ...(input.distinctPayer ? { distinct_payer_required: true } : {}),
     status: "open",
   };
   await saveBounty(env, record);
@@ -423,6 +565,42 @@ export interface ClaimInput {
   payer: string;
   payoutTo: string;
   observation?: string;
+  report?: WalkReport;
+}
+
+/**
+ * THE STRUCTURED REPORT, TAKEN AS DATA AND NEVER AS TRUTH.
+ *
+ * Every field is a stranger's claim about somebody else's door, so
+ * each is bounded to a shape the store can print without thinking
+ * about it: a plausible status, a hex digest of the right length, a
+ * size and a latency that are numbers rather than essays. A field
+ * that does not fit its shape is DROPPED rather than refused — the
+ * reward pays for the settlement, and a malformed extra must never
+ * cost a walker money they really spent.
+ */
+export function sanitizeReport(report: WalkReport | undefined): WalkReport | undefined {
+  if (!report || typeof report !== "object") return undefined;
+  const out: WalkReport = {};
+  const { status, payment_response, body_sha256, bytes, latency_ms, content_type } =
+    report;
+  if (Number.isInteger(status) && (status as number) >= 100 && (status as number) <= 599) {
+    out.status = status as number;
+  }
+  if (typeof payment_response === "boolean") out.payment_response = payment_response;
+  if (typeof body_sha256 === "string" && /^(0x)?[0-9a-fA-F]{64}$/.test(body_sha256)) {
+    out.body_sha256 = body_sha256.toLowerCase().replace(/^0x/, "");
+  }
+  if (Number.isFinite(bytes) && (bytes as number) >= 0 && (bytes as number) < 1e9) {
+    out.bytes = Math.round(bytes as number);
+  }
+  if (Number.isFinite(latency_ms) && (latency_ms as number) >= 0 && (latency_ms as number) < 600_000) {
+    out.latency_ms = Math.round(latency_ms as number);
+  }
+  if (typeof content_type === "string" && content_type.length > 0) {
+    out.content_type = content_type.slice(0, 120);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 export interface ClaimResult {
@@ -676,6 +854,34 @@ export async function claimBounty(
   }
   if (bounty.status !== "open") {
     throw new BountyRefused(`that bounty is ${bounty.status}, not open`);
+  }
+  /*
+   * A SECOND WALK HAS TO BE SOMEBODY ELSE (2026-09-08). On 09-08 one
+   * automated wallet claimed ten of ten listings inside twenty
+   * minutes, and every crowd-walked row in the corpus that week came
+   * from two wallets in total. That walker is doing exactly what the
+   * board asks and the evidence is real — but "drawn by strangers'
+   * money" is a claim about a denominator, and a bounty posted to
+   * re-walk a door buys nothing at all if the same wallet answers it.
+   *
+   * Checked against the board's own paid records rather than a
+   * counter, so it stays true across a redeploy, and only on listings
+   * posted with the flag: the ordinary board is unchanged and no
+   * walker is turned away from a door they have not already been paid
+   * for.
+   */
+  if (bounty.distinct_payer_required) {
+    const already = (await listBountyRecords(env)).some(
+      (record) =>
+        record.domain === bounty.domain &&
+        record.status === "paid" &&
+        isSameAddress(record.claim?.payer ?? "", input.payer),
+    );
+    if (already) {
+      throw new BountyRefused(
+        "this listing is a second walk: it pays a wallet that has not already been paid for walking this door. Yours has. Nothing is spent and the listing stays open for somebody else",
+      );
+    }
   }
   if (now.toISOString() > bounty.expires_at) {
     throw new BountyRefused("that bounty expired unclaimed");
@@ -1006,6 +1212,9 @@ export async function claimBounty(
         ...(houseProbe ? { house_probe: houseProbe } : {}),
         ...(input.observation
           ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
+          : {}),
+        ...(sanitizeReport(input.report)
+          ? { report: sanitizeReport(input.report) as WalkReport }
           : {}),
         authorization_nonce: authorization.nonce,
         authorization_valid_before: authorization.validBefore,

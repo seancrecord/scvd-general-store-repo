@@ -2,7 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { payToDigest } from "@/lib/pay-to-digest";
-import type { BountyRecord } from "@/services/bounty-board";
+import type { BountyRecord, WalkReport } from "@/services/bounty-board";
 import type { Env } from "@/types";
 
 /*
@@ -72,6 +72,22 @@ export interface CrowdWalk {
   house_probe?: NonNullable<BountyRecord["claim"]>["house_probe"];
   /** Present when the walker wrote anything; the text itself stays off the row. */
   observation?: { length: number; sha256: string };
+  /**
+   * THE COMPARABLE HALF OF THEIR REPORT (2026-09-08), and it DOES ride
+   * the row verbatim where the free text does not. The difference is
+   * shape: every field here is bounded and typed at the claim door — a
+   * status, a boolean, a hex digest, a size, a duration — so a signed
+   * row carrying them lends the store's signature to nothing but the
+   * fact that this walker sent these values. Free text cannot make
+   * that promise, and its length and digest stay the only thing the
+   * chain gets.
+   *
+   * Still theirs, still the crowd-walked tier, and the reason it is
+   * worth freezing: two walkers at one door either hand back the same
+   * body digest or they do not, and next year's reader can check that
+   * against the record rather than taking our word for it today.
+   */
+  walker_report?: WalkReport;
 }
 
 /** Rows per week, bounded: the board's own cap is the bound. */
@@ -115,6 +131,7 @@ export async function crowdWalkRow(bounty: BountyRecord): Promise<CrowdWalk | nu
           },
         }
       : {}),
+    ...(claim.report ? { walker_report: claim.report } : {}),
   };
   return row;
 }

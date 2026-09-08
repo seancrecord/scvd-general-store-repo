@@ -74,6 +74,23 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
         <textarea name="note" rows="2" cols="60" maxlength="500"></textarea>
       </label>
     </p>
+    <p>
+      <label>How long each listing stands<br>
+        <select name="tier">
+          <option value="standard">standard — 7 days</option>
+          <option value="sprint">sprint — 2 days (a live queue, not a shelf)</option>
+          <option value="long">long — 21 days (wait for a DIFFERENT walker to find it)</option>
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>What we want observed at these doors (one a line, shown on every listing and at the claim door)<br>
+        <textarea name="asks" rows="3" cols="60" placeholder="Did the paid response carry a PAYMENT-RESPONSE receipt?&#10;What did the goods actually contain — did they match what the door advertises?&#10;Send report.body_sha256 so a second walker can be held against you."></textarea>
+      </label>
+    </p>
+    <p>
+      <label><input type="checkbox" name="distinct_payer" value="1"> <strong>Second walk</strong> — refuse a claim from a wallet already paid for walking this door. The only way the crowd stops being one wallet.</label>
+    </p>
     <button type="submit"><strong>Post the checked doors</strong></button>
     <p class="menu-desc">Up to ${BOUNTY_BATCH_CAP} a press. Each door is knocked on one at a time and its live 402 becomes the terms of record; a door that refuses to be posted comes back with its reason beside it and takes nothing else down. The week's budget and the one-per-domain-per-week rule are enforced where they always were.</p>
   </form>`;

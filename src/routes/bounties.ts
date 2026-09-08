@@ -15,6 +15,7 @@ import {
   claimBounty,
 } from "@/services/bounty-board";
 import { BASE_USDC } from "@/lib/base-rpc";
+import { crowdFindings, type CrowdFindings } from "@/services/crowd-findings";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -37,7 +38,25 @@ const BOARD_WHAT_THIS_IS =
   "Paid mystery shopping for the x402 economy: walk a listed door with your own wallet, submit the settlement transaction, get the door's price back plus a finder's fee — paid as a signed EIP-3009 authorization you redeem on chain yourself. The store verifies the settlement against terms it captured when the bounty opened; your observations ride along verbatim as your claim, labeled so.";
 
 const BOARD_HOW_TO_CLAIM =
-  'POST /api/bounty-claim with JSON {"bounty_id": "bty_…", "tx_hash": "the settlement on the bounty\'s rail — 0x… on Base or Polygon, a base58 signature on Solana", "payer": "the wallet that paid the door, in that rail\'s own address shape", "payout_to": "0x… (where your reward goes — Base USDC on every rail)", "observation": "optional — what the door actually did"}';
+  'POST /api/bounty-claim with JSON {"bounty_id": "bty_…", "tx_hash": "the settlement on the bounty\'s rail — 0x… on Base or Polygon, a base58 signature on Solana", "payer": "the wallet that paid the door, in that rail\'s own address shape", "payout_to": "0x… (where your reward goes — Base USDC on every rail)", "observation": "optional — what the door actually did, in your words", "report": {"status": 200, "payment_response": true, "body_sha256": "hex sha256 of the response body", "bytes": 1234, "latency_ms": 850, "content_type": "application/json"}}';
+
+/**
+ * WHAT A USEFUL REPORT CONTAINS (2026-09-08). Ten walks arrived
+ * carrying fifty-one characters each and were paid in full, which was
+ * correct: nothing on this board had ever said what to send. The
+ * `report` object is optional, never a condition of payment, and every
+ * field of it is still the walker's own claim — but a body digest from
+ * two different wallets at one door either agrees or does not, and
+ * that comparison needs neither walker to be trusted.
+ */
+const BOARD_WHAT_WE_NEED_BACK: readonly string[] = [
+  "`report.status` — the HTTP status the PAID request returned, not the 402.",
+  "`report.payment_response` — true if the paid response carried a PAYMENT-RESPONSE receipt header, false if it did not. Both answers are worth the same to us; the absence is the finding nobody publishes.",
+  "`report.body_sha256` — sha256 of the response body, hex. This is the one field another walker can contradict, which is what makes it worth more than a sentence.",
+  "`report.bytes`, `report.latency_ms`, `report.content_type` — what you got, how big, how long it took.",
+  "`observation` — free text, and the place for anything the fields above cannot hold: what the goods actually were, whether they matched what the door advertises, what broke.",
+  "None of it is a condition. The reward pays for the chain-verified settlement; a report withheld or malformed costs you nothing, because a store that graded a stranger's homework with money would be buying the answers it wanted.",
+];
 
 const BOARD_RULES: readonly string[] = [
         `One payout per settlement transaction, ever; one bounty per domain per week; rewards cap at $${BOUNTY_MAX_REWARD_USD} and the weekly budget at $${BOUNTY_WEEKLY_BUDGET_USD} — the board refuses past it and reopens with the ISO week.`,
@@ -124,6 +143,7 @@ function boardWords(base: string) {
     what_this_is: BOARD_WHAT_THIS_IS,
     how_to_claim: BOARD_HOW_TO_CLAIM,
     before_you_walk: BOARD_BEFORE_YOU_WALK,
+    what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
     a_walk_end_to_end: workedWalk(base),
     why_a_claim_is_refused: BOUNTY_REFUSALS,
     the_rules: BOARD_RULES,
@@ -146,6 +166,7 @@ function boardWords(base: string) {
 function boardHtml(
   base: string,
   board: Awaited<ReturnType<typeof bountyBoard>>,
+  findings: CrowdFindings,
 ): string {
   const open = board.bounties.filter((entry) => entry.status === "open");
   const rows = open
@@ -155,10 +176,20 @@ function boardHtml(
       <td>${escapeHtml(entry.domain)}</td>
       <td>$${entry.amount_usd.toFixed(4)}</td>
       <td><strong>$${entry.reward_usd.toFixed(2)}</strong></td>
-      <td><small>${escapeHtml(entry.expires_at.slice(0, 10))}</small></td>
+      <td><small>${escapeHtml(entry.expires_at.slice(0, 10))}${entry.tier ? ` <em>(${escapeHtml(entry.tier)})</em>` : ""}</small></td>
     </tr>${
       entry.note
         ? `<tr><td></td><td colspan="4"><small>The house's note: ${escapeHtml(entry.note)}</small></td></tr>`
+        : ""
+    }${
+      entry.distinct_payer_required
+        ? `<tr><td></td><td colspan="4"><small><strong>Second walk:</strong> this one pays a wallet that has not already been paid for walking this door — a repeat by the same wallet is refused, and the listing stays open for somebody else.</small></td></tr>`
+        : ""
+    }${
+      entry.asks && entry.asks.length > 0
+        ? `<tr><td></td><td colspan="4"><small><strong>What we want observed here:</strong> ${entry.asks
+            .map((ask) => escapeHtml(ask))
+            .join(" · ")}</small></td></tr>`
         : ""
     }`,
     )
@@ -177,6 +208,12 @@ function boardHtml(
       <p class="menu-desc">${escapeHtml(step.note)}</p>`,
     )
     .join("\n");
+  const limits = findings.limits
+    .map((line) => `<li><small>${escapeHtml(line)}</small></li>`)
+    .join("\n");
+  const needBack = BOARD_WHAT_WE_NEED_BACK.map(
+    (line) => `<li>${escapeHtml(line)}</li>`,
+  ).join("\n");
   const refusals = BOUNTY_REFUSALS.map(
     (row) => `<tr>
       <td>${escapeHtml(row.check)}</td>
@@ -226,9 +263,41 @@ function boardHtml(
       <p class="menu-meta">Only one refusal locks a settlement out for good: one that has already been claimed. Every other refusal releases it, and the store signs nothing and spends nothing on a claim it refuses. That is not the same as a second chance — a listing already paid or expired has nothing left to pay whoever walks it, whatever your transaction is still free to claim.</p>
     </section>
     <section>
+      <h2>What we need back</h2>
+      <p class="menu-desc">The reward pays for the chain-verified settlement and nothing else — this list is what makes a walk worth more than its own receipt, not a condition of being paid. A report you leave out costs you nothing.</p>
+      <ul>${needBack}</ul>
+      <p class="menu-meta">Two walkers at one door either hand back the same <code>body_sha256</code> or they do not, and that comparison needs neither of them to be trusted — which is the only way a claim on this board becomes evidence without the store pretending it saw the transcript.</p>
+    </section>
+    <section>
       <h2>The rules, in full</h2>
       <ul>${rules}</ul>
       <p class="menu-meta">The method is public: ${escapeHtml(BOARD_METHOD)}. What a signature from this store proves, per artifact class, is at <a href="/attestation">/attestation</a>; what the walks add up to is the weekly census at <a href="/registry">/registry</a>.</p>
+    </section>
+    <section>
+      <h2>What the walks have shown</h2>
+      <p class="menu-desc">${escapeHtml(findings.headline)}</p>
+      <table border="1" cellpadding="6">
+        <tr><th>what</th><th>count</th><th>whose fact it is</th></tr>
+        <tr><td>settlements verified on chain</td><td><strong>${findings.walks.settlements}</strong></td><td>ours, proven</td></tr>
+        <tr><td>distinct paying wallets</td><td><strong>${findings.walks.distinct_payers}</strong></td><td>ours, proven</td></tr>
+        <tr><td>distinct doors walked</td><td><strong>${findings.walks.distinct_doors}</strong></td><td>ours, proven</td></tr>
+        <tr><td>walks carrying a report</td><td>${findings.reports.reported} <small>of ${findings.walks.settlements}</small></td><td>theirs, claimed</td></tr>
+        <tr><td>paid responses said to carry a PAYMENT-RESPONSE receipt</td><td>${findings.reports.receipt_seen} <small>· said to carry none: ${findings.reports.receipt_absent} · not reported: ${findings.walks.settlements - findings.reports.receipt_seen - findings.reports.receipt_absent}</small></td><td>theirs, claimed</td></tr>
+        <tr><td>our own knock said ready and the walk returned 2xx</td><td>${findings.house_vs_walker.both_good}</td><td>ours observed, theirs claimed</td></tr>
+        <tr><td>our knock said ready and the walk did not</td><td>${findings.house_vs_walker.house_ready_walk_failed}</td><td>ours observed, theirs claimed</td></tr>
+        <tr><td>our knock said NOT ready and the walk worked anyway</td><td>${findings.house_vs_walker.house_unready_walk_worked}</td><td>ours observed, theirs claimed</td></tr>
+      </table>
+      ${
+        findings.digests.length > 0
+          ? `<p class="menu-desc"><strong>Two wallets, one door:</strong> ${findings.digests
+              .map(
+                (row) =>
+                  `${escapeHtml(row.host)} — ${row.walks} walk${row.walks === 1 ? "" : "s"} from ${row.payers} wallet${row.payers === 1 ? "" : "s"}, bodies ${escapeHtml(row.agreement)}`,
+              )
+              .join(" · ")}. A digest two strangers agree on needs neither of them trusted.</p>`
+          : ""
+      }
+      <ul>${limits}</ul>
     </section>
     <section>
       <h2>What your walk becomes</h2>
@@ -296,6 +365,7 @@ bountyRoutes.get("/bounties", async (c) => {
     return c.json({
       ...boardWords(base),
       board: `${base}/api/bounties`,
+      what_the_walks_show: crowdFindings(board.bounties),
       ...board,
     });
   }
@@ -305,7 +375,7 @@ bountyRoutes.get("/bounties", async (c) => {
       description:
         "Get paid to shop somebody else's x402 door: walk a posted endpoint with your own wallet, submit the settlement transaction, and the store returns the door's price plus a finder's fee as a signed EIP-3009 authorization you redeem yourself. No account, no signup.",
       path: "/bounties",
-      bodyHtml: boardHtml(base, board),
+      bodyHtml: boardHtml(base, board, crowdFindings(board.bounties)),
     }),
   );
 });
@@ -315,6 +385,7 @@ bountyRoutes.get("/api/bounties", async (c) => {
   return c.json(
     {
       ...boardWords(c.env.STORE_BASE_URL),
+      what_the_walks_show: crowdFindings(board.bounties),
       ...board,
     },
     200,
@@ -340,6 +411,7 @@ bountyRoutes.get("/api/bounty-claim", (c) => {
      * before its walker's money is already gone.
      */
     before_you_walk: BOARD_BEFORE_YOU_WALK,
+    what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
     why_a_claim_is_refused: BOUNTY_REFUSALS,
     a_walk_end_to_end: workedWalk(c.env.STORE_BASE_URL),
     the_board: "/api/bounties",
@@ -402,6 +474,9 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
       payoutTo: String(body["payout_to"] ?? ""),
       ...(typeof body["observation"] === "string"
         ? { observation: body["observation"] }
+        : {}),
+      ...(body["report"] && typeof body["report"] === "object"
+        ? { report: body["report"] as Parameters<typeof claimBounty>[1]["report"] }
         : {}),
     });
     await book(

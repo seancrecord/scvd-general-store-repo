@@ -4,6 +4,7 @@ import {
   openBounty,
   type BountyBoardOptions,
   type BountyRecord,
+  type BountyTier,
 } from "@/services/bounty-board";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -176,6 +177,9 @@ export interface BatchResult {
   posted: number;
   refused: number;
   reward_usd: number;
+  /** The length these listings were posted to stand under. */
+  tier?: BountyTier;
+  days?: number;
   outcomes: BatchOutcome[];
   /** Set when the press asked for more doors than one press may post. */
   trimmed?: number;
@@ -199,7 +203,18 @@ export interface BatchResult {
  */
 export async function openBountyBatch(
   env: Env,
-  input: { urls: readonly string[]; rewardUsd: number; note?: string },
+  input: {
+    urls: readonly string[];
+    rewardUsd: number;
+    note?: string;
+    /** How long these listings stand: a tier, or a day count. */
+    tier?: BountyTier;
+    days?: number;
+    /** What this store wants observed at every door in the press. */
+    asks?: readonly string[];
+    /** Post them as second walks: a wallet already paid here is refused. */
+    distinctPayer?: boolean;
+  },
   options: BountyBoardOptions = {},
 ): Promise<BatchResult> {
   const wanted = input.urls
@@ -215,6 +230,10 @@ export async function openBountyBatch(
           targetUrl: url,
           rewardUsd: input.rewardUsd,
           ...(input.note ? { note: input.note } : {}),
+          ...(input.tier ? { tier: input.tier } : {}),
+          ...(input.days !== undefined ? { days: input.days } : {}),
+          ...(input.asks && input.asks.length > 0 ? { asks: input.asks } : {}),
+          ...(input.distinctPayer ? { distinctPayer: true } : {}),
         },
         options,
       );
@@ -241,6 +260,8 @@ export async function openBountyBatch(
     posted,
     refused: outcomes.length - posted,
     reward_usd: input.rewardUsd,
+    ...(input.tier ? { tier: input.tier } : {}),
+    ...(input.days !== undefined ? { days: input.days } : {}),
     outcomes,
     ...(wanted.length > urls.length
       ? { trimmed: wanted.length - urls.length }
@@ -250,7 +271,12 @@ export async function openBountyBatch(
 
 /** One line a keeper can read at a glance, for the notice after a press. */
 export function batchNotice(result: BatchResult): string {
-  const head = `Posted ${result.posted} bount${result.posted === 1 ? "y" : "ies"} at $${result.reward_usd.toFixed(2)} each`;
+  const length = result.tier
+    ? ` (${result.tier})`
+    : result.days !== undefined
+      ? ` (${result.days} days)`
+      : "";
+  const head = `Posted ${result.posted} bount${result.posted === 1 ? "y" : "ies"} at $${result.reward_usd.toFixed(2)} each${length}`;
   const refusals = result.outcomes
     .filter((outcome) => !outcome.ok)
     .map((outcome) => `${outcome.url} — ${outcome.refusal}`);
