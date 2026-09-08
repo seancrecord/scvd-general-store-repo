@@ -492,7 +492,7 @@ export async function deliverInstantGoods(
       if (!prov) {
         throw new Error("provenance_check reached goods with no record");
       }
-      await storeProvenanceCheck(env, prov, input.certId ?? "");
+      await storeProvenanceCheck(env, prov, input.certId ?? "", input.purchasedAt);
       const r = prov.record;
       const last = r.weeks[r.weeks.length - 1];
       const seen = !last

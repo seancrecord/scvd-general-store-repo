@@ -368,22 +368,6 @@ export async function fulfillPurchase(
     onpageAudit = await performOnpageAudit(env, input.targetUrl ?? "");
     mintOptions.attests = onpageAudit.evidence_hash;
   }
-  // Commit only after the eligible instrument has finished. Recovery must
-  // publish the purchased observation, even if the target changes or vanishes.
-  if (pending.observation) {
-    const prepared = retainedObservation ?? await pending.observation.save({
-      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit,
-      attests: mintOptions.attests!,
-    });
-    attestation = prepared.attestation;
-    bundle = prepared.bundle;
-    serviceAudit = prepared.serviceAudit;
-    goodBuyer = prepared.goodBuyer;
-    signatureAgentCard = prepared.signatureAgentCard;
-    onpageAudit = prepared.onpageAudit;
-    a2aKit = prepared.a2aKit;
-    mintOptions.attests = prepared.attests;
-  }
   /**
    * THE LAUNCH CHECK walks first and mints second, same discipline:
    * the certificate binds the walk record's evidence hash. The real
@@ -443,13 +427,13 @@ export async function fulfillPurchase(
    * only — the one paid item here that touches neither chain nor
    * subject, which is what lets it price at the floor.
    */
-  let provenanceCheck: SignedProvenanceCheck | undefined;
-  if (item.id === "provenance_check") {
+  let provenanceCheck: SignedProvenanceCheck | undefined = retainedObservation?.provenanceCheck;
+  if (item.id === "provenance_check" && !retainedObservation) {
     provenanceCheck = await performProvenanceCheck(env, input.subjectAddress ?? "");
     mintOptions.attests = provenanceCheck.evidence_hash;
   }
-  let spotCheck: SignedSpotCheck | undefined;
-  if (item.id === "spot_check") {
+  let spotCheck: SignedSpotCheck | undefined = retainedObservation?.spotCheck;
+  if (item.id === "spot_check" && !retainedObservation) {
     spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
     mintOptions.attests = spotCheck.evidence_hash;
   }
@@ -532,6 +516,24 @@ export async function fulfillPurchase(
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
     mintOptions.witness = true;
+  }
+  // Commit only after the eligible instrument has finished. Recovery must
+  // publish the purchased observation, even if the target changes or vanishes.
+  if (pending.observation) {
+    const prepared = retainedObservation ?? await pending.observation.save({
+      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
+      attests: mintOptions.attests!,
+    });
+    attestation = prepared.attestation;
+    bundle = prepared.bundle;
+    serviceAudit = prepared.serviceAudit;
+    goodBuyer = prepared.goodBuyer;
+    signatureAgentCard = prepared.signatureAgentCard;
+    onpageAudit = prepared.onpageAudit;
+    a2aKit = prepared.a2aKit;
+    spotCheck = prepared.spotCheck;
+    provenanceCheck = prepared.provenanceCheck;
+    mintOptions.attests = prepared.attests;
   }
   /**
    * THE MONEY MOVES HERE, and not one line earlier. Every observation
