@@ -78,6 +78,13 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://mcpfind.org/servers/store-scvd-general-store",
+    registry: "MCPFind",
+    confirmed: "2026-09-08",
+    what_it_proves:
+      "That MCPFind lists SCVD General Store with its repository and describes its x402 preflight, receipt checks and settlement attestations. Not an endorsement and not an audit: the directory page establishes that the server was indexed, not that a purchase or delivery succeeded.",
+  },
+  {
     url: "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
     registry: "Licium",
     confirmed: "2026-09-06",
@@ -374,18 +381,16 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     /**
      * A SKILL DIRECTORY, NOT A STORE DIRECTORY: skills.sh indexes the
-     * SKILL.md files a GitHub repository publishes, keyed by owner and
-     * repo, and is the source `npx skills add` installs from. The row
-     * is here because the desk filed it on 2026-09-01 as "a listing,
-     * not a new skill" — the channel classifier already knew the host
-     * — and a listing somebody can install from is a record worth
-     * dating like the rest.
+     * SKILL.md files a GitHub repository publishes. The 2026-09-08
+     * read confirmed the individual skill page, including the skill
+     * name after owner/repo; the old repository-only URL was not the
+     * page this record meant to identify.
      */
-    url: "https://skills.sh/seancrecord/scvd-general-store-repo",
+    url: "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
     registry: "skills.sh (open Agent Skills directory)",
-    confirmed: "2026-09-02",
+    confirmed: "2026-09-08",
     what_it_proves:
-      "That the open Agent Skills directory indexes this repository's skill bundle by owner and repo, which is the form an agent installs it in. Not an endorsement and not an audit: a skill index proves the SKILL.md was found under this repository, nothing about the store the skill walks into.",
+      "That the open Agent Skills directory publishes this repository's scvd-general-store skill, its SKILL.md excerpt and an installation command. Not an endorsement and not an audit: a skill index proves the skill was found under this repository, nothing about the store the skill walks into.",
   },
   {
     /**

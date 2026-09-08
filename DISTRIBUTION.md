@@ -114,6 +114,12 @@ overwrote server.json with a fresh GitHub-namespace manifest on
 2026-08-21 before finding the existing one; reverted same minute. The
 domain-namespaced manifest is authoritative.)
 
+MCPFind listing confirmed 2026-09-08: [SCVD General Store](https://mcpfind.org/servers/store-scvd-general-store)
+links the repository and describes preflight, receipt checks and
+settlement attestations. This is indexing, not connector acceptance
+or proof of a successful purchase. The shared trust record feeds the
+storefront's structured identity links and trust pages.
+
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
 Status of the review gates, checked 2026-08-21:
@@ -136,10 +142,12 @@ to several months — submit early, it queues.
 - `npx skills add seancrecord/scvd-general-store-repo` WORKS as of
   tonight (the frontmatter quoting fix — the CLI silently skipped us
   before). Nothing to submit; the repo is the listing.
-- skills.sh indexes GitHub repos with skills; check
-  https://skills.sh/seancrecord/scvd-general-store-repo renders after
-  the fix deploys. Aggregators (explainx.ai, Tessl) scrape the same
-  spec — no action, they follow usage.
+- skills.sh: the individual skill listing was confirmed 2026-09-08 at
+  https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store.
+  It renders the named skill, its SKILL.md excerpt and installation
+  command. The former repo-only link omitted the skill name. This
+  confirms indexing; it does not prove installation or successful use.
+  explainx.ai and Tessl indexing remains unconfirmed.
 - ClawHub: published (3.4.0 live; 3.5.0 pending the next
   `npm run skill:publish -- 3.5.0 "<changelog>"` after this merges).
 

@@ -535,6 +535,16 @@
       "cites_since": null
     },
     {
+      "name": "MCPFind",
+      "url": "https://mcpfind.org/servers/store-scvd-general-store",
+      "what_it_scores": "Directory of MCP servers; its SCVD General Store page links the repository and describes preflight, receipt checks and settlement attestations.",
+      "contact": null,
+      "found_on": "Keeper-supplied server listing, fetched and read 2026-09-08",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "mcpindex.ai",
       "url": "https://mcpindex.ai/server/store-scvd-general-store",
       "what_it_scores": "The drift-monitored MCP server index with an in-path trust gate: pins each tool contract and HOLDs when it silently changes - before your agent acts.",
@@ -736,10 +746,10 @@
     },
     {
       "name": "skills.sh",
-      "url": "https://skills.sh/seancrecord/scvd-general-store-repo",
+      "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
       "what_it_scores": "Discover and install skills for AI agents.",
       "contact": null,
-      "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "found_on": "Keeper-supplied individual skill listing, fetched and read 2026-09-08",
       "note_sent": null,
       "reply": null,
       "cites_since": null
