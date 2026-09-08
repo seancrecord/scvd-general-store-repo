@@ -12,7 +12,7 @@ import {
 import { getMenuItem } from "@/store/menu";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
@@ -78,7 +78,7 @@ async function seedTwoWeeks(): Promise<void> {
 }
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 /**
