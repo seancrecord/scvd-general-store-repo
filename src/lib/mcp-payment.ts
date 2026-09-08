@@ -1,3 +1,5 @@
+import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
+import { humanResolutionBody } from "@/services/human-resolution-record";
 import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
@@ -395,6 +397,21 @@ export async function runMcpPayment(
    * facilitator, so this payer actually signed.
    */
   const verifiedPayer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
+  try {
+    const resolution = await resolvedHumanPayment(env, path, result.paymentRequirements.network, verifiedPayer, result.paymentPayload);
+    if (resolution) {
+      const work = resolvedHumanDelivery(resolution);
+      if (!work) return { kind: "purchase-status", body: humanResolutionBody(resolution) };
+      const payment = { paidUsdc: resolution.statement.paid_usdc, tipUsdc: Number(work.tip_usdc ?? 0),
+        payer: verifiedPayer, network: resolution.statement.network, transaction: resolution.statement.transaction, settleHeaders: {} };
+      return { kind: "authorized", recovered: true, savedDelivery: work, verifiedPayer,
+        pending: { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc, payer: verifiedPayer, settle: async () => payment },
+        settledSoFar: () => payment, deliveryKeySoFar: () => null };
+    }
+  } catch {
+    return { kind: "purchase-status", body: { code: "purchase_record_unavailable", charged: null, settlement_attempted: false,
+      error: "The retained purchase resolution could not be read. Keep this payment and retry; do not pay again." } };
+  }
   if (onVerifiedPayer) {
     if (!verifiedPayer) return { kind: "payment-unavailable", body: paymentIdentityUnavailableBody() };
     const cached = await onVerifiedPayer(verifiedPayer);

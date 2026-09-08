@@ -2,6 +2,8 @@
 
 Checked means the repair is committed and its regression was observed failing before the fix and passing afterward. It does not mean deployed. PRs #540, #544, #549, #551 and #552 have merged; #541 has merged. All payment tests use local fixtures.
 
+The finding rows below are the current status; dated entries retain earlier status and validation counts.
+
 The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-001, BUY-005, and BUY-028; the other three require durable payment and delivery recovery.
 
 ## SEV-1 findings
@@ -10,15 +12,15 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
 - [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: verified purchase intents, truthful payment status and original-evidence recovery are implemented for the checked product families below. Remaining product families and historical obligations still need delivery recovery or explicit resolution.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
-- [ ] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — partial: new checkpointed human orders reconstruct with stable IDs, original briefs/terms and preserved completed work. Historical purchases missing retained briefs or durable order checkpoints remain open; unrelated instant-product work is not a prerequisite for closing this finding.
+- [x] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — human-purchase repair complete: checkpointed orders reconstruct; authentic legacy orders return their original work; irrecoverable briefs require a durable signed resolution backed by completed original work or a finalized full refund. This is a tested repair and manual-resolution mechanism, not a claim that production customers have been refunded. See the resolution evidence below.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial: HTTP and both MCP profiles recover the checked product families from authenticated purchase records. Uncheckpointed products and older purchases missing original input/evidence bindings remain open.
 
-## What still closes the three recovery SEV-1s
+## Recovery SEV-1 status
 
 The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
 
 - **BUY-017:** finish original-deliverable recovery for the remaining paid product families after an ambiguous settlement answer. A truthful unknown/settled status is necessary but does not itself deliver the good.
-- **BUY-034:** resolve historical human purchases that predate retained briefs and durable order checkpoints. New checkpointed human orders already reconstruct with stable IDs and preserve completed work; that completed work does not wait on unrelated instant products.
+- **BUY-034 — complete:** original human work is recovered when retained, and a missing brief cannot be replaced by retry input or a desk preview. An authenticated completed order or finalized refund can now resolve the obligation durably. Missing payment identity/handles and expired verification remain BUY-014/015; unrelated instant-product recovery remains BUY-017/037.
 - **BUY-037:** finish equivalent authenticated MCP recovery for the remaining products and older purchases whose original input/evidence was never retained. The original payment must not buy replacement evidence or trigger a second charge.
 
 Inventory and commission side effects need their own recovery proof before those products join the supported set. Missing private recovery handles and expired/rejected verification also remain tracked under BUY-014/015; they must not disappear merely because a product's reconstruction substep passes. Parent closure needs explicit evidence for the remaining obligation or a documented resolution, not an unchecked promise to reconstruct data the store never retained.
@@ -66,7 +68,7 @@ Inventory and commission side effects need their own recovery proof before those
 - [x] Withhold purchase details when the old record's payer, product or transaction does not match. Report status as unknown rather than inventing payment identity, and never infer the historical chain from today's offer.
 - [x] Preserve automatic recovery when a newer purchase retained its complete brief but could not open the artifact journal. Return its protected status handle, then reconstruct from the original acceptance time, brief and terms without another settlement.
 - [x] Recover an existing legacy order/certificate association when sufficient original records survive, preserving its brief, SLA, ID and completed work. See the retained-order retrieval evidence below.
-- [ ] Establish explicit resolution evidence for records that cannot yield the original work; a truthful refusal alone does not close BUY-034.
+- [x] Establish explicit resolution evidence for records that cannot yield the original work; require matching completed work or a finalized full refund before clearing the obligation. See the signed-resolution increment below.
 
 These are synthetic historical records, not evidence of unresolved production customers. The new public-door matrix exercises both human products through HTTP and both MCP profiles on Base and Polygon. The initial 72 cases failed before the guard; the additional 48 product/transaction mismatch cases failed before their identity checks. All 120 passed alongside the existing recovery controls. Six additional capture-before-artifact cases failed before preserving the newer purchase record; the resulting integration gate passed 267 cases across six files. The historical certificate-only fixture now removes the newer purchase journal and uses its actual signed payer; all 24 obligations remain covered. The final related gate passed 203 tests across six files. The shared recovery description stays within the unchanged MCP catalog budget; detailed instructions remain in the failure response. A separate full run caught one stale hand-maintained error-code list; its guard now reads the published contract and includes an unpublished-code negative control. Known legacy payment failures retain the contract's HTTP 500, and identity-unknown records use its HTTP 503. The completed guard does not claim to reconstruct a missing brief or to issue refunds automatically. At that guard commit, both follow-up steps above remained open; the retained-order step is now completed below. Unrelated instant-product families do not gate BUY-034.
 
@@ -83,7 +85,21 @@ The synthetic legacy matrix covers both human products, Base and Polygon, and al
 
 Final local validation: all 597 test files passed, with 8,118 tests passing and one existing skip (801.37 seconds). The focused recovery gate passed 234 tests across four files; typechecking, both Worker dry-run bundles, native Worker startup, audit, claims and docs checks also passed.
 
-BUY-034's remaining step is explicit resolution evidence when the original work cannot be recovered. Parent findings remain open; the completed retrieval substep does not imply an automatic refund. The next fix must also correct `runDeliveryAudit`'s alert text: it currently calls the truncated query preview enough to produce the goods, although that preview is not the retained original brief. A resolution must cite the actual work or refund record rather than treating that preview or an outcome label as proof.
+At this retrieval increment, BUY-034's remaining step was explicit resolution evidence when the original work could not be recovered. Parent findings remain open; the completed retrieval substep does not imply an automatic refund. The next fix must also correct `runDeliveryAudit`'s alert text: it currently calls the truncated query preview enough to produce the goods, although that preview is not the retained original brief. A resolution must cite the actual work or refund record rather than treating that preview or an outcome label as proof.
+
+## 2026-09-08 — Evidence-backed human resolution
+
+- [x] Refuse an outcome label alone. Fulfillment requires the authenticated original completed order; a refund requires the original finalized native-USDC payment and a subsequent full refund to its payer on the same network. An unrelated transfer, wrong asset/amount/recipient/chain, failed transaction, pending finality or unavailable RPC leaves the obligation open.
+- [x] Sign the resolution statement and its work/refund evidence; commit it before projecting the desk record or deleting the intent. Preserve earlier signed revisions. Identical retries repair interrupted publication without reading the chain again or creating another resolution.
+- [x] Allocate a refund transaction to at most one purchase, including simultaneous resolutions. House absorption requires the exact registered house payer; Solana casing is preserved.
+- [x] Check durable resolutions before HTTP/MCP delivery caches. Return retained completed work or a terminal refunded response without settlement, even after order/desk records disappear. Protected purchase status returns the resolution; a later recovery alarm creates no replacement order.
+- [x] Label the desk and alert query as a possibly truncated preview. All resolution forms expose network, completed-order and refund evidence fields.
+
+The entry-point regression was run with its tracked production changes stashed while retaining the storage implementation: 46 tests failed and three independent controls passed. With the fix restored, the final focused gate passed 211 tests, including both HTTP and MCP catalog/source-contract guards. Two additional stale-status controls were observed failing before removing the old queued snapshot. Additional integration runs covered the existing legacy-order, capture and paid-retry paths. The final full suite passed all 599 files: 8,177 tests passed with one existing skip (416.13 seconds). Typecheck, both Worker dry-run bundles and native Worker startup passed. Rebase onto merged #582 changed no tested source or test bytes. The explicit Durable Object write guard also passed after recording the three reviewed atomic writes; its checks against KV aliases remain enforced.
+
+Refund observations cover Base, Polygon and Solana using local finalized-chain fixtures. Buyer retry equivalence covers HTTP and both MCP profiles on Base/Polygon; protected status is tested independently of the spent-nonce row. This request sends no refund. The keeper transfers funds, then supplies evidence. Partial refunds and allocating one refund transaction across multiple purchases are refused. A missing or unverifiable original payment identity stays open for recovery rather than being guessed. Expired payment verification and missing private handles remain BUY-014/015. Ordinary human-work signatures remain BUY-025; this increment signs only explicitly resolved work.
+
+BUY-034's human-order scope is closed by the combined checkpoint, legacy retrieval and explicit-resolution proofs. BUY-017 and BUY-037 still own the remaining artifact families and historical nonhuman obligations. No production-order inventory or live payment was performed.
 
 ## Verification and scope
 

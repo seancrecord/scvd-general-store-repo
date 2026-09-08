@@ -1,3 +1,6 @@
+import { getMenuItem } from "@/store";
+import { isRecord } from "@/types";
+import type { HumanResolutionInput } from "@/services/human-delivery-resolution";
 import type { SettledPayment } from "@/lib/payments";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -222,7 +225,8 @@ export async function auditDeliveries(
  *
  * A resolution is a RECORD, not an erasure: the intent row is
  * replaced by a resolution row naming the outcome and the hand, kept
- * on the same 90-day clock as the event rows.
+ * on the same 90-day clock as the event rows for legacy nonhuman cases.
+ * Human resolutions retain signed evidence durably before clearing the desk.
  */
 export type DeliveryOutcome = "fulfilled_by_hand" | "refunded" | "house_absorbed";
 
@@ -230,6 +234,7 @@ export async function resolveDeliveryIntent(
   env: Env,
   transaction: string,
   outcome: DeliveryOutcome,
+  evidence?: HumanResolutionInput,
 ): Promise<{ ok: true } | { ok: false; refusal: string }> {
   const id = transaction.trim();
   if (!id) {
@@ -257,6 +262,40 @@ export async function resolveDeliveryIntent(
    * is worth less than one that shows it did.
    */
   const priorRaw = await kvGet(env.ORDERS, `delivery_resolved:${id}`);
+  // Historical corrections may keep the original intent under superseded.
+  // Never let a missing current row turn a human obligation into an unguarded
+  // chain-orphan resolution. New records retain the intent at the top level.
+  let original: unknown;
+  let priorValue: unknown;
+  try {
+    original = intent ? JSON.parse(intent) : null;
+    priorValue = priorRaw ? JSON.parse(priorRaw) : null;
+    let cursor = priorValue;
+    for (let depth = 0; !original && isRecord(cursor); depth++) {
+      if (depth >= 64) return { ok: false, refusal: "Resolution history needs inspection before correction." };
+      if (isRecord(cursor.intent)) original = cursor.intent;
+      cursor = cursor.superseded;
+    }
+    if (!original) {
+      const { humanResolutionStore } = await import("@/services/human-resolution-record");
+      const raw = await humanResolutionStore(env).findHumanResolution(id);
+      const durable: unknown = raw ? JSON.parse(raw) : null;
+      if (isRecord(durable)) original = durable.intent;
+    }
+  } catch {
+    return { ok: false, refusal: "The retained resolution could not be read. Keep the obligation open and retry." };
+  }
+  if (isRecord(original) && typeof original.path === "string" &&
+    getMenuItem(original.path.replace(/^\/api\/buy\//, ""))?.fulfillment === "human_queue") {
+    const { resolveHumanDelivery } = await import("@/services/human-delivery-resolution");
+    if (typeof original.paid_usdc !== "number" || typeof original.settled_at !== "string" ||
+      typeof original.transaction !== "string" || typeof original.payer !== "string") {
+      return { ok: false, refusal: "The original human payment record is incomplete. Keep the obligation open." };
+    }
+    return resolveHumanDelivery(env, id, outcome, { path: original.path, paid_usdc: original.paid_usdc,
+      settled_at: original.settled_at, transaction: original.transaction, payer: original.payer,
+      ...(typeof original.query === "string" ? { query: original.query } : {}) }, evidence, priorValue);
+  }
   if (priorRaw) {
     let prior: unknown = null;
     try {
@@ -348,8 +387,8 @@ export async function runDeliveryAudit(
         sale.payer ? ` Payer: ${sale.payer}.` : ""
       } Paid ${sale.paid_usdc} USDC.${
         sale.query
-          ? ` THEY ASKED FOR: ${sale.query} — that is enough to produce the goods, so this one can be FULFILLED rather than refunded.`
-          : " WHAT THEY ASKED FOR WAS NOT RECORDED (settled before 2026-08-10), so this one cannot be fulfilled by hand — only refunded."
+          ? ` REQUEST PREVIEW (may be truncated): ${sale.query}. Check the retained original purchase or order; this preview alone cannot establish the work owed.`
+          : " NO REQUEST PREVIEW IS HELD. Check the retained original purchase or order before deciding whether the work can be recovered."
       } This is money taken without delivery — check the order, then refund or fulfil by hand.`,
       key: sale.key,
     }).catch(() => {

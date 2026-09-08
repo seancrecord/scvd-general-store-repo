@@ -1531,6 +1531,7 @@ function doesInYourName(tool: McpTool): string {
  */
 function underContract(tool: McpTool, base: string): McpTool {
   const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
+  const human = [tool.itemId, ...(tool.itemIds ?? [])].some(id => id && getMenuItem(id)?.fulfillment === "human_queue");
   return {
     ...tool,
     /**
@@ -1541,7 +1542,7 @@ function underContract(tool: McpTool, base: string): McpTool {
      */
     title: tool.title ?? tool.annotations?.title ?? tool.name,
     errors: MCP_REFUSAL_CODES.filter(
-      (refusal) => paid || FREE_TOOL_CODES.has(refusal.code),
+      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code)) && (refusal.code !== "purchase_resolved" || human),
     ),
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),

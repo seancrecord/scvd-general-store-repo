@@ -1,3 +1,5 @@
+import { recordedHumanResolution, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
+import { humanResolutionBody } from "@/services/human-resolution-record";
 import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import type { PaymentRequirements } from "@x402/core/types";
 import { jcsCanonicalize } from "@/lib/jcs";
@@ -198,6 +200,9 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
     const saved = await purchaseIntentStore(env, id).readPurchase(token);
     if (!saved) return missing;
     const record = JSON.parse(saved) as PurchaseIntent;
+    const resolution = await recordedHumanResolution(env, record);
+    if (resolution) return { status: 200, body: { ...purchaseStatus(record), ...humanResolutionBody(resolution),
+      delivery_state: "resolved", fulfillment: resolvedHumanDelivery(resolution) ?? undefined } };
     const body = purchaseStatus(record);
     if (record.delivery) {
       body.fulfillment = await purchaseDelivery(env, record);

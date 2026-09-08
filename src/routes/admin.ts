@@ -1359,13 +1359,18 @@ adminRoutes.post("/admin/delivery/resolve", async (c) => {
     );
   }
   const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
-  const result = await resolveDeliveryIntent(c.env, transaction, outcome);
+  const evidence = Object.fromEntries(["network", "order_id", "refund_tx", "refund_payer"].flatMap(field => {
+    const value = form[field];
+    return typeof value === "string" && value.trim() ? [[field, value.trim()]] : [];
+  }));
+  const result = await resolveDeliveryIntent(c.env, transaction, outcome, evidence);
   if (!result.ok) {
     return c.json({ refused: result.refusal }, 404);
   }
   return c.json({
     resolved: { transaction, outcome },
-    note: "The intent row is now a resolution row; the audit stops paging about this sale. The record keeps the original intent inside it.",
+    ...("resolution" in result ? { resolution: result.resolution } : {}),
+    note: "The resolution retains the original intent and any required evidence. No refund was sent by this request.",
   });
 });
 

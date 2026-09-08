@@ -78,6 +78,11 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     (payment.network.startsWith("eip155:") ? !isSameAddress(payment.payer, record.payer) : payment.payer !== record.payer)) {
     throw new Error("Recorded payment identity mismatch");
   }
+  if (item.fulfillment === "human_queue") {
+    const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
+    const resolution = await recordedHumanResolution(env, record);
+    if (resolution) return resolvedHumanDelivery(resolution);
+  }
   const query = new URLSearchParams(record.request);
   const args = record.door === "mcp" ? JSON.parse(record.request) as Record<string, unknown> : null;
   const input = purchaseInputFrom(item, args ? toolArgs(args) : queryArgs(name => query.get(name) ?? undefined));

@@ -42,6 +42,10 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],
   "/src/services/paid-recovery.ts": [
+    // One storage transaction commits the refund claim, resolution, and lookup.
+    'await txn.put(claim, key);',
+    'await txn.put(row, record);',
+    'await txn.put(`human-transaction:${statement.transaction.startsWith("0x") ? statement.transaction.toLowerCase() : statement.transaction}`, key);',
     'await txn.put("observation", { path, digest, value: proposal });',
     'await txn.put("purchase", { ...current, delivery });',
     'await txn.put("purchase", { ...latest, reconciliation: update.reconciliation });',

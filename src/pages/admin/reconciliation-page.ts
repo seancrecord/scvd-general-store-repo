@@ -1,3 +1,4 @@
+import { resolutionEvidenceFields } from "@/pages/admin/resolution-fields";
 import type { SettleReconciliation } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
@@ -274,8 +275,8 @@ function deliveriesHtml(
          * choice and a trap.
          */
         sale.query
-          ? `<div><small><strong>They asked for:</strong> <code>${escapeHtml(sale.query)}</code> — enough to produce the goods, so this one can be FULFILLED.</small></div>`
-          : `<div><small><strong style="color:#8c2f1b">What they asked for was not recorded</strong> — settled before 2026-08-10, when the request stopped being thrown away. There is no way to know what artifact to make, so this one can only be REFUNDED.</small></div>`
+          ? `<div><small><strong>Request preview (may be truncated):</strong> <code>${escapeHtml(sale.query)}</code> — check the retained original order or purchase for the full brief. This preview alone cannot establish the work owed.</small></div>`
+          : `<div><small><strong>No request preview is held.</strong> Check the original purchase or order before deciding whether the work can be recovered.</small></div>`
       }
       <form method="POST" action="/admin/delivery/resolve" style="margin:0.3em 0">
         <input type="hidden" name="transaction" value="${escapeHtml(sale.transaction ?? "")}">
@@ -285,7 +286,8 @@ function deliveriesHtml(
           <option value="refunded">refunded</option>
           ${house ? "" : `<option value="house_absorbed">house money, absorbed</option>`}
         </select>
-        <button type="submit">Resolve this one</button>
+        ${resolutionEvidenceFields()}
+      <button type="submit">Resolve this one</button>
       </form></li>`;
     })
     .join("\n");
@@ -355,7 +357,8 @@ function alertsHtml(
                   <option value="fulfilled_by_hand">fulfilled by hand</option>
                   <option value="refunded">refunded</option>
                 </select>
-                <button type="submit">Resolve this one</button>
+                ${resolutionEvidenceFields()}
+      <button type="submit">Resolve this one</button>
               </form>`
             : ""
         }</li>`,
