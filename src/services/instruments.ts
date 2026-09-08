@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 import type { MetricEvent } from "@/lib/metrics";
 import { walkerKey } from "@/lib/walkers";
+import { isNoiseFloor } from "@/lib/declines";
 import type { Observatory, SurfaceCount } from "@/services/observatory";
 import type { Env } from "@/types";
 
@@ -443,14 +444,18 @@ export function splitUnknown(
  * which is the exact shape of a conversion problem the store does not
  * have. A monitor reading a door is not a customer hesitating at it.
  *
- * WHAT THIS FILTER STILL CANNOT SEE, and it is not small:
- * `inferChannel` short-circuits on `viaMcp` before it ever consults
- * the crawler table (channel.ts), so an infrastructure client that
- * arrives through the MCP door is stamped `mcp` and counted here as
- * organic. Filtering on channel cannot fix that — the classification
- * never ran. Until the short-circuit is reordered, `checkers` is an
- * OVER-count on the MCP side and the page says so rather than
- * implying a clean number.
+ * READ THROUGH `isNoiseFloor`, NOT THE STORED CHANNEL, and the
+ * difference is the whole month of rows already in KV. `inferChannel`
+ * used to short-circuit on `viaMcp` before it consulted the crawler
+ * table, so every self-identifying prober that walked in through /mcp
+ * was stamped `mcp` and never `infrastructure`. That was fixed at the
+ * classifier on 2026-09-08 — but a stamp is written once, at the door,
+ * and every row booked before the fix still carries the old one. A
+ * filter that trusted `channel` alone would therefore exclude the
+ * monitors arriving from now on and keep counting the ones already on
+ * the books, which is the worse half of the bug and the half nobody
+ * would notice. The shared predicate re-reads the user-agent table, so
+ * history is classified by the same rule as today.
  */
 export const HANDOFF_WINDOW_MS = 30 * 60 * 1000;
 export const HANDOFF_ITEMS_SHOWN = 8;
@@ -481,7 +486,7 @@ export function handoffs(events: readonly MetricEvent[], month: string, windowMs
   const infraClients = new Set<string>();
   for (const event of events) {
     if (event.house || !event.at.startsWith(month)) continue;
-    if (event.channel === "infrastructure") infraClients.add(walkerKey(event));
+    if (isNoiseFloor(event)) infraClients.add(walkerKey(event));
   }
   const infraCheckers = new Set<string>();
   for (const event of events) {

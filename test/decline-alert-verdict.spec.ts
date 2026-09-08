@@ -36,6 +36,41 @@ function uniqueReason(base: string): string {
   return `${base}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
+/**
+ * THE ALARM THAT CRIED FOR THE NOISE FLOOR (2026-09-08).
+ *
+ * The gate was `!event.house`, so a conformance walker signing
+ * without its required input paged the keeper once per item per six
+ * hours. Six such declines landed in two days from two clients the
+ * store's own user-agent table already calls machinery. An alarm that
+ * fires for machinery is one a keeper learns to swipe away, and that
+ * costs the real buyer the hand it exists to raise.
+ */
+describe("the decline alert stays quiet for the noise floor", () => {
+  it("does not page for a client that names itself machinery", async () => {
+    const reason = `insufficient_funds ${uniqueReason("m")}`;
+    await recordPaymentDecline(testEnv, "/api/buy/hello", reason, {
+      userAgent: "x402-conformance-monitor/0.1 (read-only; no-wallet; no-payment)",
+    });
+    const alerts = await listAlerts(testEnv, 30);
+    expect(
+      alerts.some(
+        (alert) =>
+          alert.condition === "payment_declined" && alert.detail.includes(reason),
+      ),
+    ).toBe(false);
+  });
+
+  it("still pages for a buyer whose wallet was short", async () => {
+    const reason = `insufficient_funds ${uniqueReason("n")}`;
+    await recordPaymentDecline(testEnv, "/api/buy/hello", reason, {
+      userAgent: "some-agent-sdk/2.1",
+    });
+    // The row that matters must survive the fix that silenced the rest.
+    expect(await latestDeclineAlert()).toContain(reason);
+  });
+});
+
 describe("the decline alert leads with whose problem it is", () => {
   it("says OURS, first, when the store turned away money it could have taken", async () => {
     // A recipient/amount disagreement is readReason's "ours" — our

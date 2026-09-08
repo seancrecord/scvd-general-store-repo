@@ -64,10 +64,13 @@ function handoffHtml(h: Handoff): string {
     <p><small>Priced after a check: ${items}.</small></p>
     <p><small>Who they were — each links to its whole trail, so the counts above can be traced instead of believed.
     Checked: ${clientLinks(h.checker_clients)}. Of those, priced: ${clientLinks(h.priced_clients)}.</small></p>
-    <p><small><strong>What this exclusion still cannot catch:</strong> channel inference short-circuits on the MCP
-    flag before it consults the crawler table, so an infrastructure client arriving through the MCP door is stamped
-    <code>mcp</code> and is counted above as organic. Filtering on channel cannot fix that — the classification never
-    ran. On the MCP side these are OVER-counts, and stay so until that ordering changes.</small></p>`;
+    <p><small><strong>How the exclusion reads history:</strong> channel inference used to short-circuit on the MCP
+    flag before it consulted the crawler table, so a prober arriving through the MCP door was stamped <code>mcp</code>
+    and never <code>infrastructure</code>. That was fixed at the classifier on 2026-09-08, but a stamp is written once,
+    at the door — every row booked before the fix still carries the old one. So this exclusion re-reads the user-agent
+    table rather than trusting the stored channel, and history is classified by the same rule as today. What it still
+    cannot catch is machinery that does not name itself: a prober on a bare <code>node</code> or <code>curl</code>
+    string is indistinguishable from a buyer's SDK here, deliberately, and is counted above as organic.</small></p>`;
 }
 
 function afterSaleHtml(m: InstrumentMonth): string {

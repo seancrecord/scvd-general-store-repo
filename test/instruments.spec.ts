@@ -274,6 +274,37 @@ describe("the free instruments, sorted out of the observatory", () => {
     expect(h.items_after_check).toEqual([{ item: "observation", clients: 1 }]);
   });
 
+  it("excludes a monitor whose stored channel still says mcp, from before the classifier was fixed", () => {
+    /**
+     * THE ROWS ALREADY ON THE BOOKS. inferChannel short-circuited on
+     * viaMcp before it read the crawler table until 2026-09-08, so
+     * every self-identifying prober that came through /mcp was stamped
+     * `mcp` and never `infrastructure`. The classifier is fixed; the
+     * stamps are not, because a stamp is written once at the door. A
+     * filter trusting the stored channel would exclude the monitors
+     * arriving from now on and keep counting the ones already booked —
+     * the worse half of the bug, and the half nobody would notice.
+     */
+    const at = (minute: number): string => new Date(Date.UTC(2026, 8, 5, 12, minute)).toISOString();
+    const ev = (kind: MetricEvent["kind"], item: string, ua: string, minute: number): MetricEvent => ({
+      // Stamped `mcp` at the door, as every pre-fix row was.
+      kind, item, channel: "mcp", house: false, at: at(minute), user_agent: ua,
+    });
+    const events: MetricEvent[] = [
+      ev("porch", "mcp:tool:check_conformance", "x402-conformance-monitor/0.1", 0),
+      ev("challenge", "observation", "x402-conformance-monitor/0.1", 5),
+      // A real MCP client on a generic SDK string stays counted: the
+      // table names machinery, and `mcp` alone is a transport.
+      ev("porch", "mcp:tool:preflight_endpoint", "node", 0),
+      ev("challenge", "observation", "node", 5),
+    ];
+    const h = handoffs(events, "2026-09");
+    expect(h.checkers).toBe(1);
+    expect(h.checker_clients).toEqual(["node"]);
+    expect(h.infrastructure_checkers).toBe(1);
+    expect(h.then_priced).toBe(1);
+  });
+
   it("renders behind the keeper's door and stores the reading for next time", async () => {
     await testEnv.COUNTERS.delete(KV_KEYS.instrumentsReading);
     const page = await SELF.fetch("https://scvd.store/admin/instruments", { headers: AUTH });

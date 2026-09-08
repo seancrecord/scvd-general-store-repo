@@ -194,6 +194,58 @@ describe("reading a decline", () => {
     expect(row?.reading.toLowerCase()).toContain("instrument");
   });
 
+  /**
+   * THE NOISE FLOOR, READ AS DEMAND (2026-09-08). The desk excluded
+   * the house and called everything else intent, so six declines from
+   * two clients the store's own user-agent table already names as
+   * machinery were reported as "somebody wanted to buy and could not".
+   * One of them writes "no-wallet; no-payment" into its user-agent.
+   */
+  it("keeps a self-identifying prober out of the outside count", async () => {
+    const before = await readDeclines(testEnv);
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-observatory/1.0 (+https://example.test/methodology)",
+        note: "local:input_missing:tx_hash",
+        channel: "infrastructure",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    // Counted, named, and never mixed into the number that means intent.
+    expect(report.outside_count).toBe(before.outside_count);
+    expect(report.infrastructure_count).toBe(before.infrastructure_count + 1);
+    expect(report.infrastructure_clients).toContain(
+      "declines-spec-observatory/1.0 (+https://example.test/methodology)",
+    );
+    // The reason table is the intent table: a prober's error code must
+    // not be able to trip the "same reason from different clients" rule.
+    expect(report.by_reason["local:input_missing:tx_hash"] ?? 0).toBe(
+      before.by_reason["local:input_missing:tx_hash"] ?? 0,
+    );
+    // The row itself is still on the page. Excluded from the count is
+    // not hidden from the desk.
+    expect(
+      report.declines.some((row) => row.user_agent?.includes("declines-spec-observatory")),
+    ).toBe(true);
+  });
+
+  /**
+   * A row booked before its user-agent was promoted to the table
+   * carries the old verdict forever. The table is the law, not the row.
+   */
+  it("re-reads the user-agent, so a row booked as organic before the promotion still lands on the noise floor", async () => {
+    const before = (await readDeclines(testEnv)).outside_count;
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-uptime-monitor/1",
+        note: "local:payload_missing_accepted",
+        channel: "mcp",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    expect(report.outside_count).toBe(before);
+  });
+
   it("keeps the house out of the outside count", async () => {
     const before = (await readDeclines(testEnv)).outside_count;
     await seedRow(

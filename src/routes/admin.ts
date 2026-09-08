@@ -6,7 +6,7 @@ import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { takeCensus } from "@/lib/census";
-import { readDeclines, traceClient } from "@/lib/declines";
+import { isNoiseFloor, readDeclines, traceClient } from "@/lib/declines";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
@@ -3116,7 +3116,11 @@ adminRoutes.get("/admin/bounties", async (c) => {
 
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
-  const outside = report.declines.filter((row) => !row.house);
+  // The trace exists to read A BUYER'S sequence. Picking the busiest
+  // non-house client picked the busiest PROBER instead: a conformance
+  // walker hits four doors in a morning and no real buyer ever
+  // out-declines it. Same line the desk's counts draw.
+  const outside = report.declines.filter((row) => !isNoiseFloor(row));
   const counts = new Map<string, number>();
   for (const row of outside) {
     const ua = row.user_agent ?? "(no user-agent)";

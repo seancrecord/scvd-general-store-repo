@@ -6,7 +6,7 @@ import { sendAlert } from "@/lib/alerts";
 // the phone notification and /admin/declines can never disagree about
 // whose problem a decline is. declines.ts imports only a TYPE from this
 // module, so the pair erases to no runtime cycle.
-import { readReason, type DeclineFault } from "@/lib/declines";
+import { isNoiseFloor, readReason, type DeclineFault } from "@/lib/declines";
 import { houseWallets, inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
@@ -462,6 +462,25 @@ async function raiseFirstOutsideSignature(
   if (event.house) {
     return;
   }
+  /*
+   * A LATCH MACHINERY MUST NOT BE ABLE TO BURN (2026-09-08).
+   *
+   * This alarm writes a "once" key: the first outside signature EVER,
+   * and never again. It excluded the house and nothing else, so the
+   * first self-identifying prober to sign without its required input
+   * would spend the store's one-and-only first-signature alarm on a
+   * client that came to look — and the real first buyer, whenever
+   * they arrived, would arrive silently.
+   *
+   * A DECLINE from the noise floor is not that event. A SETTLE from
+   * it still is: money moved, and the store's standing rule is that a
+   * crawler that pays is a customer (see bucketSuffix, where settles
+   * never bucket as infrastructure). So the exclusion is scoped to
+   * the declined outcome and nothing else.
+   */
+  if (outcome === "declined" && isNoiseFloor(event)) {
+    return;
+  }
   if (await kvGet(env.COUNTERS, KV_KEYS.firstSignature)) {
     return;
   }
@@ -518,10 +537,21 @@ export async function recordPaymentDecline(
    */
   await writeDeclineIndex(env, event);
   await raiseFirstOutsideSignature(env, event, "declined");
-  if (!event.house) {
+  if (!isNoiseFloor(event)) {
     // RAISE A HAND. An outside decline is the rarest and most valuable
     // event this store can have: somebody opened a wallet at our door
-    // and did not get through. On 2026-07-28 a real buyer was turned
+    // and did not get through.
+    //
+    // NOT, HOWEVER, WHEN THE WALLET WAS NEVER GOING TO OPEN
+    // (2026-09-08). The gate was `!event.house`, so a conformance
+    // walker that signs without its required input paged the keeper's
+    // phone once per item per six hours. Six such declines landed in
+    // two days from two clients the store's own user-agent table
+    // already calls machinery, one of which writes "no-wallet;
+    // no-payment" into its name. An alarm that cries for the noise
+    // floor is an alarm the keeper learns to swipe away, which costs
+    // the real buyer the hand this exists to raise. The rows are all
+    // still booked and still on the desk; only the phone is spared. On 2026-07-28 a real buyer was turned
     // away three times and nothing said so — the reasons were in KV,
     // no surface read them, and no alarm fired. Deduped by item+reason
     // so a client hitting the same wall nags once every six hours
