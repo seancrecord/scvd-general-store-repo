@@ -1,3 +1,4 @@
+import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -1226,14 +1227,24 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           return c.json(recorded.body, 503);
         }
         const open = await getOpenDeliveryIntent(c.env, spent.transaction);
-        if (open) {
-          if (legacyItem?.fulfillment === "human_queue") {
-            c.header("Cache-Control", "no-store");
-            c.header("Paid-Retry", "incomplete");
-            const failure = legacyHumanRecoveryFailure(c.env.STORE_BASE_URL, legacyItem,
-              open.intent, { path: c.req.path, transaction: spent.transaction, payer });
-            return c.json(failure, failure.charged === true ? 500 : 503);
+        if (legacyItem?.fulfillment === "human_queue") {
+          const recovered = await recoverLegacyHumanOrder(c.env, legacyItem,
+            { path: c.req.path, transaction: spent.transaction, payer, network: result.paymentRequirements.network }, open?.intent);
+          if (recovered) {
+            const response = c.json(recovered);
+            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(spent.transaction)).catch(() => undefined);
+            await recordDeliveredSettlement(c.env, spent.transaction);
+            response.headers.set("Cache-Control", "no-store");
+            response.headers.set("Paid-Retry", "true");
+            return response;
           }
+          c.header("Cache-Control", "no-store");
+          c.header("Paid-Retry", "incomplete");
+          const failure = legacyHumanRecoveryFailure(c.env.STORE_BASE_URL, legacyItem,
+            open?.intent, { path: c.req.path, transaction: spent.transaction, payer });
+          return c.json(failure, failure.charged === true ? 500 : 503);
+        }
+        if (open) {
           const retryMinimum = minimumUsdcForPath(c.req.path);
           const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
           const retryPayment: SettledPayment = {

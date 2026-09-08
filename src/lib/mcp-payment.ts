@@ -1,3 +1,4 @@
+import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
@@ -464,9 +465,20 @@ export async function runMcpPayment(
       }
       const open = await getOpenDeliveryIntent(env, spent.transaction);
       const retry = open?.intent.mcp_retry;
-      if (open && !retry?.input_digest && legacyItem?.fulfillment === "human_queue") {
+      if (legacyItem?.fulfillment === "human_queue") {
+        const recovered = await recoverLegacyHumanOrder(env, legacyItem,
+          { path, transaction: spent.transaction, payer: verifiedPayer, network: result.paymentRequirements.network }, open?.intent);
+        if (recovered) {
+          const payment: SettledPayment = { paidUsdc: Number(recovered.paid_usdc), tipUsdc: Number(recovered.tip_usdc),
+            payer: verifiedPayer, network: result.paymentRequirements.network, transaction: spent.transaction, settleHeaders: {} };
+          return { kind: "authorized", recovered: true, savedDelivery: recovered, verifiedPayer,
+            pending: { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc, payer: verifiedPayer, settle: async () => payment },
+            settledSoFar: () => payment, deliveryKeySoFar: () => KV_KEYS.deliveryIntent(spent.transaction!) };
+        }
+      }
+      if (!retry?.input_digest && legacyItem?.fulfillment === "human_queue") {
         return { kind: "purchase-status", body: legacyHumanRecoveryFailure(env.STORE_BASE_URL,
-          legacyItem, open.intent, { path, transaction: spent.transaction, payer: verifiedPayer }) };
+          legacyItem, open?.intent, { path, transaction: spent.transaction, payer: verifiedPayer }) };
       }
       if (open && retry && open.intent.path === path &&
         retry.payment.transaction === spent.transaction &&
