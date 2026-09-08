@@ -62,6 +62,8 @@ export interface FacilitatorMockState {
   settleDuplicateAnswers: number;
   /** Every settle call, verdicts and 502s alike — the retry counter. */
   settleCalls: number;
+  /** Successful settlement identities, in order; distinct sales must not share one. */
+  settledTransactions: string[];
   /**
    * A successful settle that comes back with no payer address. Not
    * hypothetical: the store's `nopayer` counter exists because real
@@ -140,7 +142,17 @@ function findNonce(value: unknown): string | null {
   return null;
 }
 
+// Keep both installers argument-free: existing specs pass the original directly
+// to beforeAll, whose parameters Vitest interprets as fixture dependencies.
 export function installFacilitatorMock(): FacilitatorMockState {
+  return createFacilitatorMock(false);
+}
+
+export function installMultiPurchaseFacilitatorMock(): FacilitatorMockState {
+  return createFacilitatorMock(true);
+}
+
+function createFacilitatorMock(uniqueTransactions: boolean): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
@@ -149,6 +161,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
     settleTransient502s: 0,
     settleDuplicateAnswers: 0,
     settleCalls: 0,
+    settledTransactions: [],
     settleOmitsPayer: false,
     webhookCalls: [],
     settledNonces: new Set(),
@@ -258,6 +271,13 @@ export function installFacilitatorMock(): FacilitatorMockState {
         }
         state.settledNonces.add(nonce);
       }
+      // Older single-transaction fixtures name TEST_TRANSACTION explicitly.
+      // Multi-purchase walks need separate chain identities: the artifact journal
+      // correctly rejects using one transaction to buy different goods.
+      const transaction = uniqueTransactions
+        ? `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, "0")).join("")}`
+        : TEST_TRANSACTION;
+      state.settledTransactions.push(transaction);
       // The CDP facilitator reports extension outcomes (e.g. Bazaar
       // discovery) in this header; the store's observer captures it.
       const extensionResponses = btoa(
@@ -266,7 +286,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
       return Response.json(
         {
           success: true,
-          transaction: TEST_TRANSACTION,
+          transaction,
           network: "eip155:8453",
           ...(state.settleOmitsPayer ? {} : { payer: TEST_PAYER }),
         },

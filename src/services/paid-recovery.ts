@@ -18,7 +18,7 @@ export interface ArtifactPurchase {
 export interface RecoveryIdentity {
   path: string; payer: string; network: string; transaction: string;
 }
-export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment";
+export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
 
 function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
   const payer = purchase.payment.payer;

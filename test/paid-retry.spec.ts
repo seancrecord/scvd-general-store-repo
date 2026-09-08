@@ -1,16 +1,16 @@
-import { SELF, env } from "cloudflare:test";
+import { SELF, env, runInDurableObject } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
-import { installFacilitatorMock, TEST_TRANSACTION } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 /**
@@ -20,8 +20,9 @@ beforeAll(() => {
  * CARRIES the inputs, and 2026-08-07 proved buyers retry. A spent
  * nonce whose delivery intent is still open means money moved and
  * goods never left: the gate runs the handler on the retry's own
- * inputs, charges nothing, closes the intent. A spent nonce whose
- * intent is closed stays the refusal it always was.
+ * inputs, charges nothing, closes the intent. Checkpointed goods can
+ * also be retrieved after delivery closed; legacy certificate-only
+ * records still leave the obligation open.
  */
 
 async function challengeAndSign(item: string): Promise<string> {
@@ -81,7 +82,7 @@ describe("the paid retry", () => {
     expect(await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(tx))).toBeNull();
   });
 
-  it("keeps delivery open when only the certificate can be recovered", async () => {
+  it("keeps legacy delivery open when only the certificate can be recovered", async () => {
     // A real purchase start to finish: cert mints, intent closes.
     const header = await challengeAndSign("small_blessing");
     const paid = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
@@ -90,13 +91,19 @@ describe("the paid retry", () => {
     expect(paid.status).toBe(200);
     const firstBody = (await paid.json()) as Record<string, any>;
 
-    // Now the counterfactual crash: REOPEN the intent for the same
-    // settle, as if the response had died after the mint.
+    // Model a pre-checkpoint purchase: only the certificate survived.
+    // A modern purchase also retains the actual text and is recoverable.
+    const transaction = firstBody.certificate.settlement_tx as string;
+    const namespace = testEnv.PAID_RECOVERIES!;
+    await runInDurableObject(namespace.get(namespace.idFromName(`${firstBody.certificate.network}:${transaction}`)),
+      async (_instance, state) => state.storage.deleteAll());
+    const settlesBefore = facilitator.settleCalls;
+    // Reopen the delivery obligation as if the response died after minting.
     await testEnv.ORDERS.put(
-      KV_KEYS.deliveryIntent(TEST_TRANSACTION),
+      KV_KEYS.deliveryIntent(transaction),
       JSON.stringify({
         path: "/api/buy/small_blessing",
-        transaction: TEST_TRANSACTION,
+        transaction,
         paid_usdc: 1,
         settled_at: new Date().toISOString(),
       }),
@@ -105,6 +112,7 @@ describe("the paid retry", () => {
       headers: { "PAYMENT-SIGNATURE": header },
     });
     expect(retry.status).toBe(500);
+    expect(facilitator.settleCalls).toBe(settlesBefore);
     expect(retry.headers.get("Paid-Retry")).toBe("incomplete");
     const body = (await retry.json()) as Record<string, any>;
     // A blessing's purchased text is not recoverable from its certificate.
@@ -114,23 +122,26 @@ describe("the paid retry", () => {
     expect(body.certificate_id).toBe(firstBody.certificate.cert_id);
     expect(body.verify_url).toContain(firstBody.certificate.cert_id);
     expect(
-      await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(TEST_TRANSACTION)),
+      await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(transaction)),
     ).not.toBeNull();
   });
 
-  it("still refuses a spent nonce whose goods went out (intent closed)", async () => {
+  it("retrieves the same good after delivery closed without another charge", async () => {
     const header = await challengeAndSign("hello");
     const paid = await SELF.fetch(`${BASE}/api/buy/hello`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
     expect(paid.status).toBe(200);
-    // Delivered and closed; the same authorization again is a replay.
+    const original = await paid.json();
+    const settlesBefore = facilitator.settleCalls;
+    // A lost response is recoverable even when delivery already closed.
     const replay = await SELF.fetch(`${BASE}/api/buy/hello`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(replay.status).toBe(402);
-    const body = (await replay.json()) as Record<string, any>;
-    expect(body.error).toContain("through this till once already");
+    expect(replay.status).toBe(200);
+    expect(replay.headers.get("Paid-Retry")).toBe("true");
+    expect(await replay.json()).toEqual(original);
+    expect(facilitator.settleCalls).toBe(settlesBefore);
   });
 
   it("refuses a spent nonce aimed at a DIFFERENT item than the money bought", async () => {
