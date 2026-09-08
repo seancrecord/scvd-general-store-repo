@@ -172,3 +172,11 @@ This extends BUY-017/034/037 recovery without closing the parent findings. Inven
 - [x] Preserve the legacy certificate-only failure case by removing its artifact journal, leaving the actual purchased text unavailable; assert that the delivery obligation stays open and no second settlement occurs.
 
 Both GitHub runs and the local reproduction failed the same 21 assertions across ten files. Those files now pass all 86 cases; the final combined gate passed 445 cases across 19 files, including checkpoint recovery, wrong-input/owner controls, legacy recovery, receipts and duplicate protection. Typecheck passed. This repairs the test integration for simple instant recovery; it changes no production payment safeguards and closes no additional parent buyer finding. Full CI remains delegated to GitHub.
+
+## 2026-09-08 — payment fixture hook compatibility / PR #562
+
+- [x] Restore the argument-free `installFacilitatorMock` entry point used directly by ten Vitest setup hooks; expose the distinct-transaction setup through a separate argument-free installer. Keep the existing hook callers unchanged.
+
+The preceding repair removed the 21 payment assertion failures, but its optional helper parameter was interpreted by Vitest as a fixture dependency. Both GitHub runs failed the same ten setup hooks, preventing 124 tests from running; the local reproduction confirmed all ten failures. This is a test API compatibility repair, not a production payment change or closure of another buyer finding.
+
+After the compatibility repair, all 244 tests across the 26 affected/adjacent files passed, with no skipped cases; typecheck passed. Full CI remains on GitHub.

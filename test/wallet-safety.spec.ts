@@ -1,7 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { privateKeyToAccount } from "viem/accounts";
-import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -14,9 +14,9 @@ import { isRecord } from "@/types";
 const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 beforeAll(() => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 /**

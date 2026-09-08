@@ -3,16 +3,16 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { getSpentNonce } from "@/lib/replay-guard";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 import {
-  installFacilitatorMock,
+  installMultiPurchaseFacilitatorMock,
 } from "./helpers/facilitator-mock";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 beforeAll(() => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 /**

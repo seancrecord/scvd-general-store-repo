@@ -3,14 +3,14 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 
 beforeAll(() => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 const CV_WALLET = HOUSE_WALLET_FILE.wallets.find(

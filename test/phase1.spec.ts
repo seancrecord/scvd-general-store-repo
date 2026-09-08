@@ -8,7 +8,7 @@ import {
   duplicatelyShelvedItemIds,
   unshelvedItemIds,
 } from "@/lib/mcp-tools";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -27,7 +27,7 @@ const adminAuth = {
 };
 
 beforeAll(() => {
-  installFacilitatorMock({ uniqueTransactions: true });
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

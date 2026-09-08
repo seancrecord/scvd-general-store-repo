@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { MENU_ITEMS } from "@/store";
@@ -8,7 +8,7 @@ import { MENU_ITEMS } from "@/store";
 const BASE = "https://scvd.store";
 
 beforeAll(() => {
-  installFacilitatorMock({ uniqueTransactions: true });
+  installMultiPurchaseFacilitatorMock();
 });
 
 /**

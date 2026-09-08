@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { JCS_DUAL_EMIT_DATED, jcsCanonicalize, signJcs } from "@/lib/jcs";
 import { verifyMessageSignature } from "@/lib/signing";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
@@ -75,10 +75,10 @@ describe("the RFC 8785 canonicalizer", () => {
   });
 });
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 
 beforeAll(() => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 async function buy(path: string): Promise<Record<string, any>> {

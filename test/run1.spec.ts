@@ -5,7 +5,7 @@ import { renderPatronBadge } from "@/services/badge-svg";
 import { replyToLetter } from "@/services/letters";
 import { seasonEntry, signForAddress } from "@/services/zodiac";
 import { ZODIAC_SIGNS } from "@/store/zodiac";
-import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
 import { markKeeperPresent } from "./helpers/keeper";
 import {
   buildPaymentSignature,
@@ -22,7 +22,7 @@ const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
 beforeAll(async () => {
-  installFacilitatorMock({ uniqueTransactions: true });
+  installMultiPurchaseFacilitatorMock();
   await markKeeperPresent(testEnv);
 });
 

@@ -55,10 +55,10 @@ describe("additional checkout rails are explicitly enabled and independently acc
 
 describe("the SDK-backed gate can quote, deliver and receipt both new rails", () => {
   it("preserves the selected network all the way into the receipt and certificate", async () => {
-    const { installFacilitatorMock } = await import("./helpers/facilitator-mock");
+    const { installMultiPurchaseFacilitatorMock } = await import("./helpers/facilitator-mock");
     const { decodePaymentRequired, buildPaymentSignature } = await import("./helpers/payment");
     const { app } = await import("@/index");
-    const facilitator = installFacilitatorMock({ uniqueTransactions: true });
+    const facilitator = installMultiPurchaseFacilitatorMock();
     const original = globalThis.fetch;
     vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;

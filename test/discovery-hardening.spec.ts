@@ -4,7 +4,7 @@ import { renderPatronBadge } from "@/services/badge-svg";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
 import {
-  installFacilitatorMock,
+  installMultiPurchaseFacilitatorMock,
   type FacilitatorMockState,
 } from "./helpers/facilitator-mock";
 import { markKeeperPresent } from "./helpers/keeper";
@@ -24,7 +24,7 @@ const BASE = "https://scvd.store";
 let facilitator: FacilitatorMockState;
 
 beforeAll(async () => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
   await markKeeperPresent(testEnv);
 });
 

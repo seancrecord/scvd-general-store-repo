@@ -2,15 +2,15 @@ import { SELF, env, runInDurableObject } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 beforeAll(() => {
-  facilitator = installFacilitatorMock({ uniqueTransactions: true });
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 /**

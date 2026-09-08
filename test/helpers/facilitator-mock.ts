@@ -142,9 +142,17 @@ function findNonce(value: unknown): string | null {
   return null;
 }
 
-export function installFacilitatorMock(
-  options: { uniqueTransactions?: boolean } = {},
-): FacilitatorMockState {
+// Keep both installers argument-free: existing specs pass the original directly
+// to beforeAll, whose parameters Vitest interprets as fixture dependencies.
+export function installFacilitatorMock(): FacilitatorMockState {
+  return createFacilitatorMock(false);
+}
+
+export function installMultiPurchaseFacilitatorMock(): FacilitatorMockState {
+  return createFacilitatorMock(true);
+}
+
+function createFacilitatorMock(uniqueTransactions: boolean): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
@@ -266,7 +274,7 @@ export function installFacilitatorMock(
       // Older single-transaction fixtures name TEST_TRANSACTION explicitly.
       // Multi-purchase walks need separate chain identities: the artifact journal
       // correctly rejects using one transaction to buy different goods.
-      const transaction = options.uniqueTransactions
+      const transaction = uniqueTransactions
         ? `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, "0")).join("")}`
         : TEST_TRANSACTION;
       state.settledTransactions.push(transaction);
