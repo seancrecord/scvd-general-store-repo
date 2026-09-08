@@ -71,6 +71,7 @@ joins or leaves.
 | [mcp-marketplace.io](https://mcp-marketplace.io/server/store-scvd-general-store) | support@mcp-marketplace.io |
 | [mcp.so](https://mcp.so/servers/scvd-store) | — |
 | [MCPBeat](https://mcpbeat.com/mcp-servers/scvd/general-store/) | — |
+| [MCPFind](https://mcpfind.org/servers/store-scvd-general-store) | — |
 | [mcpindex.ai](https://mcpindex.ai/server/store-scvd-general-store) | hello@mcpindex.ai |
 | [MCPmarket](https://mcpmarket.com/server/sean-claude-van-damme-s-general-store) | — |
 | [mcppedia](https://mcppedia.org/s/store-scvd-general-store) | https://mcppedia.org/about |
@@ -91,7 +92,7 @@ joins or leaves.
 | [Sentinel Global Check](https://sentinel.rootstuff.io) | https://sentinel.rootstuff.io/about |
 | [Sentinel-01](https://mungi.qd.je/v1/x402-audit/preview) | — |
 | [signal402](https://signal402.com/services/scvd-store) | — |
-| [skills.sh](https://skills.sh/seancrecord/scvd-general-store-repo) | — |
+| [skills.sh](https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store) | — |
 | [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store) | support@smithery.ai |
 | [socketcat](https://socketcat.com/servers/store.scvd/general-store) | https://socketcat.com/blueprints?category=support |
 | [Sourcey Startup Review](https://sourcey.com) | https://sourcey.com/catalog/creatorsuite/offers/annual-plan-discount-and-support |

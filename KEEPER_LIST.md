@@ -997,9 +997,13 @@ Do not relitigate without you.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
-- **skills.sh.** LOOK:
-  https://skills.sh/seancrecord/scvd-general-store-repo
-  — render or 404? Index lag, not a missing file.
+- **skills.sh and MCPFind.** DONE 2026-09-08: the keeper supplied
+  both listing URLs; live reads confirmed the named skill and server.
+  Skills: https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store
+  (the old repo-only URL omitted the skill). MCPFind:
+  https://mcpfind.org/servers/store-scvd-general-store.
+  Recorded in the trust signals and distribution docs; indexing
+  only, not an endorsement or proof of purchases.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.
