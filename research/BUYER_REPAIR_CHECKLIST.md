@@ -15,6 +15,12 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 - [x] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — human-purchase repair complete: checkpointed orders reconstruct; authentic legacy orders return their original work; irrecoverable briefs require a durable signed resolution backed by completed original work or a finalized full refund. This is a tested repair and manual-resolution mechanism, not a claim that production customers have been refunded. See the resolution evidence below.
 - [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial: HTTP and both MCP profiles recover the checked product families from authenticated purchase records. Uncheckpointed products and older purchases missing original input/evidence bindings remain open.
 
+## How to read progress
+
+The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
+
+The two remaining recovery parents need a product-by-product finish line. Existing complete coverage is named by `supportsArtifactRecovery()` in `src/lib/artifact-checkpoint.ts`. Partial progress and CI repairs must stay visible without counting either as a fully closed buyer finding. A 2026-09-08 snapshot derived from `MENU_ITEMS.filter(supportsArtifactRecovery)` admits 18 of the 33 current catalogue products to artifact recovery. That is implementation coverage, not a claim that all historical obligations or non-catalogue commissions are resolved; the open parents retain those limits.
+
 ## Recovery SEV-1 status
 
 The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
@@ -336,3 +342,11 @@ All 231 new cases were observed failing with the production fixes removed. The f
 - [x] Derive synthetic Solana subject identities from the purchase canary digest instead of passing random bytes into the Base58 encoder. CodeQL traced those two fixture calls into the codec's radix arithmetic; production encoding, payment signatures and the security check remain unchanged.
 
 The rebased fixture gate passed all 231 cases. The full local suite passed all 591 files: 7,870 tests passed with one existing conditional key-continuity skip (822.56 seconds). Typecheck, both Worker dry-run builds and the separate A2A/Tab/till/Action/example/package/audit/claims/docs checks passed. The remote CodeQL result must be checked on the new commit; this record does not mark it green in advance.
+
+## 2026-09-08 — PR #583 security-check fixture repair
+
+- [x] Replace random-byte synthetic Solana transaction IDs with deterministic canary digests. CodeQL followed the fixture data through reversible Base58 radix arithmetic; no secret is sampled or reduced here. Production encoding and the security check remain unchanged.
+
+The same fixture pattern had already been corrected for #578 and was reintroduced in the new resolution spec. That repetition was avoidable. The existing refund success, wrong-recipient/token/amount/chain, finality and failure controls remain the behavioral gate. Remote CodeQL must pass on the corrected commit before this PR can merge.
+
+Final local validation of the fixture correction: typecheck and all 599 test files passed, with 8,177 passing tests and one existing skip (894.53 seconds). No production source changed in this correction.

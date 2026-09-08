@@ -41,9 +41,14 @@ beforeAll(() => {
     return Response.json({ jsonrpc: "2.0", id: body.id, result });
   });
 });
+let caseNumber = 0;
 async function seed() {
-  const transaction = encodeBase58(crypto.getRandomValues(new Uint8Array(64)));
-  const refund = encodeBase58(crypto.getRandomValues(new Uint8Array(64)));
+  // These are public fixture identifiers, not generated secrets or sampled digits.
+  const canary = `human-resolution-${++caseNumber}`;
+  const signature = async (label: string) => encodeBase58(new Uint8Array(
+    await crypto.subtle.digest("SHA-512", new TextEncoder().encode(`${canary}:${label}`))));
+  const transaction = await signature("payment");
+  const refund = await signature("refund");
   const intent = { path: "/api/buy/aura_walk", transaction, payer, paid_usdc: getMenuItem("aura_walk")!.price_usdc,
     settled_at: "2026-09-04T12:00:00.000Z" };
   evidence = { original: transaction, refund, amount: intent.paid_usdc };
