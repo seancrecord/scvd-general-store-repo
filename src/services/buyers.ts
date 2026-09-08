@@ -1,6 +1,6 @@
 import { canonicalAddress } from "@/lib/addresses";
 import { isHouseWallet } from "@/lib/channel";
-import { readDeclines, type DeclineRow } from "@/lib/declines";
+import { isNoiseFloor, readDeclines, type DeclineRow } from "@/lib/declines";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
@@ -158,7 +158,11 @@ export async function readBuyers(env: Env): Promise<BuyersReport> {
 
   const turned = new Map<string, TurnedAway>();
   for (const row of declines.declines as DeclineRow[]) {
-    if (row.house) continue;
+    // "Turned away" means a buyer was. Machinery the store already
+    // names as the noise floor walks more doors than any customer, so
+    // left in it sorts straight to the top of this list and reads as
+    // the store's biggest lost sale.
+    if (isNoiseFloor(row)) continue;
     const ua = row.user_agent ?? "(no user-agent)";
     const entry = turned.get(ua) ?? { user_agent: ua, declines: 0, items: {}, reasons: {}, last: row.at };
     entry.declines += 1;
