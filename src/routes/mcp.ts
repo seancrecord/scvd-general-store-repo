@@ -48,6 +48,7 @@ import { factBlockText } from "@/lib/listing-spec";
  */
 import {
   checkPurchaseArgs,
+  checkPurchaseAvailability,
   purchaseInputFrom,
   refusalCode,
   refusalMessage,
@@ -790,7 +791,7 @@ async function callPurchaseTool(
    * should say so before it hands you an offer to sign.
    */
   const missing = missingRequiredInputs(item, args);
-  const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args));
+  const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args), { deferAvailability: true });
   if (refusal) {
     const paying = paymentMeta !== undefined && paymentMeta !== null;
     /**
@@ -892,6 +893,8 @@ async function callPurchaseTool(
       }
     : undefined;
   const admitPurchase = async () => {
+    const setup = await checkPurchaseAvailability(c.env, item, toolArgs(args));
+    if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: setup.body };
     const remaining = await remainingInventory(c.env, item);
     if (remaining !== null && remaining <= 0) return {
       code: "sold_out",

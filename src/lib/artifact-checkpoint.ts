@@ -46,7 +46,7 @@ export function supportsSimpleInstantRecovery(item: MenuItem): boolean {
 export function supportsObservationRecovery(item: MenuItem | undefined): boolean {
   return !!item && [
     "settlement_attestation", "attestation_bundle", "service_audit",
-    "good_buyer", "signature_agent_card", "onpage_audit",
+    "good_buyer", "signature_agent_card", "onpage_audit", "a2a_repair_kit",
   ].includes(item.id);
 }
 
