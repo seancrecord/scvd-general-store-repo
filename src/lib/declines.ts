@@ -2,6 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
+import { isInfrastructureUserAgent } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 
 /**
@@ -73,11 +74,26 @@ export interface DeclineReport {
   /** True when the index was read to its end: the declines it holds are ALL of them, cap or no cap. */
   index_complete: boolean;
   declines: DeclineRow[];
-  /** Outside declines only — the house testing is not a lost sale. */
+  /**
+   * Declines that measure INTENT: not the house, and not the noise
+   * floor. See isNoiseFloor — a crawler refused at a door it was
+   * never going to pay is not a lost sale, and counting it as one
+   * puts a number on this page that the funnel already knows to
+   * throw away.
+   */
   outside_count: number;
   /** Distinct outside clients that ever hit a decline. */
   outside_clients: string[];
-  /** Reason string -> how many times, outside only. */
+  /**
+   * Declines from clients the store's OWN user-agent table already
+   * calls machinery. Counted and shown, never mixed into
+   * outside_count: the noise floor is a fact about the porch, not a
+   * buyer who could not get through.
+   */
+  infrastructure_count: number;
+  /** Distinct infrastructure clients that ever hit a decline. */
+  infrastructure_clients: string[];
+  /** Reason string -> how many times, intent-bearing declines only. */
   by_reason: Record<string, number>;
   /**
    * Declines recorded with no reason attached. The verify-side reason
@@ -466,6 +482,40 @@ export function readReason(raw: string): {
   };
 }
 
+/**
+ * A DECLINE THAT IS NOT A LOST SALE (2026-09-08).
+ *
+ * The desk shipped with one exclusion — the house — and read
+ * everything else as intent: "somebody opened a wallet at our door
+ * and did not get through". Six rows proved that too generous. Both
+ * clients behind them were already on the store's own noise-floor
+ * table: x402-conformance-monitor/0.1 matches "monitor",
+ * vet402-observatory-l1/1.0 matches "observatory", and one of them
+ * writes "no-wallet; no-payment" into its user-agent. The store
+ * classified them as machinery at the door and the desk reported
+ * them back as demand.
+ *
+ * The funnel has always drawn this line (services/funnel.ts skips
+ * `event.house || event.channel === "infrastructure"`). The decline
+ * desk carried the channel on every row and never read it. It does
+ * now, and it reads the SAME two facts the funnel does.
+ *
+ * The user-agent is re-checked beside the stored channel on purpose:
+ * a row booked before a user-agent was promoted to the table carries
+ * the old verdict forever, and the table is the law, not the row.
+ */
+export function isNoiseFloor(row: {
+  house: boolean;
+  channel: string;
+  user_agent?: string;
+}): boolean {
+  return (
+    row.house ||
+    row.channel === "infrastructure" ||
+    isInfrastructureUserAgent(row.user_agent)
+  );
+}
+
 /** Walks the raw rows newest-first and reads every decline. */
 export async function readDeclines(
   env: Env,
@@ -479,10 +529,13 @@ export async function readDeclines(
     declines: [],
     outside_count: 0,
     outside_clients: [],
+    infrastructure_count: 0,
+    infrastructure_clients: [],
     by_reason: {},
     unspecified: 0,
   };
   const clients = new Set<string>();
+  const machines = new Set<string>();
   const seen = new Set<string>();
 
   /** One decline row, folded into the report. Deduped: the index and the raw stream both carry it. */
@@ -512,14 +565,25 @@ export async function readDeclines(
       house: event.house,
     });
 
-    if (!event.house) {
-      report.outside_count += 1;
-      report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
-      clients.add(event.user_agent ?? "(no user-agent)");
-      if (bare === "unspecified") {
-        report.unspecified += 1;
-      }
+    if (event.house) {
+      return;
     }
+    const who = event.user_agent ?? "(no user-agent)";
+    // Counted across BOTH columns on purpose. A lost reason measures
+    // the instrument, not the client: the nonce join drops it just as
+    // easily on a prober's row, and scoping this to intent-bearing
+    // rows would let the desk look healthy while it was losing them.
+    if (bare === "unspecified") {
+      report.unspecified += 1;
+    }
+    if (isNoiseFloor(event)) {
+      report.infrastructure_count += 1;
+      machines.add(who);
+      return;
+    }
+    report.outside_count += 1;
+    report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
+    clients.add(who);
   };
 
   /**
@@ -587,6 +651,7 @@ export async function readDeclines(
   // Two sources, one order: newest first, as the desk has always shown them.
   report.declines.sort((a, b) => b.at.localeCompare(a.at));
   report.outside_clients = [...clients];
+  report.infrastructure_clients = [...machines];
   return report;
 }
 
