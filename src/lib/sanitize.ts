@@ -30,15 +30,24 @@ export const NAME_CAP = 80;
  * written before this existed are already on the wall, and no amount of
  * input hygiene reaches back for them.
  */
-export function scrubBrokenText(input: string): string {
+/**
+ * The broken-encoding scrub ALONE, with no opinion about whitespace —
+ * lone surrogates and replacement characters out, everything else as
+ * written. Split out of `scrubBrokenText` on 2026-09-08 so prose can
+ * be cleaned without being flattened; `scrubBrokenText` keeps its own
+ * behaviour exactly, built on this.
+ */
+function scrubBrokenChars(input: string): string {
   return input
     .replace(/[\uFFFD\uFFFE\uFFFF]/g, "")
     .replace(
       /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,
       "",
-    )
-    .replace(/\s+/g, " ")
-    .trim();
+    );
+}
+
+export function scrubBrokenText(input: string): string {
+  return scrubBrokenChars(input).replace(/\s+/g, " ").trim();
 }
 
 export function sanitizeText(input: unknown, maxLength: number): string {
@@ -51,6 +60,51 @@ export function sanitizeText(input: unknown, maxLength: number): string {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, maxLength);
+}
+
+/**
+ * PROSE, READ RATHER THAN TRIMMED (2026-09-08).
+ *
+ * `sanitizeText` ends in `.slice(0, maxLength)`, which is right for a
+ * name or a note — a field with a shape, where a caller who sends
+ * more than fits sent the wrong thing. It is wrong for anything a
+ * stranger WROTE, and the mailbox proved it: a letter over the cap
+ * was cut in half and stored, and the door still answered 201. The
+ * keeper's own reply had asked a correspondent to deliver a report
+ * that way, so the next thing through that door would have arrived
+ * two-thirds long, with nothing marking the cut on either side.
+ *
+ * This reads instead of cutting: the caller is handed the cleaned
+ * text and told whether it fits, and decides. Nothing is ever
+ * silently dropped.
+ *
+ * IT ALSO KEEPS THE LINE BREAKS. `sanitizeText` collapses every run
+ * of whitespace to one space, which turns a report into a paragraph
+ * and a JSON body into a single line. Runs of spaces and tabs still
+ * collapse; newlines survive, with a blank line the most anyone gets.
+ */
+export interface ProseRead {
+  /** The cleaned text, in full. Never truncated. */
+  text: string;
+  /** Its length after cleaning — what to tell a sender who ran over. */
+  length: number;
+  /** True when it will not fit the cap it was read against. */
+  over: boolean;
+}
+
+export function readProse(input: unknown, maxLength: number): ProseRead {
+  if (typeof input !== "string") {
+    return { text: "", length: 0, over: false };
+  }
+  const text = scrubBrokenChars(input)
+    .replace(/<[^>]*>/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[^\S\n]+/g, " ")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return { text, length: text.length, over: text.length > maxLength };
 }
 
 /** Escape for safe interpolation into HTML and SVG documents. */

@@ -2,9 +2,15 @@ import { listKeys } from "@/lib/kv-list";
 import { newLetterId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
-import { sanitizeText } from "@/lib/sanitize";
+import { readProse, sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
-import type { Env, LetterRecord, LetterReply, LetterStatus } from "@/types";
+import type {
+  Env,
+  LetterFollowUp,
+  LetterRecord,
+  LetterReply,
+  LetterStatus,
+} from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 
@@ -16,7 +22,20 @@ import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
  * The public sees only two numbers: received and answered.
  */
 
-export const LETTER_CAP = 2000;
+/**
+ * How long a letter may run. ⚑ keeper dial.
+ *
+ * RAISED FROM 2000 ON 2026-09-08, because the keeper's own reply had
+ * just invited a correspondent to deliver a five-endpoint report with
+ * response hashes through this door, and 2000 characters does not
+ * hold one. The box is still small on purpose — this is a mailbox,
+ * not a manuscript drawer — but it now fits the thing the store asks
+ * people to put in it.
+ */
+export const LETTER_CAP = 8000;
+
+/** How many times a correspondent may add to one letter. ⚑ keeper dial. */
+export const LETTER_FOLLOW_UP_CAP = 20;
 
 export interface SubmitLetterInput {
   letter: unknown;
@@ -29,14 +48,35 @@ export interface SubmittedLetter {
   pickupUrl: string;
 }
 
+/**
+ * WHAT THE DOOR DECIDED, said out loud (2026-09-08). This used to
+ * return `null` for both "you sent nothing" and — never, because the
+ * over-long case did not exist: `sanitizeText` cut the letter to fit
+ * and the door answered 201 over the top of it. A caller cannot tell
+ * a sender what went wrong with a value that does not distinguish.
+ */
+export type LetterSubmission =
+  | { ok: true; record: LetterRecord; pickupUrl: string }
+  | { ok: false; reason: "empty" }
+  | { ok: false; reason: "too_long"; length: number; cap: number };
+
 export async function submitLetter(
   env: Env,
   input: SubmitLetterInput,
-): Promise<SubmittedLetter | null> {
-  const letter = sanitizeText(input.letter, LETTER_CAP);
-  if (!letter) {
-    return null;
+): Promise<LetterSubmission> {
+  const read = readProse(input.letter, LETTER_CAP);
+  if (!read.text) {
+    return { ok: false, reason: "empty" };
   }
+  if (read.over) {
+    return {
+      ok: false,
+      reason: "too_long",
+      length: read.length,
+      cap: LETTER_CAP,
+    };
+  }
+  const letter = read.text;
   const record: LetterRecord = {
     letter_id: newLetterId(),
     letter,
@@ -57,8 +97,74 @@ export async function submitLetter(
   await kvPut(env.ORDERS, KV_KEYS.letterById(record.letter_id), queueKey);
   await bumpCounter(env, KV_KEYS.lettersReceived);
   return {
+    ok: true,
     record,
     pickupUrl: `${env.STORE_BASE_URL}/api/letter/${record.letter_id}`,
+  };
+}
+
+/**
+ * THE CORRESPONDENT WRITES BACK, on the same letter (2026-09-08).
+ *
+ * Answering used to be one sentence each way. The keeper got a thread
+ * the same day this shipped; without this, the other half of the
+ * conversation still arrived as unrelated letters, one a day, with
+ * nothing on them saying which exchange they belonged to.
+ *
+ * THE DOOR OPENS ONLY AFTER HE ANSWERS. An unanswered letter takes no
+ * follow-ups: otherwise this is an unmetered write channel into the
+ * keeper's queue, and the daily limit on new letters would mean
+ * nothing. Once he has replied he has invited the reply, so a
+ * follow-up is not rationed by the day — a correspondent working to a
+ * deadline can confirm a scope and deliver against it the same
+ * afternoon — and is bounded per letter instead.
+ */
+export type FollowUpResult =
+  | { ok: true; record: LetterRecord; pickupUrl: string }
+  | { ok: false; reason: "empty" }
+  | { ok: false; reason: "too_long"; length: number; cap: number }
+  | { ok: false; reason: "no_such_letter" }
+  | { ok: false; reason: "unanswered" }
+  | { ok: false; reason: "full"; cap: number };
+
+export async function addFollowUp(
+  env: Env,
+  letterId: string,
+  letter: unknown,
+): Promise<FollowUpResult> {
+  const record = await getLetter(env, letterId);
+  if (!record) {
+    return { ok: false, reason: "no_such_letter" };
+  }
+  if (letterThread(record).length === 0) {
+    return { ok: false, reason: "unanswered" };
+  }
+  const existing = record.follow_ups ?? [];
+  if (existing.length >= LETTER_FOLLOW_UP_CAP) {
+    return { ok: false, reason: "full", cap: LETTER_FOLLOW_UP_CAP };
+  }
+  const read = readProse(letter, LETTER_CAP);
+  if (!read.text) {
+    return { ok: false, reason: "empty" };
+  }
+  if (read.over) {
+    return {
+      ok: false,
+      reason: "too_long",
+      length: read.length,
+      cap: LETTER_CAP,
+    };
+  }
+  const entry: LetterFollowUp = {
+    letter: read.text,
+    date: new Date().toISOString(),
+  };
+  record.follow_ups = [...existing, entry];
+  await saveLetter(env, letterId, record);
+  return {
+    ok: true,
+    record,
+    pickupUrl: `${env.STORE_BASE_URL}/api/letter/${letterId}`,
   };
 }
 
@@ -230,7 +336,52 @@ export async function letterCounts(env: Env): Promise<LetterCounts> {
  * in the box, visible, out of the count.
  */
 export function letterNeedsReply(record: LetterRecord): boolean {
-  return record.status === "received" || record.status === "read";
+  const thread = letterThread(record);
+  if (thread.length === 0) {
+    return record.status === "received" || record.status === "read";
+  }
+  /*
+   * AND IT IS WORK AGAIN THE MOMENT THEY WRITE BACK (2026-09-08).
+   * Once the correspondent could add to a letter, "answered" stopped
+   * meaning "finished": a follow-up that arrived after the last reply
+   * is a question sitting unanswered in a letter the counter had
+   * already stopped mentioning. The last word decides — his, and it
+   * rests; theirs, and it is his turn.
+   */
+  const lastReply = thread[thread.length - 1]?.replied_at ?? "";
+  return (record.follow_ups ?? []).some((entry) => entry.date > lastReply);
+}
+
+/** One side's turn in a letter, for the keeper's box. */
+export type LetterEvent =
+  | { at: string; who: "them"; text: string }
+  | { at: string; who: "keeper"; text: string };
+
+/**
+ * THE WHOLE EXCHANGE IN ORDER, both sides — what the admin box shows.
+ * Built from the record rather than stored, so a letter from any era
+ * reads the same: the original, the keeper's answers, and the
+ * correspondent's later messages, interleaved by their own clocks.
+ */
+export function letterEvents(record: LetterRecord): LetterEvent[] {
+  const events: LetterEvent[] = [
+    { at: record.date, who: "them", text: record.letter },
+    ...(record.follow_ups ?? []).map(
+      (entry): LetterEvent => ({
+        at: entry.date,
+        who: "them",
+        text: entry.letter,
+      }),
+    ),
+    ...letterThread(record).map(
+      (entry): LetterEvent => ({
+        at: entry.replied_at,
+        who: "keeper",
+        text: entry.reply,
+      }),
+    ),
+  ];
+  return events.sort((a, b) => a.at.localeCompare(b.at));
 }
 
 /** For the Sunday digest: letters the keeper hasn't read yet. */

@@ -1128,6 +1128,23 @@ export interface LetterReply {
 }
 
 /**
+ * A LATER MESSAGE FROM THE CORRESPONDENT, on the same letter
+ * (2026-09-08). The keeper got a thread the same day; the visitor
+ * did not, and every message they sent minted a fresh letter_id that
+ * arrived in the queue with nothing tying it to the conversation it
+ * belonged to. A follow-up hangs on the letter it answers.
+ *
+ * UNTRUSTED, and tied to the original by POSSESSION OF THE PICKUP ID
+ * and nothing else — the same key that already lets a holder read the
+ * keeper's reply. The admin box says so rather than implying these
+ * came from the person who wrote first.
+ */
+export interface LetterFollowUp {
+  letter: string;
+  date: string;
+}
+
+/**
  * A letter in the Mailbox. Private correspondence: admin queue only,
  * never published, never rendered on any public surface. Stored raw;
  * shown to the keeper escaped.
@@ -1147,6 +1164,8 @@ export interface LetterRecord {
    * one-reply thread it is.
    */
   replies?: LetterReply[];
+  /** The correspondent's later messages on this letter, oldest first. */
+  follow_ups?: LetterFollowUp[];
   /**
    * THE FIRST REPLY, PINNED (2026-09-08). These four fields were the
    * whole reply until the thread existed, and a correspondent may

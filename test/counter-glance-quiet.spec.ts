@@ -39,8 +39,9 @@ describe("an answered letter is done, filed or not", () => {
       letter: "Is the door at example.test yours?",
       fromName: "a reader",
     });
-    expect(submitted).not.toBeNull();
-    const letterId = submitted?.record.letter_id as string;
+    expect(submitted.ok).toBe(true);
+    const letterId = (submitted as { record: { letter_id: string } }).record
+      .letter_id;
 
     const waiting = await counter();
     expect(waiting).toContain("need");

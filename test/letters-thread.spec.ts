@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { KV_KEYS, invertedTimestamp } from "@/lib/kv-keys";
 import { verifyMessageSignature } from "@/lib/signing";
 import {
+  LETTER_CAP,
+  LETTER_FOLLOW_UP_CAP,
+  letterNeedsReply,
   letterThread,
   replyToLetter,
   setLetterStatus,
@@ -177,5 +180,147 @@ describe("the keeper can write twice, and the first answer never moves", () => {
       "The old single answer.",
       "And the answer that came later.",
     ]);
+  });
+});
+
+
+/**
+ * THE OTHER HALF OF THE CONVERSATION (2026-09-08).
+ *
+ * Written after reading how the box was actually used: an autonomous
+ * agent proposed a piece of work, the keeper accepted a scope and
+ * asked for the report to be delivered here, and three things stood
+ * between that and a delivered report — the door cut anything over
+ * the cap and said 201, every message the agent sent minted an
+ * unrelated letter, and the daily refusal told software to come back
+ * "tomorrow" without saying when that was.
+ */
+describe("a letter is a conversation, and nothing in it is quietly dropped", () => {
+  it("refuses an over-long letter whole, naming the length, storing nothing", async () => {
+    const before = Number(
+      (await testEnv.COUNTERS.get(KV_KEYS.lettersReceived)) ?? "0",
+    );
+    const response = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        letter: "x".repeat(LETTER_CAP + 500),
+        from_name: "Over Cap",
+      }),
+    });
+    expect(response.status).toBe(413);
+    const body = (await response.json()) as Record<string, unknown>;
+    // The sender is told what actually happened and can act on it.
+    expect(body["length"]).toBe(LETTER_CAP + 500);
+    expect(body["cap"]).toBe(LETTER_CAP);
+    expect(String(body["error"])).toContain("Nothing was stored");
+    // And nothing was: no half-letter in the box, no count moved.
+    expect(
+      Number((await testEnv.COUNTERS.get(KV_KEYS.lettersReceived)) ?? "0"),
+    ).toBe(before);
+  });
+
+  it("keeps the line breaks a report is written with", async () => {
+    const report = "door 1: ready\ndoor 2: not_ready\n\nhash: abc123";
+    const letterId = await postLetter("Line Breaks", report);
+    const stored = (await testEnv.ORDERS.get(
+      (await testEnv.ORDERS.get(KV_KEYS.letterById(letterId))) as string,
+      "json",
+    )) as LetterRecord;
+    // Flattening this is what turned a delivered report into a paragraph.
+    expect(stored.letter).toBe(report);
+  });
+
+  it("says when the box reopens instead of saying tomorrow", async () => {
+    await postLetter("Twice Today", "The first of the day.");
+    const second = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        letter: "The second of the day.",
+        from_name: "Twice Today",
+      }),
+    });
+    expect(second.status).toBe(429);
+    // Machine-readable both ways: an agent should never have to parse
+    // the word "tomorrow" out of an apology.
+    const retryAfter = Number(second.headers.get("Retry-After"));
+    expect(retryAfter).toBeGreaterThan(0);
+    expect(retryAfter).toBeLessThanOrEqual(86400);
+    const body = (await second.json()) as Record<string, unknown>;
+    const reopens = new Date(String(body["next_letter_at"]));
+    expect(reopens.getTime()).toBeGreaterThan(Date.now());
+    expect(reopens.toISOString()).toContain("T00:00:00.000Z");
+  });
+
+  it("hangs a follow-up on the answered letter, past the daily limit, and puts it back on the keeper", async () => {
+    const letterId = await postLetter("Follow Up", "Are you commissioning work?");
+
+    // Before he answers there is no thread to add to — otherwise this
+    // is an unmetered write channel into his queue.
+    const early = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ letter: "Anything?", in_reply_to: letterId }),
+    });
+    expect(early.status).toBe(409);
+    expect(String(((await early.json()) as Record<string, unknown>)["error"]))
+      .toContain("no answer yet");
+
+    await replyToLetter(testEnv, letterId, "Yes. Here is the scope.");
+
+    // Now it opens — and the same correspondent, already at their one
+    // letter for the day, gets through without waiting.
+    const added = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        letter: "Accepted. Report below.",
+        from_name: "Follow Up",
+        in_reply_to: letterId,
+      }),
+    });
+    expect(added.status).toBe(200);
+    const addedBody = (await added.json()) as Record<string, unknown>;
+    // Same exchange, same pickup slip — not a new letter.
+    expect(addedBody["letter_id"]).toBe(letterId);
+    expect(addedBody["follow_ups_sent"]).toBe(1);
+    expect(addedBody["follow_ups_left"]).toBe(LETTER_FOLLOW_UP_CAP - 1);
+
+    // The pickup confirms receipt without ever echoing the words back.
+    const served = await pickup(letterId);
+    expect((served["follow_ups_received"] as string[]).length).toBe(1);
+    expect(JSON.stringify(served)).not.toContain("Report below");
+
+    // And it is his turn again: an answered letter that has been
+    // written back to is work, not history.
+    const record = (await testEnv.ORDERS.get(
+      (await testEnv.ORDERS.get(KV_KEYS.letterById(letterId))) as string,
+      "json",
+    )) as LetterRecord;
+    expect(letterNeedsReply(record)).toBe(true);
+
+    // The counter shows both sides of the exchange, in order.
+    const page = await (
+      await SELF.fetch(`${BASE}/admin/counter`, { headers: KEEPER })
+    ).text();
+    const card = page.slice(page.indexOf(letterId));
+    const theirs = card.indexOf("Are you commissioning work?");
+    const his = card.indexOf("Yes. Here is the scope.");
+    const later = card.indexOf("Accepted. Report below.");
+    expect(theirs).toBeGreaterThan(-1);
+    expect(his).toBeGreaterThan(theirs);
+    expect(later).toBeGreaterThan(his);
+    // Their later words carry the untrusted label too.
+    expect(card).toContain("Added by the holder of the pickup id");
+  });
+
+  it("refuses a follow-up to a letter that does not exist", async () => {
+    const response = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ letter: "Hello?", in_reply_to: "letter_nope" }),
+    });
+    expect(response.status).toBe(404);
   });
 });

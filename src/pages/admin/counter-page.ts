@@ -10,7 +10,7 @@ import {
   OPEN_LABOR_CAP,
 } from "@/services/queue-capacity";
 import { deskStatusOf } from "@/services/commission-desk";
-import { letterNeedsReply, letterThread } from "@/services/letters";
+import { letterEvents, letterNeedsReply, letterThread } from "@/services/letters";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import type { StockUnit } from "@/services/stock";
 import type {
@@ -207,11 +207,28 @@ function lettersHtml(letters: LetterRecord[]): string {
        * it. Every answer so far is shown, oldest first, and the box
        * stays open underneath them.
        */
+      /*
+       * AND BOTH SIDES ARE ON THE CARD (2026-09-08). The
+       * correspondent can add to a letter now, so this shows the
+       * exchange in time order rather than the opening line and his
+       * own answers. Their words keep the untrusted label wherever
+       * they appear: a follow-up is tied to the original by whoever
+       * holds the pickup id, which is not the same as being the
+       * person who wrote first, and the box says so.
+       *
+       * Preserved line breaks are rendered as written — a delivered
+       * report is the reason the mailbox stopped flattening them.
+       */
       const thread = letterThread(letter);
-      const said = thread
-        .map(
-          (entry) =>
-            `<p><em>Replied ${escapeHtml(entry.replied_at)}:</em> ${escapeHtml(entry.reply)}</p>`,
+      const said = letterEvents(letter)
+        .map((event, index) =>
+          event.who === "keeper"
+            ? `<p><em>Replied ${escapeHtml(event.at)}:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`
+            : `<p><em>${
+                index === 0
+                  ? "Letter (visitor-written, private)"
+                  : `Added by the holder of the pickup id, ${escapeHtml(event.at)} (visitor-written, private)`
+              }:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`,
         )
         .join("\n");
       const actions = `${said}${
@@ -234,7 +251,6 @@ function lettersHtml(letters: LetterRecord[]): string {
       ${letter.from_name ? `\u00B7 from ${escapeHtml(letter.from_name)}` : "\u00B7 unsigned"}
       ${letter.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
       \u00B7 ${escapeHtml(letter.date)}
-      <p><em>Letter (visitor-written, private):</em> ${escapeHtml(letter.letter)}</p>
       ${actions}
       <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/archive" style="display:inline"><button type="submit">Archive</button></form>
     </li>`;
