@@ -1,7 +1,7 @@
 {
-  "version": "3.16.0",
-  "bundle_sha256": "b95990b5bc6513c317d50b12b47c1fe72aad34a85c632a32bdbe8b9f8c749231",
-  "published_at": "2026-09-06T20:11:47.551Z",
-  "commit": "5e0312a68cd2d61662f13bf8f56b38de4d4bbb8e",
-  "changelog": "Clearer shopping instructions for agents, including those unfamiliar with x402.  * Follow the current payment quote for supported networks, USDC amounts, and required inputs. * Explicit instructions for reading a 402 response, obtaining a wallet signature, and retrying with the same idempotency key. * WebMCP purchase guidance covering free quotes and submission of buyer-signed payments. * Clearer publication purchase links, delivery expectations, and retry instructions. * Distinguish networks accepted for payment from networks a statement or audit can inspect.  No credentials, private keys, or seed phrases are requested. Payments require the buyer’s decision and a compatible wallet signer."
+  "version": "3.16.1",
+  "bundle_sha256": "d156cf5f4e1ea64474055a0170e2ee8bb2edf328cedae83b54df96b248fc3e24",
+  "published_at": "2026-09-08T15:40:50.027Z",
+  "commit": "9bc7f41ca5bdb0f01bb07680da63f500fde3ebdb",
+  "changelog": "General fixes and polish"
 }

@@ -237,3 +237,23 @@ Validation policy, updated 2026-09-08 at the keeper's request: run the full loca
 The new public-door regression contains 114 cases, all passing locally. Removing the production repair made all 111 new behavior cases fail; the three current-permission controls passed both ways. The adjacent gate passed 167 checks across five files before the final six recovery controls were added. The final full local suite passed all 586 files: 7,434 tests passed with one existing conditional key-continuity skip (464.18 seconds). Typecheck, both Worker dry-run builds, A2A runner/schema checks, Tab/browser-bridge/Action/example/package tests, audit, claims, and docs checks also passed. Native Worker startup passed on a standalone rerun; its first concurrent attempt stalled on the empty control Worker. Payment and target execution use local signed fixtures. Lost-settlement tests inject the already-confirmed local payment result after demonstrating the ambiguous answer; chain finality retains its separate negative-control suites. Missing original snapshots remain an explicit owed purchase and never authorize a replacement observation.
 
 BUY-017/034/037 remain open for the other uncheckpointed products, inventory/commission services, and legacy obligations. BUY-014/015 still include expired/rejected verification and missing recovery handles. These completed substeps do not change the 15/39 parent count or establish production deployment.
+
+## 2026-09-08 — Separate archive-report proofs from purchase certificates
+
+- [x] Preserve Spot Check and Provenance Check's complete signed report under `observation`, beside the purchase certificate's proof. The report's own verification instructions name that field explicitly; neither proof can overwrite the other.
+- [x] Exercise a recipient's independent signature, canonical-signature, evidence-hash and certificate-binding checks through HTTP and both MCP profiles, including tampered-report rejection.
+
+All six recipient regressions failed without the production correction and passed with it. The existing flat report fields remain compatible; `observation` carries the complete report proof. This is a separate artifact correction discovered during the recovery work; the larger recovery findings remain open.
+
+## 2026-09-08 — Spot Check and Provenance Check recovery
+
+- [x] Retain each original signed archive report in the purchase journal before settlement; recover it without rederiving from newer, changed or unavailable books.
+- [x] Resume certificate signing, provenance-record publication and response publication with the original subject, report ID, evidence hash and signatures. Provenance retrieval keeps the original purchase timestamp.
+- [x] Exercise HTTP and both MCP profiles across all five configured fixture rails, with unique buyer canaries in actual archive rows and recipient verification of the purchased good.
+- [x] Exercise pre-settlement journal failures, lost settlement acknowledgements, changed inputs, concurrent duplicates, missing original evidence, and changed/unavailable archive data. A missing original remains an owed purchase; it cannot authorize a replacement observation.
+
+The 186 recovery cases failed with recovery support removed while the independent report-proof correction remained in place, and passed after restoration. The separate six recipient-proof regressions also passed. Ambiguous-settlement cases inject the already-confirmed local receipt to isolate artifact survival; chain finality remains covered by its own negative-control suites. No live payment was submitted.
+
+BUY-017/034/037 remain open for other uncheckpointed observations, inventory/commission services, legacy obligations and missing private recovery handles. These checked substeps do not change the 15/39 parent-finding count. Next observation families to examine are wallet statements and settlement reconciliation; their original chain readings also need durable recovery.
+
+Final local validation passed all 588 files: 7,626 tests passed with one existing conditional key-continuity skip (337.93 seconds). Typecheck, both Worker dry-run bundles, native Worker startup, A2A runner/schema checks, Tab/browser-bridge/Action/example/package tests, audit, claims and docs checks passed. The first full run exposed two older provenance tests sharing a constant settlement transaction across distinct sales; the two product specs now use the existing multi-purchase facilitator fixture. Both affected specs passed all 15 tests, followed by the complete passing rerun. No timeout or production recovery guard was relaxed.

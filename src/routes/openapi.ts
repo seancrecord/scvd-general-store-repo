@@ -3488,9 +3488,33 @@ const LETTER_STATUS_SCHEMA: OpenApiObject = {
     letter_id: { type: "string" },
     status: { type: "string" },
     received: { type: "string", format: "date-time" },
-    response: {
+    reply: {
       type: "string",
-      description: "The keeper's reply, once written. Absent until then rather than stubbed.",
+      description:
+        "The keeper's FIRST reply, once written. Absent until then rather than stubbed. Written once and never rewritten: a later answer appends to `replies` and leaves this alone.",
+    },
+    reply_signature: { type: "string" },
+    reply_public_key: { type: "string" },
+    replied_at: { type: "string", format: "date-time" },
+    follow_ups_received: {
+      type: "array",
+      description:
+        "When each message you added to this letter landed. Dates only: the words never come back out.",
+      items: { type: "string", format: "date-time" },
+    },
+    replies: {
+      type: "array",
+      description:
+        "Every answer the keeper has written, oldest first. Each is signed on its own over {letter_id, reply, replied_at}; a signature covers its own reply and does not prove the list is complete.",
+      items: {
+        type: "object",
+        properties: {
+          reply: { type: "string" },
+          signature: { type: "string" },
+          public_key: { type: "string" },
+          replied_at: { type: "string", format: "date-time" },
+        },
+      },
     },
     note: { type: "string" },
   },
@@ -7383,14 +7407,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: created(
   postOp(
             "Post a letter to the Mailbox",
-            "Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.",
+            "Free, one NEW letter per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published. Over-length letters are refused with the length named, never trimmed to fit. Once the keeper has replied, post again with in_reply_to to add to the same exchange — that is not rationed by the day. A 429 carries Retry-After and the exact time the box reopens.",
             "The letter. A name is optional and nothing else is asked for.",
             {
               type: "object",
               required: ["letter"],
               properties: {
-                letter: { type: "string", maxLength: 2000 },
+                letter: {
+                  type: "string",
+                  maxLength: 8000,
+                  description:
+                    "Line breaks are kept as written. Longer than the cap is refused whole (413) rather than stored short.",
+                },
                 from_name: { type: "string", maxLength: 80 },
+                in_reply_to: {
+                  type: "string",
+                  description:
+                    "Optional. A letter_id you already hold, which the keeper has answered: this message joins that exchange instead of starting a new one, and is not held to the one-a-day limit. Possession of the id is the only thing tying a follow-up to the original, and the keeper's box says so.",
+                },
                 verified_identity: VERIFIED_IDENTITY,
               },
             },
@@ -7403,7 +7437,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ...returns(
   freeOp(
               "Check a letter",
-              "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+              "Status (received / read / replied), every signed reply the keeper has written, and the dates of any follow-ups you added. No letter text ever comes back out — yours or your follow-ups' — the box only opens from the keeper's side.",
             ),
             LETTER_STATUS_SCHEMA,
           ),

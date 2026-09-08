@@ -476,13 +476,14 @@ export async function deliverInstantGoods(
         deliverable: `Spot check for ${spot.record.host}, read from the books at ${spot.record.asked_at}. ${seen} The full signed record rides in extras; the same facts serve free at ${spot.record.free_twin_url} — what you bought is the signed, certificate-bound copy.`,
         extras: {
           spot_check: spot.record,
+          observation: spot,
           evidence_hash: spot.evidence_hash,
           signed_payload: spot.signed_payload,
           signature: spot.signature,
           signature_jcs: spot.signature_jcs,
           public_key: spot.public_key,
           how_to_verify:
-            "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too.",
+            "ed25519_verify(observation.signed_payload, observation.signature) against observation.public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too.",
         },
       };
     }
@@ -491,7 +492,7 @@ export async function deliverInstantGoods(
       if (!prov) {
         throw new Error("provenance_check reached goods with no record");
       }
-      await storeProvenanceCheck(env, prov, input.certId ?? "");
+      await storeProvenanceCheck(env, prov, input.certId ?? "", input.purchasedAt);
       const r = prov.record;
       const last = r.weeks[r.weeks.length - 1];
       const seen = !last
@@ -501,6 +502,7 @@ export async function deliverInstantGoods(
         deliverable: `The company this address keeps, read from the signed chain at ${r.asked_at}. ${seen} The full signed record rides in extras and is served at /api/provenance-check/${r.provenance_id}, to you; nothing about it is published by us.`,
         extras: {
           provenance_check: r,
+          observation: prov,
           record_url: `/api/provenance-check/${r.provenance_id}`,
           evidence_hash: prov.evidence_hash,
           signed_payload: prov.signed_payload,
@@ -508,7 +510,7 @@ export async function deliverInstantGoods(
           signature_jcs: prov.signature_jcs,
           public_key: prov.public_key,
           how_to_verify:
-            "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too; how_to_rederive on the record rebuilds every line from the public chain.",
+            "ed25519_verify(observation.signed_payload, observation.signature) against observation.public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too; how_to_rederive on the record rebuilds every line from the public chain.",
         },
       };
     }
