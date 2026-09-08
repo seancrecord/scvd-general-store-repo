@@ -6,7 +6,7 @@ import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { takeCensus } from "@/lib/census";
-import { readDeclines, traceClient } from "@/lib/declines";
+import { isNoiseFloor, readDeclines, traceClient } from "@/lib/declines";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
@@ -38,6 +38,7 @@ import { renderBuyersPage } from "@/pages/admin/buyers-page";
 import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
+import { renderTracePage } from "@/pages/admin/trace-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
@@ -3243,17 +3244,35 @@ adminRoutes.get("/admin/bounties", async (c) => {
 
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
-  const outside = report.declines.filter((row) => !row.house);
+  // The trace exists to read A BUYER'S sequence. Picking the busiest
+  // non-house client picked the busiest PROBER instead: a conformance
+  // walker hits four doors in a morning and no real buyer ever
+  // out-declines it. Same line the desk's counts draw.
+  const outside = report.declines.filter((row) => !isNoiseFloor(row));
   const counts = new Map<string, number>();
   for (const row of outside) {
     const ua = row.user_agent ?? "(no user-agent)";
     counts.set(ua, (counts.get(ua) ?? 0) + 1);
   }
   const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  const trace = busiest
-    ? { user_agent: busiest, events: await traceClient(c.env, busiest) }
-    : undefined;
+  const trace = busiest ? await traceClient(c.env, busiest) : undefined;
   return c.html(renderDeclinesPage({ report, ...(trace ? { trace } : {}) }));
+});
+
+/**
+ * THE PER-CLIENT LOOKUP: /admin/trace?ua=<user-agent>.
+ *
+ * A query parameter for the same reason the item lookup uses one: a
+ * user-agent carries slashes, spaces and parentheses, and a key that
+ * has to be escaped into a path segment is a lookup nobody will use.
+ *
+ * Empty `ua` renders the instructions rather than 400ing, because the
+ * keeper arrives here from a link as often as from a guess.
+ */
+adminRoutes.get("/admin/trace", async (c) => {
+  const ua = c.req.query("ua") ?? "";
+  if (!ua) return c.html(renderTracePage(null));
+  return c.html(renderTracePage(await traceClient(c.env, ua)));
 });
 
 /**

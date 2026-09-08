@@ -460,11 +460,12 @@ export async function storeReconciliation(
   env: Env,
   reconciliation: SignedReconciliation,
   certId: string,
+  createdAt?: string,
 ): Promise<void> {
   const record: ReconciliationRecord = {
     reconciliation,
     cert_id: certId,
-    stored_at: new Date().toISOString(),
+    stored_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.settlementReconciliation(reconciliation.reconciliation_id),

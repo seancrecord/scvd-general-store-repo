@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { statementRailOf } from "@/lib/statement-rails";
 import { getWalletStatement } from "@/services/wallet-statement";
 import type { HonoEnv } from "@/types";
 
@@ -21,16 +22,17 @@ statementRoutes.get("/api/statement/:statement_id", async (c) => {
     );
   }
   const base = c.env.STORE_BASE_URL;
+  const readMethod = statementRailOf(record.statement.chain)?.readMethod;
   return c.json(
     {
       what_this_is:
-        "A signed record of every USDC transfer in and out of the wallet named inside, over exactly the block window stated, read off Base by this store at the moment stated. A statement, never a judgment: no comparison to anyone's ledger was made — the holder does the comparing, and the difference is the finding.",
+        `A signed record of every USDC transfer in and out of the wallet named inside, over exactly the window stated, read from ${record.statement.chain} by this store at the moment stated. A statement, never a judgment: no comparison to anyone's ledger was made — the holder does the comparing, and the difference is the finding.`,
       statement: record.statement,
       certificate: `${base}/api/verify/${record.cert_id}`,
       how_to_verify: [
         "1. The record is signed on its own: re-serialize every field above `signature` (same order) and check the ed25519 signature against the key at /.well-known/scvd-signing-key.",
         "2. The record's evidence_hash is bound into the purchase certificate's attests field — the certificate URL above answers for it.",
-        "3. Every row is a Base transaction hash: paste any of them into an explorer and the chain answers without asking us. Re-run the same indexed eth_getLogs over the stated block window and the whole list reproduces.",
+        `3. Every row names a transaction on ${record.statement.chain}: check it with that chain's explorer or your own node. Re-run the chain reads described in statement.scope${readMethod ? ` (${readMethod})` : ""} over the stated window to reproduce the list.`,
       ],
       created_at: record.created_at,
     },

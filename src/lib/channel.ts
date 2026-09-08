@@ -15,7 +15,10 @@ import type { Channel, Env } from "@/types";
  *   3. infrastructure, known-crawler UA table (search bots, security
  *                       scanners, registry mirrors, uptime probes):
  *                       the noise floor made visible. Separate from
- *                       organic AND house. UA-based only.
+ *                       organic AND house. UA-based only, and it
+ *                       OUTRANKS the mcp transport: a client that
+ *                       names itself machinery is machinery whichever
+ *                       door it knocks on.
  *   4. bazaar         — REFERRER mentions x402scan/bazaar catalog
  *                       pages: a client that arrived FROM a listing.
  *                       (The x402scan crawler itself matches the UA
@@ -119,6 +122,17 @@ export const INFRASTRUCTURE_UA_HINTS: readonly string[] = [
   "agenteconomyreport", "band-hunt",
 ];
 
+/**
+ * Machinery by its own name. Exported so the desks that must exclude
+ * the noise floor (the funnel, the decline desk) and the classifier
+ * itself read ONE table, and a user-agent promoted here is promoted
+ * everywhere at once.
+ */
+export function isInfrastructureUserAgent(userAgent: string | undefined): boolean {
+  const ua = (userAgent ?? "").toLowerCase();
+  return ua.length > 0 && INFRASTRUCTURE_UA_HINTS.some((hint) => ua.includes(hint));
+}
+
 export interface ChannelSignals {
   referrer?: string;
   userAgent?: string;
@@ -129,12 +143,31 @@ export interface ChannelSignals {
 }
 
 export function inferChannel(signals: ChannelSignals): Channel {
-  if (signals.viaMcp) {
-    return "mcp";
-  }
   const referrer = (signals.referrer ?? "").toLowerCase();
   const userAgent = (signals.userAgent ?? "").toLowerCase();
   const declared = (signals.declaredSource ?? "").toLowerCase();
+  const machinery = isInfrastructureUserAgent(userAgent);
+  /**
+   * THE DOOR IS NOT THE INTENT (2026-09-08, off the decline desk).
+   *
+   * `viaMcp` used to return before the user-agent table was ever
+   * consulted, so every self-identifying crawler that walked in
+   * through /mcp was stamped "mcp" and never "infrastructure" — the
+   * one classification the table exists to make. The reclassifier
+   * has always disagreed: services/reclassify.ts re-derives the
+   * channel from the user-agent ALONE, with no viaMcp, so it would
+   * name an MCP-borne prober as machinery that the live path had
+   * just filed as a customer. Two instruments, two answers, on the
+   * same row.
+   *
+   * MCP is a transport. Infrastructure is a statement about who is
+   * knocking, and a monitor is a monitor whichever door it uses. The
+   * table wins; the rest of the MCP branch is untouched, so a real
+   * buyer's SDK over MCP still counts as "mcp" exactly as before.
+   */
+  if (signals.viaMcp) {
+    return machinery ? "infrastructure" : "mcp";
+  }
   if (declared === "clawhub-skill" || declared === "skill") {
     return "skill";
   }
@@ -148,7 +181,7 @@ export function inferChannel(signals: ChannelSignals): Channel {
   if (SKILL_HINTS.some((hint) => `${referrer} ${userAgent}`.includes(hint))) {
     return "skill";
   }
-  if (INFRASTRUCTURE_UA_HINTS.some((hint) => userAgent.includes(hint))) {
+  if (machinery) {
     return "infrastructure";
   }
   if (BAZAAR_REFERRER_HINTS.some((hint) => referrer.includes(hint))) {

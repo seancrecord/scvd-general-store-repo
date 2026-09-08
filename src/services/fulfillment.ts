@@ -442,8 +442,8 @@ export async function fulfillPurchase(
     trustProfile = await performTrustProfile(env, input.targetUrl ?? "");
     mintOptions.attests = trustProfile.evidence_hash;
   }
-  let walletStatement: SignedWalletStatement | undefined;
-  if (item.id === "the_statement") {
+  let walletStatement: SignedWalletStatement | undefined = retainedObservation?.walletStatement;
+  if (item.id === "the_statement" && !retainedObservation) {
     walletStatement = await performWalletStatement(
       env,
       input.statementWallet ?? "",
@@ -475,8 +475,8 @@ export async function fulfillPurchase(
    * so /api/verify answers "this is the observation that purchase
    * bought" without a second endpoint being asked to be trusted.
    */
-  let reconciliation: SignedReconciliation | undefined;
-  if (item.id === "settlement_reconciliation") {
+  let reconciliation: SignedReconciliation | undefined = retainedObservation?.reconciliation;
+  if (item.id === "settlement_reconciliation" && !retainedObservation) {
     reconciliation = await reconcileSettlement(
       env,
       input.reconciliationQuery ?? { txHash: "" },
@@ -522,6 +522,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
+      walletStatement, reconciliation,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -533,6 +534,8 @@ export async function fulfillPurchase(
     a2aKit = prepared.a2aKit;
     spotCheck = prepared.spotCheck;
     provenanceCheck = prepared.provenanceCheck;
+    walletStatement = prepared.walletStatement;
+    reconciliation = prepared.reconciliation;
     mintOptions.attests = prepared.attests;
   }
   /**

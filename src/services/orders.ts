@@ -111,6 +111,25 @@ export async function getOrder(
   return currentOrder(env, orderId, await kvGetJson<OrderRecord>(env.ORDERS, KV_KEYS.order(orderId), "json"));
 }
 
+/** Historical orders have no certificate index. An incomplete scan cannot
+ * establish a unique association, even when one matching row was visible. */
+export async function orderForCertificate(env: Env, certId: string): Promise<OrderRecord | null> {
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.orderPrefix, cap: ORDER_CAP });
+  if (listed.truncated) throw new Error("Order scan incomplete");
+  const values = await bulkGetJson<OrderRecord>(env.ORDERS, listed.names);
+  const matches: OrderRecord[] = [];
+  for (const name of listed.names) {
+    const order = values.get(name);
+    if (!order || typeof order.order_id !== "string" || typeof order.cert_id !== "string" ||
+      name !== KV_KEYS.order(order.order_id)) throw new Error("Order association unreadable");
+    if (order.cert_id === certId) matches.push(order);
+  }
+  if (matches.length !== 1) return null;
+  const candidate = matches[0]!;
+  const order = await currentOrder(env, candidate.order_id, candidate);
+  return order?.cert_id === certId && order.order_id === candidate.order_id ? order : null;
+}
+
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
   /*
    * A SHORT ORDER LIST IS NOT AN ANSWER (2026-09-07).

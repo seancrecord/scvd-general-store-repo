@@ -90,6 +90,13 @@ export type AdminTab =
    */
   | "events"
   /**
+   * The per-client lookup, same shape and same reason as the item one:
+   * matches no nav entry, so it is reached from the counts it explains
+   * (the handoff's named clients, the decline desk's trail) and never
+   * becomes a room with no way out.
+   */
+  | "trace"
+  /**
    * The money walks, moved off the desk 2026-08-28 so the desk stops
    * paying for three of them just to open. Demoted like the rest:
    * reached from the desk's take section, not from the top nav, which
@@ -226,6 +233,7 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/settlement-unknown", label: "Settlements the store could not read" },
   { href: "/admin/glance", label: "The glance" },
   { href: "/admin/events", label: "Item events" },
+  { href: "/admin/trace", label: "Client trace (one user-agent, whole trail)" },
   { href: "/admin/bell", label: "The bell" },
   { href: "/admin/market/authenticity", label: "The market: authenticity" },
   { href: "/admin/market/inflows", label: "The market: inflows" },

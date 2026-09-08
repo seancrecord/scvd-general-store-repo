@@ -18,6 +18,7 @@ vi.mock("@/services/settlement-records", async (original) => {
   } };
 });
 import { KV_KEYS } from "@/lib/kv-keys";
+import { purchaseIdentity, purchaseIntentStore } from "@/services/purchase-intent";
 import { BASE_NETWORK, POLYGON_NETWORK } from "@/lib/payments";
 import { installBuyerHarness, items, baseline, call, object, sourceEnv, testEnv, facilitator, type Obj } from "./helpers/buyer-harness";
 import { evmPayment, evmValid } from "./helpers/buyer-signed-payments";
@@ -39,7 +40,12 @@ beforeAll(() => {
     const response = await inner(input, init);
     if (url.pathname.endsWith("/x402/settle")) {
       const receipt = object(await response.clone().json());
-      if (receipt.success) { transfers.push(receipt); fault.confirmed = true; }
+      const wire = object(object(JSON.parse(String(init?.body))).paymentPayload);
+      if (receipt.success) {
+        receipt.payer = object(object(wire.payload).authorization).from;
+        transfers.push(receipt); fault.confirmed = true;
+      }
+      return Response.json(receipt, { status: response.status, headers: response.headers });
     }
     return response;
   });
@@ -69,7 +75,8 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
       const quote = await call(item, "http", args);
       const offer = quote.offers.find(offer => offer.network === network)!;
       expect(offer).toBeTruthy();
-      const payment = btoa(JSON.stringify(await evmPayment(offer))), key = crypto.randomUUID();
+      const wire = await evmPayment(offer);
+      const payment = btoa(JSON.stringify(wire)), key = crypto.randomUUID();
       fault.kind = "product";
       const first = await call(item, "http", args, undefined, payment, key);
       expect(fault.hits).toBeGreaterThan(0);
@@ -86,12 +93,25 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
         await runInDurableObject(namespace.get(namespace.idFromName(`${network}:${tx}`)),
           async (_instance, state) => state.storage.deleteAll());
       }
+      // A true pre-capture sale has no full purchase journal either. Keeping
+      // today's journal would make this a recoverable modern purchase.
+      const payer = String(object(object(wire.payload).authorization).from);
+      expect(String(object(JSON.parse(before!)).payer).toLowerCase()).toBe(payer.toLowerCase());
+      const identity = await purchaseIdentity(network, payer, wire);
+      await runInDurableObject(purchaseIntentStore(sourceEnv, identity.id),
+        async (_instance, state) => state.storage.deleteAll());
       fault.kind = after;
       for (let attempt = 0; attempt < 2; attempt++) {
         const retry = await call(item, "http", args, undefined, payment, key);
+        const human = id === "aura_walk" || id === "the_collab";
         expect(retry.status).toBe(500);
         expect(retry.body).toMatchObject({ code: "delivery_failed", charged: true, charged_again: false,
-          transaction: tx, network });
+          transaction: tx });
+        if (human) {
+          expect(retry.body.recovery_reason).toBe("original_inputs_unavailable");
+          expect(retry.body.network).toBeUndefined();
+          expect((await sourceEnv.ORDERS.list({ prefix: KV_KEYS.orderPrefix })).keys).toHaveLength(0);
+        } else expect(retry.body.network).toBe(network);
         expect(retry.body.already_delivered).not.toBe(true);
         expect(retry.quote).toBe(false);
         expect(retry.settles).toBe(0);

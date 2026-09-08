@@ -194,6 +194,58 @@ describe("reading a decline", () => {
     expect(row?.reading.toLowerCase()).toContain("instrument");
   });
 
+  /**
+   * THE NOISE FLOOR, READ AS DEMAND (2026-09-08). The desk excluded
+   * the house and called everything else intent, so six declines from
+   * two clients the store's own user-agent table already names as
+   * machinery were reported as "somebody wanted to buy and could not".
+   * One of them writes "no-wallet; no-payment" into its user-agent.
+   */
+  it("keeps a self-identifying prober out of the outside count", async () => {
+    const before = await readDeclines(testEnv);
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-observatory/1.0 (+https://example.test/methodology)",
+        note: "local:input_missing:tx_hash",
+        channel: "infrastructure",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    // Counted, named, and never mixed into the number that means intent.
+    expect(report.outside_count).toBe(before.outside_count);
+    expect(report.infrastructure_count).toBe(before.infrastructure_count + 1);
+    expect(report.infrastructure_clients).toContain(
+      "declines-spec-observatory/1.0 (+https://example.test/methodology)",
+    );
+    // The reason table is the intent table: a prober's error code must
+    // not be able to trip the "same reason from different clients" rule.
+    expect(report.by_reason["local:input_missing:tx_hash"] ?? 0).toBe(
+      before.by_reason["local:input_missing:tx_hash"] ?? 0,
+    );
+    // The row itself is still on the page. Excluded from the count is
+    // not hidden from the desk.
+    expect(
+      report.declines.some((row) => row.user_agent?.includes("declines-spec-observatory")),
+    ).toBe(true);
+  });
+
+  /**
+   * A row booked before its user-agent was promoted to the table
+   * carries the old verdict forever. The table is the law, not the row.
+   */
+  it("re-reads the user-agent, so a row booked as organic before the promotion still lands on the noise floor", async () => {
+    const before = (await readDeclines(testEnv)).outside_count;
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-uptime-monitor/1",
+        note: "local:payload_missing_accepted",
+        channel: "mcp",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    expect(report.outside_count).toBe(before);
+  });
+
   it("keeps the house out of the outside count", async () => {
     const before = (await readDeclines(testEnv)).outside_count;
     await seedRow(
@@ -227,13 +279,55 @@ describe("the trail", () => {
       decline({ user_agent: ua, at: "2026-07-28T10:02:00.000Z", note: "b" }),
     );
 
-    const trail = await traceClient(testEnv, ua);
-    expect(trail.length).toBeGreaterThanOrEqual(3);
+    const trace = await traceClient(testEnv, ua);
+    expect(trace.user_agent).toBe(ua);
+    expect(trace.events.length).toBeGreaterThanOrEqual(3);
     // The sequence is the evidence, so it has to read in the order it
     // happened, not the order KV hands it back.
-    const times = trail.map((event) => event.at);
+    const times = trace.events.map((event) => event.at);
     expect([...times].sort()).toEqual(times);
-    expect(trail[0]?.kind).toBe("challenge");
+    expect(trace.events[0]?.kind).toBe("challenge");
+    // NOT FOUND AND NOT REACHED ARE DIFFERENT ANSWERS: the trace has to
+    // say how far it got, or an empty tail is unreadable.
+    expect(trace.rows_scanned).toBeGreaterThan(0);
+    expect(trace.oldest_row_seen).not.toBeNull();
+    expect(typeof trace.capped).toBe("boolean");
+  });
+});
+
+const TRACE_AUTH = {
+  Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+  Accept: "text/html",
+};
+
+describe("the per-client lookup", () => {
+  /**
+   * The gap this closes: traceClient had one caller, on the client the
+   * CODE picked (most declines). A keeper could not trace a client they
+   * named, so "is the client that priced and walked the same one that
+   * got refused?" was unanswerable with any password.
+   */
+  it("traces a client the keeper names, and says how far it reached", async () => {
+    const ua = "named-lookup-agent/1.0";
+    await seedRow({ ...decline({ user_agent: ua }), kind: "challenge", at: "2026-07-29T09:00:00.000Z" });
+    await seedRow(decline({ user_agent: ua, at: "2026-07-29T09:01:00.000Z", note: "insufficient_funds" }));
+
+    const page = await SELF.fetch(
+      `${BASE}/admin/trace?ua=${encodeURIComponent(ua)}`,
+      { headers: TRACE_AUTH },
+    );
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain(ua);
+    expect(html).toContain("insufficient_funds");
+    // Reach is reported either way, so an empty tail is never ambiguous.
+    expect(html).toMatch(/hit its cap|the whole log/);
+  });
+
+  it("renders instructions rather than an error when no client is named", async () => {
+    const page = await SELF.fetch(`${BASE}/admin/trace`, { headers: TRACE_AUTH });
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain("Trace a client");
   });
 });
 
