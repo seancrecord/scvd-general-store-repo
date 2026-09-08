@@ -246,8 +246,9 @@ export async function fulfillPurchase(
   // Everything else mints first; the order is the exception, and the
   // reason is that /api/verify must cover the observation without a
   // second endpoint existing.
-  let attestation: SignedAttestation | undefined;
-  if (item.id === "settlement_attestation") {
+  const retainedObservation = await pending.observation?.read();
+  let attestation: SignedAttestation | undefined = retainedObservation?.attestation;
+  if (item.id === "settlement_attestation" && !retainedObservation) {
     attestation = await observeSettlement(env, input.attestationQuery ?? {});
     mintOptions.attests = attestation.evidence_hash;
   }
@@ -261,8 +262,8 @@ export async function fulfillPurchase(
    * keeper resolves it by hand rather than the buyer getting a sheaf
    * with quiet holes in it.
    */
-  let bundle: SignedAttestation[] | undefined;
-  if (item.id === "attestation_bundle") {
+  let bundle: SignedAttestation[] | undefined = retainedObservation?.bundle;
+  if (item.id === "attestation_bundle" && !retainedObservation) {
     /**
      * TWO CHAIN SUBREQUESTS FOR THE WHOLE SHEAF, however many hashes
      * (the red team's finding): every receipt in one batched call,
@@ -301,6 +302,12 @@ export async function fulfillPurchase(
       );
     }
     mintOptions.attests = await bundleEvidenceHash(bundle);
+  }
+  if (pending.observation) {
+    const prepared = retainedObservation ?? await pending.observation.save({ attestation, bundle, attests: mintOptions.attests! });
+    attestation = prepared.attestation;
+    bundle = prepared.bundle;
+    mintOptions.attests = prepared.attests;
   }
   /**
    * THE SERVICE AUDIT observes first and mints second, for the same

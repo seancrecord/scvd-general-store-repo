@@ -1,3 +1,4 @@
+import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
 import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 export { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
@@ -1629,6 +1630,7 @@ export interface SettledPayment {
  * holding nothing.
  */
 export interface PendingPayment {
+  observation?: ObservationCheckpoint;
   paidUsdc: number;
   tipUsdc: number;
   /** From the signed authorization; the facilitator may name it too. */

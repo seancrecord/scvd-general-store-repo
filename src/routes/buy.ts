@@ -105,7 +105,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
    * the gate, so wrapping it costs nothing and tells this frame
    * whether money moved before a throw arrived.
    */
-  let settled: SettledPayment | null = null;
+  let settled: SettledPayment | null = c.get("payment") ?? null;
   const watched: typeof pending = {
     ...pending,
     settle: async () => {

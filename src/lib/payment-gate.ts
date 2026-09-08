@@ -1,3 +1,4 @@
+import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
@@ -1192,7 +1193,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           }
           c.set("payment", payment);
           c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
-            payer: payment.payer, settle: async () => payment });
+            payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
           await next();
           if (c.res.status < 300) {
             await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
@@ -1257,6 +1258,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             paidUsdc: retryPayment.paidUsdc,
             tipUsdc: retryPayment.tipUsdc,
             ...(retryPayer ? { payer: retryPayer } : {}),
+            observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, retryPayer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true),
             settle: async () => retryPayment,
           });
           await next();
@@ -1673,6 +1675,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ...(payerFromPaymentHeader(paymentHeaderOf(c))
       ? { payer: payerFromPaymentHeader(paymentHeaderOf(c)) }
       : {}),
+    observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), verifiedRequirements.network, payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot), verifiedPayload, c.req.path, await httpArtifactDigest(c.req.url)),
     settle: settleNow,
   });
 
