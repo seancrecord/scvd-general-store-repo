@@ -1,5 +1,4 @@
-import { isNoiseFloor, type DeclineReport, type DeclineRow } from "@/lib/declines";
-import type { MetricEvent } from "@/lib/metrics";
+import { isNoiseFloor, type ClientTrace, type DeclineReport, type DeclineRow } from "@/lib/declines";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 
@@ -21,7 +20,7 @@ import { renderAdminShell } from "@/pages/admin/layout";
 export interface DeclinesPageData {
   report: DeclineReport;
   /** Full event trail for the client with the most outside declines. */
-  trace?: { user_agent: string; events: MetricEvent[] };
+  trace?: ClientTrace;
 }
 
 const FAULT_LABEL: Record<string, string> = {
@@ -44,6 +43,26 @@ function declineRowHtml(row: DeclineRow): string {
     <td>${escapeHtml(row.channel)}${isNoiseFloor(row) && !row.house ? " <em>(noise floor)</em>" : ""}</td>
     <td>${escapeHtml(row.user_agent ?? "(no user-agent)")}${row.house ? " <em>(house)</em>" : ""}</td>
   </tr>`;
+}
+
+/**
+ * NOT FOUND AND NOT REACHED ARE DIFFERENT ANSWERS. The item lookup has
+ * refused to confuse them since it was built; the trace returned a bare
+ * array until 2026-09-08 and so could not say which one an empty tail
+ * meant. Same sentence, same red, one function.
+ */
+export function reachHtml(trace: ClientTrace): string {
+  const oldest = trace.oldest_row_seen
+    ? `${escapeHtml(trace.oldest_row_seen.slice(0, 19).replace("T", " "))} UTC`
+    : "no rows at all";
+  return trace.capped
+    ? `<p style="color:#8c2f1b"><strong>The scan hit its cap.</strong> It walked
+       ${trace.rows_scanned} rows back to ${oldest} and stopped with rows still
+       unread. Anything this client did before that is NOT REACHED, not absent —
+       and an absent settle here is not evidence they never bought.</p>`
+    : `<p><small>Walked ${trace.rows_scanned} rows, the whole log, back to ${oldest}.
+       Nothing is behind a cap: what is missing above did not happen, within the
+       ninety days rows are kept.</small></p>`;
 }
 
 function traceHtml(trace: DeclinesPageData["trace"]): string {
@@ -72,6 +91,7 @@ function traceHtml(trace: DeclinesPageData["trace"]): string {
       <tr><th>when</th><th>what</th><th>item</th><th>note</th></tr>
       ${rows}
     </table>
+    ${reachHtml(trace)}
   </section>`;
 }
 

@@ -656,6 +656,27 @@ export async function readDeclines(
 }
 
 /**
+ * One client's whole trail, with the reach of the scan that found it.
+ *
+ * The reach fields are not decoration. This trace is read to answer
+ * "did this client ever settle" and "what did it try first", and both
+ * are questions where an empty result has two meanings. The item
+ * lookup already refuses to confuse them (ItemEventHistory carries the
+ * same three fields, and renderItemEventsPage prints NOT REACHED in
+ * red); a trace that returned a bare array made the keeper guess.
+ */
+export interface ClientTrace {
+  /** The walker key traced, verbatim — "(no user-agent)" is a real client. */
+  user_agent: string;
+  events: MetricEvent[];
+  rows_scanned: number;
+  /** True when the scan hit its cap with rows still unread. */
+  capped: boolean;
+  /** Timestamp of the oldest row reached, so "nothing found" has a floor. */
+  oldest_row_seen: string | null;
+}
+
+/**
  * Everything one client did at a priced door, in order. When a real
  * buyer bounces, the sequence is the evidence: which items they tried,
  * how many 402s they read first, and whether the declines changed
@@ -665,10 +686,12 @@ export async function traceClient(
   env: Env,
   userAgent: string,
   scanCap = SCAN_CAP,
-): Promise<MetricEvent[]> {
+): Promise<ClientTrace> {
   const trail: MetricEvent[] = [];
   let cursor: string | undefined;
   let scanned = 0;
+  let capped = false;
+  let oldest: string | null = null;
   while (scanned < scanCap) {
     const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
@@ -680,13 +703,23 @@ export async function traceClient(
     const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
     for (const name of names) {
       const event = values.get(name);
-      if (event && (event.user_agent ?? "(no user-agent)") === userAgent) {
+      if (!event) continue;
+      // Rows arrive newest-first, so every row seen lowers the floor.
+      if (oldest === null || event.at < oldest) oldest = event.at;
+      if ((event.user_agent ?? "(no user-agent)") === userAgent) {
         trail.push(event);
       }
     }
     if (listed.list_complete) break;
     cursor = listed.cursor;
+    if (scanned >= scanCap) capped = true;
   }
   // Rows arrive newest-first; the sequence reads forward.
-  return trail.reverse();
+  return {
+    user_agent: userAgent,
+    events: trail.reverse(),
+    rows_scanned: scanned,
+    capped,
+    oldest_row_seen: oldest,
+  };
 }
