@@ -2,7 +2,14 @@ import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
-import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
+import {
+  LETTER_CAP,
+  LETTER_FOLLOW_UP_CAP,
+  addFollowUp,
+  getLetter,
+  letterThread,
+  submitLetter,
+} from "@/services/letters";
 import { isRecord, type HonoEnv } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 
@@ -16,6 +23,21 @@ export const letterRoutes = new Hono<HonoEnv>();
 
 const DAY_SECONDS = 86400;
 
+/**
+ * WHEN "TOMORROW" IS (2026-09-08). The daily limit is per UTC
+ * calendar day, and the refusal said "tomorrow" — which a person
+ * infers and an agent cannot. Half the correspondents through this
+ * door are software working to a deadline; one of them told us so in
+ * writing. The refusal now carries the moment it lifts, in the header
+ * every HTTP client already knows how to read and in the body for
+ * everything else.
+ */
+function nextUtcMidnight(now: Date): Date {
+  const next = new Date(now);
+  next.setUTCHours(24, 0, 0, 0);
+  return next;
+}
+
 letterRoutes.post("/api/letter", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
   if (!isRecord(body)) {
@@ -28,6 +50,63 @@ letterRoutes.post("/api/letter", async (c) => {
     );
   }
 
+  /*
+   * A FOLLOW-UP GOES ON THE LETTER IT ANSWERS (2026-09-08), and is
+   * decided before the daily limit, because it is not rationed by the
+   * day — the keeper opened this door by replying.
+   */
+  const inReplyTo = sanitizeText(body["in_reply_to"], 80);
+  if (inReplyTo) {
+    const added = await addFollowUp(c.env, inReplyTo, body["letter"]);
+    if (!added.ok) {
+      const refusal: Record<"reason" | "error", string> & {
+        status: 400 | 404 | 409 | 413;
+      } =
+        added.reason === "no_such_letter"
+          ? {
+              reason: added.reason,
+              status: 404,
+              error:
+                "No letter by that id in the box. Check the pickup slip; in_reply_to takes the letter_id you were given, not the pickup URL.",
+            }
+          : added.reason === "unanswered"
+            ? {
+                reason: added.reason,
+                status: 409,
+                error:
+                  "That letter has no answer yet, so there is no thread to add to. One letter a day until the keeper writes back — then this door opens and stays open.",
+              }
+            : added.reason === "full"
+              ? {
+                  reason: added.reason,
+                  status: 409,
+                  error: `That letter has taken its ${LETTER_FOLLOW_UP_CAP} follow-ups. Start a fresh letter tomorrow, or say the important part in one.`,
+                }
+              : added.reason === "too_long"
+                ? {
+                    reason: added.reason,
+                    status: 413,
+                    error: `That runs ${added.length} characters and the box holds ${added.cap}. Nothing was stored — a letter is never cut down to fit here, because half a report is worse than none. Send it in parts, or trim it yourself.`,
+                  }
+                : {
+                    reason: added.reason,
+                    status: 400,
+                    error: "A letter needs words in it.",
+                  };
+      const { status, ...rest } = refusal;
+      return c.json(rest, status);
+    }
+    return c.json({
+      message:
+        "Added to your letter. The keeper sees it under the same exchange, and his counter says it is his turn again.",
+      letter_id: added.record.letter_id,
+      pickup_url: added.pickupUrl,
+      follow_ups_sent: added.record.follow_ups?.length ?? 0,
+      follow_ups_left:
+        LETTER_FOLLOW_UP_CAP - (added.record.follow_ups?.length ?? 0),
+    });
+  }
+
   // One letter per visitor per day, same easy arithmetic as the bell.
   const fromName = sanitizeText(body["from_name"], 80);
   const who =
@@ -38,13 +117,24 @@ letterRoutes.post("/api/letter", async (c) => {
   const today = new Date().toISOString().slice(0, 10);
   const sentKey = KV_KEYS.letterSent(who.toLowerCase(), today);
   if (await kvGet(c.env.COUNTERS, sentKey)) {
+    const now = new Date();
+    const opensAt = nextUtcMidnight(now);
+    const seconds = Math.max(
+      1,
+      Math.ceil((opensAt.getTime() - now.getTime()) / 1000),
+    );
     return c.json(
       {
         error:
           "One letter a day, friend. The box is small and the keeper reads slow, on purpose. Tomorrow's mail goes out tomorrow.",
+        next_letter_at: opensAt.toISOString(),
+        retry_after_seconds: seconds,
+        already_writing:
+          "Answered already and need to add to it? Post to the SAME letter with in_reply_to and its id — a letter the keeper has replied to takes follow-ups without waiting for tomorrow.",
         ...(cadenceFor("letter") ? { cadence: cadenceFor("letter") } : {}),
       },
       429,
+      { "Retry-After": String(seconds) },
     );
   }
 
@@ -53,7 +143,24 @@ letterRoutes.post("/api/letter", async (c) => {
     fromName: body["from_name"],
     verifiedIdentity: sanitizeText(body["verified_identity"], 300) || undefined,
   });
-  if (!submitted) {
+  if (!submitted.ok) {
+    /*
+     * OVER-LONG IS REFUSED, NOT TRIMMED (2026-09-08). Until today a
+     * letter past the cap was sliced to fit and stored, and this door
+     * answered 201 over the top of it — the sender never learned, and
+     * neither did the keeper. Nothing is stored now, and the refusal
+     * says how long it actually ran, so a sender can act on it.
+     */
+    if (submitted.reason === "too_long") {
+      return c.json(
+        {
+          error: `That runs ${submitted.length} characters and the box holds ${submitted.cap}. Nothing was stored — a letter is never cut down to fit here, because half a letter read as a whole one is worse than no letter at all. Trim it, or send it in parts.`,
+          length: submitted.length,
+          cap: submitted.cap,
+        },
+        413,
+      );
+    }
     return c.json(
       {
         error: `A letter needs words in it. ${LETTER_CAP} characters, tops, it's a mailbox, not a manuscript drawer.`,
@@ -67,6 +174,8 @@ letterRoutes.post("/api/letter", async (c) => {
     {
       message:
         "Letter's in the box. The keeper reads Sundays and replies when he has something to say, which is not always. Check your pickup URL, no news is also an answer, just a slower one.",
+      writing_again:
+        "Once he has replied, post here again with in_reply_to set to this letter_id and it joins THIS exchange instead of starting a new one — and it does not wait for tomorrow.",
       letter_id: submitted.record.letter_id,
       pickup_url: submitted.pickupUrl,
       privacy:
@@ -91,20 +200,51 @@ letterRoutes.get("/api/letter/:letter_id", async (c) => {
       404,
     );
   }
+  /*
+   * THE THREAD DECIDES, NOT THE STATUS (2026-09-08). Two things were
+   * wrong with reading `record.status` here.
+   *
+   * FILING USED TO DESTROY THE ANSWER. "archived" was reported as
+   * "read" — right, since how the keeper files his box is nobody
+   * else's business — but the reply was served only when the status
+   * read exactly "replied". So the moment he archived a letter he had
+   * already answered, the correspondent's pickup URL went back to
+   * saying nobody had written, and the signed reply they were told to
+   * come and collect was gone. Housekeeping is not a retraction.
+   *
+   * A letter that HAS answers reports "replied" and serves them,
+   * whatever the keeper has since done with his copy; a letter with
+   * none still never leaks whether it was filed.
+   */
+  const thread = letterThread(record);
+  const answered = thread.length > 0;
+  const first = thread[0];
   const response: Record<string, unknown> = {
     letter_id: record.letter_id,
-    status: record.status === "archived" ? "read" : record.status,
+    status: answered ? "replied" : record.status === "archived" ? "read" : record.status,
     received: record.date,
-    note:
-      record.status === "replied"
+    note: !answered
+      ? "The keeper reads Sundays and replies when he has something to say, which is not always."
+      : thread.length === 1
         ? "The keeper wrote back. The reply below is signed, verify it against the key at /.well-known/scvd-signing-key."
-        : "The keeper reads Sundays and replies when he has something to say, which is not always.",
+        : `The keeper wrote back ${thread.length} times. Every answer is under "replies", oldest first, each signed on its own — verify them against the key at /.well-known/scvd-signing-key. The "reply" field stays the FIRST answer, unchanged, so nothing this store has published ever changes meaning under you. Each signature covers its own reply; it does not prove the list is complete.`,
   };
-  if (record.status === "replied" && record.reply) {
-    response["reply"] = record.reply;
-    response["reply_signature"] = record.reply_signature;
-    response["reply_public_key"] = record.reply_public_key;
-    response["replied_at"] = record.replied_at;
+  /*
+   * RECEIPT, NOT AN ECHO. The letter never comes back out of this box
+   * — that rule is older than follow-ups and survives them — but a
+   * sender does need to know their message landed, so the dates come
+   * back and the words never do.
+   */
+  const followUps = record.follow_ups ?? [];
+  if (followUps.length > 0) {
+    response["follow_ups_received"] = followUps.map((entry) => entry.date);
+  }
+  if (first) {
+    response["reply"] = first.reply;
+    response["reply_signature"] = first.signature;
+    response["reply_public_key"] = first.public_key;
+    response["replied_at"] = first.replied_at;
+    response["replies"] = thread;
   }
   return c.json(response);
 });
