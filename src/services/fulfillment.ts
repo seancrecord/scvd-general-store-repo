@@ -304,12 +304,6 @@ export async function fulfillPurchase(
     }
     mintOptions.attests = await bundleEvidenceHash(bundle);
   }
-  if (pending.observation) {
-    const prepared = retainedObservation ?? await pending.observation.save({ attestation, bundle, attests: mintOptions.attests! });
-    attestation = prepared.attestation;
-    bundle = prepared.bundle;
-    mintOptions.attests = prepared.attests;
-  }
   /**
    * THE SERVICE AUDIT observes first and mints second, for the same
    * reason the attestations do: the certificate binds the report's
@@ -322,8 +316,8 @@ export async function fulfillPurchase(
    */
   const a2aKit = item.id === "a2a_repair_kit" ? await prepareA2AKit(env, input.targetUrl ?? "") : undefined;
   if (a2aKit) mintOptions.attests = a2aKit.report.evidence_hash;
-  let serviceAudit: SignedServiceAudit | undefined;
-  if (item.id === "service_audit") {
+  let serviceAudit: SignedServiceAudit | undefined = retainedObservation?.serviceAudit;
+  if (item.id === "service_audit" && !retainedObservation) {
     serviceAudit = await performServiceAudit(env, input.targetUrl ?? "");
     mintOptions.attests = serviceAudit.evidence_hash;
   }
@@ -336,8 +330,8 @@ export async function fulfillPurchase(
    * `unreachable` rather than a throw, because a dated did-not-answer
    * is itself the observation.
    */
-  let goodBuyer: SignedGoodBuyerReading | undefined;
-  if (item.id === "good_buyer") {
+  let goodBuyer: SignedGoodBuyerReading | undefined = retainedObservation?.goodBuyer;
+  if (item.id === "good_buyer" && !retainedObservation) {
     goodBuyer = await performGoodBuyerReading(env, input.targetUrl ?? "", {
       ...(input.buyerCapUsd !== undefined
         ? { max_amount_per_payment_usd: input.buyerCapUsd }
@@ -352,8 +346,8 @@ export async function fulfillPurchase(
    * evidence hash, so /api/verify answers for the card with no new
    * endpoint asked to be trusted.
    */
-  let signatureAgentCard: SignedSignatureAgentCard | undefined;
-  if (item.id === "signature_agent_card") {
+  let signatureAgentCard: SignedSignatureAgentCard | undefined = retainedObservation?.signatureAgentCard;
+  if (item.id === "signature_agent_card" && !retainedObservation) {
     signatureAgentCard = await performSignatureAgentCard(
       env,
       input.targetUrl ?? "",
@@ -366,10 +360,25 @@ export async function fulfillPurchase(
    * hash, so /api/verify answers for the page report with no new
    * endpoint asked to be trusted.
    */
-  let onpageAudit: SignedOnpageAudit | undefined;
-  if (item.id === "onpage_audit") {
+  let onpageAudit: SignedOnpageAudit | undefined = retainedObservation?.onpageAudit;
+  if (item.id === "onpage_audit" && !retainedObservation) {
     onpageAudit = await performOnpageAudit(env, input.targetUrl ?? "");
     mintOptions.attests = onpageAudit.evidence_hash;
+  }
+  // Commit only after the eligible instrument has finished. Recovery must
+  // publish the purchased observation, even if the target changes or vanishes.
+  if (pending.observation) {
+    const prepared = retainedObservation ?? await pending.observation.save({
+      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit,
+      attests: mintOptions.attests!,
+    });
+    attestation = prepared.attestation;
+    bundle = prepared.bundle;
+    serviceAudit = prepared.serviceAudit;
+    goodBuyer = prepared.goodBuyer;
+    signatureAgentCard = prepared.signatureAgentCard;
+    onpageAudit = prepared.onpageAudit;
+    mintOptions.attests = prepared.attests;
   }
   /**
    * THE LAUNCH CHECK walks first and mints second, same discipline:

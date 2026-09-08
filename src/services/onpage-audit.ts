@@ -176,11 +176,13 @@ export async function storeOnpageAudit(
   env: Env,
   audit: SignedOnpageAudit,
   certId: string,
+  // The purchase time is retained so retrying publication keeps the same envelope.
+  createdAt?: string,
 ): Promise<OnpageAuditRecord> {
   const record: OnpageAuditRecord = {
     audit,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.onpageAudit(audit.audit_id),

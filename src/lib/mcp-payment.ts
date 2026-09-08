@@ -1,5 +1,5 @@
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
-import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { getMenuItem } from "@/store";
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
@@ -136,6 +136,7 @@ export type McpPaymentOutcome =
       recovered?: true;
       artifactRecovery?: true;
       savedResponse?: string;
+      savedDelivery?: Record<string, unknown>;
       pending: PendingPayment;
       settledSoFar: () => SettledPayment | null;
       /**
@@ -398,6 +399,17 @@ export async function runMcpPayment(
     if (cached) return { kind: "replay", body: cached };
   }
 
+  const recorded = await lookupRecordedPurchase(env, result.paymentRequirements.network, verifiedPayer, result.paymentPayload,
+    { path, door: "mcp", digest: inputDigest });
+  if (recorded?.kind === "refused") return { kind: "purchase-status", body: recorded.body };
+  if (recorded?.kind === "complete") return {
+    kind: "authorized", recovered: true, savedDelivery: recorded.delivery, verifiedPayer,
+    pending: { paidUsdc: recorded.payment.paidUsdc, tipUsdc: recorded.payment.tipUsdc,
+      payer: verifiedPayer, settle: async () => recorded.payment },
+    settledSoFar: () => recorded.payment,
+    deliveryKeySoFar: () => KV_KEYS.deliveryIntent(recorded.payment.transaction),
+  };
+
   // Authentication still precedes every recovery read. A spent payment
   // may finish its own missing mint; it cannot buy different inputs.
   const nonce = extractPaymentNonce(result.paymentPayload);
@@ -488,8 +500,7 @@ export async function runMcpPayment(
     };
   }
 
-  const unresolved = await unresolvedPurchase(env, result.paymentRequirements.network, verifiedPayer, result.paymentPayload);
-  if (unresolved) return { kind: "purchase-status", body: unresolved };
+  if (recorded?.kind === "pending") return { kind: "purchase-status", body: recorded.body };
 
   const admissionRefusal = await admitPurchase?.();
   if (admissionRefusal) return { kind: "admission-refused", refusal: admissionRefusal };

@@ -1070,7 +1070,9 @@ async function callPurchaseTool(
    */
   let response: Record<string, unknown>;
   try {
-    if (outcome.savedResponse !== undefined) {
+    if (outcome.savedDelivery !== undefined) {
+      response = outcome.savedDelivery;
+    } else if (outcome.savedResponse !== undefined) {
       const saved: unknown = JSON.parse(outcome.savedResponse);
       if (!isRecord(saved)) throw new Error("Paid recovery response unreadable");
       response = saved;

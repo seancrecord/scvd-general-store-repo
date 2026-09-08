@@ -44,7 +44,10 @@ export function supportsSimpleInstantRecovery(item: MenuItem): boolean {
 
 /** These observations are fully prepared before settlement; retain their signed bytes. */
 export function supportsObservationRecovery(item: MenuItem | undefined): boolean {
-  return !!item && ["settlement_attestation", "attestation_bundle"].includes(item.id);
+  return !!item && [
+    "settlement_attestation", "attestation_bundle", "service_audit",
+    "good_buyer", "signature_agent_card", "onpage_audit",
+  ].includes(item.id);
 }
 
 /** Stocked goods consume external inventory; their recovery needs a separate journal. */

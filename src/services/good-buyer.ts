@@ -226,11 +226,13 @@ export async function storeGoodBuyerReading(
   env: Env,
   reading: SignedGoodBuyerReading,
   certId: string,
+  // The purchase time is retained so retrying publication keeps the same envelope.
+  createdAt?: string,
 ): Promise<GoodBuyerRecord> {
   const record: GoodBuyerRecord = {
     reading,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(
     env.PATRONS,
