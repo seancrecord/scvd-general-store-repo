@@ -452,6 +452,7 @@ export async function deliverInstantGoods(
         deliverable: `A fresh look at ${observed.host}, taken ${observed.observed_at} by the census's own instrument: ${observed.verdict.toUpperCase()}. The passport at /passport/${observed.host} re-derives from this observation immediately${observed.verdict === "ready" ? ", and the chip reads FRESH" : " — and because the finding is not ready, the passport refuses and the chip is dark. The check was bought; the verdict never is"}.`,
         extras: {
           refresh: refresh.observation,
+          observation: refresh,
           evidence_hash: refresh.evidence_hash,
           signature: refresh.signature,
           signature_jcs: refresh.signature_jcs,
@@ -459,7 +460,7 @@ export async function deliverInstantGoods(
           passport_url: `/passport/${observed.host}`,
           chip_url: `/badges/passport/${observed.host}.svg`,
           verify_note:
-            "The observation is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the observation too.",
+            "ed25519_verify(observation.signed_payload, observation.signature) against observation.public_key, also served at /.well-known/scvd-signing-key. observation.signature_jcs verifies the RFC 8785 canonicalization of observation.observation. SHA-256 of observation.signed_payload equals observation.evidence_hash, bound into this purchase's certificate as attests; /api/verify/{cert_id} verifies the certificate separately.",
         },
       };
     }
@@ -524,6 +525,7 @@ export async function deliverInstantGoods(
         deliverable: `Your hosted trust profile for ${r.host} is standing at ${r.profile_url} — term ends ${r.expires.slice(0, 10)}, purchase ${r.renewals} of the record. The page aggregates your live passport, the freshness chip, and the signed observation history; it derives from the same corpus everyone reads free, so what it shows moves with the evidence, both directions. Renew any time — an early renewal extends the term from its current end, never from today.`,
         extras: {
           profile: r,
+          observation: profile,
           evidence_hash: profile.evidence_hash,
           signature: profile.signature,
           signature_jcs: profile.signature_jcs,
@@ -532,7 +534,7 @@ export async function deliverInstantGoods(
           passport_url: `/passport/${r.host}`,
           chip_url: `/badges/passport/${r.host}.svg`,
           verify_note:
-            "The commission record is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the record too.",
+            "ed25519_verify(observation.signed_payload, observation.signature) against observation.public_key, also served at /.well-known/scvd-signing-key. observation.signature_jcs verifies the RFC 8785 canonicalization of observation.record. SHA-256 of observation.signed_payload equals observation.evidence_hash, bound into this purchase's certificate as attests; /api/verify/{cert_id} verifies the certificate separately.",
         },
       };
     }
