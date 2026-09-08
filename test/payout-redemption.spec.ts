@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { privateKeyToAccount } from "viem/accounts";
-import { AUTHORIZATION_USED_TOPIC, BASE_USDC } from "@/lib/base-rpc";
+import { BASE_USDC } from "@/lib/base-rpc";
 import { livePayouts, payoutRedemptions, type BountyRecord } from "@/services/bounty-board";
 import { outstandingPayouts } from "@/pages/admin/bounties-page";
 import type { Env } from "@/types";
@@ -14,9 +14,18 @@ const FIELD = privateKeyToAccount(KEY).address;
  * "WE STILL HAVE TO TEST THAT THEY CAN CLAIM IT" (2026-09-04). "Paid"
  * in the books means a signed authorization went out. Whether the
  * walker ever redeemed it is the chain's fact, and the page used to
- * say "still redeemable" of every live payout regardless. Now the
- * store asks the USDC contract for AuthorizationUsed(field wallet,
- * nonce), and a redeemed payout stops counting as a promise.
+ * say "still redeemable" of every live payout regardless. A redeemed
+ * payout stops counting as a promise.
+ *
+ * HOW THE QUESTION IS ASKED, REWRITTEN 2026-09-08. It used to scan
+ * AuthorizationUsed logs from the bounty's opening block to the head.
+ * That range grows all week, and on 09-08 four bounties opened on
+ * 09-01 each asked for ~300,000 blocks in one call — refused by every
+ * endpoint, nine attempts, "unknown" on the desk while two of the four
+ * had really been redeemed and $0.50 had really left the wallet. The
+ * question now goes to the token's own state: one eth_call, no range
+ * to be capped. The test below fails if a block range ever comes
+ * back — that is the defect, not an implementation detail.
  */
 
 const NONCE_A = `0x${"aa".repeat(32)}`;
@@ -53,20 +62,26 @@ function chain(): typeof fetch {
   return (async (_input: RequestInfo | URL, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body)) as {
       method: string;
-      params: [{ topics?: string[]; address?: string }];
+      params: [{ to?: string; data?: string }, string];
     };
-    if (body.method === "eth_blockNumber") {
-      return new Response(JSON.stringify({ result: "0x2000" }), { status: 200 });
-    }
-    expect(body.method).toBe("eth_getLogs");
-    const filter = body.params[0];
-    expect(filter.address?.toLowerCase()).toBe(BASE_USDC.toLowerCase());
-    expect(filter.topics?.[0]).toBe(AUTHORIZATION_USED_TOPIC);
-    expect(filter.topics?.[1]).toContain(FIELD.slice(2).toLowerCase());
-    const burned = filter.topics?.[2] === NONCE_A;
+    /*
+     * NO LOG SCAN, AND THE ASSERTION IS THE POINT. A reading that
+     * needs a block range is a reading that goes blind the week the
+     * range outgrows what an endpoint will serve.
+     */
+    expect(body.method, "the redemption reading asked for a log range again").toBe("eth_call");
+    const call = body.params[0];
+    expect(call.to?.toLowerCase()).toBe(BASE_USDC.toLowerCase());
+    // authorizationState(address,bytes32): selector, authorizer, nonce.
+    expect(call.data?.slice(0, 10)).toBe("0xe94a0102");
+    expect(call.data?.slice(10, 74)).toBe(
+      FIELD.slice(2).toLowerCase().padStart(64, "0"),
+    );
+    const nonce = `0x${call.data?.slice(74)}`;
+    const burned = nonce === NONCE_A;
     return new Response(
       JSON.stringify({
-        result: burned ? [{ transactionHash: "0xREDEEMED" }] : [],
+        result: `0x${(burned ? 1 : 0).toString(16).padStart(64, "0")}`,
       }),
       { status: 200 },
     );
@@ -78,20 +93,56 @@ describe("whether a signed payout was redeemed is read off the chain", () => {
     vi.unstubAllGlobals();
   });
 
-  it("asks AuthorizationUsed(field wallet, nonce) per paid bounty and reads the answer", async () => {
+  it("asks the token for authorizationState(field wallet, nonce) and reads the answer", async () => {
     vi.stubGlobal("fetch", chain());
     const redemptions = await payoutRedemptions(
       { ...testEnv, FIELD_WALLET_KEY: KEY } as Env,
       [paid("bty_a", NONCE_A), paid("bty_b", NONCE_B)],
     );
-    expect(redemptions["bty_a"]).toEqual({ state: "redeemed", tx_hash: "0xredeemed" });
+    expect(redemptions["bty_a"]).toEqual({ state: "redeemed" });
     expect(redemptions["bty_b"]).toEqual({ state: "unredeemed" });
+  });
+
+  /**
+   * THE DEFECT ITSELF, DATED. A bounty opened a week before the read
+   * used to make the reading ask for the whole week of blocks at once.
+   * The reading must not care how old the bounty is.
+   */
+  it("reads a week-old bounty with the same single call as a fresh one", async () => {
+    let calls = 0;
+    vi.stubGlobal("fetch", (async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls += 1;
+      return chain()(input, init);
+    }) as typeof fetch);
+    const ancient = paid("bty_old", NONCE_A);
+    ancient.opened_block = 1; // a week and 300,000 blocks ago
+    const redemptions = await payoutRedemptions(
+      { ...testEnv, FIELD_WALLET_KEY: KEY } as Env,
+      [ancient],
+    );
+    expect(redemptions["bty_old"]).toEqual({ state: "redeemed" });
+    expect(calls, "one payout, one call — no head read, no range walk").toBe(1);
+  });
+
+  /**
+   * A NODE THAT ANSWERS NONSENSE IS NOT A NODE THAT ANSWERS "NO". The
+   * wallet cover counts unknown payouts as still owed; reading an
+   * unparseable word as false would quietly drop a real liability.
+   */
+  it("an unreadable answer is unknown, not unredeemed", async () => {
+    vi.stubGlobal("fetch", (async () =>
+      new Response(JSON.stringify({ result: "" }), { status: 200 })) as typeof fetch);
+    const redemptions = await payoutRedemptions(
+      { ...testEnv, FIELD_WALLET_KEY: KEY } as Env,
+      [paid("bty_a", NONCE_A)],
+    );
+    expect(redemptions["bty_a"]?.state).toBe("unknown");
   });
 
   it("a redeemed payout is money gone, not money promised", () => {
     const bounties = [paid("bty_a", NONCE_A), paid("bty_b", NONCE_B)];
     const redemptions = {
-      bty_a: { state: "redeemed" as const, tx_hash: "0x1" },
+      bty_a: { state: "redeemed" as const },
       bty_b: { state: "unredeemed" as const },
     };
     expect(livePayouts(bounties, redemptions, NOW).map((b) => b.bounty_id)).toEqual(["bty_b"]);
@@ -117,8 +168,8 @@ describe("whether a signed payout was redeemed is read off the chain", () => {
       { ...testEnv, FIELD_WALLET_KEY: KEY } as Env,
       [paid("bty_a", NONCE_A)],
     ).catch(() => null);
-    // getBlockNumber fails first; the caller's fail-soft takes over.
-    // If it did answer, every entry must be "unknown".
+    // Every entry must be "unknown" — never "unredeemed", which would
+    // read as money the store no longer owes.
     if (redemptions) {
       for (const reading of Object.values(redemptions)) {
         expect(reading.state).toBe("unknown");

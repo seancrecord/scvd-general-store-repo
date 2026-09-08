@@ -2,7 +2,7 @@ import {
   BASE_EVM,
   BASE_USDC,
   evmChainOf,
-  findAuthorizationUseInRange,
+  authorizationUsed,
   getBlockNumber,
   getReceipt,
   isSameAddress,
@@ -1042,18 +1042,35 @@ export async function claimBounty(
  *
  * "Paid" in this store's books means a signed authorization went out.
  * Whether the recipient ever submitted it is the chain's fact, and
- * until today nobody asked: the page said "still redeemable" of every
- * live payout whether it had been redeemed an hour ago or never. An
- * EIP-3009 nonce burns at most once and emits AuthorizationUsed
- * (authorizer, nonce) when it does — both indexed, so the node answers
- * the exact question. One bounded read per paid bounty, from the
- * block the bounty opened to the head; a read that fails answers
- * "unknown", never "not redeemed".
+ * until 09-04 nobody asked: the page said "still redeemable" of every
+ * live payout whether it had been redeemed an hour ago or never.
+ *
+ * HOW IT ASKS, REWRITTEN 2026-09-08. The first version read
+ * AuthorizationUsed logs from the bounty's opening block to the head.
+ * That range grows by 43,200 blocks a day on Base, and by 09-08 the
+ * four paid bounties opened on 09-01 each asked for ~300,000 blocks in
+ * one call — a width every endpoint refuses outright. The desk showed
+ * "unknown" on all four while two of them had really been redeemed and
+ * $0.50 had really left the wallet; the wallet cover, counting unknown
+ * as promised, said $1.00 was still owed. A blind instrument that
+ * fails soft looks exactly like a quiet one.
+ *
+ * So the question goes to the token's own state — one eth_call per
+ * paid bounty, no block range to be capped, no ladder to exhaust
+ * (base-rpc's authorizationUsed). What it costs is the redeeming
+ * transaction hash, which is a log fact and not a state fact: a
+ * redeemed payout is now reported with its hash only when an earlier
+ * reading already found one. The money question answers either way,
+ * and a read that fails still answers "unknown", never "not
+ * redeemed".
  */
 export type PayoutRedemption =
-  | { state: "redeemed"; tx_hash: string }
+  | { state: "redeemed"; tx_hash?: string }
   | { state: "unredeemed" }
   | { state: "unknown"; problem: string };
+
+/** Calls in flight at once — bounded, the same courtesy the ward round keeps. */
+const REDEMPTION_BATCH = 5;
 
 export async function payoutRedemptions(
   env: Env,
@@ -1075,36 +1092,31 @@ export async function payoutRedemptions(
     return out;
   }
   const authorizer = (await fieldSignerFromKey(env.FIELD_WALLET_KEY)).address;
-  const head = await getBlockNumber(env, BASE_EVM);
-  for (const bounty of paid) {
-    try {
-      const use = await findAuthorizationUseInRange(
-        env,
-        authorizer,
-        bounty.claim!.authorization_nonce,
-        bounty.opened_block,
-        head,
-        BASE_EVM,
-      );
-      out[bounty.bounty_id] = use
-        ? { state: "redeemed", tx_hash: use.txHash }
-        : { state: "unredeemed" };
-    } catch (error) {
-      out[bounty.bounty_id] = {
-        state: "unknown",
-        problem: String(error instanceof Error ? error.message : error).slice(0, 160),
-      };
-    }
+  for (let start = 0; start < paid.length; start += REDEMPTION_BATCH) {
+    await Promise.all(
+      paid.slice(start, start + REDEMPTION_BATCH).map(async (bounty) => {
+        try {
+          const used = await authorizationUsed(
+            env,
+            authorizer,
+            bounty.claim!.authorization_nonce,
+            BASE_EVM,
+          );
+          out[bounty.bounty_id] = used
+            ? { state: "redeemed" }
+            : { state: "unredeemed" };
+        } catch (error) {
+          out[bounty.bounty_id] = {
+            state: "unknown",
+            problem: String(error instanceof Error ? error.message : error).slice(0, 160),
+          };
+        }
+      }),
+    );
   }
   return out;
 }
 
-/**
- * The authorizations a recipient can still turn into money: paid,
- * inside validBefore, and not already burned on chain. Redeemed ones
- * are money gone, not money promised; unknown ones stay counted, the
- * cautious direction.
- */
 export function livePayouts(
   bounties: readonly BountyRecord[],
   redemptions: Readonly<Record<string, PayoutRedemption>>,
