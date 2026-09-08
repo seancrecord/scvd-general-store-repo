@@ -195,3 +195,9 @@ The ambiguity cases simulate a lost settlement response and then inject its conf
 This extends BUY-017/034/037 without closing their parent findings or changing the 15/39 completion count. Other external observations, inventory/term services, commission/publication capture, pre-capture obligations and lost status handles remain. This increment covers settlement attestations and bundles only; it does not claim every observation product is recoverable.
 
 Storage uses the existing coordinator and its [transactional Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/); no new migration is required.
+
+## 2026-09-08 — observation journal CI integration / PR #570
+
+- [x] Register the reviewed `DurableObjectTransaction.put` for the original observation in the KV-write scanner's exact-line exceptions. The scanner still rejects ordinary KV aliases, including a different write through a receiver named `txn`, and rejects the same exception in an unrelated source file.
+
+GitHub reported one failure with 6,935 passing tests: the scanner treated this Durable Object transaction as an unguarded KV write. The same assertion reproduced locally; all four scanner checks passed after the exception was added, followed by typecheck. No production storage or payment behavior changed. This does not close another buyer finding.
