@@ -89,18 +89,46 @@ export async function purchaseIdentity(network: string, verifiedPayer: string, p
   return { payer, id: await sha256Hex(jcsCanonicalize({ network, payer, identity })) };
 }
 
-/** Unknown retries precede new-sale admission: a closed shelf cannot say no charge. */
-export async function unresolvedPurchase(env: Env, network: string, payer: string | undefined, payload: unknown) {
+type RecordedPurchaseLookup =
+  | { kind: "complete"; delivery: Record<string, unknown>; payment: SettledPayment }
+  | { kind: "refused" | "pending"; body: Record<string, unknown> & { error: string } }
+  | null;
+
+/** Authenticated completed goods outlive the replay cache; never run fulfillment again. */
+export async function lookupRecordedPurchase(env: Env, network: string, payer: string | undefined, payload: unknown,
+  request: { path: string; door: "http" | "mcp"; digest: string | undefined },
+): Promise<RecordedPurchaseLookup> {
   if (!payer) return null;
+  let known: PurchaseIntent | undefined;
   try {
-    const { id } = await purchaseIdentity(network, payer, payload);
-    const saved = await purchaseIntentStore(env, id).existingPurchase();
+    const identity = await purchaseIdentity(network, payer, payload);
+    const saved = await purchaseIntentStore(env, identity.id).existingPurchase();
     if (!saved) return null;
     const record = JSON.parse(saved) as PurchaseIntent;
-    return record.state === "unknown" ? new RecordedPurchase(env, record).body() : null;
+    if (record.id !== identity.id || record.payer !== identity.payer || record.terms.network !== network) {
+      throw new Error("Purchase owner mismatch");
+    }
+    known = record;
+    if (record.state === "unknown") return { kind: "pending", body: new RecordedPurchase(env, record).body() };
+    if (record.state !== "settled" || !record.delivery || !record.payment) return null;
+    const digest = record.door === "mcp"
+      ? await sha256Hex(jcsCanonicalize(JSON.parse(record.request)))
+      : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
+    if (record.path !== request.path || record.door !== request.door || digest !== request.digest) {
+      return { kind: "refused", body: {
+        error: "This payment bought a different request. Retry the original product and inputs, or read its purchase status. No additional payment was submitted.",
+        code: "purchase_input_mismatch", charged: true, charged_again: false, settlement_attempted: false,
+        recovery: purchaseRecovery(env, record),
+      } };
+    }
+    return { kind: "complete", delivery: (await purchaseDelivery(env, record))!, payment: record.payment };
   } catch {
-    return { error: "Purchase status is unavailable. This request did not submit payment; an earlier attempt may remain unresolved.",
-      code: PURCHASE_RECORD_CODES.unavailable, charged: null, settlement_attempted: false, payment_state: "unknown" };
+    return { kind: "pending", body: {
+      error: "Purchase status is unavailable. This request did not submit payment; an earlier attempt may remain unresolved.",
+      code: PURCHASE_RECORD_CODES.unavailable, charged: known ? purchaseStatus(known).charged : null,
+      settlement_attempted: false, payment_state: known?.state ?? "unknown",
+      ...(known ? { recovery: purchaseRecovery(env, known) } : {}),
+    } };
   }
 }
 
@@ -147,6 +175,17 @@ export async function notePurchaseUnknown(env: Env, record: PurchaseIntent, refe
   if (reference) await purchaseIntentStore(env, record.id).updatePurchase({ reconciliation_reference: reference }).catch(() => undefined);
 }
 
+async function purchaseDelivery(env: Env, record: PurchaseIntent): Promise<Record<string, unknown> | undefined> {
+  if (record.item?.fulfillment === "human_queue" && typeof record.delivery?.order_id === "string") {
+    const { getOrder } = await import("@/services/orders");
+    const order = await getOrder(env, record.delivery.order_id);
+    if (!order) throw new Error("Purchased order unavailable");
+    return { ...record.delivery, status: order.status,
+      ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
+  }
+  return record.delivery;
+}
+
 export async function readPurchaseStatus(env: Env, id: unknown, token: unknown): Promise<{ status: 200 | 404 | 503; body: Record<string, unknown> }> {
   const missing = { status: 404 as const, body: { code: "purchase_status_not_found", error: "No purchase status available with these credentials." } };
   if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id) || typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) return missing;
@@ -155,13 +194,11 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
     if (!saved) return missing;
     const record = JSON.parse(saved) as PurchaseIntent;
     const body = purchaseStatus(record);
-    if (record.item?.fulfillment === "human_queue" && typeof record.delivery?.order_id === "string") {
-      const { getOrder } = await import("@/services/orders");
-      const order = await getOrder(env, record.delivery.order_id);
-      if (!order) throw new Error("Purchased order unavailable");
-      body.delivery_state = order.status === "completed" ? "delivered" : "order_created";
-      body.fulfillment = { ...record.delivery, status: order.status,
-        ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
+    if (record.delivery) {
+      body.fulfillment = await purchaseDelivery(env, record);
+      if (record.item?.fulfillment === "human_queue") {
+        body.delivery_state = body.fulfillment?.status === "completed" ? "delivered" : "order_created";
+      }
     }
     return { status: 200, body };
   } catch {

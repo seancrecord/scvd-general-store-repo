@@ -1,5 +1,5 @@
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
-import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody } from "@/lib/delivery-failed";
@@ -1146,6 +1146,23 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
+  const recorded = c.req.path.startsWith("/api/buy/") ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
+    payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
+    { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) }) : null;
+  if (recorded?.kind === "refused") return c.json(recorded.body, 503);
+  if (recorded?.kind === "complete") {
+    c.header("Cache-Control", "no-store");
+    c.header("Paid-Retry", "true");
+    try {
+      const response = c.json({ ...recorded.delivery, paid_retry: true, charged: true, charged_again: false });
+      for (const [name, value] of Object.entries(recorded.payment.settleHeaders)) response.headers.set(name, value);
+      return response;
+    } catch {
+      return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL,
+        getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, recorded.payment), charged_again: false }, 500);
+    }
+  }
+
   // Verified. A nonce we've already settled once is refused — unless
   // the money it moved never became goods, which is the one state
   // where a spent nonce should buy something instead of a refusal.
@@ -1297,11 +1314,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
-  if (c.req.path.startsWith("/api/buy/")) {
-    const unresolved = await unresolvedPurchase(c.env, result.paymentRequirements.network,
-      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload);
-    if (unresolved) return c.json(unresolved, 503);
-  }
+  // Preserve nonce/artifact recovery when the purchase journal is still uncertain.
+  if (recorded?.kind === "pending") return c.json(recorded.body, 503);
 
   // Existing paid goods are owed even when the shelf has since closed.
   // Only a new sale reaches these checks, before any settlement is possible.
