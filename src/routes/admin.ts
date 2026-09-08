@@ -38,6 +38,7 @@ import { renderBuyersPage } from "@/pages/admin/buyers-page";
 import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
+import { renderTracePage } from "@/pages/admin/trace-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
@@ -3122,10 +3123,24 @@ adminRoutes.get("/admin/declines", async (c) => {
     counts.set(ua, (counts.get(ua) ?? 0) + 1);
   }
   const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  const trace = busiest
-    ? { user_agent: busiest, events: await traceClient(c.env, busiest) }
-    : undefined;
+  const trace = busiest ? await traceClient(c.env, busiest) : undefined;
   return c.html(renderDeclinesPage({ report, ...(trace ? { trace } : {}) }));
+});
+
+/**
+ * THE PER-CLIENT LOOKUP: /admin/trace?ua=<user-agent>.
+ *
+ * A query parameter for the same reason the item lookup uses one: a
+ * user-agent carries slashes, spaces and parentheses, and a key that
+ * has to be escaped into a path segment is a lookup nobody will use.
+ *
+ * Empty `ua` renders the instructions rather than 400ing, because the
+ * keeper arrives here from a link as often as from a guess.
+ */
+adminRoutes.get("/admin/trace", async (c) => {
+  const ua = c.req.query("ua") ?? "";
+  if (!ua) return c.html(renderTracePage(null));
+  return c.html(renderTracePage(await traceClient(c.env, ua)));
 });
 
 /**

@@ -213,6 +213,13 @@ describe("the free instruments, sorted out of the observatory", () => {
       ev("porch", "preflight", "agent-h/1", 0, { house: true }),
       ev("challenge", "observation", "agent-h/1", 1, { house: true }),
       ev("porch", "preflight", "agent-old/1", 0, { at: "2026-08-30T12:00:00.000Z" }),
+      // Out: INFRASTRUCTURE. A peer observatory that checks, is priced
+      // and signs is still the noise floor, and counting it as a client
+      // that failed to convert invents a conversion problem. Counted
+      // separately so the exclusion is visible rather than silent.
+      ev("porch", "conformance", "vet402-observatory-l1/1.0", 0, { channel: "infrastructure" }),
+      ev("challenge", "observation", "vet402-observatory-l1/1.0", 5, { channel: "infrastructure" }),
+      ev("porch", "preflight", "x402-conformance-monitor/0.1", 0, { channel: "infrastructure" }),
     ];
     const h = handoffs(events, "2026-09");
     expect(h.window_minutes).toBe(30);
@@ -220,10 +227,51 @@ describe("the free instruments, sorted out of the observatory", () => {
     expect(h.then_priced).toBe(3);
     expect(h.then_settled).toBe(1);
     expect(h.items_after_check).toEqual([{ item: "observation", clients: 3 }, { item: "simple", clients: 1 }]);
+    // The noise floor is named, not netted away.
+    expect(h.infrastructure_checkers).toBe(2);
+    // The counts can be traced instead of believed.
+    expect(h.checker_clients).toEqual(["(no user-agent)", "agent-a/1", "agent-b/1", "agent-c/1"]);
+    expect(h.priced_clients).toEqual(["(no user-agent)", "agent-a/1", "agent-b/1"]);
+    // An infrastructure client never appears in either list.
+    expect(h.checker_clients.join(" ")).not.toContain("observatory");
+    expect(h.priced_clients.join(" ")).not.toContain("monitor");
     // Lands on the month being read, and nowhere else.
     const u = freeInstrumentUsage(sample, { now: NOW, handoff: h });
     expect(u.months[0]!.handoff).toBe(h);
     expect(u.months[1]!.handoff).toBeNull();
+  });
+
+  it("excludes an infrastructure client from the handoff on every row, not just the infra ones", () => {
+    /**
+     * THE MIXED-CHANNEL CASE, which a per-event filter gets wrong. A
+     * 402 and its check are two different HTTP requests and can carry
+     * different headers, so one client's rows land in different
+     * channels — the item lookup says so in its own footnote. A filter
+     * that tested each row would keep this monitor's organic-looking
+     * check, drop its infrastructure price, and report it as a client
+     * that checked and then declined to buy: a false conversion story
+     * reached from the other side. Naming the CLIENT is the fix.
+     */
+    const at = (minute: number): string => new Date(Date.UTC(2026, 8, 5, 12, minute)).toISOString();
+    const ev = (kind: MetricEvent["kind"], item: string, ua: string, minute: number, channel: MetricEvent["channel"]): MetricEvent => ({
+      kind, item, channel, house: false, at: at(minute), user_agent: ua,
+    });
+    const events: MetricEvent[] = [
+      // The monitor: checked on a request that inferred as direct, priced on one that inferred as infrastructure.
+      ev("porch", "conformance", "x402-conformance-monitor/0.1", 0, "direct"),
+      ev("challenge", "observation", "x402-conformance-monitor/0.1", 5, "infrastructure"),
+      // A real client beside it, so the exclusion is not just "everything".
+      ev("porch", "conformance", "buyer/1", 0, "direct"),
+      ev("challenge", "observation", "buyer/1", 5, "direct"),
+    ];
+    const h = handoffs(events, "2026-09");
+    expect(h.checkers).toBe(1);
+    expect(h.then_priced).toBe(1);
+    expect(h.checker_clients).toEqual(["buyer/1"]);
+    expect(h.infrastructure_checkers).toBe(1);
+    // The monitor is nowhere in the organic counts, by either row.
+    expect(h.checker_clients.join(" ")).not.toContain("monitor");
+    expect(h.items_after_check).toEqual([{ item: "observation", clients: 1 }]);
   });
 
   it("renders behind the keeper's door and stores the reading for next time", async () => {

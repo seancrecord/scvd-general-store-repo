@@ -168,6 +168,18 @@ export interface Handoff {
   then_settled: number;
   /** The paid items those clients were priced for after a check, most seen first, bounded. */
   items_after_check: { item: string; clients: number }[];
+  /**
+   * Infrastructure clients that checked and are NOT in the counts
+   * above. Published rather than dropped: an excluded row the reader
+   * cannot see is the same failure as an included one they cannot
+   * spot, and this is the number that says how much of the handoff
+   * was ever a handoff.
+   */
+  infrastructure_checkers: number;
+  /** The checkers themselves, so the count can be traced instead of believed. Bounded. */
+  checker_clients: string[];
+  /** ...of those, the ones a price was issued to inside the window. Bounded. */
+  priced_clients: string[];
 }
 
 export interface InstrumentMonth {
@@ -421,17 +433,67 @@ export function splitUnknown(
  * signs, and the doctrine's direction of error is to understate — a
  * narrow window would call a real handoff a coincidence, a wide one
  * calls a coincidence a handoff, and the page says which way it leans.
+ *
+ * INFRASTRUCTURE IS EXCLUDED HERE, corrected 2026-09-08. This filter
+ * read `event.house` alone, while the surface table it sits under
+ * excludes house AND infrastructure at the door (observatory.ts: "the
+ * infrastructure buckets that are kept out of them"). One page, two
+ * denominators, no label — so a peer observatory walking the catalog
+ * was counted as a client that checked, priced, and declined to buy,
+ * which is the exact shape of a conversion problem the store does not
+ * have. A monitor reading a door is not a customer hesitating at it.
+ *
+ * WHAT THIS FILTER STILL CANNOT SEE, and it is not small:
+ * `inferChannel` short-circuits on `viaMcp` before it ever consults
+ * the crawler table (channel.ts), so an infrastructure client that
+ * arrives through the MCP door is stamped `mcp` and counted here as
+ * organic. Filtering on channel cannot fix that — the classification
+ * never ran. Until the short-circuit is reordered, `checkers` is an
+ * OVER-count on the MCP side and the page says so rather than
+ * implying a clean number.
  */
 export const HANDOFF_WINDOW_MS = 30 * 60 * 1000;
 export const HANDOFF_ITEMS_SHOWN = 8;
+/**
+ * How many client keys the handoff names. Bounded because these are
+ * strangers' strings on a page, and because a list long enough to
+ * scroll is a list nobody traces.
+ */
+export const HANDOFF_CLIENTS_SHOWN = 12;
 
 export function handoffs(events: readonly MetricEvent[], month: string, windowMs = HANDOFF_WINDOW_MS): Handoff {
   const checks = new Map<string, number[]>();
   const priced = new Map<string, { at: number; item: string }[]>();
   const settled = new Map<string, number[]>();
+  /**
+   * INFRASTRUCTURE IS A PROPERTY OF THE CLIENT, NOT THE REQUEST, so
+   * this is a first pass over the rows rather than a test inside the
+   * second. The item lookup states the reason in its own footnote: a
+   * 402 and its settle are two different HTTP requests and can carry
+   * different headers, so one client's rows land in different channels
+   * without either being wrong. Filtering per-event would therefore
+   * keep a monitor's organic-looking check and drop its infrastructure
+   * price — counting it as a client that checked and declined to buy,
+   * which is the exact false conversion story this fix exists to end,
+   * arrived at from the other side. Any row naming a client as the
+   * noise floor names it for all of them.
+   */
+  const infraClients = new Set<string>();
+  for (const event of events) {
+    if (event.house || !event.at.startsWith(month)) continue;
+    if (event.channel === "infrastructure") infraClients.add(walkerKey(event));
+  }
+  const infraCheckers = new Set<string>();
   for (const event of events) {
     if (event.house || !event.at.startsWith(month)) continue;
     const key = walkerKey(event);
+    if (infraClients.has(key)) {
+      // Counted, named, and kept out of every number below.
+      if (event.kind === "porch" && instrumentKind(event.item) === "argument") {
+        infraCheckers.add(key);
+      }
+      continue;
+    }
     const at = Date.parse(event.at);
     if (event.kind === "porch" && instrumentKind(event.item) === "argument") {
       checks.set(key, [...(checks.get(key) ?? []), at]);
@@ -441,14 +503,14 @@ export function handoffs(events: readonly MetricEvent[], month: string, windowMs
       settled.set(key, [...(settled.get(key) ?? []), at]);
     }
   }
-  let thenPriced = 0;
   let thenSettled = 0;
   const items = new Map<string, number>();
+  const pricedClients: string[] = [];
   const after = (from: number, t: number): boolean => t > from && t <= from + windowMs;
   for (const [key, times] of checks) {
     const pricedAfter = (priced.get(key) ?? []).filter((p) => times.some((t) => after(t, p.at)));
     if (pricedAfter.length > 0) {
-      thenPriced += 1;
+      pricedClients.push(key);
       for (const item of new Set(pricedAfter.map((p) => p.item))) items.set(item, (items.get(item) ?? 0) + 1);
     }
     if ((settled.get(key) ?? []).some((s) => times.some((t) => after(t, s)))) thenSettled += 1;
@@ -456,9 +518,12 @@ export function handoffs(events: readonly MetricEvent[], month: string, windowMs
   return {
     window_minutes: Math.round(windowMs / 60000),
     checkers: checks.size,
-    then_priced: thenPriced,
+    then_priced: pricedClients.length,
     then_settled: thenSettled,
     items_after_check: topOf(items, HANDOFF_ITEMS_SHOWN).map(({ key, visits }) => ({ item: key, clients: visits })),
+    infrastructure_checkers: infraCheckers.size,
+    checker_clients: [...checks.keys()].sort().slice(0, HANDOFF_CLIENTS_SHOWN),
+    priced_clients: [...pricedClients].sort().slice(0, HANDOFF_CLIENTS_SHOWN),
   };
 }
 

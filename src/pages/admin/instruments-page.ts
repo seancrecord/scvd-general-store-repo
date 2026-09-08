@@ -40,11 +40,34 @@ function unknownHtml(u: UnknownSplit): string {
     <p><small>Referring hosts: ${hosts}.<br>No-user-agent visits by surface: ${surfaces}.</small></p>`;
 }
 
+/** Client keys, each a link to its own trail. The count stops being a thing to believe. */
+function clientLinks(keys: string[]): string {
+  if (keys.length === 0) return "none";
+  return keys
+    .map((key) => `<a href="/admin/trace?ua=${encodeURIComponent(key)}"><code>${escapeHtml(key)}</code></a>`)
+    .join(", ");
+}
+
 function handoffHtml(h: Handoff): string {
   const items = h.items_after_check.map((i) => `<code>${escapeHtml(i.item)}</code> ${i.clients}`).join(", ") || "none";
+  /**
+   * The excluded count is printed beside the included one, never
+   * netted out of sight. When infrastructure outnumbers the organic
+   * checkers, THAT is the finding, and a page that only showed the
+   * survivors would have hidden it.
+   */
+  const infra = h.infrastructure_checkers > 0
+    ? ` Kept out of every number here: <strong>${h.infrastructure_checkers}</strong> infrastructure client(s) that also made an argument-carrying call — the store's own noise floor, excluded because a monitor reading a door is not a customer hesitating at it.`
+    : "";
   return `<p><strong>The handoff</strong>, off the same rows, by user-agent (a floor on clients: one SDK string is many agents, and two agents on one string inside the window read as one):
-    clients that made an argument-carrying free call <strong>${h.checkers}</strong> · of those, asked a price within ${h.window_minutes} min <strong>${h.then_priced}</strong> · of those, settled within ${h.window_minutes} min <strong>${h.then_settled}</strong>.</p>
-    <p><small>Priced after a check: ${items}.</small></p>`;
+    clients that made an argument-carrying free call <strong>${h.checkers}</strong> · of those, asked a price within ${h.window_minutes} min <strong>${h.then_priced}</strong> · of those, settled within ${h.window_minutes} min <strong>${h.then_settled}</strong>.${infra}</p>
+    <p><small>Priced after a check: ${items}.</small></p>
+    <p><small>Who they were — each links to its whole trail, so the counts above can be traced instead of believed.
+    Checked: ${clientLinks(h.checker_clients)}. Of those, priced: ${clientLinks(h.priced_clients)}.</small></p>
+    <p><small><strong>What this exclusion still cannot catch:</strong> channel inference short-circuits on the MCP
+    flag before it consults the crawler table, so an infrastructure client arriving through the MCP door is stamped
+    <code>mcp</code> and is counted above as organic. Filtering on channel cannot fix that — the classification never
+    ran. On the MCP side these are OVER-counts, and stay so until that ordering changes.</small></p>`;
 }
 
 function afterSaleHtml(m: InstrumentMonth): string {

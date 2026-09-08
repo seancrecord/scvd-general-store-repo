@@ -227,13 +227,55 @@ describe("the trail", () => {
       decline({ user_agent: ua, at: "2026-07-28T10:02:00.000Z", note: "b" }),
     );
 
-    const trail = await traceClient(testEnv, ua);
-    expect(trail.length).toBeGreaterThanOrEqual(3);
+    const trace = await traceClient(testEnv, ua);
+    expect(trace.user_agent).toBe(ua);
+    expect(trace.events.length).toBeGreaterThanOrEqual(3);
     // The sequence is the evidence, so it has to read in the order it
     // happened, not the order KV hands it back.
-    const times = trail.map((event) => event.at);
+    const times = trace.events.map((event) => event.at);
     expect([...times].sort()).toEqual(times);
-    expect(trail[0]?.kind).toBe("challenge");
+    expect(trace.events[0]?.kind).toBe("challenge");
+    // NOT FOUND AND NOT REACHED ARE DIFFERENT ANSWERS: the trace has to
+    // say how far it got, or an empty tail is unreadable.
+    expect(trace.rows_scanned).toBeGreaterThan(0);
+    expect(trace.oldest_row_seen).not.toBeNull();
+    expect(typeof trace.capped).toBe("boolean");
+  });
+});
+
+const TRACE_AUTH = {
+  Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+  Accept: "text/html",
+};
+
+describe("the per-client lookup", () => {
+  /**
+   * The gap this closes: traceClient had one caller, on the client the
+   * CODE picked (most declines). A keeper could not trace a client they
+   * named, so "is the client that priced and walked the same one that
+   * got refused?" was unanswerable with any password.
+   */
+  it("traces a client the keeper names, and says how far it reached", async () => {
+    const ua = "named-lookup-agent/1.0";
+    await seedRow({ ...decline({ user_agent: ua }), kind: "challenge", at: "2026-07-29T09:00:00.000Z" });
+    await seedRow(decline({ user_agent: ua, at: "2026-07-29T09:01:00.000Z", note: "insufficient_funds" }));
+
+    const page = await SELF.fetch(
+      `${BASE}/admin/trace?ua=${encodeURIComponent(ua)}`,
+      { headers: TRACE_AUTH },
+    );
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain(ua);
+    expect(html).toContain("insufficient_funds");
+    // Reach is reported either way, so an empty tail is never ambiguous.
+    expect(html).toMatch(/hit its cap|the whole log/);
+  });
+
+  it("renders instructions rather than an error when no client is named", async () => {
+    const page = await SELF.fetch(`${BASE}/admin/trace`, { headers: TRACE_AUTH });
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain("Trace a client");
   });
 });
 
