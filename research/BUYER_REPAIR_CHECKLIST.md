@@ -257,3 +257,10 @@ The 186 recovery cases failed with recovery support removed while the independen
 BUY-017/034/037 remain open for other uncheckpointed observations, inventory/commission services, legacy obligations and missing private recovery handles. These checked substeps do not change the 15/39 parent-finding count. Next observation families to examine are wallet statements and settlement reconciliation; their original chain readings also need durable recovery.
 
 Final local validation passed all 588 files: 7,626 tests passed with one existing conditional key-continuity skip (337.93 seconds). Typecheck, both Worker dry-run bundles, native Worker startup, A2A runner/schema checks, Tab/browser-bridge/Action/example/package tests, audit, claims and docs checks passed. The first full run exposed two older provenance tests sharing a constant settlement transaction across distinct sales; the two product specs now use the existing multi-purchase facilitator fixture. Both affected specs passed all 15 tests, followed by the complete passing rerun. No timeout or production recovery guard was relaxed.
+
+## 2026-09-08 — Wallet statement recipient chain
+
+- [x] Derive the purchase response and retrieval page's chain references from the signed wallet statement instead of describing every purchase as Base. Preserve chain-specific RPC instructions from the shared rail definition, including Solana's slot/token-account reader.
+- [x] Exercise Base, Polygon and Solana subject chains through HTTP and both MCP profiles, checking the signed subject chain and the recipient's verification instructions together.
+
+All nine new recipient regressions failed without the correction and passed with it. The existing statement suite also passes; its assertion that the Base reading explains `eth_getLogs` remains intact. This correction is committed separately from durable chain-report recovery.
