@@ -1110,6 +1110,24 @@ export interface PhantomCheckRecord {
 export type LetterStatus = "received" | "read" | "replied" | "archived";
 
 /**
+ * ONE SIGNED ANSWER in a letter's thread (2026-09-08). Each reply is
+ * signed on its own, over the same payload the first reply always
+ * was: {letter_id, reply, replied_at}. So a correspondent verifies
+ * every answer the same way, and the instructions never forked.
+ *
+ * HONEST LIMIT, stated rather than implied: each reply's signature
+ * covers that reply. The COMPLETENESS of the thread is not itself
+ * signed, so these signatures prove each answer is the keeper's, not
+ * that no answer is missing from the list.
+ */
+export interface LetterReply {
+  reply: string;
+  signature: string;
+  public_key: string;
+  replied_at: string;
+}
+
+/**
  * A letter in the Mailbox. Private correspondence: admin queue only,
  * never published, never rendered on any public surface. Stored raw;
  * shown to the keeper escaped.
@@ -1122,6 +1140,20 @@ export interface LetterRecord {
   from_name?: string;
   verified_identity?: string;
   identity_verified?: boolean;
+  /**
+   * Every answer, oldest first (2026-09-08). Absent on letters
+   * answered before the thread existed — read it through
+   * `letterThread`, never directly, so a legacy record reads as the
+   * one-reply thread it is.
+   */
+  replies?: LetterReply[];
+  /**
+   * THE FIRST REPLY, PINNED (2026-09-08). These four fields were the
+   * whole reply until the thread existed, and a correspondent may
+   * have fetched and verified them already. They are written once, on
+   * the first answer, and never touched again — a second reply
+   * appends to `replies` and leaves what was published alone.
+   */
   reply?: string;
   reply_signature?: string;
   reply_public_key?: string;

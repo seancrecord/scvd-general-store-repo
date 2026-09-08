@@ -3488,9 +3488,27 @@ const LETTER_STATUS_SCHEMA: OpenApiObject = {
     letter_id: { type: "string" },
     status: { type: "string" },
     received: { type: "string", format: "date-time" },
-    response: {
+    reply: {
       type: "string",
-      description: "The keeper's reply, once written. Absent until then rather than stubbed.",
+      description:
+        "The keeper's FIRST reply, once written. Absent until then rather than stubbed. Written once and never rewritten: a later answer appends to `replies` and leaves this alone.",
+    },
+    reply_signature: { type: "string" },
+    reply_public_key: { type: "string" },
+    replied_at: { type: "string", format: "date-time" },
+    replies: {
+      type: "array",
+      description:
+        "Every answer the keeper has written, oldest first. Each is signed on its own over {letter_id, reply, replied_at}; a signature covers its own reply and does not prove the list is complete.",
+      items: {
+        type: "object",
+        properties: {
+          reply: { type: "string" },
+          signature: { type: "string" },
+          public_key: { type: "string" },
+          replied_at: { type: "string", format: "date-time" },
+        },
+      },
     },
     note: { type: "string" },
   },

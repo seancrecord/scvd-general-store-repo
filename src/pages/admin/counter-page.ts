@@ -10,7 +10,7 @@ import {
   OPEN_LABOR_CAP,
 } from "@/services/queue-capacity";
 import { deskStatusOf } from "@/services/commission-desk";
-import { letterNeedsReply } from "@/services/letters";
+import { letterNeedsReply, letterThread } from "@/services/letters";
 import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import type { StockUnit } from "@/services/stock";
 import type {
@@ -199,17 +199,35 @@ function lettersHtml(letters: LetterRecord[]): string {
   }
   return active
     .map((letter) => {
-      const actions =
-        letter.status === "replied"
-          ? `<p><em>Replied ${escapeHtml(letter.replied_at ?? "")}:</em> ${escapeHtml(letter.reply ?? "")}</p>`
-          : `${
-              letter.status === "received"
-                ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
-                : ""
-            }
+      /*
+       * THE BOX NEVER CLOSES (2026-09-08). Answering a letter used to
+       * replace this form with the reply text, so a correspondence was
+       * exactly one sentence long in each direction: the keeper
+       * promised a follow-up in a reply and then had nowhere to write
+       * it. Every answer so far is shown, oldest first, and the box
+       * stays open underneath them.
+       */
+      const thread = letterThread(letter);
+      const said = thread
+        .map(
+          (entry) =>
+            `<p><em>Replied ${escapeHtml(entry.replied_at)}:</em> ${escapeHtml(entry.reply)}</p>`,
+        )
+        .join("\n");
+      const actions = `${said}${
+        letter.status === "received"
+          ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
+          : ""
+      }
             <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/reply">
-              <textarea name="reply" rows="2" cols="50" placeholder="The keeper's reply (signed on send)" required></textarea>
-              <button type="submit">Reply, signed</button>
+              <textarea name="reply" rows="2" cols="50" placeholder="${
+                thread.length > 0
+                  ? "Another reply (appended, signed on send)"
+                  : "The keeper's reply (signed on send)"
+              }" required></textarea>
+              <button type="submit">${
+                thread.length > 0 ? "Reply again, signed" : "Reply, signed"
+              }</button>
             </form>`;
       return `<li>
       <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]

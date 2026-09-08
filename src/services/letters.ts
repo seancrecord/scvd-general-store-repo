@@ -4,7 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
-import type { Env, LetterRecord, LetterStatus } from "@/types";
+import type { Env, LetterRecord, LetterReply, LetterStatus } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 
@@ -115,7 +115,53 @@ export async function setLetterStatus(
   return record;
 }
 
-/** The keeper answers. The reply is signed; the original stays private. */
+/**
+ * EVERY ANSWER A LETTER HAS, oldest first — the one way to read a
+ * letter's replies. A record written before the thread existed keeps
+ * its four top-level fields and no `replies` array; that is a
+ * one-reply thread and reads as one here, so no caller needs to know
+ * which era a record is from.
+ */
+export function letterThread(record: LetterRecord): LetterReply[] {
+  if (record.replies?.length) {
+    return record.replies;
+  }
+  if (record.reply) {
+    return [
+      {
+        reply: record.reply,
+        signature: record.reply_signature ?? "",
+        public_key: record.reply_public_key ?? "",
+        replied_at: record.replied_at ?? record.date,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
+ * THE KEEPER ANSWERS — AND MAY ANSWER AGAIN (2026-09-08).
+ *
+ * FOUND BY TRYING TO USE IT. A correspondent wrote in on 09-05 with a
+ * scoped offer; the keeper replied, promised a list of endpoints in
+ * the same breath, and then had nowhere to put them: the admin box
+ * replaces the reply form with the reply text the moment a letter is
+ * answered, so a second letter could not be written at all. The
+ * promise went unkept because the desk had no way to keep it.
+ *
+ * AND THE ROUTE UNDERNEATH WAS WORSE THAN MISSING. A second POST
+ * (the form is gone, the route was not) overwrote `reply`,
+ * `reply_signature` and `replied_at` in place. That is this store
+ * silently replacing a SIGNED artifact it had already published at a
+ * public pickup URL — the one thing every rule here exists to
+ * prevent. It also bumped `letters_answered` a second time, so the
+ * public "answered" figure counted answers, not letters.
+ *
+ * SO: replies APPEND. Each is signed on its own over the same payload
+ * as before. The first reply's four fields are written once and never
+ * touched again, because somebody may already hold them. The counter
+ * moves only when a letter goes from unanswered to answered.
+ */
 export async function replyToLetter(
   env: Env,
   letterId: string,
@@ -125,18 +171,27 @@ export async function replyToLetter(
   if (!record) {
     return null;
   }
+  const existing = letterThread(record);
   const repliedAt = new Date().toISOString();
   const { signature, publicKey } = await signMessage(
     JSON.stringify({ letter_id: letterId, reply, replied_at: repliedAt }),
     env.SIGNING_KEY,
   );
   record.status = "replied";
-  record.reply = reply;
-  record.reply_signature = signature;
-  record.reply_public_key = publicKey;
-  record.replied_at = repliedAt;
+  record.replies = [
+    ...existing,
+    { reply, signature, public_key: publicKey, replied_at: repliedAt },
+  ];
+  if (existing.length === 0) {
+    record.reply = reply;
+    record.reply_signature = signature;
+    record.reply_public_key = publicKey;
+    record.replied_at = repliedAt;
+  }
   await saveLetter(env, letterId, record);
-  await bumpCounter(env, KV_KEYS.lettersAnswered);
+  if (existing.length === 0) {
+    await bumpCounter(env, KV_KEYS.lettersAnswered);
+  }
   return record;
 }
 

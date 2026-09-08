@@ -2,7 +2,12 @@ import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
-import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
+import {
+  LETTER_CAP,
+  getLetter,
+  letterThread,
+  submitLetter,
+} from "@/services/letters";
 import { isRecord, type HonoEnv } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 
@@ -91,20 +96,41 @@ letterRoutes.get("/api/letter/:letter_id", async (c) => {
       404,
     );
   }
+  /*
+   * THE THREAD DECIDES, NOT THE STATUS (2026-09-08). Two things were
+   * wrong with reading `record.status` here.
+   *
+   * FILING USED TO DESTROY THE ANSWER. "archived" was reported as
+   * "read" — right, since how the keeper files his box is nobody
+   * else's business — but the reply was served only when the status
+   * read exactly "replied". So the moment he archived a letter he had
+   * already answered, the correspondent's pickup URL went back to
+   * saying nobody had written, and the signed reply they were told to
+   * come and collect was gone. Housekeeping is not a retraction.
+   *
+   * A letter that HAS answers reports "replied" and serves them,
+   * whatever the keeper has since done with his copy; a letter with
+   * none still never leaks whether it was filed.
+   */
+  const thread = letterThread(record);
+  const answered = thread.length > 0;
+  const first = thread[0];
   const response: Record<string, unknown> = {
     letter_id: record.letter_id,
-    status: record.status === "archived" ? "read" : record.status,
+    status: answered ? "replied" : record.status === "archived" ? "read" : record.status,
     received: record.date,
-    note:
-      record.status === "replied"
+    note: !answered
+      ? "The keeper reads Sundays and replies when he has something to say, which is not always."
+      : thread.length === 1
         ? "The keeper wrote back. The reply below is signed, verify it against the key at /.well-known/scvd-signing-key."
-        : "The keeper reads Sundays and replies when he has something to say, which is not always.",
+        : `The keeper wrote back ${thread.length} times. Every answer is under "replies", oldest first, each signed on its own — verify them against the key at /.well-known/scvd-signing-key. The "reply" field stays the FIRST answer, unchanged, so nothing this store has published ever changes meaning under you. Each signature covers its own reply; it does not prove the list is complete.`,
   };
-  if (record.status === "replied" && record.reply) {
-    response["reply"] = record.reply;
-    response["reply_signature"] = record.reply_signature;
-    response["reply_public_key"] = record.reply_public_key;
-    response["replied_at"] = record.replied_at;
+  if (first) {
+    response["reply"] = first.reply;
+    response["reply_signature"] = first.signature;
+    response["reply_public_key"] = first.public_key;
+    response["replied_at"] = first.replied_at;
+    response["replies"] = thread;
   }
   return c.json(response);
 });
