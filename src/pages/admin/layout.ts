@@ -2,8 +2,9 @@ import { escapeHtml } from "@/lib/sanitize";
 import { OFFICE_CSS } from "@/pages/admin/office-css";
 
 /**
- * Keep's Office. Three rooms and a shelf of readings.
+ * Keep's Office. Four rooms and a shelf of readings.
  *
+ *   /admin/round    the round (what ran, and what you owe) — open this first
  *   /admin          the desk (analytics front and center)
  *   /admin/counter  the counter (the day's actual work)
  *   /admin/tools    the back shelf (levers, rarely pulled)
@@ -33,6 +34,13 @@ import { OFFICE_CSS } from "@/pages/admin/office-css";
  */
 
 export type AdminTab =
+  /**
+   * THE ROUND (2026-09-08), and it goes first on purpose. The office
+   * had fifteen honest readings and no answer to the two questions a
+   * keeper opens it with: is anything stuck, and what do I owe. Every
+   * other room here leads with numbers; this one leads with work.
+   */
+  | "round"
   | "office"
   | "counter"
   | "tools"
@@ -93,8 +101,13 @@ export type AdminTab =
   | "outreach"
   | "trade";
 
-/** The three rooms. Always first, always in this order. */
+/**
+ * The rooms. Always first, always in this order — and the round is
+ * first among them since 2026-09-08: it is the page that says whether
+ * the others are worth opening today.
+ */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
+  { tab: "round", href: "/admin/round", label: "The round" },
   { tab: "office", href: "/admin", label: "The desk" },
   { tab: "counter", href: "/admin/counter", label: "The counter" },
   { tab: "tools", href: "/admin/tools", label: "The back shelf" },

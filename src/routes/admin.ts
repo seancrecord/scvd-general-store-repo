@@ -631,6 +631,25 @@ adminRoutes.get("/admin/take", async (c) => {
   return c.html(body);
 });
 
+/**
+ * THE ROUND (2026-09-08, the keeper: "should be very easy to me to see
+ * 'bounty done', needs new bounty… really everything that I 'could' be
+ * checking or last checked or need to update in one place").
+ *
+ * Reads only. Every machine's own state, printed against the cadence
+ * it is supposed to keep, plus the presses nobody but the keeper can
+ * make. JSON for anything that polls; the room for the browser.
+ */
+adminRoutes.get("/admin/round", async (c) => {
+  const { readKeepersRound } = await import("@/services/keepers-round");
+  const round = await readKeepersRound(c.env);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(round);
+  }
+  const { renderRoundPage } = await import("@/pages/admin/round-page");
+  return c.html(renderRoundPage(round));
+});
+
 adminRoutes.get("/admin/glance", async (c) => {
   const { readGlance } = await import("@/services/glance");
   const glance = await readGlance(c.env);
