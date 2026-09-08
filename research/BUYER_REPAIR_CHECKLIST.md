@@ -36,7 +36,7 @@ Inventory and commission side effects need their own recovery proof before those
 - [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
 - [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
-- [ ] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — open.
+- [x] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — complete for all four audited products: Spot Check, Provenance Check, Passport Refresh and Trust Profile carry independently verifiable observation envelopes beside their purchase certificates. See the proof-completion evidence below. Durable response-loss recovery remains BUY-017/037.
 - [x] **BUY-007 — P1: Solana retries bypass the purchase cache** — repaired on `codex/buyer-solana-replay`: verified Solana payer scopes cached retries; missing identity safely refuses settlement. Merged in PR #551; production release is a separate status.
 - [x] **BUY-008 — P1: HTTP stock checks block recovery of an already-paid order** — authenticated cached/recoverable purchases now precede weekly stock, shutter and capacity admission. MCP also preserves paid replay when its shutter closes; new sales still run their admission checks.
 - [ ] **BUY-009 — P1: valid text advertised as verbatim is changed** — open.
@@ -302,6 +302,16 @@ BUY-017/034/037 remain open for the other uncheckpointed products, inventory/com
 - [x] Exercise a recipient's independent signature, canonical-signature, evidence-hash and certificate-binding checks through HTTP and both MCP profiles, including tampered-report rejection.
 
 All six recipient regressions failed without the production correction and passed with it. The existing flat report fields remain compatible; `observation` carries the complete report proof. This is a separate artifact correction discovered during the recovery work; the larger recovery findings remain open.
+
+## 2026-09-08 — Complete observation proof packaging (BUY-006)
+
+- [x] Preserve the complete signed Passport Refresh observation and Trust Profile commission under `observation`, including their exact signed payload, both signatures, key and evidence hash. Existing `refresh`/`profile` fields and the top-level purchase-certificate proof retain their meanings.
+- [x] Give recipients explicit verification paths for both observation signature formats and the certificate's `attests` binding.
+- [x] Verify all four affected products through HTTP and both MCP profiles on every enabled test rail. Check exact URL canaries for the two remaining products, independent observation/certificate signatures, certificate verification and rejection of a changed subject.
+
+The expanded recipient regression was run before the source repair: all 30 Passport Refresh/Trust Profile cases failed, while all 30 previously repaired product controls passed. After the fix all 60 pass; the adjacent passport/profile gate passes 77 tests across three files. This closes the successful-response proof-packaging finding; it does not claim retained-response recovery, term-service commissioning safety or live payment finality. Those remain separate findings.
+
+Final validation on current main passed all 597 test files: 8,172 tests passed and one existing skip (868.69 seconds). Typecheck, both Worker dry-run bundles, the standalone native-startup check, audit, claims and docs checks passed. The initial concurrent startup probe stalled on its empty control and was stopped; the separate rerun completed normally. Payment and probe traffic use local fixtures.
 
 ## 2026-09-08 — Spot Check and Provenance Check recovery
 
