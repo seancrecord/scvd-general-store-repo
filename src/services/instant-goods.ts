@@ -544,7 +544,7 @@ export async function deliverInstantGoods(
       if (!statement) {
         throw new Error("the_statement reached goods with no record");
       }
-      await storeWalletStatement(env, statement, input.certId ?? "");
+      await storeWalletStatement(env, statement, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: statementNote(statement.coverage),
         extras: {
@@ -555,7 +555,7 @@ export async function deliverInstantGoods(
           statement,
           statement_url: `/api/statement/${statement.statement_id}`,
           verify_note:
-            "Three ways to check this, none of which requires trusting us. The record is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the statement too. And every row is a Base transaction hash — the chain's copy is nobody's to edit, ours included.",
+            `Three ways to check this, none of which requires trusting us. The record is signed on its own: re-serialize every field above \`signature\` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the statement too. And every row is a ${statement.chain} transaction identifier — the chain's copy is nobody's to edit, ours included.`,
         },
       };
     }
@@ -683,7 +683,7 @@ export async function deliverInstantGoods(
           "settlement_reconciliation reached goods with no observation",
         );
       }
-      await storeReconciliation(env, reconciliation, input.certId ?? "");
+      await storeReconciliation(env, reconciliation, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: reconciliationNote(
           reconciliation.verdict,

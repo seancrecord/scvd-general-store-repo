@@ -1,3 +1,5 @@
+import type { SignedWalletStatement } from "@/services/wallet-statement";
+import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedSpotCheck } from "@/services/spot-check";
 import type { SignedProvenanceCheck } from "@/services/provenance-check";
 import type { PreparedA2AKit } from "@/services/a2a-kit";
@@ -21,6 +23,8 @@ export interface PreparedObservation {
   a2aKit?: PreparedA2AKit;
   spotCheck?: SignedSpotCheck;
   provenanceCheck?: SignedProvenanceCheck;
+  walletStatement?: SignedWalletStatement;
+  reconciliation?: SignedReconciliation;
   attests: string;
 }
 export interface ObservationCheckpoint {
