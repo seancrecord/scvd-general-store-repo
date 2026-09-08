@@ -49,6 +49,23 @@ export type RecoveryClaim =
  * from safely starting the first reconstruction.
  */
 export class PaidRecoveryStore extends DurableObject<Env> {
+  // First prepared bytes win, including simultaneous requests with one payment.
+  // A mismatched question cannot replace them or use them to buy a different good.
+  async retainObservation(path: string, digest: string, proposal?: string): Promise<string | null> {
+    return this.ctx.storage.transaction(async txn => {
+      const prior = await txn.get<{ path: string; digest: string; value: string }>("observation");
+      if (prior) {
+        if (prior.path !== path || prior.digest !== digest) throw new Error("Observation input mismatch");
+        return prior.value;
+      }
+      if (proposal === undefined) return null;
+      if (await txn.get("purchase")) throw new Error("Cannot observe after settlement admission");
+      JSON.parse(proposal);
+      await txn.put("observation", { path, digest, value: proposal });
+      return proposal;
+    });
+  }
+
   async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
     return this.ctx.storage.transaction(async (txn) => {
@@ -56,6 +73,12 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       if (prior) {
         if (!prior.delivery && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
         return { started: false, record: JSON.stringify(prior) };
+      }
+      if (proposal.observation_digest) {
+        const observation = await txn.get<{ path: string; digest: string }>("observation");
+        if (!observation || observation.path !== proposal.path || observation.digest !== proposal.observation_digest) {
+          throw new Error("Original observation must precede settlement");
+        }
       }
       await txn.put("purchase", proposal);
       // The obligation and its wake-up commit together, before settlement.

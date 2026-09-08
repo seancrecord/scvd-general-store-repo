@@ -1,3 +1,4 @@
+import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, unresolvedPurchase } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { getMenuItem } from "@/store";
@@ -401,6 +402,8 @@ export async function runMcpPayment(
   // may finish its own missing mint; it cannot buy different inputs.
   const nonce = extractPaymentNonce(result.paymentPayload);
   const spent = nonce ? await getSpentNonce(env, nonce) : null;
+  const observation = await verifiedObservationCheckpoint(env, getMenuItem(itemId), result.paymentRequirements.network,
+    verifiedPayer, result.paymentPayload, path, inputDigest ?? "", !!spent);
   if (spent) {
     if (spent.path === path && spent.transaction && verifiedPayer) {
       // A completed durable result outlives both the KV replay cache and
@@ -419,7 +422,7 @@ export async function runMcpPayment(
         return {
           kind: "authorized", recovered: true, artifactRecovery: true, verifiedPayer,
           pending: { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
-            payer: verifiedPayer, settle: async () => payment },
+            payer: verifiedPayer, observation, settle: async () => payment },
           settledSoFar: () => payment,
           deliveryKeySoFar: () => KV_KEYS.deliveryIntent(payment.transaction),
         };
@@ -437,7 +440,7 @@ export async function runMcpPayment(
         return {
           kind: "authorized", recovered: true, savedResponse: saved.response, verifiedPayer,
           pending: { paidUsdc: saved.payment.paidUsdc, tipUsdc: saved.payment.tipUsdc,
-            payer: verifiedPayer, settle: async () => saved.payment },
+            payer: verifiedPayer, observation, settle: async () => saved.payment },
           settledSoFar: () => saved.payment,
           deliveryKeySoFar: () => KV_KEYS.deliveryIntent(saved.payment.transaction),
         };
@@ -467,6 +470,7 @@ export async function runMcpPayment(
             paidUsdc: retry.payment.paidUsdc,
             tipUsdc: retry.payment.tipUsdc,
             payer: verifiedPayer,
+            observation,
             settle: async () => retry.payment,
           },
           settledSoFar: () => retry.payment,
@@ -712,6 +716,7 @@ export async function runMcpPayment(
   };
 
   const pending: PendingPayment = {
+    observation,
     paidUsdc: paidUsdcQuoted,
     tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),
     ...(payerFromPaymentHeader(paymentHeader)

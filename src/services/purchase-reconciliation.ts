@@ -1,9 +1,10 @@
+import { observationCheckpoint } from "@/services/purchase-observation";
 import type { Env } from "@/types";
 import type { PurchaseIntent } from "@/services/purchase-intent";
 import { atomicToUsdc, tipFromPaid } from "@/lib/payments";
 import { evmChainOf, getFinalizedBlockNumber, getBlockTimestamp, findAuthorizationUseInRange,
   getReceipt, usdcAuthorizations, usdcTransfers, isSameAddress, type EvmChain } from "@/lib/base-rpc";
-import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
+import { httpArtifactDigest, supportsArtifactRecovery, supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { sha256Hex } from "@/lib/idempotency";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { purchaseInputFrom, queryArgs, toolArgs } from "@/lib/purchase-args";
@@ -83,6 +84,6 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
   if (record.door === "mcp") input.source = "mcp";
   const digest = args ? await sha256Hex(jcsCanonicalize(args))
     : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
-  return fulfillPurchase(env, item, { ...payment, settle: async () => payment }, input,
+  return fulfillPurchase(env, item, { ...payment, observation: supportsObservationRecovery(item) ? observationCheckpoint(env, record.id, record.path, digest, true) : undefined, settle: async () => payment }, input,
     { path: record.path, digest, purchasedAt: record.created_at });
 }

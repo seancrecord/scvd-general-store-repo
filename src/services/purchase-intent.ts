@@ -1,3 +1,4 @@
+import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import type { PaymentRequirements } from "@x402/core/types";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { sha256Hex } from "@/lib/idempotency";
@@ -24,6 +25,7 @@ export interface PurchaseIntent {
   request: string;
   item?: MenuItem;
   created_at: string;
+  observation_digest?: string;
   authorization?: { nonce: string; valid_after: string; valid_before: string };
   solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
@@ -76,7 +78,7 @@ class RecordedPurchase extends SettlementUnknown {
   }
 }
 
-async function purchaseIdentity(network: string, verifiedPayer: string, payment: unknown) {
+export async function purchaseIdentity(network: string, verifiedPayer: string, payment: unknown) {
   const payer = network.startsWith("eip155:") ? verifiedPayer.toLowerCase() : verifiedPayer;
   const nonce = extractPaymentNonce(payment);
   const payload = isRecord(payment) && isRecord(payment.payload) ? payment.payload : {};
@@ -117,11 +119,16 @@ export async function beginPurchaseIntent(env: Env, input: {
     const nonce = extractPaymentNonce(input.payload);
     const solana = input.terms.network.startsWith("solana:")
       ? await solanaPaymentEvidence(String(payload.transaction)) : null;
+    const observationDigest = supportsObservationRecovery(input.item)
+      ? input.door === "mcp" ? await sha256Hex(jcsCanonicalize(JSON.parse(input.request)))
+        : await httpArtifactDigest(`${env.STORE_BASE_URL}${input.path}?${input.request}`)
+      : undefined;
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 1, id,
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
       ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
+      ...(observationDigest ? { observation_digest: observationDigest } : {}),
       ...(input.item ? { item: input.item } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;

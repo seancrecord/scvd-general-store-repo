@@ -42,7 +42,12 @@ export function supportsSimpleInstantRecovery(item: MenuItem): boolean {
   return item.fulfillment === "instant" && ["hello", "certificate_of_patronage", "small_blessing", "daily_fortune"].includes(item.id);
 }
 
+/** These observations are fully prepared before settlement; retain their signed bytes. */
+export function supportsObservationRecovery(item: MenuItem | undefined): boolean {
+  return !!item && ["settlement_attestation", "attestation_bundle"].includes(item.id);
+}
+
 /** Stocked goods consume external inventory; their recovery needs a separate journal. */
 export function supportsArtifactRecovery(item: MenuItem | undefined): boolean {
-  return !!item && (supportsSimpleInstantRecovery(item) || item.id === "context_anchor" || (item.fulfillment === "human_queue" && !item.stocked));
+  return !!item && (supportsSimpleInstantRecovery(item) || supportsObservationRecovery(item) || item.id === "context_anchor" || (item.fulfillment === "human_queue" && !item.stocked));
 }

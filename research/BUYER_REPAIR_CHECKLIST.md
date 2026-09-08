@@ -180,3 +180,24 @@ Both GitHub runs and the local reproduction failed the same 21 assertions across
 The preceding repair removed the 21 payment assertion failures, but its optional helper parameter was interpreted by Vitest as a fixture dependency. Both GitHub runs failed the same ten setup hooks, preventing 124 tests from running; the local reproduction confirmed all ten failures. This is a test API compatibility repair, not a production payment change or closure of another buyer finding.
 
 After the compatibility repair, all 244 tests across the 26 affected/adjacent files passed, with no skipped cases; typecheck passed. Full CI remains on GitHub.
+
+## 2026-09-08 — original settlement-observation recovery
+
+- [x] Retain the signed Settlement Attestation or Attestation Bundle before admitting settlement, bound to the verified payment identity, product path and complete request digest. Atomic admission requires that snapshot to exist.
+- [x] Resume the original evidence through HTTP and both MCP profiles, or the purchase-status alarm, without rereading the subject chain after payment. Preserve evidence hashes, signatures, observation time, exact requested transactions and bundle order.
+- [x] Refuse settlement when observation storage fails; a lost write acknowledgement can retry the same request using the first saved bytes. Concurrent requests cannot replace the saved question or evidence.
+- [x] Preserve confirmed-charge reporting when an HTTP recovery fails before reaching its memoized settlement call. Missing legacy evidence stays an open delivery obligation; recovery does not create a new observation and pretend it was the purchased one.
+
+The new public-door suite passed all 120 cases across five payment rails. Removing the production patch made 114 regression cases fail; six legacy safety controls passed both ways. The final integration gate passed 476 tests across 25 files, including existing payment fixtures, buyer-input mapping, discovery, collector isolation, deliver-before-settlement and EVM/Solana reconciliation. Typecheck and both Worker dry-run bundles passed. Full CI remains delegated to GitHub.
+
+The ambiguity cases simulate a lost settlement response and then inject its confirmed payment result to test evidence survival; they do not claim new coverage of chain finality verification. That verification retains its separate negative-control suites. All payments and chain observations here are local fixtures.
+
+This extends BUY-017/034/037 without closing their parent findings or changing the 15/39 completion count. Other external observations, inventory/term services, commission/publication capture, pre-capture obligations and lost status handles remain. This increment covers settlement attestations and bundles only; it does not claim every observation product is recoverable.
+
+Storage uses the existing coordinator and its [transactional Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/); no new migration is required.
+
+## 2026-09-08 — observation journal CI integration / PR #570
+
+- [x] Register the reviewed `DurableObjectTransaction.put` for the original observation in the KV-write scanner's exact-line exceptions. The scanner still rejects ordinary KV aliases, including a different write through a receiver named `txn`, and rejects the same exception in an unrelated source file.
+
+GitHub reported one failure with 6,935 passing tests: the scanner treated this Durable Object transaction as an unguarded KV write. The same assertion reproduced locally; all four scanner checks passed after the exception was added, followed by typecheck. No production storage or payment behavior changed. This does not close another buyer finding.
