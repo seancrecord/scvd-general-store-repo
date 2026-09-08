@@ -25,6 +25,7 @@ windDownRoutes.get("/wind-down", (c) => {
     standfirst: WIND_DOWN_STANDFIRST,
     classes: WIND_DOWN_CLASSES,
     honest_limit: WIND_DOWN_LIMIT,
+    a2a_kit: "A2A card watches and included rechecks need this store to remain online. If hosting stops, remaining observations cannot run; missing checks are never passes. Save the report, signature and independently obtained issuer key while the report is reachable. The downloaded regression runner can run without this store, but cannot issue our signatures.",
     decided_on: "2026-07-30",
     note: "Decided while the store was open and nothing turned on the answer.",
   };
@@ -56,6 +57,10 @@ windDownRoutes.get("/wind-down", (c) => {
           <tr><th>what we hold</th><th>what happens to it</th><th>why that and not the other</th></tr>
           ${classes}
         </table>
+      </section>
+      <section>
+        <h2>A2A repair kits</h2>
+        <p class="menu-meta">${escapeHtml(payload.a2a_kit)}</p>
       </section>
       <section>
         <h2>What this is worth</h2>

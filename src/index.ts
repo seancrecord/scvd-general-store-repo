@@ -1,3 +1,4 @@
+import { a2aDeskRoutes } from "@/routes/a2a-desk";
 import { withPatientKv } from "@/lib/kv-retry";
 import type { Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
@@ -223,6 +224,7 @@ app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
 app.route("/", operatorStatementRoutes);
 app.route("/", onpageRoutes);
+app.route("/", a2aDeskRoutes);
 app.route("/", watchRoutes);
 app.route("/", anchorLogRoutes);
 app.route("/", rightsRoutes);
@@ -1136,3 +1138,5 @@ export { app };
 export { TradeNonceStore } from "@/services/trade-nonces";
 export { PaidRecoveryStore } from "@/services/paid-recovery";
 export { A2ATaskStore } from "@/services/a2a-tasks";
+
+export { A2AKitStore } from "@/services/a2a-kit";

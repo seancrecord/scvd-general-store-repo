@@ -1170,6 +1170,13 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
       input.type = "text";
       input.placeholder = field.name;
       input.setAttribute("aria-label", `${item.name}: ${field.name}`);
+      // Carry the card-check target to its item page, visibly editable.
+      // This fills a field only; the buyer still explicitly starts the quote.
+      const location = doc.defaultView?.location;
+      if (field.name === "url" && location?.pathname === `/menu/${item.id}`) {
+        const target = new URLSearchParams(location.search).get("url");
+        if (target && target.length <= 2048) input.value = target;
+      }
       inputs.set(field.name, input);
       row.appendChild(input);
     }

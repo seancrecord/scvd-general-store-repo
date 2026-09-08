@@ -34,6 +34,7 @@ export const TOOL_ENDPOINTS: Readonly<
   /* The look belongs in a browser for the same reason the dry run does: an agent in someone's browser is as likely to be holding a URL and a wallet as one in a tool loop. Free, read-only, one probe plus our own chain. */
   look_at_door: { method: "POST", path: "/api/look/v1" },
   check_conformance: { method: "POST", path: "/api/conformance/v1" },
+  check_a2a_card: { method: "POST", path: "/api/a2a/check" },
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
   /* The poll half of the async job, for an agent in a browser holding an order id: free, read-only, the store's own books. */
   check_purchase: { method: "GET", path: "/api/purchase-status/{purchase_id}", bearerArgument: "status_token" },

@@ -188,7 +188,7 @@ not for connecting to it.)
 
 ### Tools
 
-Sixteen tools, all listed free by `tools/list`; the `buy_*` tools
+Tools are listed free by `tools/list`; the `buy_*` tools
 are x402-paid in-band. Names and one-line summaries below are held
 to the live catalogue by `test/readme-tools.spec.ts`; the full
 descriptions and input schemas are what the server sends.
@@ -197,6 +197,7 @@ descriptions and input schemas are what the server sends.
 | --- | --- |
 | `read_store_guide` | The store's front door as text: the menu with prices, how x402 payment works here, the free shelf. |
 | `preflight_endpoint` | x402 endpoint preflight, free: checks any x402 door's 402 shape before anyone pays it. |
+| `check_a2a_card` | Free A2A 0.3.0 card checks, bounded evidence and suggested repairs. Runtime testing and signed rechecks are available in the repair kit. |
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
 | `check_purchase` | Read retained payment status and original terms with purchase_id and the private status_token. Free, including after payment authorization expiry. |
@@ -802,7 +803,7 @@ are not:
   with its own quality scan: descriptions, parameter descriptions and
   output schemas at full marks. Its annotations reading (0 of 27)
   describes the 27-tool catalog this store retired on 2026-08-02 —
-  the live catalog is available through `tools/list`, with every tool carrying all four MCP
+  the live catalog lists every tool with all four MCP
   behavior hints through `tools/list` — and refreshes on its next
   scan rather than being argued with.
 - **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)
@@ -829,3 +830,12 @@ column that does not run through us.
   intents, unknown-settlement records, and the delivery audit account for
   failures around that boundary. An interrupted response is not proof that
   no money moved; retain the original payment and retry key for recovery.
+
+### A2A repair kits
+
+The [A2A repair desk](https://scvd.store/a2a-desk) checks public A2A cards
+free and offers an operator-authorized repair kit with reproducible
+failures, suggested fixes, a regression runner, one signed recheck and a
+bounded card watch. A2A 0.3.0 JSON-RPC only; untested capabilities and
+missed observations remain visible. Repository implementation is separately
+scoped. [Pilot scope and verification](docs/A2A_REPAIR_KIT_2026-09-07.md).

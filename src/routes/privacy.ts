@@ -27,6 +27,10 @@ export const privacyRoutes = new Hono<HonoEnv>();
 
 const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
   {
+    head: "A2A repair kits",
+    body: ["The repair desk stores bounded public test cards, authorization fixtures, requests and responses, signed observations and suggested repairs. Use only public test data. Anyone holding the unguessable report link can read it. The private recheck token is held separately and omitted from report reads. The seven-day watch reads only the card; active tests require the operator authorization file and run at purchase and the buyer-triggered recheck. Reports are retained for later verification."],
+  },
+  {
     head: "The A2A evidence agent",
     body: [A2A_STATE_DESCRIPTION],
   },
@@ -35,7 +39,8 @@ const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
     body: [
       "No accounts and no signups exist here, so there is nothing account-shaped to collect: no names required, no email required, no passwords, no profiles.",
       "No cookies, no client-side tracking, no analytics scripts, no fingerprinting. What you read here is not observed.",
-      "One script is served, and only on the pages that sell something: /till.js, the browser till, which asks your wallet to sign a payment. It is first-party, unminified, byte-identical to its source in the public repository, and it makes no request to anything but this origin. It sets no cookie and writes nothing to browser storage. It never sees a key — a wallet returns a signature and keeps the key, which is exactly what every agent buying here already does. With scripting off, the page you are reading is unchanged and every instruction on it still works.",
+      "The browser till, /till.js, is served on pages that sell something and asks your wallet to sign a payment. It is first-party, unminified, byte-identical to its source in the public repository, and it makes no request to anything but this origin. It sets no cookie and writes nothing to browser storage. It never sees a key — a wallet returns a signature and keeps the key, which is exactly what every agent buying here already does. With scripting off, the page you are reading is unchanged and every instruction on it still works.",
+      "The A2A regression runner is a separate downloadable program at /api/a2a/runner.mjs. It is served as an attachment, never automatically executed by a page. It reads the public card, and runs runtime tests only with the caller-selected --runtime flag and the operator authorization fixture. Its exact source and build recipe are in the repository.",
       "The application keeps no IP address logs. Our host (Cloudflare) processes IPs to serve traffic, as every host does; the store's own code neither reads nor stores them.",
       "Uniqueness is deliberately unavailable: the store cannot tell whether two anonymous visits were the same visitor, and treats that inability as a feature.",
     ],

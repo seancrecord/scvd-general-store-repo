@@ -210,7 +210,7 @@ GitHub reported one failure with 6,935 passing tests: the scanner treated this D
 - [x] Exercise pre-settlement journal failure, lost journal acknowledgement, changed-input replay and concurrent initial requests. Use real report construction/signing with local pages and local signed payment fixtures.
 - [x] Give the older MCP argument-survival spec unique settlement identities for independent purchases using the existing scoped multi-purchase fixture.
 
-All 288 new cases failed with the production repair temporarily removed and passed after restoration. The final related gate passed 1,050 cases across 17 files, plus all four KV-write scanner checks. Typecheck and both Worker dry-run builds passed; the full suite runs on GitHub. These are local fixtures, not live-chain or production-deployment evidence.
+All 288 new cases failed with the production repair temporarily removed and passed after restoration. The final related gate passed 1,050 cases across 17 files, plus all four KV-write scanner checks. Typecheck and both Worker dry-run builds passed; the full suite runs on GitHub. After integrating current main, the recovery/A2A conflict gate passed 465 cases across seven files, with typecheck and both dry-run builds passing again. These are local fixtures, not live-chain or production-deployment evidence.
 
 BUY-017/034/037 remain open. This increment covers these four URL reports, not every external observation or paid product. Other observations, inventory/term services, commission/publication capture, pre-capture obligations and lost private handles remain. The completed parent count stays 15/39.
 

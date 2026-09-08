@@ -83,7 +83,7 @@ function pageHtml(base: string, artifact: Awaited<ReturnType<typeof sampleOnceOv
  * the price is read off the shelf at request time so a repriced item
  * never serves a stale "price of the real thing".
  */
-samplesRoutes.get("/samples/:slug{[a-z-]+\\.json}", async (c) => {
+samplesRoutes.get("/samples/:slug{[a-z0-9-]+\\.json}", async (c) => {
   const slug = c.req.param("slug").replace(/\.json$/, "");
   const listing = SAMPLES.find((entry) => entry.slug === slug);
   if (!listing) {

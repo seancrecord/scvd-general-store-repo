@@ -6,7 +6,7 @@ import standaloneCode from "ajv/dist/standalone/index.js";
 const schema = JSON.parse(readFileSync(new URL("../research/a2a-2026-09-06/official-schema-0.3.0.json", import.meta.url)));
 const ajv = new Ajv({ strict: false, validateFormats: false, code: { source: true, esm: true } });
 ajv.addSchema(schema, "a2a");
-const validators = Object.fromEntries(["SendMessageRequest", "GetTaskRequest", "CancelTaskRequest"].map((name) => {
+const validators = Object.fromEntries(["SendMessageRequest", "GetTaskRequest", "CancelTaskRequest", "AgentCard", "Task", "Message"].map((name) => {
   ajv.addSchema({ $ref: `a2a#/definitions/${name}` }, name);
   return [`validate${name}`, name];
 }));

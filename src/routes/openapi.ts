@@ -1,3 +1,4 @@
+import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import {
   ALSO_A_STORE,
@@ -6351,6 +6352,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           URL_BODY,
         ), LOOK_VERDICT_SCHEMA)),
       },
+      "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } } },
+      "/api/a2a/check": { get: { security: [], summary: "Free A2A check instructions and limits", responses: { ...COMMON_RESPONSES, "200": { description: "Desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } }, post: { security: [], summary: "Free, bounded A2A 0.3.0 card check", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Unsigned checks, evidence, repairs and gaps", content: { "application/json": { schema: A2A_CHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Target refused"), "429": PROBLEM_RESPONSE("Budget exhausted; retry after 60 seconds") } } },
+      "/api/a2a/runner.mjs": { get: { security: [], summary: "Free downloadable Node regression runner; runs only on caller decision", responses: { ...COMMON_RESPONSES, "200": { description: "JavaScript attachment; Node 22+", content: { "text/javascript": { schema: { type: "string" } } } } } } },
+      "/api/a2a/kits/{kit_id}": { get: { security: [], summary: "Read an A2A repair kit, recheck and finite card watch", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], responses: { ...COMMON_RESPONSES, "200": { description: "Signed observations and suggested repairs; Accept text/html for a human report", content: { "application/json": { schema: A2A_KIT_SCHEMA } } }, "404": PROBLEM_RESPONSE("Kit not found") } } },
+      "/api/a2a/kits/{kit_id}/recheck": { post: { security: [], summary: "Use the included A2A recheck, authorized by the private purchase token", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["token"], properties: { token: { type: "string", maxLength: 100 } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Stored signed recheck; retries return the same result", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "202": { description: "Recheck started; no automatic replay after interruption", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Invalid body or operator authorization absent"), "403": PROBLEM_RESPONSE("Token invalid"), "410": PROBLEM_RESPONSE("Recheck period ended"), "503": PROBLEM_RESPONSE("Instrument failure; no pass claimed") } } },
       "/api/onpage/v1": {
         get: returns(
           freeOp(

@@ -84,6 +84,7 @@ export interface Room {
  * are about, not one of them. HUMAN_SURFACES puts it back at the front.
  */
 export const ROOMS: readonly Room[] = [
+  { path: "/a2a-desk", name: "A2A checks and repair kits", deeper: ["a2a_repair_kit"], writes_its_own_deeper: true },
   // "What is scvd.store?" since 2026-09-03 (F29): the branded question,
   // the way people type it, as the room's name and the page's title.
   { path: "/what", name: "What is scvd.store?" },

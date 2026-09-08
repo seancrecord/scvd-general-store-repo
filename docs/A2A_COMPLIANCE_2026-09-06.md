@@ -4,7 +4,7 @@ Read on September 6 in America/New_York; raw timestamps are September 7
 UTC. This is an unsigned operational reading of our own public endpoint.
 No payment, deployment, outreach or third-party agent task was performed.
 
-## Repair follow-through — built locally, deployment still pending
+## Repair follow-through — merged and deployed 2026-09-07
 
 The keeper asked how to close the gaps in the same sitting. The repair is
 on `codex/a2a-compliance`; the original live readings below remain unchanged.
@@ -200,3 +200,13 @@ Primary reads: [official 0.3.0 specification](https://a2a-protocol.org/v0.3.0/sp
 [versioned schema](https://raw.githubusercontent.com/a2aproject/A2A/v0.3.0/specification/json/a2a.json);
 [checker README](https://github.com/UltraSkye/a2a-compliance), plus the
 installed package source. Recorded in `docs/SPEC_READS.md` per rule 61.
+
+
+### Release follow-through, 2026-09-07
+
+PR #556 merged as `d99d8ccb4589b78f63c1909c1cad938365ccd37e`; both
+production builds completed. The live gate passed 14/14 at
+2026-09-07T02:15:52Z. The pinned external CLI also exited zero. Earlier
+references to a pending deployment describe the pre-release state.
+The customer-facing extension is now the separate authorized pilot in
+`docs/A2A_REPAIR_KIT_2026-09-07.md`.

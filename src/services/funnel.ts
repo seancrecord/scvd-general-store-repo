@@ -20,6 +20,7 @@ export const VERIFICATION_TIER: readonly string[] = [
   "settlement_reconciliation",
   "attestation_bundle",
   "service_audit",
+  "a2a_repair_kit",
   "conformance_watch",
   "bitcoin_anchor",
   "standing_watch",

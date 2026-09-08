@@ -585,3 +585,27 @@ Read the [IANA JSON-LD registration](https://www.iana.org/assignments/media-type
 Read-only requests to all ten live dataset URLs with `Accept: application/json` found schema.org `Dataset` JSON-LD in `/fixtures.json`, `/corpus.json`, `/registry` and `/inflows`. The other six machine responses are ordinary JSON; JSON-LD in an HTML page does not change its separate JSON response. ARD now derives each format from the dataset roster and emits it in both `type` and `mediaType`. All currently use `application/json` HTTP response headers; the four JSON-LD bodies also remain retrievable when explicitly requested as `application/ld+json`. No response body or negotiation rule changes here.
 
 The function-calling document is ordinary JSON with a `tools` array; the description already names its function-calling shape. Its homemade profile is removed too. The Atom type and OpenAPI version parameter remain. Regression tests compare the declarations with the served machine bodies; the new dataset and tools assertions were observed failing before the fix. This improves the declarations, not evidence of new visitors, registry coverage or a promised score.
+
+## 2026-09-07 — A2A repair-kit pilot
+
+- [Official A2A 0.3.0 specification](https://a2a-protocol.org/v0.3.0/specification/):
+  re-read card discovery, Task/Message shapes, JSON-RPC methods and errors.
+  The retained official 0.3.0 schema generates validators for the hosted
+  instrument and downloadable runner. Scope deliberately excludes other
+  versions/transports, streaming, push, authentication and long tasks.
+- [Cloudflare Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+  and [Durable Object alarms](https://developers.cloudflare.com/durable-objects/api/alarms/):
+  bounded body reads, explicit async completion, per-object storage and
+  finite schedules. Alarm retries do not establish a complete history;
+  missed slots remain derivable and visible. Local installed Workers types
+  and Wrangler schema are used for binding/type validation.
+- [a2a-compliance README](https://github.com/UltraSkye/a2a-compliance) and
+  [AgentCard repair explanations](https://www.agentcard.net/blog/agent-card-validation-errors):
+  free validation, explanations and CI tooling already exist. This pilot
+  sells hosted work, repair handoff and signed observations/rechecks.
+  The external CLI is not used as a completeness oracle or run by the Worker.
+
+Gaps: no market demand, competing paid-service pricing or full multi-version
+conformance coverage verified. No claim is made from the unverified 50-agent
+sample in A2A issue #1755. No third-party production endpoint was actively
+probed during the build; tests use operator-style fixtures.

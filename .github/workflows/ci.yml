@@ -35,6 +35,8 @@ jobs:
       - run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      - name: A2A repair runner matches the hosted instrument
+        run: npm run a2a:runner:check && npm run a2a:runner:test
       - name: A2A official schema and task lifecycle
         run: npm run a2a:check
       # SELF-ROW — we sell discovery_coherence pointed at other

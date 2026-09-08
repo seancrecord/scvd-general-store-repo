@@ -230,7 +230,9 @@ describe("every public door is on a surface an agent reads, or says why not", ()
        * reader deciding how much to trust a green run should read
        * this paragraph, not that sentence.
        */
-      if (haystack.includes(probe)) continue;
+      // OpenAPI documents parameterized paths with {names}; the router probe
+      // removes :names. Normalize the documented form by the same rule.
+      if (haystack.includes(probe) || haystack.replace(/\/\{[A-Za-z_][A-Za-z0-9_]*\}(?=\/|["?])/g, "").includes(probe)) continue;
       if (probe in DELIBERATELY_QUIET) continue;
       unaccounted.push(...routes.map((key) => `${key}  (probe: ${probe})`));
     }

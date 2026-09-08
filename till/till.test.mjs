@@ -905,6 +905,19 @@ test("an item with required inputs will not buy on an empty field", async () => 
   assert.ok(!wallet.calls.includes("eth_signTypedData_v4"));
 });
 
+test("an item-page URL fills the target field without quoting or signing", async () => {
+  const doc = fakeDocument();
+  doc.defaultView = { location: { pathname: "/menu/a2a_repair_kit", search: "?url=https%3A%2F%2Fagent.example%2Fcard.json" } };
+  const shelf = { ...SHELF, items: [{ id: "a2a_repair_kit", name: "A2A kit", price_usdc: 49, buy_path: "/api/buy/a2a_repair_kit", requires: [{ name: "url" }] }] };
+  let quotes = 0;
+  const wallet = fakeWallet();
+  const section = mountTill({ doc, provider: wallet, shelf, fetchImpl: async () => { quotes++; throw new Error("must not quote on mount"); } });
+  const row = section.children.find(child => child.className === "till-row");
+  assert.equal(row.children.find(child => child.tag === "input").value, "https://agent.example/card.json");
+  await settle(); assert.equal(quotes, 0);
+  assert.equal(wallet.calls.filter(call => call.method === "eth_signTypedData_v4").length, 0);
+});
+
 test("prices read like prices, at both ends of the shelf", () => {
   const doc = fakeDocument();
   doc.shelfNode.textContent = JSON.stringify({

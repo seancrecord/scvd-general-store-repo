@@ -1,3 +1,4 @@
+import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
 import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
@@ -313,6 +314,8 @@ export async function fulfillPurchase(
    * did-not-answer is itself the observation — the artifact frames
    * what that can and cannot prove.
    */
+  const a2aKit = item.id === "a2a_repair_kit" ? await prepareA2AKit(env, input.targetUrl ?? "") : undefined;
+  if (a2aKit) mintOptions.attests = a2aKit.report.evidence_hash;
   let serviceAudit: SignedServiceAudit | undefined = retainedObservation?.serviceAudit;
   if (item.id === "service_audit" && !retainedObservation) {
     serviceAudit = await performServiceAudit(env, input.targetUrl ?? "");
@@ -801,6 +804,7 @@ export async function fulfillPurchase(
     if (goodBuyer) {
       goodsInput.goodBuyer = goodBuyer;
     }
+    if (a2aKit) goodsInput.a2aKit = a2aKit;
     if (serviceAudit) {
       goodsInput.serviceAudit = serviceAudit;
     }

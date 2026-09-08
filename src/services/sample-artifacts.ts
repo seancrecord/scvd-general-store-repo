@@ -1,3 +1,4 @@
+import { sampleA2AKit } from "@/services/a2a-sample";
 import { surfacesSectionOf, type SurfaceReads } from "@/services/surface-reads";
 import { NO_VERDICT } from "@/services/case-file";
 import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
@@ -256,6 +257,7 @@ import { LAUNCH_CHECK_UA } from "@/services/launch-check-terms";
 import { BASE_EVM, TRANSFER_TOPIC } from "@/lib/base-rpc";
 
 export type SampleSlug =
+  | "a2a-repair-kit"
   | "once-over"
   | "conformance-watch"
   | "night-watch"
@@ -564,6 +566,7 @@ export interface SampleListing {
 
 /** Every specimen, once — the routes, the index and the item pages read this. */
 export const SAMPLES: readonly SampleListing[] = [
+  { slug: "a2a-repair-kit", item: "a2a_repair_kit", build: sampleA2AKit },
   { slug: "once-over", item: "service_audit", build: (env, price) => sampleOnceOver(env, price) },
   { slug: "conformance-watch", item: "conformance_watch", build: (env, price) => sampleConformanceWatch(env, price) },
   { slug: "night-watch", item: "standing_watch", build: (env, price) => sampleNightWatch(env, price) },
