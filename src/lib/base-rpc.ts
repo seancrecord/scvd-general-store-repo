@@ -906,6 +906,79 @@ export async function findAuthorizationUse(
 }
 
 /**
+ * THE SAME QUESTION ASKED OF THE TOKEN, NOT OF THE LOG INDEX
+ * (2026-09-08, and the desk it un-blinded).
+ *
+ * The bounty desk read redemption by scanning AuthorizationUsed from
+ * the bounty's opening block to the head. By 2026-09-08 that was a
+ * ~300,000-block range on four bounties opened 09-01, and every
+ * endpoint refuses a range that wide — HTTP 400 by plan design, the
+ * REQUEST verdict FALLBACK_RPCS already records, so the ladder rotated
+ * through all four and answered "unknown" nine attempts later. Two of
+ * those four payouts had in fact been redeemed and $0.50 really had
+ * left the wallet; the page said unknown of all four and the wallet
+ * cover counted $1.00 still promised. Nothing was wrong with the
+ * money. The instrument had simply gone blind, and the fail-soft
+ * hid it.
+ *
+ * Chunking the scan is the obvious fix and the wrong one: at Base's
+ * 2,000-block span a seven-day authorization is 151 calls per payout.
+ * The token already keeps the answer as STATE. FiatToken's
+ * `authorizationState(authorizer, nonce)` is the mapping
+ * transferWithAuthorization sets when it burns a nonce — one
+ * eth_call, no range, no cap, exact, and it cannot go blind because a
+ * provider narrowed a log window.
+ *
+ * WHAT IT DOES NOT GIVE is the transaction that burned it: state is a
+ * boolean. Callers that need the tx hash (the ambiguous-settle rescue,
+ * which must produce a receipt) keep the log readers below. Callers
+ * that need the FACT — was this walker paid — ask here.
+ *
+ * `true` means used or canceled; this store never cancels an
+ * authorization, so on our own payouts the two are the same fact.
+ */
+const AUTHORIZATION_STATE_SELECTOR = "0xe94a0102";
+
+export async function authorizationUsed(
+  env: Env,
+  authorizer: string,
+  nonce: string,
+  chain: EvmChain = BASE_EVM,
+): Promise<boolean> {
+  const paddedAuthorizer = authorizer
+    .toLowerCase()
+    .replace(/^0x/, "")
+    .padStart(64, "0");
+  const paddedNonce = nonce.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+  const result = await rpc<string>(
+    env,
+    "eth_call",
+    [
+      {
+        to: chain.usdc,
+        data: `${AUTHORIZATION_STATE_SELECTOR}${paddedAuthorizer}${paddedNonce}`,
+      },
+      "latest",
+    ],
+    chain,
+  );
+  /*
+   * A word of zeroes is false and anything else is true — read as a
+   * number rather than string-matched, so a node that pads or cases
+   * its answer differently cannot turn a redeemed payout into an
+   * unredeemed one. An unparseable answer throws rather than reading
+   * false: the caller must be able to tell "not redeemed" from "not
+   * answered", or the wallet cover starts counting money that is gone.
+   */
+  if (!/^0x[0-9a-fA-F]+$/.test(result ?? "")) {
+    throw new Error(
+      `${chain.label} RPC authorizationState answered no readable word`,
+    );
+  }
+  return BigInt(result) !== 0n;
+}
+
+/**
  * The same one question over an EXPLICIT block range, for callers that
  * walk history in chain-sized chunks (Machine 1's resolver re-asks
  * hours after the ambiguous settle, which can sit past the one-call

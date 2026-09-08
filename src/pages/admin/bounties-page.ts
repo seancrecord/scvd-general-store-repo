@@ -210,7 +210,21 @@ function redemptionHtml(
     return "<small>redemption not checked</small>";
   }
   if (reading.state === "redeemed") {
-    return `<strong style="color:#2f6b2f">redeemed on chain</strong> <small>tx <code>${escapeHtml(reading.tx_hash.slice(0, 18))}…</code></small>`;
+    /*
+     * THE HASH IS OPTIONAL SINCE 2026-09-08. The reading now comes
+     * from the token's own authorizationState — one call, exact, and
+     * unable to be refused by a provider's log-range cap, which is
+     * what had this desk answering "unknown" of payouts that were
+     * already money gone. State is a boolean: it says the nonce
+     * burned, not which transaction burned it. The fact is the part
+     * the keeper reads this line for; the hash rides along only when
+     * a log reading found one.
+     */
+    return `<strong style="color:#2f6b2f">redeemed on chain</strong>${
+      reading.tx_hash
+        ? ` <small>tx <code>${escapeHtml(reading.tx_hash.slice(0, 18))}…</code></small>`
+        : " <small>— the walker submitted the authorization; the reward is theirs and the wallet is down that money</small>"
+    }`;
   }
   if (reading.state === "unknown") {
     return `<small>redemption unknown (${escapeHtml(reading.problem)})</small>`;

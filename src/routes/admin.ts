@@ -631,6 +631,25 @@ adminRoutes.get("/admin/take", async (c) => {
   return c.html(body);
 });
 
+/**
+ * THE ROUND (2026-09-08, the keeper: "should be very easy to me to see
+ * 'bounty done', needs new bounty… really everything that I 'could' be
+ * checking or last checked or need to update in one place").
+ *
+ * Reads only. Every machine's own state, printed against the cadence
+ * it is supposed to keep, plus the presses nobody but the keeper can
+ * make. JSON for anything that polls; the room for the browser.
+ */
+adminRoutes.get("/admin/round", async (c) => {
+  const { readKeepersRound } = await import("@/services/keepers-round");
+  const round = await readKeepersRound(c.env);
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json(round);
+  }
+  const { renderRoundPage } = await import("@/pages/admin/round-page");
+  return c.html(renderRoundPage(round));
+});
+
 adminRoutes.get("/admin/glance", async (c) => {
   const { readGlance } = await import("@/services/glance");
   const glance = await readGlance(c.env);
@@ -2199,12 +2218,78 @@ adminRoutes.get("/admin/market", async (c) => {
   const board = await bountyBoard(c.env).catch(() => null);
   const posted = c.req.query("bounty_posted");
   const refused = c.req.query("bounty_refused");
+  const batch = c.req.query("bounty_batch");
   const notice = posted
     ? `Posted: ${posted} — it's on the public board now, terms captured from the door's live 402.`
     : refused
       ? `The board refused that one: ${refused}`
-      : undefined;
-  return c.html(renderMarketPage(round, market, board, notice));
+      : batch
+        ? batch
+        : undefined;
+  /*
+   * THE POSTING LIST (2026-09-08): the round's own ready rows with
+   * this store's bounty history beside each. Derived here from what
+   * the page already loaded — the round and the board — so the desk
+   * pays nothing extra for it, and a board that would not read simply
+   * offers no list rather than taking the page down.
+   */
+  const { bountyCandidates } = await import("@/services/bounty-batch");
+  const candidates = board
+    ? bountyCandidates(
+        round,
+        board.bounties,
+        new URL(c.env.STORE_BASE_URL).host.toLowerCase(),
+      )
+    : [];
+  return c.html(renderMarketPage(round, market, board, notice, candidates));
+});
+
+/**
+ * THE KEEPER POSTS A ROUND OF THEM (2026-09-08). Same door as the
+ * single post — house-picked URLs, each door's live 402 captured as
+ * its own terms, every rule enforced in openBounty where it always
+ * was — pressed once for up to ten doors. Every refusal comes back
+ * named beside its URL: a batch that quietly dropped half its doors
+ * would be worse than the ten trips it replaces.
+ */
+adminRoutes.post("/admin/bounties/batch", async (c) => {
+  const { openBountyBatch, batchNotice } = await import(
+    "@/services/bounty-batch"
+  );
+  const contentType = c.req.header("Content-Type") ?? "";
+  let urls: string[] = [];
+  let rewardUsd = Number.NaN;
+  let note = "";
+  if (contentType.includes("json")) {
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+    urls = Array.isArray(body["urls"]) ? body["urls"].map(String) : [];
+    rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
+    note = typeof body["note"] === "string" ? body["note"] : "";
+  } else {
+    const form = await c.req.parseBody({ all: true });
+    const raw = form["url"];
+    urls = Array.isArray(raw) ? raw.map(String) : raw ? [String(raw)] : [];
+    rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
+    note = typeof form["note"] === "string" ? form["note"] : "";
+  }
+  if (urls.length === 0) {
+    const message = "Nothing was checked, so nothing was posted.";
+    return contentType.includes("json")
+      ? c.json({ error: message }, 400)
+      : c.redirect(`/admin/market?bounty_batch=${encodeURIComponent(message)}`, 303);
+  }
+  const result = await openBountyBatch(c.env, {
+    urls,
+    rewardUsd,
+    ...(note ? { note } : {}),
+  });
+  if (contentType.includes("json")) {
+    return c.json(result);
+  }
+  return c.redirect(
+    `/admin/market?bounty_batch=${encodeURIComponent(batchNotice(result).slice(0, 900))}`,
+    303,
+  );
 });
 
 /**

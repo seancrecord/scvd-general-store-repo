@@ -5,12 +5,16 @@ import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
+  BOUNTY_AUTH_VALID_SECONDS,
   BOUNTY_MAX_REWARD_USD,
+  BOUNTY_OPEN_DAYS,
+  BOUNTY_REFUSALS,
   BOUNTY_WEEKLY_BUDGET_USD,
   BountyRefused,
   bountyBoard,
   claimBounty,
 } from "@/services/bounty-board";
+import { BASE_USDC } from "@/lib/base-rpc";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -44,6 +48,88 @@ const BOARD_RULES: readonly string[] = [
 ];
 
 const BOARD_METHOD = "BOUNTY_BOARD.md in the store's public repository";
+
+/**
+ * BEFORE YOU SPEND YOUR OWN MONEY (2026-09-08). The board's three
+ * steps start at "pay the door", which is the first irreversible act
+ * on the page. Everything a walker can check for free happens before
+ * it, and until today none of it was written down anywhere a walker
+ * would read in time. Each line names a field on the board's own JSON,
+ * so the check is one read and not a judgement call.
+ */
+const BOARD_BEFORE_YOU_WALK: readonly string[] = [
+  "Read the board on the minute you walk, not from a cached page: `status` is derived from the clock on every read, and a listing that reads `expired` will refuse the claim you paid for.",
+  "Compare the door's live 402 against the bounty's `amount_usd` and `network` before you pay. The claim is verified against the terms THIS STORE captured at posting; a price that moved between then and your walk is the one loss mode a careful walker still eats.",
+  "Check `payouts_enabled` is true and that `spent_this_week_usd` leaves room under `weekly_budget_usd` — a spent week refuses claims until the ISO week turns over.",
+  "Settle on the bounty's own rail. The claim door reads the chain named in `network` and nothing else; a payment on another chain cannot claim the listing however real it is.",
+  "Have a 0x Base address you control ready for `payout_to`. Rewards pay in Base USDC on every rail, Solana doors included, and the address is sanctions-screened before a cent is signed.",
+  `A listing runs ${BOUNTY_OPEN_DAYS} days and one bounty stands per domain per week. Nothing here needs an account, an email, or a signup — the board never learns who you are, only which wallet paid.`,
+];
+
+/**
+ * ONE WALK, END TO END, IN COMMANDS (2026-09-08). The board described
+ * the loop in prose and served the claim's JSON shape as a sentence.
+ * An agent reading this page has to turn that sentence into a request,
+ * and a person deciding whether the walk is worth it has to picture
+ * the whole thing — including the redemption, which is the step that
+ * actually turns the reward into money and the only one this store
+ * cannot take for them. So: the four commands, no price typed by hand,
+ * and every id marked as the example it is.
+ */
+function workedWalk(base: string) {
+  return {
+    note: "Ids, hashes and addresses below are illustrative — take the real ones off the board. The reward is a signed authorization, not a transfer: the last command is yours to send, and nobody sends it for you.",
+    steps: [
+      {
+        step: "1. Read the board and pick an open listing",
+        shell: `curl -sS ${base}/api/bounties | jq '.bounties[] | select(.status == "open")'`,
+        note: "Keep the row: bounty_id, target_url, network, amount_usd and pay_to are the terms your claim is verified against.",
+      },
+      {
+        step: "2. Walk the door with your own wallet",
+        note: "No command of ours here: your x402 client, your wallet, your gas, the door's own terms. Check the 402's amount and network against the bounty's before you sign anything, then keep the settlement's transaction id and whatever the door returned.",
+      },
+      {
+        step: "3. Hand back the settlement",
+        shell: [
+          `curl -sS -X POST ${base}/api/bounty-claim \\`,
+          `  -H 'Content-Type: application/json' \\`,
+          `  -d '{"bounty_id":"bty_01J8EXAMPLE","tx_hash":"0xabc…","payer":"0xYourPayingWallet","payout_to":"0xWhereTheRewardGoes","observation":"402 quoted the posted price on Base; paid; 200 with a PAYMENT-RESPONSE receipt and the goods delivered."}'`,
+        ].join("\n"),
+        note: "observation is optional and rides along verbatim as YOUR claim. The reward does not depend on it and is never withheld for what it says.",
+      },
+      {
+        step: "4. Redeem the authorization yourself",
+        shell: [
+          `cast send ${BASE_USDC} \\`,
+          `  'transferWithAuthorization(address,address,uint256,uint256,uint256,bytes32,bytes)' \\`,
+          `  $FROM $TO $VALUE $VALID_AFTER $VALID_BEFORE $NONCE $SIGNATURE \\`,
+          `  --rpc-url https://mainnet.base.org --private-key $YOUR_KEY`,
+        ].join("\n"),
+        note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing.`,
+      },
+    ],
+  };
+}
+
+/**
+ * ONE COPY OF THE BOARD'S WORDS for every face that serves them: the
+ * room, the JSON board, and the claim door's own GET. The rules,
+ * the checklist, the worked walk and the refusal catalogue are the
+ * same strings in all three or the board is describing a store that
+ * does not exist.
+ */
+function boardWords(base: string) {
+  return {
+    what_this_is: BOARD_WHAT_THIS_IS,
+    how_to_claim: BOARD_HOW_TO_CLAIM,
+    before_you_walk: BOARD_BEFORE_YOU_WALK,
+    a_walk_end_to_end: workedWalk(base),
+    why_a_claim_is_refused: BOUNTY_REFUSALS,
+    the_rules: BOARD_RULES,
+    method: BOARD_METHOD,
+  };
+}
 
 /**
  * THE ROOM (2026-08-20, the AEO sweep). The board's mechanism is the
@@ -80,6 +166,24 @@ function boardHtml(
   const rules = BOARD_RULES.map(
     (line) => `<li>${escapeHtml(line)}</li>`,
   ).join("\n");
+  const checklist = BOARD_BEFORE_YOU_WALK.map(
+    (line) => `<li>${escapeHtml(line)}</li>`,
+  ).join("\n");
+  const walk = workedWalk(base);
+  const walkSteps = walk.steps
+    .map(
+      (step) => `<h3>${escapeHtml(step.step)}</h3>
+      ${"shell" in step && step.shell ? `<pre class="menu-desc"><code>${escapeHtml(step.shell)}</code></pre>` : ""}
+      <p class="menu-desc">${escapeHtml(step.note)}</p>`,
+    )
+    .join("\n");
+  const refusals = BOUNTY_REFUSALS.map(
+    (row) => `<tr>
+      <td>${escapeHtml(row.check)}</td>
+      <td>${escapeHtml(row.refused_when)}</td>
+      <td>${escapeHtml(row.then_what)}</td>
+    </tr>`,
+  ).join("\n");
   return `<section>
       <p class="menu-desc"><strong>Get paid to shop somebody else's x402 door.</strong> Walk a posted door with your own wallet, hand back the settlement transaction, and the store pays you what the door charged plus a finder's fee — in USDC, to a wallet you name, with no account anywhere.</p>
       <p class="menu-desc">${escapeHtml(BOARD_WHAT_THIS_IS)}</p>
@@ -101,6 +205,25 @@ function boardHtml(
       <p class="menu-desc"><strong>1. Pay the door yourself.</strong> Your wallet, your gas, the door's own terms. Check the bounty's price against what the door quotes you before you commit — the posted price is what this store saw when it opened the bounty.</p>
       <p class="menu-desc"><strong>2. Hand back the settlement.</strong> ${escapeHtml(BOARD_HOW_TO_CLAIM)}</p>
       <p class="menu-desc"><strong>3. Redeem the payout.</strong> The reward comes back as a signed EIP-3009 <code>transferWithAuthorization</code> — the store broadcasts nothing and holds no gas; you submit it to the USDC contract on Base yourself, or you let it expire and it costs the store nothing.</p>
+    </section>
+    <section>
+      <h2>Before you spend your own money</h2>
+      <p class="menu-desc">Everything below is free to check and each line names a field on <a href="/api/bounties"><code>/api/bounties</code></a>. The first irreversible act on this page is paying somebody else's door; these are the checks that go before it.</p>
+      <ul>${checklist}</ul>
+    </section>
+    <section>
+      <h2>A walk, end to end</h2>
+      <p class="menu-desc">${escapeHtml(walk.note)}</p>
+      ${walkSteps}
+    </section>
+    <section>
+      <h2>Why a claim is refused</h2>
+      <p class="menu-desc">Every way this store will say no to a claim, in the order the claim door checks them, with what each one costs you. A refusal read for the first time by somebody already out of pocket is a refusal published too late — so it is published here instead, and a test drives every row against the live door.</p>
+      <table border="1" cellpadding="6">
+        <tr><th>the check</th><th>refused when</th><th>then what</th></tr>
+        ${refusals}
+      </table>
+      <p class="menu-meta">Only one refusal locks a settlement out for good: one that has already been claimed. Every other refusal releases it, and the store signs nothing and spends nothing on a claim it refuses. That is not the same as a second chance — a listing already paid or expired has nothing left to pay whoever walks it, whatever your transaction is still free to claim.</p>
     </section>
     <section>
       <h2>The rules, in full</h2>
@@ -171,10 +294,7 @@ bountyRoutes.get("/bounties", async (c) => {
   const board = await bountyBoard(c.env);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
-      what_this_is: BOARD_WHAT_THIS_IS,
-      how_to_claim: BOARD_HOW_TO_CLAIM,
-      the_rules: BOARD_RULES,
-      method: BOARD_METHOD,
+      ...boardWords(base),
       board: `${base}/api/bounties`,
       ...board,
     });
@@ -194,10 +314,7 @@ bountyRoutes.get("/api/bounties", async (c) => {
   const board = await bountyBoard(c.env);
   return c.json(
     {
-      what_this_is: BOARD_WHAT_THIS_IS,
-      how_to_claim: BOARD_HOW_TO_CLAIM,
-      the_rules: BOARD_RULES,
-      method: BOARD_METHOD,
+      ...boardWords(c.env.STORE_BASE_URL),
       ...board,
     },
     200,
@@ -216,6 +333,15 @@ bountyRoutes.get("/api/bounty-claim", (c) => {
   return c.json({
     this_door_takes: "POST",
     shape: BOARD_HOW_TO_CLAIM,
+    /*
+     * THE REFUSALS BELONG AT THE DOOR THAT REFUSES (2026-09-08). An
+     * agent that reads anything before POSTing here reads this, and
+     * the ways this door says no are exactly what it should know
+     * before its walker's money is already gone.
+     */
+    before_you_walk: BOARD_BEFORE_YOU_WALK,
+    why_a_claim_is_refused: BOUNTY_REFUSALS,
+    a_walk_end_to_end: workedWalk(c.env.STORE_BASE_URL),
     the_board: "/api/bounties",
     the_room: "/bounties",
   });

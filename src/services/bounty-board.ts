@@ -2,7 +2,7 @@ import {
   BASE_EVM,
   BASE_USDC,
   evmChainOf,
-  findAuthorizationUseInRange,
+  authorizationUsed,
   getBlockNumber,
   getReceipt,
   isSameAddress,
@@ -448,6 +448,170 @@ export interface ClaimResult {
 }
 
 /**
+ * WHY A CLAIM IS REFUSED, IN THE ORDER THE DOOR CHECKS (2026-09-08).
+ *
+ * The board told a shopper how to walk a door and how to claim, and
+ * said nothing at all about the far more expensive question: what
+ * happens when a claim is refused AFTER their own money has already
+ * left their wallet. Every refusal below was already worded carefully
+ * at the moment it fires — and a refusal read for the first time by
+ * somebody who is already out of pocket is worded too late. The store
+ * that publishes its own defect vocabulary can publish the list of
+ * ways it will say no.
+ *
+ * Two things this list is careful about, because they are the two
+ * that cost real money:
+ *
+ *   WHICH REFUSALS RELEASE. A refusal taken before the settlement is
+ *   held costs nothing, and so does every refusal inside the claim
+ *   path — the claim is released and the settlement stays claimable.
+ *   The one that does not come back is a settlement someone already
+ *   claimed. Each row says which it is, in its own words.
+ *
+ *   WHICH REFUSALS THE WALKER CAN SEE COMING. Price drift, an expired
+ *   listing and a spent budget are all readable on the board BEFORE a
+ *   wallet opens. Saying so on the same page is the difference between
+ *   a rule and a warning.
+ *
+ * Each row carries the refusal as the door actually words it
+ * (`matches`), and test/bounty-board.spec.ts drives every one of them
+ * against the real claim door and fails if any row here matches
+ * nothing the store says. A refusal that gets reworded and leaves this
+ * list behind is a red test, not a quiet lie on the public board.
+ */
+export interface BountyRefusalNote {
+  /** What the door is checking, in the shopper's terms. */
+  check: string;
+  /** The condition that refuses. */
+  refused_when: string;
+  /** What it costs the walker, and whether there is a second try. */
+  then_what: string;
+  /**
+   * The door's own wording, for the drift test only — stripped from
+   * the published catalogue (BOUNTY_REFUSALS), which is prose.
+   */
+  matches: RegExp;
+}
+
+export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
+  {
+    check: "Payouts are live on this deployment at all",
+    refused_when:
+      "the field wallet is not provisioned, so there is nothing to sign a reward with",
+    then_what:
+      "Refused before anything is read, and the board says so on every read: payouts_enabled is false. Nothing is spent — check that field before you walk, not after.",
+    matches: /read-only/,
+  },
+  {
+    check: "payout_to is an address this store can pay",
+    refused_when:
+      "payout_to is not a 0x address — rewards are Base USDC on every rail, Solana doors included",
+    then_what:
+      "Nothing is looked up, nothing is held, nothing is spent. Fix the address and claim the same settlement again.",
+    matches: /payout_to must be a 0x/,
+  },
+  {
+    check: "The bounty exists",
+    refused_when: "no record stands under that bounty_id",
+    then_what:
+      "Ids are bty_… and the board that serves them is /api/bounties. Nothing is held; claim again against a real id.",
+    matches: /no bounty under that id/,
+  },
+  {
+    check: "The ids are in the shape of the bounty's own rail",
+    refused_when:
+      "an EVM bounty is claimed with anything but a 0x hash and a 0x payer, or a Solana bounty with anything but a base58 signature and a base58 payer",
+    then_what:
+      "Nothing is held. The rail is on the bounty's network field, and it is the rail the settlement has to land on — read it before you pay, not after.",
+    matches: /(tx_hash|payer) must be/,
+  },
+  {
+    check: "The bounty is still open",
+    refused_when:
+      "it was already paid to someone else's settlement, or its status is anything but open",
+    then_what:
+      "There is no second try on a spent listing, and nothing this store can do after the fact. One bounty pays once: read the board on the same minute you open your wallet.",
+    matches: /not open/,
+  },
+  {
+    check: "The bounty has not expired",
+    refused_when: "the walk came in after the listing's expires_at",
+    then_what:
+      `Listings run ${BOUNTY_OPEN_DAYS} days and the clock that refuses your claim is the same one that prints the status you read. An expired listing pays nothing, whatever you spent at the door.`,
+    matches: /expired unclaimed/,
+  },
+  {
+    check: "That settlement has never been claimed",
+    refused_when: "some claim already paid out against that transaction",
+    then_what:
+      "One payout per settlement, ever — this is the one refusal that does not come back. A fresh walk needs a fresh payment to the door.",
+    matches: /already been claimed/,
+  },
+  {
+    check: "The store's own hold on your settlement reads back",
+    refused_when:
+      "the store's storage does not yet show its own write — eventually consistent reads, nobody else involved",
+    then_what:
+      "Nothing was signed and nothing is spent; the settlement stays claimable. Try again in a moment. This is the store's plumbing, not a judgement on your walk.",
+    matches: /could not be confirmed/,
+  },
+  {
+    check: "The chain has that settlement, and it succeeded",
+    refused_when:
+      "the rail shows no transaction under that id, or shows one that failed — a failed transaction moved no USDC",
+    then_what:
+      "The claim is released. If you paid on a different chain than the bounty captured, that is the whole answer: the settlement has to be on the bounty's own rail.",
+    matches: /shows no|that transaction failed/,
+  },
+  {
+    check: "A Solana settlement is past the finality window",
+    refused_when:
+      "the signature is fewer slots deep than the board pays past — a confirmed transaction the cluster can still drop",
+    then_what:
+      "Released, not refused for good, and the message says how deep it got. Come back a minute later with the same signature.",
+    matches: /slots deep/,
+  },
+  {
+    check: "The settlement postdates the bounty",
+    refused_when: "it landed in a block or slot older than the listing",
+    then_what:
+      "The board pays for walks it commissioned, not for history. A payment you made before the bounty opened cannot claim it, and the claim is released.",
+    matches: /predates the bounty/,
+  },
+  {
+    check: "The transfer is the one the bounty asked for",
+    refused_when:
+      "the settlement carries no USDC transfer of exactly the captured amount from your payer to the payTo this store captured when it opened the bounty",
+    then_what:
+      "This is the honest loss mode, and the only one that costs a careful walker money: the door's price moved between the posting and your walk, so what you paid is real and unclaimable. Compare the live 402 against the bounty's amount_usd BEFORE you pay. The claim is released; the door keeps its price.",
+    matches: /no USDC transfer of|carry no transfer of/,
+  },
+  {
+    check: "The payout address passes the sanctions screen",
+    refused_when:
+      "the on-chain oracle identifies the address, or does not answer at all — rule 3 fails closed either way",
+    then_what:
+      "An identified address is refused and the refusal is recorded. A screen that did not answer is a wait, not a verdict: the claim is released and the same settlement can be claimed again when the oracle answers.",
+    matches: /sanctions screen/,
+  },
+  {
+    check: "The week's budget covers the reward",
+    refused_when: "this week's payouts already reached the posted weekly budget",
+    then_what:
+      "The claim is released and the board reopens with the ISO week. Every read publishes spent_this_week_usd against weekly_budget_usd, so a week with no room left says so before you walk.",
+    matches: /budget .* is spent/,
+  },
+];
+
+/**
+ * The catalogue as the board publishes it: prose only. The regexes
+ * are the drift test's business and would serialize as empty objects
+ * on the JSON door.
+ */
+export const BOUNTY_REFUSALS: readonly Omit<BountyRefusalNote, "matches">[] =
+  BOUNTY_REFUSAL_CATALOGUE.map(({ matches: _matches, ...row }) => row);
+
+/**
  * A claim either pays or refuses with the reason named — never a
  * partial state. Every check below runs BEFORE the budget moves or
  * the authorization signs; the last writes are the record and the
@@ -878,18 +1042,35 @@ export async function claimBounty(
  *
  * "Paid" in this store's books means a signed authorization went out.
  * Whether the recipient ever submitted it is the chain's fact, and
- * until today nobody asked: the page said "still redeemable" of every
- * live payout whether it had been redeemed an hour ago or never. An
- * EIP-3009 nonce burns at most once and emits AuthorizationUsed
- * (authorizer, nonce) when it does — both indexed, so the node answers
- * the exact question. One bounded read per paid bounty, from the
- * block the bounty opened to the head; a read that fails answers
- * "unknown", never "not redeemed".
+ * until 09-04 nobody asked: the page said "still redeemable" of every
+ * live payout whether it had been redeemed an hour ago or never.
+ *
+ * HOW IT ASKS, REWRITTEN 2026-09-08. The first version read
+ * AuthorizationUsed logs from the bounty's opening block to the head.
+ * That range grows by 43,200 blocks a day on Base, and by 09-08 the
+ * four paid bounties opened on 09-01 each asked for ~300,000 blocks in
+ * one call — a width every endpoint refuses outright. The desk showed
+ * "unknown" on all four while two of them had really been redeemed and
+ * $0.50 had really left the wallet; the wallet cover, counting unknown
+ * as promised, said $1.00 was still owed. A blind instrument that
+ * fails soft looks exactly like a quiet one.
+ *
+ * So the question goes to the token's own state — one eth_call per
+ * paid bounty, no block range to be capped, no ladder to exhaust
+ * (base-rpc's authorizationUsed). What it costs is the redeeming
+ * transaction hash, which is a log fact and not a state fact: a
+ * redeemed payout is now reported with its hash only when an earlier
+ * reading already found one. The money question answers either way,
+ * and a read that fails still answers "unknown", never "not
+ * redeemed".
  */
 export type PayoutRedemption =
-  | { state: "redeemed"; tx_hash: string }
+  | { state: "redeemed"; tx_hash?: string }
   | { state: "unredeemed" }
   | { state: "unknown"; problem: string };
+
+/** Calls in flight at once — bounded, the same courtesy the ward round keeps. */
+const REDEMPTION_BATCH = 5;
 
 export async function payoutRedemptions(
   env: Env,
@@ -911,36 +1092,31 @@ export async function payoutRedemptions(
     return out;
   }
   const authorizer = (await fieldSignerFromKey(env.FIELD_WALLET_KEY)).address;
-  const head = await getBlockNumber(env, BASE_EVM);
-  for (const bounty of paid) {
-    try {
-      const use = await findAuthorizationUseInRange(
-        env,
-        authorizer,
-        bounty.claim!.authorization_nonce,
-        bounty.opened_block,
-        head,
-        BASE_EVM,
-      );
-      out[bounty.bounty_id] = use
-        ? { state: "redeemed", tx_hash: use.txHash }
-        : { state: "unredeemed" };
-    } catch (error) {
-      out[bounty.bounty_id] = {
-        state: "unknown",
-        problem: String(error instanceof Error ? error.message : error).slice(0, 160),
-      };
-    }
+  for (let start = 0; start < paid.length; start += REDEMPTION_BATCH) {
+    await Promise.all(
+      paid.slice(start, start + REDEMPTION_BATCH).map(async (bounty) => {
+        try {
+          const used = await authorizationUsed(
+            env,
+            authorizer,
+            bounty.claim!.authorization_nonce,
+            BASE_EVM,
+          );
+          out[bounty.bounty_id] = used
+            ? { state: "redeemed" }
+            : { state: "unredeemed" };
+        } catch (error) {
+          out[bounty.bounty_id] = {
+            state: "unknown",
+            problem: String(error instanceof Error ? error.message : error).slice(0, 160),
+          };
+        }
+      }),
+    );
   }
   return out;
 }
 
-/**
- * The authorizations a recipient can still turn into money: paid,
- * inside validBefore, and not already burned on chain. Redeemed ones
- * are money gone, not money promised; unknown ones stay counted, the
- * cautious direction.
- */
 export function livePayouts(
   bounties: readonly BountyRecord[],
   redemptions: Readonly<Record<string, PayoutRedemption>>,
