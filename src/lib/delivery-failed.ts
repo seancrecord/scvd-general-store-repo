@@ -28,7 +28,7 @@ export const DELIVERY_FAILED_CODE = "delivery_failed";
 export function legacyHumanRecoveryFailure(
   base: string,
   item: Pick<MenuItem, "name">,
-  intent: DeliveryIntent,
+  intent: DeliveryIntent | undefined,
   identity: { path: string; transaction: string; payer: string | undefined },
 ): Record<string, unknown> & { error: string } {
   const recovery = {
@@ -38,7 +38,7 @@ export function legacyHumanRecoveryFailure(
   };
   // Spent nonces were globally indexed. Knowing one cannot disclose another
   // buyer's order, and older rows sometimes did not retain their payer at all.
-  if (intent.path !== identity.path || intent.transaction !== identity.transaction ||
+  if (!intent || intent.path !== identity.path || intent.transaction !== identity.transaction ||
     !identity.payer || !intent.payer || intent.payer.toLowerCase() !== identity.payer.toLowerCase()) {
     return {
       code: "purchase_record_unavailable", charged: null, charged_again: false,
