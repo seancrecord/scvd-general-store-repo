@@ -1,4 +1,5 @@
 import { runDurableObjectAlarm, runInDurableObject } from "cloudflare:test";
+import { hexToBytes } from "viem";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { getPaymentStack, atomicToUsdc } from "@/lib/payments";
 import { BASE_USDC, TRANSFER_TOPIC } from "@/lib/base-rpc";
@@ -141,8 +142,9 @@ async function purchase(id: string, door: LaborDoor, rail: number, subjectNetwor
   const item = items.find(i => i.id === id)!, network = laborNetworks()[rail]!;
   const canary = `SCVD-E2E-${crypto.randomUUID()}`;
   const digest = await sha256Hex(canary);
-  subjectWallet = subjectNetwork === "solana" ? encodeBase58(crypto.getRandomValues(new Uint8Array(32))) : `0x${digest.slice(0, 40)}`;
-  subjectTx = subjectNetwork === "solana" ? encodeBase58(crypto.getRandomValues(new Uint8Array(64))) : `0x${digest}`;
+  // Public synthetic chain identities are derived from the purchase canary.
+  subjectWallet = subjectNetwork === "solana" ? encodeBase58(hexToBytes(`0x${digest}`)) : `0x${digest.slice(0, 40)}`;
+  subjectTx = subjectNetwork === "solana" ? encodeBase58(hexToBytes(`0x${digest.repeat(2)}`)) : `0x${digest}`;
   outTx = `0x${await sha256Hex(canary + "out")}`;
   const subject = id === "the_statement" ? subjectWallet : subjectTx;
   const args: Record<string, string> = id === "the_statement"

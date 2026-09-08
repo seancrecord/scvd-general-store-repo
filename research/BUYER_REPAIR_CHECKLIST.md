@@ -287,3 +287,10 @@ The recovery regression has 222 cases. RPC fixtures feed the real chain readers,
 BUY-017/034/037 remain open. Other observation, inventory and commission products still need recovery coverage; historical obligations that predate retained input/evidence still need safe resolution. The human-order reconstruction already completed is not being reopened by this increment. The parent count remains 15/39.
 
 All 231 new cases were observed failing with the production fixes removed. The focused gate passed all 222 recovery cases, and the recipient/statement gate passed 21 tests after preserving the existing Base RPC guidance. Final local validation passed all 590 files: 7,857 tests passed with one existing conditional key-continuity skip (791.84 seconds). Typecheck, both Worker dry-run builds, native Worker startup, A2A runner/schema checks, Tab/browser-bridge/Action/example/package tests, audit, claims and docs checks also passed. No test timeout or production money-safety guard was relaxed.
+
+## 2026-09-08 — PR #578 check repair
+
+- [x] Rebase the chain-report recovery branch onto current main to remove its merge conflict.
+- [x] Derive synthetic Solana subject identities from the purchase canary digest instead of passing random bytes into the Base58 encoder. CodeQL traced those two fixture calls into the codec's radix arithmetic; production encoding, payment signatures and the security check remain unchanged.
+
+The rebased fixture gate passed all 231 cases. The full local suite passed all 591 files: 7,870 tests passed with one existing conditional key-continuity skip (822.56 seconds). Typecheck, both Worker dry-run builds and the separate A2A/Tab/till/Action/example/package/audit/claims/docs checks passed. The remote CodeQL result must be checked on the new commit; this record does not mark it green in advance.
