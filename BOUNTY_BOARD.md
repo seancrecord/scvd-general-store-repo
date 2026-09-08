@@ -75,6 +75,40 @@ recipient redeems, and SPL USDC has no such instrument. A shopper who
 walks a Solana door names any 0x address for the reward — the claim
 form already takes `payout_to` apart from `payer`.
 
+## What the room publishes besides the listings (2026-09-08)
+
+The board described how to walk a door and how to claim, and said
+nothing about the expensive half: what happens when a claim is refused
+AFTER a stranger's own money has already left their wallet. Three
+things now stand beside the listings, served identically by the room,
+the JSON board and the claim door's own GET — an agent that reads
+anything before it POSTs reads them.
+
+- **Before you spend your own money.** Every check that is free and
+  goes before the first irreversible act, each line naming a field on
+  `/api/bounties`: the derived `status`, the door's live 402 against
+  the captured `amount_usd` and `network`, `payouts_enabled`,
+  `spent_this_week_usd` against `weekly_budget_usd`, a 0x address ready
+  for `payout_to`.
+- **A walk, end to end.** The four commands, ids marked as the
+  examples they are — read the board, walk the door (no command of
+  ours: it is their wallet), POST the claim, and the one nobody had
+  ever written down, the `transferWithAuthorization` call that turns
+  the signed reward into money. The redemption is the walker's own
+  send; the store still broadcasts nothing.
+- **Why a claim is refused.** Every refusal the claim door can produce,
+  in the order it checks them, with what each costs: which ones are
+  taken before anything is held, which release the settlement so it
+  stays claimable, and the one that never comes back (a settlement
+  someone already claimed). The catalogue lives in
+  `src/services/bounty-board.ts` beside the checks it describes, and
+  each row carries the refusal as the door actually words it.
+  `test/bounty-board.spec.ts` drives every row against the live
+  claim door and fails if any published row matches nothing the store
+  says — a reworded refusal goes red in CI rather than quietly false on
+  the public page. Same rule as the expiry correction: one clock, and
+  one wording, behind every face.
+
 ## The honest register (the part that keeps this ours)
 
 - What the store verified is the SETTLEMENT: money moved from that

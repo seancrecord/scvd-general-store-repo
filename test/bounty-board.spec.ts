@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { recoverTypedDataAddress } from "viem";
 import {
   BOUNTY_MAX_REWARD_USD,
+  BOUNTY_REFUSALS,
+  BOUNTY_REFUSAL_CATALOGUE,
   BOUNTY_WEEKLY_BUDGET_USD,
   BountyRefused,
   bountyBoard,
@@ -10,6 +12,7 @@ import {
   openBounty,
   type ClaimInput,
 } from "@/services/bounty-board";
+import { escapeHtml } from "@/lib/sanitize";
 import { crowdWalkRow } from "@/services/crowd-walks";
 import { SOLANA_CHAIN, SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { fieldSignerFromKey } from "@/services/launch-check";
@@ -898,5 +901,369 @@ describe("the fourth rail on the board", () => {
       { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: globalThis.fetch },
     );
     expect(paid.reward_usd).toBe(0.1);
+  });
+});
+
+/**
+ * THE BOARD PUBLISHES THE WAYS IT SAYS NO (2026-09-08).
+ *
+ * The room told a walker how to walk and how to claim, and said
+ * nothing about the expensive half: what happens when a claim is
+ * refused after their own money has already left their wallet. The
+ * refusal catalogue is that half, published — and a published list of
+ * refusals is only worth the paper if it still describes the door.
+ *
+ * So the catalogue is not prose about the code, it is pinned TO the
+ * code: every row carries the door's own wording, and this test drives
+ * each refusal for real and fails if any row matches nothing the store
+ * says. Reword a refusal and leave the board behind, and the test goes
+ * red instead of the public page going quietly false — the same rule
+ * as the expiry correction, one clock behind every face.
+ */
+describe("the refusal catalogue is the door's own words", () => {
+  const SOL_DOOR_URL = "https://sol.example/api/buy/thing";
+  const SOL_SELLER = "SeLLeRWaLLeT111111111111111111111111111111b";
+  const SOL_BUYER = "BuYeRWaLLeT1111111111111111111111111111111a";
+  const SOL_SIG = "4".repeat(87);
+  const SOL_SLOT = 310_000_000;
+
+  /** A Solana door whose settlement is still inside the finality window. */
+  function unfinalSolanaWorld(): typeof fetch {
+    const evm = world();
+    const balance = (owner: string, amount: string, accountIndex: number) => ({
+      accountIndex,
+      mint: SOLANA_USDC_MINT,
+      owner,
+      uiTokenAmount: { amount },
+    });
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      if (url.startsWith("https://sol.example/")) {
+        return new Response("{}", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": btoa(
+              JSON.stringify({
+                x402Version: 2,
+                accepts: [
+                  {
+                    scheme: "exact",
+                    network: SOLANA_CHAIN,
+                    amount: "50000",
+                    asset: SOLANA_USDC_MINT,
+                    payTo: SOL_SELLER,
+                  },
+                ],
+              }),
+            ),
+          },
+        });
+      }
+      const body = JSON.parse(String(init?.body ?? "{}")) as { method?: string };
+      if (body.method === "getSlot") {
+        return Response.json({ jsonrpc: "2.0", id: 1, result: SOL_SLOT });
+      }
+      if (body.method === "getTransaction") {
+        // Landed at the head: zero slots deep, inside the window.
+        return Response.json({
+          jsonrpc: "2.0",
+          id: 1,
+          result: {
+            slot: SOL_SLOT,
+            meta: {
+              err: null,
+              preTokenBalances: [
+                balance(SOL_BUYER, "50000", 0),
+                balance(SOL_SELLER, "0", 1),
+              ],
+              postTokenBalances: [
+                balance(SOL_BUYER, "0", 0),
+                balance(SOL_SELLER, "50000", 1),
+              ],
+            },
+            transaction: { message: { accountKeys: [] } },
+          },
+        });
+      }
+      return evm(input, init);
+    }) as typeof fetch;
+  }
+
+  /**
+   * A KV facade that hands back the pre-write value once for one key —
+   * the eventually-consistent read that refuses a real walker and has
+   * to release rather than burn their settlement.
+   */
+  function staleOnce(realEnv: Env, key: string): Env {
+    let stale: string | null = null;
+    let held = false;
+    const counters = realEnv.COUNTERS;
+    const facade = {
+      ...counters,
+      get: (async (name: string, type?: string) => {
+        if (name === key && held) {
+          held = false;
+          return stale;
+        }
+        return (counters.get as (n: string, t?: string) => Promise<unknown>)(
+          name,
+          type,
+        );
+      }) as KVNamespace["get"],
+      put: (async (name: string, value: string) => {
+        if (name === key && !held) {
+          stale = (await counters.get(name)) as string | null;
+          held = true;
+        }
+        return counters.put(name, value);
+      }) as KVNamespace["put"],
+      delete: counters.delete.bind(counters),
+      list: counters.list.bind(counters),
+    } as unknown as KVNamespace;
+    return { ...realEnv, COUNTERS: facade } as Env;
+  }
+
+  /** Every refusal the claim door can produce, collected by producing them. */
+  async function refusalsFromTheDoor(): Promise<string[]> {
+    const said: string[] = [];
+    const drive = async (
+      run: () => Promise<unknown>,
+      what: string,
+    ): Promise<void> => {
+      try {
+        await run();
+        throw new Error(`the door did not refuse: ${what}`);
+      } catch (error) {
+        expect(error, what).toBeInstanceOf(BountyRefused);
+        said.push(String((error as Error).message));
+      }
+    };
+
+    const bounty = await openTestBounty();
+    const claim = (over: Partial<ClaimInput> = {}) => ({
+      bountyId: bounty.bounty_id,
+      txHash: TX,
+      payer: SHOPPER,
+      payoutTo: PAYOUT_TO,
+      ...over,
+    });
+    vi.stubGlobal("fetch", world());
+
+    // The checks taken before the settlement is ever held.
+    await drive(
+      async () => claimBounty(testEnv, claim(), { fetch: world() }),
+      "no field wallet",
+    );
+    await drive(
+      async () =>
+        claimBounty(testEnv, claim({ payoutTo: "not-an-address" }), await claimOptions()),
+      "payout_to is not an address",
+    );
+    await drive(
+      async () => claimBounty(testEnv, claim({ bountyId: "bty_nothere" }), await claimOptions()),
+      "no bounty under that id",
+    );
+    await drive(
+      async () => claimBounty(testEnv, claim({ txHash: "not-a-hash" }), await claimOptions()),
+      "the tx id is not the rail's shape",
+    );
+
+    // The chain's part, each refusal against its own world.
+    for (const [worldOpts, what] of [
+      [{ noReceipt: true }, "the chain has no such settlement"],
+      [{ receiptBlock: 400_000 }, "the settlement predates the bounty"],
+      [{ transferAmount: "49999" }, "the transfer is not the one asked for"],
+    ] as Array<[Parameters<typeof world>[0], string]>) {
+      vi.stubGlobal("fetch", world(worldOpts));
+      await drive(
+        async () =>
+          claimBounty(testEnv, claim(), {
+            signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+            fetch: world(worldOpts),
+          }),
+        what,
+      );
+    }
+    vi.stubGlobal("fetch", world());
+
+    await drive(
+      async () =>
+        claimBounty(testEnv, claim(), {
+          signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+          fetch: world(),
+          screen: async () => ({ listed: true, source: "test screen" }),
+        }),
+      "the payout address is screened",
+    );
+
+    // The week's wall, put up and taken down again.
+    await testEnv.COUNTERS.put(
+      KV_KEYS.bountyBudget(currentWeekKey()),
+      String(BOUNTY_WEEKLY_BUDGET_USD),
+    );
+    await drive(
+      async () => claimBounty(testEnv, claim(), await claimOptions()),
+      "the week's budget is spent",
+    );
+    await testEnv.COUNTERS.put(KV_KEYS.bountyBudget(currentWeekKey()), "0");
+
+    // A hold this store cannot read back: released, never burned.
+    const staleTx = `0x${"ab".repeat(32)}`;
+    await drive(
+      async () =>
+        claimBounty(
+          staleOnce(testEnv, KV_KEYS.bountyTx(staleTx)),
+          claim({ txHash: staleTx }),
+          await claimOptions(),
+        ),
+      "the store's own hold did not read back",
+    );
+
+    // A Solana settlement still inside the finality window.
+    const solanaWorld = unfinalSolanaWorld();
+    vi.stubGlobal("fetch", solanaWorld);
+    const solanaBounty = await openBounty(
+      testEnv,
+      { targetUrl: SOL_DOOR_URL, rewardUsd: 0.1 },
+      { fetch: solanaWorld },
+    );
+    await drive(
+      async () =>
+        claimBounty(
+          testEnv,
+          {
+            bountyId: solanaBounty.bounty_id,
+            txHash: SOL_SIG,
+            payer: SOL_BUYER,
+            payoutTo: PAYOUT_TO,
+          },
+          { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: solanaWorld },
+        ),
+      "the Solana settlement is inside the finality window",
+    );
+
+    // Then the states a listing passes through: paid, replayed, expired.
+    vi.stubGlobal("fetch", world());
+    await claimBounty(testEnv, claim(), await claimOptions());
+    await drive(
+      async () =>
+        claimBounty(testEnv, claim({ txHash: `0x${"dd".repeat(32)}` }), await claimOptions()),
+      "the bounty is already paid",
+    );
+    await clearBoardStatusOpen(bounty.bounty_id);
+    await drive(
+      async () => claimBounty(testEnv, claim(), await claimOptions()),
+      "that settlement was already claimed",
+    );
+    const stored = await testEnv.COUNTERS.get<Record<string, unknown>>(
+      KV_KEYS.bounty(bounty.bounty_id),
+      "json",
+    );
+    await testEnv.COUNTERS.put(
+      KV_KEYS.bounty(bounty.bounty_id),
+      JSON.stringify({ ...stored, status: "open", expires_at: "2026-08-27T00:00:00.000Z" }),
+    );
+    await drive(
+      async () =>
+        claimBounty(testEnv, claim({ txHash: `0x${"ef".repeat(32)}` }), await claimOptions()),
+      "the bounty expired unclaimed",
+    );
+    return said;
+  }
+
+  it("every published row matches a refusal the door actually produced", async () => {
+    const said = await refusalsFromTheDoor();
+    for (const row of BOUNTY_REFUSAL_CATALOGUE) {
+      expect(
+        said.some((message) => row.matches.test(message)),
+        `the board publishes a refusal the door no longer says: "${row.check}" (${row.matches})\nwhat the door said:\n${said.join("\n")}`,
+      ).toBe(true);
+    }
+  });
+
+  it("publishes the catalogue as prose, with no regexes on the wire", async () => {
+    expect(BOUNTY_REFUSALS).toHaveLength(BOUNTY_REFUSAL_CATALOGUE.length);
+    expect(JSON.stringify(BOUNTY_REFUSALS)).not.toContain("{}");
+    for (const row of BOUNTY_REFUSALS) {
+      expect(row.check.length, row.check).toBeGreaterThan(0);
+      expect(row.refused_when.length, row.check).toBeGreaterThan(0);
+      expect(row.then_what.length, row.check).toBeGreaterThan(0);
+    }
+  });
+});
+
+/**
+ * WHAT A WALKER READS BEFORE THEY SPEND (2026-09-08). The checklist,
+ * the worked walk and the refusal catalogue are one set of strings
+ * served by three faces — the room, the JSON board, and the claim
+ * door's own GET, which is the last thing an agent reads before it
+ * POSTs. A face that serves fewer of them is describing a board this
+ * store does not run, which is the exact defect the expiry correction
+ * was written about.
+ */
+describe("the board's instructions, on every face", () => {
+  it("the JSON board carries the checklist, the walk and the refusals", async () => {
+    const board = (await (await SELF.fetch(`${BASE}/api/bounties`)).json()) as {
+      before_you_walk: string[];
+      a_walk_end_to_end: { note: string; steps: Array<{ step: string; shell?: string; note: string }> };
+      why_a_claim_is_refused: Array<{ check: string; refused_when: string; then_what: string }>;
+    };
+    expect(board.before_you_walk.length).toBeGreaterThan(3);
+    expect(board.before_you_walk.join(" ")).toContain("payouts_enabled");
+    expect(board.why_a_claim_is_refused).toHaveLength(BOUNTY_REFUSAL_CATALOGUE.length);
+    expect(board.a_walk_end_to_end.steps).toHaveLength(4);
+    // The redemption is the step nobody has done before, so it is the
+    // one the worked walk must actually spell out.
+    expect(JSON.stringify(board.a_walk_end_to_end)).toContain(
+      "transferWithAuthorization(address,address,uint256,uint256,uint256,bytes32,bytes)",
+    );
+    expect(JSON.stringify(board.a_walk_end_to_end)).toContain(BASE_USDC);
+    expect(JSON.stringify(board.a_walk_end_to_end)).toContain("/api/bounty-claim");
+  });
+
+  it("the room prints the same words, escaped", async () => {
+    const room = await (
+      await SELF.fetch(`${BASE}/bounties`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(room).toContain("Before you spend your own money");
+    expect(room).toContain("Why a claim is refused");
+    expect(room).toContain("A walk, end to end");
+    for (const row of BOUNTY_REFUSALS) {
+      expect(room, row.check).toContain(escapeHtml(row.check));
+      expect(room, row.check).toContain(escapeHtml(row.then_what));
+    }
+    expect(room).toContain(escapeHtml(`cast send ${BASE_USDC} \\`));
+    // The shape of the two new blocks, not just their words: one
+    // refusal row per published row plus the header, and a command
+    // block for each step of the walk that has a command.
+    const refusalTable = room.slice(
+      room.indexOf("Why a claim is refused"),
+      room.indexOf("The rules, in full"),
+    );
+    expect(refusalTable.split("<tr>").length - 1).toBe(BOUNTY_REFUSALS.length + 1);
+    const walkSection = room.slice(
+      room.indexOf("A walk, end to end"),
+      room.indexOf("Why a claim is refused"),
+    );
+    expect(walkSection.split("<h3>").length - 1).toBe(4);
+    expect(walkSection.split('<pre class="menu-desc">').length - 1).toBe(3);
+  });
+
+  it("the claim door tells an agent how it will refuse, before it POSTs", async () => {
+    const door = (await (await SELF.fetch(`${BASE}/api/bounty-claim`)).json()) as {
+      this_door_takes: string;
+      before_you_walk: string[];
+      why_a_claim_is_refused: Array<{ check: string }>;
+      a_walk_end_to_end: { steps: unknown[] };
+    };
+    expect(door.this_door_takes).toBe("POST");
+    expect(door.why_a_claim_is_refused).toHaveLength(BOUNTY_REFUSAL_CATALOGUE.length);
+    expect(door.before_you_walk.length).toBeGreaterThan(3);
+    expect(door.a_walk_end_to_end.steps).toHaveLength(4);
   });
 });

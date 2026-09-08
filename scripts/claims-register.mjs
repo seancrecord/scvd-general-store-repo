@@ -230,4 +230,17 @@ export const REGISTER = [
     from: "webmcpTools() and uiResourceCatalog() — the tool list, its count, and the card count render from the same derivations the surfaces serve",
     why: "The first draft nearly said 'scoped, not built' against a surface another desk shipped the same week; the sentence now reads the live catalog so the next release cannot falsify it.",
   },
+  /**
+   * THE BOUNTY BOARD'S REFUSAL CATALOGUE (2026-09-08) — the board
+   * publishes every way the claim door says no, so a walker reads
+   * them before their money is gone rather than after.
+   */
+  {
+    id: "bounties.refusal.spent-listing",
+    file: "src/services/bounty-board.ts",
+    match: "There is no second try on a spent listing",
+    resolution: "derived",
+    from: "claimBounty's `bounty.status !== \"open\"` refusal, taken against the status bountyStatusAt derives at read time",
+    why: "Claim-shaped and correctly caught: it tells a stranger their money is gone. It is structural rather than dated — one bounty pays once because the claim door refuses any listing whose derived status is not open, and the row carries the door's own wording, which test/bounty-board.spec.ts drives against the live door. The day a spent listing could pay twice, the catalogue's drift test goes red before this sentence does.",
+  },
 ];
