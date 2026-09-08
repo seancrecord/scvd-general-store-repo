@@ -386,11 +386,13 @@ export async function storeSignatureAgentCard(
   env: Env,
   card: SignedSignatureAgentCard,
   certId: string,
+  // The purchase time is retained so retrying publication keeps the same envelope.
+  createdAt?: string,
 ): Promise<SignatureAgentCardRecord> {
   const record: SignatureAgentCardRecord = {
     card,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.signatureAgentCard(card.card_id),

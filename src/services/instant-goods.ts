@@ -406,7 +406,7 @@ export async function deliverInstantGoods(
       if (!card) {
         throw new Error("signature_agent_card reached goods with no card");
       }
-      await storeSignatureAgentCard(env, card, input.certId ?? "");
+      await storeSignatureAgentCard(env, card, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: signatureCardNote(card.verdict),
         extras: {
@@ -593,7 +593,7 @@ export async function deliverInstantGoods(
       if (!pageAudit) {
         throw new Error("onpage_audit reached goods with no report");
       }
-      await storeOnpageAudit(env, pageAudit, input.certId ?? "");
+      await storeOnpageAudit(env, pageAudit, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: onpageAuditNote(pageAudit.verdict),
         extras: {
@@ -615,7 +615,7 @@ export async function deliverInstantGoods(
       if (!audit) {
         throw new Error("service_audit reached goods with no report");
       }
-      await storeServiceAudit(env, audit, input.certId ?? "");
+      await storeServiceAudit(env, audit, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: serviceAuditNote(audit.verdict),
         extras: {
@@ -652,7 +652,7 @@ export async function deliverInstantGoods(
       if (!reading) {
         throw new Error("good_buyer reached goods with no reading");
       }
-      await storeGoodBuyerReading(env, reading, input.certId ?? "");
+      await storeGoodBuyerReading(env, reading, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: goodBuyerNote(reading.verdict),
         extras: {

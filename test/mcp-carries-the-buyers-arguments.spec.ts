@@ -6,13 +6,13 @@ import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { purchaseInputFrom, toolArgs } from "@/lib/purchase-args";
 import { isRecord } from "@/types";
 import type { MenuItem } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
 
 const BASE = "https://scvd.store";
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 /**

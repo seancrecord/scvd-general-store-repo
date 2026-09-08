@@ -345,11 +345,13 @@ export async function storeServiceAudit(
   env: Env,
   audit: SignedServiceAudit,
   certId: string,
+  // The purchase time is retained so retrying publication keeps the same envelope.
+  createdAt?: string,
 ): Promise<ServiceAuditRecord> {
   const record: ServiceAuditRecord = {
     audit,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: createdAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.serviceAudit(audit.audit_id),

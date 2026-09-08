@@ -201,3 +201,19 @@ Storage uses the existing coordinator and its [transactional Durable Object stor
 - [x] Register the reviewed `DurableObjectTransaction.put` for the original observation in the KV-write scanner's exact-line exceptions. The scanner still rejects ordinary KV aliases, including a different write through a receiver named `txn`, and rejects the same exception in an unrelated source file.
 
 GitHub reported one failure with 6,935 passing tests: the scanner treated this Durable Object transaction as an unguarded KV write. The same assertion reproduced locally; all four scanner checks passed after the exception was added, followed by typecheck. No production storage or payment behavior changed. This does not close another buyer finding.
+
+## 2026-09-08 — original URL-report recovery
+
+- [x] Retain Service Audit, Good Buyer, Signature-Agent Card and On-Page Audit signed observations before settlement. A recovery publishes those exact bytes without probing a changed or unavailable target.
+- [x] Preserve the public report ID, certificate linkage and purchase timestamp when report publication fails before the write or loses its acknowledgement. The free report URL and protected purchase-status response serve the same purchased evidence.
+- [x] Exercise certificate, public-report and response-checkpoint failures through HTTP and both MCP profiles on all five configured rails. Recover a day later with the target unavailable; check exact URL canaries, signatures, tampering rejection, certificate evidence hashes and one settlement.
+- [x] Exercise pre-settlement journal failure, lost journal acknowledgement, changed-input replay and concurrent initial requests. Use real report construction/signing with local pages and local signed payment fixtures.
+- [x] Give the older MCP argument-survival spec unique settlement identities for independent purchases using the existing scoped multi-purchase fixture.
+
+All 288 new cases failed with the production repair temporarily removed and passed after restoration. The final related gate passed 1,050 cases across 17 files, plus all four KV-write scanner checks. Typecheck and both Worker dry-run builds passed; the full suite runs on GitHub. These are local fixtures, not live-chain or production-deployment evidence.
+
+BUY-017/034/037 remain open. This increment covers these four URL reports, not every external observation or paid product. Other observations, inventory/term services, commission/publication capture, pre-capture obligations and lost private handles remain. The completed parent count stays 15/39.
+
+### Next reproduced retry defect — BUY-014/015 and recovery follow-up
+
+- [ ] After the response cache expires, a verified Solana retry can return `purchase_recovery_pending` / HTTP 503 or an MCP error even when the durable record says `delivery_state: delivered` and includes the correct fulfillment. The protected status and public report URLs still retrieve the good, and no second settlement occurs. Return the completed purchase through the ordinary retry door with correct payment metadata, while preserving owner, product and full-input binding. Reproduced locally during the URL-report matrix; fixing this envelope is separate from preserving the purchased evidence.

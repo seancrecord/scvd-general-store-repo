@@ -1,3 +1,7 @@
+import type { SignedServiceAudit } from "@/services/service-audit";
+import type { SignedGoodBuyerReading } from "@/services/good-buyer";
+import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
+import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import type { SignedAttestation } from "@/services/attestation";
 import type { Env, MenuItem } from "@/types";
 import { purchaseIdentity, purchaseIntentStore, purchaseRecovery, purchaseStatus, type PurchaseIntent } from "@/services/purchase-intent";
@@ -7,6 +11,10 @@ import { SettlementDeclined } from "@/lib/payments";
 export interface PreparedObservation {
   attestation?: SignedAttestation;
   bundle?: SignedAttestation[];
+  serviceAudit?: SignedServiceAudit;
+  goodBuyer?: SignedGoodBuyerReading;
+  signatureAgentCard?: SignedSignatureAgentCard;
+  onpageAudit?: SignedOnpageAudit;
   attests: string;
 }
 export interface ObservationCheckpoint {
