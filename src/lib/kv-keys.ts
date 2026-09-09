@@ -453,6 +453,23 @@ export const KV_KEYS = {
    */
   mandate: (mandateId: string): string => `mandate:${mandateId}`,
   /**
+   * ONE COUNTER-ATTESTATION, UNDER ITS OWN KEY (2026-09-09).
+   *
+   * Keyed by mandate AND attesting public key, rather than appended to
+   * the mandate record, for two reasons. Workers KV is last-write-wins
+   * with no compare-and-swap, so two parties attesting in the same
+   * moment under a read-modify-write would lose one of them — and the
+   * whole point of this record is that nobody's assent quietly
+   * disappears. And a key attesting twice writes its own key again,
+   * so a retry is idempotent instead of a duplicate row.
+   *
+   * Scanned by prefix on read, bounded by the per-mandate cap.
+   */
+  mandateAttestation: (mandateId: string, publicKey: string): string =>
+    `mandate_attest:${mandateId}:${publicKey}`,
+  mandateAttestationPrefix: (mandateId: string): string =>
+    `mandate_attest:${mandateId}:`,
+  /**
    * The bounty board (BOUNTY_BOARD.md): keeper-posted bounties, the
    * per-week payout budget, and the one-payout-per-transaction guard.
    * COUNTERS. The bounty scan is bounded by the board's own scale —

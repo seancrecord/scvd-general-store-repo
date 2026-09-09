@@ -1,3 +1,4 @@
+import type { SignedLaunchCheck } from "@/services/launch-check";
 import type { SignedCaseFile } from "@/services/case-file";
 import type { SignedMandate } from "@/services/mandates";
 import type { PreparedPatronAnchor } from "@/services/patron-anchors";
@@ -20,6 +21,7 @@ import { supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { SettlementDeclined } from "@/lib/payments";
 
 export interface PreparedObservation {
+  launchCheck?: SignedLaunchCheck;
   caseFile?: SignedCaseFile;
   caseFileReused?: boolean;
   mandate?: SignedMandate;
@@ -41,6 +43,7 @@ export interface PreparedObservation {
 }
 export interface ObservationCheckpoint {
   purchase?: HostedPurchase;
+  launchCheck?(url: string): Promise<SignedLaunchCheck>;
   unavailable?(error: unknown): Promise<never>;
   read(): Promise<PreparedObservation | null>;
   save(value: PreparedObservation): Promise<PreparedObservation>;
@@ -74,7 +77,12 @@ export function observationCheckpoint(env: Env, id: string, path: string, digest
       return unavailable(error);
     }
   };
-  return { purchase: { id, digest }, unavailable, read: () => access(), save: async value => {
+  return { purchase: { id, digest }, unavailable,
+    launchCheck: async url => {
+      if (readOnly) throw new Error("A paid recovery cannot repeat a launch check");
+      try { return await purchaseIntentStore(env, id).prepareLaunchCheck(path, digest, url); }
+      catch (error) { return unavailable(error); }
+    }, read: () => access(), save: async value => {
     if (readOnly) throw new Error("A paid recovery cannot replace its observation");
     return (await access(value))!;
   } };

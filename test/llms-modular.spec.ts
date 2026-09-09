@@ -850,8 +850,16 @@ const BASE = "https://scvd.store";
 // derived price-ceiling counts introduced by the new paid item.
 // 2026-09-09: Confession discovery now explains the private signed receipt.
 // Replacing only that description reproduces the prior digest exactly.
+// 2026-09-09: the_mandate can now be counter-signed (PR #593): the_mandate's menu description and constraint
+// name the free attest door and what the store does not conclude from it.
+// Verified by restoring only that copy from main in an isolated run: the
+// prior digest matched exactly, and this PR's copy reproduces the new one.
+// 2026-09-09: the counter-sign door moved onto the mandate's own path (rule
+// 60.1 — a sub-path was an orphan; the record's address is the door); the
+// menu copy names it. Verified as before: restoring only that copy from the
+// prior commit reproduces the prior digest exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "50745426f3030f5b52006a9f04ca0b4a722de89e449fa0029fc296adea5319fc";
+  "9026f014861d340e57f8d0f1eeefc355f8ba17e5bfbffff05f47b572ad8c1b55";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

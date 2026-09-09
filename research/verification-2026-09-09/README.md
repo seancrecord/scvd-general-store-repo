@@ -76,3 +76,10 @@ Workers deployed; npm verified the registry signature and provenance; the
 tarball matches the prepared package. The 20:03 UTC fresh-install read
 followed all compact pages and verified all six live snapshot signatures
 against the established key, with the earlier canonical bytes unchanged.
+
+The subsequent live entry-point check and browser runtime read are recorded in
+`reader-followthrough/six-doors-live.json` and `browser-runtime-parity.json`.
+The original unknown catalog result remains intact; `corrected-webmcp-reading.json`
+is the repaired parser over captured public bytes. `unjoined-classification.json`
+classifies the same private census's 44 unresolved bindings without claiming
+additional report verification. Source records remain private.

@@ -280,6 +280,13 @@ export interface LaunchCheckObservation {
   challenge_evidence?: WatchEvidenceCapture;
   /** Which revision of the walk produced this record (1.3 / D6). */
   battery: string;
+  /** Public reconciliation facts only; no spendable signature is retained. */
+  payment_attempt?: {
+    network: string; asset: string; nonce: string; amount_atomic: string;
+    valid_after: string; valid_before: string;
+    /** A seller-named receipt does not establish use of this exact nonce. */
+    settlement: "unknown";
+  };
   evidence_hash: string;
   scope: string;
 }
@@ -297,7 +304,7 @@ export interface LaunchCheckRecord {
 }
 
 const CHECK_SCOPE =
-  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. The payment was presented in the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. A seller asking for a different transfer method — extra.assetTransferMethod of permit2 or erc7710 — is read at the terms stage and the walk stops there unpaid, naming this instrument's reach as the reason, because presenting an envelope we knew would bounce and then reporting the bounce would say something false about your door. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
+  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. Any payment presentation uses the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. A seller asking for a different transfer method — extra.assetTransferMethod of permit2 or erc7710 — is read at the terms stage and the walk stops there unpaid, naming this instrument's reach as the reason, because presenting an envelope we knew would bounce and then reporting the bounce would say something false about your door. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
 
 /**
  * The buyer-side signer, as a seam: production builds one from
@@ -495,7 +502,10 @@ export function chainalysisScreen(
   };
 }
 
+export type LaunchCheckCore = Omit<LaunchCheckObservation, "evidence_hash" | "scope">;
 export interface LaunchCheckOptions {
+  /** Durable caller retains the risk before sending, and the result before signing. */
+  retain?: (stage: "attempt" | "observation", core: LaunchCheckCore) => Promise<void>;
   fetch?: typeof fetch;
   signer?: FieldSigner;
   screen?: SanctionsScreen;
@@ -606,6 +616,8 @@ export async function performLaunchCheck(
 ): Promise<SignedLaunchCheck> {
   const fetchImpl = options.fetch ?? fetch;
   const now = options.now ?? new Date();
+  const checkId = `lcheck_${newEntryId()}`;
+  let paymentAttempt: LaunchCheckObservation["payment_attempt"];
   const stages: LaunchCheckStage[] = [];
   let verdict: LaunchCheckVerdict;
   let paidUsd = 0;
@@ -1013,6 +1025,21 @@ export async function performLaunchCheck(
       detail: `EIP-3009 authorization signed by ${signer.address} and presented in the PAYMENT-SIGNATURE header, v2 shape.`,
     });
 
+    paymentAttempt = { network: paidNetwork, asset: chosen.asset, nonce: authorization.nonce,
+      amount_atomic: authorization.value, valid_after: authorization.validAfter, valid_before: authorization.validBefore, settlement: "unknown" };
+    // A crash after this write cannot tell us whether the next fetch reached the
+    // seller. Retain that uncertainty before exposing the authorization; recovery
+    // signs this gap instead of authorizing another payment.
+    await options.retain?.("attempt", {
+      check_id: checkId, url: targetUrl, observed_at: now.toISOString(), ua_sent: LAUNCH_CHECK_UA,
+      verdict: "unreachable", stages: [...stages.slice(0, -1),
+        { stage: "payment", ok: false, detail: "An authorization was prepared for this door. The walk was interrupted around its presentation; whether the seller received or settled it is unknown. No replacement payment was sent." }],
+      paid_usd: 0, pay_to: payTo, tx_hash: null, tx_hash_status: null, field_wallet: signer.address,
+      replay_served: null, authorization_outstanding_until: authorizationOutstandingUntil,
+      ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
+      battery: LAUNCH_CHECK_BATTERY, payment_attempt: paymentAttempt,
+    });
+
     // STAGE 6 — the second knock, money in hand.
     let second: Response;
     try {
@@ -1029,7 +1056,7 @@ export async function performLaunchCheck(
       stages.push({
         stage: "settle",
         ok: false,
-        detail: `the paid request could not complete: ${String(error)}. The authorization was signed but never accepted, so no funds can have moved through it after its validity window (${authorization.validBefore}, unix seconds) passed.`,
+        detail: `the paid request could not complete: ${String(error)}. Whether the seller received or settled the authorization is unknown. Expiry (${authorization.validBefore}, unix seconds) prevents later use; it does not prove that no funds moved before then. No replacement payment was sent.`,
       });
       verdict = "unreachable";
       break walk;
@@ -1133,7 +1160,7 @@ export async function performLaunchCheck(
           detail: `the replayed request could not complete: ${replayError}. Nothing is claimed about this door's replay handling in either direction — the authorization's nonce was already spent, so no funds could move regardless.`,
         });
       } else {
-        const replayBody = await replayResponse.text();
+        const { text: replayBody, truncated: replayTruncated } = await readCapped(replayResponse);
         const served =
           replayResponse.status >= 200 && replayResponse.status < 300;
         replayServed = served;
@@ -1141,7 +1168,7 @@ export async function performLaunchCheck(
           stage: "replay",
           ok: !served,
           detail: served
-            ? `SERVED AGAIN. The identical already-settled payment was presented a second time and the door answered HTTP ${replayResponse.status} with ${replayBody.length} bytes. The authorization's nonce is spent, so no second payment can have reached the seller — this is product given away. First 300 bytes: ${JSON.stringify(replayBody.slice(0, 300))}`
+            ? `SERVED AGAIN. The identical already-settled payment was presented a second time and the door answered HTTP ${replayResponse.status} with ${replayBody.length} bytes${replayTruncated ? " (bounded prefix; response truncated)" : ""}. The authorization's nonce is spent, so no second payment can have reached the seller — this is product given away. First 300 bytes: ${JSON.stringify(replayBody.slice(0, 300))}`
             : `refused, correctly: HTTP ${replayResponse.status} on a replay of the already-settled payment. This is the check most endpoints are never tested on.`,
         });
       }
@@ -1253,7 +1280,7 @@ export async function performLaunchCheck(
   }
 
   const core = {
-    check_id: `lcheck_${newEntryId()}`,
+    check_id: checkId,
     url: targetUrl,
     observed_at: now.toISOString(),
     ua_sent: LAUNCH_CHECK_UA,
@@ -1269,7 +1296,13 @@ export async function performLaunchCheck(
     field_wallet: signer?.address ?? null,
     ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
     battery: LAUNCH_CHECK_BATTERY,
+    ...(paymentAttempt ? { payment_attempt: paymentAttempt } : {}),
   };
+  await options.retain?.("observation", core);
+  return signLaunchCheck(env, core);
+}
+
+export async function signLaunchCheck(env: Env, core: LaunchCheckCore): Promise<SignedLaunchCheck> {
   const observation: LaunchCheckObservation = {
     ...core,
     evidence_hash: await sha256Hex(JSON.stringify(core)),
@@ -1294,11 +1327,12 @@ export async function storeLaunchCheck(
   env: Env,
   check: SignedLaunchCheck,
   certId: string,
+  purchasedAt?: string,
 ): Promise<LaunchCheckRecord> {
   const record: LaunchCheckRecord = {
     check,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: purchasedAt ?? new Date().toISOString(),
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.launchCheck(check.check_id),

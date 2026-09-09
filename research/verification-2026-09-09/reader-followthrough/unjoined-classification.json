@@ -1,0 +1,15 @@
+{
+  "captured_from": "2026-09-09T18:32:01.166Z",
+  "captured_to": "2026-09-09T18:37:09.501Z",
+  "checked_at": "2026-09-09T20:13:46.702Z",
+  "unjoined_by_item": {
+    "settlement_attestation": 7,
+    "trust_profile": 3,
+    "bitcoin_anchor": 3,
+    "passport_refresh": 7,
+    "spot_check": 12,
+    "attestation_bundle": 12
+  },
+  "attestation_bundle_binding_equals_sha256_empty": 2,
+  "scope": "Verified signed claims from the existing capture; no new production reads or report recovery. An empty-string digest is consistent with the already documented empty-sheaf defect; this digest alone does not prove delivery or settlement."
+}

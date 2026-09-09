@@ -4027,6 +4027,7 @@ const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
     signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
   },
 };
+const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
 
 const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
   type: "object",
@@ -4055,7 +4056,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description: "What was paid above the ask, where anything was.",
     },
     patron_number: { type: "integer" },
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     confession_receipt: {
       type: "object",
       description: "Confession only. Private proof binding the stored text to this purchase. Absent from public certificates and verification. Share only by choice.",
@@ -4390,7 +4391,7 @@ const WATCH_HISTORY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "probes", "how_to_verify", "what_this_is_not"],
   properties: {
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     watch_id: { type: "string" },
     url: { type: "string", description: "The door being watched." },
     started_at: { type: "string" },
@@ -4426,7 +4427,7 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "passes", "how_to_verify"],
   properties: {
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     watch_id: { type: "string" },
     url: { type: "string" },
     started_at: { type: "string" },
@@ -5373,6 +5374,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       schemas: {
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
+        WatchCommission: WATCH_COMMISSION_SCHEMA,
         OrderReceipt: ORDER_RECEIPT_SCHEMA,
         PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
       },
@@ -6563,11 +6565,67 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
       },
       "/api/mandate/{mandate_id}": {
+        post: {
+          ...returns(
+          postOp(
+            "Counter-sign a mandate (free): POST to the record",
+            "A second party signs a mandate with their OWN ed25519 key, free and forever. GET the record first for the exact string to sign, served as attest_here.sign_this — it binds the mandate id as well as the evidence hash, so a signature made for one record cannot be replayed onto another carrying identical text. The store verifies before filing and files nothing that fails, so every attestation on a record is one a stranger can re-check without trusting this store. What it never says: that the parties agreed, that anyone is bound, that anything was performed or is owed. Recording a mandate costs a dime; attesting to one is free, because a record the second party had to buy into would tilt toward whoever paid.",
+            "Your key and your signature over the mandate's payload.",
+            {
+              type: "object",
+              required: ["public_key", "signature"],
+              properties: {
+                public_key: {
+                  type: "string",
+                  description: "Your ed25519 public key, 64 lowercase hex characters.",
+                },
+                signature: {
+                  type: "string",
+                  description:
+                    "Your signature over the record's attest_here.sign_this string, 128 lowercase hex characters.",
+                },
+                label: {
+                  type: "string",
+                  maxLength: 80,
+                  description:
+                    "Optional. What you call yourself. Recorded verbatim and unverified, like every name here.",
+                },
+              },
+            },
+          ),
+          {
+            type: "object",
+            properties: {
+              recorded: { type: "string" },
+              mandate_url: { type: "string", format: "uri" },
+              attestation: {
+                type: "object",
+                properties: {
+                  public_key: { type: "string" },
+                  signature: { type: "string" },
+                  signature_covers: {
+                    type: "string",
+                    description: "The exact string this signature covers, so a reader can rebuild and check it.",
+                  },
+                  attested_at: { type: "string", format: "date-time" },
+                  label: { type: "string" },
+                },
+              },
+              attesting_keys: { type: "integer" },
+              what_this_does_not_say: { type: "string" },
+              slots_left: { type: "integer" },
+            },
+          },
+          ),
+          parameters: [
+            pathParam("mandate_id", "From the purchase response; starts m_."),
+          ],
+        },
         get: {
           ...returns(
   freeOp(
               "A purchased mandate record",
-              "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+              "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, how later certificates cite it, and every key that has counter-signed it. Also carries attest_here.sign_this: the exact string a second party signs to add their own attestation, free. Served free, forever.",
             ),
             citedRecordSchema({
               payloadKey: "mandate",
@@ -6646,7 +6704,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             signedArtifactSchema({
               payloadKey: "check",
               payloadDescription:
-                "The signed launch check: a real mainnet purchase made against the buyer's own endpoint, and what it answered.",
+                "The signed launch check: one purchase attempt against the buyer's exact endpoint. payment_attempt records the nonce, rail, amount and expiry when an authorization was prepared. Its settlement can remain unknown: an interrupted response or expired authorization does not prove no money moved. Recovery retains the original attempt without issuing another payment.",
             }),
           ),
           parameters: [

@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-09-09T20:21:14.559Z",
+  "scope": "Corrected parser over captured live script and MCP response; no full room sweep rerun",
+  "criterion": {
+    "id": "declarations_derive_from_the_mcp_door",
+    "asks": "Do the free browser instruments derive from the MCP catalog?",
+    "how": "compare the free instrument names in /webmcp.js against MCP tools/list; browser purchase transport tools are separate",
+    "verdict": "met",
+    "note": "10 free browser instruments, every one also served by MCP"
+  }
+}

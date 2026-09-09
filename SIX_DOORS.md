@@ -31,7 +31,7 @@ it is to go and look.
 
 ## The instrument
 
-`npm run doors:check` reads the live store against 26 criteria and
+`npm run doors:check` reads the live store against the declared criteria and
 prints one dated observation. `scripts/lib/doors.mjs` holds the doors
 and the readers; `docs/six-doors/observation.json` holds the recorded
 baseline; `.github/workflows/doors-check.yml` re-reads it weekly on a
@@ -69,6 +69,45 @@ possible way to be wrong.
 The checker goes red for either. Both are work; neither is a crash.
 
 ---
+
+## September 9 reader-release check
+
+The read-only production sweep begun at 20:11 UTC reached 1,013 rooms;
+all 1,012 HTML rooms carried their main landmark, and 1,012 rooms declared
+WebMCP. No criterion regressed against the saved baseline and no review was
+overdue. The baseline was not rewritten. Two qualifications remain visible:
+OpenAPI exceeded the reader's warning budget while staying below its cap,
+and the WebMCP catalog parser returned unknown.
+
+The latter was the instrument's defect. Its regular expression stopped at
+a semicolon in the first description and rejected digits in `check_a2a_card`.
+It could also silently omit later orphan tools or count a nested schema's
+`name` as a tool. The repair parses the complete JSON declaration and only
+its top-level row names. Unreadable, empty, malformed or duplicate catalogs
+remain unknown; the remote script is never executed by the checker.
+Four regression cases failed against the earlier parser and passed after
+repair. `npm run doors:test` now also includes this battery's test file;
+the workflow already invoked that command, but it had omitted this file.
+All 46 tests across the three files pass. The full Worker suite also passed
+610 files and 9,543 tests, with one existing skip (1,496.69 seconds).
+Typecheck, both Worker bundles, claims and the documentation check passed;
+the latter retains its existing dated-document backlog. The exact record is
+`reader-followthrough/live-reader-validation.json` under the research directory
+named below.
+
+A separate browser read registered 12 tools. The ten free instruments all
+had MCP counterparts; the other two were the separate purchase transport.
+A free `find_in_catalog` lookup returned the Bitcoin-anchor listing, with
+no console errors observed. No purchase tool was exercised. The corrected
+parser over the captured public script and MCP reply reports all ten free
+instruments. This supplements the original unknown; it does not rewrite
+that observation or claim a second full room sweep.
+
+Records: `research/verification-2026-09-09/reader-followthrough/`
+`six-doors-live.json`, `browser-runtime-parity.json`, and
+`corrected-webmcp-reading.json`. OpenAPI size headroom is on ROADMAP VQ5.
+This records local parser validation; release status follows the branch's
+checks and merge record.
 
 ## Withdrawn, 2026-08-29 — three findings the first reading got wrong
 

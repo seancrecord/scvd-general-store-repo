@@ -302,3 +302,20 @@ The final local run passed **621 files, 9,915 tests, one existing skip** in
 bundles, claims, audit and whitespace checks passed. Main subsequently
 advanced to `08bff6a6`; a merge-tree check found no conflicts. PR CI will
 validate the combined tree before merge.
+
+## Latest-main contract size and final integration
+
+An isolated check of GitHub's exact merge tree passed 423 of 424 targeted
+tests. Its sole failure was the existing OpenAPI size guard: 700,055
+serialized characters against the 700,000 limit after combining the new
+main metadata with these changes. The three repeated watch-commission
+definitions now reference one `WatchCommission` component. All fields and
+paths remain declared; the budget is unchanged. Watch discovery checks
+resolve internal component references before asserting the signed proof
+fields, and the existing reference-integrity checks remain in place.
+
+Main at `08bff6a6` is now integrated into the release branch. The complete
+combined run passed **626 files, 10,269 tests, one existing skip** in
+861.10 seconds. Typecheck, both Worker bundles, field-tool tests, reader
+tests, the audit and claims checks passed. Main was still at that commit
+when the result was recorded. PR CI will gate this final integration.

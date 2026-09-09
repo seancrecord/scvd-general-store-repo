@@ -45,7 +45,7 @@
     "doors:check": "node scripts/doors-check.mjs",
     "specs:check": "node scripts/specs-check.mjs",
     "specs:test": "node --test scripts/specs-check.test.mjs",
-    "doors:test": "node --test scripts/doors-config.test.mjs scripts/doors-live.test.mjs",
+    "doors:test": "node --test scripts/doors-config.test.mjs scripts/doors-live.test.mjs scripts/doors-check.test.mjs",
     "listings:check": "node scripts/listings-check.mjs",
     "listings:test": "node --test scripts/listings-check.test.mjs",
     "corpus:publish": "node scripts/corpus-publish.mjs",

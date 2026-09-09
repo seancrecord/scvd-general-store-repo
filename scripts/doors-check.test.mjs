@@ -126,7 +126,7 @@ function goodSnapshot() {
     webmcpScript: {
       ok: true,
       status: 200,
-      text: 'mc.registerTool({"name": "read_store_guide"});',
+      text: 'var TOOLS = [{"name": "read_store_guide"}];\nmc.registerTool(TOOLS[0]);',
     },
     mcpTools: { ok: true, status: 200, json: { result: { tools } } },
     preflightNoAuth: { ok: false, status: 400, text: "{}" },
@@ -205,6 +205,48 @@ test("a well-formed store passes every criterion it can", () => {
       .map((criterion) => `${door.id}/${criterion.id}: ${criterion.verdict} — ${criterion.note}`),
   );
   assert.deepEqual(failures, [], "the battery must be able to say yes");
+});
+
+function browserCatalogReading(tools, served, suffix = "") {
+  const snapshot = goodSnapshot();
+  snapshot.webmcpScript.text = `var TOOLS = ${JSON.stringify(tools, null, 2)};\n${suffix}`;
+  snapshot.mcpTools.json.result.tools = served.map(name => ({ name }));
+  return readDoors(snapshot, NOW).doors.find(door => door.id === "webmcp")
+    .criteria.find(criterion => criterion.id === "declarations_derive_from_the_mcp_door");
+}
+
+test("browser catalog names survive digits and semicolons inside descriptions", () => {
+  const names = ["check_a2a_card", "read_store_guide"];
+  const reading = browserCatalogReading(names.map(name => ({ name, description: "Free; one bounded read." })), names);
+  assert.equal(reading.verdict, "met");
+  assert.match(reading.note, /^2 free browser instruments/);
+});
+
+test("an orphan after a description's semicolon is still compared", () => {
+  const reading = browserCatalogReading([
+    { name: "read_store_guide", description: "Free; no payment." },
+    { name: "orphan_v2" },
+  ], ["read_store_guide"]);
+  assert.equal(reading.verdict, "unmet");
+  assert.match(reading.note, /orphan_v2/);
+});
+
+test("only catalog row names count, excluding nested schema names and purchase tools", () => {
+  const reading = browserCatalogReading([
+    { name: "read_store_guide", inputSchema: { properties: { example: { name: "not_a_tool" } } } },
+  ], ["read_store_guide"], 'var PURCHASE_TOOLS = [{"name":"complete_store_purchase"}];\n');
+  assert.equal(reading.verdict, "met");
+  assert.match(reading.note, /^1 free browser instruments/);
+});
+
+test("an unreadable or ambiguous browser catalog abstains instead of partially passing", () => {
+  for (const tools of [[], {}, [{ name: "read_store_guide" }, {}], [{ name: "read_store_guide" }, { name: "read_store_guide" }]]) {
+    assert.equal(browserCatalogReading(tools, ["read_store_guide"]).verdict, "unknown");
+  }
+  const snapshot = goodSnapshot();
+  snapshot.webmcpScript.text = 'var TOOLS = [{"name":"read_store_guide"}, broken];\n';
+  assert.equal(readDoors(snapshot, NOW).doors.find(door => door.id === "webmcp")
+    .criteria.find(criterion => criterion.id === "declarations_derive_from_the_mcp_door").verdict, "unknown");
 });
 
 test("an expired origin trial closes the browser door", () => {
