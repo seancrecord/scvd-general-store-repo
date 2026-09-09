@@ -489,6 +489,9 @@ function freeServicesJsonLd(base: string): string {
     path: string;
     type: string;
   }) => ({
+    // A fragment on the door's own URL: the door is the page, the
+    // Service is the thing the page does, and neither collides.
+    "@id": `${base}${options.path}#service`,
     "@type": "Service",
     name: options.name,
     description: options.description,
@@ -506,13 +509,18 @@ function freeServicesJsonLd(base: string): string {
     },
   });
 
-  return jsonLdSafe({
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: `${STORE_SERVICE_NAME} — the free instruments`,
-    description:
-      "What this store does for anyone, for nothing, with no account: check an x402 door before paying it, check any issuer's signed offers and receipts, and verify anything this store has ever signed.",
-    itemListElement: [
+  /*
+   * TOP-LEVEL NODES, NOT A NESTED LIST (2026-09-09). These three have
+   * been typed Service since the day the block shipped, and a reader
+   * that walks into an ItemList finds them. A reader that reads only
+   * each block's top-level @type — and one such reader scores this
+   * page — saw "ItemList" and reported no Service here at all. So the
+   * ItemList keeps its order and points at each Service by @id, and
+   * the Services stand beside it in a @graph where the shallowest
+   * reader meets them first. Same three nodes, one array, one source;
+   * JSON-LD reads a node and a reference to it as one thing.
+   */
+  const services = [
       service({
         name: "x402 endpoint preflight",
         description:
@@ -544,11 +552,23 @@ function freeServicesJsonLd(base: string): string {
         path: "/attestation",
         type: "Signature verification",
       }),
-    ].map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      item,
-    })),
+  ];
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        name: `${STORE_SERVICE_NAME} — the free instruments`,
+        description:
+          "What this store does for anyone, for nothing, with no account: check an x402 door before paying it, check any issuer's signed offers and receipts, and verify anything this store has ever signed.",
+        itemListElement: services.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: { "@id": item["@id"] },
+        })),
+      },
+      ...services,
+    ],
   });
 }
 
@@ -943,6 +963,18 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
+  <!--
+    THE API'S DOCUMENTATION, NAMED IN THE HEAD (2026-09-09, RFC 8631).
+    The apex has sent rel="service-doc" and rel="service-desc" in its
+    Link header since the map was laid, and a test fetches every door
+    on it. A reader that only parses the HTML body never sees a Link
+    header: one such reader took the first /api/ href it met — a JSON
+    ledger — for the documentation, and scored the docs as thin. The
+    same two relations, in the markup, for the reader that reads
+    markup. Same targets as the header, no second source of truth.
+  -->
+  <link rel="service-doc" href="${data.base ?? "https://scvd.store"}/developers" title="API documentation">
+  <link rel="service-desc" href="${data.base ?? "https://scvd.store"}/openapi.json" type="application/vnd.oai.openapi+json" title="OpenAPI contract">
   ${ardLinkTags(data.base ?? "https://scvd.store")}
   <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats, data.paymentConfig)}</script>
   <!--

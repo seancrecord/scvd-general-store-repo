@@ -107,6 +107,52 @@ function pricingJsonLd(base: string, floorUsd: number): string {
  * says where to get them rather than serving a second copy a reader
  * might verify against by mistake.
  */
+/**
+ * THE PRICE LIST, DERIVED (2026-09-09). A reader comparing options
+ * asked this page for prices and found only the rules by which they
+ * are set — true, and not what it came for. The rows come off
+ * MENU_ITEMS at render time under the charter's own discipline: a
+ * typed price is a promise with an expiry date. Pay-what-it-deserves
+ * doors show their span; everything else is one figure.
+ */
+/**
+ * ONE TABLE CELL, ESCAPED IN THE RIGHT ORDER (2026-09-09, CodeQL on
+ * PR #598, high). The first version escaped the pipe and nothing
+ * else, so a backslash already in the text landed in front of the
+ * one this inserts and un-escaped it: `a\|b` came out `a\\|b`, which
+ * markdown reads as a literal backslash and then a LIVE pipe, and
+ * the row broke at that cell. Backslashes go first, then pipes, so
+ * every backslash in the output is one the text had or one this put
+ * there on purpose. The shelf's text is the keeper's and carries
+ * neither today; the point is that the helper keeps its promise on
+ * the day it does. Exported so the test can hand it that day's input.
+ */
+export function markdownCell(text: string): string {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function priceRows(base: string): string {
+  const firstSentence = (text: string): string => text.split(/(?<=\.)\s/)[0] ?? text;
+  return MENU_ITEMS.filter((item) => item.price_usdc > 0)
+    .slice()
+    .sort((a, b) => a.price_usdc - b.price_usdc || a.name.localeCompare(b.name))
+    .map((item) => {
+      const tiers = priceTiersUsdc(item);
+      const price =
+        tiers.length > 1
+          ? `$${Math.min(...tiers)}–$${Math.max(...tiers)} (pay what it deserves)`
+          : `$${item.price_usdc}`;
+      const cadence = item.cadence === "term" ? "term" : "one-off";
+      const what = markdownCell(item.subtitle ?? firstSentence(item.description));
+      return `| [${markdownCell(item.name)}](${base}/menu/${item.id}) \`${item.id}\` | ${price} | ${cadence} | ${what} |`;
+    })
+    .join("\n");
+}
+
 function pricingMarkdown(
   base: string,
   floorUsd: number,
@@ -186,6 +232,20 @@ else's spending limit.
 This is not a charter clause. It is a fact about your client, read from
 the installed package, and it sits deliberately outside the signed
 payload above.
+
+## The price list
+
+Every priced door on the shelf, read off the live menu as this page
+rendered — never typed, for the same reason the floor above is not.
+There are no plans and no tiers here: each door is one price, paid per
+call, and a door that takes more than one amount says so in its row.
+
+| Door | Price (USDC) | Cadence | What it is |
+|---|---|---|---|
+${priceRows(base)}
+
+Free doors are not rows here; they are free. The shelf with every
+door's input contract is ${base}/menu.json.
 
 ## How you pay
 
