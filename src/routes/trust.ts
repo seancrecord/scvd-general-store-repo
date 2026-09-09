@@ -167,8 +167,9 @@ trustRoutes.get("/trust", async (c) => {
       ${panel.corrections.total} on record${panel.corrections.latest ? `, latest ${escapeHtml(panel.corrections.latest)}` : ""}.
       Things we said that were not true, kept forever, never softened.</li>
       <li><a href="${escapeHtml(panel.corpus.url)}">The corpus</a> —
-      ${panel.corpus.entries} signed, hash-chained, Bitcoin-anchored weekly
-      snapshot${panel.corpus.entries === 1 ? "" : "s"} of the x402 ecosystem${panel.corpus.latest_week ? `, latest ${escapeHtml(panel.corpus.latest_week)}` : ""}.</li>
+      ${panel.corpus.entries} signed, hash-chained weekly
+      snapshot${panel.corpus.entries === 1 ? "" : "s"} of the x402 ecosystem${panel.corpus.latest_week ? `, latest ${escapeHtml(panel.corpus.latest_week)}` : ""}.
+      Each digest is submitted for Bitcoin anchoring; check its timestamp status and verify the proof independently.</li>
       <li><a href="/books">The books</a> — revenue checked against the chain,
       drift printed, and <a href="/stats">the stats behind them</a>, house
       traffic split out.</li>

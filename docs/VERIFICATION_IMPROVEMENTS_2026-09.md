@@ -30,8 +30,9 @@ The directory mismatch persists in the refreshed capture. No note was sent.
 Details and remaining limits are in the observation record below.
 
 The final follow-through tree passed **603 test files, 8,438 tests and one
-existing skip** (801.86 seconds), typecheck, both Worker bundles, 30 Node
-evidence tests, five independent Python proof/tamper checks and the
+existing skip** (427.29 seconds on the final documentation pass), typecheck, both Worker bundles, 30 Node
+evidence tests, five independent Python proof/tamper checks, 56 focused
+checks on the final public wording and the
 checkout, corrections and claims checks. Regression checks were observed
 failing without the relevant fixes. The documentation check retains its
 existing dated-document backlog. See

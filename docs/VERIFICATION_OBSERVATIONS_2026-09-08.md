@@ -29,7 +29,11 @@ and refuses another pending calendar answer as a completed proof.
 
 The feed previously called any timestamp record Bitcoin-anchored, even
 pending or failed ones. It now states the actual stored status and says
-completed proofs need independent verification. The dated correction is
+completed proofs need independent verification. The final documentation
+sweep applies the same distinction to the trust page, agent instructions,
+weekly brief, askable index, FAQ and client READMEs. The attestation
+specification now uses the shared installation description and states the
+PQ experiment's remaining production requirements. The dated correction is
 `src/store/corrections-ledger/2026-09-09-corpus-timestamp-delivery.ts`.
 
 Reproduce from the saved public inputs, without network reads:

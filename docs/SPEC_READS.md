@@ -68,7 +68,8 @@ The corpus index and latest record exceeded the bounded read's 8 MiB cap;
 their unreadability remains recorded. Snapshot 1 was captured for a local
 file-checkpoint experiment only. No corpus-wide anchor percentage is
 claimed. The source bundle now exists locally, superseding the absence
-noted in the recommendation read below; npm publication is pending.
+noted in the recommendation read below; npm publication was pending at
+this September 8 read and completed September 9 (record above).
 Design, actual result and remaining limits:
 `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`.
 

@@ -1,10 +1,11 @@
 {
-  "scope": "Final follow-through tree before release; not deployment evidence",
+  "scope": "Follow-through implementation plus final public documentation sweep before release; not deployment evidence",
   "full_suite": {
     "files_passed": 603,
     "tests_passed": 8438,
     "tests_skipped": 1,
-    "duration_seconds": 801.86
+    "duration_seconds": 427.29,
+    "started_at": "2026-09-09T13:06:12Z"
   },
   "typecheck": "passed",
   "worker_bundle_checks": "both passed",
@@ -24,5 +25,6 @@
     "corpus key and signed sequence mismatch"
   ],
   "package_publication": "Registry integrity matches reviewed local package; registry signature and provenance verified; fresh installation checked real receipt",
-  "proof_scope": "Receipt and six listed corpus snapshots verified against matching headers from two outside sources; no local consensus validation"
+  "proof_scope": "Receipt and six listed corpus snapshots verified against matching headers from two outside sources; no local consensus validation",
+  "final_public_copy_focused_tests": 56
 }

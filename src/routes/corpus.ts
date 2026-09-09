@@ -504,7 +504,7 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
       lastModifiedOf(brief.taken_at),
     );
   }
-  const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519 and Bitcoin-anchored. Not a ranking.`;
+  const description = `The x402 corpus for ${brief.week}: ${brief.doors.listed} doors named, ${brief.doors.probed} probed, ${brief.doors.payable} payable and ${brief.doors.not_payable} not, defects by name, and the gaps counted against the observer. Signed snapshot ${brief.sequence}, ed25519; see its timestamp status and verify completed Bitcoin proofs independently. Not a ranking.`;
   return c.html(
     renderSimplePage({
       title: `x402 endpoint readiness, week ${brief.week}: ${brief.doors.payable} of ${brief.doors.probed} probed doors payable`,
