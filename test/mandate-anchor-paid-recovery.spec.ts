@@ -44,6 +44,7 @@ vi.mock("@/lib/kv-retry", async original => {
   return { ...actual, kvPut: async (...args: Parameters<typeof actual.kvPut>) => {
     const productRecord = args[1].startsWith(KV_KEYS.mandate("")) || args[1].startsWith(KV_KEYS.patronAnchorPrefix);
     if (productRecord && fault === "publication-before") failure();
+    if (productRecord && fault === "upgrade-publication" && object(object(JSON.parse(String(args[2]))).ots).status === "complete") failure();
     await actual.kvPut(...args);
     if (productRecord && fault === "publication-after") failure();
   } };
@@ -310,3 +311,22 @@ for (const id of ids) for (const door of doors) {
     expect(transfers).toBe(1);
   });
 }
+
+it("bitcoin_anchor: an acknowledged purchase retains an upgrade whose KV write fails", async () => {
+  const p = await purchase("bitcoin_anchor", "http", 0);
+  const bought = await p.send();
+  expect(bought.refused).toBe(false);
+  const anchorId = String(bought.body.anchor_id);
+  fault = "upgrade-publication";
+  await expect(sweepPatronAnchors(sourceEnv, { now: new Date(NOW.getTime() + 3600_000),
+    fetch: async () => new Response(bitcoinProofBytes(900001)) })).rejects.toThrow();
+  expect((await getPatronAnchor(sourceEnv, anchorId))!.ots.status).toBe("pending");
+  fault = "";
+  let upstreamCalls = 0;
+  await sweepPatronAnchors(sourceEnv, { fetch: async () => { upstreamCalls++; throw new Error("fixture calendar offline"); } });
+  const restored = (await getPatronAnchor(sourceEnv, anchorId))!;
+  expect(restored.ots.status).toBe("complete");
+  expect(restored.ots.upgraded_at).toBe(new Date(NOW.getTime() + 3600_000).toISOString());
+  expect(upstreamCalls).toBe(0);
+  expect(transfers).toBe(1);
+});

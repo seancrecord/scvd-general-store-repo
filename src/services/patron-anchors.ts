@@ -162,19 +162,21 @@ export async function sweepPatronAnchors(
     still_pending: 0,
   };
   let work = 0;
-  for (const record of values.values()) {
-    if (!record || work >= MAX_SWEEP_WORK) {
+  for (const listedRecord of values.values()) {
+    if (!listedRecord || work >= MAX_SWEEP_WORK || listedRecord.ots.status === "complete") {
       continue;
     }
+    work += 1;
+    // A previous upgrade may be durable even though its KV write failed.
+    // Republish it first; a calendar outage must not hide a proof we hold.
+    const record = await publishPatronAnchor(env, listedRecord);
     if (record.ots.status === "failed") {
-      work += 1;
       const ots = await submitDigestToOts(record.digest, options);
       if (ots.status !== "failed") {
         sweep.resubmitted += 1;
         await publishPatronAnchor(env, { ...record, ots });
       }
     } else if (record.ots.status === "pending") {
-      work += 1;
       const upgraded = await upgradeDigestOts(
         record.digest,
         record.ots,
