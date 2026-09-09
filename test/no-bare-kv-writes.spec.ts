@@ -41,6 +41,12 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   "/src/services/a2a-tasks.ts": [
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],
+  "/src/services/hosted-observation.ts": [
+    'await txn.put(key, { purchase, observation } satisfies HostedGrant);',
+    'await txn.put("hosted:current", current ? newer(observation, current) : observation);',
+    'await txn.put("hosted:current", observation);',
+    'await txn.put("hosted:current", value);',
+  ],
   "/src/services/paid-recovery.ts": [
     // One storage transaction commits the refund claim, resolution, and lookup.
     'await txn.put(claim, key);',

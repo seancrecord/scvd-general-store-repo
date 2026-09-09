@@ -1,3 +1,6 @@
+import type { SignedPassportRefresh } from "@/services/passport-refresh";
+import type { SignedTrustProfile } from "@/services/trust-profile";
+import type { HostedPurchase } from "@/services/hosted-observation";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedSpotCheck } from "@/services/spot-check";
@@ -14,6 +17,8 @@ import { supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { SettlementDeclined } from "@/lib/payments";
 
 export interface PreparedObservation {
+  passportRefresh?: SignedPassportRefresh;
+  trustProfile?: SignedTrustProfile;
   attestation?: SignedAttestation;
   bundle?: SignedAttestation[];
   serviceAudit?: SignedServiceAudit;
@@ -28,6 +33,8 @@ export interface PreparedObservation {
   attests: string;
 }
 export interface ObservationCheckpoint {
+  purchase?: HostedPurchase;
+  unavailable?(error: unknown): Promise<never>;
   read(): Promise<PreparedObservation | null>;
   save(value: PreparedObservation): Promise<PreparedObservation>;
 }
@@ -36,24 +43,31 @@ export interface ObservationCheckpoint {
 // It lives beside the purchase intent, so its alarm can retrieve the same bytes
 // even when the settlement acknowledgement or transaction checkpoint was lost.
 export function observationCheckpoint(env: Env, id: string, path: string, digest: string, readOnly = false): ObservationCheckpoint {
-  const access = async (proposal?: PreparedObservation) => {
+  const unavailable = async (error: unknown): Promise<never> => {
+    if (readOnly) throw error; // The caller already carries the confirmed payment.
     let existing: PurchaseIntent | null | undefined;
     try {
       const record = await purchaseIntentStore(env, id).existingPurchase();
       existing = record ? JSON.parse(record) as PurchaseIntent : null;
+    } catch { /* An unreadable purchase is unknown, never proof of no charge. */ }
+    throw new SettlementDeclined(Response.json({ code: "observation_storage_unavailable",
+      charged: existing ? existing.state === "settled" ? true : existing.state === "not_settled" ? false : null : existing === null ? false : null,
+      ...(existing ? { ...purchaseStatus(existing), recovery: purchaseRecovery(env, existing) } : {}),
+      settlement_attempted: false, error: "The original observation is unavailable. This request submitted no payment. Keep the same request and payment; check the retained purchase status when available." }, { status: 503 }));
+  };
+  const access = async (proposal?: PreparedObservation) => {
+    try {
+      const record = await purchaseIntentStore(env, id).existingPurchase();
+      const existing = record ? JSON.parse(record) as PurchaseIntent : null;
       const value = await purchaseIntentStore(env, id).retainObservation(path, digest,
         proposal === undefined ? undefined : JSON.stringify(proposal));
       if (value === null && (readOnly || existing || proposal !== undefined)) throw new Error("Original observation unavailable");
       return value === null ? null : JSON.parse(value) as PreparedObservation;
     } catch (error) {
-      if (readOnly) throw error; // The caller already carries the confirmed payment.
-      throw new SettlementDeclined(Response.json({ code: "observation_storage_unavailable",
-        charged: existing ? existing.state === "settled" ? true : existing.state === "not_settled" ? false : null : existing === null ? false : null,
-        ...(existing ? { ...purchaseStatus(existing), recovery: purchaseRecovery(env, existing) } : {}),
-        settlement_attempted: false, error: "The original observation is unavailable. This request submitted no payment. Keep the same request and payment; check the retained purchase status when available." }, { status: 503 }));
+      return unavailable(error);
     }
   };
-  return { read: () => access(), save: async value => {
+  return { purchase: { id, digest }, unavailable, read: () => access(), save: async value => {
     if (readOnly) throw new Error("A paid recovery cannot replace its observation");
     return (await access(value))!;
   } };

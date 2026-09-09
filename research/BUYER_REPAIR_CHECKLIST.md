@@ -109,7 +109,7 @@ BUY-034's human-order scope is closed by the combined checkpoint, legacy retriev
 
 ## Verification and scope
 
-Every repair gets a separate commit. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
+Related repairs are batched into one PR, with separate coherent commits and one full-suite run on the completed batch, as requested on 2026-09-08. Focused regressions run during development. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
 
 The broad untracked audit probes intentionally fail for unresolved findings. They remain separate from the normal regression gate; they have not been deleted or relabeled as passing.
 
@@ -360,3 +360,25 @@ The rebased fixture gate passed all 231 cases. The full local suite passed all 5
 The same fixture pattern had already been corrected for #578 and was reintroduced in the new resolution spec. That repetition was avoidable. The existing refund success, wrong-recipient/token/amount/chain, finality and failure controls remain the behavioral gate. Remote CodeQL must pass on the corrected commit before this PR can merge.
 
 Final local validation of the fixture correction: typecheck and all 599 test files passed, with 8,177 passing tests and one existing skip (894.53 seconds). No production source changed in this correction.
+
+
+## 2026-09-08 — Passport Refresh and Trust Profile recovery
+
+- [x] Retain the exact signed refresh or profile commission before settlement, bound to the verified purchase and complete input digest. HTTP and both MCP profiles recover that original evidence after certificate or response failure and after a lost settlement acknowledgement.
+- [x] Give each hosted commission a durable per-purchase grant. Retrying a profile never adds another term; concurrent separate purchases each extend once. A grant whose acknowledgement was lost retains its original timestamp and subject.
+- [x] Publish through a per-host coordinator so an older recovery preserves a newer refresh or profile term. The retained record is authoritative; public KV remains an eventually consistent projection. Recovery repairs a missing projection without probing again or renewing the term.
+- [x] Apply Trust Profile readiness to new commissions after authenticated replay lookup. An already paid buyer can retrieve the original commission after readiness disappears; a new buyer is refused before settlement.
+
+The initial 144-case regression produced 138 failures and six passing controls before source changes. Coverage spans both hosted products, HTTP and both MCP profiles, and every configured fixture rail. It verifies exact subject URLs, original signed/JCS bytes, evidence hashes, certificate binding, verification, protected status retrieval, missing-original refusals and newer-publication preservation. No live payment or production migration is involved.
+
+## 2026-09-08 — Hosted storage failures and retry status
+
+- [x] Return explicit payment status and the existing machine-readable observation-storage error when a hosted grant or publication fails. No new settlement is attempted; an unreadable purchase record is unknown rather than silently reported unpaid.
+- [x] Preserve the original commission across lost grant/publication acknowledgements. Concurrent duplicate payments settle once; changed-input replay is refused.
+- [x] Leave paid recovery owed while publication is unavailable. Once storage returns, its alarm publishes the original evidence and delivers it without another observation, term extension or transfer.
+
+The expanded 186-case regression produced 177 failures and nine passing controls with the tracked source changes stashed. The final focused gate passed 566 tests across seven files, including earlier observation recovery and proof packaging. The former Trust Profile refusal fixture now makes an unpaid quote request; signed-payment controls separately prove that readiness disappearing after a quote still prevents a new settlement.
+
+BUY-017 and BUY-037 remain open for other product families and historical obligations. These completed hosted-product substeps do not reopen completed work or claim that every paid product is recoverable. A 2026-09-08 snapshot evaluated from the current `MENU_ITEMS` and `supportsArtifactRecovery()` now admits 20 of 33 catalogue products, up from 18 before this batch. This is current implementation coverage, not historical-obligation closure. Validation was rebased onto main after #583/#584 merged, including the subsequent bounty-board changes. The initial unbounded local full run was stopped without a verdict under heavy memory pressure; the replacement uses `npm test -- --maxWorkers=2`, with the same files and assertions. The bounded full run finished with 587 files passing and 12 failing (8,387 tests passed, 21 failed, one existing skip), plus two worker-startup timeout errors without file names. System sleep interrupted that run. All 12 failing files then passed with no source changes: 2,013 tests, no unhandled errors (281.28 seconds). The original full run is not relabeled green; GitHub's complete suite remains the merge gate. Typechecking, both Worker dry-run bundles, audit, claims and docs checks pass on current main.
+
+The first recovery commit (`2311bd6e`) also passed its standalone typecheck and all 144 core regression cases before committing. The final batch passed native startup for both Workers; the startup timing control was noisy, so this is startup validation rather than a performance claim. The second commit restores the exact source/test bytes used by the 2,013-case retry gate.

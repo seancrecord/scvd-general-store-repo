@@ -1,3 +1,4 @@
+import { hostedCoordinator, hostedPurchase, publishHostedObservation, type HostedPurchase } from "@/services/hosted-observation";
 import { signJcs } from "@/lib/jcs";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -6,7 +7,7 @@ import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import { issuePassport } from "@/services/passport";
 import type { Env } from "@/types";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson } from "@/lib/kv-retry";
 
 /**
  * THE HOSTED TRUST PROFILE — the store's first recurring door
@@ -120,6 +121,7 @@ export async function performTrustProfile(
   env: Env,
   rawUrl: string,
   now: Date = new Date(),
+  purchase?: HostedPurchase,
 ): Promise<SignedTrustProfile> {
   const url = new URL(rawUrl); // unparseable throws pre-402; validated in buy.ts like the audits
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
@@ -132,6 +134,13 @@ export async function performTrustProfile(
     throw new ProbeTargetRefused(
       "That is this store's own hostname; the house profile is /trust, free.",
     );
+  }
+  const identity = hostedPurchase(url.toString(), purchase);
+  const coordinator = hostedCoordinator(env, "trust_profile", host);
+  const retained = await coordinator.readHostedGrant(identity);
+  if (retained) {
+    if (retained.kind !== "trust_profile") throw new Error("Hosted observation kind mismatch");
+    return retained.report;
   }
   /**
    * THE READY GATE, re-derived AT the mint (verified-fact law): the
@@ -146,7 +155,15 @@ export async function performTrustProfile(
       `No profile minted: ${gate.detail} Nothing charged.`,
     );
   }
-  const existing = await readTrustProfile(env, host);
+  const profile = await coordinator.prepareHostedProfile(identity, url.toString(), now.toISOString());
+  if (!purchase) await publishHostedObservation(env, { kind: "trust_profile", report: profile });
+  return profile;
+}
+
+/** Pure commission construction; the host coordinator serializes the term and
+ * its purchase identity in one storage transaction. No KV or probe I/O here. */
+export async function signTrustProfile(env: Env, url: URL, existing: SignedTrustProfile | null, now: Date): Promise<SignedTrustProfile> {
+  const host = url.host.toLowerCase();
   const base = env.STORE_BASE_URL;
   const extendFrom =
     existing && existing.record.expires > now.toISOString()
@@ -187,8 +204,5 @@ export async function performTrustProfile(
     ),
     public_key: publicKey,
   };
-  // Latest-only, like the refresh: the record IS the current term;
-  // the purchase certificates are the history of renewals.
-  await kvPut(env.COUNTERS, KV_KEYS.trustProfile(host), JSON.stringify(profile));
   return profile;
 }

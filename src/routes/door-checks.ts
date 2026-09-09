@@ -377,7 +377,7 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
     const item = getMenuItem(buyItemId(c));
     // A bare catalog probe still quotes its required inputs. A supplied
-    // A2A target must be available before new terms or settlement.
+    // target must be available before new terms or settlement.
     if (item && c.req.query("url")) {
       const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
       if (refusal) return c.json(refusal.body, refusal.status);
