@@ -1,3 +1,4 @@
+import { canonicalAddress } from "@/lib/addresses";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { readObserverStatus } from "@/lib/observer-control";
@@ -141,7 +142,7 @@ export async function startConformanceWatch(
     ends_at: new Date(
       now.getTime() + CONFORMANCE_WATCH_DURATION_DAYS * 24 * 3600_000,
     ).toISOString(),
-    ...(payer ? { payer: payer.toLowerCase() } : {}),
+    ...(payer ? { payer: canonicalAddress(payer) } : {}),
     passes: [],
   };
   await kvPut(env.ORDERS, 

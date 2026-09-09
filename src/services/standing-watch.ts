@@ -1,3 +1,4 @@
+import { canonicalAddress } from "@/lib/addresses";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
@@ -272,7 +273,7 @@ export async function startWatch(
     ends_at: new Date(
       now.getTime() + WATCH_DURATION_HOURS * 3600_000,
     ).toISOString(),
-    ...(payer ? { payer: payer.toLowerCase() } : {}),
+    ...(payer ? { payer: canonicalAddress(payer) } : {}),
     probes: [],
   };
   await kvPut(env.ORDERS, 
@@ -558,7 +559,7 @@ export async function watchesForPayer(
   }>;
   truncated: boolean;
 }> {
-  const wanted = payer.toLowerCase();
+  const wanted = canonicalAddress(payer);
   const found: Array<{
     watch_id: string;
     kind: "standing_watch" | "conformance_watch";
@@ -594,7 +595,7 @@ export async function watchesForPayer(
       payer?: string;
     }>(env.ORDERS, listed.names);
     for (const record of records.values()) {
-      if (!record?.watch_id || record.payer?.toLowerCase() !== wanted) {
+      if (!record?.watch_id || (!record.payer || canonicalAddress(record.payer) !== wanted)) {
         continue;
       }
       found.push({
