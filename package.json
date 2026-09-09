@@ -73,7 +73,7 @@
     "a2a:runner:build": "node scripts/a2a-runner-build.mjs",
     "a2a:runner:check": "node scripts/a2a-runner-build.mjs --check",
     "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs",
-    "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs"
+    "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs scripts/evidence-coverage.test.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

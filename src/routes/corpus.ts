@@ -1,3 +1,4 @@
+import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { namedExclusions } from "@/store/exclusions";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { CITE_HOW, citeRow } from "@/services/cite";
@@ -55,7 +56,7 @@ export const corpusRoutes = new Hono<HonoEnv>();
 const citingPathHeaders: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   const base = c.env.STORE_BASE_URL.replace(/\/$/, "");
-  const links = [`<${base}/scorers>; rel="help"`, `<${CORPUS_DATASET_LICENSE}>; rel="license"`];
+  const links = [`<${base}/corpus/index.json>; rel="index"`, `<${base}/scorers>; rel="help"`, `<${CORPUS_DATASET_LICENSE}>; rel="license"`];
   const existing = c.res.headers.get("Link");
   c.res.headers.set("Link", existing ? `${existing}, ${links.join(", ")}` : links.join(", "));
 };
@@ -99,6 +100,16 @@ corpusRoutes.use("/corpus.json", async (c, next) => {
     headers.set("Last-Modified", header["Last-Modified"]);
     c.res = new Response(c.res.body, { status: 200, headers });
   }
+});
+
+corpusRoutes.get("/corpus/index.json", async (c) => {
+  const raw = c.req.query("limit");
+  const limit = raw === undefined ? CORPUS_INDEX_PAGE_SIZE : /^\d+$/.test(raw) ? Number(raw) : NaN;
+  const cursor = c.req.query("cursor");
+  if (!Number.isInteger(limit) || limit < 1 || limit > CORPUS_INDEX_PAGE_SIZE || (cursor !== undefined && (!cursor || cursor.length > 2048))) {
+    return c.json({ error: `Use limit 1–${CORPUS_INDEX_PAGE_SIZE} and the cursor from the preceding page.` }, 400);
+  }
+  return c.json({ ...await corpusIndexPage(c.env, limit, cursor), corrections: CORRECTIONS_POINTER });
 });
 
 corpusRoutes.get("/corpus.json", async (c) => {
@@ -252,6 +263,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
     corrections: CORRECTIONS_POINTER,
     honest_limits:
       "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from a round was unlisted that week, beyond the round's stated caps, or dropped by our own coverage — the round's own coverage fields say which, so absence alone proves nothing about the host. One structural exclusion, stated because it flatters our trust-gap numbers: the round can never probe this store's own host (a Worker cannot fetch itself), so our own door is in no denominator here. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
+    compact_index: `${base}/corpus/index.json`,
     latest: records[records.length - 1] ?? null,
     index: records.map((record) => ({
       sequence: record.snapshot.sequence,

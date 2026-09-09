@@ -756,3 +756,17 @@ Gaps: no market demand, competing paid-service pricing or full multi-version
 conformance coverage verified. No claim is made from the unverified 50-agent
 sample in A2A issue #1755. No third-party production endpoint was actively
 probed during the build; tests use operator-style fixtures.
+
+
+## 2026-09-09 — corpus readers and operator inventory
+
+Read the current Cloudflare Workers best-practices and KV list-keys docs:
+https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
+and https://developers.cloudflare.com/kv/api/list-keys/.
+The compact index uses explicit page caps and continuations, bounded record
+reads, and named incomplete results. Current Workers type definitions
+5.20260908.1 were retrieved without changing project dependencies.
+Installed Wrangler list/get help and implementation were inspected: remote
+key listing follows the provider's list cursors. Production read failed
+with authentication error 10000; no inventory count was inferred.
+Implementation and limits: `EVIDENCE_READER_COVERAGE_2026-09.md`.

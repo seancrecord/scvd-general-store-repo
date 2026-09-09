@@ -1003,7 +1003,7 @@ const worker: ExportedHandler<Env> = {
       import("@/services/certificate-anchors").then(
         ({ sweepCertificateAnchors }) =>
           sweepCertificateAnchors(env).then(
-            () => undefined,
+            (summary) => console.log(JSON.stringify({ event: "certificate_anchor_sweep", ...summary })),
             (error) =>
               sendAlert(env, {
                 condition: "worker_health",

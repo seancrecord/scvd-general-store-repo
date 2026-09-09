@@ -3,8 +3,21 @@
 This is an implementation and observation record from
 `codex/verification-evidence`. Release was subsequently authorized with
 “alright lets roll”; the complete staged-release validation is recorded in
-the linked plan. The maintainer note remains unsent.
+the linked plan. The keeper confirmed the maintainer note sent on
+September 9; a reply remains pending (delivery record below).
 VQ1 shipped in PR #585. The follow-through is ROADMAP VQ2 and its linked design.
+
+## Later September 9 reader and inventory work
+
+The compact index and source CLI now pass the saved corpus size check.
+The earlier Wrangler authentication failure was resolved on retry. The
+18:32–18:37 UTC census verified all 262 captured certificate signatures and
+36 reports; 44 of 80 signed report links remain unresolved in the selected
+families. All 261 available timestamp proofs passed independent operation
+and matching-explorer-header checks. One certificate sharing patron number
+199 is outside the current patron-number sweep and has no stored anchor.
+Details: `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Earlier capture limits
+below remain the historical record, not current implementation status.
 
 ## September 9 follow-through
 
@@ -80,7 +93,8 @@ Certificate / linked-report population reconciliation remains open.
 The refreshed directory record still says `unmeasured-network`, while its
 Coinbase mapping still enables the sampled transaction origin and the
 service still advertises the matching payout address. The note below
-remains unsent and asks about attribution, not organic traction. Verifier
+asks about attribution, not organic traction; the keeper subsequently
+confirmed it sent on September 9. Verifier
 1.2.0 is now published through the provenance workflow. The registry
 artifact exactly matches the reviewed tarball; npm verified its signature
 and attestation, and a fresh registry installation checked the real
@@ -153,7 +167,7 @@ measurement canary and **not independent customer demand**. No traction
 score or ranking gain is forecast. Directory data: x402-list.com, CC BY 4.0;
 source URLs and provenance remain in the saved inputs.
 
-### Unsent note for directory maintainer — refreshed September 9
+### Note for directory maintainer — sent September 9, keeper-confirmed
 
 Recipient: **info@x402-list.com**, listed on
 [the directory contact page](https://www.x402-list.com/contact), read
@@ -181,8 +195,17 @@ as independent demand. Dated captures and the reproducible join are in
 `research/verification-2026-09-08/` and `research/verification-2026-09-09/`
 in https://github.com/seancrecord/scvd-general-store-repo.
 
-This note has not been sent. It needs the keeper's send decision; the
-recipient is now identified and the evidence is prepared.
+Delivery status, September 9: the keeper approved the prepared note, then
+offered to send it by hand. The attempted Mail access returned “Computer Use
+permissions are not granted”; no email was submitted. No locally configured
+mail credential was available, and the existing outreach endpoint cannot
+send this arbitrary note. The exact recipient, subject and body above were
+handed back for manual sending. The keeper subsequently confirmed “sent”
+on September 9 (confirmation recorded at 16:20 UTC). This is the keeper's
+send confirmation, not an independently observed delivery receipt; no
+message ID or maintainer reply was supplied. Await their response and do
+not send a duplicate. The saved capture-time “unsent” statuses remain
+historical observations.
 
 ## Anchor sample and unresolved coverage
 
