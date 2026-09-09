@@ -1,3 +1,5 @@
+import { canonicalAddress } from "@/lib/addresses";
+import { publishWatch, retainWatch, signWatchCommission, WATCH_SPACING_MS, type WatchCommission, type WatchPurchase } from "@/services/watch-recovery";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { readObserverStatus } from "@/lib/observer-control";
@@ -8,7 +10,7 @@ import { REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson } from "@/lib/kv-retry";
 
 /**
  * THE CONFORMANCE WATCH — the Night Watch's shape pointed at
@@ -45,7 +47,7 @@ export const CONFORMANCE_WATCH_DURATION_DAYS = 7;
 const CWATCH_SCAN_CAP = 500;
 
 /** A doubled cron tick must not double-bill the day. */
-const MIN_PASS_SPACING_MS = 23 * 3600_000;
+const MIN_PASS_SPACING_MS = WATCH_SPACING_MS.conformance;
 
 export interface ConformancePass {
   at: string;
@@ -83,6 +85,7 @@ export interface ConformancePass {
 }
 
 export interface ConformanceWatchRecord {
+  commission?: WatchCommission;
   watch_id: string;
   /** The buyer's own endpoint. Consent is the purchase itself. */
   url: string;
@@ -132,22 +135,25 @@ export async function startConformanceWatch(
   env: Env,
   url: string,
   payer?: string,
+  purchase?: WatchPurchase,
 ): Promise<{ record: ConformanceWatchRecord; historyUrl: string }> {
-  const now = new Date();
-  const record: ConformanceWatchRecord = {
-    watch_id: newWatchId(),
-    url,
-    started_at: now.toISOString(),
-    ends_at: new Date(
-      now.getTime() + CONFORMANCE_WATCH_DURATION_DAYS * 24 * 3600_000,
-    ).toISOString(),
-    ...(payer ? { payer: payer.toLowerCase() } : {}),
-    passes: [],
-  };
-  await kvPut(env.ORDERS, 
-    KV_KEYS.conformanceWatch(record.watch_id),
-    JSON.stringify(record),
-  );
+  const now = new Date(purchase?.purchasedAt ?? Date.now());
+  const selected = await retainWatch(purchase, async () => {
+    const record: ConformanceWatchRecord = {
+      watch_id: newWatchId(),
+      url,
+      started_at: now.toISOString(),
+      ends_at: new Date(
+        now.getTime() + CONFORMANCE_WATCH_DURATION_DAYS * 24 * 3600_000,
+      ).toISOString(),
+      ...(payer ? { payer: canonicalAddress(payer) } : {}),
+      passes: [],
+    };
+    const commission = await signWatchCommission(env, "conformance", record, purchase?.certId);
+    if (commission) record.commission = commission;
+    return { kind: "conformance" as const, record };
+  });
+  const { record } = await publishWatch(env, selected);
   return {
     record,
     historyUrl: `${env.STORE_BASE_URL}/api/conformance-watch/${record.watch_id}`,
@@ -232,11 +238,13 @@ export async function sweepConformanceWatches(env: Env): Promise<number> {
     scanCap: CWATCH_SCAN_CAP,
     minSpacingMs: MIN_PASS_SPACING_MS,
     entriesOf: (record) => record.passes,
+    publish: async record => { await publishWatch(env, { kind: "conformance", record }); },
     observe: (record) => passOnce(env, record),
   });
 }
 
 export interface ConformanceWatchHistory {
+  commission?: WatchCommission;
   watch_id: string;
   url: string;
   started_at: string;
@@ -334,6 +342,7 @@ export function conformanceWatchHistoryOf(
   const drift = readouts.size > 1;
   return {
     watch_id: record.watch_id,
+    ...(record.commission ? { commission: record.commission } : {}),
     url: record.url,
     started_at: record.started_at,
     ends_at: record.ends_at,
