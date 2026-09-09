@@ -1,3 +1,4 @@
+import { LaunchCheckStore } from "@/services/launch-check-recovery";
 import { WatchRecoveryStore, type RecoverableWatch } from "@/services/watch-recovery";
 import { PersonalGoodsStore, type PersonalRecord, type PersonalMutation } from "@/services/personal-goods";
 import { CaseFilePublicationStore } from "@/services/case-file-publication";
@@ -26,7 +27,7 @@ export interface ArtifactPurchase {
 export interface RecoveryIdentity {
   path: string; payer: string; network: string; transaction: string;
 }
-export type ArtifactStage = "watch_record" | "confession_receipt" | "personal_record" | "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
+export type ArtifactStage = "opening_day" | "watch_record" | "confession_receipt" | "personal_record" | "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
 
 function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
   const payer = purchase.payment.payer;
@@ -101,6 +102,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly launch = new LaunchCheckStore(this.ctx.storage, this.env);
+  prepareLaunchCheck(path: string, digest: string, url: string) { return this.launch.run(path, digest, url); }
+
   private readonly watches = new WatchRecoveryStore(this.ctx.storage, this.env);
   publishWatch(value: RecoverableWatch) { return this.watches.publish(value); }
 

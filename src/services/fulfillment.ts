@@ -381,14 +381,16 @@ export async function fulfillPurchase(
    * THE LAUNCH CHECK walks first and mints second, same discipline:
    * the certificate binds the walk record's evidence hash. The real
    * money this spends (the field wallet's, capped in the service)
-   * moves inside the walk, post-settle of the BUYER's payment — a
-   * failed walk is still a signed observation, never a refund case.
+   * moves inside the walk before the buyer settles. Retain the upstream
+   * attempt and observation so retries cannot spend the field wallet again.
    */
-  let launchCheck: SignedLaunchCheck | undefined;
+  let launchCheck: SignedLaunchCheck | undefined = retainedObservation?.launchCheck;
   // The Opening Day bundle walks the same door with the same engine;
   // its certificate binds the walk, and the watch opens after the mint.
-  if (item.id === "launch_check" || item.id === "opening_day") {
-    launchCheck = await performLaunchCheck(env, input.targetUrl ?? "", {
+  if ((item.id === "launch_check" || item.id === "opening_day") && !retainedObservation) {
+    launchCheck = pending.observation?.launchCheck
+      ? await pending.observation.launchCheck(input.targetUrl ?? "")
+      : await performLaunchCheck(env, input.targetUrl ?? "", {
       /*
        * 3.2: the paid walk gets the real chain reader, so a seller's
        * claimed settlement hash is read on the rail we paid before it
@@ -527,7 +529,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
-      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused,
+      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused, launchCheck,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -545,10 +547,12 @@ export async function fulfillPurchase(
     trustProfile = prepared.trustProfile;
     mandate = prepared.mandate;
     patronAnchor = prepared.patronAnchor;
+    launchCheck = prepared.launchCheck;
     caseFile = prepared.caseFile;
     caseFileReused = prepared.caseFileReused ?? false;
     if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor) ||
-      (item.id === "the_case_file" && !caseFile)) {
+      (item.id === "the_case_file" && !caseFile) ||
+      (["launch_check", "opening_day"].includes(item.id) && !launchCheck)) {
       const error = new Error("Original purchased record unavailable");
       if (pending.observation.unavailable) await pending.observation.unavailable(error);
       throw error;
