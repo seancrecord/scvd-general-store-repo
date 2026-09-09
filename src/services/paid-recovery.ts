@@ -1,4 +1,6 @@
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
+import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
+import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import { recordDeliveredSettlement } from "@/services/settlement-records";
 import { closeDeliveryIntent } from "@/services/delivery-audit";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
@@ -94,6 +96,12 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly hosted = new HostedObservationStore(this.ctx.storage, this.env);
+
+  readHostedGrant(purchase: HostedPurchase) { return this.hosted.read(purchase); }
+  retainHostedRefresh(purchase: HostedPurchase, report: SignedPassportRefresh) { return this.hosted.retainRefresh(purchase, report); }
+  prepareHostedProfile(purchase: HostedPurchase, url: string, at: string) { return this.hosted.prepareProfile(purchase, url, at); }
+  publishHostedObservation(observation: HostedObservation) { return this.hosted.publish(observation); }
 
   // First prepared bytes win, including simultaneous requests with one payment.
   // A mismatched question cannot replace them or use them to buy a different good.

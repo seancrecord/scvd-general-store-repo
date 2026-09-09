@@ -248,6 +248,12 @@ function a2aSetupRefusal(error: string): PurchaseRefusal {
 
 /** Live permission and capacity apply to a new sale, not retrieval of owed work. */
 export async function checkPurchaseAvailability(env: Env, item: MenuItem, args: PurchaseArgs): Promise<PurchaseRefusal | undefined> {
+  if (item.id === "trust_profile") {
+    const raw = args.get("url");
+    if (!isValidHttpUrl(raw)) return undefined; // Argument validation owns malformed targets.
+    const gate = await issuePassport(env, new URL(raw!).host.toLowerCase());
+    return gate.issued ? undefined : refuse(403, "passport_refused", `${gate.detail} Nothing charged.`);
+  }
   if (item.id !== "a2a_repair_kit") return undefined;
   const error = await a2aAdmission(env, args.get("url"));
   return error ? a2aSetupRefusal(error) : undefined;
@@ -330,13 +336,10 @@ export async function checkPurchaseArgs(
       "That is this store's own hostname; the house profile is /trust, free, and hosting a paid page about ourselves would be the instrument vouching for itself. Nothing charged.",
     );
     if (refusal) return refusal;
-    // The profiles index names only ready-side hosts, so a door whose
-    // latest evidence is failing gets its refusal here, for free, with
-    // the same reasons the passport gives. (The mint re-derives it;
-    // evidence can move between the quote and the payment.)
-    const gate = await issuePassport(env, new URL(read("url")!).host.toLowerCase());
-    if (!gate.issued) {
-      return refuse(403, "passport_refused", `${gate.detail} Nothing charged.`);
+    // Readiness admits a new commission, never retrieval of an already paid one.
+    if (!options.deferAvailability) {
+      const unavailable = await checkPurchaseAvailability(env, item, args);
+      if (unavailable) return unavailable;
     }
   }
 

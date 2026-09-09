@@ -1,9 +1,10 @@
+import { hostedCoordinator, hostedPurchase, publishHostedObservation, type HostedPurchase } from "@/services/hosted-observation";
 import { signJcs } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { ProbeTargetRefused, checkProbeTarget, parseProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson } from "@/lib/kv-retry";
 
 /**
  * THE PASSPORT REFRESH — the paid fresh check (the keeper's "both"
@@ -68,6 +69,7 @@ export async function performPassportRefresh(
   env: Env,
   rawUrl: string,
   now: Date = new Date(),
+  purchase?: HostedPurchase,
 ): Promise<SignedPassportRefresh> {
   // An unparseable URL is a refused target under the shared law, never
   // a throw the catch below would sign as "unreachable".
@@ -76,6 +78,13 @@ export async function performPassportRefresh(
   const target = checkProbeTarget(url, ownHost);
   if (!target.ok) {
     throw new ProbeTargetRefused(target.reason ?? "probe target refused");
+  }
+  const identity = hostedPurchase(url.toString(), purchase);
+  const coordinator = hostedCoordinator(env, "passport_refresh", url.host.toLowerCase());
+  const retained = await coordinator.readHostedGrant(identity);
+  if (retained) {
+    if (retained.kind !== "passport_refresh") throw new Error("Hosted observation kind mismatch");
+    return retained.report;
   }
   const { probeHost } = await import("@/services/ward-round");
   const probe = await probeHost(env, url.toString());
@@ -108,11 +117,8 @@ export async function performPassportRefresh(
     ),
     public_key: publicKey,
   };
-  // Latest-only: the passport wants the newest observation, and a
-  // history of refreshes is what the census chain already is.
-  await kvPut(env.COUNTERS, 
-    KV_KEYS.passportRefresh(observation.host),
-    JSON.stringify(observation),
-  );
-  return record;
+  const selected = await coordinator.retainHostedRefresh(identity, record);
+  // Checkout publishes only after its full observation checkpoint is durable.
+  if (!purchase) await publishHostedObservation(env, { kind: "passport_refresh", report: selected });
+  return selected;
 }

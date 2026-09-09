@@ -117,7 +117,6 @@ describe("the hosted trust profile", () => {
     // Never observed → the gate's never-observed refusal, pre-402.
     const response = await SELF.fetch(
       "https://scvd.store/api/buy/trust_profile?url=https://other-door.example/api/thing",
-      { headers: { "x-payment": "attempt" } },
     );
     expect(response.status).toBe(403);
     const body = (await response.json()) as { error: string };

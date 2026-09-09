@@ -1,3 +1,6 @@
+import type { SignedPassportRefresh } from "@/services/passport-refresh";
+import type { SignedTrustProfile } from "@/services/trust-profile";
+import type { HostedPurchase } from "@/services/hosted-observation";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedSpotCheck } from "@/services/spot-check";
@@ -14,6 +17,8 @@ import { supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { SettlementDeclined } from "@/lib/payments";
 
 export interface PreparedObservation {
+  passportRefresh?: SignedPassportRefresh;
+  trustProfile?: SignedTrustProfile;
   attestation?: SignedAttestation;
   bundle?: SignedAttestation[];
   serviceAudit?: SignedServiceAudit;
@@ -28,6 +33,7 @@ export interface PreparedObservation {
   attests: string;
 }
 export interface ObservationCheckpoint {
+  purchase?: HostedPurchase;
   read(): Promise<PreparedObservation | null>;
   save(value: PreparedObservation): Promise<PreparedObservation>;
 }
@@ -53,7 +59,7 @@ export function observationCheckpoint(env: Env, id: string, path: string, digest
         settlement_attempted: false, error: "The original observation is unavailable. This request submitted no payment. Keep the same request and payment; check the retained purchase status when available." }, { status: 503 }));
     }
   };
-  return { read: () => access(), save: async value => {
+  return { purchase: { id, digest }, read: () => access(), save: async value => {
     if (readOnly) throw new Error("A paid recovery cannot replace its observation");
     return (await access(value))!;
   } };

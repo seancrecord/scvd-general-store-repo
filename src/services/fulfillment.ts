@@ -1,3 +1,4 @@
+import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
 import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
@@ -408,9 +409,9 @@ export async function fulfillPurchase(
    * from it the moment the buyer looks. The verdict lands whatever it
    * says — a broken finding is the product working.
    */
-  let passportRefresh: SignedPassportRefresh | undefined;
-  if (item.id === "passport_refresh") {
-    passportRefresh = await performPassportRefresh(env, input.targetUrl ?? "");
+  let passportRefresh: SignedPassportRefresh | undefined = retainedObservation?.passportRefresh;
+  if (item.id === "passport_refresh" && !retainedObservation) {
+    passportRefresh = await performPassportRefresh(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase);
     mintOptions.attests = passportRefresh.evidence_hash;
   }
   /**
@@ -437,9 +438,9 @@ export async function fulfillPurchase(
     spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
     mintOptions.attests = spotCheck.evidence_hash;
   }
-  let trustProfile: SignedTrustProfile | undefined;
-  if (item.id === "trust_profile") {
-    trustProfile = await performTrustProfile(env, input.targetUrl ?? "");
+  let trustProfile: SignedTrustProfile | undefined = retainedObservation?.trustProfile;
+  if (item.id === "trust_profile" && !retainedObservation) {
+    trustProfile = await performTrustProfile(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase);
     mintOptions.attests = trustProfile.evidence_hash;
   }
   let walletStatement: SignedWalletStatement | undefined = retainedObservation?.walletStatement;
@@ -522,7 +523,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
-      walletStatement, reconciliation,
+      walletStatement, reconciliation, passportRefresh, trustProfile,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -536,6 +537,8 @@ export async function fulfillPurchase(
     provenanceCheck = prepared.provenanceCheck;
     walletStatement = prepared.walletStatement;
     reconciliation = prepared.reconciliation;
+    passportRefresh = prepared.passportRefresh;
+    trustProfile = prepared.trustProfile;
     mintOptions.attests = prepared.attests;
   }
   /**
@@ -554,6 +557,10 @@ export async function fulfillPurchase(
   if (item.id === "recurring_patronage" && input.passId !== undefined) {
     await requireRenewalPass(env, input.passId);
   }
+  // A failed publication costs a new buyer nothing. A paid recovery republishes
+  // the original commission without probing or extending its term again.
+  if (passportRefresh) await publishHostedObservation(env, { kind: "passport_refresh", report: passportRefresh });
+  if (trustProfile) await publishHostedObservation(env, { kind: "trust_profile", report: trustProfile });
   const payment = await pending.settle();
   if (payment.payer) {
     mintOptions.payer = payment.payer;

@@ -109,7 +109,7 @@ BUY-034's human-order scope is closed by the combined checkpoint, legacy retriev
 
 ## Verification and scope
 
-Every repair gets a separate commit. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
+Related repairs are batched into one PR, with separate coherent commits and one full-suite run on the completed batch, as requested on 2026-09-08. Focused regressions run during development. The focused regressions exercise the public purchase doors, with the served catalog and local payment processor fixtures; they do not establish live-chain settlement or production deployment.
 
 The broad untracked audit probes intentionally fail for unresolved findings. They remain separate from the normal regression gate; they have not been deleted or relabeled as passing.
 
@@ -360,3 +360,13 @@ The rebased fixture gate passed all 231 cases. The full local suite passed all 5
 The same fixture pattern had already been corrected for #578 and was reintroduced in the new resolution spec. That repetition was avoidable. The existing refund success, wrong-recipient/token/amount/chain, finality and failure controls remain the behavioral gate. Remote CodeQL must pass on the corrected commit before this PR can merge.
 
 Final local validation of the fixture correction: typecheck and all 599 test files passed, with 8,177 passing tests and one existing skip (894.53 seconds). No production source changed in this correction.
+
+
+## 2026-09-08 — Passport Refresh and Trust Profile recovery
+
+- [x] Retain the exact signed refresh or profile commission before settlement, bound to the verified purchase and complete input digest. HTTP and both MCP profiles recover that original evidence after certificate or response failure and after a lost settlement acknowledgement.
+- [x] Give each hosted commission a durable per-purchase grant. Retrying a profile never adds another term; concurrent separate purchases each extend once. A grant whose acknowledgement was lost retains its original timestamp and subject.
+- [x] Publish through a per-host coordinator so an older recovery preserves a newer refresh or profile term. The retained record is authoritative; public KV remains an eventually consistent projection. Recovery repairs a missing projection without probing again or renewing the term.
+- [x] Apply Trust Profile readiness to new commissions after authenticated replay lookup. An already paid buyer can retrieve the original commission after readiness disappears; a new buyer is refused before settlement.
+
+The initial 144-case regression produced 138 failures and six passing controls before source changes. Coverage spans both hosted products, HTTP and both MCP profiles, and every configured fixture rail. It verifies exact subject URLs, original signed/JCS bytes, evidence hashes, certificate binding, verification, protected status retrieval, missing-original refusals and newer-publication preservation. No live payment or production migration is involved.
