@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-09-09T20:32:24.563Z",
+  "counters": [
+    {
+      "key": "patron_number",
+      "status": "readable",
+      "value": 263
+    },
+    {
+      "key": "cert_anchor_cursor",
+      "status": "readable",
+      "value": {
+        "head": 263,
+        "backfill": 0
+      }
+    },
+    {
+      "key": "cert_anchor_sweep",
+      "status": "readable",
+      "value": {
+        "observed_at": "2026-09-09T20:31:12.314Z",
+        "counters": {
+          "submitted": 2,
+          "backfilled": 0,
+          "resubmitted": 0,
+          "upgraded": 0,
+          "still_pending": 2,
+          "behind_head": 0,
+          "behind_backfill": 0,
+          "pending_truncated": false
+        }
+      }
+    }
+  ],
+  "prior_attempt": {
+    "checked_at": "2026-09-09T20:31:43.298Z",
+    "status": "all three reads unavailable; subsequent sequential reads succeeded",
+    "cause": "not established"
+  },
+  "previously_unanchored_certificate": {
+    "checked_at": "2026-09-09T20:32:52.557Z",
+    "signed_bytes_unchanged": true,
+    "existence_status": "none",
+    "proof_present": false
+  }
+}

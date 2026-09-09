@@ -21,6 +21,18 @@ each one a five-minute job.
 
 ## September 9 — verifier publication follow-through
 
+**Subsequent reader release:** [x402-verify 1.3.0](https://www.npmjs.com/package/x402-verify/v/1.3.0)
+published from `f44df7b165c6534fe7c9cfcb0b2a12790e56eade` through the
+[provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34398582831).
+It adds corpus-v1 exports and explicit bounded reader allowances. A fresh
+registry install verified its registry signature and provenance, matched
+the prepared tarball, and verified all six live corpus snapshots at 20:03
+UTC with their canonical signed bytes unchanged. The compact index deployed
+in PR #592. Records live under
+`research/verification-2026-09-09/reader-followthrough/`; commands and limits
+are in `verifier/README.md`. The 1.2.0 publication below remains historical
+fact; its immutable package has not changed.
+
 **Published:** [x402-verify 1.2.0](https://www.npmjs.com/package/x402-verify/v/1.2.0)
 from commit `4f452acee2690f112e6fcda2768630490ba270bd`, through the existing
 [provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34353123366).

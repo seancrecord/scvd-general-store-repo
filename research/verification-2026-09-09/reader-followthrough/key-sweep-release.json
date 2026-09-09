@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-09-09T21:14:20.803620+00:00",
+  "pull_request": "https://github.com/seancrecord/scvd-general-store-repo/pull/596",
+  "repair_head": "b8f95811c4edf70d862cedd8d8db8dc116e69e4d",
+  "merge_commit": "86b12f40d578d227ca582fce6cdc8b633788a6f6",
+  "merged_at": "2026-09-09T21:11:38Z",
+  "production_deployments": [
+    {
+      "name": "Workers Builds: scvd-general-store-repo",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production/builds/97af360a-c6d2-45eb-b3a7-0c91fcc09529",
+      "completed_at": "2026-09-09T21:13:07Z"
+    },
+    {
+      "name": "Workers Builds: scvd-doors",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production/builds/74d82a88-8a01-4a9a-bb52-b33040e7e47c",
+      "completed_at": "2026-09-09T21:12:44Z"
+    }
+  ],
+  "premerge_ci": [
+    {
+      "run_id": 34398972156,
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34398972156",
+      "conclusion": "success",
+      "files_passed": 610,
+      "tests_passed": 9543,
+      "tests_skipped": 1,
+      "suite_seconds": 3782.93
+    },
+    {
+      "run_id": 34398968230,
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34398968230",
+      "conclusion": "success",
+      "files_passed": 610,
+      "tests_passed": 9543,
+      "tests_skipped": 1,
+      "suite_seconds": 2743.06
+    }
+  ],
+  "diagnostic_recheck": {
+    "files_passed": 5,
+    "tests_passed": 639,
+    "seconds": 118.81,
+    "code_changed": false
+  },
+  "delivery_at_deployment": "Not yet observed; the earlier 20:32 UTC missing-certificate check remains the baseline. Subsequent live delivery results belong to the linked pull-request release record."
+}

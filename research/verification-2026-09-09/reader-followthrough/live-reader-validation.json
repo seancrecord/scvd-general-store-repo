@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-09-09T20:46:44.001105+00:00",
+  "scope": "Pre-release browser catalog reader repair and documentation follow-through",
+  "worker_suite": {
+    "files_passed": 610,
+    "tests_passed": 9543,
+    "tests_skipped": 1,
+    "seconds": 1496.69,
+    "max_workers": 4
+  },
+  "new_regression_cases_failed_before_repair": 4,
+  "door_check_tests_passed": 46,
+  "typecheck": "passed",
+  "worker_bundles": "both passed",
+  "claims": {
+    "resolved": 39,
+    "unbound": 0
+  },
+  "docs_check": "passed with existing dated-document backlog",
+  "human_baseline_modified": false,
+  "browser_free_catalog_lookup": "passed; no purchase exercised",
+  "production_parser_release_checked": false
+}

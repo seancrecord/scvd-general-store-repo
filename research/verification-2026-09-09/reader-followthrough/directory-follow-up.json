@@ -1,0 +1,37 @@
+{
+  "retrieved_at": "2026-09-09T20:56:43.214333+00:00",
+  "source_url": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+  "response_sha256": "c61c1d3f6f9b9d5f7de4a1b1e2e024bcafa3ec03c510c485c164c7f2bee53253",
+  "source_last_checked_at": "2026-09-09T20:46:22.828Z",
+  "traction": {
+    "status": "unmeasured-network",
+    "volume_usd_30d": null,
+    "tx_count_30d": null,
+    "unique_buyers_30d": null,
+    "last_settlement_at": null,
+    "top_buyer_share_30d": null,
+    "trend_7d_vs_30d": null,
+    "shared_payout": false,
+    "shared_with": 0,
+    "measured_networks": [],
+    "first_settlement_at": null,
+    "volume_usd_all_time": null,
+    "tx_count_all_time": null,
+    "median_settlement_usd_30d": null,
+    "max_settlement_usd_30d": null,
+    "settled_via": [],
+    "settled_via_detail": [],
+    "shared_with_services": [],
+    "pro_quota_share": null,
+    "caveat": "Conservative undercount: only USDC settlements via facilitators we measure are counted. A measured floor, not an estimate.",
+    "all_time_caveat": "All-time is floored at the start of our harvest window, not the service full history."
+  },
+  "provenance": {
+    "license": "CC-BY-4.0",
+    "attribution_required": true,
+    "attribution": "Data: x402-list.com (CC BY 4.0)",
+    "cite_as": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+    "source": "https://x402-list.com"
+  },
+  "interpretation": "The keeper-confirmed note is sent; the public attribution state remains unresolved. No duplicate note sent."
+}

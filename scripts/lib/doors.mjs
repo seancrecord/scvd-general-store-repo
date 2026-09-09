@@ -863,15 +863,26 @@ export const DOORS = [
           if (scriptMiss) return scriptMiss;
           const mcpMiss = reached(snap, "mcpTools");
           if (mcpMiss) return mcpMiss;
-          const declared = new Set(
-            ((snap.webmcpScript.text?.match(/var TOOLS = ([\s\S]*?);/)?.[1] ?? snap.webmcpScript.text)?.match(/"name":\s*"([a-z_]+)"/g) ?? []).map(
-              (match) => /"name":\s*"([a-z_]+)"/.exec(match)[1],
-            ),
-          );
+          // The served catalog is JSON, not arbitrary JavaScript. Its strings
+          // can contain semicolons and nested schemas can contain "name" too.
+          // A JSON string cannot contain a literal newline, so this terminator
+          // ends the declaration without ending inside a description. Never
+          // execute a remote script to recover its catalog.
+          let catalog;
+          try {
+            catalog = JSON.parse(snap.webmcpScript.text?.match(/var TOOLS = ([\s\S]*?);\s*\n/)?.[1] ?? "");
+          } catch {
+            return unknown("browser instrument catalog was not readable JSON");
+          }
+          if (!Array.isArray(catalog) || catalog.length === 0 ||
+            catalog.some(tool => !tool || typeof tool.name !== "string" || !tool.name.trim())) {
+            return unknown("browser instrument catalog has missing or invalid names");
+          }
+          const declared = new Set(catalog.map(tool => tool.name));
+          if (declared.size !== catalog.length) return unknown("browser instrument catalog has duplicate names");
           const served = new Set(
             (snap.mcpTools.json?.result?.tools ?? []).map((tool) => tool.name),
           );
-          if (declared.size === 0) return unknown("no tool names read out of the script");
           const orphans = [...declared].filter((name) => !served.has(name));
           if (orphans.length > 0) {
             return unmet(
