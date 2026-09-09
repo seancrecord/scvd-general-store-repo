@@ -1,3 +1,4 @@
+import { preparePatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
@@ -467,8 +468,8 @@ export async function fulfillPurchase(
    * certificate binds the record's evidence hash, and the record must
    * exist before any later purchase can cite its id.
    */
-  let mandate: SignedMandate | undefined;
-  if (item.id === "the_mandate") {
+  let mandate: SignedMandate | undefined = retainedObservation?.mandate;
+  if (item.id === "the_mandate" && !retainedObservation) {
     mandate = await performMandate(env, {
       text: input.mandateText ?? "",
       submittedAs: input.mandateSubmittedAs,
@@ -510,16 +511,12 @@ export async function fulfillPurchase(
     }
     mintOptions.attests = caseFile.evidence_hash;
   }
-  /**
-   * THE BITCOIN ANCHOR binds the buyer's digest the same way the
-   * attestations bind their evidence hashes: through `attests`, so
-   * /api/verify answers for "this store certified THIS digest at THIS
-   * time" with no new endpoint. The OTS submission happens after the
-   * mint, in instant goods, where a calendar outage can fail soft
-   * without costing the certificate.
-   */
-  if (item.id === "bitcoin_anchor" && input.anchorDigest) {
-    mintOptions.attests = input.anchorDigest.toLowerCase();
+  // Retain the proof and its identity before money moves. A calendar outage
+  // is an explicit failed submission that the existing sweep can finish.
+  let patronAnchor: PreparedPatronAnchor | undefined = retainedObservation?.patronAnchor;
+  if (item.id === "bitcoin_anchor" && !retainedObservation) {
+    patronAnchor = await preparePatronAnchor({ digest: input.anchorDigest ?? "", label: input.anchorLabel });
+    mintOptions.attests = patronAnchor.digest;
   }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
@@ -530,7 +527,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
-      walletStatement, reconciliation, passportRefresh, trustProfile,
+      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -546,6 +543,13 @@ export async function fulfillPurchase(
     reconciliation = prepared.reconciliation;
     passportRefresh = prepared.passportRefresh;
     trustProfile = prepared.trustProfile;
+    mandate = prepared.mandate;
+    patronAnchor = prepared.patronAnchor;
+    if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor)) {
+      const error = new Error("Original purchased record unavailable");
+      if (pending.observation.unavailable) await pending.observation.unavailable(error);
+      throw error;
+    }
     mintOptions.attests = prepared.attests;
   }
   /**
@@ -858,6 +862,7 @@ export async function fulfillPurchase(
     if (mandate) {
       goodsInput.mandate = mandate;
     }
+    if (patronAnchor) goodsInput.patronAnchor = patronAnchor;
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;
       if (input.anchorLabel) {

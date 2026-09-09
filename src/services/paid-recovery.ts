@@ -1,3 +1,4 @@
+import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-anchors";
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
@@ -96,6 +97,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly patronAnchor = new PatronAnchorStore(this.ctx.storage, this.env);
+  publishPatronAnchor(record: PatronAnchorRecord) { return this.patronAnchor.publish(record); }
+
   private readonly hosted = new HostedObservationStore(this.ctx.storage, this.env);
 
   readHostedGrant(purchase: HostedPurchase) { return this.hosted.read(purchase); }

@@ -122,11 +122,12 @@ export async function storeMandate(
   env: Env,
   mandate: SignedMandate,
   certId: string,
+  purchasedAt?: string,
 ): Promise<MandateRecord> {
   const record: MandateRecord = {
     mandate,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: purchasedAt ?? mandate.recorded_at,
   };
   await kvPut(env.PATRONS, 
     KV_KEYS.mandate(mandate.mandate_id),

@@ -57,28 +57,70 @@ const PATRON_ANCHOR_SCAN_CAP = 1000;
 /** Sweep work per pass, same discipline as the key chain's cron. */
 const MAX_SWEEP_WORK = 10;
 
+export type PreparedPatronAnchor = Omit<PatronAnchorRecord, "cert_id">;
+
+export async function preparePatronAnchor(
+  input: { digest: string; label?: string },
+  options: SubmitOptions = {},
+): Promise<PreparedPatronAnchor> {
+  return {
+    anchor_id: `banchor_${newEntryId()}`,
+    digest: input.digest.toLowerCase(),
+    ...(input.label ? { label: input.label } : {}),
+    created_at: (options.now ?? new Date()).toISOString(),
+    ots: await submitDigestToOts(input.digest.toLowerCase(), options),
+  };
+}
+
+export async function publishPatronAnchor(env: Env, record: PatronAnchorRecord): Promise<PatronAnchorRecord> {
+  if (!env.PAID_RECOVERIES) throw new Error("Patron anchor coordinator unavailable");
+  const stub = env.PAID_RECOVERIES.get(env.PAID_RECOVERIES.idFromName(`patron-anchor:${record.anchor_id}`));
+  return stub.publishPatronAnchor(record);
+}
+
 export async function createPatronAnchor(
   env: Env,
   input: { digest: string; label?: string; certId: string },
   options: SubmitOptions = {},
 ): Promise<PatronAnchorRecord> {
-  const record: PatronAnchorRecord = {
-    anchor_id: `banchor_${newEntryId()}`,
-    digest: input.digest.toLowerCase(),
-    ...(input.label ? { label: input.label } : {}),
-    cert_id: input.certId,
-    created_at: (options.now ?? new Date()).toISOString(),
-    // Submitted inline so the ordinary buyer leaves with a pending
-    // proof in hand; a calendar outage records "failed" and the sweep
-    // retries — the purchase is complete either way, and the record
-    // says exactly which state it is in.
-    ots: await submitDigestToOts(input.digest.toLowerCase(), options),
-  };
-  await kvPut(env.PATRONS, 
-    KV_KEYS.patronAnchor(record.anchor_id),
-    JSON.stringify(record),
-  );
-  return record;
+  const prepared = await preparePatronAnchor(input, options);
+  return publishPatronAnchor(env, { ...prepared, cert_id: input.certId });
+}
+
+// Every writer, including the upgrade sweep, uses this per-anchor journal.
+// Keep the first proof at each stage: a stale purchase may restore a missing
+// public projection, but can never replace a later Bitcoin-confirmed proof.
+function advanceAnchor(current: PatronAnchorRecord, proposal: PatronAnchorRecord): PatronAnchorRecord {
+  if (current.anchor_id !== proposal.anchor_id || current.digest !== proposal.digest ||
+      current.label !== proposal.label || current.cert_id !== proposal.cert_id || current.created_at !== proposal.created_at) {
+    throw new Error("Patron anchor purchase mismatch");
+  }
+  const rank = { failed: 0, pending: 1, complete: 2 };
+  return rank[proposal.ots.status] > rank[current.ots.status] ? proposal : current;
+}
+
+export class PatronAnchorStore {
+  private publication: Promise<unknown> = Promise.resolve();
+  constructor(private readonly storage: DurableObjectStorage, private readonly env: Env) {}
+
+  async publish(proposal: PatronAnchorRecord): Promise<PatronAnchorRecord> {
+    const work = this.publication.catch(() => undefined).then(async () => {
+      // Seed pre-journal records from KV. Subsequent recovery always has the
+      // durable latest proof even if this eventually consistent view is lost.
+      const projection = await getPatronAnchor(this.env, proposal.anchor_id);
+      const selected = await this.storage.transaction(async txn => {
+        const saved = await txn.get<PatronAnchorRecord>("patron-anchor");
+        const current = saved && projection ? advanceAnchor(saved, projection) : saved ?? projection;
+        const record = current ? advanceAnchor(current, proposal) : proposal;
+        await txn.put("patron-anchor", record);
+        return record;
+      });
+      await kvPut(this.env.PATRONS, KV_KEYS.patronAnchor(selected.anchor_id), JSON.stringify(selected));
+      return selected;
+    });
+    this.publication = work;
+    return work;
+  }
 }
 
 export async function getPatronAnchor(
@@ -129,10 +171,7 @@ export async function sweepPatronAnchors(
       const ots = await submitDigestToOts(record.digest, options);
       if (ots.status !== "failed") {
         sweep.resubmitted += 1;
-        await kvPut(env.PATRONS, 
-          KV_KEYS.patronAnchor(record.anchor_id),
-          JSON.stringify({ ...record, ots }),
-        );
+        await publishPatronAnchor(env, { ...record, ots });
       }
     } else if (record.ots.status === "pending") {
       work += 1;
@@ -143,10 +182,7 @@ export async function sweepPatronAnchors(
       );
       if (upgraded) {
         sweep.upgraded += 1;
-        await kvPut(env.PATRONS, 
-          KV_KEYS.patronAnchor(record.anchor_id),
-          JSON.stringify({ ...record, ots: upgraded }),
-        );
+        await publishPatronAnchor(env, { ...record, ots: upgraded });
       } else {
         sweep.still_pending += 1;
       }

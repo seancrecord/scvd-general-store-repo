@@ -4,14 +4,14 @@ import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { certificateSignatureForm } from "@/lib/signing";
 import type { Certificate, Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature } from "./helpers/payment";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function buy(
