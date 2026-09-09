@@ -183,6 +183,13 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /api/trade/:partner/statement",
   "GET /api/trade/:partner/claim",
   "POST /api/trade/:partner/:item_id",
+  /**
+   * The door card (2026-09-09): a marketplace's liveness probe hits
+   * it on a schedule, so counting it would fill the porch with a
+   * robot's heartbeat and call it footfall. What the counter can
+   * prove about this door is on its own ledger, not the porch's.
+   */
+  "GET /api/trade/:partner/:item_id",
 ];
 
 /** Hono reports paths with parameters; the porch maps concrete paths. */
