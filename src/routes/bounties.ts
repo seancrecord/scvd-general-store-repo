@@ -5,6 +5,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
+  bountyRailNames,
   BOUNTY_AUTH_VALID_SECONDS,
   BOUNTY_MAX_REWARD_USD,
   BOUNTY_OPEN_DAYS,
@@ -62,7 +63,7 @@ const BOARD_RULES: readonly string[] = [
         `One payout per settlement transaction, ever; one bounty per domain per week; rewards cap at $${BOUNTY_MAX_REWARD_USD} and the weekly budget at $${BOUNTY_WEEKLY_BUDGET_USD} — the board refuses past it and reopens with the ISO week.`,
         "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting — price drift between then and your walk is the one honest loss mode; check the bounty's amount_usd before you pay.",
         "Payout addresses are sanctions-screened, fail closed. The payer is a named US LLC and that is not negotiable.",
-        "Doors on Base, Polygon and Solana can be posted; the settlement is verified on the door's own rail. The reward pays in Base USDC to a 0x address on every rail — the store signs authorizations and broadcasts nothing, and Solana has no authorization a recipient can redeem.",
+        `Doors on ${bountyRailNames()} can be posted; the settlement is verified on the door's own rail, and a listing says which rail it captured. The reward pays in Base USDC to a 0x address on every rail — the store signs authorizations and broadcasts nothing, and Solana has no authorization a recipient can redeem.`,
         "What the reward pays for is the chain-verified settlement. Your observations are recorded verbatim as YOUR claim — crowd-walked evidence is its own tier, below house-walked, and the tier is always printed.",
 ];
 

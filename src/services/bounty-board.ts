@@ -1,6 +1,7 @@
 import {
   BASE_EVM,
   BASE_USDC,
+  EVM_CHAINS,
   evmChainOf,
   authorizationUsed,
   getBlockNumber,
@@ -19,6 +20,15 @@ import {
   SOLANA_USDC_MINT,
   solanaTransactionFacts,
 } from "@/lib/solana-rpc";
+import {
+  ALGORAND_ADDRESS,
+  ALGORAND_CHAIN,
+  algorandRound,
+  algorandTransferFacts,
+  algorandUsdcAsset,
+  isAlgorandNetwork,
+  isAlgorandTxId,
+} from "@/lib/algorand-rpc";
 import { SOLANA_FINALITY_SLOTS } from "@/services/attestation";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -64,6 +74,42 @@ export const BOUNTY_WEEKLY_BUDGET_USD = 10;
 export const BOUNTY_AUTH_VALID_SECONDS = 7 * 24 * 3600;
 /** Verbatim observation cap — a claim, not a filesystem. */
 export const BOUNTY_OBSERVATION_CAP = 4000;
+/**
+ * THE RAILS THIS BOARD CAN POST, DERIVED (2026-09-09).
+ *
+ * BOUNTY_BOARD.md and the board's own rules said "Base, Polygon and
+ * Solana" from the day the third rail shipped. The claim verifier had
+ * meanwhile grown to read every chain in EVM_CHAINS — seven of them —
+ * because evmChainOf resolves the whole list and the claim door reads
+ * the bounty's own captured chain. So the room understated the code by
+ * four rails, in copy on a page that sells accuracy.
+ *
+ * Deriving the list from the verifier's own table is the fix that
+ * cannot go stale: add a chain to EVM_CHAINS and the board says so the
+ * same day, in the rules, in the JSON, and in the posting refusal.
+ *
+ * WHAT THIS LIST IS NOT is a recommendation. A rail whose gas costs a
+ * walker more than the reward pays is a rail where a bounty takes
+ * their money — Ethereum mainnet at a $0.25 ceiling is exactly that.
+ * The verifier reads it; the keeper should not post it. That judgement
+ * lives in BOUNTY_BOARD.md beside the posting press, not in a filter
+ * here, because gas is not a fact this store can read at posting time
+ * and a rule it cannot check is a rule it should not pretend to.
+ */
+export function bountyRails(): Array<{ caip2: string; label: string }> {
+  return [
+    ...EVM_CHAINS.map((chain) => ({ caip2: chain.caip2, label: chain.label })),
+    { caip2: SOLANA_CHAIN, label: "Solana" },
+    { caip2: ALGORAND_CHAIN, label: "Algorand" },
+  ];
+}
+
+/** The rails, named, for copy that must not drift from the verifier. */
+export function bountyRailNames(): string {
+  const rails = bountyRails().map((rail) => rail.label);
+  return `${rails.slice(0, -1).join(", ")} and ${rails[rails.length - 1]}`;
+}
+
 /** Bounty listings live this long by default, then expire unclaimed. */
 export const BOUNTY_OPEN_DAYS = 7;
 
@@ -169,6 +215,14 @@ export interface BountyRecord {
    * two clocks, each named. Absent on every EVM bounty.
    */
   opened_slot?: number;
+  /**
+   * THE FIFTH RAIL'S CLOCK (2026-09-09). Algorand counts rounds, and a
+   * round is FINAL when it is confirmed — no fork to wait out, so
+   * unlike the Solana path there is no finality window to sit through,
+   * only a height a settlement must postdate. Absent on every other
+   * rail.
+   */
+  opened_round?: number;
   amount_atomic: string;
   amount_usd: number;
   reward_usd: number;
@@ -230,6 +284,8 @@ export interface BountyRecord {
      * corpus row prints it as `slot`, never as `block`.
      */
     settled_slot?: number;
+    /** The Algorand round a settlement landed in. Present only on that rail. */
+    settled_round?: number;
     /**
      * OUR OWN KNOCK AT THE MOMENT OF THE CLAIM (2026-09-04, the keeper:
      * "what if they type nonsense?"). The walker's observation is a
@@ -333,6 +389,21 @@ export async function openBounty(
     days?: number;
     /** What this store wants observed at this door. Asks, not conditions. */
     asks?: readonly string[];
+    /**
+     * CAPTURE THIS RAIL, or refuse (2026-09-09). Without it the picker
+     * takes Base whenever a door offers Base, which is every
+     * multi-rail door in the census — 136 quote Polygon, 130 Arbitrum,
+     * 81 World, and not one of them quotes those EXCLUSIVELY. So the
+     * board could read seven chains and was structurally incapable of
+     * ever posting on six of them.
+     *
+     * A CAIP-2 or the plain word ("arbitrum", "eip155:42161",
+     * "solana"). Named and not offered is a REFUSAL, never a quiet
+     * fallback to Base: a keeper asking for Arbitrum evidence and
+     * silently getting another Base row would be buying the wrong
+     * thing and told it worked.
+     */
+    rail?: string;
     /** Refuse a claim from a wallet that already walked this domain. */
     distinctPayer?: boolean;
   },
@@ -396,7 +467,57 @@ export async function openBounty(
    * the settlement must land on. The REWARD is Base USDC on every rail:
    * money-out on Solana is SOLANA_PARITY.md #4 and stays shut.
    */
+  /*
+   * THE RAIL, IF ONE WAS NAMED. Resolved through the same vocabulary
+   * the claim door uses, so a rail this store cannot verify can never
+   * be captured — and the refusal names what the door DID offer, which
+   * is the thing the keeper needs to post it correctly next time.
+   */
+  let wanted: string | null = null;
+  if (input.rail) {
+    const asEvm = evmChainOf(input.rail);
+    const asked = input.rail.trim().toLowerCase();
+    wanted =
+      asEvm?.caip2 ??
+      (asked === "solana" || asked === SOLANA_CHAIN.toLowerCase()
+        ? SOLANA_CHAIN
+        : asked === "algorand" || isAlgorandNetwork(asked)
+          ? ALGORAND_CHAIN
+          : null);
+    if (!wanted) {
+      throw new BountyRefused(
+        `this store cannot verify a settlement on "${input.rail}" — the rails it reads are ${bountyRailNames()}`,
+      );
+    }
+    const offered = [
+      ...new Set(
+        accepts
+          .map((entry) => entry.network)
+          .filter((network): network is string => Boolean(network)),
+      ),
+    ];
+    const offersWanted = offered.some((network) =>
+      wanted === ALGORAND_CHAIN
+        ? isAlgorandNetwork(network)
+        : network.toLowerCase() === wanted!.toLowerCase(),
+    );
+    if (!offersWanted) {
+      throw new BountyRefused(
+        `this door quotes no ${input.rail} entry — it offers ${offered.join(", ") || "no network at all"}. Nothing is posted: a bounty captured on another rail is not the evidence that was asked for`,
+      );
+    }
+  }
+  const railWanted = (entry: AcceptEntry): boolean => {
+    if (wanted === null) return true;
+    // Algorand is spelled three ways in the wild (algorand-rpc.ts), so
+    // a rail asked for by name must match any of them or a door that
+    // offers it would read as a door that does not.
+    if (wanted === ALGORAND_CHAIN) return isAlgorandNetwork(entry.network);
+    return (entry.network ?? "").toLowerCase() === wanted.toLowerCase();
+  };
+
   const evmEntries = accepts
+    .filter(railWanted)
     .map((entry) => ({
       entry,
       chain: entry.network ? evmChainOf(entry.network) : null,
@@ -422,22 +543,59 @@ export async function openBounty(
   const solanaEntries = accepts
     .filter(
       (entry) =>
+        railWanted(entry) &&
         entry.network === SOLANA_CHAIN &&
         (entry.scheme ?? "exact") === "exact" &&
         Number.isFinite(amountUsd(entry)),
     )
     .sort((a, b) => amountUsd(a) - amountUsd(b));
+  /*
+   * THE FIFTH RAIL (2026-09-09): 78 ready doors in the W37 census
+   * quote Algorand, and not one of them quotes it exclusively — so it
+   * is captured only when it is asked for by name, or when a door
+   * offers nothing this store reads besides it. The asset is checked
+   * here when the door names one and on chain at every claim
+   * regardless, which is the check that actually decides.
+   */
+  const algorandEntries = accepts
+    .filter(
+      (entry) =>
+        railWanted(entry) &&
+        isAlgorandNetwork(entry.network) &&
+        (entry.scheme ?? "exact") === "exact" &&
+        Number.isFinite(amountUsd(entry)) &&
+        (!entry.asset ||
+          String(entry.asset).trim() === String(algorandUsdcAsset(env))),
+    )
+    .sort((a, b) => amountUsd(a) - amountUsd(b));
   const chosenPair = evmEntries[0];
   const chosenSolana = chosenPair ? undefined : solanaEntries[0];
-  const chosen = chosenPair?.entry ?? chosenSolana;
+  const chosenAlgorand =
+    chosenPair || chosenSolana ? undefined : algorandEntries[0];
+  /*
+   * A named rail that survived the filter above but produced no
+   * payable entry — wrong asset, a scheme we do not read, an
+   * unparseable amount — refuses here rather than falling through to
+   * whatever else the door offers.
+   */
+  if (wanted && !chosenPair && !chosenSolana && !chosenAlgorand) {
+    throw new BountyRefused(
+      `this door quotes ${input.rail} but no payable USDC entry on it that this store can verify — nothing is posted`,
+    );
+  }
+  const chosen = chosenPair?.entry ?? chosenSolana ?? chosenAlgorand;
   const bountyChain = chosenPair?.chain;
   const assetMatches = bountyChain
     ? isSameAddress(chosen?.asset ?? "", bountyChain.usdc)
-    : chosen?.asset === SOLANA_USDC_MINT;
-  const railCaip2 = bountyChain?.caip2 ?? SOLANA_CHAIN;
+    : chosenSolana
+      ? chosen?.asset === SOLANA_USDC_MINT
+      : // Algorand: the door may name the ASA or leave it out; either
+        // way the claim compares the on-chain asset id against ours.
+        Boolean(chosenAlgorand);
+  const railCaip2 = bountyChain?.caip2 ?? (chosenSolana ? SOLANA_CHAIN : ALGORAND_CHAIN);
   if (!chosen?.payTo || !assetMatches) {
     throw new BountyRefused(
-      "no payable USDC rail on Base, Polygon or Solana could be read from the door's 402 — the claim verifier would have nothing to verify against",
+      `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 — the claim verifier would have nothing to verify against`,
     );
   }
   /**
@@ -504,7 +662,11 @@ export async function openBounty(
     // scans Base from it); the settlement rail's height is kept beside
     // it when the two differ.
     opened_block: await getBlockNumber(env, bountyChain ?? BASE_EVM),
-    ...(bountyChain ? {} : { opened_slot: await getSlot(env) }),
+    ...(bountyChain
+      ? {}
+      : chosenSolana
+        ? { opened_slot: await getSlot(env) }
+        : { opened_round: await algorandRound(env) }),
     expires_at: new Date(
       now.getTime() + openDays * 24 * 3600 * 1000,
     ).toISOString(),
@@ -833,7 +995,19 @@ export async function claimBounty(
    * first and the shapes are read against ITS rail.
    */
   const solanaRail = familyOf(bounty.network ?? "eip155:8453") === "solana";
-  if (solanaRail) {
+  const algorandRail = familyOf(bounty.network ?? "eip155:8453") === "algorand";
+  if (algorandRail) {
+    if (!isAlgorandTxId(input.txHash)) {
+      throw new BountyRefused(
+        "tx_hash must be a 52-character base32 Algorand transaction id — this bounty's door settles on Algorand",
+      );
+    }
+    if (!ALGORAND_ADDRESS.test(input.payer)) {
+      throw new BountyRefused(
+        "payer must be a 58-character Algorand address — the account that paid the door",
+      );
+    }
+  } else if (solanaRail) {
     if (!isSolanaSignature(input.txHash)) {
       throw new BountyRefused(
         "tx_hash must be a base58 Solana transaction signature — this bounty's door settles on Solana",
@@ -888,6 +1062,41 @@ export async function claimBounty(
   }
 
   /*
+   * ONE CLAIM AT A TIME ON THIS LISTING (2026-09-09), and the guard
+   * the tx key could never be. Two walkers who each really paid this
+   * door, claiming in the same second with two DIFFERENT settlements,
+   * both passed every check above and both got signed a reward — one
+   * listing, two payouts, budget counted once. The claim door named
+   * that hole the day it shipped and left it open, because KV has no
+   * compare-and-swap and a second KV key would have inherited the same
+   * weakness.
+   *
+   * A Durable Object decides it in one indivisible step. Held for the
+   * length of one claim's work and released on every exit; a
+   * deployment without the binding keeps exactly the old behaviour,
+   * which is stated in bounty-claim-locks.ts and is the honest trade
+   * for an instrument that must not refuse a walker who really walked.
+   */
+  const { bountyLock, BOUNTY_LOCK_SECONDS } = await import(
+    "@/services/bounty-claim-locks"
+  );
+  const lock = bountyLock(env);
+  const lockId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
+  if (lock) {
+    const taken = await lock
+      .take(input.bountyId, lockId, BOUNTY_LOCK_SECONDS)
+      .catch(() => "taken" as const);
+    if (taken === "held") {
+      throw new BountyRefused(
+        "another claim on this bounty is being verified right now — one listing pays once, so this one is refused rather than risking a second payout. Nothing is spent; if that claim fails, try again in a minute",
+      );
+    }
+  }
+  const releaseLock = async (): Promise<void> => {
+    if (lock) await lock.release(input.bountyId, lockId).catch(() => undefined);
+  };
+
+  /*
    * ONE PAYOUT PER TRANSACTION, EVER — AND THE CLAIM HAS TO LAND
    * BEFORE THE SIGNATURE, NOT AFTER IT.
    *
@@ -930,10 +1139,21 @@ export async function claimBounty(
    * are case-sensitive and are keyed as written, behind a `sol:`
    * prefix so the family is legible in the KV listing.
    */
-  const txId = solanaRail ? input.txHash : input.txHash.toLowerCase();
-  const txKey = KV_KEYS.bountyTx(solanaRail ? `sol:${txId}` : txId);
+  /*
+   * Base32 and base58 are both case-sensitive, so an Algorand id is
+   * keyed as written like a Solana signature is, behind its own prefix
+   * so the three families stay legible in a KV listing.
+   */
+  const txId =
+    solanaRail || algorandRail ? input.txHash : input.txHash.toLowerCase();
+  const txKey = KV_KEYS.bountyTx(
+    solanaRail ? `sol:${txId}` : algorandRail ? `algo:${txId}` : txId,
+  );
   const claimId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
   if (await kvGet(env.COUNTERS, txKey)) {
+    // Refused before the try block, so the hold is given back here or
+    // it would sit until its lease lapsed on a claim nobody is making.
+    await releaseLock();
     throw new BountyRefused(
       "that transaction has already been claimed — one payout per settlement, ever",
     );
@@ -962,6 +1182,7 @@ export async function claimBounty(
    */
   let reserved: { week: string; amount: number } | null = null;
   const releaseClaim = async () => {
+    await releaseLock();
     if ((await kvGet(env.COUNTERS, txKey)) === claimId) {
       await env.COUNTERS.delete(txKey);
     }
@@ -1016,8 +1237,49 @@ export async function claimBounty(
     // captured at open, defaulting Base for bounties older than the
     // third rail's parity build.
     let railLabel: string;
-    let settledHeight: { settled_block: number } | { settled_slot: number };
-    if (solanaRail) {
+    let settledHeight:
+      | { settled_block: number }
+      | { settled_slot: number }
+      | { settled_round: number };
+    if (algorandRail) {
+      /*
+       * ALGORAND HAS NO FINALITY WINDOW TO WAIT OUT, and that is the
+       * one real difference from the Solana path rather than an
+       * omission: a confirmed round is final on this chain, so a
+       * settlement the indexer reports at a round is settled. What is
+       * checked is what the transfer MOVED — the store's own asset id,
+       * the exact captured amount, from the claimed payer to the
+       * captured payTo, in a round after the bounty existed.
+       */
+      const facts = await algorandTransferFacts(env, input.txHash);
+      if (!facts) {
+        throw new BountyRefused(
+          `Algorand shows no asset transfer under that id — nothing verified, nothing paid. The bounty's captured rail is ${ALGORAND_CHAIN}; a settlement on another chain cannot claim it`,
+        );
+      }
+      if (facts.round < (bounty.opened_round ?? 0)) {
+        throw new BountyRefused(
+          "that settlement predates the bounty — the board pays for walks it commissioned, not history",
+        );
+      }
+      const expectedAsset = algorandUsdcAsset(env);
+      if (facts.asset !== expectedAsset) {
+        throw new BountyRefused(
+          `that transaction moved asset ${facts.asset}, not the USDC asset this store prices in (${expectedAsset}) — nothing is paid for a transfer of something else`,
+        );
+      }
+      if (
+        facts.sender !== input.payer ||
+        facts.receiver !== bounty.pay_to ||
+        facts.amount !== BigInt(bounty.amount_atomic)
+      ) {
+        throw new BountyRefused(
+          `that transaction carries no transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
+        );
+      }
+      railLabel = "Algorand";
+      settledHeight = { settled_round: facts.round };
+    } else if (solanaRail) {
       /*
        * SOLANA HAS NO RECEIPT LOGS: the settled outcome is the
        * pre/post token balances, read per owner (the same reader the
@@ -1205,7 +1467,8 @@ export async function claimBounty(
       claim: {
         // Base58 is case-sensitive: a Solana id is kept as written.
         tx_hash: txId,
-        payer: solanaRail ? input.payer : input.payer.toLowerCase(),
+        payer:
+          solanaRail || algorandRail ? input.payer : input.payer.toLowerCase(),
         payout_to: input.payoutTo.toLowerCase(),
         claimed_at: now.toISOString(),
         ...settledHeight,
@@ -1223,11 +1486,13 @@ export async function claimBounty(
     // txKey already holds this claim and the budget is already reserved;
     // both were taken before the signature existed.
     await saveBounty(env, paid);
+    // The listing is spent now, so the hold has nothing left to guard.
+    await releaseLock();
 
     return {
       bounty_id: bounty.bounty_id,
       reward_usd: bounty.reward_usd,
-      what_was_verified: `The chain's part: transaction ${txId} succeeded on ${railLabel} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a ${solanaRail ? "slot" : "block"} after the bounty existed, never claimed before. That is what the reward pays for.`,
+      what_was_verified: `The chain's part: transaction ${txId} succeeded on ${railLabel} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a ${algorandRail ? "round" : solanaRail ? "slot" : "block"} after the bounty existed, never claimed before. That is what the reward pays for.`,
       what_was_not:
         "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
       payout: {
@@ -1281,10 +1546,25 @@ export type PayoutRedemption =
 /** Calls in flight at once — bounded, the same courtesy the ward round keeps. */
 const REDEMPTION_BATCH = 5;
 
+/**
+ * HOW MANY PAID BOUNTIES ONE READING COVERS (raised 2026-09-09).
+ *
+ * The cap was 25 when each reading was an eth_getLogs scan over a
+ * growing block range — expensive, and the reason a bound existed at
+ * all. The reading is one eth_call against the token's own state now,
+ * so the cost is linear and small, and 25 had become the wrong kind
+ * of bound: the board passed 30 paid bounties on 2026-09-09 and the
+ * five oldest started reading "redemption not checked" on the desk.
+ *
+ * That is not cosmetic. An unknown reading counts as STILL OWED in
+ * the wallet cover (livePayouts keeps it, the cautious direction), so
+ * a cap quietly reached makes the store report a liability it has
+ * already discharged — money it says it owes and does not.
+ */
 export async function payoutRedemptions(
   env: Env,
   bounties: readonly BountyRecord[],
-  cap = 25,
+  cap = 250,
 ): Promise<Record<string, PayoutRedemption>> {
   const out: Record<string, PayoutRedemption> = {};
   const paid = bounties

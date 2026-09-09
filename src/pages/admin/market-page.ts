@@ -6,6 +6,7 @@ import {
   type MarketAggregates,
 } from "@/services/market";
 import type { bountyBoard } from "@/services/bounty-board";
+import { bountyRails } from "@/services/bounty-board";
 import {
   BOUNTY_BATCH_CAP,
   BOUNTY_BATCH_DEFAULT_REWARD,
@@ -31,6 +32,12 @@ type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
  * ask it again next week.
  */
 function candidatesHtml(candidates: readonly BountyCandidate[]): string {
+  const railOptions = bountyRails()
+    .map(
+      (rail) =>
+        `<option value="${escapeHtml(rail.caip2)}">${escapeHtml(rail.label)} — ${escapeHtml(rail.caip2)}</option>`,
+    )
+    .join("\n");
   if (candidates.length === 0) {
     return `<h3>Post a round of bounties</h3>
     <p class="menu-desc">No ready doors on the latest round to offer — the list is built from the round's own rows, never from anything a seller nominated.</p>`;
@@ -87,6 +94,15 @@ function candidatesHtml(candidates: readonly BountyCandidate[]): string {
       <label>What we want observed at these doors (one a line, shown on every listing and at the claim door)<br>
         <textarea name="asks" rows="3" cols="60" placeholder="Did the paid response carry a PAYMENT-RESPONSE receipt?&#10;What did the goods actually contain — did they match what the door advertises?&#10;Send report.body_sha256 so a second walker can be held against you."></textarea>
       </label>
+    </p>
+    <p>
+      <label>Capture which rail (optional)<br>
+        <select name="rail">
+          <option value="">whatever the door offers, Base first</option>
+          ${railOptions}
+        </select>
+      </label>
+      <small class="menu-meta">Named and not offered is a refusal, never a quiet Base row: a door that quotes Base and Arbitrum is captured as Base unless you say otherwise, which is why no bounty has ever been posted on a rail other than Base or Solana.</small>
     </p>
     <p>
       <label><input type="checkbox" name="distinct_payer" value="1"> <strong>Second walk</strong> — refuse a claim from a wallet already paid for walking this door. The only way the crowd stops being one wallet.</label>

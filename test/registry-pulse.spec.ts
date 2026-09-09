@@ -165,3 +165,91 @@ describe("the public room and the keeper's press", () => {
     expect(press.status).toBe(404);
   });
 });
+
+/**
+ * THE WEEK NOBODY PRESSED (2026-09-09, the keeper: "the registry
+ * posted w35 to the site but then i go in and only see w37 available
+ * for publish… now we have a gap. whys that not updated automatically
+ * … i guess it backfills").
+ *
+ * It did not. The press built from latestWardRound and nothing else,
+ * so the next Sunday overwrote the only round it could reach and the
+ * missed week became a permanent hole in a public tally — made by
+ * nobody pressing a button. The corpus had frozen that exact round,
+ * signed, the whole time.
+ */
+describe("a missed week is filled from the corpus, not lost", () => {
+  const auth = {
+    Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+  };
+
+  async function seedCorpusWeek(week: string, at: string, sequence = 1) {
+    await testEnv.COUNTERS.put(
+      `${KV_KEYS.corpusPrefix}${String(sequence).padStart(6, "0")}`,
+      JSON.stringify({
+        snapshot: {
+          version: 1,
+          sequence,
+          taken_at: at,
+          previous_digest: null,
+          source: "ward_round",
+          week,
+          round: { ...round(week, [host("a.example", "ready")]), at },
+        },
+        digest: "d".repeat(64),
+        signature: "s".repeat(128),
+        public_key: "p".repeat(64),
+      }),
+    );
+  }
+
+  it("publishes the frozen round, dated when it was walked", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.registryPulse);
+    await seedCorpusWeek("2026-W36", "2026-08-30T11:00:00.000Z");
+    const { publishRegistryWeekFromCorpus, readRegistryPulse, unpublishedCorpusWeeks } =
+      await import("@/services/registry-pulse");
+
+    expect(await unpublishedCorpusWeeks(testEnv)).toContain("2026-W36");
+    const result = await publishRegistryWeekFromCorpus(testEnv, "2026-W36");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      // Walked then, rescued now: the row says both, and neither is a guess.
+      expect(result.entry.week).toBe("2026-W36");
+      expect(result.entry.observed_at).toBe("2026-08-30T11:00:00.000Z");
+      expect(result.entry.published_at > "2026-09-01").toBe(true);
+    }
+    expect((await readRegistryPulse(testEnv)).weeks.map((w) => w.week)).toEqual([
+      "2026-W36",
+    ]);
+    // Filled, so it is no longer outstanding.
+    expect(await unpublishedCorpusWeeks(testEnv)).not.toContain("2026-W36");
+    await testEnv.COUNTERS.delete(`${KV_KEYS.corpusPrefix}000001`);
+    await testEnv.COUNTERS.delete(KV_KEYS.registryPulse);
+  });
+
+  it("refuses a week the corpus never froze, and names what it holds", async () => {
+    await seedCorpusWeek("2026-W36", "2026-08-30T11:00:00.000Z");
+    const { publishRegistryWeekFromCorpus } = await import("@/services/registry-pulse");
+    const result = await publishRegistryWeekFromCorpus(testEnv, "2026-W20");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.refusal).toContain("2026-W36");
+    await testEnv.COUNTERS.delete(`${KV_KEYS.corpusPrefix}000001`);
+  });
+
+  it("is behind the gate, and takes an ISO week or nothing", async () => {
+    expect(
+      (
+        await SELF.fetch(`${BASE}/admin/market/publish-registry-week`, {
+          method: "POST",
+          headers: { "CF-Connecting-IP": "192.0.2.77" },
+        })
+      ).status,
+    ).toBe(401);
+    const bad = await SELF.fetch(`${BASE}/admin/market/publish-registry-week`, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({ week: "last tuesday" }),
+    });
+    expect(bad.status).toBe(400);
+  });
+});

@@ -120,14 +120,68 @@ describe("the round says what ran and what is owed", () => {
       entry.what.includes("registry week"),
     );
     expect(press, "no press was raised for the unpublished week").toBeTruthy();
-    expect(press?.why).toContain("2026-W36");
-    expect(press?.why).toContain("cannot be published");
-    expect(press?.urgent).toBe(true);
+    expect(press?.why).toContain("2026-W35");
 
     const registry = reading.rows.find((row) => row.name.includes("registry"));
     expect(registry?.detail).toContain("2026-W35");
     expect(registry?.detail).toContain("2026-W37");
     expect(registry?.state).toBe("due");
+  });
+
+
+  /**
+   * THE GAP IS FILLABLE NOW (2026-09-09), and this page must say so.
+   * It used to tell the keeper a missed week "cannot be published any
+   * more" — true of the old press, false the day the backfill read the
+   * corpus, and exactly the kind of stale impossibility a page like
+   * this exists to prevent elsewhere.
+   */
+  it("names the weeks the corpus can still publish, and how", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(round("2026-W37", "2026-09-06T11:00:00.000Z")),
+    );
+    await testEnv.COUNTERS.put(
+      KV_KEYS.registryPulse,
+      JSON.stringify({
+        version: 1,
+        weeks: [
+          buildRegistryWeek(
+            round("2026-W35", "2026-08-23T11:00:00.000Z"),
+            "2026-08-23T12:00:00.000Z",
+          ),
+        ],
+      }),
+    );
+    // The corpus froze W36 on the Sunday it ran; nobody pressed publish.
+    await testEnv.COUNTERS.put(
+      `${KV_KEYS.corpusPrefix}000001`,
+      JSON.stringify({
+        snapshot: {
+          version: 1,
+          sequence: 1,
+          taken_at: "2026-08-30T11:00:00.000Z",
+          previous_digest: null,
+          source: "ward_round",
+          week: "2026-W36",
+          round: round("2026-W36", "2026-08-30T11:00:00.000Z"),
+        },
+        digest: "d".repeat(64),
+        signature: "s".repeat(128),
+        public_key: "p".repeat(64),
+      }),
+    );
+    const reading = await readKeepersRound(testEnv, NOW);
+    const backfill = reading.presses.find((entry) =>
+      entry.what.startsWith("Backfill"),
+    );
+    expect(backfill, "the fillable week was not named").toBeTruthy();
+    expect(backfill?.what).toContain("2026-W36");
+    expect(backfill?.why).toContain("publish-registry-week");
+    expect(backfill?.urgent).toBe(true);
+    // And nothing claims the week is beyond reach any more.
+    expect(JSON.stringify(reading.presses)).not.toContain("cannot be published");
+    await testEnv.COUNTERS.delete(`${KV_KEYS.corpusPrefix}000001`);
   });
 
   it("counts the weeks between two publishes, and stops at a year", () => {
