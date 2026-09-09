@@ -121,7 +121,7 @@ async function assertGood(p: Purchase, body: Obj, original?: Obj) {
       expect(await verifyMessageSignature(jcsCanonicalize(changed), String(proof.signature), String(proof.public_key))).toBe(false);
     }
   } else if (p.id === "graffiti_on_a_train") {
-    expect(saved).toMatchObject({ tag: p.text, cert_id: cert.cert_id, date: NOW.toISOString() });
+    expect(saved).toMatchObject({ tag: p.text, cert_id: cert.cert_id, date: NOW.toISOString(), paid_usdc: cert.paid_usdc });
     expect(cert.tag).toBe(p.text);
   } else if (p.id === "coffees_for_closers") {
     expect(saved).toMatchObject({ win: p.text, at: NOW.toISOString() });
