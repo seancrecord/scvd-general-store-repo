@@ -496,11 +496,11 @@ export async function fulfillPurchase(
    * THE CASE FILE assembles first and mints second, like every
    * observation above it, and is idempotent by the complete question inside a
    * day: the same inputs inside the window bind the same case to a
-   * new certificate rather than assembling and charging twice.
+   * new certificate. A retry retains the original assembly and reuse decision.
    */
-  let caseFile: SignedCaseFile | undefined;
-  let caseFileReused = false;
-  if (item.id === "the_case_file") {
+  let caseFile: SignedCaseFile | undefined = retainedObservation?.caseFile;
+  let caseFileReused = retainedObservation?.caseFileReused ?? false;
+  if (item.id === "the_case_file" && !retainedObservation) {
     const ask = input.caseFileInput ?? { txHash: "" };
     const existing = await existingCaseFor(env, ask);
     if (existing) {
@@ -527,7 +527,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
-      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor,
+      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -545,7 +545,10 @@ export async function fulfillPurchase(
     trustProfile = prepared.trustProfile;
     mandate = prepared.mandate;
     patronAnchor = prepared.patronAnchor;
-    if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor)) {
+    caseFile = prepared.caseFile;
+    caseFileReused = prepared.caseFileReused ?? false;
+    if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor) ||
+      (item.id === "the_case_file" && !caseFile)) {
       const error = new Error("Original purchased record unavailable");
       if (pending.observation.unavailable) await pending.observation.unavailable(error);
       throw error;

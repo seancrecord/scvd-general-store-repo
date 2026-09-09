@@ -703,7 +703,7 @@ export async function deliverInstantGoods(
       if (!caseFile || !input.caseFileInput) {
         throw new Error("the_case_file reached goods with no assembly");
       }
-      await storeCaseFile(env, caseFile, input.certId ?? "", input.caseFileInput);
+      await storeCaseFile(env, caseFile, input.certId ?? "", input.caseFileInput, input.purchasedAt);
       return {
         deliverable: caseFileNote(caseFile),
         extras: {

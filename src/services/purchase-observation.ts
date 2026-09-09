@@ -1,3 +1,4 @@
+import type { SignedCaseFile } from "@/services/case-file";
 import type { SignedMandate } from "@/services/mandates";
 import type { PreparedPatronAnchor } from "@/services/patron-anchors";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
@@ -19,6 +20,8 @@ import { supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { SettlementDeclined } from "@/lib/payments";
 
 export interface PreparedObservation {
+  caseFile?: SignedCaseFile;
+  caseFileReused?: boolean;
   mandate?: SignedMandate;
   patronAnchor?: PreparedPatronAnchor;
   passportRefresh?: SignedPassportRefresh;

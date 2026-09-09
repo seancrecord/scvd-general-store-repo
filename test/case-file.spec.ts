@@ -22,7 +22,7 @@ import type { Env } from "@/types";
 import { isRecord } from "@/types";
 import clawhubBundle from "../registry/clawhub/SKILL.md?raw";
 import {
-  installFacilitatorMock,
+  installMultiPurchaseFacilitatorMock,
   type FacilitatorMockState,
 } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
@@ -191,7 +191,7 @@ async function buy(url: string): Promise<Record<string, unknown>> {
 }
 
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 beforeEach(async () => {

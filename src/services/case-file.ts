@@ -524,11 +524,12 @@ export async function storeCaseFile(
   signed: SignedCaseFile,
   certId: string,
   input: CaseFileInput,
+  purchasedAt?: string,
 ): Promise<CaseFileRecord> {
   const record: CaseFileRecord = {
     case: signed,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: purchasedAt ?? signed.assembled_at,
   };
   await kvPut(env.PATRONS, KV_KEYS.caseFile(signed.case_id), JSON.stringify(record));
   await kvPut(
