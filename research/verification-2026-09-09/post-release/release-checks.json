@@ -1,0 +1,278 @@
+{
+  "checked_at": "2026-09-09T14:32:12.937Z",
+  "denominator": 6,
+  "complete": 6,
+  "reads": [
+    {
+      "url": "https://scvd.store/corpus.json",
+      "read_at": "2026-09-09T14:32:05.510Z",
+      "status": 200,
+      "bytes": 11494185,
+      "sha256": "5fded2778ced21fca03ca1ab63ab5b77e653d5c8cc94780183fabc6a7a51cc9b"
+    },
+    {
+      "url": "https://scvd.store/corpus/1.json",
+      "read_at": "2026-09-09T14:32:08.375Z",
+      "status": 200,
+      "bytes": 15869,
+      "sha256": "0fe52d0bb18c66f003efb7cba219d7adb2694d7d97d663c9b5eaf9aee01955e1"
+    },
+    {
+      "url": "https://scvd.store/corpus/2.json",
+      "read_at": "2026-09-09T14:32:08.708Z",
+      "status": 200,
+      "bytes": 25741,
+      "sha256": "b4106372b04cbed1a3223ac6b0c0706bada29ede5ac550c451733c164ab38ff4"
+    },
+    {
+      "url": "https://scvd.store/corpus/3.json",
+      "read_at": "2026-09-09T14:32:08.944Z",
+      "status": 200,
+      "bytes": 17499,
+      "sha256": "9e9c32b014b6f025707e08f50a723b5adcfcc7828704f5851398f0c8212ba370"
+    },
+    {
+      "url": "https://scvd.store/corpus/4.json",
+      "read_at": "2026-09-09T14:32:09.194Z",
+      "status": 200,
+      "bytes": 332249,
+      "sha256": "1c038e05cb7ba4ac0b81da383654a63876b13d6677a433093f508590311eb80a"
+    },
+    {
+      "url": "https://scvd.store/corpus/5.json",
+      "read_at": "2026-09-09T14:32:09.451Z",
+      "status": 200,
+      "bytes": 6780303,
+      "sha256": "207960ae426487e43981b66d4e12f1c883974e2f17dbe18bdc516fd6b3a16f72"
+    },
+    {
+      "url": "https://scvd.store/corpus/6.json",
+      "read_at": "2026-09-09T14:32:10.200Z",
+      "status": 200,
+      "bytes": 11485079,
+      "sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0"
+    },
+    {
+      "url": "https://scvd.store/developers",
+      "read_at": "2026-09-09T14:32:11.346Z",
+      "status": 200,
+      "bytes": 41322,
+      "sha256": "d60d3b7a2cb542ffa83c0d403e7abfc4eb4e2fdaffdf8300ddab0d12c5212061"
+    },
+    {
+      "url": "https://scvd.store/feeds/corpus.xml",
+      "read_at": "2026-09-09T14:32:11.410Z",
+      "status": 200,
+      "bytes": 4352,
+      "sha256": "52f8827c973d3b3125aaf0625411ffe897d628b882cb7e4a13ffde3c6dc97349"
+    },
+    {
+      "url": "https://scvd.store/attestation",
+      "read_at": "2026-09-09T14:32:12.342Z",
+      "status": 200,
+      "bytes": 46215,
+      "sha256": "add42685551b4c1f080faf499efd6ab597882bdeed66d06fc917c09f2ef32dd4"
+    },
+    {
+      "url": "https://scvd.store/trust",
+      "read_at": "2026-09-09T14:32:12.744Z",
+      "status": 200,
+      "bytes": 34918,
+      "sha256": "391643ed4790ec8fc79bf9d5fbe79904dcfe368ca4f71cdf8868357435ffd472"
+    },
+    {
+      "url": "https://scvd.store/agents.md",
+      "read_at": "2026-09-09T14:32:12.895Z",
+      "status": 200,
+      "bytes": 16094,
+      "sha256": "34c1707dfd8646a75e5e8c300ca44c5b539fae269156d0c66b05bfc297f4da95"
+    }
+  ],
+  "corpus": [
+    {
+      "sequence": 1,
+      "digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 961727,
+        "block_hash": "00000000000000000000b79b7b22483afc3b9c8ba10860a468d7cfe2b12615ba",
+        "block_header_time": "2026-08-09T12:05:55+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:50.782Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:51.155Z"
+        }
+      ],
+      "proof_file": "corpus-1.ots"
+    },
+    {
+      "sequence": 2,
+      "digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 962725,
+        "block_hash": "0000000000000000000073ffaf662f4da69dad17c3820f9e2c7a374fea45b13b",
+        "block_header_time": "2026-08-16T11:12:57+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:51.357Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:51.505Z"
+        }
+      ],
+      "proof_file": "corpus-2.ots"
+    },
+    {
+      "sequence": 3,
+      "digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 963117,
+        "block_hash": "0000000000000000000066cea3bdf284ed12ef3eb6330ba83b0586386cf729d9",
+        "block_header_time": "2026-08-19T02:22:33+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:51.569Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:51.717Z"
+        }
+      ],
+      "proof_file": "corpus-3.ots"
+    },
+    {
+      "sequence": 4,
+      "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 963865,
+        "block_hash": "000000000000000000008b27710cffe945539f590f6e5417cc5cc709af5a43fd",
+        "block_header_time": "2026-08-24T14:26:12+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:51.788Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:52.485Z"
+        }
+      ],
+      "proof_file": "corpus-4.ots"
+    },
+    {
+      "sequence": 5,
+      "digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 965040,
+        "block_hash": "00000000000000000000c043a324e2af843d68ccfd827e99e24f4d4166746620",
+        "block_header_time": "2026-09-01T13:36:39+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:52.553Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:52.701Z"
+        }
+      ],
+      "proof_file": "corpus-5.ots"
+    },
+    {
+      "sequence": 6,
+      "digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "complete",
+      "status": "complete",
+      "proof": {
+        "payload_digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+        "proof_matches_header": true,
+        "header_proof_of_work_valid": true,
+        "block_height": 966091,
+        "block_hash": "000000000000000000020223844be93ec366f277920373d094658cd21417f1f3",
+        "block_header_time": "2026-09-08T15:22:49+00:00",
+        "local_chain_validated": false,
+        "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+      },
+      "header_sources": [
+        {
+          "source": "blockstream.info",
+          "read_at": "2026-09-09T12:25:52.788Z"
+        },
+        {
+          "source": "mempool.space",
+          "read_at": "2026-09-09T12:25:52.930Z"
+        }
+      ],
+      "proof_file": "corpus-6.ots"
+    }
+  ],
+  "checks": {
+    "attestation_no_stale_npm_pending": true,
+    "attestation_pq_scope": true,
+    "trust_no_blanket_anchor_claim": true,
+    "agent_timestamp_scope": true,
+    "developer_stable_verifier_link": true,
+    "developer_no_stale_npm_pending": true,
+    "feed_actual_status": true,
+    "feed_no_submission_as_anchored": true
+  },
+  "trust": "Post-deploy HTTPS reads. Signatures use previously captured issuer key. Bitcoin header/height selections from two outside sources were captured earlier today; no local consensus validation. Saved proofs verify against unchanged payloads in the earlier captures."
+}

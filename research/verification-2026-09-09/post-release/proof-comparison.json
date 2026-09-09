@@ -1,0 +1,32 @@
+[
+  {
+    "file": "corpus-1.ots",
+    "sha256": "576e3cc70cd939187c96633c6b3cc3883a7add995124206540dac094c49b11aa",
+    "matches_independently_checked_calendar_upgrade": true
+  },
+  {
+    "file": "corpus-2.ots",
+    "sha256": "87a7bd83216430cc6cd3b4c5370c49451e7bcedc99d1a8b03f4936060ed617c2",
+    "matches_independently_checked_calendar_upgrade": true
+  },
+  {
+    "file": "corpus-3.ots",
+    "sha256": "d1be363e2a9aa10598b1d00a048ed61334ad4d8bf3d5471b191f6d714f10361f",
+    "matches_independently_checked_calendar_upgrade": true
+  },
+  {
+    "file": "corpus-4.ots",
+    "sha256": "b3f2208c8b48fdf3c11a8451a05745a4d93d9167a2defa6fc3cbb8950d563d51",
+    "matches_independently_checked_calendar_upgrade": true
+  },
+  {
+    "file": "corpus-5.ots",
+    "sha256": "e6bda5e99aaf34b455a6c7fca7b236fa63bc873bb6ceb50e45bf9ff5bc4fd248",
+    "matches_independently_checked_calendar_upgrade": true
+  },
+  {
+    "file": "corpus-6.ots",
+    "sha256": "c2a5178e170f7f2b4d2eeae79aa0988809337ad5e6f1f13f0c95f18c2abeb8a5",
+    "matches_independently_checked_calendar_upgrade": true
+  }
+]

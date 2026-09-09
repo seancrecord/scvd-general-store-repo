@@ -19,12 +19,16 @@ unsampled payment-challenge checks passed. Those release actions are done.
 
 The keeper subsequently authorized the remaining sequence: independent
 Bitcoin verification, verifier publication, corpus coverage and directory
-attribution, with documentation updated throughout. Work continues on
-`codex/verification-followthrough`; ROADMAP VQ2 tracks it. The September 9
+attribution, with documentation updated throughout. PR #588 merged as
+`3fb532f5f3be3119109ba958c1b8cca3281850b6` at 13:55 UTC on September 9;
+both Workers deployed, and the live documentation and sampled / unsampled
+payment challenges passed. ROADMAP VQ2 records the completed release;
+VQ3 and VQ4 hold the remaining reader-bound and population-coverage work.
+The September 9
 read independently checked the receipt and all six listed corpus proofs
 against matching headers from two outside explorers. All six corpus proofs
 were available at their calendars while the store still served pending
-submissions; a missing hourly corpus upgrade pass is being repaired.
+submissions; the missing hourly corpus upgrade pass is now deployed.
 This is outside-header verification, not local Bitcoin consensus validation.
 The directory mismatch persists in the refreshed capture. No note was sent.
 Details and remaining limits are in the observation record below.
@@ -37,7 +41,17 @@ checkout, corrections and claims checks. Regression checks were observed
 failing without the relevant fixes. The documentation check retains its
 existing dated-document backlog. See
 `research/verification-2026-09-09/validation-summary.json`.
-Merge, deployment and production proof reads are still to follow.
+The merged main tree, including the separate PR #587 buyer-recovery
+changes, also passed typechecking and **604 files, 8,724 tests and one
+existing skip** (441.02 seconds). Scorecard initially hit GitHub GraphQL
+internal errors; its delayed retry passed without a code change.
+Merge, deployment and the first production delivery pass are complete.
+At 14:32 UTC all six listed records served completed proofs, each checked
+against the earlier matching outside Bitcoin headers. Signed bytes, digests
+and signatures were unchanged. The first read after the scheduled time
+was early and still pending; the re-read confirmed completion. Public
+responses, delivered proofs and comparison results are retained under
+`research/verification-2026-09-09/post-release/`.
 
 The keeper authorized release with “alright lets roll”. The branch was
 fast-forwarded to current main `21cff153a23fb5813ed8f2301c71d2dd210b7029`
@@ -83,7 +97,8 @@ not individually classified. No tests were disabled or softened.
 
 The original commit/merge/deploy actions are complete. Verifier 1.2.0
 was published September 9 with verified registry provenance; see
-DISTRIBUTION.md. The corpus upgrade repair is the new release in progress.
+DISTRIBUTION.md. The corpus upgrade repair shipped in PR #588 and its
+first production delivery pass was verified at 14:32 UTC.
 The directory note still
 needs an actual send decision. The PQ candidate
 has no independent audit and remains outside production. There is no new
