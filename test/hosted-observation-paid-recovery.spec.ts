@@ -190,3 +190,63 @@ for (const product of goods) for (const door of doors) {
   });
 }
 
+for (const product of goods) for (const door of doors) {
+  for (const point of ["grant-before", "grant-after", "publication-before", "publication-after"]) it(`${product.id} ${door}: ${point} never charges for unavailable storage`, async () => {
+    const p = await purchase(product.id, door, 0); fault = point;
+    const first = await p.send(); expect(first.refused).toBe(true); expect(hits).toBeGreaterThan(0);
+    expect(first.body).toMatchObject({ charged: false, settlement_attempted: false, code: "observation_storage_unavailable" });
+    expect(transfers).toBe(0);
+    vi.setSystemTime(new Date(NOW.getTime() + 60_000));
+    fault = ""; const retry = await p.send(); expect(retry.refused, JSON.stringify(retry.body)).toBe(false);
+    expect(transfers).toBe(1);
+    if (product.id === "trust_profile") expect(object(retry.body.profile).renewals).toBe(1);
+    await assertGood(retry.body, object(retry.body.observation), product, p.args.url);
+    if (point !== "grant-before") {
+      const record = object(retry.body[product.field]);
+      expect(record.observed_at ?? record.commissioned_at).toBe(NOW.toISOString());
+    }
+  });
+  it(`${product.id} ${door}: publication outage keeps paid recovery owed until storage returns`, async () => {
+    const p = await purchase(product.id, door, 0); fault = "certificate-before";
+    expect((await p.send()).body.charged).toBe(true); const original = structuredClone(observed!);
+    fault = "publication-before"; unavailable = true; const before = reads;
+    await sourceEnv.COUNTERS.delete(product.key(p.host));
+    expect(await runDurableObjectAlarm(p.stub)).toBe(true);
+    const owed = JSON.parse((await p.stub.existingPurchase())!) as PurchaseIntent;
+    expect(owed.state).toBe("settled"); expect(owed.delivery).toBeUndefined();
+    fault = ""; expect(await runDurableObjectAlarm(p.stub)).toBe(true);
+    const saved = JSON.parse((await p.stub.existingPurchase())!) as PurchaseIntent;
+    await assertGood(object(saved.delivery), original, product, p.args.url);
+    expect(await sourceEnv.COUNTERS.get(product.key(p.host), "json")).toEqual(product.id === "trust_profile" ? original : original.observation);
+    expect(reads).toBe(before); expect(transfers).toBe(1);
+  });
+  it(`${product.id} ${door}: simultaneous duplicates preserve one purchase`, async () => {
+    const p = await purchase(product.id, door, 0);
+    await Promise.all([p.send(), p.send()]);
+    const retry = await p.send(); expect(retry.refused, JSON.stringify(retry.body)).toBe(false);
+    expect(transfers).toBe(1);
+    if (product.id === "trust_profile") expect(object(retry.body.profile).renewals).toBe(1);
+    await assertGood(retry.body, object(retry.body.observation), product, p.args.url);
+    const changed = await p.send({ ...p.args, purpose: "different commission" });
+    expect(changed.refused).toBe(true); expect(transfers).toBe(1);
+  });
+}
+for (const door of doors) {
+  it(`trust_profile ${door}: concurrent distinct purchases each add exactly one term`, async () => {
+    const a = await purchase("trust_profile", door, 0), b = await purchase("trust_profile", door, 0, a.host);
+    const answers = await Promise.all([a.send(), b.send()]);
+    for (const answer of answers) expect(answer.refused, JSON.stringify(answer.body)).toBe(false);
+    const records = answers.map(answer => object(answer.body.profile)).sort((x, y) => Number(x.renewals) - Number(y.renewals));
+    expect(records.map(record => record.renewals)).toEqual([1, 2]);
+    expect(Date.parse(String(records[1]!.expires)) - Date.parse(String(records[0]!.expires))).toBe(Number(records[1]!.term_days) * 86400_000);
+    expect(object(await sourceEnv.COUNTERS.get(KV_KEYS.trustProfile(a.host), "json")).record).toEqual(records[1]);
+    expect(transfers).toBe(2);
+  });
+  it(`trust_profile ${door}: readiness disappearing after quote refuses a new settlement`, async () => {
+    const p = await purchase("trust_profile", door, 0);
+    await sourceEnv.COUNTERS.delete(`${KV_KEYS.corpusPrefix}000000001`);
+    const answer = await p.send(); expect(answer.refused).toBe(true);
+    expect(answer.body).toMatchObject({ code: "passport_refused", charged: false });
+    expect(transfers).toBe(0); expect(reads).toBe(0);
+  });
+}

@@ -203,6 +203,13 @@ export async function fulfillPurchase(
   input: FulfillmentInput,
   recovery?: { digest: string; path: string; purchasedAt?: string },
 ): Promise<Record<string, unknown>> {
+  const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
+    try { return await work(); }
+    catch (error) {
+      if (pending.observation?.unavailable) return pending.observation.unavailable(error);
+      throw error;
+    }
+  };
   let mintOptions: Parameters<typeof mintCertificate>[1] = {
     itemId: item.id,
   };
@@ -411,7 +418,7 @@ export async function fulfillPurchase(
    */
   let passportRefresh: SignedPassportRefresh | undefined = retainedObservation?.passportRefresh;
   if (item.id === "passport_refresh" && !retainedObservation) {
-    passportRefresh = await performPassportRefresh(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase);
+    passportRefresh = await retainHosted(() => performPassportRefresh(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase));
     mintOptions.attests = passportRefresh.evidence_hash;
   }
   /**
@@ -440,7 +447,7 @@ export async function fulfillPurchase(
   }
   let trustProfile: SignedTrustProfile | undefined = retainedObservation?.trustProfile;
   if (item.id === "trust_profile" && !retainedObservation) {
-    trustProfile = await performTrustProfile(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase);
+    trustProfile = await retainHosted(() => performTrustProfile(env, input.targetUrl ?? "", new Date(), pending.observation?.purchase));
     mintOptions.attests = trustProfile.evidence_hash;
   }
   let walletStatement: SignedWalletStatement | undefined = retainedObservation?.walletStatement;
@@ -559,8 +566,8 @@ export async function fulfillPurchase(
   }
   // A failed publication costs a new buyer nothing. A paid recovery republishes
   // the original commission without probing or extending its term again.
-  if (passportRefresh) await publishHostedObservation(env, { kind: "passport_refresh", report: passportRefresh });
-  if (trustProfile) await publishHostedObservation(env, { kind: "trust_profile", report: trustProfile });
+  if (passportRefresh) await retainHosted(() => publishHostedObservation(env, { kind: "passport_refresh", report: passportRefresh! }));
+  if (trustProfile) await retainHosted(() => publishHostedObservation(env, { kind: "trust_profile", report: trustProfile! }));
   const payment = await pending.settle();
   if (payment.payer) {
     mintOptions.payer = payment.payer;
