@@ -122,7 +122,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: SCORERS_PROPOSITION,
     for_money: SCORERS_FOR_MONEY,
     free_first: SCORERS_FREE_FIRST,
-    doors: [],
+    doors: ["/corpus/index.json"],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,
   },

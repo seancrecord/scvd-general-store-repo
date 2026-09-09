@@ -46,3 +46,12 @@ Versions are immutable once published. Minor versions add functions
 and never change an existing function's result; the result shapes are
 the store's own documents, which carry their own versions. The dated
 record is `CHANGELOG.md`.
+
+### Compact discovery
+
+The next Worker release adds `/corpus/index.json`, a paginated metadata
+projection. Follow its `next` URLs and preserve unreadable rows in your
+counts. It does not verify signatures or fetch R2 snapshot bodies. The
+existing `corpus()` function and `/corpus.json` shape stay unchanged.
+For bounded snapshot export and offline verification, use the source CLI
+instructions in [`verifier/README.md`](../verifier/README.md#large-corpus-snapshots-source-checkout-not-in-npm-120).

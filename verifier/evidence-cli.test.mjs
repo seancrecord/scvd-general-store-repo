@@ -41,3 +41,32 @@ test("export is bounded, preserves bytes and verifies after the origin disappear
     assert.equal((await run(["export", "https://user:password@example.test/a", "--out", join(dir, "bad")])).code, 2);
   } finally { server.close(); await rm(dir, { recursive: true, force: true }); }
 });
+
+test("corpus export above the default cap requires an explicit bounded allowance and detects tampering", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-corpus-test-"));
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const key = publicKey.export({ type: "spki", format: "der" }).subarray(-32).toString("hex");
+  const snapshot = { version: 1, sequence: 1, taken_at: "2026-09-09T00:00:00Z", previous_digest: null, source: "ward_round", week: "2026-W37", round: { hosts: [], evidence: "x".repeat(9 * 1024 * 1024) } };
+  const payload = JSON.stringify(snapshot);
+  const { createHash } = await import("node:crypto");
+  const doc = { snapshot, digest: createHash("sha256").update(payload).digest("hex"), signature: sign(null, Buffer.from(payload), privateKey).toString("hex"), public_key: key };
+  const server = createServer((req, res) => res.end(JSON.stringify(req.url.startsWith("/corpus/") ? doc : { public_key: key })));
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const url = `http://127.0.0.1:${server.address().port}/corpus/1.json`;
+  try {
+    const out = join(dir, "saved");
+    assert.equal((await run(["export", url, "--out", out])).code, 2);
+    const exported = await run(["export", url, "--out", out, "--max-bytes", String(32 * 1024 * 1024)]);
+    assert.equal(exported.code, 0, exported.stderr);
+    assert.equal(await readFile(join(out, "payload.json"), "utf8"), payload);
+    server.close();
+    const input = join(out, "bundle.json");
+    assert.equal((await run(["verify", input, "--public-key", key])).code, 2);
+    assert.equal((await run(["verify", input, "--public-key", key, "--max-bytes", String(32 * 1024 * 1024)])).code, 0);
+    for (const value of ["0", "Infinity", "1e8", "67108865"]) assert.equal((await run(["verify", input, "--public-key", key, "--max-bytes", value])).code, 2);
+    const bundle = JSON.parse(await readFile(input, "utf8"));
+    bundle.artifact.signed_payload += " ";
+    await writeFile(input, JSON.stringify(bundle));
+    assert.equal((await run(["verify", input, "--public-key", key, "--max-bytes", String(32 * 1024 * 1024)])).code, 1);
+  } finally { server.close(); await rm(dir, { recursive: true, force: true }); }
+});

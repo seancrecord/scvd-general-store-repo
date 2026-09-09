@@ -1875,7 +1875,11 @@ bytes and `/corpus/6.json` was 11,483,825 bytes. Both exceeded the earlier
 size. A passing small fixture therefore does not establish production
 readability. Keep the signed snapshot bytes; make the index compact and
 add a representative growth check. This remains on ROADMAP VQ3; increasing
-one research client's cap did not close it. Raw bytes and sizes are retained
+one research client's cap did not close it. September 9 follow-through now
+builds a separate compact paginated index and explicit bounded corpus export;
+all six saved snapshots verified with canonical bytes unchanged. Deployment
+and remaining population measurement are tracked in
+`docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Raw bytes and sizes are retained
 in `research/verification-2026-09-09/capture-manifest.json`.
 
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification

@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-09T18:37:44.997766+00:00",
+  "certificates_read": 262,
+  "statuses": {
+    "verified_against_matching_explorer_headers": 261,
+    "signature_verified_no_stored_timestamp": 1
+  },
+  "distinct_bitcoin_heights": 18,
+  "header_sources": [
+    "blockstream.info",
+    "mempool.space"
+  ],
+  "local_bitcoin_consensus_validated": false,
+  "limits": [
+    "Only captured records; storage may change during the census.",
+    "Proof path, digest, header hash and proof of work checked with the independent Python OTS library. Explorer agreement supplies height and chain-membership trust.",
+    "No factual-truth, exact issue-time, settlement or delivery claim."
+  ]
+}

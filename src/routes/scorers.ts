@@ -277,6 +277,7 @@ scorersRoutes.get("/scorers", (c) => {
       misuse: MISUSE_CLAUSE,
       named_integrations: integrations,
       license: "https://creativecommons.org/licenses/by/4.0/",
+      compact_index: `${base}/corpus/index.json`,
       the_record: `${base}/corpus.json`,
       the_dispute_artifacts: [`${base}/menu/the_case_file`, `${base}/menu/launch_check`, `${base}/menu/settlement_attestation`, `${base}/api/conformance/v1`],
     });
@@ -382,7 +383,7 @@ scorersRoutes.get("/scorers", (c) => {
             { "@type": "HowToStep", name: "Re-observe", text: "Run a fresh observation when a door has moved; differences are time, not error.", url: `${base}/corrections` },
           ],
         })}
-        <p class="menu-meta">The record: <a href="/corpus.json"><code>/corpus.json</code></a>. The dispute artifacts on the shelf: <a href="/menu/the_case_file">the case file</a>, <a href="/menu/launch_check">the launch check</a>, <a href="/menu/settlement_attestation">the settlement attestation</a>; the free desk for any issuer's signed offers and receipts at <code>/api/conformance/v1</code>. For operators: <a href="/operators">/operators</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
+        <p class="menu-meta">Compact discovery: <a href="/corpus/index.json"><code>/corpus/index.json</code></a>. The record: <a href="/corpus.json"><code>/corpus.json</code></a>. The dispute artifacts on the shelf: <a href="/menu/the_case_file">the case file</a>, <a href="/menu/launch_check">the launch check</a>, <a href="/menu/settlement_attestation">the settlement attestation</a>; the free desk for any issuer's signed offers and receipts at <code>/api/conformance/v1</code>. For operators: <a href="/operators">/operators</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),
   );
