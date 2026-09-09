@@ -1,3 +1,4 @@
+import { commissionGuidance } from "@/lib/buyer-guidance";
 import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
 import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
@@ -671,6 +672,7 @@ function commissionRungRouteConfig(rung: number, env: Env): RouteConfig {
         error: `This is the Commission Desk's $${rung} rung, friend. It takes payment only against a live quote at this exact price — the keeper's terms, not a menu price.`,
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). A payment needs ?commission=<id> for a request the keeper has quoted at this rung; anything else is refused before any money moves.",
         how_the_desk_works: `POST ${env.STORE_BASE_URL}/api/request with { description, offer_usdc, contact } — free. The keeper reads every one and quotes by hand at a published rung with its own delivery window. Check your request at GET ${env.STORE_BASE_URL}/api/commission/{id}.`,
+        buyer_guidance: commissionGuidance(rung, env.STORE_BASE_URL),
         price_usdc: rung,
         pricing: "quoted",
       },
@@ -1630,6 +1632,8 @@ export interface SettledPayment {
  * holding nothing.
  */
 export interface PendingPayment {
+  /** Private buyer capability, available only after its record was acknowledged. */
+  purchaseRecovery?: () => Record<string, unknown> | undefined;
   observation?: ObservationCheckpoint;
   paidUsdc: number;
   tipUsdc: number;

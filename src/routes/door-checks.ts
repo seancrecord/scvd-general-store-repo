@@ -19,6 +19,7 @@
 import type { MiddlewareHandler } from "hono";
 import { gateSignals, paymentGate } from "@/lib/payment-gate";
 import { buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { catalogRecovery } from "@/lib/catalog-recovery";
 import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
 import { waitlistHowToJoin } from "@/routes/requests";
 import {
@@ -111,6 +112,7 @@ export const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
           error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
           code: "retired",
           charged: false,
+          ...catalogRecovery(c.env.STORE_BASE_URL, itemId),
           ...(retired.folded_into
             ? {
                 folded_into: retired.folded_into,
@@ -150,6 +152,7 @@ export const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         error: VOICE.unknownItem,
         code: "unknown_item",
         charged: false,
+        ...catalogRecovery(c.env.STORE_BASE_URL),
         menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
         request_url: `${c.env.STORE_BASE_URL}/api/request`,
       },

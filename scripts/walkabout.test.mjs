@@ -287,16 +287,17 @@ test("rule 5: every number in the report re-derives from the ledger", () => {
   assert.deepEqual(summary.unpaid_reasons, { per_item_cap: 1 });
   assert.deepEqual(summary.refused_status, { 400: 1 });
   assert.equal(summary.payments_presented, 3);
-  assert.equal(summary.settled_with_body, 1);
-  assert.equal(summary.spent_usd, 0.06);
+  assert.equal(summary.responses_with_body, 1);
+  assert.equal(summary.quoted_usdc, "0.060000");
+  assert.equal(summary.unpriced_presentations, 1);
 
   const report = renderReport(summary, { ledgerPath: "research/field-run-2026-09-08/ledger.jsonl" });
   // Taxonomy before any percentage (WALKABOUT.md, "What a run delivers").
   assert.ok(report.indexOf("## Taxonomy, stated first") < report.indexOf("%"));
-  assert.match(report, /\| settled \| 2 \(66\.7% of presented\) \|/);
+  assert.match(report, /\| successful responses with a body \| 1 \|/);
   assert.match(report, /\| spec_conformant \| 4 \| 50\.0% \|/);
   assert.match(report, /`per_item_cap` × 1/);
-  assert.match(report, /Not yet run\./);
+  assert.match(report, /Not yet run with evidence joins/);
   assert.match(report, /Not a score on any operator/);
   /*
    * A ZERO GAP NEVER TRAVELS WITHOUT ITS DENOMINATOR (2026-09-06).
@@ -317,34 +318,28 @@ test("rule 5: every number in the report re-derives from the ledger", () => {
   assert.match(empty, /0\.0%/);
 });
 
-test("reconcile: the chain is the record; the gap is stated even when zero", () => {
+test("reconcile: terms-only evidence stays unresolved and exact joins count money once", () => {
   const transfers = [
     { to: PAY_TO, value: "50000", txHash: "0xa" },
     { to: "0x2222222222222222222222222222222222222222", value: "10000", txHash: "0xb" },
   ];
-  const exact = reconcile(LEDGER, transfers);
+  const candidates = reconcile(LEDGER, transfers);
+  assert.equal(candidates.matched, 0);
+  assert.equal(candidates.rows[0].candidate_transfers, 1);
+  assert.equal(candidates.unmatched_usdc, "0.060000");
+  const receipts = LEDGER.map((row, i) => i === 1 ? { ...row, tx_hash: "0xa" } : i === 2 ? { ...row, tx_hash: "0xb" } : row);
+  const exact = reconcile(receipts, transfers);
   assert.equal(exact.matched, 2);
-  assert.equal(exact.chain_only, 0);
-  assert.equal(exact.ledger_only, 0);
-  assert.equal(exact.gap_usd, 0);
-  assert.equal(exact.ledger_usd, 0.06);
-  assert.equal(exact.chain_usd, 0.06);
-
-  // A transfer the ledger never recorded (the August failure mode).
-  const extra = reconcile(LEDGER, [...transfers, { to: PAY_TO, value: "30000", txHash: "0xc" }]);
-  assert.equal(extra.chain_only, 1);
-  assert.equal(extra.gap_usd, 0.03);
-  assert.deepEqual(extra.chain_only_rows, [{ to: PAY_TO.toLowerCase(), value: "30000", txHash: "0xc" }]);
-
-  // A settle the chain does not show (a 2xx that never settled).
-  const missing = reconcile(LEDGER, transfers.slice(0, 1));
-  assert.equal(missing.ledger_only, 1);
-  assert.equal(missing.ledger_only_rows[0].url, "https://b.example/x");
-
-  // Matching is one-to-one: two ledger rows cannot claim one transfer.
-  const doubled = reconcile([...LEDGER, LEDGER[1]], transfers);
-  assert.equal(doubled.matched, 2);
-  assert.equal(doubled.ledger_only, 1);
+  assert.equal(exact.chain_usdc, "0.060000");
+  assert.equal(exact.unmatched_atomic, "0");
+  const extra = reconcile(receipts, [...transfers, { to: PAY_TO, value: "30000", txHash: "0xc" }]);
+  assert.equal(extra.unmatched_transfers.length, 1);
+  assert.equal(extra.unmatched_usdc, "0.030000");
+  const missing = reconcile(receipts, transfers.slice(0, 1));
+  assert.equal(missing.rows[1].settlement, "unknown");
+  const repeated = reconcile([...receipts, receipts[1]], transfers);
+  assert.equal(repeated.matched, 2);
+  assert.equal(repeated.rows.at(-1).settlement, "confirmed_replay");
 });
 
 test("transferFromLog decodes the USDC Transfer topic layout", () => {
@@ -381,7 +376,7 @@ const CLI = new URL("./walkabout.mjs", import.meta.url).pathname;
  * as a child process exactly as CV runs it, in --dry-run, so the whole
  * path up to the signature is exercised and no money can move.
  */
-function fixture() {
+function fixture(chainId = "0x2105") {
   return new Promise((resolve) => {
     const server = createServer((req, res) => {
       if (req.url === "/rpc") {
@@ -390,6 +385,7 @@ function fixture() {
         req.on("end", () => {
           const body = JSON.parse(raw);
           const result =
+            body.method === "eth_chainId" ? chainId : body.method === "eth_getLogs" ? [] :
             body.method === "eth_blockNumber" ? "0x64" : `0x${"0".repeat(64)}`;
           res.writeHead(200, { "content-type": "application/json" });
           res.end(JSON.stringify({ jsonrpc: "2.0", id: body.id, result }));
@@ -410,6 +406,7 @@ function fixture() {
         res.end('{"free":true}');
         return;
       }
+      if (req.url === "/disconnect") { req.socket.destroy(); return; }
       if (req.url === "/blank") {
         res.writeHead(402);
         res.end("");
@@ -430,7 +427,7 @@ test("the CLI, dry, walks a fixture door through every rule up to the signature"
     const targets = join(dir, "targets.json");
     writeFileSync(
       targets,
-      JSON.stringify([`${base}/door`, `${base}/open`, `${base}/blank`, `${base}/missing`]),
+      JSON.stringify([`${base}/door`, `${base}/open`, `${base}/blank`, `${base}/missing`, `${base}/disconnect`]),
     );
     const out = join(dir, "run");
     const env = { ...process.env, BASE_RPC_URL: `${base}/rpc`, FIELD_WALLET_KEY: "" };
@@ -454,6 +451,7 @@ test("the CLI, dry, walks a fixture door through every rule up to the signature"
     assert.equal(by["/door"].sanctions_screen.listed, false);
     assert.equal(by["/door"].verdict, "unpaid_by_rule");
     assert.equal(by["/door"].reason, "dry_run");
+    assert.equal(by["/door"].payment_submitted, false);
     assert.equal(by["/door"].ua_sent, "scvd-walkabout/1.0 (+https://scvd.store/what) x402-field-research");
     assert.equal(by["/door"].body, "{}");
     assert.ok(by["/door"].response_headers["payment-required"]);
@@ -464,11 +462,13 @@ test("the CLI, dry, walks a fixture door through every rule up to the signature"
     assert.equal(by["/blank"].verdict, "malformed_challenge");
     assert.equal(by["/missing"].shape, "non_402");
     assert.equal(by["/missing"].verdict, "unreachable");
+    assert.equal(by["/disconnect"].failure_origin, "transport");
+    assert.equal(by["/disconnect"].payment_submitted, false);
 
     // The report derives from that file and lands beside it.
     await execFileAsync(process.execPath, [CLI, "report", join(out, "ledger.jsonl")], { env });
     const report = readFileSync(join(out, "report.md"), "utf8");
-    assert.match(report, /\| attempts \| 4 \|/);
+    assert.match(report, /\| attempts \| 5 \|/);
     assert.match(report, /`dry_run` × 1/);
     assert.ok(existsSync(join(out, "report.md")));
 
@@ -547,4 +547,23 @@ test("ledgerWeek abstains rather than guessing", () => {
   assert.equal(ledgerWeek("not json\n{}"), null);
   assert.equal(ledgerWeek(JSON.stringify({ observed_at: "the other day" })), null);
   assert.equal(ledgerWeek(null), null);
+});
+
+
+test("the reconciliation CLI refuses a wrong chain or a scan window beyond the node head", async () => {
+  for (const [chainId, endBlock, reason] of [["0x1", 100, /wrong chain/i], ["0x2105", 200, /scan window/i]]) {
+    const { server, port } = await fixture(chainId);
+    try {
+      const dir = mkdtempSync(join(tmpdir(), "walkabout-scan-"));
+      const ledger = join(dir, "ledger.jsonl");
+      writeFileSync(ledger, [
+        { kind: "run", wallet: HOUSE, start_block: 100 },
+        { kind: "run_end", end_block: endBlock },
+      ].map(row => JSON.stringify(row)).join("\n"));
+      await assert.rejects(execFileAsync(process.execPath, [CLI, "reconcile", ledger], {
+        env: { ...process.env, BASE_RPC_URL: `http://127.0.0.1:${port}/rpc`, FIELD_WALLET_KEY: "" },
+      }), error => reason.test(error.stderr));
+      assert.equal(existsSync(join(dir, "reconciliation.json")), false);
+    } finally { await new Promise(resolve => server.close(resolve)); }
+  }
 });

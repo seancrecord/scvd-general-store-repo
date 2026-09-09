@@ -180,6 +180,7 @@ describe("the rung routes", () => {
       ]);
       const body = await json(challenge);
       expect(String(body["error"])).toContain("live quote");
+      expect(body["buyer_guidance"]).toMatchObject({price_effect:{minimum_usdc:rung,higher_payment_changes_scope:false},production:{kind:"commissioned_human_work"},recovery:{private_status_handle:false}});
     }
   });
 
@@ -200,6 +201,7 @@ describe("payment against the quote", () => {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
     });
     expect(response.status).toBe(400);
+    expect(await json(response)).toMatchObject({charged:false,settlement_attempted:false,next_step:{method:"GET",payment_required:false}});
     expect(facilitator.settleCalls).toBe(settlesBefore);
   });
 

@@ -186,6 +186,10 @@ describe("a bounded catalog leads to a single-item tool with ordinary required f
       const text = await response.text();
       expect(text.length, item.id).toBeLessThan(COMPACT_CATALOG_BUDGET_BYTES);
       const contract = obj(JSON.parse(text));
+      expect(contract.description, item.id).toBe(item.description);
+      expect(contract.constraints, item.id).toEqual(item.constraints);
+      expect(contract.reads, item.id).toBe(item.reads);
+      expect(contract.sample_url, item.id).toBe(item.sample_url);
       const path = String(contract.mcp_url).replace(BASE, "");
       const listed = obj((await rpc(path, "tools/list")).body.result);
       const tools = listed.tools as Record<string, unknown>[];
@@ -210,6 +214,10 @@ describe("a bounded catalog leads to a single-item tool with ordinary required f
       const page = obj(JSON.parse(text));
       expect(page.total).toBe(MENU_ITEMS.length);
       const items = page.items as Record<string, unknown>[];
+      expect(page.limit).toBe(8);
+      expect(page.offset).toBe(seen.length);
+      expect(page.returned).toBe(items.length);
+      expect(page.has_more).toBe(page.next !== null);
       expect(items.length).toBeGreaterThan(0);
       expect(items.length).toBeLessThanOrEqual(8);
       for (const row of items) {

@@ -239,6 +239,13 @@ export async function archiveDepthFor(
   return held(env, "host", host, () => hostDepth(env, base, host));
 }
 
+/** A failed read is unknown, not a measured zero or an inapplicable field. */
+export async function archiveDepthDisclosure(env: Env, base: string, itemId: string, query: Record<string, string | undefined>) {
+  if (!Object.hasOwn(DEPTH_ITEMS, itemId)) return {};
+  const depth = await archiveDepthFor(env, base, itemId, query).catch(() => null);
+  return { archive_depth: depth, archive_depth_status: depth ? "available" : "unavailable" };
+}
+
 /** One line for a page: the numbers with their nouns, never a ratio. */
 export function depthLine(depth: ArchiveDepth): string {
   if (depth.kind === "archive") {

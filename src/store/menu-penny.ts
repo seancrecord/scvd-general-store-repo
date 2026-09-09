@@ -18,6 +18,7 @@ import type { MenuItem } from "@/types";
 export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   {
     id: "small_blessing",
+    production: { kind: "prewritten_human_text", author: "the keeper" },
     listed_week: "2026-W30",
     name: "A Small Blessing",
     price_usdc: 0.005,
@@ -31,6 +32,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "daily_fortune",
+    production: { kind: "prewritten_human_text", author: "the keeper" },
     listed_week: "2026-W30",
     name: "The Daily Fortune",
     price_usdc: 0.01,

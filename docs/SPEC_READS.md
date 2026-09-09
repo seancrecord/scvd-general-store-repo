@@ -1,5 +1,22 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-09 — buyer guidance and conditional evidence reads
+
+Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and [Hono's Context API](https://hono.dev/docs/api/context) for response
+replacement and headers. Read [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html),
+conditional requests and ETags: the stable host view reuses the existing
+body-derived validator and omits only its request timestamp. A validator
+is not a signature and an unchanged response is not a fresh observation.
+
+Buyer recovery reuses the existing private purchase record and verified
+payer cache; it introduces no new protocol extension or payment authority.
+Guidance stays outside signed payment requirements and certificate bytes.
+Publication replay preserves markdown and the original settlement headers,
+not arbitrary response headers. Credit discovery imports pure terms, not
+the payout signer. Scope and validation are recorded in
+`docs/FIELD_RESEARCH_FOLLOWUP_2026-09-09.md`.
+
 ## 2026-09-09 — Bitcoin header verification and verifier publication
 
 Read the [OpenTimestamps client](https://github.com/opentimestamps/opentimestamps-client)

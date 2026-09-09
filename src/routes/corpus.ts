@@ -319,8 +319,11 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
   const observation = await effectiveObservation(c.env, host);
   const base = c.env.STORE_BASE_URL;
   const latestProbed = [...observation.history.timeline].reverse().find((round) => round.probed) ?? null;
+  // Opt-in stable bytes let a buyer revalidate the evidence without a request
+  // timestamp changing the ETag. The existing full view keeps asked_at.
+  const { asked_at, ...stableHistory } = observation.history;
   return c.json({
-    ...observation.history,
+    ...(c.req.query("view") === "stable" ? stableHistory : { ...stableHistory, asked_at }),
     tier: deriveTier(
       tierInputFromHistory(observation.history, observation),
       `${base}/criteria`,

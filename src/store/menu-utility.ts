@@ -543,6 +543,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    */
   {
     id: "spot_check",
+    free_alternative: { path_template: "/corpus/host/{host}.json", paid_adds: "A signed, certificate-bound copy of the recorded facts, with the observation dates and gaps; no new probe." },
     listed_week: "2026-W35",
     name: "Spot Check",
     price_usdc: 0.001,

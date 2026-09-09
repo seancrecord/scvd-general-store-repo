@@ -17,14 +17,25 @@ The ward round, graduated from looking to paying. The weekly corpus
 already records what every listed x402 host SERVED; the walkabout
 records what happens when somebody actually pays it — settled or
 failed, delivered or not, on what terms, on what date. A probe proves
-an endpoint answers. A settlement proves it takes money and delivers.
-That second observation class exists nowhere else in this ecosystem,
-and it cannot be backfilled later at any price.
+an endpoint answers. A transfer records money moving; the response records
+what came back. Settlement and delivery are counted separately. These dated
+observations cannot be backfilled later.
 
 It is also a calling card. Every request carries this store's name
 where the operator will actually see it, and every settlement is a
 permanent on-chain record that we were there, from a wallet this
 store declares and signs at /house-ledger.json.
+
+## Reservation before submission (2026-09-09)
+
+The run cap limits authorized exposure, not just successful responses.
+Before sending a signed paid request, the runner reserves its exact atomic
+USDC amount and one domain slot. Neither reservation is released during
+the run, including for a timeout, error response, or free delivery. This
+bounds unresolved attempts while the separate reconciliation establishes
+what actually settled. Run-end records publish `reserved_atomic`; they do
+not label reservations as spend. Quotes without submitted payment reserve
+nothing. Malformed, negative or sub-atomic amounts fail closed.
 
 ## The envelope — how a request identifies itself
 
@@ -254,3 +265,42 @@ That is a decision, not a setup step.
 - 45-plus permanent on-chain entries per run saying, verifiably and
   politely: scvd.store was here, paid its own money, and wrote down
   what it saw.
+
+## Reading a reconciled report (2026-09-09)
+
+The runner's historical `settled` verdict means a 2xx response after a
+signed request. `payment_refused` means a non-2xx response. Neither is a
+chain verdict. Reports keep those raw labels but derive payment accounting
+separately from the saved transfers in `reconciliation.json`.
+
+`node scripts/walkabout.mjs reconcile <ledger.jsonl>` reads the declared
+Base USDC wallet over the run's start/end blocks. Version 2 records that
+scope, the transfer evidence, and a fingerprint of the parsed ledger. The
+node must report the declared chain and a head covering the scan’s end block.
+`report` refuses a version-2 reconciliation if that ledger has changed;
+older reconciliations must be regenerated before their totals are used.
+The fingerprint prevents accidental stale joins; it is not a signature.
+
+A confirmed association requires the transaction, network, asset, recipient
+and exact atomic amount. A repeated receipt does not add another transfer.
+Matching only the seller and price produces a candidate, never a confirmed
+association. Transfers without an exact association remain visible with
+their full amount; equal headline totals do not hide unmatched records.
+Atomic units are integer strings, and USDC is rendered to six decimals.
+
+Door counts use HTTP method + origin + pathname. Query parameters are
+inputs; repeat attempts do not imply repeated authorizations. Successful
+responses with a nonempty body are reported delivery evidence, not a
+semantic verification of the purchased resource. Free-delivery responses
+require the seller's explicit first-call-free claim and no matching transfer
+in a completed scan of that rail and asset. Missing or incomplete scans,
+missing terms, and same-price candidate transfers leave the answer unknown.
+A bounded absence never means the authorization cannot settle later.
+
+New attempts retain whether a signed request was submitted and whether an
+exception arose in the client or transport. Older `paid:false` rows without
+submission evidence stay unknown. Malformed JSON is rejected rather than
+silently dropped from the denominator. The offline fixtures exercise header
+case variants, free delivery, unsettled refusals, charged failures, repeated
+receipts, ambiguous joins, exact totals, stale reports and client transport
+failures. They make no field-wallet purchases.

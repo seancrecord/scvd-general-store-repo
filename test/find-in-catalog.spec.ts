@@ -108,12 +108,14 @@ describe("the tool, on both doors", () => {
     expect(viaTool.result.structuredContent).toEqual(viaHttp.body);
   });
 
-  it("hands a refusal back as words, not as a record", async () => {
+  it("keeps the RPC refusal envelope and preserves the HTTP repair record", async () => {
     const bad = await tool({ max_price_usdc: "abc" });
     expect(bad.error).toBeTruthy();
     expect(String(bad.error.message)).toContain("max_price_usdc");
+    expect(bad.error.data).toEqual(searchCatalog(BASE, { maxPriceUsdc: "abc" }).body);
     const unknown = await tool({ item_id: "carry_on_suitcase" });
     expect(String(unknown.error.message)).toContain("carry_on_suitcase");
+    expect(unknown.error.data).toEqual(searchCatalog(BASE, { itemId: "carry_on_suitcase" }).body);
   });
 
   it("says what a row holds, so a planner can chain from it", () => {
