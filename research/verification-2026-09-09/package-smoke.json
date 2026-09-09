@@ -1,0 +1,40 @@
+{
+  "package": "x402-verify",
+  "version": "1.2.0",
+  "source": "locally packed tarball, not registry publication",
+  "exit_code": 3,
+  "result": {
+    "valid": true,
+    "evidence_complete": false,
+    "missing_evidence": [
+      "saw"
+    ],
+    "problems": [],
+    "context_authenticated": false,
+    "timestamp": {
+      "status": "unverified",
+      "verified": false
+    },
+    "scope": "Signature and attached hash bindings against the public key supplied by the caller; not an issuer identity or factual verdict.",
+    "does_not_establish": [
+      "issuer identity without an independently trusted key",
+      "issue time or key authorization at issue time",
+      "Bitcoin anchoring without independent OTS verification",
+      "truth, settlement, delivery, completeness of the observed world",
+      "authenticity of context, filenames or captured key history"
+    ],
+    "signed_claims": {
+      "cert_id": "cert_et6zuesrrn",
+      "item": "small_blessing",
+      "patron_number": 243,
+      "date": "2026-09-06T22:48:31.020Z",
+      "paid_usdc": 0.005,
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "payer": "0x137ae5e3c7ed176744226f67223de50ca3a19e5a",
+      "settlement_tx": "0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b",
+      "from_the_store": "Thanks for shopping somewhere that shows its work.",
+      "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+    }
+  }
+}

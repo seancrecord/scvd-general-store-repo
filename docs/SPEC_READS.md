@@ -1,5 +1,36 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-09 — Bitcoin header verification and verifier publication
+
+Read the [OpenTimestamps client](https://github.com/opentimestamps/opentimestamps-client)
+and its installed Python library: `BitcoinBlockHeaderAttestation.verify_against_blockheader`
+checks the computed proof message against a selected header's Merkle root.
+The standard client normally obtains chain membership from Bitcoin Core.
+This sitting checked saved proof operations against matching headers from
+two HTTPS explorers, including header hash and proof of work; it did not
+validate a local chain. Read the [Esplora API](https://github.com/Blockstream/esplora/blob/master/API.md)
+for height-to-hash and serialized-header endpoints. URLs and capture dates
+for all selected headers are in `research/verification-2026-09-09/`.
+
+Re-read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and the [Wrangler command reference](https://developers.cloudflare.com/workers/wrangler/commands/)
+before adding the missing corpus upgrade pass. Existing KV/R2 helpers and
+the hourly `waitUntil` pattern are reused; signed bytes are not rewritten.
+Read [npm provenance guidance](https://docs.npmjs.com/generating-provenance-statements/):
+publication will use the existing GitHub-hosted workflow and provenance,
+not a laptop token export. Public npm was still at x402-verify 1.0.2 at the
+start of this sitting. Publication results belong in DISTRIBUTION.md.
+
+The directory service and Coinbase mappings were re-read. The same
+attribution discrepancy remains. Existing Base transaction evidence is
+historical and reused, not described as a fresh chain read. The
+[methodology](https://www.x402-list.com/methodology) describes transaction
+origin for facilitator attribution, but uses “sender” of a USDC transfer
+for service attribution; the prepared note asks which field that means.
+The [contact page](https://www.x402-list.com/contact) identifies
+info@x402-list.com. Web extraction missed that page; a direct HTTPS read
+succeeded. No message sent.
+
 ## 2026-09-08 — Verification implementation and live reconciliation
 
 Follow-through on the recommendation below, authorized in the same sitting.

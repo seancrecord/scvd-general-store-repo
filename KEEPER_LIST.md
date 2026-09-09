@@ -26,6 +26,11 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **x402-verify 1.2.0 published (2026-09-09).** The evidence CLI is on
+  npm with verified provenance. A registry installation verified the
+  saved receipt and reported its missing evidence. The old 1.1.0 press
+  is closed by this release; details and workflow receipt: DISTRIBUTION.md.
+
 - **Browser till purchase delivered (2026-09-06).** The keeper reported
   the delivered Small Blessing and full till reading. Certificate
   `cert_et6zuesrrn` verifies: patron 243, $0.005 USDC on Base, recorded
@@ -407,8 +412,10 @@ build, it is on the roadmap.
   and an unsent maintainer note are in
   `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`. This is the keeper's
   test purchase, not organic traction. Decide whether to send that
-  specific note; no message has been sent. The implementation stays
-  on ROADMAP VQ1.
+  specific note to `info@x402-list.com` (public contact read September 9);
+  no message has been sent. The implementation stays
+  on ROADMAP VQ2. The mapping was re-read September 9 and the same
+  discrepancy remains; captured evidence is in `research/verification-2026-09-09/`.
 
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
   moves").** A week's evidence lived in ONE KV value (the walk
@@ -773,7 +780,6 @@ Do not relitigate without you.
   before-you-pay, month, feeds, the FIX lines (roadmap C5). The
   Saturday listings read will say the registry differs from the
   tree until you press.
-- **npm publish x402-verify 1.1.0** from `verifier/` on main (A1).
 - **npm publish the four new packages** from main (roadmap C5b):
   `x402-preflight` 0.1.0 (`x402-preflight/`), `scvd-corpus-client`
   0.1.0 (`corpus-client/`), `scvd-defects` 0.10.0 (`defects/`),

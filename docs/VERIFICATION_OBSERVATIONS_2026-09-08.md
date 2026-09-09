@@ -4,7 +4,78 @@ This is an implementation and observation record from
 `codex/verification-evidence`. Release was subsequently authorized with
 “alright lets roll”; the complete staged-release validation is recorded in
 the linked plan. The maintainer note remains unsent.
-The build order is ROADMAP VQ1 and its linked design.
+VQ1 shipped in PR #585. The follow-through is ROADMAP VQ2 and its linked design.
+
+## September 9 follow-through
+
+The known receipt's exact bytes and detached proof now verify through the
+standard OpenTimestamps library against the same Bitcoin header returned
+by Blockstream and mempool.space. The header hash and proof of work also
+check. This establishes a match to an independently obtained header;
+height and active-chain membership still depend on those HTTPS sources.
+No local Bitcoin consensus node was used. Its missing `saw` file remains
+missing; a timestamp does not fill that evidence gap.
+
+The larger, separately bounded capture read every entry in the public
+corpus index: six signatures, six digest links, and six completed proofs
+retrieved from their calendars and checked against matching headers from
+the same two outside sources. The published corpus still said **pending
+for all six** at capture time. Local upgrades do not change production.
+Inspection across `src/` found submission at the weekly freeze but no
+corpus upgrade caller. The new bounded hourly pass finishes that delivery;
+signed snapshots, digests and signatures stay unchanged. It also retries
+failed submissions, counts unreadable / invalid records and deferred work,
+and refuses another pending calendar answer as a completed proof.
+
+The feed previously called any timestamp record Bitcoin-anchored, even
+pending or failed ones. It now states the actual stored status and says
+completed proofs need independent verification. The dated correction is
+`src/store/corrections-ledger/2026-09-09-corpus-timestamp-delivery.ts`.
+
+Reproduce from the saved public inputs, without network reads:
+
+```sh
+python3 -m venv /tmp/scvd-ots-review
+/tmp/scvd-ots-review/bin/pip install opentimestamps==0.4.5 python-bitcoinlib==0.12.2
+/tmp/scvd-ots-review/bin/python scripts/verify_ots_header_test.py
+node scripts/verification-followthrough-report.mjs /tmp/scvd-ots-review/bin/python
+```
+
+The report uses the production canonicalizer, checks capture hashes,
+verifies signatures against the separately captured issuer HTTPS key,
+then checks the actual proof operations and selected headers through the
+independent Python libraries. Inputs, source URLs, capture times and the
+derived `verified-report.json` are in `research/verification-2026-09-09/`.
+These packages are isolated review tools, not production or npm-verifier
+dependencies. No private key is involved.
+
+Coverage is **all sequences listed in that captured index**, not a census
+of every certificate or evidence report the store has issued, and not proof
+that no record was withheld. The index was 11,492,925 bytes and snapshot 6
+was 11,483,825 bytes: both exceed the evidence CLI's unchanged 8 MiB cap.
+The reporting capture deliberately allowed 32 MiB per read. Making the
+index compact and providing a usable large-snapshot verification path is
+still work; this measurement does not cure their reader-limit violation.
+
+The September 8 description of certificate sweep counters needs a narrower
+reading: the function **returns** those counters; its current hourly
+caller discards them. They are not a published production coverage ledger.
+Certificate / linked-report population reconciliation remains open.
+
+The refreshed directory record still says `unmeasured-network`, while its
+Coinbase mapping still enables the sampled transaction origin and the
+service still advertises the matching payout address. The note below
+remains unsent and asks about attribution, not organic traction. Verifier
+1.2.0 is now published through the provenance workflow. The registry
+artifact exactly matches the reviewed tarball; npm verified its signature
+and attestation, and an independent registry installation checked the real
+receipt while reporting the missing `saw` evidence. Publication receipts
+are in DISTRIBUTION.md and the September 9 research folder. The publishing
+workflow now runs the package's own tests; its README has a stable link.
+
+The September 8 observations below remain the dated record of what was
+checked then; the Bitcoin and corpus limitations are superseded only to
+the extent stated above.
 
 The keeper confirmed that the original comparison concerns Rubric.
 The Rubric source read in `docs/SPEC_READS.md` applies directly. Its
@@ -32,7 +103,8 @@ free trial for every paid product. The test covers both cases and the
 existing door-parity and shopping-field tests cover the common paths.
 
 Draft source-tool descriptions were added to the receipt JSON and
-developer page. Npm publication remains pending.
+developer page. Npm publication was pending at the September 8 close;
+the September 9 release above supersedes that status.
 
 ## The directory mismatch, narrowed
 
@@ -66,26 +138,36 @@ measurement canary and **not independent customer demand**. No traction
 score or ranking gain is forecast. Directory data: x402-list.com, CC BY 4.0;
 source URLs and provenance remain in the saved inputs.
 
-### Unsent note for directory maintainer
+### Unsent note for directory maintainer — refreshed September 9
 
-Our service is currently marked `unmeasured-network`. Could you check its
-Base service/network attribution? In the captured September 8 data, the
-Coinbase mapping already enables origin
+Recipient: **info@x402-list.com**, listed on
+[the directory contact page](https://www.x402-list.com/contact), read
+September 9. Subject: **Base attribution for scvd.store**.
+
+Our service remains `unmeasured-network` in the September 9 capture. Could
+you check its Base payout/network mapping and settlement attribution?
+Your Coinbase mapping enables transaction origin
 `0xa32ccda98ba7529705a059bd2d213da8de10d101` on `eip155:8453`, and our service
-offers advertise the receiving address
-`0xdd350976b8cffc65938c0464d39a2c78be079bd0`.
+advertises recipient `0xdd350976b8cffc65938c0464d39a2c78be079bd0`.
 
-Transaction
+Our previously captured transaction
 `0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b`
 has that origin and a successful canonical Base USDC transfer of 5,000
-atomic units to that recipient. Our signed receipt is
-https://scvd.store/api/verify/cert_et6zuesrrn. This was our keeper's checkout
-test, not organic traction; we are asking whether the attribution join and
-measured-network status work, not asking you to count it as independent
-demand. Is a harvest-window limit, payout mapping or assessment refresh
-responsible? Raw read timestamps and the transaction receipt are available.
+atomic units to that recipient. The token transfer's sender is the buyer,
+which differs from the transaction origin. Does “sender” in your
+per-service attribution documentation mean transaction origin or token
+`Transfer.from`? Could payout/network normalization or the harvest window
+explain the null network and volume fields?
 
-No recipient was selected and this note has not been sent.
+The signed receipt is https://scvd.store/api/verify/cert_et6zuesrrn. This
+was our keeper's checkout test, not organic traction; we are asking about
+the attribution and measured-network status, not asking you to treat it
+as independent demand. Dated captures and the reproducible join are in
+`research/verification-2026-09-08/` and `research/verification-2026-09-09/`
+in https://github.com/seancrecord/scvd-general-store-repo.
+
+This note has not been sent. It needs the keeper's send decision; the
+recipient is now identified and the evidence is prepared.
 
 ## Anchor sample and unresolved coverage
 

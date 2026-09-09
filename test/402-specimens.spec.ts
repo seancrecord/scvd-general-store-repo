@@ -2,6 +2,8 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { getMenuItem } from "@/store";
+import { EVIDENCE_TOOLS_SOURCE } from "@/store/evidence-tools";
+import verifierReadme from "../verifier/README.md?raw";
 beforeAll(() => installFacilitatorMock());
 
 it("the payment challenge links the same unsigned specimen as the item page", async () => {
@@ -26,11 +28,13 @@ it("an item without a specimen does not advertise a free live demo", async () =>
   expect(body).not.toHaveProperty("free_demo");
 });
 
-it("developer discovery describes source-only offline tools and their proof boundary", async () => {
+it("developer discovery links usable installation instructions and states the proof boundary", async () => {
   const response = await SELF.fetch("https://scvd.store/developers", { headers: { Accept: "application/json" } });
   expect(response.status).toBe(200);
   const text = await response.text();
-  expect(text).toContain("/verifier#portable-evidence");
-  expect(text).toContain("npm publication is pending");
+  expect(text).toContain(EVIDENCE_TOOLS_SOURCE);
+  const headings = verifierReadme.split('\n').filter(line => line.startsWith('## '))
+    .map(line => line.slice(3).toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/ /g, '-'));
+  expect(headings).toContain(new URL(EVIDENCE_TOOLS_SOURCE).hash.slice(1));
   expect(text).toContain("Bitcoin timestamps need an independent OTS verifier");
 });
