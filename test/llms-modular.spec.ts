@@ -848,8 +848,10 @@ const BASE = "https://scvd.store";
 // 2026-09-07: merged protected purchase status, recovery-token, payment-profile
 // and delivery-state guidance from PR #559; reviewed the A2A desk paragraph, kit menu/spec copy, and
 // derived price-ceiling counts introduced by the new paid item.
+// 2026-09-09: Confession discovery now explains the private signed receipt.
+// Replacing only that description reproduces the prior digest exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7c20440c67f341e04124b8cd0855c7c81490e35b2a525b76b41a542cfb2734b1";
+  "50745426f3030f5b52006a9f04ca0b4a722de89e449fa0029fc296adea5319fc";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

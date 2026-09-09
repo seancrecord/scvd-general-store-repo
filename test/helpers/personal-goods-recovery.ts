@@ -1,6 +1,8 @@
 import { runDurableObjectAlarm, runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { atomicToUsdc, getPaymentStack } from "@/lib/payments";
+import { verifyMessageSignature } from "@/lib/signing";
+import { jcsCanonicalize } from "@/lib/jcs";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { listTags, setTagStatus } from "@/services/train";
@@ -28,6 +30,7 @@ vi.mock("@/lib/kv-retry", async original => {
 vi.mock("@/lib/signing", async original => {
   const actual = await original<typeof import("@/lib/signing")>();
   return { ...actual, signMessage: async (...args: Parameters<typeof actual.signMessage>) => {
+    if (fault === "receipt-signing" && args[0].includes('"scvd.confession-receipt.v1"')) failure();
     if (fault === "lucky-signing" && args[0].includes('"lucky_id"')) failure();
     return actual.signMessage(...args);
   } };
@@ -110,6 +113,13 @@ async function assertGood(p: Purchase, body: Obj, original?: Obj) {
     expect(JSON.stringify(cert)).not.toContain(p.text);
     expect(saved).not.toHaveProperty("cert_id");
     expect(saved).not.toHaveProperty("payer");
+    const proof = object(body.confession_receipt), receipt = object(proof.receipt);
+    expect(receipt).toMatchObject({ confession: p.text, cert_id: cert.cert_id, confession_id: saved.id, recorded_at: NOW.toISOString() });
+    expect(JSON.parse(String(proof.signed_payload))).toEqual(receipt);
+    expect(await verifyMessageSignature(String(proof.signed_payload), String(proof.signature), String(proof.public_key))).toBe(true);
+    for (const changed of [{ ...receipt, confession: "wrong" }, { ...receipt, cert_id: "wrong" }]) {
+      expect(await verifyMessageSignature(jcsCanonicalize(changed), String(proof.signature), String(proof.public_key))).toBe(false);
+    }
   } else if (p.id === "graffiti_on_a_train") {
     expect(saved).toMatchObject({ tag: p.text, cert_id: cert.cert_id, date: NOW.toISOString() });
     expect(cert.tag).toBe(p.text);
@@ -210,6 +220,18 @@ for (const id of ids) for (const door of doors) for (const [rail] of laborNetwor
     } finally { spy.mockRestore(); }
   });
 }
+if (item === "the_confession") for (const door of doors) for (const point of ["receipt-signing", "confession_receipt-before", "confession_receipt-after"]) {
+  it(`the_confession ${door}: ${point} returns private proof after recovery`, async () => {
+    const p = await purchase("the_confession", door);
+    fault = point;
+    expect((await p.send()).body.charged).toBe(true);
+    expect(hits).toBeGreaterThan(0);
+    const original = structuredClone(prepared!);
+    fault = "";
+    await recover(p, original);
+    expect(transfers).toBe(1);
+  });
+}
 if (item === "luckies") for (const door of doors) it(`luckies ${door}: signing failure recovers the original purchase`, async () => {
   const p = await purchase("luckies", door);
   fault = "lucky-signing";
@@ -272,6 +294,19 @@ if (item === "coffees_for_closers") it("coffees_for_closers: recovery cannot ren
   expect(object(saved.delivery).win_recorded).toBe(p.text);
   expect(await listClosers(sourceEnv)).toEqual([]);
   expect((await sourceEnv.ORDERS.list({ prefix: KV_KEYS.closerPrefix })).keys).toEqual([]);
+  expect(transfers).toBe(1);
+});
+
+if (item === "the_confession") for (const door of doors) it(`the_confession ${door}: retained private proof survives signer loss and stays out of public verification`, async () => {
+  const p = await purchase("the_confession", door);
+  fault = "response-before";
+  expect((await p.send()).body.charged).toBe(true);
+  const original = structuredClone(prepared!);
+  fault = "receipt-signing";
+  const body = await recover(p, original);
+  const verified = await (await request(String(body.verify_url))).text();
+  expect(verified).not.toContain(p.text);
+  expect(verified).not.toContain(String(body.confession_id));
   expect(transfers).toBe(1);
 });
 

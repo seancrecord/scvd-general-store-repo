@@ -7,6 +7,7 @@ import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
 import { createPatronAnchor, publishPatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
+import { privateConfessionReceipt } from "@/services/confession-receipt";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
@@ -357,6 +358,7 @@ export async function deliverInstantGoods(
         deliverable: CONFESSION_ABSOLUTION,
         extras: {
           confession_id: heard.record.id,
+          confession_receipt: await privateConfessionReceipt(env, heard.record, input.certId, checkpoint),
           counter_sign: CONFESSION_COUNTER_SIGN,
         },
       };
