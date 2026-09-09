@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-09T19:58:18.856827+00:00",
+  "scope": "Pre-release validation of certificate-key sweep repair",
+  "branch": "codex/certificate-key-sweep",
+  "worker_suite": {
+    "files_passed": 610,
+    "tests_passed": 9543,
+    "tests_skipped": 1,
+    "seconds": 1741.9,
+    "max_workers": 4
+  },
+  "regression_cases_failed_without_repair": 7,
+  "focused_anchor_tests_passed": 35,
+  "typecheck": "passed",
+  "worker_bundles": "both passed",
+  "evidence_tests_passed": 36,
+  "standalone_packages": "passed",
+  "scalability_audit": "passed; two existing warnings within budget",
+  "claims": {
+    "resolved": 39,
+    "unbound": 0
+  },
+  "docs_check": "passed with existing dated-document backlog",
+  "production_delivery_checked": false
+}

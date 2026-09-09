@@ -1874,11 +1874,12 @@ bytes and `/corpus/6.json` was 11,483,825 bytes. Both exceeded the earlier
 32 MiB. The existing machine-surface test did not exercise a corpus of this
 size. A passing small fixture therefore does not establish production
 readability. Keep the signed snapshot bytes; make the index compact and
-add a representative growth check. This remains on ROADMAP VQ3; increasing
-one research client's cap did not close it. September 9 follow-through now
-builds a separate compact paginated index and explicit bounded corpus export;
-all six saved snapshots verified with canonical bytes unchanged. Deployment
-and remaining population measurement are tracked in
+add a representative growth check. Increasing one research client's cap
+did not close it. PR #592 subsequently shipped the separate compact
+paginated index and explicit bounded corpus export in x402-verify 1.3.0.
+At 20:03 UTC, all six live snapshots verified from a fresh registry install
+with canonical bytes unchanged; the old full index remains for compatibility.
+The release and remaining population work are tracked in
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Raw bytes and sizes are retained
 in `research/verification-2026-09-09/capture-manifest.json`.
 

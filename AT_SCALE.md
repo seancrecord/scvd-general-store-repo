@@ -104,6 +104,13 @@ the named fix. **Accepted, unchanged** — a duplicate patron number is
 a shared house joke, not a broken receipt: the certificate ids stay
 unique, and the signature covers what matters.
 
+**September 9 evidence follow-through:** the private certificate-key census
+found two certificates sharing a patron number, with one absent from the
+patron-number anchor sweep. The counter allocation decision stays unchanged.
+A separate bounded, resumable certificate-key pass repairs delivery coverage
+without changing either signed receipt. Validation and release status:
+`docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
+
 ### 8. Price changed between the signed offer and the payment
 
 **What happens:** offers commit to quoted terms for 300 seconds. The
