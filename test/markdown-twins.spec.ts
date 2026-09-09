@@ -21,6 +21,9 @@ describe("the .md twin fallback", () => {
       "/defects",
       "/api/preflight/v1",
       "/api/preflight/v2",
+      // The other two free doors' documents, twinned 2026-09-09.
+      "/api/conformance/v1",
+      "/api/look/v1",
     ]) {
       const twin = await SELF.fetch(`${BASE}${path}.md`);
       expect(twin.status, `${path}.md does not answer`).toBe(200);
@@ -100,16 +103,26 @@ describe("the free instruments in JSON-LD", () => {
       ),
     ].map((match) => JSON.parse(match[1]!) as Record<string, unknown>);
 
+    /*
+     * A Service may stand at the top of a @graph (2026-09-09) or sit
+     * inside an ItemList as it did before; this guard reads both, so
+     * what it holds the store to — free, priced at zero, at a door
+     * that answers — does not depend on where the node was placed.
+     */
     const services = blocks.flatMap((block) => {
+      const candidates: unknown[] = [];
+      const graph = block["@graph"];
+      if (Array.isArray(graph)) candidates.push(...graph);
       const elements = block["itemListElement"];
-      if (!Array.isArray(elements)) return [];
-      return elements
-        .map((entry) => (entry as Record<string, unknown>)["item"])
-        .filter(
-          (item): item is Record<string, unknown> =>
-            !!item &&
-            (item as Record<string, unknown>)["@type"] === "Service",
+      if (Array.isArray(elements)) {
+        candidates.push(
+          ...elements.map((entry) => (entry as Record<string, unknown>)["item"]),
         );
+      }
+      return candidates.filter(
+        (item): item is Record<string, unknown> =>
+          !!item && (item as Record<string, unknown>)["@type"] === "Service",
+      );
     });
 
     expect(services.length).toBeGreaterThanOrEqual(3);

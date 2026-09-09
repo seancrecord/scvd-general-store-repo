@@ -107,6 +107,33 @@ function pricingJsonLd(base: string, floorUsd: number): string {
  * says where to get them rather than serving a second copy a reader
  * might verify against by mistake.
  */
+/**
+ * THE PRICE LIST, DERIVED (2026-09-09). A reader comparing options
+ * asked this page for prices and found only the rules by which they
+ * are set — true, and not what it came for. The rows come off
+ * MENU_ITEMS at render time under the charter's own discipline: a
+ * typed price is a promise with an expiry date. Pay-what-it-deserves
+ * doors show their span; everything else is one figure.
+ */
+function priceRows(base: string): string {
+  const cell = (text: string): string => text.replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
+  const firstSentence = (text: string): string => text.split(/(?<=\.)\s/)[0] ?? text;
+  return MENU_ITEMS.filter((item) => item.price_usdc > 0)
+    .slice()
+    .sort((a, b) => a.price_usdc - b.price_usdc || a.name.localeCompare(b.name))
+    .map((item) => {
+      const tiers = priceTiersUsdc(item);
+      const price =
+        tiers.length > 1
+          ? `$${Math.min(...tiers)}–$${Math.max(...tiers)} (pay what it deserves)`
+          : `$${item.price_usdc}`;
+      const cadence = item.cadence === "term" ? "term" : "one-off";
+      const what = cell(item.subtitle ?? firstSentence(item.description));
+      return `| [${cell(item.name)}](${base}/menu/${item.id}) \`${item.id}\` | ${price} | ${cadence} | ${what} |`;
+    })
+    .join("\n");
+}
+
 function pricingMarkdown(
   base: string,
   floorUsd: number,
@@ -186,6 +213,20 @@ else's spending limit.
 This is not a charter clause. It is a fact about your client, read from
 the installed package, and it sits deliberately outside the signed
 payload above.
+
+## The price list
+
+Every priced door on the shelf, read off the live menu as this page
+rendered — never typed, for the same reason the floor above is not.
+There are no plans and no tiers here: each door is one price, paid per
+call, and a door that takes more than one amount says so in its row.
+
+| Door | Price (USDC) | Cadence | What it is |
+|---|---|---|---|
+${priceRows(base)}
+
+Free doors are not rows here; they are free. The shelf with every
+door's input contract is ${base}/menu.json.
 
 ## How you pay
 

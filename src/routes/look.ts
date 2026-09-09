@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono";
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { LOOK_HOLD_SECONDS, LOOK_VERSION, NOT_A_SCORE, lookAtDoor } from "@/services/look";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { lifecycleHeaders } from "@/store/api-lifecycle";
@@ -74,9 +75,91 @@ function withLifecycle(c: Context<HonoEnv>, path: string): Record<string, string
   return lifecycleHeaders(path, c.env.STORE_BASE_URL);
 }
 
-lookRoutes.get(`/api/look/${LOOK_VERSION}`, (c) =>
-  c.json(doc(c.env.STORE_BASE_URL), 200, withLifecycle(c, `/api/look/${LOOK_VERSION}`)),
-);
+/**
+ * THE MARKDOWN TWIN (2026-09-09). The document answered only in JSON,
+ * so `/api/look/v1.md` was a 404 beside a preflight twin that answered.
+ * Rendered from the same `doc()` the JSON serves — one source — by a
+ * renderer generic enough that a field added to the document appears
+ * here without anybody remembering a second place needed editing:
+ * a string is a paragraph, a list is bullets, an object is a
+ * key-by-key list, and nesting indents.
+ */
+function docMarkdown(base: string): string {
+  const d = doc(base) as Record<string, unknown>;
+  const render = (value: unknown, depth = 0): string => {
+    const pad = "  ".repeat(depth);
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) =>
+          entry && typeof entry === "object"
+            ? `${pad}-\n${render(entry, depth + 1)}`
+            : `${pad}- ${String(entry)}`,
+        )
+        .join("\n");
+    }
+    if (value && typeof value === "object") {
+      return Object.entries(value as Record<string, unknown>)
+        .map(([key, entry]) =>
+          entry && typeof entry === "object"
+            ? `${pad}- **\`${key}\`**\n${render(entry, depth + 1)}`
+            : `${pad}- **\`${key}\`** — ${String(entry)}`,
+        )
+        .join("\n");
+    }
+    return value === undefined ? "" : `${pad}${String(value)}`;
+  };
+  const heading = (key: string): string =>
+    key.replace(/_/g, " ").replace(/^./, (ch) => ch.toUpperCase());
+  const skip = new Set(["title", "version", "summary", "method", "url"]);
+  const sections = Object.entries(d)
+    .filter(([key]) => !skip.has(key))
+    .map(([key, value]) => `## ${heading(key)}\n\n${render(value)}`)
+    .join("\n\n");
+  return `---
+title: "${String(d["title"])}"
+description: "${String(d["summary"]).replace(/"/g, "'")}"
+canonical: "${base}/api/look/${LOOK_VERSION}"
+url: "${base}/api/look/${LOOK_VERSION}"
+version: "${String(d["version"])}"
+method: "POST"
+price: "free"
+auth: "none"
+---
+
+# ${String(d["title"])}
+
+${String(d["summary"])}
+
+## How to call it
+
+\`\`\`
+POST ${base}/api/look/${LOOK_VERSION}
+Content-Type: application/json
+
+{"url": "https://the-door-you-are-asking-about/..."}
+\`\`\`
+
+Free, and no account exists to open. The whole procedure for every door
+in this store is at ${base}/auth.md.
+
+${sections}
+`;
+}
+
+lookRoutes.get(`/api/look/${LOOK_VERSION}`, (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const path = `/api/look/${LOOK_VERSION}`;
+  c.header("Vary", VARY_ACCEPT);
+  // JSON by default; markdown only when ranked above it, as everywhere.
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
+    return c.text(docMarkdown(base), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+      ...withLifecycle(c, path),
+    });
+  }
+  return c.json(doc(base), 200, withLifecycle(c, path));
+});
 lookRoutes.get("/api/look", (c) => c.json(doc(c.env.STORE_BASE_URL)));
 
 async function handle(c: Context<HonoEnv>) {

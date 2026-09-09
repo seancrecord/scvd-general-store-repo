@@ -237,6 +237,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/menu.json": ["application/json", "text/markdown"],
   "/api/preflight/v1": ["application/json", "text/markdown"],
   "/api/preflight/v2": ["application/json", "text/markdown"],
+  // Gained a markdown twin on 2026-09-09, beside the preflight's.
+  "/api/look/v1": ["application/json", "text/markdown"],
   "/pricing": ["application/json", "text/markdown", "text/html"],
   "/deprecation": ["text/html", "text/markdown", "application/json"],
   "/developers": ["text/html", "text/markdown", "application/json"],
@@ -251,7 +253,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/trust": ["application/json", "text/html"],
   "/fresh-set": ["application/json", "text/html"],
   "/corrections": ["application/json", "text/html"],
-  "/api/conformance/v1": ["application/json", "text/html"],
+  // Markdown added 2026-09-09; JSON and HTML were already served.
+  "/api/conformance/v1": ["application/json", "text/markdown", "text/html"],
   "/bounties": ["application/json", "text/html"],
   "/credit": ["application/json", "text/html"],
   "/samples": ["application/json", "text/html"],
@@ -6322,7 +6325,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returnsMarkdown(
           freeOp(
             "The pricing charter, in markdown",
-            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses — and beneath the clauses, every priced door on the shelf with its price and cadence, read off the live menu as the page renders rather than typed. There are no plans and no tiers here: one price per door, paid per call. The canonical link points back at /pricing: one document, two addresses.",
           ),
         ),
       },
