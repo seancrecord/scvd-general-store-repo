@@ -679,3 +679,169 @@ describe("two real settlements, one listing", () => {
     expect(paid.reward_usd).toBe(0.1);
   });
 });
+
+/**
+ * THE ASK, MADE OF SHAPE RATHER THAN SENTENCES (2026-09-09).
+ *
+ * Forty-nine settlements from three wallets carried ZERO structured
+ * reports. The asks were on every listing, in the JSON those walkers
+ * polled 235 times, and at the claim door — and a walker is code whose
+ * claim body was written against the shape published the day it
+ * integrated. Prose in a field nobody parses is prose nobody sends.
+ *
+ * Four things follow, and these tests hold each: the ask is a template
+ * a client can act on; the fields are taken wherever the walker puts
+ * them; a malformed field is explained rather than silently dropped;
+ * and the answer teaches without ever touching the reward.
+ */
+describe("the ask is a shape, and the door teaches on the way past", () => {
+  async function paidClaim(body: Record<string, unknown>) {
+    vi.stubGlobal("fetch", world());
+    const bounty = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: world() },
+    );
+    return claimBounty(
+      testEnv,
+      {
+        bountyId: bounty.bounty_id,
+        txHash: TX,
+        payer: SHOPPER,
+        payoutTo: PAYOUT_TO,
+        ...body,
+      } as never,
+      await claimOptions(),
+    );
+  }
+
+  it("publishes a template with keys and nulls, not a paragraph", async () => {
+    const board = (await (await SELF.fetch(`${BASE}/api/bounties`)).json()) as {
+      report_template: Record<string, null>;
+      report_fields: Array<{ field: string; what: string; how: string; why: string }>;
+    };
+    expect(Object.keys(board.report_template).sort()).toEqual([
+      "body_sha256",
+      "bytes",
+      "content_type",
+      "latency_ms",
+      "payment_response",
+      "status",
+    ]);
+    expect(Object.values(board.report_template).every((v) => v === null)).toBe(true);
+    // Every field says what it is, how to get it, and what it buys.
+    for (const entry of board.report_fields) {
+      expect(entry.what.length, entry.field).toBeGreaterThan(10);
+      expect(entry.how.length, entry.field).toBeGreaterThan(10);
+      expect(entry.why.length, entry.field).toBeGreaterThan(10);
+    }
+    // And the claim door answers with a complete, fillable body.
+    const door = (await (await SELF.fetch(`${BASE}/api/bounty-claim`)).json()) as {
+      example_claim: Record<string, unknown>;
+    };
+    expect(Object.keys(door.example_claim)).toContain("report");
+    expect(door.example_claim["bounty_id"]).toBeTruthy();
+  });
+
+  it("tells a walk that sent nothing exactly what it could have sent", async () => {
+    const result = await paidClaim({});
+    expect(result.reward_usd).toBe(0.1);
+    expect(result.your_report.received).toBeNull();
+    expect(result.your_report.missing.map((m) => m.field)).toContain("body_sha256");
+    for (const entry of result.your_report.missing) {
+      expect(entry.how.length, entry.field).toBeGreaterThan(10);
+    }
+    expect(result.your_report.template).toHaveProperty("status", null);
+    // The reward is never the lever.
+    expect(result.your_report.note).toContain("reward is yours regardless");
+  });
+
+  /**
+   * A CORRECT PAYLOAD IN THE FLATTER SHAPE. Refusing this on a
+   * technicality would be this store failing the way the doors it
+   * audits fail: the right values, rejected for their packaging.
+   */
+  it("takes the fields at the top level as well as nested", async () => {
+    const { claimedReport } = await import("@/routes/bounties");
+    // The flatter shape, which is the one a client is likelier to send.
+    expect(
+      claimedReport({ bounty_id: "bty_x", status: 200, body_sha256: DIGEST }),
+    ).toEqual({ status: 200, body_sha256: DIGEST });
+    // The nested shape, as documented.
+    expect(claimedReport({ report: { status: 201 } })).toEqual({ status: 201 });
+    // Both at once: nested wins, and nothing is lost from either.
+    expect(
+      claimedReport({ status: 200, latency_ms: 12, report: { status: 500 } }),
+    ).toEqual({ status: 500, latency_ms: 12 });
+    // A claim with no report at all stays undefined rather than {}.
+    expect(claimedReport({ bounty_id: "bty_x" })).toBeUndefined();
+  });
+
+  it("keeps what fits, names what did not, and never charges for the mistake", async () => {
+    const result = await paidClaim({
+      report: {
+        status: 200,
+        body_sha256: "not-a-digest",
+        payment_response: "yes",
+        latency_ms: 850,
+      },
+    });
+    expect(result.reward_usd).toBe(0.1);
+    expect(result.your_report.received).toEqual({ status: 200, latency_ms: 850 });
+    const dropped = result.your_report.dropped.map((d) => d.field).sort();
+    expect(dropped).toEqual(["body_sha256", "payment_response"]);
+    // Each says the shape it needed, so a walker is one edit from useful.
+    const digest = result.your_report.dropped.find((d) => d.field === "body_sha256");
+    expect(digest?.why).toContain("64 hex characters");
+    const receipt = result.your_report.dropped.find((d) => d.field === "payment_response");
+    expect(receipt?.why).toContain("true or false");
+  });
+
+  it("says so plainly when a walk sent everything", async () => {
+    const result = await paidClaim({
+      report: {
+        status: 200,
+        payment_response: false,
+        body_sha256: DIGEST,
+        bytes: 1234,
+        latency_ms: 850,
+        content_type: "application/json",
+      },
+    });
+    expect(result.your_report.missing).toHaveLength(0);
+    expect(result.your_report.dropped).toHaveLength(0);
+    expect(result.your_report.note).toContain("held against another walker");
+  });
+
+  /**
+   * SELLING TO SOMEBODY WHO WAS JUST PAID (the keeper: "so they can
+   * spend the money they made"). Once, on the paid answer, made of
+   * facts read off the menu and the credit desk — and never on a
+   * refusal, because a walker being told no is not a sales
+   * opportunity.
+   */
+  it("offers the shelf on a paid claim, with prices read off the menu", async () => {
+    const { walkerOffer } = await import("@/services/walker-offer");
+    const offer = walkerOffer(BASE);
+    expect(offer.cheapest_usd).toBeGreaterThan(0);
+    expect(offer.cheapest_item.buy_url).toContain("/api/buy/");
+    expect(offer.credit).toContain("%");
+    // The standing arrangement is named where it exists.
+    expect(offer.patronage?.id).toBe("recurring_patronage");
+    expect(offer.patronage?.what).toContain("thirty-day");
+    // The cheapest quoted price is really the cheapest on the menu.
+    const { MENU_ITEMS } = await import("@/store/menu");
+    const min = Math.min(...MENU_ITEMS.map((item) => item.price_usdc));
+    expect(offer.cheapest_usd).toBe(min);
+  });
+
+  it("never puts the offer on a refusal", async () => {
+    const refused = await SELF.fetch(`${BASE}/api/bounty-claim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bounty_id: "bty_none", tx_hash: `0x${"cd".repeat(32)}` }),
+    });
+    expect(refused.status).toBe(400);
+    expect(JSON.stringify(await refused.json())).not.toContain("spend_it_here");
+  });
+});

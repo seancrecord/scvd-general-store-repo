@@ -6,6 +6,8 @@ import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/json
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   bountyRailNames,
+  BOUNTY_REPORT_FIELDS,
+  BOUNTY_REPORT_TEMPLATE,
   BOUNTY_AUTH_VALID_SECONDS,
   BOUNTY_MAX_REWARD_USD,
   BOUNTY_OPEN_DAYS,
@@ -145,6 +147,13 @@ function boardWords(base: string) {
     how_to_claim: BOARD_HOW_TO_CLAIM,
     before_you_walk: BOARD_BEFORE_YOU_WALK,
     what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
+    /*
+     * THE ASK AS A SHAPE, not a sentence: 49 walks read the prose
+     * version and sent none of it. A template with keys and nulls is
+     * the thing a client can act on without anybody reading anything.
+     */
+    report_template: BOUNTY_REPORT_TEMPLATE,
+    report_fields: BOUNTY_REPORT_FIELDS,
     a_walk_end_to_end: workedWalk(base),
     why_a_claim_is_refused: BOUNTY_REFUSALS,
     the_rules: BOARD_RULES,
@@ -413,12 +422,59 @@ bountyRoutes.get("/api/bounty-claim", (c) => {
      */
     before_you_walk: BOARD_BEFORE_YOU_WALK,
     what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
+    report_template: BOUNTY_REPORT_TEMPLATE,
+    report_fields: BOUNTY_REPORT_FIELDS,
+    /**
+     * The claim body, complete and fillable. The shape door answers
+     * with the whole example rather than a description of one.
+     */
+    example_claim: {
+      bounty_id: "bty_…",
+      tx_hash: "the settlement on the bounty's rail",
+      payer: "the wallet that paid the door",
+      payout_to: "0x… (Base USDC, every rail)",
+      observation: "one line: what the goods actually were",
+      report: BOUNTY_REPORT_TEMPLATE,
+      note: "report fields are also accepted at the top level of this body if that is easier — nested wins on a conflict, and the answer says which arrived",
+    },
     why_a_claim_is_refused: BOUNTY_REFUSALS,
     a_walk_end_to_end: workedWalk(c.env.STORE_BASE_URL),
     the_board: "/api/bounties",
     the_room: "/bounties",
   });
 });
+
+/**
+ * THE REPORT, WHEREVER THE WALKER PUT IT (2026-09-09).
+ *
+ * The board asked for a nested `report` object and got nothing at all
+ * from forty-nine walks. Some of that is clients never reading the
+ * ask; some of it, predictably, will be clients that read it and put
+ * the fields at the top level of the claim body, which is the
+ * flatter and frankly more obvious shape. Refusing those on a
+ * technicality would be this store failing the same way the doors it
+ * audits fail — a correct payload rejected for its packaging.
+ *
+ * So both are taken, nested wins on a conflict, and the answer tells
+ * them which shape arrived. Being generous about the envelope costs
+ * nothing; the fields themselves are still shape-checked at the door.
+ */
+export function claimedReport(
+  body: Record<string, unknown>,
+): Parameters<typeof claimBounty>[1]["report"] | undefined {
+  const nested =
+    body["report"] && typeof body["report"] === "object"
+      ? (body["report"] as Record<string, unknown>)
+      : {};
+  const flat: Record<string, unknown> = {};
+  for (const entry of BOUNTY_REPORT_FIELDS) {
+    if (body[entry.field] !== undefined) flat[entry.field] = body[entry.field];
+  }
+  const merged = { ...flat, ...nested };
+  return Object.keys(merged).length > 0
+    ? (merged as Parameters<typeof claimBounty>[1]["report"])
+    : undefined;
+}
 
 /**
  * Attribution for the claim's row in the books — the same signals
@@ -462,12 +518,22 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
   } catch {
     await book("", "refused", "the claim body was not JSON");
     return c.json(
-      { error: "The claim body must be JSON — the shape is on GET /api/bounties." },
+      {
+        error: "The claim body must be JSON — here is the shape rather than a pointer to it.",
+        example_claim: {
+          bounty_id: "bty_…",
+          tx_hash: "the settlement on the bounty's rail",
+          payer: "the wallet that paid the door",
+          payout_to: "0x… (Base USDC, every rail)",
+          report: BOUNTY_REPORT_TEMPLATE,
+        },
+      },
       400,
     );
   }
   const bountyId = String(body["bounty_id"] ?? "");
   try {
+    const { walkerOffer } = await import("@/services/walker-offer");
     const result = await claimBounty(c.env, {
       bountyId,
       txHash: String(body["tx_hash"] ?? ""),
@@ -476,16 +542,22 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
       ...(typeof body["observation"] === "string"
         ? { observation: body["observation"] }
         : {}),
-      ...(body["report"] && typeof body["report"] === "object"
-        ? { report: body["report"] as Parameters<typeof claimBounty>[1]["report"] }
-        : {}),
+      ...(claimedReport(body) ? { report: claimedReport(body) } : {}),
     });
     await book(
       bountyId,
       "paid",
       `$${result.reward_usd} authorized to ${result.payout.authorization.to}`,
     );
-    return c.json(result, 200);
+    /*
+     * ONE LINE, ON THE WAY OUT, TO SOMEBODY WHO WAS JUST PAID. Never
+     * on a refusal (walker-offer.ts states why), and never a condition
+     * of anything above it — the reward was decided by the chain.
+     */
+    return c.json(
+      { ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL) },
+      200,
+    );
   } catch (error) {
     if (error instanceof BountyRefused) {
       await book(bountyId, "refused", error.message);
