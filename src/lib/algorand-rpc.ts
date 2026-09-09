@@ -26,24 +26,28 @@ import { outboundHeaders } from "@/lib/identity";
  */
 
 /**
- * USDC on Algorand mainnet is ASA 31566704 (Circle's), and this
- * constant is the one thing in this file the build environment could
- * not check for itself: egress to the Algorand indexer is blocked from
- * the machine this was written on, so the id comes from Circle's
- * published documentation rather than from a call this store made.
+ * USDC on Algorand mainnet is ASA 31566704, and this one is CHECKED
+ * rather than cited (2026-09-09). The reader was written on a machine
+ * whose egress policy blocks the Algorand indexer, so the id arrived
+ * from Circle's documentation with the gap stated out loud; the keeper
+ * then ran the call from his own machine and the indexer answered:
  *
- * THE FAILURE MODE IS FAIL-CLOSED, which is why shipping it unverified
- * is defensible. Every claim compares the on-chain asset id against
- * this number: wrong here means honest claims are REFUSED, never that
- * a wrong asset is paid for. Nobody loses money; a walker is told no.
+ *   name USDC, unit-name USDC, decimals 6, creator
+ *   2UEQTE5QDNXPI7M3TU44G6SYKLFWLPQO7EBZM7K7MHMQQMFI4QJPLHQFHM
  *
- * Verify it in one call before the first Algorand bounty is posted:
+ * Six decimals matters beyond identification: it means an atomic unit
+ * here is an atomic unit on Base, so a captured amount compares across
+ * the two rails without a conversion this file would otherwise have to
+ * carry.
  *
- *   curl -s https://mainnet-idx.algonode.cloud/v2/assets/31566704 \\
+ * THE FAILURE MODE STAYS FAIL-CLOSED whatever the number is. Every
+ * claim compares the on-chain asset id against it, so a wrong id
+ * REFUSES honest claims and can never pay for a transfer of something
+ * else. Re-check it the day Circle moves the asset, and override with
+ * ALGORAND_USDC_ASSET rather than waiting for a deploy:
+ *
+ *   curl -s https://mainnet-idx.algonode.cloud/v2/assets/31566704 \
  *     | jq '.asset.params | {name, "unit-name", decimals, creator}'
- *
- * Six decimals, unit-name USDC, Circle's creator address. Override
- * with ALGORAND_USDC_ASSET if it ever moves.
  */
 export const ALGORAND_USDC_ASSET_DEFAULT = 31_566_704;
 

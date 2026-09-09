@@ -149,7 +149,7 @@ anything before it POSTs reads them.
   the public page. Same rule as the expiry correction: one clock, and
   one wording, behind every face.
 
-## The fifth rail, and the one number we did not check (2026-09-09)
+## The fifth rail (2026-09-09)
 
 Algorand is read the way Solana is: the indexer answers what a
 transaction moved, and the claim compares it against the terms this
@@ -167,18 +167,25 @@ word `mainnet` (1). All three are accepted and stored as one, because
 refusing an honest door over a formatting opinion is the observer's
 defect, not the door's.
 
-And the honest gap: **USDC on Algorand is ASA 31566704, and this store
-has not verified that number itself.** Egress to the Algorand indexer
-was blocked from the machine the reader was written on, so the id comes
-from Circle's documentation rather than from a call we made. The
-failure mode is fail-closed — every claim compares the on-chain asset
-id against it, so a wrong number REFUSES honest claims and can never
-pay for the wrong asset. Verify before the first Algorand bounty:
+**USDC here is ASA 31566704, and the number was checked rather than
+cited.** The reader was written on a machine whose egress policy blocks
+the Algorand indexer, so the id arrived from Circle's documentation
+with the gap stated out loud; the keeper ran the call from his own
+machine on 2026-09-09 and the indexer answered name USDC, unit-name
+USDC, decimals 6, creator
+`2UEQTE5QDNXPI7M3TU44G6SYKLFWLPQO7EBZM7K7MHMQQMFI4QJPLHQFHM`. Six
+decimals is the part that matters twice: it identifies the asset, and
+it means an atomic unit here equals an atomic unit on Base, so a
+captured amount compares across rails with no conversion in between.
+
+The check stays fail-closed whatever the number is — every claim
+compares the on-chain asset id against it, so a wrong id refuses honest
+claims and can never pay for a transfer of something else. Re-run it
+the day Circle moves the asset, and `ALGORAND_USDC_ASSET` overrides
+without waiting for a deploy:
 
     curl -s https://mainnet-idx.algonode.cloud/v2/assets/31566704 \
       | jq '.asset.params | {name, "unit-name", decimals, creator}'
-
-`ALGORAND_USDC_ASSET` overrides it the day it moves.
 
 ## One claim at a time (2026-09-09)
 
