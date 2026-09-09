@@ -489,6 +489,7 @@ export const KV_KEYS = {
    * same case — written with a one-day TTL so it expires on its own.
    */
   caseFile: (caseId: string): string => `case_file:${caseId}`,
+  caseFilePurchase: (caseId: string, certId: string): string => `case_file_purchase:${caseId}:${certId}`,
   caseFileQuery: (digest: string): string => `case_file_query:${digest}`,
   /**
    * A settled sale whose goods have not gone out yet. Exists only

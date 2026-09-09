@@ -13,7 +13,7 @@ import type { HonoEnv } from "@/types";
 export const caseFileRoutes = new Hono<HonoEnv>();
 
 caseFileRoutes.get("/case/:case_id", async (c) => {
-  const record = await getCaseFile(c.env, c.req.param("case_id"));
+  const record = await getCaseFile(c.env, c.req.param("case_id"), c.req.query("cert_id"));
   if (!record) {
     return c.json(
       {

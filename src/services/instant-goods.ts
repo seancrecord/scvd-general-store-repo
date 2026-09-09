@@ -697,24 +697,24 @@ export async function deliverInstantGoods(
     case "the_case_file": {
       // Assembled and signed upstream so its evidence hash could go into
       // the certificate; filed here, after the mint, so the record
-      // carries the cert id. A reused case (same tx and mandate inside a
-      // day) is filed again under the same id with the new cert.
+      // carries this purchase's certificate without replacing earlier links.
       const caseFile = input.caseFile;
       if (!caseFile || !input.caseFileInput) {
         throw new Error("the_case_file reached goods with no assembly");
       }
-      await storeCaseFile(env, caseFile, input.certId ?? "", input.caseFileInput);
+      await storeCaseFile(env, caseFile, input.certId ?? "", input.caseFileInput, input.purchasedAt);
       return {
         deliverable: caseFileNote(caseFile),
         extras: {
           case_id: caseFile.case_id,
           case_url: `/case/${caseFile.case_id}`,
+          case_purchase_url: `/case/${caseFile.case_id}?cert_id=${encodeURIComponent(input.certId ?? "")}`,
           sections_present: ["settlement", "reconciliation", "mandate", "door", "delivery"].filter(
             (section) => (caseFile[section as keyof SignedCaseFile] as { presence: { present: boolean } }).presence.present,
           ),
           gaps: caseFile.gaps,
           ...(caseFile.conflict ? { conflict: caseFile.conflict } : {}),
-          ...(input.caseFileReused ? { reused: true, reused_note: "The same tx_hash and mandate_id were assembled inside the last 24 hours; this is that case file, under the same id, bound to this new certificate." } : {}),
+          ...(input.caseFileReused ? { reused: true, reused_note: "The same complete question was assembled inside the last 24 hours. This purchase binds that assembly to its own certificate; case_purchase_url carries this purchase's link." } : {}),
           case_file: caseFile,
           verify_note:
             "The file is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it too. Read `gaps` before anything else: the sections this store could not observe are the file's most important fact.",

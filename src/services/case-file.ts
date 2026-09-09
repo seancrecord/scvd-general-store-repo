@@ -3,7 +3,7 @@ import { jcsCanonicalize, signJcs } from "@/lib/jcs";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
-import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson } from "@/lib/kv-retry";
 import { houseWallets } from "@/lib/channel";
 import { signMessage } from "@/lib/signing";
 import { isSolanaSignature } from "@/lib/solana-rpc";
@@ -524,24 +524,26 @@ export async function storeCaseFile(
   signed: SignedCaseFile,
   certId: string,
   input: CaseFileInput,
+  purchasedAt?: string,
 ): Promise<CaseFileRecord> {
   const record: CaseFileRecord = {
     case: signed,
     cert_id: certId,
-    created_at: new Date().toISOString(),
+    created_at: purchasedAt ?? signed.assembled_at,
   };
-  await kvPut(env.PATRONS, KV_KEYS.caseFile(signed.case_id), JSON.stringify(record));
-  await kvPut(
-    env.PATRONS,
-    KV_KEYS.caseFileQuery(await caseFileQueryDigest(input)),
-    signed.case_id,
-    { expirationTtl: CASE_FILE_IDEMPOTENT_SECONDS },
-  );
-  return record;
+  if (!env.PAID_RECOVERIES) throw new Error("Case File publication coordinator unavailable");
+  const query = await caseFileQueryDigest(input);
+  const stub = env.PAID_RECOVERIES.get(env.PAID_RECOVERIES.idFromName(`case-file:${query}`));
+  return stub.publishCaseFile(query, record);
 }
 
-export async function getCaseFile(env: Env, caseId: string): Promise<CaseFileRecord | null> {
-  return kvGetJson<CaseFileRecord>(env.PATRONS, KV_KEYS.caseFile(caseId), "json");
+export async function getCaseFile(env: Env, caseId: string, certId?: string): Promise<CaseFileRecord | null> {
+  if (certId) {
+    const purchase = await kvGetJson<CaseFileRecord>(env.PATRONS, KV_KEYS.caseFilePurchase(caseId, certId), "json");
+    if (purchase) return purchase;
+  }
+  const record = await kvGetJson<CaseFileRecord>(env.PATRONS, KV_KEYS.caseFile(caseId), "json");
+  return record && (!certId || record.cert_id === certId) ? record : null;
 }
 
 /** The case already assembled for this complete question inside a day, if any. */
@@ -549,8 +551,16 @@ export async function existingCaseFor(
   env: Env,
   input: CaseFileInput,
 ): Promise<CaseFileRecord | null> {
-  const caseId = await kvGet(env.PATRONS, KV_KEYS.caseFileQuery(await caseFileQueryDigest(input)));
-  return caseId ? getCaseFile(env, caseId) : null;
+  if (!env.PAID_RECOVERIES) throw new Error("Case File publication coordinator unavailable");
+  const query = await caseFileQueryDigest(input);
+  const stub = env.PAID_RECOVERIES.get(env.PAID_RECOVERIES.idFromName(`case-file:${query}`));
+  const retained = await stub.latestCaseFile();
+  const caseId = retained ? null : await kvGet(env.PATRONS, KV_KEYS.caseFileQuery(query));
+  const record = retained ?? (caseId ? await getCaseFile(env, caseId) : null);
+  // KV expiration has a minimum TTL and may outlive the actual reuse window.
+  // A paid retry never makes an old assembly fresh again.
+  const age = record ? Date.now() - Date.parse(record.case.assembled_at) : NaN;
+  return age >= 0 && age < CASE_FILE_IDEMPOTENT_SECONDS * 1000 ? record : null;
 }
 
 /** The words a verdict would use, kept off every field by a test. */

@@ -1,3 +1,5 @@
+import { CaseFilePublicationStore } from "@/services/case-file-publication";
+import type { CaseFileRecord } from "@/services/case-file";
 import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-anchors";
 import { humanResolutionKey, type HumanResolutionRecord } from "@/services/human-resolution-record";
 import { HostedObservationStore, type HostedObservation, type HostedPurchase } from "@/services/hosted-observation";
@@ -97,6 +99,10 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly caseFile = new CaseFilePublicationStore(this.ctx.storage, this.env);
+  latestCaseFile() { return this.caseFile.latest(); }
+  publishCaseFile(query: string, record: CaseFileRecord) { return this.caseFile.publish(query, record); }
+
   private readonly patronAnchor = new PatronAnchorStore(this.ctx.storage, this.env);
   publishPatronAnchor(record: PatronAnchorRecord) { return this.patronAnchor.publish(record); }
 
