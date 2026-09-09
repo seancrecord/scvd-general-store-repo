@@ -149,7 +149,7 @@ export async function startConformanceWatch(
       ...(payer ? { payer: canonicalAddress(payer) } : {}),
       passes: [],
     };
-    const commission = await signWatchCommission(env, "conformance", record, purchase?.certId);
+    const commission = await signWatchCommission(env, "conformance", record, purchase?.certId, purchase?.itemId);
     if (commission) record.commission = commission;
     return { kind: "conformance" as const, record };
   });

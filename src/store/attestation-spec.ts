@@ -196,7 +196,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     signs:
       "The whole walk: the endpoint named, the moment, the exact User-Agent sent, every stage (approach, challenge, terms, screen, payment, settle, delivery) with its detail, what was paid, to whom, the settlement transaction where one came back, the paying field wallet, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
     does_not_prove:
-      "Anything about any other moment, any other buyer, or the seller generally — one transaction, once. An unpaid verdict is a statement about this store's published rules (spend cap, sanctions screen, rails carried), never about the seller. Payment was presented in the v2 shape only; a v1-only seller's refusal is recorded as exactly that. Never a badge, never a score.",
+      "Anything about any other moment, any other buyer, or the seller generally — one transaction, once. An unpaid verdict is a statement about this store's published rules (spend cap, sanctions screen, rails carried), never about the seller. Any payment presentation uses the v2 shape only; a v1-only seller's refusal is recorded as exactly that. A lost response or expired authorization does not prove no money moved: payment_attempt retains the reconciliation facts and names an unknown settlement explicitly. Never a badge, never a score.",
     verify_url: "/api/launch-check/{check_id}",
   },
   {
@@ -204,7 +204,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Opening days (one real purchase attempt, then a week of daily passes, then the passport, under one certificate)",
     trust_model: "third_party_observation",
     signs:
-      "The launch check's whole walk (endpoint, moment, User-Agent, every stage, what was paid and to whom, the settlement transaction where one came back, the field wallet) and its evidence hash, which the purchase certificate binds in its attests field. Each of the watch's daily passes is signed on its own at the history URL. The passport is the census's own signed, expiring object.",
+      "The launch check's whole walk (endpoint, moment, User-Agent, every stage, what was paid and to whom, the settlement transaction where one came back, the field wallet) and its evidence hash, which the purchase certificate binds in its attests field. A signed watch commission binds the same URL, purchase certificate and original service dates; each daily pass is signed on its own at the history URL. The passport is the census's own signed, expiring object.",
     does_not_prove:
       "Anything about any other moment, buyer, or the seller generally: one transaction once, seven daily looks, and a page that names its own stale date. The three under one certificate are still three observations, not a grade. Never a badge, never a score, never a guarantee the door stays up.",
     verify_url: "/api/opening-day/{cert_id}",

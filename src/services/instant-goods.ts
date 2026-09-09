@@ -305,25 +305,24 @@ export async function deliverInstantGoods(
         throw new Error("opening_day reached goods with no walk record");
       }
       const certId = input.certId ?? "";
-      await storeLaunchCheck(env, walk, certId);
+      await storeLaunchCheck(env, walk, certId, input.purchasedAt);
       const watch = await startConformanceWatch(
         env,
         input.targetUrl ?? "",
         input.payer,
+        { checkpoint, purchasedAt: input.purchasedAt, certId, itemId: "opening_day" },
       );
       const host = new URL(input.targetUrl ?? "https://invalid.example").host;
-      await kvPut(
-        env.ORDERS,
-        KV_KEYS.openingDay(certId),
-        JSON.stringify({
-          cert_id: certId,
-          host,
-          url: input.targetUrl ?? "",
-          check_id: walk.check_id,
-          watch_id: watch.record.watch_id,
-          opened_at: new Date().toISOString(),
-        }),
-      );
+      const bundle = {
+        cert_id: certId,
+        host,
+        url: input.targetUrl ?? "",
+        check_id: walk.check_id,
+        watch_id: watch.record.watch_id,
+        opened_at: watch.record.started_at,
+      };
+      const retained = checkpoint ? await checkpoint.save("opening_day", bundle) : bundle;
+      await kvPut(env.ORDERS, KV_KEYS.openingDay(certId), JSON.stringify(retained));
       return {
         deliverable: openingDayNote(walk.verdict, watch.record.ends_at),
         extras: {
@@ -337,6 +336,7 @@ export async function deliverInstantGoods(
             check_url: `/api/launch-check/${walk.check_id}`,
           },
           conformance_watch: {
+            ...(watch.record.commission ? { commission: watch.record.commission } : {}),
             watch_id: watch.record.watch_id,
             ends_at: watch.record.ends_at,
             history_url: watch.historyUrl,
@@ -566,7 +566,7 @@ export async function deliverInstantGoods(
       if (!walk) {
         throw new Error("launch_check reached goods with no record");
       }
-      await storeLaunchCheck(env, walk, input.certId ?? "");
+      await storeLaunchCheck(env, walk, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: launchCheckNote(
           walk.verdict,

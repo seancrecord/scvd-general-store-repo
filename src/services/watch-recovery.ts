@@ -19,7 +19,7 @@ export interface WatchCommission {
 export type RecoverableWatch =
   | { kind: "standing"; record: StandingWatchRecord }
   | { kind: "conformance"; record: ConformanceWatchRecord };
-export interface WatchPurchase { checkpoint?: ArtifactCheckpoint; purchasedAt?: string; certId?: string }
+export interface WatchPurchase { checkpoint?: ArtifactCheckpoint; purchasedAt?: string; certId?: string; itemId?: "opening_day" }
 interface WatchJournal { value: RecoverableWatch; count: number }
 type WatchStorage = Pick<DurableObjectStorage, "get" | "list">;
 const entryKey = (index: number) => `watch:entry:${String(index).padStart(9, "0")}`;
@@ -57,10 +57,10 @@ export async function retainWatch<T extends RecoverableWatch>(purchase: WatchPur
   const value = await prepare();
   return purchase?.checkpoint ? purchase.checkpoint.save("watch_record", value) : value;
 }
-export async function signWatchCommission(env: Env, kind: RecoverableWatch["kind"], record: RecoverableWatch["record"], certId?: string): Promise<WatchCommission | undefined> {
+export async function signWatchCommission(env: Env, kind: RecoverableWatch["kind"], record: RecoverableWatch["record"], certId?: string, itemId?: "opening_day"): Promise<WatchCommission | undefined> {
   if (!certId) return undefined; // Existing direct-service callers and legacy rows carry no purchase certificate.
   const signed_payload = jcsCanonicalize({ type: "scvd.watch-commission.v1", cert_id: certId,
-    item_id: kind === "standing" ? "standing_watch" : "conformance_watch", watch_id: record.watch_id,
+    item_id: itemId ?? (kind === "standing" ? "standing_watch" : "conformance_watch"), watch_id: record.watch_id,
     url: record.url, started_at: record.started_at, ends_at: record.ends_at,
     interval_hours: kind === "standing" ? 1 : 24 });
   const signed = await signMessage(signed_payload, env.SIGNING_KEY);

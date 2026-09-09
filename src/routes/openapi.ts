@@ -6620,7 +6620,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             signedArtifactSchema({
               payloadKey: "check",
               payloadDescription:
-                "The signed launch check: a real mainnet purchase made against the buyer's own endpoint, and what it answered.",
+                "The signed launch check: one purchase attempt against the buyer's exact endpoint. payment_attempt records the nonce, rail, amount and expiry when an authorization was prepared. Its settlement can remain unknown: an interrupted response or expired authorization does not prove no money moved. Recovery retains the original attempt without issuing another payment.",
             }),
           ),
           parameters: [

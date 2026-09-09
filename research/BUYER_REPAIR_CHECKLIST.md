@@ -19,7 +19,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
 
-The two remaining recovery parents need a product-by-product finish line. Existing complete coverage is named by `supportsArtifactRecovery()` in `src/lib/artifact-checkpoint.ts`. Partial progress and CI repairs must stay visible without counting either as a fully closed buyer finding. A 2026-09-09 snapshot derived from `MENU_ITEMS.filter(supportsArtifactRecovery)` admits 29 of the 33 current catalogue products to artifact recovery. That is implementation coverage, not a claim that all historical obligations or non-catalogue commissions are resolved; the open parents retain those limits.
+The two remaining recovery parents need a product-by-product finish line. Existing complete coverage is named by `supportsArtifactRecovery()` in `src/lib/artifact-checkpoint.ts`. Partial progress and CI repairs must stay visible without counting either as a fully closed buyer finding. A 2026-09-09 snapshot derived from `MENU_ITEMS.filter(supportsArtifactRecovery)` admits 31 of the 33 current catalogue products to artifact recovery. That is implementation coverage, not a claim that all historical obligations or non-catalogue commissions are resolved; the open parents retain those limits.
 
 ## Recovery SEV-1 status
 
@@ -449,5 +449,36 @@ Wallet identity is committed separately as `8203ab02`; the watch journal, commis
 
 Watch-family follow-through, still open:
 
-- [ ] Launch Check and Opening Day must retain the original upstream payment attempt and signed walk before allowing recovery; a retry must not spend from the field wallet again. The paid-fetch timeout currently calls the authorization "never accepted" without evidence; retain an unknown outcome instead of asserting non-payment.
+- [x] Launch Check and Opening Day retain the original upstream payment attempt and signed walk before allowing recovery; a retry cannot spend from the field wallet again. Interrupted presentations retain an explicit unknown outcome. See the launch recovery evidence below.
 - [ ] Expired empty-watch history pages still describe the first observation as coming on the next rounds. Correct that wording to show the ended term and its missed observations, including late recovery. This is a remaining buyer-message defect, not an extension of the purchased period.
+
+
+## Launch Check and Opening Day recovery — 2026-09-09
+
+- [x] Retain the authorization risk before presenting the field wallet's payment. A durable journal binds the buyer's verified authorization to the original item/path, full input digest and target URL; concurrent requests cannot create another walk.
+- [x] Preserve public reconciliation facts (nonce, rail, asset, amount and validity window) without retaining a spendable payment signature. A lost response or interrupted presentation reports an unknown settlement; expiry is never used as proof that no funds moved.
+- [x] Retain the original observation before signing and the signed walk before buyer settlement. Failed durable writes and lost acknowledgements survive a fresh journal instance without a second upstream send; historical purchases without their original observation remain refused.
+- [x] Recover the same certificate and signed walk through HTTP and both MCP payment profiles across all five fixture checkout rails. Failed certificate creation, public report writes and response retention recover through the authenticated purchase status without charging again.
+- [x] Recover Opening Day's original watch, service dates and bundle record after failed checkpoints or KV publication. A signed commission binds the watch to the actual Opening Day certificate and target; a retry after the week ends does not renew it.
+- [x] Preserve publication timestamps and verify the returned walk's signature, certificate evidence binding, exact target and bundled watch commission, including tampering with the target.
+- [x] Bound replay-response reads, cancelling an oversized body and reporting truncation rather than consuming it unboundedly after payment.
+
+The catalogue and recovery predicate evaluate to **31/33** admitted products. Remaining: Recurring Patronage and Operator Statement. BUY-017 and BUY-037 also retain historical obligations without original input/evidence. BUY-024 remains open for other term products. Original finding completion remains **18/39**. Checkout-rail fixtures do not expand the field wallet's Base-only upstream payment support, establish production settlement, or reconstruct historical evidence that was never retained.
+
+Validation: all 336 buyer cases fail with only this batch's source changes stashed. All nine durable-journal cases fail with retained-report and retained-attempt reuse disabled. The restored eight-file gate passes 404 tests. The replay-body boundary fails against the unchanged previous branch. A further review regression reproduces a seller-named transfer being incorrectly promoted to confirmation of the new authorization; the new authorization status stays unknown unless that exact authorization is established. The final full local suite passed all 618 files: 10,189 tests passed, zero failed and one existing key-continuity test was skipped (2,059.57 seconds). All 347 new regressions pass in that run. The final three-file boundary gate passes 11 tests, and the separate evidence-package gate passes 36 tests. Typechecking, both Worker dry-run bundles, audit, claims and docs checks pass. At that point, advancing onto merged #595 (`35230014`) changed no tested source or test bytes; all 1,253 source/test hashes matched the full-run snapshot. A subsequent clean rebase onto merged #597 (`7694f540`) brought in the separate index-reporting repair. All 439 recovery and affected-integration tests across 13 files then passed, along with typechecking and both Worker dry-run builds. This batch's recovery source/test bytes remain unchanged; GitHub's full suite on the final combined tree remains a merge gate. No live payment was submitted.
+
+
+Commit map for this batch: `39158f83` retains upstream authorization risk and observations; the following commit enables Launch Check and Opening Day delivery recovery and records these completed substeps.
+
+Next term-product batch (not complete):
+
+- [ ] Recurring Patronage: retain the original pass and each paid renewal grant; serialize distinct renewals without extending twice on replay or erasing a later renewal. Bind the purchased dates into independently verifiable commission proof.
+- [ ] Operator Statement: retain the original wallet, chain, asset, term, opening chain position and signed pass history. Preserve Solana payer identity. The current unavailable-head fallback sets the opening position to 1; the first pass then reads from there, rather than from the purchased month. Cover that wrong-period case before admitting this product to recovery.
+
+
+Additional launch follow-through found while reviewing this batch (not complete):
+
+- [ ] Validate public report responses against their served OpenAPI schemas. The shared signed-artifact schema currently requires `cert_id` and the audit verdict enum, while the Launch Check route returns a `certificate` URL and launch-specific verdicts such as `settled`. Cover the actual HTTP response rather than comparing schema helpers.
+- [ ] Distinguish idempotent retrieval from repeated fulfillment in the launch replay verdict. The current walk treats any replayed 2xx as a defect without establishing that the seller performed fresh work; returning the original purchased artifact is also the safe retry behavior this buyer suite requires.
+
+- [ ] Correlate the seller-named receipt with the exact authorization nonce and amount before claiming it settles the walk. The new `payment_attempt.settlement` stays unknown; the existing `tx_hash_status` describes the separate seller-named transfer read.
