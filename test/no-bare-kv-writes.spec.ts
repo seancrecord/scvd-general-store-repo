@@ -41,6 +41,12 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   "/src/services/a2a-tasks.ts": [
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],
+  "/src/services/case-file-publication.ts": [
+    'await txn.put("case:query", query);',
+    'await txn.put(caseKey, canonical);',
+    'await txn.put(purchaseKey, purchase);',
+    'await txn.put("case:latest", latest);',
+  ],
   "/src/services/patron-anchors.ts": [
     'await txn.put("patron-anchor", record);',
   ],

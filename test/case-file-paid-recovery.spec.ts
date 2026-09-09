@@ -232,3 +232,100 @@ for (const door of doors) for (const [rail] of laborNetworks().entries()) {
     } finally { spy.mockRestore(); }
   });
 }
+for (const door of doors) {
+  it(`the_case_file ${door}: reused assemblies retain both purchase certificates through reverse recovery`, async () => {
+    const first = await purchase(door, 0);
+    fault = "response-before";
+    expect((await first.send()).body.charged).toBe(true);
+    const snapshot = structuredClone(prepared!);
+    const original = (await getCaseFile(sourceEnv, String(object(snapshot.caseFile).case_id)))!;
+    fault = ""; unavailable = true;
+    const secondAt = new Date(NOW.getTime() + 3600_000);
+    vi.setSystemTime(secondAt);
+    const second = await purchase(door, 0, first.args);
+    const newer = await second.send();
+    expect(newer.refused, JSON.stringify(newer.body)).toBe(false);
+    expect(newer.body.reused).toBe(true);
+    await assertGood(second, newer.body, snapshot, secondAt.toISOString());
+    expect((await getCaseFile(sourceEnv, original.case.case_id))!.cert_id).toBe(original.cert_id);
+    const newerUrl = String(newer.body.case_purchase_url);
+    expect(object(await (await request(newerUrl)).json()).cert_id).not.toBe(original.cert_id);
+    // Force recovery to rebuild both projections from durable state, after a
+    // second buyer has received a certificate against the same assembly.
+    await sourceEnv.PATRONS.delete(KV_KEYS.caseFile(original.case.case_id));
+    await sourceEnv.PATRONS.delete(KV_KEYS.caseFilePurchase(original.case.case_id, original.cert_id));
+    expect(await runDurableObjectAlarm(first.stub)).toBe(true);
+    const recovered = JSON.parse((await first.stub.existingPurchase())!) as PurchaseIntent;
+    await assertGood(first, object(recovered.delivery), snapshot);
+    expect(await getCaseFile(sourceEnv, original.case.case_id)).toEqual(original);
+    expect(object(await (await request(newerUrl)).json()).cert_id).not.toBe(original.cert_id);
+    expect((await request(`/case/${original.case.case_id}?cert_id=unrelated`)).status).toBe(404);
+    expect(transfers).toBe(2);
+    expect(preparations).toBe(1);
+  });
+
+  it(`the_case_file ${door}: old recovery cannot revive expired evidence or replace a newer assembly`, async () => {
+    const first = await purchase(door, 0);
+    fault = "response-before";
+    expect((await first.send()).body.charged).toBe(true);
+    const snapshot = structuredClone(prepared!);
+    const file = object(snapshot.caseFile);
+    const query: CaseFileInput = { txHash: String(first.args.tx_hash), mandateId: String(first.args.mandate_id),
+      endpointUrl: String(first.args.url), launchCheckId: String(first.args.launch_check_id),
+      payer: String(first.args.payer), recipient: String(first.args.recipient), expectedAmountUsdc: 1.25, claim: String(first.args.claim) };
+    const queryKey = KV_KEYS.caseFileQuery(await caseFileQueryDigest(query));
+    fault = "";
+    vi.setSystemTime(new Date(NOW.getTime() + 86401_000));
+    // An intentionally stale KV pointer is not evidence that a file is fresh.
+    await sourceEnv.PATRONS.put(queryKey, String(file.case_id));
+    const second = await purchase(door, 0, first.args);
+    const newer = await second.send();
+    expect(newer.refused).toBe(false);
+    expect(newer.body.case_id).not.toBe(file.case_id);
+    unavailable = true;
+    expect(await runDurableObjectAlarm(first.stub)).toBe(true);
+    expect(await sourceEnv.PATRONS.get(queryKey)).toBe(newer.body.case_id);
+    const recovered = JSON.parse((await first.stub.existingPurchase())!) as PurchaseIntent;
+    await assertGood(first, object(recovered.delivery), snapshot);
+    expect(transfers).toBe(2);
+    expect(preparations).toBe(2);
+  });
+
+  it(`the_case_file ${door}: missing original case bytes stay owed without replacement`, async () => {
+    const p = await purchase(door, 0);
+    fault = "certificate-before";
+    expect((await p.send()).body.charged).toBe(true);
+    await runInDurableObject(p.stub, async (_instance, state) => {
+      const row = (await state.storage.get<{ path: string; digest: string; value: string }>("observation"))!;
+      const value = JSON.parse(row.value) as Obj;
+      delete value.caseFile;
+      await state.storage.put("observation", { ...row, value: JSON.stringify(value) });
+    });
+    fault = "";
+    const count = preparations;
+    expect(await runDurableObjectAlarm(p.stub)).toBe(true);
+    const recovered = JSON.parse((await p.stub.existingPurchase())!) as PurchaseIntent;
+    expect(recovered.delivery).toBeUndefined();
+    expect(preparations).toBe(count);
+    expect(transfers).toBe(1);
+  });
+
+  it(`the_case_file ${door}: persistent publication failure stays owed until storage returns`, async () => {
+    const p = await purchase(door, 0);
+    fault = "publication-before";
+    expect((await p.send()).body.charged).toBe(true);
+    const snapshot = structuredClone(prepared!);
+    const count = preparations;
+    unavailable = true;
+    expect(await runDurableObjectAlarm(p.stub)).toBe(true);
+    const owed = JSON.parse((await p.stub.existingPurchase())!) as PurchaseIntent;
+    expect(owed.state).toBe("settled");
+    expect(owed.delivery).toBeUndefined();
+    fault = "";
+    expect(await runDurableObjectAlarm(p.stub)).toBe(true);
+    const delivered = JSON.parse((await p.stub.existingPurchase())!) as PurchaseIntent;
+    await assertGood(p, object(delivered.delivery), snapshot);
+    expect(preparations).toBe(count);
+    expect(transfers).toBe(1);
+  });
+}
