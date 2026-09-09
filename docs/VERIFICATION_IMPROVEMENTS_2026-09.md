@@ -1,8 +1,9 @@
 # Verification improvements — September 8, 2026
 
 Authorized in this sitting: “okay lets outline a plan then lets do it”.
-Build serially on `codex/verification-evidence`. No commit, publication,
-deployment, external submission or production key change is included.
+Initial implementation ran serially on `codex/verification-evidence`.
+That initial scope excluded release; the subsequent authorizations and
+current status are recorded below.
 The feature queue stays in ROADMAP.md; this document is the design and
 validation record, not a second queue.
 
@@ -11,6 +12,32 @@ comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
 
 ## Release follow-through
+
+PR #585 merged as `041df513989980e614ffab8cd89e173507616137` on September 9
+UTC. Both Workers deployed and the public developer, verify and sampled /
+unsampled payment-challenge checks passed. Those release actions are done.
+
+The keeper subsequently authorized the remaining sequence: independent
+Bitcoin verification, verifier publication, corpus coverage and directory
+attribution, with documentation updated throughout. Work continues on
+`codex/verification-followthrough`; ROADMAP VQ2 tracks it. The September 9
+read independently checked the receipt and all six listed corpus proofs
+against matching headers from two outside explorers. All six corpus proofs
+were available at their calendars while the store still served pending
+submissions; a missing hourly corpus upgrade pass is being repaired.
+This is outside-header verification, not local Bitcoin consensus validation.
+The directory mismatch persists in the refreshed capture. No note was sent.
+Details and remaining limits are in the observation record below.
+
+The final follow-through tree passed **603 test files, 8,438 tests and one
+existing skip** (427.29 seconds on the final documentation pass), typecheck, both Worker bundles, 30 Node
+evidence tests, five independent Python proof/tamper checks, 56 focused
+checks on the final public wording and the
+checkout, corrections and claims checks. Regression checks were observed
+failing without the relevant fixes. The documentation check retains its
+existing dated-document backlog. See
+`research/verification-2026-09-09/validation-summary.json`.
+Merge, deployment and production proof reads are still to follow.
 
 The keeper authorized release with “alright lets roll”. The branch was
 fast-forwarded to current main `21cff153a23fb5813ed8f2301c71d2dd210b7029`
@@ -25,12 +52,12 @@ as history and is superseded for this release by that complete staged run.
 The live receipt was exported with the CLI and verified against the key
 captured separately earlier in this sitting. Its missing `saw` evidence and
 unverified Bitcoin timestamp were reported. The prepared release includes
-source distribution of the CLI; npm publication and the directory note
-remain separate. PQ signing stays experimental.
+source distribution of the CLI. Npm publication followed September 9;
+the directory note remains unsent. PQ signing stays experimental.
 
 ## Outcome of the implementation sitting
 
-Steps 1–2 are built locally. Step 3 produced a reproducible settlement join
+Steps 1–2 shipped in PR #585. Step 3 produced a reproducible settlement join
 and an unsent directory note. Step 4 produced the protected experimental
 envelope, real dual-signature checkpoint, measurements and tampering checks.
 Step 5 records one receipt and the unreadable corpus boundaries, not a
@@ -54,9 +81,11 @@ This is not a clean full-suite release result; other full-run failures were
 not individually classified. No tests were disabled or softened.
 `research/verification-2026-09-08/validation-summary.txt` retains summaries.
 
-Remaining release actions are outside this local implementation: review the
-draft copy, commit/merge/deploy if requested, and publish the verifier
-package. The directory note needs an actual send decision. The PQ candidate
+The original commit/merge/deploy actions are complete. Verifier 1.2.0
+was published September 9 with verified registry provenance; see
+DISTRIBUTION.md. The corpus upgrade repair is the new release in progress.
+The directory note still
+needs an actual send decision. The PQ candidate
 has no independent audit and remains outside production. There is no new
 paid screening SKU and no production key change.
 

@@ -19,6 +19,28 @@ and third doors. Rule 30 applies throughout: every actual send,
 submission, or account action is the keeper's hand; this file makes
 each one a five-minute job.
 
+## September 9 — verifier publication follow-through
+
+**Published:** [x402-verify 1.2.0](https://www.npmjs.com/package/x402-verify/v/1.2.0)
+from commit `4f452acee2690f112e6fcda2768630490ba270bd`, through the existing
+[provenance workflow](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34353123366).
+The preceding [dry run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34352944736)
+also passed. The workflow now runs the verifier's own tests instead of
+falling through its no-tests branch.
+
+A fresh registry install, with install scripts disabled, verified the saved
+real receipt and correctly returned its missing `saw` evidence. Registry
+integrity exactly matched the locally reviewed tarball. `npm audit signatures`
+verified both the registry signature and provenance attestation. Public
+release metadata and the installed-package result are retained under
+`research/verification-2026-09-09/`. No credential value was retrieved into
+this task; the workflow used its existing repository secret.
+
+The package README carries installed CLI commands and a stable portable-
+evidence heading. Node-only checks leave Bitcoin validation to a separate
+OTS verifier; package publication does not expand that claim. The former
+1.1.0 publication item is superseded by this release.
+
 ## 1. The official MCP Registry — PUBLISHED THREE TIMES, ONE POSITIONING BEHIND
 
 **Corrected 2026-08-29.** The paragraph that stood here said the

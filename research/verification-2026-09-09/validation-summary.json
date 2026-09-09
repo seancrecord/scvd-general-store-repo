@@ -1,0 +1,30 @@
+{
+  "scope": "Follow-through implementation plus final public documentation sweep before release; not deployment evidence",
+  "full_suite": {
+    "files_passed": 603,
+    "tests_passed": 8438,
+    "tests_skipped": 1,
+    "duration_seconds": 427.29,
+    "started_at": "2026-09-09T13:06:12Z"
+  },
+  "typecheck": "passed",
+  "worker_bundle_checks": "both passed",
+  "node_evidence_tests": 30,
+  "python_proof_and_tamper_tests": 5,
+  "checkout_configuration_tests": 14,
+  "corrections_tests": 2,
+  "claims": {
+    "resolved": 39,
+    "unbound": 0
+  },
+  "documentation_check": "passed; existing dated-document backlog reported",
+  "regressions_observed_red_then_green": [
+    "pending corpus feed claim",
+    "publication workflow verifier test branch",
+    "malformed corpus row isolation",
+    "corpus key and signed sequence mismatch"
+  ],
+  "package_publication": "Registry integrity matches reviewed local package; registry signature and provenance verified; fresh installation checked real receipt",
+  "proof_scope": "Receipt and six listed corpus snapshots verified against matching headers from two outside sources; no local consensus validation",
+  "final_public_copy_focused_tests": 56
+}

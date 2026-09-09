@@ -168,7 +168,7 @@ export async function corpusEntries(env: Env, base: string): Promise<FeedEntry[]
       title: `Snapshot ${record.snapshot.sequence}, week ${record.snapshot.week}`,
       link: `${base}/corpus/${record.snapshot.sequence}.json`,
       updated: record.snapshot.taken_at,
-      summary: `Signed snapshot ${record.snapshot.sequence} of the corpus chain, week ${record.snapshot.week}, digest ${record.digest}${record.ots ? ", Bitcoin-anchored" : ""}. The linked JSON is the exact bytes the signature covers; verify with the store's public key or your own library.`,
+      summary: `Signed snapshot ${record.snapshot.sequence} of the corpus chain, week ${record.snapshot.week}, digest ${record.digest}. Timestamp: ${record.ots?.status ?? "not submitted"}${record.ots?.status === "complete" ? " (proof available; verify against Bitcoin independently)" : ""}. The linked JSON contains the signed snapshot; recompute its canonical bytes and verify with the store's public key or your own library.`,
     }))
     .sort((a, b) => b.updated.localeCompare(a.updated));
 }

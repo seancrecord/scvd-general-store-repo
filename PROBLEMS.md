@@ -34,6 +34,16 @@ file because everything else assumes the key is ours alone.
 
 ### 2. Temporally immutable proof of authorization — OTS ANCHORING SHIPPED 2026-08-02
 
+**September 9 verification follow-through:** the key-history machinery
+below is distinct from the corpus. A complete read found all listed corpus
+entries still serving pending proofs even though their calendars held
+completed upgrades. The corpus lacked the hourly upgrade caller; the repair
+is on ROADMAP VQ2. The saved receipt and all listed corpus proofs now pass
+independent operation/header checks using the Python OpenTimestamps library
+and matching headers from two outside explorers. This is not local Bitcoin
+consensus validation. Evidence, the feed correction and remaining coverage
+limits: `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`.
+
 **Shipped:** an append-only hash chain over the key state at
 /.well-known/anchor-log.json, with digests submitted to the free
 OpenTimestamps calendars and a cron that upgrades pending proofs to
@@ -1856,6 +1866,16 @@ The four surfaces this entry still owed a measurement —
 as the OpenAPI guard: a budget inside the reader's cap, and a
 refusal to pass by deleting the shelf. ⚑ Rule wording awaits the
 keeper's own ink.
+
+**Reopened by a live read, September 9:** `/corpus.json` was 11,492,925
+bytes and `/corpus/6.json` was 11,483,825 bytes. Both exceeded the earlier
+8 MiB capture cap; the newer bounded capture read them successfully at
+32 MiB. The existing machine-surface test did not exercise a corpus of this
+size. A passing small fixture therefore does not establish production
+readability. Keep the signed snapshot bytes; make the index compact and
+add a representative growth check. This remains on ROADMAP VQ2; increasing
+one research client's cap did not close it. Raw bytes and sizes are retained
+in `research/verification-2026-09-09/capture-manifest.json`.
 
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 

@@ -846,6 +846,7 @@ The source verifier now includes a free portable-evidence command. Export
 with `node verifier/evidence-cli.mjs export <verify-url> --out <new-directory>`,
 then verify `bundle.json` with `node verifier/evidence-cli.mjs verify <file>
 --public-key <independently-trusted-public-key-hex>`. See
-[the verifier's limits and full instructions](verifier/README.md#portable-evidence-12-source-release-npm-publication-pending).
+[the verifier's limits and full instructions](verifier/README.md#portable-evidence).
 Missing linked evidence is named. This verifies signed bytes and attachment
-bindings; Bitcoin proof verification is separate. npm publication is pending.
+bindings; Bitcoin proof verification is separate. The linked instructions
+cover source and package installation.

@@ -117,7 +117,7 @@ function r2Key(sequence: number): string {
  * invisible (and the idempotent snapshot pass re-takes it) rather
  * than pointing at an object that does not exist.
  */
-async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<void> {
+export async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<void> {
   const sequence = record.snapshot.sequence;
   if (env.CORPUS_R2) {
     await env.CORPUS_R2.put(r2Key(sequence), JSON.stringify(record));

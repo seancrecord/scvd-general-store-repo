@@ -6,7 +6,7 @@ edited in place.
 
 ## 1.2.0 — 2026-09-08
 
-Source release, not yet published: portable signed-payload evidence bundles
+Portable signed-payload evidence bundles
 and the scvd-evidence export/offline verification command. Existing JWS
 APIs are unchanged. Timestamp proofs remain independently verifiable OTS
 files, never a local Bitcoin verification claim.

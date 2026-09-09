@@ -971,6 +971,15 @@ const worker: ExportedHandler<Env> = {
      * failure inside is already recorded on its own entry — this catch
      * is for the unexpected kind.
      */
+    // Corpus snapshots are submitted weekly; their proofs finish hourly.
+    ctx.waitUntil(
+      import("@/services/corpus-anchors").then(({ sweepCorpusAnchors }) =>
+        sweepCorpusAnchors(env).then(
+          (summary) => console.log(JSON.stringify({ event: "corpus_anchor_sweep", ...summary })),
+          () => sendAlert(env, { condition: "worker_health", detail: "Corpus anchor sweep failed." }),
+        ),
+      ),
+    );
     // The patron anchors' sweep rides the same hour: resubmit what a
     // down calendar refused, upgrade what Bitcoin has since confirmed.
     // Bounded per pass; completing delivery, not monitoring (rule 23a).

@@ -14,6 +14,11 @@
 > Use their ROADMAP DONE rows and tests, not the historical “missing”
 > column below, to decide whether code remains to be written.
 
+**Publication follow-through, 2026-09-09:** `x402-verify` 1.2.0 is now
+on npm, including the verification front door and portable evidence CLI.
+Registry integrity, provenance and an installed CLI were checked; see
+DISTRIBUTION.md. The original intake below remains historical.
+
 The keeper's memo of 2026-09-03 evening, filed as a plan: each of its
 ten parts against what already stands in the tree, what is missing,
 and the three moves it names first. The lens is the same one he set

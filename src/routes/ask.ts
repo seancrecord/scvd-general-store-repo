@@ -482,7 +482,7 @@ const SCHEMA_FEEDS: readonly SchemaFeed[] = [
   {
     path: "/corpus.json",
     type: "application/json",
-    title: "The signed evidence corpus, appended weekly and Bitcoin-anchored",
+    title: "The signed evidence corpus, appended weekly with Bitcoin timestamp status",
   },
   {
     path: "/doors.json",

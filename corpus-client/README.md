@@ -22,7 +22,8 @@ const atom = await feeds();                    // the four Atom feeds, by addres
 
 Every function is one GET to a stable address and returns the store's
 JSON whole. Nothing is summarised, scored or re-derived here: the
-corpus is signed and Bitcoin-anchored, and a client that rewrote it
+corpus is signed, with each digest submitted for Bitcoin anchoring.
+Pending submissions still need completed proofs and independent verification. A client that rewrote it
 would be a second source of truth. Check the signatures with
 [`x402-verify`](https://www.npmjs.com/package/x402-verify) or any
 ed25519 library against the key at `/.well-known/scvd-signing-key`.

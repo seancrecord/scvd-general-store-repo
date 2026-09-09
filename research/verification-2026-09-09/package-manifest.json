@@ -1,0 +1,25 @@
+{
+  "package": "x402-verify",
+  "version": "1.2.0",
+  "integrity": "sha512-yEF+ySZG21ZuSY0eIHKUBH5eMnfZiLL6k9oE4+HK/xvasy5C1iyYZg019hPIbQaYstk3MF7k2xTtnPvfEal6zw==",
+  "bytes": 29462,
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "evidence-bundle.d.ts",
+    "evidence-bundle.js",
+    "evidence-cli.mjs",
+    "fixtures/issuer-key-document.json",
+    "fixtures/offer-expired-but-wellformed.json",
+    "fixtures/offer-tampered-payload.json",
+    "fixtures/offer-valid.json",
+    "fixtures/receipt-missing-payer.json",
+    "fixtures/receipt-valid.json",
+    "fixtures/receipt-wrong-key.json",
+    "package.json",
+    "x402-verify.d.ts",
+    "x402-verify.js"
+  ],
+  "scope": "Local tarball prepared for publication. Not a registry receipt."
+}

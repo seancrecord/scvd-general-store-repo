@@ -1,0 +1,252 @@
+{
+  "captured_at": "2026-09-09T12:23:26.780Z",
+  "bound_bytes_per_read": 33554432,
+  "index_entries": 6,
+  "reads": [
+    {
+      "url": "https://scvd.store/corpus.json",
+      "read_at": "2026-09-09T12:23:19.836Z",
+      "status": 200,
+      "bytes": 11492925,
+      "sha256": "ddd7f93c7099d85ccc76edc79306cc199512f4e182bf266d2618c3944ab85aa2",
+      "file": "corpus-index.json.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/1.json",
+      "read_at": "2026-09-09T12:23:22.780Z",
+      "status": 200,
+      "bytes": 14523,
+      "sha256": "38ac52d150a422b75d0d52e794db9faa998e5e63b603f9d159c4d239f3b6d0cc",
+      "file": "corpus-1.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6a785dded6f9985a14eae330afa7807cc52f9344c819063129b9a12c26e92ab28586732b4497030e0a8bd017",
+      "read_at": "2026-09-09T12:23:22.823Z",
+      "status": 200,
+      "bytes": 1036,
+      "sha256": "080aebc1b516c6f77e31a3271fa252b2beb8daa419a91cc488b9205f1bb6b0e2",
+      "file": "corpus-1.upgrade.bin.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/2.json",
+      "read_at": "2026-09-09T12:23:23.152Z",
+      "status": 200,
+      "bytes": 24487,
+      "sha256": "6c54bd7a106242243e15847e34936a46356d5cd52059e4992634870994ae88e0",
+      "file": "corpus-2.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6a81986d0b9d6fbb204da248bf2be0a2be34ef6bd0be77b401c13c7a6219729c587caa300a11f6e1241a070e",
+      "read_at": "2026-09-09T12:23:23.194Z",
+      "status": 200,
+      "bytes": 966,
+      "sha256": "bebc2dbb4c18085a1f93ac9c17a1376569b574da1dee87eb3863f7dbdc52a14b",
+      "file": "corpus-2.upgrade.bin.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/3.json",
+      "read_at": "2026-09-09T12:23:23.300Z",
+      "status": 200,
+      "bytes": 16149,
+      "sha256": "55764b20307ce8c88657612e27ecbf2807027e4a37c94262f3d2adf3a37d4984",
+      "file": "corpus-3.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6a84f74a3c4fdfb2d053304417becfd89e67fb8894ab2d02fba9e8e54123f23747bd5ae95f2100978aa9b5db",
+      "read_at": "2026-09-09T12:23:23.354Z",
+      "status": 200,
+      "bytes": 1035,
+      "sha256": "fc1fb68fbe007dc648ffa230ad5398082bea073ee356702c83d6f186cb9b36e9",
+      "file": "corpus-3.upgrade.bin.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/4.json",
+      "read_at": "2026-09-09T12:23:23.460Z",
+      "status": 200,
+      "bytes": 331043,
+      "sha256": "5df87a3930361e01e35ae75089ec16a1c6f3c6afc1a8cf0d84b2bf64e0148366",
+      "file": "corpus-4.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6a8c510bfd14f128b2d6f6d8291e49f4800c471600fb14d6121813285af115b82c5ff16d422158cc972ffd18",
+      "read_at": "2026-09-09T12:23:23.654Z",
+      "status": 200,
+      "bytes": 930,
+      "sha256": "8c0f351dcfc4b0ca790e10275b7230b5aa5655afabb4fb5b92ea989e2e200aac",
+      "file": "corpus-4.upgrade.bin.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/5.json",
+      "read_at": "2026-09-09T12:23:23.755Z",
+      "status": 200,
+      "bytes": 6779097,
+      "sha256": "e3280471793559f66d475ddb5654d9c4bbca05503464bccb53e6c05df72da88d",
+      "file": "corpus-5.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6a96d2af0dce6d7881fa6a184cad46044fff833cd957f6ad2db94acea7a9824d1b632662c14685566d56a6ca",
+      "read_at": "2026-09-09T12:23:24.470Z",
+      "status": 200,
+      "bytes": 930,
+      "sha256": "431977ab0cd895485ba4e9f1783f6629fcc3a0be41548089aad069ff4954e9aa",
+      "file": "corpus-5.upgrade.bin.gz"
+    },
+    {
+      "url": "https://scvd.store/corpus/6.json",
+      "read_at": "2026-09-09T12:23:24.572Z",
+      "status": 200,
+      "bytes": 11483825,
+      "sha256": "651b6365dd0f3637b6c3b156056c9342bfba2982fc50577a6584040e2467822c",
+      "file": "corpus-6.json.gz"
+    },
+    {
+      "url": "https://alice.btc.calendar.opentimestamps.org/timestamp/6aa021bd01c26e4a06a85d1a6c9a2979453fa80ab35bd71f5bad48c9716502b7ab0e21d266541a473001c522",
+      "read_at": "2026-09-09T12:23:25.557Z",
+      "status": 200,
+      "bytes": 965,
+      "sha256": "edfac7ea51fd448ea0885ea0c2f95865a410c10e97b046c9b0607a3ab1d62de0",
+      "file": "corpus-6.upgrade.bin.gz"
+    },
+    {
+      "url": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+      "read_at": "2026-09-09T12:23:25.649Z",
+      "status": 200,
+      "bytes": 87217,
+      "sha256": "08b07385cb1203dcaf95017dd4143feeb031d8ef4b1b0e1fd5dacc903ef07cdb",
+      "file": "listing.json.gz"
+    },
+    {
+      "url": "https://www.x402-list.com/api/v1/facilitators/coinbase",
+      "read_at": "2026-09-09T12:23:26.164Z",
+      "status": 200,
+      "bytes": 14303,
+      "sha256": "bb7ab104362edace23af560d80073c848d51ec772fb4b9e151a2e65ec6d69773",
+      "file": "coinbase.json.gz"
+    },
+    {
+      "url": "https://blockstream.info/api/block-height/965852",
+      "read_at": "2026-09-09T12:23:26.328Z",
+      "status": 200,
+      "bytes": 64,
+      "sha256": "60a929419a0748e6731e65d7aeefe1ab860818be18871c6f884e330be6d8e21a",
+      "file": "receipt-blockstream.info.hash.txt.gz"
+    },
+    {
+      "url": "https://blockstream.info/api/block/00000000000000000001a27ca2feecc6065cf4e54bf4fe4f4ae0bd9dd16e9a42/header",
+      "read_at": "2026-09-09T12:23:26.569Z",
+      "status": 200,
+      "bytes": 160,
+      "sha256": "b7f508f2229eb858d3014ae0c191bb4d8ef2c41b5a74408b5e3f19cf25e40be0",
+      "file": "receipt-blockstream.info.header.txt.gz"
+    },
+    {
+      "url": "https://mempool.space/api/block-height/965852",
+      "read_at": "2026-09-09T12:23:26.643Z",
+      "status": 200,
+      "bytes": 64,
+      "sha256": "60a929419a0748e6731e65d7aeefe1ab860818be18871c6f884e330be6d8e21a",
+      "file": "receipt-mempool.space.hash.txt.gz"
+    },
+    {
+      "url": "https://mempool.space/api/block/00000000000000000001a27ca2feecc6065cf4e54bf4fe4f4ae0bd9dd16e9a42/header",
+      "read_at": "2026-09-09T12:23:26.749Z",
+      "status": 200,
+      "bytes": 160,
+      "sha256": "b7f508f2229eb858d3014ae0c191bb4d8ef2c41b5a74408b5e3f19cf25e40be0",
+      "file": "receipt-mempool.space.header.txt.gz"
+    }
+  ],
+  "corpus": [
+    {
+      "sequence": 1,
+      "listed_digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 961727
+        }
+      ]
+    },
+    {
+      "sequence": 2,
+      "listed_digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 962725
+        }
+      ]
+    },
+    {
+      "sequence": 3,
+      "listed_digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 963117
+        }
+      ]
+    },
+    {
+      "sequence": 4,
+      "listed_digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 963865
+        }
+      ]
+    },
+    {
+      "sequence": 5,
+      "listed_digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 965040
+        }
+      ]
+    },
+    {
+      "sequence": 6,
+      "listed_digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+      "listed_status": "pending",
+      "digest_matches": true,
+      "signature_valid": true,
+      "previous_matches": true,
+      "published_status": "pending",
+      "pending_count": 1,
+      "bitcoin_attestations": [
+        {
+          "block_height": 966091
+        }
+      ]
+    }
+  ],
+  "trust": "Signatures use separately captured issuer HTTPS key. No local Bitcoin chain. Upgrades are local captures, never production writes."
+}

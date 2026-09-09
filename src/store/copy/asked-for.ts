@@ -207,7 +207,7 @@ export function askedForFaq(base: string): { question: string; answer: string }[
     },
     {
       question: "Is scvd.store legitimate?",
-      answer: `Check rather than trust: prices are public and small, payment moves wallet-to-wallet over x402 to the address printed in every 402, and everything the store signs verifies free at ${base}/api/verify/{id} with the public key at ${base}/.well-known/scvd-signing-key. Kept by a named human, with the registered entity in the structured data on the front page and a dated record of every claim we got wrong at ${base}/corrections. The signed corpus is Bitcoin-anchored weekly, so its history cannot be quietly rewritten.`,
+      answer: `Check rather than trust: prices are public and small, payment moves wallet-to-wallet over x402 to the address printed in every 402, and everything the store signs verifies free at ${base}/api/verify/{id} with the public key at ${base}/.well-known/scvd-signing-key. Kept by a named human, with the registered entity in the structured data on the front page and a dated record of every claim we got wrong at ${base}/corrections. The signed corpus is hash-chained weekly and submitted for Bitcoin anchoring. Check each timestamp status and verify the completed proof to establish its existed-by bound.`,
     },
   ];
 }

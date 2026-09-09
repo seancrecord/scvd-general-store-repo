@@ -58,7 +58,7 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd before-you-pay <url> [--cap <usd>]` | Will a stock x402 client pay that door, and which accept would it sign? A dry run: nothing is signed, nothing is paid. `--cap` sets the client's per-payment ceiling; without it, the answer is for a client configured with nothing. |
 | `scvd onpage <url>` | What that page serves a machine reader: title, description, canonical, headings, JSON-LD. |
 | `scvd fresh-set` | This week's x402 doors that answered a conformant challenge. |
-| `scvd corpus` | The weekly signed, Bitcoin-anchored census, whole. |
+| `scvd corpus` | The weekly signed census with its timestamp status, whole. |
 | `scvd month [YYYY-MM]` | The state of x402 for one month: the closing week beside every round's door-weeks, defects by name, the months held. |
 | `scvd feeds` | The four Atom feeds — the brief, the corpus, corrections, disagreements — by address. |
 | `scvd menu` | What is on the shelf, and for how much. |
