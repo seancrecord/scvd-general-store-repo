@@ -1,6 +1,7 @@
 import {
   BASE_EVM,
   BASE_USDC,
+  EVM_CHAINS,
   evmChainOf,
   authorizationUsed,
   getBlockNumber,
@@ -64,6 +65,41 @@ export const BOUNTY_WEEKLY_BUDGET_USD = 10;
 export const BOUNTY_AUTH_VALID_SECONDS = 7 * 24 * 3600;
 /** Verbatim observation cap — a claim, not a filesystem. */
 export const BOUNTY_OBSERVATION_CAP = 4000;
+/**
+ * THE RAILS THIS BOARD CAN POST, DERIVED (2026-09-09).
+ *
+ * BOUNTY_BOARD.md and the board's own rules said "Base, Polygon and
+ * Solana" from the day the third rail shipped. The claim verifier had
+ * meanwhile grown to read every chain in EVM_CHAINS — seven of them —
+ * because evmChainOf resolves the whole list and the claim door reads
+ * the bounty's own captured chain. So the room understated the code by
+ * four rails, in copy on a page that sells accuracy.
+ *
+ * Deriving the list from the verifier's own table is the fix that
+ * cannot go stale: add a chain to EVM_CHAINS and the board says so the
+ * same day, in the rules, in the JSON, and in the posting refusal.
+ *
+ * WHAT THIS LIST IS NOT is a recommendation. A rail whose gas costs a
+ * walker more than the reward pays is a rail where a bounty takes
+ * their money — Ethereum mainnet at a $0.25 ceiling is exactly that.
+ * The verifier reads it; the keeper should not post it. That judgement
+ * lives in BOUNTY_BOARD.md beside the posting press, not in a filter
+ * here, because gas is not a fact this store can read at posting time
+ * and a rule it cannot check is a rule it should not pretend to.
+ */
+export function bountyRails(): Array<{ caip2: string; label: string }> {
+  return [
+    ...EVM_CHAINS.map((chain) => ({ caip2: chain.caip2, label: chain.label })),
+    { caip2: SOLANA_CHAIN, label: "Solana" },
+  ];
+}
+
+/** The rails, named, for copy that must not drift from the verifier. */
+export function bountyRailNames(): string {
+  const rails = bountyRails().map((rail) => rail.label);
+  return `${rails.slice(0, -1).join(", ")} and ${rails[rails.length - 1]}`;
+}
+
 /** Bounty listings live this long by default, then expire unclaimed. */
 export const BOUNTY_OPEN_DAYS = 7;
 
@@ -333,6 +369,21 @@ export async function openBounty(
     days?: number;
     /** What this store wants observed at this door. Asks, not conditions. */
     asks?: readonly string[];
+    /**
+     * CAPTURE THIS RAIL, or refuse (2026-09-09). Without it the picker
+     * takes Base whenever a door offers Base, which is every
+     * multi-rail door in the census — 136 quote Polygon, 130 Arbitrum,
+     * 81 World, and not one of them quotes those EXCLUSIVELY. So the
+     * board could read seven chains and was structurally incapable of
+     * ever posting on six of them.
+     *
+     * A CAIP-2 or the plain word ("arbitrum", "eip155:42161",
+     * "solana"). Named and not offered is a REFUSAL, never a quiet
+     * fallback to Base: a keeper asking for Arbitrum evidence and
+     * silently getting another Base row would be buying the wrong
+     * thing and told it worked.
+     */
+    rail?: string;
     /** Refuse a claim from a wallet that already walked this domain. */
     distinctPayer?: boolean;
   },
@@ -396,7 +447,45 @@ export async function openBounty(
    * the settlement must land on. The REWARD is Base USDC on every rail:
    * money-out on Solana is SOLANA_PARITY.md #4 and stays shut.
    */
+  /*
+   * THE RAIL, IF ONE WAS NAMED. Resolved through the same vocabulary
+   * the claim door uses, so a rail this store cannot verify can never
+   * be captured — and the refusal names what the door DID offer, which
+   * is the thing the keeper needs to post it correctly next time.
+   */
+  let wanted: string | null = null;
+  if (input.rail) {
+    const asEvm = evmChainOf(input.rail);
+    const asked = input.rail.trim().toLowerCase();
+    wanted =
+      asEvm?.caip2 ??
+      (asked === "solana" || asked === SOLANA_CHAIN.toLowerCase()
+        ? SOLANA_CHAIN
+        : null);
+    if (!wanted) {
+      throw new BountyRefused(
+        `this store cannot verify a settlement on "${input.rail}" — the rails it reads are ${bountyRailNames()}`,
+      );
+    }
+    const offered = [
+      ...new Set(
+        accepts
+          .map((entry) => entry.network)
+          .filter((network): network is string => Boolean(network)),
+      ),
+    ];
+    if (!offered.some((network) => network.toLowerCase() === wanted!.toLowerCase())) {
+      throw new BountyRefused(
+        `this door quotes no ${input.rail} entry — it offers ${offered.join(", ") || "no network at all"}. Nothing is posted: a bounty captured on another rail is not the evidence that was asked for`,
+      );
+    }
+  }
+  const railWanted = (entry: AcceptEntry): boolean =>
+    wanted === null ||
+    (entry.network ?? "").toLowerCase() === wanted.toLowerCase();
+
   const evmEntries = accepts
+    .filter(railWanted)
     .map((entry) => ({
       entry,
       chain: entry.network ? evmChainOf(entry.network) : null,
@@ -422,6 +511,7 @@ export async function openBounty(
   const solanaEntries = accepts
     .filter(
       (entry) =>
+        railWanted(entry) &&
         entry.network === SOLANA_CHAIN &&
         (entry.scheme ?? "exact") === "exact" &&
         Number.isFinite(amountUsd(entry)),
@@ -429,6 +519,17 @@ export async function openBounty(
     .sort((a, b) => amountUsd(a) - amountUsd(b));
   const chosenPair = evmEntries[0];
   const chosenSolana = chosenPair ? undefined : solanaEntries[0];
+  /*
+   * A named rail that survived the filter above but produced no
+   * payable entry — wrong asset, a scheme we do not read, an
+   * unparseable amount — refuses here rather than falling through to
+   * whatever else the door offers.
+   */
+  if (wanted && !chosenPair && !chosenSolana) {
+    throw new BountyRefused(
+      `this door quotes ${input.rail} but no payable USDC entry on it that this store can verify — nothing is posted`,
+    );
+  }
   const chosen = chosenPair?.entry ?? chosenSolana;
   const bountyChain = chosenPair?.chain;
   const assetMatches = bountyChain

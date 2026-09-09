@@ -1454,6 +1454,7 @@ interface PostingExtras {
   days?: number;
   asks?: string[];
   distinctPayer?: boolean;
+  rail?: string;
 }
 
 function postingExtras(body: Record<string, unknown>): PostingExtras {
@@ -1469,6 +1470,8 @@ function postingExtras(body: Record<string, unknown>): PostingExtras {
     // The form's textarea: one ask a line.
     out.asks = asks.split("\n").map((line) => line.trim()).filter(Boolean);
   }
+  const rail = String(body["rail"] ?? "").trim();
+  if (rail) out.rail = rail;
   const second = body["distinct_payer"] ?? body["second_walk"];
   if (second === true || second === "on" || second === "1" || second === "true") {
     out.distinctPayer = true;
