@@ -1,0 +1,152 @@
+{
+  "checked_at": "2026-09-09T14:31:06.081Z",
+  "denominator": 6,
+  "complete": 0,
+  "reads": [
+    {
+      "url": "https://scvd.store/corpus.json",
+      "read_at": "2026-09-09T14:30:58.299Z",
+      "status": 200,
+      "bytes": 11492925,
+      "sha256": "ddd7f93c7099d85ccc76edc79306cc199512f4e182bf266d2618c3944ab85aa2"
+    },
+    {
+      "url": "https://scvd.store/corpus/1.json",
+      "read_at": "2026-09-09T14:31:00.815Z",
+      "status": 200,
+      "bytes": 14523,
+      "sha256": "38ac52d150a422b75d0d52e794db9faa998e5e63b603f9d159c4d239f3b6d0cc"
+    },
+    {
+      "url": "https://scvd.store/corpus/2.json",
+      "read_at": "2026-09-09T14:31:00.873Z",
+      "status": 200,
+      "bytes": 24487,
+      "sha256": "6c54bd7a106242243e15847e34936a46356d5cd52059e4992634870994ae88e0"
+    },
+    {
+      "url": "https://scvd.store/corpus/3.json",
+      "read_at": "2026-09-09T14:31:00.923Z",
+      "status": 200,
+      "bytes": 16149,
+      "sha256": "55764b20307ce8c88657612e27ecbf2807027e4a37c94262f3d2adf3a37d4984"
+    },
+    {
+      "url": "https://scvd.store/corpus/4.json",
+      "read_at": "2026-09-09T14:31:00.980Z",
+      "status": 200,
+      "bytes": 331043,
+      "sha256": "5df87a3930361e01e35ae75089ec16a1c6f3c6afc1a8cf0d84b2bf64e0148366"
+    },
+    {
+      "url": "https://scvd.store/corpus/5.json",
+      "read_at": "2026-09-09T14:31:01.117Z",
+      "status": 200,
+      "bytes": 6779097,
+      "sha256": "e3280471793559f66d475ddb5654d9c4bbca05503464bccb53e6c05df72da88d"
+    },
+    {
+      "url": "https://scvd.store/corpus/6.json",
+      "read_at": "2026-09-09T14:31:02.017Z",
+      "status": 200,
+      "bytes": 11483825,
+      "sha256": "651b6365dd0f3637b6c3b156056c9342bfba2982fc50577a6584040e2467822c"
+    },
+    {
+      "url": "https://scvd.store/developers",
+      "read_at": "2026-09-09T14:31:03.008Z",
+      "status": 200,
+      "bytes": 41322,
+      "sha256": "d60d3b7a2cb542ffa83c0d403e7abfc4eb4e2fdaffdf8300ddab0d12c5212061"
+    },
+    {
+      "url": "https://scvd.store/feeds/corpus.xml",
+      "read_at": "2026-09-09T14:31:03.127Z",
+      "status": 200,
+      "bytes": 4010,
+      "sha256": "2bea45d4c3e7d123b3b7faa732c2a52668fc7a9d5f58cc4c253a104dac20019c"
+    },
+    {
+      "url": "https://scvd.store/attestation",
+      "read_at": "2026-09-09T14:31:03.555Z",
+      "status": 200,
+      "bytes": 46215,
+      "sha256": "add42685551b4c1f080faf499efd6ab597882bdeed66d06fc917c09f2ef32dd4"
+    },
+    {
+      "url": "https://scvd.store/trust",
+      "read_at": "2026-09-09T14:31:03.715Z",
+      "status": 200,
+      "bytes": 34918,
+      "sha256": "391643ed4790ec8fc79bf9d5fbe79904dcfe368ca4f71cdf8868357435ffd472"
+    },
+    {
+      "url": "https://scvd.store/agents.md",
+      "read_at": "2026-09-09T14:31:06.036Z",
+      "status": 200,
+      "bytes": 16094,
+      "sha256": "34c1707dfd8646a75e5e8c300ca44c5b539fae269156d0c66b05bfc297f4da95"
+    }
+  ],
+  "corpus": [
+    {
+      "sequence": 1,
+      "digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    },
+    {
+      "sequence": 2,
+      "digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    },
+    {
+      "sequence": 3,
+      "digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    },
+    {
+      "sequence": 4,
+      "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    },
+    {
+      "sequence": 5,
+      "digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    },
+    {
+      "sequence": 6,
+      "digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+      "signature_unchanged": true,
+      "signature_verified": true,
+      "index_status": "pending",
+      "status": "pending"
+    }
+  ],
+  "checks": {
+    "attestation_no_stale_npm_pending": true,
+    "attestation_pq_scope": true,
+    "trust_no_blanket_anchor_claim": true,
+    "agent_timestamp_scope": true,
+    "developer_stable_verifier_link": true,
+    "developer_no_stale_npm_pending": true,
+    "feed_actual_status": true,
+    "feed_no_submission_as_anchored": true
+  },
+  "trust": "Post-deploy HTTPS reads. Signatures use previously captured issuer key. Bitcoin header/height selections from two outside sources were captured earlier today; no local consensus validation. Saved proofs verify against unchanged payloads in the earlier captures."
+}

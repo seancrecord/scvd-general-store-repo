@@ -37,8 +37,9 @@ file because everything else assumes the key is ours alone.
 **September 9 verification follow-through:** the key-history machinery
 below is distinct from the corpus. A complete read found all listed corpus
 entries still serving pending proofs even though their calendars held
-completed upgrades. The corpus lacked the hourly upgrade caller; the repair
-is on ROADMAP VQ2. The saved receipt and all listed corpus proofs now pass
+completed upgrades. The corpus lacked the hourly upgrade caller; PR #588
+repaired it, and the 14:32 UTC read verified all six delivered proofs with
+unchanged signed snapshots (ROADMAP VQ2, done). The saved receipt and all listed corpus proofs now pass
 independent operation/header checks using the Python OpenTimestamps library
 and matching headers from two outside explorers. This is not local Bitcoin
 consensus validation. Evidence, the feed correction and remaining coverage
@@ -1873,7 +1874,7 @@ bytes and `/corpus/6.json` was 11,483,825 bytes. Both exceeded the earlier
 32 MiB. The existing machine-surface test did not exercise a corpus of this
 size. A passing small fixture therefore does not establish production
 readability. Keep the signed snapshot bytes; make the index compact and
-add a representative growth check. This remains on ROADMAP VQ2; increasing
+add a representative growth check. This remains on ROADMAP VQ3; increasing
 one research client's cap did not close it. Raw bytes and sizes are retained
 in `research/verification-2026-09-09/capture-manifest.json`.
 

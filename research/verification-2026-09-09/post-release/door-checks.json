@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-09-09T13:59:37.034Z",
+  "rows": [
+    {
+      "url": "https://scvd.store/api/buy/service_audit?url=https%3A%2F%2Fexample.com%2Fpay",
+      "read_at": "2026-09-09T13:59:36.989Z",
+      "status": 402,
+      "response_sha256": "463f1aaa5f94049286eb9eacb3eb2213b706e95a502ecd267ead59c1990e6aed",
+      "sample_url": "https://scvd.store/samples/once-over.json",
+      "sample": {
+        "url": "https://scvd.store/samples/once-over.json",
+        "kind": "unsigned_specimen",
+        "price": "free",
+        "live_observation": false
+      },
+      "free_demo_advertised": false,
+      "paid": false
+    },
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "read_at": "2026-09-09T13:59:37.034Z",
+      "status": 402,
+      "response_sha256": "c16c5e593c733760fcf87c5d198fd048402e5a6072beb13b8aa51fc40fd3787b",
+      "sample_url": null,
+      "sample": null,
+      "free_demo_advertised": false,
+      "paid": false
+    }
+  ]
+}

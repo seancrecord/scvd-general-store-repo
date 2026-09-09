@@ -1,0 +1,18 @@
+{
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/588",
+  "merge_commit": "3fb532f5f3be3119109ba958c1b8cca3281850b6",
+  "merged_at": "2026-09-09T13:55:29Z",
+  "production_workers": [
+    "scvd-general-store-repo",
+    "scvd-doors"
+  ],
+  "both_deployments_passed": true,
+  "proofs_checked_at": "2026-09-09T14:32:12.937Z",
+  "scorecard": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34360225812",
+    "attempt": 3,
+    "conclusion": "success",
+    "earlier_attempts": "GitHub GraphQL internal errors; no code change for retry"
+  },
+  "external_directory_note": "Unsent; explicit send decision pending"
+}

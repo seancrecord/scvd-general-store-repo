@@ -26,6 +26,12 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Corpus proof delivery verified (2026-09-09).** PR #588 deployed;
+  all six listed snapshots served completed proofs at 14:32 UTC, verified
+  against outside Bitcoin headers with signatures unchanged. This closes
+  the delivery repair, not certificate/report population coverage. The
+  remaining builds are ROADMAP VQ3–VQ4; the directory note below is unsent.
+
 - **x402-verify 1.2.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
   saved receipt and reported its missing evidence. The old 1.1.0 press

@@ -26,5 +26,17 @@
   ],
   "package_publication": "Registry integrity matches reviewed local package; registry signature and provenance verified; fresh installation checked real receipt",
   "proof_scope": "Receipt and six listed corpus snapshots verified against matching headers from two outside sources; no local consensus validation",
-  "final_public_copy_focused_tests": 56
+  "final_public_copy_focused_tests": 56,
+  "merged_main": {
+    "commit": "3fb532f5f3be3119109ba958c1b8cca3281850b6",
+    "includes": "PR #588 verification follow-through and PR #587 buyer recovery",
+    "typecheck": "passed",
+    "full_suite": {
+      "files_passed": 604,
+      "tests_passed": 8724,
+      "tests_skipped": 1,
+      "duration_seconds": 441.02,
+      "started_at": "2026-09-09T13:57:14Z"
+    }
+  }
 }

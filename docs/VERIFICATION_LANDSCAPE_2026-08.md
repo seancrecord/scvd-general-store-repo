@@ -7,6 +7,16 @@ noted as unreachable rather than absent. Traction figures are
 x402-list.com's measured 30-day on-chain floors (CC BY 4.0), read the
 same day.
 
+**Follow-through, 2026-09-09:** this remains the August 24 observation,
+not a current inventory. The keeper confirmed Rubric is the adjacent
+party under discussion. Its later documentation describes batching,
+pending anchor states and MCP support; the initial comparison must be
+read with those qualifications. SCVD's verifier publication, corpus proof
+checks and remaining gaps are recorded in
+[the September follow-through](VERIFICATION_OBSERVATIONS_2026-09-08.md).
+Use ROADMAP.md and KEEPER_LIST.md for open work rather than treating this
+historical table as today's gap list.
+
 **What this is NOT:** a grading exercise. The published index states
 observable facts per service, dated and reproducible, with SCVD in the
 table under the same columns — including the cells where someone else's

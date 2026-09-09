@@ -43,3 +43,13 @@ records a fresh registry installation checking the receipt. Its integrity
 matches `package-manifest.json`; npm verified the registry signature and
 provenance attestation (`npm-provenance-check.txt`). Publication workflow:
 https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34353123366.
+
+`post-release/` preserves the production release checks, initial pending
+reads and the successful 14:32 UTC re-read. All six delivered detached
+proofs are byte-identical to the earlier calendar upgrades; rerunning the
+offline report above therefore verifies these exact proofs too. Compare
+`post-release/corpus-N.ots` with `corpus-N.payload.json.ots` for each listed
+sequence; `post-release/proof-comparison.json` records the hashes. Live
+records also retained the original canonical payload digest and signature.
+The initial scheduled-time read is kept because it had not yet observed
+completion. No whole-certificate-population claim follows from this pass.

@@ -8,6 +8,17 @@ VQ1 shipped in PR #585. The follow-through is ROADMAP VQ2 and its linked design.
 
 ## September 9 follow-through
 
+PR #588 merged at 13:55 UTC and both Workers deployed. Live developer,
+attestation, trust, agent instructions and feed checks passed, as did
+sampled and unsampled payment challenges. The initial reads still showed
+six pending submissions; the 14:32 UTC re-read after the hourly pass
+confirmed **six completed proofs out of six listed records**. Every digest,
+signed snapshot and signature was unchanged. Each delivered proof passed
+the independent Python operation/header check and was byte-identical to
+its earlier locally collected calendar upgrade. These are outside-header
+checks, not local Bitcoin consensus validation. Captures and exact proofs:
+`research/verification-2026-09-09/post-release/`.
+
 The known receipt's exact bytes and detached proof now verify through the
 standard OpenTimestamps library against the same Bitcoin header returned
 by Blockstream and mempool.space. The header hash and proof of work also
@@ -72,7 +83,7 @@ service still advertises the matching payout address. The note below
 remains unsent and asks about attribution, not organic traction. Verifier
 1.2.0 is now published through the provenance workflow. The registry
 artifact exactly matches the reviewed tarball; npm verified its signature
-and attestation, and an independent registry installation checked the real
+and attestation, and a fresh registry installation checked the real
 receipt while reporting the missing `saw` evidence. Publication receipts
 are in DISTRIBUTION.md and the September 9 research folder. The publishing
 workflow now runs the package's own tests; its README has a stable link.
