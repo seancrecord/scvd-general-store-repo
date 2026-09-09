@@ -58,6 +58,7 @@ export const COMPACT_CATALOG_BUDGET_BYTES = 16_000;
 export const SINGLE_ITEM_TOOL_BUDGET_BYTES = 10_000;
 
 export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
+  { path: "/corpus/index.json", budget: COMPACT_CATALOG_BUDGET_BYTES, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   { path: "/a2a-desk.json", budget: 32000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   {
     path: "/menu.json?view=compact",

@@ -4,6 +4,13 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## Unreleased — September 9 source changes
+
+Corpus-v1 snapshot export with digest validation and fixed canonical field
+order. Explicit `--max-bytes` / library `maxBytes` option (default unchanged,
+hard ceiling 64 MiB), applied to input reads and bundle creation/verification.
+Existing receipt exports and the v1 bundle format remain compatible.
+
 ## 1.2.0 — 2026-09-08
 
 Portable signed-payload evidence bundles

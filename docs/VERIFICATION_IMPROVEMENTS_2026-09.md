@@ -11,6 +11,14 @@ The keeper subsequently confirmed that the competitor in the original
 comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
 
+## Reader and inventory follow-through
+
+Authorized September 9 with “okay lets do that”: compact corpus discovery,
+explicit bounded large-snapshot verification, certificate/report inventory
+and documentation closeout. Current work, checks and access limitations:
+`docs/EVIDENCE_READER_COVERAGE_2026-09.md`. These source changes are separate
+from the completed releases below; npm 1.2.0 has not changed.
+
 ## Release follow-through
 
 PR #585 merged as `041df513989980e614ffab8cd89e173507616137` on September 9
@@ -30,7 +38,9 @@ against matching headers from two outside explorers. All six corpus proofs
 were available at their calendars while the store still served pending
 submissions; the missing hourly corpus upgrade pass is now deployed.
 This is outside-header verification, not local Bitcoin consensus validation.
-The directory mismatch persists in the refreshed capture. No note was sent.
+The directory mismatch persists in the refreshed capture. The note was
+unsent at capture time; the keeper confirmed it sent later on September 9.
+A maintainer reply remains pending.
 Details and remaining limits are in the observation record below.
 
 The final follow-through tree passed **603 test files, 8,438 tests and one
@@ -67,7 +77,8 @@ The live receipt was exported with the CLI and verified against the key
 captured separately earlier in this sitting. Its missing `saw` evidence and
 unverified Bitcoin timestamp were reported. The prepared release includes
 source distribution of the CLI. Npm publication followed September 9;
-the directory note remains unsent. PQ signing stays experimental.
+the keeper confirmed the directory note sent September 9. A maintainer
+reply remains pending. PQ signing stays experimental.
 
 ## Outcome of the implementation sitting
 
@@ -99,8 +110,9 @@ The original commit/merge/deploy actions are complete. Verifier 1.2.0
 was published September 9 with verified registry provenance; see
 DISTRIBUTION.md. The corpus upgrade repair shipped in PR #588 and its
 first production delivery pass was verified at 14:32 UTC.
-The directory note still
-needs an actual send decision. The PQ candidate
+The keeper confirmed the directory note sent by hand on September 9 after
+agent Mail access was blocked by missing Computer Use permissions. Await
+the maintainer's reply; the attribution question is not yet resolved. The PQ candidate
 has no independent audit and remains outside production. There is no new
 paid screening SKU and no production key change.
 

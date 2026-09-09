@@ -33,7 +33,12 @@ cover every issued certificate or linked evidence report.
 Directory data: x402-list.com, CC BY 4.0, with URLs retained in the manifest.
 The refreshed mappings are joined to the historical Base transaction capture
 from September 8. The keeper purchase remains a test, not organic demand.
-The maintainer note is prepared but unsent.
+The maintainer note was unsent at capture time. On September 9 the keeper
+approved it and offered to send it by hand after Mail access was blocked
+by missing Computer Use permissions. He subsequently confirmed “sent” on
+September 9, recorded at 16:20 UTC. The observation document retains the
+prepared note and delivery record; no independent delivery receipt or
+maintainer reply was supplied. Capture-time records remain unchanged.
 
 `package-smoke.json` records installation and offline verification from the
 locally packed verifier; it is not a registry publication receipt.

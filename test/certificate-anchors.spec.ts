@@ -519,3 +519,10 @@ describe("the /attestation page says what the bound adds and does not", () => {
     expect(line).toContain("says nothing about what was withheld");
   });
 });
+
+it("retains the completed sweep counters with the injected observation time", async () => {
+  const now = new Date("2026-09-09T12:30:00.000Z");
+  const sweep = await sweepCertificateAnchors(testEnv, { ...options(network()), now });
+  const saved = await testEnv.COUNTERS.get("cert_anchor_sweep", "json");
+  expect(saved).toEqual({ observed_at: now.toISOString(), counters: sweep });
+});

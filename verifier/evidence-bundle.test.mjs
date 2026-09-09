@@ -98,3 +98,14 @@ test("rejects malformed or oversized inputs and attachments without a signed bin
   assert.equal((await verifyEvidenceBundle(b, { publicKey: key })).valid, false);
   await assert.rejects(() => createEvidenceBundle({ ...response(), signed_payload: "a".repeat(16 * 1024 * 1024) }));
 });
+
+test("corpus canonical field order is fixed, and a changed digest or unsupported schema is refused", async () => {
+  const snapshot = { version:1,sequence:1,taken_at:"2026-09-09",previous_digest:null,source:"ward_round",week:"2026-W37",round:{hosts:[]} };
+  const payload = JSON.stringify(snapshot);
+  const doc = {snapshot:Object.fromEntries(Object.entries(snapshot).reverse()),digest:hash(payload),signature:sign(null,Buffer.from(payload),pair.privateKey).toString('hex'),public_key:key};
+  const bundle = await createEvidenceBundle(doc);
+  assert.equal(bundle.artifact.signed_payload,payload);
+  assert.equal((await verifyEvidenceBundle(bundle,{publicKey:key})).valid,true);
+  await assert.rejects(createEvidenceBundle({...doc,digest:'0'.repeat(64)}),/corpus_digest_mismatch/);
+  await assert.rejects(createEvidenceBundle({...doc,snapshot:{...snapshot,version:2}}),/unsupported_corpus_snapshot/);
+});

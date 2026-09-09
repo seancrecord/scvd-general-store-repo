@@ -317,7 +317,7 @@ signed payload. Missing linked evidence is listed; this first format does
 not recursively collect nested documents or assert population completeness.
 Only JSON-object signed payloads with Ed25519 are supported. Other formats
 refuse rather than silently dropping fields. Inputs and the combined bundle
-are capped at 8 MiB, with at most 32 attachments. Existing output directories
+default to an 8 MiB cap, with at most 32 attachments. Existing output directories
 are never overwritten. Export reads the chosen URL and its same-origin key
 document only; redirects are refused and embedded URLs are never fetched.
 
@@ -337,3 +337,35 @@ The dependency-free API is exported at `x402-verify/bundle`;
 copy both evidence-bundle.js and x402-verify.js when vendoring it.
 The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
 WebCrypto when the global is unavailable.
+
+### Large corpus snapshots (source checkout; not in npm 1.2.0)
+
+The source CLI also accepts `/corpus/{sequence}.json` records. It rebuilds
+only the fixed corpus-v1 canonical field order, checks the published digest,
+and exports the original signed bytes. Unknown snapshot versions refuse.
+Start with `/corpus/index.json`: a compact, paginated metadata index with
+no embedded newest snapshot. Follow `next` until null. `has_more: true`
+without a next URL is an incomplete enumeration. Metadata availability
+is not proof that the linked R2 object exists or that its signature verifies.
+The original `/corpus.json` response remains available to existing clients.
+
+Opt into a larger bound on **both** commands:
+
+```sh
+node verifier/evidence-cli.mjs export https://scvd.store/corpus/6.json --out saved-corpus-6 --max-bytes 33554432
+node verifier/evidence-cli.mjs verify saved-corpus-6/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432
+```
+
+`--max-bytes` is an integer byte ceiling for the source, local inputs and
+combined bundle, up to 64 MiB. The library accepts the same ceiling as
+`maxBytes`. The default remains 8 MiB; an artifact cannot increase its own
+allowance. A bundle repeats signed content in unsigned context, so budget
+for the bundle, not just the source response. The saved September 9 largest
+snapshot was 11,483,825 bytes; its minimal-context bundle was 23,221,351
+bytes and verified within 32 MiB. Oversized input refuses explicitly.
+
+One successful verification establishes one snapshot's signature against
+your selected key. Verify adjacent `previous_digest` values yourself for
+chain continuity; this command does not enumerate the whole corpus or
+check Bitcoin headers. Deployment and publication status:
+[`EVIDENCE_READER_COVERAGE_2026-09.md`](../docs/EVIDENCE_READER_COVERAGE_2026-09.md).

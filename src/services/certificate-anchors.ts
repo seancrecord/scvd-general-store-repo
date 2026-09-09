@@ -327,6 +327,9 @@ export async function sweepCertificateAnchors(
     sweep.upgraded += 1;
     await saveAnchor(env, certId, record, next);
   }
+  await kvPut(env.COUNTERS, KV_KEYS.certAnchorSweep, JSON.stringify({
+    observed_at: (options.now ?? new Date()).toISOString(), counters: sweep,
+  }));
   return sweep;
 }
 

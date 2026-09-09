@@ -19,10 +19,12 @@ export interface EvidenceBundleResult {
 }
 export declare const EVIDENCE_BUNDLE_FORMAT: "scvd-evidence-bundle/v1";
 export declare const EVIDENCE_BUNDLE_MAX_BYTES: number;
+export declare const EVIDENCE_BUNDLE_HARD_MAX_BYTES: number;
+export declare function evidenceByteLimit(value?: number): number;
 export declare const EVIDENCE_BUNDLE_MAX_ATTACHMENTS: number;
-export declare function createEvidenceBundle(response: unknown, options?: { sourceUrl?: string; capturedAt?: string; issuerDocument?: unknown; attachments?: { name: string; bytes: Uint8Array }[] }): Promise<EvidenceBundle>;
-export declare function verifyEvidenceBundle(bundle: unknown, options?: { publicKey?: string }): Promise<EvidenceBundleResult>;
+export declare function createEvidenceBundle(response: unknown, options?: { maxBytes?: number; sourceUrl?: string; capturedAt?: string; issuerDocument?: unknown; attachments?: { name: string; bytes: Uint8Array }[] }): Promise<EvidenceBundle>;
+export declare function verifyEvidenceBundle(bundle: unknown, options?: { publicKey?: string; maxBytes?: number }): Promise<EvidenceBundleResult>;
 export declare function evidenceDigest(bytes: Uint8Array): Promise<string>;
 export declare function evidenceBase64(bytes: Uint8Array): string;
-export declare function evidenceBytes(value: string): Uint8Array;
+export declare function evidenceBytes(value: string, maxBytes?: number): Uint8Array;
 export declare function detachedTimestamp(digest: string, proofBase64: string): Uint8Array;

@@ -1,0 +1,39 @@
+{
+  "checked_at": "2026-09-09T16:56:26Z",
+  "branch": "codex/corpus-reader-coverage",
+  "worker_suite": {
+    "files_passed": 606,
+    "tests_passed": 8905,
+    "tests_skipped": 1,
+    "seconds": 428.44
+  },
+  "typecheck": "passed",
+  "worker_bundles": "both passed",
+  "evidence_tests_passed": 36,
+  "claims": {
+    "resolved": 39,
+    "unbound": 0
+  },
+  "docs_check": "passed with existing dated-document backlog",
+  "package_check": "local dry-run only; no registry publication",
+  "corpus_measurement": "six saved September 9 production snapshots; see corpus-size-check.json",
+  "production_inventory": {
+    "status": "not_measured",
+    "reason": "Cloudflare authentication error 10000 on the read-only certificate key listing"
+  },
+  "release": {
+    "worker_deployed": false,
+    "npm_published": false
+  },
+  "first_development_suite": {
+    "tests_passed": 8902,
+    "tests_failed": 3,
+    "tests_skipped": 1,
+    "superseded": true,
+    "failures": [
+      "new index missing corrections pointer",
+      "new index missing discovery listing",
+      "reader-ceiling roster changed during the development run"
+    ]
+  }
+}

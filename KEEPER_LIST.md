@@ -412,15 +412,24 @@ build, it is on the roadmap.
 
 ## NOW
 
+- **LOOK — restore census read access (2026-09-09).** The read-only
+  production certificate inventory request returned Cloudflare authentication
+  error 10000. The reader and census tools are built; no population totals
+  were obtained. Restore the operator's normal Wrangler sign-in, then run
+  the private capture and offline checks in
+  `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. No private key is needed.
+  VQ4 stays on ROADMAP for the unfinished measurement and storage coverage.
+
 - **LOOK — directory attribution evidence (2026-09-08).** The known
   browser receipt matches a Coinbase settler already tracked by
   x402-list, while the store remains `unmeasured-network`. Exact evidence
-  and an unsent maintainer note are in
+  and the prepared maintainer note are in
   `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`. This is the keeper's
-  test purchase, not organic traction. Decide whether to send that
-  specific note to `info@x402-list.com` (public contact read September 9);
-  no message has been sent. The implementation stays
-  on ROADMAP VQ2. The mapping was re-read September 9 and the same
+  test purchase, not organic traction. The keeper confirmed “sent” on
+  September 9 for the note to `info@x402-list.com`, subject “Base attribution
+  for scvd.store”. Await the maintainer's reply; sending does not resolve
+  the measurement discrepancy. Do not send a duplicate.
+  Implementation completed in ROADMAP VQ2. The mapping was re-read September 9 and the same
   discrepancy remains; captured evidence is in `research/verification-2026-09-09/`.
 
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
