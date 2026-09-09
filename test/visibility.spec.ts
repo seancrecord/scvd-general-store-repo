@@ -1,7 +1,7 @@
 import { env, SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { reRegistration } from "@/services/visibility";
+import { renderWardPage } from "@/pages/admin/ward-page";
 import type { WardRound } from "@/services/ward-round";
 import { MENU_ITEMS } from "@/store/menu";
 import type { Env } from "@/types";
@@ -12,27 +12,8 @@ const AUTH = {
   Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
 };
 
-/**
- * THE WEEKLY VISIBILITY CHECK (2026-09-04). The Sunday round already
- * asked the CDP index which of our doors it lists; the keeper heard
- * about a miss once, when the list changed, and the fix — one house
- * purchase per door — was prose in REGISTRATION_RUN.md. Now the desk
- * carries the reading and the exact press, and the page repeats every
- * week the miss stands.
- */
-describe("the re-registration is spelled out", () => {
-  it("names the shopping run and prices one copy of each missing door", () => {
-    const [a, b] = MENU_ITEMS;
-    const press = reRegistration([b!.id, a!.id, "not_a_door"]);
-    // Menu order, unknown ids dropped, price summed at list.
-    expect(press.items).toEqual([a!.id, b!.id]);
-    expect(press.cost_usd).toBeCloseTo(a!.price_usdc + b!.price_usdc, 3);
-    expect(press.command).toBe(`ITEMS=${a!.id},${b!.id} npm run shop`);
-    expect(reRegistration([]).command).toBe("");
-  });
-});
-
 describe("the desk says how visible the store is", () => {
+  afterEach(() => vi.unstubAllGlobals());
   function round(missing: string[]): WardRound {
     return {
       week: "2026-W36",
@@ -51,7 +32,7 @@ describe("the desk says how visible the store is", () => {
     };
   }
 
-  it("names the missing doors and the press when some are gone", async () => {
+  it("withdraws legacy missing claims and offers a free live check", async () => {
     const missing = MENU_ITEMS.slice(0, 2).map((item) => item.id);
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round(missing)));
     const page = await SELF.fetch(`${BASE}/admin`, { headers: AUTH });
@@ -59,7 +40,13 @@ describe("the desk says how visible the store is", () => {
     const html = await page.text();
     expect(html).toContain("Visibility:");
     expect(html).toContain(`${MENU_ITEMS.length - 2} of ${MENU_ITEMS.length}`);
-    expect(html).toContain(`ITEMS=${missing.join(",")} npm run shop`);
+    expect(html).not.toContain("npm run shop");
+    expect(html).toContain("not established");
+    expect(html).toContain("/admin/ward/index");
+    const ward = renderWardPage(round(missing), null, null);
+    expect(ward).not.toContain("Re-register");
+    expect(ward).toContain("not established");
+    expect(ward).toContain("saved weekly reading");
   });
 
   it("says every door is findable when none is missing", async () => {
@@ -67,6 +54,39 @@ describe("the desk says how visible the store is", () => {
     const page = await SELF.fetch(`${BASE}/admin`, { headers: AUTH });
     const html = await page.text();
     expect(html).toContain(`${MENU_ITEMS.length} of ${MENU_ITEMS.length}`);
-    expect(html).toContain("it can find");
+    expect(html).toContain("saved weekly reading");
+    expect(html).not.toContain("it can find");
+  });
+
+  it("the free live check is authenticated, shows current evidence, and leaves the signed round untouched", async () => {
+    const ed25519 = await import("@noble/ed25519");
+    const seed = new Uint8Array(32).fill(0x42);
+    const key = new Uint8Array(64);
+    key.set(seed);
+    key.set(await ed25519.getPublicKeyAsync(seed), 32);
+    testEnv.CDP_API_KEY_ID = "test-key-id";
+    testEnv.CDP_API_KEY_SECRET = btoa(String.fromCharCode(...key));
+    const saved = JSON.stringify(round(["hello"]));
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, saved);
+    let calls = 0;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input instanceof Request ? input.url : input));
+      expect(url.host).toBe("api.cdp.coinbase.com");
+      expect(url.pathname).toBe("/platform/v2/x402/discovery/search");
+      expect(init?.method ?? "GET").toBe("GET");
+      calls++;
+      return Response.json({ partialResults: false, resources: MENU_ITEMS.map(item => ({ resource: `${BASE}/api/buy/${item.id}` })) });
+    });
+    const denied = await SELF.fetch(`${BASE}/admin/ward/index`);
+    expect([401, 403]).toContain(denied.status);
+    expect(calls).toBe(0);
+    const response = await SELF.fetch(`${BASE}/admin/ward/index`, { headers: AUTH });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    const html = await response.text();
+    expect(html).toContain(`${MENU_ITEMS.length} of ${MENU_ITEMS.length} payable doors found`);
+    expect(html).toContain("This free check does not change a signed round");
+    expect(calls).toBe(1);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.wardRoundLatest)).toBe(saved);
   });
 });

@@ -1,3 +1,4 @@
+import { renderIndexReading } from "@/pages/admin/index-reading";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { WardDelta, WardRound } from "@/services/ward-round";
@@ -151,31 +152,10 @@ export function renderWardPage(
           ? "present"
           : "ABSENT — see the alert; re-run bazaar:check by hand"
     }</strong>.</li>
-    ${
-      round.our_doors
-        ? `<li>Our doors in the search index: <strong>${
-            round.our_doors.could_not_check
-              ? "could not check (never read as missing)"
-              : `${round.our_doors.found.length} of ${round.our_doors.claimed} found`
-          }</strong>.${
-            round.our_doors.missing.length > 0
-              ? ` <strong style="color:#8c2f1b">Missing: ${escapeHtml(round.our_doors.missing.join(", "))}.</strong> Re-register those (your press); the miss stays on the signed round until the index returns them.`
-              : ""
-          }${
-            (round.our_doors.stale?.length ?? 0) > 0
-              ? ` <strong style="color:#8c2f1b">Stale: ${escapeHtml((round.our_doors.stale ?? []).join(", "))}.</strong> Retired doors the index still returns. Each answers 410 with Sunset, and each is a row an outside prober scores as down. The catalog never delists on its own; removal is a letter to Coinbase (your hand).`
-              : ""
-          }${
-            (round.our_doors.unknown?.length ?? 0) > 0
-              ? ` <strong style="color:#8c2f1b">Unrecognized: ${escapeHtml((round.our_doors.unknown ?? []).join(", "))}.</strong> Paths under /api/buy/ the index carries that are neither on the menu nor retired.`
-              : ""
-          }${
-            round.our_doors.stale === undefined
-              ? " Stale doors: not measured this round (predates the reading)."
-              : ""
-          }</li>`
-        : "<li>Our doors in the search index: not measured this round (predates the door check).</li>"
-    }
+    <li>${round.our_doors ? renderIndexReading(round.our_doors, round.at, round.week) : "Our index visibility was not measured this round."}</li>
+    ${round.our_doors?.stale?.length ? `<li>Retired resource URLs returned: ${escapeHtml(round.our_doors.stale.join(", "))}.</li>` : ""}
+    ${round.our_doors?.unknown?.length ? `<li>Unrecognized resource URLs returned: ${escapeHtml(round.our_doors.unknown.join(", "))}.</li>` : ""}
+    ${round.our_doors && !round.our_doors.broad_search_complete ? "<li>The broad search was incomplete or its completeness was not recorded; additional retired or unrecognized URLs may be outside this reading.</li>" : ""}
     ${
       round.catalog_agreement
         ? `<li>The catalog's copy against the doors: <strong>${round.catalog_agreement.agrees} of ${round.catalog_agreement.compared} listed-with-terms doors agree</strong>; ${round.catalog_agreement.differs} differ, ${round.catalog_agreement.not_comparable} not comparable, ${round.catalog_agreement.not_listed} not listed this round.${
@@ -187,10 +167,6 @@ export function renderWardPage(
                     .join(" · "),
                 )}. The catalog's copy, not the door's defect.`
               : ""
-          }${
-            round.our_doors?.catalog_differs && round.our_doors.catalog_differs.length > 0
-              ? ` <strong style="color:#8c2f1b">Ours: the index's cheapest amount is not the shelf minimum for ${escapeHtml(round.our_doors.catalog_differs.join(", "))}.</strong>`
-              : ""
           }</li>`
         : "<li>The catalog's copy against the doors: not measured this round (predates the column).</li>"
     }
@@ -200,7 +176,7 @@ export function renderWardPage(
         : ""
     }
     ${round.coverage_suspect ? "<li>Coverage suspect: the list read may be one page. Treat totals as floors.</li>" : ""}
-    ${round.capped ? "<li>The round hit its host cap; the tail went unprobed and this line is the record of that.</li>" : ""}
+    ${round.capped ? "<li>The round hit its host cap; the week ended with hosts still unprobed. Resource listings and unique hosts are different counts.</li>" : ""}
     ${
       round.walk
         ? `<li><strong>Assembled from the long walk:</strong> ${round.walk.walked} of ${round.walk.roster} roster doors walked across ${round.walk.batches} hourly batches since ${escapeHtml(round.walk.started_at.slice(0, 16))}Z. Sunday collected; the week did the knocking.</li>`

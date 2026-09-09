@@ -268,7 +268,7 @@ export async function readKeepersRound(
       // A week plus a day is due; two weeks is a round that did not run.
       state: judge(age, 24 * 8, 24 * 14),
       detail: round
-        ? `${round.week}: ${round.hosts?.length ?? 0} hosts walked, ${round.listed_resources} listed${round.capped ? " — capped, so the tail was never walked" : ""}${round.coverage_suspect ? " — coverage suspect" : ""}`
+        ? `${round.week}: ${round.hosts?.length ?? 0} hosts walked, ${round.listed_resources} resource listings${round.capped ? " — incomplete: hosts remained unwalked when the round closed" : ""}${round.coverage_suspect ? " — coverage suspect" : ""}`
         : "no round has ever been stored",
       where: "/admin/ward",
     });

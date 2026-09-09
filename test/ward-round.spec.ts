@@ -104,10 +104,13 @@ describe("the round itself, with the outside world stubbed", () => {
       const url = String(input instanceof Request ? input.url : input);
       if (url.includes("api.cdp.coinbase.com")) {
         if (url.includes("/discovery/search")) {
-          if (options.searchBody === undefined) {
-            return Response.json({ items: [{ resourceUrl: `${BASE}/api/buy/hello` }] });
-          }
-          return Response.json(options.searchBody);
+          const body = (options.searchBody ?? { items: [{ resourceUrl: `${BASE}/api/buy/hello` }] }) as Record<string, unknown>;
+          const filter = new URL(url).searchParams.get("urlSubstring");
+          const field = "resources" in body ? "resources" : "items";
+          const rows = body[field];
+          return Response.json({ partialResults: false, ...body, ...(filter && Array.isArray(rows) ? {
+            [field]: rows.filter(row => String(row.resource ?? row.resourceUrl ?? "").includes(filter)),
+          } : {}) });
         }
         return Response.json({
           items: options.listedUrls.map((resourceUrl) => ({ resourceUrl })),
@@ -201,16 +204,70 @@ describe("the round itself, with the outside world stubbed", () => {
     // The miss is on the signed round, dated: what the corpus freezes.
     const stored = await latestWardRound(testEnv);
     expect(stored?.our_doors?.missing).toEqual(round.our_doors?.missing);
-    // And the keeper is told what to run and what it costs — every
-    // week the miss stands, not once (2026-09-04).
+    // A confirmed miss calls for diagnosis, never another purchase.
     const { listAlerts } = await import("@/lib/alerts");
     const alerts = await listAlerts(testEnv, 20);
     const page = alerts.find((alert) => alert.detail.includes("payable doors this store claims"));
     expect(page, "a missing door did not page").toBeTruthy();
-    expect(page!.detail).toContain("ITEMS=");
-    expect(page!.detail).toContain("npm run shop");
+    expect(page!.detail).not.toContain("npm run shop");
+    expect(page!.detail).toContain("receipts");
     expect(page!.detail).toContain("conformance_watch");
-    expect(page!.detail).toContain("every Sunday the miss stands");
+  });
+
+  it("finds doors outside the first twenty search results with individual URL filters", async () => {
+    const { MENU_ITEMS } = await import("@/store/menu");
+    stubWorld({ listedUrls: [] });
+    const inner = globalThis.fetch;
+    const searches: string[] = [];
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+      const url = new URL(String(input instanceof Request ? input.url : input));
+      if (url.pathname.endsWith("/discovery/search")) {
+        const filter = url.searchParams.get("urlSubstring");
+        searches.push(filter ?? "domain");
+        const items = filter ? MENU_ITEMS.filter(item => `${BASE}/api/buy/${item.id}` === filter) : MENU_ITEMS.slice(0, 20);
+        return Response.json({ partialResults: !filter, resources: items.map(item => ({ resource: `${BASE}/api/buy/${item.id}` })) });
+      }
+      return inner(input);
+    });
+    const round = await runWardRound(testEnv);
+    expect(round.our_doors?.found).toHaveLength(MENU_ITEMS.length);
+    expect(round.our_doors?.missing).toEqual([]);
+    expect(searches).toHaveLength(1 + MENU_ITEMS.length - 20);
+  });
+
+  it.each(["failed", "partial", "malformed", "no-completeness-flag"])("a %s targeted search leaves an unknown, not a missing door", async (kind) => {
+    const { MENU_ITEMS } = await import("@/store/menu");
+    const target = MENU_ITEMS[0]!.id;
+    stubWorld({ listedUrls: [] });
+    const inner = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+      const url = new URL(String(input instanceof Request ? input.url : input));
+      if (url.pathname.endsWith("/discovery/search")) {
+        if (url.searchParams.has("urlSubstring")) {
+          return kind === "failed" ? new Response("unavailable", { status: 503 }) : Response.json(
+            kind === "malformed" ? { partialResults: false, resources: [null] }
+              : kind === "partial" ? { partialResults: true, resources: [] }
+              : { resources: [] },
+          );
+        }
+        return Response.json({ partialResults: true, resources: MENU_ITEMS.slice(1).map(item => ({ resource: `${BASE}/api/buy/${item.id}` })) });
+      }
+      return inner(input);
+    });
+    const round = await runWardRound(testEnv);
+    expect(round.our_doors?.missing).not.toContain(target);
+    expect(round.our_doors?.could_not_check).toBe(true);
+    expect(round.our_doors).toMatchObject({ unchecked: [target] });
+    expect(round.our_search_presence).toBe(true);
+  });
+
+  it("does not count a URL mentioned in another resource's description as indexed", async () => {
+    stubWorld({ listedUrls: [], searchBody: { partialResults: false, resources: [
+      { resource: `${BASE}/api/buy/hello_extra`, description: `${BASE}/api/buy/hello` },
+    ] } });
+    const round = await runWardRound(testEnv);
+    expect(round.our_doors?.found).not.toContain("hello");
+    expect(round.our_doors?.missing).toContain("hello");
   });
 
   /**
@@ -273,7 +330,7 @@ describe("the round itself, with the outside world stubbed", () => {
     });
     const round = await runWardRound(testEnv);
     expect(round.our_search_presence).toBeNull();
-    expect(round.our_doors).toEqual({
+    expect(round.our_doors).toMatchObject({
       claimed: (await import("@/store/menu")).MENU_ITEMS.length,
       found: [],
       missing: [],
