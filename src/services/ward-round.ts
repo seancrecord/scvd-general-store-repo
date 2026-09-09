@@ -1,3 +1,5 @@
+import { EVM_CHAINS } from "@/lib/base-rpc";
+import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { readObserverStatus } from "@/lib/observer-control";
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
@@ -256,9 +258,17 @@ export interface OurDoors {
    * a cheapest amount that is NOT this shelf's minimum for the item,
    * by id. Amount only — the catalog's copy against menu.json's
    * price; payTo is not compared here. Absent when the index's rows
-   * did not parse as rows (the substring presence test still ran).
+   * did not parse as rows. New readings also carry both prices.
    */
   catalog_differs?: string[];
+  price_differences?: { id: string; catalog_usdc: number; shelf_usdc: number; last_updated: string | null }[];
+  /** Missing means a complete URL-filtered lookup returned no exact resource. */
+  search_basis?: "url-filter-v1";
+  checked_at?: string;
+  /** Claimed doors whose targeted lookup failed or was incomplete. */
+  unchecked?: string[];
+  /** The broad search can still omit retired or unrecognized doors. */
+  broad_search_complete?: boolean;
   /** Every payable resource the shelf claims, by item id. */
   claimed: number;
   found: string[];
@@ -282,7 +292,7 @@ export interface OurDoors {
    */
   stale?: string[];
   unknown?: string[];
-  /** The search could not be read: a gap in our vantage, never a miss. */
+  /** At least one claimed URL could not be checked; found/missing retain independent evidence. */
   could_not_check: boolean;
 }
 
@@ -1261,117 +1271,105 @@ export async function readAgent402Leaderboard(
   }
 }
 
-/** Search decides presence; a list miss says nothing (bazaar-check's law). */
-/**
- * One search, two readings: whether the store is in the index at all,
- * and which of the doors it claims the index actually returns. The
- * second is roadmap N5 — a listing decays door by door, and a store
- * that only watched its own name would not notice until the last one.
- */
-/**
- * The catalog's copy of OUR terms against the shelf (S8 Tier C on
- * ourselves): for each of our doors the search rows carry with
- * accepts, the cheapest atomic amount across its rails against the
- * item's minimum price in USDC atomic units. Returns null when the
- * body has no parseable rows, so "not compared" never reads as
- * "agrees".
- */
-function ourCatalogDifferences(
-  body: Record<string, unknown>,
-  claimed: { id: string; url: string }[],
-): string[] | null {
-  const rows = body["items"] ?? body["resources"] ?? body["data"];
+/** Search results are ranked, never a host inventory. Read URL fields only. */
+function searchRows(body: unknown): { rows: Record<string, unknown>[]; complete: boolean } | null {
+  if (!body || typeof body !== "object") return null;
+  const record = body as Record<string, unknown>;
+  const rows = record["resources"] ?? record["items"] ?? record["data"];
   if (!Array.isArray(rows)) return null;
-  const differs: string[] = [];
-  for (const row of rows) {
-    if (!row || typeof row !== "object") continue;
-    const record = row as Record<string, unknown>;
-    const url = String(
-      record["resourceUrl"] ?? record["resource_url"] ?? record["resource"] ?? record["url"] ?? "",
-    ).toLowerCase();
-    const door = claimed.find((entry) => entry.url === url);
-    if (!door) continue;
-    const terms = catalogTermsFromRow(record);
-    if (!terms) continue;
-    const item = MENU_ITEMS.find((entry) => entry.id === door.id);
-    if (!item) continue;
-    const amounts = terms.accepts
-      .map((entry) => Number(entry.amount))
-      .filter((amount) => Number.isFinite(amount));
-    if (amounts.length === 0) continue;
-    const cheapest = Math.min(...amounts);
-    const minimum = Math.round(item.price_usdc * 1_000_000);
-    if (cheapest !== minimum) differs.push(door.id);
-  }
-  return differs.sort();
+  if (rows.some(row => !row || typeof row !== "object" || !searchResource(row))) return null;
+  return { rows, complete: record["partialResults"] === false };
 }
 
-async function ourSearchReading(
+function searchResource(row: Record<string, unknown>): string | null {
+  const value = row["resource"] ?? row["resourceUrl"] ?? row["resource_url"] ?? row["url"];
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return url.href.replace(/\/$/, "");
+  } catch { return null; }
+}
+
+function ourCatalogDifferences(rows: Record<string, unknown>[], base: string): NonNullable<OurDoors["price_differences"]> {
+  return MENU_ITEMS.flatMap(item => {
+    const matches = rows.filter(row => searchResource(row) === `${base}/api/buy/${item.id}`);
+    const prices = matches.flatMap(row => (catalogTermsFromRow(row)?.accepts ?? []).filter(term => {
+      const evm = EVM_CHAINS.find(chain => chain.caip2 === term.network);
+      const usdc = evm?.usdc ?? (term.network.startsWith("solana:") ? SOLANA_USDC_MINT : undefined);
+      return usdc?.toLowerCase() === term.asset.toLowerCase() && /^\d+$/.test(term.amount) && Number.isSafeInteger(Number(term.amount));
+    }).map(term => Number(term.amount)));
+    if (!prices.length) return [];
+    const cheapest = Math.min(...prices);
+    if (cheapest === Math.round(item.price_usdc * 1_000_000)) return [];
+    const dates = matches.map(row => row["lastUpdated"]).filter((value): value is string => typeof value === "string");
+    return [{ id: item.id, catalog_usdc: cheapest / 1_000_000, shelf_usdc: item.price_usdc, last_updated: dates.sort().at(-1) ?? null }];
+  }).sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * One broad read supplies positive evidence. Every unreturned shelf
+ * URL gets its own filtered lookup; only an explicitly complete reply
+ * can put it in missing. Four concurrent requests, at most one per
+ * claimed door after the broad read. No payment or signed-round write.
+ */
+export async function ourSearchReading(
   env: Env,
 ): Promise<{ presence: boolean | null; doors: OurDoors }> {
-  const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const claimed = MENU_ITEMS.map((item) => ({
-    id: item.id,
-    url: `${env.STORE_BASE_URL}/api/buy/${item.id}`.toLowerCase(),
-  }));
-  try {
-    const body = (await cdpGet(
-      env,
-      SEARCH_PATH,
-      `?query=${encodeURIComponent(ownHost)}`,
-    )) as Record<string, unknown>;
-    const text = JSON.stringify(body).toLowerCase();
-    const found = claimed.filter((door) => text.includes(door.url)).map((door) => door.id);
-    const missing = claimed.filter((door) => !text.includes(door.url)).map((door) => door.id);
-    /**
-     * Every /api/buy/ path the index returns under our host, whatever
-     * the shelf thinks of it — read from the same lowercased body
-     * `found` reads, so the two readings cannot disagree about what
-     * the index said. An id ends at the first character a door id
-     * cannot contain; ids here are lowercase snake_case, so the
-     * lowercasing above loses nothing.
-     */
-    const ownDoorPrefix = `${env.STORE_BASE_URL}/api/buy/`.toLowerCase();
-    const ownDoorPattern = new RegExp(
-      `${ownDoorPrefix.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}([a-z0-9_-]+)`,
-      "g",
-    );
-    const claimedIds = new Set(claimed.map((door) => door.id));
-    const returned = new Set<string>();
-    for (const match of text.matchAll(ownDoorPattern)) {
-      const id = match[1];
-      if (id && !claimedIds.has(id)) returned.add(id);
-    }
-    const stale = [...returned].filter((id) => getRetiredItem(id) !== undefined).sort();
-    const unknown = [...returned].filter((id) => getRetiredItem(id) === undefined).sort();
-    const catalogDiffers = ourCatalogDifferences(body, claimed);
-    return {
-      presence: text.includes(ownHost),
-      doors: {
-        claimed: claimed.length,
-        found,
-        missing,
-        stale,
-        unknown,
-        could_not_check: false,
-        ...(catalogDiffers ? { catalog_differs: catalogDiffers } : {}),
-      },
-    };
-  } catch {
-    // An unreadable search is "could not check", never "absent" — for
-    // the store and for every door alike.
-    return {
-      presence: null,
-      doors: {
-        claimed: claimed.length,
-        found: [],
-        missing: [],
-        stale: [],
-        unknown: [],
-        could_not_check: true,
-      },
-    };
+  const checkedAt = new Date().toISOString();
+  const base = env.STORE_BASE_URL.replace(/\/$/, "");
+  const origin = new URL(base).origin;
+  const claimed = MENU_ITEMS.map(item => ({ id: item.id, url: `${base}/api/buy/${item.id}` }));
+  const broad = await cdpGet(env, SEARCH_PATH, `?query=${encodeURIComponent(new URL(base).host)}`)
+    .then(searchRows).catch(() => null);
+  const rows = [...(broad?.rows ?? [])];
+  const found = new Set(claimed.filter(door => rows.some(row => searchResource(row) === door.url)).map(door => door.id));
+  const missing = new Set<string>();
+  const unchecked = new Set<string>();
+  const remaining = claimed.filter(door => !found.has(door.id));
+  for (let offset = 0; offset < remaining.length; offset += 4) {
+    await Promise.all(remaining.slice(offset, offset + 4).map(async door => {
+      const result = await cdpGet(env, SEARCH_PATH, `?${new URLSearchParams({ urlSubstring: door.url })}`)
+        .then(searchRows).catch(() => null);
+      const exact = result?.rows.filter(row => searchResource(row) === door.url) ?? [];
+      if (exact.length) {
+        found.add(door.id);
+        rows.push(...exact);
+      } else if (result?.complete && result.rows.every(row => searchResource(row)!.toLowerCase().includes(door.url.toLowerCase()))) {
+        missing.add(door.id);
+      } else {
+        unchecked.add(door.id);
+      }
+    }));
   }
+  const returned = new Set(rows.flatMap(row => {
+    const resource = searchResource(row);
+    if (!resource) return [];
+    const url = new URL(resource);
+    const match = url.origin === origin && url.pathname.match(/^\/api\/buy\/([a-z0-9_-]+)\/?$/);
+    return match && !claimed.some(door => door.id === match[1]) ? [match[1]!] : [];
+  }));
+  const prices = ourCatalogDifferences(rows, base);
+  const hostFound = rows.some(row => new URL(searchResource(row)!).origin === origin);
+  return {
+    // Negative evidence about every claimed URL does not prove that
+    // the host has no other (retired or unclaimed) resource indexed.
+    presence: hostFound ? true : null,
+    doors: {
+      claimed: claimed.length,
+      found: claimed.filter(door => found.has(door.id)).map(door => door.id),
+      missing: claimed.filter(door => missing.has(door.id)).map(door => door.id),
+      unchecked: claimed.filter(door => unchecked.has(door.id)).map(door => door.id),
+      stale: [...returned].filter(id => getRetiredItem(id) !== undefined).sort(),
+      unknown: [...returned].filter(id => getRetiredItem(id) === undefined).sort(),
+      could_not_check: unchecked.size > 0,
+      broad_search_complete: broad?.complete ?? false,
+      search_basis: "url-filter-v1",
+      checked_at: checkedAt,
+      catalog_differs: prices.map(row => row.id),
+      price_differences: prices,
+    },
+  };
 }
 
 
@@ -1441,25 +1439,14 @@ async function sealRound(
    * this one is a channel dying with no symptom anywhere else.
    */
   const doors = round.our_doors;
-  if (doors && !doors.could_not_check && doors.missing.length > 0) {
-    /*
-     * EVERY WEEK THE MISS STANDS, not once when the list changes
-     * (2026-09-04, the keeper's ask). A door that fell out of the
-     * index and stayed out used to page once and then sit on the
-     * signed round in silence; the page now carries the exact run and
-     * its cost, keyed by the round's week so each Sunday is its own
-     * page and the six-hour dedupe never swallows a standing miss.
-     */
-    const { reRegistration } = await import("@/services/visibility");
-    const press = reRegistration(doors.missing);
+  if (doors?.search_basis === "url-filter-v1" && doors.missing.length > 0) {
     await sendAlert(env, {
       condition: "worker_health",
       key: `search-missing:${round.week}`,
-      // The command leads, because the page is cut at a thousand
-      // characters and thirty door names would push it off the end.
-      detail: `The CDP search index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims. The press, one house purchase per missing door from a listed house wallet on a machine with the key, about $${press.cost_usd.toFixed(3)} for one copy of each: ${press.command || "(nothing on today's shelf is missing)"}. A door the index no longer returns is invisible to every agent that shops by search; the index lists a door when the facilitator settles one real payment for it. This pages every Sunday the miss stands; the desk carries the same line and the full list. Missing: ${doors.missing.join(", ")}.`,
+      detail: `The CDP index returned ${doors.found.length} of the ${doors.claimed} payable doors this store claims. Individual URL lookups did not return: ${doors.missing.join(", ")}. Unchecked: ${(doors.unchecked ?? []).join(", ") || "none"}. This is the saved ${round.week} reading, not a live inventory. Check /admin/ward/index for a free current reading, then reconcile existing purchase receipts, discovery metadata and settlement before considering another payment. A search miss does not establish that a purchase failed or that paying again will fix indexing.`,
     }).catch(() => undefined);
   }
+
   /**
    * The second alarm on the same reading (2026-09-02): the index is
    * still selling doors we closed. Fires when the stale set CHANGES,

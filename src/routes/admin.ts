@@ -42,7 +42,6 @@ import { renderTracePage } from "@/pages/admin/trace-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
-import { reRegistration } from "@/services/visibility";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import {
   listAlmanacEntries,
@@ -998,17 +997,7 @@ adminRoutes.get("/admin", async (c) => {
         const round = shelf(wardLatest, null, "the latest round", notes);
         const doors = round?.our_doors;
         if (!round || !doors) return null;
-        const press = reRegistration(doors.missing);
-        return {
-          week: round.week,
-          at: round.at,
-          claimed: doors.claimed,
-          found: doors.found.length,
-          missing: doors.missing,
-          could_not_check: doors.could_not_check,
-          command: press.command,
-          cost_usd: press.cost_usd,
-        };
+        return { week: round.week, at: round.at, doors };
       })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
@@ -1279,6 +1268,15 @@ adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
  * wants a fresh reading now (or the first reading, before any Sunday
  * has come).
  */
+// A current index reading is separate from the signed weekly census.
+adminRoutes.get("/admin/ward/index", async (c) => {
+  const { ourSearchReading } = await import("@/services/ward-round");
+  const { renderIndexReading } = await import("@/pages/admin/index-reading");
+  const reading = await ourSearchReading(c.env);
+  c.header("Cache-Control", "no-store");
+  return c.html(renderAdminShell("ward", `<h2>The index now</h2>${renderIndexReading(reading.doors, reading.doors.checked_at!)}<p><a href="/admin/ward">Back to the saved weekly reading</a></p>`));
+});
+
 adminRoutes.get("/admin/ward", async (c) => {
   const { latestWardRound, previousWardRound, wardDelta } = await import(
     "@/services/ward-round"

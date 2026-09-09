@@ -69,3 +69,10 @@ sharing a patron number has no stored anchor. See
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md` for exclusions, the separate
 proof-check trust boundary, and current release status. The private records
 are deliberately outside the repository.
+
+`reader-followthrough/reader-release.json` and `registry-1.3.0-smoke.json`
+record the later PR #592 deployment and x402-verify 1.3.0 publication. Both
+Workers deployed; npm verified the registry signature and provenance; the
+tarball matches the prepared package. The 20:03 UTC fresh-install read
+followed all compact pages and verified all six live snapshot signatures
+against the established key, with the earlier canonical bytes unchanged.

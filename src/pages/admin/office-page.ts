@@ -1,3 +1,5 @@
+import { renderIndexReading } from "@/pages/admin/index-reading";
+import type { OurDoors } from "@/services/ward-round";
 import type {
   MetricEvent,
   MonthLedger,
@@ -71,34 +73,19 @@ function moneyOutHtml(money: MoneyOut | null | undefined): string {
 
 /**
  * VISIBILITY (2026-09-04): which of our doors the CDP search index
- * returned on the latest Sunday round, and the exact press that puts
- * a missing one back. Null when no round has run.
+ * returned on the latest Sunday round, with the measurement gaps.
+ * Null when no round has run.
  */
 export interface Visibility {
   week: string;
   at: string;
-  claimed: number;
-  found: number;
-  missing: string[];
-  could_not_check: boolean;
-  command: string;
-  cost_usd: number;
+  doors: OurDoors;
 }
 
 function visibilityHtml(visibility: Visibility | null | undefined): string {
-  if (!visibility) {
-    return `<p><strong>Visibility:</strong> no Sunday round has run yet, so nothing here is known.</p>`;
-  }
-  if (visibility.could_not_check) {
-    return `<p><strong>Visibility:</strong> the CDP search index could not be read on the ${escapeHtml(visibility.week)} round — a gap in our vantage, not a miss. <a href="/admin/ward">The ward</a> has the round.</p>`;
-  }
-  if (visibility.missing.length === 0) {
-    return `<p><strong>Visibility:</strong> <strong style="color:#2f6b2f">${visibility.found} of ${visibility.claimed}</strong> payable doors in the CDP search index on the ${escapeHtml(visibility.week)} round. Every door an agent can search for, it can find.</p>`;
-  }
-  return `<p><strong>Visibility:</strong> <strong style="color:#8c2f1b">${visibility.found} of ${visibility.claimed}</strong> payable doors in the CDP search index on the ${escapeHtml(visibility.week)} round; missing: ${visibility.missing.map((id) => `<code>${escapeHtml(id)}</code>`).join(", ")}.
-    The index lists a door when the facilitator settles one real payment for it, so the press is one house purchase per missing door, about $${visibility.cost_usd.toFixed(3)} for the lot, from a listed house wallet on a machine with the key:</p>
-    <pre>${escapeHtml(visibility.command)}</pre>
-    <p><small>Re-read every Sunday; the email says the same until the index finds them again. REGISTRATION_RUN.md has the full run.</small></p>`;
+  return visibility
+    ? renderIndexReading(visibility.doors, visibility.at, visibility.week)
+    : "<p><strong>Visibility:</strong> no saved weekly reading yet.</p>";
 }
 
 export interface OfficePageData {

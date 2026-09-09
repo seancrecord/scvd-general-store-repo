@@ -1,8 +1,17 @@
 # The registration run — one settle per endpoint, over the Solana rail
 
+**2026-09-09 correction:** this is a procedure for an explicitly chosen
+registration purchase, not a remedy prescribed by a ward warning.
+The former ward check called doors missing after reading only one ranked
+search response, capped at twenty results. That absence claim is withdrawn.
+Use the free `/admin/ward/index` reading;
+reconcile existing purchase receipts and discovery metadata before deciding
+whether another payment has a purpose. A repeated payment is not an indexing
+diagnosis.
+
 The run that does two jobs at once (CV's batching call, 2026-08-04):
-every settled payment REGISTERS its endpoint in CDP discovery (the
-only admission mechanism that exists — no API, no form; see
+a successful discovery-enabled settlement triggers CDP indexing when its
+metadata is accepted (there is no separate registration API or form; see
 PAYMENT_RAILS.md "How CDP discovery actually admits an endpoint"),
 and every Solana-rail settle EXERCISES the second rail end-to-end
 with real money. 22 of 24 menu items are currently invisible to

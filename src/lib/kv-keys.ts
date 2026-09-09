@@ -576,9 +576,11 @@ export const KV_KEYS = {
    * `backfill` the lowest one reached walking backward from where the
    * sweep first started. Patron numbers are the walk order because
    * they are sequential and bounded by the counter — a `cert:` prefix
-   * scan is capped and would silently stop seeing older receipts.
+   * scan also needs its own continuation, stored separately below.
    */
   certAnchorCursor: "cert_anchor_cursor",
+  /** Resumable certificate-key reconciliation; absent begins a new cycle. */
+  certAnchorKeyCursor: "cert_anchor_key_cursor",
   /** Latest completed delivery pass; inventory coverage is a separate read. */
   certAnchorSweep: "cert_anchor_sweep",
   /**

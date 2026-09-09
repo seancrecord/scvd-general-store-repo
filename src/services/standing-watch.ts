@@ -1,3 +1,5 @@
+import { canonicalAddress } from "@/lib/addresses";
+import { publishWatch, retainWatch, signWatchCommission, WATCH_SPACING_MS, type WatchCommission, type WatchPurchase } from "@/services/watch-recovery";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
@@ -19,7 +21,7 @@ import { evmChainOf } from "@/lib/base-rpc";
 import { STATEMENT_MAX_HOURS } from "@/services/wallet-statement";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson } from "@/lib/kv-retry";
 
 /**
  * THE STANDING WATCH — seller-pays monitoring as an artifact, not as
@@ -181,6 +183,7 @@ export interface WatchProbe {
 }
 
 export interface StandingWatchRecord {
+  commission?: WatchCommission;
   watch_id: string;
   /** The buyer's own endpoint. Consent is the purchase itself. */
   url: string;
@@ -263,22 +266,25 @@ export async function startWatch(
   env: Env,
   url: string,
   payer?: string,
+  purchase?: WatchPurchase,
 ): Promise<{ record: StandingWatchRecord; historyUrl: string }> {
-  const now = new Date();
-  const record: StandingWatchRecord = {
-    watch_id: newWatchId(),
-    url,
-    started_at: now.toISOString(),
-    ends_at: new Date(
-      now.getTime() + WATCH_DURATION_HOURS * 3600_000,
-    ).toISOString(),
-    ...(payer ? { payer: payer.toLowerCase() } : {}),
-    probes: [],
-  };
-  await kvPut(env.ORDERS, 
-    KV_KEYS.standingWatch(record.watch_id),
-    JSON.stringify(record),
-  );
+  const now = new Date(purchase?.purchasedAt ?? Date.now());
+  const selected = await retainWatch(purchase, async () => {
+    const record: StandingWatchRecord = {
+      watch_id: newWatchId(),
+      url,
+      started_at: now.toISOString(),
+      ends_at: new Date(
+        now.getTime() + WATCH_DURATION_HOURS * 3600_000,
+      ).toISOString(),
+      ...(payer ? { payer: canonicalAddress(payer) } : {}),
+      probes: [],
+    };
+    const commission = await signWatchCommission(env, "standing", record, purchase?.certId);
+    if (commission) record.commission = commission;
+    return { kind: "standing" as const, record };
+  });
+  const { record } = await publishWatch(env, selected);
   return {
     record,
     historyUrl: `${env.STORE_BASE_URL}/api/watch/${record.watch_id}`,
@@ -520,8 +526,9 @@ export async function sweepStandingWatches(
     kv: env.ORDERS,
     prefix: KV_KEYS.standingWatchPrefix,
     scanCap: WATCH_SCAN_CAP,
-    minSpacingMs: 55 * 60_000,
+    minSpacingMs: WATCH_SPACING_MS.standing,
     entriesOf: (record) => record.probes,
+    publish: async record => { await publishWatch(env, { kind: "standing", record }); },
     /*
      * B5's budget, spent in order. The sweep walks watches
      * sequentially, so bursting every one multiplies wall time by
@@ -558,7 +565,7 @@ export async function watchesForPayer(
   }>;
   truncated: boolean;
 }> {
-  const wanted = payer.toLowerCase();
+  const wanted = canonicalAddress(payer);
   const found: Array<{
     watch_id: string;
     kind: "standing_watch" | "conformance_watch";
@@ -594,7 +601,7 @@ export async function watchesForPayer(
       payer?: string;
     }>(env.ORDERS, listed.names);
     for (const record of records.values()) {
-      if (!record?.watch_id || record.payer?.toLowerCase() !== wanted) {
+      if (!record?.watch_id || (!record.payer || canonicalAddress(record.payer) !== wanted)) {
         continue;
       }
       found.push({
@@ -653,6 +660,7 @@ export interface PayToChange {
 }
 
 export interface WatchHistory {
+  commission?: WatchCommission;
   watch_id: string;
   url: string;
   started_at: string;
@@ -791,6 +799,7 @@ export function watchHistoryOf(
   const paytoChanges = payToChanges(record.probes, base);
   return {
     watch_id: record.watch_id,
+    ...(record.commission ? { commission: record.commission } : {}),
     url: record.url,
     started_at: record.started_at,
     ends_at: record.ends_at,

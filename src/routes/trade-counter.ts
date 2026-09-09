@@ -1030,6 +1030,88 @@ tradeCounterRoutes.get("/api/trade/:partner/claim", async (c) => {
 /* POST /api/trade/:partner/:item_id — the paid door                  */
 /* ------------------------------------------------------------------ */
 
+/**
+ * THE DOOR CARD — a side-effect-free GET on the paid door itself
+ * (2026-09-09, the first account's health checker: "all nine exact
+ * endpoint URLs return GET 405 ... Hal health-checks the concrete
+ * endpoint URL with GET and excludes unhealthy services from
+ * ordinary browse").
+ *
+ * The door was POST-only, which is right for ordering and wrong for
+ * a marketplace whose liveness probe is a GET. Nine listings were
+ * excluded from browse by a 405 the store chose, so the zero on the
+ * ledger was never a demand reading: distribution never opened.
+ *
+ * The card answers the three things a marketplace asks of a listing
+ * up front — one bounded output, the per-call price, the typed
+ * failures — from the same rows the catalog and the contract print.
+ * It reads nothing, writes nothing, consumes no nonce, delivers
+ * nothing and bills nothing; it needs no signature, because it says
+ * only what the contract already says in public.
+ */
+tradeCounterRoutes.get("/api/trade/:partner/:item_id", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const partner = getTradePartner(c.req.param("partner"));
+  if (!partner) {
+    const error = errorByCode("unknown_account");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const itemId = c.req.param("item_id");
+  const row = tradeCatalog(base, partner.partner_share_bps).find(
+    (candidate) => candidate.item_id === itemId,
+  );
+  if (!row || !partner.items.includes(itemId)) {
+    const error = errorByCode("not_at_the_counter");
+    return c.json(refusal(error, error.meaning), 404);
+  }
+  const dialect = TRADE_DIALECTS[partner.dialect];
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json({
+    /* The word a liveness probe reads first. */
+    health: "ok",
+    what_this_is:
+      "The door card: what this listing sells, for how much, what it needs, what comes back, and every way it can refuse. A GET here reads nothing and changes nothing — no probe is run, no nonce consumed, no delivery made, nothing billed. Ordering is the POST below, signed.",
+    allow: ["GET", "POST"],
+    account: partner.id,
+    account_mode: partner.mode,
+    item_id: row.item_id,
+    name: row.name,
+    description: row.description,
+    bounded_output: {
+      one_call_produces: row.signs,
+      artifact_class: row.artifact_class,
+      does_not_prove: row.does_not_prove,
+      verify_url_template: row.verify_url_template,
+      cadence: row.cadence,
+    },
+    price: {
+      per_call_usd: row.trade_price_usd,
+      partner_share_bps: partner.partner_share_bps,
+      store_net_usd: row.store_net_usd,
+      currency: TRADE_SETTLEMENT_CURRENCY,
+    },
+    request: {
+      method: "POST",
+      url: `${base}/api/trade/${partner.id}/${row.item_id}`,
+      content_type: "application/json",
+      fields: row.fields,
+      common_fields: TRADE_COMMON_FIELDS,
+      what_it_reads: row.what_it_reads,
+      signature: `HMAC-SHA256 over ${dialectRow(dialect).signing_string_in_words}, sent as ${dialect.signature_header}: ${dialect.signature_prefix}<hex>`,
+    },
+    result: {
+      status: 200,
+      shape: EXPECTED_OUTCOME,
+      invariants: TRADE_RESPONSE_INVARIANTS,
+    },
+    typed_failures: TRADE_ERRORS,
+    provisioned: tradeItemProvisioned(c.env, partner, row.item_id),
+    check_desk: `${base}/api/trade/${partner.id}/check`,
+    contract: `${base}/api/trade/contract`,
+    item_page: row.item_page,
+  });
+});
+
 tradeCounterRoutes.post("/api/trade/:partner/:item_id", async (c) => {
   c.header("Cache-Control", "no-store");
   const partner = getTradePartner(c.req.param("partner"));

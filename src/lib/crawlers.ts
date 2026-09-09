@@ -73,6 +73,19 @@ export const NAMED_AI_CRAWLERS: readonly string[] = [
   // The Allen Institute's open academic corpus.
   "AI2Bot",
   /*
+   * ora-agent (2026-09-09): the agent-readiness scanner that scores
+   * whether a site can be reached and read by machine readers. Its
+   * own report marked this store "unknown" for its own user-agent
+   * while naming every neighbour reachable — the one string on this
+   * roster that cannot be read off a vendor page, because it belongs
+   * to the instrument doing the reading. Already welcome under the
+   * wildcard; named so the answer is a yes and not a shrug. Its
+   * purpose is to score the page and its structured data, so it is
+   * an indexer by derivation: it keeps the HTML and the JSON-LD it
+   * came to measure.
+   */
+  "ora-agent",
+  /*
    * xAI, AND THE REASON THIS ENTRY IS DIFFERENT FROM THE OTHERS.
    *
    * Every other name above comes from a vendor's own published bots

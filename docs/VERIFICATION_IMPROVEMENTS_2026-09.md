@@ -19,8 +19,11 @@ and documentation closeout. Production access was restored; the completed
 census verifies 262 certificate signatures and 261 timestamp proofs, with
 one uncovered certificate and 44 report links outside the verified inventory.
 Current work, checks and trust limits:
-`docs/EVIDENCE_READER_COVERAGE_2026-09.md`. These source changes are separate
-from the completed releases below; npm 1.2.0 has not changed.
+`docs/EVIDENCE_READER_COVERAGE_2026-09.md`. PR #592 merged at 20:00:48 UTC and both Workers deployed. npm 1.3.0
+published with verified provenance and a matching prepared tarball; a fresh
+registry installation verified all six live snapshots at 20:03 UTC. npm
+1.2.0 has not changed. The measured missing-anchor repair is covered in
+`docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
 
 ## Release follow-through
 
@@ -34,7 +37,8 @@ attribution, with documentation updated throughout. PR #588 merged as
 `3fb532f5f3be3119109ba958c1b8cca3281850b6` at 13:55 UTC on September 9;
 both Workers deployed, and the live documentation and sampled / unsampled
 payment challenges passed. ROADMAP VQ2 records the completed release;
-VQ3 and VQ4 hold the remaining reader-bound and population-coverage work.
+VQ3 subsequently closed the reader-bound work through PR #592; VQ4 tracks
+the remaining population-coverage work.
 The September 9
 read independently checked the receipt and all six listed corpus proofs
 against matching headers from two outside explorers. All six corpus proofs

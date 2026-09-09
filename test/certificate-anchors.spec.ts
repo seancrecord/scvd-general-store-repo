@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bitcoinProofBytes, pendingProofBytes } from "./helpers/ots";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex } from "@/lib/signing";
@@ -7,6 +7,7 @@ import { lookupBlockTime } from "@/lib/bitcoin-block-time";
 import { mintCertificate } from "@/services/certificates";
 import {
   CERT_ANCHOR_BACKFILL_PER_PASS,
+  CERT_ANCHOR_KEY_SCAN_PER_PASS,
   CERT_ANCHOR_SUBMISSIONS_PER_PASS,
   anchorCertificate,
   certificateAnchorDigest,
@@ -72,6 +73,7 @@ const options = (fetchImpl: typeof fetch) => ({
 
 async function resetStore(): Promise<void> {
   await testEnv.COUNTERS.delete(KV_KEYS.certAnchorCursor);
+  await testEnv.COUNTERS.delete(KV_KEYS.certAnchorKeyCursor);
   await testEnv.COUNTERS.delete(KV_KEYS.patronNumber);
   for (const prefix of [KV_KEYS.certPrefix, "patron:", KV_KEYS.certAnchorPendingPrefix]) {
     let cursor: string | undefined;
@@ -191,6 +193,136 @@ describe("anchoring one certificate", () => {
 
 describe("the sweep", () => {
   beforeEach(resetStore);
+  afterEach(() => vi.restoreAllMocks());
+
+  it("anchors both certificates sharing one patron number without changing signed bytes", async () => {
+    const first = await mintCertificate(testEnv, { itemId: "hello" });
+    // Reproduce the stale cross-colo view while retaining the first certificate.
+    await testEnv.PATRONS.delete(KV_KEYS.patron(first.certificate.patron_number));
+    await testEnv.COUNTERS.put(KV_KEYS.patronNumber, "0");
+    const second = await mintCertificate(testEnv, { itemId: "hello" });
+    expect(first.certificate.patron_number).toBe(second.certificate.patron_number);
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 1, backfill: 0 }));
+    await sweepCertificateAnchors(testEnv, options(network()));
+    for (const original of [first, second]) {
+      const stored = await readCert(original.certificate.cert_id);
+      expect(stored.anchor?.ots.status).toBe("complete");
+      expect(stored.certificate).toEqual(original.certificate);
+      expect(stored.signature).toBe(original.signature);
+      expect(stored.public_key).toBe(original.publicKey);
+    }
+  });
+
+  it("retains a deferred key page until every orphan has been submitted", async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < CERT_ANCHOR_SUBMISSIONS_PER_PASS + 1; i++) {
+      ids.push((await mintCertificate(testEnv, { itemId: "hello" })).certificate.cert_id);
+    }
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: ids.length, backfill: 0 }));
+    const first = await sweepCertificateAnchors(testEnv, options(network({ upgrade: () => new Response("", { status: 404 }) })));
+    expect(first.key_scan_submitted).toBe(CERT_ANCHOR_SUBMISSIONS_PER_PASS);
+    expect(first.key_scan_deferred).toBe(1);
+    expect(first.key_scan_has_more).toBe(true);
+    expect(first.key_scan_cycle_complete).toBe(false);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.certAnchorKeyCursor)).toBeNull();
+    const second = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(second.key_scan_submitted).toBe(1);
+    expect(second.key_scan_deferred).toBe(0);
+    expect(second.key_scan_cycle_complete).toBe(true);
+    for (const id of ids) expect((await readCert(id)).anchor?.ots.status).toBe("complete");
+  });
+
+  it("counts corrupt and tampered rows without hiding a valid orphan", async () => {
+    const valid = await mintCertificate(testEnv, { itemId: "hello" });
+    const tampered = await mintCertificate(testEnv, { itemId: "hello" });
+    const changed = await readCert(tampered.certificate.cert_id);
+    changed.certificate.item = "a different item";
+    await testEnv.PATRONS.put(KV_KEYS.cert(tampered.certificate.cert_id), JSON.stringify(changed));
+    await testEnv.PATRONS.put(KV_KEYS.cert("corrupt"), "broken JSON");
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 2, backfill: 0 }));
+    const sweep = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(sweep.key_scan_listed).toBe(3);
+    expect(sweep.key_scan_unreadable).toBe(1);
+    expect(sweep.key_scan_invalid_signature).toBe(1);
+    expect(sweep.key_scan_submitted).toBe(1);
+    expect((await readCert(valid.certificate.cert_id)).anchor?.ots.status).toBe("complete");
+    expect((await readCert(tampered.certificate.cert_id)).anchor).toBeUndefined();
+  });
+
+  it("repairs a marker write interrupted after storing the anchor", async () => {
+    const minted = await mintCertificate(testEnv, { itemId: "hello" });
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 1, backfill: 0 }));
+    const marker = KV_KEYS.certAnchorPending(minted.certificate.cert_id);
+    const put = testEnv.PATRONS.put.bind(testEnv.PATRONS);
+    const broken = vi.spyOn(testEnv.PATRONS, "put").mockImplementation(async (key, value, opts) => {
+      if (key === marker) throw new Error("fixture marker write refused");
+      return put(key, value, opts);
+    });
+    await expect(sweepCertificateAnchors(testEnv, options(network()))).rejects.toThrow();
+    expect((await readCert(minted.certificate.cert_id)).anchor?.ots.status).toBe("pending");
+    expect(await testEnv.COUNTERS.get(KV_KEYS.certAnchorKeyCursor)).toBeNull();
+    broken.mockRestore();
+    const next = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(next.key_scan_submitted).toBe(0);
+    expect(next.key_scan_requeued).toBe(1);
+    expect((await readCert(minted.certificate.cert_id)).anchor?.ots.status).toBe("complete");
+    expect(await testEnv.PATRONS.get(marker)).toBeNull();
+  });
+
+  it("resumes beyond a capped page and restarts after the final page", async () => {
+    const minted = await mintCertificate(testEnv, { itemId: "hello" });
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 1, backfill: 0 }));
+    const list = testEnv.PATRONS.list.bind(testEnv.PATRONS);
+    const cursors: (string | undefined)[] = [];
+    vi.spyOn(testEnv.PATRONS, "list").mockImplementation(async (opts) => {
+      if (opts?.prefix !== KV_KEYS.certPrefix) return list(opts);
+      cursors.push(opts.cursor ?? undefined);
+      expect(opts.limit).toBe(CERT_ANCHOR_KEY_SCAN_PER_PASS);
+      return opts.cursor === "next-certificate-page"
+        ? { keys: [{ name: KV_KEYS.cert(minted.certificate.cert_id) }], list_complete: true, cacheStatus: null }
+        : { keys: Array.from({ length: CERT_ANCHOR_KEY_SCAN_PER_PASS }, (_, i) => ({ name: KV_KEYS.cert(`missing-${i}`) })), list_complete: false, cursor: "next-certificate-page", cacheStatus: null };
+    });
+    const first = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(first.key_scan_listed).toBe(CERT_ANCHOR_KEY_SCAN_PER_PASS);
+    expect(first.key_scan_unreadable).toBe(CERT_ANCHOR_KEY_SCAN_PER_PASS);
+    expect(first.key_scan_has_more).toBe(true);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.certAnchorKeyCursor)).toBe("next-certificate-page");
+    const second = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(second.key_scan_submitted).toBe(1);
+    expect(second.key_scan_cycle_complete).toBe(true);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.certAnchorKeyCursor)).toBeNull();
+    await sweepCertificateAnchors(testEnv, options(network()));
+    expect(cursors).toEqual([undefined, "next-certificate-page", undefined]);
+  });
+
+  it("runs the key scan even while the forward patron cursor is behind", async () => {
+    const minted = await mintCertificate(testEnv, { itemId: "hello" });
+    await testEnv.PATRONS.delete(KV_KEYS.patron(minted.certificate.patron_number));
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 1, backfill: 0 }));
+    await testEnv.COUNTERS.put(KV_KEYS.patronNumber, String(CERT_ANCHOR_SUBMISSIONS_PER_PASS + 2));
+    const sweep = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(sweep.behind_head).toBeGreaterThan(0);
+    expect(sweep.key_scan_submitted).toBe(1);
+    expect((await readCert(minted.certificate.cert_id)).anchor?.ots.status).toBe("complete");
+  });
+
+  it("retains its cursor when a truncated key listing loses its continuation", async () => {
+    const minted = await mintCertificate(testEnv, { itemId: "hello" });
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorCursor, JSON.stringify({ head: 1, backfill: 0 }));
+    await testEnv.COUNTERS.put(KV_KEYS.certAnchorKeyCursor, "prior-page");
+    const list = testEnv.PATRONS.list.bind(testEnv.PATRONS);
+    vi.spyOn(testEnv.PATRONS, "list").mockImplementation(async (opts) => {
+      if (opts?.prefix !== KV_KEYS.certPrefix) return list(opts);
+      expect(opts.cursor).toBe("prior-page");
+      return { keys: [{ name: KV_KEYS.cert(minted.certificate.cert_id) }], list_complete: false, cursor: "", cacheStatus: null };
+    });
+    const sweep = await sweepCertificateAnchors(testEnv, options(network()));
+    expect(sweep.key_scan_submitted).toBe(1);
+    expect(sweep.key_scan_has_more).toBe(true);
+    expect(sweep.key_scan_cursor_missing).toBe(true);
+    expect(sweep.key_scan_cycle_complete).toBe(false);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.certAnchorKeyCursor)).toBe("prior-page");
+  });
 
   it("first run walks everything on backfill, newest first, and records lag honestly", async () => {
     const ids: string[] = [];
@@ -236,7 +368,9 @@ describe("the sweep", () => {
     expect(first.backfilled).toBe(CERT_ANCHOR_BACKFILL_PER_PASS);
     expect(first.behind_backfill).toBe(2);
     const second = await sweepCertificateAnchors(testEnv, options(network()));
-    expect(second.backfilled).toBe(2);
+    // The key scan already submitted the two records behind the patron walk.
+    expect(first.key_scan_submitted).toBe(2);
+    expect(second.backfilled).toBe(0);
     expect(second.behind_backfill).toBe(0);
     expect(CERT_ANCHOR_SUBMISSIONS_PER_PASS).toBeGreaterThan(0);
   });

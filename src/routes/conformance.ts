@@ -1,3 +1,4 @@
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import {
@@ -148,8 +149,86 @@ function docHtml(base: string): string {
     </section>`;
 }
 
+/**
+ * THE MARKDOWN TWIN (2026-09-09). This document answered in JSON and,
+ * for a browser, in HTML — and in nothing a markdown reader could
+ * take, so `/api/conformance/v1.md` was a 404 while the preflight's
+ * twin next door answered. Rendered from the same `conformanceDoc`
+ * the other two representations read, so the three cannot drift.
+ * Sections follow the HTML twin's order; the frontmatter follows the
+ * preflight's.
+ */
+function docMarkdown(base: string): string {
+  const d = conformanceDoc(base) as Record<string, unknown>;
+  const list = (value: unknown): string =>
+    Array.isArray(value) ? value.map((line) => `- ${String(line)}`).join("\n") : "";
+  const pairs = (value: unknown): string =>
+    value && typeof value === "object"
+      ? Object.entries(value as Record<string, unknown>)
+          .map(([key, entry]) => `- **\`${key}\`** — ${String(entry)}`)
+          .join("\n")
+      : "";
+  const text = (value: unknown): string => (value === undefined ? "" : String(value));
+  return `---
+title: "${text(d["title"])}"
+description: "${text(d["summary"]).replace(/"/g, "'")}"
+canonical: "${base}/api/conformance/${CONFORMANCE_VERSION}"
+url: "${base}/api/conformance/${CONFORMANCE_VERSION}"
+version: "${text(d["version"])}"
+method: "POST"
+price: "free"
+auth: "none"
+---
+
+# ${text(d["title"])}
+
+${text(d["summary"])}
+
+**${text(d["why_it_is_free"])}**
+
+## How to call it
+
+\`\`\`
+POST ${base}/api/conformance/${CONFORMANCE_VERSION}
+Content-Type: application/json
+
+{"artifact": "<compact JWS>"}
+\`\`\`
+
+${pairs(d["request"])}
+
+Free, and no account exists to open. The whole procedure for every door
+in this store is at ${base}/auth.md.
+
+## What it checks
+
+${list(d["what_it_checks"])}
+
+## Required fields
+
+${Array.isArray(d["required_fields"]) ? list(d["required_fields"]) : pairs(d["required_fields"])}
+
+## What it cannot tell you
+
+${list(d["what_it_cannot_tell_you"])}
+
+## Why you should not trust this page
+
+${text(d["our_conflict_of_interest"])}
+
+${text(d["run_it_yourself"])}
+
+---
+
+${text(d["contract"])}
+
+${text(d["rate_limit"])}
+`;
+}
+
 conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
   const base = c.env.STORE_BASE_URL;
+  c.header("Vary", VARY_ACCEPT);
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.html(
       renderSimplePage({
@@ -160,6 +239,18 @@ conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
         bodyHtml: docHtml(base),
       }),
     );
+  }
+  /*
+   * JSON stays the default — an API door, and a caller who stated no
+   * preference wants the machine form. Markdown fires only when a
+   * client ranked it above JSON, the rule every negotiating surface
+   * here follows.
+   */
+  if (prefersMarkdown(c.req.header("Accept"), "application/json", c.req.header("User-Agent"))) {
+    return c.text(docMarkdown(base), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+    });
   }
   return c.json(conformanceDoc(base));
 });

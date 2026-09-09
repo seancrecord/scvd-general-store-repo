@@ -49,7 +49,7 @@ record is `CHANGELOG.md`.
 
 ### Compact discovery
 
-The next Worker release adds `/corpus/index.json`, a paginated metadata
+The September 9 Worker release adds `/corpus/index.json`, a paginated metadata
 projection. Follow its `next` URLs and preserve unreadable rows in your
 counts. It does not verify signatures or fetch R2 snapshot bodies. The
 existing `corpus()` function and `/corpus.json` shape stay unchanged.

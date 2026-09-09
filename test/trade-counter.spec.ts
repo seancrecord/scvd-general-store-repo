@@ -621,6 +621,48 @@ describe("the sandbox: integration before the conversation", () => {
   });
 });
 
+describe("the door card: a side-effect-free GET on every paid door", () => {
+  it("answers 200 with the bounded output, the price and the typed failures, and changes nothing", async () => {
+    for (const itemId of HAL.items) {
+      const response = await SELF.fetch(`${BASE}/api/trade/hal/${itemId}`);
+      expect(response.status, itemId).toBe(200);
+      const body = await json(response);
+      expect(body["health"], itemId).toBe("ok");
+      expect(body["item_id"]).toBe(itemId);
+      expect(body["allow"]).toEqual(["GET", "POST"]);
+      const item = getMenuItem(itemId)!;
+      const price = body["price"] as Record<string, unknown>;
+      expect(price["per_call_usd"]).toBe(tradePriceUsd(item, HAL.partner_share_bps));
+      expect(price["store_net_usd"]).toBe(tradeNetUsd(tradePriceUsd(item, HAL.partner_share_bps), HAL.partner_share_bps));
+      const bounded = body["bounded_output"] as Record<string, unknown>;
+      expect(String(bounded["does_not_prove"]).length).toBeGreaterThan(0);
+      expect((body["typed_failures"] as unknown[]).length).toBe(TRADE_ERRORS.length);
+      const request = body["request"] as Record<string, unknown>;
+      expect(request["method"]).toBe("POST");
+      expect(request["url"]).toBe(`${BASE}/api/trade/hal/${itemId}`);
+      // No secret is ever on this card.
+      expect(JSON.stringify(body)).not.toContain(SECRET);
+      expect(JSON.stringify(body)).not.toContain(PROVIDER_KEY);
+    }
+    // Side-effect free: no row written, no nonce consumed, no counter moved.
+    const rows = await testEnv.ORDERS.list({ prefix: KV_KEYS.tradeRowPrefix("hal") });
+    expect(rows.keys.length).toBe(0);
+  });
+
+  it("404s an item that is not on the account, and an account that does not exist", async () => {
+    expect((await SELF.fetch(`${BASE}/api/trade/hal/the_penny_shelf`)).status).toBe(404);
+    expect((await SELF.fetch(`${BASE}/api/trade/nobody/context_anchor`)).status).toBe(404);
+  });
+
+  it("does not shadow the account's own signed GET doors", async () => {
+    // claim and statement are registered ahead of the card and still refuse an unsigned read.
+    expect((await SELF.fetch(`${BASE}/api/trade/hal/statement`)).status).toBe(401);
+    expect((await SELF.fetch(`${BASE}/api/trade/hal/claim?order_ref=x`)).status).toBe(401);
+    // The check desk still says it opens on POST.
+    expect((await SELF.fetch(`${BASE}/api/trade/hal/check`)).status).toBe(405);
+  });
+});
+
 describe("the check desk: every check reported, nothing delivered", () => {
   it("passes a good request, names the first failure on a bad one, and consumes no nonce", async () => {
     const good = await sandboxSigned("x", { summary: "s" }, "check");
