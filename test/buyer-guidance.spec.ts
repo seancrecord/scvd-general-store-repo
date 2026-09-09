@@ -58,3 +58,15 @@ for (const path of ['/almanac/missing-guidance-fixture', '/gazette/issue-999999'
     expect((await SELF.fetch(body.next_step.url)).status).toBe(200);
   });
 }
+it('publication and catalog repairs meet the required fields in the published error contract', async () => {
+  const document = await (await SELF.fetch(base + '/openapi.json')).json() as {
+    components: { schemas: { Problem: { properties: { next_step: { required: string[] } } } } };
+  };
+  const required = document.components.schemas.Problem.properties.next_step.required;
+  for (const path of ['/almanac/missing-guidance-fixture', '/gazette/issue-999999', '/zodiac/archive/missing/week-9999', '/api/buy/missing-guidance-fixture']) {
+    const response = await SELF.fetch(base + path);
+    expect(response.status).toBe(404);
+    const body = await response.json() as { next_step: Record<string, unknown> };
+    for (const field of required) expect(body.next_step, `${path}: required ${field}`).toHaveProperty(field);
+  }
+});

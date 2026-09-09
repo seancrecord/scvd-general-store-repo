@@ -286,3 +286,19 @@ existing skip**, in 851.68 seconds. Typecheck, all 33 field-tool tests, both
 production bundles, the audit and the claims register passed on this tree.
 The earlier PR CI runs were cancelled because they tested the superseded
 base; fresh PR checks will validate the integration commit.
+
+## Recovery schema correction before merge
+
+The shared error schema initially required an MCP recipe on every
+`next_step`, while publication recovery supplies a free HTTP read. A
+regression check fetched the published schema and real publication and
+catalog refusals, and failed on the absent `mcp` field before the fix.
+The schema now keeps `method`, `url` and `payment_required` mandatory and
+describes MCP as an optional additional recipe. All existing uses of these
+fields were checked.
+
+The final local run passed **621 files, 9,915 tests, one existing skip** in
+439.07 seconds. All 32 targeted contract tests, typecheck, both Worker
+bundles, claims, audit and whitespace checks passed. Main subsequently
+advanced to `08bff6a6`; a merge-tree check found no conflicts. PR CI will
+validate the combined tree before merge.

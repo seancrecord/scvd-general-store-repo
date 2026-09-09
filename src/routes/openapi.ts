@@ -107,12 +107,12 @@ const PROBLEM_SCHEMA: OpenApiObject = {
     },
     retry_same_request: {
       type: "boolean", const: false,
-      description: "Present on catalog and input repairs: correct the selection or inputs before retrying.",
+      description: "Present on repair responses: correct the selection or inputs before retrying.",
     },
     next_step: {
       type: "object",
-      description: "Optional free read after a catalog or input refusal. No payment or buyer arguments are forwarded.",
-      required: ["method", "url", "payment_required", "mcp"],
+      description: "Optional free read after a refusal. Catalog and input repairs also include an equivalent MCP read. No payment or buyer arguments are forwarded.",
+      required: ["method", "url", "payment_required"],
       properties: {
         method: { type: "string", const: "GET" },
         url: { type: "string", format: "uri" },
