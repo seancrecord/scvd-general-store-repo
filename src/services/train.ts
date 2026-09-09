@@ -1,10 +1,10 @@
+import { retainPersonalRecord, publishPersonalRecord, mutatePersonalRecord, type PersonalPurchase } from "@/services/personal-goods";
 import { listKeys } from "@/lib/kv-list";
 import { newTagId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { Env, TrainTagRecord, TrainTagStatus } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE TRAIN. Out past the porch.
@@ -26,11 +26,6 @@ import { kvPut } from "@/lib/kv-retry";
  */
 
 export const TAG_CAP = 140;
-
-/** Keys sort ascending, so the oldest tag is the front of the train. */
-function forwardTimestamp(now: number): string {
-  return String(now).padStart(14, "0");
-}
 
 /**
  * No URLs in tags. The wall is public and permanent, which is exactly
@@ -63,26 +58,28 @@ export async function paintTag(
      */
     paidUsdc?: number;
   },
+  purchase?: PersonalPurchase,
 ): Promise<PaintedTag> {
-  const record: TrainTagRecord = {
-    id: newTagId(),
-    tag: input.tag.slice(0, TAG_CAP),
-    status: "pending_review",
-    date: new Date().toISOString(),
-    cert_id: input.certId,
-    patron_number: input.patronNumber,
-  };
-  if (typeof input.paidUsdc === "number" && Number.isFinite(input.paidUsdc)) {
-    record.paid_usdc = input.paidUsdc;
-  }
-  const name = sanitizeText(input.name, 80);
-  if (name) {
-    record.name = name;
-  }
-  await kvPut(env.ORDERS, 
-    KV_KEYS.trainTag(forwardTimestamp(Date.now()), record.id),
-    JSON.stringify(record),
-  );
+  const prepared = await retainPersonalRecord(purchase, () => {
+    const record: TrainTagRecord = {
+      id: newTagId(),
+      tag: input.tag.slice(0, TAG_CAP),
+      status: "pending_review",
+      date: purchase?.purchasedAt ?? new Date().toISOString(),
+      cert_id: input.certId,
+      patron_number: input.patronNumber,
+    };
+    if (typeof input.paidUsdc === "number" && Number.isFinite(input.paidUsdc)) {
+      record.paid_usdc = input.paidUsdc;
+    }
+    const name = sanitizeText(input.name, 80);
+    if (name) {
+      record.name = name;
+    }
+    return { kind: "tag" as const, record };
+  });
+  if (prepared.kind !== "tag") throw new Error("Original tag record unavailable");
+  const { record } = await publishPersonalRecord(env, prepared);
   return { record };
 }
 
@@ -134,21 +131,9 @@ export async function setTagStatus(
   if (!found) {
     return null;
   }
-  found.record.status = status;
-  /**
-   * The display date stamps ONCE and survives status flips. Two real
-   * mistap shapes on a phone at the counter: a double-submit of
-   * approve must not reset "up since" to the second tap, and an
-   * accidental take-down followed by putting it back must not
-   * replace the true first-display date with the date of the
-   * mistake. The wall only shows displayed_at on approved tags, so
-   * keeping it on a held record is bookkeeping, not a claim.
-   */
-  if (status === "approved" && !found.record.displayed_at) {
-    found.record.displayed_at = new Date().toISOString();
-  }
-  await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
-  return found.record;
+  const saved = await mutatePersonalRecord(env, { kind: "tag", record: found.record, storageKey: found.kvKey },
+    { kind: "tag", status, at: new Date().toISOString() });
+  return saved.record;
 }
 
 /**

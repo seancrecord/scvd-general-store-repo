@@ -7,6 +7,7 @@ import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
 import { createPatronAnchor, publishPatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
+import { privateConfessionReceipt } from "@/services/confession-receipt";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
@@ -351,11 +352,13 @@ export async function deliverInstantGoods(
         env,
         input.confessionText ?? "",
         input.agentName,
+        { checkpoint, purchasedAt: input.purchasedAt },
       );
       return {
         deliverable: CONFESSION_ABSOLUTION,
         extras: {
           confession_id: heard.record.id,
+          confession_receipt: await privateConfessionReceipt(env, heard.record, input.certId, checkpoint),
           counter_sign: CONFESSION_COUNTER_SIGN,
         },
       };
@@ -363,7 +366,7 @@ export async function deliverInstantGoods(
     case "coffees_for_closers": {
       const win = input.win ?? "";
       // The Sunday list is what makes the deliverable's claim true.
-      await recordCloser(env, win, input.patronNumber);
+      await recordCloser(env, win, input.patronNumber, { checkpoint, purchasedAt: input.purchasedAt, ...(input.certId ? { certId: input.certId } : {}) });
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
@@ -763,7 +766,7 @@ export async function deliverInstantGoods(
       // The wall queue. The certificate already exists by now and does
       // not depend on this landing — they bought the persistence, not
       // the placement.
-      await paintTag(env, {
+      const painted = await paintTag(env, {
         tag,
         certId: input.certId ?? "",
         patronNumber: input.patronNumber,
@@ -773,14 +776,14 @@ export async function deliverInstantGoods(
         ...(typeof input.paidUsdc === "number"
           ? { paidUsdc: input.paidUsdc }
           : {}),
-      });
+      }, { checkpoint, purchasedAt: input.purchasedAt });
       return {
         deliverable: graffitiNote(tag),
         extras: {
           tag,
           tag_recorded: "verbatim, on the certificate, permanently",
           wall_url: "/train",
-          display_status: "pending_review",
+          display_status: painted.record.status,
           display_note:
             "The certificate is done and verifies now. The wall is the keeper's call; a tag he doesn't put up keeps everything except the spot.",
         },
@@ -813,7 +816,7 @@ export async function deliverInstantGoods(
         orderId: "instant",
         certId: input.certId ?? "",
         patronNumber: input.patronNumber,
-      });
+      }, { checkpoint, purchasedAt: input.purchasedAt });
       const base = env.STORE_BASE_URL;
       const cardUrl = `${base}/luckies/${record.lucky.lucky_id}.svg`;
       const recordUrl = `${base}/api/lucky/${record.lucky.lucky_id}`;

@@ -815,6 +815,7 @@ export async function fulfillPurchase(
       goodsInput.paidUsdc = payment.paidUsdc;
     }
     if (input.tag !== undefined) {
+      goodsInput.paidUsdc = payment.paidUsdc;
       goodsInput.tag = input.tag;
     }
     if (attestation) {
