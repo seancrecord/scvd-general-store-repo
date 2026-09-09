@@ -5,7 +5,7 @@ import { storeProvenanceCheck, type SignedProvenanceCheck } from "@/services/pro
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvPut } from "@/lib/kv-retry";
 import { createAnchor } from "@/services/anchors";
-import { createPatronAnchor } from "@/services/patron-anchors";
+import { createPatronAnchor, publishPatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
@@ -137,6 +137,7 @@ export interface InstantGoodsInput {
   provenanceCheck?: SignedProvenanceCheck;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
+  patronAnchor?: PreparedPatronAnchor;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -373,21 +374,11 @@ export async function deliverInstantGoods(
       if (!digest) {
         throw new Error("bitcoin_anchor reached goods with no digest");
       }
-      /**
-       * Submission happens HERE, after the mint, so a calendar outage
-       * costs a retry and never the certificate: the cert already
-       * binds the digest via `attests`, and the sweep finishes what a
-       * down calendar started. The record is the deliverable's spine;
-       * the proof URL serves it forever.
-       */
-      const anchorInput: Parameters<typeof createPatronAnchor>[1] = {
-        digest,
-        certId: input.certId ?? "",
-      };
-      if (input.anchorLabel) {
-        anchorInput.label = input.anchorLabel;
-      }
-      const record = await createPatronAnchor(env, anchorInput);
+      // Paid checkout already retained the exact proof before settlement.
+      // Direct service callers still prepare a new commission explicitly.
+      const record = input.patronAnchor
+        ? await publishPatronAnchor(env, { ...input.patronAnchor, cert_id: input.certId ?? "" })
+        : await createPatronAnchor(env, { digest, label: input.anchorLabel, certId: input.certId ?? "" });
       return {
         deliverable: bitcoinAnchorNote(record.ots.status),
         extras: {
@@ -429,7 +420,7 @@ export async function deliverInstantGoods(
       if (!record) {
         throw new Error("the_mandate reached goods with no record");
       }
-      await storeMandate(env, record, input.certId ?? "");
+      await storeMandate(env, record, input.certId ?? "", input.purchasedAt);
       return {
         deliverable: mandateNote(),
         extras: {

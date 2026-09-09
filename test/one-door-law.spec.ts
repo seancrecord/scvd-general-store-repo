@@ -5,13 +5,13 @@ import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { purchaseInputFrom } from "@/lib/purchase-args";
 import type { MenuItem } from "@/types";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 
 const BASE = "https://scvd.store";
 
-let facilitator: ReturnType<typeof installFacilitatorMock>;
+let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
 beforeAll(() => {
-  facilitator = installFacilitatorMock();
+  facilitator = installMultiPurchaseFacilitatorMock();
 });
 
 /**
