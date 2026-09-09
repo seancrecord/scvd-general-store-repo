@@ -1,11 +1,14 @@
 # Corpus readers and evidence inventory — September 9, 2026
 
-The keeper authorized this follow-through with “okay lets do that”. Code
-has passed local validation; no new Worker deployment or npm publication
-is claimed here. The earlier x402-verify 1.2.0 release is unchanged. The keeper authorized
-release with “nice lets keep rollng”; version 1.3.0 is prepared for the
-provenance publishing workflow. Normal Cloudflare access succeeded on
-retry and the private inventory capture and independent proof checks are complete.
+The keeper authorized this follow-through with “okay lets do that” and
+release with “nice lets keep rollng”. PR #592 merged at 20:00:48 UTC on
+September 9 as `f44df7b165c6534fe7c9cfcb0b2a12790e56eade`; both production
+Workers deployed. x402-verify 1.3.0 is published with verified registry
+signature and provenance, and its tarball matches the prepared bytes.
+The earlier 1.2.0 release remains unchanged. The production census and
+independent proof checks below are complete within their stated scope.
+The certificate-key repair is documented separately in
+`docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
 
 ## Corpus access
 
@@ -24,11 +27,11 @@ snapshot and does not prove that nothing was withheld. The original
 corpus response headers advertise the same index. Existing signed records
 are never rewritten for this change.
 
-The source evidence CLI accepts corpus-v1 records and checks their digest
+The 1.3.0 evidence CLI accepts corpus-v1 records and checks their digest
 before exporting the exact canonical signed bytes. `--max-bytes` (library
 `maxBytes`) explicitly raises a reader's allowance while keeping the old
 default and a hard ceiling. An artifact cannot select its own allowance.
-The source README documents invocation, failure modes and unsigned context.
+The package README documents invocation, failure modes and unsigned context.
 
 `research/verification-2026-09-09/reader-followthrough/corpus-size-check.json`
 records all six saved public snapshots verified with unchanged canonical
@@ -96,7 +99,10 @@ reports in the ten declared report families. Of 80 signed `attests` links,
 36 matched verified reports and 44 did not match this inventory. The unresolved
 links belong to settlement attestation (7), trust profile (3), Bitcoin anchor
 (3), passport refresh (7), spot check (12), and attestation bundle (12).
-Their absence from these adapters does not establish lost evidence.
+These are unresolved signed `attests` bindings, not necessarily standalone
+reports: Bitcoin-anchor purchases bind an opaque buyer-supplied digest, and
+attestation bundles bind a collection of observations. Their absence from
+these adapters does not establish lost evidence.
 The 121 signed `saw` bindings remain outside this capture.
 
 261 certificates carried stored complete proofs with matching payload digests.
@@ -112,7 +118,8 @@ share patron number 199; one has an anchor and one does not. The sweep's
 `submitAtPatron` follows a single patron-to-certificate mapping and explicitly
 cannot reach the other certificate. The counter reads 261 while certificate
 key enumeration finds 262. VQ4 therefore remains open for certificate-key
-sweep coverage and the six unresolved product categories. No historical
+sweep coverage and classification of the six unresolved product categories.
+The subsequent repair is tracked in `docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`. No historical
 certificate was rewritten and no raw purchase record is published.
 
 Aggregate counts, unresolved categories and the public Bitcoin headers are
@@ -150,6 +157,14 @@ retained. Typecheck, both builds, and 36 evidence tests passed. The exact
 record is `reader-followthrough/release-validation.json`; GitHub's full
 checks remain the final merge gate.
 
-These changes are on `codex/corpus-reader-coverage`. Worker release and
-x402-verify 1.3.0 publication remain pending. The directory note's September 9 keeper-confirmed send is
+The release's two GitHub CI runs subsequently passed all 610 files and
+9,536 tests, with one existing skip, plus every downstream check. At
+20:03 UTC, a fresh npm installation followed all three compact-index pages
+(limit 2; 1,253–1,629 bytes per page) and exported and verified all six live
+snapshots under 32 MiB. Their exact canonical bytes match the earlier
+captures. The largest actual CLI bundle was 23,227,004 bytes, including the
+captured issuer document. The CLI correctly leaves Bitcoin verification
+separate. Release and smoke records:
+`research/verification-2026-09-09/reader-followthrough/reader-release.json`
+and `registry-1.3.0-smoke.json`. The directory note's September 9 keeper-confirmed send is
 included in the documentation closeout; a reply remains pending.

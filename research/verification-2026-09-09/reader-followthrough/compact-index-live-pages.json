@@ -1,0 +1,104 @@
+[
+  {
+    "url": "https://scvd.store/corpus/index.json?limit=2",
+    "bytes": 1629,
+    "body": {
+      "format": "scvd-corpus-index/v1",
+      "entries": [
+        {
+          "sequence": 1,
+          "status": "metadata_available",
+          "week": "2026-W32",
+          "digest": "6830b3735ad37707f44e8740eec7d273d987b69bc0f4e71e9d118b6a6e882865",
+          "url": "https://scvd.store/corpus/1.json"
+        },
+        {
+          "sequence": 2,
+          "status": "metadata_available",
+          "week": "2026-W33",
+          "digest": "7728bd55f64b7499fa051cfd6ac55a2c46539ee225b87993dd10e6d4e6185083",
+          "url": "https://scvd.store/corpus/2.json"
+        }
+      ],
+      "listed": 2,
+      "unreadable": 0,
+      "has_more": true,
+      "next": "https://scvd.store/corpus/index.json?limit=2&cursor=AAAAAEp_SvI-AKTwh1Ty0AZOEGSe5l4C1b_ndIBZteNjsw9JZ5GPybrnVhUVCw07CU83_n0rWkP5FfZnnGqcjPdfnL2X5mDIOLSMwkLVMfkuF5St_qXygta86ExIbfSA5J-wDAHkoZki4Y8SiCxswWTww3Dpdmh9hlAASXYLbZX-86LL3sMpgqFpAqCAyKuOpTiJ_-igWbUi1Zg6b1CdUiKXUyAEoDsacC8ysg9Ijp2n-KI1iEgO5qfqw183KQq86vDrxhk3m2Q35lw9Yh8E16cHq1TFJnyZEAm8oOvC02O7QSYoRi19AXNlpweZnLWbWO0gEoc",
+      "page_limit": 2,
+      "record_byte_limit": 16777216,
+      "r2_bodies_read": false,
+      "verification": "Not performed. This index reads KV metadata (legacy embedded records are projected); it does not read R2 bodies, verify signatures, chain links or Bitcoin proofs. Fetch and verify each linked snapshot separately.",
+      "completeness": "Listed keys in this page, including unreadable rows. Follow next until null; has_more with no next is incomplete. KV pagination is not a point-in-time inventory and cannot prove no records were withheld.",
+      "legacy_index": "https://scvd.store/corpus.json",
+      "corrections": "Things this store said that later proved wrong live at /corrections — dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands."
+    }
+  },
+  {
+    "url": "https://scvd.store/corpus/index.json?limit=2&cursor=AAAAAEp_SvI-AKTwh1Ty0AZOEGSe5l4C1b_ndIBZteNjsw9JZ5GPybrnVhUVCw07CU83_n0rWkP5FfZnnGqcjPdfnL2X5mDIOLSMwkLVMfkuF5St_qXygta86ExIbfSA5J-wDAHkoZki4Y8SiCxswWTww3Dpdmh9hlAASXYLbZX-86LL3sMpgqFpAqCAyKuOpTiJ_-igWbUi1Zg6b1CdUiKXUyAEoDsacC8ysg9Ijp2n-KI1iEgO5qfqw183KQq86vDrxhk3m2Q35lw9Yh8E16cHq1TFJnyZEAm8oOvC02O7QSYoRi19AXNlpweZnLWbWO0gEoc",
+    "bytes": 1629,
+    "body": {
+      "format": "scvd-corpus-index/v1",
+      "entries": [
+        {
+          "sequence": 3,
+          "status": "metadata_available",
+          "week": "2026-W34",
+          "digest": "75dcedd2252ef3d893d5f874dcf44992d1a791fc9bec41eda57491cfc26cc64d",
+          "url": "https://scvd.store/corpus/3.json"
+        },
+        {
+          "sequence": 4,
+          "status": "metadata_available",
+          "week": "2026-W35",
+          "digest": "a77a01a8fff60c897972b7c4dbcb2696be361c03513a20245823a8e8b98a58a1",
+          "url": "https://scvd.store/corpus/4.json"
+        }
+      ],
+      "listed": 2,
+      "unreadable": 0,
+      "has_more": true,
+      "next": "https://scvd.store/corpus/index.json?limit=2&cursor=AAAAAJN9pyX03MfMLbf76s_YzNYl7bvacQr-UUtAs7qdAp8w_oF1h36RYqMpt_1FJJ0I_SKYWuzhZNJjqoULuzrVGa9Z_RzAIUP-ilMplldG5MMbNUwbkVM2Rt3hZsmeEphAqjaO8PjDQ_71Crw4kCBxMF9-FbI2a4xMWrTZXzTasjCx6Ughccx2kjgppqd_Q-au8138sGWWlhneuJLW6VwuxIFbBW0Rr7qHdfyblPCVQxLRV0aXYzGzJAlgwjTZDb4FDOMEsv1EylqjHHxsZlGciVPH5dWlGvJdoze_TjMiDl3BWiJYJd9iBfE6rAGOoCYzvZM",
+      "page_limit": 2,
+      "record_byte_limit": 16777216,
+      "r2_bodies_read": false,
+      "verification": "Not performed. This index reads KV metadata (legacy embedded records are projected); it does not read R2 bodies, verify signatures, chain links or Bitcoin proofs. Fetch and verify each linked snapshot separately.",
+      "completeness": "Listed keys in this page, including unreadable rows. Follow next until null; has_more with no next is incomplete. KV pagination is not a point-in-time inventory and cannot prove no records were withheld.",
+      "legacy_index": "https://scvd.store/corpus.json",
+      "corrections": "Things this store said that later proved wrong live at /corrections — dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands."
+    }
+  },
+  {
+    "url": "https://scvd.store/corpus/index.json?limit=2&cursor=AAAAAJN9pyX03MfMLbf76s_YzNYl7bvacQr-UUtAs7qdAp8w_oF1h36RYqMpt_1FJJ0I_SKYWuzhZNJjqoULuzrVGa9Z_RzAIUP-ilMplldG5MMbNUwbkVM2Rt3hZsmeEphAqjaO8PjDQ_71Crw4kCBxMF9-FbI2a4xMWrTZXzTasjCx6Ughccx2kjgppqd_Q-au8138sGWWlhneuJLW6VwuxIFbBW0Rr7qHdfyblPCVQxLRV0aXYzGzJAlgwjTZDb4FDOMEsv1EylqjHHxsZlGciVPH5dWlGvJdoze_TjMiDl3BWiJYJd9iBfE6rAGOoCYzvZM",
+    "bytes": 1253,
+    "body": {
+      "format": "scvd-corpus-index/v1",
+      "entries": [
+        {
+          "sequence": 5,
+          "status": "metadata_available",
+          "week": "2026-W36",
+          "digest": "a69a2144fb5b0feee0da1003d6356dca331ccf58917e6f136ff369706d9f3722",
+          "url": "https://scvd.store/corpus/5.json"
+        },
+        {
+          "sequence": 6,
+          "status": "metadata_available",
+          "week": "2026-W37",
+          "digest": "779d120a8b2267f0585b5899542ede6dc174d0d042ff122496af4bc1f4cb6f0c",
+          "url": "https://scvd.store/corpus/6.json"
+        }
+      ],
+      "listed": 2,
+      "unreadable": 0,
+      "has_more": false,
+      "next": null,
+      "page_limit": 2,
+      "record_byte_limit": 16777216,
+      "r2_bodies_read": false,
+      "verification": "Not performed. This index reads KV metadata (legacy embedded records are projected); it does not read R2 bodies, verify signatures, chain links or Bitcoin proofs. Fetch and verify each linked snapshot separately.",
+      "completeness": "Listed keys in this page, including unreadable rows. Follow next until null; has_more with no next is incomplete. KV pagination is not a point-in-time inventory and cannot prove no records were withheld.",
+      "legacy_index": "https://scvd.store/corpus.json",
+      "corrections": "Things this store said that later proved wrong live at /corrections — dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands."
+    }
+  }
+]

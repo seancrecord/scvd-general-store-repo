@@ -51,11 +51,14 @@ import type { CertificateAnchor, CertificateRecord, Env } from "@/types";
  *
  * NEVER ON THE MONEY PATH. The mint writes nothing new; the hourly
  * sweep walks patron numbers — sequential, bounded by the counter,
- * never a capped prefix scan that quietly stops seeing old receipts —
+ * with a separate resumable certificate-key scan to find receipts whose
+ * patron mapping was overwritten —
  * with two cursors: `head` follows the counter forward so a new
  * receipt is anchored within the hour, `backfill` walks from where
  * the sweep first started down to patron #1. New receipts first,
- * because the bound is worth most when it is close to the mint.
+ * because the bound is worth most when it is close to the mint. The key scan
+ * has its own bounded work allowance on every pass, even when these cursors
+ * lag, and starts another cycle at the end; KV is eventually consistent.
  *
  * NO CHAIN, on purpose, same reasoning as the patron anchors: each
  * receipt's proof stands alone. Chaining receipts would be the
@@ -67,6 +70,7 @@ import type { CertificateAnchor, CertificateRecord, Env } from "@/types";
 export const CERT_ANCHOR_SUBMISSIONS_PER_PASS = 25;
 export const CERT_ANCHOR_BACKFILL_PER_PASS = 25;
 export const CERT_ANCHOR_UPGRADES_PER_PASS = 40;
+export const CERT_ANCHOR_KEY_SCAN_PER_PASS = 1000;
 /** Ceiling on the open-work listing. An unnamed cap is a silent one. */
 const PENDING_SCAN_CAP = 1000;
 
@@ -194,6 +198,17 @@ export interface CertificateAnchorSweep {
    * so a backlog that outgrows the sweep is a number, not a silence.
    */
   pending_truncated: boolean;
+  key_scan_ran: boolean;
+  key_scan_listed: number;
+  key_scan_submitted: number;
+  key_scan_requeued: number;
+  key_scan_unreadable: number;
+  key_scan_invalid_signature: number;
+  key_scan_deferred: number;
+  key_scan_has_more: boolean;
+  key_scan_cursor_missing: boolean;
+  /** Enumeration cycle ended; not a claim that every record verified. */
+  key_scan_cycle_complete: boolean;
 }
 
 async function readCursor(env: Env): Promise<AnchorCursor | null> {
@@ -211,8 +226,8 @@ async function patronCounter(env: Env): Promise<number> {
  * patron record, or whose certificate is gone, is skipped and counted
  * as walked: the cursor must never stall on a hole (the patron
  * allocator can, under contention, let two receipts share a number,
- * and the losing one is unreachable from here — named on the
- * /attestation page rather than hidden by a stuck walk).
+ * and the losing one is unreachable from this mapping. The separate
+ * certificate-key scan finds it without changing either signed record).
  */
 async function submitAtPatron(
   env: Env,
@@ -227,13 +242,93 @@ async function submitAtPatron(
   return after?.anchor !== undefined;
 }
 
+/** Find certificates the patron-number mapping cannot enumerate. Never advance
+ * past deferred submissions or a failed write: retrying may reread completed
+ * work, but cannot permanently hide a receipt behind the cursor. */
+async function scanCertificateKeys(
+  env: Env,
+  options: CertificateAnchorOptions,
+  sweep: CertificateAnchorSweep,
+): Promise<void> {
+  const cursor = await kvGet(env.COUNTERS, KV_KEYS.certAnchorKeyCursor);
+  const listed = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.certPrefix,
+    cap: CERT_ANCHOR_KEY_SCAN_PER_PASS,
+    ...(cursor ? { cursor } : {}),
+  });
+  const records = await bulkGetJson<CertificateRecord>(env.PATRONS, listed.names);
+  const openMarkers = listed.names.flatMap((name) => {
+    const status = records.get(name)?.anchor?.ots?.status;
+    return status === "pending" || status === "failed"
+      ? [KV_KEYS.certAnchorPending(name.slice(KV_KEYS.certPrefix.length))] : [];
+  });
+  const markers = await bulkGetJson<unknown>(env.PATRONS, openMarkers);
+  sweep.key_scan_ran = true;
+  sweep.key_scan_listed = listed.names.length;
+  for (const name of listed.names) {
+    const certId = name.slice(KV_KEYS.certPrefix.length);
+    const record = records.get(name);
+    if (!record?.certificate || record.certificate.cert_id !== certId ||
+      typeof record.signature !== "string" || typeof record.public_key !== "string") {
+      sweep.key_scan_unreadable++;
+      continue;
+    }
+    if (record.anchor) {
+      const status = record.anchor.ots?.status;
+      if (status === "complete") continue;
+      if (status !== "pending" && status !== "failed") {
+        sweep.key_scan_unreadable++;
+        continue;
+      }
+      const marker = KV_KEYS.certAnchorPending(certId);
+      if (markers.get(marker) != null) continue;
+      if (sweep.key_scan_submitted + sweep.key_scan_requeued >= CERT_ANCHOR_SUBMISSIONS_PER_PASS) {
+        sweep.key_scan_deferred++;
+        continue;
+      }
+      // A failed marker write after the certificate write must be recoverable.
+      await kvPut(env.PATRONS, marker, "1");
+      sweep.key_scan_requeued++;
+      continue;
+    }
+    if (sweep.key_scan_submitted + sweep.key_scan_requeued >= CERT_ANCHOR_SUBMISSIONS_PER_PASS) {
+      sweep.key_scan_deferred++;
+      continue;
+    }
+    let form: Awaited<ReturnType<typeof certificateSignatureForm>>;
+    try {
+      form = await certificateSignatureForm(record.certificate, record.signature, record.public_key);
+    } catch {
+      sweep.key_scan_unreadable++;
+      continue;
+    }
+    if (form === "invalid") {
+      sweep.key_scan_invalid_signature++;
+      continue;
+    }
+    const after = await anchorCertificate(env, certId, options);
+    if (after?.anchor) sweep.key_scan_submitted++;
+    else sweep.key_scan_unreadable++;
+  }
+  sweep.key_scan_has_more = listed.truncated || sweep.key_scan_deferred > 0;
+  sweep.key_scan_cursor_missing = listed.truncated && !listed.cursor;
+  sweep.key_scan_cycle_complete = !sweep.key_scan_has_more;
+  if (sweep.key_scan_deferred > 0 || sweep.key_scan_cursor_missing) return;
+  if (listed.truncated) {
+    await kvPut(env.COUNTERS, KV_KEYS.certAnchorKeyCursor, listed.cursor!);
+  } else {
+    await env.COUNTERS.delete(KV_KEYS.certAnchorKeyCursor);
+  }
+}
+
 /**
  * One pass, bounded in every direction: new receipts forward from the
  * head, old ones backward on the backfill, then the open work —
  * resubmit what a down calendar refused, upgrade what Bitcoin has
  * since confirmed. Delivery, not monitoring (rule 23a): every record
  * touched here is moving toward a terminal state, and a completed one
- * is never read again.
+ * is never submitted again. The key scan rereads completed records while
+ * looking for certificates outside the patron-number mapping.
  */
 export async function sweepCertificateAnchors(
   env: Env,
@@ -248,6 +343,16 @@ export async function sweepCertificateAnchors(
     behind_head: 0,
     behind_backfill: 0,
     pending_truncated: false,
+    key_scan_ran: false,
+    key_scan_listed: 0,
+    key_scan_submitted: 0,
+    key_scan_requeued: 0,
+    key_scan_unreadable: 0,
+    key_scan_invalid_signature: 0,
+    key_scan_deferred: 0,
+    key_scan_has_more: false,
+    key_scan_cursor_missing: false,
+    key_scan_cycle_complete: false,
   };
   const counter = await patronCounter(env);
   // First run: the head starts at the counter and the backfill starts
@@ -279,6 +384,9 @@ export async function sweepCertificateAnchors(
   if (cursor.backfill <= 1) cursor.backfill = 0;
   sweep.behind_backfill = Math.max(0, cursor.backfill - 1);
   await kvPut(env.COUNTERS, KV_KEYS.certAnchorCursor, JSON.stringify(cursor));
+
+  // A busy head must not starve receipts outside its patron-number mapping.
+  await scanCertificateKeys(env, options, sweep);
 
   // The open work: whatever is not yet Bitcoin-confirmed.
   const listed = await listKeys(env.PATRONS, {
