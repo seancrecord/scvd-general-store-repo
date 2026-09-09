@@ -115,8 +115,27 @@ function pricingJsonLd(base: string, floorUsd: number): string {
  * typed price is a promise with an expiry date. Pay-what-it-deserves
  * doors show their span; everything else is one figure.
  */
+/**
+ * ONE TABLE CELL, ESCAPED IN THE RIGHT ORDER (2026-09-09, CodeQL on
+ * PR #598, high). The first version escaped the pipe and nothing
+ * else, so a backslash already in the text landed in front of the
+ * one this inserts and un-escaped it: `a\|b` came out `a\\|b`, which
+ * markdown reads as a literal backslash and then a LIVE pipe, and
+ * the row broke at that cell. Backslashes go first, then pipes, so
+ * every backslash in the output is one the text had or one this put
+ * there on purpose. The shelf's text is the keeper's and carries
+ * neither today; the point is that the helper keeps its promise on
+ * the day it does. Exported so the test can hand it that day's input.
+ */
+export function markdownCell(text: string): string {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function priceRows(base: string): string {
-  const cell = (text: string): string => text.replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
   const firstSentence = (text: string): string => text.split(/(?<=\.)\s/)[0] ?? text;
   return MENU_ITEMS.filter((item) => item.price_usdc > 0)
     .slice()
@@ -128,8 +147,8 @@ function priceRows(base: string): string {
           ? `$${Math.min(...tiers)}–$${Math.max(...tiers)} (pay what it deserves)`
           : `$${item.price_usdc}`;
       const cadence = item.cadence === "term" ? "term" : "one-off";
-      const what = cell(item.subtitle ?? firstSentence(item.description));
-      return `| [${cell(item.name)}](${base}/menu/${item.id}) \`${item.id}\` | ${price} | ${cadence} | ${what} |`;
+      const what = markdownCell(item.subtitle ?? firstSentence(item.description));
+      return `| [${markdownCell(item.name)}](${base}/menu/${item.id}) \`${item.id}\` | ${price} | ${cadence} | ${what} |`;
     })
     .join("\n");
 }

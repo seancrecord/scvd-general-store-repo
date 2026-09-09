@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
+import { markdownCell } from "@/routes/pricing";
 
 const BASE = "https://scvd.store";
 
@@ -47,5 +48,20 @@ describe("the price list on /pricing.md", () => {
       await SELF.fetch(`${BASE}/pricing`, { headers: { Accept: "text/markdown" } })
     ).text();
     expect(negotiated).toBe(twin);
+  });
+});
+
+/**
+ * ONE TABLE CELL CANNOT BREAK ITS ROW (2026-09-09, CodeQL on PR #598).
+ * The helper escaped pipes and not backslashes, so a backslash in the
+ * text un-escaped the pipe this inserts. Order is the whole fix.
+ */
+describe("a markdown table cell", () => {
+  it("escapes backslashes before pipes, so neither is left live", () => {
+    expect(markdownCell("a|b")).toBe("a\\|b");
+    // a\|b -> a\\\|b : the text's backslash doubled, then the pipe escaped.
+    expect(markdownCell("a\\|b")).toBe("a\\\\\\|b");
+    expect(markdownCell("back\\slash")).toBe("back\\\\slash");
+    expect(markdownCell("  plain   text ")).toBe("plain text");
   });
 });
