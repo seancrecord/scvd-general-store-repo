@@ -109,7 +109,8 @@
       { "name": "TRADE_NONCES", "class_name": "TradeNonceStore" },
       { "name": "PAID_RECOVERIES", "class_name": "PaidRecoveryStore" },
       { "name": "A2A_KITS", "class_name": "A2AKitStore" },
-      { "name": "A2A_TASKS", "class_name": "A2ATaskStore" }
+      { "name": "A2A_TASKS", "class_name": "A2ATaskStore" },
+      { "name": "BOUNTY_CLAIM_LOCKS", "class_name": "BountyClaimLocks" }
     ]
   },
   "migrations": [
@@ -118,7 +119,10 @@
     // versions upload cannot provision a new class (Cloudflare error 10211).
     { "tag": "v2-paid-recovery", "new_sqlite_classes": ["PaidRecoveryStore"] },
     { "tag": "v3-a2a-tasks", "new_sqlite_classes": ["A2ATaskStore"] },
-    { "tag": "v4-a2a-kits", "new_sqlite_classes": ["A2AKitStore"] }
+    { "tag": "v4-a2a-kits", "new_sqlite_classes": ["A2AKitStore"] },
+    // One claim at a time per bounty: the double-pay race the claim
+    // door documented and KV could not close.
+    { "tag": "v5-bounty-claim-locks", "new_sqlite_classes": ["BountyClaimLocks"] }
   ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",

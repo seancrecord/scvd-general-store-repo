@@ -160,12 +160,7 @@ export type PublishResult =
  * week replaces its row (the round may have been re-run by hand), and
  * the replacement is visible in published_at rather than silent.
  */
-export async function publishRegistryWeek(env: Env): Promise<PublishResult> {
-  const round = await latestWardRound(env);
-  if (!round) {
-    return { ok: false, refusal: "no ward round to publish from" };
-  }
-  const entry = buildRegistryWeek(round, new Date().toISOString());
+async function insertWeek(env: Env, entry: RegistryWeekEntry): Promise<PublishResult> {
   const pulse = await readRegistryPulse(env);
   const existing = pulse.weeks.findIndex((row) => row.week === entry.week);
   const replaced = existing >= 0;
@@ -180,4 +175,79 @@ export async function publishRegistryWeek(env: Env): Promise<PublishResult> {
   }
   await kvPut(env.COUNTERS, KV_KEYS.registryPulse, JSON.stringify(pulse));
   return { ok: true, entry, weeks: pulse.weeks.length, replaced };
+}
+
+export async function publishRegistryWeek(env: Env): Promise<PublishResult> {
+  const round = await latestWardRound(env);
+  if (!round) {
+    return { ok: false, refusal: "no ward round to publish from" };
+  }
+  return insertWeek(env, buildRegistryWeek(round, new Date().toISOString()));
+}
+
+/**
+ * PUBLISHING A WEEK THAT WAS MISSED (2026-09-09, the keeper: "the
+ * registry posted w35 to the site but then i go in and only see w37
+ * available for publish… now we have a gap. whys that not updated
+ * automatically… i guess it backfills").
+ *
+ * It did not backfill. publishRegistryWeek builds from latestWardRound
+ * and nothing else, so the Sunday after a missed press overwrote the
+ * only round the press could reach, and W36 became unpublishable — a
+ * permanent hole in a public tally, created by nobody pressing a
+ * button.
+ *
+ * The week was never lost, though: the corpus froze that exact round
+ * on the Sunday it ran, signed and hash-chained, and it is still
+ * there. So the gap is fillable from the record this store already
+ * keeps for other reasons, and a keeper does not need a time machine —
+ * he needs the press to read the corpus instead of the latest round.
+ *
+ * WHAT THE ROW SAYS ABOUT ITSELF. `observed_at` is the round's own
+ * timestamp, so a backfilled week carries the date it was WALKED and
+ * not the date it was pressed; `published_at` is today, which is the
+ * truth about when the neighbourhood heard. Nothing is recomputed and
+ * no number is invented: the entry is built from the frozen round by
+ * the same builder the live press uses, which is why a backfilled week
+ * and a same-day week are the same kind of row.
+ */
+export async function publishRegistryWeekFromCorpus(
+  env: Env,
+  week: string,
+): Promise<PublishResult> {
+  const { listCorpus } = await import("@/services/corpus-list");
+  const records = await listCorpus(env);
+  const found = records.find((record) => record.snapshot?.week === week);
+  if (!found?.snapshot?.round) {
+    const held = records
+      .map((record) => record.snapshot?.week)
+      .filter((value): value is string => Boolean(value));
+    return {
+      ok: false,
+      refusal: `the corpus holds no snapshot for ${week} — it holds ${held.join(", ") || "nothing"}`,
+    };
+  }
+  return insertWeek(
+    env,
+    buildRegistryWeek(found.snapshot.round, new Date().toISOString()),
+  );
+}
+
+/**
+ * The weeks the corpus can still publish and the tally has not: the
+ * gap, by name. A keeper should never have to derive "what is
+ * missing" by reading two lists side by side — that is the arithmetic
+ * that produced the W36 hole in the first place.
+ */
+export async function unpublishedCorpusWeeks(env: Env): Promise<string[]> {
+  const [{ listCorpus }, pulse] = await Promise.all([
+    import("@/services/corpus-list"),
+    readRegistryPulse(env),
+  ]);
+  const published = new Set(pulse.weeks.map((row) => row.week));
+  const records = await listCorpus(env);
+  return records
+    .map((record) => record.snapshot?.week)
+    .filter((week): week is string => Boolean(week) && !published.has(week!))
+    .sort();
 }

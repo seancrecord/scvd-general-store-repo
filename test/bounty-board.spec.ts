@@ -549,7 +549,18 @@ describe("a settlement can only be claimed once", () => {
     ).toBe(1);
     for (const attempt of attempts) {
       if (attempt.status === "fulfilled") continue;
-      expect(String(attempt.reason)).toMatch(/already been claimed/);
+      /*
+       * EITHER GUARD IS THE RIGHT ANSWER, and which one fires is a
+       * race (2026-09-09). The per-listing lock now runs before the
+       * tx key, so a loser is usually told another claim on this
+       * bounty is being verified; a loser that got past the lock is
+       * still caught by "already been claimed". The property under
+       * test is one signature and one reward, not which sentence the
+       * losers were handed.
+       */
+      expect(String(attempt.reason)).toMatch(
+        /already been claimed|being verified right now/,
+      );
     }
 
     // And the week's books moved by exactly one reward, which is the

@@ -60,7 +60,8 @@ describe a board the other does not run.
 ## The rails (2026-09-09)
 
 Doors on any chain the claim verifier reads can be posted: Base,
-Polygon, Ethereum, Arbitrum, OP Mainnet, Avalanche, World and Solana.
+Polygon, Ethereum, Arbitrum, OP Mainnet, Avalanche, World, Solana and
+Algorand.
 That list is not typed here — `bountyRails()` derives it from the same
 `EVM_CHAINS` table the claim door resolves against, so a chain added to
 the verifier is named by the board's rules, its JSON and its posting
@@ -147,6 +148,60 @@ anything before it POSTs reads them.
   says — a reworded refusal goes red in CI rather than quietly false on
   the public page. Same rule as the expiry correction: one clock, and
   one wording, behind every face.
+
+## The fifth rail, and the one number we did not check (2026-09-09)
+
+Algorand is read the way Solana is: the indexer answers what a
+transaction moved, and the claim compares it against the terms this
+store captured — the asset, the exact amount, the payer, the payTo, and
+a round after the bounty existed. Two differences are worth writing
+down rather than discovering.
+
+**A confirmed round is final**, so there is no finality window here of
+the kind the Solana path sits through. The absence is a fact about the
+chain, not a check that was skipped.
+
+**The ecosystem spells the chain three ways** — the CAIP-2 truncation
+(78 doors in W37), the padded base64 genesis hash (8), and the plain
+word `mainnet` (1). All three are accepted and stored as one, because
+refusing an honest door over a formatting opinion is the observer's
+defect, not the door's.
+
+And the honest gap: **USDC on Algorand is ASA 31566704, and this store
+has not verified that number itself.** Egress to the Algorand indexer
+was blocked from the machine the reader was written on, so the id comes
+from Circle's documentation rather than from a call we made. The
+failure mode is fail-closed — every claim compares the on-chain asset
+id against it, so a wrong number REFUSES honest claims and can never
+pay for the wrong asset. Verify before the first Algorand bounty:
+
+    curl -s https://mainnet-idx.algonode.cloud/v2/assets/31566704 \
+      | jq '.asset.params | {name, "unit-name", decimals, creator}'
+
+`ALGORAND_USDC_ASSET` overrides it the day it moves.
+
+## One claim at a time (2026-09-09)
+
+The claim door shipped naming a hole it could not close: the replay
+guard keys the SETTLEMENT, so two walkers claiming one listing with two
+DIFFERENT real transactions both passed every check and both were
+signed a reward. One listing, two payouts, and a weekly budget that
+counted one. Nothing was stolen — the store spent twice for one piece
+of evidence.
+
+KV could not fix it. It is last-write-wins with edge-cached reads and
+no compare-and-swap, which is why the tx guard says of itself, in the
+code, that it is not a mutex. A Durable Object decides the question in
+one indivisible step, and `services/bounty-claim-locks.ts` is that
+object: take the listing, do the work, give it back on every exit.
+
+The lock is a lease, not a latch — sixty seconds, long enough for a
+chain read, a screen and a signature, short enough that a claim which
+died mid-flight frees the listing on its own. A deployment without the
+binding keeps exactly the guarantees the board had before, which is
+stated in that file and is the honest trade: refusing every walker
+because a lock is unavailable would turn a rare double-pay into an
+outage.
 
 ## The honest register (the part that keeps this ours)
 

@@ -3121,6 +3121,41 @@ adminRoutes.post("/admin/market/publish-inflows", async (c) => {
   );
 });
 
+/**
+ * FILLING A GAP FROM THE CORPUS (2026-09-09). The ordinary press
+ * publishes the round in hand; this one publishes a week the corpus
+ * froze and nobody pressed at the time. Same builder, same row shape,
+ * and the row carries the round's own observed_at so a backfilled week
+ * is dated when it was WALKED rather than when it was rescued.
+ */
+adminRoutes.post("/admin/market/publish-registry-week", async (c) => {
+  const { publishRegistryWeekFromCorpus } = await import(
+    "@/services/registry-pulse"
+  );
+  const contentType = c.req.header("Content-Type") ?? "";
+  const body: Record<string, unknown> = contentType.includes("json")
+    ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+    : ((await c.req.parseBody()) as Record<string, unknown>);
+  const week = String(body["week"] ?? "").trim();
+  if (!/^\d{4}-W\d{2}$/.test(week)) {
+    return c.json({ refused: "week must be an ISO week, e.g. 2026-W36" }, 400);
+  }
+  const result = await publishRegistryWeekFromCorpus(c.env, week);
+  if (!result.ok) {
+    return c.json({ refused: result.refusal }, 404);
+  }
+  if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.json({
+      published: result.entry.week,
+      observed_at: result.entry.observed_at,
+      weeks_on_tally: result.weeks,
+      replaced_existing_row: result.replaced,
+      public_at: "/registry",
+    });
+  }
+  return c.redirect("/registry");
+});
+
 adminRoutes.post("/admin/market/publish-registry", async (c) => {
   const { publishRegistryWeek } = await import("@/services/registry-pulse");
   const result = await publishRegistryWeek(c.env);

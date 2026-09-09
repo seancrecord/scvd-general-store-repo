@@ -1140,3 +1140,4 @@ export { PaidRecoveryStore } from "@/services/paid-recovery";
 export { A2ATaskStore } from "@/services/a2a-tasks";
 
 export { A2AKitStore } from "@/services/a2a-kit";
+export { BountyClaimLocks } from "@/services/bounty-claim-locks";
