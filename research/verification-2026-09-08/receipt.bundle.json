@@ -1,0 +1,128 @@
+{
+  "format": "scvd-evidence-bundle/v1",
+  "artifact": {
+    "algorithm": "ed25519",
+    "signed_payload": "{\"cert_id\":\"cert_et6zuesrrn\",\"item\":\"small_blessing\",\"patron_number\":243,\"date\":\"2026-09-06T22:48:31.020Z\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137ae5e3c7ed176744226f67223de50ca3a19e5a\",\"settlement_tx\":\"0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b\",\"from_the_store\":\"Thanks for shopping somewhere that shows its work.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+    "signature": "8b634cef3fa4efa05e8299c20d2319b79bd0131123b6c368b6dc6009b328d56d25aaf4bceed8da8c939a62028cb950d647d44756585ba172d6940a40e4502306",
+    "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550"
+  },
+  "attachments": [],
+  "timestamp": {
+    "format": "opentimestamps-calendar-ops",
+    "digest": "da294753ef13ca600152087ab55bbba95d693a2d98bca63aeffb2b863f8f7eb3",
+    "proof_base64": "8AhLkiYVVNQ1HwjwEBKZeUtt4B/AIReLvX4mVnMI8SDz0YDE/JuccSMVNpwgtqjjxm0+be3dP0IZL0y1XHZCFwjwIHt1afx0i7crL3x15BqS46hMDG90NJI81GAs0ZSpqIhBCPEgAREY/Loe9C6Gfa+N7iyIXks+J8QP7KAbJclYCZlTUacI8QRqnfec8AgRs2AxiAitPAjxIF6sFTX80e78hCGaYXoIvOlJoBRUYolWWXX1aVvKFjczCPAgYwZb1GO+G+drc2SduGLaP4f9JTVOzv5aije03q33h+II8CAF2wzGm0AeAyNgDYQsGAWFxCHwykv2yV0Yc8w+cxEBpgjxIK4MkL6U75ejbFhTPQj3iA0xq/nggnES7+AD/yTbgXMxCPAgpdnB7y1m/xPIU1IYZga2LGgW/AOewhMYvkE28VCb96MI8SAsRMXm4BF1hFOlsHZJoLP843blgM/J9vWUjcy1QEvaDQjwIJCiGAM+H7MZK1Z4IEBmOemj5xG/abcj7Mxcoqrs2T9JCPEg4gFu7cJw4mFkc8tk/FfKJOEE/ABZcOMTz7pHOhOsZV4I8CDgE4XpdJioRfzY86qb9BLTKpEUBfob/5FcamuBI12Z3AjwIKAF7X22bChC9QMYxJ+lEVI8v2Y185FPG0zvYcupojbMCPAg6UwT6MAoiY/ECKCen9EcwD3g9emz5nRcm1Ib8/cAre0I8VkBAAAAAft7MXEcTEQ+pXhKtp6vT0P6Q0ZdUFTFoLIHVt5PQdoPAAAAAAD+////At04AwAAAAAAFgAUOn9TY6YpQ4meL9P529yOGQXpGeYAAAAAAAAAACJqIPAE27wOAAgI8SB9nMjVXaEe/8uDnAmWNtjNG2hhnEtg55WOkbhZolaj4wgI8CCAvQgzjGr0rOqQxEY2Sje7DnPAb0WbXhtWL5OOT1mH7QgI8SDFohufni3mJ0TDFka5YEIkvu2Hl0LIX8lppUwVnQJJ2AgI8CDnU1ocN+AZJWSe+XWRTjHB7L3HP9U8lOlPUZAzK8XvRAgI8SBRvmJy7bc38OYQy+tFRJQFQbnzd0kVgT9UhJEjSB1zXQgI8SCJhkLZ1U3DevvN39X78Q5JLFh7oJdfczaP+Taj8Z65XwgI8SBmP9j3K/SV06rsjZmNbIrhXhVa/cJiNmIFXBGrnSwhzQgI8SBYPc8cRN3B66eDHX8oe2kRdgu8Mu1BREMaBJmxrh8aqAgI8CDk440ZSECt6LQFjXH1atmBz+G/3cCB7SnxZvtZyoGkbggI8SCAXd7qECwlyfZkMAGJF9wol2T5wBCPYD/CEQi1pg+/0wgI8CD6HMX/JNyjeRjNIY+FkkbTGJsMwJJMyXCycSvt7kocSQgI8CDseG1NLDtxF5Udw4I85DZSZgot0OsKymLJCG/Mwf4pVggI8CDuHDUIo8b807m1d3OvT9fUW22mSsbzXzPmDLoBTQx5yQgIAAWIlg1z1xkBA9z5Og=="
+  },
+  "context": {
+    "source_url": "https://scvd.store/api/verify/cert_et6zuesrrn",
+    "captured_at": "2026-09-08T20:44:30.663Z",
+    "issuer_document": {
+      "algorithm": "ed25519",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "encoding": "hex",
+      "identity_policy": "This wallet, this domain, and 2 signing keys — 1 retired, each kept published forever with its dates and the signed announcement that retired it. A key change here is announced before the new key signs anything and the announcement is signed by the outgoing key; nothing is ever quietly swapped. Full history at /.well-known/scvd-signing-key, policy at /attestation.",
+      "sample_artifact_id": "cert_4dww28dx5j",
+      "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+      "key_history": {
+        "current": {
+          "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+          "status": "current",
+          "in_service_from": "2026-07-31"
+        },
+        "retired": [
+          {
+            "public_key": "d98ebec640489852c7076aee66615705200971e7d32c54964e173aea3d37e1af",
+            "in_service_from": "2026-07-22",
+            "retired_on": "2026-07-31",
+            "reason": "No recoverable copy of the private key existed. It was generated, pushed into a Cloudflare Worker secret, and no copy kept — not as a decision, but because nobody thought that far ahead yet. Worker secrets are write-only, which is right, and is why there was nothing to retrieve when the paper-backup procedure was written on 2026-07-31. Nothing was broken by that: this key worked, and everything signed under it verifies and always will. What did not exist was any way to survive losing it. Retired in favour of a key written on paper before it ever signed anything.",
+            "succeeded_by": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+            "announcement_id": "handover_1"
+          }
+        ],
+        "rotations_performed": 1
+      },
+      "did": {
+        "id": "did:web:scvd.store",
+        "document": "https://scvd.store/.well-known/did.json",
+        "note": "The same current key, published in the W3C DID shape the x402 offer-receipt extension resolves. One derivation serves both documents; they cannot disagree."
+      },
+      "continuity": {
+        "key_count": 2,
+        "successor_key_exists": false,
+        "rotations_performed": 1,
+        "if_this_key_ever_changes": "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
+        "full_policy": "https://scvd.store/attestation",
+        "externally_anchored_history": "https://scvd.store/.well-known/anchor-log.json — everything above is served by us and is editable by us. That log is a hash chain over this key state whose digests are timestamped into Bitcoin via OpenTimestamps, so how far back this registry could quietly have been rewritten is bounded by something outside our control. It proves WHEN a key state was committed and never WHO SHOULD HAVE held it: a thief with this key could timestamp exactly as validly. Forensics, not a defence."
+      },
+      "note": "Anything we sign, this key verifies. Hangs by the door for a reason."
+    },
+    "response": {
+      "valid": true,
+      "store_identity": {
+        "name": "SCVD General Store",
+        "what": "A human-run general store selling small signed goods to autonomous agents, paid in USDC over x402 v2 on a network offered in the current payment quote (see /rails). Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+        "homepage": "https://scvd.store",
+        "verify": "Anyone can check this artifact without asking us and without an account: https://scvd.store/api/verify/{id}, free and permanent. The signing key is at https://scvd.store/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST https://scvd.store/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.",
+        "rights": "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights."
+      },
+      "certificate": {
+        "cert_id": "cert_et6zuesrrn",
+        "item": "small_blessing",
+        "patron_number": 243,
+        "date": "2026-09-06T22:48:31.020Z",
+        "paid_usdc": 0.005,
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "payer": "0x137ae5e3c7ed176744226f67223de50ca3a19e5a",
+        "settlement_tx": "0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b",
+        "from_the_store": "Thanks for shopping somewhere that shows its work.",
+        "saw": "305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400"
+      },
+      "signature": "8b634cef3fa4efa05e8299c20d2319b79bd0131123b6c368b6dc6009b328d56d25aaf4bceed8da8c939a62028cb950d647d44756585ba172d6940a40e4502306",
+      "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signed_by": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "means": "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.",
+        "service_window": {
+          "status": "in_service",
+          "in_window": true,
+          "in_service_from": "2026-07-31",
+          "retired_on": null,
+          "artifact_dated": "2026-09-06T22:48:31.020Z",
+          "means": "dated 2026-09-06, and the key has been in service since 2026-07-31 with no retirement published"
+        }
+      },
+      "algorithm": "ed25519",
+      "signed_payload": "{\"cert_id\":\"cert_et6zuesrrn\",\"item\":\"small_blessing\",\"patron_number\":243,\"date\":\"2026-09-06T22:48:31.020Z\",\"paid_usdc\":0.005,\"asset\":\"USDC\",\"network\":\"eip155:8453\",\"payer\":\"0x137ae5e3c7ed176744226f67223de50ca3a19e5a\",\"settlement_tx\":\"0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b\",\"from_the_store\":\"Thanks for shopping somewhere that shows its work.\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\"}",
+      "artifact_hash": "da294753ef13ca600152087ab55bbba95d693a2d98bca63aeffb2b863f8f7eb3",
+      "signature_covers": "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.",
+      "existence": {
+        "status": "bounded",
+        "digest": "da294753ef13ca600152087ab55bbba95d693a2d98bca63aeffb2b863f8f7eb3",
+        "digest_matches_artifact_hash": true,
+        "form": "current",
+        "submitted_at": "2026-09-06T23:30:36.019Z",
+        "calendar": "https://a.pool.opentimestamps.org",
+        "upgraded_at": "2026-09-07T01:30:18.781Z",
+        "proof_base64": "8AhLkiYVVNQ1HwjwEBKZeUtt4B/AIReLvX4mVnMI8SDz0YDE/JuccSMVNpwgtqjjxm0+be3dP0IZL0y1XHZCFwjwIHt1afx0i7crL3x15BqS46hMDG90NJI81GAs0ZSpqIhBCPEgAREY/Loe9C6Gfa+N7iyIXks+J8QP7KAbJclYCZlTUacI8QRqnfec8AgRs2AxiAitPAjxIF6sFTX80e78hCGaYXoIvOlJoBRUYolWWXX1aVvKFjczCPAgYwZb1GO+G+drc2SduGLaP4f9JTVOzv5aije03q33h+II8CAF2wzGm0AeAyNgDYQsGAWFxCHwykv2yV0Yc8w+cxEBpgjxIK4MkL6U75ejbFhTPQj3iA0xq/nggnES7+AD/yTbgXMxCPAgpdnB7y1m/xPIU1IYZga2LGgW/AOewhMYvkE28VCb96MI8SAsRMXm4BF1hFOlsHZJoLP843blgM/J9vWUjcy1QEvaDQjwIJCiGAM+H7MZK1Z4IEBmOemj5xG/abcj7Mxcoqrs2T9JCPEg4gFu7cJw4mFkc8tk/FfKJOEE/ABZcOMTz7pHOhOsZV4I8CDgE4XpdJioRfzY86qb9BLTKpEUBfob/5FcamuBI12Z3AjwIKAF7X22bChC9QMYxJ+lEVI8v2Y185FPG0zvYcupojbMCPAg6UwT6MAoiY/ECKCen9EcwD3g9emz5nRcm1Ib8/cAre0I8VkBAAAAAft7MXEcTEQ+pXhKtp6vT0P6Q0ZdUFTFoLIHVt5PQdoPAAAAAAD+////At04AwAAAAAAFgAUOn9TY6YpQ4meL9P529yOGQXpGeYAAAAAAAAAACJqIPAE27wOAAgI8SB9nMjVXaEe/8uDnAmWNtjNG2hhnEtg55WOkbhZolaj4wgI8CCAvQgzjGr0rOqQxEY2Sje7DnPAb0WbXhtWL5OOT1mH7QgI8SDFohufni3mJ0TDFka5YEIkvu2Hl0LIX8lppUwVnQJJ2AgI8CDnU1ocN+AZJWSe+XWRTjHB7L3HP9U8lOlPUZAzK8XvRAgI8SBRvmJy7bc38OYQy+tFRJQFQbnzd0kVgT9UhJEjSB1zXQgI8SCJhkLZ1U3DevvN39X78Q5JLFh7oJdfczaP+Taj8Z65XwgI8SBmP9j3K/SV06rsjZmNbIrhXhVa/cJiNmIFXBGrnSwhzQgI8SBYPc8cRN3B66eDHX8oe2kRdgu8Mu1BREMaBJmxrh8aqAgI8CDk440ZSECt6LQFjXH1atmBz+G/3cCB7SnxZvtZyoGkbggI8SCAXd7qECwlyfZkMAGJF9wol2T5wBCPYD/CEQi1pg+/0wgI8CD6HMX/JNyjeRjNIY+FkkbTGJsMwJJMyXCycSvt7kocSQgI8CDseG1NLDtxF5Udw4I85DZSZgot0OsKymLJCG/Mwf4pVggI8CDuHDUIo8b807m1d3OvT9fUW22mSsbzXzPmDLoBTQx5yQgIAAWIlg1z1xkBA9z5Og==",
+        "means": "existence.digest is sha256 of the exact signed_payload above — recompute it and compare with artifact_hash; the two are derived on this response, never stored. A complete OpenTimestamps proof over that digest establishes the signed bytes existed by the Bitcoin block named, which is the one bound the artifact's own date cannot supply: a date is what the signer chose to write, a block is what the chain had mined. Run `ots verify` on proof_base64 against your own headers rather than taking the block from us. block_time is looked up from the named explorer as a courtesy and is not part of the proof; the height is. The bound is taken AFTER minting by an hourly sweep, so it lags issue by an hour or so, and a certificate minted before 2026-09-05 was anchored on backfill: its bound is the backfill day, which proves nothing about its issue date and is said so on the verdict. This is an existed-by for the receipt, not a proof that anything was delivered.",
+        "existed_by": {
+          "block_height": 965852,
+          "block_hash": "00000000000000000001a27ca2feecc6065cf4e54bf4fe4f4ae0bd9dd16e9a42",
+          "block_time": "2026-09-06T23:56:03.000Z",
+          "block_time_source": "https://blockstream.info"
+        },
+        "key_window": "current_key",
+        "verdict": "The signed bytes existed by Bitcoin block 965852 (mined 2026-09-06, per https://blockstream.info), and the signing key is still in service, so there is no retirement for the bound to fall after."
+      },
+      "cite": "scvd.store, receipt cert_et6zuesrrn, observed 2026-09-06T22:48:31.020Z; ed25519-signed, key at https://scvd.store/.well-known/scvd-signing-key; bytes at https://scvd.store/api/verify/cert_et6zuesrrn.",
+      "cite_format": "One line to quote verbatim: the issuer, what and which, when it was observed, how it is signed and where the key is, and the URL whose bytes are the thing cited. A citation names an observation, never a judgment.",
+      "signature_jcs": "626c397076a69b9e4c23bc0750ab79ab0619c4b4bbef4c854012feff4a0a220a00746fcefc204282f098708d6df3ec6049d557b9df62ed2113445351ce8e170a",
+      "signature_jcs_valid": true,
+      "signature_jcs_payload": "{\"asset\":\"USDC\",\"cert_id\":\"cert_et6zuesrrn\",\"date\":\"2026-09-06T22:48:31.020Z\",\"from_the_store\":\"Thanks for shopping somewhere that shows its work.\",\"item\":\"small_blessing\",\"network\":\"eip155:8453\",\"paid_usdc\":0.005,\"patron_number\":243,\"payer\":\"0x137ae5e3c7ed176744226f67223de50ca3a19e5a\",\"saw\":\"305caff875cb88b576cfff10a0bf29883c7476f0bfff67e1faa2542eb062c400\",\"settlement_tx\":\"0x3d88c1dac9d339020cd24bf70d92a8482bd43c6304d9d18a465e2dec6cac0b9b\"}",
+      "signature_jcs_covers": "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.",
+      "note": "Genuine article. Signed by the store itself."
+    },
+    "authenticated": false
+  }
+}

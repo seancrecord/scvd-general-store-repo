@@ -25,7 +25,7 @@ is for.
 npm install x402-verify
 ```
 
-It is one file with no dependencies, so vendoring the file is exactly
+The JWS verifier is one file with no dependencies, so vendoring it is exactly
 as legitimate as installing the package; the package exists so your
 `package.json` can say what your code relies on.
 
@@ -287,3 +287,45 @@ second opinion on your implementation, or as a live counterpart whose
 (`GET https://scvd.store/api/buy/hello`). No account, no wallet, no
 call home in this file — the store is a deployment of this library,
 not a dependency of it.
+
+## Portable evidence (1.2 source release; npm publication pending)
+
+From a checkout of this repository:
+
+```sh
+node verifier/evidence-cli.mjs export https://scvd.store/api/verify/CERT_ID --out saved-evidence
+node verifier/evidence-cli.mjs verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
+```
+
+Use the public key you established independently, never simply the key in
+the bundle. The export retains exact signed bytes, the signature, a captured
+issuer document where available, and the original response as **unauthenticated
+context**. Verification uses only the exact signed payload for its findings.
+It makes no network request and does not trust the response's `valid` label.
+
+Attach a local evidence file with `--evidence observation.json` at export.
+It must hash to a top-level `attests`, `saw` or `body_sha256` field in the
+signed payload. Missing linked evidence is listed; this first format does
+not recursively collect nested documents or assert population completeness.
+Only JSON-object signed payloads with Ed25519 are supported. Other formats
+refuse rather than silently dropping fields. Inputs and the combined bundle
+are capped at 8 MiB, with at most 32 attachments. Existing output directories
+are never overwritten. Export reads the chosen URL and its same-origin key
+document only; redirects are refused and embedded URLs are never fetched.
+
+Where available, `payload.json.ots` wraps the store's raw calendar operations
+as a standard detached timestamp file. Run `ots verify payload.json.ots`
+with an independent OpenTimestamps installation and trusted Bitcoin headers.
+This command does **not** verify Bitcoin, infer issue time, or authenticate
+key-history snapshots. Its timestamp result is always absent or unverified.
+A removed proof likewise cannot yield a verified timestamp.
+
+Exit codes: 0 means the signature and supplied evidence bindings verify;
+1 means invalid evidence or no independently supplied key; 3 means valid
+signed bytes with missing linked evidence; 2 means invalid arguments or a
+read/export failure. A zero exit never establishes factual truth or delivery.
+
+The dependency-free API is exported at `x402-verify/bundle` in this source
+release; copy both evidence-bundle.js and x402-verify.js when vendoring it.
+The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
+WebCrypto when the global is unavailable.

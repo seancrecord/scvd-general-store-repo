@@ -1,0 +1,45 @@
+{
+  "read_at": "2026-09-08T20:44:30.704Z",
+  "url": "https://scvd.store/.well-known/scvd-signing-key",
+  "status": 200,
+  "data": {
+    "algorithm": "ed25519",
+    "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+    "encoding": "hex",
+    "identity_policy": "This wallet, this domain, and 2 signing keys — 1 retired, each kept published forever with its dates and the signed announcement that retired it. A key change here is announced before the new key signs anything and the announcement is signed by the outgoing key; nothing is ever quietly swapped. Full history at /.well-known/scvd-signing-key, policy at /attestation.",
+    "sample_artifact_id": "cert_4dww28dx5j",
+    "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+    "key_history": {
+      "current": {
+        "public_key": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+        "status": "current",
+        "in_service_from": "2026-07-31"
+      },
+      "retired": [
+        {
+          "public_key": "d98ebec640489852c7076aee66615705200971e7d32c54964e173aea3d37e1af",
+          "in_service_from": "2026-07-22",
+          "retired_on": "2026-07-31",
+          "reason": "No recoverable copy of the private key existed. It was generated, pushed into a Cloudflare Worker secret, and no copy kept — not as a decision, but because nobody thought that far ahead yet. Worker secrets are write-only, which is right, and is why there was nothing to retrieve when the paper-backup procedure was written on 2026-07-31. Nothing was broken by that: this key worked, and everything signed under it verifies and always will. What did not exist was any way to survive losing it. Retired in favour of a key written on paper before it ever signed anything.",
+          "succeeded_by": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+          "announcement_id": "handover_1"
+        }
+      ],
+      "rotations_performed": 1
+    },
+    "did": {
+      "id": "did:web:scvd.store",
+      "document": "https://scvd.store/.well-known/did.json",
+      "note": "The same current key, published in the W3C DID shape the x402 offer-receipt extension resolves. One derivation serves both documents; they cannot disagree."
+    },
+    "continuity": {
+      "key_count": 2,
+      "successor_key_exists": false,
+      "rotations_performed": 1,
+      "if_this_key_ever_changes": "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
+      "full_policy": "https://scvd.store/attestation",
+      "externally_anchored_history": "https://scvd.store/.well-known/anchor-log.json — everything above is served by us and is editable by us. That log is a hash chain over this key state whose digests are timestamped into Bitcoin via OpenTimestamps, so how far back this registry could quietly have been rewritten is bounded by something outside our control. It proves WHEN a key state was committed and never WHO SHOULD HAVE held it: a thief with this key could timestamp exactly as validly. Forensics, not a defence."
+    },
+    "note": "Anything we sign, this key verifies. Hangs by the door for a reason."
+  }
+}

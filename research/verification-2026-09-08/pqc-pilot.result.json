@@ -1,0 +1,57 @@
+{
+  "experimental": true,
+  "run_at": "2026-09-08T20:48:33.850Z",
+  "runtime": "v22.13.1",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "checkpoint_sha256": "38ac52d150a422b75d0d52e794db9faa998e5e63b603f9d159c4d239f3b6d0cc",
+  "signed_bytes": 560,
+  "envelope_json_bytes": 7426,
+  "verified": {
+    "valid": true,
+    "checks": [
+      {
+        "algorithm": "ed25519",
+        "key_id": "pilot-ed25519",
+        "valid": true
+      },
+      {
+        "algorithm": "ML-DSA-65",
+        "key_id": "pilot-ml-dsa-65",
+        "valid": true
+      }
+    ],
+    "scope": "All expected signatures cover the exact payload, purpose and signer policy. Experimental format; no timestamp or factual claim is verified."
+  },
+  "rejected": {
+    "payload": true,
+    "pq_signature": true,
+    "downgrade": true,
+    "purpose": true
+  },
+  "timing": {
+    "ed25519": {
+      "iterations": 20,
+      "mean_sign_ms": 0.02282499999999956,
+      "mean_verify_ms": 0.11222080000000005,
+      "signature_bytes": 64,
+      "public_key_bytes": 44,
+      "public_key_encoding": "SPKI DER"
+    },
+    "ML-DSA-65": {
+      "iterations": 20,
+      "mean_sign_ms": 8.2665146,
+      "mean_verify_ms": 1.6521853999999991,
+      "signature_bytes": 3309,
+      "public_key_bytes": 1952,
+      "public_key_encoding": "raw"
+    }
+  },
+  "limitations": [
+    "Unaudited candidate library @noble/post-quantum 0.7.1; not approved for production.",
+    "Sign and verify use the same ML-DSA implementation; no independent interoperability or FIPS validation.",
+    "Local Node timing under concurrent test load; not Worker CPU or customer latency.",
+    "Throwaway trust document demonstrates mechanics, not issuer identity or secure operational custody.",
+    "Existing corpus signature and Bitcoin proof are not verified by this experiment."
+  ]
+}

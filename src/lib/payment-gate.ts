@@ -441,6 +441,12 @@ async function enrich402Body(
       ? {
           spec_note: factBlockText(item),
           spec: listingSpec(item, base),
+          // The menu already names the specimen. Importing its builder
+          // here would pull observation engines into the small doors Worker.
+          ...(item.sample_url ? {
+            sample_url: `${base}${item.sample_url}`,
+            sample: { url: `${base}${item.sample_url}`, kind: "unsigned_specimen", price: "free", live_observation: false },
+          } : {}),
           guarantee: GUARANTEE_BLOCK_TEXT,
           /**
            * REPLAY PROTECTION FOR A CLIENT THAT NEVER READ THE DOCS.

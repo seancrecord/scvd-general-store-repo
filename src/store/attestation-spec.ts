@@ -19,11 +19,9 @@
  * claimed in general, including the classes where the honest answer is
  * "the weakest one."
  *
- * WE DO NOT CLAIM RIGOR WE DO NOT HAVE. There is no hash-linked
- * continuity chain here, no offline evidence bundle format, no key
- * rotation, no threshold signing, no HSM, and no patent. Every one of
- * those absences is listed below in its own words rather than left for
- * somebody to discover and write a post about.
+ * WE DO NOT CLAIM RIGOR WE DO NOT HAVE. The limitations below distinguish
+ * artifact ordering, key custody and independent review from the source
+ * evidence bundle. Packaging bytes does not repair those other gaps.
  *
  * THE POINT IS NOT TO LOOK SERIOUS. It is that a buyer can work out,
  * without asking us, exactly how much a given signature is worth — and
@@ -410,7 +408,7 @@ export const EXISTENCE_BOUND_MEANS =
 
 export const NOT_BUILT: readonly string[] = [
   "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten. Since 2026-09-05 each certificate also carries its own OpenTimestamps existed-by, served as `existence` on /api/verify, which bounds when that one receipt existed and still says nothing about what was withheld between one receipt and the next.)",
-  "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",
+  "A portable evidence bundle is available in the source verifier package: exact signed bytes, supplied hash-bound attachments and timestamp proof bytes. It needs an independently trusted public key; key-history snapshots are context, and Bitcoin proofs need an independent OTS verifier. Missing evidence is named. See /developers for the source command; npm publication is pending.",
   `No successor key. One ed25519 key signs everything at a time — ${RETIRED_KEYS.length} retired, one in service — and if the live one is stolen every signature it produces is indistinguishable from ours; a backup is no defence against that and is not offered as one. ${
     KEY_BACKUP_EXISTS
       ? "Recovery from LOSS only: the key exists offline on paper in more than one place, so a destroyed secret does not end the store's ability to sign. That is the whole of it."
@@ -514,4 +512,4 @@ export const WHY_SIGNED_PAYLOAD =
  * warning they add up to stays with them.
  */
 export const ATTESTATION_HONEST_LIMIT =
-  "ONE KEY IN SERVICE, ONE HOLDER, ONE ROTATION ON THE RECORD, no chain, no bundle format and no audit, all listed above in their own words — weigh anything load-bearing against that before building on it. The store is evolving toward verifying more than its own shelf; that direction is tracked at /becoming with its triggers, and nothing here claims it early. What is offered today is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";
+  "ONE KEY IN SERVICE, ONE HOLDER, ONE ROTATION ON THE RECORD, no artifact-ordering chain and no audit, all listed above in their own words — weigh anything load-bearing against that before building on it. The store is evolving toward verifying more than its own shelf; that direction is tracked at /becoming with its triggers, and nothing here claims it early. What is offered today is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";

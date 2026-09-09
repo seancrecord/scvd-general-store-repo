@@ -4,6 +4,13 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## 1.2.0 — 2026-09-08
+
+Source release, not yet published: portable signed-payload evidence bundles
+and the scvd-evidence export/offline verification command. Existing JWS
+APIs are unchanged. Timestamp proofs remain independently verifiable OTS
+files, never a local Bitcoin verification claim.
+
 ## 1.1.0 — 2026-09-03
 
 **Added.** `verifyReceipt({ receipt, issuerKeyUrl })` and

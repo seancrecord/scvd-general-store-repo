@@ -1,4 +1,5 @@
 import { settlementExplorer } from "@/lib/payment-networks";
+import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
@@ -557,6 +558,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
        */
       store_identity: storeIdentity(c.env.STORE_BASE_URL),
       certificate: record.certificate,
+      offline_verification: { source: EVIDENCE_TOOLS_SOURCE, description: EVIDENCE_TOOLS_DESCRIPTION },
       signature: record.signature,
       public_key: record.public_key,
       ...(await signedBy(c, record.public_key, record.certificate.date)),

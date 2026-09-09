@@ -839,3 +839,13 @@ failures, suggested fixes, a regression runner, one signed recheck and a
 bounded card watch. A2A 0.3.0 JSON-RPC only; untested capabilities and
 missed observations remain visible. Repository implementation is separately
 scoped. [Pilot scope and verification](docs/A2A_REPAIR_KIT_2026-09-07.md).
+
+### Keep and verify a receipt offline
+
+The source verifier now includes a free portable-evidence command. Export
+with `node verifier/evidence-cli.mjs export <verify-url> --out <new-directory>`,
+then verify `bundle.json` with `node verifier/evidence-cli.mjs verify <file>
+--public-key <independently-trusted-public-key-hex>`. See
+[the verifier's limits and full instructions](verifier/README.md#portable-evidence-12-source-release-npm-publication-pending).
+Missing linked evidence is named. This verifies signed bytes and attachment
+bindings; Bitcoin proof verification is separate. npm publication is pending.
