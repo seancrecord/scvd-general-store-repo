@@ -19,6 +19,17 @@ and third doors. Rule 30 applies throughout: every actual send,
 submission, or account action is the keeper's hand; this file makes
 each one a five-minute job.
 
+## September 9 — verifier publication follow-through
+
+The keeper authorized publishing the version in `verifier/package.json`.
+At the start of this sitting npm still served x402-verify 1.0.2; the source
+was 1.2.0. The existing Actions publisher now runs the verifier's own tests
+instead of falling through its no-tests branch. The package README uses
+a stable portable-evidence heading and contains the installed CLI commands,
+so its immutable registry copy will remain usable. Publication will use
+the repository workflow with provenance after validation; this paragraph
+is a preparation record until a successful registry read is recorded.
+
 ## 1. The official MCP Registry — PUBLISHED THREE TIMES, ONE POSITIONING BEHIND
 
 **Corrected 2026-08-29.** The paragraph that stood here said the

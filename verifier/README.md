@@ -288,7 +288,15 @@ second opinion on your implementation, or as a live counterpart whose
 call home in this file — the store is a deployment of this library,
 not a dependency of it.
 
-## Portable evidence (1.2 source release; npm publication pending)
+## Portable evidence
+
+Included in version 1.2.0. For a registry installation of that version:
+
+```sh
+npm install --global x402-verify@1.2.0
+scvd-evidence export https://scvd.store/api/verify/CERT_ID --out saved-evidence
+scvd-evidence verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
+```
 
 From a checkout of this repository:
 
@@ -325,7 +333,7 @@ Exit codes: 0 means the signature and supplied evidence bindings verify;
 signed bytes with missing linked evidence; 2 means invalid arguments or a
 read/export failure. A zero exit never establishes factual truth or delivery.
 
-The dependency-free API is exported at `x402-verify/bundle` in this source
-release; copy both evidence-bundle.js and x402-verify.js when vendoring it.
+The dependency-free API is exported at `x402-verify/bundle`;
+copy both evidence-bundle.js and x402-verify.js when vendoring it.
 The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
 WebCrypto when the global is unavailable.
