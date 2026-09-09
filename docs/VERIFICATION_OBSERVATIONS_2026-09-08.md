@@ -9,7 +9,9 @@ VQ1 shipped in PR #585. The follow-through is ROADMAP VQ2 and its linked design.
 
 ## Later September 9 reader and inventory work
 
-The compact index and source CLI now pass the saved corpus size check.
+PR #592 deployed the compact index and published x402-verify 1.3.0. A
+fresh registry installation verified all six live snapshots at 20:03 UTC,
+with canonical bytes unchanged and 1–2 KiB compact pages at limit 2.
 The earlier Wrangler authentication failure was resolved on retry. The
 18:32–18:37 UTC census verified all 262 captured certificate signatures and
 36 reports; 44 of 80 signed report links remain unresolved in the selected

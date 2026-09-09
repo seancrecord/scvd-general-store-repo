@@ -8,11 +8,11 @@
  * first Solana settle.
  *
  * Canonical form: EVM (0x-prefixed) lowercased, everything else
- * preserved byte-for-byte. MATCHING may still be case-insensitive
- * (lowercasing both sides of a compare loses nothing); STORAGE and
- * DISPLAY must go through this instead.
+ * preserved byte-for-byte. Matching follows the same rule: EVM is
+ * case-insensitive, while base58 identities must match exactly.
+ * Use this canonical form for storage, display and lookup.
  */
 export function canonicalAddress(address: string): string {
   const trimmed = address.trim();
-  return trimmed.startsWith("0x") ? trimmed.toLowerCase() : trimmed;
+  return /^0x/i.test(trimmed) ? trimmed.toLowerCase() : trimmed;
 }

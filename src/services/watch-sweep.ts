@@ -50,6 +50,8 @@ export interface WatchSweepOptions<
   entriesOf: (record: T) => E[];
   /** One observation for this record, already signed by its caller. */
   observe: (record: T) => Promise<E>;
+  /** A durable publisher merges concurrent progress for recoverable watches. */
+  publish?: (record: T) => Promise<void>;
   now?: number;
 }
 
@@ -81,7 +83,8 @@ export async function sweepWatches<
       continue;
     }
     entries.push(await options.observe(record));
-    await options.kv.put(name, JSON.stringify(record));
+    if (options.publish) await options.publish(record);
+    else await options.kv.put(name, JSON.stringify(record));
     worked += 1;
   }
   return worked;

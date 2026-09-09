@@ -1,3 +1,4 @@
+import { WatchRecoveryStore, type RecoverableWatch } from "@/services/watch-recovery";
 import { PersonalGoodsStore, type PersonalRecord, type PersonalMutation } from "@/services/personal-goods";
 import { CaseFilePublicationStore } from "@/services/case-file-publication";
 import type { CaseFileRecord } from "@/services/case-file";
@@ -25,7 +26,7 @@ export interface ArtifactPurchase {
 export interface RecoveryIdentity {
   path: string; payer: string; network: string; transaction: string;
 }
-export type ArtifactStage = "confession_receipt" | "personal_record" | "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
+export type ArtifactStage = "watch_record" | "confession_receipt" | "personal_record" | "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
 
 function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
   const payer = purchase.payment.payer;
@@ -100,6 +101,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly watches = new WatchRecoveryStore(this.ctx.storage, this.env);
+  publishWatch(value: RecoverableWatch) { return this.watches.publish(value); }
+
   private readonly personalGoods = new PersonalGoodsStore(this.ctx.storage, this.env);
   publishPersonalRecord(value: PersonalRecord, mutation?: PersonalMutation) { return this.personalGoods.publish(value, mutation); }
 
@@ -188,6 +192,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   }
 
   async alarm(): Promise<void> {
+    if (await this.watches.repair()) return;
     const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
     if (!record || record.delivery || record.state === "not_settled") return;
     // Unsupported goods/unknown rails retain their record for the delivery

@@ -271,3 +271,18 @@ Main advanced during the run to `35230014` with the separate watch-recovery
 PR. GitHub's pull-request workflow will validate the combined merge tree.
 This local result applies to the isolated release branch; it does not
 claim a completed deployment or a live payment.
+
+## Integration with the September 9 releases
+
+While PR #600 was waiting on CI, main advanced through the ward repair,
+certificate sweep, machine-reader surfaces, trade door card and bounty-board
+releases to `c62c5779`. Integration preserved both completed roadmap rows
+and the newer verification status. Only ROADMAP.md required manual conflict
+resolution; source files merged without a textual conflict. The combined
+tree passed validation before the integration commit.
+
+The integrated full suite passed **621 files and 9,914 tests, with one
+existing skip**, in 851.68 seconds. Typecheck, all 33 field-tool tests, both
+production bundles, the audit and the claims register passed on this tree.
+The earlier PR CI runs were cancelled because they tested the superseded
+base; fresh PR checks will validate the integration commit.

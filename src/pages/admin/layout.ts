@@ -226,6 +226,7 @@ export const ADMIN_PAGES: readonly { tab: AdminTab; href: string }[] = [
  * then lost again.
  */
 export const EVERY_ROOM: readonly { href: string; label: string }[] = [
+  { href: "/admin/ward/index", label: "The index now — free live check" },
   { href: "/admin/recount", label: "The recount (row-level settle audit)" },
   { href: "/admin/take", label: "The take (every certificate, counted)" },
   { href: "/admin/books", label: "The books" },

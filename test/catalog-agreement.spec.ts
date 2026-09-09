@@ -185,6 +185,11 @@ describe("on the census", () => {
     expect(round.catalog_agreement).toEqual({ compared: 2, agrees: 1, differs: 1, not_listed: 0, not_comparable: 2 });
     // Ours: hello's shelf minimum is 500000 atomic; service_audit's is not 100000.
     expect(round.our_doors?.catalog_differs).toEqual(["service_audit"]);
+    expect(round.our_doors).toMatchObject({ price_differences: [{
+      id: "service_audit", catalog_usdc: 0.1,
+      shelf_usdc: (await import("@/store/menu")).MENU_ITEMS.find(item => item.id === "service_audit")!.price_usdc,
+      last_updated: null,
+    }] });
 
     const stored = await latestWardRound(testEnv);
     expect(stored?.catalog_agreement).toEqual(round.catalog_agreement);

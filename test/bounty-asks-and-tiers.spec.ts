@@ -5,6 +5,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import {
   BOUNTY_TIERS,
   bountyBoard,
+  bountyRailNames,
   claimBounty,
   openBounty,
   sanitizeReport,
@@ -429,5 +430,252 @@ describe("the walks are read, not just stored", () => {
     ).text();
     expect(room).toContain("What the walks have shown");
     expect(room).toContain("whose fact it is");
+  });
+});
+
+/**
+ * WHICH RAIL A DOOR IS CAPTURED ON (2026-09-09).
+ *
+ * The claim verifier reads seven EVM chains and Solana. The board had
+ * posted on exactly two, and not by choice: the picker takes Base
+ * whenever a door offers Base, and in the 2026-W37 census every single
+ * door quoting Polygon, Arbitrum or World also quoted Base. 347 doors
+ * on three rails, structurally unpostable.
+ *
+ * So a press may name the rail. The rule that matters is what happens
+ * when the door does not offer it: a REFUSAL naming what it did offer,
+ * never a quiet Base row, because a keeper who asked for Arbitrum
+ * evidence and got Base would have bought the wrong thing and been
+ * told it worked.
+ */
+describe("a rail is a posting decision, not an accident", () => {
+  /** A door quoting Base and Arbitrum, the shape the census is full of. */
+  function twoRailWorld(): typeof fetch {
+    const evm = world();
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url =
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (url.includes(".example/")) {
+        return new Response("{}", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": btoa(
+              JSON.stringify({
+                x402Version: 2,
+                accepts: [
+                  {
+                    scheme: "exact",
+                    network: "eip155:8453",
+                    amount: "50000",
+                    asset: BASE_USDC,
+                    payTo: DOOR_PAY_TO,
+                  },
+                  {
+                    scheme: "exact",
+                    network: "eip155:42161",
+                    amount: "50000",
+                    asset: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+                    payTo: DOOR_PAY_TO,
+                  },
+                ],
+              }),
+            ),
+          },
+        });
+      }
+      return evm(input, init);
+    }) as typeof fetch;
+  }
+
+  it("takes Base by default, and Arbitrum when Arbitrum is asked for", async () => {
+    const railWorld = twoRailWorld();
+    vi.stubGlobal("fetch", railWorld);
+    const byDefault = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: railWorld },
+    );
+    expect(byDefault.network).toBe("eip155:8453");
+
+    const asked = await openBounty(
+      testEnv,
+      { targetUrl: "https://second.example/api", rewardUsd: 0.1, rail: "arbitrum" },
+      { fetch: railWorld },
+    );
+    expect(asked.network).toBe("eip155:42161");
+    // The CAIP-2 spelling resolves to the same rail.
+    const byCaip2 = await openBounty(
+      testEnv,
+      { targetUrl: "https://third.example/api", rewardUsd: 0.1, rail: "eip155:42161" },
+      { fetch: railWorld },
+    );
+    expect(byCaip2.network).toBe("eip155:42161");
+  });
+
+  it("refuses rather than quietly capturing another rail", async () => {
+    const railWorld = twoRailWorld();
+    vi.stubGlobal("fetch", railWorld);
+    // The door offers Base and Arbitrum; Polygon is not on offer.
+    await expect(
+      openBounty(
+        testEnv,
+        { targetUrl: DOOR, rewardUsd: 0.1, rail: "polygon" },
+        { fetch: railWorld },
+      ),
+    ).rejects.toThrow(/quotes no polygon entry — it offers eip155:8453, eip155:42161/);
+    // Nothing was posted on any rail.
+    const board = await bountyBoard(testEnv, new Date());
+    expect(board.bounties).toHaveLength(0);
+  });
+
+  /**
+   * XRPL, not Algorand: 81 ready doors quote XRPL in the W37 census
+   * and this store reads none of them. (Algorand was the honest
+   * example here for about an hour, until the fifth rail shipped — a
+   * test that names an unsupported rail has to be repointed at one
+   * that is still unsupported, which is the pleasant kind of
+   * maintenance.)
+   */
+  it("refuses a rail this store cannot verify, and names the ones it can", async () => {
+    const railWorld = twoRailWorld();
+    vi.stubGlobal("fetch", railWorld);
+    await expect(
+      openBounty(
+        testEnv,
+        { targetUrl: DOOR, rewardUsd: 0.1, rail: "xrpl:0" },
+        { fetch: railWorld },
+      ),
+    ).rejects.toThrow(/cannot verify a settlement on "xrpl:0"/);
+    // And the refusal names what it CAN read, including the newest rail.
+    await expect(
+      openBounty(
+        testEnv,
+        { targetUrl: DOOR, rewardUsd: 0.1, rail: "xrpl:0" },
+        { fetch: railWorld },
+      ),
+    ).rejects.toThrow(/Algorand/);
+  });
+
+  /**
+   * The copy that said "Base, Polygon and Solana" while the verifier
+   * read seven chains. Derived now, so the rules cannot fall behind
+   * the code again.
+   */
+  it("publishes the rails it reads, derived from the verifier's own table", async () => {
+    const names = bountyRailNames();
+    for (const label of ["Base", "Polygon", "Arbitrum", "World", "Solana"]) {
+      expect(names, `${label} missing from the published rails`).toContain(label);
+    }
+    const json = (await (await SELF.fetch(`${BASE}/api/bounties`)).json()) as {
+      the_rules: string[];
+    };
+    const rails = json.the_rules.find((rule) => rule.includes("can be posted"));
+    expect(rails).toContain("Arbitrum");
+    expect(rails).toContain("World");
+    expect(rails).not.toContain("Doors on Base, Polygon and Solana");
+  });
+});
+
+/**
+ * ONE LISTING PAYS ONCE, EVEN WHEN BOTH WALKERS REALLY WALKED
+ * (2026-09-09).
+ *
+ * The claim door named this hole the day it shipped and left it open:
+ * the replay guard keys the SETTLEMENT, so two claims on one listing
+ * carrying two DIFFERENT real transactions both passed every check and
+ * both were signed a reward. One listing, two payouts, and a weekly
+ * budget that counted one — the money is not stolen, it is spent twice
+ * for one piece of evidence.
+ *
+ * KV could not fix it: last-write-wins, edge-cached reads, no
+ * compare-and-swap. A Durable Object decides it in one step. This test
+ * is the one that would have failed before the lock existed, and it
+ * uses two distinct settlements on purpose — with one transaction the
+ * old tx guard already answered.
+ */
+describe("two real settlements, one listing", () => {
+  it("signs exactly one reward and refuses the other without spending", async () => {
+    vi.stubGlobal("fetch", world());
+    const bounty = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: world() },
+    );
+    const options = await claimOptions();
+    const attempts = await Promise.allSettled([
+      claimBounty(
+        testEnv,
+        {
+          bountyId: bounty.bounty_id,
+          txHash: `0x${"11".repeat(32)}`,
+          payer: SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        options,
+      ),
+      claimBounty(
+        testEnv,
+        {
+          bountyId: bounty.bounty_id,
+          // A DIFFERENT settlement, equally real on this fake chain.
+          txHash: `0x${"22".repeat(32)}`,
+          payer: OTHER_SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        options,
+      ),
+    ]);
+    const paid = attempts.filter((a) => a.status === "fulfilled");
+    expect(paid.length, "one listing signed more than one reward").toBe(1);
+    const refused = attempts.find((a) => a.status === "rejected");
+    expect(String((refused as PromiseRejectedResult).reason)).toMatch(
+      /being verified right now|not open/,
+    );
+    // The listing is paid once and the loser's settlement is not burned:
+    // a walk that was refused must stay claimable somewhere else.
+    const stored = await testEnv.COUNTERS.get<BountyRecord>(
+      KV_KEYS.bounty(bounty.bounty_id),
+      "json",
+    );
+    expect(stored?.status).toBe("paid");
+  });
+
+  it("gives the lock back when a claim is refused, so the next walker is not shut out", async () => {
+    vi.stubGlobal("fetch", world());
+    const bounty = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: world() },
+    );
+    // A screened-out payout address: refused deep inside the claim path.
+    await expect(
+      claimBounty(
+        testEnv,
+        {
+          bountyId: bounty.bounty_id,
+          txHash: `0x${"33".repeat(32)}`,
+          payer: SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        {
+          signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+          fetch: world(),
+          screen: async () => ({ listed: true as const, source: "test screen" }),
+        },
+      ),
+    ).rejects.toThrow(/sanctions screen/);
+    // The very next claim goes through: the hold was released, not left
+    // to lapse on its own clock.
+    const paid = await claimBounty(
+      testEnv,
+      {
+        bountyId: bounty.bounty_id,
+        txHash: `0x${"44".repeat(32)}`,
+        payer: SHOPPER,
+        payoutTo: PAYOUT_TO,
+      },
+      await claimOptions(),
+    );
+    expect(paid.reward_usd).toBe(0.1);
   });
 });

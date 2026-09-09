@@ -57,23 +57,63 @@ describe a board the other does not run.
    holds no gas, broadcasts nothing, and the payout instrument is
    itself a verifiable artifact with an expiry.
 
-## The rails (2026-09-05)
+## The rails (2026-09-09)
 
-Doors on Base, Polygon and Solana can be posted. When a door quotes
-more than one, the store captures an EVM rail first (Base before
-Polygon) and Solana only when the door offers nothing else. A Solana
-bounty keeps two clocks on its record: `opened_slot`, the Solana
-height a claimed settlement must postdate, and `opened_block`, the
-Base height at the same instant, because the payout scans Base from
+Doors on any chain the claim verifier reads can be posted: Base,
+Polygon, Ethereum, Arbitrum, OP Mainnet, Avalanche, World, Solana and
+Algorand.
+That list is not typed here — `bountyRails()` derives it from the same
+`EVM_CHAINS` table the claim door resolves against, so a chain added to
+the verifier is named by the board's rules, its JSON and its posting
+refusals the same day. The copy said "Base, Polygon and Solana" for
+three weeks after the verifier had grown past it; that is the drift
+this derivation exists to end.
+
+**A door that quotes several rails is captured on ONE of them, and
+which one is a posting decision.** Left unsaid, the picker takes an EVM
+rail first (Base before Polygon) and Solana only when nothing else is
+offered. That default made rail coverage impossible rather than
+merely unlikely: in the 2026-W37 census, 136 ready doors quote Polygon,
+130 quote Arbitrum and 81 quote World — and NOT ONE of them quotes
+those rails exclusively. Every one offers Base beside it, so every one
+would be captured as Base, forever.
+
+So the press takes a rail: name it and the door is captured there or
+refused, with the refusal listing what the door actually offered. A
+named rail never falls back — a keeper who asked for Arbitrum evidence
+and quietly got another Base row would have bought the wrong thing and
+been told it worked.
+
+That also makes a question askable that no probe can answer: **does a
+door honour every rail it advertises?** Post the same door twice, once
+captured on each of its rails, and the pair of settlements says whether
+the second rail was real. A door that takes Base money and refuses
+Arbitrum money is a defect nothing in this ecosystem currently names.
+
+**The reward pays in Base USDC to a 0x address on every rail**, so
+posting on a new rail costs this store nothing on that rail: no gas, no
+balance, no wallet. The store's side of any bounty is a chain READ. The
+walker needs funds and gas on the door's rail; the house does not.
+
+That last fact carries the one posting judgement this file makes and
+the code deliberately does not: **do not post Ethereum mainnet.** The
+verifier reads it correctly and a walker would lose money walking it —
+gas there exceeds a $0.25 ceiling. Gas is not something this store can
+read at posting time, so it is not a rule the code pretends to enforce;
+it is a rule the keeper keeps.
+
+A Solana bounty keeps two clocks on its record: `opened_slot`, the
+Solana height a claimed settlement must postdate, and `opened_block`,
+the Base height at the same instant, because the payout scans Base from
 it. The paid claim keeps `settled_slot`, and the corpus row prints it
 as a slot, never as a block.
 
-**The reward pays in Base USDC to a 0x address on every rail, Solana
-included.** That is not parity left undone; it is SOLANA_PARITY.md
-gap 4, which stands: the payout here is an authorization the
-recipient redeems, and SPL USDC has no such instrument. A shopper who
-walks a Solana door names any 0x address for the reward — the claim
-form already takes `payout_to` apart from `payer`.
+**Why the reward is Base USDC on every rail**, Solana included: that is
+not parity left undone, it is SOLANA_PARITY.md gap 4, which stands. The
+payout here is an authorization the recipient redeems, and SPL USDC has
+no such instrument. A shopper who walks a Solana door names any 0x
+address for the reward — the claim form already takes `payout_to` apart
+from `payer`.
 
 ## What the room publishes besides the listings (2026-09-08)
 
@@ -108,6 +148,67 @@ anything before it POSTs reads them.
   says — a reworded refusal goes red in CI rather than quietly false on
   the public page. Same rule as the expiry correction: one clock, and
   one wording, behind every face.
+
+## The fifth rail (2026-09-09)
+
+Algorand is read the way Solana is: the indexer answers what a
+transaction moved, and the claim compares it against the terms this
+store captured — the asset, the exact amount, the payer, the payTo, and
+a round after the bounty existed. Two differences are worth writing
+down rather than discovering.
+
+**A confirmed round is final**, so there is no finality window here of
+the kind the Solana path sits through. The absence is a fact about the
+chain, not a check that was skipped.
+
+**The ecosystem spells the chain three ways** — the CAIP-2 truncation
+(78 doors in W37), the padded base64 genesis hash (8), and the plain
+word `mainnet` (1). All three are accepted and stored as one, because
+refusing an honest door over a formatting opinion is the observer's
+defect, not the door's.
+
+**USDC here is ASA 31566704, and the number was checked rather than
+cited.** The reader was written on a machine whose egress policy blocks
+the Algorand indexer, so the id arrived from Circle's documentation
+with the gap stated out loud; the keeper ran the call from his own
+machine on 2026-09-09 and the indexer answered name USDC, unit-name
+USDC, decimals 6, creator
+`2UEQTE5QDNXPI7M3TU44G6SYKLFWLPQO7EBZM7K7MHMQQMFI4QJPLHQFHM`. Six
+decimals is the part that matters twice: it identifies the asset, and
+it means an atomic unit here equals an atomic unit on Base, so a
+captured amount compares across rails with no conversion in between.
+
+The check stays fail-closed whatever the number is — every claim
+compares the on-chain asset id against it, so a wrong id refuses honest
+claims and can never pay for a transfer of something else. Re-run it
+the day Circle moves the asset, and `ALGORAND_USDC_ASSET` overrides
+without waiting for a deploy:
+
+    curl -s https://mainnet-idx.algonode.cloud/v2/assets/31566704 \
+      | jq '.asset.params | {name, "unit-name", decimals, creator}'
+
+## One claim at a time (2026-09-09)
+
+The claim door shipped naming a hole it could not close: the replay
+guard keys the SETTLEMENT, so two walkers claiming one listing with two
+DIFFERENT real transactions both passed every check and both were
+signed a reward. One listing, two payouts, and a weekly budget that
+counted one. Nothing was stolen — the store spent twice for one piece
+of evidence.
+
+KV could not fix it. It is last-write-wins with edge-cached reads and
+no compare-and-swap, which is why the tx guard says of itself, in the
+code, that it is not a mutex. A Durable Object decides the question in
+one indivisible step, and `services/bounty-claim-locks.ts` is that
+object: take the listing, do the work, give it back on every exit.
+
+The lock is a lease, not a latch — sixty seconds, long enough for a
+chain read, a screen and a signature, short enough that a claim which
+died mid-flight frees the listing on its own. A deployment without the
+binding keeps exactly the guarantees the board had before, which is
+stated in that file and is the honest trade: refusing every walker
+because a lock is unavailable would turn a rare double-pay into an
+outage.
 
 ## The honest register (the part that keeps this ours)
 

@@ -713,6 +713,17 @@ function mcpManifest(base: string) {
      * it. Same string, no second source of truth.
      */
     url: `${base}/mcp`,
+    /**
+     * And `serverUrl` beside both (2026-09-09): the field the v1
+     * server-card schema this document cites actually names, and the
+     * one a scanner reading strictly to that schema looks for. A
+     * reader that found `url` and `endpoint` but no `serverUrl`
+     * reported this card as describing a server it could not find,
+     * and then measured drift against whatever it connected to
+     * instead. Same string, third name, still no second source of
+     * truth.
+     */
+    serverUrl: `${base}/mcp`,
     transport: "streamable-http",
     /** The methods the transport actually accepts, spelled out. */
     methods: ["POST"],

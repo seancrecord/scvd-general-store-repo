@@ -214,6 +214,12 @@ export async function openBountyBatch(
     asks?: readonly string[];
     /** Post them as second walks: a wallet already paid here is refused. */
     distinctPayer?: boolean;
+    /**
+     * Capture this rail at every door in the press, or refuse the door.
+     * A press asking for Arbitrum evidence must not come back as ten
+     * more Base rows.
+     */
+    rail?: string;
   },
   options: BountyBoardOptions = {},
 ): Promise<BatchResult> {
@@ -234,6 +240,7 @@ export async function openBountyBatch(
           ...(input.days !== undefined ? { days: input.days } : {}),
           ...(input.asks && input.asks.length > 0 ? { asks: input.asks } : {}),
           ...(input.distinctPayer ? { distinctPayer: true } : {}),
+          ...(input.rail ? { rail: input.rail } : {}),
         },
         options,
       );

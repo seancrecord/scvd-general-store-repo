@@ -54,6 +54,15 @@ export interface Env {
   A2A_KITS?: DurableObjectNamespace<import("@/services/a2a-kit").A2AKitStore>;
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
   /**
+   * One claim at a time per bounty (2026-09-09). Optional like the
+   * rest: a deployment without it keeps the guarantees the board had
+   * before — the KV replay guard and the chain — rather than refusing
+   * every walker because a lock is missing.
+   */
+  BOUNTY_CLAIM_LOCKS?: DurableObjectNamespace<
+    import("@/services/bounty-claim-locks").BountyClaimLocks
+  >;
+  /**
    * The observer control beacon (3.4/B6): a stable, off-store URL the
    * probes read when a target fails, to tell our outage from theirs.
    * Optional — unprovisioned, failed probes book as the subject's
@@ -214,6 +223,15 @@ export interface Env {
    * endpoint, fine at this volume, swappable the day it isn't.
    */
   SOLANA_RPC_URL?: string;
+  /**
+   * The Algorand rail (2026-09-09). Both endpoints have public
+   * defaults; the asset id defaults to Circle's USDC ASA and exists as
+   * a dial because a hardcoded asset that ever moved would refuse
+   * every honest claim until a deploy.
+   */
+  ALGORAND_INDEXER_URL?: string;
+  ALGORAND_ALGOD_URL?: string;
+  ALGORAND_USDC_ASSET?: string;
   /** Basic Auth password for the keeper's back room. Secret. */
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */

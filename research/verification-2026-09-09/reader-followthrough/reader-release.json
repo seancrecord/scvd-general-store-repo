@@ -1,0 +1,26 @@
+{
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/592",
+  "merge_commit": "f44df7b165c6534fe7c9cfcb0b2a12790e56eade",
+  "merged_at": "2026-09-09T20:00:48Z",
+  "both_production_workers_deployed": true,
+  "ci": {
+    "pull_request_run": 34393421831,
+    "push_run": 34393418480,
+    "both_passed": true,
+    "worker_files": 610,
+    "worker_tests_passed": 9536,
+    "worker_tests_skipped": 1
+  },
+  "npm": {
+    "name": "x402-verify",
+    "version": "1.3.0",
+    "git_head": "f44df7b165c6534fe7c9cfcb0b2a12790e56eade",
+    "integrity": "sha512-2aEbVEYCyIeIVxGHtkjR9zkglXjtVDSarZrQePHkZ2207TMdNRHncRmD9sL5lHfWurQjYW8uqphGrtefnNsUgA==",
+    "prepared_tarball_matches": true,
+    "registry_signature_verified": true,
+    "provenance_verified": true,
+    "publish_run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34398582831"
+  },
+  "live_reader_smoke": "registry-1.3.0-smoke.json",
+  "scope": "Reader release only; certificate-key sweep repair follows separately."
+}

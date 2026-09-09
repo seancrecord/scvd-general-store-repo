@@ -260,6 +260,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/menu.json": ["application/json", "text/markdown"],
   "/api/preflight/v1": ["application/json", "text/markdown"],
   "/api/preflight/v2": ["application/json", "text/markdown"],
+  // Gained a markdown twin on 2026-09-09, beside the preflight's.
+  "/api/look/v1": ["application/json", "text/markdown"],
   "/pricing": ["application/json", "text/markdown", "text/html"],
   "/deprecation": ["text/html", "text/markdown", "application/json"],
   "/developers": ["text/html", "text/markdown", "application/json"],
@@ -274,7 +276,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
   "/trust": ["application/json", "text/html"],
   "/fresh-set": ["application/json", "text/html"],
   "/corrections": ["application/json", "text/html"],
-  "/api/conformance/v1": ["application/json", "text/html"],
+  // Markdown added 2026-09-09; JSON and HTML were already served.
+  "/api/conformance/v1": ["application/json", "text/markdown", "text/html"],
   "/bounties": ["application/json", "text/html"],
   "/credit": ["application/json", "text/html"],
   "/samples": ["application/json", "text/html"],
@@ -4015,6 +4018,16 @@ const PRACTICE_SCHEMA: OpenApiObject = {
  * and calling these costs real USDC. Every field left undeclared on
  * a paid door is a field somebody pays to discover.
  */
+const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "Signed purchase commission for Standing Watch and Conformance Watch. Decode signed_payload to read the exact target URL, watch_id, cert_id, item_id, started_at, ends_at and interval_hours. Present on new purchases and their public history; absent on legacy watches. Observations carry their own signatures.",
+  required: ["signed_payload", "signature", "public_key", "signature_covers"],
+  properties: {
+    signed_payload: { type: "string", description: "RFC 8785 canonical JSON. Verify the ed25519 signature over these exact UTF-8 bytes." },
+    signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
+  },
+};
+
 const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
   type: "object",
   required: [
@@ -4042,6 +4055,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description: "What was paid above the ask, where anything was.",
     },
     patron_number: { type: "integer" },
+    commission: WATCH_COMMISSION_SCHEMA,
     confession_receipt: {
       type: "object",
       description: "Confession only. Private proof binding the stored text to this purchase. Absent from public certificates and verification. Share only by choice.",
@@ -4376,6 +4390,7 @@ const WATCH_HISTORY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "probes", "how_to_verify", "what_this_is_not"],
   properties: {
+    commission: WATCH_COMMISSION_SCHEMA,
     watch_id: { type: "string" },
     url: { type: "string", description: "The door being watched." },
     started_at: { type: "string" },
@@ -4411,6 +4426,7 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "passes", "how_to_verify"],
   properties: {
+    commission: WATCH_COMMISSION_SCHEMA,
     watch_id: { type: "string" },
     url: { type: "string" },
     started_at: { type: "string" },
@@ -6345,7 +6361,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returnsMarkdown(
           freeOp(
             "The pricing charter, in markdown",
-            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses — and beneath the clauses, every priced door on the shelf with its price and cadence, read off the live menu as the page renders rather than typed. There are no plans and no tiers here: one price per door, paid per call. The canonical link points back at /pricing: one document, two addresses.",
           ),
         ),
       },

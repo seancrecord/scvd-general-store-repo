@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-09-09T20:03:02.478Z",
+  "package": "x402-verify",
+  "version": "1.3.0",
+  "page_count": 3,
+  "compact_index_bytes": [
+    1629,
+    1629,
+    1253
+  ],
+  "page_bodies_read_r2": [
+    false,
+    false,
+    false
+  ],
+  "snapshots": [
+    {
+      "sequence": 1,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 36034,
+      "timestamp_status": "unverified"
+    },
+    {
+      "sequence": 2,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 56424,
+      "timestamp_status": "unverified"
+    },
+    {
+      "sequence": 3,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 39376,
+      "timestamp_status": "unverified"
+    },
+    {
+      "sequence": 4,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 705438,
+      "timestamp_status": "unverified"
+    },
+    {
+      "sequence": 5,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 13652740,
+      "timestamp_status": "unverified"
+    },
+    {
+      "sequence": 6,
+      "signature_verified": true,
+      "canonical_bytes_unchanged": true,
+      "bundle_bytes": 23227004,
+      "timestamp_status": "unverified"
+    }
+  ],
+  "limits": "Single-snapshot signature checks and equality to saved canonical payloads. The CLI does not verify Bitcoin."
+}

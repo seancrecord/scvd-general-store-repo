@@ -60,6 +60,15 @@ export default defineConfig({
       wrangler: { configPath: "./wrangler.jsonc" },
       miniflare: {
         kvNamespaces: ["ORDERS", "GUESTBOOK", "COUNTERS", "PATRONS"],
+        /*
+         * The claim lock is a Durable Object and the suite runs the
+         * real one: a guard tested against a mock is a guard nobody
+         * has tested. wrangler.jsonc carries the binding for
+         * production; the pool needs it named here too.
+         */
+        durableObjects: {
+          BOUNTY_CLAIM_LOCKS: { className: "BountyClaimLocks", scriptName: undefined },
+        },
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",

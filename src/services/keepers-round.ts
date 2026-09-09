@@ -174,7 +174,7 @@ export async function readKeepersRound(
   const rows: RoundRow[] = [];
   const presses: KeeperPress[] = [];
 
-  const [glance, round, corpus, pulse, mcp, longWalk, citations, board] =
+  const [glance, round, corpus, pulse, fillable, mcp, longWalk, citations, board] =
     await Promise.all([
       attempt(notes, "the hourly glance", async () =>
         (await import("@/services/glance")).readGlance(env),
@@ -187,6 +187,9 @@ export async function readKeepersRound(
       ),
       attempt(notes, "the registry tally", async () =>
         (await import("@/services/registry-pulse")).readRegistryPulse(env),
+      ),
+      attempt(notes, "the corpus weeks not yet published", async () =>
+        (await import("@/services/registry-pulse")).unpublishedCorpusWeeks(env),
       ),
       attempt(notes, "the MCP walk", async () =>
         (await import("@/services/mcp-ward")).readMcpWalk(env),
@@ -268,7 +271,7 @@ export async function readKeepersRound(
       // A week plus a day is due; two weeks is a round that did not run.
       state: judge(age, 24 * 8, 24 * 14),
       detail: round
-        ? `${round.week}: ${round.hosts?.length ?? 0} hosts walked, ${round.listed_resources} listed${round.capped ? " — capped, so the tail was never walked" : ""}${round.coverage_suspect ? " — coverage suspect" : ""}`
+        ? `${round.week}: ${round.hosts?.length ?? 0} hosts walked, ${round.listed_resources} resource listings${round.capped ? " — incomplete: hosts remained unwalked when the round closed" : ""}${round.coverage_suspect ? " — coverage suspect" : ""}`
         : "no round has ever been stored",
       where: "/admin/ward",
     });
@@ -345,17 +348,30 @@ export async function readKeepersRound(
       where: "/admin/market",
     });
     if (behind && roundWeek) {
-      const missed = published
-        ? missingWeeks(published.week, roundWeek)
-        : [];
       presses.push({
         what: `Publish the registry week ${roundWeek}`,
-        why:
-          missed.length > 0
-            ? `${published?.week} is the last published and the round in hand is ${roundWeek}, so ${missed.join(", ")} ${missed.length === 1 ? "was" : "were"} never published. The press builds from the round in hand only — those weeks cannot be published from the market page any more, though their rounds are still signed in the corpus.`
-            : `the round in hand (${roundWeek}) has not been published to /registry`,
+        why: `${published?.week} is the last week on the public tally and the round in hand is ${roundWeek}`,
         where: "/admin/market",
-        urgent: missed.length > 0,
+        urgent: false,
+      });
+    }
+    /*
+     * THE GAP, BY NAME, AND NOW FILLABLE (2026-09-09). This row used to
+     * say a missed week "cannot be published any more", which was true
+     * of a press that built only from the round in hand — and stopped
+     * being true the day the backfill read the corpus instead. A page
+     * whose whole job is telling the keeper what is stuck must not be
+     * the last thing carrying a stale impossibility.
+     */
+    if (!failed(fillable) && fillable && fillable.length > 0) {
+      const missed = published
+        ? missingWeeks(published.week, roundWeek ?? published.week)
+        : [];
+      presses.push({
+        what: `Backfill ${fillable.length} registry week${fillable.length === 1 ? "" : "s"}: ${fillable.join(", ")}`,
+        why: `the corpus froze ${fillable.length === 1 ? "this round" : "these rounds"} on the Sunday ${fillable.length === 1 ? "it" : "they"} ran and nobody pressed publish at the time${missed.length > 0 ? ` — the tally reads ${published?.week} straight to ${roundWeek}` : ""}. POST /admin/market/publish-registry-week with the week fills it from the signed record; the row is dated when it was walked, not when it was rescued`,
+        where: "/admin/market",
+        urgent: true,
       });
     }
   }

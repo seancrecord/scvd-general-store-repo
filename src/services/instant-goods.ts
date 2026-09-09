@@ -229,7 +229,7 @@ export async function deliverInstantGoods(
       };
     }
     case "standing_watch": {
-      const watch = await startWatch(env, input.targetUrl ?? "", input.payer);
+      const watch = await startWatch(env, input.targetUrl ?? "", input.payer, { checkpoint, purchasedAt: input.purchasedAt, certId: input.certId });
       return {
         deliverable: standingWatchNote(
           watch.record.url,
@@ -237,6 +237,7 @@ export async function deliverInstantGoods(
         ),
         extras: {
           watch_id: watch.record.watch_id,
+          ...(watch.record.commission ? { commission: watch.record.commission } : {}),
           ends_at: watch.record.ends_at,
           history_url: watch.historyUrl,
           first_probe_by:
@@ -272,6 +273,7 @@ export async function deliverInstantGoods(
         env,
         input.targetUrl ?? "",
         input.payer,
+        { checkpoint, purchasedAt: input.purchasedAt, certId: input.certId },
       );
       return {
         deliverable: conformanceWatchNote(
@@ -280,6 +282,7 @@ export async function deliverInstantGoods(
         ),
         extras: {
           watch_id: watch.record.watch_id,
+          ...(watch.record.commission ? { commission: watch.record.commission } : {}),
           ends_at: watch.record.ends_at,
           history_url: watch.historyUrl,
           first_pass_by:
