@@ -564,10 +564,15 @@ build, it is on the roadmap.
   lines). Hand-deliver, stamp. The
   wire stays paused. This is the seller loop; it is your
   press.
-- **Re-register the missing doors.** After Sunday's round,
-  `/admin/ward` prints `our_doors` — which of our paid
-  doors the CDP search index still returns. `opening_day`
-  and `provenance_check` will be missing until you press.
+- **Indexing diagnosis — repeat-purchase instruction withdrawn 2026-09-09.**
+  The ward's one-query check could see at most twenty search results;
+  its missing list did not prove absence. The keeper reports buying
+  the listed doors twice. Do not ask for another registration purchase
+  on that evidence. Read `/admin/ward/index`;
+  for any doors still unreturned, reconcile existing receipts, discovery
+  metadata and settlement. Receipt details unavailable to the public
+  reader may need his lookup; a build does not belong on this row.
+  The keeper deferred that investigation on 2026-09-09.
 - No agent item is queued (2026-09-02, after S6). The
   roadmap's NOW table is empty; S8-v3 waits on your yes /
   no / later, not on a date; everything in LATER needs a

@@ -31,6 +31,34 @@ The [contact page](https://www.x402-list.com/contact) identifies
 info@x402-list.com. Web extraction missed that page; a direct HTTPS read
 succeeded. No message sent.
 
+## 2026-09-09 — Ward search completeness
+
+Read Coinbase's [discovery guide](https://docs.cdp.coinbase.com/x402/buyer/discover-services),
+[search API](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/search-x402-resources),
+and [seller indexing guide](https://docs.cdp.coinbase.com/x402/seller/get-discovered).
+Search is ranked, limited to twenty rows, and reports `partialResults`;
+`urlSubstring` narrows the resource URL. A successful discovery-enabled
+settlement triggers indexing, but a search omission is not evidence that
+another payment is needed. No registration or payment was made in this read.
+
+At 19:17 UTC, individual URL searches returned five of the thirteen doors
+called missing by the saved W37 round. The complete EVM merchant listing
+returned twenty-five rows. Eight individual URL queries returned empty,
+non-partial results; their payment receipts and indexing outcomes remain
+unreconciled. The index's August prices for Coffee, The Collab and The
+Statement differed from the live menu. These are dated observations, not
+constants for the checker. Read the current Workers best-practices page;
+used the installed Workers 5.20260905.1 types for the existing fetch/timeout
+API. No runtime or binding configuration changes.
+
+The same day, the documented unauthenticated `POST /x402/validate`
+with `{resource, method: "GET"}` rejected `attestation_bundle`: the
+required parse check reported “pattern must be a valid regex”. The seven
+other unreturned doors passed, with `index: null`. Current validation
+does not reconstruct their earlier settlement requests or outcomes.
+The keeper deferred that investigation; roadmap IDX1 retains it.
+
+
 ## 2026-09-08 — Verification implementation and live reconciliation
 
 Follow-through on the recommendation below, authorized in the same sitting.
