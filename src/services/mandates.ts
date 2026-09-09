@@ -1,6 +1,8 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
-import { signMessage } from "@/lib/signing";
+import { listKeys } from "@/lib/kv-list";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env } from "@/types";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
@@ -141,4 +143,157 @@ export async function getMandate(
   mandateId: string,
 ): Promise<MandateRecord | null> {
   return kvGetJson<MandateRecord>(env.PATRONS, KV_KEYS.mandate(mandateId), "json");
+}
+
+/**
+ * THE COUNTER-ATTESTATION (2026-09-09) — the answer to the objection
+ * this product's own scope note has always printed against itself.
+ *
+ * MANDATE_SCOPE says a mandate "does not prove the human principal
+ * actually gave these instructions (unless the principal's own client
+ * submitted it, which this store cannot distinguish)". That
+ * parenthesis is the hole: the obvious complaint about any mandate is
+ * that the agent wrote its own authorization, and until today the
+ * record had no way to answer it.
+ *
+ * A counter-attestation is the distinguisher. A second party — the
+ * principal, a counterparty, anyone holding a key — signs this
+ * mandate's id and evidence hash with their OWN key, and the store
+ * files what they signed. Two keys attesting to one text is a
+ * different and much harder thing to wave away than one.
+ *
+ * THE STORE ADDS NO CLAIM OF ITS OWN. It does not re-sign the
+ * mandate, does not say the parties AGREED — agreement is a legal
+ * conclusion and this desk does not draw those — and does not say
+ * anyone is bound, performed, or owes anything. It says: these keys
+ * signed this id and this hash, at these times, and here is each
+ * signature so you can check it yourself without believing us. The
+ * mandate's own signature is untouched, so a record verified before
+ * an attestation arrived still verifies byte-for-byte after.
+ *
+ * WHOEVER OPENS THE RECORD PAYS; ATTESTING IS FREE. If the second
+ * party had to pay, the store would be the buyer's instrument and the
+ * record would tilt toward whoever bought it. Free is what keeps it
+ * neutral, and it is why this is a route rather than an item.
+ *
+ * SIGNED ONLY — there is no weaker "they echoed the text back" tier,
+ * considered and dropped. A store assertion that someone submitted a
+ * matching string is a claim only this store can vouch for, sitting
+ * in a record whose entire value is that it needs no such vouching.
+ * Every attestation here is self-verifying by a stranger, or absent.
+ */
+
+/** How many keys may attest to one mandate. ⚑ keeper dial. */
+export const MANDATE_ATTESTATION_CAP = 20;
+
+/** An ed25519 public key, 32 bytes of lowercase hex. */
+const HEX_KEY = /^[0-9a-f]{64}$/;
+/** An ed25519 signature, 64 bytes of lowercase hex. */
+const HEX_SIGNATURE = /^[0-9a-f]{128}$/;
+/** The attestor's claimed name for themselves. A claim, like the rest. */
+export const ATTESTATION_LABEL_CAP = 80;
+
+export interface MandateAttestation {
+  /** The attesting key, lowercase hex. Verified before it was filed. */
+  public_key: string;
+  /** Their signature over the exact string in `signature_covers`. */
+  signature: string;
+  /** What they signed, stated so a stranger can rebuild and check it. */
+  signature_covers: string;
+  /** This store's clock at filing. */
+  attested_at: string;
+  /** What the attestor calls themselves. UNVERIFIED, like every name here. */
+  label?: string;
+}
+
+/**
+ * THE STRING AN ATTESTOR SIGNS. The mandate id is in it deliberately:
+ * the evidence hash alone would let a signature made for one mandate
+ * be replayed onto a different mandate carrying identical text, and
+ * two parties agreeing the same words twice is a normal thing to do.
+ */
+export function attestationPayload(
+  mandateId: string,
+  evidenceHash: string,
+): string {
+  return `scvd-mandate-attestation:${mandateId}:${evidenceHash}`;
+}
+
+export type AttestationResult =
+  | { ok: true; attestation: MandateAttestation; total: number }
+  | { ok: false; reason: "no_such_mandate" }
+  | { ok: false; reason: "bad_key" }
+  | { ok: false; reason: "bad_signature_shape" }
+  | { ok: false; reason: "signature_did_not_verify"; payload: string }
+  | { ok: false; reason: "full"; cap: number };
+
+export async function attestMandate(
+  env: Env,
+  mandateId: string,
+  input: { publicKey: unknown; signature: unknown; label?: string },
+): Promise<AttestationResult> {
+  const record = await getMandate(env, mandateId);
+  if (!record) {
+    return { ok: false, reason: "no_such_mandate" };
+  }
+  const publicKey = String(input.publicKey ?? "").trim().toLowerCase();
+  const signature = String(input.signature ?? "").trim().toLowerCase();
+  if (!HEX_KEY.test(publicKey)) {
+    return { ok: false, reason: "bad_key" };
+  }
+  if (!HEX_SIGNATURE.test(signature)) {
+    return { ok: false, reason: "bad_signature_shape" };
+  }
+  const payload = attestationPayload(mandateId, record.mandate.evidence_hash);
+  if (!(await verifyMessageSignature(payload, signature, publicKey))) {
+    return { ok: false, reason: "signature_did_not_verify", payload };
+  }
+  /*
+   * The cap is checked against keys ALREADY FILED, and a key that has
+   * attested before writes its own key again — so a retry costs
+   * nothing and never consumes a slot.
+   */
+  const existing = await listAttestations(env, mandateId);
+  const known = existing.some((entry) => entry.public_key === publicKey);
+  if (!known && existing.length >= MANDATE_ATTESTATION_CAP) {
+    return { ok: false, reason: "full", cap: MANDATE_ATTESTATION_CAP };
+  }
+  const attestation: MandateAttestation = {
+    public_key: publicKey,
+    signature,
+    signature_covers: payload,
+    attested_at: new Date().toISOString(),
+    ...(input.label ? { label: input.label.slice(0, ATTESTATION_LABEL_CAP) } : {}),
+  };
+  await kvPut(
+    env.PATRONS,
+    KV_KEYS.mandateAttestation(mandateId, publicKey),
+    JSON.stringify(attestation),
+  );
+  return {
+    ok: true,
+    attestation,
+    total: known ? existing.length : existing.length + 1,
+  };
+}
+
+/** Every key that has attested to one mandate, oldest first. */
+export async function listAttestations(
+  env: Env,
+  mandateId: string,
+): Promise<MandateAttestation[]> {
+  const listed = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.mandateAttestationPrefix(mandateId),
+    cap: MANDATE_ATTESTATION_CAP,
+  });
+  if (listed.names.length === 0) {
+    return [];
+  }
+  const values = await bulkGetJson<MandateAttestation>(
+    env.PATRONS,
+    listed.names,
+  );
+  return [...values.values()]
+    .filter((entry): entry is MandateAttestation => Boolean(entry?.public_key))
+    .sort((a, b) => a.attested_at.localeCompare(b.attested_at));
 }
