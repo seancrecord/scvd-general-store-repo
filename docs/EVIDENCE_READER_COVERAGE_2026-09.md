@@ -113,20 +113,81 @@ consensus locally or establish exact issue time. The census tool's own
 `independently_verified: 0` remains unchanged: the separate result is recorded
 in `reader-followthrough/certificate-proof-check.json`.
 
-One signed certificate has no stored timestamp. Two captured certificates
+At the 18:32–18:37 UTC capture, one signed certificate had no stored timestamp. Two captured certificates
 share patron number 199; one has an anchor and one does not. The sweep's
 `submitAtPatron` follows a single patron-to-certificate mapping and explicitly
 cannot reach the other certificate. The counter reads 261 while certificate
 key enumeration finds 262. VQ4 therefore remains open for certificate-key
 sweep coverage and classification of the six unresolved product categories.
-The subsequent repair is tracked in `docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`. No historical
+The subsequent repair merged in PR #596 at 21:11:38 UTC and both production
+Workers deployed by 21:13:07 UTC. The first delivery pass was not yet observed
+at deployment; its follow-up is linked from `docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`. No historical
 certificate was rewritten and no raw purchase record is published.
 
 Aggregate counts, unresolved categories and the public Bitcoin headers are
 under `research/verification-2026-09-09/reader-followthrough/`. Private source
 records remain outside the checkout. The pre-release sweep-counter record
-was unavailable, as expected before this release first retains it; a live
-post-deployment observation is still needed.
+was unavailable before this release first retained it. A subsequent 20:32 UTC
+read retrieved the 20:31 UTC successful pass: two new submissions, two pending
+proofs and zero head/backfill lag. The patron counter had advanced to 263;
+this operational read does not replace the earlier certificate-key census.
+The first attempt could not read the three counters; sequential reads then
+succeeded, with no cause established for the first failure. The record is
+`reader-followthrough/first-live-sweep-counters.json`. This pass preceded
+the certificate-key repair and does not establish its delivery. The 20:32 UTC
+public recheck still found no timestamp on the previously missed certificate,
+with its signed payload, signature and public key unchanged.
+
+## What the unresolved bindings refer to
+
+A September 9 follow-up rechecked the same captured bytes and trusted public
+keys. This is a classification of the 44 unresolved signed bindings, not a
+new production census or a claim that their preimages have been recovered.
+
+- Seven settlement-attestation bindings refer to individual signed chain
+  observations returned in the purchased goods. The current checkout also
+  retains prepared observations in the purchase-recovery journal; the first
+  inventory did not enumerate those journals. Re-querying a transaction today
+  would produce a different observation and cannot recover the original bytes.
+- Twelve spot-check bindings refer to signed, dated host-history records
+  returned in the goods. Current checkout retention uses the same recovery
+  journal. Today's free host view is not the historical signed preimage.
+- Seven passport-refresh bindings refer to signed refresh observations. The
+  public KV projection retains only the latest observation body for each host,
+  while current hosted grants retain the signed purchase record. A projection
+  can match a certificate digest without containing an independent report
+  signature; those checks must be counted separately.
+- Three trust-profile bindings refer to signed commission records. Their KV
+  projection is the latest record for each host; current hosted grants retain
+  purchase-specific records. A renewed profile cannot stand in for an earlier
+  commission merely because the host is the same.
+- Three Bitcoin-anchor bindings are the buyers' opaque SHA-256 digests. There
+  is no store-observed report behind that claim. Reconciliation should join
+  each certificate to its patron-anchor record and independently check that
+  proof; the bytes behind the digest remain the buyer's evidence.
+- Twelve bundle bindings commit to the member evidence hashes, comma-joined
+  in delivery order. Reconciliation needs the exact delivered member list,
+  each member's signature and evidence hash, and the enclosing bundle digest.
+  Two verified certificate bindings equal SHA-256 of the empty string,
+  consistent with the already published September 4 empty-sheaf correction.
+  That equality alone does not establish whether a particular purchase was
+  delivered or settled. The historical records remain unchanged.
+
+Current retention code does not establish that journals exist for older
+purchases. A later adapter must preserve missing, unreadable, unsupported,
+expired and unavailable states, keep its collection limits visible, and
+separate an authentic certificate binding from an independently verified
+report and Bitcoin proof. No additional reports are counted as verified by
+this classification.
+
+Implementation references at `b8f95811`: `src/services/fulfillment.ts`
+(`bundleEvidenceHash`, prepared observations and certificate bindings),
+`src/services/instant-goods.ts` (delivered evidence),
+`src/services/purchase-observation.ts` and `src/services/paid-recovery.ts`
+(purchase journal), `src/services/hosted-observation.ts` (grants and latest
+projections), and `src/services/patron-anchors.ts` (opaque digest records).
+The historical correction is
+`src/store/corrections-ledger/2026-09-04-the-mcp-door-took-a-buyer.ts`.
 
 ## Validation
 

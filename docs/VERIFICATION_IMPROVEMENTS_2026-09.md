@@ -22,8 +22,10 @@ Current work, checks and trust limits:
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. PR #592 merged at 20:00:48 UTC and both Workers deployed. npm 1.3.0
 published with verified provenance and a matching prepared tarball; a fresh
 registry installation verified all six live snapshots at 20:03 UTC. npm
-1.2.0 has not changed. The measured missing-anchor repair is covered in
-`docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
+1.2.0 has not changed. The measured missing-anchor repair merged in PR #596 at 21:11:38 UTC; both
+production Workers deployed by 21:13:07 UTC. The first delivery pass was not
+yet observed at deployment. Its release record and subsequent live follow-up
+are linked from `docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
 
 ## Release follow-through
 

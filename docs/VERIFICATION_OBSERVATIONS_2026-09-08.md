@@ -17,7 +17,10 @@ The earlier Wrangler authentication failure was resolved on retry. The
 36 reports; 44 of 80 signed report links remain unresolved in the selected
 families. All 261 available timestamp proofs passed independent operation
 and matching-explorer-header checks. One certificate sharing patron number
-199 is outside the current patron-number sweep and has no stored anchor.
+199 was outside the old patron-number sweep and had no stored anchor.
+PR #596 repaired the sweep and both production Workers deployed by 21:13:07
+UTC. At deployment, its first delivery pass was not yet observed; subsequent
+checks are linked from `docs/CERTIFICATE_SWEEP_REPAIR_2026-09.md`.
 Details: `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Earlier capture limits
 below remain the historical record, not current implementation status.
 

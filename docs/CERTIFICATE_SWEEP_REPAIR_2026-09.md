@@ -1,9 +1,22 @@
 # Certificate-key sweep repair — September 9, 2026
 
-Pre-release implementation and validation record for
-`codex/certificate-key-sweep`. The preceding reader release is deployed
-through PR #592; this record does not establish live delivery of the repair. The keeper's “nice lets keep rollng” continues the
-verification follow-through; the measured gap and private census are in
+Released through [PR #596](https://github.com/seancrecord/scvd-general-store-repo/pull/596) at 21:11:38 UTC on September 9,
+as `86b12f40d578d227ca582fce6cdc8b633788a6f6`. Both production Workers
+completed deployment by 21:13:07 UTC. Both pre-merge CI runs passed
+610 files and 9,543 tests, with one existing skip, and all downstream checks.
+The five files still outstanding during a long CI interval also passed
+unchanged locally: 639 tests in 118.81 seconds. Neither CI run was restarted.
+
+At deployment, the first production delivery pass had not yet been observed.
+The baseline at 20:32 UTC still had no timestamp and unchanged signed bytes.
+Subsequent live delivery and independent proof checks are recorded in the
+[PR #596 release follow-through](https://github.com/seancrecord/scvd-general-store-repo/pull/596); deployment alone is not proof delivery.
+The dated release record is
+`research/verification-2026-09-09/reader-followthrough/key-sweep-release.json`.
+
+The implementation and validation below are the pre-release record for
+`codex/certificate-key-sweep`. The preceding reader release deployed through
+PR #592. The measured gap and private census are documented in
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md`.
 
 The census found 262 signed certificates but a patron counter of 261.

@@ -423,6 +423,10 @@ build, it is on the roadmap.
   the measurement discrepancy. Do not send a duplicate.
   Implementation completed in ROADMAP VQ2. The mapping was re-read September 9 and the same
   discrepancy remains; captured evidence is in `research/verification-2026-09-09/`.
+  Re-read September 9 at 20:56 UTC: still `unmeasured-network`, measured
+  volume and transaction counts null. Data: x402-list.com (CC BY 4.0);
+  `research/verification-2026-09-09/reader-followthrough/directory-follow-up.json`.
+  This is a public listing check, not an inbox check.
 
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
   moves").** A week's evidence lived in ONE KV value (the walk

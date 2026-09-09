@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-09-09T20:19:48.395Z",
+  "free_browser_instruments": [
+    "check_a2a_card",
+    "check_purchase",
+    "read_store_guide",
+    "preflight_endpoint",
+    "look_at_door",
+    "check_before_you_pay",
+    "check_conformance",
+    "verify_artifact",
+    "check_order",
+    "find_in_catalog"
+  ],
+  "mcp_tools": [
+    "check_a2a_card",
+    "check_purchase",
+    "read_store_guide",
+    "ring_bell",
+    "sign_guestbook",
+    "preflight_endpoint",
+    "look_at_door",
+    "check_before_you_pay",
+    "check_conformance",
+    "verify_artifact",
+    "check_order",
+    "find_in_catalog",
+    "buy_simple",
+    "buy_signed_record",
+    "buy_human_task",
+    "buy_observation",
+    "buy_memory_anchor",
+    "buy_small_pleasure"
+  ],
+  "orphans": [],
+  "browser_runtime": {
+    "surface": "Codex in-app browser",
+    "registered_tools": 12,
+    "free_catalog_lookup": "passed",
+    "console_errors": 0
+  },
+  "original_checker": "unknown: regex stopped at a semicolon in a description and rejected digits in the first tool name"
+}
