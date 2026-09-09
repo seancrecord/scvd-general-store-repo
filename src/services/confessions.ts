@@ -1,11 +1,10 @@
+import { retainPersonalRecord, publishPersonalRecord, mutatePersonalRecord, type PersonalPurchase } from "@/services/personal-goods";
 import { listKeys } from "@/lib/kv-list";
 import { newConfessionId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
-import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { ConfessionRecord, ConfessionStatus, Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
-
 
 /**
  * The confession drawer. Anonymized by construction, the record
@@ -26,21 +25,23 @@ export async function hearConfession(
   env: Env,
   confessionText: string,
   signAs?: string,
+  purchase?: PersonalPurchase,
 ): Promise<HeardConfession> {
-  const record: ConfessionRecord = {
-    id: newConfessionId(),
-    confession: confessionText.slice(0, CONFESSION_CAP),
-    status: "pending_review",
-    date: new Date().toISOString(),
-  };
-  const name = sanitizeText(signAs, 80);
-  if (name && name.toLowerCase() !== "anonymous") {
-    record.sign_as = name;
-  }
-  await kvPut(env.ORDERS, 
-    KV_KEYS.confession(invertedTimestamp(Date.now()), record.id),
-    JSON.stringify(record),
-  );
+  const prepared = await retainPersonalRecord(purchase, () => {
+    const record: ConfessionRecord = {
+      id: newConfessionId(),
+      confession: confessionText.slice(0, CONFESSION_CAP),
+      status: "pending_review",
+      date: purchase?.purchasedAt ?? new Date().toISOString(),
+    };
+    const name = sanitizeText(signAs, 80);
+    if (name && name.toLowerCase() !== "anonymous") {
+      record.sign_as = name;
+    }
+    return { kind: "confession" as const, record };
+  });
+  if (prepared.kind !== "confession") throw new Error("Original confession record unavailable");
+  const { record } = await publishPersonalRecord(env, prepared);
   return { record };
 }
 
@@ -75,9 +76,8 @@ export async function setConfessionStatus(
   if (!found) {
     return null;
   }
-  found.record.status = status;
-  await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
-  return found.record;
+  const saved = await mutatePersonalRecord(env, { kind: "confession", record: found.record, storageKey: found.kvKey }, { kind: "confession", status });
+  return saved.record;
 }
 
 /** The oldest approved, unprinted confession, the Gazette's candidate. */

@@ -41,6 +41,9 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
   "/src/services/a2a-tasks.ts": [
     'await txn.put("task", { task, expiresAt } satisfies StoredTask);',
   ],
+  "/src/services/personal-goods.ts": [
+    'await txn.put("personal", value);',
+  ],
   "/src/services/case-file-publication.ts": [
     'await txn.put("case:query", query);',
     'await txn.put(caseKey, canonical);',

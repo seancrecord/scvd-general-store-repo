@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -35,7 +35,7 @@ const adminAuth = {
 };
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

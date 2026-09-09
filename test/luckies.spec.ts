@@ -4,7 +4,7 @@ import { createOrder } from "@/services/orders";
 import { createLucky } from "@/services/luckies";
 import { getMenuItem } from "@/store";
 import { HERD, HERD_PROVENANCE, LUCKY_NOTES } from "@/store/luckies";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -28,7 +28,7 @@ const adminAuth = {
 };
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

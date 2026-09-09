@@ -1,7 +1,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -92,7 +92,7 @@ async function buy(path: string): Promise<Record<string, unknown>> {
 
 describe("a certificate verifies with nothing but the response", () => {
   beforeAll(() => {
-    installFacilitatorMock();
+    installMultiPurchaseFacilitatorMock();
   });
 
   it("hands over the signed bytes, so no canonicalization is guessed", async () => {
