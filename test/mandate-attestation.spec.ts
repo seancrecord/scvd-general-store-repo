@@ -61,7 +61,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
     );
 
     const posted = await SELF.fetch(
-      `${BASE}/api/mandate/${mandate.mandate_id}/attest`,
+      `${BASE}/api/mandate/${mandate.mandate_id}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -115,7 +115,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
 
     // A real signature, but from a different key than the one claimed.
     const mismatched = await SELF.fetch(
-      `${BASE}/api/mandate/${mandate.mandate_id}/attest`,
+      `${BASE}/api/mandate/${mandate.mandate_id}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +136,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
       { public_key: "a".repeat(64), signature: "short" },
     ]) {
       const bad = await SELF.fetch(
-        `${BASE}/api/mandate/${mandate.mandate_id}/attest`,
+        `${BASE}/api/mandate/${mandate.mandate_id}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -147,7 +147,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
     }
 
     // Nothing above reached the record.
-    expect(await listAttestations(testEnv, mandate.mandate_id)).toEqual([]);
+    expect((await listAttestations(testEnv, mandate.mandate_id)).attestations).toEqual([]);
   });
 
   it("refuses a signature replayed from another mandate carrying the same text", async () => {
@@ -170,7 +170,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
       signature: forFirst,
     });
     expect(replayed.ok).toBe(false);
-    expect(await listAttestations(testEnv, second.mandate_id)).toEqual([]);
+    expect((await listAttestations(testEnv, second.mandate_id)).attestations).toEqual([]);
 
     // It lands on the record it was actually made for.
     const honest = await attestMandate(testEnv, first.mandate_id, {
@@ -198,7 +198,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
     expect(first.ok && first.total).toBe(1);
     // Idempotent: the key writes its own key again rather than a second row.
     expect(again.ok && again.total).toBe(1);
-    expect(await listAttestations(testEnv, mandate.mandate_id)).toHaveLength(1);
+    expect((await listAttestations(testEnv, mandate.mandate_id)).attestations).toHaveLength(1);
     // And each attestation lives under its own key, so two parties
     // signing at once cannot overwrite one another.
     const listed = await testEnv.PATRONS.list({
@@ -228,7 +228,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
       label: "implementer",
     });
 
-    const both = await listAttestations(testEnv, mandate.mandate_id);
+    const { attestations: both } = await listAttestations(testEnv, mandate.mandate_id);
     expect(both.map((entry) => entry.label)).toEqual(["buyer", "implementer"]);
     expect(both[0]!.attested_at <= both[1]!.attested_at).toBe(true);
 
@@ -243,7 +243,7 @@ describe("a second key can sign a mandate, free, and the store adds no claim", (
   });
 
   it("refuses an unknown mandate and says where ids come from", async () => {
-    const response = await SELF.fetch(`${BASE}/api/mandate/m_nope/attest`, {
+    const response = await SELF.fetch(`${BASE}/api/mandate/m_nope`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

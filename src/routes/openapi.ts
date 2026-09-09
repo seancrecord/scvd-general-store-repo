@@ -6539,11 +6539,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
             BOUNTY_CLAIM_SCHEMA,
           ),
       },
-      "/api/mandate/{mandate_id}/attest": {
+      "/api/mandate/{mandate_id}": {
         post: {
           ...returns(
           postOp(
-            "Counter-sign a mandate (free)",
+            "Counter-sign a mandate (free): POST to the record",
             "A second party signs a mandate with their OWN ed25519 key, free and forever. GET the record first for the exact string to sign, served as attest_here.sign_this — it binds the mandate id as well as the evidence hash, so a signature made for one record cannot be replayed onto another carrying identical text. The store verifies before filing and files nothing that fails, so every attestation on a record is one a stranger can re-check without trusting this store. What it never says: that the parties agreed, that anyone is bound, that anything was performed or is owed. Recording a mandate costs a dime; attesting to one is free, because a record the second party had to buy into would tilt toward whoever paid.",
             "Your key and your signature over the mandate's payload.",
             {
@@ -6596,8 +6596,6 @@ openapiRoutes.get("/openapi.json", async (c) => {
             pathParam("mandate_id", "From the purchase response; starts m_."),
           ],
         },
-      },
-      "/api/mandate/{mandate_id}": {
         get: {
           ...returns(
   freeOp(

@@ -854,8 +854,12 @@ const BASE = "https://scvd.store";
 // name the free attest door and what the store does not conclude from it.
 // Verified by restoring only that copy from main in an isolated run: the
 // prior digest matched exactly, and this PR's copy reproduces the new one.
+// 2026-09-09: the counter-sign door moved onto the mandate's own path (rule
+// 60.1 — a sub-path was an orphan; the record's address is the door); the
+// menu copy names it. Verified as before: restoring only that copy from the
+// prior commit reproduces the prior digest exactly.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3f363cdb9ced44d127af9887c75fefa2fd7278c5ac9b35894c52809816747b63";
+  "9026f014861d340e57f8d0f1eeefc355f8ba17e5bfbffff05f47b572ad8c1b55";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

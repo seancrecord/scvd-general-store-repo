@@ -29,7 +29,7 @@ mandateRoutes.get("/api/mandate/:mandate_id", async (c) => {
     );
   }
   const base = c.env.STORE_BASE_URL;
-  const attestations = await listAttestations(c.env, record.mandate.mandate_id);
+  const { attestations, truncated } = await listAttestations(c.env, record.mandate.mandate_id);
   return c.json(
     {
       what_this_is:
@@ -54,12 +54,19 @@ mandateRoutes.get("/api/mandate/:mandate_id", async (c) => {
        * conclusions, and this desk records rather than concludes.
        */
       attestations,
+      ...(truncated
+        ? {
+            attestations_truncated: true,
+            attestations_truncated_note:
+              "More keys have signed this record than this read is allowed to list. The cap was lowered after they were filed; nothing was removed, and this page would rather say so than pretend the list is whole.",
+          }
+        : {}),
       attestation_note:
         attestations.length === 0
-          ? `Nobody but the submitter has signed this record. A second party can, free, at POST /api/mandate/${record.mandate.mandate_id}/attest — which is the answer to the obvious objection that an agent wrote its own authorization.`
+          ? `Nobody but the submitter has signed this record. A second party can, free, by POSTing to this record's own URL — which is the answer to the obvious objection that an agent wrote its own authorization.`
           : `${attestations.length} key${attestations.length === 1 ? " has" : "s have"} signed this record's id and evidence hash with their own key. That is what is claimed and all that is claimed: not that the parties agreed, not that anyone is bound, not that anything was performed. Check each signature yourself against the string in its signature_covers.`,
       attest_here: {
-        url: `${base}/api/mandate/${record.mandate.mandate_id}/attest`,
+        url: `${base}/api/mandate/${record.mandate.mandate_id}`,
         method: "POST",
         free: "Recording a mandate costs a dime; attesting to one costs nothing, ever. If the second party had to pay, this record would tilt toward whoever bought it.",
         sign_this: attestationPayload(
@@ -79,7 +86,15 @@ mandateRoutes.get("/api/mandate/:mandate_id", async (c) => {
 });
 
 /**
- * POST /api/mandate/{mandate_id}/attest — a second party signs, free.
+ * POST /api/mandate/{mandate_id} — a second party signs, free.
+ *
+ * ON THE MANDATE'S OWN PATH, NOT A SUB-PATH (2026-09-09). This shipped
+ * first as /attest and the feature register refused it: house rule
+ * 60.1 says a new API path belongs to a feature row with a room, and
+ * the mandate — older than the rule — has none; back-registering it is
+ * the keeper's ink, not this branch's. An attestation is something
+ * you POST to the record, so the record's own address is the honest
+ * door, and it needs no new path to exist.
  *
  * The store verifies the signature before filing it and files nothing
  * that does not verify, so every attestation this record serves is
@@ -87,7 +102,7 @@ mandateRoutes.get("/api/mandate/:mandate_id", async (c) => {
  * the parties agreed, not that anyone is bound. See the long note in
  * services/mandates.ts for why there is no weaker echoed tier.
  */
-mandateRoutes.post("/api/mandate/:mandate_id/attest", async (c) => {
+mandateRoutes.post("/api/mandate/:mandate_id", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
   if (!isRecord(body)) {
     return c.json(

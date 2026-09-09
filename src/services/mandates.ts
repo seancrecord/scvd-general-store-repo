@@ -253,7 +253,7 @@ export async function attestMandate(
    * attested before writes its own key again — so a retry costs
    * nothing and never consumes a slot.
    */
-  const existing = await listAttestations(env, mandateId);
+  const { attestations: existing } = await listAttestations(env, mandateId);
   const known = existing.some((entry) => entry.public_key === publicKey);
   if (!known && existing.length >= MANDATE_ATTESTATION_CAP) {
     return { ok: false, reason: "full", cap: MANDATE_ATTESTATION_CAP };
@@ -277,23 +277,41 @@ export async function attestMandate(
   };
 }
 
-/** Every key that has attested to one mandate, oldest first. */
+export interface AttestationList {
+  /** Every key that has attested, oldest first — as far as the read saw. */
+  attestations: MandateAttestation[];
+  /**
+   * TRUE WHEN THERE WERE MORE THAN THE READ COULD SEE. The read is
+   * capped at MANDATE_ATTESTATION_CAP and the door refuses a new key
+   * past the same cap, so this is only ever true if the keeper lowers
+   * the dial below what was already filed. A record that says "these
+   * signed" while silently dropping some who did would be the exact
+   * failure this artifact exists to prevent, so the flag rides out to
+   * the page rather than being dropped here.
+   */
+  truncated: boolean;
+}
+
+/** Every key that has attested to one mandate, oldest first, and whether that was all of them. */
 export async function listAttestations(
   env: Env,
   mandateId: string,
-): Promise<MandateAttestation[]> {
+): Promise<AttestationList> {
   const listed = await listKeys(env.PATRONS, {
     prefix: KV_KEYS.mandateAttestationPrefix(mandateId),
     cap: MANDATE_ATTESTATION_CAP,
   });
   if (listed.names.length === 0) {
-    return [];
+    return { attestations: [], truncated: listed.truncated };
   }
   const values = await bulkGetJson<MandateAttestation>(
     env.PATRONS,
     listed.names,
   );
-  return [...values.values()]
-    .filter((entry): entry is MandateAttestation => Boolean(entry?.public_key))
-    .sort((a, b) => a.attested_at.localeCompare(b.attested_at));
+  return {
+    attestations: [...values.values()]
+      .filter((entry): entry is MandateAttestation => Boolean(entry?.public_key))
+      .sort((a, b) => a.attested_at.localeCompare(b.attested_at)),
+    truncated: listed.truncated,
+  };
 }
