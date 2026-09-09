@@ -58,3 +58,14 @@ sequence; `post-release/proof-comparison.json` records the hashes. Live
 records also retained the original canonical payload digest and signature.
 The initial scheduled-time read is kept because it had not yet observed
 completion. No whole-certificate-population claim follows from this pass.
+
+`reader-followthrough/` records the later compact-reader work and the
+18:32–18:37 UTC private inventory census. Only reviewed aggregates and public
+Bitcoin headers are committed: 262 certificate signatures and 36 report
+signatures/hashes verified; 36 of 80 signed report links matched this
+inventory. Independently, 261 delivered certificate proofs passed Python
+OTS checks against matching headers from two explorers. One certificate
+sharing a patron number has no stored anchor. See
+`docs/EVIDENCE_READER_COVERAGE_2026-09.md` for exclusions, the separate
+proof-check trust boundary, and current release status. The private records
+are deliberately outside the repository.

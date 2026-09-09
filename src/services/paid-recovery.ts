@@ -1,3 +1,4 @@
+import { PersonalGoodsStore, type PersonalRecord, type PersonalMutation } from "@/services/personal-goods";
 import { CaseFilePublicationStore } from "@/services/case-file-publication";
 import type { CaseFileRecord } from "@/services/case-file";
 import { PatronAnchorStore, type PatronAnchorRecord } from "@/services/patron-anchors";
@@ -24,7 +25,7 @@ export interface ArtifactPurchase {
 export interface RecoveryIdentity {
   path: string; payer: string; network: string; transaction: string;
 }
-export type ArtifactStage = "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
+export type ArtifactStage = "confession_receipt" | "personal_record" | "identity" | "patron_start" | "patron_number" | "certificate" | "anchor" | "response" | "credit_started" | "credit" | "order" | "fulfillment" | "instant_goods";
 
 function owns(purchase: ArtifactPurchase["purchase"], identity: RecoveryIdentity): boolean {
   const payer = purchase.payment.payer;
@@ -99,6 +100,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly personalGoods = new PersonalGoodsStore(this.ctx.storage, this.env);
+  publishPersonalRecord(value: PersonalRecord, mutation?: PersonalMutation) { return this.personalGoods.publish(value, mutation); }
+
   private readonly caseFile = new CaseFilePublicationStore(this.ctx.storage, this.env);
   latestCaseFile() { return this.caseFile.latest(); }
   publishCaseFile(query: string, record: CaseFileRecord) { return this.caseFile.publish(query, record); }

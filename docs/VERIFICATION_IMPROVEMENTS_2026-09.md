@@ -15,7 +15,10 @@ applies directly; the implementation order is unchanged.
 
 Authorized September 9 with “okay lets do that”: compact corpus discovery,
 explicit bounded large-snapshot verification, certificate/report inventory
-and documentation closeout. Current work, checks and access limitations:
+and documentation closeout. Production access was restored; the completed
+census verifies 262 certificate signatures and 261 timestamp proofs, with
+one uncovered certificate and 44 report links outside the verified inventory.
+Current work, checks and trust limits:
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. These source changes are separate
 from the completed releases below; npm 1.2.0 has not changed.
 

@@ -412,14 +412,6 @@ build, it is on the roadmap.
 
 ## NOW
 
-- **LOOK — restore census read access (2026-09-09).** The read-only
-  production certificate inventory request returned Cloudflare authentication
-  error 10000. The reader and census tools are built; no population totals
-  were obtained. Restore the operator's normal Wrangler sign-in, then run
-  the private capture and offline checks in
-  `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. No private key is needed.
-  VQ4 stays on ROADMAP for the unfinished measurement and storage coverage.
-
 - **LOOK — directory attribution evidence (2026-09-08).** The known
   browser receipt matches a Coinbase settler already tracked by
   x402-list, while the store remains `unmeasured-network`. Exact evidence

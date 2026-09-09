@@ -1,0 +1,8 @@
+{
+  "settlement_attestation": 7,
+  "trust_profile": 3,
+  "bitcoin_anchor": 3,
+  "passport_refresh": 7,
+  "spot_check": 12,
+  "attestation_bundle": 12
+}

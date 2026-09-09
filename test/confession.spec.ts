@@ -6,7 +6,7 @@ import {
 } from "@/services/confessions";
 import { assembleDraft, publishEdition } from "@/services/gazette-weekly";
 import { MENU_ITEMS } from "@/store";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -22,7 +22,7 @@ const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

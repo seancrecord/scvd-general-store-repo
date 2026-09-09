@@ -4,7 +4,7 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
-## Unreleased — September 9 source changes
+## 1.3.0 — 2026-09-09
 
 Corpus-v1 snapshot export with digest validation and fixed canonical field
 order. Explicit `--max-bytes` / library `maxBytes` option (default unchanged,

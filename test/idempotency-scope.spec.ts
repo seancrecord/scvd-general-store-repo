@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -38,7 +38,7 @@ const BASE = "https://scvd.store";
  */
 
 beforeAll(() => {
-  installFacilitatorMock();
+  installMultiPurchaseFacilitatorMock();
 });
 
 async function buyTag(

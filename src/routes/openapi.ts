@@ -1,4 +1,5 @@
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
+import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
 import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import {
@@ -4018,6 +4019,25 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description: "What was paid above the ask, where anything was.",
     },
     patron_number: { type: "integer" },
+    confession_receipt: {
+      type: "object",
+      description: "Confession only. Private proof binding the stored text to this purchase. Absent from public certificates and verification. Share only by choice.",
+      required: ["receipt", "signed_payload", "signature", "public_key", "signature_covers"],
+      properties: {
+        receipt: {
+          type: "object",
+          required: ["type", "cert_id", "confession_id", "confession", "recorded_at"],
+          properties: {
+            type: { type: "string", const: CONFESSION_RECEIPT_TYPE },
+            cert_id: { type: "string" }, confession_id: { type: "string" },
+            confession: { type: "string" }, recorded_at: { type: "string", format: "date-time" },
+            sign_as: { type: "string" },
+          },
+        },
+        signed_payload: { type: "string", description: "JCS of receipt. Verify the ed25519 signature over these exact UTF-8 bytes." },
+        signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
+      },
+    },
     badge_url: { type: "string", format: "uri" },
     certificate: {
       type: "object",

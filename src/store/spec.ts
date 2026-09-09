@@ -506,7 +506,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   daily_fortune:
     "The day's fortune, deterministic for the calendar date (UTC) and delivered instantly with fortune_date beside it: every buyer today reads the same line, tomorrow's buyers read the next. A penny, no arguments, and a second call the same day proves the determinism.",
   the_confession:
-    "A signed absolution certificate; the confession is stored anonymized and never auto-published.",
+    "A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published.",
   context_anchor:
     "A signed, stored copy of the agent-supplied state summary, readable forever at a stable anchor URL.",
   recurring_patronage:

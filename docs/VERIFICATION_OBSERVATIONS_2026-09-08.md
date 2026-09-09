@@ -10,9 +10,12 @@ VQ1 shipped in PR #585. The follow-through is ROADMAP VQ2 and its linked design.
 ## Later September 9 reader and inventory work
 
 The compact index and source CLI now pass the saved corpus size check.
-Production certificate enumeration was attempted through Wrangler but
-Cloudflare returned authentication error 10000; no population denominator
-was obtained. The read must be repeated after restoring operator access.
+The earlier Wrangler authentication failure was resolved on retry. The
+18:32–18:37 UTC census verified all 262 captured certificate signatures and
+36 reports; 44 of 80 signed report links remain unresolved in the selected
+families. All 261 available timestamp proofs passed independent operation
+and matching-explorer-header checks. One certificate sharing patron number
+199 is outside the current patron-number sweep and has no stored anchor.
 Details: `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Earlier capture limits
 below remain the historical record, not current implementation status.
 

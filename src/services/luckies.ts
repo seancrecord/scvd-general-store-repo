@@ -1,4 +1,5 @@
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { retainPersonalRecord, publishPersonalRecord, mutatePersonalRecord, type PersonalPurchase } from "@/services/personal-goods";
+import { kvGetJson } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newLuckyId } from "@/lib/ids";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -71,20 +72,25 @@ export interface CreateLuckyOptions {
 export async function createLucky(
   env: Env,
   options: CreateLuckyOptions,
+  purchase?: PersonalPurchase,
 ): Promise<SignedLuckyRecord> {
-  const lucky: LuckyRecord = {
-    lucky_id: newLuckyId(),
-    name: options.name,
-    provenance: options.provenance,
-    power: options.power,
-    strength: options.strength,
-    status: "in_service",
-    date: new Date().toISOString(),
-    order_id: options.orderId,
-    cert_id: options.certId,
-    patron_number: options.patronNumber,
-  };
-  return signAndStore(env, lucky);
+  const prepared = await retainPersonalRecord(purchase, async () => {
+    const lucky: LuckyRecord = {
+      lucky_id: newLuckyId(),
+      name: options.name,
+      provenance: options.provenance,
+      power: options.power,
+      strength: options.strength,
+      status: "in_service",
+      date: purchase?.purchasedAt ?? new Date().toISOString(),
+      order_id: options.orderId,
+      cert_id: options.certId,
+      patron_number: options.patronNumber,
+    };
+    return { kind: "lucky" as const, record: await signLuckyRecord(env, lucky) };
+  });
+  if (prepared.kind !== "lucky") throw new Error("Original lucky record unavailable");
+  return (await publishPersonalRecord(env, prepared)).record;
 }
 
 export async function getLucky(
@@ -108,17 +114,9 @@ export async function setLuckyStatus(
   if (!record) {
     return null;
   }
-  const lucky: LuckyRecord = {
-    ...record.lucky,
-    status,
-    status_changed_at: new Date().toISOString(),
-  };
-  if (statusNote) {
-    lucky.status_note = statusNote;
-  } else {
-    delete lucky.status_note;
-  }
-  return signAndStore(env, lucky);
+  const saved = await mutatePersonalRecord(env, { kind: "lucky", record },
+    { kind: "lucky", status, at: new Date().toISOString(), ...(statusNote ? { note: statusNote } : {}) });
+  return saved.record;
 }
 
 export async function verifyLuckySignature(
@@ -178,7 +176,7 @@ export function drawLuckyParts(certId: string): DrawnLucky {
   };
 }
 
-async function signAndStore(
+export async function signLuckyRecord(
   env: Env,
   lucky: LuckyRecord,
 ): Promise<SignedLuckyRecord> {
@@ -191,6 +189,5 @@ async function signAndStore(
     signature,
     public_key: publicKey,
   };
-  await kvPut(env.PATRONS, KV_KEYS.lucky(lucky.lucky_id), JSON.stringify(record));
   return record;
 }

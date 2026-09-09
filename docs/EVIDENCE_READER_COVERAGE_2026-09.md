@@ -2,7 +2,10 @@
 
 The keeper authorized this follow-through with “okay lets do that”. Code
 has passed local validation; no new Worker deployment or npm publication
-is claimed here. The earlier x402-verify 1.2.0 release is unchanged.
+is claimed here. The earlier x402-verify 1.2.0 release is unchanged. The keeper authorized
+release with “nice lets keep rollng”; version 1.3.0 is prepared for the
+provenance publishing workflow. Normal Cloudflare access succeeded on
+retry and the private inventory capture and independent proof checks are complete.
 
 ## Corpus access
 
@@ -60,7 +63,7 @@ Historical `saw` preimages are not collected. Hosted projections, recovery-only
 observations, caller-held attestations, sheaves and A2A journals are outside
 this first inventory; missing a match here is not proof a report never existed.
 
-Run after restoring the operator's normal Wrangler access:
+Run with the operator's normal Wrangler access:
 
 ```sh
 node scripts/capture-evidence-inventory.mjs /private/tmp/scvd-private-inventory-NEW
@@ -81,15 +84,42 @@ that record and the existing patron counter/cursors; sweep activity alone
 is not evidence coverage. Failed passes do not overwrite the last successful
 observation, whose date remains visible.
 
-## Current production limitation
+## Production access and measurement
 
 At 16:32 UTC on September 9, the production certificate key-list request
 failed with Cloudflare authentication error 10000. No certificate count
 or linked-report population percentage was obtained. No credentials were
-printed or copied into this work. Restore normal operator authentication
-and repeat the capture; finish independent proof/header checks before
-claiming population-wide verified timestamps. VQ4 remains open for that
-measurement and the explicitly excluded storage categories.
+printed or copied into this work. The retry before the 18:32 UTC capture succeeded with normal
+Wrangler authentication. The capture ran from 18:32:01 to 18:37:09 UTC:
+all 262 listed certificates passed signature verification, as did all 36
+reports in the ten declared report families. Of 80 signed `attests` links,
+36 matched verified reports and 44 did not match this inventory. The unresolved
+links belong to settlement attestation (7), trust profile (3), Bitcoin anchor
+(3), passport refresh (7), spot check (12), and attestation bundle (12).
+Their absence from these adapters does not establish lost evidence.
+The 121 signed `saw` bindings remain outside this capture.
+
+261 certificates carried stored complete proofs with matching payload digests.
+A separate independent Python OpenTimestamps pass verified every one against
+matching Blockstream and mempool.space headers across 18 Bitcoin heights,
+including header hashes and proof of work. This does not validate Bitcoin
+consensus locally or establish exact issue time. The census tool's own
+`independently_verified: 0` remains unchanged: the separate result is recorded
+in `reader-followthrough/certificate-proof-check.json`.
+
+One signed certificate has no stored timestamp. Two captured certificates
+share patron number 199; one has an anchor and one does not. The sweep's
+`submitAtPatron` follows a single patron-to-certificate mapping and explicitly
+cannot reach the other certificate. The counter reads 261 while certificate
+key enumeration finds 262. VQ4 therefore remains open for certificate-key
+sweep coverage and the six unresolved product categories. No historical
+certificate was rewritten and no raw purchase record is published.
+
+Aggregate counts, unresolved categories and the public Bitcoin headers are
+under `research/verification-2026-09-09/reader-followthrough/`. Private source
+records remain outside the checkout. The pre-release sweep-counter record
+was unavailable, as expected before this release first retains it; a live
+post-deployment observation is still needed.
 
 ## Validation
 
@@ -111,6 +141,15 @@ link, discovery listing, and reader-ceiling roster). Those were fixed and
 the entire suite rerun on the completed tree; no test was disabled or given
 a larger timeout. The final pass above supersedes that development run.
 
-These changes are on `codex/corpus-reader-coverage`. Release and npm versioning
-remain pending. The directory note's September 9 keeper-confirmed send is
+Release validation after incorporating main's buyer-recovery changes ran
+all 610 files: 9,532 tests passed, four timed out, and one was skipped. A
+focused rerun encountered different failures during a roughly 983-second
+runtime stall. All four files then passed unchanged in a sequential run:
+631 tests in 122.21 seconds, with idle sleep prevented and original timeouts
+retained. Typecheck, both builds, and 36 evidence tests passed. The exact
+record is `reader-followthrough/release-validation.json`; GitHub's full
+checks remain the final merge gate.
+
+These changes are on `codex/corpus-reader-coverage`. Worker release and
+x402-verify 1.3.0 publication remain pending. The directory note's September 9 keeper-confirmed send is
 included in the documentation closeout; a reply remains pending.

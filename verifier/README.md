@@ -290,10 +290,11 @@ not a dependency of it.
 
 ## Portable evidence
 
-Included in version 1.2.0. For a registry installation of that version:
+Portable evidence was added in 1.2.0; corpus snapshots and explicit reader
+limits are included in 1.3.0. Install this version:
 
 ```sh
-npm install --global x402-verify@1.2.0
+npm install --global x402-verify@1.3.0
 scvd-evidence export https://scvd.store/api/verify/CERT_ID --out saved-evidence
 scvd-evidence verify saved-evidence/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX
 ```
@@ -338,9 +339,9 @@ copy both evidence-bundle.js and x402-verify.js when vendoring it.
 The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
 WebCrypto when the global is unavailable.
 
-### Large corpus snapshots (source checkout; not in npm 1.2.0)
+### Large corpus snapshots (1.3.0)
 
-The source CLI also accepts `/corpus/{sequence}.json` records. It rebuilds
+The CLI also accepts `/corpus/{sequence}.json` records. It rebuilds
 only the fixed corpus-v1 canonical field order, checks the published digest,
 and exports the original signed bytes. Unknown snapshot versions refuse.
 Start with `/corpus/index.json`: a compact, paginated metadata index with
@@ -352,8 +353,8 @@ The original `/corpus.json` response remains available to existing clients.
 Opt into a larger bound on **both** commands:
 
 ```sh
-node verifier/evidence-cli.mjs export https://scvd.store/corpus/6.json --out saved-corpus-6 --max-bytes 33554432
-node verifier/evidence-cli.mjs verify saved-corpus-6/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432
+scvd-evidence export https://scvd.store/corpus/6.json --out saved-corpus-6 --max-bytes 33554432
+scvd-evidence verify saved-corpus-6/bundle.json --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432
 ```
 
 `--max-bytes` is an integer byte ceiling for the source, local inputs and
