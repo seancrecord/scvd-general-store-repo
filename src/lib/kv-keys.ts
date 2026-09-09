@@ -579,6 +579,8 @@ export const KV_KEYS = {
    * scan is capped and would silently stop seeing older receipts.
    */
   certAnchorCursor: "cert_anchor_cursor",
+  /** Latest completed delivery pass; inventory coverage is a separate read. */
+  certAnchorSweep: "cert_anchor_sweep",
   /**
    * A certificate whose anchor is not yet Bitcoin-confirmed: the
    * marker the sweep lists to know what still wants an upgrade or a

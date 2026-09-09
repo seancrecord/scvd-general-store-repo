@@ -112,6 +112,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           what: "The same evidence as an Open Knowledge Format v0.2 bundle — markdown concepts with YAML frontmatter, cross-linked, machine-confirmed and dated.",
         },
         {
+          href: `${base}/corpus/index.json`,
+          label: "GET /corpus/index.json",
+          what: "Compact paginated snapshot metadata. Follow next; fetch and verify each snapshot separately. No embedded newest snapshot.",
+        },
+        {
           href: `${base}/corpus.json`,
           label: "GET /corpus.json",
           what: "The weekly signed census of the public x402 web, as a dataset.",

@@ -1,3 +1,4 @@
+import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
 import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
@@ -6789,6 +6790,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           DEFECTS_SCHEMA,
         ),
+      },
+      "/corpus/index.json": {
+        get: {
+          ...returns(freeOp("Compact corpus index", "Free paginated snapshot metadata, without embedded snapshot bodies. Follow next until null; retain unreadable rows. Metadata is not signature, chain or Bitcoin verification. Existing full index: /corpus.json."), {
+            type: "object",
+            required: ["entries", "listed", "unreadable", "has_more", "next", "verification"],
+            properties: {
+              entries: { type: "array", items: { type: "object" } },
+              listed: { type: "integer" }, unreadable: { type: "integer" },
+              has_more: { type: "boolean" }, next: { type: "string", nullable: true },
+              verification: { type: "string" }, completeness: { type: "string" },
+            },
+          }),
+          parameters: [
+            { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: CORPUS_INDEX_PAGE_SIZE, default: CORPUS_INDEX_PAGE_SIZE } },
+            { name: "cursor", in: "query", schema: { type: "string", maxLength: 2048 }, description: "Opaque continuation from the previous page." },
+          ],
+        },
       },
       "/corpus.json": {
         get: returns(

@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-09-09T19:09:48.068710+00:00",
+  "base_main": "f13cee8d4584b85e9db448c4e2489697e9f2dffd",
+  "full_suite": {
+    "files": 610,
+    "passed": 9532,
+    "failed": 4,
+    "skipped": 1,
+    "seconds": 964.81,
+    "failures": "Four buyer-recovery timeouts; no assertion changes made"
+  },
+  "first_focused_rerun": {
+    "passed": 626,
+    "failed": 5,
+    "seconds": 1044.79,
+    "finding": "Different cases timed out during a roughly 983-second stall; one following assertion also failed"
+  },
+  "sequential_rerun": {
+    "files_passed": 4,
+    "tests_passed": 631,
+    "seconds": 122.21,
+    "timeouts_unchanged": true,
+    "idle_sleep_prevented_for_command": true
+  },
+  "typecheck": "passed",
+  "worker_bundles": "both passed",
+  "evidence_tests_passed": 36,
+  "docs_check": "passed with existing dated-document backlog",
+  "production_inventory": "production-coverage.json",
+  "independent_certificate_proofs": "certificate-proof-check.json",
+  "release": {
+    "worker_deployed": false,
+    "npm_published": false
+  }
+}

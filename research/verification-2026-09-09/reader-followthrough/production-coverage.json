@@ -1,0 +1,137 @@
+{
+  "captured_from": "2026-09-09T18:32:01.166Z",
+  "captured_to": "2026-09-09T18:37:09.501Z",
+  "checked_at": "2026-09-09T18:37:17.820Z",
+  "inventory_lists_complete": true,
+  "certificates": {
+    "listed": 262,
+    "verified": 262
+  },
+  "reports": {
+    "listed": 36,
+    "verified": 36
+  },
+  "links": {
+    "signed_certificates_with_attests": 80,
+    "matched_verified_report": 36,
+    "not_found_in_verified_inventory": 44,
+    "signed_saw_not_collected": 121
+  },
+  "timestamps": {
+    "eligible_signed_certificates": 262,
+    "stored_states": {
+      "complete": 261,
+      "absent": 1
+    },
+    "digest_mismatches": 0,
+    "proof_present": 261,
+    "independently_verified": 0
+  },
+  "limits": [
+    "Denominator: keys enumerated in the recorded storage reads; not all purchases, not proof no records were withheld. KV listings and values can change during capture.",
+    "Reports cover the declared immutable PATRONS storage families only. Hosted latest-wins projections, recovery-only observations, caller-held attestations, sheaves, A2A journals and historical saw preimages are not collected. An unresolved hash is not proof its report never existed.",
+    "Signature and report hash checks use independently supplied issuer keys, not keys selected by records. No key service-window or factual-truth claim.",
+    "Stored complete and a matching digest do not verify a Bitcoin timestamp. Independently verified stays zero unless a separate proof/header pass is recorded."
+  ],
+  "certificate_inventory_complete": true,
+  "unenumerated_families": [],
+  "families": [
+    {
+      "name": "certificates",
+      "status": "readable",
+      "listed": 262,
+      "read": 262,
+      "complete": true
+    },
+    {
+      "name": "service_audit",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "good_buyer",
+      "status": "readable",
+      "listed": 7,
+      "read": 7,
+      "complete": true
+    },
+    {
+      "name": "signature_agent_card",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    },
+    {
+      "name": "onpage_audit",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    },
+    {
+      "name": "launch_check",
+      "status": "readable",
+      "listed": 7,
+      "read": 7,
+      "complete": true
+    },
+    {
+      "name": "provenance_check",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "wallet_statement",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "mandate",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    },
+    {
+      "name": "settlement_reconciliation",
+      "status": "readable",
+      "listed": 4,
+      "read": 4,
+      "complete": true
+    },
+    {
+      "name": "case_file",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    }
+  ],
+  "counter_reads": [
+    {
+      "key": "patron_number",
+      "status": "readable",
+      "value": 261
+    },
+    {
+      "key": "cert_anchor_cursor",
+      "status": "readable",
+      "value": {
+        "head": 261,
+        "backfill": 0
+      }
+    },
+    {
+      "key": "cert_anchor_sweep",
+      "status": "unavailable",
+      "value": null
+    }
+  ]
+}
