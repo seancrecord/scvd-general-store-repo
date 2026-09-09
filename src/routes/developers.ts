@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
 import {
   GLOBAL_PROBES_PER_MINUTE,
   PROBES_PER_MINUTE,
@@ -195,6 +196,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
     {
       heading: "On the command line",
       entries: [
+        { href: EVIDENCE_TOOLS_SOURCE, label: "Portable evidence — export and offline verification", what: EVIDENCE_TOOLS_DESCRIPTION },
         {
           /**
            * THE LINK THAT WORKS TODAY, WHICHEVER DAY IT IS.

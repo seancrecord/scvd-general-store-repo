@@ -1,0 +1,3275 @@
+{
+  "read_at": "2026-09-08T20:44:32.996Z",
+  "url": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+  "status": 200,
+  "data": {
+    "data": {
+      "slug": "sean-claude-van-damme-s-general-store",
+      "name": "scvd.store — evidence observatory for the x402 economy",
+      "description": "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.\n\nFree instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts, including our competitors', a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Never a ranking, and never a verdict without its derivation and denominator beside it. Operated by Record Creative Co. LLC.",
+      "base_url": "https://scvd.store",
+      "website_url": "https://scvd.store",
+      "category": "Verification",
+      "endpoint_count": 32,
+      "min_price_usd": 0.001,
+      "uptime_24h": 100,
+      "source": "submitted",
+      "status": "online",
+      "verified": false,
+      "verified_until": null,
+      "payment_ready": true,
+      "payment_ready_until": "2026-09-15T20:39:17.141Z",
+      "last_success_at": "2026-09-08T20:39:17.141Z",
+      "consecutive_failures": 0,
+      "check_interval_minutes": 15,
+      "last_checked_at": "2026-09-08T20:39:17.141Z",
+      "created_at": "2026-07-28T11:18:30.592Z",
+      "uptime": {
+        "24h": 100,
+        "7d": 100,
+        "30d": 100,
+        "90d": 100,
+        "coverage": {
+          "24h": {
+            "daysCovered": 1,
+            "checkCount": 75
+          },
+          "7d": {
+            "daysCovered": 7,
+            "checkCount": 612
+          },
+          "30d": {
+            "daysCovered": 30,
+            "checkCount": 2677
+          },
+          "90d": {
+            "daysCovered": 43,
+            "checkCount": 3806
+          }
+        }
+      },
+      "avg_response_time_ms": 438,
+      "total_checks": 2759,
+      "networks": [
+        "ARB",
+        "BSE",
+        "POL",
+        "SOL"
+      ],
+      "networks_caip2": [
+        "eip155:42161",
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "asset": "USDC",
+      "endpoints": [
+        {
+          "id": "ca79cf4d-e4a4-4816-bef8-73782f88f90e",
+          "method": "GET",
+          "path": "/api/buy/attestation_bundle",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:16.939Z",
+          "variable_amount": false,
+          "min_price_usd": 0.05,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "50000",
+              "price_usd": "0.0500000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "50000",
+              "price_usd": "0.0500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "50000",
+              "price_usd": "0.0500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "50000",
+              "price_usd": "0.0500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "50000",
+              "price_usd": "0.0500000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "f5efcba8-ce1f-4fc7-83e0-4f854d46827a",
+          "method": "GET",
+          "path": "/api/buy/aura_walk",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-02T21:52:07.975Z",
+          "last_seen_at": "2026-09-08T20:39:16.874Z",
+          "variable_amount": false,
+          "min_price_usd": 150,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "150000000",
+              "price_usd": "150.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "150000000",
+              "price_usd": "150.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "150000000",
+              "price_usd": "150.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "150000000",
+              "price_usd": "150.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "150000000",
+              "price_usd": "150.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "78d7281f-e0d9-422d-906b-842c473a6fe5",
+          "method": "GET",
+          "path": "/api/buy/bitcoin_anchor",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:17.058Z",
+          "variable_amount": false,
+          "min_price_usd": 1,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "6e009253-71c1-416f-8e83-410510bc17d3",
+          "method": "GET",
+          "path": "/api/buy/certificate_of_patronage",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.887Z",
+          "variable_amount": false,
+          "min_price_usd": 20,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "20000000",
+              "price_usd": "20.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "40000000",
+              "price_usd": "40.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "100000000",
+              "price_usd": "100.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "20000000",
+              "price_usd": "20.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "40000000",
+              "price_usd": "40.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "100000000",
+              "price_usd": "100.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "20000000",
+              "price_usd": "20.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "40000000",
+              "price_usd": "40.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "100000000",
+              "price_usd": "100.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "20000000",
+              "price_usd": "20.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "40000000",
+              "price_usd": "40.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "100000000",
+              "price_usd": "100.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "20000000",
+              "price_usd": "20.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "40000000",
+              "price_usd": "40.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "100000000",
+              "price_usd": "100.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "28d2d0c4-fe5b-4cee-af01-fd7612f484ae",
+          "method": "GET",
+          "path": "/api/buy/coffees_for_closers",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.924Z",
+          "variable_amount": false,
+          "min_price_usd": 0.99,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "77a0e3f9-672d-4253-bf10-dc155a3188da",
+          "method": "GET",
+          "path": "/api/buy/conformance_watch",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:16.900Z",
+          "variable_amount": false,
+          "min_price_usd": 5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "a1a39b97-e950-44d0-b0f7-2a4eb6e530ed",
+          "method": "GET",
+          "path": "/api/buy/context_anchor",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.997Z",
+          "variable_amount": false,
+          "min_price_usd": 1,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "338b72de-b59e-43e7-9684-d774ed80c972",
+          "method": "GET",
+          "path": "/api/buy/daily_fortune",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-07-28T11:18:30.592Z",
+          "last_seen_at": "2026-09-08T20:39:17.070Z",
+          "variable_amount": false,
+          "min_price_usd": 0.01,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "1b3234c9-3269-4025-884a-ea694de622bb",
+          "method": "GET",
+          "path": "/api/buy/good_buyer",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-02T21:52:07.975Z",
+          "last_seen_at": "2026-09-08T20:39:16.935Z",
+          "variable_amount": false,
+          "min_price_usd": 0.99,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "3b23e1e0-1001-4965-8c76-c0bd9596d27d",
+          "method": "GET",
+          "path": "/api/buy/graffiti_on_a_train",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.928Z",
+          "variable_amount": false,
+          "min_price_usd": 1,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "2000000",
+              "price_usd": "2.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "2000000",
+              "price_usd": "2.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "2000000",
+              "price_usd": "2.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "2000000",
+              "price_usd": "2.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "2000000",
+              "price_usd": "2.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "5abf3751-4abf-40b6-afc5-163b702032df",
+          "method": "GET",
+          "path": "/api/buy/hello",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-07-28T11:18:30.592Z",
+          "last_seen_at": "2026-09-08T20:39:16.881Z",
+          "variable_amount": false,
+          "min_price_usd": 0.5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "500000",
+              "price_usd": "0.5000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "500000",
+              "price_usd": "0.5000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "500000",
+              "price_usd": "0.5000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "500000",
+              "price_usd": "0.5000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "500000",
+              "price_usd": "0.5000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "07f2b098-c6f3-49ac-b49d-add17fe39230",
+          "method": "GET",
+          "path": "/api/buy/launch_check",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:17.105Z",
+          "variable_amount": false,
+          "min_price_usd": 5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "42ea3d43-fe08-47ca-bba6-3079730b683a",
+          "method": "GET",
+          "path": "/api/buy/luckies",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:17.084Z",
+          "variable_amount": false,
+          "min_price_usd": 0.99,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1980000",
+              "price_usd": "1.9800000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "4950000",
+              "price_usd": "4.9500000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1980000",
+              "price_usd": "1.9800000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "4950000",
+              "price_usd": "4.9500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1980000",
+              "price_usd": "1.9800000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "4950000",
+              "price_usd": "4.9500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1980000",
+              "price_usd": "1.9800000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "4950000",
+              "price_usd": "4.9500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1980000",
+              "price_usd": "1.9800000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "4950000",
+              "price_usd": "4.9500000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "98c0d5a4-d811-4acc-9fec-2e9d43351f47",
+          "method": "GET",
+          "path": "/api/buy/onpage_audit",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:17.120Z",
+          "variable_amount": false,
+          "min_price_usd": 3,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "1dffbcd2-8e6b-41cf-aa71-6d9d96c116bc",
+          "method": "GET",
+          "path": "/api/buy/opening_day",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-02T21:52:07.975Z",
+          "last_seen_at": "2026-09-08T20:39:16.904Z",
+          "variable_amount": false,
+          "min_price_usd": 9,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "9000000",
+              "price_usd": "9.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "9000000",
+              "price_usd": "9.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "9000000",
+              "price_usd": "9.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "9000000",
+              "price_usd": "9.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "9000000",
+              "price_usd": "9.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "39e2cba0-92db-4798-af61-7b309c1b7c2f",
+          "method": "GET",
+          "path": "/api/buy/operator_statement",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-08T15:45:57.614Z",
+          "last_seen_at": "2026-09-08T20:39:16.806Z",
+          "variable_amount": false,
+          "min_price_usd": 21,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "381b7c27-0952-4986-b6be-2a5a52bea1c8",
+          "method": "GET",
+          "path": "/api/buy/passport_refresh",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:16.894Z",
+          "variable_amount": false,
+          "min_price_usd": 1,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1000000",
+              "price_usd": "1.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "f64ef000-6349-428b-a25a-53f13b9e1efd",
+          "method": "GET",
+          "path": "/api/buy/provenance_check",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-02T21:52:07.975Z",
+          "last_seen_at": "2026-09-08T20:39:16.989Z",
+          "variable_amount": false,
+          "min_price_usd": 5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "ab92d7b4-d43f-4fa3-b373-50403071800c",
+          "method": "GET",
+          "path": "/api/buy/recurring_patronage",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:17.011Z",
+          "variable_amount": false,
+          "min_price_usd": 3,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "3000000",
+              "price_usd": "3.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "33fbd7a9-0702-4ca4-aa0b-4acb9e2dd420",
+          "method": "GET",
+          "path": "/api/buy/service_audit",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:17.115Z",
+          "variable_amount": false,
+          "min_price_usd": 5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "df760f8a-01d0-4529-afe0-45cb192845d0",
+          "method": "GET",
+          "path": "/api/buy/settlement_attestation",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:17.101Z",
+          "variable_amount": false,
+          "min_price_usd": 0.004,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "4000",
+              "price_usd": "0.0040000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "4000",
+              "price_usd": "0.0040000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "4000",
+              "price_usd": "0.0040000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "4000",
+              "price_usd": "0.0040000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "4000",
+              "price_usd": "0.0040000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "4f1b9a85-d25a-4163-8c08-dc03a9f68a86",
+          "method": "GET",
+          "path": "/api/buy/settlement_reconciliation",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-20T04:32:25.681Z",
+          "last_seen_at": "2026-09-08T20:39:17.125Z",
+          "variable_amount": false,
+          "min_price_usd": 0.006,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "6000",
+              "price_usd": "0.0060000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "6000",
+              "price_usd": "0.0060000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "6000",
+              "price_usd": "0.0060000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "6000",
+              "price_usd": "0.0060000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "6000",
+              "price_usd": "0.0060000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "49a29c3b-f705-4e99-8e86-e1ccd7480ca5",
+          "method": "GET",
+          "path": "/api/buy/signature_agent_card",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:16.908Z",
+          "variable_amount": false,
+          "min_price_usd": 0.99,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "c0893984-13b1-4e78-a6a6-8ad77a3a7c96",
+          "method": "GET",
+          "path": "/api/buy/small_blessing",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-07-28T11:18:30.592Z",
+          "last_seen_at": "2026-09-08T20:39:16.811Z",
+          "variable_amount": false,
+          "min_price_usd": 0.005,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000",
+              "price_usd": "0.0050000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000",
+              "price_usd": "0.0050000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000",
+              "price_usd": "0.0050000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000",
+              "price_usd": "0.0050000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000",
+              "price_usd": "0.0050000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "5ab55117-5229-40ae-b936-f393ac88f5d8",
+          "method": "GET",
+          "path": "/api/buy/spot_check",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:17.030Z",
+          "variable_amount": false,
+          "min_price_usd": 0.001,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1000",
+              "price_usd": "0.0010000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1000",
+              "price_usd": "0.0010000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1000",
+              "price_usd": "0.0010000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1000",
+              "price_usd": "0.0010000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1000",
+              "price_usd": "0.0010000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "72c6e2ec-6214-47da-b633-f10d730512a7",
+          "method": "GET",
+          "path": "/api/buy/standing_watch",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:17.065Z",
+          "variable_amount": false,
+          "min_price_usd": 5,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "5000000",
+              "price_usd": "5.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "947ce2aa-bbb1-4243-8b51-de65fc247ca1",
+          "method": "GET",
+          "path": "/api/buy/the_case_file",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-09-02T21:52:07.975Z",
+          "last_seen_at": "2026-09-08T20:39:16.952Z",
+          "variable_amount": false,
+          "min_price_usd": 0.25,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "250000",
+              "price_usd": "0.2500000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "250000",
+              "price_usd": "0.2500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "250000",
+              "price_usd": "0.2500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "250000",
+              "price_usd": "0.2500000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "250000",
+              "price_usd": "0.2500000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "e198e48c-d06a-4179-99f6-9be153d36108",
+          "method": "GET",
+          "path": "/api/buy/the_collab",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.913Z",
+          "variable_amount": false,
+          "min_price_usd": 300,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "300000000",
+              "price_usd": "300.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "600000000",
+              "price_usd": "600.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "1500000000",
+              "price_usd": "1500.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "300000000",
+              "price_usd": "300.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "600000000",
+              "price_usd": "600.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "1500000000",
+              "price_usd": "1500.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "300000000",
+              "price_usd": "300.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "600000000",
+              "price_usd": "600.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "1500000000",
+              "price_usd": "1500.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "300000000",
+              "price_usd": "300.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "600000000",
+              "price_usd": "600.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "1500000000",
+              "price_usd": "1500.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "300000000",
+              "price_usd": "300.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "600000000",
+              "price_usd": "600.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "1500000000",
+              "price_usd": "1500.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "786c03da-7040-4087-b866-fff82df28559",
+          "method": "GET",
+          "path": "/api/buy/the_confession",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:17.110Z",
+          "variable_amount": false,
+          "min_price_usd": 0.01,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "10000",
+              "price_usd": "0.0100000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "6f53386a-5fa6-4b42-a0dc-ff0fc805957d",
+          "method": "GET",
+          "path": "/api/buy/the_mandate",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.848Z",
+          "variable_amount": false,
+          "min_price_usd": 0.1,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "100000",
+              "price_usd": "0.1000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "100000",
+              "price_usd": "0.1000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "100000",
+              "price_usd": "0.1000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "100000",
+              "price_usd": "0.1000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "100000",
+              "price_usd": "0.1000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "640f06b2-bc07-4106-945e-0efd3c9e0b4d",
+          "method": "GET",
+          "path": "/api/buy/the_statement",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-31T20:54:54.355Z",
+          "last_seen_at": "2026-09-08T20:39:16.817Z",
+          "variable_amount": false,
+          "min_price_usd": 0.99,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "990000",
+              "price_usd": "0.9900000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        },
+        {
+          "id": "e8adaf36-ca8c-482a-9867-d207b173d112",
+          "method": "GET",
+          "path": "/api/buy/trust_profile",
+          "description": null,
+          "mime_type": null,
+          "is_active": true,
+          "first_seen_at": "2026-08-25T13:28:50.081Z",
+          "last_seen_at": "2026-09-08T20:39:16.919Z",
+          "variable_amount": false,
+          "min_price_usd": 21,
+          "networks": [
+            "ARB",
+            "BSE",
+            "POL",
+            "SOL"
+          ],
+          "pricing": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "network_caip2": "eip155:8453",
+              "asset_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "asset_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "network_caip2": "eip155:137",
+              "asset_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "asset_address_norm": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "network_caip2": "eip155:42161",
+              "asset_address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "asset_address_norm": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "asset_name": "USD Coin",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "network_caip2": "eip155:480",
+              "asset_address": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_address_norm": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "0xdd350976b8cffc65938c0464d39a2c78be079bd0",
+              "max_timeout_seconds": 300
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4usfv8p8njdtrepy1vzqkqzkvdp",
+              "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "asset_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "asset_name": "USDC",
+              "price": "21000000",
+              "price_usd": "21.0000000000",
+              "pay_to": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "max_timeout_seconds": 300
+            }
+          ]
+        }
+      ],
+      "assessment": {
+        "updated_at": "2026-09-08T14:43:00.962Z",
+        "input_hash": "44e4fc1331abe46788a55a32e2a3f3f934d0a322f951efae116306925e5f8295",
+        "model_id": null,
+        "prompt_version": null,
+        "reliability": {
+          "uptime": {
+            "24h": 100,
+            "7d": 100,
+            "30d": 100,
+            "90d": 100
+          },
+          "response_p95_ms": 447,
+          "avg_response_ms": 440,
+          "last_checked_at": "2026-09-08T14:31:30.228Z",
+          "consecutive_failures": 0,
+          "total_checks": 2736
+        },
+        "compliance": {
+          "grade": "A",
+          "passed": 14,
+          "total": 14,
+          "checks": [
+            {
+              "id": "payload_captured",
+              "label": "402 payload captured",
+              "pass": true
+            },
+            {
+              "id": "accepts_present",
+              "label": "accepts[] array present",
+              "pass": true
+            },
+            {
+              "id": "payto_recoverable",
+              "label": "payTo address recoverable",
+              "pass": true
+            },
+            {
+              "id": "payto_conformant",
+              "label": "payTo at accepts[0].payTo (conformant shape)",
+              "pass": true
+            },
+            {
+              "id": "payto_shape",
+              "label": "payTo is a valid on-chain address",
+              "pass": true
+            },
+            {
+              "id": "price_present",
+              "label": "atomic price declared",
+              "pass": true
+            },
+            {
+              "id": "price_sane",
+              "label": "atomic price in a sane range",
+              "pass": true
+            },
+            {
+              "id": "asset_declared",
+              "label": "asset (token) address declared",
+              "pass": true
+            },
+            {
+              "id": "network_caip2",
+              "label": "network resolves to CAIP-2",
+              "pass": true
+            },
+            {
+              "id": "scheme_declared",
+              "label": "payment scheme declared",
+              "pass": true
+            },
+            {
+              "id": "transport_https",
+              "label": "served over HTTPS",
+              "pass": true
+            },
+            {
+              "id": "x402_version_current",
+              "label": "declares the current x402 version (2)",
+              "pass": true
+            },
+            {
+              "id": "eip712_domain_extra",
+              "label": "EIP-712 domain parameters present on every EVM entry",
+              "pass": true
+            },
+            {
+              "id": "version_channel_coherent",
+              "label": "x402 v2 envelope delivered in the payment-required header",
+              "pass": true
+            }
+          ],
+          "pay_to_source": "payTo",
+          "pay_to_location": "accept",
+          "staleness": {
+            "probe_failing": false,
+            "last_success_at": "2026-09-08T20:39:17.141Z",
+            "envelope_captured_at": "2026-09-08T17:11:24.735Z"
+          }
+        },
+        "site": {
+          "homepage": true,
+          "openapi": true,
+          "pricing": true,
+          "llms_txt": true,
+          "robots": true,
+          "terms": true,
+          "checked_at": "2026-09-07T14:03:00.393Z"
+        },
+        "domain": {
+          "age_days": 42,
+          "registrar": "Cloudflare, Inc.",
+          "free_host": false,
+          "created_date": "2026-07-21T22:20:35.892Z",
+          "checked_at": "2026-09-02T10:43:00.345Z"
+        },
+        "economics": {
+          "price_usd": 0.001,
+          "price_atomic": "1000",
+          "model": "tiered",
+          "category_percentile": 5,
+          "stability": 0.66,
+          "price_max_usd": 1500,
+          "category_percentile_max": 99,
+          "endpoint_count": 31,
+          "distinct_price_count": 25
+        },
+        "risk": {
+          "level": "clean",
+          "flags": []
+        },
+        "synthesis": null,
+        "traction": {
+          "status": "unmeasured-network",
+          "volume_usd_30d": null,
+          "tx_count_30d": null,
+          "unique_buyers_30d": null,
+          "last_settlement_at": null,
+          "top_buyer_share_30d": null,
+          "trend_7d_vs_30d": null,
+          "shared_payout": false,
+          "shared_with": 0,
+          "measured_networks": [],
+          "first_settlement_at": null,
+          "volume_usd_all_time": null,
+          "tx_count_all_time": null,
+          "median_settlement_usd_30d": null,
+          "max_settlement_usd_30d": null,
+          "settled_via": [],
+          "settled_via_detail": [],
+          "shared_with_services": [],
+          "pro_quota_share": null,
+          "caveat": "Conservative undercount: only USDC settlements via facilitators we measure are counted. A measured floor, not an estimate.",
+          "all_time_caveat": "All-time is floored at the start of our harvest window, not the service full history."
+        }
+      }
+    },
+    "provenance": {
+      "license": "CC-BY-4.0",
+      "attribution_required": true,
+      "attribution": "Data: x402-list.com (CC BY 4.0)",
+      "cite_as": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+      "source": "https://x402-list.com"
+    }
+  }
+}

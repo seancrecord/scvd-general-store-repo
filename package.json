@@ -16,7 +16,7 @@
     "deploy": "wrangler deploy && node scripts/indexnow-ping.mjs",
     "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
-    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run doors:test && npm run specs:test && npm run listings:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
+    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run doors:test && npm run specs:test && npm run listings:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "a2a:validation:build": "node scripts/a2a-validation-build.mjs",
@@ -72,7 +72,8 @@
     "doors:live": "node scripts/doors-live.mjs",
     "a2a:runner:build": "node scripts/a2a-runner-build.mjs",
     "a2a:runner:check": "node scripts/a2a-runner-build.mjs --check",
-    "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs"
+    "a2a:runner:test": "node --test scripts/a2a-runner.test.mjs",
+    "evidence:test": "node --test verifier/*.test.mjs experiments/pqc/envelope.test.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

@@ -1,0 +1,674 @@
+{
+  "url": "https://www.x402-list.com/api/v1/facilitators/coinbase",
+  "read_at": "2026-09-08T20:45:08.603Z",
+  "status": 200,
+  "data": {
+    "data": {
+      "facilitator_id": "coinbase",
+      "name": "Coinbase",
+      "website_url": "https://docs.cdp.coinbase.com/x402/welcome",
+      "volume_usd_24h": 1855.15,
+      "volume_usd_7d": 31326.37,
+      "volume_usd_30d": 568661.04,
+      "volume_usd_all": 2679234.4,
+      "tx_count_24h": 21934,
+      "tx_count_7d": 427677,
+      "tx_count_30d": 7465075,
+      "tx_count_all": 36635160,
+      "last_activity_at": "2026-09-08T00:00:00.000Z",
+      "settler_count": 36,
+      "verification": "on-chain",
+      "avg_settlement_usd_all": 0.07313287017171483,
+      "avg_settlement_usd_30d": 0.07617619916745647,
+      "trend_7d_vs_prev_7d": 0.3882544200197409,
+      "buyers": {
+        "by_chain": [
+          {
+            "network": "base",
+            "network_caip2": "eip155:8453",
+            "unique_buyers_30d": 41082
+          },
+          {
+            "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+            "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+            "unique_buyers_30d": 625
+          }
+        ],
+        "total_upper_bound_30d": 41707,
+        "caveat": "Distinct buyers are counted per chain from the daily snapshots. A buyer active on more than one day is counted once per active day, and buyers on different chains or tokens are not de-duplicated, so total_upper_bound_30d is an upper bound, not an exact head count. Prefer the per-chain figures."
+      },
+      "chains": [
+        {
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "token_address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "token_address_norm": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          "asset_name": "USDC",
+          "volume_usd_24h": 1855.15,
+          "volume_usd_7d": 31326.37,
+          "volume_usd_30d": 473648.39,
+          "volume_usd_all": 2363451.98,
+          "tx_count_all": 35949525,
+          "first_activity_at": "2026-01-01T00:00:00.000Z",
+          "last_activity_at": "2026-09-08T00:00:00.000Z",
+          "verification": "on-chain"
+        },
+        {
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "token_address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "token_address_norm": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "asset_name": "USDC",
+          "volume_usd_24h": 0,
+          "volume_usd_7d": 0,
+          "volume_usd_30d": 95012.65,
+          "volume_usd_all": 315782.42,
+          "tx_count_all": 685635,
+          "first_activity_at": "2026-02-18T00:00:00.000Z",
+          "last_activity_at": "2026-08-23T00:00:00.000Z",
+          "verification": "on-chain"
+        }
+      ],
+      "settlers": [
+        {
+          "address": "0x14fda13953fc30428938e6bf950d036e77214e52",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x2a89407a98a0732b7fd578c4e156b7166540eb5a",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x42dd53906b49c202e8e934b059dc019e04634b00",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x4c934c63c786157fefd990945b25ea60a0fb0205",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x59b7ebc67a3d627fabaf06768c818638452ae704",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x625d8a65134079f8faaac39a7947c73d93c6ac39",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x64cc42b1ce598e3abcfbb64df4688521ddbf1f0a",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x67b9ce703d9ce658d7c4ac3c289cea112fe662af",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x68a96f41ff1e9f2e7b591a931a4ad224e7c07863",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x68efafe862d89ce66dd3d7b07d5a3747a0871164",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x772003a2e9c2ccc8af956870a37a66f64f8cec38",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x8cda367232d78c067116e3260da881d2da8ffa39",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x8f5cb67b49555e614892b7233cfddebfb746e531",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x93f6601151ccb08f333ab4b1cccfb1e188c0be44",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x97acce27d5069544480bde0f04d9f47d7422a016",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xa32ccda98ba7529705a059bd2d213da8de10d101",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xb87e1a2cc2b4643f2892768e80e41167f17c5860",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xca5e87f82b3fa093800e6ad67d621a427d79c70d",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xe72f0af4cf41356d433723547f1412ca27fbb1b8",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xe74817f4cdc15844314812b2271276e64e890fae",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "BENrLoUbndxoNMUS5JXApGMtNykLjFXXixMtpDwDR9SP",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "BFK9TLC3edb13K6v4YyH3DwPb5DSUpkWvb7XnqCL9b4F",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "GVJJ7rdGiXr5xaYbRwRbjfaJL7fmwRygFi1H6aGqDveb",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "Hc3sdEAsCGQcpgfivywog9uwtk8gUBUZgsxdME1EJy88",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-08T04:20:00.030Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "D6ZhtNQ5nT9ZnTHUbqXZsTx5MH2rPFiBBggX4hY1WePM",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "x402scan",
+          "last_seen_at": "2026-09-07T04:20:00.031Z",
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x001ddabba5782ee48842318bd9ff4008647c8d9c",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x3a70788150c7645a21b95b7062ab1784d3cc2104",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x708e57b6650a9a741ab39cae1969ea1d2d10eca1",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x7f6d822467df2a85f792d4508c5722ade96be056",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x9aae2b0d1b9dc55ac9bab9556f9a26cb64995fb9",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x9c09faa49c4235a09677159ff14f17498ac48738",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0x9fb2714af0a84816f5c6322884f2907e33946b88",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xcbb10c30a9a72fae9232f41cbbd566a097b4e03a",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xce82eeec8e98e443ec34fda3c3e999cbe4cb6ac2",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "0xdbdf3d8ed80f84c35d01c6c9f9271761bad90ba6",
+          "network": "base",
+          "network_caip2": "eip155:8453",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        },
+        {
+          "address": "L54zkaPQFeTn1UsEqieEXBqWrPShiaZEPD7mS5WXfQg",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+          "network_caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "source": "swader",
+          "last_seen_at": null,
+          "token_name": "USDC",
+          "token_decimals": 6,
+          "enabled": true
+        }
+      ],
+      "listed_services": {
+        "all_time_count": 511,
+        "active_count_30d": 423,
+        "top": [
+          {
+            "slug": "blockrun",
+            "name": "BlockRun",
+            "status": "degraded",
+            "volume_usd_30d": 125515.621445,
+            "tx_count_30d": 5880427
+          },
+          {
+            "slug": "clash-of-coins-checkout",
+            "name": "Clash of Coins Checkout",
+            "status": "online",
+            "volume_usd_30d": 20556.403,
+            "tx_count_30d": 1582
+          },
+          {
+            "slug": "stableenrich",
+            "name": "StableEnrich",
+            "status": "online",
+            "volume_usd_30d": 2155.2902,
+            "tx_count_30d": 82371
+          },
+          {
+            "slug": "sean-claude-van-damme-s-general-store",
+            "name": "scvd.store — evidence observatory for the x402 economy",
+            "status": "online",
+            "volume_usd_30d": 997.105,
+            "tx_count_30d": 160
+          },
+          {
+            "slug": "frantic",
+            "name": "Frantic",
+            "status": "degraded",
+            "volume_usd_30d": 570.4,
+            "tx_count_30d": 80
+          },
+          {
+            "slug": "bitrefill",
+            "name": "Bitrefill",
+            "status": "online",
+            "volume_usd_30d": 564.67,
+            "tx_count_30d": 588
+          },
+          {
+            "slug": "apify-actors-api",
+            "name": "Apify Actors API",
+            "status": "online",
+            "volume_usd_30d": 442.39195,
+            "tx_count_30d": 353
+          },
+          {
+            "slug": "apify-agentic-endpoint-agi",
+            "name": "Apify Agentic Endpoint (AGI)",
+            "status": "online",
+            "volume_usd_30d": 442.39195,
+            "tx_count_30d": 353
+          },
+          {
+            "slug": "jarvisclaw",
+            "name": "JarvisClaw",
+            "status": "degraded",
+            "volume_usd_30d": 426.611792,
+            "tx_count_30d": 8000
+          },
+          {
+            "slug": "onchainpulse",
+            "name": "OnchainPulse",
+            "status": "online",
+            "volume_usd_30d": 328.285,
+            "tx_count_30d": 1687
+          }
+        ],
+        "caveat": "Services listed in this directory that have settled on-chain via this facilitator. Volume is the service 30d figure over its payout mapping (a conservative floor, USDC via measured facilitators only); services that share a payout address are counted at the address level here. The all-time count is null until the hourly precompute records it."
+      },
+      "series": [
+        {
+          "date": "2026-08-10",
+          "volume_usd": 22402.19,
+          "tx_count": 412269
+        },
+        {
+          "date": "2026-08-11",
+          "volume_usd": 40990.99,
+          "tx_count": 205815
+        },
+        {
+          "date": "2026-08-12",
+          "volume_usd": 47094.78,
+          "tx_count": 161150
+        },
+        {
+          "date": "2026-08-13",
+          "volume_usd": 40977.64,
+          "tx_count": 265234
+        },
+        {
+          "date": "2026-08-14",
+          "volume_usd": 42124.22,
+          "tx_count": 347355
+        },
+        {
+          "date": "2026-08-15",
+          "volume_usd": 29588.09,
+          "tx_count": 427243
+        },
+        {
+          "date": "2026-08-16",
+          "volume_usd": 16797.83,
+          "tx_count": 538671
+        },
+        {
+          "date": "2026-08-17",
+          "volume_usd": 51142.91,
+          "tx_count": 1270504
+        },
+        {
+          "date": "2026-08-18",
+          "volume_usd": 37700.84,
+          "tx_count": 1247784
+        },
+        {
+          "date": "2026-08-19",
+          "volume_usd": 17813.79,
+          "tx_count": 548464
+        },
+        {
+          "date": "2026-08-20",
+          "volume_usd": 27994.63,
+          "tx_count": 435113
+        },
+        {
+          "date": "2026-08-21",
+          "volume_usd": 36103.43,
+          "tx_count": 379147
+        },
+        {
+          "date": "2026-08-22",
+          "volume_usd": 16367.08,
+          "tx_count": 118673
+        },
+        {
+          "date": "2026-08-23",
+          "volume_usd": 11199.43,
+          "tx_count": 147434
+        },
+        {
+          "date": "2026-08-24",
+          "volume_usd": 10128.92,
+          "tx_count": 48231
+        },
+        {
+          "date": "2026-08-25",
+          "volume_usd": 8222.74,
+          "tx_count": 53272
+        },
+        {
+          "date": "2026-08-26",
+          "volume_usd": 8178.29,
+          "tx_count": 48439
+        },
+        {
+          "date": "2026-08-27",
+          "volume_usd": 13246.58,
+          "tx_count": 52029
+        },
+        {
+          "date": "2026-08-28",
+          "volume_usd": 24232.86,
+          "tx_count": 60434
+        },
+        {
+          "date": "2026-08-29",
+          "volume_usd": 9290.45,
+          "tx_count": 54635
+        },
+        {
+          "date": "2026-08-30",
+          "volume_usd": 8633.88,
+          "tx_count": 73328
+        },
+        {
+          "date": "2026-08-31",
+          "volume_usd": 8996.35,
+          "tx_count": 72279
+        },
+        {
+          "date": "2026-09-01",
+          "volume_usd": 8106.75,
+          "tx_count": 69895
+        },
+        {
+          "date": "2026-09-02",
+          "volume_usd": 9901.14,
+          "tx_count": 169982
+        },
+        {
+          "date": "2026-09-03",
+          "volume_usd": 5555.88,
+          "tx_count": 78678
+        },
+        {
+          "date": "2026-09-04",
+          "volume_usd": 4375.91,
+          "tx_count": 41408
+        },
+        {
+          "date": "2026-09-05",
+          "volume_usd": 3750.44,
+          "tx_count": 40701
+        },
+        {
+          "date": "2026-09-06",
+          "volume_usd": 3642.12,
+          "tx_count": 38618
+        },
+        {
+          "date": "2026-09-07",
+          "volume_usd": 2245.73,
+          "tx_count": 36356
+        },
+        {
+          "date": "2026-09-08",
+          "volume_usd": 1855.15,
+          "tx_count": 21934
+        }
+      ],
+      "method": "Settlement volume is measured directly on-chain by settler-address attribution (USDC), never self-reported.",
+      "caveat": "A measured floor, not an ecosystem total. Average USD per settlement is volume divided by settlement count over the window (null when there are no settlements), and the trend compares the last 7 days to the previous 7. The 24h figures are today so far in UTC, not a trailing 24 hours."
+    },
+    "provenance": {
+      "license": "CC-BY-4.0",
+      "attribution_required": true,
+      "attribution": "Data: x402-list.com (CC BY 4.0)",
+      "cite_as": "https://x402-list.com/facilitators/coinbase",
+      "source": "https://x402-list.com"
+    }
+  }
+}

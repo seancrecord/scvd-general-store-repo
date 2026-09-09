@@ -1,0 +1,8 @@
+{
+  "name": "scvd-pqc-checkpoint-experiment",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test envelope.test.mjs", "pilot": "node pilot.mjs" },
+  "devDependencies": { "@noble/post-quantum": "0.7.1" }
+}

@@ -401,6 +401,15 @@ build, it is on the roadmap.
 
 ## NOW
 
+- **LOOK — directory attribution evidence (2026-09-08).** The known
+  browser receipt matches a Coinbase settler already tracked by
+  x402-list, while the store remains `unmeasured-network`. Exact evidence
+  and an unsent maintainer note are in
+  `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`. This is the keeper's
+  test purchase, not organic traction. Decide whether to send that
+  specific note; no message has been sent. The implementation stays
+  on ROADMAP VQ1.
+
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
   moves").** A week's evidence lived in ONE KV value (the walk
   state) and the sealed round in three more, each carrying every

@@ -1,5 +1,92 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-08 — Verification implementation and live reconciliation
+
+Follow-through on the recommendation below, authorized in the same sitting.
+Read the current [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and [Wrangler command reference](https://developers.cloudflare.com/workers/wrangler/commands/).
+The changes reuse the existing payment gate and metadata. Both Worker
+bundles were checked with the existing dry-run command; no deployment.
+
+Read [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final) and the
+[@noble/post-quantum source documentation](https://github.com/paulmillr/noble-post-quantum).
+The installed 0.7.1 README explicitly says no independent audit. An exact
+pin and separate lockfile keep the local experiment out of production.
+The real dual-signature pilot and a second verifier process passed;
+same-library verification is not independent interoperability or FIPS
+validation. Full limits and results: `experiments/pqc/README.md`.
+
+Read the [OpenTimestamps detached-file serialization](https://github.com/opentimestamps/python-opentimestamps/blob/master/opentimestamps/core/timestamp.py).
+The store serves raw calendar operations, so a portable `.ots` file needs
+the detached-file magic, version, hash operation and digest. The standard
+client independently parsed the exported real receipt proof. It did not
+validate the Bitcoin header chain. No server `bounded` label was promoted
+to a local proof verdict.
+
+Public receipt and key reads succeeded on the direct HTTP client at
+20:44 UTC. The receipt signature was checked locally against that separate
+HTTPS key capture. Saved directory service, facilitator, transaction and
+USDC logs show the directory already tracks this receipt's Coinbase
+origin while marking the service `unmeasured-network`. Attribution or
+harvest/computation coverage is now the question, not an assumed missing
+store facilitator. It is the keeper's browser canary, not organic demand.
+No directory message was sent. Source URLs, timestamps, CC BY 4.0
+provenance and joins: `research/verification-2026-09-08/`.
+
+The corpus index and latest record exceeded the bounded read's 8 MiB cap;
+their unreadability remains recorded. Snapshot 1 was captured for a local
+file-checkpoint experiment only. No corpus-wide anchor percentage is
+claimed. The source bundle now exists locally, superseding the absence
+noted in the recommendation read below; npm publication is pending.
+Design, actual result and remaining limits:
+`docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`.
+
+## 2026-09-08 — Adjacent verification products: recommendation read
+
+Read [x402-list's methodology](https://www.x402-list.com/methodology),
+especially per-service attribution and its instruction to submit missing
+facilitators with settler wallets. Attribution requires tracked settler
+addresses and the service's payTo mapping; a ranking gain is not established.
+The current checkout code constructs the Coinbase CDP facilitator client
+(`src/lib/payments.ts`), so the supplied premise that an unregistered
+store-operated facilitator explains the gap needs transaction-level checking.
+
+Read [Rubric's homepage](https://rubric-protocol.com/) and
+[canonical-host documentation](https://rubric-protocol.com/docs).
+They describe ML-DSA-65, direct and batched Hedera anchoring, pending
+states, MCP tools, and encrypted retention. These are vendor claims,
+not a reproduced paid workflow or cryptographic audit. The keeper
+subsequently confirmed in this sitting that Rubric is the competitor
+in the supplied comparison, resolving the initial identity uncertainty.
+That confirmation does not independently verify the product claims. The blanket claims
+"every artifact immediately anchored" and "no MCP" must not be repeated
+about Rubric: its own documentation describes batching, delay and MCP.
+
+Read [NIST's PQC migration guidance](https://www.nist.gov/pqc) and
+[NIST IR 8547 initial public draft](https://csrc.nist.gov/pubs/ir/8547/ipd).
+ML-DSA is standardized; migration planning is warranted. Neither source
+establishes a quantum-computer arrival date or buyer demand for this store.
+Preservation must distinguish signature authentication from an independently
+verified existed-by proof; a future signature alone cannot recover lost
+historical authenticity after compromise.
+
+Local reconciliation: `src/services/certificate-anchors.ts` already submits
+individual certificate signed-payload digests through an hourly bounded sweep;
+`src/services/anchor-submit.ts` gives key-history snapshots a daily interval;
+the weekly corpus is a separate chain. Coverage and backlog remain relevant,
+and this read did not verify deployed proofs. Algorithm labels already appear
+in `src/routes/verify.ts`; signing remains Ed25519. Product specimens and
+derived sample links already exist in `sample-artifacts.ts` and
+`shopping-fields.ts`. A portable offline evidence bundle remains explicitly
+absent in `src/store/attestation-spec.ts`.
+
+Gaps: the web fetcher could not read the store's selected live certificate,
+its x402 well-known document, or Rubric's llms.txt. No payment, vault opening,
+signature verification, ledger proof verification, current scoreboard capture,
+or attribution reconciliation was performed. Reported latency, price-stability,
+age, Algorand counts and vault attempts remain the keeper's supplied observation.
+This is a recommendation read, not a product change or a revised build queue.
+
 ## 2026-09-06 — A2A live compliance and the checker itself
 
 Follow-through, same sitting: re-read the versioned request definitions and

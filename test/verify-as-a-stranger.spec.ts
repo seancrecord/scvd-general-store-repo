@@ -103,6 +103,10 @@ describe("a certificate verifies with nothing but the response", () => {
     ).json()) as Record<string, unknown>;
 
     expect(body["valid"]).toBe(true);
+    expect(body["offline_verification"]).toMatchObject({
+      source: expect.stringContaining("/verifier#portable-evidence"),
+      description: expect.stringContaining("public key you establish independently"),
+    });
     expect(body["signed_payload"], "no signed_payload to check").toBeTruthy();
     expect(
       await verifyLikeAStranger(body),
