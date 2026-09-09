@@ -202,32 +202,30 @@ describe("the watch's week, swept", () => {
   });
 
   it("derives drift from the signed rows when the readout changes mid-week", async () => {
-    answerTarget(wellFormed402);
-    const { record } = await startConformanceWatch(
-      testEnv,
-      "https://merchant.example/api/buy/thing",
-    );
-    await sweepConformanceWatches(testEnv);
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-09T12:00:00Z"));
+    try {
+      answerTarget(wellFormed402);
+      const { record } = await startConformanceWatch(
+        testEnv,
+        "https://merchant.example/api/buy/thing",
+      );
+      await sweepConformanceWatches(testEnv);
 
-    // The deploy that breaks the door: day two answers 200, the
-    // "listed but functionally absent" shape. Backdate day one so the
-    // sweep sees a stale pass and takes day two.
-    const stored = await testEnv.ORDERS.get<Record<string, any>>(
-      `cwatch:${record.watch_id}`,
-      "json",
-    );
-    stored!.passes[0].at = new Date(Date.now() - 24 * 3600_000).toISOString();
-    await testEnv.ORDERS.put(`cwatch:${record.watch_id}`, JSON.stringify(stored));
+      // Advance both the due check and signed observation clock. Backdating
+      // an already-signed row corrupts its evidence and is now rejected by the journal.
+      vi.setSystemTime(new Date("2026-09-10T12:00:00Z"));
 
-    answerTarget(() => new Response("ok", { status: 200 }));
-    await sweepConformanceWatches(testEnv);
+      answerTarget(() => new Response("ok", { status: 200 }));
+      await sweepConformanceWatches(testEnv);
 
-    const history = await readConformanceWatch(testEnv, record.watch_id);
-    expect(history?.summary.passes_recorded).toBe(2);
-    expect(history?.passes[1]?.verdict).toBe("not_ready");
-    expect(history?.passes[1]?.failed).toContain("status-402");
-    // The week's story, as arithmetic: the readout changed.
-    expect(history?.summary.drift_detected).toBe(true);
+      const history = await readConformanceWatch(testEnv, record.watch_id);
+      expect(history?.summary.passes_recorded).toBe(2);
+      expect(history?.passes[1]?.verdict).toBe("not_ready");
+      expect(history?.passes[1]?.failed).toContain("status-402");
+      // The week's story, as arithmetic: the readout changed.
+      expect(history?.summary.drift_detected).toBe(true);
+    } finally { vi.useRealTimers(); }
   });
 
   it("counts the days WE missed against us, and ends terminal", async () => {

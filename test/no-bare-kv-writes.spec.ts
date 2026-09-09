@@ -59,6 +59,10 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("hosted:current", observation);',
     'await txn.put("hosted:current", value);',
   ],
+  "/src/services/watch-recovery.ts": [
+    // Durable local transaction, committing the watch manifest and its signed rows.
+    'await txn.put("watch", { value: withoutEntries(selected), count: entries.length } satisfies WatchJournal);',
+  ],
   "/src/services/paid-recovery.ts": [
     // One storage transaction commits the refund claim, resolution, and lookup.
     'await txn.put(claim, key);',
