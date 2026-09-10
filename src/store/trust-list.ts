@@ -49,23 +49,62 @@ export type TrustListStatus = "verified" | "unreachable" | "removed";
 
 /**
  * What actually happened between the keeper and the origin. The
- * strong claim and the weak one, never collapsed into each other.
+ * strong claim and the weak one, never collapsed into each other —
+ * and, since v2, a third relation that is neither: a treaty.
  */
-export type TrustListRelation = "transacted" | "used";
+export type TrustListRelation = "transacted" | "used" | "treaty";
 
-export interface TrustListEntry {
+interface TrustListEntryBase {
   /** The origin checked. Not a deep link; the thing that either exists or doesn't. */
   origin: string;
-  /** Paid transaction, or unpaid use. The reader decides what that's worth. */
-  relation: TrustListRelation;
-  /** What was transacted, in general terms. Never private detail. */
-  transacted: string;
   /** ISO date the keeper first verified it by doing the thing. */
   first_verified: string;
   /** ISO date of the most recent check. */
   last_checked: string;
   status: TrustListStatus;
 }
+
+/** An origin the keeper dealt with: money moved, or he used it unpaid. */
+export interface TrustListDealing extends TrustListEntryBase {
+  /** Paid transaction, or unpaid use. The reader decides what that's worth. */
+  relation: "transacted" | "used";
+  /** What was transacted, in general terms. Never private detail. */
+  transacted: string;
+}
+
+/**
+ * THE TREATY RELATION, v2 — added 2026-09-10, the day the first yes
+ * arrived (StillOS Notary, issue #622 on the public repository,
+ * answering docs/RECEIPT_TREATY_ASK.md from the other direction).
+ *
+ * A treaty is two operators each stating, publicly and revocably,
+ * that artifacts signed by the other's published key are honoured as
+ * evidence of exactly what they attest — nothing more. It is a
+ * DIFFERENT claim from the two above: nothing was bought and nothing
+ * was used. What the keeper "did" is read their statement at a URL
+ * they control, and this entry points at that URL. It never
+ * paraphrases their words, because a list that restates someone
+ * else's promise in its own voice is a list that can drift from it.
+ * Revocable by either side unpublishing: the statement is re-read,
+ * never cached as a promise, and `last_checked` says when.
+ *
+ * The roster is EMPTY UNTIL THE KEEPER HAS READ THE STATEMENT. The
+ * first yes was reported in words this build environment could not
+ * check (its egress refused the host), and an entry for a URL nobody
+ * here has opened would be the same wishful thinking counterparts.ts
+ * refuses. The entry lands by his hand, dated the day he read it.
+ */
+export interface TrustListTreaty extends TrustListEntryBase {
+  relation: "treaty";
+  /** THEIR statement, at a URL they control. The list points; it does not quote. */
+  statement_url: string;
+  /** Where THEIR signed artifacts verify, so the treaty runs both ways. Null until they publish one. */
+  verify_url: string | null;
+  /** Where THEIR public key lives. Null until they publish one. */
+  key_url: string | null;
+}
+
+export type TrustListEntry = TrustListDealing | TrustListTreaty;
 
 /**
  * The list itself. One paid entry — us — and three neighbors the
@@ -114,7 +153,16 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
 
 /** What the list claims, stated where it cannot be missed. */
 export const TRUST_LIST_ATTESTS =
-  'Each entry records that the keeper dealt with the origin on the date shown and it delivered. That is an observation about a past event, signed. It is not a claim that the origin is safe, recommended, or will behave the same tomorrow — nobody can sign for someone else\'s future. Read the relation field before you weigh an entry: "transacted" means money moved over x402 and the thing arrived; "used" means the keeper used the service and it worked, with nothing paid. They are different claims and this list will never blur them.';
+  'Each entry records that the keeper dealt with the origin on the date shown and it delivered — or, for a treaty, that he read the statement it published that day. That is an observation about a past event, signed. It is not a claim that the origin is safe, recommended, or will behave the same tomorrow — nobody can sign for someone else\'s future. Read the relation field before you weigh an entry: "transacted" means money moved over x402 and the thing arrived; "used" means the keeper used the service and it worked, with nothing paid; "treaty" means the origin published, at a URL it controls, that it honours artifacts signed by this store\'s key as evidence of what they attest, and this store honours theirs the same way. They are different claims and this list will never blur them.';
+
+/**
+ * WHAT A TREATY ENTRY COMMITS EACH SIDE TO, stated once on the list
+ * rather than once per entry, so the terms cannot vary by row. The
+ * wording is the ask's own (docs/RECEIPT_TREATY_ASK.md), and the
+ * negative half is the load-bearing part.
+ */
+export const TRUST_LIST_TREATY_TERMS =
+  "A treaty entry means both sides have stated, publicly and revocably, that an artifact signed by the other's published key, when presented and verified, is treated as evidence of exactly what it attests — its own signature_covers scope and its own what-this-does-not-prove text — and nothing more. It is not an endorsement of the other operator's judgment, not liability for their mistakes, not an uptime dependency, and not exclusive. Either side revokes by unpublishing; the entry points at their statement rather than quoting it, and last_checked is the day it was last re-read.";
 
 /** Why the list is short, and what the gate still holds back. */
 /**
@@ -181,7 +229,7 @@ export const TRUST_LIST_STALE_AFTER_DAYS = 30;
 export type TrustListFreshness = "recent" | "aging" | "stale";
 
 export function daysSinceChecked(
-  entry: TrustListEntry,
+  entry: Pick<TrustListEntry, "last_checked">,
   now: Date = new Date(),
 ): number {
   const checked = Date.parse(`${entry.last_checked}T00:00:00.000Z`);
@@ -192,7 +240,7 @@ export function daysSinceChecked(
 }
 
 export function entryFreshness(
-  entry: TrustListEntry,
+  entry: Pick<TrustListEntry, "last_checked">,
   now: Date = new Date(),
 ): TrustListFreshness {
   const days = daysSinceChecked(entry, now);

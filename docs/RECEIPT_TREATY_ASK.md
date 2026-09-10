@@ -80,3 +80,93 @@ verifiable themselves, or the treaty has one real side.
 Rule 43 holds: a treaty entry is a dated, mutual statement of what
 each side honours — never a score. Rule 30 holds: nothing sends
 itself; this document is a drawer the keeper reaches into.
+
+---
+
+## The first yes (2026-09-10)
+
+It arrived before the ask was sent. StillOS Notary — the register
+entry with `note_sent: null` — read this file in the public repository
+and answered it from the other direction, in issue #622, from Marcus.
+What their note says, in their words: their half is live at
+`https://stillosdigitalholdings.com/notary/trust` (`?format=json` for
+the machine form, shaped to mirror `/trust-list.json`); an SCVD
+artifact signed by the key at our key URL, presented and verified, is
+treated as evidence of exactly what it attests and nothing more; no
+endorsement, no liability, no uptime dependency, no exclusivity;
+revocable by unpublishing; marked `reciprocated: false`, meaning the
+statement stands whether or not step 2 happens here.
+
+Nobody here has read that page. The build environment's egress
+refused their host, so the yes is recorded as what it is — a reply,
+in the register, in their words — and not as a treaty entry. Rule 30's
+condition applies exactly: what publishes must be a verified fact,
+re-checked live by the hand that presses.
+
+### What was built the same day
+
+Step 2, as this file said it would be. `/trust-list.json` is version 2
+and carries a third relation, `treaty`, beside `transacted` and `used`:
+
+- the terms both sides commit to are stated once on the list
+  (`treaty_terms`), in this file's words, negative half included;
+- treaties are counted apart, and zero is a real count — the relation
+  exists before its first entry so a reader learns what one would
+  mean;
+- a treaty entry carries `statement_url` (theirs, at an origin they
+  control), `verify_url` and `key_url` (theirs, null until published),
+  and the same dates and status as every other entry. The test refuses
+  a statement URL on a different origin from the entry. It never
+  carries a paraphrase of their words: the list points, it does not
+  quote.
+
+### What waits on the keeper
+
+The entry. When he has opened their statement and it says what the
+issue says, this is the row, dated the day he read it:
+
+```ts
+{
+  origin: "https://stillosdigitalholdings.com",
+  relation: "treaty",
+  statement_url: "https://stillosdigitalholdings.com/notary/trust?format=json",
+  verify_url: null, // theirs; the issue did not give one
+  key_url: null,    // theirs; the issue did not give one
+  first_verified: "<the day he read it>",
+  last_checked: "<the same day>",
+  status: "verified",
+}
+```
+
+The two nulls are the gap in our half. The treaty as defined above
+runs both ways only when their artifacts verify somewhere we can
+point at; the issue describes a keyring resolving each receipt's own
+`notary_fp` and re-verification on every request, but names no key
+URL and no verify URL. The reply asks for both.
+
+### The reply, for the keeper's pen (issue #622)
+
+> Marcus — yes. Read your note; the treaty relation is now built on
+> our side (/trust-list.json, version 2: a third relation beside
+> transacted and used, terms stated once, treaties counted apart, and
+> each entry pointing at the other operator's own statement URL rather
+> than restating it). Your entry lands the day I read your statement
+> myself; the build could not reach your host and the list does not
+> carry a URL nobody here has opened.
+>
+> Two things I need from you for our half to run both ways: the URL
+> where your public key lives, and the URL where one of your receipts
+> verifies. The treaty as we wrote it is "artifacts signed by {their
+> published key} verify at {their verify URL}," and the issue gave
+> neither. Our entry will carry both, null until you say.
+>
+> Domain corrected in the register. The bad 402 at your door is noted;
+> we won't retry on your account and we don't take a key in the
+> runtime, as you guessed. The §7 read on #3220/#3376 I have not
+> checked yet and will not pretend to have; it goes on the spec-watch
+> desk and you'll hear what we find, either way.
+>
+> On the verifier that was quietly wrong: that is the argument, and
+> it is why the list only ever points at your words.
+
+Not sent. Sending is his hand.

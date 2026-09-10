@@ -863,8 +863,14 @@ const BASE = "https://scvd.store";
 // host history, and the asked-for queue at /corpus/asked.json. Verified
 // the same way: the prior text reproduced the prior digest in the run
 // that caught this edit, and this copy reproduces the new one.
+// 2026-09-10: the trust-list paragraph carries the third relation — the
+// treaty count beside transacted and used, the version number it prints
+// moving from 1 to 2, and the sentence that a treaty entry points at the
+// other operator's own statement. Verified the same way: with the prose
+// and the trust-list modules restored from HEAD in an isolated run the
+// prior digest matched exactly, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "ee78bd0d900f56a5b44eaf163ae763c5c5b3505b8026c68da48752d859090ece";
+  "82c88d567d9df025f0e86e27a41b7e4543c9c1b7f9dc9def6bc909ffe565e9e3";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
