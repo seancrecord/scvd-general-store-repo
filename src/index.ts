@@ -727,6 +727,72 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    /**
+     * THE STANDING ORDER FOR THE BOARD (2026-09-10, the keeper: "can
+     * we automate a few weeks of them?").
+     *
+     * Posting was sixty seconds of attention per door every week, and
+     * a week the keeper was busy was a week the board sat empty in
+     * front of walkers who poll it. The plan is him writing down what
+     * he would have pressed, once, for as many weeks as he means it.
+     *
+     * IT CHOOSES NO DOORS OF ITS OWN. Candidates come from this
+     * week's census round through bountyCandidates — the same
+     * house-picked list the market page shows, in the same order.
+     * Nothing self-nominates, so the anti-farming rule in
+     * BOUNTY_BOARD.md is untouched; what is automated is the press.
+     *
+     * IT WILL POST NOTHING RATHER THAN OVERCOMMIT. The weekly budget
+     * is checked at CLAIM time, after a walker has paid a door out of
+     * their own wallet, so a board carrying more listings than it can
+     * honour takes strangers money and refuses them. The pass
+     * reserves against open listings as well as spent ones and stops
+     * early. A quiet week is the guard working.
+     */
+    ctx.waitUntil(
+      import("@/services/bounty-plan").then(({ bountyPlanPass }) =>
+        bountyPlanPass(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "bounty-plan-failed",
+              detail: `The standing bounty order failed to run: ${String(error)}. The board is not posting itself; post by hand on /admin/market until this clears.`,
+            }),
+        ),
+      ),
+    );
+    /**
+     * THE SCOUT ON THE TICK (2026-09-10). It was a button that read
+     * twenty-five hosts a press, and the keeper had sixteen hundred
+     * of them: "its taking me fucking forever to manually press 25 at
+     * a time and then ill re run a walk and number will go up".
+     *
+     * The second half is why a hand could never finish. The unscouted
+     * pile is not a fixed backlog — it is re-derived from the latest
+     * round on every read, and the long walk keeps adding hosts to
+     * that round. The keeper was racing a number that grows on its
+     * own. Twenty-five an hour is six hundred a day, which wins that
+     * race; sixty-four presses do not.
+     *
+     * IT SENDS NOTHING. Rule 30 holds the PRESS, not the reading, and
+     * a security.txt is a file a host published at a well-known path
+     * so that strangers would read it. Drafting and delivery are
+     * untouched and the wire stays paused.
+     */
+    ctx.waitUntil(
+      import("@/services/outreach").then(({ scoutSweep }) =>
+        scoutSweep(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              key: "scout-sweep-failed",
+              detail: `The contact scout failed: ${String(error)}. Unscouted hosts are not being read; press "Scout contacts" on /admin/outreach by hand until this clears.`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {
