@@ -169,3 +169,31 @@ export function renderBurst(base, b) {
   for (const s of b.slowest) lines.push(`  slowest  ${pad(s.ms, 6)} ms  ${s.isolate.padEnd(8)} ${s.path}`);
   return lines.join("\n");
 }
+
+/** A control need not mark an isolate, but known cold responses cannot calibrate it. */
+export function summarizeControl(knocks) {
+  const [first, ...rest] = knocks;
+  if (!first) return null;
+  const measured = (k) => Number.isFinite(k.ms) && k.ms >= 0 && Number.isInteger(k.status);
+  const eligibleFirst = measured(first) && first.status >= 200 && first.status < 300 && first.timing?.isolate !== "cold";
+  const comparable = rest.filter((k) => eligibleFirst && measured(k) &&
+    k.status === first.status && k.timing?.isolate !== "cold");
+  const warmMedian = median(comparable.map((k) => k.ms));
+  return {
+    first_ms: first.ms,
+    first_status: first.status,
+    first_isolate: first.timing?.isolate ?? "unmarked",
+    warm_median_ms: warmMedian,
+    vantage_floor_ms: eligibleFirst && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null,
+    comparison_note: "First minus eligible repeated median, clipped at zero. This assumes the control has no application startup cost; these requests do not establish that assumption or isolate a network cause.",
+    coverage: {
+      attempted: knocks.length,
+      answered: knocks.filter(measured).length,
+      failed: knocks.filter((k) => !measured(k)).length,
+      http_errors: knocks.filter((k) => measured(k) && k.status >= 500).length,
+      subsequent: rest.length,
+      comparable_repeats: comparable.length,
+      excluded_from_comparison: rest.length - comparable.length,
+    },
+  };
+}

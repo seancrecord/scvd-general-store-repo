@@ -8,6 +8,7 @@ import {
   renderSummary,
   summarize,
   summarizeBurst,
+  summarizeControl,
 } from "./lib/cold-read.mjs";
 
 test("the store's Server-Timing line parses into the three figures", () => {
@@ -157,4 +158,43 @@ test("the summary line says NOT YET when the isolate predates the push", () => {
     seconds_since_push: 300,
   });
   assert.match(text, /NOT YET/);
+});
+
+
+test("the control uses the middle pair, not the upper middle, for an even sample", () => {
+  const control = summarizeControl([
+    { ms: 300, status: 200, timing: {} },
+    { ms: 80, status: 200, timing: {} },
+    { ms: 120, status: 200, timing: {} },
+  ]);
+  assert.equal(control.warm_median_ms, 100);
+  assert.equal(control.vantage_floor_ms, 200);
+});
+
+test("control failures, changed statuses and marked cold responses do not become the baseline", () => {
+  const control = summarizeControl([
+    { ms: 300, status: 200, timing: {} },
+    { ms: 1, status: 503, timing: {} },
+    { ms: 100, status: 200, timing: {} },
+    { ms: NaN, status: null, timing: {}, error: "timeout" },
+    { ms: 140, status: 200, timing: {} },
+    { ms: 900, status: 200, timing: { isolate: "cold" } },
+  ]);
+  assert.equal(control.warm_median_ms, 120);
+  assert.equal(control.vantage_floor_ms, 180);
+  assert.deepEqual(control.coverage, {
+    attempted: 6, answered: 5, failed: 1, http_errors: 1,
+    subsequent: 5, comparable_repeats: 2, excluded_from_comparison: 3,
+  });
+});
+
+test("a failed, explicitly cold or missing first control has no comparison", () => {
+  for (const first of [
+    { ms: 5, status: 503, timing: {} },
+    { ms: NaN, status: null, timing: {} },
+    { ms: 300, status: 200, timing: { isolate: "cold" } },
+  ]) {
+    assert.equal(summarizeControl([first, { ms: 100, status: 200, timing: {} }]).vantage_floor_ms, null);
+  }
+  assert.equal(summarizeControl([]), null);
 });

@@ -58,6 +58,17 @@ status, and excludes failed first responses from cold comparisons. Every
 attempt, transport failure, HTTP 5xx response and excluded comparison is
 counted. If the first request fails, JSON retains the later attempts.
 
+The optional control reader also uses the true median for an even sample,
+excludes failed, known-cold or different-status repeats, and retains every
+raw attempt with coverage counts. A valid control must begin with a measured
+2xx response that is not marked cold. Its historical `vantage_floor_ms`
+field remains for compatibility, but the report states the unproven
+assumption that the control has no application startup cost; the number
+does not establish a network cause. `control-integration.json` records a
+six-request live CLI check: an immutable public GitHub file as control and
+the unpaid Hello challenge, three requests each. All six answered. This
+checks the instrument, not a population latency claim.
+
 `latency.json` records 11 requests each to three explicit public URLs at
 18:10 UTC. All 33 answered: checkout 402, compact corpus and developers
 200. The comparable warm medians were 53, 86 and 44 ms respectively.
@@ -110,13 +121,35 @@ commercial terms have been established by the competitor comparison alone.
 
 ## Checks
 
-The two new publication cases, two latency cases, and three preview
-cases were observed failing on the old implementation before their fixes.
-The first checks after the fixes passed 34 focused Worker tests and 11
-cold-reader tests; all four companion Node suites passed. A first companion
-attempt hit sandbox loopback EPERM; the authorized loopback run passed.
-An earlier focused pass (including checkout-Worker parity) passed 54 tests in five files. The subsequent all-product preview cases and preflight publication selection were witnessed failing before their fixes. Typecheck, both Worker bundles, documentation and claims checks passed. A separate wrong-component-link regression was also witnessed red before restoration. Local defects and MCP-starter archives were packed with scripts disabled and retained with their manifests; this is preparation, not a registry installation check. No full-suite,
-publication or deployment success is claimed by these focused checks.
+New preview, publication-selection and latency regressions were observed
+failing on the previous implementation before their fixes. The installed
+MCP command check also caught a silent exit through npm's bin symlink.
+Its entry guard now compares resolved filesystem paths, including a path
+containing spaces and `#`, while imports remain inert. The reviewed packed
+command answers initialization and lists the five expected live read-only
+tools. The preflight installed command and both advertised TypeScript
+package imports passed their installed-use checks. All three packed
+companion installations matched every shipped file and passed their own
+suites on minimum Node 18.17.0.
+
+The first local full-suite attempt was stopped before a verdict after
+misreading expected fault-injection `internal error` logs. Those strings
+alone were not a regression. The subsequent completed bounded run found
+three real failures: attaching previews by object spread froze
+price-dependent menu getters. The same three failures reproduced in
+isolation, and the old-source GitHub run also failed them. Keeping the
+original property descriptors fixes the regression. All 51 affected tests
+in five files then passed. The corrected full local run passed all 638
+files and 10,882 tests, with one skip. No assertion or timeout was weakened.
+
+The optional control arithmetic had three witnessed failing regressions;
+all 14 Node measurement tests now pass. Typecheck and both Worker bundles
+passed after the menu correction. Documentation and claims checks passed.
+The independent package archives additionally passed their own Linux
+publication dry runs. The corrected full local suite and package-specific
+Linux checks qualify package publication; the website still requires its
+full GitHub CI before merge. Registry verification and production smoke
+checks are recorded separately when performed.
 
 Sources read September 10:
 - https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
@@ -124,24 +157,3 @@ Sources read September 10:
 - https://www.chainalysis.com/product/address-screening/
 - Installed Wrangler deploy help, locked dependency types, and the source
   and test files named by the changes. No runtime binding API changed.
-
-Final preparation checks: 86 affected-surface tests in nine files passed,
-including all-product previews, input schemas, checkout Worker parity and
-buyer entry points. The three packed companion installations matched all
-shipped files and passed their own suites on Node 18.17.0. Typecheck,
-both Worker bundles, docs and claims checks passed. The required full local
-attempt reproduced repeated Worker `internal error` exceptions and was
-stopped; it is not a full-suite pass. Full GitHub CI remains the merge and
-publication gate. No test timeout or assertion was weakened.
-
-The installed command check caught a further first-release defect: the
-MCP starter compared its module URL to the literal command path, so npm's
-bin symlink caused it to exit silently. A regression reproduced that
-failure through a command link under a path containing spaces and `#`.
-The entry guard now compares resolved filesystem paths and still leaves
-library imports inert. The repacked command answers initialization, its
-source and packed suites pass on Node 22 and minimum Node 18.17.0, and the
-current archive record supersedes the earlier preparation archive. The
-preflight installed command and both advertised TypeScript package imports
-also passed their installed-use checks. The merge was held for this fix;
-full CI must run on the corrected source before release.

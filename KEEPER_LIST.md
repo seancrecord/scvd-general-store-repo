@@ -31,7 +31,7 @@ build, it is on the roadmap.
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
   compact reader has shipped; remaining population coverage is ROADMAP VQ4.
-  The directory note was sent September 9; its methodology reply is pending.
+  The directory note was sent September 9; no methodology reply is recorded here.
 
 - **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the

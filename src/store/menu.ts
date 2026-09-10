@@ -151,11 +151,14 @@ export const MENU_ITEMS: readonly MenuItem[] = [
     (a, b) => a.price_usdc - b.price_usdc,
   ),
   ...LADDER.filter((item) => item.price_usdc > CHEAP_DOOR_MAX_USDC),
-].map((item): MenuItem => item.sample_url ? item : {
-  ...item,
-  // An outline shows the existing discovery contract, never a fabricated delivery.
-  sample_url: `/samples/${item.id.replaceAll("_", "-")}.json`,
-  sample_kind: "delivery_outline",
+].map((item): MenuItem => {
+  if (item.sample_url) return item;
+  // Spreading evaluates price-dependent getters once. Keep those getters
+  // intact when attaching the outline to the existing discovery contract.
+  const preview = Object.create(Object.getPrototypeOf(item), Object.getOwnPropertyDescriptors(item)) as MenuItem;
+  preview.sample_url = `/samples/${item.id.replaceAll("_", "-")}.json`;
+  preview.sample_kind = "delivery_outline";
+  return preview;
 });
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

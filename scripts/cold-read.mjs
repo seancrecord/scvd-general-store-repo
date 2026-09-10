@@ -65,6 +65,7 @@ import {
   renderSummary,
   summarize,
   summarizeBurst,
+  summarizeControl,
 } from "./lib/cold-read.mjs";
 
 const args = process.argv.slice(2);
@@ -183,15 +184,17 @@ const out = [];
 if (control) {
   const knocks = await readDoor(control);
   const first = knocks[0];
-  const warm = knocks.slice(1).map((k) => k.ms);
-  const warmMedian = warm.length ? [...warm].sort((a, b) => a - b)[Math.floor(warm.length / 2)] : null;
-  const floor = Number.isFinite(first.ms) && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null;
-  observation.control = { url: control, first_ms: first.ms, warm_median_ms: warmMedian, vantage_floor_ms: floor };
+  const summary = summarizeControl(knocks);
+  const warmMedian = summary.warm_median_ms;
+  const floor = summary.vantage_floor_ms;
+  observation.control = { url: control, ...summary, knocks };
   out.push(
     Number.isFinite(first.ms)
-      ? `${control}\n  control       ${String(first.ms).padStart(6)} ms   first knock on a host with no cold start; warm median ${warmMedian ?? "-"} ms\n  vantage floor ${String(floor ?? "-").padStart(6)} ms   what this vantage adds to any first knock; a cold penalty must clear it by a wide margin`
+      ? `${control}\n  control       ${String(first.ms).padStart(6)} ms   first control response (HTTP ${first.status}, ${summary.first_isolate}); eligible repeated median ${warmMedian ?? "-"} ms\n  vantage floor ${String(floor ?? "-").padStart(6)} ms   first minus repeated median, clipped at zero; assumes no application startup cost at the control`
       : `${control}\n  control unreachable: ${first.error ?? "no answer"}`,
   );
+  out.push(`  control coverage: answered ${summary.coverage.answered}/${summary.coverage.attempted}, failed ${summary.coverage.failed}, HTTP errors (5xx) ${summary.coverage.http_errors}; ${summary.coverage.comparable_repeats}/${summary.coverage.subsequent} eligible repeats`);
+  out.push(`  ${summary.comparison_note}`);
 }
 
 for (const url of urls) {
