@@ -45,7 +45,7 @@ export function supportsSimpleInstantRecovery(item: MenuItem): boolean {
 /** These observations are fully prepared before settlement; retain their signed bytes. */
 export function supportsObservationRecovery(item: MenuItem | undefined): boolean {
   return !!item && [
-    "launch_check", "opening_day", "settlement_attestation", "attestation_bundle", "service_audit",
+    "recurring_patronage", "operator_statement", "launch_check", "opening_day", "settlement_attestation", "attestation_bundle", "service_audit",
     "good_buyer", "signature_agent_card", "onpage_audit", "a2a_repair_kit",
     "spot_check", "provenance_check", "the_statement", "settlement_reconciliation",
     "passport_refresh", "trust_profile", "the_mandate", "bitcoin_anchor", "the_case_file",

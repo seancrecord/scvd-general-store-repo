@@ -3548,19 +3548,33 @@ const LETTER_STATUS_SCHEMA: OpenApiObject = {
   },
 };
 
+const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "Signed original purchase terms. URL watches bind the target and service dates; Operator Statement also binds the wallet, chain, asset and opening position; Recurring Patronage grants bind each purchased extension separately. Decode signed_payload for the certificate ID and exact terms. Present on new purchases and their public records; absent on legacy records. Observations carry their own signatures.",
+  required: ["signed_payload", "signature", "public_key", "signature_covers"],
+  properties: {
+    signed_payload: { type: "string", description: "RFC 8785 canonical JSON. Verify the ed25519 signature over these exact UTF-8 bytes." },
+    signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
+  },
+};
+
+const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
+
 /** A patronage pass, and what it does and does not buy. */
 const PATRONAGE_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["note"],
+  required: ["pass", "current", "note"],
   properties: {
-    pass_id: { type: "string" },
-    badge_url: { type: "string", format: "uri" },
-    renew_url: {
-      type: "string",
-      format: "uri",
-      description: "Renewal is a fresh purchase a buyer decides to make. Nothing here charges again by itself.",
-    },
-    monthly_note: { type: "string" },
+    pass: { type: "object", required: ["pass_id", "patron_number", "started_at", "expires_at", "renewals"], properties: {
+      pass_id: { type: "string" }, patron_number: { type: "integer" }, started_at: { type: "string" },
+      expires_at: { type: "string" }, renewals: { type: "integer" }, agent_name: { type: "string" },
+      commission: WATCH_COMMISSION_REF,
+    } },
+    current: { type: "boolean" }, badge_url: { type: "string", format: "uri" },
+    renew_url: { type: "string", format: "uri", description: "A fresh purchase the buyer chooses. No automatic charge." },
+    monthly_note: { type: "object", required: ["month", "note", "signature", "public_key"], properties: {
+      month: { type: "string" }, note: { type: "string" }, signature: { type: "string" }, public_key: { type: "string" },
+    } },
     note: { type: "string" },
   },
 };
@@ -4018,16 +4032,6 @@ const PRACTICE_SCHEMA: OpenApiObject = {
  * and calling these costs real USDC. Every field left undeclared on
  * a paid door is a field somebody pays to discover.
  */
-const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
-  type: "object",
-  description: "Signed purchase commission for Standing Watch and Conformance Watch. Decode signed_payload to read the exact target URL, watch_id, cert_id, item_id, started_at, ends_at and interval_hours. Present on new purchases and their public history; absent on legacy watches. Observations carry their own signatures.",
-  required: ["signed_payload", "signature", "public_key", "signature_covers"],
-  properties: {
-    signed_payload: { type: "string", description: "RFC 8785 canonical JSON. Verify the ed25519 signature over these exact UTF-8 bytes." },
-    signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
-  },
-};
-const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
 
 const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
   type: "object",
@@ -6673,6 +6677,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 what_this_is: { type: "string" },
                 statement_id: { type: "string" },
                 wallet: { type: "string" },
+                asset: { type: "string" },
+                opened_at_block: { type: "integer" },
+                commission: WATCH_COMMISSION_REF,
                 chain: { type: "string" },
                 started_at: { type: "string" },
                 ends_at: { type: "string" },
