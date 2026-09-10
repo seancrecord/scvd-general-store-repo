@@ -100,6 +100,13 @@ export interface Env {
    * chain down.
    */
   CORPUS_R2?: R2Bucket;
+  /**
+   * The deployed version, from Workers' version_metadata binding
+   * (wrangler.jsonc). OPTIONAL: the corpus's derived-value memo keys
+   * on its id so one deploy's arithmetic is never served under the
+   * next; absent (tests, the doors Worker) that memo stays off.
+   */
+  CF_VERSION_METADATA?: { id: string; tag: string; timestamp: string };
   /** Base wallet that receives USDC. Secret. */
   PAY_TO_ADDRESS: string;
   /**

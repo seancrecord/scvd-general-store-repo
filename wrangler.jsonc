@@ -92,6 +92,14 @@
     { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
   ],
   /**
+   * THE DEPLOY'S OWN ID (2026-09-10, the slow-doors read). Surfaces
+   * derived from the corpus are memoised in KV keyed on the chain's
+   * fingerprint AND this version id (services/corpus-list.ts), so a
+   * new deploy with a new derivation never reads the old deploy's
+   * answer. Cloudflare fills the binding; nothing to create.
+   */
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
+  /**
    * THE TRADE COUNTER'S NONCE STORE (2026-09-03) — the first binding
    * here that is neither KV nor R2, and the reason is in
    * src/services/trade-nonces.ts: a replay guard that has no on-chain

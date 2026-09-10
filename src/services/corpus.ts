@@ -5,7 +5,7 @@ import type { SubmitOptions } from "@/services/anchor-submit";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { listCorpus, resolveRecord } from "@/services/corpus-list";
+import { chainFingerprintOf, latestCorpusEntry, listCorpus, resolveRecord } from "@/services/corpus-list";
 import type { CorpusPointer, CorpusRecord } from "@/services/corpus-list";
 export { listCorpus } from "@/services/corpus-list";
 export type { CorpusRecord } from "@/services/corpus-list";
@@ -139,12 +139,12 @@ export async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<v
 
 /** Ceiling on a corpus scan. Named because an unnamed cap is a silent one. */
 
-export async function latestCorpusEntry(
-  env: Env,
-): Promise<CorpusRecord | null> {
-  const records = await listCorpus(env);
-  return records[records.length - 1] ?? null;
-}
+/*
+ * latestCorpusEntry lives in corpus-list.ts now (2026-09-10): it reads
+ * the newest pointer and fetches that one object, where it used to
+ * resolve the whole chain from R2 to look at its last element.
+ */
+export { latestCorpusEntry };
 
 export async function getCorpusEntry(
   env: Env,
@@ -270,6 +270,29 @@ export async function verifyCorpusChain(
   listed?: CorpusRecord[],
 ): Promise<{ intact: boolean; entries: number; problem?: string }> {
   const records = listed ?? (await listCorpus(env));
+  /*
+   * ONE WALK PER CHAIN STATE (2026-09-10). Recomputing every digest
+   * means re-serialising every snapshot — the latest is 11.5 MB — on
+   * every /corpus.json read, for a verdict that cannot change until
+   * the chain does. The verdict is held per isolate under the chain's
+   * own fingerprint (sequence, digest, stamp of every record), so a
+   * changed or appended record is a miss and gets walked in full.
+   */
+  const fingerprint = chainFingerprintOf(records);
+  if (chainVerdict?.fingerprint === fingerprint) return { ...chainVerdict.verdict };
+  const verdict = await walkChain(records);
+  chainVerdict = { fingerprint, verdict };
+  return { ...verdict };
+}
+
+let chainVerdict: {
+  fingerprint: string;
+  verdict: { intact: boolean; entries: number; problem?: string };
+} | null = null;
+
+async function walkChain(
+  records: CorpusRecord[],
+): Promise<{ intact: boolean; entries: number; problem?: string }> {
   let previousDigest: string | null = null;
   for (const [index, record] of records.entries()) {
     if (record.snapshot.sequence !== index + 1) {

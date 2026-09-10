@@ -5,7 +5,7 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import { getMenuItem } from "@/store/menu";
 import { priceLine } from "@/services/menu-markdown";
-import { listCorpus } from "@/services/corpus";
+import { derivedFromCorpus } from "@/services/corpus-list";
 import { deriveDoorIndex, type DoorIndex, type DoorIndexEntry } from "@/services/door-index";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -177,10 +177,14 @@ const SECURITY = {
    * nothing about you" cannot. So it carries the date it was true on,
    * the store's own method applied to its own copy, and a standing
    * test that goes red if this door ever sets a cookie or writes a
-   * counter (test/door-index.spec.ts).
+   * counter (test/door-index.spec.ts). Since 2026-09-10 a read may
+   * write ONE thing: the index itself, memoised under the chain's
+   * digest (services/corpus-list.ts). The test names that key by
+   * shape and still fails on anything else, and the sentence below
+   * says so rather than letting "writes anything" go quietly false.
    */
   what_it_stores_about_you:
-    "Nothing. There is no account, no cookie, no body to post, and no log entry keyed to a caller — true as of 2026-08-29, and held by a standing test that fails if this door ever sets a cookie or writes anything.",
+    "Nothing. There is no account, no cookie, no body to post, and no log entry keyed to a caller — true as of 2026-08-29, and held by a standing test that fails if this door ever sets a cookie or writes anything about a caller. The one thing a read can write is this index itself, kept under the signed chain's own digest so the next reader gets it faster; it carries nothing from the request.",
   what_the_data_is:
     "Observations of PUBLIC endpoints that public discovery feeds listed, taken by one GET each. No authentication was bypassed, no rate limit was evaded, and nothing private was read to produce any row here.",
   integrity:
@@ -388,7 +392,7 @@ function doorsDatasetJsonLd(base: string, index: DoorIndex): string {
  * the page and the JSON disagreeing about a count.
  */
 async function readIndex(env: HonoEnv["Bindings"]): Promise<DoorIndex> {
-  return deriveDoorIndex(await listCorpus(env));
+  return derivedFromCorpus(env, "door-index", deriveDoorIndex);
 }
 
 doorsRoutes.get("/doors.json", async (c) => {

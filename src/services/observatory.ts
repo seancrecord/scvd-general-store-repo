@@ -102,20 +102,23 @@ export async function computeObservatory(env: Env, now: Date = new Date()): Prom
   const months = monthsSinceOpening(now).slice(-PULSE_MONTHS).reverse();
   const current = metricsMonth(now);
   if (!months.includes(current)) months.unshift(current);
-  const read: ObservatoryMonth[] = [];
-  for (const month of months) {
-    const ledger = await readPorchLedger(env, month).catch(() => null);
-    if (!ledger) {
-      read.push({ month, organic_visits: 0, surfaces: [], truncated: true });
-      continue;
-    }
-    read.push({
-      month,
-      organic_visits: ledger.organicVisits,
-      surfaces: surfaceRows(ledger),
-      truncated: ledger.truncated,
-    });
-  }
+  // Every month's ledger at once (2026-09-10): six months read one
+  // after another was 1.3 s of KV waits for a page that sums them.
+  // The order of the answer is the order of `months`, not of arrival.
+  const read: ObservatoryMonth[] = await Promise.all(
+    months.map(async (month) => {
+      const ledger = await readPorchLedger(env, month).catch(() => null);
+      if (!ledger) {
+        return { month, organic_visits: 0, surfaces: [], truncated: true };
+      }
+      return {
+        month,
+        organic_visits: ledger.organicVisits,
+        surfaces: surfaceRows(ledger),
+        truncated: ledger.truncated,
+      };
+    }),
+  );
   return {
     computed_at: now.toISOString(),
     months: read,
