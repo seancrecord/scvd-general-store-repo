@@ -9,21 +9,21 @@ registry artifact before recording completion. KEEPER_LIST is the
 current press queue. A build or old receipt does not establish today's
 registry state.
 
-**Registry identity read, September 10:** Verify 1.3.0 and Tab 0.11.1
+**Registry identity read, before publication on September 10:** Verify 1.3.0 and Tab 0.11.1
 match every published file; Sign 1.0.2 and CLI 0.2.0 match executable
-files and have documentation corrections awaiting a patch. The npm
+files and had documentation corrections awaiting a patch. The npm
 `x402-preflight` package belongs to another repository; our client needs
-a distinct name before publication. Three other companion packages remain
-unpublished. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`.
+a distinct name before publication. Three other companion packages were
+unpublished at that reading. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
 
-**Package implementation, September 10:** CLI's opt-in compact corpus
-command and the corpus client's one-page helper are implemented. CLI and
-Sign versions in their manifests are prepared releases, not registry facts.
-No npm publication occurred in this batch. The corpus client remains
-unpublished as of the last registry check; its first-release workflow and
-installation documentation are now prepared. Release checks, exact commands and
-remaining publication work: `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+**Package release, September 10:** CLI 0.3.0, Sign 1.0.3 and the corpus
+client's first release 0.1.0 are published. Fresh installs match the
+reviewed archives and shipped files; registry signatures and provenance
+verify, including the expected source commits and workflow runs. Verify
+and Tab already match their published artifacts and need no release.
+The served CLI command catalog now includes compact discovery. Receipts,
+checks and scope: `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
 
 Written 2026-08-21, the night the strategy was ruled: agents don't
 browse, they inherit. An agent reaches this store through four doors —
@@ -34,6 +34,35 @@ Passport work). This file is the submission checklist for the first
 and third doors. Rule 30 applies throughout: every actual send,
 submission, or account action is the keeper's hand; this file makes
 each one a five-minute job.
+
+## September 10 — compact packages published
+
+[scvd-cli 0.3.0](https://www.npmjs.com/package/scvd-cli/v/0.3.0) and
+[x402-sign 1.0.3](https://www.npmjs.com/package/x402-sign/v/1.0.3) were
+published from `680c5c051a89df85a18d459c836cb2a9d8f59e97` after its full
+CI passed. The provenance workflow receipts are
+[CLI](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34499849387)
+and [Sign](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34499852883).
+The tested package commit was published while #613 reconciled the overlapping
+release documentation; the compact API was already deployed in #592.
+No review or test gate was bypassed.
+
+The fresh CLI registry install matched the reviewed archive and every shipped
+file, verified its registry signature and provenance attestation, and read
+one live compact page with limits and continuation intact. Served command
+discovery includes the new command in the release closeout. Sign also
+matched its reviewed archive and all installed files, with its
+registry signature and provenance verified. Its first version read returned
+404 immediately after publication; the subsequent read succeeded without
+republication. The corpus client 0.1.0 was subsequently published from the tested,
+merged commit `64152f16924569221c889d64ec1ffde9e5e70db9` through
+[its provenance run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34504193625).
+Its fresh install also matches the reviewed archive and all files, verifies
+registry signature and provenance, and preserves an unreadable page with
+one request. All three provenance statements name this repository, the
+expected commit, the release workflow and their actual invocation.
+The corpus-client namespace was created successfully; no account change
+is required. Final records: `research/compact-corpus-packages-2026-09-10/`.
 
 ## September 9 — verifier publication follow-through
 
@@ -194,6 +223,17 @@ measure. The same day the keeper re-opened the existing 402.ad and
 VerifyMCP store pages; their confirmed dates moved, their rows did not.
 Indexing only; none of this is connector acceptance or purchase evidence.
 
+Later the same day, two more from the keeper's browser:
+[PublishYourSaaS](https://publishyoursaas.com/listing/scvd-store), a
+launch-directory listing opening with the sixty words' first
+sentence, and [AI Tools Capital](https://aitoolscapital.com/tools/scvd-general-store/),
+a review-shaped directory page. Both are trust rows; both hosts refuse
+the sandbox, so the rows carry what the search snippets showed. A web
+scan for the store's name the same afternoon found seven more pages
+nobody here has opened (Agent Economy Report's CCC rating among them);
+they are register rows and a LOOK on the desk, not trust rows, and
+`research/listing-scan-2026-09-10.md` holds the snippets.
+
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
 Status of the review gates, checked 2026-08-21:
@@ -329,7 +369,11 @@ archived the same day).
   generated from this repository's own Agent Plugins package. The row
   is in `src/store/trust-signals.ts`; this line said "accepts
   submissions" until 2026-09-06, which is what a hand-kept venue list
-  does when a directory indexes you without asking.
+  does when a directory indexes you without asking. Re-read by the
+  keeper 2026-09-10: both MCP connection configs match `mcp.json`,
+  one skill, the evidence-observatory lead; its tag cloud is a
+  cached snapshot of older GitHub topics and lags until their
+  rescan. Nothing to change on this side.
 - Perplexity connectors: developer-program submission; wants the
   privacy policy and a remote MCP endpoint — the same two gates as
   Claude's, both met.

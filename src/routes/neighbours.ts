@@ -22,6 +22,10 @@ export const neighboursRoutes = new Hono<HonoEnv>();
 
 neighboursRoutes.get("/neighbours", (c) => {
   const rows = NEIGHBOUR_RECEIPTS;
+  // Summed from the rows, never typed: the total is a receipt too.
+  const totalPaidUsdc = Number(
+    rows.reduce((sum, row) => sum + row.paid_usdc, 0).toFixed(3),
+  );
 
   if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const table = rows
@@ -49,6 +53,7 @@ neighboursRoutes.get("/neighbours", (c) => {
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(NEIGHBOURS_STANDFIRST)}</p>
           <p class="menu-desc">${escapeHtml(NEIGHBOURS_OWN_SCORE_NOTE)}</p>
+          <p class="menu-meta">${rows.length} receipts, $${totalPaidUsdc} USDC in total.</p>
         </section>
         <section>
           ${table}
@@ -69,6 +74,7 @@ neighboursRoutes.get("/neighbours", (c) => {
     corrections: NEIGHBOURS_CORRECTION_NOTE,
     receipts: rows.map((row) => ({ ...row })),
     count: rows.length,
+    total_paid_usdc: totalPaidUsdc,
     // Stated so nobody reads a short table as a short field.
     coverage:
       "Only services this store has actually paid. Absence from this list says nothing about a service except that we have not bought from it.",

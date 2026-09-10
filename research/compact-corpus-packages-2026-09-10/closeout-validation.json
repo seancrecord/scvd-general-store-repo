@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-10",
+  "source_base": "c69a6764a95c4c9fe52ee956edc7da7a6d02746d",
+  "served_discovery_regression": {
+    "before": "failed: compact command absent from /developers JSON",
+    "after": {
+      "test_files": 5,
+      "passed": 60
+    }
+  },
+  "typecheck": "passed",
+  "worker_bundles": "both passed",
+  "docs": "passed",
+  "claims": "passed",
+  "experimental_envelope_tests": 12,
+  "interop": {
+    "backends": [
+      "OpenSSL 3.5.1",
+      "@noble/post-quantum 0.7.1"
+    ],
+    "contexts": 2,
+    "directions": 2,
+    "negative_cases": 16,
+    "result": "all passed"
+  },
+  "nist_sample": {
+    "selected_cases": 70,
+    "negative_control": "changed expected public key failed actual comparison; no success report written",
+    "exclusions": "135 ML-DSA-65 prehash/internal cases and all other parameter sets"
+  },
+  "full_local_suite": "Earlier repeated Worker internal error; not reported as passing. No blind rerun or weakened tests. Clean full CI gates this closeout.",
+  "production_signing": "Ed25519; no production key or signing dependency changed"
+}

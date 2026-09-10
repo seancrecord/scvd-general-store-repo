@@ -58,6 +58,26 @@ describe("/neighbours", () => {
     expect(first?.came_back).toContain("63/100");
   });
 
+  it("sums the receipts rather than typing a total", async () => {
+    const body = (await (
+      await SELF.fetch("https://scvd.store/neighbours")
+    ).json()) as Record<string, unknown>;
+    const expected = Number(
+      NEIGHBOUR_RECEIPTS.reduce((sum, row) => sum + row.paid_usdc, 0).toFixed(3),
+    );
+    expect(body.count).toBe(NEIGHBOUR_RECEIPTS.length);
+    expect(body.total_paid_usdc).toBe(expected);
+  });
+
+  it("keeps the receipts in the order they were bought", () => {
+    // Our own bad number leads; after it, the page reads as a ledger.
+    const dates = NEIGHBOUR_RECEIPTS.slice(1).map((row) => row.date);
+    expect([...dates].sort()).toEqual(dates);
+    for (const row of NEIGHBOUR_RECEIPTS) {
+      expect(Number.isNaN(Date.parse(`${row.date}T00:00:00.000Z`))).toBe(false);
+    }
+  });
+
   it("says that absence from the list means nothing about a service", async () => {
     const body = (await (
       await SELF.fetch("https://scvd.store/neighbours")

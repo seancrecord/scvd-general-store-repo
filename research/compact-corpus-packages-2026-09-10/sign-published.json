@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-09-10T16:07:10.299Z",
+  "name": "x402-sign",
+  "version": "1.0.3",
+  "repository": {
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "type": "git",
+    "directory": "signer"
+  },
+  "dist": {
+    "shasum": "6de8fb400ed75d7879164aec09ed54093c0fdcd1",
+    "tarball": "https://registry.npmjs.org/x402-sign/-/x402-sign-1.0.3.tgz",
+    "fileCount": 5,
+    "integrity": "sha512-cjyqKL/dXkdI4yQ6iBGSwNOMZsF8Y4PqAURcNWs8+tbka74d2xNac5mFX/RsxhaiA3Q5BwkAa7pVZWkxPkCs6w==",
+    "signatures": [
+      {
+        "sig": "MEYCIQCfiNTBTa6/sT7dS4ADCilp/Z6PZfF9MbfsyX+xyCxhAAIhAKK3EAbc9QZZ/980hRssFtbh8tp++ATOKYNy1x/x4uOC",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "sig": "MEQCIAsqn+kkHM1crLBHwZ+EcMqgoxDKnOSKoT96Kw3COz87AiB0+M3imcJxqYoyS9q84iSNh/JZRtxELEbmWsidb5EMpA==",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-sign@1.0.3",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 23858
+  },
+  "reviewed_archive_integrity": "sha512-cjyqKL/dXkdI4yQ6iBGSwNOMZsF8Y4PqAURcNWs8+tbka74d2xNac5mFX/RsxhaiA3Q5BwkAa7pVZWkxPkCs6w==",
+  "installed_files_match": true,
+  "audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation",
+  "exercise": {
+    "kind": "exports and full installed file equality",
+    "exports": [
+      "OFFER_REQUIRED_FIELDS",
+      "RECEIPT_REQUIRED_FIELDS",
+      "bytesToHex",
+      "didDocument",
+      "generateKeypair",
+      "hexToBytes",
+      "offersForAccepts",
+      "signOffer",
+      "signReceipt"
+    ]
+  },
+  "provenance_source": {
+    "workflow": {
+      "ref": "refs/heads/codex/compact-corpus-packages",
+      "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+      "path": ".github/workflows/publish-npm.yml"
+    },
+    "commit": "680c5c051a89df85a18d459c836cb2a9d8f59e97",
+    "run": 34499852883,
+    "subject_matches_reviewed_archive": true,
+    "signature_verification": "npm audit signatures verified the registry provenance attestation before this source/subject check."
+  }
+}

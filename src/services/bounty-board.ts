@@ -200,6 +200,7 @@ export const BOUNTY_REPORT_TEMPLATE: Readonly<Record<keyof WalkReport, null>> = 
   bytes: null,
   latency_ms: null,
   content_type: null,
+  etag: null,
 };
 
 /** Per field: what it is, how to get it, and what it buys us. */
@@ -224,7 +225,7 @@ export const BOUNTY_REPORT_FIELDS: ReadonlyArray<{
   {
     field: "body_sha256",
     what: "sha256 of the response body, hex",
-    how: "sha256 over the exact bytes you received, before any parsing",
+    how: "sha256 over the exact bytes you received, before any parsing. If your client transparently decompressed the response (content-encoding gzip or br), the on-wire bytes are already gone: hash the DECOMPRESSED body as canonical compact JSON instead, and say so in your observation so the next walker hashes the same thing",
     why: "the only field another walker can contradict — two digests at one door either agree or they do not, and that comparison needs neither of you trusted",
   },
   {
@@ -244,6 +245,12 @@ export const BOUNTY_REPORT_FIELDS: ReadonlyArray<{
     what: "the response's declared content type",
     how: "the Content-Type header on the paid response",
     why: "a door advertising JSON and serving HTML is a defect no status code shows",
+  },
+  {
+    field: "etag",
+    what: "the ETag the door returned, verbatim including any W/ prefix and quotes",
+    how: "the ETag header on the paid response; send nothing if the door emitted none",
+    why: "a walker found the hole in body_sha256 and named the fix: compression means two honest walkers can hash different bytes, but an ETag is a string the DOOR emitted, so comparing it needs neither walker to have reconstructed anything",
   },
 ];
 
@@ -274,6 +281,25 @@ export interface WalkReport {
   latency_ms?: number;
   /** The response's declared content type. */
   content_type?: string;
+  /**
+   * THE DOOR'S OWN VALIDATOR (2026-09-10). Added because a walker
+   * found the hole in body_sha256 and said so in their own
+   * observation: agent402.tools serves `content-encoding: br`, their
+   * client decompresses before they can touch it, and the literal
+   * on-wire bytes are therefore not hashable by anybody using a
+   * normal HTTP library. They published a digest of the canonical
+   * compact JSON instead, wrote down that they had, and pointed at
+   * the ETag as "the more robust comparison target since it is the
+   * door's own validator".
+   *
+   * They are right, and the reason is that an ETag skips the argument
+   * entirely: two walkers comparing it are comparing a string the
+   * DOOR emitted, not two independent attempts to reconstruct the
+   * same bytes through different client stacks. It costs nothing to
+   * send and it fails safe — a door that emits none simply has no
+   * second axis, which is where every door stood yesterday.
+   */
+  etag?: string;
 }
 
 export interface BountyRecord {
@@ -838,8 +864,15 @@ export function readReport(report: WalkReport | undefined): ReportReading {
   if (!report || typeof report !== "object") return { dropped };
   const out: WalkReport = {};
   const sent = report as Record<string, unknown>;
-  const { status, payment_response, body_sha256, bytes, latency_ms, content_type } =
-    report;
+  const {
+    status,
+    payment_response,
+    body_sha256,
+    bytes,
+    latency_ms,
+    content_type,
+    etag,
+  } = report;
   if (Number.isInteger(status) && (status as number) >= 100 && (status as number) <= 599) {
     out.status = status as number;
   } else if (sent["status"] !== undefined) {
@@ -874,6 +907,22 @@ export function readReport(report: WalkReport | undefined): ReportReading {
     out.content_type = content_type.slice(0, 120);
   } else if (sent["content_type"] !== undefined) {
     dropped.push({ field: "content_type", why: "a non-empty content type string" });
+  }
+  /*
+   * THE ETAG IS TAKEN VERBATIM, only trimmed and length-capped. Every
+   * other field here is normalised to something comparable, and this
+   * one must NOT be: `W/"abc"` and `"abc"` are a weak and a strong
+   * validator and the difference is the door's, not the walker's.
+   * Stripping the W/ to make two walkers agree would be this store
+   * manufacturing an agreement neither of them reported.
+   */
+  if (typeof etag === "string" && etag.trim().length > 0) {
+    out.etag = etag.trim().slice(0, 200);
+  } else if (sent["etag"] !== undefined) {
+    dropped.push({
+      field: "etag",
+      why: "the ETag header as the door sent it, quotes and any W/ prefix included; omit it entirely if there was none",
+    });
   }
   return {
     ...(Object.keys(out).length > 0 ? { report: out } : {}),

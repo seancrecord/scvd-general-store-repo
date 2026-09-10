@@ -577,6 +577,7 @@ export async function scoutContacts(
   env: Env,
   rows: ReadonlyArray<{ host: string }>,
   ledger: OutreachLedger,
+  cap: number = SCOUT_CAP,
 ): Promise<ScoutReport> {
   const seen = new Set<string>();
   const pending = rows.filter((row) => {
@@ -584,7 +585,7 @@ export async function scoutContacts(
     seen.add(row.host);
     return !ledger.hosts[row.host]?.scouted_at;
   });
-  const slice = pending.slice(0, SCOUT_CAP);
+  const slice = pending.slice(0, Math.max(0, Math.min(cap, SCOUT_CAP)));
   const { pooled } = await import("@/services/ward-round");
   const read = await pooled(slice, 10, async (row) => {
     const text =
@@ -611,6 +612,81 @@ export async function scoutContacts(
     found,
     remaining: pending.length - slice.length,
   };
+}
+
+/**
+ * HOW MANY HOSTS ONE UNATTENDED SCOUT PASS KNOCKS ON.
+ *
+ * The same size as a keeper's press, because the work is the same
+ * work and the ceiling was always the invocation's budget rather
+ * than anybody's caution: one or two plain GETs for a security.txt,
+ * ten at a time, no model and no money. On the hourly tick that is
+ * 600 hosts a day, so a backlog the keeper measured in sixty-four
+ * presses clears itself over a long weekend without one.
+ */
+export const SCOUT_SWEEP_CAP = 25;
+
+/**
+ * THE BACKLOG THAT MEANS THE SWEEP IS LOSING (2026-09-10). The keeper:
+ * "its taking me fucking forever to manually press 25 at a time and
+ * then ill re run a walk and number will go up". The second half is
+ * the real complaint — the unscouted count is not a fixed pile being
+ * worked down, it is re-derived from the latest round every read, and
+ * the long walk keeps ADDING hosts to that round. A keeper pressing
+ * 25 at a time was racing a number that grows on its own.
+ *
+ * The clock wins that race and a hand cannot. But if it ever stops
+ * winning — if the walk starts finding hosts faster than 600 a day —
+ * that is worth one page rather than a silence that looks identical
+ * to a cleared queue.
+ */
+export const SCOUT_BACKLOG_ALARM = 2_000;
+
+/**
+ * SCOUTING ON THE TICK (2026-09-10), in the shape auditSweep already
+ * established: a button became a clock because the button was a thing
+ * somebody had to remember, sixty-four times.
+ *
+ * NO NEW STATE. `scouted_at` on the ledger entry has always been the
+ * durable done-marker, and scoutContacts already filters on it, so a
+ * pass resumes wherever the last one stopped with no cursor to keep,
+ * corrupt, or reset. It is idempotent per host and never re-knocks.
+ *
+ * THIS SENDS NOTHING, and the distinction matters: rule 30 puts the
+ * PRESS in the keeper's hand, not the reading. Scouting reads a file
+ * a host published at a well-known path precisely so that strangers
+ * would read it. Drafting and delivery are untouched and the wire
+ * stays paused.
+ */
+export async function scoutSweep(
+  env: Env,
+): Promise<(ScoutReport & { backlog: number }) | null> {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const round = await latestWardRound(env);
+  if (!round) return null;
+  const previous = await previousWardRound(env);
+  const ledger = await readOutreachLedger(env);
+  const rows = [
+    ...deriveProspects(round, previous),
+    ...deriveWelcomes(
+      round,
+      previous,
+      new URL(env.STORE_BASE_URL).host.toLowerCase(),
+    ),
+  ];
+  const report = await scoutContacts(env, rows, ledger, SCOUT_SWEEP_CAP);
+  const backlog = report.remaining;
+  if (backlog > SCOUT_BACKLOG_ALARM) {
+    const { sendAlert } = await import("@/lib/alerts");
+    await sendAlert(env, {
+      condition: "worker_health",
+      key: "scout-backlog-growing",
+      detail: `${backlog} hosts are still unscouted after a sweep. At ${SCOUT_SWEEP_CAP} an hour the clock clears ${SCOUT_SWEEP_CAP * 24} a day, so a backlog this size means the walk is finding hosts faster than the scout reads them. Nothing is broken; the queue is just growing, and it will not drain on its own.`,
+    });
+  }
+  return { ...report, backlog };
 }
 
 /**

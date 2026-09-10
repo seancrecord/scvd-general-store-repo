@@ -121,6 +121,7 @@ describe("the three paths a developer types", () => {
     };
     expect(cli.npm).toBe(CLI_PACKAGE);
     expect(cli.commands).toContain("scvd preflight <url>");
+    expect(cli.commands).toContain("scvd corpus-index [--limit <n>] [--cursor <cursor>]");
     expect(cli.also.npm).toBe("scvd-tab");
     /*
      * THE PACKAGE AND THE COMMAND ARE TWO NAMES NOW. npm refused the
