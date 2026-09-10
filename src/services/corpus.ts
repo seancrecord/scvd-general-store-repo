@@ -10,6 +10,7 @@ import type { CorpusPointer, CorpusRecord } from "@/services/corpus-list";
 export { listCorpus } from "@/services/corpus-list";
 export type { CorpusRecord } from "@/services/corpus-list";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { detachEvidence } from "@/services/corpus-evidence";
 import { payToDigest } from "@/lib/pay-to-digest";
 
 /**
@@ -186,7 +187,7 @@ export type CorpusPass =
  * read. Field order: `pay_to_digest` lands where `pay_to` sat, so a
  * row's other bytes do not move.
  */
-async function sealRoundForChain(round: WardRound): Promise<WardRound> {
+async function sealRoundForChain(env: Env, round: WardRound, sequence: number): Promise<WardRound> {
   const hosts = await Promise.all(
     (round.hosts ?? []).map(async (host) => {
       const offer = host.offer;
@@ -203,7 +204,13 @@ async function sealRoundForChain(round: WardRound): Promise<WardRound> {
       };
     }),
   );
-  return { ...round, hosts };
+  /*
+   * AND THE CAPTURE GOES BESIDE THE CHAIN (2026-09-10): each row's
+   * evidence becomes its digest here, after the address digests and
+   * before anything is signed, so the signed bytes commit to the
+   * capture without carrying it. services/corpus-evidence.ts.
+   */
+  return detachEvidence(env, { ...round, hosts }, sequence);
 }
 
 export async function takeCorpusSnapshot(
@@ -214,7 +221,6 @@ export async function takeCorpusSnapshot(
   if (!round) {
     return { taken: false, reason: "no ward round has run yet" };
   }
-  const sealed = await sealRoundForChain(round);
   const previous = await latestCorpusEntry(env);
   if (previous && previous.snapshot.week === round.week) {
     return {
@@ -222,9 +228,14 @@ export async function takeCorpusSnapshot(
       reason: `week ${round.week} is already in the corpus (sequence ${previous.snapshot.sequence})`,
     };
   }
+  // The sequence is decided before the seal, because the evidence
+  // shards are addressed by it; an idempotent re-fire returned above
+  // and wrote nothing.
+  const sequence = (previous?.snapshot.sequence ?? 0) + 1;
+  const sealed = await sealRoundForChain(env, round, sequence);
   const snapshot: CorpusSnapshot = {
     version: 1,
-    sequence: (previous?.snapshot.sequence ?? 0) + 1,
+    sequence,
     taken_at: (options.now ?? new Date()).toISOString(),
     previous_digest: previous?.digest ?? null,
     source: "ward_round",

@@ -173,12 +173,17 @@ describe("the sweep", () => {
      * asserted separately below (old rows carrying no tls
      * canonicalize without one, byte-identical forever).
      */
+    /*
+     * The challenge is captured ONCE (2026-09-10): verbatim as
+     * `challenge_bytes`, and no longer a second time under
+     * `headers` — the copy was half of every round's captured bytes
+     * and nothing read it. Rows captured before carry both.
+     */
     expect(evidence).toEqual({
       tls: "unavailable-from-this-vantage",
       challenge_bytes: challengeBytes,
       headers: {
         "content-type": "application/x402+json",
-        "payment-required": challengeBytes,
       },
       body_sha256:
         "faf6fdc3fa6f93829d0cc582a8d20666d2bb311a8ef0303bfd23cbbcc80e0866",

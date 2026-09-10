@@ -237,21 +237,41 @@ export async function derivedFromCorpus<T>(
   build: (records: CorpusRecord[]) => T | Promise<T>,
 ): Promise<T> {
   const pointers = await listPointers(env);
+  return derivedValue(env, surface, pointers.fingerprint, async () => build(await resolveAll(env, pointers)));
+}
+
+/**
+ * The same memo over any identity a caller can state — the fresh set
+ * keys on the stored ward-round pointer beside the chain fingerprint.
+ * The identity is hashed, so a caller may pass whatever bytes name
+ * the inputs; the key stays bounded.
+ */
+export async function derivedValue<T>(
+  env: Env,
+  surface: string,
+  identity: string,
+  build: () => T | Promise<T>,
+): Promise<T> {
   const version = env.CF_VERSION_METADATA?.id;
   const key = version
-    ? KV_KEYS.corpusDerived(surface, version, pointers.fingerprint)
+    ? KV_KEYS.corpusDerived(surface, version, await sha256Hex(identity))
     : null;
   if (key) {
     const held = await kvGetJson<T>(env.COUNTERS, key, "json").catch(() => null);
     if (held !== null && held !== undefined) return held;
   }
-  const value = await build(await resolveAll(env, pointers));
+  const value = await build();
   if (key) {
     await kvPut(env.COUNTERS, key, JSON.stringify(value), {
       expirationTtl: DERIVED_TTL_SECONDS,
     }).catch(() => undefined);
   }
   return value;
+}
+
+/** The chain as KV holds it, in one hex string: what every memo above keys on. */
+export async function corpusFingerprint(env: Env): Promise<string> {
+  return (await listPointers(env)).fingerprint;
 }
 
 /** Test seam: forget the isolate's resolved chain. */

@@ -1,4 +1,7 @@
+import { KV_KEYS } from "@/lib/kv-keys";
+import { kvGetJson } from "@/lib/kv-retry";
 import { latestCorpusEntry } from "@/services/corpus";
+import { corpusFingerprint, derivedValue } from "@/services/corpus-list";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -210,6 +213,22 @@ export function freshRows(round: WardRound, base: string): FreshSetRow[] {
   }
   rows.sort((a, b) => (a.host < b.host ? -1 : a.host > b.host ? 1 : 0));
   return rows;
+}
+
+/**
+ * THE SET, KEPT UNTIL ITS INPUTS MOVE (2026-09-10). buildFreshSet
+ * reads the whole latest round — 2,767 rows with their captures,
+ * 11.5 MB from R2 — on every request, for rows that change once a
+ * week. The memo keys on the two things the set is a function of:
+ * the stored ward-round pointer (the R2 key and count that name this
+ * week's rows) and the chain fingerprint (which snapshot, if any,
+ * froze the week). services/corpus-list.ts says what the memo is and
+ * is not.
+ */
+export async function freshSet(env: Env): Promise<FreshSet | null> {
+  const stored = await kvGetJson<unknown>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json").catch(() => null);
+  const identity = `${JSON.stringify(stored ?? null)}|${await corpusFingerprint(env)}`;
+  return derivedValue(env, "fresh-set", identity, () => buildFreshSet(env));
 }
 
 export async function buildFreshSet(env: Env): Promise<FreshSet | null> {
