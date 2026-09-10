@@ -88,11 +88,14 @@ describe("mcp.json points at the doors the registry publishes", () => {
     expect(store.url).toBe(registryManifest.remotes[0]?.url);
   });
 
-  it("launches the Tab by the npm name the Tab actually publishes under", () => {
+  it("launches the Tab by the npm name the Tab actually publishes under, pinned to its version", () => {
+    // Pinned since the 2026-09-10 ClawHub audit (T08): a bare name
+    // resolves to whatever npm serves at launch. test/tab-pin.spec.ts
+    // holds every other install block to the same version.
     const tab = mcpConfig.mcpServers["scvd-tab"];
     expect(tab.type).toBe("stdio");
     expect(tab.command).toBe("npx");
-    expect(tab.args?.[tab.args.length - 1]).toBe(tabPackage.name);
+    expect(tab.args?.[tab.args.length - 1]).toBe(`${tabPackage.name}@${tabPackage.version}`);
   });
 });
 

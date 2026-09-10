@@ -97,7 +97,7 @@
     "dotenv": "^17.4.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
-    "wrangler": "^4.129.0"
+    "wrangler": "^4.131.0"
   },
   "overrides": {
     "axios": "^1.19.0",
