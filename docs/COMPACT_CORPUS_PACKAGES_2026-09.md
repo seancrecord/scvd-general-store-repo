@@ -83,3 +83,29 @@ The API release preceding this batch is closed: PR #610 merged at 14:43:14
 UTC, both production Worker build checks passed, and a 14:49:56 UTC read
 returned 686,600 decoded bytes with all 162 paths. Its full validation and
 size comparison remain in `docs/OPENAPI_HEADROOM_2026-09.md`.
+
+## First corpus-client release preparation
+
+The authorized follow-through adds the corpus client's manifest name to the
+existing manual provenance workflow, resolves its directory and runs its
+own tests before packing or publication. The regression was witnessed
+failing against the old workflow, then passing after the mapping was added.
+The initial manifest version is retained; no previous version is overwritten.
+README installation examples now use the package name so the immutable
+first release will not advertise itself as unpublished. Registry publication
+is still pending; workflow setup does not establish package ownership or
+permission to create the new name.
+
+The production signing plan is `PQ_PRODUCTION_ROLLOUT_2026-09.md`. It keeps
+checkpoint work off the checkout path and names the tests, runtime
+measurements, package changes and custody decision needed before activation.
+
+First-release preparation checks: 30 focused package-contract checks passed;
+all companion Node suites passed and all six corpus-client tests passed on
+Node 18.17.0. The repacked archive passed the fixture exercise on Node 18
+and 22 and strict packaged declaration checks. Typecheck, both Worker
+bundles, documentation and claims checks passed. Archive contents/integrity
+are recorded in `research/compact-corpus-packages-2026-09-10/corpus-first-release-pack.json`.
+The previously reproduced local full-suite runtime failure remains a
+limitation; no additional blind full run or passing full-local result is
+claimed. Required clean full CI still gates merge and actual publication.

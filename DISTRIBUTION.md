@@ -21,7 +21,8 @@ unpublished. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`
 command and the corpus client's one-page helper are implemented. CLI and
 Sign versions in their manifests are prepared releases, not registry facts.
 No npm publication occurred in this batch. The corpus client remains
-unpublished; its README now says so. Release checks, exact commands and
+unpublished as of the last registry check; its first-release workflow and
+installation documentation are now prepared. Release checks, exact commands and
 remaining publication work: `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
 
 Written 2026-08-21, the night the strategy was ruled: agents don't

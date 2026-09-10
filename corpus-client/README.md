@@ -5,17 +5,19 @@ x402 corpus: the weekly census, the fresh set, one host's readiness
 history, the month, the feeds, the diff and the defect vocabulary, each
 as the store serves it. The `scvd` CLI's library half.
 
-This package is not yet published (registry checked September 10, 2026).
-Use the local module from a checkout:
+## Install
 
-```js
-import { corpusIndex, hostHistory } from "./corpus-client/corpus-client.js";
+```sh
+npm install scvd-corpus-client
 ```
+
+Node 18.17 or newer. To use a source checkout, import
+`./corpus-client/corpus-client.js` instead of the package name.
 
 ## Use
 
 ```js
-import { corpus, hostHistory, month, feeds } from "./corpus-client/corpus-client.js";
+import { corpus, hostHistory, month, feeds } from "scvd-corpus-client";
 
 const census = await corpus();                 // the weekly signed census, whole
 const history = await hostHistory("door.example");
@@ -55,10 +57,10 @@ record is `CHANGELOG.md`.
 `corpusIndex({ limit?, cursor?, base?, fetch?, timeoutMs? })` returns one
 page from `/corpus/index.json`. Omit `limit` to use the server's default;
 the server enforces its maximum. It makes one GET and never follows `next`
-or fetches snapshot bodies. For example, from a checkout:
+or fetches snapshot bodies. For example:
 
 ```js
-import { corpusIndex } from "./corpus-client/corpus-client.js";
+import { corpusIndex } from "scvd-corpus-client";
 
 const page = await corpusIndex({ limit: 1 });
 console.log(page); // includes unreadable rows, counts and verification limits

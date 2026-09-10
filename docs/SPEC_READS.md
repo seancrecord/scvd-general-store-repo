@@ -849,3 +849,16 @@ Implementation and limits: `EVIDENCE_READER_COVERAGE_2026-09.md`.
 Read [OpenAPI 3.1.0 components, references and response headers](https://spec.openapis.org/oas/v3.1.0.html): response schemas and header definitions may use internal references. Keep the existing inline request parameters: the September 5 naive-reader compatibility fix and its regression still apply. Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/): do not retain request-scoped state globally. Only environment-independent schema projections are prepared once; live offers, issue inventory and conditional responses retain their existing freshness.
 
 Direct registry metadata and integrity-checked tarballs on September 10 show published executable files match this tree for x402-verify 1.3.0, x402-sign 1.0.2, scvd-cli 0.2.0 and scvd-tab 0.11.1. Sign and CLI have documentation differences. The registry's x402-preflight 0.1.0 names Gareth1953/x402-preflight as its repository, not this repository; equal names and versions do not establish identity. scvd-corpus-client, scvd-defects and scvd-mcp-starter returned 404. No package was published in this read. This does not verify registry account permissions or third-party reader compatibility.
+
+## 2026-09-10 — production PQ plan
+
+Read [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final), including the
+current July 31, 2026 potential-errata notice;
+[noble-post-quantum security notes](https://github.com/paulmillr/noble-post-quantum#security);
+and [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/).
+The library reports no independent audit or constant-time execution claim.
+The Workers algorithm table lists Ed25519 and does not list ML-DSA; this is
+a documentation observation, not a runtime probe. No dependency was changed.
+The plan in `PQ_PRODUCTION_ROLLOUT_2026-09.md` requires exact-version
+interoperability, supply-chain review, target-runtime measurements and a
+custody rehearsal before activation. No production keys were accessed.

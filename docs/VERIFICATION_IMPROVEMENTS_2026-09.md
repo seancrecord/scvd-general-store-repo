@@ -189,6 +189,11 @@ testing tampering. Any experimental dependency is isolated from the
 Worker and the dependency-free verifier. Production adoption requires
 the measured result and a concrete key-provisioning review.
 
+Production follow-through is now specified in
+`PQ_PRODUCTION_ROLLOUT_2026-09.md`: checkpoint-first deployment, independent
+verification before issuance, measured runtime budgets, fail-closed policy
+and a concrete custody rehearsal. This is a plan; signing remains Ed25519.
+
 ## 5. Anchor coverage
 
 Measure the public artifacts that can be read, with a denominator that
