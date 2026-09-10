@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-09-10T16:09:07.505303+00:00",
+  "url": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+  "http_status": 403,
+  "current_listing_read": false,
+  "fallback_web_read": "unavailable",
+  "latest_successful_capture": "research/verification-2026-09-09/retention-followthrough/directory-measured.json",
+  "interpretation": "No current measurement or methodology verdict inferred from the refused read."
+}

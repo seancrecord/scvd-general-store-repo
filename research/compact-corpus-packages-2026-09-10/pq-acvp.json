@@ -1,0 +1,505 @@
+{
+  "experimental": true,
+  "checked_at": "2026-09-10T15:44:24.840Z",
+  "node": "v22.13.1",
+  "noble": "0.7.1",
+  "sources": {
+    "commit": "975de31eb83d87039ec88934fdc47d8c312b892d",
+    "files": [
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-keyGen-FIPS204/prompt.json",
+        "filename": "keyGen-prompt.json",
+        "bytes": 10062,
+        "sha256": "43e81ad820e495dbcad086fe27c1008393a8c32100bbbff77c558c3f06dcefef"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-keyGen-FIPS204/expectedResults.json",
+        "filename": "keyGen-expectedResults.json",
+        "bytes": 873632,
+        "sha256": "361f47ca19d592adcc66ff2cb591686ad785fea157b295648738bed6921a68df"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-sigGen-FIPS204/prompt.json",
+        "filename": "sigGen-prompt.json",
+        "bytes": 5044293,
+        "sha256": "447749d72817b211160d243311ce32302f3023e59c355b0f70be2bd3e9e7830d"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-sigGen-FIPS204/expectedResults.json",
+        "filename": "sigGen-expectedResults.json",
+        "bytes": 2511972,
+        "sha256": "228d011bbe274aeb93e22eea1e0d57b78f43795cf6a64fb5ef1e626485a0bedb"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-sigVer-FIPS204/prompt.json",
+        "filename": "sigVer-prompt.json",
+        "bytes": 3125947,
+        "sha256": "e2cba4589389756fa0bea1a7e6837138bf0a81f9d14234c9ee8f6d33caa1654e"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files/ML-DSA-sigVer-FIPS204/expectedResults.json",
+        "filename": "sigVer-expectedResults.json",
+        "bytes": 13956,
+        "sha256": "e1d84ef1b2f35196278ab0b0ed6a46ec62cc03d2dfa92c564199e1999bfb8ea6"
+      }
+    ]
+  },
+  "totals": {
+    "keyGen": {
+      "all_parameter_sets": 75,
+      "ml_dsa65": 25,
+      "checked": 25,
+      "excluded": 0
+    },
+    "sigGen": {
+      "all_parameter_sets": 360,
+      "ml_dsa65": 120,
+      "checked": 30,
+      "excluded": 90
+    },
+    "sigVer": {
+      "all_parameter_sets": 180,
+      "ml_dsa65": 60,
+      "checked": 15,
+      "excluded": 45
+    }
+  },
+  "passed": [
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 26
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 27
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 28
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 29
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 30
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 31
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 32
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 33
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 34
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 35
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 36
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 37
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 38
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 39
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 40
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 41
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 42
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 43
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 44
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 45
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 46
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 47
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 48
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 49
+    },
+    {
+      "mode": "keyGen",
+      "tgId": 2,
+      "tcId": 50
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 31
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 32
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 33
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 34
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 35
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 36
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 37
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 38
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 39
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 40
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 41
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 42
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 43
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 44
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 3,
+      "tcId": 45
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 211
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 212
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 213
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 214
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 215
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 216
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 217
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 218
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 219
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 220
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 221
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 222
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 223
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 224
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 15,
+      "tcId": 225
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 31,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 32,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 33,
+      "expected_valid": true
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 34,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 35,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 36,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 37,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 38,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 39,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 40,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 41,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 42,
+      "expected_valid": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 43,
+      "expected_valid": true
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 44,
+      "expected_valid": true
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 3,
+      "tcId": 45,
+      "expected_valid": false
+    }
+  ],
+  "excluded": [
+    {
+      "mode": "sigGen",
+      "tgId": 4,
+      "tests": 15,
+      "signatureInterface": "external",
+      "preHash": "preHash"
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 9,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": true
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 10,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": false
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 16,
+      "tests": 15,
+      "signatureInterface": "external",
+      "preHash": "preHash"
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 21,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": true
+    },
+    {
+      "mode": "sigGen",
+      "tgId": 22,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": false
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 4,
+      "tests": 15,
+      "signatureInterface": "external",
+      "preHash": "preHash"
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 9,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": true
+    },
+    {
+      "mode": "sigVer",
+      "tgId": 10,
+      "tests": 15,
+      "signatureInterface": "internal",
+      "externalMu": false
+    }
+  ],
+  "limitations": [
+    "Selected ML-DSA-65 NIST public sample cases only; prehash, internal interfaces and other parameter sets are excluded.",
+    "No ACVP certification, FIPS module validation, security audit or production implementation approval.",
+    "The checked inputs include publicly known test seeds/secret keys; none is a production key.",
+    "No Worker resource, customer latency or key-custody measurement."
+  ]
+}

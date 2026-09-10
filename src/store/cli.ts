@@ -58,6 +58,7 @@ export const CLI_COMMANDS: readonly string[] = [
   "scvd onpage <url>",
   "scvd fresh-set",
   "scvd corpus",
+  "scvd corpus-index [--limit <n>] [--cursor <cursor>]",
   "scvd menu",
   "scvd catalog",
   "scvd versions",

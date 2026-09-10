@@ -32,8 +32,11 @@ applies directly; the implementation order is unchanged.
 PR #610 has passed full CI, merged and deployed; the live API retains all
 paths below its size-warning budget. CLI and the corpus client now have
 explicit one-page metadata readers, with original whole-corpus output
-preserved. Sign's documentation patch is prepared. These package versions
-are not yet published. Implementation, validation and release conditions:
+preserved. CLI, Sign's documentation patch and the corpus client's first
+release are now published with verified registry integrity and provenance.
+The integrated PR #613 passed full CI and both production builds. The
+closeout adds served command discovery and records independent PQ/NIST
+probes; production signing remains Ed25519. Release evidence and limits:
 `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
 
 ## Reader and inventory follow-through

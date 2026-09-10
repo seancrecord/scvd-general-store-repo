@@ -95,7 +95,10 @@ What people arrive here to do, and where each door is:
   is `scvd preflight` from [`scvd-cli`](https://www.npmjs.com/package/scvd-cli).
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
-  [scvd.store/corpus](https://scvd.store/corpus).
+  [scvd.store/corpus](https://scvd.store/corpus). For bounded metadata
+  discovery, use the [CLI](cli/README.md) or the published
+  [corpus client](corpus-client/README.md); both preserve gaps and leave
+  signature and timestamp verification explicit.
 - **Score, rank or list x402 doors?** Take the evidence and leave the
   opinion: [scvd.store/scorers](https://scvd.store/scorers) is the
   room for systems that consume this corpus. Pull it, verify it

@@ -1,0 +1,50 @@
+{
+  "checked_at": "2026-09-10T16:47:30.147Z",
+  "name": "scvd-corpus-client",
+  "version": "0.1.0",
+  "repository": {
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "type": "git",
+    "directory": "corpus-client"
+  },
+  "dist": {
+    "shasum": "901fe2597a907a9c164309dd5245b1514dd83d95",
+    "tarball": "https://registry.npmjs.org/scvd-corpus-client/-/scvd-corpus-client-0.1.0.tgz",
+    "fileCount": 7,
+    "integrity": "sha512-40frMC8RsUcaCY6bUCakX7umELL6M/IYWmp9/ZANb2Dr85N6GCbFdQfDMY+9+22YJ1ON0XW5Q8HiqVb84bAoPg==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCaotqYt4GlzaXmbGvvGgvSKapljQMK5evhnYBUtkawBwIgWwj0GYcFmi1Yiy7ENq7AJh13HAgxa3/r5fIyjnB7PKM=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-corpus-client@0.1.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 13708
+  },
+  "reviewed_archive_integrity": "sha512-40frMC8RsUcaCY6bUCakX7umELL6M/IYWmp9/ZANb2Dr85N6GCbFdQfDMY+9+22YJ1ON0XW5Q8HiqVb84bAoPg==",
+  "installed_files_match": true,
+  "audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation",
+  "exercise": {
+    "kind": "one injected unreadable page",
+    "requests": [
+      "https://scvd.store/corpus/index.json?limit=1"
+    ],
+    "returned_exactly": true
+  },
+  "provenance_source": {
+    "workflow": {
+      "ref": "refs/heads/codex/package-release-followthrough",
+      "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+      "path": ".github/workflows/publish-npm.yml"
+    },
+    "commit": "64152f16924569221c889d64ec1ffde9e5e70db9",
+    "run": 34504193625,
+    "subject_matches_reviewed_archive": true,
+    "signature_verification": "npm audit signatures verified the registry provenance attestation before this source/subject check."
+  }
+}
