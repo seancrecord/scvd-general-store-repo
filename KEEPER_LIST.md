@@ -912,6 +912,17 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **LOOK: the crawler 404s, by path (2026-09-10).** The Cloudflare
+  AI-crawler panel you pasted shows 858 404s in the month and names
+  none of them; every one of the 2,990 sitemap URLs answered 200 when
+  walked as Claude-User the same day, so they are guesses. Two of the
+  guesses now answer (`/.well-known/ai-plugin.json` serves the retired
+  plugin manifest over our contract; `/index.html` is a 301 to `/`).
+  In that panel, "Most crawled paths" → the 4xx tab → paste the top
+  rows here. One dominant path is a fix; a long tail is a probe and
+  nothing to do. The same panel's 301s are trailing slashes and
+  http→https, which is normal.
+
 - **GitHub Agent Finder: the catalog PR (2026-09-10).** Copilot's
   agent finder did not return the store on 2026-09-06, and the
   community catalog behind it (`github/agentfinder-catalog`) takes

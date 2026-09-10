@@ -166,6 +166,8 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /spec/scvd-attestation/v1",
   "GET /agent",
   "GET /agent-mode",
+  // The 1990s guess for the front door (2026-09-10): a 301 to /, which is counted.
+  "GET /index.html",
   "GET /api/declare-door",
   "POST /api/declare-door",
   "POST /api/claims/challenge",
