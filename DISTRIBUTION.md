@@ -168,6 +168,16 @@ It lists the repository's plugin bundle, skill and MCP servers and
 publishes its own manifest-schema verification date. This is separate
 from acceptance into any client's marketplace or successful runtime use.
 
+Two more directory rows confirmed 2026-09-10 from the keeper's browser:
+[robinsaige.com](https://robinsaige.com/s/store.scvd/general-store), a
+server page under the official registry name, and
+[Crosspeel](https://crosspeel.com/endpoints/scvd-store/), a per-provider
+endpoint page. Both hosts refuse the build sandbox's egress, so the
+rows record the address and the keeper's hand and nothing the pages
+measure. The same day the keeper re-opened the existing 402.ad and
+VerifyMCP store pages; their confirmed dates moved, their rows did not.
+Indexing only; none of this is connector acceptance or purchase evidence.
+
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
 Status of the review gates, checked 2026-08-21:

@@ -235,6 +235,16 @@
       "cites_since": null
     },
     {
+      "name": "Crosspeel",
+      "url": "https://crosspeel.com/endpoints/scvd-store/",
+      "what_it_scores": "An endpoint index that keeps a per-provider page for scvd.store's x402 doors; what it measures on that page is unread from this tree, because the host refuses the sandbox's egress.",
+      "contact": null,
+      "found_on": "Keeper-supplied provider listing, 2026-09-10; the page itself is unreadable from the sandbox",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "Cursor Directory",
       "url": "https://cursor.directory/plugins/scvd-general-store-repo",
       "what_it_scores": "Directory of Cursor plugins and MCP servers; carries a listing page for this store.",
@@ -680,6 +690,16 @@
       "what_it_scores": "Automated security audit for Solidity and EVM smart contracts, returning a Markdown report with findings by severity, proof of concept snippets and remediation notes.",
       "contact": null,
       "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "robinsaige.com",
+      "url": "https://robinsaige.com/s/store.scvd/general-store",
+      "what_it_scores": "An MCP server directory keyed on the official registry name (store.scvd/general-store); what it measures on that page is unread from this tree, because the host refuses the sandbox's egress.",
+      "contact": null,
+      "found_on": "Keeper-supplied server listing, 2026-09-10; the page itself is unreadable from the sandbox",
       "note_sent": null,
       "reply": null,
       "cites_since": null

@@ -41,6 +41,7 @@ joins or leaves.
 | [Cleared Index Paid Probe](https://clearedindex.com) | hello@clearedindex.com |
 | [CopperheadAI](https://copperhead.lonestaroracle.xyz) | — |
 | [CottonmouthAI](https://cottonmouth.lonestaroracle.xyz) | — |
+| [Crosspeel](https://crosspeel.com/endpoints/scvd-store/) | — |
 | [Cursor Directory](https://cursor.directory/plugins/scvd-general-store-repo) | — |
 | [Data Quality Gate](https://www.aidatatools.dev) | — |
 | [Datasource Pulse](https://datasourcepulse.com) | — |
@@ -86,6 +87,7 @@ joins or leaves.
 | [probe402](https://probe402.com) | hello@probe402.com |
 | [PulseFeed — x402 Trust & Safety Oracle](https://pulsefeed.dev) | nikolife2016@gmail.com |
 | [RattlerAI](https://rattler.lonestaroracle.xyz) | — |
+| [robinsaige.com](https://robinsaige.com/s/store.scvd/general-store) | — |
 | [roninforge state-of-mcp](https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/) | — |
 | [Rubric Protocol — Post-Quantum AI Attestation](https://rubric-protocol.com) | https://rubric-protocol.com/contact |
 | [SALT19 Agent Utility Grid](https://salt19.com/agent-utility-grid/) | https://salt19.com/about |

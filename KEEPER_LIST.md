@@ -1046,6 +1046,17 @@ Do not relitigate without you.
   re-read at https://agentpluginsdirectory.com/plugins/scvd-general-store.
   Confirmation date refreshed; the record now describes the plugin
   bundle and the directory's manifest check, not only the MCP server.
+- **robinsaige.com, Crosspeel, 402.ad, VerifyMCP.** DONE 2026-09-10:
+  the keeper supplied four listing URLs. Two were new and are now
+  trust rows: https://robinsaige.com/s/store.scvd/general-store and
+  https://crosspeel.com/endpoints/scvd-store/. Two were already
+  rows and had their confirmed date refreshed: the 402.ad service
+  page and the VerifyMCP store page. Neither new host answers the
+  sandbox, so the rows state only what the address establishes and
+  the register marks both pages unread. LOOK, five minutes: what
+  each of the two new pages actually measures, so the row can say
+  it in their words; and whether either offers a claim or refresh
+  route. Indexing only, not an endorsement or proof of purchases.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.
