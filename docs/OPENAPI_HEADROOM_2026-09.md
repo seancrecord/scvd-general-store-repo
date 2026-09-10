@@ -120,5 +120,14 @@ moves forward. All 33 checks in the two repaired files pass. Product expiry
 rules are unchanged. The same clock-only repair is carried into the queued
 evidence-reader PR #605, whose current full CI began after both expiries.
 
-A clean full CI run is required before release. The change is not yet
-deployed. The PR check record will carry the exact release result.
+PR #610 passed full CI and merged September 10 at 14:43:14 UTC as
+`1f97e1a14ad9580f98719ac666d4e96f7ee2e5c9`. Both production Worker build
+checks on that merge passed. A direct read at 14:49:56 UTC returned
+686,600 decoded bytes and all 162 paths, below the warning budget.
+This is a live size observation, not a latency benchmark. PR #605 also
+passed its preceding full CI; its roadmap conflict is resolved on
+`fe431105`, with fresh integrated CI required before merge.
+
+The following package implementation is recorded separately in
+`docs/COMPACT_CORPUS_PACKAGES_2026-09.md`; its prepared versions are not
+registry releases yet.

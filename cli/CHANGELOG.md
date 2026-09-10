@@ -5,6 +5,16 @@ version forever (0.1.1 exists because of that). Minor versions add
 commands and never change an existing command's output shape or exit
 code; a change to either is a major.
 
+## 0.3.0 — 2026-09-10
+
+- Add `corpus-index [--limit <n>] [--cursor <cursor>]`: one metadata page,
+  returned whole. No automatic pagination, snapshot fetching or verification.
+- Preserve unreadable rows, pagination and the server's evidence limits.
+- Correct the README's blanket anchoring claim to timestamp status.
+- Accept global `--json` and week flags before a command without treating
+  the flags themselves as positional arguments. Existing command endpoints,
+  output shapes and exit codes are unchanged.
+
 ## 0.2.0 — 2026-09-03
 
 Added, on the roadmap's C5 row:

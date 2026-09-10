@@ -27,6 +27,15 @@ The keeper subsequently confirmed that the competitor in the original
 comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
 
+## September 10 — package reader follow-through
+
+PR #610 has passed full CI, merged and deployed; the live API retains all
+paths below its size-warning budget. CLI and the corpus client now have
+explicit one-page metadata readers, with original whole-corpus output
+preserved. Sign's documentation patch is prepared. These package versions
+are not yet published. Implementation, validation and release conditions:
+`docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
 ## Reader and inventory follow-through
 
 Authorized September 9 with “okay lets do that”: compact corpus discovery,
@@ -195,6 +204,11 @@ experiment with throwaway keys only, measuring bytes and timing and
 testing tampering. Any experimental dependency is isolated from the
 Worker and the dependency-free verifier. Production adoption requires
 the measured result and a concrete key-provisioning review.
+
+Production follow-through is now specified in
+`PQ_PRODUCTION_ROLLOUT_2026-09.md`: checkpoint-first deployment, independent
+verification before issuance, measured runtime budgets, fail-closed policy
+and a concrete custody rehearsal. This is a plan; signing remains Ed25519.
 
 ## 5. Anchor coverage
 

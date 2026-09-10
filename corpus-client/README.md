@@ -5,9 +5,14 @@ x402 corpus: the weekly census, the fresh set, one host's readiness
 history, the month, the feeds, the diff and the defect vocabulary, each
 as the store serves it. The `scvd` CLI's library half.
 
-```
+## Install
+
+```sh
 npm install scvd-corpus-client
 ```
+
+Node 18.17 or newer. To use a source checkout, import
+`./corpus-client/corpus-client.js` instead of the package name.
 
 ## Use
 
@@ -20,7 +25,7 @@ const august = await month("2026-08");         // the state of x402 for one mont
 const atom = await feeds();                    // the four Atom feeds, by address
 ```
 
-Every function is one GET to a stable address and returns the store's
+Each reader makes at most one GET to a stable address and returns the store's
 JSON whole. Nothing is summarised, scored or re-derived here: the
 corpus is signed, with each digest submitted for Bitcoin anchoring.
 Pending submissions still need completed proofs and independent verification. A client that rewrote it
@@ -49,10 +54,38 @@ record is `CHANGELOG.md`.
 
 ### Compact discovery
 
-The September 9 Worker release adds `/corpus/index.json`, a paginated metadata
-projection. Follow its `next` URLs and preserve unreadable rows in your
-counts. It does not verify signatures or fetch R2 snapshot bodies. The
-existing `corpus()` function and `/corpus.json` shape stay unchanged.
+`corpusIndex({ limit?, cursor?, base?, fetch?, timeoutMs? })` returns one
+page from `/corpus/index.json`. Omit `limit` to use the server's default;
+the server enforces its maximum. It makes one GET and never follows `next`
+or fetches snapshot bodies. For example:
+
+```js
+import { corpusIndex } from "scvd-corpus-client";
+
+const page = await corpusIndex({ limit: 1 });
+console.log(page); // includes unreadable rows, counts and verification limits
+// When you decide to fetch another page:
+if (page.has_more === true && typeof page.next === "string") {
+  const cursor = new URL(page.next).searchParams.get("cursor");
+  if (!cursor) throw new Error("Incomplete pagination: next has no cursor");
+  const nextPage = await corpusIndex({ limit: 1, cursor });
+  console.log(nextPage);
+}
+```
+
+A page with `has_more: true` and no `next` is incomplete. Keep unreadable
+rows in the denominator, and preserve the server's `verification` and
+`completeness` fields. This is metadata discovery; the helper does not
+verify signatures, chain links or Bitcoin proofs. Pagination does not
+establish a point-in-time inventory. `corpus()` keeps its original whole
+`/corpus.json` response.
+
+Invalid option shapes throw `TypeError` without a request. HTTP refusals
+throw `CorpusHttpError` with the status and server body; timeouts and
+network failures reject. An unreadable successful page rejects instead
+of becoming an empty inventory. The existing `timeoutMs` option defaults
+to 30 seconds. Every read is free and needs no account, key or wallet.
+
 For bounded snapshot export and offline verification, use the published
 [x402-verify evidence CLI](https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence),
 with explicit byte-limit settings for larger snapshots.

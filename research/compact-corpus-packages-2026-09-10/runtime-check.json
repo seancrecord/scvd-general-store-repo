@@ -1,0 +1,11 @@
+{
+  "runtime": "Node.js v18.17.0",
+  "source": "https://nodejs.org/download/release/v18.17.0/node-v18.17.0-darwin-arm64.tar.gz",
+  "checksums": "https://nodejs.org/download/release/v18.17.0/SHASUMS256.txt",
+  "sha256": "19731ef427e77ad9c5f476eb62bfb02a7f179d3012feed0bbded62e45f23e679",
+  "cli_and_client_tests": {
+    "passed": 36,
+    "failed": 0
+  },
+  "local_archive_fixture": "passed"
+}

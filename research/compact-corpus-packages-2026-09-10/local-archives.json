@@ -1,0 +1,117 @@
+{
+  "status": "reviewed local archives, not published",
+  "packages": [
+    {
+      "name": "scvd-cli",
+      "version": "0.3.0",
+      "size": 15404,
+      "unpackedSize": 49793,
+      "integrity": "sha512-m5mc0hJ6Df7R6YYZO4no3GTbBzdbadfuCSXfBR7WhrfQfDwk6+IXnxYP80mWitofNy7MomW7x31BfiE0z3MUMA==",
+      "files": [
+        {
+          "path": "CHANGELOG.md",
+          "size": 2316,
+          "mode": 420
+        },
+        {
+          "path": "LICENSE",
+          "size": 1068,
+          "mode": 420
+        },
+        {
+          "path": "README.md",
+          "size": 9272,
+          "mode": 420
+        },
+        {
+          "path": "package.json",
+          "size": 882,
+          "mode": 420
+        },
+        {
+          "path": "scvd.mjs",
+          "size": 36255,
+          "mode": 493
+        }
+      ]
+    },
+    {
+      "name": "x402-sign",
+      "version": "1.0.3",
+      "size": 9280,
+      "unpackedSize": 23858,
+      "integrity": "sha512-cjyqKL/dXkdI4yQ6iBGSwNOMZsF8Y4PqAURcNWs8+tbka74d2xNac5mFX/RsxhaiA3Q5BwkAa7pVZWkxPkCs6w==",
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1068,
+          "mode": 420
+        },
+        {
+          "path": "README.md",
+          "size": 7590,
+          "mode": 420
+        },
+        {
+          "path": "package.json",
+          "size": 1151,
+          "mode": 420
+        },
+        {
+          "path": "x402-sign.d.ts",
+          "size": 3017,
+          "mode": 420
+        },
+        {
+          "path": "x402-sign.js",
+          "size": 11032,
+          "mode": 420
+        }
+      ]
+    },
+    {
+      "name": "scvd-corpus-client",
+      "version": "0.1.0",
+      "size": 5406,
+      "unpackedSize": 13781,
+      "integrity": "sha512-OQgfFZpDtdMm9sE3AMWFGJxmCWrnDKWDFbZYtoxq285koNd3vYXUbAVwpPGjTmymcz5kcwMJFk13YZYcK4meRg==",
+      "files": [
+        {
+          "path": "CHANGELOG.md",
+          "size": 688,
+          "mode": 420
+        },
+        {
+          "path": "LICENSE",
+          "size": 1068,
+          "mode": 420
+        },
+        {
+          "path": "README.md",
+          "size": 4000,
+          "mode": 420
+        },
+        {
+          "path": "corpus-client.d.ts",
+          "size": 1391,
+          "mode": 420
+        },
+        {
+          "path": "corpus-client.js",
+          "size": 5084,
+          "mode": 420
+        },
+        {
+          "path": "example.mjs",
+          "size": 513,
+          "mode": 420
+        },
+        {
+          "path": "package.json",
+          "size": 1037,
+          "mode": 420
+        }
+      ]
+    }
+  ]
+}
