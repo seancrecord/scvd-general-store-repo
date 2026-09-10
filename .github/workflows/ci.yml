@@ -18,9 +18,21 @@ name: CI
 permissions:
   contents: read
 
+# ONE RUN PER COMMIT (2026-09-10). This said `branches: ["**"]` beside
+# `pull_request:`, and every commit on a PR branch matched BOTH — two
+# identical 32-minute suites against the same SHA, racing each other,
+# on every push to every branch. It was found the honest way: waiting
+# on #604 and noticing the board showed two `check` rows two seconds
+# apart.
+#
+# Nothing loses coverage. A branch commit is still checked, through
+# the pull_request event; main is still checked on push, which is the
+# run that gates the deploy. What goes away is only the duplicate —
+# and with it half the wall-clock before any PR is mergeable, since
+# `blocked` waits on both.
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
 
 jobs:
