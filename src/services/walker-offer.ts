@@ -1,5 +1,5 @@
 import { MENU_ITEMS } from "@/store/menu";
-import { CREDIT_RATE } from "@/services/store-credit";
+import { CREDIT_FLOOR_ATOMIC, CREDIT_RATE } from "@/services/store-credit";
 
 /**
  * WHAT A WALKER CAN DO WITH WHAT THEY JUST EARNED (2026-09-09, the
@@ -68,7 +68,14 @@ export function walkerOffer(base: string): WalkerOffer {
           },
         }
       : { cheapest_item: { id: "", name: "", buy_url: `${base}/menu.json` } }),
-    credit: `${CREDIT_RATE * 100}% of anything you buy here banks back to the wallet that paid — no account, the wallet is the card, and it cashes out to you in USDC. ${base}/api/credit/<your wallet>`,
+    /*
+     * THE FLOOR BELONGS IN THE SAME BREATH AS THE RATE. A rebate whose
+     * cash-out threshold is unstated reads as money you can take today
+     * and is not; saying "$1" here is the difference between an offer
+     * and a small disappointment later. Both numbers are read off the
+     * credit desk's own dials so this line cannot outlive them.
+     */
+    credit: `${CREDIT_RATE * 100}% of anything you buy here banks back to the wallet that paid — no account, the wallet is the card. It cashes out to you in USDC once the balance passes $${(Number(CREDIT_FLOOR_ATOMIC) / 1e6).toFixed(2)}; under that it keeps accruing. ${base}/api/credit/<your wallet>`,
     ...(pass
       ? {
           patronage: {

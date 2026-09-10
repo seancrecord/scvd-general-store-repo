@@ -826,6 +826,11 @@ describe("the ask is a shape, and the door teaches on the way past", () => {
     expect(offer.cheapest_usd).toBeGreaterThan(0);
     expect(offer.cheapest_item.buy_url).toContain("/api/buy/");
     expect(offer.credit).toContain("%");
+    // The rate AND the floor: a rebate whose threshold is unstated
+    // reads as money you can take today, and is not.
+    const { CREDIT_FLOOR_ATOMIC, CREDIT_RATE } = await import("@/services/store-credit");
+    expect(offer.credit).toContain(`${CREDIT_RATE * 100}%`);
+    expect(offer.credit).toContain(`$${(Number(CREDIT_FLOOR_ATOMIC) / 1e6).toFixed(2)}`);
     // The standing arrangement is named where it exists.
     expect(offer.patronage?.id).toBe("recurring_patronage");
     expect(offer.patronage?.what).toContain("thirty-day");
