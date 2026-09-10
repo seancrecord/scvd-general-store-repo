@@ -78,29 +78,44 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   /**
-   * TWO MORE FROM THE KEEPER'S HAND (2026-09-10). Both URLs came in
-   * from the keeper's browser; both hosts refuse this sandbox's
-   * egress, so the pages themselves were not read here. The row says
-   * only what the address shape establishes and what the keeper
-   * confirmed by opening it — nothing about what either page grades,
-   * because a reading copied from memory would be exactly the invented
-   * claim the docblock above forbids. `npm run listings:check` reads
-   * both from CI and says which generation of the store's text each
-   * carries.
+   * FOUR FROM THE KEEPER'S HAND (2026-09-10). The URLs came in from
+   * the keeper's browser; every one of these hosts refuses this
+   * sandbox's egress, so no page was opened here. What each row says
+   * beyond the address comes from the search engine's snippet of the
+   * page (research/listing-scan-2026-09-10.md holds the snippets as
+   * read), which is a partial read and is named as one — nothing a
+   * snippet did not show is asserted, because a reading copied from
+   * memory would be exactly the invented claim the docblock above
+   * forbids. `npm run listings:check` reads all four from CI and says
+   * which generation of the store's text each carries.
    */
   {
     url: "https://robinsaige.com/s/store.scvd/general-store",
     registry: "robinsaige.com — MCP server directory",
     confirmed: "2026-09-10",
     what_it_proves:
-      "That robinsaige.com carries a page for this server under the official registry name, store.scvd/general-store, which is the form every downstream of the MCP registry resolves it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods, and whatever the page measures is its own reading on its own schedule.",
+      "That robinsaige.com carries a page for this server under the official registry name, store.scvd/general-store, with the registry description verbatim and a verdict of its own derived from the live door (its snippet reads 'allow — alive & usable' and counts the tools served). Not an endorsement and not an audit: a directory page proves indexing, and its verdict is its instrument, read on its page and not copied here.",
   },
   {
     url: "https://crosspeel.com/endpoints/scvd-store/",
-    registry: "Crosspeel (crosspeel.com) — endpoint index",
+    registry: "Crosspeel (crosspeel.com) — endpoint observer",
     confirmed: "2026-09-10",
     what_it_proves:
-      "That Crosspeel keeps a per-provider page for this store's x402 endpoints under the slug scvd-store. Not an endorsement and not an audit: an endpoint index proves the doors were found and indexed, nothing about the goods behind them or whether a purchase ever settled.",
+      "That Crosspeel keeps a per-provider page for this store's x402 endpoints under the slug scvd-store — observations, price history and every stored response, in its own words, with named goods among them. Not an endorsement and not an audit: an observer's page proves the doors were found and knocked on, nothing about the goods behind them or whether a purchase ever settled.",
+  },
+  {
+    url: "https://publishyoursaas.com/listing/scvd-store",
+    registry: "PublishYourSaaS",
+    confirmed: "2026-09-10",
+    what_it_proves:
+      "That a SaaS launch directory carries a listing for scvd.store whose opening line is the sixty words' first sentence, verbatim. Not an endorsement and not an audit: a listing proves indexing under the current text, nothing about the goods.",
+  },
+  {
+    url: "https://aitoolscapital.com/tools/scvd-general-store/",
+    registry: "AI Tools Capital",
+    confirmed: "2026-09-10",
+    what_it_proves:
+      "That an AI-tools review directory carries a page for SCVD General Store, shaped as a review ('Worth It?') and reading it as an evidence observatory and marketplace for agentic commerce with x402 payments and endpoint verification, priced from free. Not an endorsement and not an audit: a review-shaped directory page is still a directory page — it proves indexing, and its verdict is its own.",
   },
   {
     url: "https://agenstry.com/agents/scvd.store",
@@ -777,20 +792,30 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://cursor.directory/plugins/scvd-general-store-repo",
     registry: "Cursor Directory",
-    confirmed: "2026-08-11",
+    confirmed: "2026-09-10",
     /**
      * THE FIRST LISTING BUILT FROM THE REPO'S OWN PACKAGE rather than
      * a crawler's paraphrase: its scanner rejected this repository in
-     * the morning ("No plugin components found in: repo root"), the
-     * Agent Plugins package (plugin.json, mcp.json, skills/) shipped
-     * in answer, and the rescan produced a page that reads correctly
-     * on arrival — both MCP servers with their real connection
-     * configs, the skill, and the trust-layer description leading.
-     * Nothing to correct at the source, for once, because the source
-     * is this repository.
+     * the morning of 2026-08-11 ("No plugin components found in: repo
+     * root"), the Agent Plugins package (plugin.json, mcp.json,
+     * skills/) shipped in answer, and the rescan produced a page that
+     * reads correctly on arrival — both MCP servers with their real
+     * connection configs, the skill, and the trust-layer description
+     * leading. Nothing to correct at the source, for once, because
+     * the source is this repository.
+     *
+     * RE-READ BY THE KEEPER 2026-09-10: the page now leads with the
+     * evidence-observatory sentence and the storefront's title, the
+     * two MCP servers still carry the exact connection configs
+     * mcp.json declares (streamable-http at /mcp; npx scvd-tab), one
+     * skill. Its tag cloud is a cached snapshot: it carries topics the
+     * repository no longer declares (clawdhub, openclaw,
+     * personal-agents, marketplace) beside the current ones. That
+     * lags until their rescan and is not corrected from here, because
+     * the source it derives from is already right.
      */
     what_it_proves:
-      "That the Cursor Directory carries a plugin page for this store, generated from this repository's own Agent Plugins package (plugin.json, mcp.json, skills/) — so its connection configs and description are the repo's own words rather than a crawler's guess. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service.",
+      "That the Cursor Directory carries a plugin page for this store, generated from this repository's own Agent Plugins package (plugin.json, mcp.json, skills/) — so its connection configs are the repo's own words rather than a crawler's guess, and read correctly on 2026-09-10. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service; its tag cloud is a cached snapshot that lags the repository's topics until its next rescan.",
   },
   {
     url: "https://smithery.ai/servers/seancrecord/scvd-general-store",

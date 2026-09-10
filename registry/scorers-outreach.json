@@ -95,6 +95,16 @@
       "cites_since": null
     },
     {
+      "name": "Agent Economy Report",
+      "url": "https://agenteconomy.report/s/scvd.store",
+      "what_it_scores": "A trust index over agent-facing services; its scvd.store page publishes a letter rating (CCC, 'declining', on the 2026-09-10 snippet) derived from numbers it measured itself: organic paying agents, USDC settled, uptime.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "Agent Identity Registry",
       "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
       "what_it_scores": "AIR — The global identity standard and trust framework for AI agents.",
@@ -150,6 +160,16 @@
       "what_it_scores": "Thousands of services.",
       "contact": "https://agentic.market/about",
       "found_on": "the sameAs mirror list on scvd.store's homepage (what npm run listings:check walks)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "AI Tools Capital",
+      "url": "https://aitoolscapital.com/tools/scvd-general-store/",
+      "what_it_scores": "An AI-tools review directory; its SCVD General Store page is shaped as a review ('Worth It?') and reads the store as an evidence observatory and marketplace for agentic commerce with x402 payments and endpoint verification, priced from free.",
+      "contact": null,
+      "found_on": "Keeper-supplied listing, 2026-09-10; read as a search-engine snippet, the host refuses the sandbox's egress",
       "note_sent": null,
       "reply": null,
       "cites_since": null
@@ -237,9 +257,9 @@
     {
       "name": "Crosspeel",
       "url": "https://crosspeel.com/endpoints/scvd-store/",
-      "what_it_scores": "An endpoint index that keeps a per-provider page for scvd.store's x402 doors; what it measures on that page is unread from this tree, because the host refuses the sandbox's egress.",
+      "what_it_scores": "An endpoint observer; its scvd.store page keeps observations, price history and every stored response per endpoint, in its own words, and names goods it saw (Settlement Attestation among them).",
       "contact": null,
-      "found_on": "Keeper-supplied provider listing, 2026-09-10; the page itself is unreadable from the sandbox",
+      "found_on": "Keeper-supplied provider listing, 2026-09-10; read as a search-engine snippet, the host refuses the sandbox's egress",
       "note_sent": null,
       "reply": null,
       "cites_since": null
@@ -415,6 +435,16 @@
       "cites_since": null
     },
     {
+      "name": "Influzer",
+      "url": "https://www.influzer.ai/mcp/seancrecord-scvd-general-store-repo",
+      "what_it_scores": "An MCP server directory mirrored from mcpservers.org; carries the store under its canonical name and a second entry under the July name from the llms.txt-derived listing.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "IntentFence",
       "url": "https://agentpass-protocol.rmalka06.chatgpt.site",
       "what_it_scores": "Pre-transaction policy and quote safety checks for autonomous AI agents.",
@@ -430,6 +460,16 @@
       "what_it_scores": "KHOTEM is a cryptographic witness for AI agents: seal (SHA-256 commitments), attest, verify, timestamp and audit, plus three paid operational-law documents for agent builders.",
       "contact": null,
       "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "Launch AI",
+      "url": "https://trylaunch.ai/launch/scvd-store",
+      "what_it_scores": "A community launch board; its scvd.store page reads 'an evidence observatory for agentic commerce on x402' and was posted by a third-party account (davidaidirectories), not the keeper.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
       "note_sent": null,
       "reply": null,
       "cites_since": null
@@ -675,6 +715,16 @@
       "cites_since": null
     },
     {
+      "name": "PublishYourSaaS",
+      "url": "https://publishyoursaas.com/listing/scvd-store",
+      "what_it_scores": "A SaaS launch directory; its scvd.store listing opens with the sixty words' first sentence verbatim.",
+      "contact": null,
+      "found_on": "Keeper-supplied listing, 2026-09-10; read as a search-engine snippet, the host refuses the sandbox's egress",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "PulseFeed — x402 Trust & Safety Oracle",
       "url": "https://pulsefeed.dev",
       "what_it_scores": "Verify any x402 endpoint before your agent pays: liveness, scam/anomaly scan (payTo hijack, bait-and-switch, honeypot), on-chain receiver verification and an open Trust Score.",
@@ -697,9 +747,9 @@
     {
       "name": "robinsaige.com",
       "url": "https://robinsaige.com/s/store.scvd/general-store",
-      "what_it_scores": "An MCP server directory keyed on the official registry name (store.scvd/general-store); what it measures on that page is unread from this tree, because the host refuses the sandbox's egress.",
+      "what_it_scores": "An MCP server directory keyed on the official registry name (store.scvd/general-store); carries the registry description verbatim and publishes a derived verdict on the live door ('allow — alive & usable', tools served counted).",
       "contact": null,
-      "found_on": "Keeper-supplied server listing, 2026-09-10; the page itself is unreadable from the sandbox",
+      "found_on": "Keeper-supplied server listing, 2026-09-10; read as a search-engine snippet, the host refuses the sandbox's egress",
       "note_sent": null,
       "reply": null,
       "cites_since": null
@@ -845,6 +895,16 @@
       "cites_since": null
     },
     {
+      "name": "Talkshi",
+      "url": "https://talkshi.com/agent/x402-scvd-store",
+      "what_it_scores": "An agent-services marketplace with reviews and ratings that routes x402 calls through its own account; keeps a provider profile for scvd.store, named in its site map.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "TinyOps Automation Integration Preflight",
       "url": "https://tinyopsstudio.com/automation-preflight-api.html",
       "what_it_scores": "Public-page automation readiness and acceptance-pack API.",
@@ -955,11 +1015,41 @@
       "cites_since": null
     },
     {
+      "name": "Vouch Protocol",
+      "url": "https://vouch-protocol.com/agent-trust-index/",
+      "what_it_scores": "An Agent Trust Index grading MCP servers on identity proof; its table carries store.scvd/general-store with did:web and an Ed25519 JWK at grade A, 100 on the 2026-09-10 snippet. One table, no per-server page found.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
       "name": "Watchtower",
       "url": "https://watchtower-api.com",
       "what_it_scores": "Deterministic sanctions screening for AI agents across OFAC/UN/EU/UK lists; x402 USDC on Base, no signup.",
       "contact": null,
       "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "WhatTheAI",
+      "url": "https://whattheai.tech/tools/scvd-store",
+      "what_it_scores": "An AI-tools review directory; its scvd.store page misreads the store as consumer-trend analytics ('track trends, consumer behavior, and market dynamics'), a wrong reading recorded on arrival.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
+      "note_sent": null,
+      "reply": null,
+      "cites_since": null
+    },
+    {
+      "name": "x402 Lens",
+      "url": "https://x402lens.com/services/scvd-general-store-scvd-store",
+      "what_it_scores": "An x402 service explorer; its SCVD General Store page lists the paid doors with their menu links and MCP tools, and its Coinbase facilitator page ranks the store among the top services routed by settled volume.",
+      "contact": null,
+      "found_on": "Web search for the store's name, 2026-09-10 (research/listing-scan-2026-09-10.md); read as a search-engine snippet, unopened",
       "note_sent": null,
       "reply": null,
       "cites_since": null

@@ -185,6 +185,17 @@ measure. The same day the keeper re-opened the existing 402.ad and
 VerifyMCP store pages; their confirmed dates moved, their rows did not.
 Indexing only; none of this is connector acceptance or purchase evidence.
 
+Later the same day, two more from the keeper's browser:
+[PublishYourSaaS](https://publishyoursaas.com/listing/scvd-store), a
+launch-directory listing opening with the sixty words' first
+sentence, and [AI Tools Capital](https://aitoolscapital.com/tools/scvd-general-store/),
+a review-shaped directory page. Both are trust rows; both hosts refuse
+the sandbox, so the rows carry what the search snippets showed. A web
+scan for the store's name the same afternoon found seven more pages
+nobody here has opened (Agent Economy Report's CCC rating among them);
+they are register rows and a LOOK on the desk, not trust rows, and
+`research/listing-scan-2026-09-10.md` holds the snippets.
+
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
 Status of the review gates, checked 2026-08-21:
@@ -320,7 +331,11 @@ archived the same day).
   generated from this repository's own Agent Plugins package. The row
   is in `src/store/trust-signals.ts`; this line said "accepts
   submissions" until 2026-09-06, which is what a hand-kept venue list
-  does when a directory indexes you without asking.
+  does when a directory indexes you without asking. Re-read by the
+  keeper 2026-09-10: both MCP connection configs match `mcp.json`,
+  one skill, the evidence-observatory lead; its tag cloud is a
+  cached snapshot of older GitHub topics and lags until their
+  rescan. Nothing to change on this side.
 - Perplexity connectors: developer-program submission; wants the
   privacy policy and a remote MCP endpoint — the same two gates as
   Claude's, both met.
