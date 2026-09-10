@@ -96,7 +96,7 @@ jobs:
       # this job does not want.
       - name: The examples
         run: npm run examples:test
-      # THE PACKAGES (roadmap C5): x402-preflight, scvd-corpus-client,
+      # THE PACKAGES (roadmap C5): scvd-preflight, scvd-corpus-client,
       # scvd-defects and scvd-mcp-starter, each zero-dependency, each
       # tested on Node's own runner against a server that is not the
       # store. Publish is the keeper's press; the tree is the source.

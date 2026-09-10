@@ -1,3 +1,4 @@
+import { decodeBase64Json } from "@/lib/base64-json";
 import type { DeclineReason } from "@/lib/payments";
 import {
   blockingProblems,
@@ -37,7 +38,7 @@ export function decodePaymentHeader(header: string | undefined): unknown {
     return undefined;
   }
   try {
-    return JSON.parse(atob(header));
+    return decodeBase64Json(header);
   } catch {
     return undefined;
   }
@@ -351,17 +352,17 @@ export function neverJudgedBlock(
   const solana = network?.startsWith("solana:") ?? false;
   return {
     fault: "upstream",
-    note: "Your payment was NEVER JUDGED. The call from this store to the payment facilitator failed, so nothing looked at your signature, your authorization or your wallet. No money moved, your nonce is unspent, and nothing is wrong with what you sent.",
+    note: "This verification attempt was NEVER JUDGED. The call from this store to the payment facilitator failed. This request did not submit payment; an earlier attempt may still have settled or remain unresolved. Keep the original payment, key and any private status handle.",
     retry: {
       resend_identical_payload: true,
       after_seconds: RESEND_AFTER_SECONDS,
       ...(signedUntil ? { payload_valid_until: signedUntil } : {}),
-      how: `Wait ${RESEND_AFTER_SECONDS} seconds and send the SAME payment payload again, byte for byte, to this same resource. Do not re-sign and do not generate a new nonce${signedUntil ? ` — the authorization you already hold is good until unix ${signedUntil}` : ""}. Re-signing is not unsafe, it is just wasted work on a payload that was never the problem.`,
+      how: `Wait ${RESEND_AFTER_SECONDS} seconds and send the SAME payment payload again, byte for byte, to this same resource. Do not re-sign and do not generate a new nonce${signedUntil ? ` — the authorization you already hold is good until unix ${signedUntil}` : ""}. Do not sign another payment while an earlier attempt is unresolved.`,
       if_it_repeats:
         "Two or three of these in a row is an outage on the payment rail rather than anything you can fix. Back off and come back later; the price and the goods will be here.",
       ...(solana
         ? {
-            solana_blockhash: `Solana is the exception to "byte for byte": your transaction carries a recent blockhash that the chain stops accepting after roughly ${SOLANA_BLOCKHASH_KEEPS_SECONDS} seconds. Resend the identical payload inside that window; past it, expect BlockhashNotFound and build a fresh transaction on a new blockhash instead. Nothing was spent either way.`,
+            solana_blockhash: `Solana is the exception to "byte for byte": your transaction carries a recent blockhash that the chain stops accepting after roughly ${SOLANA_BLOCKHASH_KEEPS_SECONDS} seconds. Resend the identical payload inside that window. Past it, a BlockhashNotFound response means the original signed transaction is no longer spendable, but it can still authenticate retained purchase recovery. Use the private status handle or Claims if needed; create a fresh transaction only for a deliberate new purchase after the earlier outcome is known.`,
           }
         : {}),
     },
@@ -370,5 +371,5 @@ export function neverJudgedBlock(
 
 /** The note for a refusal that WAS a judgement. */
 export const JUDGED_NOTE =
-  "The signed payment was not accepted; no money moved and nothing left the shelf.";
+  "This verification attempt was not accepted and did not submit payment. That does not establish the outcome of any earlier attempt; keep the original payment and key for recovery.";
 

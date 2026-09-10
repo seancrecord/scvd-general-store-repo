@@ -25,6 +25,8 @@ export interface PurchaseIntent {
   door: "http" | "mcp";
   payer: string;
   terms: PaymentRequirements;
+  /** One-way fingerprint of the verified wire payment, never executable bytes. */
+  payment_proof?: string;
   /** Exact query (duplicates retained) or full MCP arguments; never payment credentials. */
   request: string;
   item?: MenuItem;
@@ -46,6 +48,10 @@ export function purchaseIntentStore(env: Env, id: string) {
   const namespace = env.PAID_RECOVERIES;
   if (!namespace) throw new Error("Purchase storage unavailable");
   return namespace.get(namespace.idFromName(`purchase:${id}`));
+}
+
+export async function paymentRecoveryFingerprint(payment: unknown): Promise<string> {
+  return sha256Hex(jcsCanonicalize(payment));
 }
 
 export function purchaseRecovery(env: Env, record: PurchaseIntent) {
@@ -195,6 +201,7 @@ export async function beginPurchaseIntent(env: Env, input: {
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 1, id,
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
+      payment_proof: await paymentRecoveryFingerprint(input.payload),
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
       ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(observationDigest ? { observation_digest: observationDigest } : {}),

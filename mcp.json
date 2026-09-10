@@ -8,7 +8,7 @@
     "scvd-tab": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "scvd-tab"]
+      "args": ["-y", "scvd-tab@0.11.1"]
     }
   }
 }

@@ -1,0 +1,180 @@
+{
+  "source": "local prepared menu, not deployment evidence",
+  "items": [
+    {
+      "id": "spot_check",
+      "url": "/samples/spot-check.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "settlement_attestation",
+      "url": "/samples/settlement-attestation.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "small_blessing",
+      "url": "/samples/small-blessing.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "settlement_reconciliation",
+      "url": "/samples/settlement-reconciliation.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "daily_fortune",
+      "url": "/samples/daily-fortune.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "the_confession",
+      "url": "/samples/the-confession.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "attestation_bundle",
+      "url": "/samples/attestation-bundle.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "the_mandate",
+      "url": "/samples/the-mandate.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "the_case_file",
+      "url": "/samples/case-file.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "hello",
+      "url": "/samples/hello.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "good_buyer",
+      "url": "/samples/good-buyer.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "signature_agent_card",
+      "url": "/samples/signature-agent-card.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "the_statement",
+      "url": "/samples/the-statement.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "luckies",
+      "url": "/luckies/sample.svg",
+      "kind": "visual_preview"
+    },
+    {
+      "id": "coffees_for_closers",
+      "url": "/samples/coffees-for-closers.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "bitcoin_anchor",
+      "url": "/samples/bitcoin-anchor.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "context_anchor",
+      "url": "/samples/context-anchor.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "passport_refresh",
+      "url": "/samples/passport-refresh.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "graffiti_on_a_train",
+      "url": "/samples/graffiti-on-a-train.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "a2a_repair_kit",
+      "url": "/samples/a2a-repair-kit.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "standing_watch",
+      "url": "/samples/night-watch.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "service_audit",
+      "url": "/samples/once-over.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "conformance_watch",
+      "url": "/samples/conformance-watch.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "onpage_audit",
+      "url": "/samples/onpage-audit.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "launch_check",
+      "url": "/samples/launch-check.json",
+      "kind": "unsigned_specimen"
+    },
+    {
+      "id": "opening_day",
+      "url": "/samples/launch-check.json",
+      "kind": "shared_component"
+    },
+    {
+      "id": "provenance_check",
+      "url": "/samples/provenance-check.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "recurring_patronage",
+      "url": "/samples/recurring-patronage.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "trust_profile",
+      "url": "/samples/trust-profile.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "operator_statement",
+      "url": "/samples/operator-statement.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "certificate_of_patronage",
+      "url": "/samples/certificate-of-patronage.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "aura_walk",
+      "url": "/samples/aura-walk.json",
+      "kind": "delivery_outline"
+    },
+    {
+      "id": "the_collab",
+      "url": "/samples/the-collab.json",
+      "kind": "delivery_outline"
+    }
+  ],
+  "counts": {
+    "total": 33,
+    "by_kind": {
+      "delivery_outline": 24,
+      "unsigned_specimen": 7,
+      "visual_preview": 1,
+      "shared_component": 1
+    },
+    "missing": 0
+  }
+}

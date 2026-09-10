@@ -1,3 +1,4 @@
+import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
 import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
@@ -327,6 +328,7 @@ async function enrich402Body(
   query: Record<string, string | undefined> = {},
   signedUntil?: number,
   network?: string,
+  originalKey?: string,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -404,9 +406,7 @@ async function enrich402Body(
            * to read as an instruction. A weak model acts on "do this
            * now"; it does not reliably act on "this facility exists."
            */
-          before_you_retry: isNeverJudged(decline)
-            ? `You are about to retry, and on this path that is exactly right: resend the same signed payload after ${RESEND_AFTER_SECONDS} seconds. Nothing settled, so there is nothing to double-charge — but sending idempotency.suggested_key as the Idempotency-Key header costs nothing and closes the one case this store cannot see from here.`
-            : "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. Keep your original key if you already sent one; unresolved admission stops another settlement.",
+          before_you_retry: "Keep the original signed payment and any idempotency key you already sent. To avoid a second charge, resend that key as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). A refused verification does not establish what happened on an earlier attempt. Retry the original payment for recovery, or use its private status handle or /api/claims. Use a suggested key only if you never sent one; do not replace an earlier key or sign another payment while its outcome is unresolved.",
           /*
            * A signature that did not clear is the exact moment the
            * domain trap costs somebody a night, so the whole block
@@ -447,7 +447,7 @@ async function enrich402Body(
           // here would pull observation engines into the small doors Worker.
           ...(item.sample_url ? {
             sample_url: `${base}${item.sample_url}`,
-            sample: { url: `${base}${item.sample_url}`, kind: "unsigned_specimen", price: "free", live_observation: false },
+            sample: { url: `${base}${item.sample_url}`, kind: item.sample_kind ?? "unsigned_specimen", price: "free", live_observation: false },
           } : {}),
           guarantee: GUARANTEE_BLOCK_TEXT,
           /**
@@ -458,7 +458,7 @@ async function enrich402Body(
            * as it did before it existed.
            */
           idempotency: {
-            suggested_key: suggestedIdempotencyKey(item.id),
+            suggested_key: originalKey ?? suggestedIdempotencyKey(item.id),
             how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
             optional:
               "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
@@ -830,6 +830,27 @@ function recordGateOutcome(c: Context<HonoEnv>, outcome: string): void {
   }
 }
 
+async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: SignedPurchaseRecovery): Promise<Response> {
+  c.header("Cache-Control", "no-store");
+  c.header("Paid-Retry", "true");
+  if (recovery.kind === "status") return c.json(recovery.body, recovery.body.code === "purchase_resolved" ? 409 : 503);
+  try {
+    const page = recovery.delivery.publication_response;
+    if (isRecord(page) && typeof page.markdown === "string" && typeof page.content_type === "string") {
+      const response = publicationResponse({ markdown: page.markdown, content_type: page.content_type }, recovery.payment.settleHeaders, recovery.recovery);
+      response.headers.set("Paid-Retry", "true");
+      return response;
+    }
+    const response = c.json({ ...recovery.delivery, paid_retry: true, charged: true, charged_again: false });
+    for (const [name, value] of Object.entries(recovery.payment.settleHeaders)) response.headers.set(name, value);
+    return response;
+  } catch {
+    return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL,
+      getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, recovery.payment), charged_again: false,
+      ...(recovery.recovery ? { recovery: recovery.recovery } : {}) }, 500);
+  }
+}
+
 const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new DialectTolerantAdapter(c);
@@ -919,12 +940,14 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const idempotencyKey = usableIdempotencyKey(c.req.header("Idempotency-Key"));
 
   // First facilitator sync happens on the first paid request per isolate.
-  await stack.initialized;
-
   let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
   try {
+    await stack.initialized;
     result = await stack.httpServer.processHTTPRequest(context);
   } catch (error) {
+    const recovered = await recoverSignedPurchase(c.env, decodePaymentHeader(offeredHeader),
+      { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
+    if (recovered) return signedRecoveryResponse(c, recovered);
     // P1: the facilitator conversation itself broke (not a mere decline).
     await sendAlert(c.env, {
       condition: "settlement_failure",
@@ -937,6 +960,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   if (result.type === "payment-error") {
+    const recovered = await recoverSignedPurchase(c.env, decodePaymentHeader(offeredHeader),
+      { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
+    if (recovered) return signedRecoveryResponse(c, recovered);
     // Failed authentication may return new terms; a closed shelf cannot quote.
     const unavailable = await c.get("purchaseAdmission")?.();
     if (unavailable) return unavailable;
@@ -1070,6 +1096,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           c.req.query(),
           signedValidBefore(paymentHeader),
           paymentNetwork(paymentHeader),
+          idempotencyKey ?? undefined,
         );
         /*
          * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store

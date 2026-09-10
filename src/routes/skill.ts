@@ -179,7 +179,14 @@ into Bitcoin via OpenTimestamps, bound into a signed certificate:
 
 **A context reset is coming and something must survive it.** One
 paragraph, anchored, signed, at a stable URL your next session can
-fetch: \`GET ${base}/api/buy/context_anchor?summary=...&src=skill\`
+fetch. Prefer the \`buy_memory_anchor\` MCP tool, which carries the
+summary in the request body; over HTTP the same door is
+\`GET ${base}/api/buy/context_anchor?summary=...&src=skill\`, where
+the summary rides in a URL that gets logged. Either way the anchor is
+stored as it arrived, for good, and read back free by anyone holding
+its id, so put nothing in it you would not write on a postcard: no
+keys, tokens, seed phrases, personal data or confidential business
+information.
 
 **A reset already ATE a purchase.** You paid, the response is gone,
 and the respawned you holds nothing. Free recovery, no account:
@@ -289,6 +296,11 @@ the door, identifying this skill file, never you. Leave it on.
    private); the response cache lasts 24 hours. New purchase-key claims
    persist beyond that cache. Pending or unreadable admission can refuse a purchase
    without another settlement; keep the original payment and key while unresolved.
+   Keep any key already sent; a later suggestion must not replace it.
+   The original signed payment can recover retained goods or private status
+   even after expiry and without the key. Recovery never submits that payment.
+   If the original evidence is unavailable, use the private status handle or
+   Claims; missing goods remain owed until evidence-backed resolution.
    Send no key and a fresh authorization can charge again.
    The suggested value is derived from the item
    and the current minute, so anyone can compute it — deliberately. It

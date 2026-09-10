@@ -1,5 +1,5 @@
 /**
- * x402-preflight — scvd.store's free x402 door check, as a library.
+ * scvd-preflight — scvd.store's free x402 door check, as a library.
  *
  * One POST per door to /api/preflight/v2: the same single probe, the
  * same battery, the same limiter every caller gets. The store answers
@@ -23,7 +23,7 @@ export const EXIT = Object.freeze({ ok: 0, verdictNegative: 1, usage: 2, unreach
 /** The order the worst outcome is chosen in; higher index is worse. */
 export const SEVERITY = Object.freeze(["ready", "refused", "unreachable", "not_ready"]);
 
-const USER_AGENT = "x402-preflight (+https://scvd.store/api/preflight/v2)";
+const USER_AGENT = "scvd-preflight (+https://scvd.store/api/preflight/v2)";
 /** Trailing slashes off an origin, without a regular expression over caller input. */
 function trimSlashes(value) {
   let end = String(value).length;

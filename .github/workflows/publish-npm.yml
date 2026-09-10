@@ -64,6 +64,9 @@ on:
           - x402-verify
           - x402-sign
           - scvd-corpus-client
+          - scvd-defects
+          - scvd-mcp-starter
+          - scvd-preflight
       # NO DEFAULT, ON PURPOSE — the same reasoning as the skill
       # publisher next door. A prefilled version is a number that reads
       # as current because nothing marks it as old, and one tap on a
@@ -111,6 +114,9 @@ jobs:
             x402-verify)  DIR=verifier ;;
             x402-sign)    DIR=signer ;;
             scvd-corpus-client) DIR=corpus-client ;;
+            scvd-defects) DIR=defects ;;
+            scvd-mcp-starter) DIR=mcp-starter ;;
+            scvd-preflight) DIR=x402-preflight ;;
             *) echo "::error::No directory mapped for $PACKAGE"; exit 1 ;;
           esac
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
@@ -155,6 +161,9 @@ jobs:
             scvd-tab) node --test tab/tab.test.mjs ;;
             x402-verify) node --test verifier/*.test.mjs ;;
             scvd-corpus-client) node --test corpus-client/*.test.mjs ;;
+            scvd-defects) node --test defects/*.test.mjs ;;
+            scvd-mcp-starter) node --test mcp-starter/*.test.mjs ;;
+            scvd-preflight) node --test x402-preflight/*.test.mjs ;;
             *) echo "$PACKAGE ships no test file of its own; skipping." ;;
           esac
 

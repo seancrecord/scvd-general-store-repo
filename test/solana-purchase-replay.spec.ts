@@ -95,14 +95,20 @@ for (const door of ["http", "mcp", "mcp-standard"]) {
       expect(ledger.size).toBe(0);
     });
   }
-  it(`${door}: failed verification cannot retrieve an existing Solana purchase`, async () => {
+  it(`${door}: unavailable verification recovers only the authentic original Solana payment`, async () => {
     const item = items.find(i => i.id === "hello")!, tool = shelves(item)[0]!;
     const offer = (await call(item, "mcp", {}, tool)).offers.find(o => o.network === SOLANA_NETWORK)!;
     const payment = await solPayment(offer), key = crypto.randomUUID();
     const original = await purchase(item.id, door, {}, payment, key);
     const before = facilitator.settleCalls;
     rejectVerification = true;
-    expect(idOf(await purchase(item.id, door, {}, payment, key))).toBeUndefined();
+    const tampered = structuredClone(payment);
+    const bytes = Uint8Array.from(atob(String(object(tampered.payload).transaction)), c => c.charCodeAt(0));
+    bytes[65] = bytes[65]! ^ 1; // Keep the fee-payer transaction ID; corrupt the buyer's signature.
+    object(tampered.payload).transaction = btoa(String.fromCharCode(...bytes));
+    expect(idOf(await purchase(item.id, door, {}, tampered, key))).toBeUndefined();
+    expect(facilitator.settleCalls).toBe(before);
+    expect(idOf(await purchase(item.id, door, {}, payment, key))).toBe(idOf(original));
     expect(facilitator.settleCalls).toBe(before);
     rejectVerification = false;
     expect(idOf(await purchase(item.id, door, {}, payment, key))).toBe(idOf(original));

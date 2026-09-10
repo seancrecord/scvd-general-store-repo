@@ -410,6 +410,8 @@ export interface MenuItem {
    * luckies specimen card). The catalog serves it absolute.
    */
   sample_url?: string;
+  /** A visual or component preview must not masquerade as the whole artifact. */
+  sample_kind?: "unsigned_specimen" | "visual_preview" | "shared_component" | "delivery_outline";
   /**
    * Class 1, stocked: units are keeper-made ahead of orders; purchases
    * take the oldest and complete themselves; an empty shelf sells out

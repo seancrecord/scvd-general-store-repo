@@ -9,3 +9,7 @@ First publish, roadmap C5: the stdio handshake, `ping`, notifications
 swallowed, `tools/list` and `tools/call` forwarded to the store's
 read-only verifier door, upstream errors answered as JSON-RPC errors.
 Zero dependencies.
+
+Before the initial npm release (2026-09-10): recognize the installed
+command symlink as the entry point, including paths containing spaces or
+`#`. Importing the module still does not start the stdio server.

@@ -1,0 +1,110 @@
+{
+  "read_at": "2026-09-10T19:34:56.831Z",
+  "since": null,
+  "control": {
+    "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/6c6b74ab787122a4dfb6c28e00b7734d2d0e7e14/README.md",
+    "first_ms": 102,
+    "first_status": 200,
+    "first_isolate": "unmarked",
+    "warm_median_ms": 15,
+    "vantage_floor_ms": 87,
+    "comparison_note": "First minus eligible repeated median, clipped at zero. This assumes the control has no application startup cost; these requests do not establish that assumption or isolate a network cause.",
+    "coverage": {
+      "attempted": 3,
+      "answered": 3,
+      "failed": 0,
+      "http_errors": 0,
+      "subsequent": 2,
+      "comparable_repeats": 2,
+      "excluded_from_comparison": 0
+    },
+    "knocks": [
+      {
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/6c6b74ab787122a4dfb6c28e00b7734d2d0e7e14/README.md",
+        "status": 200,
+        "ms": 102,
+        "handshake_ms": 95,
+        "timing": {}
+      },
+      {
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/6c6b74ab787122a4dfb6c28e00b7734d2d0e7e14/README.md",
+        "status": 200,
+        "ms": 15,
+        "handshake_ms": 0,
+        "timing": {}
+      },
+      {
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/6c6b74ab787122a4dfb6c28e00b7734d2d0e7e14/README.md",
+        "status": 200,
+        "ms": 14,
+        "handshake_ms": 0,
+        "timing": {}
+      }
+    ]
+  },
+  "doors": [
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "first_ms": 252,
+      "first_status": 402,
+      "first_isolate": "cold",
+      "first_age_s": 0,
+      "first_req_ms": 55,
+      "warm_knocks": 2,
+      "warm_median_ms": 41,
+      "warm_max_ms": 44,
+      "cold_penalty_ms": 211,
+      "statuses": [
+        402
+      ],
+      "coverage": {
+        "attempted": 3,
+        "answered": 3,
+        "failed": 0,
+        "http_errors": 0,
+        "subsequent": 2,
+        "comparable_warm": 2,
+        "excluded_from_warm": 0
+      },
+      "deploy": {
+        "known": false
+      },
+      "knocks": [
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 252,
+          "handshake_ms": 110,
+          "timing": {
+            "isolate": "cold",
+            "age": 0,
+            "req": 55
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 44,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 37,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        }
+      ]
+    }
+  ],
+  "burst": null
+}

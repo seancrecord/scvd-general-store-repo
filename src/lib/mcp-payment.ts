@@ -1,3 +1,4 @@
+import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
@@ -219,6 +220,14 @@ export async function readMcpPaymentChallenge(env: Env, itemId: string): Promise
   return challenge;
 }
 
+function signedRecoveryOutcome(recovery: SignedPurchaseRecovery): McpPaymentOutcome {
+  if (recovery.kind === "status") return { kind: "purchase-status", body: recovery.body };
+  const payment = recovery.payment;
+  return { kind: "authorized", recovered: true, savedDelivery: recovery.delivery, verifiedPayer: payment.payer,
+    pending: { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc, payer: payment.payer, settle: async () => payment },
+    settledSoFar: () => payment, deliveryKeySoFar: () => KV_KEYS.deliveryIntent(payment.transaction) };
+}
+
 /**
  * Run the full payment pipeline for one MCP purchase. Returns either
  * the 402 challenge to relay or a settled payment ready to fulfill.
@@ -285,12 +294,13 @@ export async function runMcpPayment(
     method: "GET",
     [DECLINE_SLOT_KEY]: declineSlot,
   } as HTTPRequestContext;
-  await stack.initialized;
-
   let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
   try {
+    await stack.initialized;
     result = await stack.httpServer.processHTTPRequest(context);
   } catch (error) {
+    const recovered = await recoverSignedPurchase(env, decodePaymentHeader(paymentHeader), { path, door: "mcp", digest: inputDigest });
+    if (recovered) return signedRecoveryOutcome(recovered);
     await sendAlert(env, {
       condition: "settlement_failure",
       detail: `MCP processHTTPRequest threw for ${itemId}: ${String(error)}`,
@@ -303,6 +313,8 @@ export async function runMcpPayment(
     throw new Error(`MCP purchase path unexpectedly ungated: ${path}`);
   }
   if (result.type === "payment-error") {
+    const recovered = await recoverSignedPurchase(env, decodePaymentHeader(paymentHeader), { path, door: "mcp", digest: inputDigest });
+    if (recovered) return signedRecoveryOutcome(recovered);
     if (paymentHeader) {
       const unavailable = await admitPurchase?.();
       if (unavailable) return { kind: "admission-refused", refusal: unavailable };

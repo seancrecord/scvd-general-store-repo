@@ -62,3 +62,26 @@ test("over stdio: newline-delimited JSON-RPC in, one line out per request", asyn
     assert.ok(lines.some((line) => line.error && line.error.code === -32700));
   });
 });
+
+test("the npm-style command link starts stdio, including spaces and # in its path", async () => {
+  const { mkdtempSync, symlinkSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { spawnSync } = await import("node:child_process");
+  const directory = mkdtempSync(join(tmpdir(), "scvd mcp #command-"));
+  try {
+    const command = join(directory, "scvd-mcp-starter");
+    symlinkSync(fileURLToPath(new URL("./server.mjs", import.meta.url)), command);
+    const child = spawnSync(process.execPath, [command], {
+      encoding: "utf8", timeout: 5000,
+      input: `${JSON.stringify({ jsonrpc: "2.0", id: 91, method: "initialize", params: {} })}\n`,
+    });
+    assert.equal(child.status, 0, child.stderr);
+    assert.ok(child.stdout.trim(), "installed command exited without an MCP response");
+    const response = JSON.parse(child.stdout);
+    assert.equal(response.id, 91);
+    assert.equal(response.result.serverInfo.name, SERVER_INFO.name);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

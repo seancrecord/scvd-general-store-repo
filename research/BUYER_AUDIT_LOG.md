@@ -64,11 +64,15 @@ Evidence: `malformed-settlement-base58` rows and independent SDK fixture validat
 
 ### BUY-014 — P1: a spent payment without its original key does not retrieve the receipt
 
+**2026-09-10 repair complete.** Ordinary HTTP/MCP retries now authenticate retained original payments separately from spendability, retrieve original goods or private status without the old key, and preserve supplied keys in refusal guidance. Missing goods remain owed; no recovery branch submits payment. The [completion register](BUYER_REPAIR_CHECKLIST.md#2026-09-10--signed-payment-recovery-after-expiry-or-lost-keys) records the regression controls and historical-authentication limits. Earlier audit observations follow unchanged.
+
 **Open · payment ambiguity audit.** On Base and Polygon, replaying a successful payment with no idempotency key, or with a new key, refuses without returning the already-created artifact. Eight cases across HTTP/MCP. The nonce guard prevents a second settlement, but its response tells the buyer to sign a fresh authorization. A buyer who lost the first response still needs the original good, not another purchase.
 
 Repair: return an authenticated path to the original receipt/artifact for a spent payment. Keep changed-item/input requests distinct; never release another buyer's purchase based only on a claimed payer. The separate wallet-signature Claims door exists; this finding concerns ordinary purchase retry, not absence of every recovery mechanism.
 
 ### BUY-015 — P1: payment expiry blocks receipt replay, and the suggested replacement key can charge again
+
+**2026-09-10 repair complete.** Ordinary HTTP/MCP retries now authenticate retained original payments separately from spendability, retrieve original goods or private status without the old key, and preserve supplied keys in refusal guidance. Missing goods remain owed; no recovery branch submits payment. The [completion register](BUYER_REPAIR_CHECKLIST.md#2026-09-10--signed-payment-recovery-after-expiry-or-lost-keys) records the regression controls and historical-authentication limits. Earlier audit observations follow unchanged.
 
 **Open · payment ambiguity audit.** With a quote-window EVM authorization, a same-payment/same-key replay at ten minutes fails verification before reaching the 24-hour purchase cache. Fresh authorization with the ORIGINAL key recovers safely. Copying the response's suggested key instead changes purchase identity: all four literal EVM retry-instruction cases produce two simulated debits and two certificates. A verifier that rejects spent authorizations similarly blocks ordinary replay; that is an explicit facilitator-policy simulation, not a claim about every live verifier.
 
@@ -380,3 +384,5 @@ The human-order recovery increment extends the journal to unstocked human-queue 
 
 
 The BUY-017 catalogue-intent increment retains original requests and selected terms before settlement, coordinates identical attempts, and provides a private status handle through HTTP and MCP. Thirty-two public fault/status/discovery controls fail without the repair; signed local fixtures cover all five checkout rails. The capture and status substeps are checked off in [the repair checklist](BUYER_REPAIR_CHECKLIST.md). Reconciliation-driven fulfillment, non-catalogue capture and the other SEV-1 recovery obligations remain open; see [the progress record](buyer-repair-progress-2026-09-06.md).
+
+Final validation and the three text-only follow-up corrections are recorded in the canonical checklist. The completed sweep covers the merged #621/#624 tree; earlier interrupted runs are retained as evidence, not substituted for that sweep. No production transaction or customer inventory was performed.

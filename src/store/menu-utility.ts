@@ -338,8 +338,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "Name your x402 endpoint (the url query parameter) and three things happen under one certificate. First, the Launch Check: this store walks your door the way a paying stranger does — one real EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, every stage signed. Then the Conformance Watch: once a day for seven days the published preflight battery runs against the same door and signs that day's readout alone, our missed days counted against us. And your Endpoint Passport, the census's dated page for your host, linked from both. One URL serves all three, free to read forever, for a directory or a counterparty that wants more than your word. Bought apart these cost ten dollars and come as a receipt each. Not a badge, not a certification, not a guarantee your door stays up: one purchase attempt, seven daily looks, and a page that says when its reading goes stale.",
-    /* #31: the free specimen of the walk half. */
-    sample_url: "/samples/once-over.json",
+    /* The launch-check component; the watch and passport are separate. */
+    sample_url: "/samples/launch-check.json",
+    sample_kind: "shared_component",
     note_402:
       "Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is ten, and a receipt each.",
     constraints: [

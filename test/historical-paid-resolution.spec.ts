@@ -1,3 +1,4 @@
+import { installExpiredPaymentFixture, refuseSpentVerification } from "./helpers/expired-payment";
 import { idempotencyScope, idempotentPurchaseStore, storeIdempotent } from "@/lib/idempotency";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { runInDurableObject, runDurableObjectAlarm } from "cloudflare:test";
@@ -17,6 +18,7 @@ import { verifyMessageSignature } from "@/lib/signing";
 import type { CommissionRequest } from "@/types";
 
 installLaborAdmissionHarness();
+installExpiredPaymentFixture();
 const auth = { Authorization: `Basic ${btoa("keeper:test-admin-password")}`, "Content-Type": "application/x-www-form-urlencoded" };
 const hex = (n: number) => `0x${n.toString(16)}`;
 const topic = (s: string) => `0x${s.slice(2).toLowerCase().padStart(64, "0")}`;
@@ -224,6 +226,21 @@ for (const [rail] of laborNetworks().entries()) for (const door of ["http", "mcp
       : await sendLabor("small_blessing", door, args, fresh, key);
     expect(response.body).toMatchObject({ code: "purchase_resolved", refunded: true, transaction: s.transaction, charged_again: false });
     expect(response.body.obsolete_cached_goods).toBeUndefined();
+    expect(transfers).toBe(0);
+  });
+}
+
+for (const [rail] of laborNetworks().entries()) for (const door of ["http", "mcp", "mcp-standard"] as const) {
+  it(`rail ${rail} ${door}: an expired original payment retrieves its signed refund without a key`, async () => {
+    const s = await seed(rail, "small_blessing", true);
+    expect((await resolve(s.transaction, "refunded", { network: s.network, refund_tx: s.refund })).status).toBe(200);
+    refuseSpentVerification();
+    const args = Object.fromEntries(new URL(s.url, testEnv.STORE_BASE_URL).searchParams);
+    const response = door === "http"
+      ? { body: object(await (await request(s.url, { headers: { "PAYMENT-SIGNATURE": btoa(JSON.stringify(s.wire)) } })).json()) }
+      : await sendLabor("small_blessing", door, args, s.wire);
+    expect(response.body).toMatchObject({ code: "purchase_resolved", refunded: true, transaction: s.transaction, charged_again: false });
+    expect(object(response.body.resolution).signature).toBeTruthy();
     expect(transfers).toBe(0);
   });
 }
