@@ -1,4 +1,5 @@
 import { corpusIndexPage, CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
+import { EVIDENCE_DIGEST_DATED, readEvidence } from "@/services/corpus-evidence";
 import { namedExclusions } from "@/store/exclusions";
 import { MISUSE_CLAUSE, TWO_SEATS_DATED, TWO_SEATS_SENTENCE } from "@/store/copy/doctrine";
 import { CITE_HOW, citeRow } from "@/services/cite";
@@ -262,6 +263,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "3. Check `signature` over the same canonical string against the key at /.well-known/scvd-signing-key with your own ed25519 library.",
       "4. Check `previous_digest` equals the prior entry's digest, back to sequence 1 — that is the whole chain.",
       "5. Base64-decode `ots.proof_base64` and run `ots verify` against the digest: a Bitcoin-confirmed proof means the snapshot existed by that block, on evidence that is not ours.",
+      `6. A row's \`evidence_digest\` (rows sealed from ${EVIDENCE_DIGEST_DATED}) is sha256 over the RFC 8785 canonical bytes of the probe's capture, served at ${base}/corpus/{sequence}/evidence/{host}.json: hash the body you receive and compare. Rows sealed earlier carry the capture inline as \`evidence\`, inside the signed bytes themselves.`,
     ],
     corrections: CORRECTIONS_POINTER,
     honest_limits:
@@ -888,6 +890,54 @@ corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
     200,
     lastModifiedOf(record.snapshot.taken_at),
   );
+});
+
+/**
+ * GET /corpus/{sequence}/evidence/{host}.json — the bytes a sealed
+ * row's `evidence_digest` commits to (2026-09-10), served canonical
+ * so a reader hashes exactly what they receive. Content-addressed by
+ * the chain, so cacheable forever. A row sealed before the digest
+ * carries its capture inline; the same door serves it and the
+ * headers say which shape the chain holds. services/corpus-evidence.ts.
+ */
+corpusRoutes.get("/corpus/:sequence{[0-9]+}/evidence/:file{[a-z0-9.:_-]+\\.json}", async (c) => {
+  const sequence = Number.parseInt(c.req.param("sequence"), 10);
+  const host = c.req.param("file").replace(/\.json$/, "");
+  const record = await getCorpusEntry(c.env, sequence);
+  if (!record) {
+    return c.json({ error: `No corpus entry at sequence ${sequence}. The index is at /corpus.json.` }, 404);
+  }
+  const read = await readEvidence(c.env, record, host);
+  if (!read.found) {
+    const why = {
+      host_not_in_round: `Sequence ${sequence} (week ${record.snapshot.week}) carries no row for ${host}.`,
+      no_evidence_on_row: `Sequence ${sequence} carries a row for ${host} with no capture: the door was not reached, or the row predates capture (2026-08-26).`,
+      evidence_unreadable: `Sequence ${sequence}'s row for ${host} commits to a capture this store could not read back. The digest on the row still stands; the bytes are our gap.`,
+    }[read.reason];
+    return c.json(
+      { error: why, reason: read.reason, entry: `${c.env.STORE_BASE_URL}/corpus/${sequence}.json` },
+      read.reason === "evidence_unreadable" ? 503 : 404,
+    );
+  }
+  if (read.digest_matches === false) {
+    return c.json(
+      {
+        error: "The bytes on hand do not recompute to the digest the signed row carries. Trust the row; not these bytes.",
+        signed_sha256: read.signed_sha256,
+        computed_sha256: read.sha256,
+        entry: `${c.env.STORE_BASE_URL}/corpus/${sequence}.json`,
+      },
+      409,
+    );
+  }
+  return c.body(read.canonical, 200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    ETag: `"${read.sha256}"`,
+    "X-Evidence-SHA256": read.sha256,
+    "X-Evidence-Sealed-As": read.inline ? "inline" : "digest",
+    "X-Evidence-Canonicalization": "RFC8785",
+  });
 });
 
 /**

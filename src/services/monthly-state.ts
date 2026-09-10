@@ -164,7 +164,14 @@ export function deriveMonthlyState(
   base: string,
   month?: string,
 ): { state: MonthState | null; known_months: string[] } {
-  const states = deriveMonthlyStates(records, base);
+  return pickMonth(deriveMonthlyStates(records, base), month);
+}
+
+/** The month asked for, or the latest held, from states already derived. */
+export function pickMonth(
+  states: readonly MonthState[],
+  month?: string,
+): { state: MonthState | null; known_months: string[] } {
   const known = states.map((state) => state.month);
   const found = month ? states.find((state) => state.month === month) : states[states.length - 1];
   return { state: found ?? null, known_months: known };

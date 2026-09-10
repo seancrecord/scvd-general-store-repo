@@ -6943,6 +6943,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         },
       },
+      "/corpus/{sequence}/evidence/{host}.json": {
+        get: {
+          ...freeOp("Read the capture a sealed row's evidence_digest commits to", "The probe's raw capture for one host in one signed snapshot — the verbatim PAYMENT-REQUIRED bytes, curated headers, body digest — served as RFC 8785 canonical JSON so the bytes received hash to the row's evidence_digest.sha256 (rows sealed from 2026-09-10). Rows sealed earlier carry the capture inline in the signed snapshot; the same door serves it and X-Evidence-Sealed-As says which. Content-addressed by the chain: cache forever."),
+          parameters: [pathParam("sequence", "The snapshot's chain position, 1-based"), pathParam("host", "A bare hostname the round carries a row for")],
+          responses: { ...COMMON_RESPONSES,
+            "200": {description:"The canonical capture bytes; hash them and compare with the signed row",headers:{"X-Evidence-SHA256":{schema:{type:"string"},description:"sha256 of the body, hex"},"X-Evidence-Sealed-As":{schema:{type:"string",enum:["digest","inline"]},description:"Whether the row commits to the capture by digest or carries it inline"},"X-Evidence-Canonicalization":{schema:{type:"string",enum:["RFC8785"]}}},content:{"application/json":{schema:{
+              type:"object", required:["challenge_bytes","headers","body_sha256","body_bytes","body_truncated","tls"],
+              properties:{challenge_bytes:{type:["string","null"],description:"The PAYMENT-REQUIRED header value, verbatim"},headers:{type:"object",additionalProperties:{type:"string"}},body_sha256:{type:["string","null"]},body_bytes:{type:"integer"},body_truncated:{type:"boolean"},tls:{type:"string"}},
+            }}}},
+            "404": {description:"No entry at that sequence, no row for that host, or a row with no capture (unreachable, or sealed before capture); reason names which"},
+            "409": {description:"The bytes on hand do not recompute to the signed digest; both digests in the body"},
+            "503": {description:"The row commits to a capture this store could not read back; the digest stands, the bytes are our gap"},
+          },
+        },
+      },
       "/corpus/asked.json": {
         get: returns(
           freeOp(

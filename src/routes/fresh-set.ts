@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
+import { freshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import type { HonoEnv } from "@/types";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 
@@ -75,7 +75,7 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
 
 freshSetRoutes.get("/fresh-set", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const set = await buildFreshSet(c.env);
+  const set = await freshSet(c.env);
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     if (!set) {
       return c.json(

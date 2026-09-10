@@ -2,8 +2,8 @@ import { Hono, type Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
-import { listCorpus } from "@/services/corpus";
-import { deriveMonthlyState, type MonthReading, type MonthState } from "@/services/monthly-state";
+import { derivedFromCorpus } from "@/services/corpus-list";
+import { deriveMonthlyStates, pickMonth, type MonthReading, type MonthState } from "@/services/monthly-state";
 import { CORRECTIONS_POINTER } from "@/store/corrections";
 import type { HonoEnv } from "@/types";
 
@@ -71,7 +71,10 @@ function stateHtml(state: MonthState): string {
 async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable: boolean) {
   const base = c.env.STORE_BASE_URL;
   const html = wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"));
-  const { state, known_months } = deriveMonthlyState(await listCorpus(c.env), base, month);
+  const states = await derivedFromCorpus(c.env, "monthly-states", (records) =>
+    deriveMonthlyStates(records, base),
+  );
+  const { state, known_months } = pickMonth(states, month);
   if (!state) {
     const status = month ? 404 : 200;
     const note = month

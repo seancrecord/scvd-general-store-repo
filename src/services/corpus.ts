@@ -5,11 +5,12 @@ import type { SubmitOptions } from "@/services/anchor-submit";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { listCorpus, resolveRecord } from "@/services/corpus-list";
+import { chainFingerprintOf, latestCorpusEntry, listCorpus, resolveRecord } from "@/services/corpus-list";
 import type { CorpusPointer, CorpusRecord } from "@/services/corpus-list";
 export { listCorpus } from "@/services/corpus-list";
 export type { CorpusRecord } from "@/services/corpus-list";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { detachEvidence } from "@/services/corpus-evidence";
 import { payToDigest } from "@/lib/pay-to-digest";
 
 /**
@@ -139,12 +140,12 @@ export async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<v
 
 /** Ceiling on a corpus scan. Named because an unnamed cap is a silent one. */
 
-export async function latestCorpusEntry(
-  env: Env,
-): Promise<CorpusRecord | null> {
-  const records = await listCorpus(env);
-  return records[records.length - 1] ?? null;
-}
+/*
+ * latestCorpusEntry lives in corpus-list.ts now (2026-09-10): it reads
+ * the newest pointer and fetches that one object, where it used to
+ * resolve the whole chain from R2 to look at its last element.
+ */
+export { latestCorpusEntry };
 
 export async function getCorpusEntry(
   env: Env,
@@ -186,7 +187,7 @@ export type CorpusPass =
  * read. Field order: `pay_to_digest` lands where `pay_to` sat, so a
  * row's other bytes do not move.
  */
-async function sealRoundForChain(round: WardRound): Promise<WardRound> {
+async function sealRoundForChain(env: Env, round: WardRound, sequence: number): Promise<WardRound> {
   const hosts = await Promise.all(
     (round.hosts ?? []).map(async (host) => {
       const offer = host.offer;
@@ -203,7 +204,13 @@ async function sealRoundForChain(round: WardRound): Promise<WardRound> {
       };
     }),
   );
-  return { ...round, hosts };
+  /*
+   * AND THE CAPTURE GOES BESIDE THE CHAIN (2026-09-10): each row's
+   * evidence becomes its digest here, after the address digests and
+   * before anything is signed, so the signed bytes commit to the
+   * capture without carrying it. services/corpus-evidence.ts.
+   */
+  return detachEvidence(env, { ...round, hosts }, sequence);
 }
 
 export async function takeCorpusSnapshot(
@@ -214,7 +221,6 @@ export async function takeCorpusSnapshot(
   if (!round) {
     return { taken: false, reason: "no ward round has run yet" };
   }
-  const sealed = await sealRoundForChain(round);
   const previous = await latestCorpusEntry(env);
   if (previous && previous.snapshot.week === round.week) {
     return {
@@ -222,9 +228,14 @@ export async function takeCorpusSnapshot(
       reason: `week ${round.week} is already in the corpus (sequence ${previous.snapshot.sequence})`,
     };
   }
+  // The sequence is decided before the seal, because the evidence
+  // shards are addressed by it; an idempotent re-fire returned above
+  // and wrote nothing.
+  const sequence = (previous?.snapshot.sequence ?? 0) + 1;
+  const sealed = await sealRoundForChain(env, round, sequence);
   const snapshot: CorpusSnapshot = {
     version: 1,
-    sequence: (previous?.snapshot.sequence ?? 0) + 1,
+    sequence,
     taken_at: (options.now ?? new Date()).toISOString(),
     previous_digest: previous?.digest ?? null,
     source: "ward_round",
@@ -270,6 +281,29 @@ export async function verifyCorpusChain(
   listed?: CorpusRecord[],
 ): Promise<{ intact: boolean; entries: number; problem?: string }> {
   const records = listed ?? (await listCorpus(env));
+  /*
+   * ONE WALK PER CHAIN STATE (2026-09-10). Recomputing every digest
+   * means re-serialising every snapshot — the latest is 11.5 MB — on
+   * every /corpus.json read, for a verdict that cannot change until
+   * the chain does. The verdict is held per isolate under the chain's
+   * own fingerprint (sequence, digest, stamp of every record), so a
+   * changed or appended record is a miss and gets walked in full.
+   */
+  const fingerprint = chainFingerprintOf(records);
+  if (chainVerdict?.fingerprint === fingerprint) return { ...chainVerdict.verdict };
+  const verdict = await walkChain(records);
+  chainVerdict = { fingerprint, verdict };
+  return { ...verdict };
+}
+
+let chainVerdict: {
+  fingerprint: string;
+  verdict: { intact: boolean; entries: number; problem?: string };
+} | null = null;
+
+async function walkChain(
+  records: CorpusRecord[],
+): Promise<{ intact: boolean; entries: number; problem?: string }> {
   let previousDigest: string | null = null;
   for (const [index, record] of records.entries()) {
     if (record.snapshot.sequence !== index + 1) {

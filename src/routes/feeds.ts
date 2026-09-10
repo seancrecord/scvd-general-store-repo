@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { listCorpus } from "@/services/corpus";
+import { derivedFromCorpus, type CorpusRecord } from "@/services/corpus-list";
 import { deriveWeeklyBrief } from "@/services/weekly-brief";
 import { CORRECTIONS, CORRECTIONS_POINTER } from "@/store/corrections";
 import { DISAGREEMENTS } from "@/store/disagreements";
@@ -142,8 +142,11 @@ ${entries}
 `;
 }
 
-export async function briefEntries(env: Env, base: string): Promise<FeedEntry[]> {
-  const records = await listCorpus(env);
+export function briefEntries(env: Env, base: string): Promise<FeedEntry[]> {
+  return derivedFromCorpus(env, "feed-brief", (records) => briefEntriesOf(records, base));
+}
+
+export function briefEntriesOf(records: CorpusRecord[], base: string): FeedEntry[] {
   const { known_weeks } = deriveWeeklyBrief(records, base);
   const entries: FeedEntry[] = [];
   for (const week of known_weeks) {
@@ -160,8 +163,11 @@ export async function briefEntries(env: Env, base: string): Promise<FeedEntry[]>
   return entries.sort((a, b) => b.updated.localeCompare(a.updated));
 }
 
-export async function corpusEntries(env: Env, base: string): Promise<FeedEntry[]> {
-  const records = await listCorpus(env);
+export function corpusEntries(env: Env, base: string): Promise<FeedEntry[]> {
+  return derivedFromCorpus(env, "feed-corpus", (records) => corpusEntriesOf(records, base));
+}
+
+export function corpusEntriesOf(records: CorpusRecord[], base: string): FeedEntry[] {
   return records
     .map((record) => ({
       id: `${base}/corpus/${record.snapshot.sequence}.json`,

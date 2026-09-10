@@ -356,6 +356,15 @@ export const KV_KEYS = {
    */
   corpusPrefix: "corpus_log:",
   /**
+   * A derivation over the corpus (the door index, a feed's entries,
+   * the monthly states), kept until the chain or the deploy moves:
+   * surface, the deployed version's id, the chain fingerprint. Never
+   * the record — services/corpus-list.ts says what it is and is not.
+   */
+  corpusDerivedPrefix: "corpus_derived:",
+  corpusDerived: (surface: string, version: string, fingerprint: string): string =>
+    `corpus_derived:${surface}:${version}:${fingerprint}`,
+  /**
    * A patron's purchased Bitcoin anchor: their digest, their label
    * (untrusted), the OTS proof state. PATRONS namespace beside the
    * certificate the purchase minted. Independent records, no chain —

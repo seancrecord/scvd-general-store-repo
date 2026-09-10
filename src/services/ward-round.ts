@@ -4,6 +4,7 @@ import { readObserverStatus } from "@/lib/observer-control";
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
+import type { EvidenceDigest } from "@/services/corpus-evidence";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
@@ -197,8 +198,16 @@ export interface WardHostResult {
    * produced it rides inside the same signed bytes. Absent on rounds
    * before 2026-08-26 and on unreachable doors — a legacy row keeps
    * its exact original preimage, the standing-watch lesson.
+   *
+   * INLINE IN THE ROUND, A DIGEST IN THE CHAIN (2026-09-10). The
+   * mutable round keeps the capture here; the freeze replaces it
+   * with `evidence_digest` and writes the bytes beside the chain
+   * (services/corpus-evidence.ts), so a snapshot signs the hash and
+   * the door at /corpus/{sequence}/evidence/{host}.json serves the
+   * preimage. Rows sealed before that date carry it inline forever.
    */
   evidence?: WatchEvidenceCapture;
+  evidence_digest?: EvidenceDigest;
   /**
    * 3.1 (ledger G3) — every did:web signer this door presented, read
    * from the offers' JWS headers without verifying anything. An

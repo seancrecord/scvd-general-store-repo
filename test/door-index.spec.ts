@@ -319,7 +319,18 @@ describe("the list is served, at its own door", () => {
    */
   it("keeps nothing about a caller, which is what the page promises", async () => {
     await seed("2026-W35", [row("alpha.example", "ready")]);
-    const before = (await testEnv.COUNTERS.list()).keys.map((key) => key.name).sort();
+    /*
+     * THE ONE WRITE A READ MAY CAUSE (2026-09-10): the derived door
+     * index, memoised in KV under its surface, the deploy's id and the
+     * chain's sha256 (services/corpus-list.ts) — content-addressed,
+     * with nothing from the request in the key or the value. It is
+     * named here by shape so anything else a read writes still goes
+     * red, and so a memo key that ever carried a caller would too.
+     */
+    const memo = /^corpus_derived:door-index:[^:]+:[0-9a-f]{64}$/;
+    const keysHeld = async () =>
+      (await testEnv.COUNTERS.list()).keys.map((key) => key.name).filter((name) => !memo.test(name)).sort();
+    const before = await keysHeld();
 
     for (const url of [`${BASE}/doors.json`, `${BASE}/doors`, `${BASE}/doors?verdict=ready`]) {
       const response = await SELF.fetch(url);
@@ -329,7 +340,7 @@ describe("the list is served, at its own door", () => {
       ).toBeNull();
     }
 
-    const after = (await testEnv.COUNTERS.list()).keys.map((key) => key.name).sort();
+    const after = await keysHeld();
     expect(
       after,
       "reading the door list wrote to the store. The page tells a caller it keeps no log entry keyed to them; a write here is that sentence going false.",

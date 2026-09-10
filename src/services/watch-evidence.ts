@@ -20,7 +20,13 @@ export const WATCH_EVIDENCE_BODY_LIMIT_BYTES = 256 * 1024;
  * permanent artifact by accident.
  */
 const CURATED_RESPONSE_HEADERS = [
-  "payment-required",
+  /*
+   * NOT "payment-required" (2026-09-10): that header IS
+   * `challenge_bytes`, captured verbatim on the same row, and keeping
+   * it here too stored every challenge twice — 4.5 MB of a round's
+   * 11.5 MB was the second copy. Rows captured before this carry
+   * both, byte-identical forever; nothing reads the copy.
+   */
   /*
    * THE SECOND WIRE (roadmap V3 PR 1, 2026-09-04): an MPP door puts
    * its challenge on WWW-Authenticate: Payment. Without this header
