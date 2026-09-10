@@ -1,5 +1,27 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-10 — compact package readers and release preparation
+
+Read the live `/corpus/index.json?limit=1` response at 14:49 UTC and the
+implementation in `src/routes/corpus.ts` / `src/services/corpus-index.ts`.
+It returns a page of metadata, unreadable counts, `has_more`, `next`, and
+explicit verification/completeness limits. The clients return that page
+whole and do not follow its links. No new external protocol is invented.
+
+Read [npm's provenance documentation](https://docs.npmjs.com/generating-provenance-statements/)
+for the existing GitHub workflow's supported signing environment and
+repository binding. Provenance identifies source/build provenance; it is
+not a guarantee of safe code. The moving Node 18 documentation URL was
+unreachable through the web reader; the version-specific
+[Node 18.17.0 URL documentation](https://nodejs.org/download/release/v18.17.0/docs/api/url.html#urlsearchparamstostring)
+was readable and lists the query construction/serialization API used here.
+Encoded cursor tests cover its use. All 36 CLI/client tests subsequently
+passed on both Node 22 and the declared minimum Node 18.17.0. The latter
+used the official Darwin arm64 archive checked against the release's
+published SHA-256 digest, in a temporary directory; project dependencies
+and installed runtimes were unchanged. Package publication remains
+pending; see `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
 ## 2026-09-09 — Discovery envelope and regex compatibility
 
 Resumed on the keeper's “keep rolling.” Read Coinbase's

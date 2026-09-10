@@ -11,6 +11,15 @@ The keeper subsequently confirmed that the competitor in the original
 comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
 
+## September 10 — package reader follow-through
+
+PR #610 has passed full CI, merged and deployed; the live API retains all
+paths below its size-warning budget. CLI and the corpus client now have
+explicit one-page metadata readers, with original whole-corpus output
+preserved. Sign's documentation patch is prepared. These package versions
+are not yet published. Implementation, validation and release conditions:
+`docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
 ## Reader and inventory follow-through
 
 Authorized September 9 with “okay lets do that”: compact corpus discovery,

@@ -166,3 +166,10 @@ method and whose free tools check anyone's: endpoint preflight
 (`POST /api/conformance/v1`), published vectors, and the offline
 verifier. The store is a deployment of this library, not a dependency
 of it.
+
+
+## 1.0.3 documentation patch
+
+This version carries the corrected census-coverage wording and
+package metadata; the signing implementation and type declarations are
+unchanged from 1.0.2. This patch does not enable post-quantum signing.

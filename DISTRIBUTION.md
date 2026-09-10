@@ -16,6 +16,14 @@ files and have documentation corrections awaiting a patch. The npm
 a distinct name before publication. Three other companion packages remain
 unpublished. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
+
+**Package implementation, September 10:** CLI's opt-in compact corpus
+command and the corpus client's one-page helper are implemented. CLI and
+Sign versions in their manifests are prepared releases, not registry facts.
+No npm publication occurred in this batch. The corpus client remains
+unpublished; its README now says so. Release checks, exact commands and
+remaining publication work: `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
 Written 2026-08-21, the night the strategy was ruled: agents don't
 browse, they inherit. An agent reaches this store through four doors —
 its config (MCP connectors, skills), its model's memory (AEO, shipped),
