@@ -115,6 +115,44 @@ On-chain transfer data: `usdc-transfers.json` (669 transfers, blocks 50140000–
 
 ---
 
+---
+
+## ⚑ CORRECTION — 2026-09-08
+
+**Section 3's reading of the 400s, and the sentence in section 6 that
+rests on it, are withdrawn.** They are left in place below, unedited,
+per house rule 10: the house corrects on a date rather than rewriting.
+
+The original text called "Payment failed: 400" a case where "the payment
+is signed per spec but the facilitator rejects it," and named facilitator
+rejection the ecosystem's number one friction point. Reading the stored
+response bodies does not support that.
+
+Re-deriving with `node scripts/four-hundred-buckets.mjs`:
+
+| What the 400 response body says | Count | Share of the 616 |
+|---|---|---|
+| Missing or invalid request inputs | 276 | 44.8% |
+| No body at all | 250 | 40.6% |
+| Other (a usage hint) | 50 | 8.1% |
+| Mentions payment, signature, nonce or authorization | 40 | 6.5% |
+
+The count also splits: 616 rows are `Payment failed: 400` (a 400 after
+the signed retry) and a further 51 are `Expected 402, got 400` on the
+unpaid probe. The original 667 combined the two. The 36.1% figure above
+is the 616 alone.
+
+The corrected reading: most of these are doors refusing a request that
+was malformed before payment was ever considered, because the x402
+challenge has no field for required inputs and this walker sent no
+request body. That is the `inputs-undeclared` defect class, and the
+walker's empty body is both the cause and the limit of the finding.
+
+What survives unchanged: 400 is still the largest single failure at
+36.1% of attempts, the four-plus challenge shapes in section 3, the
+fleet concentration in section 5, and the whole of section 7's
+reconciliation.
+
 ## WHAT THIS MEANS FOR scvd-STYLE AGENTS
 
 1. **Expect ~34% first-try success on cheap endpoints.** Build retry with fallback facilitators, not re-signing the same reject.
