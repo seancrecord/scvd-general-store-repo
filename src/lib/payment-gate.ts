@@ -1,3 +1,4 @@
+import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
 import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -8,7 +9,7 @@ import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase, purchaseRecovery } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
-import { deliveryFailedBody, legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
+import { deliveryFailedBody, legacyRecoveryFailure } from "@/lib/delivery-failed";
 import { archiveDepthDisclosure } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
@@ -83,7 +84,6 @@ import {
   openDeliveryIntent,
 } from "@/services/delivery-audit";
 import {
-  certIdForSettlement,
   recordDeliveredSettlement,
 } from "@/services/settlement-records";
 import {
@@ -117,8 +117,6 @@ import type { SettledPayment } from "@/lib/payments";
 import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 import {
   extractPaymentNonce,
-  getSpentNonce,
-  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import type { HonoEnv } from "@/types";
@@ -1206,177 +1204,82 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json({ ...recorded.body, charged_again: false }, 503);
   }
 
-  // Verified. A nonce we've already settled once is refused — unless
-  // the money it moved never became goods, which is the one state
-  // where a spent nonce should buy something instead of a refusal.
+  // Only retained original goods may resume a settled payment. A retry's
+  // inputs and today's upstream evidence cannot replace the purchased good.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  if (nonce) {
-    const spent = await getSpentNonce(c.env, nonce);
-    if (spent) {
-      /**
-       * THE PAID RETRY (2026-08-08, closing class B of "paid and got
-       * nothing"). The delivery audit's ruling stands — no cron can
-       * re-run a handler whose inputs it never had — but the BUYER'S
-       * RETRY carries the inputs, and the 2026-08-07 incident proved
-       * buyers do retry. This branch runs only when: the payload
-       * VERIFIED (we are past the facilitator check, so the caller
-       * holds the buyer's actually-signed authorization — the same
-       * standard the idempotency cache stands on), the retry is for
-       * the SAME path the money bought, and the delivery intent for
-       * that settle is STILL OPEN — money taken, goods never left.
-       *
-       * If a certificate already names the settle, the crash may have
-       * preceded the actual order or product write. Keep the delivery
-       * open and identify the certificate without claiming fulfillment
-       * or minting another one against the same payment.
-       *
-       * Books are deliberately NOT rewritten on this lane: the
-       * original settle already recorded the sale once. Nothing here
-       * settles, charges, or counts — it only stops refusing a buyer
-       * we already charged.
-       */
-      if (spent.transaction && spent.path === c.req.path) {
-        const payer = payerOfVerifiedPayload(result.paymentPayload);
-        const namespace = c.env.PAID_RECOVERIES;
-        const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
-          await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
-            .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
-              transaction: spent.transaction }).catch(() => null);
-        if (artifact) {
-          const payment = artifact.purchase.payment;
-          c.header("Cache-Control", "no-store");
-          if (artifact.digest !== await httpArtifactDigest(c.req.url)) {
-            return c.json({
-              ...deliveryFailedBody(c.env.STORE_BASE_URL, getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, payment),
-              charged_again: false, recovery_reason: "original_inputs_required",
-            }, 500);
-          }
-          c.set("payment", payment);
-          c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
-            payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
-          await next();
-          if (c.res.status < 300) {
-            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
-            await recordDeliveredSettlement(c.env, payment.transaction);
-            for (const [name, value] of Object.entries(payment.settleHeaders)) c.res.headers.set(name, value);
-          }
-          c.res.headers.set("Paid-Retry", "true");
-          return c.res;
+  let spent;
+  try {
+    spent = await legacyPaidAttempt(c.env, result.paymentRequirements.network, result.paymentPayload);
+  } catch {
+    return c.json(legacyRecoveryFailure(c.env.STORE_BASE_URL, { name: c.req.path }, undefined,
+      { path: c.req.path, transaction: "", payer: undefined }), 503);
+  }
+  if (spent) {
+    if (spent.transaction && spent.path === c.req.path) {
+      const payer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
+      const namespace = c.env.PAID_RECOVERIES;
+      const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
+        await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
+          .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
+            transaction: spent.transaction }).catch(() => null);
+      if (artifact) {
+        const payment = artifact.purchase.payment;
+        c.header("Cache-Control", "no-store");
+        if (artifact.digest !== await httpArtifactDigest(c.req.url)) {
+          return c.json({
+            ...deliveryFailedBody(c.env.STORE_BASE_URL, getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, payment),
+            charged_again: false, recovery_reason: "original_inputs_required",
+          }, 500);
         }
-        const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
-        if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
-          c.header("Cache-Control", "no-store");
-          return c.json(recorded.body, 503);
+        c.set("payment", payment);
+        c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
+          payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
+        await next();
+        if (c.res.status < 300) {
+          await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
+          await recordDeliveredSettlement(c.env, payment.transaction);
+          for (const [name, value] of Object.entries(payment.settleHeaders)) c.res.headers.set(name, value);
         }
-        const open = await getOpenDeliveryIntent(c.env, spent.transaction);
-        if (legacyItem?.fulfillment === "human_queue") {
-          const recovered = await recoverLegacyHumanOrder(c.env, legacyItem,
-            { path: c.req.path, transaction: spent.transaction, payer, network: result.paymentRequirements.network }, open?.intent);
-          if (recovered) {
-            const response = c.json(recovered);
-            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(spent.transaction)).catch(() => undefined);
-            await recordDeliveredSettlement(c.env, spent.transaction);
-            response.headers.set("Cache-Control", "no-store");
-            response.headers.set("Paid-Retry", "true");
-            return response;
-          }
-          c.header("Cache-Control", "no-store");
-          c.header("Paid-Retry", "incomplete");
-          const failure = legacyHumanRecoveryFailure(c.env.STORE_BASE_URL, legacyItem,
-            open?.intent, { path: c.req.path, transaction: spent.transaction, payer });
-          return c.json(failure, failure.charged === true ? 500 : 503);
-        }
-        if (open) {
-          const retryMinimum = minimumUsdcForPath(c.req.path);
-          const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
-          const retryPayment: SettledPayment = {
-            paidUsdc: open.intent.paid_usdc,
-            tipUsdc: tipFromPaid(open.intent.paid_usdc, retryMinimum),
-            transaction: spent.transaction,
-            network: result.paymentRequirements.network,
-            ...(retryPayer ? { payer: retryPayer } : {}),
-            settleHeaders: {},
-          };
-          const incomplete = (reason: string, certId?: string) => {
-            c.header("Cache-Control", "no-store");
-            c.header("Paid-Retry", "incomplete");
-            return c.json({
-              ...deliveryFailedBody(c.env.STORE_BASE_URL,
-                getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, retryPayment),
-              error: "Your payment settled, but this retry cannot confirm that the purchased work was delivered. The delivery remains open; nothing was charged again.",
-              charged_again: false,
-              recovery_reason: reason,
-              settlement_tx: spent.transaction,
-              ...(certId ? {
-                certificate_id: certId,
-                verify_url: `${c.env.STORE_BASE_URL}/api/verify/${certId}`,
-                certificate_note: "This verifies the payment certificate. It does not establish that the purchased order or artifact was delivered.",
-              } : {}),
-            }, 500);
-          };
-          let lookup: Awaited<ReturnType<typeof certIdForSettlement>>;
-          try {
-            lookup = await certIdForSettlement(c.env, spent.transaction);
-          } catch {
-            return incomplete("recovery_lookup_unavailable");
-          }
-          // A certificate is written BEFORE the order or product. Finding it
-          // must not erase the owed delivery or authorize another mint. Keep
-          // the original obligation until the actual good can be recovered.
-          if (lookup.certId) return incomplete("certificate_already_minted", lookup.certId);
-          if (!lookup.certain) return incomplete("certificate_lookup_incomplete");
-          c.set("payment", retryPayment);
-          /*
-           * THE RETRY LANE SETTLES NOTHING, and under rule 9 as
-           * amended that has to be said in the type rather than
-           * implied by the absence of a call. The money moved on the
-           * FIRST attempt; this pass exists only to hand over goods
-           * that were paid for and never delivered. So the pending
-           * payment it gives the handler resolves instantly to the
-           * original settlement — same transaction on the
-           * certificate, and the facilitator is never asked twice.
-           */
-          c.set("pending", {
-            paidUsdc: retryPayment.paidUsdc,
-            tipUsdc: retryPayment.tipUsdc,
-            ...(retryPayer ? { payer: retryPayer } : {}),
-            observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, retryPayer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true),
-            settle: async () => retryPayment,
-          });
-          await next();
-          if (c.res.status < 300) {
-            await closeDeliveryIntent(c.env, open.key).catch(() => {
-              // Left open on failure: a false alarm beats a silent loss.
-            });
-            // The goods finally went out on the retry, so the walk's
-            // delivered-settlement record is written now, not at the
-            // original settle whose delivery died.
-            await recordDeliveredSettlement(c.env, spent.transaction);
-          }
-          c.res.headers.set("Paid-Retry", "true");
-          c.res.headers.set("Cache-Control", "no-store");
-          return c.res;
+        c.res.headers.set("Paid-Retry", "true");
+        return c.res;
+      }
+      const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
+      if (recorded?.kind === "pending") {
+        c.header("Cache-Control", "no-store");
+        return c.json(recorded.body, 503);
+      }
+      const open = await getOpenDeliveryIntent(c.env, spent.transaction).catch(() => null);
+      if (legacyItem?.fulfillment === "human_queue") {
+        const recovered = await recoverLegacyHumanOrder(c.env, legacyItem,
+          { path: c.req.path, transaction: spent.transaction, payer, network: result.paymentRequirements.network }, open?.intent);
+        if (recovered) {
+          const response = c.json(recovered);
+          await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(spent.transaction)).catch(() => undefined);
+          await recordDeliveredSettlement(c.env, spent.transaction);
+          response.headers.set("Cache-Control", "no-store");
+          response.headers.set("Paid-Retry", "true");
+          return response;
         }
       }
-      // BOOK IT. This path refused a signed payment and recorded nothing
-      // until 2026-07-28, which meant a buyer retrying an authorization
-      // instead of re-signing was invisible in the books — the exact
-      // shape of a real buyer bouncing repeatedly off a fixable wall.
-      await recordPaymentDecline(
-        c.env,
-        c.req.path,
-        "replay:nonce_already_settled",
-        gateSignals(c),
-      ).catch(() => undefined);
       c.header("Cache-Control", "no-store");
-      return c.json(
-        {
-          error:
-            "That payment authorization has been through this till once already. Sign a fresh one, the register remembers. (If your last attempt paid and the goods never arrived, retrying with the SAME authorization within a day delivers them without a second charge — that lane just found nothing owed.)",
-        },
-        402,
-      );
+      c.header("Paid-Retry", "incomplete");
+      const failure = legacyRecoveryFailure(c.env.STORE_BASE_URL, legacyItem ?? { name: c.req.path },
+        open?.intent, { path: c.req.path, transaction: spent.transaction, payer });
+      return c.json(failure, failure.charged === true ? 500 : 503);
     }
+    // BOOK IT. This path refused a signed payment and recorded nothing
+    // until 2026-07-28, which meant a buyer retrying an authorization
+    // instead of re-signing was invisible in the books — the exact
+    // shape of a real buyer bouncing repeatedly off a fixable wall.
+    await recordPaymentDecline(
+      c.env,
+      c.req.path,
+      "replay:nonce_already_settled",
+      gateSignals(c),
+    ).catch(() => undefined);
+    c.header("Cache-Control", "no-store");
+    return c.json(legacyRecoveryFailure(c.env.STORE_BASE_URL, { name: c.req.path }, undefined,
+      { path: c.req.path, transaction: "", payer: undefined }), 503);
   }
 
   // Preserve nonce/artifact recovery when the purchase journal is still uncertain.

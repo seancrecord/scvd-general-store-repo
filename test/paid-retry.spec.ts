@@ -1,5 +1,6 @@
 import { SELF, env, runInDurableObject } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
+import { purchaseIdentity, purchaseIntentStore } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 import { installMultiPurchaseFacilitatorMock } from "./helpers/facilitator-mock";
@@ -13,17 +14,8 @@ beforeAll(() => {
   facilitator = installMultiPurchaseFacilitatorMock();
 });
 
-/**
- * THE PAID RETRY — class B of "paid and got nothing," closed the only
- * honest way. The delivery audit's own ruling stands (no cron can
- * re-run a handler whose inputs it never had) — but the buyer's retry
- * CARRIES the inputs, and 2026-08-07 proved buyers retry. A spent
- * nonce whose delivery intent is still open means money moved and
- * goods never left: the gate runs the handler on the retry's own
- * inputs, charges nothing, closes the intent. Checkpointed goods can
- * also be retrieved after delivery closed; legacy certificate-only
- * records still leave the obligation open.
- */
+/** Paid retry returns retained original goods; a spent nonce and desk preview
+ * alone cannot authenticate either the buyer or the purchased content. */
 
 async function challengeAndSign(item: string): Promise<string> {
   const challenge = await SELF.fetch(`${BASE}/api/buy/${item}`);
@@ -45,7 +37,7 @@ function nonceOf(header: string): string {
 }
 
 describe("the paid retry", () => {
-  it("delivers on retry when money moved and goods never left — no second charge", async () => {
+  it("refuses to invent goods when the legacy record has no authenticated payer", async () => {
     const header = await challengeAndSign("hello");
     // The crash, reconstructed as state: the settle happened (spent
     // nonce carries the tx) and the handler never finished (intent
@@ -69,17 +61,13 @@ describe("the paid retry", () => {
     const retry = await SELF.fetch(`${BASE}/api/buy/hello`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(retry.status).toBe(200);
-    expect(retry.headers.get("Paid-Retry")).toBe("true");
-    const body = (await retry.json()) as Record<string, any>;
-    // Goods, minted against the ORIGINAL settle: the certificate
-    // names the transaction the money actually moved in.
-    expect(body.deliverable).toBeTruthy();
-    expect(body.certificate.settlement_tx).toBe(tx);
-    // Nothing settled again: the facilitator was never asked.
+    expect(retry.status).toBe(503);
+    expect(retry.headers.get("Paid-Retry")).toBe("incomplete");
+    const body = (await retry.json()) as Record<string, unknown>;
+    expect(body).toMatchObject({ code: "purchase_record_unavailable", charged: null, charged_again: false });
+    expect(body.deliverable).toBeUndefined();
     expect(facilitator.settleCalls).toBe(settlesBefore);
-    // The intent closed: the sale terminated in goods.
-    expect(await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(tx))).toBeNull();
+    expect(await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(tx))).not.toBeNull();
   });
 
   it("keeps legacy delivery open when only the certificate can be recovered", async () => {
@@ -97,13 +85,17 @@ describe("the paid retry", () => {
     const namespace = testEnv.PAID_RECOVERIES!;
     await runInDurableObject(namespace.get(namespace.idFromName(`${firstBody.certificate.network}:${transaction}`)),
       async (_instance, state) => state.storage.deleteAll());
+    const wire = JSON.parse(atob(header));
+    const payer = wire.payload.authorization.from;
+    const identity = await purchaseIdentity(wire.accepted.network, payer, wire);
+    await runInDurableObject(purchaseIntentStore(testEnv, identity.id), async (_instance, state) => state.storage.deleteAll());
     const settlesBefore = facilitator.settleCalls;
     // Reopen the delivery obligation as if the response died after minting.
     await testEnv.ORDERS.put(
       KV_KEYS.deliveryIntent(transaction),
       JSON.stringify({
         path: "/api/buy/small_blessing",
-        transaction,
+        transaction, payer,
         paid_usdc: 1,
         settled_at: new Date().toISOString(),
       }),
@@ -119,8 +111,8 @@ describe("the paid retry", () => {
     // Preserve the obligation and the payment state instead of claiming delivery.
     expect(body).toMatchObject({ code: "delivery_failed", charged: true, charged_again: false });
     expect(body.already_delivered).not.toBe(true);
-    expect(body.certificate_id).toBe(firstBody.certificate.cert_id);
-    expect(body.verify_url).toContain(firstBody.certificate.cert_id);
+    expect(body.recovery_reason).toBe("original_inputs_unavailable");
+    expect(await testEnv.PATRONS.get(KV_KEYS.cert(firstBody.certificate.cert_id))).not.toBeNull();
     expect(
       await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(transaction)),
     ).not.toBeNull();
@@ -165,18 +157,19 @@ describe("the paid retry", () => {
     const swap = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(swap.status).toBe(402);
+    expect(swap.status).toBe(402); // Rejected as mismatched terms before verified recovery.
   });
 
-  it("gives pre-upgrade spent-nonce rows the refusal they always got", async () => {
+  it("reports an unlinked pre-upgrade payment without offering a new purchase", async () => {
     const header = await challengeAndSign("hello");
     // An old row: the bare path string, no transaction link.
     await testEnv.COUNTERS.put(KV_KEYS.paymentNonce(nonceOf(header)), "/api/buy/hello");
     const retry = await SELF.fetch(`${BASE}/api/buy/hello`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
-    expect(retry.status).toBe(402);
+    expect(retry.status).toBe(503);
     const body = (await retry.json()) as Record<string, any>;
-    expect(body.error).toContain("through this till once already");
+    expect(body).toMatchObject({ code: "purchase_record_unavailable", charged: null, charged_again: false, settlement_attempted: false });
+    expect(body.error).toContain("do not make another purchase");
   });
 });

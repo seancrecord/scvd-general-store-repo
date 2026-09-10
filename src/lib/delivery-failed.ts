@@ -1,3 +1,4 @@
+import { canonicalAddress } from "@/lib/addresses";
 import { sendAlert } from "@/lib/alerts";
 import type { SettledPayment } from "@/lib/payments";
 import type { Env, MenuItem } from "@/types";
@@ -24,8 +25,8 @@ import type { DeliveryIntent } from "@/services/delivery-audit";
  */
 export const DELIVERY_FAILED_CODE = "delivery_failed";
 
-/** A legacy desk preview is not a complete, authenticated purchase brief. */
-export function legacyHumanRecoveryFailure(
+/** A preview or request digest cannot recover the original good or observation. */
+export function legacyRecoveryFailure(
   base: string,
   item: Pick<MenuItem, "name">,
   intent: DeliveryIntent | undefined,
@@ -39,7 +40,9 @@ export function legacyHumanRecoveryFailure(
   // Spent nonces were globally indexed. Knowing one cannot disclose another
   // buyer's order, and older rows sometimes did not retain their payer at all.
   if (!intent || intent.path !== identity.path || intent.transaction !== identity.transaction ||
-    !identity.payer || !intent.payer || intent.payer.toLowerCase() !== identity.payer.toLowerCase()) {
+    !identity.payer || typeof intent.payer !== "string" || canonicalAddress(intent.payer) !== canonicalAddress(identity.payer) ||
+    typeof intent.paid_usdc !== "number" || !Number.isFinite(intent.paid_usdc) || intent.paid_usdc <= 0 ||
+    typeof intent.settled_at !== "string" || !Number.isFinite(Date.parse(intent.settled_at))) {
     return {
       code: "purchase_record_unavailable", charged: null, charged_again: false,
       settlement_attempted: false,
@@ -52,7 +55,7 @@ export function legacyHumanRecoveryFailure(
       transaction: identity.transaction, payer: intent.payer, settleHeaders: {} }),
     // The legacy row did not retain the chain. Today's selected offer cannot
     // supply that missing fact about yesterday's settlement.
-    error: "Your payment is recorded, but the original human-work brief was not retained in a form this retry can authenticate. The delivery remains open for the keeper to resolve or refund. No new order or charge was created; keep your original payment and do not buy again to recover it.",
+    error: "Your payment is recorded, but the original good and its complete inputs or evidence cannot be recovered from authenticated retained records. The delivery remains open for the keeper to resolve or refund. No replacement good or charge was created; keep your original payment and do not buy again to recover it.",
     charged_again: false, settlement_attempted: false,
     recovery_reason: "original_inputs_unavailable",
     recovery,

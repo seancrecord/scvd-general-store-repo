@@ -111,7 +111,8 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
           expect(retry.body.recovery_reason).toBe("original_inputs_unavailable");
           expect(retry.body.network).toBeUndefined();
           expect((await sourceEnv.ORDERS.list({ prefix: KV_KEYS.orderPrefix })).keys).toHaveLength(0);
-        } else expect(retry.body.network).toBe(network);
+        }
+        expect(retry.body.network).toBeUndefined(); // The old intent did not retain its rail.
         expect(retry.body.already_delivered).not.toBe(true);
         expect(retry.quote).toBe(false);
         expect(retry.settles).toBe(0);

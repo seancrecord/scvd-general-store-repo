@@ -32,6 +32,7 @@ vi.mock("@/services/settlement-records", async (original) => {
   } };
 });
 
+import { purchaseIdentity, purchaseIntentStore } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { BASE_NETWORK, POLYGON_NETWORK } from "@/lib/payments";
 import { installBuyerHarness, items, shelves, baseline, call, request, object, sourceEnv, testEnv, facilitator, type Obj } from "./helpers/buyer-harness";
@@ -188,12 +189,17 @@ it("does not reconstruct from a forged payer or a payment moved to another chain
   expect((await buying.send()).protocolError).toBe(false);
 });
 
+async function removePurchaseJournal(wire: Obj) {
+  const identity = await purchaseIdentity(String(object(wire.accepted).network), String(object(object(wire.payload).authorization).from), wire);
+  await runInDurableObject(purchaseIntentStore(sourceEnv, identity.id), async (_instance, state) => state.storage.deleteAll());
+}
 for (const point of ["lookup_incomplete", "lookup_error"]) {
   it(`keeps paid recovery open when the certificate check reports ${point}`, async () => {
     const buying = await purchase("context_anchor", { summary: "SCVD-E2E-uncertain-recovery" });
     fault.kind = "generation";
     await buying.send();
-    // A purchase from before artifact checkpoints still needs a certain lookup.
+    // A historical request digest survives, but no original purchase or good does.
+    await removePurchaseJournal(buying.wire);
     const namespace = sourceEnv.PAID_RECOVERIES!;
     await runInDurableObject(namespace.get(namespace.idFromName(`${BASE_NETWORK}:${transfers[0]!.transaction}`)),
       async (_instance, state) => state.storage.deleteAll());
@@ -205,7 +211,9 @@ for (const point of ["lookup_incomplete", "lookup_error"]) {
     expect(retry.settles).toBe(0);
     expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(0);
     fault.kind = "none";
-    expect((await buying.send()).protocolError).toBe(false);
+    const stillOwed = await buying.send();
+    expect(stillOwed.protocolError).toBe(true);
+    expect(stillOwed.body.recovery_reason).toBe("original_inputs_unavailable");
     expect(transfers).toHaveLength(1);
   });
 }
@@ -217,6 +225,7 @@ it("does not call a legacy certificate a delivered good or mint another against 
   expect(fault.hits).toBeGreaterThan(0);
   expect(first.charged).toBe(true);
   // Reproduce the old certificate-only state without an immutable manifest.
+  await removePurchaseJournal(buying.wire);
   const namespace = sourceEnv.PAID_RECOVERIES!;
   await runInDurableObject(namespace.get(namespace.idFromName(`${BASE_NETWORK}:${transfers[0]!.transaction}`)),
     async (_instance, state) => state.storage.deleteAll());
@@ -226,7 +235,7 @@ it("does not call a legacy certificate a delivered good or mint another against 
   expect(retry.quote).toBe(false);
   expect(retry.charged).toBe(true);
   expect(retry.body.already_delivered).not.toBe(true);
-  expect(retry.body.recovery_reason).toBe("certificate_already_minted");
+  expect(retry.body.recovery_reason).toBe("original_inputs_unavailable");
   expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(1);
   expect(await sourceEnv.ORDERS.get(KV_KEYS.deliveryIntent(String(transfers[0]!.transaction)))).not.toBeNull();
   expect(transfers).toHaveLength(1);
