@@ -124,4 +124,16 @@ describe("the hand-rolling notes", () => {
     expect(HAND_ROLLING.echo_the_offer).toContain("`extra`");
     expect(HAND_ROLLING.echo_the_offer).toContain("BEFORE the facilitator");
   });
+
+  it("includes quoted discovery metadata in the envelope readers copy", async () => {
+    const response = await SELF.fetch("https://scvd.store/try");
+    const body = (await response.json()) as { hand_rolling: typeof HAND_ROLLING };
+    const notes = body.hand_rolling;
+    expect(notes.envelope).toContain('"resource"');
+    expect(notes.envelope).toContain('"extensions"');
+    expect(notes.worked_example.right).toHaveProperty("resource");
+    expect(notes.worked_example.right).toHaveProperty("extensions");
+    expect(notes.echo_the_offer).toContain("discovery");
+    expect(notes.echo_the_offer).toContain("settle");
+  });
 });

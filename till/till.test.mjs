@@ -452,6 +452,26 @@ test("the accepted offer is echoed whole and unchanged", () => {
   assert.equal(decoded.payload.signature, SIGNATURE);
 });
 
+test("browser payment carries the resource and discovery declaration from its quote", async () => {
+  const resource = { url: "https://scvd.store/api/buy/hello", description: "A signed hello." };
+  const extensions = { bazaar: { info: { input: { type: "http", method: "GET" } }, schema: { type: "object" } } };
+  let paidPayload;
+  let knocks = 0;
+  const store = { fetchImpl: async (_url, init) => {
+    if (++knocks === 1) return fakeResponse({ status: 402,
+      headers: { "PAYMENT-REQUIRED": base64FromString(JSON.stringify({ x402Version: 2, accepts: [baseAccept()], resource, extensions })) },
+      json: { idempotency: { suggested_key: "discovery-test" } },
+    });
+    paidPayload = JSON.parse(stringFromBase64(init.headers["PAYMENT-SIGNATURE"]));
+    return fakeResponse({ status: 200, json: { paid_usdc: 0.001 } });
+  } };
+  const { result } = await run({ store });
+  assert.equal(result.outcome, "delivered");
+  assert.deepEqual(paidPayload.resource, resource);
+  assert.deepEqual(paidPayload.extensions, extensions);
+  assert.deepEqual(paidPayload.accepted, baseAccept());
+});
+
 test("a signature that is not 65 bytes is never presented as payment", () => {
   for (const bad of ["0x1234", SIGNATURE + "ab", 42, null]) {
     assert.throws(

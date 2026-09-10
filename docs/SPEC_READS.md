@@ -1,5 +1,39 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-09 — Discovery envelope and regex compatibility
+
+Resumed on the keeper's “keep rolling.” Read Coinbase's
+[seller discovery guide](https://docs.cdp.coinbase.com/x402/seller/get-discovered)
+and [free validator contract](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/validate-x402-endpoint):
+POST `{resource, method: "GET"}` to `/platform/v2/x402/validate`.
+Validation neither pays nor indexes. Inspected the installed x402 client's
+envelope construction and server forwarding: resource and extensions travel
+in the client payload. Our browser and published hand-built example omitted
+both. The browser now echoes the challenge's fields unchanged.
+
+[Go regexp syntax](https://go.dev/pkg/regexp/syntax/) limits counted
+repetition, including nested counts. Reproduced the bundle pattern's rejection
+with Go 1.27.1, then compiled the replacement against the same engine.
+The schema's length bounds retain the existing two-to-twenty hash limit.
+The CI check reads actual published schemas, not a second list of patterns.
+
+Read all 346 retained discovery-response rows and 22 retained sale-event rows
+without making a purchase. Bundle settlement responses on August 19 and 26
+report `invalid discovery configuration`; today's validator identifies the
+regex, but the older generic errors cannot identify their offending field.
+Recent affected sales identify `cv-handrolled/1.0` or `cv-mcp-hand/1.0`;
+their discovery responses contain no Bazaar status. Adjacent stock-client
+sales received `processing`. Submitted envelopes are not retained, so omitted
+metadata in those custom-client requests remains an inference. No retained
+discovery row for `a2a_repair_kit` was found; that is a retention gap, not a
+finding that it was never purchased. The response buffer is bounded and its
+timestamp keys can collide; this ledger is not a complete payment inventory.
+
+At 19:53 UTC Coffee received a `processing` response and its index entry
+updated to the shelf price, $0.99. The Collab and The Statement still carried
+August index timestamps on this read. Changes here prevent future malformed
+discovery submissions; existing missing or stale entries remain unresolved.
+
 ## 2026-09-09 — Bitcoin header verification and verifier publication
 
 Read the [OpenTimestamps client](https://github.com/opentimestamps/opentimestamps-client)
