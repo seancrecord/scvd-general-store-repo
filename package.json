@@ -47,7 +47,7 @@
     "specs:test": "node --test scripts/specs-check.test.mjs",
     "doors:test": "node --test scripts/doors-config.test.mjs scripts/doors-live.test.mjs scripts/doors-check.test.mjs",
     "listings:check": "node scripts/listings-check.mjs",
-    "listings:test": "node --test scripts/listings-check.test.mjs",
+    "listings:test": "node --test scripts/listings-check.test.mjs scripts/agentfinder-check.test.mjs",
     "corpus:publish": "node scripts/corpus-publish.mjs",
     "corpus:publish:test": "node --test scripts/corpus-publish.test.mjs",
     "citations:check": "node scripts/citations-check.mjs",

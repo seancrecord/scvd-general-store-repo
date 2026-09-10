@@ -68,7 +68,7 @@ describe("the named list splits by purpose, exactly once", () => {
       // OpenAI, Anthropic, Google, Microsoft, Amazon, Perplexity, Meta,
       // ByteDance, Mistral, Cohere, Apple, Common Crawl.
       "GPTBot", "ChatGPT-User", "OAI-SearchBot",
-      "ClaudeBot", "Claude-User", "Claude-SearchBot", "anthropic-ai",
+      "ClaudeBot", "Claude-User", "Claude-SearchBot",
       "Googlebot", "Google-Extended", "GoogleOther", "Google-CloudVertexBot",
       "bingbot", "Amazonbot", "PerplexityBot", "Perplexity-User",
       "Meta-ExternalAgent", "Meta-ExternalFetcher", "Bytespider",
@@ -77,9 +77,52 @@ describe("the named list splits by purpose, exactly once", () => {
       "DuckAssistBot", "YouBot", "PetalBot", "AI2Bot",
       // xAI: named though the vendor publishes no bots page.
       "GrokBot", "xAI-Grok", "Grok-DeepSearch",
+      // The third walk, 2026-09-10: every token below was read off its
+      // operator's own bots page, never off a third-party directory.
+      "Google-Agent", "Google-NotebookLM", "Amzn-SearchBot", "Amzn-User",
+      "Meta-WebIndexer", "MistralAI-Index", "KimiBot", "Kimi-SearchBot",
+      "Diffbot-User", "bedrockbot", "Bravebot",
+      // The keeper's same-day ruling: the eight with no bots page.
+      "DeepSeekBot", "QwenBot", "DoubaoBot", "MistralAI-Training",
+      "FirecrawlAgent", "ExaSearchBot", "TavilyBot", "Claude-Code",
     ]) {
       expect(named.has(token), `${token} is not named anywhere`).toBe(true);
     }
+  });
+
+  it("names no crawler its operator has retired", () => {
+    /*
+     * Anthropic retired `anthropic-ai` and `Claude-Web` in favour of
+     * ClaudeBot; its support page lists ClaudeBot, Claude-User and
+     * Claude-SearchBot and nothing else. A stanza for a retired string
+     * is a false claim by the file's own rule, and the store carried
+     * one from 2026-08-30 to 2026-09-10. Held here so it cannot creep
+     * back from a directory that still lists it.
+     */
+    const named = new Set([...NAMED_AI_CRAWLERS, ...SEARCH_CRAWLERS]);
+    for (const retired of ["anthropic-ai", "Claude-Web"]) {
+      expect(named.has(retired), `${retired} was retired by its operator`).toBe(false);
+    }
+  });
+
+  it("classes the 2026-09-10 additions on their published purpose", () => {
+    for (const reader of ["KimiBot", "Google-NotebookLM", "Amzn-User", "Diffbot-User"]) {
+      expect(MARKDOWN_READERS).toContain(reader);
+    }
+    // A browser agent keeps the page it came to press buttons on; the
+    // indexes keep the JSON-LD they came to cite.
+    for (const indexer of [
+      "Google-Agent", "Amzn-SearchBot", "Meta-WebIndexer", "MistralAI-Index",
+      "Kimi-SearchBot", "bedrockbot", "Bravebot",
+    ]) {
+      expect(HTML_INDEXERS).toContain(indexer);
+    }
+    // The substring match must not let a sibling token class its
+    // neighbour: Diffbot-User is a reader, plain Diffbot is not.
+    expect(isMarkdownReader("Mozilla/5.0 (compatible; Diffbot-User/1.0)")).toBe(true);
+    expect(isMarkdownReader("Mozilla/5.0 (compatible; Diffbot/1.0)")).toBe(false);
+    expect(isMarkdownReader("Mozilla/5.0 (compatible; Kimi-SearchBot/1.0)")).toBe(false);
+    expect(isMarkdownReader("Mozilla/5.0 (compatible; KimiBot/1.0)")).toBe(true);
   });
 
   it("leaves a vendor with no published purpose as an indexer, never a reader", () => {
@@ -89,7 +132,12 @@ describe("the named list splits by purpose, exactly once", () => {
      * readers by it — and unsure defaults to the answer that loses
      * least, which is the page and its structured data.
      */
-    for (const token of ["GrokBot", "xAI-Grok", "Grok-DeepSearch", "GoogleOther", "Google-CloudVertexBot"]) {
+    for (const token of [
+      "GrokBot", "xAI-Grok", "Grok-DeepSearch", "GoogleOther", "Google-CloudVertexBot",
+      // The keeper's 2026-09-10 eight, named on the xAI precedent.
+      "DeepSeekBot", "QwenBot", "DoubaoBot", "MistralAI-Training",
+      "FirecrawlAgent", "ExaSearchBot", "TavilyBot", "Claude-Code",
+    ]) {
       expect(MARKDOWN_READERS, `${token} was classed on a purpose nobody published`).not.toContain(token);
       expect(HTML_INDEXERS).toContain(token);
     }
