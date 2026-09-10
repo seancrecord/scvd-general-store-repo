@@ -1,11 +1,12 @@
 # Adoption and latency follow-through — September 10, 2026
 
-Status: companion packages published and registry-verified September 10.
-The preview and measurement changes are locally qualified; website release
-acceptance is tracked in [PR #621](https://github.com/seancrecord/scvd-general-store-repo/pull/621). The keeper approved adoption work
-and latency measurements while asking for the effort/value of the other
-verification options. Production PQ and standalone screening were not
-activated or sold by this work.
+Status: released and verified September 10 through
+[PR #621](https://github.com/seancrecord/scvd-general-store-repo/pull/621), merged at 2026-09-10T21:09:31Z as
+`b41e131d94c2a9fa8a14b9cc05502b1ed6a70c01`. All three companion packages are
+published and registry-verified; both production Worker builds and the
+live preview checks passed. The keeper approved adoption and latency work.
+Production PQ and standalone screening remain deferred; historical evidence
+recovery belongs to the separately supplied agent prompt.
 
 ## Examples and discovery
 
@@ -156,9 +157,11 @@ all 14 Node measurement tests now pass. Typecheck and both Worker bundles
 passed after the menu correction. Documentation and claims checks passed.
 The independent package archives additionally passed their own Linux
 publication dry runs. The corrected full local suite and package-specific
-Linux checks qualify package publication; the website still requires its
-full GitHub CI before merge. Registry verification and production smoke
-checks are recorded separately when performed.
+Linux checks qualified package publication. The integrated PR subsequently
+passed full GitHub CI: 641 files, 10,899 tests and
+1 skip. Those counts include the base branch's additional tests;
+the local branch count above remains separately stated. Registry and
+production acceptance records are retained alongside the readings.
 
 Sources read September 10:
 - https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
@@ -166,3 +169,30 @@ Sources read September 10:
 - https://www.chainalysis.com/product/address-screening/
 - Installed Wrangler deploy help, locked dependency types, and the source
   and test files named by the changes. No runtime binding API changed.
+
+## Production acceptance and repeat reading
+
+`release-acceptance.json` records the successful full PR CI and the two
+actual merged-revision production builds. `live-previews.json` records
+32 unique preview URLs covering all 33 products,
+plus the Hello payment challenge's preview kind and the item page's
+input/output-example label, checked at 2026-09-10T21:18:20.028Z.
+`registry-live.json` additionally records the actual registry-installed
+MCP command initializing and listing the five expected read-only tools,
+the preflight usage command, and Defects matching live vocabulary v13.
+No purchases were made by these checks.
+
+`latency-after.json`, read at 2026-09-10T21:18:20.112Z, repeats the same
+three URLs and 11 requests per URL. All 33 requests answered with the
+expected status and all repeated responses were marked warm. Warm medians
+were 38, 71, 34 ms for checkout, compact corpus and developers,
+respectively; the earlier reading was 53, 86, 44 ms. First requests
+were all marked cold and took 175, 1073, 309 ms. The earlier developers
+first request was warm, so those first-response values are not a matched
+cold comparison. These short samples from one machine have no concurrent
+control and establish neither population p95 nor a causal speedup.
+No cache, verification, freshness or bounded-memory policy was loosened.
+
+Post-deployment records and this final documentation update are retained
+on the release branch and linked from PR #621. They record observations
+after deployment; they are not represented as inputs to the earlier CI run.

@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-09-10T20:20:13.710Z",
+  "branch_commit": "07d381270f8864a43e05ee0bb7d5cebb157dcd43",
+  "base": "https://5f2aabab-scvd-doors.seancrecord.workers.dev",
+  "checks": [
+    {
+      "item": "hello",
+      "status": 402,
+      "sample": {
+        "url": "https://scvd.store/samples/hello.json",
+        "kind": "delivery_outline",
+        "price": "free",
+        "live_observation": false
+      },
+      "bytes": 14936
+    },
+    {
+      "item": "signature_agent_card",
+      "status": 402,
+      "sample": {
+        "url": "https://scvd.store/samples/signature-agent-card.json",
+        "kind": "delivery_outline",
+        "price": "free",
+        "live_observation": false
+      },
+      "bytes": 17240
+    }
+  ],
+  "paid_requests": 0
+}

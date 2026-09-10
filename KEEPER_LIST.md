@@ -839,6 +839,8 @@ Do not relitigate without you.
   and verified against the reviewed archives, repository commit and
   provenance runs. No keeper press or credential change remains.
   `docs/ADOPTION_AND_LATENCY_2026-09.md` records the release checks.
+  The preview site is also deployed and live-checked; latency readings
+  and VQ8 acceptance are closed. No keeper action remains for this batch.
 - **Tab registry press closed, checked September 10.** `scvd-tab`
   0.11.1 matches every published file in this tree. No Tab release
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.

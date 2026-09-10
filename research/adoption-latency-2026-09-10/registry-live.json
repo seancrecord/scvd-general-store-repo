@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-09-10T20:23:39.999Z",
+  "install_source": "npm registry, exact versions retained in adjacent registry records",
+  "mcp": {
+    "upstream": "https://scvd.store/mcp/verifier",
+    "command": "scvd-mcp-starter",
+    "initialize": "passed",
+    "tools": [
+      "get_defect_definition",
+      "lookup_endpoint_readiness",
+      "preflight_x402_endpoint",
+      "verify_scvd_artifact",
+      "verify_x402_receipt"
+    ]
+  },
+  "preflight": {
+    "command": "scvd-preflight",
+    "usage_exit": 2,
+    "package_name_in_usage": true
+  },
+  "vocabulary": {
+    "stale": false,
+    "snapshot": "13",
+    "live": "13"
+  },
+  "paid_requests": 0
+}

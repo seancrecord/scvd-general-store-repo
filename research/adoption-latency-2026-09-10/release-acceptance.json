@@ -1,0 +1,50 @@
+{
+  "checked_at": "2026-09-10T21:19:58.311Z",
+  "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/621",
+  "merged_at": "2026-09-10T21:09:31Z",
+  "merge_commit": "b41e131d94c2a9fa8a14b9cc05502b1ed6a70c01",
+  "qualified_pr_head": "07d381270f8864a43e05ee0bb7d5cebb157dcd43",
+  "ci": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34525627716",
+    "status": "completed",
+    "conclusion": "success",
+    "full_suite": {
+      "files_passed": 641,
+      "tests_passed": 10899,
+      "tests_skipped": 1
+    },
+    "note": "Counts read from the completed CI log; local branch suite separately passed 638 files and 10882 tests with one skip."
+  },
+  "production_builds": [
+    {
+      "name": "Workers Builds: scvd-general-store-repo",
+      "status": "completed",
+      "conclusion": "success",
+      "completed_at": "2026-09-10T21:10:25Z",
+      "url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production/builds/78a3f626-30eb-4741-952f-48a78df2c7a6",
+      "summary": "\nBuild ID: [78a3f626-30eb-4741-952f-48a78df2c7a6](https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production/builds/78a3f626-30eb-4741-952f-48a78df2c7a6)\nScript: [scvd-general-store-repo](https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-general-store-repo/production)\nVersion ID: a958122b-f233-488b-a68d-d3ba7c1662c9\n"
+    },
+    {
+      "name": "Workers Builds: scvd-doors",
+      "status": "completed",
+      "conclusion": "success",
+      "completed_at": "2026-09-10T21:10:23Z",
+      "url": "https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production/builds/05da31fd-57b9-4523-ae66-32426e5ae341",
+      "summary": "\nBuild ID: [05da31fd-57b9-4523-ae66-32426e5ae341](https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production/builds/05da31fd-57b9-4523-ae66-32426e5ae341)\nScript: [scvd-doors](https://dash.cloudflare.com/3ba8d83ad44ed9f86505de978db86388/workers/services/view/scvd-doors/production)\nVersion ID: 8d9c347d-8309-4831-8f6e-9dcfb3d4ac8c\n"
+    }
+  ],
+  "local_validation": {
+    "files_passed": 638,
+    "tests_passed": 10882,
+    "tests_skipped": 1,
+    "typecheck": "passed",
+    "both_worker_bundles": "passed",
+    "cold_reader_tests": 14
+  },
+  "main_ci": {
+    "run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34530585626/job/103050057012",
+    "status": "in_progress",
+    "conclusion": null,
+    "note": "Separate post-merge run, not substituted for the completed integrated PR CI."
+  }
+}
