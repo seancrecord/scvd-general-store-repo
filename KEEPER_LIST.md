@@ -733,18 +733,25 @@ Do not relitigate without you.
   `swept_no_door_found` for three weeks, the sweep is reading hosts
   that publish no `/.well-known/x402`, and the queue's cap is
   spending reads on them.
-- **RULE** — seller declarations, ruling 1
-  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
-  a declaration free, forever? Recommended yes; the paid instrument
-  is a watch on the match line, already priced as an endpoint watch.
-- **RULE** — seller declarations, ruling 2: does a declaration for a
-  host the feeds do not name enter the asked-for queue at the top of
-  its week? Recommended yes; it does not jump the roster cap.
-- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
-  second observer's verified row enter the signed snapshot at its
-  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
-  beside the chain in a file of its own? Recommended inside. No
-  build until a named party asks to submit rows.
+- **RULED 2026-09-10, all three, as recommended** ("agree with
+  recommendations"). Seller declarations
+  (`docs/SELLER_DECLARATIONS_2026-09.md`): attaching and reading a
+  declaration is free, forever; the paid instrument is a watch on
+  the match line, priced as an endpoint watch. A declaration for a
+  host the feeds do not name enters the asked-for queue at the top
+  of its week and does not jump the roster cap. Federation
+  (`docs/FEDERATION_2026-09.md`): a second observer's verified row
+  enters the signed snapshot at its own tier, `federated_rows[]`
+  beside `hosts[]`, the crowd-walk precedent.
+- **WAIT — nothing builds on these until the queue has one Sunday
+  of data** (his "put a reminder to wait for the data"). The LOOK
+  above is the gate: if strangers are asking about unmet hosts,
+  seller declarations have a buyer side and CV1 opens; if
+  `hosts_asked` is 0, CV1 waits and the question is why the free
+  surfaces are not being asked. Federation (CV2) keeps its own
+  trigger: a named party asks to submit rows, or a bounty walker
+  asks for their own signature. A reminder is set for Monday
+  2026-09-14 after the round seals.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 
