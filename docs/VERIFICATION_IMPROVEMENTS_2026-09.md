@@ -253,3 +253,13 @@ all payment networks. The package review distinguishes matching published
 code, documentation patches, unpublished clients and the third-party
 `x402-preflight` name collision. See `OPENAPI_HEADROOM_2026-09.md` for
 measurements, limits and pending release checks.
+
+
+## September 10 — adoption package release follow-through
+
+The previously pending Defects, MCP starter and preflight packages are
+published and registry-verified. Preflight installs as `scvd-preflight`;
+`x402-preflight/` remains the source directory. Older version and press
+rows above belong to their dated readings. Current versions, verified
+archives, provenance runs, accurate preview scope and website acceptance
+are recorded in `ADOPTION_AND_LATENCY_2026-09.md`.

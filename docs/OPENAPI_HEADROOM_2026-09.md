@@ -131,3 +131,13 @@ passed its preceding full CI; its roadmap conflict is resolved on
 The following package implementation is recorded separately in
 `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`; its prepared versions are not
 registry releases yet.
+
+
+## September 10 — adoption package release follow-through
+
+The previously pending Defects, MCP starter and preflight packages are
+published and registry-verified. Preflight installs as `scvd-preflight`;
+`x402-preflight/` remains the source directory. Older version and press
+rows above belong to their dated readings. Current versions, verified
+archives, provenance runs, accurate preview scope and website acceptance
+are recorded in `ADOPTION_AND_LATENCY_2026-09.md`.

@@ -1,7 +1,8 @@
 # Adoption and latency follow-through — September 10, 2026
 
-Status: preparation on `codex/adoption-latency-followthrough`, based on
-`e6eb17ad`. Not published or deployed. The keeper approved adoption work
+Status: companion packages published and registry-verified September 10.
+The preview and measurement changes are locally qualified; website release
+acceptance is tracked in [PR #621](https://github.com/seancrecord/scvd-general-store-repo/pull/621). The keeper approved adoption work
 and latency measurements while asking for the effort/value of the other
 verification options. Production PQ and standalone screening were not
 activated or sold by this work.
@@ -38,16 +39,24 @@ tests. The preflight client keeps its `x402-preflight/` source directory
 but installs and runs as `scvd-preflight`; its README and command help
 agree. The keeper accepted continuing the adoption work after this name
 was proposed. npm's existing `x402-preflight` belongs to another project.
-A registry 404 for the distinct name does not guarantee npm acceptance.
+The distinct namespace was accepted at publication; no account change was needed.
 
 Versions come from the manifests. Defects tracks the served vocabulary;
 its README now derives the example version from the exported constant.
 All three archives are checked by installing the packed bytes, comparing
 every shipped file and running their fixture suites on the declared
-minimum Node 18.17.0. Initial archive records are retained in the research
-folder. Publication and registry provenance checks are the remaining
-release gates; preparation is not publication. Earlier CLI, Sign, corpus
-client, Verify and Tab releases remain closed and need no API change for
+minimum Node 18.17.0. Archive and registry records are retained in the research
+folder. Fresh registry installs match every reviewed archive and shipped
+file, pass their own fixture tests, and verify their registry signatures
+and provenance attestations. The attested source is
+`4fe7417429e2580f2a59904e9ed6812693b946b5`; every attestation names this
+repository, the publication workflow and its actual invocation.
+
+- [scvd-defects 0.13.0](https://www.npmjs.com/package/scvd-defects/v/0.13.0), [provenance run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34525382788/attempts/1).
+- [scvd-mcp-starter 0.1.0](https://www.npmjs.com/package/scvd-mcp-starter/v/0.1.0), [provenance run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34525385090/attempts/1).
+- [scvd-preflight 0.1.0](https://www.npmjs.com/package/scvd-preflight/v/0.1.0), [provenance run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34525387399/attempts/1).
+
+Earlier CLI, Sign, corpus client, Verify and Tab releases remain closed and need no API change for
 these previews.
 
 ## Latency instrument and first reading

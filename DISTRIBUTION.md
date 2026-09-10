@@ -1,10 +1,12 @@
 # DISTRIBUTION.md — the agent-native channels, and exactly how to enter each
 
-September 10 adoption follow-through adds provenance-workflow support for
-scvd-defects, scvd-mcp-starter and the distinctly named scvd-preflight
-(source directory `x402-preflight/`). The release is being validated;
-publication is recorded only after registry verification. Scope and checks:
-`docs/ADOPTION_AND_LATENCY_2026-09.md`.
+September 10 adoption follow-through: scvd-defects, scvd-mcp-starter and
+scvd-preflight are published. Fresh registry installations match the
+reviewed archives and all shipped files, pass their own fixture suites,
+and verify registry signatures and provenance. The source directory for
+scvd-preflight remains `x402-preflight/`. These releases need no keeper
+press or credential change. Scope, release receipts and the separate
+website acceptance: `docs/ADOPTION_AND_LATENCY_2026-09.md`.
 
 **Version rule, refreshed 2026-09-06:** older numbered versions and
 package counts below belong to their dated readings. At a publish,

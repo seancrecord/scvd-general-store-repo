@@ -86,3 +86,13 @@ separate states; none follows automatically from the preceding one.
 September 10 release naming: the preflight companion proposed here as
 `x402-preflight` installs as `scvd-preflight`; the original name is owned
 by another project. Its source directory remains `x402-preflight/`.
+
+
+## September 10 — adoption package release follow-through
+
+The previously pending Defects, MCP starter and preflight packages are
+published and registry-verified. Preflight installs as `scvd-preflight`;
+`x402-preflight/` remains the source directory. Older version and press
+rows above belong to their dated readings. Current versions, verified
+archives, provenance runs, accurate preview scope and website acceptance
+are recorded in `ADOPTION_AND_LATENCY_2026-09.md`.

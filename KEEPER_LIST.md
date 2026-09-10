@@ -835,9 +835,10 @@ Do not relitigate without you.
   Continue with proposed `scvd-preflight`, accepted with the keeper's
   instruction to complete adoption. The source directory stays
   `x402-preflight/`; npm's `x402-preflight` belongs to another project.
-  Defects, MCP starter and preflight publication/verification are being
-  executed under that authorization. Build work and release status live
-  in `docs/ADOPTION_AND_LATENCY_2026-09.md`, not a new keeper press.
+  Defects 0.13.0, MCP starter 0.1.0 and preflight 0.1.0 are now published
+  and verified against the reviewed archives, repository commit and
+  provenance runs. No keeper press or credential change remains.
+  `docs/ADOPTION_AND_LATENCY_2026-09.md` records the release checks.
 - **Tab registry press closed, checked September 10.** `scvd-tab`
   0.11.1 matches every published file in this tree. No Tab release
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
