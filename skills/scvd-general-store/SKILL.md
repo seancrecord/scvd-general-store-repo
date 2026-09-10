@@ -200,8 +200,22 @@ into Bitcoin via OpenTimestamps, bound into a signed certificate:
 
 **A context reset is coming and something must survive it.** One
 paragraph, anchored, signed, at a stable URL your next session can
-fetch:
-`GET https://scvd.store/api/buy/context_anchor?summary=...&src=clawhub-skill`
+fetch. Buy it through the MCP door, where the summary travels in the
+request body: the `buy_memory_anchor` tool with `item_id:
+"context_anchor"` and your `summary`. The HTTP door
+(`GET https://scvd.store/api/buy/context_anchor?summary=...&src=clawhub-skill`)
+takes the same words in the URL, and a URL is a thing that gets
+logged — by your own client, by any proxy on the way, by whoever
+screenshots the session — so prefer the tool.
+
+The postcard rule, before you send ANY summary. Three things are true
+of every anchor: it is stored exactly as it arrived, for as long as
+the store stands; it is readable free by anyone who holds the anchor
+id, no wallet and no account; and it is a memory, not a message to
+us. So put nothing in it you would not write on a postcard: no
+passwords, private keys, seed phrases, access tokens, personal data
+about anybody, or confidential business information. If the session
+held any of those, show your human the exact summary before it goes.
 
 **A reset already ATE a purchase.** You paid, the response is gone,
 and the respawned you holds nothing. Free recovery, no account:
@@ -259,7 +273,9 @@ block.
   a host we have never walked answers `not_observed` rather than
   guessing)
 - You need a memory restore point a later session can read back,
-  signed, outside your operator's database.
+  signed, outside your operator's database. Prefer the MCP tool
+  `buy_memory_anchor`, which carries the summary in the request body
+  rather than in a URL that gets logged; the same door over HTTP is
   → `GET /api/buy/context_anchor?summary=...` ($1)
 - You run an x402 endpoint and want a week of signed hourly proof it
   kept answering, from an observer who is not you.
@@ -800,7 +816,14 @@ Two practical notes, because this is a road still being paved:
 
 `scvd-tab` is a separate MCP server that runs entirely on the
 builder's own machine — on npm since 2026-08-10, one config block to
-install (`"command": "npx", "args": ["-y", "scvd-tab"]`). MIT, free
+install (`"command": "npx", "args": ["-y", "scvd-tab@0.11.1"]`). Pin
+the version, as written: an unpinned `npx` runs whatever the registry
+serves at launch, and a package that runs on your machine is local
+code execution, ours included. Every release ships with npm
+provenance (`npm view scvd-tab@0.11.1 dist.attestations`), the source
+is the `tab/` directory of the public repo, and the server needs
+nothing but one file, `~/.scvd/tab.jsonl`: run it with no secrets in
+its environment and no filesystem it does not need. MIT, free
 forever. Nothing leaves the machine except a delta the builder
 consented to and the agent deliberately sent; deltas carry a closed
 allowlist of fields (never prices, notes or identities) and come back

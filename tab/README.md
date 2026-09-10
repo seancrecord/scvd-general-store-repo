@@ -77,7 +77,7 @@ One config block, any MCP client:
   "mcpServers": {
     "scvd-tab": {
       "command": "npx",
-      "args": ["-y", "scvd-tab"]
+      "args": ["-y", "scvd-tab@0.11.1"]
     }
   }
 }
@@ -108,7 +108,7 @@ pager runs from outside:
 
 ```
 # every morning at 9 — prints nothing when nothing is due
-0 9 * * *  npx -y scvd-tab-pager
+0 9 * * *  npx -y -p scvd-tab@0.11.1 scvd-tab-pager
 ```
 
 Or from a clone: `cd /path/to/repo && npm run --silent tab:pager`.
