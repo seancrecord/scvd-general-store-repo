@@ -1,10 +1,11 @@
+import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
 import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase, purchaseRecovery } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
-import { legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
+import { legacyRecoveryFailure } from "@/lib/delivery-failed";
 import { getMenuItem } from "@/store";
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
 import { sendAlert } from "@/lib/alerts";
@@ -63,11 +64,9 @@ function jsonDeclineResponse(body: unknown): Response {
 }
 import {
   extractPaymentNonce,
-  getSpentNonce,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { certIdForSettlement } from "@/services/settlement-records";
 import { getOpenDeliveryIntent, openDeliveryIntent } from "@/services/delivery-audit";
 import { isRecord } from "@/types";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
@@ -429,10 +428,15 @@ export async function runMcpPayment(
     deliveryKeySoFar: () => KV_KEYS.deliveryIntent(recorded.payment.transaction),
   };
 
-  // Authentication still precedes every recovery read. A spent payment
-  // may finish its own missing mint; it cannot buy different inputs.
+  // Authentication precedes recovery; only retained original goods may resume.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  const spent = nonce ? await getSpentNonce(env, nonce) : null;
+  let spent;
+  try {
+    spent = await legacyPaidAttempt(env, result.paymentRequirements.network, result.paymentPayload);
+  } catch {
+    return { kind: "purchase-status", body: legacyRecoveryFailure(env.STORE_BASE_URL, { name: path },
+      undefined, { path, transaction: "", payer: undefined }) };
+  }
   const observation = await verifiedObservationCheckpoint(env, getMenuItem(itemId), result.paymentRequirements.network,
     verifiedPayer, result.paymentPayload, path, inputDigest ?? "", !!spent);
   if (spent) {
@@ -477,11 +481,10 @@ export async function runMcpPayment(
         };
       }
       const legacyItem = getMenuItem(itemId);
-      if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
+      if (recorded?.kind === "pending") {
         return { kind: "purchase-status", body: recorded.body };
       }
-      const open = await getOpenDeliveryIntent(env, spent.transaction);
-      const retry = open?.intent.mcp_retry;
+      const open = await getOpenDeliveryIntent(env, spent.transaction).catch(() => null);
       if (legacyItem?.fulfillment === "human_queue") {
         const recovered = await recoverLegacyHumanOrder(env, legacyItem,
           { path, transaction: spent.transaction, payer: verifiedPayer, network: result.paymentRequirements.network }, open?.intent);
@@ -493,49 +496,11 @@ export async function runMcpPayment(
             settledSoFar: () => payment, deliveryKeySoFar: () => KV_KEYS.deliveryIntent(spent.transaction!) };
         }
       }
-      if (!retry?.input_digest && legacyItem?.fulfillment === "human_queue") {
-        return { kind: "purchase-status", body: legacyHumanRecoveryFailure(env.STORE_BASE_URL,
-          legacyItem, open?.intent, { path, transaction: spent.transaction, payer: verifiedPayer }) };
-      }
-      if (open && retry && open.intent.path === path &&
-        retry.payment.transaction === spent.transaction &&
-        retry.payment.payer?.toLowerCase() === verifiedPayer.toLowerCase() &&
-        retry.payment.network === result.paymentRequirements.network) {
-        const failed = (reason: string): McpPaymentOutcome => ({
-          kind: "delivery-failed", payment: retry.payment, reason,
-        });
-        if (!inputDigest || retry.input_digest !== inputDigest) return failed("original_inputs_required");
-        try {
-          const lookup = await certIdForSettlement(env, spent.transaction);
-          // A certificate alone is not proof of completed fulfillment. Keep
-          // the obligation open rather than re-minting or claiming delivery.
-          if (lookup.certId) return failed("certificate_already_minted");
-          if (!lookup.certain) return failed("certificate_lookup_incomplete");
-        } catch {
-          return failed("recovery_lookup_unavailable");
-        }
-        return {
-          kind: "authorized", recovered: true, verifiedPayer,
-          pending: {
-            paidUsdc: retry.payment.paidUsdc,
-            tipUsdc: retry.payment.tipUsdc,
-            payer: verifiedPayer,
-            observation,
-            settle: async () => retry.payment,
-          },
-          settledSoFar: () => retry.payment,
-          deliveryKeySoFar: () => open.key,
-        };
-      }
+      return { kind: "purchase-status", body: legacyRecoveryFailure(env.STORE_BASE_URL,
+        legacyItem ?? { name: path }, open?.intent, { path, transaction: spent.transaction, payer: verifiedPayer }) };
     }
-    return {
-      kind: "payment-required",
-      status: 402,
-      body: {
-        error:
-          "That payment authorization has been through this till once already. Sign a fresh one, the register remembers.",
-      },
-    };
+    return { kind: "purchase-status", body: legacyRecoveryFailure(env.STORE_BASE_URL, { name: path },
+      undefined, { path, transaction: "", payer: undefined }) };
   }
 
   if (recorded?.kind === "pending") return { kind: "purchase-status", body: recorded.body };

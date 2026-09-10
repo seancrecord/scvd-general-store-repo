@@ -82,6 +82,8 @@ Repair: serialize or atomically claim a purchase intent before settlement, and g
 
 ### BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”
 
+**2026-09-10 repair complete.** Original purchase records now support truthful status and original-good recovery across the current catalogue, commissions and publications. Historical retries cannot substitute current inputs/evidence, and an unlinked spent payment cannot generate new payment terms. Missing original goods remain owed until authenticated work or a verified full refund supplies a durable signed resolution. The [completion register](BUYER_REPAIR_CHECKLIST.md#2026-09-10--historical-retry-guard-and-recovery-sev-1-closure) records the regression proofs, full validation and remaining separately tracked limitations. These are local fixture proofs, not claims of live customer refunds. Earlier audit observations follow unchanged.
+
 **Partial repair:** the unknown settlement response now carries `charged:null`, a reconciliation reference when recorded, and instructions to retain the original payment/key. Both HTTP and MCP distinguish uncertainty from a confirmed refusal. Full input-bound intent, stable status and post-reconciliation delivery remain open.
 
 **Open · injected payment-ambiguity audit, not a verified live incident.** The simulated transfer lands, the facilitator acknowledgement is replaced with transport failures, and the immediate chain lookup has no visible event. On Base/Polygon, the purchase and identical retry provide no certificate while claiming no charge. The audit also checks persisted certificate keys. Base's positive control rescues and fulfills when the event is visible. Polygon does not invoke that immediate rescue even when the fixture would expose the event.
@@ -317,6 +319,8 @@ Repair: include the standard no-charge state and a stable capacity refusal code 
 ## Post-settlement failure injection
 
 ### BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key
+
+**2026-09-10 repair complete.** Original purchase records now support truthful status and original-good recovery across the current catalogue, commissions and publications. Historical retries cannot substitute current inputs/evidence, and an unlinked spent payment cannot generate new payment terms. Missing original goods remain owed until authenticated work or a verified full refund supplies a durable signed resolution. The [completion register](BUYER_REPAIR_CHECKLIST.md#2026-09-10--historical-retry-guard-and-recovery-sev-1-closure) records the regression proofs, full validation and remaining separately tracked limitations. These are local fixture proofs, not claims of live customer refunds. Earlier audit observations follow unchanged.
 
 **Partial repair, `f8f8d34f`; finding remains open.** The reproduced first-retry failures now reconstruct through MCP without another settlement, with the full input digest and original payment facts bound to the retry. A durable transaction coordinator prevents simultaneous retries from minting competing certificates. The original 24 focused cases failed on unchanged source; the completed patch passes 25 public-door cases, including the concurrency regression, plus three coordinator controls. Interrupted reconstruction after claiming and legacy purchases without full input binding still require work. See the [progress record](buyer-repair-progress-2026-09-06.md).
 

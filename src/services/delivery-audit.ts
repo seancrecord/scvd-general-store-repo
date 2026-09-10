@@ -144,10 +144,8 @@ export async function closeDeliveryIntent(
 }
 
 /**
- * Is this settle's delivery still owed? The paid retry's gate
- * question (2026-08-08): an OPEN row means money moved and goods
- * never left, which is the one state where a spent nonce should buy
- * something instead of a refusal.
+ * Read the open obligation. A desk row is not the original good or proof
+ * of its owner; retry must authenticate retained records before delivery.
  */
 export async function getOpenDeliveryIntent(
   env: Env,
