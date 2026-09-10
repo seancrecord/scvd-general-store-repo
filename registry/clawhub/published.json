@@ -1,7 +1,7 @@
 {
-  "version": "3.16.1",
-  "bundle_sha256": "d156cf5f4e1ea64474055a0170e2ee8bb2edf328cedae83b54df96b248fc3e24",
-  "published_at": "2026-09-08T15:40:50.027Z",
-  "commit": "9bc7f41ca5bdb0f01bb07680da63f500fde3ebdb",
-  "changelog": "General fixes and polish"
+  "version": "3.16.2",
+  "bundle_sha256": "12f8cee129494b6beaf9d3dcf2fd20ed7b223e5a7db896e5470c9358d84dab0c",
+  "published_at": "2026-09-10T20:51:08.319Z",
+  "commit": "87a4ffebdf3bb4d04c2edf67dc71a8a78d5b478d",
+  "changelog": "clawHub audit: anchor summary via the MCP body, tab install pinned"
 }
