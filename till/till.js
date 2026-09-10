@@ -464,7 +464,7 @@ export function buildTypedData(accept, authorization) {
  * problem. So the object that came off the wire is the object that
  * goes back onto it.
  */
-export function encodePaymentHeader({ accept, signature, authorization }) {
+export function encodePaymentHeader({ accept, signature, authorization, resource, extensions }) {
   if (typeof signature !== "string" || !SIGNATURE_RE.test(signature)) {
     throw new TillRefusal(
       "signature",
@@ -476,6 +476,10 @@ export function encodePaymentHeader({ accept, signature, authorization }) {
       x402Version: X402_VERSION,
       accepted: accept,
       payload: { signature, authorization },
+      // Discovery needs the resource and extension echo too. These are
+      // quoted metadata; the accepted payment and signed payload stay intact.
+      ...(resource ? { resource } : {}),
+      ...(extensions ? { extensions } : {}),
     }),
   );
 }
@@ -725,7 +729,7 @@ export async function purchase(options) {
 
   let paymentHeader;
   try {
-    paymentHeader = encodePaymentHeader({ accept, signature, authorization });
+    paymentHeader = encodePaymentHeader({ accept, signature, authorization, resource: challenge.resource, extensions: challenge.extensions });
   } catch (error) {
     /*
      * SIGNED, AND NEVER SENT. The wallet made an instrument and this

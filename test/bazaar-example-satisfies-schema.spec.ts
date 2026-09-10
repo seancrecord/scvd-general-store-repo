@@ -1,3 +1,4 @@
+import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 import { describe, expect, it } from "vitest";
 import { buyDiscoveryExtensions, buyInputSchema } from "@/lib/bazaar-discovery";
 import { MENU_ITEMS } from "@/store";
@@ -114,5 +115,20 @@ describe("every declared example satisfies its own declared schema", () => {
       }
     }
     expect(offences, "a worked example carries a placeholder").toEqual([]);
+  });
+});
+
+// Length carries the list bounds because Go rejects nested counted repetition.
+describe("the bundle's portable discovery pattern keeps its input bounds", () => {
+  it("accepts each admitted count and refuses both neighboring counts and malformed hashes", () => {
+    const item = MENU_ITEMS.find(item => item.id === "attestation_bundle")!;
+    const field = buyInputSchema(item).properties.tx_hashes as { pattern: string; minLength: number; maxLength: number };
+    const accepts = (value: string) => new RegExp(field.pattern).test(value) && value.length >= field.minLength && value.length <= field.maxLength;
+    const hashes = (count: number) => Array.from({ length: count }, (_, i) => `0x${i.toString(16).padStart(64, "0")}`).join(",");
+    for (let count = BUNDLE_MIN_HASHES; count <= BUNDLE_MAX_HASHES; count++) expect(accepts(hashes(count)), String(count)).toBe(true);
+    expect(accepts(hashes(BUNDLE_MIN_HASHES - 1))).toBe(false);
+    expect(accepts(hashes(BUNDLE_MAX_HASHES + 1))).toBe(false);
+    expect(accepts(hashes(BUNDLE_MIN_HASHES).replace("0x", "0z"))).toBe(false);
+    expect(accepts(hashes(BUNDLE_MIN_HASHES) + ",")).toBe(false);
   });
 });

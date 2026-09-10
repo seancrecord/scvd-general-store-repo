@@ -577,7 +577,10 @@ build, it is on the roadmap.
   for any doors still unreturned, reconcile existing receipts, discovery
   metadata and settlement. Receipt details unavailable to the public
   reader may need his lookup; a build does not belong on this row.
-  The keeper deferred that investigation on 2026-09-09.
+  The keeper resumed that investigation the same day. The retained records
+  and current validator have been read; see `docs/SPEC_READS.md` for the
+  evidence and its limits. Existing index gaps remain unresolved; another
+  purchase has not been requested or made.
 - No agent item is queued (2026-09-02, after S6). The
   roadmap's NOW table is empty; S8-v3 waits on your yes /
   no / later, not on a date; everything in LATER needs a

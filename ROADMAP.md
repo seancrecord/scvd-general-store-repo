@@ -80,7 +80,7 @@ porch `ring_bell`, WebMCP conformance instrument.
 
 | # | Task | Trigger / why later |
 | --- | --- | --- |
-| IDX1 | **Discovery rejection and settlement evidence.** Coinbase’s free validator rejected `attestation_bundle` on 2026-09-09 with “pattern must be a valid regex”; seven other unreturned doors passed current validation. Investigate the rejected pattern and reconcile existing settlement discovery outcomes before proposing another purchase. | Keeper deferred this investigation on 2026-09-09. Resume when requested; current metadata validity does not establish what happened during earlier payments. |
+| IDX1 | **Existing index gaps after discovery repairs.** Investigation resumed September 9: reproduced the bundle regex rejection; corrected the browser envelope and hand-built example to echo discovery metadata. Retained responses show generic bundle rejections and recent custom-client settlements without Bazaar status. Details and limits: `docs/SPEC_READS.md`. | Local repairs do not backfill the index. Reconcile any available original custom-client envelopes or facilitator evidence before proposing another purchase; no retained discovery row was found for the repair kit. Current metadata validity does not establish earlier submission content. |
 | L1 | Phase 4 `/agent/v1`, `find_endpoints`, `@scvd/agent` | Nothing is asking. Free desks already have MCP tools. |
 | L2 | Phase 5 chips, `@scvd/launch-check`, first `cross_ref` consumer | 5.2 pricing is ⚑. 5.1 partly live as `/corpus/diff.json`. |
 | L3 | First lane-B reader (MPP / AP2 / ACP) | After rail ink + intake collision. Parser, not a till. ACP/UCP merchant checkout stays read-only. |

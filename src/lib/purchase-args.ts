@@ -1,3 +1,5 @@
+import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
+export { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 import { target as a2aTarget } from "@/lib/a2a-instrument";
 import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
@@ -203,9 +205,6 @@ const SHA256_HEX = /^[0-9a-fA-F]{64}$/;
 /** An EVM transaction hash, the shape both attestation doors read. */
 const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
 
-/** The sheaf's bounds. Named beside the check that enforces them. */
-export const BUNDLE_MIN_HASHES = 2;
-export const BUNDLE_MAX_HASHES = 20;
 
 /**
  * The items whose probe is the audit's probe, and therefore whose
