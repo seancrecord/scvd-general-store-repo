@@ -168,6 +168,86 @@ export const BOUNTY_ASK_CAP = 6;
 export const BOUNTY_ASK_LENGTH = 160;
 
 /**
+ * THE ASK, AS A SHAPE (2026-09-09, and the number that forced it).
+ *
+ * Forty-nine settlements from three wallets, and ZERO carried a
+ * structured report. The asks were published on every listing, in the
+ * JSON board those walkers polled 235 times, and at the claim door.
+ * None of it landed, and blaming the walkers would be the wrong
+ * lesson: a walker is code, its claim body was written against the
+ * shape this board published the day it integrated, and prose in a
+ * field their parser never reads is prose nobody was ever going to
+ * send. A field a client does not know about is a field a client does
+ * not send.
+ *
+ * So the ask stops being a sentence and becomes a TEMPLATE — the
+ * object, with its keys, its nulls, and one line each saying what the
+ * value is and how to get it. A client that introspects the claim door
+ * gets structure. A person skimming gets an example they can paste.
+ * Neither has to read a paragraph to find out what we wanted.
+ *
+ * And the claim answers back. A walk that arrives without a field is
+ * told which field, what it would have added, and where it goes — in
+ * the response their code already receives and their operator's logs
+ * already keep. Feedback in the channel they are in beats instruction
+ * on a page they never open, which is what the 235 polls against 3
+ * reads of the instructions actually measured.
+ */
+export const BOUNTY_REPORT_TEMPLATE: Readonly<Record<keyof WalkReport, null>> = {
+  status: null,
+  payment_response: null,
+  body_sha256: null,
+  bytes: null,
+  latency_ms: null,
+  content_type: null,
+};
+
+/** Per field: what it is, how to get it, and what it buys us. */
+export const BOUNTY_REPORT_FIELDS: ReadonlyArray<{
+  field: keyof WalkReport;
+  what: string;
+  how: string;
+  why: string;
+}> = [
+  {
+    field: "status",
+    what: "the HTTP status the PAID request returned — not the 402",
+    how: "the status line of the response you got after paying",
+    why: "a door that takes money and answers 500 is the case a probe cannot see, and the one this board exists to find",
+  },
+  {
+    field: "payment_response",
+    what: "true or false: did the paid response carry a PAYMENT-RESPONSE receipt header",
+    how: "look for the header on the paid response; false is a finding, not a failure",
+    why: "nobody publishes how many paying doors actually return a receipt, because nobody has paid enough of them to count",
+  },
+  {
+    field: "body_sha256",
+    what: "sha256 of the response body, hex",
+    how: "sha256 over the exact bytes you received, before any parsing",
+    why: "the only field another walker can contradict — two digests at one door either agree or they do not, and that comparison needs neither of you trusted",
+  },
+  {
+    field: "bytes",
+    what: "the size of the response body",
+    how: "byte length of what came back",
+    why: "an empty 200 and a full one are the same status and different goods",
+  },
+  {
+    field: "latency_ms",
+    what: "how long the paid request took, milliseconds",
+    how: "wall clock around the paid request alone",
+    why: "a door that answers in forty seconds is technically ready and practically not",
+  },
+  {
+    field: "content_type",
+    what: "the response's declared content type",
+    how: "the Content-Type header on the paid response",
+    why: "a door advertising JSON and serving HTML is a defect no status code shows",
+  },
+];
+
+/**
  * THE STRUCTURED HALF OF A WALKER'S REPORT.
  *
  * Free text cannot be compared across walkers; these fields can. A
@@ -741,28 +821,69 @@ export interface ClaimInput {
  * reward pays for the settlement, and a malformed extra must never
  * cost a walker money they really spent.
  */
-export function sanitizeReport(report: WalkReport | undefined): WalkReport | undefined {
-  if (!report || typeof report !== "object") return undefined;
+export interface ReportReading {
+  report?: WalkReport;
+  /**
+   * Fields that were SENT and could not be kept, with the shape they
+   * needed. Silence here was the old behaviour and it was the wrong
+   * kind of forgiving: a walker who tried and got it slightly wrong
+   * looked exactly like a walker who sent nothing, so they had no way
+   * to learn they were one character from useful.
+   */
+  dropped: Array<{ field: string; why: string }>;
+}
+
+export function readReport(report: WalkReport | undefined): ReportReading {
+  const dropped: Array<{ field: string; why: string }> = [];
+  if (!report || typeof report !== "object") return { dropped };
   const out: WalkReport = {};
+  const sent = report as Record<string, unknown>;
   const { status, payment_response, body_sha256, bytes, latency_ms, content_type } =
     report;
   if (Number.isInteger(status) && (status as number) >= 100 && (status as number) <= 599) {
     out.status = status as number;
+  } else if (sent["status"] !== undefined) {
+    dropped.push({ field: "status", why: "a whole number between 100 and 599" });
   }
   if (typeof payment_response === "boolean") out.payment_response = payment_response;
+  else if (sent["payment_response"] !== undefined) {
+    dropped.push({
+      field: "payment_response",
+      why: "true or false, not a string — send false when no receipt came back, it is a finding",
+    });
+  }
   if (typeof body_sha256 === "string" && /^(0x)?[0-9a-fA-F]{64}$/.test(body_sha256)) {
     out.body_sha256 = body_sha256.toLowerCase().replace(/^0x/, "");
+  } else if (sent["body_sha256"] !== undefined) {
+    dropped.push({
+      field: "body_sha256",
+      why: "64 hex characters (a sha256 of the response body); 0x prefix optional",
+    });
   }
   if (Number.isFinite(bytes) && (bytes as number) >= 0 && (bytes as number) < 1e9) {
     out.bytes = Math.round(bytes as number);
+  } else if (sent["bytes"] !== undefined) {
+    dropped.push({ field: "bytes", why: "a number of bytes, 0 or more" });
   }
   if (Number.isFinite(latency_ms) && (latency_ms as number) >= 0 && (latency_ms as number) < 600_000) {
     out.latency_ms = Math.round(latency_ms as number);
+  } else if (sent["latency_ms"] !== undefined) {
+    dropped.push({ field: "latency_ms", why: "milliseconds, under 600000" });
   }
   if (typeof content_type === "string" && content_type.length > 0) {
     out.content_type = content_type.slice(0, 120);
+  } else if (sent["content_type"] !== undefined) {
+    dropped.push({ field: "content_type", why: "a non-empty content type string" });
   }
-  return Object.keys(out).length > 0 ? out : undefined;
+  return {
+    ...(Object.keys(out).length > 0 ? { report: out } : {}),
+    dropped,
+  };
+}
+
+/** The old name, kept for callers that only want the kept half. */
+export function sanitizeReport(report: WalkReport | undefined): WalkReport | undefined {
+  return readReport(report).report;
 }
 
 export interface ClaimResult {
@@ -770,6 +891,21 @@ export interface ClaimResult {
   reward_usd: number;
   what_was_verified: string;
   what_was_not: string;
+  /**
+   * WHAT WE GOT, WHAT WE MISSED, AND HOW TO SEND IT NEXT TIME — in the
+   * response the walker's code already receives, because the page they
+   * never open was where this used to live.
+   */
+  your_report: {
+    received: WalkReport | null;
+    /** Named fields that were not sent, each with what it would have added. */
+    missing: Array<{ field: string; why: string; how: string }>;
+    /** Fields that were sent and could not be kept, with the shape they needed. */
+    dropped: Array<{ field: string; why: string }>;
+    /** Paste this, fill it in, send it under "report" on your next claim. */
+    template: Readonly<Record<string, null>>;
+    note: string;
+  };
   payout: {
     method: "eip3009_transfer_with_authorization";
     asset: string;
@@ -1461,6 +1597,7 @@ export async function claimBounty(
       message: authorization,
     });
 
+    const reading = readReport(input.report);
     const paid: BountyRecord = {
       ...bounty,
       status: "paid",
@@ -1476,9 +1613,7 @@ export async function claimBounty(
         ...(input.observation
           ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
           : {}),
-        ...(sanitizeReport(input.report)
-          ? { report: sanitizeReport(input.report) as WalkReport }
-          : {}),
+        ...(reading.report ? { report: reading.report } : {}),
         authorization_nonce: authorization.nonce,
         authorization_valid_before: authorization.validBefore,
       },
@@ -1489,9 +1624,32 @@ export async function claimBounty(
     // The listing is spent now, so the hold has nothing left to guard.
     await releaseLock();
 
+    /*
+     * THE ANSWER TEACHES. A walk that sent nothing is told what it
+     * could have sent; a walk that sent something malformed is told
+     * which character was wrong. Neither is a scolding and neither
+     * costs the walker a cent — the reward was already decided by the
+     * chain above this line.
+     */
+    const missing = BOUNTY_REPORT_FIELDS.filter(
+      (entry) => reading.report?.[entry.field] === undefined,
+    ).map((entry) => ({ field: entry.field, why: entry.why, how: entry.how }));
+
     return {
       bounty_id: bounty.bounty_id,
       reward_usd: bounty.reward_usd,
+      your_report: {
+        received: reading.report ?? null,
+        missing,
+        dropped: reading.dropped,
+        template: BOUNTY_REPORT_TEMPLATE,
+        note:
+          missing.length === 0 && reading.dropped.length === 0
+            ? "Every field arrived. This walk is worth more than its own receipt: your body digest can now be held against another walker's at this door, and neither of you has to be trusted for that comparison to mean something."
+            : reading.dropped.length > 0
+              ? `Kept what fits and dropped ${reading.dropped.length} field${reading.dropped.length === 1 ? "" : "s"} whose shape did not match — see dropped, each with the shape it needed. Nothing was withheld from your reward for it; the reward was decided by the chain, not by the report.`
+              : "The reward is yours regardless — this is what would have made the walk worth more than its own receipt. Send the template under \"report\" on your next claim; the fields are also accepted at the top level of the claim body if that is easier.",
+      },
       what_was_verified: `The chain's part: transaction ${txId} succeeded on ${railLabel} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a ${algorandRail ? "round" : solanaRail ? "slot" : "block"} after the bounty existed, never claimed before. That is what the reward pays for.`,
       what_was_not:
         "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
