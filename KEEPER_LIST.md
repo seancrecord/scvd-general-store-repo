@@ -30,12 +30,17 @@ build, it is on the roadmap.
   all six listed snapshots served completed proofs at 14:32 UTC, verified
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
-  remaining builds are ROADMAP VQ3–VQ4; the directory note below is unsent.
+  reader release is complete; remaining coverage work and OpenAPI headroom
+  are ROADMAP VQ4–VQ5. The keeper confirmed the directory note sent; await
+  its reply as recorded below.
 
-- **x402-verify 1.2.0 published (2026-09-09).** The evidence CLI is on
-  npm with verified provenance. A registry installation verified the
-  saved receipt and reported its missing evidence. The old 1.1.0 press
-  is closed by this release; details and workflow receipt: DISTRIBUTION.md.
+- **x402-verify 1.3.0 published (2026-09-09).** A fresh registry installation
+  verified all six live corpus snapshots at 20:03 UTC, with provenance checked.
+  The original certificate census's final Bitcoin proof was independently
+  verified at 23:18 UTC: 262 of 262, with signed bytes unchanged. The limits
+  and retained-evidence follow-through are in
+  `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`; DISTRIBUTION.md holds
+  the package release record.
 
 - **Browser till purchase delivered (2026-09-06).** The keeper reported
   the delivered Small Blessing and full till reading. Certificate
@@ -412,21 +417,22 @@ build, it is on the roadmap.
 
 ## NOW
 
-- **LOOK — directory attribution evidence (2026-09-08).** The known
-  browser receipt matches a Coinbase settler already tracked by
-  x402-list, while the store remains `unmeasured-network`. Exact evidence
-  and the prepared maintainer note are in
-  `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`. This is the keeper's
-  test purchase, not organic traction. The keeper confirmed “sent” on
-  September 9 for the note to `info@x402-list.com`, subject “Base attribution
-  for scvd.store”. Await the maintainer's reply; sending does not resolve
-  the measurement discrepancy. Do not send a duplicate.
-  Implementation completed in ROADMAP VQ2. The mapping was re-read September 9 and the same
-  discrepancy remains; captured evidence is in `research/verification-2026-09-09/`.
-  Re-read September 9 at 20:56 UTC: still `unmeasured-network`, measured
-  volume and transaction counts null. Data: x402-list.com (CC BY 4.0);
-  `research/verification-2026-09-09/reader-followthrough/directory-follow-up.json`.
-  This is a public listing check, not an inbox check.
+- **LOOK — directory methodology reply; measurement now visible.** The
+  keeper confirmed the attribution note sent September 9 to
+  `info@x402-list.com`, subject “Base attribution for scvd.store”. A direct
+  public read at 00:50 UTC September 10 now reports `measured`: 162
+  settlements, $999.082 and 12 unique buyers over 30 days across Base,
+  Polygon and Solana. The directory reports 99.79% of volume from one buyer;
+  this is measurement visibility, not independently verified organic demand.
+  Its `settled_via` label is Coinbase. The previous 20:56 UTC reading was
+  `unmeasured-network`; retain that dated history. The visible status gap
+  is closed, while the maintainer's methodology explanation remains pending.
+  This was a public listing read, not an inbox check, and does not establish
+  that the note caused the change. Do not send a duplicate.
+  Data: x402-list.com (CC BY 4.0). Current capture:
+  `research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
+  Original receipt evidence and the sent note:
+  `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`.
 
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
   moves").** A week's evidence lived in ONE KV value (the walk

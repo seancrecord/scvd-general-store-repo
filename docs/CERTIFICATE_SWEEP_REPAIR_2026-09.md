@@ -1,5 +1,12 @@
 # Certificate-key sweep repair — September 9, 2026
 
+Delivery confirmed September 9 at 23:18 UTC: the previously omitted
+certificate serves a completed proof. Independent OTS verification matched
+outside Bitcoin headers and checked proof of work; its signed bytes remain
+unchanged. This completes 262 of 262 proofs in the original census, without
+establishing historical issue time. Reviewed evidence:
+`research/verification-2026-09-09/retention-followthrough/certificate-final-proof.json`.
+
 Released through [PR #596](https://github.com/seancrecord/scvd-general-store-repo/pull/596) at 21:11:38 UTC on September 9,
 as `86b12f40d578d227ca582fce6cdc8b633788a6f6`. Both production Workers
 completed deployment by 21:13:07 UTC. Both pre-merge CI runs passed

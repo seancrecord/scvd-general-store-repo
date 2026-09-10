@@ -65,7 +65,7 @@ Bitcoin headers are committed: 262 certificate signatures and 36 report
 signatures/hashes verified; 36 of 80 signed report links matched this
 inventory. Independently, 261 delivered certificate proofs passed Python
 OTS checks against matching headers from two explorers. One certificate
-sharing a patron number has no stored anchor. See
+sharing a patron number had no stored anchor at that capture. See
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md` for exclusions, the separate
 proof-check trust boundary, and current release status. The private records
 are deliberately outside the repository.
@@ -83,3 +83,11 @@ The original unknown catalog result remains intact; `corrected-webmcp-reading.js
 is the repaired parser over captured public bytes. `unjoined-classification.json`
 classifies the same private census's 44 unresolved bindings without claiming
 additional report verification. Source records remain private.
+
+`retention-followthrough/` records the final certificate proof check and the
+later retained-evidence captures. All 262 original certificate proofs are now
+independently checked. Three signed reports and two bundles were recovered;
+unsigned projections and opaque buyer-digest anchors remain separate categories.
+The repeat capture's unreadable projection and its successful independent retry
+are both retained. No raw journal response or buyer record is published.
+See `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md` for commands and limits.

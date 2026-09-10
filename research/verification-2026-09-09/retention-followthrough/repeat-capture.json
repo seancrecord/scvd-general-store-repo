@@ -1,0 +1,80 @@
+{
+  "checked_at": "2026-09-09T23:37:42.387Z",
+  "captured_from": "2026-09-09T23:28:01.001Z",
+  "captured_to": "2026-09-09T23:37:42.132Z",
+  "original_certificate_count": 262,
+  "original_unmatched_bindings": 44,
+  "outcomes": {
+    "unresolved_binding": 29,
+    "verified_report": 3,
+    "matched_opaque_anchor": 3,
+    "matched_unsigned_projection": 5,
+    "verified_bundle": 2,
+    "empty_digest_without_members": 2
+  },
+  "by_item": {
+    "attestation_bundle": {
+      "verified_bundle": 2,
+      "empty_digest_without_members": 2,
+      "unresolved_binding": 8
+    },
+    "bitcoin_anchor": {
+      "matched_opaque_anchor": 3
+    },
+    "passport_refresh": {
+      "matched_unsigned_projection": 5,
+      "unresolved_binding": 2
+    },
+    "settlement_attestation": {
+      "unresolved_binding": 7
+    },
+    "spot_check": {
+      "unresolved_binding": 11,
+      "verified_report": 1
+    },
+    "trust_profile": {
+      "verified_report": 2,
+      "unresolved_binding": 1
+    }
+  },
+  "journal_states": {
+    "not_found": 38,
+    "not_applicable": 3,
+    "readable": 3
+  },
+  "projection_rows": {
+    "readable": 10,
+    "unreadable": 1
+  },
+  "families": [
+    {
+      "name": "trust_profile",
+      "status": "readable",
+      "listed": 2,
+      "read": 2,
+      "complete": true
+    },
+    {
+      "name": "passport_refresh",
+      "status": "readable",
+      "listed": 6,
+      "read": 6,
+      "complete": true
+    },
+    {
+      "name": "bitcoin_anchor",
+      "status": "readable",
+      "listed": 3,
+      "read": 3,
+      "complete": true
+    }
+  ],
+  "limits": [
+    "Targets are the unmatched signed attests bindings from the earlier certificate census, not a new census of all purchases.",
+    "A verified report or bundle must match the exact certificate digest. Projections can contain later observations; matching only a host does not recover historical evidence.",
+    "Unsigned projection matches and opaque buyer-digest anchor records are counted separately from independently signed reports. This command does not verify Bitcoin proofs or buyer-held digest preimages.",
+    "Recovery reads use existing transaction-identity RPC methods and retained responses only, including the legacy completion reader. No replay, new observation, signing, settlement or storage write is invoked. Observation-only journals and hosted grant history without a purchase identity remain outside this collector.",
+    "Not found means these identity-matched recovery methods returned no completed record, not proof the original goods never existed. Unavailable, unreadable and capped reads remain explicit.",
+    "KV listing and later reads do not form a consistent historical snapshot. No factual-truth or exact-issue-time claim."
+  ]
+}
