@@ -13,9 +13,10 @@ from bitcoin.core import CBlockHeader, CheckProofOfWork, b2lx
 from opentimestamps.core.serialize import StreamDeserializationContext
 from opentimestamps.core.timestamp import DetachedTimestampFile
 from opentimestamps.core.notary import BitcoinBlockHeaderAttestation
+from opentimestamps.core.op import OpSHA256
 
 
-def verify_header(*, payload, proof, header, block_hash, height):
+def _verify_header(*, payload=None, expected_digest=None, proof, header, block_hash, height):
     if len(header) != 80 or height < 0:
         raise ValueError('Expected an 80-byte header and nonnegative height')
     block = CBlockHeader.deserialize(header)
@@ -26,9 +27,12 @@ def verify_header(*, payload, proof, header, block_hash, height):
     detached = DetachedTimestampFile.deserialize(StreamDeserializationContext(stream))
     if stream.read(1):
         raise ValueError('Trailing bytes after the detached timestamp')
-    expected = DetachedTimestampFile.from_fd(detached.file_hash_op, io.BytesIO(payload))
-    if expected.file_digest != detached.file_digest:
-        raise ValueError('Payload digest differs from the proof')
+    if expected_digest is None:
+        expected_digest = DetachedTimestampFile.from_fd(detached.file_hash_op, io.BytesIO(payload)).file_digest
+    elif len(expected_digest) != 32 or not isinstance(detached.file_hash_op, OpSHA256):
+        raise ValueError('A digest-only binding requires SHA-256')
+    if expected_digest != detached.file_digest:
+        raise ValueError('Expected digest differs from the proof')
     matched = False
     for message, attestation in detached.timestamp.all_attestations():
         if isinstance(attestation, BitcoinBlockHeaderAttestation) and attestation.height == height:
@@ -48,14 +52,34 @@ def verify_header(*, payload, proof, header, block_hash, height):
     }
 
 
+def verify_header(*, payload, proof, header, block_hash, height):
+    return _verify_header(payload=payload, proof=proof, header=header,
+                          block_hash=block_hash, height=height)
+
+
+def verify_digest_header(*, expected_digest, proof, header, block_hash, height):
+    if not isinstance(expected_digest, bytes) or len(expected_digest) != 32:
+        raise ValueError('Expected a 32-byte SHA-256 digest')
+    result = _verify_header(expected_digest=expected_digest, proof=proof,
+                            header=header, block_hash=block_hash, height=height)
+    result['committed_digest'] = result.pop('payload_digest')
+    result['payload_preimage_checked'] = False
+    result['trust_boundary'] += ' Caller establishes the SHA-256 binding; buyer-held preimage bytes were not supplied or checked.'
+    return result
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ['payload', 'proof', 'header', 'block-hash']:
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--payload')
+    source.add_argument('--digest', help='Independently established SHA-256 hex digest; does not verify preimage bytes')
+    for name in ['proof', 'header', 'block-hash']:
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--height', required=True, type=int)
     args = parser.parse_args()
-    result = verify_header(payload=Path(args.payload).read_bytes(),
-                           proof=Path(args.proof).read_bytes(),
-                           header=bytes.fromhex(Path(args.header).read_text().strip()),
-                           block_hash=args.block_hash, height=args.height)
+    common = dict(proof=Path(args.proof).read_bytes(),
+                  header=bytes.fromhex(Path(args.header).read_text().strip()),
+                  block_hash=args.block_hash, height=args.height)
+    result = (verify_header(payload=Path(args.payload).read_bytes(), **common) if args.payload
+              else verify_digest_header(expected_digest=bytes.fromhex(args.digest), **common))
     print(json.dumps(result, indent=2))

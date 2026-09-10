@@ -15,3 +15,10 @@ export const inventoryFamilies = [
   { name: "case_file", prefix: KV_KEYS.caseFile(""), mode: "core" },
 ] as const;
 export const inventoryCounters = [KV_KEYS.patronNumber, KV_KEYS.certAnchorCursor, KV_KEYS.certAnchorSweep];
+
+// These projections are separate from immutable reports in the original census.
+export const retentionFamilies = [
+  { name: "trust_profile", binding: "COUNTERS", prefix: KV_KEYS.trustProfile(""), mode: "payload" },
+  { name: "passport_refresh", binding: "COUNTERS", prefix: KV_KEYS.passportRefresh(""), mode: "projection" },
+  { name: "bitcoin_anchor", binding: "PATRONS", prefix: KV_KEYS.patronAnchorPrefix, mode: "opaque" },
+] as const;

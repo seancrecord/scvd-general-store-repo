@@ -1,0 +1,63 @@
+{
+  "checked_at": "2026-09-09T23:40:12.533854+00:00",
+  "certificate_bound_opaque_digests": 3,
+  "proofs_verified_against_matching_explorer_headers": 3,
+  "payload_preimages_checked": 0,
+  "local_bitcoin_consensus_validated": false,
+  "heights": [
+    963220,
+    966095,
+    966105
+  ],
+  "headers": [
+    [
+      {
+        "source": "blockstream.info",
+        "height": 966105,
+        "hash": "0000000000000000000144397555d38ff0687691d10f8a017ab7e3b6378dc1b1",
+        "header": "00e0ff3f1fa13331a05ec0afd3f4c17e31806f2b7f5f1065086e0000000000000000000089ef550dcf909a76ebffd51bb5b9c7497cb20a5e51495cecce10227152104062ed5ea06a5e350217518d4b54",
+        "checked_at": "2026-09-09T23:40:09.373003+00:00"
+      },
+      {
+        "source": "mempool.space",
+        "height": 966105,
+        "hash": "0000000000000000000144397555d38ff0687691d10f8a017ab7e3b6378dc1b1",
+        "header": "00e0ff3f1fa13331a05ec0afd3f4c17e31806f2b7f5f1065086e0000000000000000000089ef550dcf909a76ebffd51bb5b9c7497cb20a5e51495cecce10227152104062ed5ea06a5e350217518d4b54",
+        "checked_at": "2026-09-09T23:40:09.624744+00:00"
+      }
+    ],
+    [
+      {
+        "source": "blockstream.info",
+        "height": 966095,
+        "hash": "00000000000000000001e13dbe8d42237c3479d2f0b0a2353885bf333d993126",
+        "header": "00000020ce9a90767e09b480ff82f4112772a74bb79aef116e2b0100000000000000000002001de77e236f3ba029fe62e6980fc803faacb6a2aa24f29510d7e0781fd8b57631a06a5e3502176e262a56",
+        "checked_at": "2026-09-09T23:40:10.165260+00:00"
+      },
+      {
+        "source": "mempool.space",
+        "height": 966095,
+        "hash": "00000000000000000001e13dbe8d42237c3479d2f0b0a2353885bf333d993126",
+        "header": "00000020ce9a90767e09b480ff82f4112772a74bb79aef116e2b0100000000000000000002001de77e236f3ba029fe62e6980fc803faacb6a2aa24f29510d7e0781fd8b57631a06a5e3502176e262a56",
+        "checked_at": "2026-09-09T23:40:10.792082+00:00"
+      }
+    ],
+    [
+      {
+        "source": "blockstream.info",
+        "height": 963220,
+        "hash": "0000000000000000000018c7f32984704146c33318173276cd380f75b3dd3301",
+        "header": "00007f20b12cccd8dbb4f016bd1723a491a57825299e69e6528901000000000000000000ff96f762ba59d572922ab414d83bc24e4a93310ba502483341e93da2cfd9e2c5ef15866a3d35021753fb39bd",
+        "checked_at": "2026-09-09T23:40:11.969740+00:00"
+      },
+      {
+        "source": "mempool.space",
+        "height": 963220,
+        "hash": "0000000000000000000018c7f32984704146c33318173276cd380f75b3dd3301",
+        "header": "00007f20b12cccd8dbb4f016bd1723a491a57825299e69e6528901000000000000000000ff96f762ba59d572922ab414d83bc24e4a93310ba502483341e93da2cfd9e2c5ef15866a3d35021753fb39bd",
+        "checked_at": "2026-09-09T23:40:12.533189+00:00"
+      }
+    ]
+  ],
+  "scope": "These proofs commit to the exact buyer-supplied digests authenticated in the original certificates. Buyer-held preimages, factual truth and original issue time are not established."
+}

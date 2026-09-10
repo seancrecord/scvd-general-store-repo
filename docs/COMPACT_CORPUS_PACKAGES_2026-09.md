@@ -109,3 +109,12 @@ are recorded in `research/compact-corpus-packages-2026-09-10/corpus-first-releas
 The previously reproduced local full-suite runtime failure remains a
 limitation; no additional blind full run or passing full-local result is
 claimed. Required clean full CI still gates merge and actual publication.
+
+The corpus-client [workflow dry run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34496772508)
+passed on `3553dc5e96a4ede6273cb993bc31b56ecbf5bc6b`; its package tests
+ran and the Publish step was skipped. The follow-through branch integrates
+#605 and #612 to reconcile their overlapping status documents before
+release. The integrated check passed 30 package contracts, 12 retained
+reader checks, eight Python proof checks (using the existing pinned proof
+environment), typecheck, docs and claims. The package archives are unchanged
+by that integration.

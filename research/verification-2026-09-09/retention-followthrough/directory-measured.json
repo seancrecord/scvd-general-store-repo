@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-09-10T00:50:05.648Z",
+  "source": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+  "assessment_updated_at": "2026-09-09T21:33:01.209Z",
+  "attribution": {
+    "license": "CC-BY-4.0",
+    "attribution_required": true,
+    "attribution": "Data: x402-list.com (CC BY 4.0)",
+    "cite_as": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+    "source": "https://x402-list.com"
+  },
+  "traction": {
+    "status": "measured",
+    "volume_usd_30d": 999.082,
+    "tx_count_30d": 162,
+    "unique_buyers_30d": 12,
+    "last_settlement_at": "2026-09-09T19:53:31Z",
+    "top_buyer_share_30d": 0.99789706950981,
+    "trend_7d_vs_30d": 3.563152402476902,
+    "shared_payout": false,
+    "shared_with": 0,
+    "measured_networks": [
+      "eip155:137",
+      "eip155:8453",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+    ],
+    "first_settlement_at": "2026-07-22T16:16:13Z",
+    "volume_usd_all_time": 1289.6399999999999,
+    "tx_count_all_time": 258,
+    "median_settlement_usd_30d": 0.5,
+    "max_settlement_usd_30d": 300,
+    "settled_via": [
+      "coinbase"
+    ],
+    "settled_via_detail": [
+      {
+        "id": "coinbase",
+        "volume_usd_30d": 999.082,
+        "tx_count_30d": 162
+      }
+    ],
+    "shared_with_services": [],
+    "pro_quota_share": 1,
+    "caveat": "Conservative undercount: only USDC settlements via facilitators we measure are counted. A measured floor, not an estimate.",
+    "all_time_caveat": "All-time is floored at the start of our harvest window, not the service full history."
+  },
+  "limits": [
+    "Public directory report, not independent reconciliation of its population or customer demand.",
+    "The concentration figure is the directory's top-buyer volume share; no buyer identity is inferred here.",
+    "The measurement status changed since the recorded September 9 20:56 UTC read. This observation does not establish what caused the change or constitute a maintainer reply."
+  ]
+}
