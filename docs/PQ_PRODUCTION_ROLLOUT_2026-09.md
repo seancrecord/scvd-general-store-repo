@@ -58,6 +58,25 @@ from that omission: probe the target compatibility date with disposable
 keys before choosing a backend. A reviewed isolated signer is an alternative
 if the Worker cannot meet the security and resource requirements.
 
+A subsequent September 10 probe now verifies the ML-DSA leg in both
+directions between the pinned library and OpenSSL 3.5.1, with empty and
+nonempty contexts. All sixteen changed-message/signature/context/key
+refusals passed. Public fixtures and versions are retained in
+`research/compact-corpus-packages-2026-09-10/pq-interop.json`; the reproducible
+probe is `experiments/pqc/interop.mjs`. This is two generated cases, not
+the full authoritative vectors, independent envelope implementation,
+audit or production backend approval. The original pilot limits above
+remain accurate for that earlier run.
+
+The pinned candidate also matched 70 selected public NIST ACVP-Server
+vectors: key generation, external Pure signature generation and verification.
+The runner, commit, source hashes, case IDs and exclusions are retained in
+`experiments/pqc/acvp-sample.mjs` and
+`research/compact-corpus-packages-2026-09-10/pq-acvp.json`. This adds
+authoritative expected-result evidence for the selected API; 135 ML-DSA-65
+prehash/internal cases and all other parameter sets remain excluded. It is
+not an ACVP certification session or full implementation qualification.
+
 ## Build and release gates, in order
 
 1. **Freeze a production wire contract.** Publish exact byte-level

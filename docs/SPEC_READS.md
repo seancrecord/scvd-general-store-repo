@@ -886,3 +886,21 @@ a documentation observation, not a runtime probe. No dependency was changed.
 The plan in `PQ_PRODUCTION_ROLLOUT_2026-09.md` requires exact-version
 interoperability, supply-chain review, target-runtime measurements and a
 custody rehearsal before activation. No production keys were accessed.
+
+For the disposable-key interoperability probe, read OpenSSL 3.5's
+[ML-DSA signature](https://docs.openssl.org/3.5/man7/EVP_SIGNATURE-ML-DSA/)
+and [pkeyutl](https://docs.openssl.org/3.5/man1/openssl-pkeyutl/) documentation:
+Pure ML-DSA message encoding, default randomized signing and optional
+context-string parameters. The local OpenSSL 3.5.1 provider listed
+id-ml-dsa-65 and executed both signing and verification. The probe checks
+actual success before counting its tampered-message refusals; unsupported
+algorithms and process errors are failures, not verification evidence.
+
+Read the public NIST ACVP-Server ML-DSA keyGen/sigGen/sigVer FIPS204
+[prompt and expected-result files](https://github.com/usnistgov/ACVP-Server/tree/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files)
+at commit `975de31eb83d87039ec88934fdc47d8c312b892d`. URL, byte length and
+SHA-256 for each file are recorded in
+`research/compact-corpus-packages-2026-09-10/pq-acvp-sources.json`. The selected
+ML-DSA-65 external Pure cases and key-generation cases matched the pinned
+candidate; prehash/internal variants and other parameter sets were excluded
+and counted. No claim of an ACVP certification session follows.

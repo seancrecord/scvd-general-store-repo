@@ -173,3 +173,13 @@ completed 626 files and 10,269 tests, with one existing skip. Integration of
 later main-branch releases requires a fresh combined-tree check.
 `validation.json` records these scoped results; the pull request and its
 checks record the release outcome.
+
+## Release closeout — September 10
+
+[PR #605](https://github.com/seancrecord/scvd-general-store-repo/pull/605)
+merged at 15:53:59 UTC as `301e287e79ab9a720843ba40d28f604311ae4062`
+after the [full CI run](https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34492692231)
+passed. Both production Worker build checks passed on that merge commit.
+The previously reported local Worker runtime failures remain recorded as
+failures, not relabeled as a local full-suite pass. No production key or
+existing signed artifact changed.

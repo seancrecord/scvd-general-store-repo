@@ -428,7 +428,11 @@ build, it is on the roadmap.
   `unmeasured-network`; retain that dated history. The visible status gap
   is closed, while the maintainer's methodology explanation remains pending.
   This was a public listing read, not an inbox check, and does not establish
-  that the note caused the change. Do not send a duplicate.
+  that the note caused the change. A later release-closeout request returned
+  HTTP 403; the last successful reading above is retained, with no new
+  measurement verdict inferred. Refused-read record:
+  `research/compact-corpus-packages-2026-09-10/directory-reread.json`.
+  Do not send a duplicate.
   Data: x402-list.com (CC BY 4.0). Current capture:
   `research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
   Original receipt evidence and the sent note:
@@ -822,17 +826,20 @@ Do not relitigate without you.
   first recording freezes what is true; the alarm only fires when a
   row later moves DOWN from what it recorded.
 
-- **CLI 0.2.0 press closed, checked September 10.** Its published
-  executable matches the repository. The README correction is a later
-  documentation patch; no repeat publish of the immutable version.
+- **Package presses closed September 10.** CLI 0.3.0, Sign 1.0.3
+  and corpus client 0.1.0 published through the provenance workflow.
+  Fresh registry installs match the reviewed bytes and verify their
+  attestations. No press or credential update is needed for these releases.
+  Receipts and exact checks: `DISTRIBUTION.md`.
 - **RULE — choose a distinct name for our preflight client before its
   initial release.** npm's `x402-preflight` names another repository,
-  `Gareth1953/x402-preflight`; it is not ours. The other three companion
-  packages still returned 404 on September 10. Release preparation and
+  `Gareth1953/x402-preflight`; it is not ours. The corpus client has since
+  published; defects and MCP starter remain separate first-release work. Release preparation and
   package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
   must come from the current manifests, not the old numbers on this desk.
-- **The tab registry press** via the `tab` input on the publish
-  workflow (V4).
+- **Tab registry press closed, checked September 10.** `scvd-tab`
+  0.11.1 matches every published file in this tree. No Tab release
+  is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
 ### Decisions that unblock the roadmap
 

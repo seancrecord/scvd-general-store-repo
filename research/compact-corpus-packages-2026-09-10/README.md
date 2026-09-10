@@ -19,3 +19,26 @@ The 36 CLI/client tests and the installed-archive fixture check also passed
 under the declared minimum Node 18.17.0, using its official Darwin arm64
 archive verified against the published SHA-256 sum. No project dependency
 or system runtime was changed. The normal local run used Node 22.
+
+`pq-interop.json` retains the September 10 two-implementation ML-DSA
+probe's public keys, messages, signatures, exact runtime versions and
+refusal results. Both signing directions passed with empty and nonempty
+contexts; all sixteen negative cases were rejected. These are generated
+fixtures, not full NIST vector conformance, an audit, a production key
+exercise or a Worker latency measurement. Reproduce with
+`experiments/pqc/interop.mjs`; see that experiment's README.
+
+`pq-acvp.json` and `pq-acvp-sources.json` record selected NIST expected-result
+checks and exact source identities: 70 checked ML-DSA-65 cases matched;
+135 prehash/internal ML-DSA-65 cases and other parameter sets were excluded.
+No raw private keys are retained here; the underlying public NIST files
+contain known test keys. This is sample evidence, not module certification.
+
+The `*-published.json`, `*-audit-signatures.txt` and `*-provenance.json`
+files are actual CLI, Sign and corpus-client release receipts. Their
+registry installations match reviewed archive integrity and every shipped
+file. Registry signatures and attestations verified; provenance subjects,
+source commits, repository, workflow and invocation match the expected
+runs. The reader exercises are described per receipt and do not imply
+cryptographic verification of the fetched corpus. `directory-reread.json`
+records a refused HTTP 403 read; it establishes no new listing verdict.

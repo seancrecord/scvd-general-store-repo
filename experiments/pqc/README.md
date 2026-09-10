@@ -40,3 +40,53 @@ Production adoption still needs an implementation/supply-chain review,
 independent vectors/interoperability, Workers memory and CPU measurements,
 key provisioning and recovery, and a public verifier migration policy.
 Do not add the experimental dependency to the Worker to make a headline.
+
+## Independent implementation probe — September 10
+
+`node interop.mjs <new-public-result.json>` uses the existing pinned library
+and a locally installed OpenSSL with ML-DSA-65 support (`PQC_OPENSSL` can
+select an executable). The recorded run used OpenSSL 3.5.1. Each backend
+generates disposable keys and the other verifies its Pure ML-DSA signatures,
+with both empty and nonempty contexts. Both reject changed message, altered
+signature, wrong context and wrong key. OpenSSL process/setup errors fail
+the probe instead of counting as a successful refusal. Existing envelope
+bytes are the message, but only the ML-DSA leg crosses implementations.
+
+The OpenSSL private key travels through pipes; the JavaScript private key
+stays in memory. Temporary files contain public keys, messages and
+signatures and are removed in `finally`. Clearing buffers is best effort,
+not a memory-erasure guarantee. Result files are exclusively created and
+contain public fixtures only. No production key is used.
+
+Recorded result: `research/compact-corpus-packages-2026-09-10/pq-interop.json`.
+This closes the original pilot's complete absence of cross-implementation
+evidence for these two cases. Full authoritative vectors, implementation
+review, production serialization and target-runtime measurements remain
+open. It makes no Worker latency, constant-time or FIPS-validation claim.
+
+## NIST vectors — September 10
+
+`node acvp-sample.mjs <vector-directory> <new-public-result.json>` checks
+the locally downloaded, SHA-256-pinned files described in `sources.json`.
+To reproduce, copy `research/compact-corpus-packages-2026-09-10/pq-acvp-sources.json`
+to that directory as `sources.json`, and download each listed URL to its
+listed filename. The runner checks every file's length and hash before use.
+No NIST code is executed and no network call is made by the runner.
+
+The pinned NIST ACVP-Server commit and all source hashes are in that manifest.
+The recorded run matched all 70 selected ML-DSA-65 cases: 25 key generation,
+30 external Pure signature-generation cases (deterministic and supplied
+randomness), and 15 verification verdicts (three valid, twelve invalid).
+Ninety ML-DSA-65 signature-generation and 45 verification cases for prehash
+or internal interfaces were excluded; other parameter sets were also
+excluded. Both the checks and exclusions are derived from the dataset in
+`research/compact-corpus-packages-2026-09-10/pq-acvp.json`. The downloaded
+documents' `isSample` field is false; they are public repository vectors,
+not an ACVP certification session we submitted or completed.
+
+The runner compares both key bytes and exact expected signature bytes and
+requires verification verdicts to match; exceptions do not become passing
+invalid-signature cases. Known test seeds and private keys from the public
+vectors are solely test inputs. No production key is read or written.
+Passing this selected sample is not complete FIPS conformance, a module
+validation, an implementation audit or production approval.
