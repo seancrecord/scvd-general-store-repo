@@ -1,4 +1,5 @@
-import { env } from "cloudflare:test";
+import { PatronageRecoveryStore, patronageCoordinator } from "@/services/patronage-recovery";
+import { env, runInDurableObject } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { createOrRenewPass, getPass } from "@/services/patronage";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -43,7 +44,7 @@ function envWithFlakyPut(failures: number): { env: Env; attempts: () => number }
     },
   } as unknown as Env["PATRONS"];
   return {
-    env: { ...testEnv, PATRONS: patrons } as Env,
+    env: atPublisher({ ...testEnv, PATRONS: patrons } as Env),
     attempts: () => attempts,
   };
 }
@@ -107,8 +108,30 @@ describe("a settled patronage sale survives a transient KV write failure", () =>
       },
     } as unknown as Env["PATRONS"];
 
-    const found = await getPass({ ...testEnv, PATRONS: patrons } as Env, seeded.pass.pass_id);
+    await runInDurableObject(patronageCoordinator(testEnv, seeded.pass.pass_id), async (_instance, state) => state.storage.deleteAll());
+    const found = await getPass(atPublisher({ ...testEnv, PATRONS: patrons } as Env), seeded.pass.pass_id);
     expect(found?.pass_id).toBe(seeded.pass.pass_id);
     expect(reads).toBeGreaterThan(1);
   });
 });
+
+/** Inject the KV fault where writes now happen: inside the pass coordinator. */
+function atPublisher(bindings: Env): Env {
+  const namespace = bindings.PAID_RECOVERIES!;
+  bindings.PAID_RECOVERIES = new Proxy(namespace, { get(target, property) {
+    if (property === "get") return (...args: Parameters<typeof namespace.get>) => {
+      const stub = target.get(...args);
+      return new Proxy(stub, { get(inner, method) {
+        if (method === "grantPatronage") return (input: Parameters<typeof inner.grantPatronage>[0]) =>
+          runInDurableObject(stub, (_instance, state) => new PatronageRecoveryStore(state.storage, bindings).grant(input));
+        if (method === "readPatronage") return (id: string) =>
+          runInDurableObject(stub, (_instance, state) => new PatronageRecoveryStore(state.storage, bindings).read(id));
+        const member = Reflect.get(inner, method);
+        return typeof member === "function" ? member.bind(inner) : member;
+      } });
+    };
+    const member = Reflect.get(target, property);
+    return typeof member === "function" ? member.bind(target) : member;
+  } });
+  return bindings;
+}

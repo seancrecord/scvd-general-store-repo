@@ -1092,6 +1092,7 @@ export interface SignedHandoverRecord {
 
 /** A 30-day standing patronage pass. Renewable; carries the monthly note. */
 export interface PatronagePass {
+  commission?: import("@/services/watch-recovery").WatchCommission;
   pass_id: string;
   patron_number: number;
   started_at: string;

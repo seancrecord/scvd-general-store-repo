@@ -1,3 +1,4 @@
+import { PatronageRecoveryStore, type PatronageGrantInput } from "@/services/patronage-recovery";
 import { LaunchCheckStore } from "@/services/launch-check-recovery";
 import { WatchRecoveryStore, type RecoverableWatch } from "@/services/watch-recovery";
 import { PersonalGoodsStore, type PersonalRecord, type PersonalMutation } from "@/services/personal-goods";
@@ -102,6 +103,10 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly patronage = new PatronageRecoveryStore(this.ctx.storage, this.env);
+  grantPatronage(input: PatronageGrantInput) { return this.patronage.grant(input); }
+  readPatronage(passId: string) { return this.patronage.read(passId); }
+
   private readonly launch = new LaunchCheckStore(this.ctx.storage, this.env);
   prepareLaunchCheck(path: string, digest: string, url: string) { return this.launch.run(path, digest, url); }
 
@@ -197,6 +202,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
 
   async alarm(): Promise<void> {
     if (await this.watches.repair()) return;
+    if (await this.patronage.repair()) return;
     const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
     if (!record || record.delivery || record.state === "not_settled") return;
     // Unsupported goods/unknown rails retain their record for the delivery
