@@ -716,6 +716,27 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
+
+- **LOOK** — after the next Sunday round, open `/corpus/asked.json`.
+  If `hosts_asked` is 0 the free surfaces are not being asked about
+  unmet hosts, which is its own finding; if hosts sit in
+  `swept_no_door_found` for three weeks, the sweep is reading hosts
+  that publish no `/.well-known/x402`, and the queue's cap is
+  spending reads on them.
+- **RULE** — seller declarations, ruling 1
+  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
+  a declaration free, forever? Recommended yes; the paid instrument
+  is a watch on the match line, already priced as an endpoint watch.
+- **RULE** — seller declarations, ruling 2: does a declaration for a
+  host the feeds do not name enter the asked-for queue at the top of
+  its week? Recommended yes; it does not jump the roster cap.
+- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
+  second observer's verified row enter the signed snapshot at its
+  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
+  beside the chain in a file of its own? Recommended inside. No
+  build until a named party asks to submit rows.
+
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 
 - **TEST** — send Hal the ten questions in `TRADE_COUNTER.md`.

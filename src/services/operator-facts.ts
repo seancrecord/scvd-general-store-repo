@@ -65,7 +65,13 @@ export interface HostWalletFact {
   standing_note?: import("@/services/standing-note").StandingNote;
 }
 
-async function digestsOf(host: WardHostResult): Promise<string[]> {
+/**
+ * The row's pay-to digests, whichever era signed it: sealed rows carry
+ * them; rows from before the G2 ruling carry verbatim and are digested
+ * at read. Exported 2026-09-10 for the changes feed and the host
+ * history, which compare where a door asks to be paid across weeks.
+ */
+export async function digestsOf(host: WardHostResult): Promise<string[]> {
   const offer = host.offer;
   if (!offer) return [];
   if (offer.pay_to_digest && offer.pay_to_digest.length > 0) {

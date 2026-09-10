@@ -140,6 +140,36 @@ async function spec(): Promise<Record<string, unknown>> {
   return (await response.json()) as Record<string, unknown>;
 }
 
+/**
+ * FOLLOW A `$ref` BACK TO WHAT IT NAMES (2026-09-10). The verdict
+ * schema moved into components.schemas for the document's read
+ * budget, so the single-URL door carries a reference where it used
+ * to carry the object. A test that read the object in place would
+ * now pass on `{ $ref }` with no properties at all — which is why
+ * this resolves the reference and asserts on what it names, the
+ * same discipline the function-calling and batch specs run.
+ */
+function preflightVerdictSchema(document: Record<string, unknown>): Record<string, unknown> {
+  const inPlace = (
+    (
+      (
+        (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
+          "/api/preflight/v1"
+        ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
+      )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
+    )["application/json"]!.schema
+  );
+  const ref = inPlace["$ref"];
+  if (typeof ref !== "string") return inPlace;
+  expect(ref.startsWith("#/")).toBe(true);
+  let current: unknown = document;
+  for (const segment of ref.slice(2).split("/")) {
+    current = (current as Record<string, unknown>)[segment];
+  }
+  expect(current, `${ref} names a schema`).toBeDefined();
+  return current as Record<string, unknown>;
+}
+
 describe("every operation says what comes back", () => {
   it("lets no new door ship without a shape", async () => {
     const bare = operations(await spec())
@@ -226,15 +256,7 @@ const REPORT_FIELDS: Record<keyof PreflightReport, true> = {
 describe("the preflight verdict schema cannot drift from its type", () => {
   it("names every field the report can carry", async () => {
     const document = await spec();
-    const schema = (
-      (
-        (
-          (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
-            "/api/preflight/v1"
-          ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
-        )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
-      )["application/json"]!.schema
-    );
+    const schema = preflightVerdictSchema(document);
     const described = Object.keys(
       schema["properties"] as Record<string, unknown>,
     );
@@ -257,15 +279,7 @@ describe("the preflight verdict schema cannot drift from its type", () => {
      * perfectly good verdict.
      */
     const document = await spec();
-    const schema = (
-      (
-        (
-          (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
-            "/api/preflight/v1"
-          ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
-        )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
-      )["application/json"]!.schema
-    );
+    const schema = preflightVerdictSchema(document);
     const required = (schema["required"] ?? []) as string[];
     for (const conditional of ["network_failure", "also_under"]) {
       expect(required, `${conditional} is conditional`).not.toContain(conditional);

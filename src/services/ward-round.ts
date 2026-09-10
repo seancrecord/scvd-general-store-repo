@@ -434,6 +434,8 @@ export interface WardRound {
       source_unreadable: boolean;
       /** Lane C (2026-09-05): the directory's page, read where the host's own file gave no door. */
       directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
+      /** Sweep hosts that came from the asked-for queue (2026-09-10). */
+      asked_for?: { swept: number; waiting: number; dropped: number };
     };
     started_at: string;
     /** Batch values the assembly could not read back (2026-09-05); absent when none. */
@@ -1635,6 +1637,7 @@ async function assembleWalkRound(
               capped: walk.sweep.capped,
               source_unreadable: walk.sweep.source_unreadable,
               ...(walk.sweep.directory ? { directory: walk.sweep.directory } : {}),
+              ...(walk.sweep.asked_for ? { asked_for: walk.sweep.asked_for } : {}),
             },
           }
         : {}),
