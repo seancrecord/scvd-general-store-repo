@@ -1,3 +1,4 @@
+import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
@@ -29,6 +30,7 @@ const pageCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         error:
           "No page by that name in the journal. The index is free, have a look.",
         index_url: `${c.env.STORE_BASE_URL}/almanac`,
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/almanac?view=compact`),
       },
       404,
     );

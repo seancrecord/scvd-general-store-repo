@@ -396,6 +396,9 @@ export interface MenuItem {
   /** Whether a waitlist opens when inventory hits zero. */
   waitlist?: boolean;
   description: string;
+  /** Buyer-facing provenance only where the shelf actually knows it. */
+  production?: { kind: "prewritten_human_text"; author: string };
+  free_alternative?: { path_template: string; paid_adds: string };
   /** The line an agent sees on the 402 challenge. */
   note_402: string;
   constraints?: string[];

@@ -1,5 +1,6 @@
 import { acceptedNetworks, checkoutNetworks, paymentMethod, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { buyerLinks, compactCatalog, compactItemContract } from "@/lib/buyer-contract";
+import { catalogRecovery } from "@/lib/catalog-recovery";
 import { OPENAPI_TOOLS_NOTE } from "@/routes/openapi-tools";
 import { shoppingFields, verifyPattern, type WhenEntry } from "@/lib/shopping-fields";
 import {
@@ -682,6 +683,9 @@ async function serveMenuItem(c: Context<HonoEnv>) {
       return c.json(
         {
           error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
+          code: "retired",
+          charged: false,
+          ...catalogRecovery(base, itemId),
           ...(retired.folded_into
             ? { folded_into: `${base}/menu/${retired.folded_into}` }
             : {}),
@@ -693,6 +697,9 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     return c.json(
       {
         error: "No item by that id on the shelf. The whole menu is one page:",
+        code: "unknown_item",
+        charged: false,
+        ...catalogRecovery(base),
         menu_url: `${base}/menu.json`,
       },
       404,
@@ -984,6 +991,9 @@ export function searchCatalog(
         status: 400,
         body: {
           error: "max_price_usdc has to be a number of USDC, zero or more.",
+          code: "bad_request",
+          charged: false,
+          ...catalogRecovery(base),
           received: String(rawCap).slice(0, 40),
           cheapest_on_the_shelf: Math.min(...MENU_ITEMS.map((item) => item.price_usdc)),
         },
@@ -1000,6 +1010,9 @@ export function searchCatalog(
         status: 404,
         body: {
           error: `No item by that id on the shelf: ${itemId}`,
+          code: "unknown_item",
+          charged: false,
+          ...catalogRecovery(base, itemId),
           known_ids: MENU_ITEMS.map((entry) => entry.id),
         },
       };

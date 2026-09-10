@@ -10,6 +10,7 @@ import {
 import { isRecord, type ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
+import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
   frontCounterItems,
   FRONT_COUNTER_PROMISE,
@@ -1308,12 +1309,12 @@ const FREE_TOOLS: McpTool[] = [
      * this returns rows a caller can filter and compare. Nothing here
      * ranks, scores or recommends.
      */
-    name: "find_in_catalog",
+    name: CATALOG_TOOL_NAME,
     reads: "made_here",
     description:
-      "Search this store's shelf and read one item's listing. Returns compact rows — id, name, price in USDC, instant or human-fulfilled, and what the item reads — filtered by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free, read-only, no payment and no account. This is how to learn WHICH item to buy before a buy_* tool, which needs an item_id. Nothing is ranked or recommended: the order is the shelf's own and the filter is a stated rule, printed beside what it matched and what it matched from. NOT a purchase and NOT a stock check.",
+      "Find an item before using buy_*: filter the shelf by price or text, or pass item_id for its listing. Rows give USDC price, fulfillment and read scope. Free, read-only, no account. Results stay in shelf order; nothing is ranked or recommended. A listing is not a stock check. Invalid lookups return a free next_step.",
     summary:
-      "Searches this store's shelf and returns compact rows: id, name, price in USDC, instant or human-fulfilled, and what each item reads. Filters by a price ceiling, a text match, or both; an item_id returns that one item with its description. Free and read-only. Nothing is ranked or recommended.",
+      "Free catalog search by price, text or item_id. Returns listings, not stock availability.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1542,7 +1543,7 @@ function underContract(tool: McpTool, base: string): McpTool {
      */
     title: tool.title ?? tool.annotations?.title ?? tool.name,
     errors: MCP_REFUSAL_CODES.filter(
-      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code)) && (refusal.code !== "purchase_resolved" || human),
+      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) && (refusal.code !== "purchase_resolved" || human),
     ),
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),

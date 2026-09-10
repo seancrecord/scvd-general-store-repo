@@ -2,7 +2,7 @@ import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved
 import { humanResolutionBody } from "@/services/human-resolution-record";
 import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
-import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase, purchaseRecovery } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
 import { getMenuItem } from "@/store";
@@ -558,6 +558,7 @@ export async function runMcpPayment(
   const verifiedRequirementsForSettle = result.paymentRequirements;
   const verifiedExtensionsForSettle = result.declaredExtensions;
   let alreadySettled: SettledPayment | null = null;
+  let recoveryHandle: Record<string, unknown> | undefined;
   let deliveryKey: string | null = null;
 
   const settle = async (): Promise<SettledPayment> => {
@@ -565,6 +566,7 @@ export async function runMcpPayment(
     const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer,
       terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
       request: askedFor ?? "{}", item: getMenuItem(itemId) });
+    recoveryHandle = purchaseRecovery(env, purchase);
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
     // Same one-retry-on-5xx as the HTTP door: the MCP till must not
@@ -657,7 +659,8 @@ export async function runMcpPayment(
        * carry a decline branch of its own.
        */
       throw new SettlementDeclined(
-        jsonDeclineResponse(settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage)),
+        jsonDeclineResponse({ ...settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage),
+          recovery: purchaseRecovery(env, purchase) }),
       );
     }
     settledFacts = {
@@ -772,6 +775,7 @@ export async function runMcpPayment(
       ? { payer: payerFromPaymentHeader(paymentHeader) }
       : {}),
     settle,
+    purchaseRecovery: () => recoveryHandle,
   };
   return {
     kind: "authorized",

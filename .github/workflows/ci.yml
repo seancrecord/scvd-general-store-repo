@@ -61,6 +61,8 @@ jobs:
         run: npm run tab:test
       - name: Offline evidence tools
         run: npm run evidence:test
+      - name: Field research accounting and spending limits
+        run: npm run walkabout:test
       - name: Browser payment bridges
         run: npm run till:test
       # The preflight Action (roadmap L7): one file, no dependencies,

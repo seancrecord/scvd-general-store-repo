@@ -1,0 +1,26 @@
+import { KV_KEYS } from "@/lib/kv-keys";
+import { takeCorpusSnapshot } from "@/services/corpus";
+import type { Env } from "@/types";
+import { afterAll, expect, it, vi } from 'vitest';
+import { SELF, env } from 'cloudflare:test';
+afterAll(()=>vi.useRealTimers());
+it('a stable free host view revalidates across request times, without implying a new observation',async()=>{
+ vi.useFakeTimers({toFake:['Date']}); vi.setSystemTime(new Date('2026-09-09T12:00:00Z'));
+ const url='https://scvd.store/corpus/host/freshness-fixture.example.json?view=stable';
+ const first=await SELF.fetch(url), tag=first.headers.get('ETag');
+ const body=await first.json() as Record<string,unknown>;
+ expect(first.status).toBe(200); expect(tag).toBeTruthy();
+ expect(body.asked_at).toBeUndefined();
+ vi.setSystemTime(new Date('2026-09-09T13:00:00Z'));
+ const next=await SELF.fetch(url,{headers:{'If-None-Match':tag!}});
+ expect(next.status).toBe(304); expect(await next.text()).toBe('');
+ const bindings=env as unknown as Env;
+ await bindings.COUNTERS.put(KV_KEYS.wardRoundLatest,JSON.stringify({week:'2026-W37',at:'2026-09-09T13:00:00Z',listed_resources:1,coverage_suspect:false,capped:false,our_search_presence:true,hosts:[{host:'freshness-fixture.example',url:'https://freshness-fixture.example/pay',verdict:'ready',failed:[],advisories:[],source:'discovery'}]}));
+ const snapshot=await takeCorpusSnapshot(bindings,{now:new Date('2026-09-09T13:00:00Z'),calendars:['https://calendar.test'],fetch:(async()=>new Response(new Uint8Array([1,2,3]))) as typeof fetch});
+ expect(snapshot.taken).toBe(true);
+ const changed=await SELF.fetch(url,{headers:{'If-None-Match':tag!}});
+ expect(changed.status).toBe(200); expect(changed.headers.get('ETag')).not.toBe(tag);
+ expect((await changed.json() as Record<string,unknown>).rounds_probed).toBe(1);
+ const normal=await SELF.fetch(url.replace('?view=stable',''));
+ expect((await normal.json() as Record<string,unknown>).asked_at).toBeTruthy();
+});

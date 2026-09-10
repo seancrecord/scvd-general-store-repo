@@ -1,3 +1,4 @@
+import { buyerGuidance } from "@/lib/buyer-guidance";
 import { publicationCollections } from "@/lib/publication-checkout";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
@@ -72,6 +73,11 @@ export function compactItemContract(item: MenuItem, base: string) {
   const artifact = artifactClassForItem(item.id);
   return {
     ...compactItemRow(item, base),
+    buyer_guidance: buyerGuidance(item, base),
+    description: item.description,
+    reads: item.reads,
+    ...(item.constraints ? { constraints: item.constraints } : {}),
+    ...(item.sample_url ? { sample_url: item.sample_url } : {}),
     input_schema: { type: "object", ...buyInputSchema(item) },
     availability: "The purchase request checks live stock, keeper availability, and any subject-specific prerequisites before charging.",
     ...(artifact ? { signs: artifact.signs, does_not_prove: artifact.does_not_prove } : {}),
@@ -84,13 +90,19 @@ export function compactCatalog(base: string, rawPage = "0") {
   const pages = Math.max(1, Math.ceil(MENU_ITEMS.length / COMPACT_CATALOG_PAGE_SIZE));
   if (!/^\d{1,6}$/.test(rawPage) || Number(rawPage) >= pages) return null;
   const page = Number(rawPage);
+  const offset = page * COMPACT_CATALOG_PAGE_SIZE;
+  const items = MENU_ITEMS.slice(offset, offset + COMPACT_CATALOG_PAGE_SIZE)
+    .map(item => compactItemRow(item, base));
   return {
     publications: publicationCollections(base),
     total: MENU_ITEMS.length,
     page,
     pages,
-    items: MENU_ITEMS.slice(page * COMPACT_CATALOG_PAGE_SIZE, (page + 1) * COMPACT_CATALOG_PAGE_SIZE)
-      .map(item => compactItemRow(item, base)),
+    limit: COMPACT_CATALOG_PAGE_SIZE,
+    offset,
+    returned: items.length,
+    has_more: page + 1 < pages,
+    items,
     next: page + 1 < pages ? `${base}/menu.json?view=compact&page=${page + 1}` : null,
     checkout: checkoutContract(base),
   };

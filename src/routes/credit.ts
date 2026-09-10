@@ -1,3 +1,4 @@
+import { creditTerms } from "@/lib/credit-terms";
 import { Hono } from "hono";
 import { recoverMessageAddress } from "viem";
 import { escapeHtml } from "@/lib/sanitize";
@@ -52,8 +53,8 @@ function challengeText(address: string, nonce: string): string {
 function creditHtml(base: string, outstandingUsd: number): string {
   const rate = `${CREDIT_RATE * 100}%`;
   return `<section>
-      <p class="menu-desc"><strong>We reward our regulars: come back and pay less.</strong> ${escapeHtml(rate)} of every organic purchase banks back to the wallet that paid it, so the next visit costs less than the sticker says. No account, no signup, no card to carry — the wallet is the card.</p>
-      <p class="menu-desc">Credit accrues automatically on purchases that settle. When a balance reaches $${usd(CREDIT_FLOOR_ATOMIC).toFixed(2)} it can be cashed out as USDC, back to the wallet that earned it and nowhere else. Balances cap at $${usd(CREDIT_CAP_ATOMIC).toFixed(2)} and balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire.</p>
+      <p class="menu-desc"><strong>We reward our regulars: come back and pay less.</strong> ${escapeHtml(rate)} of each eligible organic certificate purchase banks back to the wallet that paid it, so the next visit costs less than the sticker says. No account, no signup, no card to carry — the wallet is the card.</p>
+      <p class="menu-desc">Credit can accrue after a certificate purchase settles and mints; the store_credit field confirms an accrual. Publication-only payments do not accrue. The current balance and cash-out API supports EVM wallets only. When a balance reaches $${usd(CREDIT_FLOOR_ATOMIC).toFixed(2)} it can be cashed out as USDC, back to the wallet that earned it and nowhere else. Balances cap at $${usd(CREDIT_CAP_ATOMIC).toFixed(2)} and balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire.</p>
     </section>
     <section>
       <h2>What this is not</h2>
@@ -63,7 +64,7 @@ function creditHtml(base: string, outstandingUsd: number): string {
     <section>
       <h2>Reading a balance</h2>
       <pre class="menu-desc"><code>curl -sS ${escapeHtml(base)}/api/credit/0xYourWalletAddress</code></pre>
-      <p class="menu-desc">Free, no signature, any wallet — the balances derive from purchases whose payers already appear on signed public certificates, so publishing them reveals nothing the record did not.</p>
+      <p class="menu-desc">Free, no signature, any EVM wallet — the balances derive from purchases whose payers already appear on signed public certificates, so publishing them reveals nothing the record did not.</p>
     </section>
     <section>
       <h2>Cashing out</h2>
@@ -93,7 +94,7 @@ function creditJsonLd(base: string): string {
     "@type": "Service",
     name: "Regulars' credit — closed-loop USDC rebate for repeat buyers",
     serviceType: "Closed-loop purchase rebate",
-    description: `${CREDIT_RATE * 100}% of every organic purchase banks to the wallet that paid, with no account and no signup — the wallet is the loyalty card. Redeemable as USDC back to the earning wallet only: never transferable, never a token.`,
+    description: `${CREDIT_RATE * 100}% of each eligible organic certificate purchase banks to the wallet that paid, with no account and no signup — the wallet is the loyalty card. Redeemable as USDC back to the earning wallet only: never transferable, never a token.`,
     url: `${base}/credit`,
     provider: organizationRef(base),
     isAccessibleForFree: true,
@@ -143,7 +144,8 @@ creditRoutes.get("/credit", async (c) => {
   const outstanding = usd(await creditOutstandingAtomic(c.env));
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({
-      what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of every organic purchase banks to the wallet that paid. A closed-loop rebate — the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token.`,
+      terms: creditTerms(base),
+      what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of each eligible organic certificate purchase banks to the wallet that paid. A closed-loop rebate — the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token.`,
       rate_pct: CREDIT_RATE * 100,
       cash_out_floor_usd: usd(CREDIT_FLOOR_ATOMIC),
       balance_cap_usd: usd(CREDIT_CAP_ATOMIC),
@@ -156,7 +158,7 @@ creditRoutes.get("/credit", async (c) => {
   return c.html(
     renderSimplePage({
       title: "Regulars' credit",
-      description: `We reward our regulars: ${CREDIT_RATE * 100}% of every purchase banks back to the wallet that paid it, so coming back costs less. No account, no signup — the wallet is the card. A closed-loop USDC rebate redeemable only by the wallet that earned it; never transferable, never a token.`,
+      description: `We reward our regulars: ${CREDIT_RATE * 100}% of eligible certificate purchases banks back to the wallet that paid it, so coming back costs less. No account, no signup — the wallet is the card. A closed-loop USDC rebate redeemable only by the wallet that earned it; never transferable, never a token.`,
       path: "/credit",
       bodyHtml: creditHtml(base, outstanding),
     }),
@@ -198,7 +200,7 @@ creditRoutes.get("/api/credit/:wallet", async (c) => {
   const outstanding = await creditOutstandingAtomic(c.env);
   return c.json(
     {
-      what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of every organic purchase banks to the wallet that paid — no account, no signup, the wallet is the card. A CLOSED-LOOP REBATE, said plainly: the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token. Balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire; house wallets never accrue.`,
+      what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of each eligible organic certificate purchase banks to the wallet that paid — no account, no signup, the wallet is the card. A CLOSED-LOOP REBATE, said plainly: the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token. Balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire; house wallets never accrue.`,
       wallet: record.wallet,
       balance_usd: usd(BigInt(record.balance_atomic)),
       earned_total_usd: usd(BigInt(record.earned_total_atomic)),
@@ -207,7 +209,7 @@ creditRoutes.get("/api/credit/:wallet", async (c) => {
       cash_out:
         usd(BigInt(record.balance_atomic)) >= usd(CREDIT_FLOOR_ATOMIC)
           ? `Eligible. 1) POST /api/credit/challenge with {"address":"${record.wallet}"} — you get a challenge string. 2) EIP-191 personal_sign it with the wallet's own key. 3) POST /api/credit/redeem with {"address","signature"} — the full balance comes back as a signed EIP-3009 authorization payable only to this wallet.`
-          : `Below the $${usd(CREDIT_FLOOR_ATOMIC)} floor — it keeps accruing at ${CREDIT_RATE * 100}% of every purchase.`,
+          : `Below the $${usd(CREDIT_FLOOR_ATOMIC)} floor — it keeps accruing at ${CREDIT_RATE * 100}% of eligible certificate purchases.`,
       /**
        * The store's whole liability, published beside any one wallet's
        * slice — a loyalty program off the books is how real stores

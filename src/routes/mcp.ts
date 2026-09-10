@@ -1,3 +1,4 @@
+import { buyerGuidance } from "@/lib/buyer-guidance";
 import { freeA2ACheck } from "@/lib/a2a-admission";
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
@@ -17,6 +18,7 @@ import {
 } from "@/lib/mcp-apps";
 import { Hono } from "hono";
 import type { Context } from "hono";
+import { archiveDepthDisclosure } from "@/services/archive-depth";
 import { readMcpPaymentChallenge, runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementUnknown, SettlementDeclined } from "@/lib/payments";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -39,6 +41,7 @@ import {
   recordVerifyCall,
 } from "@/lib/metrics";
 import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import { factBlockText } from "@/lib/listing-spec";
 /**
  * ONE PRE-PAYMENT LAW AND ONE ARGUMENT MAP, shared with the HTTP
@@ -662,11 +665,12 @@ export async function callFreeTool(
     );
     return outcome.verdict as unknown as Record<string, unknown>;
   }
-  if (name === "find_in_catalog") {
+  if (name === CATALOG_TOOL_NAME) {
     /*
      * The same derivation the HTTP door serves (routes/catalog.ts), so
-     * the shelf cannot read differently on the two doors. A refusal
-     * comes back as the search's own words, uncharged: this is free.
+     * the shelf cannot read differently on the two doors. Keep the
+     * refusal's repair data as well as its words; dispatch preserves
+     * the existing RPC error envelope around it.
      */
     const { searchCatalog } = await import("@/routes/catalog");
     const found = searchCatalog(c.env.STORE_BASE_URL, {
@@ -679,7 +683,7 @@ export async function callFreeTool(
       itemId: typeof args["item_id"] === "string" ? args["item_id"] : undefined,
     });
     if (found.status !== 200) {
-      return String(found.body["error"] ?? "The shelf could not be read.");
+      return found.body;
     }
     deferBookkeeping(c, recordPorchVisit(c.env, "catalog:mcp", mcpSignals(c)));
     return found.body;
@@ -997,17 +1001,23 @@ async function callPurchaseTool(
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
     const base = c.env.STORE_BASE_URL;
+    const depthQuery: Record<string, string> = {};
+    for (const [key, value] of Object.entries(args)) if (typeof value === "string") depthQuery[key] = value;
+    const guidance = { buyer_guidance: buyerGuidance(item, base, depthQuery) };
+    const depth = await archiveDepthDisclosure(c.env, base, item.id, depthQuery);
     if (standardPayment(c)) {
       const challenge = isRecord(outcome.challenge)
         ? outcome.challenge
         : { ...await readMcpPaymentChallenge(c.env, item.id), error: "Invalid payment" };
-      return rpcResult(id, standardPaymentResult(c, item, challenge, idempotencyKey));
+      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, idempotencyKey));
     }
     return rpcError(
       id,
       402,
       typeof body["error"] === "string" ? body["error"] : item.note_402,
       {
+        ...depth,
+        ...guidance,
         ...(outcome.challenge !== undefined
           ? { "x402/payment-required": outcome.challenge }
           : {}),
@@ -1275,7 +1285,7 @@ async function handleRpc(
     return rpcRefusal(request.id ?? null, -32602, "bad_request", "Unknown payment profile. Use payment=tool-result or omit payment for the legacy RPC error profile.");
   }
   if (c.req.query("item_id") !== undefined && !getMenuItem(c.req.query("item_id")!)) {
-    return rpcRefusal(request.id ?? null, -32602, "unknown_item", "No item by that identifier; read /menu.json?view=compact.");
+    return rpcRefusal(request.id ?? null, -32602, "unknown_item", "No item by that identifier; read /menu.json?view=compact.", catalogRecovery(c.env.STORE_BASE_URL, c.req.query("item_id")));
   }
   const era = requestEra(c, request);
   if (era instanceof Response) {
@@ -1556,6 +1566,7 @@ async function dispatchRpc(
               -32602,
               "bad_request",
               `This shelf needs an item_id. Pass one of: ${tool.itemIds.join(", ")}. No item, no charge.`,
+              catalogRecovery(c.env.STORE_BASE_URL),
             );
           }
           if (!tool.itemIds.includes(asked)) {
@@ -1589,6 +1600,7 @@ async function dispatchRpc(
               sells
                 ? `"${asked}" is not on this shelf, but it is on ${sells.name} — call that one with the same item_id. This shelf sells: ${tool.itemIds.join(", ")}. Nothing was charged.`
                 : `"${asked}" is not on this shelf, and no shelf here sells it. This one sells: ${tool.itemIds.join(", ")}. Nothing was charged.`,
+              catalogRecovery(c.env.STORE_BASE_URL, asked),
             );
           }
           itemId = asked;
@@ -1624,6 +1636,9 @@ async function dispatchRpc(
       const result = await callFreeTool(c, name, args);
       if (typeof result === "string") {
         return rpcRefusal(id, -32602, "bad_request", result);
+      }
+      if (name === CATALOG_TOOL_NAME && typeof result.error === "string") {
+        return rpcRefusal(id, -32602, String(result.code), result.error, result);
       }
       // MCP Apps: the call result repeats the card pointer (the
       // render-test hosts read it from both places).

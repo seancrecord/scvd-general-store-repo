@@ -1,3 +1,4 @@
+import { freeReadRecovery, commissionGuidance } from "@/lib/buyer-guidance";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
@@ -185,6 +186,7 @@ const quoteCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!id) {
     return c.json(
       {
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/api/commission/declined`),
         error:
           "The rungs pay quotes, not menu prices. Send ?commission=<id> for a request the keeper has quoted at this rung. No quote, no charge — write in free at POST /api/request.",
       },
@@ -194,7 +196,7 @@ const quoteCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const request = await getCommission(c.env, id);
   if (!request) {
     return c.json(
-      { error: "No request by that id on the ledger. Nothing charged." },
+      { error: "No request by that id on the ledger. Nothing charged.", ...freeReadRecovery(`${c.env.STORE_BASE_URL}/api/commission/declined`) },
       404,
     );
   }
@@ -210,11 +212,15 @@ const quoteCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       accepted:
         "That commission is already paid and on the bench. Its order is the record now.",
     };
-    return c.json({ error: `${why[status]} Nothing charged.` }, 409);
+    return c.json({ error: `${why[status]} This attempt submitted no payment.`,
+      ...freeReadRecovery(`${c.env.STORE_BASE_URL}/api/commission/${encodeURIComponent(id)}`),
+      ...(status === "accepted" && request.order_id ? { already_purchased:true, order_url:`${c.env.STORE_BASE_URL}/api/order/${request.order_id}` } : {}),
+    }, 409);
   }
   if (request.quote_usdc !== rung) {
     return c.json(
       {
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/api/commission/${encodeURIComponent(id)}`),
         error: `That request is quoted at $${request.quote_usdc}, and this is the $${rung} rung. Pay at the quoted rung: ${payUrlFor(c.env.STORE_BASE_URL, request)}. Nothing charged.`,
       },
       409,
@@ -268,6 +274,7 @@ commissionRoutes.get("/api/commission/pay/:rung", async (c) => {
     }
     return c.json({
       ...result,
+      buyer_guidance: { ...commissionGuidance(Number(c.req.param("rung")), c.env.STORE_BASE_URL), production:{kind:"commissioned_human_work",sla_hours:request.quote_window_hours,terms_url:`${c.env.STORE_BASE_URL}/api/commission/${request.id}`} },
       commission_id: request.id,
       commission_status: "accepted",
       commission_url: `${c.env.STORE_BASE_URL}/api/commission/${request.id}`,

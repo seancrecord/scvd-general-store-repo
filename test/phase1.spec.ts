@@ -229,8 +229,18 @@ describe("house traffic exclusion", () => {
       "X-House": "test-house-secret",
     });
     expect(paid.status).toBe(200);
-    // The flag never leaks into the public response.
-    expect(JSON.stringify(await paid.json())).not.toContain("house");
+    // Public credit terms may say house wallets are excluded. That word is
+    // not the traffic flag; guard the flag and credential rather than copy.
+    const publicBody = await paid.json();
+    expect(JSON.stringify(publicBody)).not.toContain("test-house-secret");
+    const assertNoHouseFlag = (value: unknown): void => {
+      if (!value || typeof value !== "object") return;
+      for (const [key, child] of Object.entries(value)) {
+        expect(["house", "is_house", "X-House"]).not.toContain(key);
+        assertNoHouseFlag(child);
+      }
+    };
+    assertNoHouseFlag(publicBody);
     const after = await readMonthLedger(testEnv);
     expect(after.items["small_blessing"]?.settledHouse ?? 0).toBe(houseBefore + 1);
   });

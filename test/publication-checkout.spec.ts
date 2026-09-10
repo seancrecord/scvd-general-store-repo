@@ -60,6 +60,9 @@ describe("compact publication pagination", () => {
     expect([...first.rows, ...second.rows, ...last.rows]).toEqual(entries);
     expect(first.pagination.next).toBe(BASE + "/almanac?view=compact&page=1");
     expect(last.pagination.next).toBeNull();
+    expect(first.pagination).toMatchObject({ limit: 8, offset: 0, returned: 8, has_more: true });
+    expect(last.pagination).toMatchObject({ limit: 8, offset: 16, returned: 3, has_more: false });
+    expect(publicationPage([], BASE + "/almanac")?.pagination).toMatchObject({ total: 0, returned: 0, has_more: false });
     for (const page of ["-1", "1.5", "3", "9999999", "wat"]) expect(publicationPage(entries, BASE + "/almanac", page)).toBeNull();
   });
   it("refuses invalid compact pages at each public index", async () => {

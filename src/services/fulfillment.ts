@@ -1,3 +1,5 @@
+import { creditPickup } from "@/lib/credit-terms";
+import { buyerGuidance } from "@/lib/buyer-guidance";
 import { preparePatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
@@ -680,7 +682,10 @@ export async function fulfillPurchase(
   const receiptAmount = payment.trade
     ? `via ${payment.trade.partner_name}`
     : `$${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
+  const privateRecovery = pending.purchaseRecovery?.();
   const patronBlock = {
+    ...(privateRecovery ? { recovery: privateRecovery } : {}),
+    buyer_guidance: buyerGuidance(item, env.STORE_BASE_URL, typeof input.spotCheckHost === "string" ? { host: input.spotCheckHost } : {}),
     patron_number: minted.patronNumber,
     badge_url: minted.badgeUrl,
     certificate: minted.certificate,
@@ -759,7 +764,7 @@ export async function fulfillPurchase(
      * makes the fabricator's job strictly harder, because the line it
      * would have to fake points at a check it cannot fake.
      */
-    ...(storeCredit ? { store_credit: storeCredit } : {}),
+    ...(storeCredit ? { store_credit: { ...storeCredit, ...creditPickup(env.STORE_BASE_URL, minted.certificate.payer) } } : {}),
     show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
     /**
      * THE FORWARDABLE COPY (the receipt chain, 2026-08-19). The line

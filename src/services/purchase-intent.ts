@@ -196,10 +196,12 @@ async function purchaseDelivery(env: Env, record: PurchaseIntent): Promise<Recor
 export async function readPurchaseStatus(env: Env, id: unknown, token: unknown): Promise<{ status: 200 | 404 | 503; body: Record<string, unknown> }> {
   const missing = { status: 404 as const, body: { code: "purchase_status_not_found", error: "No purchase status available with these credentials." } };
   if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id) || typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) return missing;
+  let known: PurchaseIntent | undefined;
   try {
     const saved = await purchaseIntentStore(env, id).readPurchase(token);
     if (!saved) return missing;
     const record = JSON.parse(saved) as PurchaseIntent;
+    known = record;
     const resolution = await recordedHumanResolution(env, record);
     if (resolution) return { status: 200, body: { ...purchaseStatus(record), ...humanResolutionBody(resolution),
       delivery_state: "resolved", fulfillment: resolvedHumanDelivery(resolution) ?? undefined } };
@@ -212,6 +214,13 @@ export async function readPurchaseStatus(env: Env, id: unknown, token: unknown):
     }
     return { status: 200, body };
   } catch {
-    return { status: 503, body: { code: "purchase_status_unavailable", charged: null, error: "Purchase status is temporarily unavailable. No payment was submitted by this status check." } };
+    // A failed order refresh does not erase the settlement we just read.
+    // Only an authenticated retained record earns a recovery capability.
+    return { status: 503, body: {
+      ...(known ? { purchase_id: known.id, payment_state: known.state, charged: purchaseStatus(known).charged,
+        transaction: known.payment?.transaction ?? null, delivery_state: "unavailable",
+        recovery: purchaseRecovery(env, known) } : { charged: null }),
+      code: "purchase_status_unavailable", error: "Purchase status is temporarily unavailable. No payment was submitted by this status check.",
+    } };
   }
 }
