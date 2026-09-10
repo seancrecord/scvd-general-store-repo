@@ -2,6 +2,7 @@ import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
 import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
+import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
@@ -103,6 +104,28 @@ const PROBLEM_SCHEMA: OpenApiObject = {
       type: "string",
       description:
         "The store's human-readable message. Always present, including on responses that predate the typed model.",
+    },
+    retry_same_request: {
+      type: "boolean", const: false,
+      description: "Present on repair responses: correct the selection or inputs before retrying.",
+    },
+    next_step: {
+      type: "object",
+      description: "Optional free read after a refusal. Catalog and input repairs also include an equivalent MCP read. No payment or buyer arguments are forwarded.",
+      required: ["method", "url", "payment_required"],
+      properties: {
+        method: { type: "string", const: "GET" },
+        url: { type: "string", format: "uri" },
+        payment_required: { type: "boolean", const: false },
+        mcp: {
+          type: "object", required: ["url", "tool", "arguments"],
+          properties: {
+            url: { type: "string", format: "uri" },
+            tool: { type: "string", const: CATALOG_TOOL_NAME },
+            arguments: { type: "object", properties: { item_id: { type: "string" } }, additionalProperties: false },
+          },
+        },
+      },
     },
   },
   required: ["error"],
@@ -4004,6 +4027,7 @@ const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
     signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
   },
 };
+const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
 
 const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
   type: "object",
@@ -4032,7 +4056,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description: "What was paid above the ask, where anything was.",
     },
     patron_number: { type: "integer" },
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     confession_receipt: {
       type: "object",
       description: "Confession only. Private proof binding the stored text to this purchase. Absent from public certificates and verification. Share only by choice.",
@@ -4367,7 +4391,7 @@ const WATCH_HISTORY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "probes", "how_to_verify", "what_this_is_not"],
   properties: {
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     watch_id: { type: "string" },
     url: { type: "string", description: "The door being watched." },
     started_at: { type: "string" },
@@ -4403,7 +4427,7 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "passes", "how_to_verify"],
   properties: {
-    commission: WATCH_COMMISSION_SCHEMA,
+    commission: WATCH_COMMISSION_REF,
     watch_id: { type: "string" },
     url: { type: "string" },
     started_at: { type: "string" },
@@ -5350,6 +5374,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       schemas: {
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
+        WatchCommission: WATCH_COMMISSION_SCHEMA,
         OrderReceipt: ORDER_RECEIPT_SCHEMA,
         PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
       },
@@ -5652,7 +5677,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/purchase-status/{purchase_id}": {
         get: {
-          ...freeOp("Read a retained purchase status", "A free, read-only status for catalogue purchases with a retained recovery handle. Use recovery.status_url and send the private recovery.status_token as Authorization: Bearer <status_token>. This does not verify or submit a payment; an expired payment authorization does not expire this read. The record preserves original request and terms, but settlement evidence alone does not establish delivery. Automatic fulfillment after reconciliation is not yet implemented."),
+          ...freeOp("Read a retained purchase status", "A free, read-only status for catalogue purchases with a retained recovery handle. Use recovery.status_url and send the private recovery.status_token as Authorization: Bearer <status_token>. This does not verify or submit a payment; an expired payment authorization does not expire this read. The record preserves original request and terms, but settlement evidence alone does not establish delivery. Recovery can resume goods backed by retained artifact checkpoints; a settled payment without recovered goods still does not establish delivery."),
           security: [{ purchaseStatusToken: [] }],
           parameters: [pathParam("purchase_id", "The purchase_id in the recovery response.")],
           responses: {
@@ -5661,7 +5686,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               type: "object", required: ["purchase_id", "payment_state", "charged", "request", "terms", "delivery_state"],
               properties: { purchase_id: { type: "string" }, payment_state: { type: "string", enum: ["unknown", "settled", "not_settled"] },
                 charged: { type: ["boolean", "null"] }, request: { type: "string" }, terms: { type: "object" },
-                delivery_state: { const: "not_established_by_this_record" } },
+                delivery_state: { type: "string", description: "The retained record may establish delivery, an order, or a resolution. Settlement alone does not establish delivery." } },
             } } } },
             "404": { description: "Unknown purchase or invalid/missing status credential" },
             "503": { description: "Status storage unavailable; no payment submitted by this read" },
@@ -6831,6 +6856,29 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           CORPUS_SCHEMA,
         ),
+      },
+      "/corpus/host/{host}.json": {
+        get: {
+          ...freeOp("Read one host's recorded history", "Free underlying evidence for Spot Check. Add view=stable to omit the request-time asked_at field and revalidate exact published bytes with If-None-Match. A 304 means this published view is unchanged, not that the host is unchanged or that a new probe ran. The default view retains asked_at."),
+          parameters: [pathParam("host", "A bare hostname"), {name:"view",in:"query",required:false,schema:{type:"string",enum:["stable"]}}],
+          responses: { ...COMMON_RESPONSES,
+            "200": {description:"Recorded history, dated observations and gaps",content:{"application/json":{schema:{
+              type:"object", required:["host","timeline","rounds_probed","rounds_gapped","what_this_cannot_see"],
+              properties:{
+                host:{type:"string"}, asked_at:{type:"string",format:"date-time",description:"Request time, omitted with view=stable"},
+                first_observed:{type:["string","null"],format:"date-time"}, last_observed:{type:["string","null"],format:"date-time"},
+                rounds_in_chain:{type:"integer"}, rounds_since_first_sighting:{type:"integer"}, rounds_probed:{type:"integer"}, rounds_gapped:{type:"integer"},
+                observation_coverage_pct:{type:["number","null"],description:"Our coverage of this host, never the host's uptime"},
+                gaps_by_reason:{type:"object",additionalProperties:{type:"integer"}},
+                timeline:{type:"array",items:{type:"object",properties:{sequence:{type:"integer"},week:{type:"string"},taken_at:{type:"string",format:"date-time"},digest:{type:"string"},entry_url:{type:"string",format:"uri"},listed:{type:"boolean"},probed:{type:"boolean"},coverage_suspect:{type:"boolean"},note:{type:"string"},verdict:{type:"string"},gap:{type:"string"},url:{type:"string",format:"uri"},observed_at:{type:"string",format:"date-time"}}}},
+                verdict_changes:{type:"array",items:{type:"object",properties:{at:{type:"string",format:"date-time"},week:{type:"string"},from:{type:"string"},to:{type:"string"}}}},
+                tier:{type:"object",properties:{tier:{type:"string"},line:{type:"string"},criteria_url:{type:"string",format:"uri"},coverage_suspect:{type:"boolean"},fraction:{type:"object",properties:{ready:{type:"integer"},rounds:{type:"integer"},weeks:{type:"string"}}}}},
+                corrections:{type:"string"}, what_this_cannot_see:{type:"array",items:{type:"string"}},
+              },
+            }}}},
+            "304": {description:"The published view has unchanged bytes; no body or charge"},
+          },
+        },
       },
       "/corpus/tiers.json": {
         get: returns(

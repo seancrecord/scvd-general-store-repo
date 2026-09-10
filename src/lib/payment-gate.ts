@@ -1,12 +1,13 @@
+import { buyerGuidance } from "@/lib/buyer-guidance";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
 import { recoverLegacyHumanOrder } from "@/services/legacy-human-order";
 import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
-import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase } from "@/services/purchase-intent";
+import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase, purchaseRecovery } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { deliveryFailedBody, legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
-import { archiveDepthFor } from "@/services/archive-depth";
+import { archiveDepthDisclosure } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
 import type {
@@ -336,15 +337,16 @@ async function enrich402Body(
    * DEPTH BEFORE YOU BUY (roadmap S7, 2026-09-02): for the items that
    * sell this store's own history, how much of it stands behind the
    * subject named in the query — counted from the chain, before the
-   * money. Fail-soft: a chain read that fails leaves the 402 exactly
-   * as it was; no decoration is worth blocking the till.
+   * money. A failed read stays unknown; it does not block the quote or
+   * turn missing evidence into a measured zero.
    */
   const archiveDepth = item
-    ? await archiveDepthFor(env, base, item.id, query).catch(() => null)
-    : null;
+    ? await archiveDepthDisclosure(env, base, item.id, query)
+    : {};
   return {
     ...body,
-    ...(archiveDepth ? { archive_depth: archiveDepth } : {}),
+    ...archiveDepth,
+    ...(item ? { buyer_guidance: buyerGuidance(item, base, query) } : {}),
     ...(decline
       ? {
           payment_declined: {
@@ -1163,6 +1165,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (replay) {
       c.header("Cache-Control", "no-store");
       c.header("Idempotency-Replay", "true");
+      const page = replay.body.publication_response;
+      if (isRecord(page) && typeof page.markdown === "string" && typeof page.content_type === "string" && isRecord(page.headers)) {
+        const headers = new Headers({ "Content-Type": page.content_type, "Cache-Control": "no-store", "Idempotency-Replay": "true" });
+        for (const [name, value] of Object.entries(page.headers)) if (typeof value === "string") headers.set(name, value);
+        return new Response(page.markdown, { status: 200, headers });
+      }
       return c.json({ ...replay.body, ...replayNote(replay.first_served_at) });
     }
   }
@@ -1416,6 +1424,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       headers: Record<string, string>;
     } | null;
     deliveryKey: string | null;
+    recovery?: Record<string, unknown>;
     payer?: string;
   } = { payment: null, settled: null, deliveryKey: null };
 
@@ -1438,6 +1447,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: menuItem,
     }) : undefined;
+    if (purchase) till.recovery = purchaseRecovery(c.env, purchase);
     let settlement: Awaited<
       ReturnType<typeof stack.httpServer.processSettlement>
     >;
@@ -1547,7 +1557,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           throw new SettlementDeclined(
             respondWithInstructions(c, {
               ...settlement.response,
-              body: settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage),
+              body: { ...settlementDeclinedBody(settlement.response.body, settlement.errorReason, settlement.errorMessage),
+                ...(purchase ? { recovery: purchaseRecovery(c.env, purchase) } : {}) },
             }),
           );
         }
@@ -1734,6 +1745,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       : {}),
     observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), verifiedRequirements.network, payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot), verifiedPayload, c.req.path, await httpArtifactDigest(c.req.url)),
     settle: settleNow,
+    purchaseRecovery: () => till.recovery,
   });
 
   try {
@@ -1890,7 +1902,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       .catch(() => null);
     if (bodyText) {
       try {
-        const parsed: unknown = JSON.parse(bodyText);
+        const isPage = (c.res.headers.get("Content-Type") ?? "").startsWith("text/markdown");
+        // Retain only receipt headers, never cookies or arbitrary middleware headers.
+        const parsed: unknown = isPage ? { publication_response: {
+          markdown: bodyText, content_type: c.res.headers.get("Content-Type"),
+          headers: Object.fromEntries([...c.res.headers].filter(([name]) => ["payment-response", "x-payment-response"].includes(name.toLowerCase()))),
+        } } : JSON.parse(bodyText);
         if (isRecord(parsed)) {
           await storeIdempotent(
             c.env,
@@ -1905,8 +1922,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           );
         }
       } catch {
-        // Non-JSON goods stay uncached; the header's absence on the
-        // next attempt is honest.
+        // Unrecognized goods stay uncached; do not pretend a replay exists.
       }
     }
   }

@@ -32,6 +32,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import * as ed25519 from "@noble/ed25519";
 import {
   BASE_USDC,
+  BASE_CAIP2,
+  atomicUsd,
+  submitWithinBudget,
   DEFAULT_CAPS,
   TRANSFER_TOPIC,
   UA,
@@ -327,15 +330,15 @@ async function walk(flags) {
   console.log(`caps $${caps.perItemUsd}/item $${caps.runUsd}/run ${caps.perDomain}/domain · ${approval}`);
   if (dryRun) console.log("DRY RUN: nothing is signed, nothing is paid.");
 
-  const state = { spentUsd: 0, domains: {} };
+  const state = { reservedAtomic: 0n, domains: {} };
   const delayMs = Number(flags.delay ?? 750);
   const limit = flags.limit ? Number(flags.limit) : Infinity;
   let attempts = 0;
 
   for (const target of targets) {
     if (attempts >= limit) break;
-    if (state.spentUsd >= caps.runUsd) {
-      console.log(`run cap reached at $${state.spentUsd.toFixed(4)}`);
+    if (state.reservedAtomic >= atomicUsd(caps.runUsd)) {
+      console.log(`run authorization cap reached at ${state.reservedAtomic} atomic USDC`);
       break;
     }
     const url = typeof target === "string" ? target : target.url;
@@ -351,14 +354,18 @@ async function walk(flags) {
       ua_sent: UA,
       web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
       signing_desk_failures: signDesk.failures,
+      payment_submitted: false,
     };
+    let phase = "client";
     try {
       const headers = { "User-Agent": UA, Accept: "application/json", ...(await signedHeaders(material, url)) };
+      phase = "transport";
       const first = await fetch(url, { method: "GET", headers, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       const firstBody = await first.text();
       entry.status = first.status;
       entry.response_headers = headersRecord(first.headers);
       Object.assign(entry, bodyRecord(firstBody));
+      phase = "client";
       const parsed = parseChallenge(first.status, first.headers, firstBody);
       entry.shape = parsed.shape;
       entry.challenge_source = parsed.source;
@@ -391,7 +398,7 @@ async function walk(flags) {
       entry.asset = chosen.asset;
 
       const withheld = ruleCheck(
-        { amountUsd: chosen.amountUsd, payTo: chosen.payTo, domain },
+        { amountUsd: chosen.amountUsd, amountAtomic: chosen.amountAtomic, payTo: chosen.payTo, domain },
         state,
         caps,
         house,
@@ -431,7 +438,10 @@ async function walk(flags) {
         ...(await signedHeaders(material, url)),
         "PAYMENT-SIGNATURE": paymentHeader(chosen.accept, signature, authorization),
       };
-      const second = await fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+      entry.payment_submitted = true;
+      phase = "transport";
+      const second = await submitWithinBudget({ ...chosen, domain }, state, caps, () =>
+        fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }));
       const secondBody = await second.text();
       entry.paid_status = second.status;
       entry.paid_response_headers = headersRecord(second.headers);
@@ -440,6 +450,7 @@ async function walk(flags) {
       entry.paid_body_sha256 = paidBody.body_sha256 ?? null;
       entry.paid_body_head = paidBody.body_head ?? null;
       entry.paid_body_bytes = paidBody.body_bytes;
+      phase = "client";
       const outcome = classifyPaid(second.status, secondBody);
       entry.verdict = outcome.verdict;
       entry.deliverable = outcome.deliverable;
@@ -461,15 +472,12 @@ async function walk(flags) {
           // No hash in the body; the reconcile step reads the chain anyway.
         }
       }
-      if (outcome.verdict === "settled") {
-        state.spentUsd += chosen.amountUsd;
-        state.domains[domain] = (state.domains[domain] ?? 0) + 1;
-      }
       append(entry);
       console.log(`${outcome.verdict.padEnd(16)} ${second.status} $${chosen.amountUsd} ${domain}`);
     } catch (error) {
       entry.verdict = "unreachable";
       entry.error = error?.message ?? String(error);
+      entry.failure_origin = phase;
       append(entry);
     }
     await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -481,9 +489,9 @@ async function walk(flags) {
     ended: new Date().toISOString(),
     end_block: endBlock,
     attempts,
-    spent_usd: Number(state.spentUsd.toFixed(6)),
+    reserved_atomic: state.reservedAtomic.toString(),
   });
-  console.log(`\ndone: ${attempts} attempts, $${state.spentUsd.toFixed(4)} spent → ${ledgerPath}`);
+  console.log(`\ndone: ${attempts} attempts, ${state.reservedAtomic} atomic USDC reserved (settlement awaits reconciliation) → ${ledgerPath}`);
   console.log(`next: node scripts/walkabout.mjs reconcile ${ledgerPath} && node scripts/walkabout.mjs report ${ledgerPath}`);
 }
 
@@ -505,6 +513,12 @@ async function reconcileCmd(positional) {
   if (!run?.start_block || !end?.end_block) {
     fail("the ledger has no start_block/end_block (a dry run, or the run never ended); nothing to reconcile against.");
   }
+  if (!Number.isSafeInteger(run.start_block) || !Number.isSafeInteger(end.end_block)
+    || run.start_block < 0 || end.end_block < run.start_block) fail("invalid scan window");
+  const chainId = BigInt(await rpc("eth_chainId", []));
+  if (chainId !== BigInt(BASE_CAIP2.split(":")[1])) fail("wrong chain: reconciliation requires the declared Base network");
+  const head = BigInt(await rpc("eth_blockNumber", []));
+  if (head < BigInt(end.end_block)) fail("scan window extends beyond the node's current head; nothing reconciled");
   const wallet = run.wallet.toLowerCase();
   const fromTopic = `0x${wallet.slice(2).padStart(64, "0")}`;
   const transfers = [];
@@ -521,14 +535,17 @@ async function reconcileCmd(positional) {
     ]);
     for (const log of logs) transfers.push(transferFromLog(log));
   }
-  const result = reconcile(entries, transfers);
+  const result = reconcile(entries, transfers, {
+    network: BASE_CAIP2, asset: BASE_USDC, wallet: run.wallet,
+    from_block: run.start_block, to_block: end.end_block, complete: true,
+  });
   const outPath = join(ledgerPath.replace(/ledger\.jsonl$/, ""), "reconciliation.json");
   writeFileSync(
     outPath,
     `${JSON.stringify({ ledger: ledgerPath, blocks: [run.start_block, end.end_block], wallet: run.wallet, ...result }, null, 2)}\n`,
   );
   console.log(
-    `chain ${result.chain_count} transfers $${result.chain_usd} · ledger ${result.ledger_count} settled $${result.ledger_usd} · matched ${result.matched} · chain-only ${result.chain_only} · ledger-only ${result.ledger_only} · gap $${result.gap_usd} → ${outPath}`,
+    `chain ${result.chain_count} transfers $${result.chain_usdc} · exact matches ${result.matched} · unmatched transfers ${result.unmatched_transfers.length} for $${result.unmatched_usdc} · unresolved attempts ${result.unknown_attempts} → ${outPath}`,
   );
 }
 

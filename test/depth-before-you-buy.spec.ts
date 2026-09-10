@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
-import { DEPTH_HOLD_SECONDS, DEPTH_ITEMS, archiveWideDepth, depthLine, forgetHeldDepths } from "@/services/archive-depth";
+import { DEPTH_HOLD_SECONDS, DEPTH_ITEMS, archiveWideDepth, archiveDepthDisclosure, depthLine, forgetHeldDepths } from "@/services/archive-depth";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
@@ -191,3 +191,42 @@ describe("the depth is held, not redone on every knock (2026-09-02)", () => {
     expect(strangerDepth["subject"]).toBe("stranger.example");
   });
 });
+
+
+describe("depth availability is distinct from a measured zero", () => {
+  it("keeps an unreadable archive unknown, without exposing storage errors", async () => {
+    const unavailable = { ...testEnv, COUNTERS: {
+      get: async () => null,
+      list: async () => { throw new Error("private storage detail"); },
+    } } as unknown as Env;
+    const result = await archiveDepthDisclosure(unavailable, BASE, "spot_check", {});
+    expect(result).toEqual({ archive_depth: null, archive_depth_status: "unavailable" });
+    expect(await archiveDepthDisclosure(unavailable, BASE, "hello", {})).toEqual({});
+  });
+  it("labels a successfully read empty archive on the free quote", async () => {
+    const response = await SELF.fetch(`${BASE}/api/buy/spot_check`);
+    expect(response.status).toBe(402);
+    expect(await json(response)).toMatchObject({
+      archive_depth_status: "available", archive_depth: { weeks_in_chain: 0, hosts_seen: 0 },
+    });
+  });
+});
+
+for (const standard of [false, true]) {
+  it(`MCP ${standard ? "tool-result" : "legacy"} quotes disclose the requested subject's depth`, async () => {
+    await chain([round("2026-W31", [host("door.example", "ready")])]);
+    const path = `/mcp?item_id=spot_check${standard ? "&payment=tool-result" : ""}`;
+    const response = await SELF.fetch(BASE + path, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: {
+        name: "buy_spot_check", arguments: { host: "door.example" },
+      } }),
+    });
+    const rpc = await json(response);
+    const envelope = (standard ? rpc.result : rpc.error) as Record<string, unknown>;
+    const quote = (standard ? envelope.structuredContent : envelope.data) as Record<string, unknown>;
+    expect(quote).toMatchObject({ archive_depth_status: "available", archive_depth: {
+      kind: "host", subject: "door.example", rounds_probed: 1, never_observed: false,
+    } });
+  });
+}

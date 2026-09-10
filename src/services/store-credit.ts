@@ -1,3 +1,4 @@
+import { creditPickup } from "@/lib/credit-terms";
 import { BASE_USDC, rpcEndpoints } from "@/lib/base-rpc";
 import { canonicalAddress } from "@/lib/addresses";
 import { isHouseWallet } from "@/lib/channel";
@@ -39,17 +40,8 @@ import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
  * banking credit would be the store tipping itself.
  */
 
-/** Share of each organic settle banked as credit. ⚑ keeper dial. */
-export const CREDIT_RATE = 0.05;
-/** Balance ceiling per wallet, atomic units ($25) — bounds the
- * liability any one wallet can hold. ⚑ keeper dial. */
-export const CREDIT_CAP_ATOMIC = 25_000_000n;
-/** Cash-out floor, atomic units ($1): below it, keep shopping. */
-export const CREDIT_FLOOR_ATOMIC = 1_000_000n;
-/** Idle this long, a balance expires back to the store. ⚑ dial. */
-export const CREDIT_IDLE_EXPIRY_DAYS = 90;
-/** Redemption authorizations expire like the bounty board's. */
-export const CREDIT_AUTH_VALID_SECONDS = 7 * 24 * 3600;
+import { CREDIT_RATE, CREDIT_CAP_ATOMIC, CREDIT_FLOOR_ATOMIC, CREDIT_IDLE_EXPIRY_DAYS, CREDIT_AUTH_VALID_SECONDS } from "@/lib/credit-terms";
+export { CREDIT_RATE, CREDIT_CAP_ATOMIC, CREDIT_FLOOR_ATOMIC, CREDIT_IDLE_EXPIRY_DAYS, CREDIT_AUTH_VALID_SECONDS } from "@/lib/credit-terms";
 
 export interface CreditRecord {
   wallet: string;
@@ -233,10 +225,11 @@ export async function accrueCredit(
   delete next.claimed_by;
   await kvPut(env.COUNTERS, KV_KEYS.credit(record.wallet), JSON.stringify(next));
   await bumpOutstanding(env, earned);
+  const pickup = creditPickup(env.STORE_BASE_URL, record.wallet);
   return {
     earned_usd: usd(earned),
     balance_usd: usd(balance + earned),
-    note: `Regulars' credit: ${CREDIT_RATE * 100}% of every purchase banks to the wallet that paid — no account, the wallet is the card. Redeemable as USDC back to your own wallet once it reaches $${usd(CREDIT_FLOOR_ATOMIC)} (GET ${env.STORE_BASE_URL}/api/credit/${record.wallet}); idle ${CREDIT_IDLE_EXPIRY_DAYS} days it expires. A closed-loop rebate — never a token, never transferable.`,
+    note: `Regulars' credit: ${CREDIT_RATE * 100}% on eligible organic certificate purchases, subject to the balance cap. ${pickup.balance_url ? `Read your balance free at ${pickup.balance_url}; cash-out starts at $${usd(CREDIT_FLOOR_ATOMIC)} and requires the earning EVM wallet's signature.` : "This wallet has no supported cash-out route: the current API accepts EVM EOAs only."} Idle ${CREDIT_IDLE_EXPIRY_DAYS} days it expires. A closed-loop rebate — never a token, never transferable.`,
   };
 }
 

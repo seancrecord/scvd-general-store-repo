@@ -1,3 +1,4 @@
+import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
@@ -99,6 +100,7 @@ const archiveCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       {
         error: "No page by that sign and week in the archive. The index is free.",
         index_url: `${c.env.STORE_BASE_URL}/zodiac/archive`,
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/zodiac/archive?view=compact`),
       },
       404,
     );
@@ -109,6 +111,7 @@ const archiveCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         error:
           "That page hasn't turned yet. The current week is free at /zodiac/{address}; the archive sells only what the calendar has finished with.",
         current_week: `${c.env.STORE_BASE_URL}/zodiac/{address}`,
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/zodiac/archive?view=compact`),
       },
       404,
     );

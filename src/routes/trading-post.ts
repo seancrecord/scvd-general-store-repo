@@ -1,3 +1,4 @@
+import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
@@ -154,6 +155,7 @@ tradingPostRoutes.get("/gazette/founding", async (c) => {
       {
         error: "The founding edition hasn't gone to press yet.",
         index_url: `${c.env.STORE_BASE_URL}/gazette`,
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/gazette?view=compact`),
       },
       404,
     );
@@ -186,6 +188,7 @@ const issueCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       {
         error: "No issue by that number off the press yet. The index is free.",
         index_url: `${c.env.STORE_BASE_URL}/gazette`,
+        ...freeReadRecovery(`${c.env.STORE_BASE_URL}/gazette?view=compact`),
       },
       404,
     );

@@ -4,6 +4,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
+import { catalogRecovery } from "@/lib/catalog-recovery";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 
 /**
@@ -785,6 +786,7 @@ export function buyerInputRepair(
     required_params: [...(buyInputSchema(item).required ?? [])],
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     issues: purchaseInputIssues(item, args, location, refusalBody),
+    ...catalogRecovery(base, item.id),
     next_action: "Read the input contract, correct the inputs, then retry the same purchase. No charge was taken.",
   };
 }

@@ -1,6 +1,13 @@
+import { IDEMPOTENCY_TTL_SECONDS } from "@/lib/idempotency";
 /** Publications return the page itself; the receipt header is the purchase record. */
 export function publicationCheckout(base: string) {
   return {
+    buyer_guidance: {
+      price_effect: { higher_payment: "optional_tip", higher_payment_changes_scope: false, scope: "The entire named page at the lowest offered tier." },
+      production: { kind: "existing_publication", attribution: "See the page byline and publication date; purchase does not commission new writing." },
+      credit: { accrues: false },
+      recovery: { how: "Retain the exact URL, original signed payment, idempotency key and receipt. Retry the same request; do not sign a fresh payment to check status.", private_status_handle: false, replay_cache_seconds: IDEMPOTENCY_TTL_SECONDS, replay_cache_limit: "A cache write or read can fail. Retain the original authorization; do not use a fresh one to recover a missing response." },
+    },
     protocol: "x402",
     version: 2,
     currency: "USDC",
@@ -38,8 +45,10 @@ export function publicationPage<T>(entries: T[], indexUrl: string, rawPage = "0"
   const pages = Math.max(1, Math.ceil(entries.length / PUBLICATION_PAGE_SIZE));
   if (!/^\d{1,6}$/.test(rawPage) || Number(rawPage) >= pages) return null;
   const page = Number(rawPage);
+  const offset = page * PUBLICATION_PAGE_SIZE;
+  const rows = entries.slice(offset, offset + PUBLICATION_PAGE_SIZE);
   return {
-    rows: entries.slice(page * PUBLICATION_PAGE_SIZE, (page + 1) * PUBLICATION_PAGE_SIZE),
-    pagination: { page, page_count: pages, total: entries.length, next: page + 1 < pages ? `${indexUrl}?view=compact&page=${page + 1}` : null },
+    rows,
+    pagination: { page, page_count: pages, total: entries.length, limit: PUBLICATION_PAGE_SIZE, offset, returned: rows.length, has_more: page + 1 < pages, next: page + 1 < pages ? `${indexUrl}?view=compact&page=${page + 1}` : null },
   };
 }

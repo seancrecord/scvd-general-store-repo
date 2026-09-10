@@ -15,6 +15,7 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
+import { attemptRows, responseSummary, reconcileEvidence, ledgerFingerprint } from "./field-evidence.mjs";
 
 export const UA =
   "scvd-walkabout/1.0 (+https://scvd.store/what) x402-field-research";
@@ -244,7 +245,7 @@ export function chooseAccept(accepts) {
  * as payTo. Returns the reason to withhold, or null to proceed.
  */
 export function ruleCheck(
-  { amountUsd, payTo, domain },
+  { amountUsd, amountAtomic, payTo, domain },
   state,
   caps = DEFAULT_CAPS,
   houseWallets = [],
@@ -259,10 +260,33 @@ export function ruleCheck(
   if ((state.domains?.[domain] ?? 0) >= caps.perDomain) {
     return "per_domain_cap";
   }
-  if (Number.isNaN(amountUsd)) return "unreadable_amount";
-  if (amountUsd > caps.perItemUsd) return "per_item_cap";
-  if ((state.spentUsd ?? 0) + amountUsd > caps.runUsd) return "run_cap";
+  let amount, itemCap, runCap, reserved;
+  try {
+    amount = atomicUsd(amountUsd);
+    if (amountAtomic !== undefined && BigInt(amountAtomic) !== amount) return "unreadable_amount";
+    itemCap = atomicUsd(caps.perItemUsd);
+    runCap = atomicUsd(caps.runUsd);
+    reserved = state.reservedAtomic ?? atomicUsd(state.spentUsd ?? 0);
+  } catch { return "unreadable_amount"; }
+  if (amount > itemCap) return "per_item_cap";
+  if (reserved + amount > runCap) return "run_cap";
   return null;
+}
+
+/** Integer USDC budgets: accepting a decimal must never round a cap upward. */
+export function atomicUsd(value) {
+  const match = /^(\d+)(?:\.(\d{1,6}))?$/.exec(String(value));
+  if (!match) throw new Error("Unreadable USDC budget");
+  return BigInt(match[1]) * 1_000_000n + BigInt((match[2] ?? "").padEnd(6, "0"));
+}
+
+/** Reserve before handing a signed authorization to transport; absence of a reply releases nothing. */
+export async function submitWithinBudget(chosen, state, caps, submit) {
+  const refusal = ruleCheck(chosen, state, caps);
+  if (refusal) throw new Error(refusal);
+  state.reservedAtomic = (state.reservedAtomic ?? atomicUsd(state.spentUsd ?? 0)) + atomicUsd(chosen.amountUsd);
+  state.domains[chosen.domain] = (state.domains[chosen.domain] ?? 0) + 1;
+  return await submit();
 }
 
 /** Caps above the defaults leave the standing approval; say why. */
@@ -455,17 +479,16 @@ function pct(part, whole) {
  */
 export function summarize(lines) {
   const entries = lines
-    .map((line) => (typeof line === "string" ? parseJson(line) : line))
+    .filter(line => typeof line !== "string" || line.trim() !== "")
+    .map((line) => (typeof line === "string" ? JSON.parse(line) : line))
     .filter(Boolean);
   const run = entries.find((e) => e.kind === "run") ?? null;
   const end = entries.find((e) => e.kind === "run_end") ?? null;
-  const attempts = entries.filter((e) => e.kind === "attempt");
+  const attempts = attemptRows(entries);
   const byShape = Object.fromEntries(SHAPES.map((s) => [s, 0]));
   const byVerdict = Object.fromEntries(VERDICTS.map((v) => [v, 0]));
   const unpaidReasons = {};
   const refusedStatus = {};
-  let spentUsd = 0;
-  let delivered = 0;
   const domains = new Set();
   for (const a of attempts) {
     if (a.shape in byShape) byShape[a.shape] += 1;
@@ -478,44 +501,40 @@ export function summarize(lines) {
       refusedStatus[a.paid_status ?? "?"] =
         (refusedStatus[a.paid_status ?? "?"] ?? 0) + 1;
     }
-    if (a.verdict === "settled") {
-      spentUsd += Number(a.amount_usd ?? 0);
-      if (a.deliverable === "body") delivered += 1;
-    }
     if (a.domain) domains.add(a.domain);
   }
-  const presented = byVerdict.settled + byVerdict.payment_refused;
   return {
     run,
     end,
+    ledger_fingerprint: ledgerFingerprint(entries),
     attempts: attempts.length,
     domains: domains.size,
     by_shape: byShape,
     by_verdict: byVerdict,
     unpaid_reasons: unpaidReasons,
     refused_status: refusedStatus,
-    payments_presented: presented,
-    settled: byVerdict.settled,
-    settled_with_body: delivered,
-    spent_usd: Number(spentUsd.toFixed(6)),
+    ...responseSummary(entries),
   };
 }
 
 export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
   const s = summary;
+  if (s.reconciliation?.version === 2 && s.reconciliation.ledger_fingerprint !== s.ledger_fingerprint) {
+    throw new Error("Ledger changed: reconciliation is stale; reconcile this ledger again");
+  }
   const started = s.run?.started ?? "unknown";
   const ended = s.end?.ended ?? "unknown (run_end line missing)";
   const lines = [];
   lines.push(`# Walkabout report — ${started.slice(0, 10)}`);
   lines.push("");
   lines.push(
-    `Every number below re-derives from \`${ledgerPath}\` with \`node scripts/walkabout.mjs report\`. Nothing here is typed.`,
+    `Response counts re-derive from \`${ledgerPath}\`; settlement counts require its matching \`reconciliation.json\` and saved transfer evidence. Run \`node scripts/walkabout.mjs report\` to reproduce this report.`,
   );
   lines.push("");
   lines.push("## Taxonomy, stated first");
   lines.push("");
   lines.push(
-    "A 402 is **spec_conformant** when its challenge carries `x402Version` and an `accepts[]` array (header or body); **other_structured** when a 402 carried JSON of another shape; **empty** when a 402 carried nothing readable; **non_402** when the door answered anything else unpaid. Verdicts are the Launch Check's: **settled** (money moved, 2xx), **payment_refused** (signed payment presented, door refused), **no_payment_gate** (answered without asking), **malformed_challenge** (402 without payable terms), **unpaid_by_rule** (terms read, this store withheld by its own rules — a statement about us), **unreachable**.",
+    "A 402 is **spec_conformant** when its challenge carries `x402Version` and an `accepts[]` array (header or body); **other_structured** when a 402 carried JSON of another shape; **empty** when a 402 carried nothing readable; **non_402** when the door answered anything else unpaid. Verdicts are the Launch Check's: **settled** (historical label for a 2xx after presenting payment; not settlement evidence), **payment_refused** (historical label for a non-2xx after presenting payment; not proof of non-settlement), **no_payment_gate** (answered without asking), **malformed_challenge** (402 without payable terms), **unpaid_by_rule** (terms read, this store withheld by its own rules — a statement about us), **unreachable**.",
   );
   lines.push("");
   lines.push("## The run");
@@ -532,11 +551,15 @@ export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
   lines.push(`| attempts | ${s.attempts} |`);
   lines.push(`| domains | ${s.domains} |`);
   lines.push(`| payments presented | ${s.payments_presented} |`);
-  lines.push(
-    `| settled | ${s.settled} (${pct(s.settled, s.payments_presented)} of presented) |`,
-  );
-  lines.push(`| settled with a body | ${s.settled_with_body} |`);
-  lines.push(`| spent (ledger) | $${s.spent_usd.toFixed(4)} |`);
+  lines.push(`| unique doors | ${s.unique_doors} |`);
+  lines.push(`| repeat attempts | ${s.repeat_attempts} |`);
+  lines.push(`| successful responses with a body | ${s.responses_with_body} |`);
+  lines.push(`| client failures | ${s.client_failures} |`);
+  lines.push(`| transport failures | ${s.transport_failures} |`);
+  lines.push(`| submission unknown | ${s.submission_unknown} |`);
+  lines.push(`| quoted on presented attempts (not spend) | $${s.quoted_usdc}; ${s.unpriced_presentations} missing amounts |`);
+  lines.push("");
+  lines.push(`Door identity: ${s.door_identity}. A response body is reported delivery evidence; its content has not been verified as the requested resource. Repeat attempts are repeated doors, not necessarily repeated authorizations.`);
   lines.push("");
   lines.push("## 402 shapes");
   lines.push("");
@@ -572,11 +595,13 @@ export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
   lines.push("");
   lines.push("## Reconciliation");
   lines.push("");
-  lines.push(
-    s.reconciliation
-      ? `Chain transfers from the wallet between blocks ${s.run?.start_block ?? "?"} and ${s.end?.end_block ?? "?"}: ${s.reconciliation.chain_count} for $${s.reconciliation.chain_usd.toFixed(4)}. Ledger settled: ${s.reconciliation.ledger_count} for $${s.reconciliation.ledger_usd.toFixed(4)}. Matched: ${s.reconciliation.matched}. On chain only: ${s.reconciliation.chain_only}. Ledger only: ${s.reconciliation.ledger_only}. Gap: $${s.reconciliation.gap_usd.toFixed(4)}.`
-      : "Not yet run. `node scripts/walkabout.mjs reconcile <ledger>` reads the wallet's USDC transfers over the run's block range and states the gap in dollars, even when it is zero.",
-  );
+  if (s.reconciliation?.version === 2) {
+    const r = s.reconciliation;
+    lines.push(`Observed transfers: ${r.chain_count} for $${r.chain_usdc}. Exact transaction-and-terms matches: ${r.matched} for $${r.matched_usdc}. Matched settlements with reported delivery: ${r.settled_with_delivery}; without: ${r.settled_without_delivery}. Free-delivery responses (seller claim and no transfer in this window): ${r.free_deliveries_in_window}. Unresolved attempts: ${r.unknown_attempts}. Unmatched transfers: ${r.unmatched_transfers.length} for $${r.unmatched_usdc}.`);
+    lines.push(`Scan: ${r.scope?.network ?? "unstated"}, asset ${r.scope?.asset ?? "unstated"}, wallet ${r.scope?.wallet ?? "unstated"}, blocks ${r.scope?.from_block ?? "?"}–${r.scope?.to_block ?? "?"}; completed: ${r.scope?.complete === true}. Absence applies only to this completed scan window; it does not prove a payment can never settle later. Terms-only matches remain candidates, not confirmed purchases.`);
+  } else {
+    lines.push("Not yet run with evidence joins. `node scripts/walkabout.mjs reconcile <ledger>` reads transfers over the run's block range. Old reconciliation files must be regenerated; an HTTP-success total is not spend.");
+  }
   lines.push("");
   /*
    * WHAT A ZERO GAP IS WORTH, SAID BESIDE IT (2026-09-06).
@@ -592,7 +617,7 @@ export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
    * They were right, so the number now carries its own denominator.
    */
   lines.push(
-    "**What that gap establishes, and what it does not.** It establishes that this record agrees with the chain over this block range. It does not establish independence: the ledger and the reconciliation are one party's tooling reading one declared wallet in one run, so a defect common to both would survive a gap of zero unchanged. The stronger claim is a second instrument re-deriving these rows from the chain on its own, and this is not that. Every settled row carries its transaction hash, and rows whose receipt named none carry the authorization nonce the settlement spent, so anyone can be that second instrument without asking us for anything.",
+    "**What that gap establishes, and what it does not.** Exact matches associate a recorded transaction and its terms with a transfer in the declared scan. Unmatched rows and transfers remain gaps; equal totals alone do not establish agreement. It does not establish independence: the ledger and the reconciliation are one party's tooling reading one declared wallet in one run, so a defect common to both would survive a gap of zero unchanged. The stronger claim is a second instrument re-deriving these rows from the chain on its own, and this is not that. Transaction hashes and recorded authorization nonces let another instrument investigate unresolved associations without assuming that a successful response moved money.",
   );
   lines.push("");
   lines.push("## What this is not");
@@ -604,59 +629,12 @@ export function renderReport(summary, { ledgerPath = "ledger.jsonl" } = {}) {
   return lines.join("\n");
 }
 
-/**
- * Rule 5's other half: the chain is the record the ledger cannot
- * edit. Match every settled ledger row to a USDC transfer out of the
- * wallet by (payTo, atomic amount), greedily and once each; what is
- * left on either side is the gap, in dollars.
- */
-export function reconcile(ledgerEntries, transfers) {
-  const settled = ledgerEntries.filter(
-    (e) => e.kind === "attempt" && e.verdict === "settled",
-  );
-  const pool = transfers.map((t) => ({
-    to: String(t.to).toLowerCase(),
-    value: String(BigInt(t.value)),
-    txHash: t.txHash ?? null,
-    used: false,
-  }));
-  let matched = 0;
-  const ledgerOnly = [];
-  for (const row of settled) {
-    const want = pool.find(
-      (t) =>
-        !t.used &&
-        t.to === String(row.pay_to).toLowerCase() &&
-        t.value === String(BigInt(row.amount_atomic ?? "0")),
-    );
-    if (want) {
-      want.used = true;
-      matched += 1;
-    } else {
-      ledgerOnly.push({ url: row.url, pay_to: row.pay_to, amount_atomic: row.amount_atomic });
-    }
-  }
-  const chainOnly = pool.filter((t) => !t.used);
-  const usd = (atomic) => Number(BigInt(atomic)) / 1e6;
-  const ledgerUsd = settled.reduce((n, r) => n + usd(r.amount_atomic ?? "0"), 0);
-  const chainUsd = pool.reduce((n, t) => n + usd(t.value), 0);
-  return {
-    ledger_count: settled.length,
-    chain_count: pool.length,
-    matched,
-    ledger_only: ledgerOnly.length,
-    chain_only: chainOnly.length,
-    ledger_only_rows: ledgerOnly,
-    chain_only_rows: chainOnly.map(({ to, value, txHash }) => ({ to, value, txHash })),
-    ledger_usd: Number(ledgerUsd.toFixed(6)),
-    chain_usd: Number(chainUsd.toFixed(6)),
-    gap_usd: Number(Math.abs(chainUsd - ledgerUsd).toFixed(6)),
-  };
-}
+/** Chain reconciliation is independent of the historical HTTP verdict names. */
+export const reconcile = reconcileEvidence;
 
 /** Decode a USDC Transfer log into {to, value, txHash}. */
 export function transferFromLog(log) {
   const to = `0x${String(log.topics?.[2] ?? "").slice(-40)}`;
   const value = BigInt(log.data ?? "0x0").toString();
-  return { to, value, txHash: log.transactionHash ?? null };
+  return { to, value, txHash: log.transactionHash ?? null, ...(log.logIndex !== undefined ? { logIndex: log.logIndex } : {}) };
 }

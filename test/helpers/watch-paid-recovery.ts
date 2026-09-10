@@ -126,12 +126,20 @@ export function watchPaidRecovery(id: WatchItem): void {
   it(`${id}: discovery declares the signed commission before payment`, async () => {
     const api = object(await (await request("/openapi.json")).json());
     const schemas = object(object(api.components).schemas);
-    const proof = object(object(object(schemas.DeliveryEnvelope).properties).commission);
+    // Components are part of the contract; check the declared fields after resolving them.
+    const dereference = (schema: Record<string, unknown>) => {
+      if (typeof schema.$ref !== "string") return schema;
+      expect(schema.$ref).toMatch(/^#\//);
+      let node: unknown = api;
+      for (const part of schema.$ref.slice(2).split("/")) node = object(node)[part.replace(/~1/g, "/").replace(/~0/g, "~")];
+      return object(node);
+    };
+    const proof = dereference(object(object(object(schemas.DeliveryEnvelope).properties).commission));
     expect(proof.required).toEqual(expect.arrayContaining(["signed_payload", "signature", "public_key"]));
     const path = id === "standing_watch" ? "/api/watch/{watch_id}" : "/api/conformance-watch/{watch_id}";
     const response = object(object(object(object(api.paths)[path]).get).responses)["200"];
     const schema = object(object(object(object(response).content)["application/json"]).schema);
-    expect(object(schema.properties).commission).toEqual(proof);
+    expect(dereference(object(object(schema.properties).commission))).toEqual(proof);
   });
   for (const door of doors) for (const [rail] of laborNetworks().entries()) {
     for (const point of ["certificate-before", "certificate-after", "watch_record-before", "watch_record-after", "commission-signing", "publication-before", "publication-after", "response-before"]) {

@@ -367,3 +367,11 @@ describe("a claim that cannot be confirmed gives the money back", () => {
     expect(String(refusal)).toMatch(/could not be confirmed/);
   });
 });
+
+it('does not advertise an unusable credit lookup for a Solana payer', async()=>{
+  const result=await accrueCredit(testEnv,'DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBuMvMgE',1,new Date('2026-09-09T12:00:00Z'));
+  expect(result).not.toBeNull();
+  expect(result!.note).toContain('EVM');
+  expect(result!.note).not.toContain('/api/credit/DGxc');
+  expect(result!.note).not.toContain('every purchase');
+});
