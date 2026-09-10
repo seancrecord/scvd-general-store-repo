@@ -16,6 +16,8 @@
  *   SCVD_MCP_UPSTREAM  the door to forward to (default https://scvd.store/mcp/verifier)
  */
 import { createInterface } from "node:readline";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 /** Trailing slashes off an origin, without a regular expression over caller input. */
 function trimSlashes(value) {
   let end = String(value).length;
@@ -77,4 +79,12 @@ export function serve({ input = process.stdin, output = process.stdout, ...optio
   return lines;
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) serve();
+// npm starts the bin through a symlink. Compare filesystem identities;
+// interpolating a file URL also misreads a literal # in an install path.
+function isEntryPoint() {
+  if (!process.argv[1]) return false;
+  try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); }
+  catch { return false; } // Imported from an evaluator with no entry file.
+}
+
+if (isEntryPoint()) serve();

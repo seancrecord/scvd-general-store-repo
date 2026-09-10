@@ -31,7 +31,7 @@ build, it is on the roadmap.
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
   compact reader has shipped; remaining population coverage is ROADMAP VQ4.
-  The directory note was sent September 9; its methodology reply is pending.
+  The directory note was sent September 9; no methodology reply is recorded here.
 
 - **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
@@ -426,8 +426,8 @@ build, it is on the roadmap.
   this is measurement visibility, not independently verified organic demand.
   Its `settled_via` label is Coinbase. The previous 20:56 UTC reading was
   `unmeasured-network`; retain that dated history. The visible status gap
-  is closed, while the maintainer's methodology explanation remains pending.
-  This was a public listing read, not an inbox check, and does not establish
+  is closed. No methodology reply is recorded in this task; the keeper's
+  inbox has not been checked. This was a public listing read, and does not establish
   that the note caused the change. A later release-closeout request returned
   HTTP 403; the last successful reading above is retained, with no new
   measurement verdict inferred. Refused-read record:
@@ -831,12 +831,14 @@ Do not relitigate without you.
   Fresh registry installs match the reviewed bytes and verify their
   attestations. No press or credential update is needed for these releases.
   Receipts and exact checks: `DISTRIBUTION.md`.
-- **RULE — choose a distinct name for our preflight client before its
-  initial release.** npm's `x402-preflight` names another repository,
-  `Gareth1953/x402-preflight`; it is not ours. The corpus client has since
-  published; defects and MCP starter remain separate first-release work. Release preparation and
-  package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
-  must come from the current manifests, not the old numbers on this desk.
+- **Preflight name resolved for the adoption release, September 10.**
+  Continue with proposed `scvd-preflight`, accepted with the keeper's
+  instruction to complete adoption. The source directory stays
+  `x402-preflight/`; npm's `x402-preflight` belongs to another project.
+  Defects 0.13.0, MCP starter 0.1.0 and preflight 0.1.0 are now published
+  and verified against the reviewed archives, repository commit and
+  provenance runs. No keeper press or credential change remains.
+  `docs/ADOPTION_AND_LATENCY_2026-09.md` records the release checks.
 - **Tab registry press closed, checked September 10.** `scvd-tab`
   0.11.1 matches every published file in this tree. No Tab release
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.

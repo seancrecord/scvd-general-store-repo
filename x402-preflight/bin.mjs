@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * x402-preflight <url> [<url>…] [--fail-on not_ready,unreachable] [--base <origin>] [--json]
+ * scvd-preflight <url> [<url>…] [--fail-on not_ready,unreachable] [--base <origin>] [--json]
  * The deploy gate's law, from the command line. Exit 0 ready, 1 a
  * verdict in --fail-on, 2 refused before probing, 3 the store did not
  * answer.
@@ -21,7 +21,7 @@ for (let i = 0; i < argv.length; i += 1) {
   else urls.push(a);
 }
 if (urls.length === 0) {
-  process.stderr.write("usage: x402-preflight <url> [<url>…] [--fail-on not_ready,unreachable] [--base <origin>] [--json]\n");
+  process.stderr.write("usage: scvd-preflight <url> [<url>…] [--fail-on not_ready,unreachable] [--base <origin>] [--json]\n");
   process.exit(EXIT.usage);
 }
 const results = await preflightMany(urls, base ? { base } : {});

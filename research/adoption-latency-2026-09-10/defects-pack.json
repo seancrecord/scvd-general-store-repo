@@ -1,0 +1,101 @@
+[
+  {
+    "id": "scvd-defects@0.13.0",
+    "name": "scvd-defects",
+    "version": "0.13.0",
+    "size": 22802,
+    "unpackedSize": 73120,
+    "shasum": "363c093e1a601f71f0eec663741b278658c60087",
+    "integrity": "sha512-AnwcB8gAF9vcPF29oqXGFH/GE4oX+Ia+flglDFY8zXcl2YpaqLjA42OD25St+ASP8J1HkoFBgYnhNkT+K2Jiaw==",
+    "filename": "scvd-defects-0.13.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 2621,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 2272,
+        "mode": 420
+      },
+      {
+        "path": "defects.d.ts",
+        "size": 1556,
+        "mode": 420
+      },
+      {
+        "path": "defects.js",
+        "size": 3328,
+        "mode": 420
+      },
+      {
+        "path": "defects.json",
+        "size": 55093,
+        "mode": 420
+      },
+      {
+        "path": "example.mjs",
+        "size": 418,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/accepts-empty.json",
+        "size": 300,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/accepts-missing-asset.json",
+        "size": 558,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/answers-200.json",
+        "size": 335,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/body-offers.json",
+        "size": 1272,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/clean-402.json",
+        "size": 602,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/header-absent.json",
+        "size": 388,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/header-unparseable.json",
+        "size": 337,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/two-surfaces.json",
+        "size": 1095,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/wrong-version.json",
+        "size": 643,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1234,
+        "mode": 420
+      }
+    ],
+    "entryCount": 17,
+    "bundled": []
+  }
+]

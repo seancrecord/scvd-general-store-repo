@@ -507,7 +507,7 @@ src/
 verifier/         # x402-verify: MIT, zero deps, any issuer's artifacts
 signer/           # x402-sign: the issuing half — mints spec-conformant
                   # signed offers & receipts that x402-verify passes
-x402-preflight/   # x402-preflight: the free door check as a library and
+x402-preflight/   # scvd-preflight: the free door check as a library and
                   # a command, with the deploy gate's exit law
 corpus-client/    # scvd-corpus-client: the signed corpus, read as served
 defects/          # scvd-defects: the vocabulary as data, both halves of

@@ -449,7 +449,7 @@ async function enrich402Body(
           // here would pull observation engines into the small doors Worker.
           ...(item.sample_url ? {
             sample_url: `${base}${item.sample_url}`,
-            sample: { url: `${base}${item.sample_url}`, kind: "unsigned_specimen", price: "free", live_observation: false },
+            sample: { url: `${base}${item.sample_url}`, kind: item.sample_kind ?? "unsigned_specimen", price: "free", live_observation: false },
           } : {}),
           guarantee: GUARANTEE_BLOCK_TEXT,
           /**

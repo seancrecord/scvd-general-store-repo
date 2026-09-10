@@ -1,11 +1,11 @@
 {
-  "name": "x402-preflight",
+  "name": "scvd-preflight",
   "version": "0.1.0",
   "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command.",
   "type": "module",
   "main": "./x402-preflight.js",
   "types": "./x402-preflight.d.ts",
-  "bin": { "x402-preflight": "./bin.mjs" },
+  "bin": { "scvd-preflight": "./bin.mjs" },
   "exports": { ".": { "types": "./x402-preflight.d.ts", "default": "./x402-preflight.js" } },
   "files": ["x402-preflight.js", "x402-preflight.d.ts", "bin.mjs", "fixtures/", "example.mjs", "CHANGELOG.md", "README.md", "LICENSE"],
   "engines": { "node": ">=18.17.0" },

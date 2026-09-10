@@ -33,6 +33,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Benching is real",
     ],
     sample_url: "/luckies/sample.svg",
+    sample_kind: "visual_preview",
   },
   {
     id: "coffees_for_closers",

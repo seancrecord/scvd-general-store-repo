@@ -14,13 +14,14 @@ npm install scvd-defects
 ## Use
 
 ```js
-import { defectClass, defectsBySignal, remediationFor, byDetectability, isStale } from "scvd-defects";
+import { VOCABULARY_VERSION, defectClass, defectsBySignal, remediationFor, byDetectability, isStale } from "scvd-defects";
 
 defectClass("no-402");                 // the class, whole
 defectsBySignal("accepts");            // every class that check name explains (two)
 remediationFor("wrong-network");       // { operator, buyer, definition_url }
 byDetectability().paid;                // the classes only a settled payment reveals
-await isStale();                       // { stale, snapshot: "10", live: "…" }
+VOCABULARY_VERSION;                    // the bundled vocabulary version
+await isStale();                       // { stale, snapshot, live }
 ```
 
 `defects.json` is a snapshot of `https://scvd.store/defects.json` cut
@@ -28,7 +29,7 @@ from the store's own source. The live document is the authority;
 definitions are never edited in place, so a snapshot is never wrong
 about its own version, only possibly behind, and `isStale()` says
 which. The package's minor version is the vocabulary version it
-carries: 0.10.x is vocabulary v10.
+carries; read `VOCABULARY_VERSION` for this snapshot's version.
 
 ## The fixtures
 
@@ -47,7 +48,7 @@ never appears here. The names are CC BY 4.0; the code is MIT.
 
 ## Versioning
 
-The minor version tracks the vocabulary version (0.10.x = v10);
+The minor version tracks the vocabulary version;
 patches fix the package, never a definition. Versions are immutable
 once published. The dated record is `CHANGELOG.md`; the vocabulary's
 own changelog rides inside `defects.json`.
