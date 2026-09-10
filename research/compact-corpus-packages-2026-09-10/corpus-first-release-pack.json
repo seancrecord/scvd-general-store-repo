@@ -1,0 +1,49 @@
+{
+  "id": "scvd-corpus-client@0.1.0",
+  "name": "scvd-corpus-client",
+  "version": "0.1.0",
+  "size": 5404,
+  "unpackedSize": 13708,
+  "shasum": "901fe2597a907a9c164309dd5245b1514dd83d95",
+  "integrity": "sha512-40frMC8RsUcaCY6bUCakX7umELL6M/IYWmp9/ZANb2Dr85N6GCbFdQfDMY+9+22YJ1ON0XW5Q8HiqVb84bAoPg==",
+  "filename": "scvd-corpus-client-0.1.0.tgz",
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "size": 687,
+      "mode": 420
+    },
+    {
+      "path": "LICENSE",
+      "size": 1068,
+      "mode": 420
+    },
+    {
+      "path": "README.md",
+      "size": 3928,
+      "mode": 420
+    },
+    {
+      "path": "corpus-client.d.ts",
+      "size": 1391,
+      "mode": 420
+    },
+    {
+      "path": "corpus-client.js",
+      "size": 5084,
+      "mode": 420
+    },
+    {
+      "path": "example.mjs",
+      "size": 513,
+      "mode": 420
+    },
+    {
+      "path": "package.json",
+      "size": 1037,
+      "mode": 420
+    }
+  ],
+  "entryCount": 7,
+  "bundled": []
+}

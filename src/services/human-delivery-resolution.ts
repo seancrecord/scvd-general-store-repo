@@ -20,10 +20,9 @@ export async function resolveHumanDelivery(env: Env, transaction: string, outcom
   const refused = (refusal: string) => ({ ok: false as const, refusal });
   if (!input.network || !intent.payer || intent.transaction !== transaction ||
     !Number.isFinite(intent.paid_usdc) || intent.paid_usdc <= 0 || !Number.isFinite(Date.parse(intent.settled_at))) {
-    return refused("A human resolution needs the original payment identity, amount, and network. Keep the obligation open while those records are recovered.");
+    return refused("A purchase resolution needs the original payment identity, amount, and network. Keep the obligation open while those records are recovered.");
   }
   const item = getMenuItem(intent.path.replace(/^\/api\/buy\//, ""));
-  if (!item || item.fulfillment !== "human_queue") return refused("The original human product is unavailable.");
   const network = input.network;
   if (network === SOLANA_NETWORK ? !isSolanaSignature(transaction)
     : !evmChainOf(network) || !/^0x[0-9a-f]{64}$/i.test(transaction)) {
@@ -43,6 +42,9 @@ export async function resolveHumanDelivery(env: Env, transaction: string, outcom
     }
     let evidence: Record<string, unknown>;
     if (outcome === "fulfilled_by_hand") {
+      // A current page, retry input or certificate is not the historical good.
+      // Refund evidence remains usable even after a product leaves the shelf.
+      if (!item || item.fulfillment !== "human_queue") return refused("The original good cannot be authenticated by this resolution path. Keep the obligation open or provide a finalized full refund.");
       if (!input.order_id) return refused("Fulfillment needs the completed original order ID; a preview or certificate alone is not the work.");
       const work = await recoverLegacyHumanOrder(env, item, { path: intent.path, transaction, network, payer: intent.payer }, intent);
       if (!work || work.order_id !== input.order_id || work.status !== "completed") return refused("That completed order cannot be authenticated as the original paid work.");

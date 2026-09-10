@@ -1,6 +1,8 @@
 import { canonicalAddress } from "@/lib/addresses";
 import type { Env } from "@/types";
 
+// The original human-resolution names and coordinator keys are retained so
+// historical refund claims share one reuse guard across every paid product.
 export type HumanResolutionOutcome = "fulfilled_by_hand" | "refunded" | "house_absorbed";
 export interface HumanResolutionRecord {
   statement: {

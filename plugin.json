@@ -14,12 +14,10 @@
     "x402",
     "signed-artifacts",
     "verification",
-    "agent-memory",
-    "human-labor",
+    "attestation",
+    "conformance",
     "mcp",
     "usdc",
-    "payments",
-    "conformance",
-    "attestation"
+    "payments"
   ]
 }

@@ -1,0 +1,50 @@
+{
+  "checked_at": "2026-09-10T16:06:25.148Z",
+  "name": "scvd-cli",
+  "version": "0.3.0",
+  "repository": {
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "type": "git",
+    "directory": "cli"
+  },
+  "dist": {
+    "shasum": "b3132b27f01f4ec0f55f9d16ded90562b957c65b",
+    "tarball": "https://registry.npmjs.org/scvd-cli/-/scvd-cli-0.3.0.tgz",
+    "fileCount": 5,
+    "integrity": "sha512-m5mc0hJ6Df7R6YYZO4no3GTbBzdbadfuCSXfBR7WhrfQfDwk6+IXnxYP80mWitofNy7MomW7x31BfiE0z3MUMA==",
+    "signatures": [
+      {
+        "sig": "MEQCIBlnolhoH43KIOflTAi/shmjfieTVv3GRm6kMNTIWJT2AiAHltBq7di8jMCmuQbyzp47HL524w0FSTaPsLcivs+ZlQ==",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-cli@0.3.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 49793
+  },
+  "reviewed_archive_integrity": "sha512-m5mc0hJ6Df7R6YYZO4no3GTbBzdbadfuCSXfBR7WhrfQfDwk6+IXnxYP80mWitofNy7MomW7x31BfiE0z3MUMA==",
+  "installed_files_match": true,
+  "audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation",
+  "exercise": {
+    "kind": "one live compact page",
+    "format": "scvd-corpus-index/v1",
+    "has_more": true,
+    "verification": "Not performed. This index reads KV metadata (legacy embedded records are projected); it does not read R2 bodies, verify signatures, chain links or Bitcoin proofs. Fetch and verify each linked snapshot separately.",
+    "completeness": "Listed keys in this page, including unreadable rows. Follow next until null; has_more with no next is incomplete. KV pagination is not a point-in-time inventory and cannot prove no records were withheld."
+  },
+  "provenance_source": {
+    "workflow": {
+      "ref": "refs/heads/codex/compact-corpus-packages",
+      "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+      "path": ".github/workflows/publish-npm.yml"
+    },
+    "commit": "680c5c051a89df85a18d459c836cb2a9d8f59e97",
+    "run": 34499849387,
+    "subject_matches_reviewed_archive": true,
+    "signature_verification": "npm audit signatures verified the registry provenance attestation before this source/subject check."
+  }
+}

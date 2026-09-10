@@ -75,6 +75,9 @@ function usage() {
   scvd fresh-set                This week's working x402 doors.
   scvd corpus [--since <week>]  The weekly signed census index; with
                                 --since, what moved since that week.
+  scvd corpus-index [--limit <n>] [--cursor <cursor>]
+                                One compact metadata page, with its gaps
+                                and next link. No snapshots fetched.
   scvd host <host>              Every signed round that met a host,
                                 the gaps by reason, the tier, the cite.
   scvd cite <host> [--week <w>] The citation for a host's row — the
@@ -553,6 +556,22 @@ const COMMANDS = {
     return dump(result);
   },
 
+  async "corpus-index"(args, options) {
+    if (args.length || options.week || options.cap !== undefined) {
+      fail("scvd corpus-index [--limit <n>] [--cursor <cursor>] — one metadata page; use corpus --since for a diff.");
+    }
+    const query = new URLSearchParams();
+    if (options.limit !== undefined) query.set("limit", options.limit);
+    if (options.cursor !== undefined) query.set("cursor", options.cursor);
+    const suffix = query.toString() ? `?${query}` : "";
+    // Returning next is deliberate: another page or snapshot is another caller decision.
+    const result = await call(`/corpus/index.json${suffix}`);
+    if (result.status < 400 && (result.json === null || typeof result.json !== "object" || Array.isArray(result.json))) {
+      fail("The compact corpus page did not return a JSON object.", EXIT.unreachable);
+    }
+    return dump(result);
+  },
+
   async host(args, options) {
     const host = args[0];
     if (!host) fail("scvd host <host> — the hostname, e.g. example.com.");
@@ -768,17 +787,27 @@ async function main(argv) {
   const options = { json: false };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "--json") options.json = true;
+    if (argument === "--json") { options.json = true; continue; }
     else if (argument === "--since" || argument === "--week") {
       const next = argv[(index += 1)];
       if (!next || !/^[0-9]{4}-W[0-9]{2}$/.test(next)) {
         fail(`${argument} wants a signed week as the corpus spells it, e.g. 2026-W34.`);
       }
       options.week = next;
+      continue;
     } else if (argument === "--base") {
       const next = argv[(index += 1)];
       if (!next) fail("--base wants a URL after it.");
       BASE = next.replace(/\/+$/, "");
+      continue;
+    }
+    if (argument === "--limit" || argument === "--cursor") {
+      const next = argv[(index += 1)];
+      if (!next || next.startsWith("--")) fail(`${argument} wants a value after it.`);
+      if (argument === "--limit" && (!/^\d+$/.test(next) || !Number.isSafeInteger(Number(next)) || Number(next) < 1)) {
+        fail("--limit wants a positive whole number; the server sets the maximum.");
+      }
+      options[argument.slice(2)] = next;
       continue;
     }
     if (argument === "--cap") {
@@ -797,6 +826,9 @@ async function main(argv) {
   if (!command) {
     process.stdout.write(usage());
     return EXIT.ok;
+  }
+  if (command !== "corpus-index" && (options.limit !== undefined || options.cursor !== undefined)) {
+    fail("--limit and --cursor belong to corpus-index.");
   }
   const handler = COMMANDS[command];
   if (!handler) {

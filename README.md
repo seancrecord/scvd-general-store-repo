@@ -95,7 +95,10 @@ What people arrive here to do, and where each door is:
   is `scvd preflight` from [`scvd-cli`](https://www.npmjs.com/package/scvd-cli).
 - **Read the corpus** — weekly signed observations of the x402
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
-  [scvd.store/corpus](https://scvd.store/corpus).
+  [scvd.store/corpus](https://scvd.store/corpus). For bounded metadata
+  discovery, use the [CLI](cli/README.md) or the published
+  [corpus client](corpus-client/README.md); both preserve gaps and leave
+  signature and timestamp verification explicit.
 - **Score, rank or list x402 doors?** Take the evidence and leave the
   opinion: [scvd.store/scorers](https://scvd.store/scorers) is the
   room for systems that consume this corpus. Pull it, verify it
@@ -791,6 +794,13 @@ are not:
   for the store's x402 doors, opened by the keeper 2026-09-10. Same
   edge as the row above: an endpoint index proves the doors were
   found, nothing about the goods behind them.
+- **PublishYourSaaS** — [a launch-directory listing](https://publishyoursaas.com/listing/scvd-store)
+  that opens with the sixty words' first sentence, verbatim; opened
+  by the keeper 2026-09-10. A listing and nothing else.
+- **AI Tools Capital** — [a review-shaped page](https://aitoolscapital.com/tools/scvd-general-store/)
+  ("Worth It?") in an AI-tools directory, opened by the keeper
+  2026-09-10. Its verdict is its own; the row records that the page
+  exists and what it leads with.
 - **Seen, no page to link** — the
   [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
   servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)

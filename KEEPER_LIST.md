@@ -30,17 +30,17 @@ build, it is on the roadmap.
   all six listed snapshots served completed proofs at 14:32 UTC, verified
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
-  reader release is complete; remaining coverage work and OpenAPI headroom
-  are ROADMAP VQ4–VQ5. The keeper confirmed the directory note sent; await
-  its reply as recorded below.
+  compact reader has shipped; remaining population coverage is ROADMAP VQ4.
+  The directory note was sent September 9; its methodology reply is pending.
 
-- **x402-verify 1.3.0 published (2026-09-09).** A fresh registry installation
-  verified all six live corpus snapshots at 20:03 UTC, with provenance checked.
+- **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
+  npm with verified provenance. A registry installation verified the
+  saved receipt and reported its missing evidence; the subsequent 1.3.0
+  install also verified six live corpus snapshots. The old 1.1.0 press
+  is closed by this release; details and workflow receipt: DISTRIBUTION.md.
   The original certificate census's final Bitcoin proof was independently
-  verified at 23:18 UTC: 262 of 262, with signed bytes unchanged. The limits
-  and retained-evidence follow-through are in
-  `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`; DISTRIBUTION.md holds
-  the package release record.
+  verified at 23:18 UTC: 262 of 262, with signed bytes unchanged. Retained
+  evidence and its limits: `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`.
 
 - **Browser till purchase delivered (2026-09-06).** The keeper reported
   the delivered Small Blessing and full till reading. Certificate
@@ -428,7 +428,11 @@ build, it is on the roadmap.
   `unmeasured-network`; retain that dated history. The visible status gap
   is closed, while the maintainer's methodology explanation remains pending.
   This was a public listing read, not an inbox check, and does not establish
-  that the note caused the change. Do not send a duplicate.
+  that the note caused the change. A later release-closeout request returned
+  HTTP 403; the last successful reading above is retained, with no new
+  measurement verdict inferred. Refused-read record:
+  `research/compact-corpus-packages-2026-09-10/directory-reread.json`.
+  Do not send a duplicate.
   Data: x402-list.com (CC BY 4.0). Current capture:
   `research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
   Original receipt evidence and the sent note:
@@ -822,17 +826,20 @@ Do not relitigate without you.
   first recording freezes what is true; the alarm only fires when a
   row later moves DOWN from what it recorded.
 
-- **CLI 0.2.0 press closed, checked September 10.** Its published
-  executable matches the repository. The README correction is a later
-  documentation patch; no repeat publish of the immutable version.
+- **Package presses closed September 10.** CLI 0.3.0, Sign 1.0.3
+  and corpus client 0.1.0 published through the provenance workflow.
+  Fresh registry installs match the reviewed bytes and verify their
+  attestations. No press or credential update is needed for these releases.
+  Receipts and exact checks: `DISTRIBUTION.md`.
 - **RULE — choose a distinct name for our preflight client before its
   initial release.** npm's `x402-preflight` names another repository,
-  `Gareth1953/x402-preflight`; it is not ours. The other three companion
-  packages still returned 404 on September 10. Release preparation and
+  `Gareth1953/x402-preflight`; it is not ours. The corpus client has since
+  published; defects and MCP starter remain separate first-release work. Release preparation and
   package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
   must come from the current manifests, not the old numbers on this desk.
-- **The tab registry press** via the `tab` input on the publish
-  workflow (V4).
+- **Tab registry press closed, checked September 10.** `scvd-tab`
+  0.11.1 matches every published file in this tree. No Tab release
+  is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
 ### Decisions that unblock the roadmap
 
@@ -1086,6 +1093,57 @@ Do not relitigate without you.
   each of the two new pages actually measures, so the row can say
   it in their words; and whether either offers a claim or refresh
   route. Indexing only, not an endorsement or proof of purchases.
+- **PublishYourSaaS, AI Tools Capital, Cursor re-read.** DONE
+  2026-09-10 (second press of the day): two more keeper-supplied
+  pages are trust rows —
+  https://publishyoursaas.com/listing/scvd-store (opens with the
+  sixty words' first sentence) and
+  https://aitoolscapital.com/tools/scvd-general-store/ (a
+  review-shaped page). The Cursor Directory page you pasted reads
+  right where it derives from this tree: both MCP servers carry
+  the exact configs `mcp.json` declares, one skill, the
+  evidence-observatory lead. Its tag cloud is a cached snapshot
+  (clawdhub, openclaw, personal-agents, marketplace beside the
+  current topics) — nothing to change here; it lags until their
+  rescan. Row refreshed. Neither new host answers the sandbox;
+  rows say what the search snippets showed and no more.
+- **The listing scan (2026-09-10).** LOOK, five minutes each,
+  in this order; each is a register row and becomes a trust row
+  the day you open it (`research/listing-scan-2026-09-10.md`
+  has the snippets):
+  1. https://agenteconomy.report/s/scvd.store — rates us CCC
+     "declining": 6 organic paying agents, $1 settled, 66%
+     uptime. The till and x402-list's 100% row disagree with
+     it. Read how it counts before deciding who is wrong.
+  2. https://vouch-protocol.com/agent-trust-index/ — grade A,
+     100, on did:web + Ed25519 JWK. One table, no page of ours.
+  3. https://x402lens.com/services/scvd-general-store-scvd-store
+     — per-door listing; its facilitator page puts us at
+     $777.77 routed through Coinbase. Their denominator.
+  4. https://trylaunch.ai/launch/scvd-store — posted by
+     "davidaidirectories", not you. Is that one of the paid
+     directories? The row does not know.
+  5. https://whattheai.tech/tools/scvd-store — reads us as
+     consumer-trend analytics. Wrong; find the correction route.
+  6. https://talkshi.com/agent/x402-scvd-store — a marketplace
+     that routes x402 calls through its own account and carries
+     reviews. What does our profile say?
+  7. https://www.influzer.ai/mcp/seancrecord-scvd-general-store-repo
+     — a mirror of mcpservers.org; its second entry still
+     carries the July name.
+  8. https://pluginbench.com/mcp/store.scvd/general-store —
+     guessed from their pattern; we appear in the rails of
+     other servers' pages with the August text.
+- **`STORE_TAGS` said agent-memory and human-labor.** RULED
+  2026-09-10 ("this sounds like we need to update it"): the two
+  July tags came out of `src/store/metadata.ts` and `plugin.json`,
+  and `attestation` and `conformance` went in — the nouns the
+  sixty words and the registry description lead with. Still five,
+  the Bazaar payload cap. What reads them: the Bazaar registration
+  (re-registers on the next press), the ARD catalog and the
+  well-known files (live on deploy), and the plugin keywords
+  (Cursor and the plugin directories pick them up on rescan).
+  LOOK after the deploy: `/.well-known/x402` carries the five.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.

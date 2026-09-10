@@ -1,4 +1,5 @@
 import { paymentMethod, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { beforeYouStartSection, spendCapCounts } from "@/lib/before-you-start";
 import { buyerQuickStart } from "@/lib/buyer-contract";
 import { Hono } from "hono";
 import { askedForBlock } from "@/store/copy/asked-for";
@@ -9,10 +10,8 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
-import { CLI_INSTALL, CLI_PUBLISHED, CLI_SOURCE_URL } from "@/store/cli";
-import { MENU_ITEMS, STORE_METADATA } from "@/store";
-import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
-import { priceTiersUsdc } from "@/lib/payments";
+import { STORE_METADATA } from "@/store";
+import { CLIENT_CAP_LABEL } from "@/lib/client-spend-cap";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -48,12 +47,11 @@ export const agentsMdRoutes = new Hono<HonoEnv>();
  * exported constant, the count from this store's own shelf. Neither
  * can go stale without the other moving with it, which is the only
  * reason a figure like this is worth printing in a manual at all.
+ * The counting lives in before-you-start.ts so the checklist above
+ * and this paragraph can never disagree about the figure.
  */
 function spendCapParagraph(): string {
-  const blocked = MENU_ITEMS.filter(
-    (item) => readAgainstCap(priceTiersUsdc(item))?.blocked === true,
-  ).length;
-  const priced = MENU_ITEMS.filter((item) => item.price_usdc > 0).length;
+  const { blocked, priced } = spendCapCounts();
   return `   **Before you spend a round trip on an expensive door:** the stock
    x402 client (\`@x402/core\`) applies a default ceiling of
    ${CLIENT_CAP_LABEL} per payment, inside \`selectPaymentRequirements\`
@@ -126,24 +124,15 @@ wallet to walk other operators' x402 doors (board JSON at
 ${base}/api/bounties; the terms are on the board and further down
 this file).
 
+${beforeYouStartSection(base, paymentConfig)}
+
 ## Installation
 
 Nothing to install for the store itself: every interaction is one
 plain HTTPS request to a public endpoint — no account, no key, no SDK
 required. The two purchasing flows below are the whole integration.
-
-Optional local tools, for builders who want them:
-
-- **scvd-tab** — the running account of what your agent signs up for
-  (local, append-only, MIT): \`npm i -g scvd-tab\`
-- **MCP stdio bridge** — for hosts that speak stdio rather than
-  Streamable HTTP: \`bin/scvd-mcp-bridge.mjs\` in the repo, pointed at
-  ${base}/mcp.
-${
-  CLI_PUBLISHED
-    ? `- **The scvd CLI** — the free instruments from a terminal: \`${CLI_INSTALL}\``
-    : `- **The scvd CLI** — the free instruments from a terminal; not yet on npm (the publish is the keeper's hand and has not run — no page here hands you an install command that fails). Source, runnable today: ${CLI_SOURCE_URL}`
-}
+The optional local tools, for builders who want them, are listed once
+under "Before you start" above.
 
 ## Usage: purchasing flow (HTTP)
 

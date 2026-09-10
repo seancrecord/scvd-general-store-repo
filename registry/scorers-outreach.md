@@ -27,12 +27,14 @@ joins or leaves.
 | [Aegis](https://borisinc.com) | — |
 | [Agenstry](https://agenstry.com/agents/scvd.store) | hello@agenstry.com |
 | [Agent Catalog](https://agentcatalog.com/publishers/scvd.store?q=) | — |
+| [Agent Economy Report](https://agenteconomy.report/s/scvd.store) | — |
 | [Agent Identity Registry](https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR) | https://agentidentityregistry.org/contact |
 | [Agent Plugins Directory](https://agentpluginsdirectory.com/plugins/scvd-general-store) | info@ellelion.com |
 | [agent-tools.cloud](https://agent-tools.cloud/services/scvd-store-bazaar) | https://agent-tools.cloud/about |
 | [AgentAge Catalog](https://catalog.agentage.io/mcp/store-scvd-general-store) | support@agentage.io |
 | [AgentBiz](https://agentbiz.mysterio.cloud) | — |
 | [agentic.market](https://agentic.market/services/scvd-store) | https://agentic.market/about |
+| [AI Tools Capital](https://aitoolscapital.com/tools/scvd-general-store/) | — |
 | [Audit Tools](https://audit-tools.ai) | — |
 | [Bounty Truth API](https://happybirthday.digitalshop.xin/bounty-truth/guide.md) | — |
 | [Butterfly Delta Order Preflight](https://butterflydelta.com) | — |
@@ -59,8 +61,10 @@ joins or leaves.
 | [HexScan](https://hexscan.xyz) | glm-5.2@basecradle.com |
 | [HostDeFi Token Risk API](https://hostdefi.com) | — |
 | [IBANforge](https://ibanforge.com) | support@ibanforge.com |
+| [Influzer](https://www.influzer.ai/mcp/seancrecord-scvd-general-store-repo) | — |
 | [IntentFence](https://agentpass-protocol.rmalka06.chatgpt.site) | — |
 | [KHOTEM — Cryptographic Witness](https://khotem.com) | — |
+| [Launch AI](https://trylaunch.ai/launch/scvd-store) | — |
 | [Lazaretto](https://lazaretto.dev) | contact@lazaretto.dev |
 | [LedgerProof Settlement Army](https://ledgerproofhq.io) | — |
 | [Lightnow](https://lightnow.ai/servers/store.scvd/general-store/versions) | https://lightnow.ai/contact |
@@ -85,6 +89,7 @@ joins or leaves.
 | [Permit Verdict Settlement Oracle](https://permitverdict.com/developers) | support@permitverdict.com |
 | [pkgproof](https://pkgproof.net) | — |
 | [probe402](https://probe402.com) | hello@probe402.com |
+| [PublishYourSaaS](https://publishyoursaas.com/listing/scvd-store) | — |
 | [PulseFeed — x402 Trust & Safety Oracle](https://pulsefeed.dev) | nikolife2016@gmail.com |
 | [RattlerAI](https://rattler.lonestaroracle.xyz) | — |
 | [robinsaige.com](https://robinsaige.com/s/store.scvd/general-store) | — |
@@ -102,6 +107,7 @@ joins or leaves.
 | [Spoolis](https://spoolis.com) | — |
 | [StillOS Notary](https://nolawealthfinancial.com) | https://nolawealthfinancial.com/about/ |
 | [Survival Colony — GitHub Opportunity Due-Diligence](https://185-70-184-213.sslip.io) | — |
+| [Talkshi](https://talkshi.com/agent/x402-scvd-store) | — |
 | [TinyOps Automation Integration Preflight](https://tinyopsstudio.com/automation-preflight-api.html) | https://tinyopsstudio.com/support |
 | [token-risk](https://5-9-107-124.nip.io) | — |
 | [toll402](https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c) | https://toll402.com/contact |
@@ -113,7 +119,10 @@ joins or leaves.
 | [Vianerds Page Signal Audit](https://vianerds.com/x402/) | — |
 | [Vibes-Coded Agent Tool API](https://vibes-coded.com) | — |
 | [VirtualSMS](https://virtualsms.io) | — |
+| [Vouch Protocol](https://vouch-protocol.com/agent-trust-index/) | — |
 | [Watchtower](https://watchtower-api.com) | — |
+| [WhatTheAI](https://whattheai.tech/tools/scvd-store) | — |
+| [x402 Lens](https://x402lens.com/services/scvd-general-store-scvd-store) | — |
 | [x402 Trust Prober](https://x402.fuchss.app) | — |
 | [x402-bazaar](https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7) | — |
 | [x402-list](https://x402-list.com) | info@x402-list.com |

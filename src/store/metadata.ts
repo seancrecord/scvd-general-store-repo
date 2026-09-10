@@ -97,6 +97,17 @@ export const DEFAULT_WEEK_NOTE =
  * TAGS: five maximum, and they are a machine's filter, not a shelf
  * sign — so they say what an agent can get here, in the vocabulary an
  * agent would search, and nothing about how the place feels.
+ *
+ * ⚑ RULED 2026-09-10: "agent-memory" and "human-labor" came out. Both
+ * named July goods (the memory anchor, the human-task shelf), and
+ * every registry that reads tags — the Bazaar registration, the ARD
+ * catalog, the well-known files, plugin.json's keywords — was still
+ * filing the store under them a month after the shelf led with
+ * observation. "attestation" and "conformance" replace them: the two
+ * nouns the sixty words and the registry description lead with, and
+ * the two an agent searching for what this store now sells would
+ * type. Still five, because the Bazaar payload schema carries five
+ * (test/two-ceilings.spec.ts reads the cap out of the package).
  */
 export const STORE_SERVICE_NAME = "SCVD General Store";
 
@@ -104,6 +115,6 @@ export const STORE_TAGS = [
   "x402",
   "signed-artifacts",
   "verification",
-  "agent-memory",
-  "human-labor",
+  "attestation",
+  "conformance",
 ] as const;

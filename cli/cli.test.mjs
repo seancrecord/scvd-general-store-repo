@@ -75,6 +75,7 @@ test("names every command in the help, so nothing ships unfindable", async () =>
     "onpage",
     "fresh-set",
     "corpus",
+    "corpus-index",
     "host",
     "cite",
     "reproduce",
@@ -511,4 +512,70 @@ test("host prints the store's cite line when the row carries one", async () => {
     json: { rounds_probed: 1, rounds_since_first_sighting: 1, rounds_gapped: 0, tier: { line: "observed — 1 of 1" }, timeline: [], cite: "scvd.store, host history door.example, observed t; ed25519-signed, key at k; bytes at u." },
   }));
   assert.match(host.stdout, /cite: scvd.store, host history door.example/);
+});
+
+
+test("compact corpus reads exactly one page, preserves gaps, and encodes the caller's cursor", async () => {
+  const page = { format: "scvd-corpus-index/v1", entries: [{ sequence: 7, status: "unreadable" }], listed: 1, unreadable: 1, has_more: true, next: "https://do-not-follow.invalid/next", verification: "Not performed.", completeness: "A page is not an inventory.", corrections: { url: "/corrections" } };
+  const seen = [];
+  const result = await run(["--json", "corpus-index", "--limit", "1", "--cursor", "a+/=&? 雪"], (request) => {
+    seen.push(request);
+    return { json: page };
+  });
+  assert.equal(result.code, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), page);
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].method, "GET");
+  const url = new URL(seen[0].url, "https://fixture.invalid");
+  assert.equal(url.pathname, "/corpus/index.json");
+  assert.deepEqual([...url.searchParams], [["limit", "1"], ["cursor", "a+/=&? 雪"]]);
+});
+
+test("compact corpus defaults to the server's page limit and preserves incomplete pagination", async () => {
+  let path;
+  const page = { entries: [], listed: 0, unreadable: 0, has_more: true, next: null };
+  const result = await run(["corpus-index"], (request) => { path = request.url; return { json: page }; });
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(path, "/corpus/index.json");
+  assert.deepEqual(JSON.parse(result.stdout), page);
+});
+
+test("compact corpus refuses invalid flags before a request and preserves server refusals", async () => {
+  for (const args of [["--limit"], ["--limit", "0"], ["--limit", "1.5"], ["--limit", "9007199254740992"], ["--cursor"], ["--cursor", ""], ["--since", "2026-W34"], ["surprise"]]) {
+    let calls = 0;
+    const result = await run(["corpus-index", ...args], () => { calls++; return { json: {} }; });
+    assert.equal(result.code, 2, JSON.stringify(args));
+    assert.equal(calls, 0);
+  }
+  for (const status of [400, 404, 429, 503]) {
+    const refusal = { error: "Cannot return this page.", retry_after: 30 };
+    const result = await run(["corpus-index"], () => ({ status, json: refusal }));
+    assert.equal(result.code, 1);
+    assert.deepEqual(JSON.parse(result.stdout), refusal);
+  }
+});
+
+
+test("whole corpus and diff keep their endpoints and exact JSON with flags in either position", async () => {
+  for (const args of [["corpus"], ["--json", "corpus"], ["--since", "2026-W34", "corpus"], ["corpus", "--since", "2026-W34"]]) {
+    const expected = args.includes("--since") ? "/corpus/diff.json?since=2026-W34" : "/corpus.json";
+    const body = { nested: { signature: "original", entries: [{ bytes: "雪" }] }, incomplete: true };
+    const seen = [];
+    const result = await run(args, (request) => { seen.push(request.url); return { json: body }; });
+    assert.equal(result.code, 0, result.stderr);
+    assert.deepEqual(seen, [expected]);
+    assert.deepEqual(JSON.parse(result.stdout), body);
+  }
+});
+
+test("compact corpus rejects unreadable successful pages and does not apply pagination to other commands", async () => {
+  for (const json of [null, [], false]) {
+    const result = await run(["corpus-index"], () => ({ json }));
+    assert.equal(result.code, 3);
+    assert.match(result.stderr, /JSON object/);
+  }
+  let calls = 0;
+  const result = await run(["corpus", "--limit", "1"], () => { calls++; return { json: {} }; });
+  assert.equal(result.code, 2);
+  assert.equal(calls, 0);
 });

@@ -243,4 +243,54 @@ export const REGISTER = [
     from: "claimBounty's `bounty.status !== \"open\"` refusal, taken against the status bountyStatusAt derives at read time",
     why: "Claim-shaped and correctly caught: it tells a stranger their money is gone. It is structural rather than dated — one bounty pays once because the claim door refuses any listing whose derived status is not open, and the row carries the door's own wording, which test/bounty-board.spec.ts drives against the live door. The day a spent listing could pay twice, the catalogue's drift test goes red before this sentence does.",
   },
+  /*
+   * THE NEIGHBOURS' PRICES, 2026-09-10. Five receipt rows on
+   * /neighbours quote a figure from somebody else's shelf: what a
+   * door charged on the day we paid it. The register's fourth
+   * resolution was written for exactly this — a fact about another
+   * surface that we can date and cannot bind. Each row already
+   * carries its purchase date in the `date` field; these entries
+   * repeat it as asOf so the resolution carries the date a reader
+   * was promised. Re-taking the observation means buying again.
+   */
+  {
+    id: "neighbours.clinic.per-line-price",
+    file: "src/store/neighbours.ts",
+    match: "sold at $0.001 per line up to $1.00 per article",
+    resolution: "external",
+    asOf: "2026-09-09",
+    why: "The Clinic's own price list, as their 402 quoted it on the purchase day. Their price, not ours; the row's date field is the record and the receipt is in the run ledger.",
+  },
+  {
+    id: "neighbours.sniperx.settled-then-404",
+    file: "src/store/neighbours.ts",
+    match: "token/price SETTLED $0.01 on-chain (real transaction), then 404'd",
+    resolution: "external",
+    asOf: "2026-09-09",
+    why: "What SniperX's token/price door charged and did on the purchase day: settled, then answered 404. A dated observation of one transaction, checkable against the chain, and covered by the page's corrections mailbox if the operator disputes it.",
+  },
+  {
+    id: "neighbours.sniperx.tuition",
+    file: "src/store/neighbours.ts",
+    match: "$0.01 of tuition: settle-after-validate is a real ordering property",
+    resolution: "external",
+    asOf: "2026-09-09",
+    why: "Our reading of the same $0.01, labelled as ours in the row. The figure is the door's price on the purchase day, same basis as the came_back line above it.",
+  },
+  {
+    id: "neighbours.suverse.data-tier",
+    file: "src/store/neighbours.ts",
+    match: "Bought three doors including a $0.05 data tier.",
+    resolution: "external",
+    asOf: "2026-09-09",
+    why: "SuVerse Pay's tier price as quoted on the purchase day. Theirs to change; the row's date says when we saw it.",
+  },
+  {
+    id: "neighbours.suverse.teaser-vs-data",
+    file: "src/store/neighbours.ts",
+    match: "the $0.001 doors work, but the real data doors are $0.05",
+    resolution: "external",
+    asOf: "2026-09-09",
+    why: "Two SuVerse Pay prices observed on the same walk, quoted so a buyer reads the price column before paying. Both are theirs; the date is ours.",
+  },
 ];

@@ -1,5 +1,6 @@
 import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
 import { buyerQuickStart } from "@/lib/buyer-contract";
+import { beforeYouStartSection } from "@/lib/before-you-start";
 import {
   CHEAPEST_ON_THE_SHELF,
   POSITION_NOT,
@@ -98,6 +99,8 @@ agents, and your human can read every receipt.
 **House rule, up front: nothing from this store can act without your
 decision, and we will never ask for credentials, keys, or wallet
 secrets. Anything that does either is not us.**
+
+${beforeYouStartSection(base, c.env)}
 
 ## Start here: testing an x402 client
 

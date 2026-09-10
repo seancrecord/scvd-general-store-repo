@@ -216,20 +216,21 @@ describe("the keeper's resolution (2026-08-04, the audit's first real catches)",
   it("turns an intent into a resolution record and stops the paging", async () => {
     const { openDeliveryIntent, auditDeliveries, resolveDeliveryIntent } =
       await import("@/services/delivery-audit");
-    const tx = "4pUYtest" + Math.random().toString(36).slice(2, 8);
+    const tx = `0x${crypto.randomUUID().replaceAll("-", "").repeat(2)}`;
+    const house = "0x1111111111111111111111111111111111111111";
     await openDeliveryIntent(testEnv, {
       path: "/api/buy/settlement_attestation",
       item_id: "settlement_attestation",
       settled_at: new Date(Date.now() - 60 * 60000).toISOString(),
       paid_usdc: 0.004,
       transaction: tx,
-      payer: "GUhrGGnu8fcaGpV7iL1XjA4P3XoM31auicMxd58NkL4J",
+      payer: house,
     } as never);
 
     const before = await auditDeliveries(testEnv);
     expect(before.undelivered.some((sale) => sale.transaction === tx)).toBe(true);
 
-    const result = await resolveDeliveryIntent(testEnv, tx, "house_absorbed");
+    const result = await resolveDeliveryIntent({ ...testEnv, HOUSE_WALLETS: house }, tx, "house_absorbed", { network: "eip155:8453" });
     expect(result.ok).toBe(true);
 
     const after = await auditDeliveries(testEnv);
@@ -322,54 +323,20 @@ describe("clicking the wrong outcome (live case, 2026-08-10)", () => {
     } as never);
   }
 
-  it("records the correction and KEEPS the outcome that was wrong", async () => {
+  it("keeps an old mistaken resolution until its correction has evidence", async () => {
     const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
-    const tx = "0xmisclick" + Math.random().toString(36).slice(2, 8);
+    const tx = `0x${crypto.randomUUID().replaceAll("-", "").repeat(2)}`;
     await openOne(tx);
-
-    await resolveDeliveryIntent(testEnv, tx, "fulfilled_by_hand");
-    const fix = await resolveDeliveryIntent(testEnv, tx, "refunded");
-    expect(fix.ok).toBe(true);
-
-    const record = await resolvedRow(tx);
-    // What actually happened to the money is what the record says now.
-    expect(record?.outcome).toBe("refunded");
-    expect(record?.corrected).toBe(true);
-    // And the mistake is still in there, not painted over.
-    expect((record?.superseded as Record<string, unknown>)?.outcome).toBe(
-      "fulfilled_by_hand",
-    );
-    expect(String(record?.note)).toContain("fulfilled_by_hand");
+    const intent = await testEnv.ORDERS.get(KV_KEYS.deliveryIntent(tx), "json");
+    const previous = { outcome: "fulfilled_by_hand", intent };
+    await testEnv.ORDERS.put(`delivery_resolved:${tx}`, JSON.stringify(previous));
+    await testEnv.ORDERS.delete(KV_KEYS.deliveryIntent(tx));
+    for (const outcome of ["refunded", "fulfilled_by_hand"] as const) {
+      const fix = await resolveDeliveryIntent(testEnv, tx, outcome);
+      expect(fix.ok).toBe(false);
+      expect(await resolvedRow(tx)).toEqual(previous);
+    }
+    expect((await resolvedRow(tx)).source).not.toBe("chain_reconciliation");
   });
 
-  it("never files a correction as a chain orphan", async () => {
-    // The specific lie the old code told: the intent DID exist, the
-    // first resolution simply consumed it.
-    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
-    const tx = "0xnotorphan" + Math.random().toString(36).slice(2, 8);
-    await openOne(tx);
-    await resolveDeliveryIntent(testEnv, tx, "fulfilled_by_hand");
-    await resolveDeliveryIntent(testEnv, tx, "refunded");
-
-    const record = await resolvedRow(tx);
-    expect(record?.source).not.toBe("chain_reconciliation");
-    expect(String(record?.note ?? "")).not.toContain("never existed");
-  });
-
-  it("treats clicking the same outcome twice as the no-op it is", async () => {
-    // Double-submit, back button, impatient reload. None of those are
-    // a correction, and none should manufacture a correction record.
-    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
-    const tx = "0xdoubleclick" + Math.random().toString(36).slice(2, 8);
-    await openOne(tx);
-    await resolveDeliveryIntent(testEnv, tx, "refunded");
-    expect((await resolveDeliveryIntent(testEnv, tx, "refunded")).ok).toBe(true);
-
-    const record = await resolvedRow(tx);
-    expect(record?.outcome).toBe("refunded");
-    expect(record?.corrected).toBeUndefined();
-    // The original intent survives the second click, which is the
-    // whole reason the no-op returns early instead of rewriting.
-    expect((record?.intent as Record<string, unknown>)?.paid_usdc).toBe(0.004);
-  });
 });

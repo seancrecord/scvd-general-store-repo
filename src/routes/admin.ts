@@ -2120,7 +2120,7 @@ adminRoutes.get("/admin/deliveries", async (c) => {
         ? `No undelivered sales. ${audit.in_flight} request(s) still inside the grace window, which is not a fault.`
         : `${audit.undelivered.length} SALE(S) TOOK MONEY AND DELIVERED NOTHING. Check each, then fulfil or refund by hand.`,
     what_to_do:
-      "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Fulfil it or refund it yourself, then delete the row.",
+      "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Recover the original work or refund it by hand, then submit the original payment network and completed-order or finalized-refund evidence to /admin/delivery/resolve. Keep the obligation open until the evidence is accepted.",
     grace_minutes: DELIVERY_GRACE_MINUTES,
     ...audit,
     blind_spot_this_covers:
@@ -2340,6 +2340,97 @@ adminRoutes.post("/admin/bounties/batch", async (c) => {
     `/admin/market?bounty_batch=${encodeURIComponent(batchNotice(result).slice(0, 900))}`,
     303,
   );
+});
+
+/**
+ * THE STANDING ORDER (2026-09-10). GET reads the plan and what this
+ * week has already committed; POST writes it. Setting `weeks` to 0
+ * retires it, which is the off switch and needs no separate door.
+ *
+ * The headroom figure is served beside the plan on purpose: it is the
+ * number that decides whether next week posts anything, and a keeper
+ * setting `per_week` without seeing it is guessing.
+ */
+adminRoutes.get("/admin/bounties/plan", async (c) => {
+  const { readBountyPlan, committedThisWeek } = await import(
+    "@/services/bounty-plan"
+  );
+  const [plan, committed] = await Promise.all([
+    readBountyPlan(c.env),
+    committedThisWeek(c.env, new Date()),
+  ]);
+  return c.json({ plan, this_week: committed });
+});
+
+adminRoutes.post("/admin/bounties/plan", async (c) => {
+  const { readBountyPlan, writeBountyPlan, committedThisWeek } = await import(
+    "@/services/bounty-plan"
+  );
+  const { BOUNTY_MAX_REWARD_USD } = await import("@/services/bounty-board");
+  const contentType = c.req.header("Content-Type") ?? "";
+  const body: Record<string, unknown> = contentType.includes("json")
+    ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+    : ((await c.req.parseBody({ all: true })) as Record<string, unknown>);
+  const weeks = Number.parseInt(String(body["weeks"] ?? ""), 10);
+  if (!Number.isFinite(weeks) || weeks < 0 || weeks > 52) {
+    return c.json({ error: "weeks must be a whole number from 0 to 52" }, 400);
+  }
+  if (weeks === 0) {
+    await writeBountyPlan(c.env, null);
+    return c.json({ ok: true, retired: true });
+  }
+  const perWeek = Number.parseInt(String(body["per_week"] ?? ""), 10);
+  const reward = Number.parseFloat(String(body["reward_usd"] ?? ""));
+  const tier = String(body["tier"] ?? "sprint");
+  if (!Number.isFinite(perWeek) || perWeek < 1 || perWeek > 10) {
+    return c.json({ error: "per_week must be between 1 and 10" }, 400);
+  }
+  if (!Number.isFinite(reward) || reward <= 0 || reward > BOUNTY_MAX_REWARD_USD) {
+    return c.json(
+      { error: `reward_usd must be between 0 and $${BOUNTY_MAX_REWARD_USD}` },
+      400,
+    );
+  }
+  if (tier !== "sprint" && tier !== "standard" && tier !== "long") {
+    return c.json({ error: "tier must be sprint, standard or long" }, 400);
+  }
+  const rawRails = body["rails"];
+  const rails = Array.isArray(rawRails)
+    ? rawRails.map(String).filter(Boolean)
+    : typeof rawRails === "string" && rawRails.trim()
+      ? rawRails.split(/[\n,]/).map((line) => line.trim()).filter(Boolean)
+      : [];
+  const rawAsks = body["asks"];
+  const asks = Array.isArray(rawAsks)
+    ? rawAsks.map(String)
+    : typeof rawAsks === "string" && rawAsks.trim()
+      ? rawAsks.split("\n").map((line) => line.trim()).filter(Boolean)
+      : [];
+  const existing = await readBountyPlan(c.env);
+  await writeBountyPlan(c.env, {
+    version: 1,
+    weeks_remaining: weeks,
+    per_week: perWeek,
+    reward_usd: reward,
+    tier,
+    rails,
+    ...(typeof body["note"] === "string" && body["note"] ? { note: body["note"] } : {}),
+    ...(asks.length > 0 ? { asks } : {}),
+    created_at: new Date().toISOString(),
+    ...(existing?.history ? { history: existing.history } : {}),
+  });
+  const committed = await committedThisWeek(c.env, new Date());
+  return c.json({
+    ok: true,
+    plan: await readBountyPlan(c.env),
+    this_week: committed,
+    /*
+     * The keeper asked for N a week; say plainly how many this week
+     * can actually pay for, because the plan will quietly post fewer
+     * and it should not be a surprise when it does.
+     */
+    affordable_this_week: Math.floor(committed.headroom / reward),
+  });
 });
 
 /**
