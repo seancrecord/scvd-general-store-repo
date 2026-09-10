@@ -1,3 +1,4 @@
+import { patronageCoordinator, type PreparedPatronage } from "@/services/patronage-recovery";
 import { isPassId, newPassId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -11,8 +12,7 @@ import type { Env, PatronagePass } from "@/types";
  * signed fresh on every read. The keeper writes the note from /admin.
  */
 
-const PASS_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
+export const PASS_DAYS = 30;
 
 const DEFAULT_MONTHLY_NOTE =
   "The keeper hasn't inked this month's note yet. It arrives the way all his deadlines do: eventually, and worth it. Your pass stands either way.";
@@ -20,6 +20,7 @@ const DEFAULT_MONTHLY_NOTE =
 export interface PassResult {
   pass: PatronagePass;
   renewed: boolean;
+  commission: import("@/services/watch-recovery").WatchCommission;
   passUrl: string;
 }
 
@@ -52,59 +53,20 @@ export async function requireRenewalPass(env: Env, passId: string): Promise<Patr
 export async function createOrRenewPass(
   env: Env,
   input: PassInput,
+  purchase?: { prepared: PreparedPatronage; certId: string },
 ): Promise<PassResult> {
-  const now = Date.now();
-  if (input.passId !== undefined) {
-    const existing = await getPass(env, input.passId);
-    if (existing) {
-      const currentExpiry = Date.parse(existing.expires_at);
-      const extendFrom = Number.isNaN(currentExpiry)
-        ? now
-        : Math.max(currentExpiry, now);
-      existing.expires_at = new Date(extendFrom + PASS_DAYS * DAY_MS)
-        .toISOString();
-      existing.renewals += 1;
-      await kvPut(
-        env.PATRONS,
-        KV_KEYS.patronagePass(existing.pass_id),
-        JSON.stringify(existing),
-      );
-      return {
-        pass: existing,
-        renewed: true,
-        passUrl: `${env.STORE_BASE_URL}/api/patronage/${existing.pass_id}`,
-      };
-    }
-    // This service may run after settlement. Do not label its failure
-    // "uncharged"; the purchase door owns that state and recovery response.
-    throw new Error("The purchased patronage renewal target is no longer available");
-  }
-  const pass: PatronagePass = {
-    pass_id: newPassId(),
-    patron_number: input.patronNumber,
-    started_at: new Date(now).toISOString(),
-    expires_at: new Date(now + PASS_DAYS * DAY_MS).toISOString(),
-    renewals: 0,
-  };
-  if (input.agentName) {
-    pass.agent_name = input.agentName;
-  }
-  await kvPut(
-    env.PATRONS,
-    KV_KEYS.patronagePass(pass.pass_id),
-    JSON.stringify(pass),
-  );
-  return {
-    pass,
-    renewed: false,
-    passUrl: `${env.STORE_BASE_URL}/api/patronage/${pass.pass_id}`,
-  };
+  const prepared = purchase?.prepared ?? await preparePatronage(env, input.passId, input.agentName);
+  const result = await patronageCoordinator(env, prepared.passId).grantPatronage({
+    prepared, patronNumber: input.patronNumber, certId: purchase?.certId ?? `direct:${crypto.randomUUID()}`,
+  });
+  return { ...result, passUrl: `${env.STORE_BASE_URL}/api/patronage/${result.pass.pass_id}` };
 }
 
 export async function getPass(
   env: Env,
   passId: string,
 ): Promise<PatronagePass | null> {
+  if (env.PAID_RECOVERIES) return patronageCoordinator(env, passId).readPatronage(passId);
   return kvGetJson<PatronagePass>(env.PATRONS, KV_KEYS.patronagePass(passId));
 }
 
@@ -135,4 +97,13 @@ export async function signedMonthlyNote(env: Env): Promise<SignedMonthlyNote> {
 export async function setMonthlyNote(env: Env, note: string): Promise<void> {
   const month = new Date().toISOString().slice(0, 7);
   await kvPut(env.COUNTERS, KV_KEYS.patronageNote(month), note);
+}
+
+/** Capture the identity and original renewal target before buyer settlement. */
+export async function preparePatronage(env: Env, passId?: string, agentName?: string): Promise<PreparedPatronage> {
+  const existing = passId === undefined ? undefined : await requireRenewalPass(env, passId);
+  if (existing && (!Number.isFinite(Date.parse(existing.expires_at)) || !Number.isFinite(Date.parse(existing.started_at)) ||
+    !Number.isSafeInteger(existing.renewals) || existing.renewals < 0)) throw new Error("Original patronage terms unavailable");
+  return { passId: existing?.pass_id ?? newPassId(), at: new Date().toISOString(),
+    ...(existing ? { existing } : {}), ...(agentName !== undefined ? { agentName } : {}) };
 }

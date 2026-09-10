@@ -81,6 +81,7 @@ async function purchase(id: WatchItem, door: LaborDoor, rail = 0) {
 }
 type Purchase = Awaited<ReturnType<typeof purchase>>;
 async function publishWatch(env: typeof testEnv, value: RecoverableWatch) {
+  if (value.kind === "operator") throw new Error("This fixture covers the URL watches");
   const key = (value.kind === "standing" ? KV_KEYS.standingWatch : KV_KEYS.conformanceWatch)(value.record.watch_id);
   return await env.PAID_RECOVERIES!.get(env.PAID_RECOVERIES!.idFromName(`watch:${key}`)).publishWatch(value);
 }
@@ -204,6 +205,7 @@ export function watchPaidRecovery(id: WatchItem): void {
       vi.setSystemTime(new Date(NOW.getTime() + 3600_000));
       if (id === "standing_watch") await sweepStandingWatches(testEnv, { burstGapMs: 0 });
       else await sweepConformanceWatches(testEnv);
+      if (original.kind === "operator") throw new Error("This fixture covers the URL watches");
       const key = p.prefix + original.record.watch_id;
       const current = await sourceEnv.ORDERS.get(key, "json");
       // Simulate a lost KV projection after a later signed observation.

@@ -63,14 +63,14 @@ export const HAND_ROLLING = {
    * client-builders have now failed here rather than at the signature.
    */
   envelope:
-    'Send the payload base64-encoded in the PAYMENT-SIGNATURE header — standard alphabet, ONE unbroken line: GNU `base64` wraps at 76 columns unless you pass -w0, and curl sends only a header\'s first line, so a wrapped encoding arrives as the first 57 bytes of your envelope and nothing else. Shaped exactly like this: { "x402Version": 2, "accepted": <one of the offered accepts entries, copied whole>, "payload": { "signature": "0x...", "authorization": { "from", "to", "value", "validAfter", "validBefore", "nonce" } } }. If `accepted` is absent the library that reads it raises a TypeError rather than a verdict, and you get a 402 that looks like a server crash. Ours now names the missing field in plain words and lists what did arrive.',
+    'Send the payload base64-encoded in the PAYMENT-SIGNATURE header — standard alphabet, ONE unbroken line: GNU `base64` wraps at 76 columns unless you pass -w0, and curl sends only a header\'s first line, so a wrapped encoding arrives as the first 57 bytes of your envelope and nothing else. Shaped exactly like this: { "x402Version": 2, "accepted": <one of the offered accepts entries, copied whole>, "resource": <challenge.resource, when present>, "extensions": <challenge.extensions, when present>, "payload": { "signature": "0x...", "authorization": { "from", "to", "value", "validAfter", "validBefore", "nonce" } } }. If `accepted` is absent the library that reads it raises a TypeError rather than a verdict, and you get a 402 that looks like a server crash. Ours now names the missing field in plain words and lists what did arrive.',
 
   /**
    * The one that actually caught our first two client-builders, and it
    * is not the signature at all.
    */
   echo_the_offer:
-    "Echo one of the offered `accepts` entries back as your `accepted` object, COMPLETE AND UNCHANGED — including `extra`. The server deep-compares the two: field order is free, but the key set must be identical and the types must match exactly, so \"500000\" is not 500000 and a dropped `extra` fails outright. This check runs BEFORE the facilitator is called, which means a failure here is not a signature problem, produces no facilitator error, and still comes back as a 402 that says verify. Rebuild the object from parts and you will land here. Our 402 now names the exact field that disagreed, so read `payment_declined.requirement_mismatch` before you touch your signing code.",
+    "Echo one of the offered `accepts` entries back as your `accepted` object, COMPLETE AND UNCHANGED — including `extra`. The server deep-compares the two: field order is free, but the key set must be identical and the types must match exactly, so \"500000\" is not 500000 and a dropped `extra` fails outright. This check runs BEFORE the facilitator is called, which means a failure here is not a signature problem, produces no facilitator error, and still comes back as a 402 that says verify. Rebuild the object from parts and you will land here. Our 402 now names the exact field that disagreed, so read `payment_declined.requirement_mismatch` before you touch your signing code. Also copy the challenge’s `resource` and `extensions` unchanged into the top-level payment envelope when present. The discovery metadata travels there; a payment can settle successfully without it and still leave the listing absent or stale. A settlement receipt alone does not confirm indexing.",
 
   /**
    * SHOW IT. CV's second bug survived a prose description of exactly
@@ -83,6 +83,8 @@ export const HAND_ROLLING = {
     heading: "The same payload, right and wrong",
     right: {
       x402Version: 2,
+      resource: "<copy challenge.resource unchanged, when present>",
+      extensions: "<copy challenge.extensions unchanged, when present>",
       accepted: {
         scheme: "exact",
         network: "eip155:8453",
@@ -106,6 +108,8 @@ export const HAND_ROLLING = {
     },
     wrong: {
       x402Version: 2,
+      resource: "<copy challenge.resource unchanged, when present>",
+      extensions: "<copy challenge.extensions unchanged, when present>",
       accepted: {
         scheme: "exact",
         network: "eip155:8453",
