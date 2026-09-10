@@ -35,7 +35,8 @@ describe("/.well-known/ai-plugin.json", () => {
     const res = await SELF.fetch(`${BASE}${AI_PLUGIN_MANIFEST_PATH}`);
     const manifest = (await res.json()) as Record<string, any>;
     for (const url of [manifest.api.url, manifest.logo_url, manifest.legal_info_url]) {
-      expect(url.startsWith(BASE)).toBe(true);
+      // The parsed origin, not a prefix: "https://scvd.store.example" starts with BASE too.
+      expect(new URL(url).origin).toBe(BASE);
       const door = await SELF.fetch(url, { redirect: "manual" });
       expect(door.status, `${url} does not answer`).toBe(200);
     }
