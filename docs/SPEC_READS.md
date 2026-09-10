@@ -821,3 +821,9 @@ Installed Wrangler list/get help and implementation were inspected: remote
 key listing follows the provider's list cursors. Production read failed
 with authentication error 10000; no inventory count was inferred.
 Implementation and limits: `EVIDENCE_READER_COVERAGE_2026-09.md`.
+
+## 2026-09-10 — OpenAPI headroom and package identity
+
+Read [OpenAPI 3.1.0 components, references and response headers](https://spec.openapis.org/oas/v3.1.0.html): response schemas and header definitions may use internal references. Keep the existing inline request parameters: the September 5 naive-reader compatibility fix and its regression still apply. Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/): do not retain request-scoped state globally. Only environment-independent schema projections are prepared once; live offers, issue inventory and conditional responses retain their existing freshness.
+
+Direct registry metadata and integrity-checked tarballs on September 10 show published executable files match this tree for x402-verify 1.3.0, x402-sign 1.0.2, scvd-cli 0.2.0 and scvd-tab 0.11.1. Sign and CLI have documentation differences. The registry's x402-preflight 0.1.0 names Gareth1953/x402-preflight as its repository, not this repository; equal names and versions do not establish identity. scvd-corpus-client, scvd-defects and scvd-mcp-starter returned 404. No package was published in this read. This does not verify registry account permissions or third-party reader compatibility.

@@ -211,3 +211,12 @@ before implementation and after restoration. Run typecheck, full tests,
 changed package/CLI tests and both Worker bundle checks. Preserve unrelated
 untracked buyer-audit work. Public descriptions follow implemented facts;
 implementation copy here is reviewable draft copy under house rule 7.
+
+## September 10 — latency and downstream package review
+
+The OpenAPI headroom follow-through preserves the full expanded contract
+and inline retry headers, and strengthens the byte-budget test to cover
+all payment networks. The package review distinguishes matching published
+code, documentation patches, unpublished clients and the third-party
+`x402-preflight` name collision. See `OPENAPI_HEADROOM_2026-09.md` for
+measurements, limits and pending release checks.

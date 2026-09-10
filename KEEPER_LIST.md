@@ -816,16 +816,15 @@ Do not relitigate without you.
   first recording freezes what is true; the alarm only fires when a
   row later moves DOWN from what it recorded.
 
-- **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
-  before-you-pay, month, feeds, the FIX lines (roadmap C5). The
-  Saturday listings read will say the registry differs from the
-  tree until you press.
-- **npm publish the four new packages** from main (roadmap C5b):
-  `x402-preflight` 0.1.0 (`x402-preflight/`), `scvd-corpus-client`
-  0.1.0 (`corpus-client/`), `scvd-defects` 0.10.0 (`defects/`),
-  `scvd-mcp-starter` 0.1.0 (`mcp-starter/`). Until you press, the
-  Saturday listings read shows them unreachable on npm, never
-  differs.
+- **CLI 0.2.0 press closed, checked September 10.** Its published
+  executable matches the repository. The README correction is a later
+  documentation patch; no repeat publish of the immutable version.
+- **RULE — choose a distinct name for our preflight client before its
+  initial release.** npm's `x402-preflight` names another repository,
+  `Gareth1953/x402-preflight`; it is not ours. The other three companion
+  packages still returned 404 on September 10. Release preparation and
+  package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
+  must come from the current manifests, not the old numbers on this desk.
 - **The tab registry press** via the `tab` input on the publish
   workflow (V4).
 
