@@ -330,16 +330,16 @@ export function deriveFindings(
  * One week, whole. Null when the chain does not hold that week —
  * never a guessed baseline, and the caller names the weeks it does.
  */
-export function deriveLedger(
+export async function deriveLedger(
   records: CorpusRecord[],
   base: string,
   register: SourceRegister | null,
   week?: string,
-): { ledger: WeekLedger | null; known_weeks: string[] } {
+): Promise<{ ledger: WeekLedger | null; known_weeks: string[] }> {
   const { brief, known_weeks } = deriveWeeklyBrief(records, base, week);
   if (!brief) return { ledger: null, known_weeks };
 
-  const changes = deriveChanges(records, brief.week, base);
+  const changes = await deriveChanges(records, brief.week, base);
   const sealed = records.find((record) => record.snapshot.week === brief.week);
   const census = sealed?.snapshot.round.population;
   const population: WeekPopulation | null =

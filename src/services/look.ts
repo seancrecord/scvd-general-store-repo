@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { recordAsk } from "@/services/asked-queue";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { ladderRung } from "@/services/menu-markdown";
 import { DEPTH_HOLD_SECONDS } from "@/services/archive-depth";
@@ -171,6 +172,11 @@ export async function heldHalfOf(env: Env, host: string, now: Date = new Date())
   const base = env.STORE_BASE_URL;
   const observation = await effectiveObservation(env, host, now);
   const history = observation.history;
+  // A miss is next week's coverage (asked-queue.ts): a host the chain
+  // never probed is queued for the sweep, by name, before the
+  // "never met" goes out. Awaited: one small KV read and write, and
+  // this fold is already held per host.
+  if (history.rounds_probed === 0) await recordAsk(env, host, "look", now);
   const tier = deriveTier(tierInputFromHistory(history, observation), `${base}/criteria`);
   const freshness = freshnessOf(observation.observed_at, observation.verdict ?? undefined, now);
   const last = [...history.timeline].reverse().find((round) => round.probed) ?? null;

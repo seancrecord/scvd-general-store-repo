@@ -1,3 +1,4 @@
+import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES, BUNDLE_HASH_CHARACTERS } from "@/lib/attestation-bundle-terms";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
@@ -425,9 +426,13 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "attestation_bundle") {
     properties["tx_hashes"] = {
       type: "string",
-      pattern: "^0x[0-9a-fA-F]{64}(,0x[0-9a-fA-F]{64}){1,19}$",
+      // Go's regexp rejects nested bounded repetition above 1000.
+      // Keep hash syntax in the pattern and count bounds in string length.
+      pattern: "^0x[0-9a-fA-F]{64}(,0x[0-9a-fA-F]{64})+$",
+      minLength: BUNDLE_MIN_HASHES * (BUNDLE_HASH_CHARACTERS + 1) - 1,
+      maxLength: BUNDLE_MAX_HASHES * (BUNDLE_HASH_CHARACTERS + 1) - 1,
       description:
-        "2 to 20 Base transaction hashes, comma-separated, no duplicates. Each is read once at one moment and signed on its own; never polled. One hash wants the single settlement_attestation instead.",
+        `${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} Base transaction hashes, comma-separated, no duplicates. Each is read once at one moment and signed on its own; never polled. One hash wants the single settlement_attestation instead.`,
     };
     required.push("tx_hashes");
   }

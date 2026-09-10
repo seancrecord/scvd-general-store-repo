@@ -1428,7 +1428,12 @@ const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
             description: "The status this entry's own probe returned.",
           },
           result: {
-            ...PREFLIGHT_VERDICT_SCHEMA,
+            // By reference, not spread (2026-09-10): the verdict schema
+            // is the largest in the document and was inlined twice,
+            // which is what pushed /openapi.json past its read budget.
+            // The single-URL door references the same component; the
+            // typed-shapes test follows the reference to check it.
+            allOf: [{ $ref: "#/components/schemas/PreflightVerdict" }],
             description: "The same verdict body a single-URL probe returns.",
           },
         },
@@ -3548,19 +3553,33 @@ const LETTER_STATUS_SCHEMA: OpenApiObject = {
   },
 };
 
+const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "Signed original purchase terms. URL watches bind the target and service dates; Operator Statement also binds the wallet, chain, asset and opening position; Recurring Patronage grants bind each purchased extension separately. Decode signed_payload for the certificate ID and exact terms. Present on new purchases and their public records; absent on legacy records. Observations carry their own signatures.",
+  required: ["signed_payload", "signature", "public_key", "signature_covers"],
+  properties: {
+    signed_payload: { type: "string", description: "RFC 8785 canonical JSON. Verify the ed25519 signature over these exact UTF-8 bytes." },
+    signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
+  },
+};
+
+const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
+
 /** A patronage pass, and what it does and does not buy. */
 const PATRONAGE_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["note"],
+  required: ["pass", "current", "note"],
   properties: {
-    pass_id: { type: "string" },
-    badge_url: { type: "string", format: "uri" },
-    renew_url: {
-      type: "string",
-      format: "uri",
-      description: "Renewal is a fresh purchase a buyer decides to make. Nothing here charges again by itself.",
-    },
-    monthly_note: { type: "string" },
+    pass: { type: "object", required: ["pass_id", "patron_number", "started_at", "expires_at", "renewals"], properties: {
+      pass_id: { type: "string" }, patron_number: { type: "integer" }, started_at: { type: "string" },
+      expires_at: { type: "string" }, renewals: { type: "integer" }, agent_name: { type: "string" },
+      commission: WATCH_COMMISSION_REF,
+    } },
+    current: { type: "boolean" }, badge_url: { type: "string", format: "uri" },
+    renew_url: { type: "string", format: "uri", description: "A fresh purchase the buyer chooses. No automatic charge." },
+    monthly_note: { type: "object", required: ["month", "note", "signature", "public_key"], properties: {
+      month: { type: "string" }, note: { type: "string" }, signature: { type: "string" }, public_key: { type: "string" },
+    } },
     note: { type: "string" },
   },
 };
@@ -4018,16 +4037,6 @@ const PRACTICE_SCHEMA: OpenApiObject = {
  * and calling these costs real USDC. Every field left undeclared on
  * a paid door is a field somebody pays to discover.
  */
-const WATCH_COMMISSION_SCHEMA: OpenApiObject = {
-  type: "object",
-  description: "Signed purchase commission for Standing Watch and Conformance Watch. Decode signed_payload to read the exact target URL, watch_id, cert_id, item_id, started_at, ends_at and interval_hours. Present on new purchases and their public history; absent on legacy watches. Observations carry their own signatures.",
-  required: ["signed_payload", "signature", "public_key", "signature_covers"],
-  properties: {
-    signed_payload: { type: "string", description: "RFC 8785 canonical JSON. Verify the ed25519 signature over these exact UTF-8 bytes." },
-    signature: { type: "string" }, public_key: { type: "string" }, signature_covers: { type: "string" },
-  },
-};
-const WATCH_COMMISSION_REF: OpenApiObject = { $ref: "#/components/schemas/WatchCommission" };
 
 const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
   type: "object",
@@ -5377,6 +5386,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
         WatchCommission: WATCH_COMMISSION_SCHEMA,
         OrderReceipt: ORDER_RECEIPT_SCHEMA,
         PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
+        /*
+         * Moved here 2026-09-10 for read budget: the preflight verdict
+         * (6 KB, inlined twice) and the ask answer (2 KB, inlined
+         * twice) were what held /openapi.json at its 700,000-byte
+         * ceiling, so any new door broke the fetchable test. Same
+         * move the problem schema and the delivery envelope made.
+         */
+        PreflightVerdict: PREFLIGHT_VERDICT_SCHEMA,
+        AskAnswer: ASK_SCHEMA,
       },
       responses: SHARED_RESPONSES,
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
@@ -6229,7 +6247,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "Ask this store a question about itself",
               "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. No query at all answers 400 with a worked example. Free, no account.",
             ),
-            ASK_SCHEMA,
+            { $ref: "#/components/schemas/AskAnswer" },
           ),
           parameters: [
             {
@@ -6269,7 +6287,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "Ask this store a question about itself (POST)",
               "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
             ),
-            ASK_SCHEMA,
+            { $ref: "#/components/schemas/AskAnswer" },
           ),
           ...jsonBody("The question, and how you want it answered.", {
             type: "object",
@@ -6396,7 +6414,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               }`,
               "The x402 door to walk.",
               URL_BODY,
-            ), PREFLIGHT_VERDICT_SCHEMA)),
+            ), { $ref: "#/components/schemas/PreflightVerdict" })),
           },
         ]),
       ),
@@ -6673,6 +6691,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 what_this_is: { type: "string" },
                 statement_id: { type: "string" },
                 wallet: { type: "string" },
+                asset: { type: "string" },
+                opened_at_block: { type: "integer" },
+                commission: WATCH_COMMISSION_REF,
                 chain: { type: "string" },
                 started_at: { type: "string" },
                 ends_at: { type: "string" },
@@ -6873,12 +6894,38 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 timeline:{type:"array",items:{type:"object",properties:{sequence:{type:"integer"},week:{type:"string"},taken_at:{type:"string",format:"date-time"},digest:{type:"string"},entry_url:{type:"string",format:"uri"},listed:{type:"boolean"},probed:{type:"boolean"},coverage_suspect:{type:"boolean"},note:{type:"string"},verdict:{type:"string"},gap:{type:"string"},url:{type:"string",format:"uri"},observed_at:{type:"string",format:"date-time"}}}},
                 verdict_changes:{type:"array",items:{type:"object",properties:{at:{type:"string",format:"date-time"},week:{type:"string"},from:{type:"string"},to:{type:"string"}}}},
                 tier:{type:"object",properties:{tier:{type:"string"},line:{type:"string"},criteria_url:{type:"string",format:"uri"},coverage_suspect:{type:"boolean"},fraction:{type:"object",properties:{ready:{type:"integer"},rounds:{type:"integer"},weeks:{type:"string"}}}}},
+                pay_to:{type:"object",description:"Where the door asks to be paid, week by week, as salted digests (never verbatim); absent when no probed round captured an address. unchanged_since is the earliest round of the unbroken run carrying this same set.",properties:{digests:{type:"array",items:{type:"string"}},observed:{type:"object"},unchanged_since:{type:"object"},rounds_captured:{type:"integer"},rounds_probed:{type:"integer"},changes:{type:"array",items:{type:"object"}},how_to_match:{type:"string"}}},
                 corrections:{type:"string"}, what_this_cannot_see:{type:"array",items:{type:"string"}},
               },
             }}}},
             "304": {description:"The published view has unchanged bytes; no body or charge"},
           },
         },
+      },
+      "/corpus/asked.json": {
+        get: returns(
+          freeOp(
+            "The asked-for queue",
+            "Every host a free surface was asked about that the signed chain had never probed, by name with a count of asks and nothing about who asked, and where each stands against this week's walk: queued, swept with no door found, on the roster, or walked. The next weekly sweep reads the most-asked hosts' own /.well-known/x402 for a door and walks what they declare. Alphabetical; the ask count is demand for the record, never a verdict on the door. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string", const: "asked_for_queue" },
+              asked_at: { type: "string", format: "date-time" },
+              hosts_asked: { type: "integer" },
+              by_state: { type: "object", additionalProperties: { type: "integer" } },
+              sweep_cap_per_week: { type: "integer" },
+              store_cap: { type: "integer" },
+              hosts: { type: "array", items: { type: "object", properties: { host: { type: "string" }, first_asked: { type: "string", format: "date-time" }, last_asked: { type: "string", format: "date-time" }, asks: { type: "integer" }, surfaces: { type: "array", items: { type: "string" } }, state: { type: "string", enum: ["queued", "swept_no_door_found", "on_roster", "walked"] }, last_swept_week: { type: "string" }, history_url: { type: "string", format: "uri" } } } },
+              how_it_works: { type: "string" },
+              what_this_is_not: { type: "string" },
+              corrections: { type: "string" },
+              walk_week: { type: ["string", "null"] },
+              latest_signed_week: { type: ["string", "null"] },
+            },
+          },
+        ),
       },
       "/corpus/tiers.json": {
         get: returns(

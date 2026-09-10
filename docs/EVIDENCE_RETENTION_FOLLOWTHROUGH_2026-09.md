@@ -168,5 +168,8 @@ internal errors; the second used one worker. Neither is a clean full-suite
 result. No timeout, assertion or production Worker source was changed to
 obtain a pass. The baseline application code had passed CI, but that does not
 replace this branch's full check: merge remains gated on successful application
-CI. `validation.json` records the local results; the pull request and its
+CI. Both full CI runs on `53c6254c` subsequently passed; the pull-request run
+completed 626 files and 10,269 tests, with one existing skip. Integration of
+later main-branch releases requires a fresh combined-tree check.
+`validation.json` records these scoped results; the pull request and its
 checks record the release outcome.

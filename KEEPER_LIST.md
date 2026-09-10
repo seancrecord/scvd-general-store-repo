@@ -583,7 +583,10 @@ build, it is on the roadmap.
   for any doors still unreturned, reconcile existing receipts, discovery
   metadata and settlement. Receipt details unavailable to the public
   reader may need his lookup; a build does not belong on this row.
-  The keeper deferred that investigation on 2026-09-09.
+  The keeper resumed that investigation the same day. The retained records
+  and current validator have been read; see `docs/SPEC_READS.md` for the
+  evidence and its limits. Existing index gaps remain unresolved; another
+  purchase has not been requested or made.
 - No agent item is queued (2026-09-02, after S6). The
   roadmap's NOW table is empty; S8-v3 waits on your yes /
   no / later, not on a date; everything in LATER needs a
@@ -721,6 +724,27 @@ Do not relitigate without you.
 ---
 
 ## NEXT — your hands
+
+### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
+
+- **LOOK** — after the next Sunday round, open `/corpus/asked.json`.
+  If `hosts_asked` is 0 the free surfaces are not being asked about
+  unmet hosts, which is its own finding; if hosts sit in
+  `swept_no_door_found` for three weeks, the sweep is reading hosts
+  that publish no `/.well-known/x402`, and the queue's cap is
+  spending reads on them.
+- **RULE** — seller declarations, ruling 1
+  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
+  a declaration free, forever? Recommended yes; the paid instrument
+  is a watch on the match line, already priced as an endpoint watch.
+- **RULE** — seller declarations, ruling 2: does a declaration for a
+  host the feeds do not name enter the asked-for queue at the top of
+  its week? Recommended yes; it does not jump the roster cap.
+- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
+  second observer's verified row enter the signed snapshot at its
+  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
+  beside the chain in a file of its own? Recommended inside. No
+  build until a named party asks to submit rows.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 
@@ -1052,6 +1076,17 @@ Do not relitigate without you.
   re-read at https://agentpluginsdirectory.com/plugins/scvd-general-store.
   Confirmation date refreshed; the record now describes the plugin
   bundle and the directory's manifest check, not only the MCP server.
+- **robinsaige.com, Crosspeel, 402.ad, VerifyMCP.** DONE 2026-09-10:
+  the keeper supplied four listing URLs. Two were new and are now
+  trust rows: https://robinsaige.com/s/store.scvd/general-store and
+  https://crosspeel.com/endpoints/scvd-store/. Two were already
+  rows and had their confirmed date refreshed: the 402.ad service
+  page and the VerifyMCP store page. Neither new host answers the
+  sandbox, so the rows state only what the address establishes and
+  the register marks both pages unread. LOOK, five minutes: what
+  each of the two new pages actually measures, so the row can say
+  it in their words; and whether either offers a claim or refresh
+  route. Indexing only, not an endorsement or proof of purchases.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.

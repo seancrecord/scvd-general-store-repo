@@ -1,3 +1,5 @@
+import { runInDurableObject } from "cloudflare:test";
+import { patronageCoordinator } from "@/services/patronage-recovery";
 import { expect, it, vi } from "vitest";
 import { createOrRenewPass } from "@/services/patronage";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -48,6 +50,9 @@ for (const door of ["http", "mcp"] as const) {
       const item = items.find(item => item.id === "recurring_patronage")!, tool = shelves(item)[0]!;
       const original = await createOrRenewPass(sourceEnv, { patronNumber: 1 });
       const pass_id = original.pass.pass_id;
+      // Legacy passes have only KV. Remove the new journal so this fixture
+      // still represents loss of every original record, not a repairable projection.
+      await runInDurableObject(patronageCoordinator(sourceEnv, pass_id), async (_instance, state) => state.storage.deleteAll());
       const offers = (await call(item, door, { pass_id }, tool)).offers;
       expect(offers.length).toBeGreaterThan(0);
       const key = KV_KEYS.patronagePass(pass_id);

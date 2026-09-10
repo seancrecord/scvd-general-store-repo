@@ -23,5 +23,17 @@
     "clean_local_full_result": false,
     "release_gate": "Full application CI must pass before merge"
   },
-  "release": "prepared_for_review_not_released"
+  "release": "prepared_for_review_not_released",
+  "full_ci_before_main_integration": {
+    "head": "53c6254c6fce63cc3f8fb736127440ecff3dc722",
+    "pr_run": 34423059839,
+    "push_run": 34423057361,
+    "both_conclusions": "success",
+    "pr_full_suite": {
+      "files_passed": 626,
+      "tests_passed": 10269,
+      "tests_skipped": 1
+    },
+    "scope": "These results precede integration of main bc334037. The combined tree must pass its own CI before merge."
+  }
 }

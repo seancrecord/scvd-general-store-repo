@@ -123,6 +123,12 @@ export const KV_KEYS = {
    */
   wardDoorBank: "ward_door_bank",
   /**
+   * THE ASKED-FOR QUEUE (2026-09-10): hosts a free surface was asked
+   * about that the chain had never probed, by name with a count, so
+   * the next sweep reads them. One key, capped, same law as the bank.
+   */
+  askedFor: "asked_for",
+  /**
    * THE LONG WALK's one piece of state (2026-08-19): the current
    * week's roster, cursor, and accumulated results. ONE key, holding
    * its own week — a new week's first pass overwrites it, so there is

@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { payToDigest } from "@/lib/pay-to-digest";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import { subjectHistory } from "@/services/subject-history";
 import { takeCensus } from "@/services/population";
@@ -125,6 +126,45 @@ describe("replaying one host out of the chain", () => {
   it("matches a host case-insensitively, because a host name is not case-sensitive", async () => {
     await chain([round("2026-W01", [host("a.example", "ready")])]);
     expect((await subjectHistory(testEnv, "A.Example", BASE)).rounds_probed).toBe(1);
+  });
+
+  it("carries where the door asks to be paid as a run of digests: unchanged since, the changes, and the capture denominator", async () => {
+    const A = "0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const B = "0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+    const paying = (name: string, payTo: string[] | null): WardHostResult => ({
+      ...host(name, "ready"),
+      ...(payTo ? { offer: { networks: ["eip155:8453"], schemes: ["exact"], pay_to: payTo } } : {}),
+    });
+    await chain([
+      round("2026-W01", [paying("moved.example", [A]), paying("steady.example", [A]), paying("bare.example", null)]),
+      round("2026-W02", [paying("moved.example", [A]), paying("steady.example", [B]), paying("bare.example", null)]),
+      // A probed round that captured no address neither breaks nor extends a run.
+      round("2026-W03", [paying("moved.example", null), paying("steady.example", [B]), paying("bare.example", null)]),
+      round("2026-W04", [paying("moved.example", [B]), paying("steady.example", [B]), paying("bare.example", null)]),
+    ]);
+    const [dA, dB] = await Promise.all([payToDigest(A), payToDigest(B)]);
+
+    const moved = (await subjectHistory(testEnv, "moved.example", BASE)).pay_to!;
+    expect(moved.digests).toEqual([dB]);
+    expect(moved.observed.week).toBe("2026-W04");
+    expect(moved.unchanged_since.week).toBe("2026-W04");
+    expect({ captured: moved.rounds_captured, probed: moved.rounds_probed }).toEqual({ captured: 3, probed: 4 });
+    expect(moved.changes).toEqual([
+      { week: "2026-W04", sequence: 4, digest: expect.stringMatching(/^[0-9a-f]{64}$/), from: [dA], to: [dB] },
+    ]);
+    expect(moved.how_to_match).toContain("sha256");
+
+    const steady = (await subjectHistory(testEnv, "steady.example", BASE)).pay_to!;
+    expect(steady.digests).toEqual([dB]);
+    expect(steady.unchanged_since.week).toBe("2026-W02");
+    expect(steady.changes.map((c) => c.week)).toEqual(["2026-W02"]);
+
+    // No round captured an address: the block is absent, never "no address".
+    expect((await subjectHistory(testEnv, "bare.example", BASE)).pay_to).toBeUndefined();
+    // The verbatim address never reaches the derived view — the G2 ruling.
+    const json = JSON.stringify(await subjectHistory(testEnv, "moved.example", BASE));
+    expect(json).not.toContain(A.toLowerCase());
+    expect(json).not.toContain(B.toLowerCase());
   });
 
   it("answers for a host it has never seen without inventing a record", async () => {
