@@ -1,3 +1,4 @@
+import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
@@ -91,7 +92,7 @@ zodiacRoutes.get("/zodiac/archive", (c) => {
 });
 
 /** Unknown signs, unwritten weeks, and unturned pages bounce before the gate. */
-const archiveCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const archiveCheck = publicationAdmission(async (c) => {
   const match = c.req.path.match(/^\/zodiac\/archive\/([a-z_]+)\/week-([0-9]+)$/);
   const sign = match ? signById(match[1] ?? "") : undefined;
   const week = match ? parseInt(match[2] ?? "0", 10) : 0;
@@ -116,8 +117,7 @@ const archiveCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       404,
     );
   }
-  await next();
-};
+});
 
 /** Paid pages never sit in a shared cache. */
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {

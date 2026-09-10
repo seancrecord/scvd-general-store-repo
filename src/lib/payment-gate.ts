@@ -1,3 +1,5 @@
+import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
+import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
@@ -1175,7 +1177,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
-  const recorded = c.req.path.startsWith("/api/buy/") ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
+  const recorded = (c.get("publicationPurchase") || c.req.path.startsWith("/api/buy/") || c.req.path.startsWith("/api/commission/pay/")) ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
     { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) }) : null;
   if (recorded?.kind === "refused") return c.json(recorded.body, 503);
@@ -1183,6 +1185,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     c.header("Cache-Control", "no-store");
     c.header("Paid-Retry", "true");
     try {
+      const page = recorded.delivery.publication_response;
+      if (isRecord(page) && typeof page.markdown === "string" && typeof page.content_type === "string") {
+        const response = publicationResponse({ markdown: page.markdown, content_type: page.content_type }, recorded.payment.settleHeaders, recorded.recovery);
+        response.headers.set("Paid-Retry", "true");
+        return response;
+      }
       const response = c.json({ ...recorded.delivery, paid_retry: true, charged: true, charged_again: false });
       for (const [name, value] of Object.entries(recorded.payment.settleHeaders)) response.headers.set(name, value);
       return response;
@@ -1190,6 +1198,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL,
         getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, recorded.payment), charged_again: false }, 500);
     }
+  }
+
+  // Commission briefs and purchased pages live in the purchase record.
+  // Pending status must precede every generic spent-nonce lane.
+  if (recorded?.kind === "pending" && (c.get("publicationPurchase") || c.req.path.startsWith("/api/commission/pay/"))) {
+    return c.json({ ...recorded.body, charged_again: false }, 503);
   }
 
   // Verified. A nonce we've already settled once is refused — unless
@@ -1249,7 +1263,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           c.res.headers.set("Paid-Retry", "true");
           return c.res;
         }
-        const legacyItem = getMenuItem(itemKeyFromPath(c.req.path));
+        const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
         if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
           c.header("Cache-Control", "no-store");
           return c.json(recorded.body, 503);
@@ -1428,6 +1442,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     payer?: string;
   } = { payment: null, settled: null, deliveryKey: null };
 
+  let publication: PublicationSnapshot | undefined;
   const settleNow = async (): Promise<SettledPayment> => {
     // MEMOIZED. Two callers, one charge — a handler that settles and a
     // gate that settles for handlers which did not must never both
@@ -1437,15 +1452,16 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
 
   async function performSettlement(): Promise<SettledPayment> {
-    // Only catalogue purchases have a complete request at this seam. Commission
-    // quotes and publication doors require their own original-input capture.
-    const menuItem = c.req.path.startsWith("/api/buy/") ? getMenuItem(itemKeyFromPath(c.req.path)) : undefined;
+    // Commission admission retains the accepted brief before entering this seam.
+    const commission = c.get("commissionPurchase");
+    const menuItem = commission ? getMenuItem(COMMISSION_ITEM_ID) :
+      c.req.path.startsWith("/api/buy/") ? getMenuItem(itemKeyFromPath(c.req.path)) : undefined;
     const query = new URL(c.req.url).searchParams;
     query.delete("payment_payload");
-    const purchase = menuItem ? await beginPurchaseIntent(c.env, {
+    const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
-      request: query.toString(), item: menuItem,
+      request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
     }) : undefined;
     if (purchase) till.recovery = purchaseRecovery(c.env, purchase);
     let settlement: Awaited<
@@ -1572,6 +1588,13 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         payer: rescued.payer,
         headers: {},
       };
+    }
+    if (publication && purchase) {
+      till.settled.headers = await withReceiptHeader(c.env, till.settled.headers, {
+        resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`, payer: purchase.payer,
+        network: verifiedRequirements.network, transaction: till.settled.transaction,
+        nowSeconds: Math.floor(Date.parse(purchase.created_at) / 1000),
+      });
     }
     if (purchase) {
       const confirmed = { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
@@ -1810,6 +1833,16 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    */
   if (!till.payment && c.res.status < 300) {
     try {
+      if (c.get("publicationPurchase")) {
+        const markdown = await c.res.clone().text();
+        const content_type = c.res.headers.get("Content-Type") ?? "";
+        if (!markdown.trim() || !content_type.startsWith("text/markdown")) {
+          c.res = c.json({ code: "publication_unavailable", charged: false, settlement_attempted: false,
+            error: "The page could not be prepared. No payment was submitted. Retry this same request." }, 503);
+          return;
+        }
+        publication = { markdown, content_type, minimum_usdc: minimumUsdc };
+      }
       await settleNow();
     } catch (error) {
       // Assigned rather than returned — see the note above. A refused
@@ -1832,6 +1865,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * bookkeeping to do, which is the quiet half of the whole amendment.
    */
   if (!till.payment || !till.settled) return;
+  if (publication && till.recovery) c.res.headers.set("Purchase-Recovery", encodeBase64Json(till.recovery));
 
   /**
    * Goods went out, so the intent stops existing. Deliberately gated
@@ -1876,7 +1910,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * to attach a receipt would break the buyer's proof of payment in
    * order to decorate it.
    */
-  const outHeaders = await withReceiptHeader(c.env, till.settled.headers, {
+  const outHeaders = publication ? till.settled.headers : await withReceiptHeader(c.env, till.settled.headers, {
     resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`,
     ...(till.payer ? { payer: till.payer } : {}),
     // The rail that actually settled; Base only as the pre-second-rail fallback.
@@ -1903,10 +1937,10 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (bodyText) {
       try {
         const isPage = (c.res.headers.get("Content-Type") ?? "").startsWith("text/markdown");
-        // Retain only receipt headers, never cookies or arbitrary middleware headers.
+        // Retain only receipt/recovery headers, never cookies or arbitrary middleware headers.
         const parsed: unknown = isPage ? { publication_response: {
           markdown: bodyText, content_type: c.res.headers.get("Content-Type"),
-          headers: Object.fromEntries([...c.res.headers].filter(([name]) => ["payment-response", "x-payment-response"].includes(name.toLowerCase()))),
+          headers: Object.fromEntries([...c.res.headers].filter(([name]) => ["payment-response", "x-payment-response", "purchase-recovery"].includes(name.toLowerCase()))),
         } } : JSON.parse(bodyText);
         if (isRecord(parsed)) {
           await storeIdempotent(

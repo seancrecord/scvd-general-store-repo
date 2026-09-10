@@ -64,7 +64,7 @@ export async function reconcileSolanaPurchase(env: Env, record: PurchaseIntent):
         if (amount <= 0n || balances.get(record.payer) !== -amount || balances.get(record.terms.payTo) !== amount) throw new Error("Recovery transfer does not match purchase");
         const paidUsdc = atomicToUsdc(record.terms.amount);
         return { payment: { payer: record.payer, network: record.terms.network, transaction: row.signature,
-          paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.item?.price_usdc ?? paidUsdc), settleHeaders: {} },
+          paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.publication?.minimum_usdc ?? record.item?.price_usdc ?? paidUsdc), settleHeaders: {} },
           reconciliation: { checked_at: new Date().toISOString() } };
       }
       // Walk bounded pages, then revisit the window for delayed RPC indexing.

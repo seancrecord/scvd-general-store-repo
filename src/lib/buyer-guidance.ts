@@ -51,7 +51,7 @@ export function commissionGuidance(rung: number, base: string) {
   return {
     price_effect: { minimum_usdc:rung, higher_payment:"not_offered", higher_payment_changes_scope:false, scope:"The keeper's live quote fixes the work and delivery window; choosing another rung does not buy extra scope." },
     production: {kind:"commissioned_human_work", terms_source:`${base}/api/commission/{id}`},
-    recovery:{private_status_handle:false, status_url_template:`${base}/api/commission/{id}`, how:"Read the quote for free. An accepted quote links its existing order; retrieve it instead of paying again."},
+    recovery:{private_status_handle:true, status_url_template:`${base}/api/commission/{id}`, how:"Keep the returned private purchase-status handle and original payment. Recovery retains the accepted brief and delivery window even after the quote expires. An accepted quote also links its order; retrieve it instead of paying again."},
     credit:creditTerms(base),
     next_step:{method:"GET",url:`${base}/api/commission/declined`,payment_required:false},
     request_quote:{method:"POST",url:`${base}/api/request`,payment_required:false,contract_url:`${base}/openapi.json`},

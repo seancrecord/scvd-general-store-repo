@@ -1,3 +1,4 @@
+import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
@@ -178,7 +179,7 @@ function issueNumberFromPath(path: string): number {
 }
 
 /** Unknown or unpublished issues are turned away before the gate. */
-const issueCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const issueCheck = publicationAdmission(async (c) => {
   const issueNumber = issueNumberFromPath(c.req.path);
   const issue = Number.isNaN(issueNumber)
     ? null
@@ -193,8 +194,7 @@ const issueCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       404,
     );
   }
-  await next();
-};
+});
 
 /** Paid copies never sit in a shared cache. */
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
