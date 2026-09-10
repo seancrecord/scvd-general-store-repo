@@ -53,5 +53,6 @@ The September 9 Worker release adds `/corpus/index.json`, a paginated metadata
 projection. Follow its `next` URLs and preserve unreadable rows in your
 counts. It does not verify signatures or fetch R2 snapshot bodies. The
 existing `corpus()` function and `/corpus.json` shape stay unchanged.
-For bounded snapshot export and offline verification, use the source CLI
-instructions in [`verifier/README.md`](../verifier/README.md#large-corpus-snapshots-source-checkout-not-in-npm-120).
+For bounded snapshot export and offline verification, use the published
+[x402-verify evidence CLI](https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence),
+with explicit byte-limit settings for larger snapshots.

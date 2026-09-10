@@ -48,11 +48,12 @@ async function document(): Promise<{ text: string; json: Record<string, unknown>
 describe("the contract is small enough to be read", () => {
   it("stays inside the budget, which is inside the fetch cap", async () => {
     const { text } = await document();
+    const bytes = new TextEncoder().encode(text).byteLength;
     expect(
-      text.length,
-      `the document is ${text.length} bytes, past the ${BUDGET_BYTES}-byte budget. Do not raise the number — find what got inlined and move it into components, the way the problem schema and the delivery envelope went. Past ${FETCH_CAP_BYTES} bytes the scanners stop fetching it and the store reads as having no contract.`,
+      bytes,
+      `the document is ${bytes} bytes, past the ${BUDGET_BYTES}-byte budget. Do not raise the number — find what got inlined and move it into components, the way the problem schema and the delivery envelope went. Past ${FETCH_CAP_BYTES} bytes the scanners stop fetching it and the store reads as having no contract.`,
     ).toBeLessThan(BUDGET_BYTES);
-    expect(text.length).toBeLessThan(FETCH_CAP_BYTES);
+    expect(bytes).toBeLessThan(FETCH_CAP_BYTES);
   });
 
   it("still describes every door it described before", async () => {

@@ -1,5 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { bountyRoutes } from "@/routes/bounties";
 import { BASE_USDC } from "@/lib/base-rpc";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
@@ -125,29 +126,41 @@ describe("a listing's length is chosen, not inherited", () => {
   it("posts a sprint, a standard and a long, and publishes which is which", async () => {
     vi.stubGlobal("fetch", world());
     const now = new Date("2026-09-08T12:00:00.000Z");
-    const sprint = await openBounty(
-      testEnv,
-      { targetUrl: DOOR, rewardUsd: 0.1, tier: "sprint" },
-      { fetch: world(), now },
-    );
-    expect(sprint.tier).toBe("sprint");
-    expect(sprint.open_days).toBe(BOUNTY_TIERS.sprint);
-    expect(sprint.expires_at).toBe("2026-09-10T12:00:00.000Z");
+    // The sprint fixture expired at noon on September 10. The rendered
+    // board must read the same clock used to create its listings, rather
+    // than SELF's separate Worker's real clock.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(now);
+    try {
+      const sprint = await openBounty(
+        testEnv,
+        { targetUrl: DOOR, rewardUsd: 0.1, tier: "sprint" },
+        { fetch: world(), now },
+      );
+      expect(sprint.tier).toBe("sprint");
+      expect(sprint.open_days).toBe(BOUNTY_TIERS.sprint);
+      expect(sprint.expires_at).toBe("2026-09-10T12:00:00.000Z");
 
-    const long = await openBounty(
-      testEnv,
-      { targetUrl: "https://other.example/api", rewardUsd: 0.1, tier: "long" },
-      { fetch: world(), now },
-    );
-    expect(long.open_days).toBe(21);
-    expect(long.expires_at).toBe("2026-09-29T12:00:00.000Z");
+      const long = await openBounty(
+        testEnv,
+        { targetUrl: "https://other.example/api", rewardUsd: 0.1, tier: "long" },
+        { fetch: world(), now },
+      );
+      expect(long.open_days).toBe(21);
+      expect(long.expires_at).toBe("2026-09-29T12:00:00.000Z");
 
-    const board = await bountyBoard(testEnv, now);
-    const room = await (
-      await SELF.fetch(`${BASE}/bounties`, { headers: { Accept: "text/html" } })
-    ).text();
-    expect(board.open_count).toBe(2);
-    expect(room).toContain("sprint");
+      const board = await bountyBoard(testEnv, now);
+      const room = await (
+        await bountyRoutes.request(`${BASE}/bounties`, { headers: { Accept: "text/html" } }, testEnv)
+      ).text();
+      expect(board.open_count).toBe(2);
+      expect(room).toContain("sprint");
+      // Moving the clock still expires a sprint; only the test clock is fixed.
+      vi.setSystemTime(new Date("2026-09-10T12:00:00.001Z"));
+      expect((await bountyBoard(testEnv, new Date())).open_count).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("refuses a length outside the bound rather than quietly clamping it", async () => {

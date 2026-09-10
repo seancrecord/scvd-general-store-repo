@@ -9,6 +9,13 @@ registry artifact before recording completion. KEEPER_LIST is the
 current press queue. A build or old receipt does not establish today's
 registry state.
 
+**Registry identity read, September 10:** Verify 1.3.0 and Tab 0.11.1
+match every published file; Sign 1.0.2 and CLI 0.2.0 match executable
+files and have documentation corrections awaiting a patch. The npm
+`x402-preflight` package belongs to another repository; our client needs
+a distinct name before publication. Three other companion packages remain
+unpublished. Details and retained comparison: `docs/OPENAPI_HEADROOM_2026-09.md`.
+
 Written 2026-08-21, the night the strategy was ruled: agents don't
 browse, they inherit. An agent reaches this store through four doors —
 its config (MCP connectors, skills), its model's memory (AEO, shipped),

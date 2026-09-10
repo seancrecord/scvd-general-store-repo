@@ -1,6 +1,6 @@
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
-import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
+import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA, A2A_SIGNED_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
@@ -62,6 +62,32 @@ import { MODES } from "@/routes/ask";
 export const openapiRoutes = new Hono<HonoEnv>();
 
 type OpenApiObject = Record<string, unknown>;
+
+// Project only the OpenAPI description. MCP keeps its self-contained schemas.
+// The shared source objects identify repeated schemas without a second field
+// list. This runs once per isolate, never over a request or a signed artifact.
+const A2A_SCHEMA_SOURCES: Record<string, OpenApiObject> = {
+  A2aSignedObservation: A2A_SIGNED_SCHEMA,
+  A2aRecheck: A2A_RECHECK_SCHEMA,
+  A2aDesk: A2A_DESK_SCHEMA,
+  A2aKit: A2A_KIT_SCHEMA,
+};
+const A2A_SCHEMA_REFERENCES = new Map<object, OpenApiObject>(
+  Object.entries(A2A_SCHEMA_SOURCES).map(([name, schema]) =>
+    [schema, { $ref: `#/components/schemas/${name}` }]),
+);
+function referenceA2aChildren(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const reference = A2A_SCHEMA_REFERENCES.get(value);
+  if (reference) return reference;
+  if (Array.isArray(value)) return value.map(referenceA2aChildren);
+  return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, referenceA2aChildren(child)]));
+}
+const A2A_OPENAPI_SCHEMAS = Object.fromEntries(
+  Object.entries(A2A_SCHEMA_SOURCES).map(([name, schema]) => [name,
+    Object.fromEntries(Object.entries(schema).map(([key, value]) => [key, referenceA2aChildren(value)])),
+  ]),
+);
 
 const JSON_RESPONSE: OpenApiObject = {
   content: { "application/json": { schema: { type: "object" } } },
@@ -207,6 +233,11 @@ const RATE_LIMIT_HEADER_SPEC: OpenApiObject = {
       'Both policies\' live state: "isolate";r=N;t=N, "global";r=N;t=N.',
   },
 };
+
+// Header names remain inline on each response; their definitions are shared.
+const RATE_LIMIT_HEADER_REFS: OpenApiObject = Object.fromEntries(
+  Object.keys(RATE_LIMIT_HEADER_SPEC).map(name => [name, { $ref: `#/components/headers/${name}` }]),
+);
 
 const TOO_MANY_REQUESTS: OpenApiObject = {
   ...PROBLEM_RESPONSE(
@@ -2141,6 +2172,10 @@ const TRADE_REFUSAL_SCHEMA: OpenApiObject = {
   },
 };
 
+const TRADE_CHECK_REF: OpenApiObject = { $ref: "#/components/schemas/TradeCheck" };
+const TRADE_DELIVERY_REF: OpenApiObject = { $ref: "#/components/schemas/TradeDelivery" };
+const TRADE_REFUSAL_REF: OpenApiObject = { $ref: "#/components/schemas/TradeRefusal" };
+
 function tradeHeader(name: string, description: string, required = true): OpenApiObject {
   return { name, in: "header", required, schema: { type: "string" }, description };
 }
@@ -2198,7 +2233,7 @@ function tradeCheckOperation(): OpenApiObject {
               "The body you would send to the order door, byte for byte.",
               TRADE_ORDER_BODY,
             ),
-            TRADE_CHECK_SCHEMA,
+            TRADE_CHECK_REF,
           ),
           [
             pathParam("partner", "The account id; use sandbox to test against the published secret."),
@@ -2220,7 +2255,7 @@ function tradeItemOperation(): OpenApiObject {
               "One JSON object: the item's fields plus optional order_ref, agent_name, purpose. Sign the exact bytes.",
               TRADE_ORDER_BODY,
             ),
-            TRADE_DELIVERY_SCHEMA,
+            TRADE_DELIVERY_REF,
           ),
           [
             pathParam("partner", "The account id from /api/trade/contract accounts[].account."),
@@ -2233,19 +2268,19 @@ function tradeItemOperation(): OpenApiObject {
           {
             "401": {
               description: "The signature, timestamp, nonce or provider key did not verify. delivered:false, billed:false, and the code names which.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed: this nonce or instruction was already presented. Nothing delivered on this call.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "429": {
               description: "The account's daily cap is reached.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "503": {
               description: "The counter is closed: the account is not provisioned on this side, or the replay store is unreachable.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         );
@@ -4838,7 +4873,7 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
             ...concrete,
             headers: {
               ...((concrete["headers"] as OpenApiObject) ?? {}),
-              ...RATE_LIMIT_HEADER_SPEC,
+              ...RATE_LIMIT_HEADER_REFS,
             },
           },
         ];
@@ -5381,6 +5416,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
       securitySchemes: { purchaseStatusToken: { type: "http", scheme: "bearer",
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
+        ...A2A_OPENAPI_SCHEMAS,
+        TradeCheck: TRADE_CHECK_SCHEMA,
+        TradeDelivery: TRADE_DELIVERY_SCHEMA,
+        TradeRefusal: TRADE_REFUSAL_SCHEMA,
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
         WatchCommission: WATCH_COMMISSION_SCHEMA,
@@ -5397,6 +5436,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         AskAnswer: ASK_SCHEMA,
       },
       responses: SHARED_RESPONSES,
+      headers: RATE_LIMIT_HEADER_SPEC,
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
     },
     /**
@@ -5907,11 +5947,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           {
             "401": {
               description: "The signature did not verify.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed nonce.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         ),
@@ -5935,11 +5975,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           {
             "401": {
               description: "The signature did not verify. delivered:false, billed:false, and the code names which check.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed nonce.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         ),
@@ -6456,11 +6496,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           URL_BODY,
         ), LOOK_VERDICT_SCHEMA)),
       },
-      "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } } },
-      "/api/a2a/check": { get: { security: [], summary: "Free A2A check instructions and limits", responses: { ...COMMON_RESPONSES, "200": { description: "Desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } }, post: { security: [], summary: "Free, bounded A2A 0.3.0 card check", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Unsigned checks, evidence, repairs and gaps", content: { "application/json": { schema: A2A_CHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Target refused"), "429": PROBLEM_RESPONSE("Budget exhausted; retry after 60 seconds") } } },
+      "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_DESK_SCHEMA)! } } } } } },
+      "/api/a2a/check": { get: { security: [], summary: "Free A2A check instructions and limits", responses: { ...COMMON_RESPONSES, "200": { description: "Desk contract", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_DESK_SCHEMA)! } } } } }, post: { security: [], summary: "Free, bounded A2A 0.3.0 card check", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Unsigned checks, evidence, repairs and gaps", content: { "application/json": { schema: A2A_CHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Target refused"), "429": PROBLEM_RESPONSE("Budget exhausted; retry after 60 seconds") } } },
       "/api/a2a/runner.mjs": { get: { security: [], summary: "Free downloadable Node regression runner; runs only on caller decision", responses: { ...COMMON_RESPONSES, "200": { description: "JavaScript attachment; Node 22+", content: { "text/javascript": { schema: { type: "string" } } } } } } },
-      "/api/a2a/kits/{kit_id}": { get: { security: [], summary: "Read an A2A repair kit, recheck and finite card watch", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], responses: { ...COMMON_RESPONSES, "200": { description: "Signed observations and suggested repairs; Accept text/html for a human report", content: { "application/json": { schema: A2A_KIT_SCHEMA } } }, "404": PROBLEM_RESPONSE("Kit not found") } } },
-      "/api/a2a/kits/{kit_id}/recheck": { post: { security: [], summary: "Use the included A2A recheck, authorized by the private purchase token", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["token"], properties: { token: { type: "string", maxLength: 100 } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Stored signed recheck; retries return the same result", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "202": { description: "Recheck started; no automatic replay after interruption", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Invalid body or operator authorization absent"), "403": PROBLEM_RESPONSE("Token invalid"), "410": PROBLEM_RESPONSE("Recheck period ended"), "503": PROBLEM_RESPONSE("Instrument failure; no pass claimed") } } },
+      "/api/a2a/kits/{kit_id}": { get: { security: [], summary: "Read an A2A repair kit, recheck and finite card watch", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], responses: { ...COMMON_RESPONSES, "200": { description: "Signed observations and suggested repairs; Accept text/html for a human report", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_KIT_SCHEMA)! } } }, "404": PROBLEM_RESPONSE("Kit not found") } } },
+      "/api/a2a/kits/{kit_id}/recheck": { post: { security: [], summary: "Use the included A2A recheck, authorized by the private purchase token", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["token"], properties: { token: { type: "string", maxLength: 100 } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Stored signed recheck; retries return the same result", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_RECHECK_SCHEMA)! } } }, "202": { description: "Recheck started; no automatic replay after interruption", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_RECHECK_SCHEMA)! } } }, "400": PROBLEM_RESPONSE("Invalid body or operator authorization absent"), "403": PROBLEM_RESPONSE("Token invalid"), "410": PROBLEM_RESPONSE("Recheck period ended"), "503": PROBLEM_RESPONSE("Instrument failure; no pass claimed") } } },
       "/api/onpage/v1": {
         get: returns(
           freeOp(

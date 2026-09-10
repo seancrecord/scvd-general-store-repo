@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DECISION_MEANING,
   decisionOf,
@@ -7,6 +7,7 @@ import {
   issueSelfPassport,
   type FreshnessState,
 } from "@/services/passport";
+import { passportRoutes } from "@/routes/passport";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
@@ -207,22 +208,35 @@ describe("the landing renders the compressed read, not only the JSON", () => {
     expect(example).toBeLessThan(walk);
   });
 
-  it("a host's own page shows the same block, and the JSON stays byte-identical", async () => {
-    await seedReadyHost();
-    const html = await (
-      await SELF.fetch(`${BASE}/passport/alpha.example`, {
+  it.each([
+    ["2026-08-27T10:00:00.000Z", "READY"],
+    ["2026-09-11T10:00:00.000Z", "EXPIRED"],
+  ])("a host's HTML and JSON agree at a fixed clock: %s -> %s", async (now, decision) => {
+    // The August fixture crossed its real-clock expiry on September 10.
+    // Run the actual router in this isolate so issuance and assertions use
+    // the same controlled Date; SELF's separate Worker has its own clock.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(now));
+    try {
+      await seedReadyHost();
+      const htmlResponse = await passportRoutes.request(`${BASE}/passport/alpha.example`, {
         headers: { Accept: "text/html" },
-      })
-    ).text();
-    expect(html).toContain('data-decision="READY"');
-    expect(html).toContain("valid_until");
-    expect(html).toContain("What this does not prove");
+      }, testEnv);
+      expect(htmlResponse.status).toBe(200);
+      const html = await htmlResponse.text();
+      expect(html).toContain(`data-decision="${decision}"`);
+      expect(html).toContain("valid_until");
+      expect(html).toContain("What this does not prove");
 
-    const json = (await (
-      await SELF.fetch(`${BASE}/passport/alpha.example`, {
+      const jsonResponse = await passportRoutes.request(`${BASE}/passport/alpha.example`, {
         headers: { Accept: "application/json" },
-      })
-    ).json()) as { payload: { summary: { decision: string } } };
-    expect(json.payload.summary.decision).toBe("READY");
+      }, testEnv);
+      expect(jsonResponse.status).toBe(200);
+      const json = await jsonResponse.json() as { payload: { issued_at: string; summary: { decision: string } } };
+      expect(json.payload.issued_at).toBe(now);
+      expect(json.payload.summary.decision).toBe(decision);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

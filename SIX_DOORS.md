@@ -344,3 +344,13 @@ revisits. That is the whole distinction between the two loops.
 - A criterion is a claim about this store, so it ships with the command
   that checks it (rule 55) and it must be able to fail (rule 46).
 - Nothing here reads on anybody but us.
+
+## September 10 OpenAPI headroom follow-through
+
+The new local five-network budget test counts UTF-8 bytes. Shared response
+schemas and header definitions reduce its fixture from 719,243 to 695,456
+bytes with the expanded contract unchanged. Inline request parameters
+remain available to naive readers. The direct live reading at 13:15 UTC
+was still 710,387 bytes; production release verification remains pending.
+Implementation, latency limits and package implications:
+`docs/OPENAPI_HEADROOM_2026-09.md`.
