@@ -161,7 +161,7 @@ export const NEIGHBOUR_RECEIPTS: readonly NeighbourReceipt[] = [
     we_asked:
       "Bought ping, then token/price for a real mint address, on the Solana rail.",
     came_back:
-      "Ping settled fine. token/price SETTLED $0.01 on-chain (real transaction), then 404'd “Token not found” — payment taken before resource validation.",
+      "Ping settled fine. token/price SETTLED $0.01 on-chain (real transaction), then 404'd “Token not found” — payment taken before resource validation. The settlement is Solana mainnet signature qnmeaFjfRE2iMVVtcVCyGmu5mgT56ddyoDBe62AJ5Ai84ydU8rBiN2svFQX7YaqT7KQVaLtBirLreKpnSp9gmAQ: err null, one transferChecked of exactly 10,000 USDC base units ($0.01) to the USDC mint, blockTime 2026-09-09T14:26:23Z, 41 seconds before our ledger stamp. Check it at https://solscan.io/tx/qnmeaFjfRE2iMVVtcVCyGmu5mgT56ddyoDBe62AJ5Ai84ydU8rBiN2svFQX7YaqT7KQVaLtBirLreKpnSp9gmAQ",
     our_reading:
       "The one door in three field runs where money moved and nothing came back for it. $0.01 of tuition: settle-after-validate is a real ordering property, and this is what it looks like backwards.",
     bought_by: "CV",
