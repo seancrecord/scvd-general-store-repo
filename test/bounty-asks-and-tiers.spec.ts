@@ -124,7 +124,22 @@ afterEach(async () => {
 describe("a listing's length is chosen, not inherited", () => {
   it("posts a sprint, a standard and a long, and publishes which is which", async () => {
     vi.stubGlobal("fetch", world());
-    const now = new Date("2026-09-08T12:00:00.000Z");
+    /*
+     * THE CLOCK IS RELATIVE, AND THAT IS A CORRECTION (2026-09-10).
+     * This used to post at a hardcoded 2026-09-08T12:00Z, which made
+     * the sprint listing expire at 2026-09-10T12:00Z — while the room
+     * below is rendered against the REAL wall clock. So the test
+     * passed all morning and began failing at midday on the tenth,
+     * for no reason connected to the code it guards. A fixture whose
+     * verdict depends on the hour it is run is not a guard.
+     *
+     * Anchored to now, every tier's window is open while the assertion
+     * runs, and the expiries are derived from the same instant the
+     * listing was posted at rather than typed in.
+     */
+    const now = new Date();
+    const after = (days: number): string =>
+      new Date(now.getTime() + days * 86_400_000).toISOString();
     const sprint = await openBounty(
       testEnv,
       { targetUrl: DOOR, rewardUsd: 0.1, tier: "sprint" },
@@ -132,7 +147,7 @@ describe("a listing's length is chosen, not inherited", () => {
     );
     expect(sprint.tier).toBe("sprint");
     expect(sprint.open_days).toBe(BOUNTY_TIERS.sprint);
-    expect(sprint.expires_at).toBe("2026-09-10T12:00:00.000Z");
+    expect(sprint.expires_at).toBe(after(BOUNTY_TIERS.sprint));
 
     const long = await openBounty(
       testEnv,
@@ -140,7 +155,7 @@ describe("a listing's length is chosen, not inherited", () => {
       { fetch: world(), now },
     );
     expect(long.open_days).toBe(21);
-    expect(long.expires_at).toBe("2026-09-29T12:00:00.000Z");
+    expect(long.expires_at).toBe(after(21));
 
     const board = await bountyBoard(testEnv, now);
     const room = await (
@@ -724,6 +739,7 @@ describe("the ask is a shape, and the door teaches on the way past", () => {
       "body_sha256",
       "bytes",
       "content_type",
+      "etag",
       "latency_ms",
       "payment_response",
       "status",
@@ -806,6 +822,7 @@ describe("the ask is a shape, and the door teaches on the way past", () => {
         bytes: 1234,
         latency_ms: 850,
         content_type: "application/json",
+        etag: 'W/"d28-1jERcbmO1KX0"',
       },
     });
     expect(result.your_report.missing).toHaveLength(0);

@@ -480,6 +480,12 @@ export const KV_KEYS = {
   bountyBudget: (weekKey: string): string => `bounty_budget:${weekKey}`,
   bountyTx: (txLower: string): string => `bounty_tx:${txLower}`,
   /**
+   * THE STANDING ORDER the keeper leaves for the board (2026-09-10):
+   * how many weeks to keep posting, how much a week may commit, and
+   * the mix. One value, rewritten as it counts down.
+   */
+  bountyPlan: "bounty_plan",
+  /**
    * Regulars' credit (services/store-credit.ts): the per-wallet
    * rebate balance, the outstanding-liability aggregate the books
    * watch, and the single-use cash-out challenge. COUNTERS. Keys are
