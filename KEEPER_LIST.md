@@ -1093,6 +1093,57 @@ Do not relitigate without you.
   each of the two new pages actually measures, so the row can say
   it in their words; and whether either offers a claim or refresh
   route. Indexing only, not an endorsement or proof of purchases.
+- **PublishYourSaaS, AI Tools Capital, Cursor re-read.** DONE
+  2026-09-10 (second press of the day): two more keeper-supplied
+  pages are trust rows —
+  https://publishyoursaas.com/listing/scvd-store (opens with the
+  sixty words' first sentence) and
+  https://aitoolscapital.com/tools/scvd-general-store/ (a
+  review-shaped page). The Cursor Directory page you pasted reads
+  right where it derives from this tree: both MCP servers carry
+  the exact configs `mcp.json` declares, one skill, the
+  evidence-observatory lead. Its tag cloud is a cached snapshot
+  (clawdhub, openclaw, personal-agents, marketplace beside the
+  current topics) — nothing to change here; it lags until their
+  rescan. Row refreshed. Neither new host answers the sandbox;
+  rows say what the search snippets showed and no more.
+- **The listing scan (2026-09-10).** LOOK, five minutes each,
+  in this order; each is a register row and becomes a trust row
+  the day you open it (`research/listing-scan-2026-09-10.md`
+  has the snippets):
+  1. https://agenteconomy.report/s/scvd.store — rates us CCC
+     "declining": 6 organic paying agents, $1 settled, 66%
+     uptime. The till and x402-list's 100% row disagree with
+     it. Read how it counts before deciding who is wrong.
+  2. https://vouch-protocol.com/agent-trust-index/ — grade A,
+     100, on did:web + Ed25519 JWK. One table, no page of ours.
+  3. https://x402lens.com/services/scvd-general-store-scvd-store
+     — per-door listing; its facilitator page puts us at
+     $777.77 routed through Coinbase. Their denominator.
+  4. https://trylaunch.ai/launch/scvd-store — posted by
+     "davidaidirectories", not you. Is that one of the paid
+     directories? The row does not know.
+  5. https://whattheai.tech/tools/scvd-store — reads us as
+     consumer-trend analytics. Wrong; find the correction route.
+  6. https://talkshi.com/agent/x402-scvd-store — a marketplace
+     that routes x402 calls through its own account and carries
+     reviews. What does our profile say?
+  7. https://www.influzer.ai/mcp/seancrecord-scvd-general-store-repo
+     — a mirror of mcpservers.org; its second entry still
+     carries the July name.
+  8. https://pluginbench.com/mcp/store.scvd/general-store —
+     guessed from their pattern; we appear in the rails of
+     other servers' pages with the August text.
+- **`STORE_TAGS` said agent-memory and human-labor.** RULED
+  2026-09-10 ("this sounds like we need to update it"): the two
+  July tags came out of `src/store/metadata.ts` and `plugin.json`,
+  and `attestation` and `conformance` went in — the nouns the
+  sixty words and the registry description lead with. Still five,
+  the Bazaar payload cap. What reads them: the Bazaar registration
+  (re-registers on the next press), the ARD catalog and the
+  well-known files (live on deploy), and the plugin keywords
+  (Cursor and the plugin directories pick them up on rescan).
+  LOOK after the deploy: `/.well-known/x402` carries the five.
 - **Agent Almanac.** Submit returned 500. Optional: issue
   on `jonradoff/awesome-agent-almanac`, or email
   hello@agentalmanac.org. Not worth a fight.

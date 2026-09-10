@@ -794,6 +794,13 @@ are not:
   for the store's x402 doors, opened by the keeper 2026-09-10. Same
   edge as the row above: an endpoint index proves the doors were
   found, nothing about the goods behind them.
+- **PublishYourSaaS** — [a launch-directory listing](https://publishyoursaas.com/listing/scvd-store)
+  that opens with the sixty words' first sentence, verbatim; opened
+  by the keeper 2026-09-10. A listing and nothing else.
+- **AI Tools Capital** — [a review-shaped page](https://aitoolscapital.com/tools/scvd-general-store/)
+  ("Worth It?") in an AI-tools directory, opened by the keeper
+  2026-09-10. Its verdict is its own; the row records that the page
+  exists and what it leads with.
 - **Seen, no page to link** — the
   [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
   servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)
