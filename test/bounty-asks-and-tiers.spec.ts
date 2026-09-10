@@ -140,7 +140,7 @@ describe("a listing's length is chosen, not inherited", () => {
       expect(sprint.tier).toBe("sprint");
       expect(sprint.open_days).toBe(BOUNTY_TIERS.sprint);
       expect(sprint.expires_at).toBe("2026-09-10T12:00:00.000Z");
-  
+
       const long = await openBounty(
         testEnv,
         { targetUrl: "https://other.example/api", rewardUsd: 0.1, tier: "long" },
@@ -148,7 +148,7 @@ describe("a listing's length is chosen, not inherited", () => {
       );
       expect(long.open_days).toBe(21);
       expect(long.expires_at).toBe("2026-09-29T12:00:00.000Z");
-  
+
       const board = await bountyBoard(testEnv, now);
       const room = await (
         await bountyRoutes.request(`${BASE}/bounties`, { headers: { Accept: "text/html" } }, testEnv)
