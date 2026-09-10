@@ -1,3 +1,4 @@
+import type { OperatorStatementRecord, OperatorStatementPass } from "@/services/operator-statement";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -8,7 +9,7 @@ import type { Env } from "@/types";
 import { signMessage } from "@/lib/signing";
 import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
 
-export const WATCH_SPACING_MS = { standing: 55 * 60_000, conformance: 23 * 3600_000 } as const;
+export const WATCH_SPACING_MS = { standing: 55 * 60_000, conformance: 23 * 3600_000, operator: 5.75 * 3600_000 } as const;
 export interface WatchCommission {
   signed_payload: string;
   signature: string;
@@ -18,7 +19,8 @@ export interface WatchCommission {
 
 export type RecoverableWatch =
   | { kind: "standing"; record: StandingWatchRecord }
-  | { kind: "conformance"; record: ConformanceWatchRecord };
+  | { kind: "conformance"; record: ConformanceWatchRecord }
+  | { kind: "operator"; record: OperatorStatementRecord };
 export interface WatchPurchase { checkpoint?: ArtifactCheckpoint; purchasedAt?: string; certId?: string; itemId?: "opening_day" }
 interface WatchJournal { value: RecoverableWatch; count: number }
 type WatchStorage = Pick<DurableObjectStorage, "get" | "list">;
@@ -41,14 +43,16 @@ async function readWatch(storage: WatchStorage): Promise<RecoverableWatch | null
   if (saved.value.kind === "standing") return { kind: "standing", record: {
     ...saved.value.record, probes: await readEntries<WatchProbe>(storage, saved.count),
   } };
-  return { kind: "conformance", record: {
+  if (saved.value.kind === "conformance") return { kind: "conformance", record: {
     ...saved.value.record, passes: await readEntries<ConformancePass>(storage, saved.count),
   } };
+  return { kind: "operator", record: { ...saved.value.record, passes: await readEntries<OperatorStatementPass>(storage, saved.count) } };
 }
 const entriesOf = (value: RecoverableWatch) => value.kind === "standing" ? value.record.probes : value.record.passes;
 function withoutEntries(value: RecoverableWatch): RecoverableWatch {
-  return value.kind === "standing" ? { kind: "standing", record: { ...value.record, probes: [] } }
-    : { kind: "conformance", record: { ...value.record, passes: [] } };
+  if (value.kind === "standing") return { kind: "standing", record: { ...value.record, probes: [] } };
+  if (value.kind === "conformance") return { kind: "conformance", record: { ...value.record, passes: [] } };
+  return { kind: "operator", record: { ...value.record, passes: [] } };
 }
 
 export async function retainWatch<T extends RecoverableWatch>(purchase: WatchPurchase | undefined, prepare: () => Promise<T>): Promise<T> {
@@ -57,7 +61,7 @@ export async function retainWatch<T extends RecoverableWatch>(purchase: WatchPur
   const value = await prepare();
   return purchase?.checkpoint ? purchase.checkpoint.save("watch_record", value) : value;
 }
-export async function signWatchCommission(env: Env, kind: RecoverableWatch["kind"], record: RecoverableWatch["record"], certId?: string, itemId?: "opening_day"): Promise<WatchCommission | undefined> {
+export async function signWatchCommission(env: Env, kind: "standing" | "conformance", record: StandingWatchRecord | ConformanceWatchRecord, certId?: string, itemId?: "opening_day"): Promise<WatchCommission | undefined> {
   if (!certId) return undefined; // Existing direct-service callers and legacy rows carry no purchase certificate.
   const signed_payload = jcsCanonicalize({ type: "scvd.watch-commission.v1", cert_id: certId,
     item_id: itemId ?? (kind === "standing" ? "standing_watch" : "conformance_watch"), watch_id: record.watch_id,
@@ -68,6 +72,7 @@ export async function signWatchCommission(env: Env, kind: RecoverableWatch["kind
     public_key: signed.publicKey, signature_covers: "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. The commission binds this watch to its purchase certificate; observations are signed separately." };
 }
 function watchKey(value: RecoverableWatch): string {
+  if (value.kind === "operator") return KV_KEYS.operatorStatement(value.record.statement_id);
   return value.kind === "standing" ? KV_KEYS.standingWatch(value.record.watch_id) : KV_KEYS.conformanceWatch(value.record.watch_id);
 }
 function commission(value: RecoverableWatch): string {
@@ -111,6 +116,8 @@ export class WatchRecoveryStore {
           selected = { kind: "standing", record: { ...current.record, probes: merge(current.record.probes, proposal.record.probes, WATCH_SPACING_MS.standing) } };
         } else if (current.kind === "conformance" && proposal.kind === "conformance") {
           selected = { kind: "conformance", record: { ...current.record, passes: merge(current.record.passes, proposal.record.passes, WATCH_SPACING_MS.conformance) } };
+        } else if (current.kind === "operator" && proposal.kind === "operator") {
+          selected = { kind: "operator", record: { ...current.record, passes: mergeOperator(current.record, proposal.record.passes) } };
         } else throw new Error("Watch kind mismatch");
         const entries = entriesOf(selected), retained = journal ? entriesOf(journal).length : 0;
         // A full week can exceed SQLite's per-value limit. Retain each signed
@@ -138,6 +145,20 @@ function merge<T extends { at: string }>(current: T[], proposal: T[], spacing: n
   for (const entry of proposal) {
     const last = result[result.length - 1];
     if (!last || Date.parse(entry.at) - Date.parse(last.at) >= spacing) result.push(entry);
+  }
+  return result;
+}
+
+function mergeOperator(current: OperatorStatementRecord, proposal: OperatorStatementPass[]): OperatorStatementPass[] {
+  const result = [...current.passes];
+  for (const entry of proposal) {
+    const last = result.at(-1), completed = [...result].reverse().find(row => row.coverage === "complete");
+    const from = completed ? completed.to_block + 1 : current.opened_at_block;
+    // A later cron can have read stale KV. Its signed overlapping range cannot
+    // be appended as new coverage or rewritten to pretend it read another range.
+    if (entry.from_block !== from || (last && Date.parse(entry.at) - Date.parse(last.at) < WATCH_SPACING_MS.operator) ||
+      Date.parse(entry.at) < Date.parse(current.started_at) || Date.parse(entry.at) > Date.parse(current.ends_at)) continue;
+    result.push(entry);
   }
   return result;
 }

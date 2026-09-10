@@ -1,3 +1,5 @@
+import type { PreparedPatronage } from "@/services/patronage-recovery";
+import type { OperatorStatementRecord } from "@/services/operator-statement";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import type { SignedCaseFile } from "@/services/case-file";
 import type { SignedMandate } from "@/services/mandates";
@@ -21,6 +23,8 @@ import { supportsObservationRecovery } from "@/lib/artifact-checkpoint";
 import { SettlementDeclined } from "@/lib/payments";
 
 export interface PreparedObservation {
+  patronage?: PreparedPatronage;
+  operatorStatement?: OperatorStatementRecord;
   launchCheck?: SignedLaunchCheck;
   caseFile?: SignedCaseFile;
   caseFileReused?: boolean;

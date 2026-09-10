@@ -1,5 +1,8 @@
+import { canonicalAddress } from "@/lib/addresses";
+import { jcsCanonicalize } from "@/lib/jcs";
+import { publishWatch, retainWatch, type WatchCommission, type WatchPurchase } from "@/services/watch-recovery";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson } from "@/lib/kv-retry";
 import { signMessage } from "@/lib/signing";
 import { usdcFromUnits } from "@/lib/base-rpc";
 import { BASE_RAIL, EVM_BLOCKS_PER_HOUR, railOfCaip2, type RailUnit, type StatementRail } from "@/lib/statement-rails";
@@ -89,11 +92,12 @@ export interface OperatorStatementPass {
   evidence_hash: string;
   signature: string;
   public_key: string;
+  signed_payload?: string;
 }
 
 export interface OperatorStatementRecord {
   statement_id: string;
-  /** The receiving address the operator named, lowercased. */
+  /** The receiving address, normalized only as its chain permits. */
   wallet: string;
   chain: string;
   asset: string;
@@ -102,6 +106,7 @@ export interface OperatorStatementRecord {
   /** The wallet that paid, for the claims door. */
   payer?: string;
   cert_id?: string;
+  commission?: WatchCommission;
   /** The first block the term covers: the head at purchase, plus one. */
   opened_at_block: number;
   passes: OperatorStatementPass[];
@@ -133,6 +138,8 @@ export interface OperatorStatementHistory {
   started_at: string;
   ends_at: string;
   complete: boolean;
+  opened_at_block: number;
+  commission?: WatchCommission;
   summary: OperatorStatementSummary;
   passes: OperatorStatementPass[];
   how_to_verify: string;
@@ -148,52 +155,40 @@ export function newOperatorStatementId(): string {
   return `ostmt_${newEntryId()}`;
 }
 
-/** Open a term: one record, the head at purchase as the opening block, no passes yet. */
-export async function startOperatorStatement(
-  env: Env,
-  wallet: string,
-  chain: StatementRail = BASE_RAIL,
-  payer?: string,
-): Promise<{ record: OperatorStatementRecord; historyUrl: string }> {
+/** Retain a real opening position before settlement; an unreadable head cannot
+ * be replaced with genesis or with a different head on a paid retry. */
+export async function prepareOperatorStatement(env: Env, wallet: string, chain: StatementRail = BASE_RAIL, payer?: string): Promise<OperatorStatementRecord> {
   const now = new Date();
-  let head = 0;
-  try {
-    head = await chain.head(env);
-  } catch {
-    // An unreadable head at purchase opens the term from block 0's
-    // successor of "whatever the first pass reads": the first pass
-    // records from_block = 1 and its own head, and the summary's
-    // blocks_since_open is measured from that pass. Never a throw at
-    // the till for a chain moment.
-    head = 0;
-  }
-  const record: OperatorStatementRecord = {
-    statement_id: newOperatorStatementId(),
-    wallet: chain.normalize(wallet),
-    chain: chain.caip2,
-    asset: chain.usdc,
-    started_at: now.toISOString(),
-    ends_at: new Date(now.getTime() + OPERATOR_STATEMENT_TERM_DAYS * 86_400_000).toISOString(),
-    ...(payer ? { payer: payer.toLowerCase() } : {}),
-    opened_at_block: head + 1,
-    passes: [],
-  };
-  await kvPut(env.ORDERS, KV_KEYS.operatorStatement(record.statement_id), JSON.stringify(record));
+  const head = await chain.head(env);
+  if (!Number.isSafeInteger(head) || head < 0 || head >= Number.MAX_SAFE_INTEGER) throw new Error("Opening chain position unavailable");
   return {
-    record,
-    historyUrl: `${env.STORE_BASE_URL}/api/operator-statement/${record.statement_id}`,
+    statement_id: newOperatorStatementId(), wallet: chain.normalize(wallet), chain: chain.caip2, asset: chain.usdc,
+    started_at: now.toISOString(), ends_at: new Date(now.getTime() + OPERATOR_STATEMENT_TERM_DAYS * 86400_000).toISOString(),
+    ...(payer ? { payer: canonicalAddress(payer) } : {}), opened_at_block: head + 1, passes: [],
   };
 }
 
-export async function bindOperatorStatementCert(
-  env: Env,
-  statementId: string,
-  certId: string,
-): Promise<void> {
-  const record = await readOperatorStatement(env, statementId);
-  if (!record) return;
-  record.cert_id = certId;
-  await kvPut(env.ORDERS, KV_KEYS.operatorStatement(statementId), JSON.stringify(record));
+export async function startOperatorStatement(
+  env: Env, wallet: string, chain: StatementRail = BASE_RAIL, payer?: string,
+  purchase?: WatchPurchase & { prepared?: OperatorStatementRecord },
+): Promise<{ record: OperatorStatementRecord; historyUrl: string }> {
+  const retained = await retainWatch(purchase, async () => {
+    const record = purchase?.prepared ?? await prepareOperatorStatement(env, wallet, chain, payer);
+    const preparationHash = await sha256Hex(jcsCanonicalize(record));
+    if (payer) record.payer = canonicalAddress(payer);
+    if (purchase?.certId) {
+      record.cert_id = purchase.certId;
+      const { passes: _passes, commission: _commission, ...terms } = record;
+      const signed_payload = jcsCanonicalize({ type: "scvd.operator-commission.v1", item_id: "operator_statement", ...terms,
+        preparation_hash: preparationHash, interval_hours: OPERATOR_PASS_HOURS });
+      const signed = await signMessage(signed_payload, env.SIGNING_KEY);
+      record.commission = { signed_payload, signature: signed.signature, public_key: signed.publicKey,
+        signature_covers: "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. The commission binds the wallet, chain, asset, opening position and original term to its purchase certificate." };
+    }
+    return { kind: "operator" as const, record };
+  });
+  const saved = await publishWatch(env, retained);
+  return { record: saved.record, historyUrl: `${env.STORE_BASE_URL}/api/operator-statement/${saved.record.statement_id}` };
 }
 
 export async function readOperatorStatement(
@@ -295,7 +290,8 @@ export async function passOnce(
     payers_capped: payersCapped,
   };
   const evidenceHash = await sha256Hex(JSON.stringify(core));
-  const signed = await signMessage(JSON.stringify({ ...core, evidence_hash: evidenceHash }), env.SIGNING_KEY);
+  const signed_payload = JSON.stringify({ ...core, evidence_hash: evidenceHash });
+  const signed = await signMessage(signed_payload, env.SIGNING_KEY);
   return {
     at: core.at,
     from_block: fromBlock,
@@ -311,6 +307,7 @@ export async function passOnce(
     evidence_hash: evidenceHash,
     signature: signed.signature,
     public_key: signed.publicKey,
+    signed_payload,
   };
 }
 
@@ -324,6 +321,7 @@ export async function sweepOperatorStatements(env: Env, now: number = Date.now()
     budget: OPERATOR_PASSES_PER_SWEEP,
     entriesOf: (record) => record.passes,
     observe: (record) => passOnce(env, record, new Date(now)),
+    publish: async record => { await publishWatch(env, { kind: "operator", record }); },
     now,
   });
 }
@@ -385,6 +383,8 @@ export function operatorStatementHistoryOf(
     started_at: record.started_at,
     ends_at: record.ends_at,
     complete: now > Date.parse(record.ends_at),
+    opened_at_block: record.opened_at_block,
+    ...(record.commission ? { commission: record.commission } : {}),
     summary: {
       passes_taken: record.passes.length,
       passes_expected: passesExpected,
@@ -401,7 +401,7 @@ export function operatorStatementHistoryOf(
     },
     passes: record.passes,
     how_to_verify:
-      "Each pass is signed on its own: ed25519_verify over the JSON of statement_id, wallet, chain, asset, at, from_block, to_block, chain_head_at_read, coverage, read_error (when present), inflows, outflows, payers, payers_capped and evidence_hash, in that order, against the pass's public_key; the key's continuity policy is at /.well-known/scvd-signing-key. Every count re-derives from indexed eth_getLogs over exactly the block range the pass states, on the chain and asset it names. The summary is arithmetic over the passes — recount it without us.",
+      "Each new pass carries signed_payload: verify its exact UTF-8 bytes and compare its fields with the pass and history. Legacy passes use the JSON of statement_id, wallet, chain, asset, at, from_block, to_block, chain_head_at_read, unit (when present), coverage, read_error (when present), inflows, outflows, payers, payers_capped and evidence_hash, in that order, against the pass's public_key; the key's continuity policy is at /.well-known/scvd-signing-key. Every count re-derives from indexed eth_getLogs over exactly the block range the pass states, on the chain and asset it names. The summary is arithmetic over the passes — recount it without us.",
     what_this_is_not:
       "Not revenue, not a rating, not a share of anything: counts with their denominators beside them, and the reader divides. distinct_payers and largest_payer are read off the senders of USDC transfers into this address and say nothing about who those senders are or what the transfers were for. blocks_unread and passes_missed are our gaps, stated against us. A window_unreadable pass is a fact about our read, never about the address.",
   };

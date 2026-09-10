@@ -1,12 +1,15 @@
 import { creditPickup } from "@/lib/credit-terms";
 import { buyerGuidance } from "@/lib/buyer-guidance";
+import { prepareOperatorStatement } from "@/services/operator-statement";
+import { sha256Hex } from "@/lib/idempotency";
+import { jcsCanonicalize } from "@/lib/jcs";
 import { preparePatronAnchor, type PreparedPatronAnchor } from "@/services/patron-anchors";
 import { publishHostedObservation } from "@/services/hosted-observation";
 import { prepareA2AKit } from "@/services/a2a-kit";
 import { getOrder } from "@/services/orders";
 import { artifactCheckpoint, supportsArtifactRecovery, supportsSimpleInstantRecovery, type ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
-import { requireRenewalPass } from "@/services/patronage";
+import { preparePatronage, InvalidPatronageTarget } from "@/services/patronage";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { storeIdentity } from "@/lib/identity";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
@@ -209,6 +212,7 @@ export async function fulfillPurchase(
   const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
     try { return await work(); }
     catch (error) {
+      if (error instanceof InvalidPatronageTarget) throw error;
       if (pending.observation?.unavailable) return pending.observation.unavailable(error);
       throw error;
     }
@@ -522,6 +526,17 @@ export async function fulfillPurchase(
     patronAnchor = await preparePatronAnchor({ digest: input.anchorDigest ?? "", label: input.anchorLabel });
     mintOptions.attests = patronAnchor.digest;
   }
+  let patronage = retainedObservation?.patronage;
+  if (item.id === "recurring_patronage" && !retainedObservation) {
+    patronage = await retainHosted(() => preparePatronage(env, input.passId, input.agentName));
+    mintOptions.attests = await sha256Hex(jcsCanonicalize(patronage));
+  }
+  let operatorStatement = retainedObservation?.operatorStatement;
+  if (item.id === "operator_statement" && !retainedObservation) {
+    operatorStatement = await retainHosted(() => prepareOperatorStatement(env, input.statementWallet ?? "",
+      statementChain(input.statementNetwork) ?? undefined, pending.payer));
+    mintOptions.attests = await sha256Hex(jcsCanonicalize(operatorStatement));
+  }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
     mintOptions.witness = true;
@@ -531,7 +546,7 @@ export async function fulfillPurchase(
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
       attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, provenanceCheck,
-      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused, launchCheck,
+      walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused, launchCheck, patronage, operatorStatement,
       attests: mintOptions.attests!,
     });
     attestation = prepared.attestation;
@@ -550,10 +565,13 @@ export async function fulfillPurchase(
     mandate = prepared.mandate;
     patronAnchor = prepared.patronAnchor;
     launchCheck = prepared.launchCheck;
+    patronage = prepared.patronage;
+    operatorStatement = prepared.operatorStatement;
     caseFile = prepared.caseFile;
     caseFileReused = prepared.caseFileReused ?? false;
     if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor) ||
       (item.id === "the_case_file" && !caseFile) ||
+      (item.id === "recurring_patronage" && !patronage) || (item.id === "operator_statement" && !operatorStatement) ||
       (["launch_check", "opening_day"].includes(item.id) && !launchCheck)) {
       const error = new Error("Original purchased record unavailable");
       if (pending.observation.unavailable) await pending.observation.unavailable(error);
@@ -572,11 +590,6 @@ export async function fulfillPurchase(
    * which is the cheap direction. A failure BELOW is the one case the
    * delivery audit still exists for.
    */
-  // Admission may have preceded slow verification or observation. Check the
-  // named renewal again at the last point where refusal costs nothing.
-  if (item.id === "recurring_patronage" && input.passId !== undefined) {
-    await requireRenewalPass(env, input.passId);
-  }
   // A failed publication costs a new buyer nothing. A paid recovery republishes
   // the original commission without probing or extending its term again.
   if (passportRefresh) await retainHosted(() => publishHostedObservation(env, { kind: "passport_refresh", report: passportRefresh! }));
@@ -790,6 +803,7 @@ export async function fulfillPurchase(
   if (item.fulfillment === "instant") {
     const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
       patronNumber: minted.patronNumber,
+      patronage, operatorStatement,
       purchasedAt: purchaseCreatedAt,
     };
     // The watches record it so a lost id is recoverable by proving

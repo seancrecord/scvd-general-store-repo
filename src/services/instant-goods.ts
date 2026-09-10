@@ -39,7 +39,7 @@ import {
   type SignedGoodBuyerReading,
 } from "@/services/good-buyer";
 import { startWatch } from "@/services/standing-watch";
-import { bindOperatorStatementCert, startOperatorStatement } from "@/services/operator-statement";
+import { startOperatorStatement } from "@/services/operator-statement";
 import { statementChain } from "@/services/wallet-statement";
 import { startConformanceWatch } from "@/services/conformance-watch";
 import {
@@ -80,6 +80,8 @@ import type { Env, MenuItem } from "@/types";
  */
 
 export interface InstantGoodsInput {
+  patronage?: import("@/services/patronage-recovery").PreparedPatronage;
+  operatorStatement?: import("@/services/operator-statement").OperatorStatementRecord;
   patronNumber: number;
   /** Original purchase date for a fortune recovered after midnight. */
   purchasedAt?: string;
@@ -200,13 +202,15 @@ export async function deliverInstantGoods(
       if (input.agentName) {
         passInput.agentName = input.agentName;
       }
-      const result = await createOrRenewPass(env, passInput);
+      const result = await createOrRenewPass(env, passInput, input.patronage && input.certId
+        ? { prepared: input.patronage, certId: input.certId } : undefined);
       return {
         deliverable: patronagePassNote(
           result.pass.pass_id,
           result.pass.expires_at,
         ),
         extras: {
+          commission: result.commission,
           pass_id: result.pass.pass_id,
           expires_at: result.pass.expires_at,
           renewed: result.renewed,
@@ -251,15 +255,12 @@ export async function deliverInstantGoods(
         input.statementWallet ?? "",
         statementChain(input.statementNetwork) ?? undefined,
         input.payer,
+        { checkpoint, certId: input.certId, prepared: input.operatorStatement },
       );
-      // The certificate minted first; the term carries its id so the
-      // history can point at the purchase that opened it.
-      if (input.certId) {
-        await bindOperatorStatementCert(env, term.record.statement_id, input.certId);
-      }
       return {
         deliverable: `A month of ${term.record.wallet} on ${term.record.chain}, read off the chain four times a day until ${term.record.ends_at}. The history is readable now at ${term.historyUrl} and fills in pass by pass; each pass is signed alone, the passes we miss are counted against us on the same page, and the term ends on its date without renewing itself.`,
         extras: {
+          commission: term.record.commission,
           statement_id: term.record.statement_id,
           ends_at: term.record.ends_at,
           history_url: term.historyUrl,
