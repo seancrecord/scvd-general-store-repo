@@ -1,0 +1,63 @@
+{
+  "read_at": "2026-09-10T18:11:53.893557+00:00",
+  "limits": "Two explicitly selected public records; reported lifecycle fields only, no fresh signature or Bitcoin proof verification. No population or time-to-publication estimate.",
+  "records": [
+    {
+      "url": "https://scvd.store/corpus/1.json",
+      "status": 200,
+      "bytes": 15869,
+      "top_level_fields": [
+        "snapshot",
+        "digest",
+        "signature",
+        "public_key",
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ],
+      "reported_lifecycle": [
+        {
+          "path": "/ots",
+          "status": "complete",
+          "submitted_at": "2026-08-09T11:00:46.588Z",
+          "upgraded_at": "2026-09-09T14:31:35.366Z"
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/api/verify/cert_et6zuesrrn",
+      "status": 200,
+      "bytes": 8701,
+      "top_level_fields": [
+        "valid",
+        "store_identity",
+        "certificate",
+        "offline_verification",
+        "signature",
+        "public_key",
+        "signed_by",
+        "algorithm",
+        "signed_payload",
+        "artifact_hash",
+        "signature_covers",
+        "existence",
+        "cite",
+        "cite_format",
+        "signature_jcs",
+        "signature_jcs_valid",
+        "signature_jcs_payload",
+        "signature_jcs_covers",
+        "note"
+      ],
+      "reported_lifecycle": [
+        {
+          "path": "/existence",
+          "status": "bounded",
+          "submitted_at": "2026-09-06T23:30:36.019Z",
+          "upgraded_at": "2026-09-07T01:30:18.781Z"
+        }
+      ]
+    }
+  ]
+}

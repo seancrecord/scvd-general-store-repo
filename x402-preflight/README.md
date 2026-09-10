@@ -1,4 +1,4 @@
-# x402-preflight
+# scvd-preflight
 
 Zero-dependency client for [scvd.store](https://scvd.store)'s free x402
 door check, as a library and a command. One `POST /api/preflight/v2`
@@ -10,13 +10,13 @@ buyer does). This package keeps that answer whole and adds the deploy
 gate's exit law on top.
 
 ```
-npm install x402-preflight
+npm install scvd-preflight
 ```
 
 ## Use
 
 ```js
-import { preflightOne, exitCodeFor, remediation } from "x402-preflight";
+import { preflightOne, exitCodeFor, remediation } from "scvd-preflight";
 
 const result = await preflightOne("https://door.example/api/paid");
 result.outcome;                 // "ready" | "not_ready" | "unreachable" | "refused" | "store_unreachable"
@@ -26,7 +26,7 @@ process.exit(exitCodeFor([result]));
 ```
 
 ```
-npx x402-preflight https://door.example/api/paid https://door.example/api/other --fail-on not_ready
+npx scvd-preflight https://door.example/api/paid https://door.example/api/other --fail-on not_ready
 ```
 
 ## The exit law

@@ -1,0 +1,71 @@
+[
+  {
+    "id": "scvd-preflight@0.1.0",
+    "name": "scvd-preflight",
+    "version": "0.1.0",
+    "size": 11163,
+    "unpackedSize": 42848,
+    "shasum": "d9e86ec65318016b1c640f040fedbfd35b87f098",
+    "integrity": "sha512-0jfdGI9T/rAtwNgDL+mcHbXhwwBZ02hOavQtLlZ+5tRRSF33Ma6Zcgsl/OWJWJ0nqYDsm6mtOmdzjOcZVt2Ohw==",
+    "filename": "scvd-preflight-0.1.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 522,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 2492,
+        "mode": 420
+      },
+      {
+        "path": "bin.mjs",
+        "size": 1325,
+        "mode": 493
+      },
+      {
+        "path": "example.mjs",
+        "size": 494,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/accepts-empty.json",
+        "size": 9012,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/ready-would-sign.json",
+        "size": 11170,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/unreachable.json",
+        "size": 7714,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1122,
+        "mode": 420
+      },
+      {
+        "path": "x402-preflight.d.ts",
+        "size": 2002,
+        "mode": 420
+      },
+      {
+        "path": "x402-preflight.js",
+        "size": 5927,
+        "mode": 420
+      }
+    ],
+    "entryCount": 11,
+    "bundled": []
+  }
+]

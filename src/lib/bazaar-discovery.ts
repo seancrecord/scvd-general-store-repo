@@ -610,7 +610,7 @@ export function buyInputExample(item: MenuItem): Record<string, unknown> {
  * verifying. That is the link a directory should be quoting, and it
  * is the one that was always true.
  */
-function buyOutputExample(item: MenuItem): Record<string, unknown> {
+export function buyOutputExample(item: MenuItem): Record<string, unknown> {
   const patronBlock = {
     patron_number: 41,
     badge_url: "https://scvd.store/badges/41.svg",

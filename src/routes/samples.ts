@@ -3,7 +3,8 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { priceLine } from "@/services/menu-markdown";
 import { SAMPLES, sampleOnceOver } from "@/services/sample-artifacts";
-import { getMenuItem } from "@/store/menu";
+import { purchaseExample } from "@/services/purchase-examples";
+import { MENU_ITEMS, getMenuItem } from "@/store/menu";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -70,6 +71,10 @@ function pageHtml(base: string, artifact: Awaited<ReturnType<typeof sampleOnceOv
         .join(" · ")}.</p>
     </section>
     <section>
+      <h2>Input/output examples</h2>
+      <p class="menu-desc">These show a request and the outer response with placeholders; they do not reproduce the complete artifact or completed commission: ${MENU_ITEMS.filter((entry) => entry.sample_kind === "delivery_outline").map((entry) => `<a href="${escapeHtml(entry.sample_url!)}">${escapeHtml(entry.name)}</a>`).join(" · ")}.</p>
+    </section>
+    <section>
       <h2>Buying the real one</h2>
       <p class="menu-desc"><strong>${escapeHtml(item?.name ?? "The Once-Over")}</strong> &mdash; ${escapeHtml(item ? priceLine(item) : "$5 fixed")}. Same battery, your endpoint, signed and dated, verifiable offline forever at <code>/api/verify/{id}</code>: <a href="/menu/service_audit">what it is</a>, or <code>GET ${base}/api/buy/service_audit?url=&hellip;</code> over x402.</p>
       <p class="menu-desc"><strong>Or check your own door for nothing first.</strong> The same battery runs free at <a href="/conformance">/conformance</a> and at <a href="/api/preflight/v1"><code>/api/preflight/v1</code></a>. What the $5 adds is the signature, the date and the artifact &mdash; not the checking. If the free run tells you what you needed, that is the honest outcome and you owe us nothing.</p>
@@ -87,6 +92,8 @@ samplesRoutes.get("/samples/:slug{[a-z0-9-]+\\.json}", async (c) => {
   const slug = c.req.param("slug").replace(/\.json$/, "");
   const listing = SAMPLES.find((entry) => entry.slug === slug);
   if (!listing) {
+    const item = MENU_ITEMS.find((entry) => entry.sample_kind === "delivery_outline" && entry.sample_url === `/samples/${slug}.json`);
+    if (item) return c.json(purchaseExample(item, c.env.STORE_BASE_URL));
     return c.json(
       {
         error: "No specimen by that name.",
@@ -116,6 +123,7 @@ samplesRoutes.get("/samples", async (c) => {
   return c.json({
     what_this_is: artifact.what_this_is,
     samples: SAMPLES.map((entry) => `${base}/samples/${entry.slug}.json`),
+    previews: MENU_ITEMS.map((item) => ({ item: item.id, url: `${base}${item.sample_url}`, kind: item.sample_kind ?? "unsigned_specimen" })),
     of_items: Object.fromEntries(SAMPLES.map((entry) => [entry.item, `${base}/samples/${entry.slug}.json`])),
     free: "Yes. Nothing on this surface is charged for, now or later.",
     the_real_thing: `${base}/api/buy/service_audit`,

@@ -82,3 +82,7 @@ Their original order above is history. The living build queue is
 ROADMAP; publication, listing and submission actions remain in
 KEEPER_LIST. Built, published, independently used and paid remain
 separate states; none follows automatically from the preceding one.
+
+September 10 release naming: the preflight companion proposed here as
+`x402-preflight` installs as `scvd-preflight`; the original name is owned
+by another project. Its source directory remains `x402-preflight/`.

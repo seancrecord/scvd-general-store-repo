@@ -18,8 +18,9 @@
  * be sent" to "the headers arrived": the TLS handshake is subtracted
  * when the socket is new, so the first knock and the warm ones are
  * the same measure. The store's Server-Timing line says whether the
- * first knock met a cold isolate; the cold penalty is that knock
- * minus the warm median. With --burst it also fires every paid door
+ * first knock met a cold isolate; the reported difference is that knock
+ * minus the median of later warm responses with the same HTTP status.
+ * It includes network and cache effects, not just isolate startup. With --burst it also fires every paid door
  * from /.well-known/x402 at once, one socket each, and counts how
  * many cold isolates a directory-shaped burst wakes.
  *
@@ -199,7 +200,7 @@ for (const url of urls) {
   if (!Number.isFinite(knocks[0].ms)) {
     out.push(`${url}\n  unreachable: ${knocks[0].error ?? "no answer"}`);
     if (url === urls[0]) exitCode = 2;
-    observation.doors.push({ url, unreachable: knocks[0].error ?? "no answer" });
+    observation.doors.push({ url, ...summary, unreachable: knocks[0].error ?? "no answer", knocks });
     continue;
   }
   const landed = deployLanded(summary.first_age_s, since);

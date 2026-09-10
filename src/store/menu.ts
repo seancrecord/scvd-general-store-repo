@@ -151,7 +151,12 @@ export const MENU_ITEMS: readonly MenuItem[] = [
     (a, b) => a.price_usdc - b.price_usdc,
   ),
   ...LADDER.filter((item) => item.price_usdc > CHEAP_DOOR_MAX_USDC),
-] as const;
+].map((item): MenuItem => item.sample_url ? item : {
+  ...item,
+  // An outline shows the existing discovery contract, never a fabricated delivery.
+  sample_url: `/samples/${item.id.replaceAll("_", "-")}.json`,
+  sample_kind: "delivery_outline",
+});
 
 export function getMenuItem(itemId: string): MenuItem | undefined {
   return MENU_ITEMS.find((item) => item.id === itemId);

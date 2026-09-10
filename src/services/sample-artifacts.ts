@@ -267,6 +267,7 @@ export type SampleSlug =
 
 export interface SampleEnvelope<T> {
   specimen: true;
+  preview_kind?: "delivery_outline";
   mark: string;
   what_this_is: string;
   not_signed: string;

@@ -1,5 +1,6 @@
 import { ROUTES } from "@/lib/when-to-buy";
-import { sampleForItem } from "@/services/sample-artifacts";
+import { getMenuItem } from "@/store/menu";
+import type { MenuItem } from "@/types";
 
 /**
  * THE SHOPPING FIELDS (roadmap S6, 2026-09-02): what a shopping agent
@@ -13,13 +14,13 @@ import { sampleForItem } from "@/services/sample-artifacts";
  *     Where the route leads with a free instrument, the entry carries
  *     it, because the counter answers free first and a shopping field
  *     that dropped that line would be an advertisement.
- *   - `sample_url`: the specimen, from the same roster /samples and the
- *     item pages read (SAMPLES). Present only where a specimen exists.
+ *   - `sample_url`: the menu's existing specimen or preview, the same
+ *     link the payment challenge and item page read.
  *   - `verify`: the one pattern every certificate this store mints
  *     resolves at, free, forever.
  *
  * NO NEW CATEGORY LIST (the S6 acceptance). Nothing here is a taxonomy
- * typed for the occasion; delete ROUTES or SAMPLES and these fields go
+ * typed for the occasion; delete ROUTES or a menu preview and these fields go
  * empty, which is the correct failure for a derived field.
  */
 
@@ -38,10 +39,10 @@ export function whenFor(itemId: string): WhenEntry[] {
   }));
 }
 
-/** The specimen's URL for an item, from the roster, or null when none is built. */
+/** The menu's preview URL, or null when none is built. No sample builder import. */
 export function sampleUrlFor(itemId: string, base: string): string | null {
-  const listing = sampleForItem(itemId);
-  return listing ? `${base}/samples/${listing.slug}.json` : null;
+  const path = getMenuItem(itemId)?.sample_url;
+  return path ? `${base}${path}` : null;
 }
 
 /** Where a certificate from any purchase verifies: the same door for every item. */
@@ -53,12 +54,13 @@ export function verifyPattern(base: string): string {
 export function shoppingFields(itemId: string, base: string): {
   when: WhenEntry[];
   sample_url?: string;
+  sample_kind?: MenuItem["sample_kind"];
   verify: string;
 } {
   const sample = sampleUrlFor(itemId, base);
   return {
     when: whenFor(itemId),
-    ...(sample ? { sample_url: sample } : {}),
+    ...(sample ? { sample_url: sample, sample_kind: getMenuItem(itemId)?.sample_kind ?? "unsigned_specimen" } : {}),
     verify: verifyPattern(base),
   };
 }

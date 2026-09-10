@@ -1,0 +1,46 @@
+[
+  {
+    "id": "scvd-mcp-starter@0.1.0",
+    "name": "scvd-mcp-starter",
+    "version": "0.1.0",
+    "size": 3796,
+    "unpackedSize": 8484,
+    "shasum": "22e89777d08d5375a72fe2220f21383d36edbd2c",
+    "integrity": "sha512-8q+twnuFZ/gD7an3kojeMiBDxPkD0+cosgOXu/CUUlO0wXEBYi6+ZZN+cBW7lbuSPzJ9PXeO2cjkopjP6LZLpA==",
+    "filename": "scvd-mcp-starter-0.1.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 396,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 1521,
+        "mode": 420
+      },
+      {
+        "path": "example.mjs",
+        "size": 639,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 989,
+        "mode": 420
+      },
+      {
+        "path": "server.mjs",
+        "size": 3871,
+        "mode": 493
+      }
+    ],
+    "entryCount": 6,
+    "bundled": []
+  }
+]

@@ -60,6 +60,44 @@ test("a warm first knock has no penalty to report", () => {
   assert.match(renderSummary("https://x/", s, { known: false }), /was not cold/);
 });
 
+test("later cold, unmarked and failed requests cannot become the warm comparison", () => {
+  const s = summarize([
+    { ms: 900, status: 402, timing: { isolate: "cold" } },
+    { ms: 800, status: 402, timing: { isolate: "cold" } },
+    { ms: 30, status: 503, timing: { isolate: "warm" } },
+    { ms: 100, status: 402, timing: { isolate: "warm" } },
+    { ms: 1, status: 200, timing: {} },
+    { ms: NaN, status: null, timing: {}, error: "timeout" },
+  ]);
+  assert.equal(s.warm_knocks, 1);
+  assert.equal(s.warm_median_ms, 100);
+  assert.equal(s.warm_max_ms, 100);
+  assert.equal(s.cold_penalty_ms, 800);
+  assert.deepEqual(s.coverage, {
+    attempted: 6, answered: 5, failed: 1, http_errors: 1,
+    subsequent: 5, comparable_warm: 1, excluded_from_warm: 4,
+  });
+  assert.match(renderSummary("https://x/", s, { known: false }), /answered 5\/6.*failed 1.*HTTP errors \(5xx\) 1/);
+});
+
+test("a fast HTTP failure or absent warm baseline never reports a cold penalty", () => {
+  for (const first of [
+    { ms: 5, status: 503, timing: { isolate: "cold" } },
+    { ms: NaN, status: null, timing: {}, error: "timeout" },
+  ]) {
+    const s = summarize([first, { ms: 100, status: 402, timing: { isolate: "warm" } }]);
+    assert.equal(s.cold_penalty_ms, null);
+  }
+  const s = summarize([
+    { ms: 900, status: 402, timing: { isolate: "cold" } },
+    { ms: 800, status: 402, timing: { isolate: "cold" } },
+  ]);
+  assert.equal(s.warm_median_ms, null);
+  assert.equal(s.warm_max_ms, null);
+  assert.equal(s.cold_penalty_ms, null);
+  assert.match(renderSummary("https://x/", s, { known: false }), /no comparable warm response/);
+});
+
 test("a first knock slower than warm but unmarked is not called a cold penalty", () => {
   const s = summarize([
     { ms: 500, status: 200, timing: {} },

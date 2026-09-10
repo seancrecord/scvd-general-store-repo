@@ -51,7 +51,12 @@ export function median(values) {
 export function summarize(knocks) {
   const [first, ...rest] = knocks;
   if (!first) return null;
-  const warm = rest.map((k) => k.ms);
+  // Repeated requests can land on another cold isolate. Only a marked
+  // warm response with the first response's HTTP outcome is comparable.
+  const measured = (k) => Number.isFinite(k.ms) && k.ms >= 0 && Number.isInteger(k.status);
+  const validFirst = measured(first) && first.status >= 200 && first.status < 500;
+  const warm = rest.filter((k) => validFirst && measured(k) &&
+    k.timing?.isolate === "warm" && k.status === first.status).map((k) => k.ms);
   const warmMedian = median(warm);
   const isolate = first.timing?.isolate ?? "unmarked";
   return {
@@ -60,14 +65,23 @@ export function summarize(knocks) {
     first_isolate: isolate,
     first_age_s: first.timing?.age ?? null,
     first_req_ms: first.timing?.req ?? null,
-    warm_knocks: rest.length,
+    warm_knocks: warm.length,
     warm_median_ms: warmMedian,
     warm_max_ms: warm.length ? Math.max(...warm) : null,
     // Only a knock the store itself marked cold is a cold penalty;
     // a warm first knock measures nothing but the network.
     cold_penalty_ms:
-      isolate === "cold" && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null,
+      validFirst && isolate === "cold" && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null,
     statuses: [...new Set(knocks.map((k) => k.status))],
+    coverage: {
+      attempted: knocks.length,
+      answered: knocks.filter(measured).length,
+      failed: knocks.filter((k) => !measured(k)).length,
+      http_errors: knocks.filter((k) => measured(k) && k.status >= 500).length,
+      subsequent: rest.length,
+      comparable_warm: warm.length,
+      excluded_from_warm: rest.length - warm.length,
+    },
   };
 }
 
@@ -129,9 +143,10 @@ export function renderSummary(url, s, landed) {
   lines.push(
     `  warm (${s.warm_knocks})      ${pad(s.warm_median_ms, 6)} ms   median, max ${s.warm_max_ms ?? "-"}ms`,
   );
+  lines.push(`  coverage      answered ${s.coverage.answered}/${s.coverage.attempted}, failed ${s.coverage.failed}, HTTP errors (5xx) ${s.coverage.http_errors}; ${s.coverage.excluded_from_warm}/${s.coverage.subsequent} later requests excluded from warm comparison`);
   lines.push(
     s.cold_penalty_ms === null
-      ? `  cold penalty       -      (first knock was not cold; nothing to subtract)`
+      ? `  cold penalty       -      (${s.first_isolate !== "cold" ? "first knock was not cold" : "no comparable warm response or first response failed"}; nothing to subtract)`
       : `  cold penalty  ${pad(s.cold_penalty_ms, 6)} ms   first knock minus warm median`,
   );
   if (landed?.known) {

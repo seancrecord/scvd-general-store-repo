@@ -904,3 +904,13 @@ SHA-256 for each file are recorded in
 ML-DSA-65 external Pure cases and key-generation cases matched the pinned
 candidate; prehash/internal variants and other parameter sets were excluded
 and counted. No claim of an ACVP certification session follows.
+
+## September 10 — adoption and latency preparation
+
+Read Cloudflare Workers best practices and metrics documentation from the
+official site, plus the installed Wrangler deploy help. The latency read
+keeps external time-to-headers distinct from Worker-reported request time;
+it does not claim a production percentile or causal cold-start cost.
+Chainalysis address-screening product documentation was read to establish
+the existing lookup category, not a resale license or legal opinion.
+Sources and exact scope: `ADOPTION_AND_LATENCY_2026-09.md`.
