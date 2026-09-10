@@ -1,3 +1,5 @@
+import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
+import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { publicationResponse, type PublicationSnapshot } from "@/lib/publication-recovery";
 import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -8,7 +10,7 @@ import { verifiedObservationCheckpoint } from "@/services/purchase-observation";
 import { beginPurchaseIntent, notePurchaseUnknown, purchaseIntentStore, lookupRecordedPurchase, purchaseRecovery } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { httpArtifactDigest, supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
-import { deliveryFailedBody, legacyHumanRecoveryFailure } from "@/lib/delivery-failed";
+import { deliveryFailedBody, legacyRecoveryFailure } from "@/lib/delivery-failed";
 import { archiveDepthDisclosure } from "@/services/archive-depth";
 import { HonoAdapter } from "@x402/hono";
 import { challengeHint } from "@/store/agent-auth";
@@ -83,7 +85,6 @@ import {
   openDeliveryIntent,
 } from "@/services/delivery-audit";
 import {
-  certIdForSettlement,
   recordDeliveredSettlement,
 } from "@/services/settlement-records";
 import {
@@ -117,8 +118,6 @@ import type { SettledPayment } from "@/lib/payments";
 import { SettlementUnknown, SettlementDeclined, settlementDeclinedBody } from "@/lib/payments";
 import {
   extractPaymentNonce,
-  getSpentNonce,
-  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import type { HonoEnv } from "@/types";
@@ -329,6 +328,7 @@ async function enrich402Body(
   query: Record<string, string | undefined> = {},
   signedUntil?: number,
   network?: string,
+  originalKey?: string,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -406,9 +406,7 @@ async function enrich402Body(
            * to read as an instruction. A weak model acts on "do this
            * now"; it does not reliably act on "this facility exists."
            */
-          before_you_retry: isNeverJudged(decline)
-            ? `You are about to retry, and on this path that is exactly right: resend the same signed payload after ${RESEND_AFTER_SECONDS} seconds. Nothing settled, so there is nothing to double-charge — but sending idempotency.suggested_key as the Idempotency-Key header costs nothing and closes the one case this store cannot see from here.`
-            : "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. It cannot refuse your purchase and costs nothing.",
+          before_you_retry: "Keep the original signed payment and any idempotency key you already sent. To avoid a second charge, resend that key as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). A refused verification does not establish what happened on an earlier attempt. Retry the original payment for recovery, or use its private status handle or /api/claims. Use a suggested key only if you never sent one; do not replace an earlier key or sign another payment while its outcome is unresolved.",
           /*
            * A signature that did not clear is the exact moment the
            * domain trap costs somebody a night, so the whole block
@@ -460,10 +458,10 @@ async function enrich402Body(
            * as it did before it existed.
            */
           idempotency: {
-            suggested_key: suggestedIdempotencyKey(item.id),
-            how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. If your retry loop fires again inside the minute, the second attempt returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+            suggested_key: originalKey ?? suggestedIdempotencyKey(item.id),
+            how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
             optional:
-              "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. Nothing here can refuse a purchase.",
+              "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
             not_a_secret:
               "This value is derived from the item and the current minute, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this key only ever reaches your own earlier purchase, never somebody else's.",
             stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
@@ -832,6 +830,27 @@ function recordGateOutcome(c: Context<HonoEnv>, outcome: string): void {
   }
 }
 
+async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: SignedPurchaseRecovery): Promise<Response> {
+  c.header("Cache-Control", "no-store");
+  c.header("Paid-Retry", "true");
+  if (recovery.kind === "status") return c.json(recovery.body, recovery.body.code === "purchase_resolved" ? 409 : 503);
+  try {
+    const page = recovery.delivery.publication_response;
+    if (isRecord(page) && typeof page.markdown === "string" && typeof page.content_type === "string") {
+      const response = publicationResponse({ markdown: page.markdown, content_type: page.content_type }, recovery.payment.settleHeaders, recovery.recovery);
+      response.headers.set("Paid-Retry", "true");
+      return response;
+    }
+    const response = c.json({ ...recovery.delivery, paid_retry: true, charged: true, charged_again: false });
+    for (const [name, value] of Object.entries(recovery.payment.settleHeaders)) response.headers.set(name, value);
+    return response;
+  } catch {
+    return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL,
+      getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, recovery.payment), charged_again: false,
+      ...(recovery.recovery ? { recovery: recovery.recovery } : {}) }, 500);
+  }
+}
+
 const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new DialectTolerantAdapter(c);
@@ -921,12 +940,14 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const idempotencyKey = usableIdempotencyKey(c.req.header("Idempotency-Key"));
 
   // First facilitator sync happens on the first paid request per isolate.
-  await stack.initialized;
-
   let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
   try {
+    await stack.initialized;
     result = await stack.httpServer.processHTTPRequest(context);
   } catch (error) {
+    const recovered = await recoverSignedPurchase(c.env, decodePaymentHeader(offeredHeader),
+      { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
+    if (recovered) return signedRecoveryResponse(c, recovered);
     // P1: the facilitator conversation itself broke (not a mere decline).
     await sendAlert(c.env, {
       condition: "settlement_failure",
@@ -939,6 +960,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   if (result.type === "payment-error") {
+    const recovered = await recoverSignedPurchase(c.env, decodePaymentHeader(offeredHeader),
+      { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
+    if (recovered) return signedRecoveryResponse(c, recovered);
     // Failed authentication may return new terms; a closed shelf cannot quote.
     const unavailable = await c.get("purchaseAdmission")?.();
     if (unavailable) return unavailable;
@@ -1072,6 +1096,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           c.req.query(),
           signedValidBefore(paymentHeader),
           paymentNetwork(paymentHeader),
+          idempotencyKey ?? undefined,
         );
         /*
          * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store
@@ -1137,7 +1162,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    */
   try {
     const resolution = await resolvedHumanPayment(c.env, c.req.path, result.paymentRequirements.network,
-      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload);
+      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
+      idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined);
     if (resolution) {
       c.header("Cache-Control", "no-store");
       const work = resolvedHumanDelivery(resolution);
@@ -1179,7 +1205,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
   const recorded = (c.get("publicationPurchase") || c.req.path.startsWith("/api/buy/") || c.req.path.startsWith("/api/commission/pay/")) ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
-    { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) }) : null;
+    { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) },
+    idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined) : null;
   if (recorded?.kind === "refused") return c.json(recorded.body, 503);
   if (recorded?.kind === "complete") {
     c.header("Cache-Control", "no-store");
@@ -1206,177 +1233,82 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json({ ...recorded.body, charged_again: false }, 503);
   }
 
-  // Verified. A nonce we've already settled once is refused — unless
-  // the money it moved never became goods, which is the one state
-  // where a spent nonce should buy something instead of a refusal.
+  // Only retained original goods may resume a settled payment. A retry's
+  // inputs and today's upstream evidence cannot replace the purchased good.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  if (nonce) {
-    const spent = await getSpentNonce(c.env, nonce);
-    if (spent) {
-      /**
-       * THE PAID RETRY (2026-08-08, closing class B of "paid and got
-       * nothing"). The delivery audit's ruling stands — no cron can
-       * re-run a handler whose inputs it never had — but the BUYER'S
-       * RETRY carries the inputs, and the 2026-08-07 incident proved
-       * buyers do retry. This branch runs only when: the payload
-       * VERIFIED (we are past the facilitator check, so the caller
-       * holds the buyer's actually-signed authorization — the same
-       * standard the idempotency cache stands on), the retry is for
-       * the SAME path the money bought, and the delivery intent for
-       * that settle is STILL OPEN — money taken, goods never left.
-       *
-       * If a certificate already names the settle, the crash may have
-       * preceded the actual order or product write. Keep the delivery
-       * open and identify the certificate without claiming fulfillment
-       * or minting another one against the same payment.
-       *
-       * Books are deliberately NOT rewritten on this lane: the
-       * original settle already recorded the sale once. Nothing here
-       * settles, charges, or counts — it only stops refusing a buyer
-       * we already charged.
-       */
-      if (spent.transaction && spent.path === c.req.path) {
-        const payer = payerOfVerifiedPayload(result.paymentPayload);
-        const namespace = c.env.PAID_RECOVERIES;
-        const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
-          await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
-            .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
-              transaction: spent.transaction }).catch(() => null);
-        if (artifact) {
-          const payment = artifact.purchase.payment;
-          c.header("Cache-Control", "no-store");
-          if (artifact.digest !== await httpArtifactDigest(c.req.url)) {
-            return c.json({
-              ...deliveryFailedBody(c.env.STORE_BASE_URL, getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, payment),
-              charged_again: false, recovery_reason: "original_inputs_required",
-            }, 500);
-          }
-          c.set("payment", payment);
-          c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
-            payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
-          await next();
-          if (c.res.status < 300) {
-            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
-            await recordDeliveredSettlement(c.env, payment.transaction);
-            for (const [name, value] of Object.entries(payment.settleHeaders)) c.res.headers.set(name, value);
-          }
-          c.res.headers.set("Paid-Retry", "true");
-          return c.res;
+  let spent;
+  try {
+    spent = await legacyPaidAttempt(c.env, result.paymentRequirements.network, result.paymentPayload);
+  } catch {
+    return c.json(legacyRecoveryFailure(c.env.STORE_BASE_URL, { name: c.req.path }, undefined,
+      { path: c.req.path, transaction: "", payer: undefined }), 503);
+  }
+  if (spent) {
+    if (spent.transaction && spent.path === c.req.path) {
+      const payer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
+      const namespace = c.env.PAID_RECOVERIES;
+      const artifact = supportsArtifactRecovery(getMenuItem(itemKeyFromPath(c.req.path))) && payer && namespace &&
+        await namespace.get(namespace.idFromName(`${result.paymentRequirements.network}:${spent.transaction}`))
+          .readArtifact({ path: c.req.path, payer, network: result.paymentRequirements.network,
+            transaction: spent.transaction }).catch(() => null);
+      if (artifact) {
+        const payment = artifact.purchase.payment;
+        c.header("Cache-Control", "no-store");
+        if (artifact.digest !== await httpArtifactDigest(c.req.url)) {
+          return c.json({
+            ...deliveryFailedBody(c.env.STORE_BASE_URL, getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, payment),
+            charged_again: false, recovery_reason: "original_inputs_required",
+          }, 500);
         }
-        const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
-        if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
-          c.header("Cache-Control", "no-store");
-          return c.json(recorded.body, 503);
+        c.set("payment", payment);
+        c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
+          payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
+        await next();
+        if (c.res.status < 300) {
+          await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);
+          await recordDeliveredSettlement(c.env, payment.transaction);
+          for (const [name, value] of Object.entries(payment.settleHeaders)) c.res.headers.set(name, value);
         }
-        const open = await getOpenDeliveryIntent(c.env, spent.transaction);
-        if (legacyItem?.fulfillment === "human_queue") {
-          const recovered = await recoverLegacyHumanOrder(c.env, legacyItem,
-            { path: c.req.path, transaction: spent.transaction, payer, network: result.paymentRequirements.network }, open?.intent);
-          if (recovered) {
-            const response = c.json(recovered);
-            await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(spent.transaction)).catch(() => undefined);
-            await recordDeliveredSettlement(c.env, spent.transaction);
-            response.headers.set("Cache-Control", "no-store");
-            response.headers.set("Paid-Retry", "true");
-            return response;
-          }
-          c.header("Cache-Control", "no-store");
-          c.header("Paid-Retry", "incomplete");
-          const failure = legacyHumanRecoveryFailure(c.env.STORE_BASE_URL, legacyItem,
-            open?.intent, { path: c.req.path, transaction: spent.transaction, payer });
-          return c.json(failure, failure.charged === true ? 500 : 503);
-        }
-        if (open) {
-          const retryMinimum = minimumUsdcForPath(c.req.path);
-          const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
-          const retryPayment: SettledPayment = {
-            paidUsdc: open.intent.paid_usdc,
-            tipUsdc: tipFromPaid(open.intent.paid_usdc, retryMinimum),
-            transaction: spent.transaction,
-            network: result.paymentRequirements.network,
-            ...(retryPayer ? { payer: retryPayer } : {}),
-            settleHeaders: {},
-          };
-          const incomplete = (reason: string, certId?: string) => {
-            c.header("Cache-Control", "no-store");
-            c.header("Paid-Retry", "incomplete");
-            return c.json({
-              ...deliveryFailedBody(c.env.STORE_BASE_URL,
-                getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, retryPayment),
-              error: "Your payment settled, but this retry cannot confirm that the purchased work was delivered. The delivery remains open; nothing was charged again.",
-              charged_again: false,
-              recovery_reason: reason,
-              settlement_tx: spent.transaction,
-              ...(certId ? {
-                certificate_id: certId,
-                verify_url: `${c.env.STORE_BASE_URL}/api/verify/${certId}`,
-                certificate_note: "This verifies the payment certificate. It does not establish that the purchased order or artifact was delivered.",
-              } : {}),
-            }, 500);
-          };
-          let lookup: Awaited<ReturnType<typeof certIdForSettlement>>;
-          try {
-            lookup = await certIdForSettlement(c.env, spent.transaction);
-          } catch {
-            return incomplete("recovery_lookup_unavailable");
-          }
-          // A certificate is written BEFORE the order or product. Finding it
-          // must not erase the owed delivery or authorize another mint. Keep
-          // the original obligation until the actual good can be recovered.
-          if (lookup.certId) return incomplete("certificate_already_minted", lookup.certId);
-          if (!lookup.certain) return incomplete("certificate_lookup_incomplete");
-          c.set("payment", retryPayment);
-          /*
-           * THE RETRY LANE SETTLES NOTHING, and under rule 9 as
-           * amended that has to be said in the type rather than
-           * implied by the absence of a call. The money moved on the
-           * FIRST attempt; this pass exists only to hand over goods
-           * that were paid for and never delivered. So the pending
-           * payment it gives the handler resolves instantly to the
-           * original settlement — same transaction on the
-           * certificate, and the facilitator is never asked twice.
-           */
-          c.set("pending", {
-            paidUsdc: retryPayment.paidUsdc,
-            tipUsdc: retryPayment.tipUsdc,
-            ...(retryPayer ? { payer: retryPayer } : {}),
-            observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, retryPayer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true),
-            settle: async () => retryPayment,
-          });
-          await next();
-          if (c.res.status < 300) {
-            await closeDeliveryIntent(c.env, open.key).catch(() => {
-              // Left open on failure: a false alarm beats a silent loss.
-            });
-            // The goods finally went out on the retry, so the walk's
-            // delivered-settlement record is written now, not at the
-            // original settle whose delivery died.
-            await recordDeliveredSettlement(c.env, spent.transaction);
-          }
-          c.res.headers.set("Paid-Retry", "true");
-          c.res.headers.set("Cache-Control", "no-store");
-          return c.res;
+        c.res.headers.set("Paid-Retry", "true");
+        return c.res;
+      }
+      const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
+      if (recorded?.kind === "pending") {
+        c.header("Cache-Control", "no-store");
+        return c.json(recorded.body, 503);
+      }
+      const open = await getOpenDeliveryIntent(c.env, spent.transaction).catch(() => null);
+      if (legacyItem?.fulfillment === "human_queue") {
+        const recovered = await recoverLegacyHumanOrder(c.env, legacyItem,
+          { path: c.req.path, transaction: spent.transaction, payer, network: result.paymentRequirements.network }, open?.intent);
+        if (recovered) {
+          const response = c.json(recovered);
+          await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(spent.transaction)).catch(() => undefined);
+          await recordDeliveredSettlement(c.env, spent.transaction);
+          response.headers.set("Cache-Control", "no-store");
+          response.headers.set("Paid-Retry", "true");
+          return response;
         }
       }
-      // BOOK IT. This path refused a signed payment and recorded nothing
-      // until 2026-07-28, which meant a buyer retrying an authorization
-      // instead of re-signing was invisible in the books — the exact
-      // shape of a real buyer bouncing repeatedly off a fixable wall.
-      await recordPaymentDecline(
-        c.env,
-        c.req.path,
-        "replay:nonce_already_settled",
-        gateSignals(c),
-      ).catch(() => undefined);
       c.header("Cache-Control", "no-store");
-      return c.json(
-        {
-          error:
-            "That payment authorization has been through this till once already. Sign a fresh one, the register remembers. (If your last attempt paid and the goods never arrived, retrying with the SAME authorization within a day delivers them without a second charge — that lane just found nothing owed.)",
-        },
-        402,
-      );
+      c.header("Paid-Retry", "incomplete");
+      const failure = legacyRecoveryFailure(c.env.STORE_BASE_URL, legacyItem ?? { name: c.req.path },
+        open?.intent, { path: c.req.path, transaction: spent.transaction, payer });
+      return c.json(failure, failure.charged === true ? 500 : 503);
     }
+    // BOOK IT. This path refused a signed payment and recorded nothing
+    // until 2026-07-28, which meant a buyer retrying an authorization
+    // instead of re-signing was invisible in the books — the exact
+    // shape of a real buyer bouncing repeatedly off a fixable wall.
+    await recordPaymentDecline(
+      c.env,
+      c.req.path,
+      "replay:nonce_already_settled",
+      gateSignals(c),
+    ).catch(() => undefined);
+    c.header("Cache-Control", "no-store");
+    return c.json(legacyRecoveryFailure(c.env.STORE_BASE_URL, { name: c.req.path }, undefined,
+      { path: c.req.path, transaction: "", payer: undefined }), 503);
   }
 
   // Preserve nonce/artifact recovery when the purchase journal is still uncertain.
@@ -1460,6 +1392,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     query.delete("payment_payload");
     const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
+      ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query), key: idempotencyKey } } : {}),
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
     }) : undefined;

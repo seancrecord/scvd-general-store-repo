@@ -905,6 +905,12 @@ ML-DSA-65 external Pure cases and key-generation cases matched the pinned
 candidate; prehash/internal variants and other parameter sets were excluded
 and counted. No claim of an ACVP certification session follows.
 
+## 2026-09-10 — BUY-016 atomic admission for fresh authorizations
+
+Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/), [KV consistency](https://developers.cloudflare.com/kv/concepts/how-kv-works/) and [SQLite Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/). KV caches both missing and present values and cannot provide atomic admission. Durable Object storage provides transactional, strongly consistent per-instance state; the existing `PAID_RECOVERIES` SQLite namespace supports the required transaction API. The repair uses a separate instance per hashed purchase scope and key, with no new binding or migration. Payment identities and existing recovery objects retain their names.
+
+Limits of this read: local Worker fixtures exercise the installed runtime and actual Durable Object transactions; no production payment, refund, live contention measurement or customer-obligation inventory is performed. Retrieved `@cloudflare/workers-types` 5.20260910.1 and checked `idFromName`, `transaction` and `abort` against its declarations. Installed runtime types and `npm run typecheck` remain the compatibility check for the built artifact. The new claim cannot retrofit a missing historical key association, and expired payment verification remains separate buyer-recovery work.
+
 ## September 10 — adoption and latency preparation
 
 Read Cloudflare Workers best practices and metrics documentation from the
@@ -927,3 +933,10 @@ registry signatures and provenance attestations verify, binding the
 archive SHA-512 to this repository, source commit
 `4fe7417429e2580f2a59904e9ed6812693b946b5`, the publication workflow and
 its actual run. Publication does not establish third-party adoption.
+
+
+## 2026-09-10 — BUY-014/015 signed-payment recovery
+
+Read the current [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/), [EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) and [Solana transaction documentation](https://solana.com/docs/core/transactions). The EIP-3009 signature commits to the authorization values and EIP-712 domain; the transfer operation separately checks its validity interval and usage. Solana signatures cover the transaction message, with signers corresponding to the first static account keys; expiry affects broadcast eligibility. These are ownership proofs for retained records, not evidence that a fresh transfer is currently spendable or that settlement occurred.
+
+Checked the installed `@x402/evm` exported `authorizationTypes`, viem `verifyTypedData` utility, and the existing bounded Solana framing helper. The viem documentation endpoint could not be read by the browsing tool; the installed utility and real signed fixture tests supply compatibility evidence. Contract signatures that cannot be rechecked locally use an exact one-way fingerprint captured only after the original facilitator verification. Existing `PAID_RECOVERIES` JSON records gain one optional field, with no binding migration or new dependency. The current Workers types were retrieved for BUY-016 earlier the same day; this increment reuses those existing bindings and timing-safe comparison APIs. No production chain transaction is submitted by these checks.

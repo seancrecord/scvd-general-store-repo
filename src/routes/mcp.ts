@@ -948,6 +948,7 @@ async function callPurchaseTool(
     JSON.stringify(args),
     inputDigest,
     admitPurchase,
+    idempotencyKey ? { surface: idempotencySurface, key: idempotencyKey } : undefined,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
@@ -1039,10 +1040,10 @@ async function callPurchaseTool(
          * shared and was not.
          */
         idempotency: {
-          suggested_key: suggestedIdempotencyKey(item.id),
-          how: "Send it back as _meta['x402/idempotency-key'] with your payment. A retry inside the minute returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+          suggested_key: idempotencyKey ?? suggestedIdempotencyKey(item.id),
+          how: "Send it back as _meta['x402/idempotency-key'] with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
           optional:
-            "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. Nothing here can refuse a purchase.",
+            "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
           not_a_secret:
             "Derived from the item and the current minute, so anyone can compute it. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this only ever reaches your own earlier purchase.",
           stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
@@ -1055,7 +1056,7 @@ async function callPurchaseTool(
           sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
           identity_policy: IDENTITY_POLICY,
         },
-        note: "Sign one of the accepts and retry this tools/call with the payment in _meta['x402/payment'].",
+        note: "For a new purchase, sign one of the accepts and send it in _meta['x402/payment']. For recovery, keep the original signed payment and key; do not sign another payment while the earlier attempt is unresolved.",
       },
     );
   }
@@ -1247,7 +1248,7 @@ function paymentProfileTool(c: Context<HonoEnv>, tool: McpTool): McpTool {
   return { ...tool, description: tool.description
     .replaceAll("error 402 with the payment requirements in error.data", "isError:true with the payment requirements in result.structuredContent")
     .replaceAll("error 402 with the terms in error.data", "isError:true with the payment requirements in result.structuredContent")
-    .replaceAll("idempotency.suggested_key from the 402", "result._meta['x402/idempotency-key'] from the quote") };
+    .replaceAll("idempotency.suggested_key", "result._meta['x402/idempotency-key']") };
 }
 
 function standardPaymentResult(

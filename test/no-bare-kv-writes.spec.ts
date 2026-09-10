@@ -68,6 +68,7 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("watch", { value: withoutEntries(selected), count: entries.length } satisfies WatchJournal);',
   ],
   "/src/services/paid-recovery.ts": [
+    'await txn.put("idempotent-purchase", purchaseId);',
     // One storage transaction commits the refund claim, resolution, and lookup.
     'await txn.put(claim, key);',
     'await txn.put(row, record);',

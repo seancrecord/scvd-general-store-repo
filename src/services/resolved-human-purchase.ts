@@ -1,3 +1,4 @@
+import { idempotentPurchaseStore } from "@/lib/idempotency";
 import { extractPaymentNonce, getSpentNonce } from "@/lib/replay-guard";
 import { solanaPaymentEvidence } from "@/lib/solana-payment-evidence";
 import { purchaseIdentity, purchaseIntentStore, type PurchaseIntent } from "@/services/purchase-intent";
@@ -5,11 +6,31 @@ import { readHumanResolution, humanResolutionBody, type HumanResolutionRecord } 
 import { isRecord, type Env } from "@/types";
 
 /** Called after payment verification, before any cached delivery can hide a refund. */
-export async function resolvedHumanPayment(env: Env, path: string, network: string, payer: string | undefined, payload: unknown) {
+export async function resolvedHumanPayment(env: Env, path: string, network: string, payer: string | undefined, payload: unknown,
+  idempotency?: { surface: string; key: string }) {
   if (!payer) return null;
   const identity = await purchaseIdentity(network, payer, payload);
   const raw = await purchaseIntentStore(env, identity.id).existingPurchase();
   const purchase = raw ? JSON.parse(raw) as PurchaseIntent : null;
+  // A fresh authorization can own the original purchase through its key.
+  // Resolve that purchase before the response cache can conceal a refund.
+  if (idempotency) {
+    const slot = await idempotentPurchaseStore(env, idempotency.surface, identity.payer, idempotency.key);
+    const owner = await slot.readIdempotentPurchase();
+    if (owner) {
+      const saved = owner === identity.id ? raw : await purchaseIntentStore(env, owner).existingPurchase();
+      if (saved) {
+        const original = JSON.parse(saved) as PurchaseIntent;
+        const sameFamily = original.terms.network === network ||
+          (original.terms.network.startsWith("eip155:") && network.startsWith("eip155:"));
+        if (original.id !== owner || original.path !== path || original.payer !== identity.payer || !sameFamily) {
+          throw new Error("Original purchase owner mismatch");
+        }
+        const resolution = await recordedHumanResolution(env, original);
+        if (resolution) return resolution;
+      }
+    }
+  }
   let transaction = purchase?.path === path && purchase.payer === identity.payer && purchase.terms.network === network
     ? purchase.payment?.transaction : undefined;
   if (!transaction) {

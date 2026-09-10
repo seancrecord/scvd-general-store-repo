@@ -420,12 +420,19 @@ not need this store today. Take a free stamp on the way past.
    The failure mode at this step is a retry loop that fires twice and
    pays twice. The 402 body carries an `idempotency` block with a
    `suggested_key`; echo it as the `Idempotency-Key` header on the
-   paid request and a second attempt inside the same minute returns
-   your ORIGINAL purchase from cache — no settlement, no second
+   paid request and a second attempt returns your ORIGINAL purchase
+   when available, or its pending status — no settlement, no second
    charge. Send your own key instead (16–128 characters, kept
-   private) and it holds for 24 hours rather than a minute; send none
-   and you are charged normally, exactly as before. Nothing about
-   this can refuse a purchase. The suggested value is derived from
+   private); the response cache lasts 24 hours. New purchase-key claims
+   persist beyond that cache. Pending or unreadable admission can refuse a purchase
+   without another settlement; keep the original payment and key while unresolved.
+   Keep any key already sent; a later suggestion must not replace it.
+   The original signed payment can recover retained goods or private status
+   even after expiry and without the key. Recovery never submits that payment.
+   If the original evidence is unavailable, use the private status handle or
+   Claims; missing goods remain owed until evidence-backed resolution.
+   Send no key and a fresh authorization can charge again.
+   The suggested value is derived from
    the item and the current minute, so anyone can compute it — that
    is deliberate. It selects a cache slot rather than opening one:
    slots are keyed by the VERIFIED paying wallet, so echoing the key

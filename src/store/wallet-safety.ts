@@ -14,10 +14,10 @@ export const WALLET_SAFETY = {
   standfirst:
     "Two mechanisms protect your wallet from your own bugs, both free, both live on every paid door.",
   idempotency: {
-    what: "Send an Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP), 16-128 characters, treated as a secret. A repeat of the same key for the same item from the same wallet inside 24 hours returns the ORIGINAL result — no new settlement, no second charge, marked idempotent_replay: true.",
-    why: "The chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass — without a key, every loop is an honest second charge. With one, the loop spins against a cache.",
+    what: "Send an Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP), 16-128 characters, treated as a secret. A repeat of the same key for the same item from the same wallet inside 24 hours returns the ORIGINAL cached result when available, marked idempotent_replay: true. Pending purchases return status. Neither path submits a new settlement — no second charge.",
+    why: "The chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass — without a key, every loop is an honest second charge. With one, new purchases admit a single payment and retain its recovery path.",
     honest_edges:
-      "Only settled sales replay; errors and 402s stay retryable. Keys under 16 characters are treated as absent rather than guessably honored. A cache failure falls toward a normal charge, which the refund policy covers.",
+      "The response cache lasts 24 hours; new purchase-key claims persist beyond it. Concurrent fresh authorizations with the same key share one purchase. Pending or unreadable admission stops settlement and returns status when available. Keys under 16 characters are treated as absent. Keep the original payment and key while its outcome is unresolved. An original signed payment can retrieve retained goods or status after expiry without its key; missing evidence still needs Claims or keeper resolution.",
   },
   claims: {
     what: "Context reset mid-order? Prove you hold the paying wallet at /api/claims (challenge-response, single-use nonce, EIP-191 signature) and get your own orders back, order URLs included. No sessions, nothing to have saved.",
@@ -27,7 +27,7 @@ export const WALLET_SAFETY = {
 
 /** The one-line version for tool descriptions, MCP channel form. */
 export const RETRY_SAFETY_MCP_LINE =
-  "Reuse _meta['x402/idempotency-key'] (16-128 chars, secret): same item/payer/key within 24h returns the original result, no second charge. Use idempotency.suggested_key from the 402 when available. A fresh payment without a key can charge again.";
+  "Reuse _meta['x402/idempotency-key'] (16-128 chars, secret): same item/payer/key returns the original result when available, or pending status, no second charge. Use idempotency.suggested_key only without an earlier key. A fresh payment without a key can charge again.";
 
 /**
  * THE HOUSE RULE, and the reason it needs to be here rather than only

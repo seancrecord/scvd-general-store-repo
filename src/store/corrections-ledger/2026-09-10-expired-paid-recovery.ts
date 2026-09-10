@@ -1,0 +1,9 @@
+import type { Correction } from "./types";
+
+export const correction: Correction = {
+  date: "2026-09-10",
+  what_was_wrong: "Ordinary purchase retries could fail checkout verification after the original payment expired or was spent, before reaching retained goods. HTTP and legacy MCP refusal instructions could replace a buyer's original key with the current minute's suggestion. Refusal copy also described this verification attempt as proof that no earlier payment had moved.",
+  how_long: "The buyer audit reproduced these paths with local signed fixtures on September 6. Private purchase-status and wallet Claims recovery already existed; the defect was the ordinary purchase retry and its advice, not the absence of every recovery mechanism. No live customer count is established by these tests.",
+  found_by: "The keeper-requested buyer audit and a matrix that replays original signed payments after a verifier-policy refusal, without their original keys.",
+  what_changed: "A recovery reader authenticates retained original purchases independently of current spendability and never submits payment or creates replacement goods. EVM and Solana signatures are checked locally; new verified payments also retain a one-way fingerprint for exact contract-signature recovery. Original goods, commission terms and signed resolutions remain retrievable; missing evidence remains owed. Refusals preserve a supplied key and distinguish this attempt from earlier outcomes. Historical records lacking both a usable signature proof and a retained fingerprint still need a private status handle, Claims where supported, or keeper resolution. Regression tests reject tampered signatures, recover original goods after verifier failures, and preserve unresolved obligations when storage is unavailable. The repair stores no executable payment bytes and makes no live purchases or refunds.",
+};

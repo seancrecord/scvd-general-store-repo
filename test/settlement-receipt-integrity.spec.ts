@@ -76,7 +76,8 @@ for (const door of ["http", "mcp"] as const) {
       const tool = shelves(item)[0]!;
       const quote = await call(item, door, {}, tool);
       const offer = quote.offers.find(o => o.network === SOLANA_NETWORK)!;
-      const key = String(object(quote.body.idempotency).suggested_key);
+      // A new fixture is a new purchase; clean() clears KV, not durable claims.
+      const key = crypto.randomUUID();
       const wire = encode(await solPayment(offer));
       receiptOverride = badReceipt;
       const failed = await call(item, door, {}, tool, wire, key);

@@ -1,4 +1,4 @@
-import { commissionGuidance } from "@/lib/buyer-guidance";
+import { commissionPurchaseResponse } from "@/lib/commission-purchase-response";
 import { sanitizeText } from "@/lib/sanitize";
 import { fulfillPurchase, type FulfillmentInput } from "@/services/fulfillment";
 import { getOrder } from "@/services/orders";
@@ -43,13 +43,5 @@ export async function fulfillCommissionPurchase(env: Env, item: MenuItem, pendin
   const order = await getOrder(env, result.order_id);
   if (!order) throw new Error("Commission order unavailable");
   await acceptCommission(env, purchase.id, result.order_id, new Date(order.created_at), purchase);
-  return { ...result, commission_id: purchase.id, commission_status: "accepted",
-    commission_terms: { description: purchase.description, quote_usdc: purchase.quote_usdc,
-      window_hours: purchase.quote_window_hours, quoted_at: purchase.quoted_at,
-      expires_at: purchase.quote_expires_at, ...(purchase.quote_note === undefined ? {} : { note: purchase.quote_note }) },
-    commission_url: `${env.STORE_BASE_URL}/api/commission/${purchase.id}`,
-    buyer_guidance: { ...commissionGuidance(purchase.quote_usdc, env.STORE_BASE_URL),
-      production: { kind: "commissioned_human_work", sla_hours: purchase.quote_window_hours,
-        terms_url: `${env.STORE_BASE_URL}/api/commission/${purchase.id}` } },
-  };
+  return commissionPurchaseResponse(env.STORE_BASE_URL, result, purchase);
 }

@@ -1177,10 +1177,13 @@ buy doors honor it now (Idempotency-Key header on HTTP,
 _meta['x402/idempotency-key'] on MCP), scoped by item + payer + hashed
 key so honoring a replay requires knowing the paying wallet AND its
 secret key; 16-character minimum so "retry-1" is treated as absent
-rather than guessably honored; 24h TTL; only SETTLED sales cache
-(errors and 402s stay retryable); every failure direction falls
-toward a normal charge, which the refund policy already covers.
-lib/idempotency.ts. The original entry follows for the record.
+rather than guessably honored; the response cache has a 24h TTL.
+Corrected 2026-09-10 (BUY-016): cache races formerly permitted a second
+charge. New keyed purchases atomically claim one payment identity before
+settlement, and retain that claim beyond the cache lifetime. Unresolved
+or unreadable admission stops another settlement; authenticated retries
+return the original purchase or its status. See lib/idempotency.ts and
+research/BUYER_REPAIR_CHECKLIST.md. The original entry follows for the record.
 
 ### 16b. (original entry, for the record)
 

@@ -28,12 +28,12 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
  * "retry-1". The cached body is the buyer's own purchase, returned
  * only under the same payer scope that bought it.
  *
- * FAILURE DIRECTION, decided consciously: a cache miss, a KV
- * hiccup, or two identical keys racing inside one propagation window
- * all fail toward A NORMAL CHARGE — the till working is the fallback,
- * and a rare duplicate charge is exactly what the refund policy
- * already covers. Failing the other way (refusing sales when the
- * cache is unsure) would break the till to protect a courtesy.
+ * The response cache is a convenience, not permission to charge. New keyed
+ * purchases also claim a durable payment identity before settlement; a cache
+ * miss or outage must still pass that admission. The claim outlives this
+ * cache and never expires into permission to charge an unresolved purchase.
+ * Before BUY-016 this file deliberately allowed races to charge normally;
+ * that failed the advertised same-key guarantee and is no longer the rule.
  */
 
 /** Below this, a key is guessable decoration, not a secret. */
@@ -76,7 +76,7 @@ export const IDEMPOTENCY_TTL_SECONDS = 24 * 3600;
  *
  * SUGGESTED, NEVER REQUIRED. A client that sends its own key keeps
  * using it; a client that sends none is charged normally, exactly as
- * before. Nothing about this rejects a request.
+ * before. An uncertain keyed admission refuses settlement until it can be read.
  */
 export const SUGGESTED_KEY_BUCKET_SECONDS = 60;
 
@@ -186,6 +186,14 @@ async function kvKeyFor(
   );
 }
 
+/** Atomic ownership is separate from the optional response cache. */
+export async function idempotentPurchaseStore(env: Env, surface: string, payer: string, key: string) {
+  const namespace = env.PAID_RECOVERIES;
+  if (!namespace) throw new Error("Purchase admission unavailable");
+  const scope = await sha256Hex(await kvKeyFor(surface, payer, key));
+  return namespace.get(namespace.idFromName(`idempotency:${scope}`));
+}
+
 /**
  * THE BUCKET-BOUNDARY GRACE, and it is why the suggested key is worth
  * shipping rather than merely defensible.
@@ -251,7 +259,7 @@ export async function lookupIdempotent(
     }
     return parsed as unknown as StoredReplay;
   } catch {
-    // Fail toward a normal charge; see header comment.
+    // The durable admission still runs after this optional cache misses.
     return null;
   }
 }
