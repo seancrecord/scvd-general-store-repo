@@ -11,13 +11,13 @@ four finding sections in your own words, and set the indicator.
 ## Story settings
 
 **Title options** (HN rewards a number and a first-person verb):
-1. I Told an AI Agent to Rob My Own Store. It Found 39 Ways.
+1. I Told Codex to Rob My Own Store. It Found 39 Ways.
 2. 39 Ways to Steal From an x402 Store, None of Them a Payment Bug
-3. I Paid an Agent to Rob Me. Here's the Receipt.
+3. I Pointed Codex at My Own Checkout and Said "Take the Money." Here's the Receipt.
 
 **TL;DR** (HN field): I run a storefront where the customers are AI
-agents and the money is USDC over x402. In September 2026 I pointed a
-coding agent at my own checkout with one instruction: take the money
+agents and the money is USDC over x402. In September 2026 I pointed
+Codex at my own checkout with one instruction: take the money
 and don't deliver. It found 39 ways across five payment rails. Six were
 severity-1. The payment layer never broke once. Every hole was in the
 twelve inches on either side of the money moving.
@@ -37,14 +37,14 @@ badge, and a delivered artifact that is visibly empty. Greenify it.
 
 ---
 
-# I Told an AI Agent to Rob My Own Store. It Found 39 Ways.
+# I Told Codex to Rob My Own Store. It Found 39 Ways.
 
 Six of them were severity-1. Not one was a payment bug.
 
 I run [scvd.store](https://scvd.store), a small storefront where the
 customers are AI agents and the money is USDC over x402. Between
-September 5 and 8, 2026, I pointed a coding agent at my own live
-checkout and gave it one instruction. Not "find bugs." Something
+September 5 and 8, 2026, I pointed Codex at my own live checkout and
+gave it one instruction. Not "find bugs." Something
 narrower and meaner:
 
 > Take my money and give me nothing. Or give me the wrong thing. Do it

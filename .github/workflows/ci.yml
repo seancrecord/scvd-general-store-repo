@@ -61,6 +61,12 @@ jobs:
         run: npm run tab:test
       - name: Browser payment bridges
         run: npm run till:test
+      # THE 400 CORRECTION (corrections entry 2026-09-10): the August
+      # field report typed its failure counts; this walks the ledger and
+      # fails if the four buckets drift from the published correction.
+      # Reads a file, so it rides Node's runner beside the Tab.
+      - name: The August walk's 400s, re-derived
+        run: npm run four-hundred:test
       # The preflight Action (roadmap L7): one file, no dependencies,
       # tested against a store that is not the store — the exit code a
       # deploy branches on is the whole product.

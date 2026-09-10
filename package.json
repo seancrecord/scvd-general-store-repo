@@ -65,6 +65,7 @@
     "outreach:sent": "node scripts/outreach-sent.mjs",
     "corrections:index": "node scripts/corrections-index.mjs",
     "corrections:test": "node --test scripts/corrections-index.test.mjs",
+    "four-hundred:test": "node --test scripts/four-hundred-buckets.test.mjs",
     "cold:read": "node scripts/cold-read.mjs",
     "cold:test": "node --test scripts/cold-read.test.mjs",
     "cold:local": "node scripts/cold-local.mjs",
