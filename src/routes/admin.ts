@@ -2120,7 +2120,7 @@ adminRoutes.get("/admin/deliveries", async (c) => {
         ? `No undelivered sales. ${audit.in_flight} request(s) still inside the grace window, which is not a fault.`
         : `${audit.undelivered.length} SALE(S) TOOK MONEY AND DELIVERED NOTHING. Check each, then fulfil or refund by hand.`,
     what_to_do:
-      "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Fulfil it or refund it yourself, then delete the row.",
+      "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Recover the original work or refund it by hand, then submit the original payment network and completed-order or finalized-refund evidence to /admin/delivery/resolve. Keep the obligation open until the evidence is accepted.",
     grace_minutes: DELIVERY_GRACE_MINUTES,
     ...audit,
     blind_spot_this_covers:

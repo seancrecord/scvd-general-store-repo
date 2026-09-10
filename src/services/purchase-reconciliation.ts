@@ -79,13 +79,11 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     (payment.network.startsWith("eip155:") ? !isSameAddress(payment.payer, record.payer) : payment.payer !== record.payer)) {
     throw new Error("Recorded payment identity mismatch");
   }
+  const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
+  const resolution = await recordedHumanResolution(env, record);
+  if (resolution) return resolvedHumanDelivery(resolution);
   if (record.publication) return publicationDelivery(record) ?? null;
   if (!item || !supportsArtifactRecovery(item)) return null;
-  if (item.fulfillment === "human_queue") {
-    const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
-    const resolution = await recordedHumanResolution(env, record);
-    if (resolution) return resolvedHumanDelivery(resolution);
-  }
   if (record.commission) {
     const { fulfillCommissionPurchase } = await import("@/services/commission-purchase");
     const digest = await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
