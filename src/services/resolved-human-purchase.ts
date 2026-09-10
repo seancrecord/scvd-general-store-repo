@@ -2,12 +2,11 @@ import { extractPaymentNonce, getSpentNonce } from "@/lib/replay-guard";
 import { solanaPaymentEvidence } from "@/lib/solana-payment-evidence";
 import { purchaseIdentity, purchaseIntentStore, type PurchaseIntent } from "@/services/purchase-intent";
 import { readHumanResolution, humanResolutionBody, type HumanResolutionRecord } from "@/services/human-resolution-record";
-import { getMenuItem } from "@/store";
 import { isRecord, type Env } from "@/types";
 
 /** Called after payment verification, before any cached delivery can hide a refund. */
 export async function resolvedHumanPayment(env: Env, path: string, network: string, payer: string | undefined, payload: unknown) {
-  if (!payer || getMenuItem(path.replace(/^\/api\/buy\//, ""))?.fulfillment !== "human_queue") return null;
+  if (!payer) return null;
   const identity = await purchaseIdentity(network, payer, payload);
   const raw = await purchaseIntentStore(env, identity.id).existingPurchase();
   const purchase = raw ? JSON.parse(raw) as PurchaseIntent : null;
@@ -29,7 +28,7 @@ export function resolvedHumanDelivery(record: HumanResolutionRecord): Record<str
   return { ...work, resolution: humanResolutionBody(record).resolution };
 }
 export async function recordedHumanResolution(env: Env, record: PurchaseIntent) {
-  return record.item?.fulfillment === "human_queue" && record.payment?.transaction
+  return record.payment?.transaction
     ? readHumanResolution(env, { path: record.path, transaction: record.payment.transaction,
       network: record.terms.network, payer: record.payer }) : null;
 }

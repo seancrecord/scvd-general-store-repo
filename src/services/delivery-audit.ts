@@ -1,4 +1,3 @@
-import { getMenuItem } from "@/store";
 import { isRecord } from "@/types";
 import type { HumanResolutionInput } from "@/services/human-delivery-resolution";
 import type { SettledPayment } from "@/lib/payments";
@@ -225,8 +224,8 @@ export async function auditDeliveries(
  *
  * A resolution is a RECORD, not an erasure: the intent row is
  * replaced by a resolution row naming the outcome and the hand, kept
- * on the same 90-day clock as the event rows for legacy nonhuman cases.
- * Human resolutions retain signed evidence durably before clearing the desk.
+ * with signed evidence retained durably before clearing a paid delivery.
+ * Chain-orphan annotations remain separate from purchase resolutions.
  */
 export type DeliveryOutcome = "fulfilled_by_hand" | "refunded" | "house_absorbed";
 
@@ -263,17 +262,21 @@ export async function resolveDeliveryIntent(
    */
   const priorRaw = await kvGet(env.ORDERS, `delivery_resolved:${id}`);
   // Historical corrections may keep the original intent under superseded.
-  // Never let a missing current row turn a human obligation into an unguarded
+  // Never let a missing current row turn a paid obligation into an unguarded
   // chain-orphan resolution. New records retain the intent at the top level.
   let original: unknown;
   let priorValue: unknown;
   try {
     original = intent ? JSON.parse(intent) : null;
+    if (intent && !isRecord(original)) return { ok: false, refusal: "The original payment record is incomplete. Keep the obligation open." };
     priorValue = priorRaw ? JSON.parse(priorRaw) : null;
     let cursor = priorValue;
     for (let depth = 0; !original && isRecord(cursor); depth++) {
       if (depth >= 64) return { ok: false, refusal: "Resolution history needs inspection before correction." };
-      if (isRecord(cursor.intent)) original = cursor.intent;
+      if ("intent" in cursor) {
+        if (!isRecord(cursor.intent)) return { ok: false, refusal: "The original payment record is incomplete. Keep the obligation open." };
+        original = cursor.intent;
+      }
       cursor = cursor.superseded;
     }
     if (!original) {
@@ -285,12 +288,11 @@ export async function resolveDeliveryIntent(
   } catch {
     return { ok: false, refusal: "The retained resolution could not be read. Keep the obligation open and retry." };
   }
-  if (isRecord(original) && typeof original.path === "string" &&
-    getMenuItem(original.path.replace(/^\/api\/buy\//, ""))?.fulfillment === "human_queue") {
+  if (original) {
     const { resolveHumanDelivery } = await import("@/services/human-delivery-resolution");
-    if (typeof original.paid_usdc !== "number" || typeof original.settled_at !== "string" ||
+    if (!isRecord(original) || typeof original.path !== "string" || typeof original.paid_usdc !== "number" || typeof original.settled_at !== "string" ||
       typeof original.transaction !== "string" || typeof original.payer !== "string") {
-      return { ok: false, refusal: "The original human payment record is incomplete. Keep the obligation open." };
+      return { ok: false, refusal: "The original payment record is incomplete. Keep the obligation open." };
     }
     return resolveHumanDelivery(env, id, outcome, { path: original.path, paid_usdc: original.paid_usdc,
       settled_at: original.settled_at, transaction: original.transaction, payer: original.payer,
