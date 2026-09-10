@@ -83,6 +83,14 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     const resolution = await recordedHumanResolution(env, record);
     if (resolution) return resolvedHumanDelivery(resolution);
   }
+  if (record.commission) {
+    const { fulfillCommissionPurchase } = await import("@/services/commission-purchase");
+    const digest = await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
+    return fulfillCommissionPurchase(env, item, { ...payment, settle: async () => payment }, record.commission,
+      { path: record.path, digest, purchasedAt: record.created_at });
+  }
+  // A commission with no retained quote must never become a generic collab.
+  if (record.path.startsWith("/api/commission/pay/")) return null;
   const query = new URLSearchParams(record.request);
   const args = record.door === "mcp" ? JSON.parse(record.request) as Record<string, unknown> : null;
   const input = purchaseInputFrom(item, args ? toolArgs(args) : queryArgs(name => query.get(name) ?? undefined));

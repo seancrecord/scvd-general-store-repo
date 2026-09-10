@@ -1,3 +1,4 @@
+import type { CommissionPurchase } from "@/services/commission-purchase";
 /**
  * Shared types for Sean-Claude Van Damme's General Store.
  * Every KV record shape and the Worker environment live here.
@@ -291,6 +292,7 @@ export type HonoEnv = {
     inputRefusal?: Record<string, unknown>;
     /** Availability checks for a new sale, after authenticated paid replay. */
     purchaseAdmission?: () => Promise<Response | void>;
+    commissionPurchase?: CommissionPurchase;
   };
 };
 

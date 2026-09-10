@@ -1,3 +1,4 @@
+import type { CommissionPurchase } from "@/services/commission-purchase";
 import { recordedHumanResolution, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
 import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -28,6 +29,7 @@ export interface PurchaseIntent {
   item?: MenuItem;
   created_at: string;
   observation_digest?: string;
+  commission?: CommissionPurchase;
   authorization?: { nonce: string; valid_after: string; valid_before: string };
   solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
@@ -142,7 +144,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
 /** Called only after verification, at the last seam before settlement. */
 export async function beginPurchaseIntent(env: Env, input: {
   path: string; door: "http" | "mcp"; payer: string | undefined;
-  terms: PaymentRequirements; payload: unknown; request: string; item?: MenuItem;
+  terms: PaymentRequirements; payload: unknown; request: string; item?: MenuItem; commission?: CommissionPurchase;
 }): Promise<PurchaseIntent> {
   let record: PurchaseIntent;
   let started: boolean;
@@ -164,7 +166,7 @@ export async function beginPurchaseIntent(env: Env, input: {
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
       ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(observationDigest ? { observation_digest: observationDigest } : {}),
-      ...(input.item ? { item: input.item } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
+      ...(input.item ? { item: input.item } : {}), ...(input.commission ? { commission: input.commission } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;
   } catch {

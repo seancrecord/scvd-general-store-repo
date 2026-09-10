@@ -1,3 +1,4 @@
+import { COMMISSION_ITEM_ID } from "@/store/commission-desk";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
@@ -1175,7 +1176,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
-  const recorded = c.req.path.startsWith("/api/buy/") ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
+  const recorded = (c.req.path.startsWith("/api/buy/") || c.req.path.startsWith("/api/commission/pay/")) ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
     { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) }) : null;
   if (recorded?.kind === "refused") return c.json(recorded.body, 503);
@@ -1190,6 +1191,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL,
         getMenuItem(itemKeyFromPath(c.req.path)) ?? { name: c.req.path }, recorded.payment), charged_again: false }, 500);
     }
+  }
+
+  // A commission's accepted brief lives in its purchase record, not in the
+  // retry query. Its pending status must precede every generic spent-nonce lane.
+  if (recorded?.kind === "pending" && c.req.path.startsWith("/api/commission/pay/")) {
+    return c.json({ ...recorded.body, charged_again: false }, 503);
   }
 
   // Verified. A nonce we've already settled once is refused — unless
@@ -1249,7 +1256,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           c.res.headers.set("Paid-Retry", "true");
           return c.res;
         }
-        const legacyItem = getMenuItem(itemKeyFromPath(c.req.path));
+        const legacyItem = getMenuItem(c.req.path.startsWith("/api/commission/pay/") ? COMMISSION_ITEM_ID : itemKeyFromPath(c.req.path));
         if (legacyItem?.fulfillment === "human_queue" && recorded?.kind === "pending") {
           c.header("Cache-Control", "no-store");
           return c.json(recorded.body, 503);
@@ -1437,15 +1444,16 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
 
   async function performSettlement(): Promise<SettledPayment> {
-    // Only catalogue purchases have a complete request at this seam. Commission
-    // quotes and publication doors require their own original-input capture.
-    const menuItem = c.req.path.startsWith("/api/buy/") ? getMenuItem(itemKeyFromPath(c.req.path)) : undefined;
+    // Commission admission retains the accepted brief before entering this seam.
+    const commission = c.get("commissionPurchase");
+    const menuItem = commission ? getMenuItem(COMMISSION_ITEM_ID) :
+      c.req.path.startsWith("/api/buy/") ? getMenuItem(itemKeyFromPath(c.req.path)) : undefined;
     const query = new URL(c.req.url).searchParams;
     query.delete("payment_payload");
     const purchase = menuItem ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
-      request: query.toString(), item: menuItem,
+      request: query.toString(), item: commission ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}),
     }) : undefined;
     if (purchase) till.recovery = purchaseRecovery(c.env, purchase);
     let settlement: Awaited<
