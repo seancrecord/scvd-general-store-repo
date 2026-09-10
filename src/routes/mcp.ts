@@ -948,6 +948,7 @@ async function callPurchaseTool(
     JSON.stringify(args),
     inputDigest,
     admitPurchase,
+    idempotencyKey ? { surface: idempotencySurface, key: idempotencyKey } : undefined,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
@@ -1040,9 +1041,9 @@ async function callPurchaseTool(
          */
         idempotency: {
           suggested_key: suggestedIdempotencyKey(item.id),
-          how: "Send it back as _meta['x402/idempotency-key'] with your payment. A retry inside the minute returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+          how: "Send it back as _meta['x402/idempotency-key'] with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
           optional:
-            "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. Nothing here can refuse a purchase.",
+            "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
           not_a_secret:
             "Derived from the item and the current minute, so anyone can compute it. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this only ever reaches your own earlier purchase.",
           stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,

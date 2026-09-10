@@ -51,12 +51,11 @@ describe("both pre-purchase documents name the double-charge guard", () => {
     }
   });
 
-  it("says the mechanism cannot refuse a purchase", async () => {
-    // The one thing a buyer needs to believe before adopting it: an
-    // idempotency key is a safety net, never a gate. A doc that
-    // describes the guard without this reads like a new way to fail.
+  it("states that unresolved admission refuses another settlement", async () => {
     for (const doc of [await liveSkill(), await bundle()]) {
-      expect(doc.toLowerCase()).toContain("refuse a purchase");
+      expect(doc).toContain("Pending or unreadable admission");
+      expect(doc).toContain("keep the original payment and key");
+      expect(doc).not.toMatch(/Nothing about (?:it|this)\s+can refuse a purchase/);
     }
   });
 

@@ -76,6 +76,8 @@ Repair: separate authenticated receipt recovery from authorization spendability.
 
 ### BUY-016 — P1: concurrent fresh authorizations bypass the same-key safeguard
 
+**2026-09-10 repair:** new keyed purchases atomically retain one payment identity before settlement through the existing Durable Object namespace. Authenticated duplicates retrieve that purchase or its pending status, including after cache loss; unavailable admission stops settlement. Signed refund resolutions precede stale cached goods. The [completion register](BUYER_REPAIR_CHECKLIST.md#2026-09-10--atomic-admission-for-concurrent-fresh-authorizations) records the failing-before/passing-after fixture evidence, scope and release validation. Historical missing key associations and expired verification remain separate. The original observation follows.
+
 **Open · payment ambiguity audit.** Two simultaneous requests for the same item, inputs, payer and idempotency key, each carrying a fresh authorization, both reach settlement and create separate purchases. The controlled schedule produces two simulated debits on each rail through both doors. This is distinct from resending one authorization, whose EVM nonce still prevents a second debit. The existing cache deliberately allows a normal charge on a miss/race; it is not atomic admission.
 
 Repair: serialize or atomically claim a purchase intent before settlement, and give losing duplicates a deterministic pending/recovery response. Test separate nonces as well as identical signatures. With one EVM authorization the losing concurrent response is ambiguous, but a later identical retry does retrieve the winner's artifact; do not label that particular case a second debit.

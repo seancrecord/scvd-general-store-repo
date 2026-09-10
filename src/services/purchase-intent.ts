@@ -5,7 +5,7 @@ import { humanResolutionBody } from "@/services/human-resolution-record";
 import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
 import type { PaymentRequirements } from "@x402/core/types";
 import { jcsCanonicalize } from "@/lib/jcs";
-import { sha256Hex } from "@/lib/idempotency";
+import { idempotentPurchaseStore, sha256Hex } from "@/lib/idempotency";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { SettlementDeclined, SettlementUnknown, type SettledPayment } from "@/lib/payments";
 import { isRecord, type Env, type MenuItem } from "@/types";
@@ -76,7 +76,7 @@ class RecordedPurchase extends SettlementUnknown {
     this.reconciliationReference = record.reconciliation_reference ?? null;
   }
   override body() {
-    return { ...super.body(), ...purchaseStatus(this.record),
+    return { ...super.body(), ...purchaseStatus(this.record), charged_again: false, settlement_attempted: false,
       error: "This payment already has a purchase record. No new settlement was attempted. Read its status; fulfillment recovery may still be required.",
       code: this.record.state === "unknown" ? "settlement_unknown" : this.record.state === "settled" ? PURCHASE_RECORD_CODES.pending : PURCHASE_RECORD_CODES.refused,
       recovery: { reference: this.reconciliationReference, recorded: true, ...purchaseRecovery(this.env, this.record),
@@ -104,19 +104,34 @@ type RecordedPurchaseLookup =
 /** Authenticated completed goods outlive the replay cache; never run fulfillment again. */
 export async function lookupRecordedPurchase(env: Env, network: string, payer: string | undefined, payload: unknown,
   request: { path: string; door: "http" | "mcp"; digest: string | undefined },
+  idempotency?: { surface: string; key: string },
 ): Promise<RecordedPurchaseLookup> {
   if (!payer) return null;
   let known: PurchaseIntent | undefined;
   try {
     const identity = await purchaseIdentity(network, payer, payload);
-    const saved = await purchaseIntentStore(env, identity.id).existingPurchase();
+    let saved = await purchaseIntentStore(env, identity.id).existingPurchase();
+    let owner = identity.id;
+    if (!saved && idempotency) {
+      const slot = await idempotentPurchaseStore(env, idempotency.surface, identity.payer, idempotency.key);
+      const claimed = await slot.readIdempotentPurchase();
+      if (claimed) {
+        owner = claimed;
+        saved = await purchaseIntentStore(env, owner).existingPurchase();
+        if (!saved && owner !== identity.id) throw new Error("Original purchase admission pending");
+      }
+    }
     if (!saved) return null;
     const record = JSON.parse(saved) as PurchaseIntent;
-    if (record.id !== identity.id || record.payer !== identity.payer || record.terms.network !== network) {
+    // EVM wallets share the existing key scope across EVM rails. A Solana
+    // address is case-sensitive and never authenticated by an EVM signature.
+    const sameNetworkFamily = record.terms.network === network ||
+      (owner !== identity.id && record.terms.network.startsWith("eip155:") && network.startsWith("eip155:"));
+    if (record.id !== owner || record.payer !== identity.payer || !sameNetworkFamily) {
       throw new Error("Purchase owner mismatch");
     }
     known = record;
-    if (record.state === "unknown") return { kind: "pending", body: new RecordedPurchase(env, record).body() };
+    if (record.state === "unknown" || (owner !== identity.id && record.state === "not_settled")) return { kind: "pending", body: new RecordedPurchase(env, record).body() };
     if (record.state === "settled" && !record.delivery && record.item?.fulfillment === "human_queue") {
       // The complete brief predates the artifact journal. If that journal could
       // not open, its alarm still owns reconstruction from these original terms.
@@ -147,6 +162,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
 /** Called only after verification, at the last seam before settlement. */
 export async function beginPurchaseIntent(env: Env, input: {
   path: string; door: "http" | "mcp"; payer: string | undefined;
+  idempotency?: { surface: string; key: string };
   terms: PaymentRequirements; payload: unknown; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
 }): Promise<PurchaseIntent> {
   let record: PurchaseIntent;
@@ -154,6 +170,19 @@ export async function beginPurchaseIntent(env: Env, input: {
   try {
     if (!input.payer) throw new Error("Missing verified payer");
     const { payer, id } = await purchaseIdentity(input.terms.network, input.payer, input.payload);
+    if (input.idempotency) {
+      const slot = await idempotentPurchaseStore(env, input.idempotency.surface, payer, input.idempotency.key);
+      const owner = await slot.claimIdempotentPurchase(id);
+      if (owner !== id) {
+        const saved = await purchaseIntentStore(env, owner).existingPurchase();
+        if (!saved) throw new Error("Original purchase admission pending");
+        const original = JSON.parse(saved) as PurchaseIntent;
+        if (original.id !== owner || original.payer !== payer || original.path !== input.path || original.door !== input.door) {
+          throw new Error("Original purchase owner mismatch");
+        }
+        throw new RecordedPurchase(env, original);
+      }
+    }
     const payload = isRecord(input.payload) && isRecord(input.payload.payload) ? input.payload.payload : {};
     const auth = isRecord(payload.authorization) ? payload.authorization : {};
     const nonce = extractPaymentNonce(input.payload);
@@ -173,7 +202,8 @@ export async function beginPurchaseIntent(env: Env, input: {
       ...(input.item ? { item: input.item } : {}), ...(input.commission ? { commission: input.commission } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;
-  } catch {
+  } catch (error) {
+    if (error instanceof RecordedPurchase) throw error;
     throw new SettlementDeclined(Response.json({ code: PURCHASE_RECORD_CODES.unavailable, charged: null, settlement_attempted: false,
       payment_state: "unknown", error: "The purchase record is unavailable. This request did not submit payment; an earlier attempt may still be unresolved. Retry the same request with the same payment and key." },
       { status: 503, headers: { "Cache-Control": "no-store" } }));

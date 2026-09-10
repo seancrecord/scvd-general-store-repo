@@ -203,8 +203,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * for readers that predate x402. Checkout networks come from the current
  * quote; product inspection networks are a separate input.
  */
-/** 3.16.1: correct secondary payment/reader copy and browser-till limits. */
-export const SKILL_VERSION = "3.16.1";
+/** 3.16.2: distinguish cached replies from durable same-key payment admission. */
+export const SKILL_VERSION = "3.16.2";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

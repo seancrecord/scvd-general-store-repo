@@ -242,6 +242,7 @@ export async function runMcpPayment(
   inputDigest?: string,
   /** Checks new sales after verified replay, and prevents quotes on closed shelves. */
   admitPurchase?: () => Promise<McpAdmissionRefusal | null>,
+  idempotency?: { surface: string; key: string },
 ): Promise<McpPaymentOutcome> {
   const path = `/api/buy/${itemId}`;
   const stack = getPaymentStack(env);
@@ -397,7 +398,7 @@ export async function runMcpPayment(
    */
   const verifiedPayer = payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot);
   try {
-    const resolution = await resolvedHumanPayment(env, path, result.paymentRequirements.network, verifiedPayer, result.paymentPayload);
+    const resolution = await resolvedHumanPayment(env, path, result.paymentRequirements.network, verifiedPayer, result.paymentPayload, idempotency);
     if (resolution) {
       const work = resolvedHumanDelivery(resolution);
       if (!work) return { kind: "purchase-status", body: humanResolutionBody(resolution) };
@@ -418,7 +419,7 @@ export async function runMcpPayment(
   }
 
   const recorded = await lookupRecordedPurchase(env, result.paymentRequirements.network, verifiedPayer, result.paymentPayload,
-    { path, door: "mcp", digest: inputDigest });
+    { path, door: "mcp", digest: inputDigest }, idempotency);
   if (recorded?.kind === "refused") return { kind: "purchase-status", body: recorded.body };
   if (recorded?.kind === "complete") return {
     kind: "authorized", recovered: true, savedDelivery: recorded.delivery, verifiedPayer,
@@ -530,7 +531,7 @@ export async function runMcpPayment(
     if (alreadySettled) return alreadySettled;
     const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer,
       terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
-      request: askedFor ?? "{}", item: getMenuItem(itemId) });
+      request: askedFor ?? "{}", item: getMenuItem(itemId), idempotency });
     recoveryHandle = purchaseRecovery(env, purchase);
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {

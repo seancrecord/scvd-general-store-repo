@@ -904,3 +904,9 @@ SHA-256 for each file are recorded in
 ML-DSA-65 external Pure cases and key-generation cases matched the pinned
 candidate; prehash/internal variants and other parameter sets were excluded
 and counted. No claim of an ACVP certification session follows.
+
+## 2026-09-10 — BUY-016 atomic admission for fresh authorizations
+
+Read Cloudflare's [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/), [KV consistency](https://developers.cloudflare.com/kv/concepts/how-kv-works/) and [SQLite Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/). KV caches both missing and present values and cannot provide atomic admission. Durable Object storage provides transactional, strongly consistent per-instance state; the existing `PAID_RECOVERIES` SQLite namespace supports the required transaction API. The repair uses a separate instance per hashed purchase scope and key, with no new binding or migration. Payment identities and existing recovery objects retain their names.
+
+Limits of this read: local Worker fixtures exercise the installed runtime and actual Durable Object transactions; no production payment, refund, live contention measurement or customer-obligation inventory is performed. Retrieved `@cloudflare/workers-types` 5.20260910.1 and checked `idFromName`, `transaction` and `abort` against its declarations. Installed runtime types and `npm run typecheck` remain the compatibility check for the built artifact. The new claim cannot retrofit a missing historical key association, and expired payment verification remains separate buyer-recovery work.

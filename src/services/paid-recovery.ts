@@ -147,6 +147,25 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     });
   }
 
+  /**
+   * One keyed purchase owns one payment identity. This claim cannot expire
+   * into a new charge while the original payment is unresolved. The owner
+   * may resume after a lost claim reply; beginPurchase still admits its
+   * settlement only once. A different authorization can only read status.
+   */
+  async readIdempotentPurchase(): Promise<string | null> {
+    return await this.ctx.storage.get<string>("idempotent-purchase") ?? null;
+  }
+
+  async claimIdempotentPurchase(purchaseId: string): Promise<string> {
+    return this.ctx.storage.transaction(async txn => {
+      const prior = await txn.get<string>("idempotent-purchase");
+      if (prior) return prior;
+      await txn.put("idempotent-purchase", purchaseId);
+      return purchaseId;
+    });
+  }
+
   async beginPurchase(proposalJson: string): Promise<{ started: boolean; record: string }> {
     const proposal = JSON.parse(proposalJson) as PurchaseIntent;
     return this.ctx.storage.transaction(async (txn) => {

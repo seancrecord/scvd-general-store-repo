@@ -96,10 +96,12 @@ for (const shelf of ["commission", "almanac", "gazette", "zodiac"]) {
   });
 }
 
+// Each identity case gets its own test boundary. An aggregate hit the CI
+// timeout and was followed by a transfer-count failure in the next test.
 for (const door of ["http", "mcp", "mcp-standard"] as const) {
-  it(`${door}: unbound or malformed historical identities disclose no paid-good facts`, async () => {
-    const item = items.find(item => item.id === "hello")!, quote = await call(item, "http", {});
-    for (const network of laborNetworks()) for (const defect of ["missing-payer", "different-payer", "invalid-amount", "invalid-time"]) {
+  for (const network of laborNetworks()) for (const defect of ["missing-payer", "different-payer", "invalid-amount", "invalid-time"]) {
+    it(`${door} ${network} ${defect}: unbound or malformed historical identities disclose no paid-good facts`, async () => {
+      const item = items.find(item => item.id === "hello")!, quote = await call(item, "http", {});
       const offer = quote.offers.find(offer => offer.network === network)!;
       const wire = await signLabor(offer), auth = object(object(wire.payload).authorization);
       const sol = network.startsWith("solana:") ? await solFacts(wire) : null;
@@ -117,8 +119,8 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       for (const field of ["transaction", "payer", "paid_usdc", "network", "deliverable", "cert_id"]) expect(retry.body[field]).toBeUndefined();
       expect(await sourceEnv.ORDERS.get(KV_KEYS.deliveryIntent(transaction))).toBe(raw);
       expect(transfers).toBe(0);
-    }
-  });
+    });
+  }
 }
 
 for (const door of ["http", "mcp", "mcp-standard"] as const) {

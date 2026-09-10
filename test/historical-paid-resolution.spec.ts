@@ -1,3 +1,4 @@
+import { idempotencyScope, idempotentPurchaseStore, storeIdempotent } from "@/lib/idempotency";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { runInDurableObject, runDurableObjectAlarm } from "cloudflare:test";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, transfers, sendLabor } from "./helpers/labor-admission";
@@ -109,7 +110,7 @@ async function seed(rail: number, shelf: string, retained = false) {
     await purchaseIntentStore(testEnv, record.id).updatePurchase({ state: "settled", payment: { paidUsdc: intent.paid_usdc, tipUsdc: 0, transaction, network, payer, settleHeaders: {} } });
     record = JSON.parse((await purchaseIntentStore(testEnv, record.id).existingPurchase())!);
   }
-  return { ...intent, network, refund, wire, record, retry: () => request(url, { headers: { "PAYMENT-SIGNATURE": btoa(JSON.stringify(wire)) } }) };
+  return { ...intent, network, refund, wire, record, offer, url, retry: () => request(url, { headers: { "PAYMENT-SIGNATURE": btoa(JSON.stringify(wire)) } }) };
 }
 for (const [rail] of laborNetworks().entries()) for (const shelf of ["small_blessing", "commission", "almanac", "gazette", "zodiac"]) {
   it(`${shelf} rail ${rail}: a verified full refund returns the signed resolution through the original paid door`, async () => {
@@ -205,3 +206,24 @@ it("the keeper's directions require evidence for every paid product", async () =
   expect(page).not.toContain("<legend>Human purchase evidence</legend>");
   expect(page).toContain("<legend>Paid purchase evidence</legend>");
 });
+
+for (const [rail] of laborNetworks().entries()) for (const door of ["http", "mcp", "mcp-standard"] as const) {
+  it(`rail ${rail} ${door}: a fresh authorization with the purchase key returns its refund before cached goods`, async () => {
+    const s = await seed(rail, "small_blessing", true), key = crypto.randomUUID();
+    const query = new URL(s.url, testEnv.STORE_BASE_URL).searchParams;
+    const args = Object.fromEntries(query);
+    const surface = await idempotencyScope(door === "http" ? s.path : "mcp:buy_small_blessing",
+      door === "http" ? query : new URLSearchParams({ item_id: "small_blessing", ...args }));
+    const slot = await idempotentPurchaseStore(testEnv, surface, s.payer, key);
+    expect(await slot.claimIdempotentPurchase(s.record!.id)).toBe(s.record!.id);
+    await storeIdempotent(testEnv, surface, s.payer, key, { obsolete_cached_goods: true });
+    expect((await resolve(s.transaction, "refunded", { network: s.network, refund_tx: s.refund })).status).toBe(200);
+    const fresh = await signLabor(s.offer);
+    const response = door === "http"
+      ? { body: object(await (await request(s.url, { headers: { "PAYMENT-SIGNATURE": btoa(JSON.stringify(fresh)), "Idempotency-Key": key } })).json()) }
+      : await sendLabor("small_blessing", door, args, fresh, key);
+    expect(response.body).toMatchObject({ code: "purchase_resolved", refunded: true, transaction: s.transaction, charged_again: false });
+    expect(response.body.obsolete_cached_goods).toBeUndefined();
+    expect(transfers).toBe(0);
+  });
+}

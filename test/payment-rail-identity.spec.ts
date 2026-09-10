@@ -64,8 +64,9 @@ it(`${door}: Solana metadata cannot claim a ${victimNetwork} payer's cached purc
   const item = items.find(i => i.id === "daily_fortune")!, tool = shelves(item)[0]!;
   await reset(); const q = await call(item, door, {}, tool);
   const base = q.offers.find(o => o.network === victimNetwork)!, sol = q.offers.find(o => o.network === SOLANA_NETWORK)!;
-  const key = String(object(q.body.idempotency).suggested_key);
-  expect(key).not.toBe("undefined");
+  // A new victim-rail case must not reuse the previous case's durable claim.
+  // The attacking wallet still knows and presents the victim's exact key.
+  const key = crypto.randomUUID();
   const original = await call(item, door, {}, tool, encode(await evmPayment(base)), key);
   expect(idOf(original)).toBeTruthy();
   const replay = await call(item, door, {}, tool, encode(await evmPayment(base)), key);

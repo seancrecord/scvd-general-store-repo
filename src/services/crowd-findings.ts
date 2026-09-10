@@ -73,6 +73,24 @@ export interface DigestCheck {
   /** Distinct wallets that walked it and reported a digest. */
   payers: number;
   agreement: "agree" | "differ" | "single";
+  /**
+   * THE SECOND AXIS (2026-09-10), and it is reported SEPARATELY rather
+   * than folded into `agreement` on purpose.
+   *
+   * A body digest is each walker's own reconstruction: compression,
+   * client stacks and canonicalisation choices all sit between the
+   * door and the hash, so two honest walkers can differ over bytes
+   * neither of them altered. An ETag has none of that between it and
+   * the door — it is a string the door itself emitted.
+   *
+   * So the two can disagree with each other, and when they do THAT is
+   * the finding: same etag with different digests means the walkers
+   * hashed differently, and different etags means the door actually
+   * changed under them. Collapsing them into one verdict would throw
+   * away the only signal that tells those two apart. Absent when
+   * fewer than two wallets reported an etag here.
+   */
+  etag_agreement?: "agree" | "differ";
 }
 
 export interface HouseVsWalker {
@@ -131,6 +149,8 @@ export function crowdFindings(bounties: readonly BountyRecord[]): CrowdFindings 
 
   /** host -> digest -> the wallets that reported it. */
   const digestsByHost = new Map<string, Map<string, Set<string>>>();
+  /** host -> etag -> the wallets that reported it. Same shape, second axis. */
+  const etagsByHost = new Map<string, Map<string, Set<string>>>();
 
   for (const bounty of paid) {
     const claim = bounty.claim!;
@@ -157,6 +177,14 @@ export function crowdFindings(bounties: readonly BountyRecord[]): CrowdFindings 
         wallets.add(claim.payer.toLowerCase());
         perHost.set(report.body_sha256, wallets);
         digestsByHost.set(bounty.domain, perHost);
+      }
+      if (report.etag) {
+        const perHost =
+          etagsByHost.get(bounty.domain) ?? new Map<string, Set<string>>();
+        const wallets = perHost.get(report.etag) ?? new Set<string>();
+        wallets.add(claim.payer.toLowerCase());
+        perHost.set(report.etag, wallets);
+        etagsByHost.set(bounty.domain, perHost);
       }
     }
 
@@ -189,12 +217,25 @@ export function crowdFindings(bounties: readonly BountyRecord[]): CrowdFindings 
       walks += set.size;
       for (const wallet of set) wallets.add(wallet);
     }
+    /*
+     * The etag axis needs its OWN two-wallet test. A door may emit an
+     * etag to one walker and not the next, so "two walkers reported a
+     * digest here" does not mean two reported an etag.
+     */
+    const perEtag = etagsByHost.get(host);
+    const etagWallets = new Set<string>();
+    for (const set of perEtag?.values() ?? []) {
+      for (const wallet of set) etagWallets.add(wallet);
+    }
     digests.push({
       host,
       walks,
       payers: wallets.size,
       agreement:
         wallets.size < 2 ? "single" : perDigest.size === 1 ? "agree" : "differ",
+      ...(perEtag && etagWallets.size >= 2
+        ? { etag_agreement: perEtag.size === 1 ? "agree" : "differ" }
+        : {}),
     });
   }
   digests.sort((a, b) => b.walks - a.walks || a.host.localeCompare(b.host));

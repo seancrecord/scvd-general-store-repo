@@ -406,7 +406,7 @@ async function enrich402Body(
            */
           before_you_retry: isNeverJudged(decline)
             ? `You are about to retry, and on this path that is exactly right: resend the same signed payload after ${RESEND_AFTER_SECONDS} seconds. Nothing settled, so there is nothing to double-charge — but sending idempotency.suggested_key as the Idempotency-Key header costs nothing and closes the one case this store cannot see from here.`
-            : "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. It cannot refuse your purchase and costs nothing.",
+            : "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. Keep your original key if you already sent one; unresolved admission stops another settlement.",
           /*
            * A signature that did not clear is the exact moment the
            * domain trap costs somebody a night, so the whole block
@@ -459,9 +459,9 @@ async function enrich402Body(
            */
           idempotency: {
             suggested_key: suggestedIdempotencyKey(item.id),
-            how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. If your retry loop fires again inside the minute, the second attempt returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+            how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
             optional:
-              "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. Nothing here can refuse a purchase.",
+              "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
             not_a_secret:
               "This value is derived from the item and the current minute, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this key only ever reaches your own earlier purchase, never somebody else's.",
             stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
@@ -1135,7 +1135,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    */
   try {
     const resolution = await resolvedHumanPayment(c.env, c.req.path, result.paymentRequirements.network,
-      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload);
+      payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
+      idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined);
     if (resolution) {
       c.header("Cache-Control", "no-store");
       const work = resolvedHumanDelivery(resolution);
@@ -1177,7 +1178,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
   const recorded = (c.get("publicationPurchase") || c.req.path.startsWith("/api/buy/") || c.req.path.startsWith("/api/commission/pay/")) ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
-    { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) }) : null;
+    { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) },
+    idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined) : null;
   if (recorded?.kind === "refused") return c.json(recorded.body, 503);
   if (recorded?.kind === "complete") {
     c.header("Cache-Control", "no-store");
@@ -1363,6 +1365,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     query.delete("payment_payload");
     const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
+      ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query), key: idempotencyKey } } : {}),
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
     }) : undefined;
