@@ -21,10 +21,16 @@
  */
 export const NAMED_AI_CRAWLERS: readonly string[] = [
   // Anthropic: training, user-initiated fetch, search indexing.
+  // `anthropic-ai` and `Claude-Web` stood here until 2026-09-10; both
+  // were retired by Anthropic in favour of ClaudeBot (their support
+  // page names these three and no other), and the rule at the top of
+  // routes/site-meta.ts is that a stanza for a crawler its operator
+  // has retired is the same class of false claim as a sameAs pointing
+  // at a page nobody wrote. Traffic still carrying the old string is
+  // legacy or spoofed, and the wildcard answers it either way.
   "ClaudeBot",
   "Claude-User",
   "Claude-SearchBot",
-  "anthropic-ai",
   // OpenAI: training, user-initiated fetch, search indexing.
   "GPTBot",
   "ChatGPT-User",
@@ -102,6 +108,47 @@ export const NAMED_AI_CRAWLERS: readonly string[] = [
   "GrokBot",
   "xAI-Grok",
   "Grok-DeepSearch",
+  /*
+   * THE FIELD, WALKED A THIRD TIME 2026-09-10, against the community
+   * roster at ai-robots-txt/ai.robots.txt (170-odd strings) and the
+   * keeper's ask that every potential reader be answered by name.
+   * The rule that decided which of the 170 land here is unchanged:
+   * a token appears only where its OPERATOR publishes it. Each line
+   * below names the vendor page it was read against, because a name
+   * copied from a third-party directory is a permission stated to a
+   * string nobody may send.
+   */
+  // Google's two user-triggered fetchers added to its crawler list
+  // in 2026 (developers.google.com, crawlers-fetchers): Google-Agent
+  // is the identity for agents on Google infrastructure browsing on a
+  // person's behalf; Google-NotebookLM fetches a page a NotebookLM
+  // user added as a source.
+  "Google-Agent",
+  "Google-NotebookLM",
+  // Amazon's two beside Amazonbot (developer.amazon.com/amazonbot):
+  // Amzn-SearchBot indexes for Alexa and Amazon search experiences,
+  // Amzn-User fetches live for an Alexa answer. Neither trains.
+  "Amzn-SearchBot",
+  "Amzn-User",
+  // Meta's search indexer beside its training crawler and fetcher
+  // (developers.facebook.com, web-crawlers): "allowing Meta-WebIndexer
+  // helps us cite and link to your content in Meta AI's responses",
+  // which is the sentence this store is built to receive.
+  "Meta-WebIndexer",
+  // Mistral's index for Le Chat's search (docs.mistral.ai/robots),
+  // beside MistralAI-User above; Mistral states it does not train.
+  "MistralAI-Index",
+  // Moonshot's pair (kimi.ai/policies/kimi-crawlers): KimiBot gathers
+  // for training, Kimi-SearchBot builds Kimi's search index.
+  "KimiBot",
+  "Kimi-SearchBot",
+  // Diffbot's user-initiated twin of the Diffbot crawler above
+  // (docs.diffbot.com).
+  "Diffbot-User",
+  // AWS's crawler for a Bedrock customer's own knowledge base
+  // (docs.aws.amazon.com/bedrock, web crawler data source): the same
+  // shape as Google-CloudVertexBot, grounding somebody else's app.
+  "bedrockbot",
 ];
 
 /**
@@ -115,6 +162,9 @@ export const SEARCH_CRAWLERS: readonly string[] = [
   "DuckDuckBot",
   "Applebot",
   "YandexBot",
+  // Brave's index (search.brave.com/help/brave-search-crawler), which
+  // also feeds the Search API that agents and RAG pipelines read.
+  "Bravebot",
 ];
 
 /**
@@ -142,7 +192,6 @@ export const SEARCH_CRAWLERS: readonly string[] = [
 export const MARKDOWN_READERS: readonly string[] = [
   // Training corpora.
   "ClaudeBot",
-  "anthropic-ai",
   "GPTBot",
   "Google-Extended",
   "Applebot-Extended",
@@ -157,6 +206,24 @@ export const MARKDOWN_READERS: readonly string[] = [
   "Perplexity-User",
   "MistralAI-User",
   "Meta-ExternalFetcher",
+  /*
+   * The 2026-09-10 additions, classed on the same published purposes:
+   * KimiBot gathers for training; Google-NotebookLM, Amzn-User and
+   * Diffbot-User each fetch one page because one person asked for it.
+   *
+   * WHO IS DELIBERATELY NOT HERE from the same walk: Google-Agent is
+   * user-initiated too, but it is an agent driving a browser, and a
+   * browser agent handed markdown loses the buttons it came to press.
+   * It sends a browser Accept in practice, so this classification
+   * mostly never fires — and where it does, unsure is an indexer, as
+   * below. Amzn-SearchBot, Meta-WebIndexer, MistralAI-Index and
+   * Kimi-SearchBot are indexes and want the JSON-LD; bedrockbot
+   * grounds a customer's app, the Google-CloudVertexBot case.
+   */
+  "KimiBot",
+  "Google-NotebookLM",
+  "Amzn-User",
+  "Diffbot-User",
   /*
    * The Allen Institute's crawler builds an open academic corpus,
    * which is the training case by its own description.

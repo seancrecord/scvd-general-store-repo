@@ -912,6 +912,19 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **GitHub Agent Finder: the catalog PR (2026-09-10).** Copilot's
+  agent finder did not return the store on 2026-09-06, and the
+  community catalog behind it (`github/agentfinder-catalog`) takes
+  one JSON file per augment by pull request. Three are drafted and
+  validated in `registry/agentfinder/catalog/seancrecord/` — the
+  store skill, the before-you-pay skill, the store's MCP server —
+  and the press is the fork-and-PR in `registry/agentfinder/README.md`.
+  The tab has no entry until its registry version is republished
+  (the press two rows down); an entry naming 0.11.1 would point at
+  a version the registry does not hold. RULE, small: the MCP entry
+  uses the feed's identifier shape rather than the guide's; the README
+  says why, and either passes.
+
 - **Desvela Registry Watch activation (2026-09-06).** After the receiver
   is deployed at `https://scvd.store/webhooks/desvela-registry`, register
   the watch separately and install the returned secret with
