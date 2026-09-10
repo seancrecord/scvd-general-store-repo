@@ -30,12 +30,17 @@ build, it is on the roadmap.
   all six listed snapshots served completed proofs at 14:32 UTC, verified
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
-  remaining builds are ROADMAP VQ3–VQ4; the directory note below is unsent.
+  reader release is complete; remaining coverage work and OpenAPI headroom
+  are ROADMAP VQ4–VQ5. The keeper confirmed the directory note sent; await
+  its reply as recorded below.
 
-- **x402-verify 1.2.0 published (2026-09-09).** The evidence CLI is on
-  npm with verified provenance. A registry installation verified the
-  saved receipt and reported its missing evidence. The old 1.1.0 press
-  is closed by this release; details and workflow receipt: DISTRIBUTION.md.
+- **x402-verify 1.3.0 published (2026-09-09).** A fresh registry installation
+  verified all six live corpus snapshots at 20:03 UTC, with provenance checked.
+  The original certificate census's final Bitcoin proof was independently
+  verified at 23:18 UTC: 262 of 262, with signed bytes unchanged. The limits
+  and retained-evidence follow-through are in
+  `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`; DISTRIBUTION.md holds
+  the package release record.
 
 - **Browser till purchase delivered (2026-09-06).** The keeper reported
   the delivered Small Blessing and full till reading. Certificate

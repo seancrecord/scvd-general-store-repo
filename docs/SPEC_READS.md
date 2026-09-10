@@ -1,5 +1,29 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-09 — retained-evidence capture and opaque-digest proofs
+
+Read [development binding support](https://developers.cloudflare.com/workers/local-development/bindings-per-env/)
+and [Durable Object binding configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#durable-objects):
+local remote bindings do not directly support Durable Objects; remote development
+supports an external class via `script_name`. The collector therefore uses a
+short-lived authenticated remote preview, with its class/name derived from the
+existing configuration. It calls only existing read RPCs, not a storage API or
+purchase handler. The installed Wrangler declarations were checked for
+`unstable_dev`, configuration and shutdown options. Re-read the
+[Wrangler KV command reference](https://developers.cloudflare.com/workers/wrangler/commands/kv/)
+and [Worker best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+for binding use, request bounds and sensitive output. Live positive journal
+reads and an unauthenticated refusal were exercised. Observation-only journals
+and hosted grant enumeration remain outside this collector; current code does
+not establish historical retention.
+
+Read the installed OpenTimestamps Python interfaces already pinned for the
+previous proof pass: `DetachedTimestampFile.file_digest`, `OpSHA256`, and
+`BitcoinBlockHeaderAttestation.verify_against_blockheader`. Digest-only checking
+uses a SHA-256 binding supplied independently from a verified certificate,
+while explicitly leaving its preimage unchecked. The existing Esplora
+height/hash/header reads supply chain membership; no local consensus node.
+
 ## 2026-09-09 — buyer guidance and conditional evidence reads
 
 Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)

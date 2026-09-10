@@ -1,5 +1,12 @@
 # Verification follow-through — September 8, 2026
 
+Latest September 9 follow-through: all 262 certificate proofs in the frozen
+census are now independently checked. Retained-evidence reads recovered three
+signed reports and two bundles, with unsigned projections, opaque digests and
+unresolved bindings counted separately. Current results and remaining limits:
+`docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`. Earlier readings below
+remain dated history.
+
 This is an implementation and observation record from
 `codex/verification-evidence`. Release was subsequently authorized with
 “alright lets roll”; the complete staged-release validation is recorded in

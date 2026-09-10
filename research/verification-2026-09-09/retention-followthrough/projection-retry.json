@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-09-09T23:40:27.672Z",
+  "family": "passport_refresh",
+  "repeat_capture_state": "unreadable",
+  "retry_state": "readable",
+  "matched_original_certificate_bindings": 1,
+  "bytes_match_first_capture": true,
+  "scope": "Separate retry; the original unreadable capture and its denominator remain unchanged."
+}
