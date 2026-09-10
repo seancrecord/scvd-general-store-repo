@@ -737,6 +737,7 @@ describe("the ask is a shape, and the door teaches on the way past", () => {
       "body_sha256",
       "bytes",
       "content_type",
+      "etag",
       "latency_ms",
       "payment_response",
       "status",
@@ -819,6 +820,7 @@ describe("the ask is a shape, and the door teaches on the way past", () => {
         bytes: 1234,
         latency_ms: 850,
         content_type: "application/json",
+        etag: 'W/"d28-1jERcbmO1KX0"',
       },
     });
     expect(result.your_report.missing).toHaveLength(0);

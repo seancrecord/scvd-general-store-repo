@@ -279,6 +279,65 @@ stated in that file and is the honest trade: refusing every walker
 because a lock is unavailable would turn a rare double-pay into an
 outage.
 
+## The second axis, found by a walker (2026-09-10)
+
+The first structured report the board ever received did more than
+comply. `agent402.tools` serves `content-encoding: br`, and the walker
+pointed out what that does to `body_sha256`: their client decompresses
+before they can touch the response, so the literal on-wire bytes are
+not hashable by anybody using a normal HTTP library. They hashed the
+canonical compact JSON instead, said in their observation that they
+had, and named the fix — the door's own **ETag**, "the more robust
+comparison target since it is the door's own validator".
+
+They were right, and the reason is worth writing down: an ETag has
+nothing between it and the door. Two walkers comparing one are
+comparing a string the door emitted, not two independent attempts to
+reconstruct the same bytes through different client stacks.
+
+So `etag` is a report field now, and three things about how it is held:
+
+- **It is taken verbatim** — trimmed and length-capped, nothing more.
+  `W/"abc"` and `"abc"` are a weak and a strong validator and the
+  difference is the door's. Normalising them into agreement would be
+  this store manufacturing a match neither walker reported.
+- **It is compared separately from the digest**, never folded in. When
+  the two disagree, THAT is the finding: one etag with two digests
+  means the walkers hashed differently; two etags means the door
+  actually moved under them. One verdict would throw away the only
+  signal that tells those apart.
+- **`body_sha256` now teaches the compression case itself**, so the
+  next walker meets the problem in the ask rather than discovering it
+  at their own expense.
+
+## The standing order (2026-09-10)
+
+Posting was sixty seconds of the keeper's attention per door, every
+week, forever — and a week he was busy was a week the board sat empty
+in front of walkers who poll it. A plan is him writing down what he
+would have pressed, once, for as many weeks as he means it: how many
+listings, at what reward, on which tier, pinned to which rails.
+
+**It chooses no doors of its own.** Candidates come from the week's
+census round through the same `bountyCandidates` the market page
+shows a keeper, in the same order. Nothing self-nominates, no seller
+reaches a walker by asking, and the anti-farming rule above is
+untouched. What is automated is the press, not the judgement.
+
+**It posts nothing rather than overcommit, and this is the important
+one.** The weekly budget is checked at *claim* time — last, after a
+walker has already paid the door out of their own wallet. A board
+carrying more listings than the week can pay does not merely
+overspend; it takes a stranger's money and then refuses them, which is
+the exact behaviour this store exists to catch other people doing. So
+the plan reserves against **open** listings as well as spent money and
+stops early. A quiet week is the guard working, and it says so in the
+round rather than going silent.
+
+It also stands down, keeping its weeks, when payouts are paused or no
+census round exists — the two states where a listing would be a door a
+walker can pay and never be paid for.
+
 ## The honest register (the part that keeps this ours)
 
 - What the store verified is the SETTLEMENT: money moved from that
