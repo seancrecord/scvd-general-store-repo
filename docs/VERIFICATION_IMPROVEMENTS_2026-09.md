@@ -7,6 +7,15 @@ unresolved bindings counted separately. Current results and remaining limits:
 `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`. Earlier readings below
 remain dated history.
 
+A later public directory read at 00:50 UTC September 10 reports `measured`
+(162 settlements and $999.082 over 30 days). One buyer represents 99.79%
+of reported volume; these are directory counts, not an independent demand
+audit. The earlier unmeasured readings below remain history. The visible
+status gap is closed; the maintainer's methodology reply is still pending.
+Data: [x402-list.com](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+(CC BY 4.0); captured in
+`research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
+
 Authorized in this sitting: “okay lets outline a plan then lets do it”.
 Initial implementation ran serially on `codex/verification-evidence`.
 That initial scope excluded release; the subsequent authorizations and

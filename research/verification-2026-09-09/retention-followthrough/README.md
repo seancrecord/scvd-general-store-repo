@@ -15,6 +15,8 @@ These reviewed aggregates describe the September 9 capture against the frozen
 - `projection-retry.json`: the separate successful retry matched the first
   capture's bytes and the original certificate binding. It does not rewrite
   the failed capture.
+- `directory-measured.json`: the later public directory record now reports
+  measured activity. It preserves attribution, concentration and demand limits.
 - `openapi-live.json`: a fresh read at 00:30 UTC September 10, after the
   separate buyer-guidance release, confirms the OpenAPI warning remains.
 - `opaque-anchor-proof-check.json`: three purchased digest proofs independently

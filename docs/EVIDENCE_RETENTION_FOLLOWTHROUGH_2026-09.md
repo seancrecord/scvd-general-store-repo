@@ -134,6 +134,17 @@ September 10, after the separate buyer-guidance release, measured OpenAPI at
 budget and below its 1,000,000-byte cap. `openapi-live.json` preserves the
 measurement; the web reader's cached response was not used for it.
 
+## Directory follow-up
+
+A later public directory read at 00:50 UTC September 10 reports `measured`
+(162 settlements and $999.082 over 30 days). One buyer represents 99.79%
+of reported volume; these are directory counts, not an independent demand
+audit. The earlier unmeasured readings below remain history. The visible
+status gap is closed; the maintainer's methodology reply is still pending.
+Data: [x402-list.com](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+(CC BY 4.0); captured in
+`research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
+
 ## Validation
 
 The four initial verifier regression cases and all four initial journal-reader
