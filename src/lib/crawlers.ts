@@ -149,6 +149,34 @@ export const NAMED_AI_CRAWLERS: readonly string[] = [
   // (docs.aws.amazon.com/bedrock, web crawler data source): the same
   // shape as Google-CloudVertexBot, grounding somebody else's app.
   "bedrockbot",
+  /*
+   * THE KEEPER'S RULING, 2026-09-10, SAME DAY: name these too. Each
+   * was held back from the walk above because its operator publishes
+   * no bots page, and the xAI precedent is the shape that covers
+   * them — a permission stated to a string we cannot confirm anyone
+   * reads, worth stating because the alternative is a major reader
+   * with no line addressed to it. Every one is an indexer below, for
+   * the reason the xAI block gives: a purpose the vendor never
+   * published is not a purpose this store can class on, and unsure
+   * loses least as the page. The day one of them publishes a bots
+   * page, its line moves to the walk above and its class follows.
+   */
+  // Three model builders whose corpora we will never be told about.
+  "DeepSeekBot",
+  "QwenBot",
+  "DoubaoBot",
+  // Mistral's training crawler: the roster says Mistral documents it
+  // beside MistralAI-Index, but the page could not be read from the
+  // build that added this line, so it waits here rather than above.
+  "MistralAI-Training",
+  // The retrieval layers agents actually call — Firecrawl, Exa,
+  // Tavily — are the Diffbot case: structured indexes other agents
+  // buy from, and a store that sells evidence wants to be inside them.
+  "FirecrawlAgent",
+  "ExaSearchBot",
+  "TavilyBot",
+  // Anthropic's coding agent fetching a URL a developer pointed it at.
+  "Claude-Code",
 ];
 
 /**

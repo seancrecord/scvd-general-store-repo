@@ -82,6 +82,9 @@ describe("the named list splits by purpose, exactly once", () => {
       "Google-Agent", "Google-NotebookLM", "Amzn-SearchBot", "Amzn-User",
       "Meta-WebIndexer", "MistralAI-Index", "KimiBot", "Kimi-SearchBot",
       "Diffbot-User", "bedrockbot", "Bravebot",
+      // The keeper's same-day ruling: the eight with no bots page.
+      "DeepSeekBot", "QwenBot", "DoubaoBot", "MistralAI-Training",
+      "FirecrawlAgent", "ExaSearchBot", "TavilyBot", "Claude-Code",
     ]) {
       expect(named.has(token), `${token} is not named anywhere`).toBe(true);
     }
@@ -129,7 +132,12 @@ describe("the named list splits by purpose, exactly once", () => {
      * readers by it — and unsure defaults to the answer that loses
      * least, which is the page and its structured data.
      */
-    for (const token of ["GrokBot", "xAI-Grok", "Grok-DeepSearch", "GoogleOther", "Google-CloudVertexBot"]) {
+    for (const token of [
+      "GrokBot", "xAI-Grok", "Grok-DeepSearch", "GoogleOther", "Google-CloudVertexBot",
+      // The keeper's 2026-09-10 eight, named on the xAI precedent.
+      "DeepSeekBot", "QwenBot", "DoubaoBot", "MistralAI-Training",
+      "FirecrawlAgent", "ExaSearchBot", "TavilyBot", "Claude-Code",
+    ]) {
       expect(MARKDOWN_READERS, `${token} was classed on a purpose nobody published`).not.toContain(token);
       expect(HTML_INDEXERS).toContain(token);
     }
