@@ -77,6 +77,31 @@ export interface ExternalRecord {
  * entry here is one the keeper confirmed by hand.
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
+  /**
+   * TWO MORE FROM THE KEEPER'S HAND (2026-09-10). Both URLs came in
+   * from the keeper's browser; both hosts refuse this sandbox's
+   * egress, so the pages themselves were not read here. The row says
+   * only what the address shape establishes and what the keeper
+   * confirmed by opening it — nothing about what either page grades,
+   * because a reading copied from memory would be exactly the invented
+   * claim the docblock above forbids. `npm run listings:check` reads
+   * both from CI and says which generation of the store's text each
+   * carries.
+   */
+  {
+    url: "https://robinsaige.com/s/store.scvd/general-store",
+    registry: "robinsaige.com — MCP server directory",
+    confirmed: "2026-09-10",
+    what_it_proves:
+      "That robinsaige.com carries a page for this server under the official registry name, store.scvd/general-store, which is the form every downstream of the MCP registry resolves it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods, and whatever the page measures is its own reading on its own schedule.",
+  },
+  {
+    url: "https://crosspeel.com/endpoints/scvd-store/",
+    registry: "Crosspeel (crosspeel.com) — endpoint index",
+    confirmed: "2026-09-10",
+    what_it_proves:
+      "That Crosspeel keeps a per-provider page for this store's x402 endpoints under the slug scvd-store. Not an endorsement and not an audit: an endpoint index proves the doors were found and indexed, nothing about the goods behind them or whether a purchase ever settled.",
+  },
   {
     url: "https://agenstry.com/agents/scvd.store",
     registry: "Agenstry — agent directory",
@@ -241,9 +266,9 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
     registry: "402.ad",
-    confirmed: "2026-09-03",
+    confirmed: "2026-09-10",
     what_it_proves:
-      "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
+      "That one more index carries the store under its own page (the keeper opened it 2026-09-03 and again 2026-09-10). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check.",
   },
   {
     url: "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
@@ -610,7 +635,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
     url: "https://verifymcp.io/servers/store-scvd-general-store/scvd",
     registry: "VerifyMCP (verifymcp.io)",
-    confirmed: "2026-09-02",
+    confirmed: "2026-09-10",
     what_it_proves:
       "That VerifyMCP connected to the live door, read its tools and scored what it found — endpoint security, schema quality, tool safety, spec recency — with the derivation of each row on the page. Not an endorsement and not an audit: an instrument reading on the shape of the door, taken by their probe on their schedule, which says nothing about the goods behind it. Their handshake name is verifymcp-probe.",
   },

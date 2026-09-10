@@ -778,6 +778,19 @@ are not:
   that pings every server it lists every fifteen minutes and shows the
   live tool list it read. Its handshake name is `mcpbeat`, the second
   most frequent visitor at the MCP door in September 2026.
+- **402.ad** — [a per-service page](https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api)
+  in an index that calls itself the search engine for the agentic
+  economy; the keeper opened it 2026-09-03 and again 2026-09-10. A
+  listing and nothing else: which generation of the store's text it
+  carries is read by `npm run listings:check`, not asserted here.
+- **robinsaige.com** — [a server page](https://robinsaige.com/s/store.scvd/general-store)
+  keyed on the official registry name, opened by the keeper
+  2026-09-10. The host refuses the build sandbox's egress, so what
+  the page measures is its own reading, on its page, not copied here.
+- **Crosspeel** — [a per-provider endpoint page](https://crosspeel.com/endpoints/scvd-store/)
+  for the store's x402 doors, opened by the keeper 2026-09-10. Same
+  edge as the row above: an endpoint index proves the doors were
+  found, nothing about the goods behind them.
 - **Seen, no page to link** — the
   [MCP Census](https://mcpcensus.com/lookup?q=scvd) returns both
   servers to a lookup; [Spanly](https://spanly.com/scan/?url=https%3A%2F%2Fscvd.store%2Fmcp)
