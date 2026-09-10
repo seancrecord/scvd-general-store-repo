@@ -60,8 +60,8 @@ time. Signatures verified. Replays were caught. Amounts matched to the
 atomic unit. Every one of the 39 lives *around* the payment, in code I
 wrote assuming the payment was the hard part.
 
-[IMAGE 1: severity breakdown. Three bars: SEV-1 ×6, P1 ×24, P2 ×9.
-Under it, one line: "Payment-layer defects: 0." Featured-image style.]
+![](images/png/39-severity.png)
+*(caption in IMAGES.md)*
 
 ## The four-character purchase
 
@@ -100,9 +100,8 @@ purchase would have preserved the wrong claim forever. ([BUY-005](LINK))
 identity, or the request has to be refused before payment.** There's no
 third option that isn't a lie to the buyer.
 
-[IMAGE 2: two receipts side by side. Left: "claim: A" / cert_xxx /
-paid. Right: "claim: B" / new cert / paid, with the artifact body
-still reading "A" circled in red.]
+![](images/png/39-receipts.png)
+*(caption in IMAGES.md)*
 
 ## The question mark that bought the wrong pass
 
@@ -154,9 +153,8 @@ payment again. ([BUY-034](LINK))
 entered a queue. I'd built a system that couldn't tell those apart, and
 it took an agent trying to rob me to show me.
 
-[IMAGE 3: a three-state diagram. "Refused" / "Unknown" / "Settled",
-with the old code collapsing Unknown into Refused, and the repair
-keeping them separate. Simple boxes.]
+![](images/png/39-states.png)
+*(caption in IMAGES.md)*
 
 ## Why the payment layer never broke
 

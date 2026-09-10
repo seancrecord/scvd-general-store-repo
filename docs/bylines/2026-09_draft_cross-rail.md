@@ -69,9 +69,8 @@ certificate**. The Solana payment was never settled. The attacker got
 someone else's paid good for free, and the real buyer's receipt went to
 a stranger. ([BUY-018](LINK))
 
-[IMAGE 1: the featured image, or a sequence diagram: Buyer A pays on
-Base → cached. Attacker sends valid Solana tx + fake EVM "from" field →
-store returns Buyer A's certificate. Three lanes.]
+![](images/png/cross-sequence.png)
+*(caption in IMAGES.md)*
 
 The Solana facilitator SDK behaved perfectly the whole time. Handed the
 same fixture in Node, it verifies the transaction and returns the actual
@@ -126,9 +125,8 @@ Those characters were chosen on purpose: `0`, `O`, `I`, `l` are exactly
 the four base58 excludes. Validate by alphabet alone, without decoding
 and checking length, and a subtler string walks through.
 
-[IMAGE 2: a certificate mockup. Green "VALID ✓" stamp at top. The
-`transaction` field reads `0OIl!` with a red box around it. Caption:
-"Signed. Valid. Meaningless."]
+![](images/png/cross-cert.png)
+*(caption in IMAGES.md)*
 
 The repair validates settlement identifiers against the rail that was
 actually selected, decoded, at 64 bytes, before anything gets signed.
@@ -181,8 +179,8 @@ control. I don't fully understand that yet. It's recorded as an
 unexplained runtime disagreement rather than left in the results looking
 like protection I haven't proven I have.
 
-[IMAGE 3: the 44-fixture table or a compact grid: 36 green / 8 red,
-"SDK agrees: 44/44".]
+![](images/png/cross-grid.png)
+*(caption in IMAGES.md)*
 
 ## What this doesn't prove
 

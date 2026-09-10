@@ -57,8 +57,8 @@ hashed, turned up three violations the checker never reported. I run
 [scvd.store](https://scvd.store), so this is my endpoint and my green
 build.
 
-[IMAGE 1: the featured image. CLI output green on the left, schema
-validation error red on the right, one arrow between them.]
+![](images/png/a2a-featured.png)
+*(caption in IMAGES.md)*
 
 ## The three things the checker missed
 
@@ -111,9 +111,8 @@ have a pipeline that can't fail.
 The GitHub README describes newer version-aware behavior than the
 published npm build implements. Pin the executable, not the README.
 
-[IMAGE 2: a small table. Column 1 "what the CLI reports", column 2
-"what the 0.3.0 spec says". Three rows: version string / method name /
-exit code on MUST warning.]
+![](images/png/a2a-table.png)
+*(caption in IMAGES.md)*
 
 ## What I did about it
 
@@ -179,8 +178,7 @@ set to the ID you just received. Then replace the parts with `[null]`.
 
 If your endpoint survives all three, you're ahead of where mine was.
 
-[IMAGE 3: terminal screenshot of the three curl calls and their
-responses, the -32001 and the 500 visible. Real output, not mocked.]
+[YOUR CAPTURE #1 — see IMAGES.md shot list]
 
 ## What this doesn't prove
 

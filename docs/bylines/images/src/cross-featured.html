@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>The signature covers the transaction, not the neighbor</title>
+<style>html,body{margin:0;background:#0b0a12}svg{display:block}text{font-family:ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="#0b0a12"/>
+
+<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#857a91"/></marker></defs>
+<text x="96" y="96" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">BUY-018 · P1 · CROSS-RAIL PAYER IDENTITY</text>
+<text x="96" y="148" font-size="40" fill="#f4f1f7" font-weight="700" text-anchor="start" opacity="1">One envelope, two fields, one signature</text>
+<rect x="96" y="220" width="820" height="420" rx="14" fill="#16121f" stroke="#372c44" stroke-dasharray="8 6"/>
+<text x="128" y="262" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">x402 payment envelope</text>
+<rect x="128" y="290" width="756" height="130" rx="10" fill="#0b0a12" stroke="#33a58c" stroke-width="3"/>
+<text x="152" y="335" font-size="26" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">solana transaction</text>
+<text x="152" y="380" font-size="20" fill="#cfc4d6" font-weight="400" text-anchor="start" opacity="1">TransferChecked · correct mint · correct amount · ed25519</text>
+<rect x="716" y="311" width="144" height="34" rx="6" fill="#33a58c"/><text x="788" y="335" font-size="20" fill="#0b0a12" font-weight="700" text-anchor="middle" opacity="1">VERIFIED</text>
+<rect x="128" y="450" width="756" height="150" rx="10" fill="#0b0a12" stroke="#857a91" stroke-dasharray="6 5"/>
+<text x="152" y="495" font-size="26" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">payload.authorization.from</text>
+<text x="152" y="540" font-size="20" fill="#cfc4d6" font-weight="400" text-anchor="start" opacity="1">0xBUYER_A…  (EVM-shaped · attached by the sender)</text>
+<text x="152" y="578" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">not covered by the signature</text>
+<line x1="886" y1="525" x2="1084" y2="525" stroke="#857a91" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="1104" y="440" width="400" height="170" rx="12" fill="#16121f" stroke="#372c44"/>
+<text x="1304" y="500" font-size="22" fill="#857a91" font-weight="400" text-anchor="middle" opacity="1">cache lookup</text>
+<text x="1304" y="545" font-size="24" fill="#f4f1f7" font-weight="700" text-anchor="middle" opacity="1">→ Buyer A's certificate</text>
+<text x="1304" y="585" font-size="18" fill="#857a91" font-weight="400" text-anchor="middle" opacity="1">Solana payment never settled</text>
+<text x="96" y="828" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">A signature authenticates the transaction it covers. It does not authenticate the fields sitting next to it.</text>
+
+</svg>

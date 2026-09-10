@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>Same endpoint, same minute</title>
+<style>html,body{margin:0;background:#0b0a12}svg{display:block}text{font-family:ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="#0b0a12"/>
+
+<text x="96" y="96" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">2026-09-06 · SCVD.STORE/A2A</text>
+<text x="96" y="148" font-size="40" fill="#f4f1f7" font-weight="700" text-anchor="start" opacity="1">Same endpoint. Same minute.</text>
+<rect x="96" y="220" width="660" height="460" rx="12" fill="#16121f" stroke="#372c44"/>
+<text x="128" y="268" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">$ npx @a2a-compliance/cli@0.3.3 run …</text>
+<text x="128" y="330" font-size="30" fill="#f4f1f7" font-weight="700" text-anchor="start" opacity="1">exit 0</text>
+<text x="128" y="385" font-size="26" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">MANDATORY</text>
+<text x="128" y="440" font-size="26" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">16 pass / 20 checks</text>
+<text x="128" y="495" font-size="26" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">0 fail · 3 warn · 1 skip</text>
+<rect x="128" y="566" width="361.5" height="34" rx="6" fill="#33a58c"/><text x="308.75" y="590" font-size="20" fill="#0b0a12" font-weight="700" text-anchor="middle" opacity="1">card: FULL_FEATURED 6/6</text>
+<text x="128" y="650" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">the checker's reading</text>
+<rect x="844" y="220" width="660" height="460" rx="12" fill="#16121f" stroke="#372c44"/>
+<text x="876" y="268" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">official 0.3.0 schema, same Task response</text>
+<text x="876" y="330" font-size="24" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">"kind": "task",</text>
+<text x="876" y="375" font-size="24" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">"id": "b1f0…",</text>
+<rect x="868" y="392" width="420" height="44" rx="6" fill="none" stroke="#d95926" stroke-width="3"/>
+<text x="876" y="420" font-size="24" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">"contextId":  (missing)</text>
+<text x="876" y="465" font-size="24" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">"status": { "state": "completed" }</text>
+<text x="876" y="540" font-size="22" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">must have required property 'contextId'</text>
+<text x="876" y="580" font-size="22" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">tasks/get on that id → -32001</text>
+<text x="876" y="620" font-size="22" fill="#f4f1f7" font-weight="400" text-anchor="start" opacity="1">parts: [null] → HTTP 500</text>
+<text x="876" y="650" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">the spec's reading</text>
+<text x="96" y="828" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">One green build, three schema violations. The checker's Task schema has contextId optional; the spec does not.</text>
+
+</svg>

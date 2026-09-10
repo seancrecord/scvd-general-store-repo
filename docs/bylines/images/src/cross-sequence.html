@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>The attack in three steps</title>
+<style>html,body{margin:0;background:#0b0a12}svg{display:block}text{font-family:ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="#0b0a12"/>
+
+<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#857a91"/></marker></defs>
+<text x="96" y="96" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">BUY-018 · REPRODUCED ON HTTP AND MCP AGAINST BASE AND POLYGON BUYERS</text>
+<text x="96" y="148" font-size="40" fill="#f4f1f7" font-weight="700" text-anchor="start" opacity="1">The attack, in three steps</text>
+<text x="276" y="250" font-size="24" fill="#f4f1f7" font-weight="700" text-anchor="middle" opacity="1">Buyer A</text><text x="836" y="250" font-size="24" fill="#f4f1f7" font-weight="700" text-anchor="middle" opacity="1">Store</text><text x="1396" y="250" font-size="24" fill="#f4f1f7" font-weight="700" text-anchor="middle" opacity="1">Attacker</text>
+<line x1="276" y1="270" x2="276" y2="720" stroke="#372c44" stroke-width="1"/><line x1="836" y1="270" x2="836" y2="720" stroke="#372c44" stroke-width="1"/><line x1="1396" y1="270" x2="1396" y2="720" stroke="#372c44" stroke-width="1"/>
+<line x1="276" y1="340" x2="828" y2="340" stroke="#857a91" stroke-width="2" marker-end="url(#ah)"/>
+<text x="556" y="320" font-size="20" fill="#cfc4d6" font-weight="400" text-anchor="middle" opacity="1">1 · pays on Base, suggested key</text>
+<rect x="736" y="360" width="200" height="44" rx="12" fill="#16121f" stroke="#372c44"/><text x="836" y="389" font-size="18" fill="#f4f1f7" font-weight="400" text-anchor="middle" opacity="1">cert_A cached</text>
+<line x1="1396" y1="480" x2="844" y2="480" stroke="#857a91" stroke-width="2" marker-end="url(#ah)"/>
+<text x="1116" y="460" font-size="20" fill="#cfc4d6" font-weight="400" text-anchor="middle" opacity="1">2 · valid Solana tx + unsigned from: BUYER_A</text>
+<line x1="836" y1="600" x2="1388" y2="600" stroke="#857a91" stroke-width="2" marker-end="url(#ah)"/>
+<text x="1116" y="580" font-size="20" fill="#cfc4d6" font-weight="400" text-anchor="middle" opacity="1">3 · here is cert_A</text>
+<rect x="1136" y="636" width="245.5" height="34" rx="6" fill="#d95926"/><text x="1258.75" y="660" font-size="20" fill="#f4f1f7" font-weight="700" text-anchor="middle" opacity="1">nothing settled</text>
+<text x="96" y="828" font-size="20" fill="#857a91" font-weight="400" text-anchor="start" opacity="1">Four victim cases failed before the fix. The repair reads payer identity only from the rail that was verified.</text>
+
+</svg>
