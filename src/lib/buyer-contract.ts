@@ -109,5 +109,5 @@ export function compactCatalog(base: string, rawPage = "0") {
 }
 
 export function buyerQuickStart(base: string): string {
-  return `Small-context purchase guide: ${base}/menu.json?view=compact (paged). Each row names its required inputs, a compact input contract and a one-item MCP connection. Free tools: ${base}/openapi-tools.json. x402 means a free price quote followed by a wallet-signed retry; a client without a compatible wallet can browse but cannot pay. Full instructions: ${base}/agents.md.`;
+  return `Small-context purchase guide: ${base}/menu.json?view=compact (paged). Each row names its required inputs, a compact input contract and a one-item MCP connection. Free tools: ${base}/openapi-tools.json. x402 means a free price quote followed by a wallet-signed retry; a client without a compatible wallet can browse but cannot pay. Prerequisites checklist and full instructions: ${base}/agents.md.`;
 }
