@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-09-09T23:18:30.118153+00:00",
+  "signed_bytes_unchanged": true,
+  "signature_verified": true,
+  "local_bitcoin_consensus_validated": false,
+  "reported_digest_matches_payload": true,
+  "status": "verified_against_matching_explorer_headers",
+  "verification": {
+    "proof_matches_header": true,
+    "header_proof_of_work_valid": true,
+    "block_height": 966273,
+    "block_hash": "00000000000000000001f0789dca8d4f3d9e09e08341048c8c38ad166bad3e68",
+    "block_header_time": "2026-09-09T22:03:11+00:00",
+    "local_chain_validated": false,
+    "trust_boundary": "Caller establishes header-chain membership and height. A header alone does not prove either, nor factual truth or exact issue time."
+  },
+  "headers": [
+    {
+      "source": "blockstream.info",
+      "height": 966273,
+      "hash": "00000000000000000001f0789dca8d4f3d9e09e08341048c8c38ad166bad3e68",
+      "header": "00a0aa245795d26b4c1c5b8dcc95339dbf40a179c43e29c89ad200000000000000000000ba0a0634ed07e8766f4ca21a925b2df0b7bee8dc0841c3eb8a4e48d8d6621e089fd7a16a5e35021768e772e5",
+      "read_at": "2026-09-09T23:18:30.601552+00:00"
+    },
+    {
+      "source": "mempool.space",
+      "height": 966273,
+      "hash": "00000000000000000001f0789dca8d4f3d9e09e08341048c8c38ad166bad3e68",
+      "header": "00a0aa245795d26b4c1c5b8dcc95339dbf40a179c43e29c89ad200000000000000000000ba0a0634ed07e8766f4ca21a925b2df0b7bee8dc0841c3eb8a4e48d8d6621e089fd7a16a5e35021768e772e5",
+      "read_at": "2026-09-09T23:18:30.836006+00:00"
+    }
+  ],
+  "limits": [
+    "The original certificate bytes are preserved; this is a present-day existence bound, not historical issue-time proof.",
+    "A verified result checks Bitcoin proof operations, header hash and proof of work independently. Explorer agreement supplies height and chain membership; no local consensus validation."
+  ],
+  "original_census_certificates": 262,
+  "original_census_proofs_now_independently_verified": 262,
+  "scope": "The separate original pass verified 261 proofs; this final previously omitted certificate proof completes that frozen census. Not a new certificate enumeration."
+}

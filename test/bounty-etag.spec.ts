@@ -5,7 +5,7 @@ import {
   readReport,
 } from "@/services/bounty-board";
 import { crowdFindings } from "@/services/crowd-findings";
-import type { BountyRecord } from "@/services/bounty-board";
+import type { BountyRecord, WalkReport } from "@/services/bounty-board";
 
 /**
  * THE SECOND AXIS (2026-09-10), and it exists because a walker found
@@ -39,9 +39,11 @@ function paid(
       payer,
       payout_to: payer,
       claimed_at: "2026-09-10T01:00:00.000Z",
-      report: report as never,
+      authorization_nonce: `0x${"cc".repeat(32)}`,
+      authorization_valid_before: "9999999999",
+      report: report as WalkReport,
     },
-  } as BountyRecord;
+  };
 }
 
 const A = `0x${"aa".repeat(20)}`;

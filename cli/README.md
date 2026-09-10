@@ -50,7 +50,8 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
 | `scvd receipt <file\|->` | Verify any issuer's receipt JSON and get back a signed verdict. |
 | `scvd verify <id>` | Verify anything this store ever signed. Free, forever, including artifacts you did not buy. |
-| `scvd corpus [--since <week>]` | The weekly signed census index; with `--since`, what moved since that week. |
+| `scvd corpus [--since <week>]` | The full weekly signed census with timestamp status; with `--since`, what moved since that week. |
+| `scvd corpus-index [--limit <n>] [--cursor <cursor>]` | One compact metadata page, including unreadable rows, verification limits and the next link. Added in 0.3.0. |
 | `scvd host <host>` | Every signed round that met a host, the gaps by reason, the tier with its fraction, and the citation for the latest row. |
 | `scvd cite <host> [--week <week>]` | The citation for a host's row, as one line, as Markdown and as the JSON shape the store's citation watch reads. |
 | `scvd reproduce <url> [--since <week>]` | Probe the door now and set the answer against the signed row: `same`, `moved`, `instrument_moved`, `not_comparable` or `no_such_round`, by the rule at `/criteria#result-class`. Exit 0 on same, 1 on moved, 3 when nothing was compared. |
@@ -58,7 +59,6 @@ Zero dependencies. Node 18.17+. MIT.
 | `scvd before-you-pay <url> [--cap <usd>]` | Will a stock x402 client pay that door, and which accept would it sign? A dry run: nothing is signed, nothing is paid. `--cap` sets the client's per-payment ceiling; without it, the answer is for a client configured with nothing. |
 | `scvd onpage <url>` | What that page serves a machine reader: title, description, canonical, headings, JSON-LD. |
 | `scvd fresh-set` | This week's x402 doors that answered a conformant challenge. |
-| `scvd corpus` | The weekly signed census with its timestamp status, whole. |
 | `scvd month [YYYY-MM]` | The state of x402 for one month: the closing week beside every round's door-weeks, defects by name, the months held. |
 | `scvd feeds` | The four Atom feeds — the brief, the corpus, corrections, disagreements — by address. |
 | `scvd menu` | What is on the shelf, and for how much. |
@@ -140,3 +140,33 @@ fresh-set` or `scvd corpus`, which cost no probes at all.
 - API catalog (RFC 9727): <https://scvd.store/.well-known/api-catalog>
 - Versioning and deprecation policy: <https://scvd.store/deprecation>
 - Source: [`cli/`](https://github.com/seancrecord/scvd-general-store-repo/tree/main/cli)
+
+
+## Compact discovery (0.3.0)
+
+Read one free metadata page from a checkout:
+
+```sh
+node cli/scvd.mjs corpus-index --limit 1
+```
+
+With 0.3.0 installed, the equivalent is `scvd corpus-index --limit 1`.
+The command prints the complete page JSON, with or without `--json`.
+It makes one request to `/corpus/index.json`; it does not fetch snapshots,
+follow `next`, or verify signatures, chain links or Bitcoin proofs.
+To request another page, take the `cursor` query value from the previous
+page's `next` URL and pass it as `--cursor '<cursor>'`. Omit `--limit` to
+use the server's default. The server enforces its maximum page size.
+
+Keep `unreadable`, `listed`, `has_more`, `next`, `verification` and
+`completeness` beside the entries. `has_more: true` with `next: null` is
+incomplete; it is not an empty or complete inventory. Pagination is not
+a point-in-time inventory. Existing `corpus` and `corpus --since` calls
+keep their original endpoints and output.
+
+Bad flags exit 2 before any request. HTTP refusals print the server's
+JSON and exit 1, including unsupported page sizes and rate limits.
+Network errors or unreadable successful responses exit 3. No account,
+key or wallet is needed, and no payment is made. To verify the evidence
+itself, use the linked snapshots and the
+[x402-verify evidence CLI](https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier#portable-evidence).

@@ -1,5 +1,21 @@
 # Verification improvements — September 8, 2026
 
+Latest September 9 follow-through: all 262 certificate proofs in the frozen
+census are now independently checked. Retained-evidence reads recovered three
+signed reports and two bundles, with unsigned projections, opaque digests and
+unresolved bindings counted separately. Current results and remaining limits:
+`docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`. Earlier readings below
+remain dated history.
+
+A later public directory read at 00:50 UTC September 10 reports `measured`
+(162 settlements and $999.082 over 30 days). One buyer represents 99.79%
+of reported volume; these are directory counts, not an independent demand
+audit. The earlier unmeasured readings below remain history. The visible
+status gap is closed; the maintainer's methodology reply is still pending.
+Data: [x402-list.com](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+(CC BY 4.0); captured in
+`research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
+
 Authorized in this sitting: “okay lets outline a plan then lets do it”.
 Initial implementation ran serially on `codex/verification-evidence`.
 That initial scope excluded release; the subsequent authorizations and
@@ -10,6 +26,15 @@ validation record, not a second queue.
 The keeper subsequently confirmed that the competitor in the original
 comparison is Rubric. The prior Rubric documentation read therefore
 applies directly; the implementation order is unchanged.
+
+## September 10 — package reader follow-through
+
+PR #610 has passed full CI, merged and deployed; the live API retains all
+paths below its size-warning budget. CLI and the corpus client now have
+explicit one-page metadata readers, with original whole-corpus output
+preserved. Sign's documentation patch is prepared. These package versions
+are not yet published. Implementation, validation and release conditions:
+`docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
 
 ## Reader and inventory follow-through
 
@@ -180,6 +205,11 @@ testing tampering. Any experimental dependency is isolated from the
 Worker and the dependency-free verifier. Production adoption requires
 the measured result and a concrete key-provisioning review.
 
+Production follow-through is now specified in
+`PQ_PRODUCTION_ROLLOUT_2026-09.md`: checkpoint-first deployment, independent
+verification before issuance, measured runtime budgets, fail-closed policy
+and a concrete custody rehearsal. This is a plan; signing remains Ed25519.
+
 ## 5. Anchor coverage
 
 Measure the public artifacts that can be read, with a denominator that
@@ -211,3 +241,12 @@ before implementation and after restoration. Run typecheck, full tests,
 changed package/CLI tests and both Worker bundle checks. Preserve unrelated
 untracked buyer-audit work. Public descriptions follow implemented facts;
 implementation copy here is reviewable draft copy under house rule 7.
+
+## September 10 — latency and downstream package review
+
+The OpenAPI headroom follow-through preserves the full expanded contract
+and inline retry headers, and strengthens the byte-budget test to cover
+all payment networks. The package review distinguishes matching published
+code, documentation patches, unpublished clients and the third-party
+`x402-preflight` name collision. See `OPENAPI_HEADROOM_2026-09.md` for
+measurements, limits and pending release checks.

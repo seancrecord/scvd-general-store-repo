@@ -1,3 +1,4 @@
+import type { CommissionPurchase } from "@/services/commission-purchase";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { sendAlert } from "@/lib/alerts";
@@ -175,6 +176,7 @@ export async function acceptCommission(
   id: string,
   orderId: string,
   now: Date = new Date(),
+  terms?: CommissionPurchase,
 ): Promise<void> {
   const request = await getCommission(env, id);
   if (!request) return;
@@ -184,6 +186,18 @@ export async function acceptCommission(
       detail: `COMMISSION PAID TWICE: request ${id} already accepted with order ${request.order_id}, and a second settle just created order ${orderId}. Two wallets raced the same quote past the pre-gate check. Both orders are real and the money moved twice — settle it by hand: refund one via /admin, or fill both if the week allows.`,
     }).catch(() => undefined);
     return;
+  }
+  // A quote can change while a verified payment is in flight. The accepted
+  // desk row must describe the scope retained before that payment settled.
+  if (terms) {
+    if (terms.id !== id) throw new Error("Commission terms identity mismatch");
+    request.description = terms.description;
+    request.quote_usdc = terms.quote_usdc;
+    request.quote_window_hours = terms.quote_window_hours;
+    request.quoted_at = terms.quoted_at;
+    request.quote_expires_at = terms.quote_expires_at;
+    if (terms.quote_note === undefined) delete request.quote_note;
+    else request.quote_note = terms.quote_note;
   }
   request.status = "accepted";
   request.accepted_at = now.toISOString();

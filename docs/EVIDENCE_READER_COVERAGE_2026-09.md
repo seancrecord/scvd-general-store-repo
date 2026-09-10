@@ -1,5 +1,12 @@
 # Corpus readers and evidence inventory — September 9, 2026
 
+Latest September 9 follow-through: all 262 certificate proofs in the frozen
+census are now independently checked. Retained-evidence reads recovered three
+signed reports and two bundles, with unsigned projections, opaque digests and
+unresolved bindings counted separately. Current results and remaining limits:
+`docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`. Earlier readings below
+remain dated history.
+
 The keeper authorized this follow-through with “okay lets do that” and
 release with “nice lets keep rollng”. PR #592 merged at 20:00:48 UTC on
 September 9 as `f44df7b165c6534fe7c9cfcb0b2a12790e56eade`; both production

@@ -1,3 +1,5 @@
+import { publicationDelivery, type PublicationSnapshot } from "@/lib/publication-recovery";
+import type { CommissionPurchase } from "@/services/commission-purchase";
 import { recordedHumanResolution, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
 import { humanResolutionBody } from "@/services/human-resolution-record";
 import { supportsObservationRecovery, httpArtifactDigest } from "@/lib/artifact-checkpoint";
@@ -28,6 +30,8 @@ export interface PurchaseIntent {
   item?: MenuItem;
   created_at: string;
   observation_digest?: string;
+  commission?: CommissionPurchase;
+  publication?: PublicationSnapshot;
   authorization?: { nonce: string; valid_after: string; valid_before: string };
   solana?: { message_hash: string };
   state: "unknown" | "settled" | "not_settled";
@@ -51,6 +55,7 @@ export function purchaseRecovery(env: Env, record: PurchaseIntent) {
 }
 
 export function purchaseStatus(record: PurchaseIntent) {
+  const delivery = record.delivery ?? publicationDelivery(record);
   return { purchase_id: record.id, payment_state: record.state,
     charged: record.state === "unknown" ? null : record.state === "settled",
     path: record.path, door: record.door, request: record.request,
@@ -58,8 +63,8 @@ export function purchaseStatus(record: PurchaseIntent) {
     transaction: record.payment?.transaction ?? null,
     // A saved settlement is not evidence of delivery. Artifact recovery follows
     // the existing transaction journal; this status never calls a cert a good.
-    delivery_state: record.delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
-    ...(record.delivery ? { fulfillment: record.delivery } : {}),
+    delivery_state: delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
+    ...(delivery ? { fulfillment: delivery } : {}),
     reconciliation_reference: record.reconciliation_reference ?? null,
     retry: "Keep the original signed payment and idempotency key. Do not sign a new payment while this purchase is unresolved.",
   };
@@ -92,7 +97,7 @@ export async function purchaseIdentity(network: string, verifiedPayer: string, p
 }
 
 type RecordedPurchaseLookup =
-  | { kind: "complete"; delivery: Record<string, unknown>; payment: SettledPayment }
+  | { kind: "complete"; delivery: Record<string, unknown>; payment: SettledPayment; recovery: Record<string, unknown> }
   | { kind: "refused" | "pending"; body: Record<string, unknown> & { error: string } }
   | null;
 
@@ -117,7 +122,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
       // not open, its alarm still owns reconstruction from these original terms.
       return { kind: "pending", body: { ...new RecordedPurchase(env, record).body(), charged_again: false } };
     }
-    if (record.state !== "settled" || !record.delivery || !record.payment) return null;
+    if (record.state !== "settled" || !(record.delivery ?? publicationDelivery(record)) || !record.payment) return null;
     const digest = record.door === "mcp"
       ? await sha256Hex(jcsCanonicalize(JSON.parse(record.request)))
       : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
@@ -128,7 +133,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
         recovery: purchaseRecovery(env, record),
       } };
     }
-    return { kind: "complete", delivery: (await purchaseDelivery(env, record))!, payment: record.payment };
+    return { kind: "complete", delivery: (await purchaseDelivery(env, record))!, payment: record.payment, recovery: purchaseRecovery(env, record) };
   } catch {
     return { kind: "pending", body: {
       error: "Purchase status is unavailable. This request did not submit payment; an earlier attempt may remain unresolved.",
@@ -142,7 +147,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
 /** Called only after verification, at the last seam before settlement. */
 export async function beginPurchaseIntent(env: Env, input: {
   path: string; door: "http" | "mcp"; payer: string | undefined;
-  terms: PaymentRequirements; payload: unknown; request: string; item?: MenuItem;
+  terms: PaymentRequirements; payload: unknown; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
 }): Promise<PurchaseIntent> {
   let record: PurchaseIntent;
   let started: boolean;
@@ -164,7 +169,8 @@ export async function beginPurchaseIntent(env: Env, input: {
       ...(nonce ? { authorization: { nonce: nonce.toLowerCase(), valid_after: String(auth.validAfter), valid_before: String(auth.validBefore) } } : {}),
       ...(solana ? { solana: { message_hash: solana.message_hash } } : {}),
       ...(observationDigest ? { observation_digest: observationDigest } : {}),
-      ...(input.item ? { item: input.item } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
+      ...(input.publication ? { publication: input.publication } : {}),
+      ...(input.item ? { item: input.item } : {}), ...(input.commission ? { commission: input.commission } : {}), created_at: new Date().toISOString(), state: "unknown" } satisfies PurchaseIntent));
     record = JSON.parse(result.record) as PurchaseIntent;
     started = result.started;
   } catch {
@@ -190,7 +196,7 @@ async function purchaseDelivery(env: Env, record: PurchaseIntent): Promise<Recor
     return { ...record.delivery, status: order.status,
       ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
   }
-  return record.delivery;
+  return record.delivery ?? publicationDelivery(record);
 }
 
 export async function readPurchaseStatus(env: Env, id: unknown, token: unknown): Promise<{ status: 200 | 404 | 503; body: Record<string, unknown> }> {

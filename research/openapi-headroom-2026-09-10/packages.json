@@ -1,0 +1,75 @@
+{
+  "read_at": "2026-09-10T13:15:08.754Z",
+  "method": "Direct npm metadata; published tarballs checked against registry SHA-512 integrity, then compared with this checkout. No code executed from downloaded tarballs. Registry integrity is not provenance verification.",
+  "packages": [
+    {
+      "name": "x402-verify",
+      "version": "1.3.0",
+      "integrity": "sha512-2aEbVEYCyIeIVxGHtkjR9zkglXjtVDSarZrQePHkZ2207TMdNRHncRmD9sL5lHfWurQjYW8uqphGrtefnNsUgA==",
+      "gitHead": "f44df7b165c6534fe7c9cfcb0b2a12790e56eade",
+      "file_comparison": []
+    },
+    {
+      "name": "x402-sign",
+      "version": "1.0.2",
+      "integrity": "sha512-s8KGu/5bBMJ/uqQOAMxneeqc2UPZ3C4/QiLWVH7JdHg7AnlvvkkLTUKrp8XsN9L6f359Fg7X6gH6rSYfFHQX6A==",
+      "gitHead": "0cb185106efd0e200929a14ee0af5a70ef431c99",
+      "file_comparison": [
+        "package.json",
+        "README.md"
+      ]
+    },
+    {
+      "name": "scvd-cli",
+      "version": "0.2.0",
+      "integrity": "sha512-TzWnVak0R+0ctylmiVqxBrDUwyg+xKdrKiOwa+nSdvzEz7k9+2UWsDmjSI7PgEU6QOo0DcJxfFNwvRQIMv0jcQ==",
+      "gitHead": "98d3dc3677f0c097083f01783ba75784b71e5474",
+      "file_comparison": [
+        "README.md"
+      ]
+    },
+    {
+      "name": "scvd-tab",
+      "version": "0.11.1",
+      "integrity": "sha512-3jcNY6+r3kK6IC8EE2ia41l7zwZOdAAPxbnEQ9C0sBaoQKZsIH8XL/NkO4B3xvUfJaddmNJNAyz+MBGS/Mdm0Q==",
+      "gitHead": "12b2a78b17c2a0ec80125506c75f4ce8dcee45ff",
+      "file_comparison": []
+    },
+    {
+      "name": "scvd-corpus-client",
+      "status": 404
+    },
+    {
+      "name": "x402-preflight",
+      "version": "0.1.0",
+      "integrity": "sha512-Rqo+KqLNyVc+izCkB01h3v/io2amYsObYNT6VwL9OzQeWLVeLMpIofgLdciecBNpbxDI6wwodNKPL4kAilPmaQ==",
+      "gitHead": "b37ac4adc974160ced6738d826a87e00f6b99a30",
+      "file_comparison": [
+        "LICENSE",
+        "dist/checks.js: missing locally",
+        "dist/cli.js: missing locally",
+        "dist/index.js: missing locally",
+        "dist/knowledge.js: missing locally",
+        "dist/types.js: missing locally",
+        "dist/wrangler.js: missing locally",
+        "package.json",
+        "README.md",
+        "dist/checks.d.ts: missing locally",
+        "dist/cli.d.ts: missing locally",
+        "dist/index.d.ts: missing locally",
+        "dist/knowledge.d.ts: missing locally",
+        "dist/types.d.ts: missing locally",
+        "dist/wrangler.d.ts: missing locally"
+      ],
+      "relationship": "Different project; registry repository is https://github.com/Gareth1953/x402-preflight. Not our release."
+    },
+    {
+      "name": "scvd-defects",
+      "status": 404
+    },
+    {
+      "name": "scvd-mcp-starter",
+      "status": 404
+    }
+  ]
+}

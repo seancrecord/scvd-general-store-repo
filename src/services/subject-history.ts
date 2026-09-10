@@ -1,7 +1,9 @@
 import type { CatalogReading } from "@/services/catalog-agreement";
 import { roundCoverageSuspect } from "@/services/passport-tier";
-import { listCorpus } from "@/services/corpus";
+import { listCorpus, type CorpusRecord } from "@/services/corpus";
+import { PAY_TO_DIGEST_SALT } from "@/lib/pay-to-digest";
 import {
+  digestsOf,
   sharedWalletFactFor,
   type HostWalletFact,
 } from "@/services/operator-facts";
@@ -165,6 +167,30 @@ export interface VerdictChange {
   to: WardHostResult["verdict"];
 }
 
+/**
+ * WHERE THIS DOOR ASKS TO BE PAID, AS HISTORY (2026-09-10). The fact
+ * a buyer needs before paying is not "what is the address" — the
+ * door's own 402 says that — but "is it the SAME address the record
+ * has seen", and since when. Addresses ride as the salted, publicly
+ * recomputable digests the sealed rows carry (the G2 ruling: never
+ * verbatim in a derived view); a buyer holding the door's current
+ * payTo recomputes the digest and matches it against `digests`.
+ * Rule 52: only probed rounds that CAPTURED an address count, and
+ * `rounds_captured` of `rounds_probed` is that denominator. Absent
+ * when no round captured one.
+ */
+export interface PayToHistory {
+  digests: string[];
+  observed: { week: string; sequence: number; digest: string };
+  /** The earliest round of the unbroken run of captured rounds carrying this same set. */
+  unchanged_since: { week: string; sequence: number; digest: string };
+  rounds_captured: number;
+  rounds_probed: number;
+  /** Every captured round whose set differed from the previous captured round's, oldest first. */
+  changes: { week: string; sequence: number; digest: string; from: string[]; to: string[] }[];
+  how_to_match: string;
+}
+
 export interface SubjectHistory {
   host: string;
   asked_at: string;
@@ -176,6 +202,8 @@ export interface SubjectHistory {
   /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
    * the chain never met the host. */
   payment_address?: HostWalletFact;
+  /** Where the door asks to be paid, week by week, as digests (2026-09-10). */
+  pay_to?: PayToHistory;
   /** The enumeration layer's record. Null if never enumerated. */
   listing: PopulationRecord | null;
   rounds_in_chain: number;
@@ -203,6 +231,60 @@ function emptyGaps(): Record<GapReason, number> {
     listed_not_walked: 0,
     possibly_beyond_cap: 0,
     instrument_degraded: 0,
+  };
+}
+
+/**
+ * Pure over the chain: the run of captured pay-to sets for one host.
+ * A probed row that captured no address is skipped, never read as
+ * "no address" — the same rule the wallet fact obeys. Degraded rows
+ * are our blind week, not the door's, and are skipped with it.
+ */
+export async function payToHistoryOf(
+  records: CorpusRecord[],
+  host: string,
+  roundsProbed: number,
+): Promise<PayToHistory | null> {
+  const captured: { week: string; sequence: number; digest: string; set: string[] }[] = [];
+  for (const record of records) {
+    const row = record.snapshot.round.hosts.find((candidate) => candidate.host === host);
+    if (!row || row.verdict === "not_probed") continue;
+    if (row.verdict === "unreachable" && row.observer_status === "degraded") continue;
+    const digests = await digestsOf(row);
+    if (digests.length === 0) continue;
+    captured.push({
+      week: record.snapshot.week,
+      sequence: record.snapshot.sequence,
+      digest: record.digest,
+      set: [...new Set(digests)].sort(),
+    });
+  }
+  const latest = captured[captured.length - 1];
+  if (!latest) return null;
+  const same = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i]);
+  const changes: PayToHistory["changes"] = [];
+  for (let i = 1; i < captured.length; i += 1) {
+    const was = captured[i - 1]!;
+    const now = captured[i]!;
+    if (!same(was.set, now.set)) {
+      changes.push({ week: now.week, sequence: now.sequence, digest: now.digest, from: was.set, to: now.set });
+    }
+  }
+  let since = latest;
+  for (let i = captured.length - 2; i >= 0; i -= 1) {
+    const earlier = captured[i]!;
+    if (!same(earlier.set, latest.set)) break;
+    since = earlier;
+  }
+  const ref = (r: { week: string; sequence: number; digest: string }) => ({ week: r.week, sequence: r.sequence, digest: r.digest });
+  return {
+    digests: latest.set,
+    observed: ref(latest),
+    unchanged_since: ref(since),
+    rounds_captured: captured.length,
+    rounds_probed: roundsProbed,
+    changes,
+    how_to_match: `Each digest is sha256 over "${PAY_TO_DIGEST_SALT}" + the address (0x addresses lowercased, base58 kept as written), hex. Recompute it from the payTo in the door's own 402 and match; the verbatim address is not published here. unchanged_since is the earliest round in the unbroken run of captured rounds carrying exactly this set — a round that captured no address neither breaks nor extends the run.`,
   };
 }
 
@@ -421,6 +503,7 @@ export async function subjectHistory(
    * host, because there is no observation to state.
    */
   const paymentAddress = await sharedWalletFactFor(records, host);
+  const payToHistory = await payToHistoryOf(records, host, probed);
 
   /**
    * STANDING NOTES (G2 ruling §5) ride here: the host's own note at
@@ -439,6 +522,7 @@ export async function subjectHistory(
     corrections: CORRECTIONS_POINTER,
     ...(hostNote ? { standing_note: hostNote } : {}),
     ...(paymentAddress ? { payment_address: paymentAddress } : {}),
+    ...(payToHistory ? { pay_to: payToHistory } : {}),
     listing,
     rounds_in_chain: records.length,
     rounds_since_first_sighting: sinceFirst,

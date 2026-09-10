@@ -1,5 +1,27 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-10 — compact package readers and release preparation
+
+Read the live `/corpus/index.json?limit=1` response at 14:49 UTC and the
+implementation in `src/routes/corpus.ts` / `src/services/corpus-index.ts`.
+It returns a page of metadata, unreadable counts, `has_more`, `next`, and
+explicit verification/completeness limits. The clients return that page
+whole and do not follow its links. No new external protocol is invented.
+
+Read [npm's provenance documentation](https://docs.npmjs.com/generating-provenance-statements/)
+for the existing GitHub workflow's supported signing environment and
+repository binding. Provenance identifies source/build provenance; it is
+not a guarantee of safe code. The moving Node 18 documentation URL was
+unreachable through the web reader; the version-specific
+[Node 18.17.0 URL documentation](https://nodejs.org/download/release/v18.17.0/docs/api/url.html#urlsearchparamstostring)
+was readable and lists the query construction/serialization API used here.
+Encoded cursor tests cover its use. All 36 CLI/client tests subsequently
+passed on both Node 22 and the declared minimum Node 18.17.0. The latter
+used the official Darwin arm64 archive checked against the release's
+published SHA-256 digest, in a temporary directory; project dependencies
+and installed runtimes were unchanged. Package publication remains
+pending; see `docs/COMPACT_CORPUS_PACKAGES_2026-09.md`.
+
 ## 2026-09-09 — Discovery envelope and regex compatibility
 
 Resumed on the keeper's “keep rolling.” Read Coinbase's
@@ -50,6 +72,30 @@ Publication replay preserves markdown and the original settlement headers,
 not arbitrary response headers. Credit discovery imports pure terms, not
 the payout signer. Scope and validation are recorded in
 `docs/FIELD_RESEARCH_FOLLOWUP_2026-09-09.md`.
+
+## 2026-09-09 — retained-evidence capture and opaque-digest proofs
+
+Read [development binding support](https://developers.cloudflare.com/workers/local-development/bindings-per-env/)
+and [Durable Object binding configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#durable-objects):
+local remote bindings do not directly support Durable Objects; remote development
+supports an external class via `script_name`. The collector therefore uses a
+short-lived authenticated remote preview, with its class/name derived from the
+existing configuration. It calls only existing read RPCs, not a storage API or
+purchase handler. The installed Wrangler declarations were checked for
+`unstable_dev`, configuration and shutdown options. Re-read the
+[Wrangler KV command reference](https://developers.cloudflare.com/workers/wrangler/commands/kv/)
+and [Worker best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+for binding use, request bounds and sensitive output. Live positive journal
+reads and an unauthenticated refusal were exercised. Observation-only journals
+and hosted grant enumeration remain outside this collector; current code does
+not establish historical retention.
+
+Read the installed OpenTimestamps Python interfaces already pinned for the
+previous proof pass: `DetachedTimestampFile.file_digest`, `OpSHA256`, and
+`BitcoinBlockHeaderAttestation.verify_against_blockheader`. Digest-only checking
+uses a SHA-256 binding supplied independently from a verified certificate,
+while explicitly leaving its preimage unchecked. The existing Esplora
+height/hash/header reads supply chain membership; no local consensus node.
 
 ## 2026-09-09 — Bitcoin header verification and verifier publication
 
@@ -821,3 +867,22 @@ Installed Wrangler list/get help and implementation were inspected: remote
 key listing follows the provider's list cursors. Production read failed
 with authentication error 10000; no inventory count was inferred.
 Implementation and limits: `EVIDENCE_READER_COVERAGE_2026-09.md`.
+
+## 2026-09-10 — OpenAPI headroom and package identity
+
+Read [OpenAPI 3.1.0 components, references and response headers](https://spec.openapis.org/oas/v3.1.0.html): response schemas and header definitions may use internal references. Keep the existing inline request parameters: the September 5 naive-reader compatibility fix and its regression still apply. Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/): do not retain request-scoped state globally. Only environment-independent schema projections are prepared once; live offers, issue inventory and conditional responses retain their existing freshness.
+
+Direct registry metadata and integrity-checked tarballs on September 10 show published executable files match this tree for x402-verify 1.3.0, x402-sign 1.0.2, scvd-cli 0.2.0 and scvd-tab 0.11.1. Sign and CLI have documentation differences. The registry's x402-preflight 0.1.0 names Gareth1953/x402-preflight as its repository, not this repository; equal names and versions do not establish identity. scvd-corpus-client, scvd-defects and scvd-mcp-starter returned 404. No package was published in this read. This does not verify registry account permissions or third-party reader compatibility.
+
+## 2026-09-10 — production PQ plan
+
+Read [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final), including the
+current July 31, 2026 potential-errata notice;
+[noble-post-quantum security notes](https://github.com/paulmillr/noble-post-quantum#security);
+and [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/).
+The library reports no independent audit or constant-time execution claim.
+The Workers algorithm table lists Ed25519 and does not list ML-DSA; this is
+a documentation observation, not a runtime probe. No dependency was changed.
+The plan in `PQ_PRODUCTION_ROLLOUT_2026-09.md` requires exact-version
+interoperability, supply-chain review, target-runtime measurements and a
+custody rehearsal before activation. No production keys were accessed.

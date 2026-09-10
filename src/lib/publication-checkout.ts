@@ -6,7 +6,7 @@ export function publicationCheckout(base: string) {
       price_effect: { higher_payment: "optional_tip", higher_payment_changes_scope: false, scope: "The entire named page at the lowest offered tier." },
       production: { kind: "existing_publication", attribution: "See the page byline and publication date; purchase does not commission new writing." },
       credit: { accrues: false },
-      recovery: { how: "Retain the exact URL, original signed payment, idempotency key and receipt. Retry the same request; do not sign a fresh payment to check status.", private_status_handle: false, replay_cache_seconds: IDEMPOTENCY_TTL_SECONDS, replay_cache_limit: "A cache write or read can fail. Retain the original authorization; do not use a fresh one to recover a missing response." },
+      recovery: { how: "Retain the exact URL, original signed payment, idempotency key and receipt. Retry the same request; do not sign a fresh payment to check status.", private_status_handle: true, status_header: "Purchase-Recovery", status_header_encoding: "base64 JSON", retained_good: "The exact markdown prepared for the original payment; later edits do not replace it.", replay_cache_seconds: IDEMPOTENCY_TTL_SECONDS, replay_cache_limit: "A cache write or read can fail. Retain the original authorization; do not use a fresh one to recover a missing response." },
     },
     protocol: "x402",
     version: 2,
@@ -24,7 +24,7 @@ export function publicationCheckout(base: string) {
       "Choose an offered network and amount within your budget. Use accepts[].amount unchanged: it is atomic USDC, not dollars. The lowest tier buys the whole page; higher tiers are optional tips.",
       "Sign in your wallet or payment client. Without a compatible wallet, stop here. Never send private keys, seed phrases or wallet secrets.",
       "Retry the identical URL with the signed x402 v2 payload in PAYMENT-SIGNATURE. Keep one unique Idempotency-Key (16–128 characters) for this purchase and reuse it on retries.",
-      "On success, save the markdown body and PAYMENT-RESPONSE header. No per-purchase certificate is minted for a page. An interrupted response does not prove payment failed; retry with the same payment and idempotency key.",
+      "On success, save the markdown body, PAYMENT-RESPONSE header and private Purchase-Recovery header (base64 JSON). The recovery handle retrieves the retained page through a free authenticated status read. No per-purchase certificate is minted for a page. An interrupted response does not prove payment failed; retry with the same payment and idempotency key.",
     ],
     documentation_url: `${base}/agents.md`,
   };

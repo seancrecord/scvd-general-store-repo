@@ -1,6 +1,7 @@
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { payToDigest } from "@/lib/pay-to-digest";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -93,6 +94,55 @@ describe("the changes, week by week", () => {
     const missing = await SELF.fetch(`${BASE}/corpus/changes/2020-W01.json`);
     expect(missing.status).toBe(404);
     expect(((await missing.json()) as Record<string, any>).known_weeks).toEqual(["2026-W34", "2026-W35"]);
+  });
+
+  it("names where a door asks to be paid moving between two weeks, as digests, over the hosts captured in both", async () => {
+    const A = "0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const A2 = "0xA2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2";
+    const B = "0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+    const C = "0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
+    const D = "0xDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
+    const offer = (payTo: string[], extra: Record<string, unknown> = {}) => ({ networks: ["eip155:8453"], schemes: ["exact"], min_usdc: 0.001, pay_to: payTo, ...extra });
+    await seedWeek("2026-W34", [
+      hostRow("moved.test", "ready", { offer: offer([A]) }),
+      hostRow("added.test", "ready", { offer: offer([B]) }),
+      hostRow("same.test", "ready", { offer: offer([C]) }),
+      hostRow("uncaptured-then.test", "ready"),
+      hostRow("uncaptured-now.test", "ready", { offer: offer([D]) }),
+    ]);
+    await seedWeek("2026-W35", [
+      hostRow("moved.test", "ready", { offer: offer([A2]) }),
+      hostRow("added.test", "ready", { offer: offer([B, A2]) }),
+      hostRow("same.test", "ready", { offer: offer([C]) }),
+      hostRow("uncaptured-then.test", "ready", { offer: offer([D]) }),
+      hostRow("uncaptured-now.test", "not_ready", { failed: ["status-402"] }),
+    ]);
+    const second = (await (await SELF.fetch(`${BASE}/corpus/changes/2026-W35.json`)).json()) as Record<string, any>;
+    const [dA, dA2, dB] = await Promise.all([payToDigest(A), payToDigest(A2), payToDigest(B)]);
+    // Rule 52: the two hosts captured in only one week are not
+    // compared, and the denominator says so.
+    expect(second.pay_to_compared).toBe(3);
+    expect(second.changed_pay_to).toEqual([
+      { host: "moved.test", from: [dA], to: [dA2], in_common: 0 },
+      { host: "added.test", from: [dB], to: [dA2, dB].sort(), in_common: 1 },
+    ]);
+    const log: string = second.changelog.join("\n");
+    expect(log).toContain("moved.test changed where it asks to be paid: 1 address digest last week, 1 address digest this week, 0 in common.");
+    expect(log).toContain("added.test changed where it asks to be paid: 1 address digest last week, 2 address digests this week, 1 in common.");
+    // The verbatim addresses never reach the derived view — the G2 ruling.
+    expect(JSON.stringify(second)).not.toContain(A.toLowerCase());
+    expect(JSON.stringify(second)).not.toContain(A2.toLowerCase());
+    expect(second.what_this_is_not).toContain("not a finding of compromise");
+  });
+
+  it("says pay-to was unchanged, with the denominator, when hosts were compared and none moved", async () => {
+    const A = "0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    await seedWeek("2026-W34", [hostRow("same.test", "ready", { offer: { networks: ["eip155:8453"], schemes: ["exact"], pay_to: [A] } })]);
+    await seedWeek("2026-W35", [hostRow("same.test", "ready", { offer: { networks: ["eip155:8453"], schemes: ["exact"], pay_to: [A] } })]);
+    const second = (await (await SELF.fetch(`${BASE}/corpus/changes/2026-W35.json`)).json()) as Record<string, any>;
+    expect(second.changed_pay_to).toEqual([]);
+    expect(second.pay_to_compared).toBe(1);
+    expect(second.changelog.join("\n")).toContain("Where doors ask to be paid: unchanged for every host captured in both weeks (1 host compared).");
   });
 
   it("latest.json is the latest snapshot at a stable address, with the cite and Last-Modified, and a conditional GET answers 304", async () => {

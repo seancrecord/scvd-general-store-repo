@@ -1,6 +1,6 @@
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
-import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
+import { A2A_CHECK_SCHEMA, A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA, A2A_SIGNED_SCHEMA } from "@/lib/a2a-desk-schema";
 import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
@@ -62,6 +62,32 @@ import { MODES } from "@/routes/ask";
 export const openapiRoutes = new Hono<HonoEnv>();
 
 type OpenApiObject = Record<string, unknown>;
+
+// Project only the OpenAPI description. MCP keeps its self-contained schemas.
+// The shared source objects identify repeated schemas without a second field
+// list. This runs once per isolate, never over a request or a signed artifact.
+const A2A_SCHEMA_SOURCES: Record<string, OpenApiObject> = {
+  A2aSignedObservation: A2A_SIGNED_SCHEMA,
+  A2aRecheck: A2A_RECHECK_SCHEMA,
+  A2aDesk: A2A_DESK_SCHEMA,
+  A2aKit: A2A_KIT_SCHEMA,
+};
+const A2A_SCHEMA_REFERENCES = new Map<object, OpenApiObject>(
+  Object.entries(A2A_SCHEMA_SOURCES).map(([name, schema]) =>
+    [schema, { $ref: `#/components/schemas/${name}` }]),
+);
+function referenceA2aChildren(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const reference = A2A_SCHEMA_REFERENCES.get(value);
+  if (reference) return reference;
+  if (Array.isArray(value)) return value.map(referenceA2aChildren);
+  return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, referenceA2aChildren(child)]));
+}
+const A2A_OPENAPI_SCHEMAS = Object.fromEntries(
+  Object.entries(A2A_SCHEMA_SOURCES).map(([name, schema]) => [name,
+    Object.fromEntries(Object.entries(schema).map(([key, value]) => [key, referenceA2aChildren(value)])),
+  ]),
+);
 
 const JSON_RESPONSE: OpenApiObject = {
   content: { "application/json": { schema: { type: "object" } } },
@@ -207,6 +233,11 @@ const RATE_LIMIT_HEADER_SPEC: OpenApiObject = {
       'Both policies\' live state: "isolate";r=N;t=N, "global";r=N;t=N.',
   },
 };
+
+// Header names remain inline on each response; their definitions are shared.
+const RATE_LIMIT_HEADER_REFS: OpenApiObject = Object.fromEntries(
+  Object.keys(RATE_LIMIT_HEADER_SPEC).map(name => [name, { $ref: `#/components/headers/${name}` }]),
+);
 
 const TOO_MANY_REQUESTS: OpenApiObject = {
   ...PROBLEM_RESPONSE(
@@ -1428,7 +1459,12 @@ const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
             description: "The status this entry's own probe returned.",
           },
           result: {
-            ...PREFLIGHT_VERDICT_SCHEMA,
+            // By reference, not spread (2026-09-10): the verdict schema
+            // is the largest in the document and was inlined twice,
+            // which is what pushed /openapi.json past its read budget.
+            // The single-URL door references the same component; the
+            // typed-shapes test follows the reference to check it.
+            allOf: [{ $ref: "#/components/schemas/PreflightVerdict" }],
             description: "The same verdict body a single-URL probe returns.",
           },
         },
@@ -2136,6 +2172,10 @@ const TRADE_REFUSAL_SCHEMA: OpenApiObject = {
   },
 };
 
+const TRADE_CHECK_REF: OpenApiObject = { $ref: "#/components/schemas/TradeCheck" };
+const TRADE_DELIVERY_REF: OpenApiObject = { $ref: "#/components/schemas/TradeDelivery" };
+const TRADE_REFUSAL_REF: OpenApiObject = { $ref: "#/components/schemas/TradeRefusal" };
+
 function tradeHeader(name: string, description: string, required = true): OpenApiObject {
   return { name, in: "header", required, schema: { type: "string" }, description };
 }
@@ -2193,7 +2233,7 @@ function tradeCheckOperation(): OpenApiObject {
               "The body you would send to the order door, byte for byte.",
               TRADE_ORDER_BODY,
             ),
-            TRADE_CHECK_SCHEMA,
+            TRADE_CHECK_REF,
           ),
           [
             pathParam("partner", "The account id; use sandbox to test against the published secret."),
@@ -2215,7 +2255,7 @@ function tradeItemOperation(): OpenApiObject {
               "One JSON object: the item's fields plus optional order_ref, agent_name, purpose. Sign the exact bytes.",
               TRADE_ORDER_BODY,
             ),
-            TRADE_DELIVERY_SCHEMA,
+            TRADE_DELIVERY_REF,
           ),
           [
             pathParam("partner", "The account id from /api/trade/contract accounts[].account."),
@@ -2228,19 +2268,19 @@ function tradeItemOperation(): OpenApiObject {
           {
             "401": {
               description: "The signature, timestamp, nonce or provider key did not verify. delivered:false, billed:false, and the code names which.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed: this nonce or instruction was already presented. Nothing delivered on this call.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "429": {
               description: "The account's daily cap is reached.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "503": {
               description: "The counter is closed: the account is not provisioned on this side, or the replay store is unreachable.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         );
@@ -4833,7 +4873,7 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
             ...concrete,
             headers: {
               ...((concrete["headers"] as OpenApiObject) ?? {}),
-              ...RATE_LIMIT_HEADER_SPEC,
+              ...RATE_LIMIT_HEADER_REFS,
             },
           },
         ];
@@ -5376,13 +5416,27 @@ openapiRoutes.get("/openapi.json", async (c) => {
       securitySchemes: { purchaseStatusToken: { type: "http", scheme: "bearer",
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
+        ...A2A_OPENAPI_SCHEMAS,
+        TradeCheck: TRADE_CHECK_SCHEMA,
+        TradeDelivery: TRADE_DELIVERY_SCHEMA,
+        TradeRefusal: TRADE_REFUSAL_SCHEMA,
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
         WatchCommission: WATCH_COMMISSION_SCHEMA,
         OrderReceipt: ORDER_RECEIPT_SCHEMA,
         PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
+        /*
+         * Moved here 2026-09-10 for read budget: the preflight verdict
+         * (6 KB, inlined twice) and the ask answer (2 KB, inlined
+         * twice) were what held /openapi.json at its 700,000-byte
+         * ceiling, so any new door broke the fetchable test. Same
+         * move the problem schema and the delivery envelope made.
+         */
+        PreflightVerdict: PREFLIGHT_VERDICT_SCHEMA,
+        AskAnswer: ASK_SCHEMA,
       },
       responses: SHARED_RESPONSES,
+      headers: RATE_LIMIT_HEADER_SPEC,
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
     },
     /**
@@ -5893,11 +5947,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           {
             "401": {
               description: "The signature did not verify.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed nonce.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         ),
@@ -5921,11 +5975,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           {
             "401": {
               description: "The signature did not verify. delivered:false, billed:false, and the code names which check.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
             "409": {
               description: "Replayed nonce.",
-              content: { "application/json": { schema: TRADE_REFUSAL_SCHEMA } },
+              content: { "application/json": { schema: TRADE_REFUSAL_REF } },
             },
           },
         ),
@@ -6233,7 +6287,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "Ask this store a question about itself",
               "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. No query at all answers 400 with a worked example. Free, no account.",
             ),
-            ASK_SCHEMA,
+            { $ref: "#/components/schemas/AskAnswer" },
           ),
           parameters: [
             {
@@ -6273,7 +6327,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               "Ask this store a question about itself (POST)",
               "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
             ),
-            ASK_SCHEMA,
+            { $ref: "#/components/schemas/AskAnswer" },
           ),
           ...jsonBody("The question, and how you want it answered.", {
             type: "object",
@@ -6400,7 +6454,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               }`,
               "The x402 door to walk.",
               URL_BODY,
-            ), PREFLIGHT_VERDICT_SCHEMA)),
+            ), { $ref: "#/components/schemas/PreflightVerdict" })),
           },
         ]),
       ),
@@ -6442,11 +6496,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
           URL_BODY,
         ), LOOK_VERDICT_SCHEMA)),
       },
-      "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } } },
-      "/api/a2a/check": { get: { security: [], summary: "Free A2A check instructions and limits", responses: { ...COMMON_RESPONSES, "200": { description: "Desk contract", content: { "application/json": { schema: A2A_DESK_SCHEMA } } } } }, post: { security: [], summary: "Free, bounded A2A 0.3.0 card check", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Unsigned checks, evidence, repairs and gaps", content: { "application/json": { schema: A2A_CHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Target refused"), "429": PROBLEM_RESPONSE("Budget exhausted; retry after 60 seconds") } } },
+      "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_DESK_SCHEMA)! } } } } } },
+      "/api/a2a/check": { get: { security: [], summary: "Free A2A check instructions and limits", responses: { ...COMMON_RESPONSES, "200": { description: "Desk contract", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_DESK_SCHEMA)! } } } } }, post: { security: [], summary: "Free, bounded A2A 0.3.0 card check", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Unsigned checks, evidence, repairs and gaps", content: { "application/json": { schema: A2A_CHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Target refused"), "429": PROBLEM_RESPONSE("Budget exhausted; retry after 60 seconds") } } },
       "/api/a2a/runner.mjs": { get: { security: [], summary: "Free downloadable Node regression runner; runs only on caller decision", responses: { ...COMMON_RESPONSES, "200": { description: "JavaScript attachment; Node 22+", content: { "text/javascript": { schema: { type: "string" } } } } } } },
-      "/api/a2a/kits/{kit_id}": { get: { security: [], summary: "Read an A2A repair kit, recheck and finite card watch", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], responses: { ...COMMON_RESPONSES, "200": { description: "Signed observations and suggested repairs; Accept text/html for a human report", content: { "application/json": { schema: A2A_KIT_SCHEMA } } }, "404": PROBLEM_RESPONSE("Kit not found") } } },
-      "/api/a2a/kits/{kit_id}/recheck": { post: { security: [], summary: "Use the included A2A recheck, authorized by the private purchase token", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["token"], properties: { token: { type: "string", maxLength: 100 } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Stored signed recheck; retries return the same result", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "202": { description: "Recheck started; no automatic replay after interruption", content: { "application/json": { schema: A2A_RECHECK_SCHEMA } } }, "400": PROBLEM_RESPONSE("Invalid body or operator authorization absent"), "403": PROBLEM_RESPONSE("Token invalid"), "410": PROBLEM_RESPONSE("Recheck period ended"), "503": PROBLEM_RESPONSE("Instrument failure; no pass claimed") } } },
+      "/api/a2a/kits/{kit_id}": { get: { security: [], summary: "Read an A2A repair kit, recheck and finite card watch", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], responses: { ...COMMON_RESPONSES, "200": { description: "Signed observations and suggested repairs; Accept text/html for a human report", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_KIT_SCHEMA)! } } }, "404": PROBLEM_RESPONSE("Kit not found") } } },
+      "/api/a2a/kits/{kit_id}/recheck": { post: { security: [], summary: "Use the included A2A recheck, authorized by the private purchase token", parameters: [{ name: "kit_id", in: "path", required: true, schema: { type: "string" } }], requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["token"], properties: { token: { type: "string", maxLength: 100 } } } } } }, responses: { ...COMMON_RESPONSES, "200": { description: "Stored signed recheck; retries return the same result", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_RECHECK_SCHEMA)! } } }, "202": { description: "Recheck started; no automatic replay after interruption", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_RECHECK_SCHEMA)! } } }, "400": PROBLEM_RESPONSE("Invalid body or operator authorization absent"), "403": PROBLEM_RESPONSE("Token invalid"), "410": PROBLEM_RESPONSE("Recheck period ended"), "503": PROBLEM_RESPONSE("Instrument failure; no pass claimed") } } },
       "/api/onpage/v1": {
         get: returns(
           freeOp(
@@ -6880,12 +6934,38 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 timeline:{type:"array",items:{type:"object",properties:{sequence:{type:"integer"},week:{type:"string"},taken_at:{type:"string",format:"date-time"},digest:{type:"string"},entry_url:{type:"string",format:"uri"},listed:{type:"boolean"},probed:{type:"boolean"},coverage_suspect:{type:"boolean"},note:{type:"string"},verdict:{type:"string"},gap:{type:"string"},url:{type:"string",format:"uri"},observed_at:{type:"string",format:"date-time"}}}},
                 verdict_changes:{type:"array",items:{type:"object",properties:{at:{type:"string",format:"date-time"},week:{type:"string"},from:{type:"string"},to:{type:"string"}}}},
                 tier:{type:"object",properties:{tier:{type:"string"},line:{type:"string"},criteria_url:{type:"string",format:"uri"},coverage_suspect:{type:"boolean"},fraction:{type:"object",properties:{ready:{type:"integer"},rounds:{type:"integer"},weeks:{type:"string"}}}}},
+                pay_to:{type:"object",description:"Where the door asks to be paid, week by week, as salted digests (never verbatim); absent when no probed round captured an address. unchanged_since is the earliest round of the unbroken run carrying this same set.",properties:{digests:{type:"array",items:{type:"string"}},observed:{type:"object"},unchanged_since:{type:"object"},rounds_captured:{type:"integer"},rounds_probed:{type:"integer"},changes:{type:"array",items:{type:"object"}},how_to_match:{type:"string"}}},
                 corrections:{type:"string"}, what_this_cannot_see:{type:"array",items:{type:"string"}},
               },
             }}}},
             "304": {description:"The published view has unchanged bytes; no body or charge"},
           },
         },
+      },
+      "/corpus/asked.json": {
+        get: returns(
+          freeOp(
+            "The asked-for queue",
+            "Every host a free surface was asked about that the signed chain had never probed, by name with a count of asks and nothing about who asked, and where each stands against this week's walk: queued, swept with no door found, on the roster, or walked. The next weekly sweep reads the most-asked hosts' own /.well-known/x402 for a door and walks what they declare. Alphabetical; the ask count is demand for the record, never a verdict on the door. Free.",
+          ),
+          {
+            type: "object",
+            properties: {
+              artifact: { type: "string", const: "asked_for_queue" },
+              asked_at: { type: "string", format: "date-time" },
+              hosts_asked: { type: "integer" },
+              by_state: { type: "object", additionalProperties: { type: "integer" } },
+              sweep_cap_per_week: { type: "integer" },
+              store_cap: { type: "integer" },
+              hosts: { type: "array", items: { type: "object", properties: { host: { type: "string" }, first_asked: { type: "string", format: "date-time" }, last_asked: { type: "string", format: "date-time" }, asks: { type: "integer" }, surfaces: { type: "array", items: { type: "string" } }, state: { type: "string", enum: ["queued", "swept_no_door_found", "on_roster", "walked"] }, last_swept_week: { type: "string" }, history_url: { type: "string", format: "uri" } } } },
+              how_it_works: { type: "string" },
+              what_this_is_not: { type: "string" },
+              corrections: { type: "string" },
+              walk_week: { type: ["string", "null"] },
+              latest_signed_week: { type: ["string", "null"] },
+            },
+          },
+        ),
       },
       "/corpus/tiers.json": {
         get: returns(

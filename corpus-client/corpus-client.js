@@ -3,7 +3,7 @@
  *
  * Every function is one GET to a public, stable address and returns
  * the store's own JSON, whole. Nothing is summarised, scored or
- * re-derived here: the corpus is signed and Bitcoin-anchored, and a
+ * re-derived here: snapshots are signed with timestamp status, and a
  * client that rewrote it would be a second source of truth. The
  * signatures are checkable with the x402-verify package, or any
  * ed25519 library, against the key at /.well-known/scvd-signing-key.
@@ -15,6 +15,7 @@ export const DEFAULT_BASE = "https://scvd.store";
 
 export const DOORS = Object.freeze({
   corpus: "/corpus.json",
+  corpus_index: "/corpus/index.json",
   fresh_set: "/fresh-set.json",
   host: (host) => `/corpus/host/${encodeURIComponent(host)}.json`,
   month: (month) => (month ? `/corpus/month/${month}` : "/corpus/month"),
@@ -41,7 +42,7 @@ export class CorpusHttpError extends Error {
   }
 }
 
-async function getJson(base, path, fetchImpl, timeoutMs) {
+async function getJson(base, path, fetchImpl, timeoutMs, requireObject = false) {
   const response = await fetchImpl(`${trimSlashes(base)}${path}`, {
     headers: { accept: "application/json", "user-agent": UA },
     signal: AbortSignal.timeout(timeoutMs),
@@ -53,6 +54,9 @@ async function getJson(base, path, fetchImpl, timeoutMs) {
     body = null;
   }
   if (!response.ok) throw new CorpusHttpError(path, response.status, body);
+  if (requireObject && (body === null || typeof body !== "object" || Array.isArray(body))) {
+    throw new TypeError(`${path} did not return a JSON object.`);
+  }
   return body;
 }
 
@@ -64,6 +68,23 @@ function opts({ base = DEFAULT_BASE, fetch: fetchImpl = fetch, timeoutMs = 30_00
 export function corpus(options) {
   const o = opts(options);
   return getJson(o.base, DOORS.corpus, o.fetchImpl, o.timeoutMs);
+}
+
+/** One discovery page, not signature verification. Never follows next or fetches snapshots. */
+export function corpusIndex(options = {}) {
+  const { limit, cursor } = options;
+  if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 1)) {
+    throw new TypeError("corpusIndex: limit must be a positive whole number; the server sets the maximum");
+  }
+  if (cursor !== undefined && (typeof cursor !== "string" || !cursor)) {
+    throw new TypeError("corpusIndex: cursor must be the nonempty string from the preceding page");
+  }
+  const o = opts(options);
+  const query = new URLSearchParams();
+  if (limit !== undefined) query.set("limit", String(limit));
+  if (cursor !== undefined) query.set("cursor", cursor);
+  const suffix = query.toString() ? `?${query}` : "";
+  return getJson(o.base, `${DOORS.corpus_index}${suffix}`, o.fetchImpl, o.timeoutMs, true);
 }
 
 /** This week's doors that answered a conformant challenge. */

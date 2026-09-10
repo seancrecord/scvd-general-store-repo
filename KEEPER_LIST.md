@@ -30,12 +30,17 @@ build, it is on the roadmap.
   all six listed snapshots served completed proofs at 14:32 UTC, verified
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
-  remaining builds are ROADMAP VQ3–VQ4; the directory note below is unsent.
+  compact reader has shipped; remaining population coverage is ROADMAP VQ4.
+  The directory note was sent September 9; its methodology reply is pending.
 
-- **x402-verify 1.2.0 published (2026-09-09).** The evidence CLI is on
+- **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
-  saved receipt and reported its missing evidence. The old 1.1.0 press
+  saved receipt and reported its missing evidence; the subsequent 1.3.0
+  install also verified six live corpus snapshots. The old 1.1.0 press
   is closed by this release; details and workflow receipt: DISTRIBUTION.md.
+  The original certificate census's final Bitcoin proof was independently
+  verified at 23:18 UTC: 262 of 262, with signed bytes unchanged. Retained
+  evidence and its limits: `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`.
 
 - **Browser till purchase delivered (2026-09-06).** The keeper reported
   the delivered Small Blessing and full till reading. Certificate
@@ -412,21 +417,22 @@ build, it is on the roadmap.
 
 ## NOW
 
-- **LOOK — directory attribution evidence (2026-09-08).** The known
-  browser receipt matches a Coinbase settler already tracked by
-  x402-list, while the store remains `unmeasured-network`. Exact evidence
-  and the prepared maintainer note are in
-  `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`. This is the keeper's
-  test purchase, not organic traction. The keeper confirmed “sent” on
-  September 9 for the note to `info@x402-list.com`, subject “Base attribution
-  for scvd.store”. Await the maintainer's reply; sending does not resolve
-  the measurement discrepancy. Do not send a duplicate.
-  Implementation completed in ROADMAP VQ2. The mapping was re-read September 9 and the same
-  discrepancy remains; captured evidence is in `research/verification-2026-09-09/`.
-  Re-read September 9 at 20:56 UTC: still `unmeasured-network`, measured
-  volume and transaction counts null. Data: x402-list.com (CC BY 4.0);
-  `research/verification-2026-09-09/reader-followthrough/directory-follow-up.json`.
-  This is a public listing check, not an inbox check.
+- **LOOK — directory methodology reply; measurement now visible.** The
+  keeper confirmed the attribution note sent September 9 to
+  `info@x402-list.com`, subject “Base attribution for scvd.store”. A direct
+  public read at 00:50 UTC September 10 now reports `measured`: 162
+  settlements, $999.082 and 12 unique buyers over 30 days across Base,
+  Polygon and Solana. The directory reports 99.79% of volume from one buyer;
+  this is measurement visibility, not independently verified organic demand.
+  Its `settled_via` label is Coinbase. The previous 20:56 UTC reading was
+  `unmeasured-network`; retain that dated history. The visible status gap
+  is closed, while the maintainer's methodology explanation remains pending.
+  This was a public listing read, not an inbox check, and does not establish
+  that the note caused the change. Do not send a duplicate.
+  Data: x402-list.com (CC BY 4.0). Current capture:
+  `research/verification-2026-09-09/retention-followthrough/directory-measured.json`.
+  Original receipt evidence and the sent note:
+  `docs/VERIFICATION_OBSERVATIONS_2026-09-08.md`.
 
 - ⚑ **THE TWO STORAGE MOVES (2026-09-05, "yes i agree with the two
   moves").** A week's evidence lived in ONE KV value (the walk
@@ -719,6 +725,27 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
+
+- **LOOK** — after the next Sunday round, open `/corpus/asked.json`.
+  If `hosts_asked` is 0 the free surfaces are not being asked about
+  unmet hosts, which is its own finding; if hosts sit in
+  `swept_no_door_found` for three weeks, the sweep is reading hosts
+  that publish no `/.well-known/x402`, and the queue's cap is
+  spending reads on them.
+- **RULE** — seller declarations, ruling 1
+  (`docs/SELLER_DECLARATIONS_2026-09.md`): is attaching and reading
+  a declaration free, forever? Recommended yes; the paid instrument
+  is a watch on the match line, already priced as an endpoint watch.
+- **RULE** — seller declarations, ruling 2: does a declaration for a
+  host the feeds do not name enter the asked-for queue at the top of
+  its week? Recommended yes; it does not jump the roster cap.
+- **RULE** — federation (`docs/FEDERATION_2026-09.md`): does a
+  second observer's verified row enter the signed snapshot at its
+  own tier (`federated_rows[]`, the crowd-walk precedent), or sit
+  beside the chain in a file of its own? Recommended inside. No
+  build until a named party asks to submit rows.
+
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 
 - **TEST** — send Hal the ten questions in `TRADE_COUNTER.md`.
@@ -795,16 +822,15 @@ Do not relitigate without you.
   first recording freezes what is true; the alarm only fires when a
   row later moves DOWN from what it recorded.
 
-- **npm publish scvd-cli 0.2.0** from `cli/` on main — look,
-  before-you-pay, month, feeds, the FIX lines (roadmap C5). The
-  Saturday listings read will say the registry differs from the
-  tree until you press.
-- **npm publish the four new packages** from main (roadmap C5b):
-  `x402-preflight` 0.1.0 (`x402-preflight/`), `scvd-corpus-client`
-  0.1.0 (`corpus-client/`), `scvd-defects` 0.10.0 (`defects/`),
-  `scvd-mcp-starter` 0.1.0 (`mcp-starter/`). Until you press, the
-  Saturday listings read shows them unreachable on npm, never
-  differs.
+- **CLI 0.2.0 press closed, checked September 10.** Its published
+  executable matches the repository. The README correction is a later
+  documentation patch; no repeat publish of the immutable version.
+- **RULE — choose a distinct name for our preflight client before its
+  initial release.** npm's `x402-preflight` names another repository,
+  `Gareth1953/x402-preflight`; it is not ours. The other three companion
+  packages still returned 404 on September 10. Release preparation and
+  package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
+  must come from the current manifests, not the old numbers on this desk.
 - **The tab registry press** via the `tab` input on the publish
   workflow (V4).
 

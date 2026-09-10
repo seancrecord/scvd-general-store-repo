@@ -1,17 +1,19 @@
-import { freeReadRecovery, commissionGuidance } from "@/lib/buyer-guidance";
+import { captureCommissionPurchase, fulfillCommissionPurchase } from "@/services/commission-purchase";
+import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
+import { deliveryFailedBody, pageDeliveryFailed } from "@/lib/delivery-failed";
+import type { SettledPayment } from "@/lib/payments";
+import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { Hono } from "hono";
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { SettlementDeclined, SettlementUnknown } from "@/lib/payments";
 import { sanitizeText } from "@/lib/sanitize";
 import {
-  acceptCommission,
   deskStatusOf,
   getCommission,
   listDeclinedCommissions,
   payUrlFor,
 } from "@/services/commission-desk";
-import { fulfillPurchase } from "@/services/fulfillment";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getMenuItem } from "@/store";
@@ -31,8 +33,8 @@ import type { CommissionRequest, HonoEnv, MenuItem } from "@/types";
  *
  * The write-in door stays POST /api/request (free, unchanged). The
  * pay routes are STATIC — one per published rung, priced at boot in
- * lib/payments.ts — and every pre-payment check here refuses before
- * the gate, so a refused buyer is never a charged one.
+ * lib/payments.ts — and admission refuses before settlement. Authenticated recovery runs
+ * before admission so an old obligation survives a closed desk.
  */
 export const commissionRoutes = new Hono<HonoEnv>();
 
@@ -132,7 +134,7 @@ commissionRoutes.get("/api/commission/declined", noStore, async (c) => {
  * the keeper is away would be money taken for work nobody is present
  * to do, which is the promise both instruments exist to keep.
  */
-const deskLaborCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const deskLaborCheck = async (c: Context<HonoEnv>): Promise<Response | void> => {
   const item = getMenuItem(COMMISSION_ITEM_ID);
   if (!item) {
     // The desk fronts a menu item; a menu without it is a build error
@@ -166,20 +168,19 @@ const deskLaborCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       503,
     );
   }
-  await next();
 };
 
 /**
- * THE QUOTE CHECK, before the gate, when a signature rides in. This is
+ * THE QUOTE CHECK, before settlement, when a signature rides in. This is
  * the desk's whole security posture in one place: the ROUTE fixes the
  * price (static, boot-time), and this check fixes WHICH quote that
  * price honours. Everything refused here is refused unpaid.
  */
-const quoteCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const quoteCheck = async (c: Context<HonoEnv>): Promise<Response | void> => {
   if (!isBuying(c)) {
     // Asking the price: the gate's 402 answers, and its body says a
     // commission id is required before any payment is honoured.
-    return next();
+    return;
   }
   const rung = Number(c.req.param("rung"));
   const id = sanitizeText(c.req.query("commission"), 60);
@@ -226,62 +227,45 @@ const quoteCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       409,
     );
   }
-  await next();
+  c.set("commissionPurchase", captureCommissionPurchase(request, c.req.query("agent_name"), c.req.header("User-Agent")));
 };
 
 commissionRoutes.use("/api/commission/pay/:rung", noStore);
-commissionRoutes.use("/api/commission/pay/:rung", deskLaborCheck);
-commissionRoutes.use("/api/commission/pay/:rung", quoteCheck);
+commissionRoutes.use("/api/commission/pay/:rung", async (c, next) => {
+  const admit = async () => await deskLaborCheck(c) ?? await quoteCheck(c);
+  if (isBuying(c)) c.set("purchaseAdmission", admit);
+  else {
+    const refusal = await admit();
+    if (refusal) return refusal;
+  }
+  await next();
+});
 commissionRoutes.use("/api/commission/pay/:rung", paymentGate);
 
 commissionRoutes.get("/api/commission/pay/:rung", async (c) => {
-  // quoteCheck proved the quote is live at this rung before the gate.
+  // Admission captured the live quote before any settlement.
   const item = getMenuItem(COMMISSION_ITEM_ID) as MenuItem;
-  const id = sanitizeText(c.req.query("commission"), 60);
-  const request = (await getCommission(c.env, id)) as CommissionRequest;
+  const purchase = c.get("commissionPurchase");
   const pending = c.get("pending");
   if (!pending) {
     // The gate never lets an unpaid request through; belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
   }
-  const input: Parameters<typeof fulfillPurchase>[3] = {
-    // The counter shows the keeper WHOSE quote this money answers.
-    detail: `Commission ${request.id}: ${request.description}`.slice(0, 600),
-  };
-  if (request.quote_window_hours) {
-    // The per-quote window IS the desk; the item's 168h is what it retires.
-    input.slaHours = request.quote_window_hours;
-  }
-  const agentName = sanitizeText(c.req.query("agent_name"), 80);
-  if (agentName) {
-    input.agentName = agentName;
-  }
-  const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
-  if (userAgent) {
-    input.userAgent = userAgent;
-  }
+  if (!purchase) throw new Error("Accepted commission terms unavailable");
+  let settled: SettledPayment | null = null;
+  const watched = { ...pending, settle: async () => { settled = await pending.settle(); return settled; } };
   try {
-    const result = await fulfillPurchase(c.env, item, pending, input);
-    /*
-     * Money moved and the order exists; binding the request row is
-     * bookkeeping AFTER the sale, so its failure can page the keeper
-     * but never un-sell the goods. acceptCommission also alerts if a
-     * second wallet raced the same quote past quoteCheck.
-     */
-    const orderId = result["order_id"];
-    if (typeof orderId === "string") {
-      await acceptCommission(c.env, request.id, orderId).catch(() => undefined);
-    }
-    return c.json({
-      ...result,
-      buyer_guidance: { ...commissionGuidance(Number(c.req.param("rung")), c.env.STORE_BASE_URL), production:{kind:"commissioned_human_work",sla_hours:request.quote_window_hours,terms_url:`${c.env.STORE_BASE_URL}/api/commission/${request.id}`} },
-      commission_id: request.id,
-      commission_status: "accepted",
-      commission_url: `${c.env.STORE_BASE_URL}/api/commission/${request.id}`,
-    });
+    return c.json(await fulfillCommissionPurchase(c.env, item, watched, purchase,
+      { path: c.req.path, digest: await httpArtifactDigest(c.req.url) }));
   } catch (error) {
     if (error instanceof SettlementUnknown) return error.response();
     if (error instanceof SettlementDeclined) return error.response;
+    const paid: SettledPayment | null = settled;
+    if (paid) {
+      await pageDeliveryFailed(c.env, item, paid, "http", error);
+      return c.json({ ...deliveryFailedBody(c.env.STORE_BASE_URL, item, paid),
+        recovery: pending.purchaseRecovery?.() }, 500);
+    }
     throw error;
   }
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import ciYml from "../.github/workflows/ci.yml?raw";
+import publishYml from "../.github/workflows/publish-npm.yml?raw";
 import rootPackage from "../package.json";
 import snapshot from "../defects/defects.json";
 import defectsPackage from "../defects/package.json";
@@ -64,5 +65,17 @@ describe("every package is shaped like the ones already published", () => {
     expect(rootPackage.scripts["packages:test"]).toContain("mcp-starter");
     expect(rootPackage.scripts["gates"]).toContain("npm run packages:test");
     expect(ciYml).toMatch(/- name: The packages\n\s+run: npm run packages:test/);
+  });
+});
+
+// Keep the first-release selection, directory mapping and test route together.
+describe("the corpus client can take the provenance publication path", () => {
+  it("is selectable, resolves its manifest directory and runs its own tests", () => {
+    const name = corpusPackage.name;
+    const directory = corpusPackage.repository.directory;
+    expect(publishYml).toContain(`- ${name}\n`);
+    const lines = publishYml.split("\n").map((line) => line.trim().replace(/\s+/g, " "));
+    expect(lines).toContain(`${name}) DIR=${directory} ;;`);
+    expect(lines).toContain(`${name}) node --test ${directory}/*.test.mjs ;;`);
   });
 });

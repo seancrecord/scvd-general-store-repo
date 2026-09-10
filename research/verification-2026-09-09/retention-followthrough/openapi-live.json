@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-10T00:30:48.397Z",
+  "url": "https://scvd.store/openapi.json",
+  "http_status": 200,
+  "utf8_bytes": 718252,
+  "reader_characters": 717139,
+  "warning_budget": 700000,
+  "fetch_cap": 1000000,
+  "within_warning_budget": false,
+  "path_count": 161,
+  "sha256": "7f1278c06f4b9ee3fb91892a9fb7f2a57af3fa126879fb68b83fdc217bd4d9b8",
+  "scope": "Direct live fetch; the web search reader returned a cached copy and was not used for this measurement."
+}

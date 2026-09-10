@@ -22,6 +22,9 @@ import { deriveWeeklyBrief, type WeeklyBrief } from "@/services/weekly-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { citeBlock, citeHtml } from "@/lib/cite";
 import { deriveChanges, lastModifiedOf } from "@/services/corpus-changes";
+import { deriveAskedQueue, readAskedFor, recordAsk } from "@/services/asked-queue";
+import { latestWardRound } from "@/services/ward-round";
+import { readLongWalk } from "@/services/long-walk";
 import { missingWeeks } from "@/services/ward-heartbeat";
 import { escapeHtml } from "@/lib/sanitize";
 import {
@@ -318,6 +321,11 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
    * here the same hour it moves the passport (2026-09-02). */
   const observation = await effectiveObservation(c.env, host);
   const base = c.env.STORE_BASE_URL;
+  // A miss is next week's coverage (asked-queue.ts). On waitUntil so
+  // the reader's clock never pays for the queue's write.
+  if (observation.history.rounds_probed === 0) {
+    c.executionCtx.waitUntil(recordAsk(c.env, host, "corpus_host"));
+  }
   const latestProbed = [...observation.history.timeline].reverse().find((round) => round.probed) ?? null;
   // Opt-in stable bytes let a buyer revalidate the evidence without a request
   // timestamp changing the ETag. The existing full view keeps asked_at.
@@ -374,11 +382,15 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   }
   const observation = await effectiveObservation(c.env, host);
   const history = observation.history;
+  if (history.rounds_probed === 0) {
+    c.executionCtx.waitUntil(recordAsk(c.env, host, "corpus_host"));
+  }
   if (history.rounds_since_first_sighting === 0 && !history.listing) {
     return c.json(
       {
-        error: `The chain has never carried ${host}. Every host it has is at ${base}/doors.`,
+        error: `The chain has never carried ${host}. Every host it has is at ${base}/doors. The ask is recorded: the next sweep reads the host's own /.well-known/x402 for a door, and the queue is at ${base}/corpus/asked.json.`,
         doors: `${base}/doors`,
+        asked: `${base}/corpus/asked.json`,
       },
       404,
     );
@@ -455,7 +467,11 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
       </section>
       ${
         history.payment_address
-          ? `<section><h2>Payment address</h2><p class="menu-desc">${escapeHtml(JSON.stringify(history.payment_address))}</p></section>`
+          ? `<section><h2>Payment address</h2><p class="menu-desc">${escapeHtml(JSON.stringify(history.payment_address))}</p>${
+              history.pay_to
+                ? `<p class="menu-meta">Where it asks to be paid, as digests: ${escapeHtml(history.pay_to.digests.length === 1 ? "one address" : `${history.pay_to.digests.length} addresses`)}, unchanged since ${escapeHtml(history.pay_to.unchanged_since.week)} (snapshot ${history.pay_to.unchanged_since.sequence}), last observed ${escapeHtml(history.pay_to.observed.week)}; captured in ${history.pay_to.rounds_captured} of ${history.pay_to.rounds_probed} probed rounds; ${history.pay_to.changes.length === 0 ? "no change on record" : `changed in ${escapeHtml(history.pay_to.changes.map((change) => change.week).join(", "))}`}. The digests and how to match one are in the JSON twin.</p>`
+                : ""
+            }</section>`
           : ""
       }
       <section>
@@ -561,6 +577,34 @@ corpusRoutes.get("/corpus/round/:week{[0-9]{4}-W[0-9]{2}}", async (c) => {
  * store does not publish one. One pass over the signed chain plus one
  * bulk read of the paid refreshes; derived at read, never stored.
  */
+/**
+ * GET /corpus/asked.json — the asked-for queue (2026-09-10): every
+ * host a free surface was asked about that the chain had never
+ * probed, with where each stands against this week's walk. The
+ * answer to "you told me never met — then what?": the ask was heard,
+ * the sweep reads the host's own files next, and the door it
+ * declares gets walked. Derived at read; the store is names and
+ * counts only.
+ */
+corpusRoutes.get("/corpus/asked.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const [store, latest, walk] = await Promise.all([
+    readAskedFor(c.env),
+    latestWardRound(c.env).catch(() => null),
+    readLongWalk(c.env).catch(() => null),
+  ]);
+  const walked = new Set<string>();
+  for (const row of latest?.hosts ?? []) walked.add(row.host);
+  for (const row of walk?.results ?? []) walked.add(row.host);
+  const roster = new Set<string>((walk?.roster ?? []).map((entry) => entry.host));
+  return c.json({
+    ...deriveAskedQueue(store, { walked, roster }, base),
+    corrections: CORRECTIONS_POINTER,
+    walk_week: walk?.week ?? null,
+    latest_signed_week: latest?.week ?? null,
+  });
+});
+
 corpusRoutes.get("/corpus/tiers.json", async (c) => {
   return c.json(await tierIndex(c.env, c.env.STORE_BASE_URL));
 });
@@ -889,7 +933,7 @@ corpusRoutes.get("/corpus/changes/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) =
   const base = c.env.STORE_BASE_URL;
   const week = c.req.param("file").replace(/\.json$/, "");
   const records = await listCorpus(c.env);
-  const changes = deriveChanges(records, week, base);
+  const changes = await deriveChanges(records, week, base);
   if (!changes) {
     return c.json(
       { error: `The chain holds no signed week named ${week}.`, known_weeks: records.map((record) => record.snapshot.week), latest: `${base}/corpus/latest.json` },

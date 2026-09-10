@@ -1,0 +1,30 @@
+{
+  "before": {
+    "bytes": 719243,
+    "gzip_bytes": 82467,
+    "paths": 162,
+    "networks": [
+      "eip155:8453",
+      "eip155:137",
+      "eip155:42161",
+      "eip155:480",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    ]
+  },
+  "after": {
+    "bytes": 695456,
+    "gzip_bytes": 82190,
+    "paths": 162,
+    "networks": [
+      "eip155:8453",
+      "eip155:137",
+      "eip155:42161",
+      "eip155:480",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+    ]
+  },
+  "expanded_contract_identical": true,
+  "existing_components_preserved": true,
+  "base_commit": "bc334037",
+  "scope": "Local Worker route, fixed test recipients, all five checkout networks; no production timing claim."
+}
