@@ -10,24 +10,24 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 - [x] **BUY-001 — SEV-1: empty essential text can settle** — fixed locally; commit ed57dc36; PR #540.
 - [x] **BUY-005 — SEV-1: a new case-file purchase returns the old claim** — fixed locally; commit 929d6b3a; PR #540.
-- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: verified purchase intents, truthful payment status and original-evidence recovery are implemented for the checked product families below. Remaining product families and historical obligations still need delivery recovery or explicit resolution.
+- [ ] **BUY-017 — SEV-1 fault case: lost settlement acknowledgement can leave no artifact and report “No charge”** — partial: verified purchase intents, truthful payment status and original-evidence recovery are implemented for the checked product families below. All current catalogue products are now admitted; historical obligations and non-catalogue paid doors still need recovery proof or explicit resolution.
 - [x] **BUY-028 — SEV-1: an invalid renewal target buys a different pass** — fixed locally; commit 01489c05; PR #540.
 - [x] **BUY-034 — SEV-1: a settled human purchase can have no order and false delivery recovery** — human-purchase repair complete: checkpointed orders reconstruct; authentic legacy orders return their original work; irrecoverable briefs require a durable signed resolution backed by completed original work or a finalized full refund. This is a tested repair and manual-resolution mechanism, not a claim that production customers have been refunded. See the resolution evidence below.
-- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial: HTTP and both MCP profiles recover the checked product families from authenticated purchase records. Uncheckpointed products and older purchases missing original input/evidence bindings remain open.
+- [ ] **BUY-037 — SEV-1: MCP cannot reconstruct some settled purchases even with the original key** — partial: HTTP and both MCP profiles recover the checked product families from authenticated purchase records. All current catalogue products are now admitted; older purchases missing original input/evidence bindings and non-catalogue paid doors remain open.
 
 ## How to read progress
 
 The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
 
-The two remaining recovery parents need a product-by-product finish line. Existing complete coverage is named by `supportsArtifactRecovery()` in `src/lib/artifact-checkpoint.ts`. Partial progress and CI repairs must stay visible without counting either as a fully closed buyer finding. A 2026-09-09 snapshot derived from `MENU_ITEMS.filter(supportsArtifactRecovery)` admits 31 of the 33 current catalogue products to artifact recovery. That is implementation coverage, not a claim that all historical obligations or non-catalogue commissions are resolved; the open parents retain those limits.
+The two remaining recovery parents need a product-by-product finish line. Existing complete coverage is named by `supportsArtifactRecovery()` in `src/lib/artifact-checkpoint.ts`. Partial progress and CI repairs must stay visible without counting either as a fully closed buyer finding. A 2026-09-09 snapshot derived from `MENU_ITEMS.filter(supportsArtifactRecovery)` admits all 33 current catalogue products to artifact recovery. That is implementation coverage, not a claim that all historical obligations or non-catalogue commissions are resolved; the open parents retain those limits.
 
 ## Recovery SEV-1 status
 
 The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
 
-- **BUY-017:** finish original-deliverable recovery for the remaining paid product families after an ambiguous settlement answer. A truthful unknown/settled status is necessary but does not itself deliver the good.
+- **BUY-017:** current catalogue coverage is complete. Finish historical nonhuman obligations and non-catalogue paid doors after an ambiguous settlement answer. A truthful unknown/settled status is necessary but does not itself deliver the good.
 - **BUY-034 — complete:** original human work is recovered when retained, and a missing brief cannot be replaced by retry input or a desk preview. An authenticated completed order or finalized refund can now resolve the obligation durably. Missing payment identity/handles and expired verification remain BUY-014/015; unrelated instant-product recovery remains BUY-017/037.
-- **BUY-037:** finish equivalent authenticated MCP recovery for the remaining products and older purchases whose original input/evidence was never retained. The original payment must not buy replacement evidence or trigger a second charge.
+- **BUY-037:** current catalogue coverage is complete. Finish equivalent authenticated recovery for non-catalogue paid doors and older purchases whose original input/evidence was never retained. The original payment must not buy replacement evidence or trigger a second charge.
 
 Inventory and commission side effects need their own recovery proof before those products join the supported set. Missing private recovery handles and expired/rejected verification also remain tracked under BUY-014/015; they must not disappear merely because a product's reconstruction substep passes. Parent closure needs explicit evidence for the remaining obligation or a documented resolution, not an unchecked promise to reconstruct data the store never retained.
 
@@ -53,7 +53,7 @@ Inventory and commission side effects need their own recovery proof before those
 - [ ] **BUY-021 — P2: purchase receipts recommend a four-tenths-cent good for one-tenth cent** — open.
 - [ ] **BUY-022 — P2: the purchased blessing and fortune text is not signed** — open.
 - [x] **BUY-023 — P2: a confession buyer cannot prove which confession was heard** — complete: the buyer receives a private ed25519-signed receipt binding the exact stored confession, original date and purchase certificate. Public verification and the anonymous drawer remain separate. See the personal-goods evidence below.
-- [ ] **BUY-024 — P1: term-service receipts do not prove the purchased commission** — open.
+- [x] **BUY-024 — P1: term-service receipts do not prove the purchased commission** — complete for all five audited products: Standing Watch, Conformance Watch, Opening Day, Operator Statement and Recurring Patronage now retain independently signed purchase commissions naming the exact subject, service identity and original dates. Patronage grants identify each paid renewal separately. See the term-product evidence below.
 - [ ] **BUY-025 — P1: completed human work is not verifiably bound to the brief** — open.
 - [ ] **BUY-026 — P1: character cuts damage Unicode in signed fields and badges** — open.
 - [ ] **BUY-027 — P1: malformed optional observation constraints are billed** — open.
@@ -470,10 +470,10 @@ Validation: all 336 buyer cases fail with only this batch's source changes stash
 
 Commit map for this batch: `39158f83` retains upstream authorization risk and observations; the following commit enables Launch Check and Opening Day delivery recovery and records these completed substeps.
 
-Next term-product batch (not complete):
+Term-product batch (completed below):
 
-- [ ] Recurring Patronage: retain the original pass and each paid renewal grant; serialize distinct renewals without extending twice on replay or erasing a later renewal. Bind the purchased dates into independently verifiable commission proof.
-- [ ] Operator Statement: retain the original wallet, chain, asset, term, opening chain position and signed pass history. Preserve Solana payer identity. The current unavailable-head fallback sets the opening position to 1; the first pass then reads from there, rather than from the purchased month. Cover that wrong-period case before admitting this product to recovery.
+- [x] Recurring Patronage: retain the original pass and each paid renewal grant; serialize distinct renewals without extending twice on replay or erasing a later renewal. Bind the purchased dates into independently verifiable commission proof.
+- [x] Operator Statement: retain the original wallet, chain, asset, term, opening chain position and signed pass history. Preserve Solana payer identity. An unavailable opening head now refuses before settlement; recovery retains the actual original opening position rather than beginning at genesis or a later chain head.
 
 
 Additional launch follow-through found while reviewing this batch (not complete):
@@ -482,3 +482,33 @@ Additional launch follow-through found while reviewing this batch (not complete)
 - [ ] Distinguish idempotent retrieval from repeated fulfillment in the launch replay verdict. The current walk treats any replayed 2xx as a defect without establishing that the seller performed fresh work; returning the original purchased artifact is also the safe retry behavior this buyer suite requires.
 
 - [ ] Correlate the seller-named receipt with the exact authorization nonce and amount before claiming it settles the walk. The new `payment_attempt.settlement` stays unknown; the existing `tx_hash_status` describes the separate seller-named transfer read.
+
+
+## Patronage and Operator Statement recovery — 2026-09-09
+
+- [x] Retain the original pass or statement preparation before settlement. An unavailable operator chain head cannot charge or silently open from genesis. The purchase certificate binds a hash of the retained preparation.
+- [x] Journal each patronage purchase grant once, atomically with the current pass and repair alarm. Distinct concurrent renewals each add one term; an old replay returns its own grant while preserving later renewals. Delayed recovery uses the original purchase date.
+- [x] Retain the operator subject, chain, asset, opening block or slot, payer, original term and signed history. Recovery never rereads the opening chain head or restarts the purchased month. Solana subjects and payers retain their case.
+- [x] Serialize scheduled operator publication with purchase repair. Reject overlapping ranges from stale cron reads and preserve a complete month larger than one storage value as individually retained signed rows.
+- [x] Return independently verifiable commission proof on both purchase doors and public histories. Operator passes expose their exact signed bytes; patronage receipts retain their individual purchased grants. Tampering with the certificate, subject, chain, pass or dates fails verification.
+- [x] Validate actual Patronage and Operator Statement HTTP responses against served OpenAPI schemas, including the separately signed monthly note, signed commission and opening chain position.
+
+The catalogue and recovery predicate evaluate to **33/33** admitted products. Closing BUY-024 raises completed original findings to **19/39**. BUY-017 and BUY-037 remain open specifically for historical nonhuman obligations without original input/evidence and non-catalogue paid doors; no catalogue product remains on their implementation admission list. Missing private handles, expired payment verification and fresh-authorization concurrency remain BUY-014/015/016.
+
+All **303** new buyer recovery cases failed against the unchanged source. Separate negative controls reproduce duplicate-grant replay failure, late date changes, a delivered grant with a missing current journal, overlapping operator ranges, SQLite's single-value size failure, and two incorrect response-schema outcomes. All use local signed payments and chain fixtures. The ambiguous-settlement cases lose an actual fixture settlement response, then supply that same receipt to the recovery record; they prove retained-fulfillment recovery after confirmation, not independent live-chain reconciliation. No live payment was submitted, no old evidence was invented, and this is not a production customer-obligation inventory.
+
+Validation: the focused gate passed 433 tests across 19 files. The full local run on `08bff6a6` completed all 626 files: 10,549 tests passed, one existing key-continuity test was skipped, and one existing counter-alarm timing assertion failed (2,291.71 seconds). All 316 new buyer, journal and response-contract tests passed. All 1,306 source/test file hashes stayed unchanged during that run. Typecheck, both Worker dry-run bundles, native Worker startup, audit, claims, docs and all 36 offline evidence tests passed.
+
+The counter fixture passed alone, then reproduced its failure under a controlled same-millisecond clock. Its producer and route reader now share an injected clock, and the explicitly later alert advances that clock. Existing assertions and timeouts are unchanged; this is a fixture correction, not a claim to repair production alarm ordering. The corrected counter and related alarm gate passed all 13 tests across three files; typechecking also passed.
+
+Next recovery work: audit historical nonhuman paid records and the non-catalogue commission/publication doors against the same authenticated-original-good or evidence-backed-resolution standard. Preserve BUY-014/015/016 as separate buyer defects rather than silently treating a protected recovery URL as their repair.
+
+
+## Counter-test timing follow-through — 2026-09-09
+
+- [x] Remove elapsed-wall-clock dependence from the counter's ordered-alert scenario. The same-time negative control fails its original new-alarm assertion; the ordered fixture retains that assertion and controls both the producer and route reader.
+- [ ] Harden production same-millisecond alarm handling separately: alert-log keys and seen-watermark comparisons currently rely on timestamps. Distinct simultaneous events and an alert arriving while a counter snapshot is being rendered need their own retention and acknowledgement proof. This adjacent follow-up is not counted among the original 39 buyer findings.
+
+Commit map: `520b9c10` retains individual Patronage grants; `ac7792f4` enables paid-term recovery and signed Operator Statement history. The following commit records the completed checklist and the counter-clock fixture correction.
+
+Post-rebase validation: rebased onto merged #600 (`2f9d62ef`), retaining its buyer guidance and shared OpenAPI commission references. All 869 affected integration tests across 38 files passed (138.64 seconds), including the corrected counter fixture, both new product matrices, both existing watch matrices, and main's changed buyer contracts. Typecheck, both Worker dry-run bundles, native Worker startup, audit, claims and docs checks passed again; all 33 field-accounting tests also passed. The full run above remains explicitly the pre-rebase snapshot; GitHub's full suite on the final combined tree is a merge gate.

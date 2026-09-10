@@ -1,5 +1,6 @@
-import { SELF, env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
+import { app } from "@/index";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { replyToLetter, submitLetter } from "@/services/letters";
@@ -27,8 +28,13 @@ const KEEPER = {
  * stops shouting once he has stood at the counter with it showing.
  */
 
+afterEach(() => vi.useRealTimers());
+
 async function counter(): Promise<string> {
-  const page = await SELF.fetch(`${BASE}/admin/counter`, { headers: KEEPER });
+  // Share the fixture clock with the alert producer as well as the reader.
+  const ctx = createExecutionContext();
+  const page = await app.fetch(new Request(`${BASE}/admin/counter`, { headers: KEEPER }), testEnv, ctx);
+  await waitOnExecutionContext(ctx);
   expect(page.status).toBe(200);
   return page.text();
 }
@@ -62,6 +68,9 @@ describe("an answered letter is done, filed or not", () => {
 
 describe("the alarms stay on the wall and stop shouting", () => {
   it("names them once, then goes quiet until one he has not met", async () => {
+    const firstAt = new Date("2026-09-09T12:00:00.000Z");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(firstAt);
     // No watermark yet: this is the state every keeper is in the first
     // time the counter loads after this shipped.
     await testEnv.COUNTERS.delete(KV_KEYS.alarmsSeenAtCounter);
@@ -85,6 +94,8 @@ describe("the alarms stay on the wall and stop shouting", () => {
     expect(second).toContain("all seen");
     expect(second).toContain("worker_health");
 
+    // This event is after the prior visit, independent of machine speed.
+    vi.setSystemTime(new Date(firstAt.getTime() + 1));
     // A new alarm gets one shout, and only that one.
     await sendAlert(testEnv, {
       condition: "order_sla",
