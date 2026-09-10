@@ -133,3 +133,15 @@ both Worker bundles, docs and claims checks passed. The required full local
 attempt reproduced repeated Worker `internal error` exceptions and was
 stopped; it is not a full-suite pass. Full GitHub CI remains the merge and
 publication gate. No test timeout or assertion was weakened.
+
+The installed command check caught a further first-release defect: the
+MCP starter compared its module URL to the literal command path, so npm's
+bin symlink caused it to exit silently. A regression reproduced that
+failure through a command link under a path containing spaces and `#`.
+The entry guard now compares resolved filesystem paths and still leaves
+library imports inert. The repacked command answers initialization, its
+source and packed suites pass on Node 22 and minimum Node 18.17.0, and the
+current archive record supersedes the earlier preparation archive. The
+preflight installed command and both advertised TypeScript package imports
+also passed their installed-use checks. The merge was held for this fix;
+full CI must run on the corrected source before release.

@@ -3,15 +3,15 @@
     "id": "scvd-mcp-starter@0.1.0",
     "name": "scvd-mcp-starter",
     "version": "0.1.0",
-    "size": 3796,
-    "unpackedSize": 8484,
-    "shasum": "22e89777d08d5375a72fe2220f21383d36edbd2c",
-    "integrity": "sha512-8q+twnuFZ/gD7an3kojeMiBDxPkD0+cosgOXu/CUUlO0wXEBYi6+ZZN+cBW7lbuSPzJ9PXeO2cjkopjP6LZLpA==",
+    "size": 4065,
+    "unpackedSize": 9094,
+    "shasum": "71a710fce5c25c87381be1b5c108b73a2e3ae08e",
+    "integrity": "sha512-n45/qsdpTzAnn/2zwPabVNFi7qViMHbbtqicT0h7Nhgi8h7tK8etBrDX9d1flKUPEUvJiRy3Yzt2dAr/4zPrWA==",
     "filename": "scvd-mcp-starter-0.1.0.tgz",
     "files": [
       {
         "path": "CHANGELOG.md",
-        "size": 396,
+        "size": 604,
         "mode": 420
       },
       {
@@ -36,7 +36,7 @@
       },
       {
         "path": "server.mjs",
-        "size": 3871,
+        "size": 4273,
         "mode": 493
       }
     ],

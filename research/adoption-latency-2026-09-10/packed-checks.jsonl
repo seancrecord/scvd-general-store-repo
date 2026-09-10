@@ -1,3 +1,3 @@
 {"name":"scvd-defects","version":"0.13.0","integrity":"sha512-AnwcB8gAF9vcPF29oqXGFH/GE4oX+Ia+flglDFY8zXcl2YpaqLjA42OD25St+ASP8J1HkoFBgYnhNkT+K2Jiaw==","packed_files":17,"files_equal":true,"node18_tests":"passed"}
-{"name":"scvd-mcp-starter","version":"0.1.0","integrity":"sha512-8q+twnuFZ/gD7an3kojeMiBDxPkD0+cosgOXu/CUUlO0wXEBYi6+ZZN+cBW7lbuSPzJ9PXeO2cjkopjP6LZLpA==","packed_files":6,"files_equal":true,"node18_tests":"passed"}
+{"name":"scvd-mcp-starter","version":"0.1.0","integrity":"sha512-n45/qsdpTzAnn/2zwPabVNFi7qViMHbbtqicT0h7Nhgi8h7tK8etBrDX9d1flKUPEUvJiRy3Yzt2dAr/4zPrWA==","packed_files":6,"files_equal":true,"node18_tests":"passed"}
 {"name":"scvd-preflight","version":"0.1.0","integrity":"sha512-0jfdGI9T/rAtwNgDL+mcHbXhwwBZ02hOavQtLlZ+5tRRSF33Ma6Zcgsl/OWJWJ0nqYDsm6mtOmdzjOcZVt2Ohw==","packed_files":11,"files_equal":true,"node18_tests":"passed"}
