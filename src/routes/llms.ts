@@ -1073,8 +1073,17 @@ not hold gets a 404 naming the weeks it does. To subscribe (since
 at an address that never changes, with ETag and Last-Modified for a
 conditional GET, and \`${base}/corpus/changes/{week}.json\` is one
 week against the one before it — additions, removals, recoveries,
-regressions, changed payment routes and prices, changed defect state —
-as fields and as a plain changelog.
+regressions, changed payment routes and prices, changed defect state,
+and (since 2026-09-10) \`changed_pay_to\`: where a door asks to be paid
+moving between the two weeks, as salted digests, compared only where
+both weeks captured an address, with \`pay_to_compared\` as the
+denominator — as fields and as a plain changelog. Each host's history
+carries the same fact as a run: \`pay_to.unchanged_since\` is the
+earliest round of the unbroken run carrying the set last observed.
+A host the chain has never probed is queued by name when any free
+surface is asked about it, and the next weekly sweep reads its own
+/.well-known/x402 for a door; \`${base}/corpus/asked.json\` is that
+queue with where each host stands.
 
 Wallet facts, under the operator-linking ruling of 2026-08-27: the
 store provides the wallet fact and the receiver makes the call.

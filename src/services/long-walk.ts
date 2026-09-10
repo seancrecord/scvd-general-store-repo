@@ -1,6 +1,7 @@
 import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
+import { pickSweep, readAskedFor, writeAskedFor } from "@/services/asked-queue";
 import { readFuchssProviders } from "@/services/ward-sources";
 import { readDirectoryDoors } from "@/services/directory-doors";
 import {
@@ -198,6 +199,13 @@ export interface SweepState {
    * the host declared. Absent on states frozen before lane C.
    */
   directory?: { read: number; found: number; none: number; unreadable: number; doors_added: number };
+  /**
+   * THE ASKED-FOR QUEUE (2026-09-10): how many of this week's sweep
+   * hosts came from strangers' misses (asked-queue.ts), how many waited
+   * behind the cap, and how many left the queue because a feed named
+   * them. Absent on states frozen before the queue.
+   */
+  asked_for?: { swept: number; waiting: number; dropped: number };
   finished_at?: string;
 }
 
@@ -434,8 +442,37 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
     .filter((host) => !rosterHosts.has(host) && !discoveryHosts.has(host) && !leaderboard?.byHost.has(host))
     .filter((host) => wellKnown.hosts[host]?.read_week !== week)
     .sort();
+
+  /*
+   * THE ASKED-FOR QUEUE (2026-09-10): hosts strangers asked the free
+   * surfaces about that the chain had never probed join the sweep
+   * behind the directory's names, most-asked first, up to their own
+   * cap. The feed wins a host it names (dropped from the queue); a
+   * host the directory also lists is swept once, under the
+   * directory's name. Fenced: a queue that cannot be read costs the
+   * asks, never the week's sweep.
+   */
+  let askedFor: SweepState["asked_for"];
+  try {
+    const alreadyNamed = new Set<string>([
+      ...rosterHosts,
+      ...discoveryHosts,
+      ...(leaderboard ? leaderboard.byHost.keys() : []),
+      ownHost,
+    ]);
+    const picked = pickSweep(await readAskedFor(env), week, alreadyNamed);
+    const sweeping = new Set(sweepHosts);
+    for (const host of picked.hosts) {
+      if (!sweeping.has(host)) sweepHosts.push(host);
+    }
+    await writeAskedFor(env, picked.store);
+    askedFor = { swept: picked.hosts.length, waiting: picked.waiting, dropped: picked.dropped };
+  } catch {
+    // No queue this week; the sweep is what the directory gave us.
+  }
   const sweep: SweepState = {
     hosts: sweepHosts,
+    ...(askedFor ? { asked_for: askedFor } : {}),
     cursor: 0,
     source_unreadable: named === null,
     read: 0,

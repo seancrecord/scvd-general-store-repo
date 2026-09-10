@@ -858,8 +858,13 @@ const BASE = "https://scvd.store";
 // 60.1 — a sub-path was an orphan; the record's address is the door); the
 // menu copy names it. Verified as before: restoring only that copy from the
 // prior commit reproduces the prior digest exactly.
+// 2026-09-10: the corpus-as-a-feed paragraph names changed_pay_to and
+// pay_to_compared on the weekly changes, pay_to.unchanged_since on the
+// host history, and the asked-for queue at /corpus/asked.json. Verified
+// the same way: the prior text reproduced the prior digest in the run
+// that caught this edit, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "9026f014861d340e57f8d0f1eeefc355f8ba17e5bfbffff05f47b572ad8c1b55";
+  "ee78bd0d900f56a5b44eaf163ae763c5c5b3505b8026c68da48752d859090ece";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

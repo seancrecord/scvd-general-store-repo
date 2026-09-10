@@ -215,8 +215,8 @@ describe("the gaps fire, because a silent gap reads as reassurance", () => {
 });
 
 describe("a week the chain does not hold is a refusal, not a guess", () => {
-  it("returns no ledger and names the weeks it does hold", () => {
-    const { ledger, known_weeks } = deriveLedger([], "https://scvd.store", null, "2026-W01");
+  it("returns no ledger and names the weeks it does hold", async () => {
+    const { ledger, known_weeks } = await deriveLedger([], "https://scvd.store", null, "2026-W01");
     expect(ledger).toBeNull();
     expect(known_weeks).toEqual([]);
   });
