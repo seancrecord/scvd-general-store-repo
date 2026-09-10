@@ -291,6 +291,7 @@ export type HonoEnv = {
     /** The failed input check, carried only within this request. */
     inputRefusal?: Record<string, unknown>;
     /** Availability checks for a new sale, after authenticated paid replay. */
+    publicationPurchase?: boolean;
     purchaseAdmission?: () => Promise<Response | void>;
     commissionPurchase?: CommissionPurchase;
   };

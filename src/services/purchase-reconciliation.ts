@@ -1,3 +1,4 @@
+import { publicationDelivery } from "@/lib/publication-recovery";
 import { observationCheckpoint } from "@/services/purchase-observation";
 import type { Env } from "@/types";
 import type { PurchaseIntent } from "@/services/purchase-intent";
@@ -57,7 +58,7 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
         isSameAddress(t.from, record.payer) && isSameAddress(t.to, record.terms.payTo) && t.amount === BigInt(record.terms.amount));
       if (!authorized || !transferred) throw new Error("Settlement does not match purchase");
       const paidUsdc = atomicToUsdc(record.terms.amount);
-      return { payment: { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.item?.price_usdc ?? paidUsdc),
+      return { payment: { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, record.publication?.minimum_usdc ?? record.item?.price_usdc ?? paidUsdc),
         payer: record.payer, network: record.terms.network, transaction,
         // This is chain evidence. Do not invent a lost facilitator receipt.
         settleHeaders: {} }, reconciliation: { start_block: start, next_block: from, checked_at: new Date().toISOString() } };
@@ -73,11 +74,13 @@ export async function reconcilePurchase(env: Env, record: PurchaseIntent): Promi
 /** Resume only goods whose partial effects already have a durable checkpoint. */
 export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent): Promise<Record<string, unknown> | null> {
   const { item, payment } = record;
-  if (record.state !== "settled" || !item || !payment || !supportsArtifactRecovery(item)) return null;
+  if (record.state !== "settled" || !payment) return null;
   if (payment.network !== record.terms.network || !payment.transaction || !payment.payer ||
     (payment.network.startsWith("eip155:") ? !isSameAddress(payment.payer, record.payer) : payment.payer !== record.payer)) {
     throw new Error("Recorded payment identity mismatch");
   }
+  if (record.publication) return publicationDelivery(record) ?? null;
+  if (!item || !supportsArtifactRecovery(item)) return null;
   if (item.fulfillment === "human_queue") {
     const { recordedHumanResolution, resolvedHumanDelivery } = await import("@/services/resolved-human-purchase");
     const resolution = await recordedHumanResolution(env, record);

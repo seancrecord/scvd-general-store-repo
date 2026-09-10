@@ -1,3 +1,4 @@
+import { publicationAdmission } from "@/lib/publication-recovery";
 import { freeReadRecovery } from "@/lib/buyer-guidance";
 import { publicationCheckout, publicationLinks, publicationPage } from "@/lib/publication-checkout";
 import { Hono } from "hono";
@@ -22,7 +23,7 @@ import type { AlmanacEntry, HonoEnv } from "@/types";
 export const almanacRoutes = new Hono<HonoEnv>();
 
 /** Unknown pages are turned away before the payment gate. */
-const pageCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+const pageCheck = publicationAdmission(async (c) => {
   const slug = c.req.path.replace(/^\/almanac\//, "");
   if (!(await findAlmanacEntry(c.env, slug))) {
     return c.json(
@@ -35,8 +36,7 @@ const pageCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       404,
     );
   }
-  await next();
-};
+});
 
 function indexEntry(entry: AlmanacEntry, base: string): Record<string, unknown> {
   return {
