@@ -47,7 +47,7 @@
     "specs:test": "node --test scripts/specs-check.test.mjs",
     "doors:test": "node --test scripts/doors-config.test.mjs scripts/doors-live.test.mjs scripts/doors-check.test.mjs",
     "listings:check": "node scripts/listings-check.mjs",
-    "listings:test": "node --test scripts/listings-check.test.mjs",
+    "listings:test": "node --test scripts/listings-check.test.mjs scripts/agentfinder-check.test.mjs",
     "corpus:publish": "node scripts/corpus-publish.mjs",
     "corpus:publish:test": "node --test scripts/corpus-publish.test.mjs",
     "citations:check": "node scripts/citations-check.mjs",
@@ -97,7 +97,7 @@
     "dotenv": "^17.4.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
-    "wrangler": "^4.129.0"
+    "wrangler": "^4.131.0"
   },
   "overrides": {
     "axios": "^1.19.0",

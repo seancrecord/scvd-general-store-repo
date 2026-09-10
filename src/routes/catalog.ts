@@ -44,6 +44,7 @@ import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
 import { TRUST_MODELS, artifactClassForItem, type ArtifactClass } from "@/store/attestation-spec";
 import { ITEM_ASKED_FOR, askedForTitle } from "@/store/copy/asked-for";
+import { purchaseExample } from "@/services/purchase-examples";
 import { sampleForItem, type SampleEnvelope } from "@/services/sample-artifacts";
 import { getRetiredItem } from "@/store/retired";
 
@@ -215,7 +216,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       not_guaranteed: NOT_GUARANTEED,
       fulfillment_state: await fulfillmentState(c.env, item, shutter),
       ...shoppingFields(item.id, base),
-      ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+      ...(item.sample_url ? { sample_url: `${base}${item.sample_url}`, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
       ...(wideDepth && item.id in DEPTH_ITEMS ? { archive_depth: wideDepth } : {}),
     })),
   );
@@ -645,10 +646,10 @@ function renderItemPage(
       ${
         specimen
           ? `<section>
-        <h2>The specimen</h2>
+        <h2>${specimen.preview_kind === "delivery_outline" ? "Input/output example" : "The specimen"}</h2>
         <p class="menu-desc">${escapeHtml(specimen.what_this_is)}</p>
         <p class="menu-meta">${escapeHtml(specimen.not_signed)}</p>
-        <details><summary>Every field, as the JSON at <code>${escapeHtml(item.sample_url ?? "")}</code> serves it</summary>
+        <details><summary>${specimen.preview_kind === "delivery_outline" ? "The outline" : "Every field"}, as the JSON at <code>${escapeHtml(item.sample_url ?? "")}</code> serves it</summary>
         <pre class="menu-desc" data-specimen="${escapeHtml(item.id)}"><code>${escapeHtml(JSON.stringify(specimen, null, 2))}</code></pre></details>
       </section>`
           : ""
@@ -760,7 +761,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     const listing = sampleForItem(item.id);
     const specimen = listing
       ? await Promise.resolve(listing.build(c.env, item.price_usdc)).catch(() => undefined)
-      : undefined;
+      : item.sample_kind === "delivery_outline" ? purchaseExample(item, base) : undefined;
     return c.html(
       renderItemPage(
         item,
@@ -797,7 +798,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     guaranteed: GUARANTEED,
     not_guaranteed: NOT_GUARANTEED,
     fulfillment_state: state,
-    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}`, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
     ...(tradeShelfEntry(item.id) && tradeEligible(item)
       ? {
           trade_account: {

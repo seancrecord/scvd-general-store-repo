@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-09-10T20:17:30.222Z",
+  "name": "scvd-mcp-starter",
+  "version": "0.1.0",
+  "source_commit": "4fe7417429e2580f2a59904e9ed6812693b946b5",
+  "integrity": "sha512-n45/qsdpTzAnn/2zwPabVNFi7qViMHbbtqicT0h7Nhgi8h7tK8etBrDX9d1flKUPEUvJiRy3Yzt2dAr/4zPrWA==",
+  "files_checked": 6,
+  "files_match": true,
+  "installed_fixture_tests": "passed",
+  "audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation",
+  "provenance": {
+    "_type": "https://in-toto.io/Statement/v1",
+    "subject": [
+      {
+        "name": "pkg:npm/scvd-mcp-starter@0.1.0",
+        "digest": {
+          "sha512": "9f8e7faac7694f30279ffdb3c0f69b54d162eea5623076dbb6a89c4f487b361822f21eed2bc7ad06b0d7f5dd5f94a50f114bc9891cb7633b76740affe333eb58"
+        }
+      }
+    ],
+    "predicateType": "https://slsa.dev/provenance/v1",
+    "predicate": {
+      "buildDefinition": {
+        "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+        "externalParameters": {
+          "workflow": {
+            "ref": "refs/heads/codex/adoption-latency-followthrough",
+            "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+            "path": ".github/workflows/publish-npm.yml"
+          }
+        },
+        "internalParameters": {
+          "github": {
+            "event_name": "workflow_dispatch",
+            "repository_id": "1308179937",
+            "repository_owner_id": "196247948"
+          }
+        },
+        "resolvedDependencies": [
+          {
+            "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/codex/adoption-latency-followthrough",
+            "digest": {
+              "gitCommit": "4fe7417429e2580f2a59904e9ed6812693b946b5"
+            }
+          }
+        ]
+      },
+      "runDetails": {
+        "builder": {
+          "id": "https://github.com/actions/runner/github-hosted"
+        },
+        "metadata": {
+          "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/34525385090/attempts/1"
+        }
+      }
+    }
+  }
+}

@@ -904,3 +904,26 @@ SHA-256 for each file are recorded in
 ML-DSA-65 external Pure cases and key-generation cases matched the pinned
 candidate; prehash/internal variants and other parameter sets were excluded
 and counted. No claim of an ACVP certification session follows.
+
+## September 10 — adoption and latency preparation
+
+Read Cloudflare Workers best practices and metrics documentation from the
+official site, plus the installed Wrangler deploy help. The latency read
+keeps external time-to-headers distinct from Worker-reported request time;
+it does not claim a production percentile or causal cold-start cost.
+Chainalysis address-screening product documentation was read to establish
+the existing lookup category, not a resale license or legal opinion.
+Sources and exact scope: `ADOPTION_AND_LATENCY_2026-09.md`.
+
+
+## September 10 — adoption package registry verification
+
+Source: direct npm version metadata, integrity-checked registry archives,
+public provenance statements and `npm audit signatures`, retained under
+`research/adoption-latency-2026-09-10/`. scvd-defects 0.13.0,
+scvd-mcp-starter 0.1.0 and scvd-preflight 0.1.0 match all reviewed archive
+bytes and shipped files. Fresh installed fixture suites pass. All three
+registry signatures and provenance attestations verify, binding the
+archive SHA-512 to this repository, source commit
+`4fe7417429e2580f2a59904e9ed6812693b946b5`, the publication workflow and
+its actual run. Publication does not establish third-party adoption.

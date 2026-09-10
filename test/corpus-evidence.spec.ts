@@ -4,7 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { getCorpusEntry, latestCorpusEntry, putCorpusRecord, takeCorpusSnapshot, verifyCorpusChain } from "@/services/corpus";
 import { evidenceShardKey, evidenceShardOf } from "@/services/corpus-evidence";
-import { forgetResolvedChain } from "@/services/corpus-list";
+import { forgetResolvedRecords } from "@/services/corpus-list";
 import { latestWardRound, type WardHostResult, type WardRound } from "@/services/ward-round";
 import type { WatchEvidenceCapture } from "@/services/watch-evidence";
 import type { Env } from "@/types";
@@ -82,7 +82,7 @@ beforeEach(async () => {
     await Promise.all(listed.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
   }
   await testEnv.COUNTERS.delete(KV_KEYS.wardRoundLatest);
-  forgetResolvedChain();
+  forgetResolvedRecords();
 });
 
 describe("a row sealed with its evidence detached", () => {
@@ -156,7 +156,7 @@ describe("the evidence door", () => {
     const legacy = round("2026-W30", [probed("old.example")]);
     const snapshot = { version: 1 as const, sequence: 1, taken_at: new Date().toISOString(), previous_digest: null, source: "ward_round" as const, week: "2026-W30", round: legacy };
     await putCorpusRecord(testEnv, { snapshot, digest: "f".repeat(64), signature: "sig", public_key: "key" });
-    forgetResolvedChain();
+    forgetResolvedRecords();
     const response = await SELF.fetch(`${BASE}/corpus/1/evidence/old.example.json`);
     expect(response.status).toBe(200);
     expect(response.headers.get("X-Evidence-Sealed-As")).toBe("inline");

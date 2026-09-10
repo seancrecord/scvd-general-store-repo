@@ -54,6 +54,16 @@ claims audit — each credential was verified true on 2026-07-22, and
 "on x402scan" is deliberately not claimed until the keeper sees it — as of 2026-07-27 he reports he has, and the README now carries an "On other people's records" section naming x402scan, the Bazaar (via agentic.market, confirmed by screenshot) and x402scout. The deep link landed 2026-07-27: https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597 — linking the index was true, linking our page there is the actual evidence anchor. The rule that produced this caution stands
 there personally.
 
+## GitHub Agent Finder (`agentfinder/`)
+
+The three catalog entries for `github/agentfinder-catalog`, the
+community registry behind GitHub Copilot's agent finder: two skills
+and the store's MCP server, held to the catalog's own validator and to
+`server.json` by `npm run listings:test`. The store was not in agent
+finder's index on the last read (2026-09-06). Steps, the two judgment
+calls a reviewer might raise, and why the tab is not yet in the drawer:
+`agentfinder/README.md`.
+
 ## On hold
 
 Agentic.market listing request waits until MCP and Bazaar channels are

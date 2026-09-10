@@ -26,7 +26,7 @@ import {
 import { USE_WHEN } from "@/store/spec";
 import { STORE_CONTACT_EMAIL } from "@/store";
 import { Hono } from "hono";
-import { NOT_AFFILIATED } from "@/store/copy/position";
+import { NOT_AFFILIATED, VALUE_PROPOSITION } from "@/store/copy/position";
 import {
   factBlockText,
   listingSpec,
@@ -1181,6 +1181,42 @@ wellKnownRoutes.get("/.well-known/openai-apps-challenge", (c) => {
   return c.text(OPENAI_APPS_CHALLENGE, 200, {
     "content-type": "text/plain; charset=utf-8",
     "cache-control": "no-store",
+  });
+});
+
+/**
+ * THE RETIRED PLUGIN MANIFEST, SERVED BECAUSE THEY STILL ASK (2026-09-10).
+ *
+ * OpenAI retired ChatGPT plugins in 2024 and the manifest with them,
+ * and this fixed path still turns up in the crawler 404s a month at a
+ * time: the readers that learned the convention never unlearned it.
+ * The keeper's word: if they are looking for it, answer. A 404 here
+ * and "no API" read the same to a checklist, and only one is true.
+ *
+ * NOTHING NEW IS CLAIMED. Every field is the contract this store
+ * already serves — the OpenAPI document, the sixty words, the contact
+ * address, the rights page — in the shape the manifest asked for, so
+ * a reader that only knows this path lands on the same doors as one
+ * that read /openapi.json directly. `auth: none` is true: every free
+ * door here is keyless, and the paid ones speak x402 in the 402
+ * itself, which is not an auth scheme this manifest could name.
+ */
+export const AI_PLUGIN_MANIFEST_PATH = "/.well-known/ai-plugin.json";
+
+wellKnownRoutes.get(AI_PLUGIN_MANIFEST_PATH, (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    schema_version: "v1",
+    name_for_human: STORE_SERVICE_NAME,
+    name_for_model: "scvd_general_store",
+    description_for_human:
+      "Free x402 preflight and conformance checks, a signed weekly corpus, and a store for AI agents.",
+    description_for_model: `${VALUE_PROPOSITION} Free doors need no key. Paid doors answer HTTP 402 with x402 terms; nothing is charged without a signed payment the caller chose to make. The full contract is ${base}/openapi.json; the operational manual is ${base}/agents.md.`,
+    auth: { type: "none" },
+    api: { type: "openapi", url: `${base}/openapi.json`, is_user_authenticated: false },
+    logo_url: `${base}/og.png`,
+    contact_email: STORE_CONTACT_EMAIL,
+    legal_info_url: `${base}/rights`,
   });
 });
 

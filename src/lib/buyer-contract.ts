@@ -77,7 +77,7 @@ export function compactItemContract(item: MenuItem, base: string) {
     description: item.description,
     reads: item.reads,
     ...(item.constraints ? { constraints: item.constraints } : {}),
-    ...(item.sample_url ? { sample_url: item.sample_url } : {}),
+    ...(item.sample_url ? { sample_url: item.sample_url, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
     input_schema: { type: "object", ...buyInputSchema(item) },
     availability: "The purchase request checks live stock, keeper availability, and any subject-specific prerequisites before charging.",
     ...(artifact ? { signs: artifact.signs, does_not_prove: artifact.does_not_prove } : {}),

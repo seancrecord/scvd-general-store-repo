@@ -7,7 +7,7 @@ import {
   takeCorpusSnapshot,
   verifyCorpusChain,
 } from "@/services/corpus";
-import { derivedFromCorpus, forgetResolvedChain } from "@/services/corpus-list";
+import { derivedFromCorpus, forgetResolvedRecords } from "@/services/corpus-list";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -55,7 +55,7 @@ async function sweep(): Promise<void> {
     await Promise.all(listed.keys.map((key) => testEnv.COUNTERS.delete(key.name)));
   }
   await testEnv.COUNTERS.delete(KV_KEYS.wardRoundLatest);
-  forgetResolvedChain();
+  forgetResolvedRecords();
 }
 
 beforeEach(sweep);
@@ -111,7 +111,7 @@ describe("the latest entry", () => {
     await freeze("2026-W31");
     await freeze("2026-W32");
     // Cold: no chain resolved in this isolate yet.
-    forgetResolvedChain();
+    forgetResolvedRecords();
     const cold = await latestCorpusEntry(testEnv);
     expect(cold?.snapshot.week).toBe("2026-W32");
     expect(cold?.snapshot.sequence).toBe(2);
@@ -134,7 +134,7 @@ describe("a derivation kept in KV", () => {
       return records.map((record) => record.snapshot.week);
     };
     expect(await derivedFromCorpus(versioned("v1"), "weeks", weeks)).toEqual(["2026-W31"]);
-    forgetResolvedChain();
+    forgetResolvedRecords();
     expect(await derivedFromCorpus(versioned("v1"), "weeks", weeks)).toEqual(["2026-W31"]);
     expect(builds).toBe(1);
 

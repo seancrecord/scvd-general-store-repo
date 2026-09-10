@@ -31,7 +31,7 @@ build, it is on the roadmap.
   against outside Bitcoin headers with signatures unchanged. This closes
   the delivery repair, not certificate/report population coverage. The
   compact reader has shipped; remaining population coverage is ROADMAP VQ4.
-  The directory note was sent September 9; its methodology reply is pending.
+  The directory note was sent September 9; no methodology reply is recorded here.
 
 - **x402-verify 1.3.0 published (2026-09-09).** The evidence CLI is on
   npm with verified provenance. A registry installation verified the
@@ -426,8 +426,8 @@ build, it is on the roadmap.
   this is measurement visibility, not independently verified organic demand.
   Its `settled_via` label is Coinbase. The previous 20:56 UTC reading was
   `unmeasured-network`; retain that dated history. The visible status gap
-  is closed, while the maintainer's methodology explanation remains pending.
-  This was a public listing read, not an inbox check, and does not establish
+  is closed. No methodology reply is recorded in this task; the keeper's
+  inbox has not been checked. This was a public listing read, and does not establish
   that the note caused the change. A later release-closeout request returned
   HTTP 403; the last successful reading above is retained, with no new
   measurement verdict inferred. Refused-read record:
@@ -831,12 +831,14 @@ Do not relitigate without you.
   Fresh registry installs match the reviewed bytes and verify their
   attestations. No press or credential update is needed for these releases.
   Receipts and exact checks: `DISTRIBUTION.md`.
-- **RULE — choose a distinct name for our preflight client before its
-  initial release.** npm's `x402-preflight` names another repository,
-  `Gareth1953/x402-preflight`; it is not ours. The corpus client has since
-  published; defects and MCP starter remain separate first-release work. Release preparation and
-  package evidence are in `docs/OPENAPI_HEADROOM_2026-09.md`; versions
-  must come from the current manifests, not the old numbers on this desk.
+- **Preflight name resolved for the adoption release, September 10.**
+  Continue with proposed `scvd-preflight`, accepted with the keeper's
+  instruction to complete adoption. The source directory stays
+  `x402-preflight/`; npm's `x402-preflight` belongs to another project.
+  Defects 0.13.0, MCP starter 0.1.0 and preflight 0.1.0 are now published
+  and verified against the reviewed archives, repository commit and
+  provenance runs. No keeper press or credential change remains.
+  `docs/ADOPTION_AND_LATENCY_2026-09.md` records the release checks.
 - **Tab registry press closed, checked September 10.** `scvd-tab`
   0.11.1 matches every published file in this tree. No Tab release
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
@@ -911,6 +913,30 @@ Do not relitigate without you.
   report goes on the completed order as the deliverable.
 
 ### Directory and listings (press is yours, rule 30)
+
+- **LOOK: the crawler 404s, by path (2026-09-10).** The Cloudflare
+  AI-crawler panel you pasted shows 858 404s in the month and names
+  none of them; every one of the 2,990 sitemap URLs answered 200 when
+  walked as Claude-User the same day, so they are guesses. Two of the
+  guesses now answer (`/.well-known/ai-plugin.json` serves the retired
+  plugin manifest over our contract; `/index.html` is a 301 to `/`).
+  In that panel, "Most crawled paths" → the 4xx tab → paste the top
+  rows here. One dominant path is a fix; a long tail is a probe and
+  nothing to do. The same panel's 301s are trailing slashes and
+  http→https, which is normal.
+
+- **GitHub Agent Finder: the catalog PR (2026-09-10).** Copilot's
+  agent finder did not return the store on 2026-09-06, and the
+  community catalog behind it (`github/agentfinder-catalog`) takes
+  one JSON file per augment by pull request. Three are drafted and
+  validated in `registry/agentfinder/catalog/seancrecord/` — the
+  store skill, the before-you-pay skill, the store's MCP server —
+  and the press is the fork-and-PR in `registry/agentfinder/README.md`.
+  The tab has no entry until its registry version is republished
+  (the press two rows down); an entry naming 0.11.1 would point at
+  a version the registry does not hold. RULE, small: the MCP entry
+  uses the feed's identifier shape rather than the guide's; the README
+  says why, and either passes.
 
 - **Desvela Registry Watch activation (2026-09-06).** After the receiver
   is deployed at `https://scvd.store/webhooks/desvela-registry`, register

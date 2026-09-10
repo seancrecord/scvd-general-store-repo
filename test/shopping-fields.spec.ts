@@ -41,13 +41,19 @@ describe("the derivation", () => {
     expect(silent, "an item with no `when` is one the routing table forgot; test/when-to-buy.spec.ts should already have said so").toEqual([]);
   });
 
-  it("reads the specimen roster and nothing else for sample_url", () => {
+  it("keeps registered specimens and leaves items with no menu preview absent", () => {
     for (const listing of SAMPLES) {
       expect(sampleUrlFor(listing.item, BASE)).toBe(`${BASE}/samples/${listing.slug}.json`);
     }
-    const unsampled = MENU_ITEMS.find((item) => !SAMPLES.some((listing) => listing.item === item.id))!;
+    const unsampled = { id: "not_a_menu_item" };
     expect(sampleUrlFor(unsampled.id, BASE)).toBeNull();
     expect(shoppingFields(unsampled.id, BASE)).not.toHaveProperty("sample_url");
+  });
+
+  it("keeps every existing menu preview discoverable, including visual and shared examples", () => {
+    for (const item of MENU_ITEMS.filter((entry) => entry.sample_url)) {
+      expect(sampleUrlFor(item.id, BASE), item.id).toBe(`${BASE}${item.sample_url}`);
+    }
   });
 
   it("the item's own typed sample_url agrees with the roster wherever the roster has one", () => {

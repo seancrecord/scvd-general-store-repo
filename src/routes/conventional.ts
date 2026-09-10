@@ -80,6 +80,15 @@ const GUESSED: Record<string, string> = {
    */
   "/agent": "/agents.md",
   "/agent-mode": "/agents.md",
+  /**
+   * THE FRONT DOOR, AT THE ADDRESS A 1990S CRAWLER GUESSES (2026-09-10).
+   * The Cloudflare AI-crawler panel showed 858 404s in a month, none
+   * of them a sitemap URL — every one of the 2,990 answered 200 when
+   * walked — so they are guesses, and /index.html is the oldest guess
+   * there is. Same rule as every line above: no new page, one hop to
+   * the document that already answers.
+   */
+  "/index.html": "/",
 };
 
 for (const [guessed, real] of Object.entries(GUESSED)) {

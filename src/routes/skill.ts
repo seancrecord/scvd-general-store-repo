@@ -179,7 +179,14 @@ into Bitcoin via OpenTimestamps, bound into a signed certificate:
 
 **A context reset is coming and something must survive it.** One
 paragraph, anchored, signed, at a stable URL your next session can
-fetch: \`GET ${base}/api/buy/context_anchor?summary=...&src=skill\`
+fetch. Prefer the \`buy_memory_anchor\` MCP tool, which carries the
+summary in the request body; over HTTP the same door is
+\`GET ${base}/api/buy/context_anchor?summary=...&src=skill\`, where
+the summary rides in a URL that gets logged. Either way the anchor is
+stored as it arrived, for good, and read back free by anyone holding
+its id, so put nothing in it you would not write on a postcard: no
+keys, tokens, seed phrases, personal data or confidential business
+information.
 
 **A reset already ATE a purchase.** You paid, the response is gone,
 and the respawned you holds nothing. Free recovery, no account:

@@ -18,8 +18,9 @@
  * be sent" to "the headers arrived": the TLS handshake is subtracted
  * when the socket is new, so the first knock and the warm ones are
  * the same measure. The store's Server-Timing line says whether the
- * first knock met a cold isolate; the cold penalty is that knock
- * minus the warm median. With --burst it also fires every paid door
+ * first knock met a cold isolate; the reported difference is that knock
+ * minus the median of later warm responses with the same HTTP status.
+ * It includes network and cache effects, not just isolate startup. With --burst it also fires every paid door
  * from /.well-known/x402 at once, one socket each, and counts how
  * many cold isolates a directory-shaped burst wakes.
  *
@@ -64,6 +65,7 @@ import {
   renderSummary,
   summarize,
   summarizeBurst,
+  summarizeControl,
 } from "./lib/cold-read.mjs";
 
 const args = process.argv.slice(2);
@@ -182,15 +184,17 @@ const out = [];
 if (control) {
   const knocks = await readDoor(control);
   const first = knocks[0];
-  const warm = knocks.slice(1).map((k) => k.ms);
-  const warmMedian = warm.length ? [...warm].sort((a, b) => a - b)[Math.floor(warm.length / 2)] : null;
-  const floor = Number.isFinite(first.ms) && warmMedian !== null ? Math.max(0, first.ms - warmMedian) : null;
-  observation.control = { url: control, first_ms: first.ms, warm_median_ms: warmMedian, vantage_floor_ms: floor };
+  const summary = summarizeControl(knocks);
+  const warmMedian = summary.warm_median_ms;
+  const floor = summary.vantage_floor_ms;
+  observation.control = { url: control, ...summary, knocks };
   out.push(
     Number.isFinite(first.ms)
-      ? `${control}\n  control       ${String(first.ms).padStart(6)} ms   first knock on a host with no cold start; warm median ${warmMedian ?? "-"} ms\n  vantage floor ${String(floor ?? "-").padStart(6)} ms   what this vantage adds to any first knock; a cold penalty must clear it by a wide margin`
+      ? `${control}\n  control       ${String(first.ms).padStart(6)} ms   first control response (HTTP ${first.status}, ${summary.first_isolate}); eligible repeated median ${warmMedian ?? "-"} ms\n  vantage floor ${String(floor ?? "-").padStart(6)} ms   first minus repeated median, clipped at zero; assumes no application startup cost at the control`
       : `${control}\n  control unreachable: ${first.error ?? "no answer"}`,
   );
+  out.push(`  control coverage: answered ${summary.coverage.answered}/${summary.coverage.attempted}, failed ${summary.coverage.failed}, HTTP errors (5xx) ${summary.coverage.http_errors}; ${summary.coverage.comparable_repeats}/${summary.coverage.subsequent} eligible repeats`);
+  out.push(`  ${summary.comparison_note}`);
 }
 
 for (const url of urls) {
@@ -199,7 +203,7 @@ for (const url of urls) {
   if (!Number.isFinite(knocks[0].ms)) {
     out.push(`${url}\n  unreachable: ${knocks[0].error ?? "no answer"}`);
     if (url === urls[0]) exitCode = 2;
-    observation.doors.push({ url, unreachable: knocks[0].error ?? "no answer" });
+    observation.doors.push({ url, ...summary, unreachable: knocks[0].error ?? "no answer", knocks });
     continue;
   }
   const landed = deployLanded(summary.first_age_s, since);

@@ -71,6 +71,71 @@ export async function resolveRecord(
 export const CORPUS_SCAN_CAP = 1000;
 
 /**
+ * THE RESOLVED RECORDS, REMEMBERED PER ISOLATE (2026-09-10).
+ *
+ * Every corpus reader — the host pages, the round pages, the sitemap,
+ * the doors, the 402's archive depth — called listCorpus, and
+ * listCorpus resolved every pointer through R2 on every call: one KV
+ * list, one bulk get, then one R2 get and one text read per record,
+ * for a corpus that gains a record every week forever. A host page
+ * cost about a second of that and nothing else; the Cloudflare AI
+ * crawler panel showed those pages being walked by the thousand, and
+ * a 12-way walk of the sitemap from outside drew 503s on fifty of
+ * them. The crawlers were paying R2 to re-read bytes the chain
+ * guarantees have not changed.
+ *
+ * A record is immutable by construction: it is a signed, hash-chained
+ * snapshot, and its pointer carries the digest. So a pointer resolved
+ * once in this isolate need not be resolved again, keyed on the R2
+ * key, the digest AND the stamp's state, so a pointer rewritten to a
+ * different object — or the same object re-put with its OTS proof
+ * upgraded, which changes the pointer but not the digest — misses
+ * the memo rather than serving the old one. The KV list still runs
+ * every call, because the list is what changes: a new week's record
+ * is a new name, resolved once and remembered.
+ *
+ * WHAT THIS DOES NOT HIDE, said plainly: an R2 object deleted from
+ * under a live pointer stays readable from a warm isolate until the
+ * isolate recycles. That is a chain problem the cold path still
+ * surfaces (resolveRecord returns null and the chain check reports a
+ * gap), and a cache that survived it for the life of an isolate is a
+ * smaller lie than a 503 to a reader. The chain check itself is not
+ * weakened: verifyCorpusChain recomputes every digest from the
+ * remembered bytes, which are the bytes R2 served, once per chain
+ * state (corpus.ts). A pointer whose object was never found is never
+ * remembered, so the gap is asked about on every read.
+ * forgetResolvedRecords is for tests.
+ */
+const resolvedRecords = new Map<string, CorpusRecord>();
+
+function memoKey(pointer: CorpusPointer): string {
+  return `${pointer.r2_key}#${pointer.digest}#${pointer.ots?.status ?? "-"}`;
+}
+
+/** Drop the isolate's memo. For the chain check and for tests. */
+export function forgetResolvedRecords(): void {
+  resolvedRecords.clear();
+}
+
+/** How many resolved pointers this isolate remembers. For tests. */
+export function resolvedRecordCount(): number {
+  return resolvedRecords.size;
+}
+
+async function resolveRemembered(
+  env: Env,
+  stored: CorpusRecord | CorpusPointer | null,
+): Promise<CorpusRecord | null> {
+  if (!stored || !isPointer(stored)) return resolveRecord(env, stored);
+  const key = memoKey(stored);
+  const remembered = resolvedRecords.get(key);
+  if (remembered) return remembered;
+  const record = await resolveRecord(env, stored);
+  if (record) resolvedRecords.set(key, record);
+  return record;
+}
+
+/**
  * THE CHAIN AS KV HOLDS IT (2026-09-10, the slow-doors read).
  *
  * What every reader of the corpus pays first: one list over the
@@ -78,9 +143,9 @@ export const CORPUS_SCAN_CAP = 1000;
  * week. The fingerprint is a sha256 over exactly those bytes, in key
  * order, so it changes when — and only when — the chain KV describes
  * changes: a week appended, an OTS stamp upgraded on a pointer, a
- * legacy full record rewritten. It is the identity every cache below
- * keys on, which is why none of them can serve a chain the store no
- * longer holds.
+ * legacy full record rewritten. It is the identity every derived
+ * value below keys on, which is why none of them can serve a chain
+ * the store no longer holds.
  */
 interface CorpusPointers {
   names: string[];
@@ -113,32 +178,7 @@ async function listPointers(env: Env): Promise<CorpusPointers> {
   return { names: listed.names, values, truncated: listed.truncated, fingerprint };
 }
 
-/**
- * ONE RESOLVED CHAIN PER ISOLATE (2026-09-10).
- *
- * Every surface derived from the corpus — the door index, the feeds,
- * the fresh set, the monthly state, /corpus.json itself — called
- * listCorpus on every request, and listCorpus fetched EVERY snapshot
- * body from R2 and parsed it, every time. Week 6's round carries
- * 2,767 hosts with their evidence inline: 11.5 MB of JSON, read and
- * parsed to answer a 3.6 KB Atom feed. Server-Timing on the live
- * doors read 700–1,300 ms of wall time in the Worker for outputs
- * that had not changed since Sunday.
- *
- * So the resolved records are held once per isolate, keyed on the
- * fingerprint above. A reader still lists KV each time — that is the
- * check that the chain is what it was — and skips R2 only when KV
- * says nothing moved. The memo hands out a copy of the array, never
- * the array, so a caller that sorts or splices cannot reorder the
- * chain for the next one; the records themselves are shared and read
- * as the immutable things they are.
- */
-let resolvedChain: { fingerprint: string; records: CorpusRecord[] } | null = null;
-
 async function resolveAll(env: Env, pointers: CorpusPointers): Promise<CorpusRecord[]> {
-  if (resolvedChain?.fingerprint === pointers.fingerprint) {
-    return [...resolvedChain.records];
-  }
   /*
    * ONE WAVE OVER THE POINTERS — rule 50.
    *
@@ -152,14 +192,13 @@ async function resolveAll(env: Env, pointers: CorpusPointers): Promise<CorpusRec
    * does, and it stays sequential over the resolved set below.
    */
   const resolved = await Promise.all(
-    pointers.names.map((name) => resolveRecord(env, pointers.values.get(name) ?? null)),
+    pointers.names.map((name) => resolveRemembered(env, pointers.values.get(name) ?? null)),
   );
   const records = resolved.filter((record): record is CorpusRecord =>
     Boolean(record),
   );
   records.sort((a, b) => a.snapshot.sequence - b.snapshot.sequence);
-  resolvedChain = { fingerprint: pointers.fingerprint, records };
-  return [...records];
+  return records;
 }
 
 export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
@@ -170,8 +209,7 @@ export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
  * The fingerprint of a chain already in hand, from the records'
  * own sequence, digest and stamp — the same facts the pointers carry —
  * so a memo over a derivation of the records (the chain check in
- * corpus.ts) can key on the records without keeping the array's
- * identity, which the copy above deliberately does not preserve.
+ * corpus.ts) can key on the records themselves.
  */
 export function chainFingerprintOf(records: readonly CorpusRecord[]): string {
   return records
@@ -187,10 +225,11 @@ function sequenceOf(stored: CorpusRecord | CorpusPointer | null): number {
 /**
  * THE NEWEST ENTRY, AND ONLY THAT ONE (2026-09-10). The fresh set and
  * the snapshot pass want the latest record; both used to resolve the
- * whole chain from R2 to read its last element. Now the pointers are
- * listed, the highest sequence picked, and that one object fetched —
- * unless the list was cut at the cap, in which case the last name
- * listed is not the newest and the full walk is the honest answer.
+ * whole chain to read its last element. Now the pointers are listed,
+ * the highest sequence picked, and that one object fetched (or
+ * remembered) — unless the list was cut at the cap, in which case the
+ * last name listed is not the newest and the full walk is the honest
+ * answer.
  */
 export async function latestCorpusEntry(env: Env): Promise<CorpusRecord | null> {
   const pointers = await listPointers(env);
@@ -198,15 +237,12 @@ export async function latestCorpusEntry(env: Env): Promise<CorpusRecord | null> 
     const records = await resolveAll(env, pointers);
     return records[records.length - 1] ?? null;
   }
-  if (resolvedChain?.fingerprint === pointers.fingerprint) {
-    return resolvedChain.records[resolvedChain.records.length - 1] ?? null;
-  }
   let newest: CorpusRecord | CorpusPointer | null = null;
   for (const name of pointers.names) {
     const stored = pointers.values.get(name) ?? null;
     if (sequenceOf(stored) > sequenceOf(newest)) newest = stored;
   }
-  return resolveRecord(env, newest);
+  return resolveRemembered(env, newest);
 }
 
 /**
@@ -214,7 +250,7 @@ export async function latestCorpusEntry(env: Env): Promise<CorpusRecord | null> 
  *
  * The door index, the feeds and the monthly state are pure functions
  * of the records: same chain, same code, same answer. Rebuilding them
- * from 11.5 MB of R2 on every cold isolate was the cost the live
+ * from 11.5 MB of records on every cold isolate was the cost the live
  * numbers showed. This keeps the built value in KV under a key made
  * of three things — the surface's name, the DEPLOYED VERSION, and the
  * chain fingerprint — so a reader anywhere pays the pointer list plus
@@ -226,8 +262,9 @@ export async function latestCorpusEntry(env: Env): Promise<CorpusRecord | null> 
  * addressed by the record's own digest chain, and it expires. Without
  * the version binding (a test, a Worker that does not declare it) the
  * KV layer is skipped entirely rather than risk serving one deploy's
- * derivation under the next: the isolate memo above still applies.
- * A put that fails costs nothing but the next reader's rebuild.
+ * derivation under the next: the per-pointer memo above still
+ * applies. A put that fails costs nothing but the next reader's
+ * rebuild.
  */
 const DERIVED_TTL_SECONDS = 30 * 24 * 60 * 60;
 
@@ -272,9 +309,4 @@ export async function derivedValue<T>(
 /** The chain as KV holds it, in one hex string: what every memo above keys on. */
 export async function corpusFingerprint(env: Env): Promise<string> {
   return (await listPointers(env)).fingerprint;
-}
-
-/** Test seam: forget the isolate's resolved chain. */
-export function forgetResolvedChain(): void {
-  resolvedChain = null;
 }

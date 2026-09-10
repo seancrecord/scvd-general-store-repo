@@ -1,0 +1,458 @@
+{
+  "read_at": "2026-09-10T18:10:45.413Z",
+  "since": null,
+  "control": null,
+  "doors": [
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "first_ms": 282,
+      "first_status": 402,
+      "first_isolate": "cold",
+      "first_age_s": 0,
+      "first_req_ms": 14,
+      "warm_knocks": 10,
+      "warm_median_ms": 53,
+      "warm_max_ms": 68,
+      "cold_penalty_ms": 229,
+      "statuses": [
+        402
+      ],
+      "coverage": {
+        "attempted": 11,
+        "answered": 11,
+        "failed": 0,
+        "http_errors": 0,
+        "subsequent": 10,
+        "comparable_warm": 10,
+        "excluded_from_warm": 0
+      },
+      "deploy": {
+        "known": false
+      },
+      "knocks": [
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 282,
+          "handshake_ms": 111,
+          "timing": {
+            "isolate": "cold",
+            "age": 0,
+            "req": 14
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 67,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 51,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 65,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 57,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 49,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 48,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 0,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 50,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 55,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 68,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/api/buy/hello",
+          "status": 402,
+          "ms": 44,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 0
+          }
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/corpus/index.json",
+      "first_ms": 1091,
+      "first_status": 200,
+      "first_isolate": "cold",
+      "first_age_s": 0,
+      "first_req_ms": 827,
+      "warm_knocks": 10,
+      "warm_median_ms": 86,
+      "warm_max_ms": 109,
+      "cold_penalty_ms": 1005,
+      "statuses": [
+        200
+      ],
+      "coverage": {
+        "attempted": 11,
+        "answered": 11,
+        "failed": 0,
+        "http_errors": 0,
+        "subsequent": 10,
+        "comparable_warm": 10,
+        "excluded_from_warm": 0
+      },
+      "deploy": {
+        "known": false
+      },
+      "knocks": [
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 1091,
+          "handshake_ms": 60,
+          "timing": {
+            "isolate": "cold",
+            "age": 0,
+            "req": 827
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 85,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 39
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 95,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 46
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 81,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 32
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 87,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 40
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 83,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 37
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 90,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 41
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 109,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 1,
+            "req": 42
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 92,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 2,
+            "req": 33
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 84,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 2,
+            "req": 31
+          }
+        },
+        {
+          "url": "https://scvd.store/corpus/index.json",
+          "status": 200,
+          "ms": 75,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 2,
+            "req": 30
+          }
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/developers",
+      "first_ms": 64,
+      "first_status": 200,
+      "first_isolate": "warm",
+      "first_age_s": 429,
+      "first_req_ms": 0,
+      "warm_knocks": 10,
+      "warm_median_ms": 44,
+      "warm_max_ms": 48,
+      "cold_penalty_ms": null,
+      "statuses": [
+        200
+      ],
+      "coverage": {
+        "attempted": 11,
+        "answered": 11,
+        "failed": 0,
+        "http_errors": 0,
+        "subsequent": 10,
+        "comparable_warm": 10,
+        "excluded_from_warm": 0
+      },
+      "deploy": {
+        "known": false
+      },
+      "knocks": [
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 64,
+          "handshake_ms": 61,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 46,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 44,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 48,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 2
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 39,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 44,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 3
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 40,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 429,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 45,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 430,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 39,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 430,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 40,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 430,
+            "req": 0
+          }
+        },
+        {
+          "url": "https://scvd.store/developers",
+          "status": 200,
+          "ms": 46,
+          "handshake_ms": 0,
+          "timing": {
+            "isolate": "warm",
+            "age": 430,
+            "req": 4
+          }
+        }
+      ]
+    }
+  ],
+  "burst": null
+}
