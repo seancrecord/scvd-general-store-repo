@@ -23,8 +23,18 @@ Cloudflare → Security → WAF → Custom rules → Create rule.
 - Expression (paste as one line):
 
 ```
-(http.user_agent contains "ClaudeBot" or http.user_agent contains "Claude-User" or http.user_agent contains "Claude-SearchBot" or http.user_agent contains "GPTBot" or http.user_agent contains "ChatGPT-User" or http.user_agent contains "OAI-SearchBot" or http.user_agent contains "PerplexityBot" or http.user_agent contains "Perplexity-User" or http.user_agent contains "Amazonbot" or http.user_agent contains "Applebot" or http.user_agent contains "Meta-ExternalAgent" or http.user_agent contains "Bytespider" or http.user_agent contains "CCBot" or http.user_agent contains "Googlebot" or http.user_agent contains "bingbot") and not cf.verified_bot
+(http.user_agent contains "ClaudeBot" or http.user_agent contains "Claude-User" or http.user_agent contains "Claude-SearchBot" or http.user_agent contains "GPTBot" or http.user_agent contains "ChatGPT-User" or http.user_agent contains "OAI-SearchBot" or http.user_agent contains "PerplexityBot" or http.user_agent contains "Perplexity-User" or http.user_agent contains "Amazonbot" or http.user_agent contains "Applebot" or http.user_agent contains "Meta-ExternalAgent" or http.user_agent contains "Bytespider" or http.user_agent contains "CCBot" or http.user_agent contains "Googlebot" or http.user_agent contains "bingbot") and not cf.client.bot
 ```
+
+The first press (2026-09-11) failed with "Filter parsing error (1:634)":
+position 634 is the last character, and the pasted text ended in
+`cf.verified_bot '` — a stray space and apostrophe picked up from the
+copy. The expression must end exactly at `cf.client.bot`, nothing
+after it. Paste into the expression editor's "Edit expression" text
+box, not the field/operator builder. `cf.client.bot` is the verified-
+bot boolean every plan has; `cf.verified_bot` is the older spelling
+and `cf.bot_management.verified_bot` needs the Bot Management add-on.
+
 
 ## Why exactly these names
 

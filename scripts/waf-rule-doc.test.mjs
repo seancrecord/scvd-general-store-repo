@@ -40,7 +40,8 @@ test("the rule names the big five and nothing outside the roster", () => {
 });
 
 test("the rule blocks only when the claim is unverified", () => {
-  assert.ok(expression.includes("and not cf.verified_bot"));
+  assert.ok(expression.includes("and not cf.client.bot"), "the verified-bot boolean every plan has");
+  assert.ok(expression.trimEnd().endsWith("cf.client.bot"), "nothing may follow the field: a trailing character is the parse error of 2026-09-11");
 });
 
 test("the unverifiable names stay off the list", () => {

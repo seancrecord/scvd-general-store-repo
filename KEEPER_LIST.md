@@ -982,16 +982,9 @@ Do not relitigate without you.
   the resubmission is the five-tool verifier already served at
   `/mcp/verifier` — the same door the Hugging Face Space wraps.
 
-- **Docker's MCP catalog: the one registry press left (2026-09-11).**
-  The findability walk (`npm run findability:check`) found every
-  file-shaped signal filled, and Smithery already lists the store
-  (your word, 09-11). Docker's catalog takes a PR to
-  `docker/mcp-registry` with a `server.yaml` naming the remote
-  endpoint `https://scvd.store/mcp`; their template is in that repo's
-  CONTRIBUTING, and remote servers are accepted if the form still
-  offers the option when you look. Lists the door, does not host it.
-
-- **The WAF rule, paste-ready (2026-09-11).** You said block them.
+- **The WAF rule, paste-ready (2026-09-11).** You said block them; the
+  first paste failed on a trailing quote and the doc now says so, with
+  the field every plan has (`cf.client.bot`).
   `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`: the exact expression,
   the one toggle NOT to press, and what to watch for a week. A test
   holds every name in the expression to the roster robots.txt

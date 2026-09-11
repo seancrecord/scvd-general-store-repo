@@ -83,6 +83,13 @@ six missing and all six were filled the same day (the Claude Code
 plugin and marketplace manifests, the Gemini extension, CITATION.cff,
 `/.well-known/tdmrep.json`, `/ai.txt`).
 
+## For CV (`FOR_CV_2026-09-11.md`)
+
+The two presses handed to CV on 2026-09-11 — copying the catalog
+entries verbatim into agentfinder-catalog#34 with a verify loop, and
+pushing the verifier Space under a fine-grained token — with the
+order they depend on (#630 first) and what not to do.
+
 ## On hold
 
 Agentic.market listing request waits until MCP and Bazaar channels are
