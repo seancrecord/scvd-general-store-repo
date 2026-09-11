@@ -1,5 +1,6 @@
+import { LABOR_CAPACITY_ID } from "@/services/labor-reservations";
 import { resetWeeklyInventory } from "@/services/orders";
-import { SELF, env } from "cloudflare:test";
+import { SELF, env, runInDurableObject } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "@/types";
 import { getMenuItem } from "@/store";
@@ -215,6 +216,8 @@ describe("weekly inventory", () => {
     const orders = await testEnv.ORDERS.list({ prefix: "order:" });
     for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
     await resetWeeklyInventory(testEnv);
+    const bench = testEnv.PAID_RECOVERIES!.get(testEnv.PAID_RECOVERIES!.idFromName(LABOR_CAPACITY_ID));
+    await runInDurableObject(bench, async (_instance, state) => state.storage.deleteAll());
   });
   it("declines waitlist entries while the shelf is stocked", async () => {
     const response = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
@@ -272,6 +275,8 @@ describe("the keeper's completion flow", () => {
     const orders = await testEnv.ORDERS.list({ prefix: "order:" });
     for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
     await resetWeeklyInventory(testEnv);
+    const bench = testEnv.PAID_RECOVERIES!.get(testEnv.PAID_RECOVERIES!.idFromName(LABOR_CAPACITY_ID));
+    await runInDurableObject(bench, async (_instance, state) => state.storage.deleteAll());
   });
 
   const auth = {

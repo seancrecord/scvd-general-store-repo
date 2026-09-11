@@ -1,4 +1,5 @@
 import { signHumanCommission, signHumanCompletion, humanOrderEvidence } from "@/services/human-order-proof";
+import { laborCapacity } from "@/services/labor-reservations";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { currentOrder, hydrateOrders, writeManagedOrder } from "@/services/managed-orders";
 import { listKeys } from "@/lib/kv-list";
@@ -22,6 +23,7 @@ const ORDER_CAP = 1000;
  */
 
 export interface CreateOrderOptions {
+  laborPurchaseId?: string;
   /** Original acceptance time, retained when paid fulfillment is resumed. */
   createdAt?: string;
   item: MenuItem;
@@ -55,6 +57,7 @@ export async function createOrder(
 ): Promise<OrderRecord> {
   let order: OrderRecord = {
     order_id: newOrderId(),
+    ...(options.laborPurchaseId ? { labor_purchase_id: options.laborPurchaseId } : {}),
     item_id: options.item.id,
     item_name: options.item.name,
     status: "queued",
@@ -102,6 +105,7 @@ export async function createOrder(
    * without walking every order the store has ever taken. The order
    * above is the truth; this is only how the bench finds it.
    */
+  if (options.item.fulfillment === "human_queue") await laborCapacity(env).noteLaborOrder(order, order.labor_purchase_id);
   if (order.status === "completed") await markLaborClosed(env, order.order_id);
   else await markLaborOpen(env, order);
   return order;
@@ -224,6 +228,7 @@ export async function completeOrder(
   }
   // Finished work stops occupying the bench. A missed delete only ever
   // over-refuses, and the next bench read sweeps it.
+  await laborCapacity(env).noteLaborOrder(order, order.labor_purchase_id);
   await markLaborClosed(env, orderId);
 
   if (order.callback_url) {

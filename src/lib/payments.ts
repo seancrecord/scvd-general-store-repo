@@ -1632,6 +1632,8 @@ export interface SettledPayment {
 export interface PendingPayment {
   /** Private buyer capability, available only after its record was acknowledged. */
   purchaseRecovery?: () => Record<string, unknown> | undefined;
+  /** Admission time retained before settlement, including a week-crossing settle. */
+  purchaseCreatedAt?: () => string | undefined;
   observation?: ObservationCheckpoint;
   paidUsdc: number;
   tipUsdc: number;
