@@ -105,7 +105,7 @@ joins or leaves.
 | [socketcat](https://socketcat.com/servers/store.scvd/general-store) | https://socketcat.com/blueprints?category=support |
 | [Sourcey Startup Review](https://sourcey.com) | https://sourcey.com/catalog/creatorsuite/offers/annual-plan-discount-and-support |
 | [Spoolis](https://spoolis.com) | — |
-| [StillOS Notary](https://nolawealthfinancial.com) | https://nolawealthfinancial.com/about/ |
+| [StillOS Notary](https://stillosdigitalholdings.com) | https://github.com/stillmarcus24 (operator, Marcus; the 2026-09-04 pull recorded nolawealthfinancial.com, which their discovery metadata was still serving as the legacy domain — canonical is stillosdigitalholdings.com by their own word, and the old one still resolves) |
 | [Survival Colony — GitHub Opportunity Due-Diligence](https://185-70-184-213.sslip.io) | — |
 | [Talkshi](https://talkshi.com/agent/x402-scvd-store) | — |
 | [TinyOps Automation Integration Preflight](https://tinyopsstudio.com/automation-preflight-api.html) | https://tinyopsstudio.com/support |

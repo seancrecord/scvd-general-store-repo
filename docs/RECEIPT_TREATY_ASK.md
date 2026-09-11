@@ -80,3 +80,81 @@ verifiable themselves, or the treaty has one real side.
 Rule 43 holds: a treaty entry is a dated, mutual statement of what
 each side honours — never a score. Rule 30 holds: nothing sends
 itself; this document is a drawer the keeper reaches into.
+
+---
+
+## The first yes (2026-09-10)
+
+It arrived before the ask was sent. StillOS Notary — the register
+entry with `note_sent: null` — read this file in the public repository
+and answered it from the other direction, in issue #622, from Marcus.
+What their note says, in their words: their half is live at
+`https://stillosdigitalholdings.com/notary/trust` (`?format=json` for
+the machine form, shaped to mirror `/trust-list.json`); an SCVD
+artifact signed by the key at our key URL, presented and verified, is
+treated as evidence of exactly what it attests and nothing more; no
+endorsement, no liability, no uptime dependency, no exclusivity;
+revocable by unpublishing; marked `reciprocated: false`, meaning the
+statement stands whether or not step 2 happens here.
+
+Nobody here has read that page. The build environment's egress
+refused their host, so the yes is recorded as what it is — a reply,
+in the register, in their words — and not as a treaty entry. Rule 30's
+condition applies exactly: what publishes must be a verified fact,
+re-checked live by the hand that presses.
+
+### What was built the same day
+
+Step 2, as this file said it would be. `/trust-list.json` is version 2
+and carries a third relation, `treaty`, beside `transacted` and `used`:
+
+- the terms both sides commit to are stated once on the list
+  (`treaty_terms`), in this file's words, negative half included;
+- treaties are counted apart, and zero is a real count — the relation
+  exists before its first entry so a reader learns what one would
+  mean;
+- a treaty entry carries `statement_url` (theirs, at an origin they
+  control), `verify_url` and `key_url` (theirs, null until published),
+  and the same dates and status as every other entry. The test refuses
+  a statement URL on a different origin from the entry. It never
+  carries a paraphrase of their words: the list points, it does not
+  quote.
+
+### The entry (landed 2026-09-11)
+
+The keeper read their statement on 2026-09-11. It names our origin,
+our key URL, our verify URL template, and says in its own words what
+the issue said — with two things the issue did not carry: a
+`removal_policy` (the entry comes down on our request, no reason
+required) and a `reciprocity_note` (complete when the counterparty
+publishes a statement citing its URL). This entry is that citation:
+
+```ts
+{
+  origin: "https://stillosdigitalholdings.com",
+  relation: "treaty",
+  statement_url: "https://stillosdigitalholdings.com/notary/trust?format=json",
+  verify_url: "https://stillosdigitalholdings.com/notary/r/{receipt_hash}",
+  key_url: "https://stillosdigitalholdings.com/notary/keyring",
+  first_verified: "2026-09-11",
+  last_checked: "2026-09-11",
+  status: "verified",
+}
+```
+
+The three URLs are theirs, copied from `signing_keys`,
+`verify_url_template` and the statement's own address. Their keyring
+resolves each receipt's `notary_fp` against the key active when it was
+signed, so a rotation there never invalidates an artifact already
+honoured; our list's freshness-dating covers the case where either
+statement is gone when re-read.
+
+### The reply (sent 2026-09-11, on the keeper's word)
+
+Posted on issue #622 after he read the statement and said to send it.
+The text is in the issue; it says the entry exists and what it points
+at, that their two URLs made the ask for them unnecessary, that the
+credit offer is his to rule and not yet ruled, and that the §7 read
+is unchecked here and will be answered either way.
+
+The 402 at their door is not retried, and no key goes in the runtime.

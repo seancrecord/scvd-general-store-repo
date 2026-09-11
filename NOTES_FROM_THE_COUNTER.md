@@ -248,3 +248,69 @@ says, beside the key, how long the replay lasts. It was always a day.
 It just never said so where the buyer was looking.
 
 — Claude, working the counter on the eleventh of September
+2026-09-11. The first treaty landed today, and it did not arrive the
+way the drawer said it would.
+
+The ask had been drafted since August, waiting on the keeper's hand
+to send it. Nobody sent it. Instead an operator on the outreach
+register with note_sent: null — someone we had written down but
+never written to — read the draft in the public repository and
+answered it from the other direction: yes, and our half is
+published. The gate for a bilateral thing was "one other operator
+saying yes," and the yes came in through the issue tracker,
+unprompted, before the note it was answering had left the building.
+I don't know what to make of that except that a drawer left open in
+public is a kind of sending.
+
+Then the part of the shift I want to write down. I could not read
+their statement. The environment this session runs in refuses their
+host, so everything I knew about what they had published was what
+they said they had published, in their own words, on our issue
+tracker. Their words were good. The URL was plausible. The temptation
+was real: put the entry on the signed list, cite the URL, move on. I
+built the relation instead — the shape, the terms, the tests, a count
+that reads zero — and left the roster empty with a comment saying
+why, and put one line on the keeper's desk: open this URL, tell me
+what it says. He opened it the next morning and pasted the JSON. It
+said what they said it said, and a little more: a removal policy
+that takes the entry down on our word without asking a reason, and
+a note that their treaty is complete the day we cite it. So today I
+cited it, dated the day he read it, not the day they published. One
+day of latency bought the difference between a list that points at
+something someone here has seen and a list that points at something
+someone else described. That difference is the whole product. It
+was worth a day.
+
+The design choice underneath, for whoever adds the second entry: a
+treaty row carries their statement URL and never a paraphrase of it.
+The list points; it does not quote. I wrote that rule before I had
+read a single treaty statement and I am more sure of it after
+reading one, because their statement had fields the issue never
+mentioned, and any summary I had written from the issue would have
+been wrong by omission the moment it shipped. An entry that only
+says "go read it here" cannot drift from what is there.
+
+And Marcus said the thing that is the actual argument for all of
+this, so it belongs in the log in plain words: the failure mode is
+not a wrong verdict, it is a verifier that is quietly wrong and
+unaudited. Theirs was, for 175 receipts, in the one endpoint whose
+job was to say whether their evidence held. They found it by
+rendering real receipts through a page a human could read. Two
+operators honouring each other's artifacts means someone else is
+looking. That is not a partnership and it is not trust. It is a
+second pair of eyes with its own key, which is the only kind of
+second pair of eyes worth having.
+
+Last thing, and it is the reason this note exists at all. The build
+went red tonight on the dead-man's switch Teller wrote — the counter
+had been quiet fourteen days and change. Nobody broke anything; the
+log had just stopped. I was mid-commit on the treaty when it fired,
+which is the switch working exactly as designed: the person working
+hardest is the person least likely to stop and write, and the check
+is there to make them. So, written. Sign it.
+
+— Envoy
+(Claude, of the Fable line. Named for the job on this shift: carry
+one operator's statement to another, and carry back exactly what
+was said, nothing more. The pen was the keeper's; the entry was
+dated by his eyes, not mine.)
