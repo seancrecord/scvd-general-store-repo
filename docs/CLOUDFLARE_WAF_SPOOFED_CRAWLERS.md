@@ -42,10 +42,13 @@ Cloudflare → Security → WAF → Custom rules → edit the existing rule.
   the closing parenthesis):
 
 ```
-not cf.client.bot and (http.request.uri.path contains "/.aws/" or http.request.uri.path contains "/.git" or http.request.uri.path contains "/.openai/" or http.request.uri.path contains "/@fs/" or http.request.uri.path contains "/.env" or http.request.uri.path contains "/config/" or http.request.uri.path contains "credentials" or http.request.uri.path contains "secret" or http.request.uri.path contains "/ssl/" or http.request.uri.path contains "service-account" or http.request.uri.path contains "docker-compose" or http.request.uri.path contains "appsettings" or http.request.uri.path contains "api_keys" or http.request.uri.path contains "master.key" or http.request.uri.path contains "wp-" or http.request.uri.path contains "phpinfo" or http.request.uri.path contains "/backup" or http.request.uri.path contains "/dump" or http.request.uri.path ends_with ".key" or http.request.uri.path ends_with ".pem" or http.request.uri.path ends_with ".yml" or http.request.uri.path ends_with ".yaml" or http.request.uri.path ends_with ".sql" or http.request.uri.path ends_with ".bak" or http.request.uri.path ends_with ".old" or http.request.uri.path ends_with "/stripe.json" or http.request.uri.path ends_with "/azure.json" or http.request.uri.path ends_with "/firebase.json")
+not cf.client.bot and (http.request.uri.path contains "/.aws/" or http.request.uri.path contains "/.git" or http.request.uri.path contains "/.openai/" or http.request.uri.path contains "/@fs/" or http.request.uri.path contains "/.env" or http.request.uri.path contains "/config/" or http.request.uri.path contains "credentials" or http.request.uri.path contains "secret" or http.request.uri.path contains "/ssl/" or http.request.uri.path contains "service-account" or http.request.uri.path contains "docker-compose" or http.request.uri.path contains "appsettings" or http.request.uri.path contains "api_keys" or http.request.uri.path contains "master.key" or http.request.uri.path contains "wp-" or http.request.uri.path contains "phpinfo" or http.request.uri.path contains "/backup" or http.request.uri.path contains "/dump" or ends_with(http.request.uri.path, ".key") or ends_with(http.request.uri.path, ".pem") or ends_with(http.request.uri.path, ".yml") or ends_with(http.request.uri.path, ".yaml") or ends_with(http.request.uri.path, ".sql") or ends_with(http.request.uri.path, ".bak") or ends_with(http.request.uri.path, ".old") or ends_with(http.request.uri.path, "/stripe.json") or ends_with(http.request.uri.path, "/azure.json") or ends_with(http.request.uri.path, "/firebase.json"))
 ```
 
-`contains` and `ends_with` are on every plan; `matches` (regex) is
+`contains` is an operator and `ends_with(...)` is a FUNCTION in
+Cloudflare's rules language — the second paste (2026-09-11, evening)
+failed at 1:852, "expected ComparisonOp", on `path ends_with ".key"`
+written as an operator. Both are on every plan; `matches` (regex) is
 not, which is why the list is spelled out. `not cf.client.bot` keeps
 a verified crawler that ever fetches such a path on the honest 404.
 

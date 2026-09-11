@@ -41,7 +41,13 @@ test("the live rule blocks on what is asked for, never on a user-agent alone", (
 });
 
 test("no probe fragment is a substring of any route the store serves", () => {
-  const fragments = [...live.matchAll(/http\.request\.uri\.path (?:contains|ends_with) "([^"]+)"/g)].map((m) => m[1]);
+  const fragments = [
+    ...[...live.matchAll(/http\.request\.uri\.path contains "([^"]+)"/g)].map((m) => m[1]),
+    ...[...live.matchAll(/ends_with\(http\.request\.uri\.path, "([^"]+)"\)/g)].map((m) => m[1]),
+  ];
+  // ends_with is a function in Cloudflare's language; written as an
+  // operator it fails to parse (the 1:852 error of 2026-09-11).
+  assert.ok(!/path ends_with/.test(live), "ends_with must be written as a function");
   assert.ok(fragments.length >= 20, "the fragment list did not parse");
   const routes = routePatterns();
   assert.ok(routes.length > 200, "the router did not parse");
