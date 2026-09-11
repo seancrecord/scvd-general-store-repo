@@ -425,7 +425,8 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // Input validation precedes this guard. A bare catalog probe still
     // quotes its required inputs; a supplied target must be available
     // before new terms or settlement.
-    if (item && c.req.query("url")) {
+    // A blank url is a missing one — a probe, not a target to check.
+    if (item && c.req.query("url")?.trim()) {
       const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
       if (refusal) return c.json(refusal.body, refusal.status);
     }

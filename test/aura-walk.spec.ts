@@ -38,8 +38,13 @@ const ID = "aura_walk";
  *      from the menu and the copy is checked against it.
  */
 
-async function paid(path: string): Promise<Response> {
-  const challenge = await SELF.fetch(`${BASE}${path}`);
+/**
+ * The quote comes from a valid ask; the paid request may then carry a
+ * different, bad input. An unsigned ask that SUPPLIES a bad input is
+ * refused before terms (house rule 62.2), so the two are separated.
+ */
+async function paid(path: string, quotePath = path): Promise<Response> {
+  const challenge = await SELF.fetch(`${BASE}${quotePath}`);
   expect(challenge.status).toBe(402);
   const accepted = decodePaymentRequired(challenge).accepts[0]!;
   const signature = buildPaymentSignature(accepted);
@@ -178,7 +183,7 @@ describe("the door", () => {
   });
 
   it("refuses our own hostname, naming the free passes instead", async () => {
-    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent(`${BASE}/api/buy/hello`)}`);
+    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent(`${BASE}/api/buy/hello`)}`, `/api/buy/${ID}?url=https://door.example/api/x`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);
@@ -187,7 +192,7 @@ describe("the door", () => {
   });
 
   it("refuses a door the shared law refuses (plain http), nothing charged", async () => {
-    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent("http://door.example/api/x")}`);
+    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent("http://door.example/api/x")}`, `/api/buy/${ID}?url=https://door.example/api/x`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);
