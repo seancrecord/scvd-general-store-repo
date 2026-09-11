@@ -477,6 +477,37 @@ function pct(part, whole) {
  * ledger lines alone — rule 5's "a percentage that cannot be
  * re-derived from committed raw data is a memory".
  */
+/**
+ * WHAT A TARGET ASKS THE RUNNER TO SEND (2026-09-11). Until today every
+ * walk was a GET, and the first POST-only door met — StillOS Notary's
+ * /notary/commit, in the treaty exchange of issue #622 — answered a
+ * GET with a 402 status and a method_not_allowed body: a true reading
+ * of the wrong question, which the ledger would have filed as
+ * malformed_challenge. A target may now carry `method` (GET or POST)
+ * and, for POST, a `body` (a string sent verbatim, or an object sent
+ * as JSON). The same request is sent unpaid and paid, so the paid
+ * response answers the same question the challenge did.
+ *
+ * Fails closed, before any request: an unknown method or a body on a
+ * GET is a refused target, not a guessed one. Derived targets carry
+ * neither field and walk exactly as before.
+ */
+export function targetRequest(target) {
+  const isObject = target && typeof target === "object";
+  const raw = isObject && target.method != null ? String(target.method).trim().toUpperCase() : "GET";
+  if (raw !== "GET" && raw !== "POST") {
+    throw new Error(`target method must be GET or POST, got ${JSON.stringify(target?.method)}`);
+  }
+  const hasBody = isObject && target.body !== undefined && target.body !== null;
+  if (hasBody && raw !== "POST") {
+    throw new Error("a target body needs method POST; a GET carries none");
+  }
+  if (!hasBody) return { method: raw, body: undefined, contentType: undefined };
+  const body = typeof target.body === "string" ? target.body : JSON.stringify(target.body);
+  const contentType = typeof target.body === "string" ? (target.content_type ?? "text/plain") : "application/json";
+  return { method: raw, body, contentType };
+}
+
 export function summarize(lines) {
   const entries = lines
     .filter(line => typeof line !== "string" || line.trim() !== "")

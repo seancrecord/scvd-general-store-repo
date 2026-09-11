@@ -27,6 +27,7 @@
 
 import "dotenv/config";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, appendFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { privateKeyToAccount } from "viem/accounts";
 import * as ed25519 from "@noble/ed25519";
@@ -55,6 +56,7 @@ import {
   ruleCheck,
   screenAddress,
   summarize,
+  targetRequest,
   transferFromLog,
   typedData,
 } from "./lib/walkabout.mjs";
@@ -262,6 +264,15 @@ function priorRunThisWeek(week) {
 async function walk(flags) {
   if (!flags.targets) fail("walk needs --targets <file> (see: derive)");
   const targets = JSON.parse(readFileSync(flags.targets, "utf8"));
+  // Every target's request is decided before the first one is sent, so
+  // a bad method on the last door refuses the run instead of half of it.
+  for (const target of targets) {
+    try {
+      targetRequest(target);
+    } catch (error) {
+      fail(`${typeof target === "string" ? target : target?.url}: ${error.message}`);
+    }
+  }
   const dryRun = Boolean(flags["dry-run"]);
   const caps = {
     perItemUsd: Number(flags["per-item"] ?? DEFAULT_CAPS.perItemUsd),
@@ -345,12 +356,16 @@ async function walk(flags) {
     const domain = hostOf(url);
     if (!domain) continue;
     attempts += 1;
+    const request = targetRequest(target);
     const entry = {
       kind: "attempt",
       ts: new Date().toISOString(),
       url,
       domain,
-      method: "GET",
+      method: request.method,
+      ...(request.body !== undefined
+        ? { request_body: request.body, request_body_sha256: createHash("sha256").update(request.body).digest("hex") }
+        : {}),
       ua_sent: UA,
       web_bot_auth: material ? "local_seed" : signDesk.password ? "signing_desk" : false,
       signing_desk_failures: signDesk.failures,
@@ -358,9 +373,20 @@ async function walk(flags) {
     };
     let phase = "client";
     try {
-      const headers = { "User-Agent": UA, Accept: "application/json", ...(await signedHeaders(material, url)) };
+      const headers = {
+        "User-Agent": UA,
+        Accept: "application/json",
+        ...(request.contentType ? { "Content-Type": request.contentType } : {}),
+        ...(await signedHeaders(material, url)),
+      };
       phase = "transport";
-      const first = await fetch(url, { method: "GET", headers, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+      const first = await fetch(url, {
+        method: request.method,
+        body: request.body,
+        headers,
+        redirect: "manual",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
       const firstBody = await first.text();
       entry.status = first.status;
       entry.response_headers = headersRecord(first.headers);
@@ -441,7 +467,13 @@ async function walk(flags) {
       entry.payment_submitted = true;
       phase = "transport";
       const second = await submitWithinBudget({ ...chosen, domain }, state, caps, () =>
-        fetch(url, { method: "GET", headers: paidHeaders, redirect: "manual", signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }));
+        fetch(url, {
+          method: request.method,
+          body: request.body,
+          headers: paidHeaders,
+          redirect: "manual",
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        }));
       const secondBody = await second.text();
       entry.paid_status = second.status;
       entry.paid_response_headers = headersRecord(second.headers);
