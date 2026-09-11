@@ -96,6 +96,18 @@ jobs:
       # this job does not want.
       - name: The examples
         run: npm run examples:test
+      # THE SPACE (2026-09-11): the Hugging Face verifier Space's tool
+      # module, held to the door's contract with a fake transport.
+      # Python's stdlib only — Gradio is the Space's dependency, not
+      # this job's, and the app is only compiled here.
+      - name: The verifier Space
+        run: npm run space:test
+      # THE LISTINGS' OFFLINE HALF (2026-09-11): the Agent Finder drawer,
+      # the findability table and the manifests other tools read, held
+      # to server.json and plugin.json. Node's runner, no network; the
+      # Saturday workflow runs the live half.
+      - name: The listings, offline
+        run: npm run listings:test
       # THE PACKAGES (roadmap C5): scvd-preflight, scvd-corpus-client,
       # scvd-defects and scvd-mcp-starter, each zero-dependency, each
       # tested on Node's own runner against a server that is not the

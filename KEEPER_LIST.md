@@ -964,6 +964,39 @@ Do not relitigate without you.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
+- **Hugging Face: the verifier Space is built; the push is yours
+  (2026-09-11).** `spaces/scvd-x402-verifier/` — Gradio, `mcp_server=True`,
+  five read-only tools fronting `/mcp/verifier`, nothing paid
+  reachable, no secret held; launched locally and its MCP schema
+  listed the five. Three commands and the token scope (fine-grained,
+  that one Space, an expiry) in `registry/huggingface/README.md`,
+  under the `keeper-scvd` namespace that already holds the corpus
+  dataset. Afterwards, the hf-discover read to file beside 09-06's
+  zero.
+
+- **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
+  submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
+  it points at the full `/mcp` door and sits in review. The open
+  risk there is unchanged: the scan lists six `buy_*` tools and
+  OpenAI's guideline bars digital commerce. If the review objects,
+  the resubmission is the five-tool verifier already served at
+  `/mcp/verifier` — the same door the Hugging Face Space wraps.
+
+- **Docker's MCP catalog: the one registry press left (2026-09-11).**
+  The findability walk (`npm run findability:check`) found every
+  file-shaped signal filled, and Smithery already lists the store
+  (your word, 09-11). Docker's catalog takes a PR to
+  `docker/mcp-registry` with a `server.yaml` naming the remote
+  endpoint `https://scvd.store/mcp`; their template is in that repo's
+  CONTRIBUTING, and remote servers are accepted if the form still
+  offers the option when you look. Lists the door, does not host it.
+
+- **The WAF rule, paste-ready (2026-09-11).** You said block them.
+  `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`: the exact expression,
+  the one toggle NOT to press, and what to watch for a week. A test
+  holds every name in the expression to the roster robots.txt
+  welcomes.
+
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
   2026-09-06 with the store skill alone; no review as of 09-11. Its

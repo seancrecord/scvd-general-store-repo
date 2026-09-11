@@ -99,6 +99,10 @@ const DELIBERATELY_QUIET: Record<string, string> = {
     "an ownership challenge, not a capability: the OpenAI plugin submission portal fetches this fixed path at the origin root to check we control the MCP host, and it answers only while OPENAI_APPS_CHALLENGE is set (store/site-verification.ts). Unlike the two below it stays up for the life of the listing, because OpenAI asks that a host's token not be removed while a plugin uses it",
   "/:file{[a-f0-9]{32}\\.txt}":
     "an ownership challenge, not a capability: IndexNow (Bing's change-notification protocol, 2026-09-02) fetches /{key}.txt at the root (the root since 2026-09-03: a key vouches only for its own directory and below) to verify that a ping came from whoever controls the origin, and it answers only while INDEXNOW_KEY is set. No agent chooses to read a key that proves we are us; the six surfaces are where agents read, and the pages the ping announces are already on the sitemap",
+  "/.well-known/tdmrep.json":
+    "the training position robots.txt already states (Content-Signal), in the W3C TDM Reservation Protocol's grammar for the European mining crawlers that read only that fixed path; derived from the same constant, so listing it would advertise a second copy of one line",
+  "/ai.txt":
+    "the training position robots.txt already states, in Spawning's ai.txt grammar for the crawlers that read only that fixed path; derived from the same constant as Content-Signal and /.well-known/tdmrep.json",
   "/.well-known/ai-plugin.json":
     "a legacy shape of /openapi.json, which every surface lists: the ChatGPT plugin manifest OpenAI retired in 2024, served (2026-09-10) because crawlers still fetch this fixed path and found a 404. It names no door the contract does not; listing it would advertise two doors that are one",
   "/.well-known/owners.json":
