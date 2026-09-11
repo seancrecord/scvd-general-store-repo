@@ -395,8 +395,10 @@ describe("the guard, before money moves", () => {
       { headers: buying },
     );
     expect(response.status).toBe(400);
-    const error = String(((await response.json()) as { error: string }).error);
-    expect(error).toContain("would otherwise read as 'no cap declared'");
+    const body = await response.json() as Record<string, unknown>;
+    expect(body).toMatchObject({ code: "bad_request", charged: false, input_field: "declared_cap_usdc" });
+    const error = String(body.error);
+    expect(error).toContain("complete finite positive decimal");
     expect(error).toContain("Nothing charged");
   });
 

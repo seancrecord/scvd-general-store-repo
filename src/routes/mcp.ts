@@ -802,7 +802,7 @@ async function callPurchaseTool(
   const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args), { deferAvailability: true });
   // Reuse the authenticated, read-only recovery lane when a retained purchase
   // predates this destination policy. A fresh payment still gets the refusal.
-  const retained = refusal && ["callback_refused", "target_refused"].includes(String(refusal.body.code)) && paymentMeta
+  const retained = refusal && ["callback_refused", "target_refused", "bad_request"].includes(String(refusal.body.code)) && paymentMeta
     ? await recoverSignedPurchase(c.env, typeof paymentMeta === "string" ? decodePaymentHeader(paymentMeta) : paymentMeta,
       { path: `/api/buy/${item.id}`, door: "mcp", digest: await jsonBodyDigest(args) })
     : null;

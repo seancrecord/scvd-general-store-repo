@@ -372,6 +372,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
         if (state.order.order_id !== seed.order_id || state.order.cert_id !== seed.cert_id) return null;
         if (mutation?.kind === "acknowledge") state.order.acknowledged_at = mutation.at;
         if (mutation?.kind === "complete") {
+          if (state.order.commission && !mutation.proof) return null;
+          if (mutation.proof) state.order.completion_proof = mutation.proof;
+          else delete state.order.completion_proof;
           state.order.status = "completed";
           state.order.deliverable = mutation.deliverable;
           state.order.completed_at = mutation.at;

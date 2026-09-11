@@ -1,9 +1,10 @@
+import { clipCodePoints } from "@/lib/unicode";
 import { retainPersonalRecord, publishPersonalRecord, mutatePersonalRecord, type PersonalPurchase } from "@/services/personal-goods";
 import { listKeys } from "@/lib/kv-list";
 import { newConfessionId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { sanitizeText } from "@/lib/sanitize";
+import { NAME_CAP } from "@/lib/sanitize";
 import type { ConfessionRecord, ConfessionStatus, Env } from "@/types";
 
 /**
@@ -30,11 +31,11 @@ export async function hearConfession(
   const prepared = await retainPersonalRecord(purchase, () => {
     const record: ConfessionRecord = {
       id: newConfessionId(),
-      confession: confessionText.slice(0, CONFESSION_CAP),
+      confession: clipCodePoints(confessionText, CONFESSION_CAP),
       status: "pending_review",
       date: purchase?.purchasedAt ?? new Date().toISOString(),
     };
-    const name = sanitizeText(signAs, 80);
+    const name = clipCodePoints(signAs ?? "", NAME_CAP);
     if (name && name.toLowerCase() !== "anonymous") {
       record.sign_as = name;
     }
