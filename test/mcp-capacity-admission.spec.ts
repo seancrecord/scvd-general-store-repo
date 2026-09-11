@@ -1,3 +1,5 @@
+import { COMMISSION_ITEM_ID, COMMISSION_RUNGS } from "@/store/commission-desk";
+import { decodePaymentRequired } from "./helpers/payment";
 import { beforeEach, expect, it, vi } from "vitest";
 const fault = vi.hoisted(() => ({ truncated: false }));
 vi.mock("@/lib/kv-list", async (original) => {
@@ -59,7 +61,7 @@ for (const menu of labor) for (const door of ["mcp", "mcp-standard"] as const) {
       const http = await sendLabor(item.id, "http", args, paying ? payment : undefined, crypto.randomUUID());
       expect(http.refused).toBe(true);
       expect(http.quote).toBe(false);
-      expect(http.body).toMatchObject({ open_orders: count, cap });
+      expect(http.body).toMatchObject({ code: "capacity_unavailable", charged: false, open_orders: count, cap });
       expect(transfers).toBe(0);
     });
   }
@@ -73,8 +75,12 @@ it("MCP discovery describes unavailable capacity and a safe next step", async ()
   expect(purchases.length).toBeGreaterThan(0);
   for (const tool of purchases) {
     const refusal = (tool.errors as Obj[]).find(error => error.code === "capacity_unavailable");
-    expect(refusal).toMatchObject({ jsonrpc: -32000, charged: false });
-    expect(String(refusal?.what_to_do)).toMatch(/original payment/i);
+    const ids = [tool.itemId, ...(Array.isArray(tool.itemIds) ? tool.itemIds : [])];
+    const humanShelf = ids.some(id => MENU_ITEMS.some(item => item.id === id && item.fulfillment === "human_queue"));
+    if (humanShelf) {
+      expect(refusal).toMatchObject({ jsonrpc: -32000, charged: false });
+      expect(String(refusal?.what_to_do)).toMatch(/original payment/i);
+    } else expect(refusal).toBeUndefined();
   }
 });
 
@@ -85,3 +91,24 @@ for (const kind of ["house", "unknown"] as const) it(`machine shelves stay avail
   }
   expect(transfers).toBe(0);
 });
+
+for (const network of laborNetworks()) for (const kind of ["item", "house", "unknown"] as const) for (const paying of [false, true]) {
+  it(`commission ${network} ${kind} ${paying ? "signed" : "unpaid"}: capacity refusal is machine-readable`, async () => {
+    const id = crypto.randomUUID(), rung = COMMISSION_RUNGS[0], now = new Date();
+    const row = { id, description: `SCVD-E2E-${id}`, contact: "fixture@example.com", date: now.toISOString(),
+      offer_usdc: rung, status: "quoted", quote_usdc: rung, quote_window_hours: 72, quoted_at: now.toISOString(),
+      quote_expires_at: new Date(now.getTime() + 86400000).toISOString(), quote_note: "Original scope" };
+    await sourceEnv.ORDERS.put(KV_KEYS.commissionRequest(id), JSON.stringify(row));
+    const path = `/api/commission/pay/${rung}?commission=${id}`;
+    const quote = await request(path); expect(quote.status).toBe(402);
+    const payment = await signLabor(decodePaymentRequired(quote).accepts.find(o => o.network === network)!);
+    const { count, cap } = await fillQueue(labor.find(item => item.id === COMMISSION_ITEM_ID)!, kind);
+    const verifies = facilitator.verifyCalls;
+    const refused = await request(path, paying ? { headers: { "PAYMENT-SIGNATURE": btoa(JSON.stringify(payment)), "Idempotency-Key": crypto.randomUUID() } } : undefined);
+    expect(refused.status).toBe(503);
+    expect(await refused.json()).toMatchObject({ code: "capacity_unavailable", charged: false, open_orders: count, cap });
+    expect(facilitator.verifyCalls - verifies).toBe(paying ? 1 : 0);
+    expect(transfers).toBe(0);
+    expect((await sourceEnv.ORDERS.list({ prefix: KV_KEYS.orderPrefix })).keys).toHaveLength(count);
+  });
+}

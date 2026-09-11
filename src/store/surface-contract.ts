@@ -163,6 +163,16 @@ export function securityBlock(
  */
 export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
+    code: "callback_refused", http: 400, charged: false,
+    means: "the supplied completion callback is malformed or violates the public https destination policy",
+    what_to_do: "Use a public https URL on port 443 without credentials or this store's hostname, or omit callback_url and poll the order URL. Retain the original payment to retrieve an older purchase.",
+  },
+  {
+    code: "capacity_unavailable", http: 503, charged: false,
+    means: "the human-work queue is full, or its count could not be completed; no new payment or order was accepted",
+    what_to_do: "Read open_orders/cap and return when capacity is available. Keep the original payment and key to retrieve an existing purchase without needing a new slot.",
+  },
+  {
     code: "payment_identity_unavailable",
     http: 503,
     charged: false,
@@ -351,6 +361,13 @@ export type RpcRefusal = {
 );
 
 export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
+  {
+    code: "callback_refused",
+    jsonrpc: -32602,
+    charged: false,
+    means: "invalid completion callback; no charge",
+    what_to_do: "Use public https:443, no credentials or own host; or omit callback_url and poll the order URL.",
+  },
   {
     code: "bad_request",
     jsonrpc: -32602,

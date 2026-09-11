@@ -19,7 +19,15 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
 
-**24/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
+**30/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
+
+## Completion-callback, target and capacity evidence — 2026-09-11
+
+BUY-029/030/031/032/033/036 are repaired together. Unsafe supplied human-order callbacks fail before a new quote or verification and are rechecked before dispatch. Redirects are not followed; outcomes and the no-automatic-retry policy are visible through HTTP and MCP polling beside the completed goods. Own-host aliases are normalized. HTTP catalogue and commission capacity refusals carry the same machine-readable no-charge facts as MCP. The URL policy does not resolve DNS or claim protection against DNS rebinding.
+
+Older authenticated payments still retrieve their retained original goods when today's destination policy would refuse a new purchase. Tests cover both human products, every checkout rail and both MCP profiles, legacy/managed callback records, all affected probe targets and capacity refusals. No live payment, completion callback or human order was sent.
+
+Validation: **12,268 passed across 658 files**, one existing key-continuity skip, zero failures; 2,357.86 seconds. All 1,367 source/test/config hashes matched before and after the full run. **509 regression failures** were observed with the corresponding source fixes removed. Typecheck, both Worker bundles, native startup, audit, claims and docs checks passed. BUY-002's broader HTTP quote policy and BUY-035's atomic capacity reservations remain separate PRs.
 
 ## Recovery SEV-1 status
 
@@ -57,13 +65,13 @@ These are tested repair mechanisms, not production-customer inventory or live-re
 - [ ] **BUY-025 — P1: completed human work is not verifiably bound to the brief** — open.
 - [ ] **BUY-026 — P1: character cuts damage Unicode in signed fields and badges** — open.
 - [ ] **BUY-027 — P1: malformed optional observation constraints are billed** — open.
-- [ ] **BUY-029 — P1: an invalid callback silently disappears after payment** — open.
-- [ ] **BUY-030 — P1: a trailing-dot own hostname bypasses the purchase refusal** — open.
-- [ ] **BUY-031 — P1: paid human callbacks skip destination validation** — open.
-- [ ] **BUY-032 — P1: callback redirects are not confined to approved destinations** — open.
-- [ ] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — open.
+- [x] **BUY-029 — P1: an invalid callback silently disappears after payment** — complete: Supplied human-order callbacks are validated before quotes or payment; malformed values cannot disappear silently. See the completion-callback evidence below.
+- [x] **BUY-030 — P1: a trailing-dot own hostname bypasses the purchase refusal** — complete: Probe purchases compare canonical own hostnames, including case and trailing DNS root dots. See the completion-callback evidence below.
+- [x] **BUY-031 — P1: paid human callbacks skip destination validation** — complete: Human completion callbacks are validated at admission and again before dispatch. See the completion-callback evidence below.
+- [x] **BUY-032 — P1: callback redirects are not confined to approved destinations** — complete: Completion callbacks use manual redirects; no redirect destination is followed. See the completion-callback evidence below.
+- [x] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — complete: HTTP order polling and MCP check_order expose callback outcomes, retrieval and the no-automatic-retry policy. See the completion-callback evidence below.
 - [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
-- [ ] **BUY-036 — P2: capacity refusal explains itself only in prose** — MCP now returns capacity_unavailable, charged:false and open_orders/cap; HTTP/commission refusal fields remain open.
+- [x] **BUY-036 — P2: capacity refusal explains itself only in prose** — complete: HTTP catalogue and commission capacity refusals return capacity_unavailable, charged:false and their counts, matching MCP. See the completion-callback evidence below.
 - [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (merged).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.
 

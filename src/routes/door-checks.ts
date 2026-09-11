@@ -1,3 +1,7 @@
+import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
+import { decodePaymentHeader } from "@/lib/decline-diagnosis";
+import { httpArtifactDigest } from "@/lib/artifact-checkpoint";
+import { signedRecoveryResponse } from "@/lib/payment-gate";
 /**
  * THE DOOR CHECKS — every refusal a paid door can give before money
  * moves, in the order it gives them (2026-09-05, the doors Worker).
@@ -260,6 +264,8 @@ export const capacityCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       return c.json(
         {
           error: verdict.reason,
+          code: "capacity_unavailable",
+          charged: false,
           open_orders: verdict.open,
           cap: verdict.cap,
           machine_shelves: `${c.env.STORE_BASE_URL}/menu.json`,
@@ -361,6 +367,14 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ? await checkPurchaseArgs(c.env, item, args, { deferAvailability: true })
     : await checkPurchaseInputSafety(c.env, item, args);
   if (refusal) {
+    // A new destination rule cannot confiscate already-paid work. This
+    // authenticates retained goods only; it never runs a callback or settles.
+    if (isBuying(c) && ["callback_refused", "target_refused"].includes(String(refusal.body.code))) {
+      const recovered = await recoverSignedPurchase(c.env,
+        decodePaymentHeader(c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT")),
+        { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
+      if (recovered) return signedRecoveryResponse(c, recovered);
+    }
     c.set("inputRefusal", refusal.body);
     return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);
   }

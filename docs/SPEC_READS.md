@@ -1,5 +1,18 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-11 — Completion callback destinations and redirects
+
+Read Cloudflare's [Request runtime API](https://developers.cloudflare.com/workers/runtime-apis/request/)
+and [Fetch runtime API](https://developers.cloudflare.com/workers/runtime-apis/fetch/).
+An outgoing request defaults to following redirects; manual mode returns the
+redirect response without contacting its destination. Completion callbacks now
+use manual mode and record the refused redirect while retaining the goods.
+The shared probe policy checks the supplied URL, including public-address
+literals, credentials, port and canonical own hostname. It does not resolve DNS
+or establish protection against DNS rebinding. Local fixtures observe the
+requested redirect mode and the destinations reached; they are not live edge
+egress or public DNS measurements. No payment or callback went to a live buyer.
+
 ## 2026-09-10 — compact package readers and release preparation
 
 Read the live `/corpus/index.json?limit=1` response at 14:49 UTC and the

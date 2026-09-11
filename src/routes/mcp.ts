@@ -1,3 +1,6 @@
+import { decodePaymentHeader } from "@/lib/decline-diagnosis";
+import { recoverSignedPurchase } from "@/services/signed-purchase-recovery";
+import { signedRecoveryOutcome } from "@/lib/mcp-payment";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { freeA2ACheck } from "@/lib/a2a-admission";
 import { readPurchaseStatus } from "@/services/purchase-intent";
@@ -797,7 +800,13 @@ async function callPurchaseTool(
    */
   const missing = missingRequiredInputs(item, args);
   const refusal = await checkPurchaseArgs(c.env, item, toolArgs(args), { deferAvailability: true });
-  if (refusal) {
+  // Reuse the authenticated, read-only recovery lane when a retained purchase
+  // predates this destination policy. A fresh payment still gets the refusal.
+  const retained = refusal && ["callback_refused", "target_refused"].includes(String(refusal.body.code)) && paymentMeta
+    ? await recoverSignedPurchase(c.env, typeof paymentMeta === "string" ? decodePaymentHeader(paymentMeta) : paymentMeta,
+      { path: `/api/buy/${item.id}`, door: "mcp", digest: await jsonBodyDigest(args) })
+    : null;
+  if (refusal && !retained) {
     const paying = paymentMeta !== undefined && paymentMeta !== null;
     /**
      * THE LOCKED DOOR, on this door's terms. The HTTP door quotes a
@@ -941,7 +950,7 @@ async function callPurchaseTool(
     const unavailable = await admitPurchase();
     if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message, unavailable.details);
   }
-  const outcome = await runMcpPayment(
+  const outcome = retained ? signedRecoveryOutcome(retained) : await runMcpPayment(
     c.env,
     item.id,
     paymentMeta,
