@@ -158,3 +158,19 @@ credit offer is his to rule and not yet ruled, and that the §7 read
 is unchecked here and will be answered either way.
 
 The 402 at their door is not retried, and no key goes in the runtime.
+
+### The exchange (2026-09-11)
+
+One real artifact each way, the day the entry reached main. Marcus
+verified `cert_et6zuesrrn` against our published key with a stock
+library; we verified his receipt `e851b71a…0329d799` the same way, key
+resolved by its own `notary_fp`, signature and hash chain reproduced,
+and one binding that did not reproduce and went back to him as a
+question. The receipt, the keyring, the check and its output are in
+`research/treaty-exchange-2026-09-11/`.
+
+The key offer was declined on 2026-09-11 (keeper's ruling): a key skips
+the 402, so it cannot verify the fix it was offered for. His door is
+`POST /notary/commit` at $0.10, body `{agent, claim}`; the walkabout
+runner learned per-target method and body for it (PR #647), and the
+walk is the keeper's one-time press at his own override words.

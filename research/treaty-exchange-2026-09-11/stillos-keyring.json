@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "purpose": "Historical public-key registry for notary receipt verification (core/proof_endpoint.cjs). Public keys only, never private material. Lets old receipts keep verifying across a future key rotation by resolving each receipt's own notary_fp field against the key that was active when it was signed, instead of always checking against whatever key is current.",
+    "current_active_fingerprint": "21de066900082465",
+    "successor_status": "N/A - rotation complete 2026-07-31T00:09:13.684Z",
+    "created": "2026-07-19"
+  },
+  "keys": [
+    {
+      "fingerprint": "921e3af51250a1f5",
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAsFIB67A7w7j7oLHjuJeErxMpq2VTZyUXD2785nbgqMM=\n-----END PUBLIC KEY-----\n",
+      "status": "retired",
+      "effective_from": "2026-06-27T08:39:51.304Z",
+      "effective_until": "2026-07-31T00:09:13.684Z",
+      "rotation_receipt_hash": null,
+      "successor_fingerprint": "21de066900082465"
+    },
+    {
+      "fingerprint": "21de066900082465",
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEARz4QMQCVd+ImBqd3YmkIA3NYd857O+5dAWNhY7V2ryk=\n-----END PUBLIC KEY-----\n",
+      "status": "active",
+      "effective_from": "2026-07-31T00:09:13.684Z",
+      "effective_until": null,
+      "rotation_receipt_hash": null,
+      "successor_fingerprint": null
+    }
+  ],
+  "how_to_use": "Each receipt carries its own notary_fp. Resolve that fingerprint against this keys[] array (by fingerprint) to get the exact public_key_pem active when it was signed -- do NOT assume the CURRENT key (or whatever /health returns right now) is correct for a receipt signed under a prior key. Verify entirely offline: recompute receipt_hash, then crypto.verify(null, Buffer.from(receipt_hash), resolved_public_key_pem, Buffer.from(signature,\"base64\"))."
+}

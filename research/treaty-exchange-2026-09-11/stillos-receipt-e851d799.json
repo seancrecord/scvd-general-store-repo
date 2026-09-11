@@ -1,0 +1,23 @@
+{
+  "found": true,
+  "hash_intact": true,
+  "signature_valid": true,
+  "receipt": {
+    "agent": "stillos-treaty-exchange",
+    "claim_sha256": "84310abb469fe44cbafe0710fafad24e204f94e262e48cb1df97bf961f4b60a6",
+    "ts": "2026-09-11T18:41:23.322Z",
+    "prev_hash": "99e755c9755ad3576285215c1d2bc51b28befd8facdf21f599de467899044189",
+    "notary_fp": "21de066900082465",
+    "resolver_hash": "bf2745000f131406241ce0897f72ce055166f23d2c99a220b1d0dfa1806a0729",
+    "receipt_hash": "e851b71a766ba7cffd0ad8a1c42e0a23549b1de62ff158388e976a3c0329d799",
+    "signature": "L0RBEIHXkb5K+x4TbmTYsujQkmUFggEgJH7LNb4EkXwwPcEHL3jJ6/d+4fO0Ak1+70OT3cv70uaUCpkEq4dLBQ==",
+    "verify": "https://stillosdigitalholdings.com/notary/verify?hash=e851b71a766ba7cffd0ad8a1c42e0a23549b1de62ff158388e976a3c0329d799",
+    "attestation_type": "resolved_verdict",
+    "authoritative": true,
+    "proves": "This claim was resolved against an external ground-truth source (see resolver_type / settles_against in the sealed verdict object). The verdict, not the claim alone, is what carries evidentiary weight.",
+    "actor_class": "INTERNAL_SYSTEM",
+    "classification_reason": "no X-Forwarded-For header — this port is unreachable externally except via Caddy, which always sets it; absence proves local origin",
+    "confidence": "HIGH",
+    "source_ip_hash": null
+  }
+}
