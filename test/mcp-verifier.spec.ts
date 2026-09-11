@@ -42,6 +42,10 @@ describe("the porch counts this door", () => {
     await rpc("tools/list");
     await rpc("tools/call", { name: "get_defect_definition", arguments: {} });
     await rpc("tools/call", { name: "buy_observation", arguments: {} });
+    // The porch write is deferred past the response and, since
+    // 2026-09-11, goes through the counter ledger before it reaches
+    // KV; give the last one a beat to land, as the porch suite does.
+    await new Promise((resolve) => setTimeout(resolve, 50));
     const after = await readPorchLedger(testEnv);
     expect(after.surfaces["mcp-verifier:tools/list"]?.["organic:mcp"]).toBe(listBefore + 1);
     expect(after.surfaces["mcp-verifier:tool:get_defect_definition"]?.["organic:mcp"]).toBe(toolBefore + 1);

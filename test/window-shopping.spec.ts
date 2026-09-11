@@ -76,6 +76,10 @@ describe("per-item window shopping", () => {
     // middleware rather than after the 404.
     const response = await SELF.fetch(`${BASE}/menu/not_a_real_item`);
     expect(response.status).toBe(404);
+    // The porch write is deferred past the response and, since
+    // 2026-09-11, goes through the counter ledger before it reaches
+    // KV; give the last one a beat to land, as the porch suite does.
+    await new Promise((resolve) => setTimeout(resolve, 50));
     const porch = await readPorchLedger(testEnv);
     const invented = Object.keys(porch.surfaces).filter(
       (surface) =>
