@@ -9,6 +9,13 @@ The corpus dataset, uploaded by the keeper on 2026-09-03:
 (the `keeper-scvd` namespace). Its card carries the concept DOI; the
 store's Dataset nodes carry its URL as `sameAs`.
 
+Also there since 2026-09-11, pushed by CV before the Space code
+reached `main`: `spaces/keeper-scvd/scvd-general-store`, a static
+Space (`sdk: static`, tag `agent-skill`) carrying a copy of
+`SKILL.md` that is already one version stale — it lacks the postcard
+rule. Not the shape hf-discover indexes, and a copy that drifts. The
+desk row recommends deleting it; `FOR_CV_2026-09-11.md` §2 says why.
+
 ## What hf-discover indexes, and why the Space is shaped this way
 
 hf-discover — Hugging Face's Agentic Resource Discovery service — reads

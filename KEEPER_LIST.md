@@ -964,15 +964,21 @@ Do not relitigate without you.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **Hugging Face: the verifier Space is built; the push is yours
-  (2026-09-11).** `spaces/scvd-x402-verifier/` — Gradio, `mcp_server=True`,
-  five read-only tools fronting `/mcp/verifier`, nothing paid
-  reachable, no secret held; launched locally and its MCP schema
-  listed the five. Three commands and the token scope (fine-grained,
-  that one Space, an expiry) in `registry/huggingface/README.md`,
-  under the `keeper-scvd` namespace that already holds the corpus
-  dataset. Afterwards, the hf-discover read to file beside 09-06's
-  zero.
+- **RULE: delete the static Space CV pushed, then push the real one
+  (2026-09-11, evening).** `spaces/keeper-scvd/scvd-general-store`
+  went up as a STATIC Space tagged `agent-skill` — before the Gradio
+  Space's code had reached `main`, because #630 merged at its
+  docs-only head and the code rode the commits after. Its `SKILL.md`
+  is already stale: 2 KB short of `main`'s, missing the postcard rule,
+  a safety instruction. hf-discover indexes neither `agent-skill`
+  Spaces nor anything without an MCP endpoint. Recommendation: delete
+  it (Settings → Delete this Space); a stale copy of a safety line
+  under our name is a false claim, and it carries nothing the store
+  does not serve. Then, once the findability PR merges, CV pushes
+  `spaces/scvd-x402-verifier/` as `keeper-scvd/scvd-x402-verifier`
+  per `registry/FOR_CV_2026-09-11.md` §2. If you keep the static one
+  instead, its `SKILL.md` must be re-uploaded from `main` on every
+  `SKILL_VERSION` bump, by hand, forever.
 
 - **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
   submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
