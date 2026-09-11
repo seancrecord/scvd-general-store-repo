@@ -3,7 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { getPaymentStack } from "@/lib/payments";
 import { purchaseIdentity, purchaseIntentStore } from "@/services/purchase-intent";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { idempotencyScope, idempotentPurchaseStore } from "@/lib/idempotency";
+import { idempotencyScope, idempotentPurchaseStore, jsonBodyDigest } from "@/lib/idempotency";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, sendLabor, transfers } from "./helpers/labor-admission";
 import { call, items, shelves, object, testEnv, sourceEnv, request, NOW } from "./helpers/buyer-harness";
 import { evmBuyer, solBuyer } from "./helpers/buyer-signed-payments";
@@ -99,7 +99,10 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
       await runDurableObjectAlarm(p.stub);
       const original = object(JSON.parse((await p.stub.existingPurchase())!));
       await dropCache();
-      const surface = await idempotencyScope(door === "http" ? new URL(p.item.buy_url, "https://scvd.store").pathname : `mcp:buy_${p.item.id}`, new URLSearchParams(door === "http" ? p.args : { item_id: p.item.id, ...p.args }));
+      // The MCP door's arguments are its body: the surface carries their canonical digest, not a query.
+      const surface = door === "http"
+        ? await idempotencyScope(new URL(p.item.buy_url, "https://scvd.store").pathname, new URLSearchParams(p.args))
+        : await idempotencyScope(`mcp:buy_${p.item.id}`, new URLSearchParams(), await jsonBodyDigest({ item_id: p.item.id, ...p.args }));
       const slot = await idempotentPurchaseStore(sourceEnv, surface, p.payer, p.key);
       // Reset the isolate, retaining durable state. A module Map cannot pass.
       expect(await slot.readIdempotentPurchase()).toBe(p.id);

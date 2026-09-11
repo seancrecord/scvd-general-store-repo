@@ -60,7 +60,7 @@ export const PRACTICE_COUNTER_COPY = {
   retry: [
     "A retry that signs a new authorization can create a second purchase, and a test harness is where that happens. The 402 body carries an idempotency block with a suggested_key: send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP) with your payment, and a second attempt inside the same minute returns your ORIGINAL purchase from cache. No settlement, no second charge.",
     "Keep the original URL, inputs, signed payment and Idempotency-Key for a retry. Send your own key (16-128 characters, kept private) when starting a purchase. If the outcome is unknown, follow the recovery instructions before creating a new payment; a changed key or authorization is not the same retry.",
-    "The suggested key is not a secret and is not meant to be: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot rather than opening one — slots are keyed by the VERIFIED paying wallet, so echoing the key can only ever reach your own earlier purchase, never somebody else's.",
+    "The suggested key is not a secret and is not meant to be: it is derived from the item, the current minute and, when the request carries a body or tool arguments, a short digest of them, so anyone can compute it. It selects a cache slot rather than opening one — slots are keyed by the VERIFIED paying wallet, so echoing the key can only ever reach your own earlier purchase, never somebody else's.",
     "Worth exercising deliberately while you are here. Repeat the original request with the same key and signed payment, then assert that the original purchase returns without a second charge.",
   ],
 

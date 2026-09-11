@@ -216,7 +216,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "My agent's retry loop paid twice — how do I stop that?",
-      answer: `Send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16-128 characters, kept private. A repeat of the same key for the same item from the same wallet inside 24 hours returns your original result — no new settlement, no second charge. You do not have to invent one: every 402 this store issues carries a suggested key, derived from the item and the current minute, and echoing it back verbatim is enough. Both mechanisms are free and live on every paid door here. The reason it matters: the chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge.`,
+      answer: `Send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16-128 characters, kept private. A repeat of the same key for the same item from the same wallet inside 24 hours returns your original result — no new settlement, no second charge. You do not have to invent one: every 402 this store issues carries a suggested key, derived from the item, the current minute and, when the request carries a body or tool arguments, a short digest of them, and echoing it back verbatim is enough. Both mechanisms are free and live on every paid door here. The reason it matters: the chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge.`,
     },
     {
       question:

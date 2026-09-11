@@ -58,7 +58,7 @@ export const STANDARDS_POSTURE = {
     you_do_not_have_to_invent_a_key:
       "Every 402 carries an idempotency.suggested_key an agent can echo back verbatim, because a client cannot send a header it does not know exists. It is stable for 60 seconds — a value that changed on every fetch would be useless to a retry loop that re-fetches the challenge each pass — and a retry straddling that boundary is still matched against the previous minute's value.",
     the_suggested_key_is_public_on_purpose:
-      "It is derived from the item and the current minute, so anyone can compute it. That is safe because it is a BUCKETING function rather than an authentication one: it selects a cache slot and does not open one. Slots are keyed by the payer the facilitator verified as having SIGNED, so echoing a key can only ever return your own earlier purchase — a stranger who computes it still needs your private key.",
+      "It is derived from the item, the current minute and, when the request carries a body or tool arguments, a short digest of them, so anyone can compute it. That is safe because it is a BUCKETING function rather than an authentication one: it selects a cache slot and does not open one. Slots are keyed by the payer the facilitator verified as having SIGNED, so echoing a key can only ever return your own earlier purchase — a stranger who computes it still needs your private key.",
     never_required:
       "A client sending its own key has it honoured as-is; a client sending none is charged normally. Nothing in this mechanism can refuse a sale.",
     why_it_exists:
