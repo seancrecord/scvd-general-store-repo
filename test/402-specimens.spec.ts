@@ -1,10 +1,10 @@
+import { installBuyerHarness, request as quoteRequest } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { getMenuItem } from "@/store";
 import { EVIDENCE_TOOLS_SOURCE } from "@/store/evidence-tools";
 import verifierReadme from "../verifier/README.md?raw";
-beforeAll(() => installFacilitatorMock());
+installBuyerHarness();
 
 it("the payment challenge links the same unsigned specimen as the item page", async () => {
   const response = await SELF.fetch("https://scvd.store/api/buy/service_audit?url=https%3A%2F%2Fexample.com%2Fpay");
@@ -31,7 +31,7 @@ it.each([
   ["luckies", "visual_preview", ""],
   ["opening_day", "shared_component", "?url=https%3A%2F%2Fexample.com%2Fpay"],
 ])("%s describes the actual kind of free example", async (item, kind, query) => {
-  const response = await SELF.fetch(`https://scvd.store/api/buy/${item}${query}`);
+  const response = await quoteRequest(`https://scvd.store/api/buy/${item}${query}`);
   expect(response.status).toBe(402);
   const body = await response.json() as { sample: { kind: string; live_observation: boolean } };
   expect(body.sample.kind).toBe(kind);

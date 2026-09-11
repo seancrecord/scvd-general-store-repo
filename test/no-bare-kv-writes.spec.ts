@@ -67,6 +67,18 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     // Durable local transaction, committing the watch manifest and its signed rows.
     'await txn.put("watch", { value: withoutEntries(selected), count: entries.length } satisfies WatchJournal);',
   ],
+  "/src/services/labor-reservations.ts": [
+    // Reviewed DurableObjectTransaction writes: admission, linkage and release.
+    'await txn.put(closedKey(order.order_id), true);',
+    'await txn.put(legacyKey(order.order_id), { order_id: order.order_id, item_id: order.item_id, created_at: order.created_at, status: order.status } satisfies LegacyLabor);',
+    'await txn.put("capacity:initialized", true);',
+    'await txn.put(baselineKey, { counter, ids: [...ids] });',
+    'await txn.put(weekKey(proposed), proposed);',
+    'await txn.put(reservationKey(purchaseId), proposed);',
+    'await txn.put(openKey(purchaseId), proposed);',
+    'await txn.put(reservationKey(purchaseId), { ...row, state: "not_settled" });',
+    'await txn.put(reservationKey(row.purchase_id), value);',
+  ],
   "/src/services/paid-recovery.ts": [
     'await txn.put("idempotent-purchase", purchaseId);',
     // One storage transaction commits the refund claim, resolution, and lookup.
@@ -77,7 +89,7 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("purchase", { ...current, delivery });',
     'await txn.put("purchase", { ...latest, reconciliation: update.reconciliation });',
     'await txn.put("purchase", proposal);',
-    'await txn.put("purchase", { ...prior, ...update });',
+    'await txn.put("purchase", next);',
     'await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);',
     'await txn.put("attempt", { ...prior, response });',
     'await txn.put("artifact", record);',
@@ -144,8 +156,7 @@ describe("the Durable Object exception does not exempt KV aliases", () => {
   });
 
   it("still catches new aliases in the recovery service, including one named txn", () => {
-    const path = "/src/services/paid-recovery.ts";
-    for (const line of [
+    for (const path of ["/src/services/paid-recovery.ts", "/src/services/labor-reservations.ts"]) for (const line of [
       'await kv.put("receipt", value);',
       'await txn.put("receipt", value);',
       'namespace.put("receipt", value);',

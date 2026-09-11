@@ -869,6 +869,20 @@ const BASE = "https://scvd.store";
 // with only llms.ts restored to the prior commit, the prior digest
 // reproduced in the run that caught this edit, and this copy
 // reproduces the new one.
+// 2026-09-10: the trust-list paragraph carries the third relation — the
+// treaty count beside transacted and used, the version number it prints
+// moving from 1 to 2, and the sentence that a treaty entry points at the
+// other operator's own statement. Verified the same way: with the prose
+// and the trust-list modules restored from HEAD in an isolated run the
+// prior digest matched exactly, and this copy reproduces the new one.
+// 2026-09-11: the first treaty entry landed, so the count the paragraph
+// prints moved from 0 to 1 with no prose change. The 09-10 pin was taken
+// on the same tree with the roster empty and reproduced exactly before
+// the entry was added; this copy reproduces the new one.
+// 2026-09-11, merge: the idempotency-key sentence (main) and the
+// treaty paragraph with its count of one (this branch) land together;
+// each was pinned alone against its own parent, and this pin is the
+// guide with both in it.
 // 2026-09-11: the menu section names the Agent Skills discovery index
 // at /.well-known/agent-skills/index.json and the digested SKILL.md
 // copies beneath it (three guide lines; Cloudflare's readiness scan had
@@ -876,8 +890,12 @@ const BASE = "https://scvd.store";
 // only llms.ts restored to the prior commit, the prior digest
 // reproduced in the run that caught this edit, and this copy
 // reproduces the new one.
+// 2026-09-11, merge: the skills-index lines (this branch) and the
+// treaty count of one with the idempotency-key sentence (main) land
+// together; each was pinned alone against its own parent, and this pin
+// is the guide with both in it.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5c9f9842611c58c7c0b85b4d94e6c25df88628335a1ddc7048f6de0b3029a174";
+  "1faa12b688c1c10d33668034220286ef0d775c49552d5975dbe23581acee63c9";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

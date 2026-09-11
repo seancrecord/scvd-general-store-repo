@@ -106,7 +106,7 @@ describe("the routable manifest", () => {
     const resources = manifest["resources"] as Entry[];
     const spot = resources.find((r) => r.resourceUrl.endsWith("/api/buy/spot_check"));
     expect(spot).toBeDefined();
-    const live = await SELF.fetch(`${BASE}/api/buy/spot_check`);
+    const live = await SELF.fetch(`${BASE}/api/buy/spot_check?host=example.com`);
     expect(live.status).toBe(402);
     const header = live.headers.get("PAYMENT-REQUIRED");
     const challenge = JSON.parse(atob(header ?? "")) as {

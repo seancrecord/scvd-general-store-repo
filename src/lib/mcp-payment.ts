@@ -537,6 +537,7 @@ export async function runMcpPayment(
   const verifiedExtensionsForSettle = result.declaredExtensions;
   let alreadySettled: SettledPayment | null = null;
   let recoveryHandle: Record<string, unknown> | undefined;
+  let purchasedAt: string | undefined;
   let deliveryKey: string | null = null;
 
   const settle = async (): Promise<SettledPayment> => {
@@ -545,6 +546,7 @@ export async function runMcpPayment(
       terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
       request: askedFor ?? "{}", item: getMenuItem(itemId), idempotency });
     recoveryHandle = purchaseRecovery(env, purchase);
+    purchasedAt = purchase.created_at;
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
     // Same one-retry-on-5xx as the HTTP door: the MCP till must not
@@ -754,6 +756,7 @@ export async function runMcpPayment(
       : {}),
     settle,
     purchaseRecovery: () => recoveryHandle,
+    purchaseCreatedAt: () => purchasedAt,
   };
   return {
     kind: "authorized",

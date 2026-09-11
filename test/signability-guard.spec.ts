@@ -1,17 +1,18 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 import { MENU_ITEMS } from "@/store/menu";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 // Without the mock the SDK validates our offered networks against a
 // facilitator that is not there, and route construction fails before
 // any challenge exists to inspect.
 beforeAll(() => {
-  installFacilitatorMock();
+
 });
 
 /**
@@ -41,7 +42,7 @@ describe("every priced door's 402 stays signable", () => {
     const inspected: string[] = [];
 
     for (const item of pricedItems) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       // 503 is a door honestly not selling right now — the shuttered
       // human-labor shelf, the capacity bench, a launch check with no
       // field wallet in this deployment. Those issue no envelope to

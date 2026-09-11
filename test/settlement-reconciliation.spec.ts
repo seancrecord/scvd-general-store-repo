@@ -402,11 +402,13 @@ describe("the guard, before money moves", () => {
     expect(error).toContain("Nothing charged");
   });
 
-  it("still quotes a price to anyone who only asks, per the probe rule", async () => {
+  it("refuses a bare purchase before issuing payment terms", async () => {
     const response = await SELF.fetch(
       `${BASE_URL}/api/buy/settlement_reconciliation`,
     );
-    expect(response.status).not.toBe(400);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ charged: false, input_field: "tx_hash" });
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
   it("publishes the required hash and warns about the declared cap in the schema itself", async () => {

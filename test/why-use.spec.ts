@@ -60,7 +60,7 @@ describe("why_use", () => {
   });
 
   it("rides the 402 challenge, where the decision actually gets made", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/context_anchor`);
+    const response = await SELF.fetch(`${BASE}/api/buy/context_anchor?summary=Fixture+session+state`);
     expect(response.status).toBe(402);
     const body: unknown = await response.json();
     if (!isRecord(body) || !isRecord(body.spec)) throw new Error("no spec");

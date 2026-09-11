@@ -458,6 +458,8 @@ export interface OrderRecord {
   completion_proof?: import("@/services/human-order-proof").HumanOrderProof;
   /** This order's mutable state is coordinated; KV is its listing projection. */
   managed_order?: true;
+  /** Internal link to the atomic labor reservation, never a status credential. */
+  labor_purchase_id?: string;
   order_id: string;
   item_id: string;
   item_name: string;

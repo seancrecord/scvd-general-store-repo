@@ -1301,8 +1301,23 @@ Do not relitigate without you.
   registration fee; their adoption signals exclude
   captive wallets, so the buys cannot flatter the
   grade. Their grade is still not ours. LOOK your books.
-- **Receipt treaty.** Ask is drafted
-  (`docs/RECEIPT_TREATY_ASK.md`). Send is your hand.
+- **Receipt treaty — the first entry landed (09-11).** StillOS
+  Notary answered the drafted ask unprompted in issue #622
+  (09-10). You read their statement on the 11th; it names
+  our origin, key URL and verify URL and says what the issue
+  said. Their origin is now the first treaty entry on
+  `/trust-list.json` (v2), citing their statement URL,
+  keyring and verify template. The reply went back on the
+  issue on your word. One hand left:
+  1. RULE — their offer of credit on a key after our house
+     wallet's bad 402 at their door. A key in the runtime is
+     what they said they would not accept either; the wallet
+     law's blanks are still open. Decline, or hold. Not a
+     code task.
+  Not your hand: their §7 claim on x402 #3220/#3376 (the
+  binding table keyed on signature scheme, populated from
+  `accepted.scheme`) is a spec read for the desk, unchecked
+  here — the PR text was outside the session's reach.
 - **Key succession.** Gate is physical: a second seed,
   not beside the first. `PROBLEMS.md` #1. We cannot
   check it from here.

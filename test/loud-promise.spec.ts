@@ -1,10 +1,11 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { env, SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { markKeeperSeen } from "@/services/shutter";
 import { MENU_ITEMS } from "@/store";
 import type { Env } from "@/types";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 /**
@@ -19,7 +20,7 @@ const BASE = "https://scvd.store";
  */
 describe("the refund promise is loud where it matters", () => {
   beforeAll(async () => {
-    installFacilitatorMock();
+
     // The human shelf shutters when the keeper hasn't been seen; a
     // fresh test KV has never seen him. Open the store first.
     await markKeeperSeen(env as unknown as Env);
@@ -42,7 +43,7 @@ describe("the refund promise is loud where it matters", () => {
     );
     expect(humanItems.length).toBeGreaterThan(0);
     for (const item of humanItems) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       expect(response.status).toBe(402);
       const body = (await response.json()) as Record<string, unknown>;
       const promise = String(body["refund_promise"] ?? "");
@@ -59,7 +60,7 @@ describe("the refund promise is loud where it matters", () => {
   it("stays out of instant items' 402s, where there is no window to miss", async () => {
     const instant = MENU_ITEMS.find((item) => item.fulfillment === "instant");
     expect(instant).toBeDefined();
-    const response = await SELF.fetch(`${BASE}/api/buy/${instant?.id}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${instant?.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === instant!.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["refund_promise"]).toBeUndefined();

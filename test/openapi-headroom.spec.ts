@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { openapiRoutes } from "@/routes/openapi";
+import { openapiRoutes, PAYMENT_CHALLENGE_HEADERS } from "@/routes/openapi";
 import { A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import { SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
 
@@ -46,4 +46,20 @@ describe("OpenAPI headroom with all checkout rails enabled", () => {
       expect(expand(paths[path]![method]!.responses[status]!.content["application/json"]!.schema, document)).toEqual(schema);
     }
   });
+});
+
+it("preserves each paid challenge header through its OpenAPI reference", async () => {
+  const response = await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails);
+  const document = await response.json() as Record<string, unknown>;
+  const paths = document.paths as Record<string, Record<string, Record<string, unknown>>>;
+  let checked = 0;
+  for (const item of Object.values(paths)) for (const operation of Object.values(item)) {
+    if (!operation || !operation["x-payment"]) continue;
+    const responses = operation.responses as Record<string, { headers: Record<string, unknown> }>;
+    for (const [name, schema] of Object.entries(PAYMENT_CHALLENGE_HEADERS)) {
+      expect(expand(responses["402"]!.headers[name], document)).toEqual(schema);
+    }
+    checked++;
+  }
+  expect(checked).toBeGreaterThan(20);
 });

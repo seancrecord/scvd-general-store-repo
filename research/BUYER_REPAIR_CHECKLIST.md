@@ -19,7 +19,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
 
-**37/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
+**39/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
 
 ## Completion-callback, target and capacity evidence — 2026-09-11
 
@@ -35,6 +35,18 @@ Validation: **12,851 passed across 666 files**, 1 existing skip, zero failures. 
 
 The signatures establish correspondence to the accepted commission and exact text, not the quality of human research. Legacy acceptance is never backdated. No live payment, buyer callback or human order was sent.
 
+## HTTP input validation and free discovery evidence — 2026-09-11
+
+Validation: **13,152 passed across 667 files**, 1 existing skip, zero failures. All 1,511 frozen source/test/config hashes matched after the full run. Typecheck, both Worker bundles, native startup and the remaining CI compatibility gates passed. 156 initial missing-input regressions failed before the input-policy fix; the retained missing-input ask test separately failed before preserving its observation. The final suite covers 300 new input-policy cases plus the shared-header regression.
+
+External scanners must adopt the free discovery contract themselves; the store does not invent example buyer inputs to obtain quotes. Refused missing-input asks remain visible without usable payment terms. No live payment, buyer callback or human order was sent.
+
+## Atomic human-capacity reservation evidence — 2026-09-11
+
+Validation: the full suite reported **13,292 passed across 672 files**, 1 existing skip and one sample-link timeout. The unchanged sample-artifact rerun passed all 13 tests; its link walk completed in 338 ms. Timeout limits and test coverage were unchanged. There are no reproducible failures. All 1,518 frozen source/test/config hashes matched after the full run. Typecheck, both Worker bundles, native startup and the remaining CI compatibility gates passed. All 141 new reservation and refusal-status regressions were observed failing without their corresponding production fixes.
+
+Migration depends on the existing KV ledger projection. It does not establish absence of undiscoverable historical obligations or work still executing an older deployment. No live payment, buyer callback or human order was sent.
+
 ## Recovery SEV-1 status
 
 The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
@@ -47,7 +59,7 @@ These are tested repair mechanisms, not production-customer inventory or live-re
 
 ## Remaining findings
 
-- [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
+- [x] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — HTTP purchase inputs are validated before usable terms; free catalog and compact item contracts provide price discovery. Both Workers agree, and authenticated retained goods remain recoverable.
 - [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [x] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — complete for all four audited products: Spot Check, Provenance Check, Passport Refresh and Trust Profile carry independently verifiable observation envelopes beside their purchase certificates. See the proof-completion evidence below. Durable response-loss recovery remains BUY-017/037.
@@ -76,7 +88,7 @@ These are tested repair mechanisms, not production-customer inventory or live-re
 - [x] **BUY-031 — P1: paid human callbacks skip destination validation** — complete: Human completion callbacks are validated at admission and again before dispatch. See the completion-callback evidence below.
 - [x] **BUY-032 — P1: callback redirects are not confined to approved destinations** — complete: Completion callbacks use manual redirects; no redirect destination is followed. See the completion-callback evidence below.
 - [x] **BUY-033 — P2: buyers cannot see callback failure or its retry policy** — complete: HTTP order polling and MCP check_order expose callback outcomes, retrieval and the no-automatic-retry policy. See the completion-callback evidence below.
-- [ ] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — open.
+- [x] **BUY-035 — P1: concurrent buyers oversubscribe the last human slot** — One durable coordinator atomically reserves human capacity before settlement. Unknown payment retains its hold, definitive non-payment releases it, and completion preserves the original weekly sale.
 - [x] **BUY-036 — P2: capacity refusal explains itself only in prose** — complete: HTTP catalogue and commission capacity refusals return capacity_unavailable, charged:false and their counts, matching MCP. See the completion-callback evidence below.
 - [x] **BUY-038 — P1: MCP can claim no charge after paid response serialization fails** — fixed in `6b23454c`; PR #541 (merged).
 - [x] **BUY-039 — P1: discovery labels a paid delivery failure as unpaid** — fixed locally; commit 0b61e5fc; PR #540.

@@ -53,7 +53,7 @@ describe("the sold-out 409 says how, not only where", () => {
   it("carries the method and the body shape beside the URL", async () => {
     // The week's slot, taken: the shelf gate reads this counter.
     await testEnv.COUNTERS.put(inventoryKey, String(aura.weekly_inventory));
-    const response = await SELF.fetch(`${BASE}/api/buy/${aura.id}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${aura.id}?url=https://door.example/api/x`);
     expect(response.status).toBe(409);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["code"]).toBe("sold_out");
