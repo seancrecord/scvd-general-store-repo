@@ -167,6 +167,15 @@ What each rule became:
   Check runs.
 - **Rule 4** — one unpaid request, one paid request, per URL. No retry
   on any status. A configurable pause between doors (`--delay`, 750ms).
+  Since 2026-09-11 a target may name its `method` (GET or POST) and,
+  for POST, a `body` (string verbatim, or object as JSON); the same
+  request goes unpaid and paid, and the ledger records the method and
+  the body's sha256. Derived targets carry neither and walk as GET.
+  The first POST-only door (StillOS Notary's `/notary/commit`, issue
+  #622) answered a GET with a 402 status and a method_not_allowed body
+  — a true reading of the wrong question. A method the runner cannot
+  send, or a body on a GET, refuses the whole run before its first
+  request rather than walking half of it.
 - **Rule 5** — one JSONL line per attempt: timestamp, exact UA,
   headers, body verbatim (sha256 + a 2KB head above 8KB), the parsed
   terms, the screen result, both statuses, the receipt header, the tx

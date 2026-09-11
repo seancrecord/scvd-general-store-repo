@@ -24,6 +24,7 @@ import {
   ruleCheck,
   screenAddress,
   summarize,
+  targetRequest,
   transferFromLog,
   typedData,
 } from "./lib/walkabout.mjs";
@@ -566,4 +567,28 @@ test("the reconciliation CLI refuses a wrong chain or a scan window beyond the n
       assert.equal(existsSync(join(dir, "reconciliation.json")), false);
     } finally { await new Promise(resolve => server.close(resolve)); }
   }
+});
+
+test("a target walks as GET unless it says otherwise, and a POST carries its body both times", () => {
+  assert.deepEqual(targetRequest("https://door.example/x"), { method: "GET", body: undefined, contentType: undefined });
+  assert.deepEqual(targetRequest({ url: "https://door.example/x" }), { method: "GET", body: undefined, contentType: undefined });
+  assert.deepEqual(targetRequest({ url: "https://door.example/x", method: "post", body: { claim_hash: "ab" } }), {
+    method: "POST",
+    body: '{"claim_hash":"ab"}',
+    contentType: "application/json",
+  });
+  assert.deepEqual(targetRequest({ url: "https://door.example/x", method: "POST", body: "raw", content_type: "text/x-raw" }), {
+    method: "POST",
+    body: "raw",
+    contentType: "text/x-raw",
+  });
+  assert.deepEqual(targetRequest({ url: "https://door.example/x", method: "POST" }), { method: "POST", body: undefined, contentType: undefined });
+});
+
+test("a target the runner cannot send faithfully is refused, never guessed", () => {
+  // The money path fails closed: a method outside the two the runner
+  // knows, or a body on a GET, refuses before any request is made.
+  assert.throws(() => targetRequest({ url: "https://door.example/x", method: "PUT" }), /GET or POST/);
+  assert.throws(() => targetRequest({ url: "https://door.example/x", body: { a: 1 } }), /needs method POST/);
+  assert.throws(() => targetRequest({ url: "https://door.example/x", method: "GET", body: "" }), /needs method POST/);
 });
