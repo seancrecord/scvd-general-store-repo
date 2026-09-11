@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import { kvPut } from "@/lib/kv-retry";
+import { kvPut, withKvRetry } from "@/lib/kv-retry";
 import type { Env, PayerRecord } from "@/types";
 
 /**
@@ -264,7 +264,7 @@ export class CounterLedger extends DurableObject<Env> {
     if (this.counterValue(key) !== null) return;
     await this.ctx.blockConcurrencyWhile(async () => {
       if (this.counterValue(key) !== null) return;
-      const raw = await this.env.COUNTERS.get(key);
+      const raw = await withKvRetry(() => this.env.COUNTERS.get(key));
       const parsed = raw ? parseInt(raw, 10) : 0;
       const seeded = Number.isFinite(parsed) ? parsed : 0;
       this.schema().exec("INSERT OR IGNORE INTO counters (key, value) VALUES (?, ?)", key, seeded);
@@ -275,7 +275,7 @@ export class CounterLedger extends DurableObject<Env> {
     if (this.rowValue(key) !== null) return;
     await this.ctx.blockConcurrencyWhile(async () => {
       if (this.rowValue(key) !== null) return;
-      const raw = await this.env.COUNTERS.get(key);
+      const raw = await withKvRetry(() => this.env.COUNTERS.get(key));
       if (!raw) return;
       try {
         JSON.parse(raw);
@@ -304,7 +304,7 @@ export class CounterLedger extends DurableObject<Env> {
 
   private kvCounter(key: string, change: (value: number) => number): Promise<number> {
     return this.ctx.blockConcurrencyWhile(async () => {
-      const raw = await this.env.COUNTERS.get(key);
+      const raw = await withKvRetry(() => this.env.COUNTERS.get(key));
       const parsed = raw ? parseInt(raw, 10) : 0;
       const value = change(Number.isFinite(parsed) ? parsed : 0);
       await kvPut(this.env.COUNTERS, key, String(value));
@@ -317,7 +317,7 @@ export class CounterLedger extends DurableObject<Env> {
     change: (row: PayerRecord | null) => PayerRecord | null,
   ): Promise<PayerRecord | null> {
     return this.ctx.blockConcurrencyWhile(async () => {
-      const raw = await this.env.COUNTERS.get(key);
+      const raw = await withKvRetry(() => this.env.COUNTERS.get(key));
       let row: PayerRecord | null = null;
       if (raw) {
         try {
