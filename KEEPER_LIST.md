@@ -964,6 +964,45 @@ Do not relitigate without you.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
+- **RULE: delete the static Space CV pushed, then push the real one
+  (2026-09-11, evening).** `spaces/keeper-scvd/scvd-general-store`
+  went up as a STATIC Space tagged `agent-skill` — before the Gradio
+  Space's code had reached `main`, because #630 merged at its
+  docs-only head and the code rode the commits after. Its `SKILL.md`
+  is already stale: 2 KB short of `main`'s, missing the postcard rule,
+  a safety instruction. hf-discover indexes neither `agent-skill`
+  Spaces nor anything without an MCP endpoint. Recommendation: delete
+  it (Settings → Delete this Space); a stale copy of a safety line
+  under our name is a false claim, and it carries nothing the store
+  does not serve. Then, once the findability PR merges, CV pushes
+  `spaces/scvd-x402-verifier/` as `keeper-scvd/scvd-x402-verifier`
+  per `registry/FOR_CV_2026-09-11.md` §2. If you keep the static one
+  instead, its `SKILL.md` must be re-uploaded from `main` on every
+  `SKILL_VERSION` bump, by hand, forever.
+
+- **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
+  submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
+  it points at the full `/mcp` door and sits in review. The open
+  risk there is unchanged: the scan lists six `buy_*` tools and
+  OpenAI's guideline bars digital commerce. If the review objects,
+  the resubmission is the five-tool verifier already served at
+  `/mcp/verifier` — the same door the Hugging Face Space wraps.
+
+- **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
+  user-agent rule you pressed worked and, within the hour, an
+  agent-readiness scanner scored the store "Some agents blocked:
+  GPTBot, ClaudeBot, ChatGPT-User…" — scanners test that claim by
+  sending exactly those user-agents from their own IPs, which is
+  byte-identical to a spoofer. So the rule is re-scoped to the
+  PATHS the scan asks for (`/.aws/`, `/.env`, `api_keys`, `.key`,
+  `.pem`, `/stripe.json`, …), none of which is a substring of any of
+  the 345 routes the store serves, a test keeps it so, and a scanner
+  reading `/robots.txt` as GPTBot passes again. Edit the existing
+  rule's expression from `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`
+  (the first fenced block), re-run the scan, and it should read 2/2.
+  Then the one-week look around 2026-09-18 as before: the 4xx bill
+  moves to 403s, the 200s do not move.
+
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
   2026-09-06 with the store skill alone; no review as of 09-11. Its

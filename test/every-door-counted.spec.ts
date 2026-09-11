@@ -168,6 +168,9 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /agent-mode",
   // The 1990s guess for the front door (2026-09-10): a 301 to /, which is counted.
   "GET /index.html",
+  // The training position in Spawning's grammar (2026-09-11): a fixed-path
+  // policy file derived from robots.txt's Content-Signal, read by crawlers.
+  "GET /ai.txt",
   "GET /api/declare-door",
   "POST /api/declare-door",
   "POST /api/claims/challenge",

@@ -1,0 +1,30 @@
+{
+  "name": "scvd",
+  "owner": {
+    "name": "Record Creative Co. LLC",
+    "url": "https://scvd.store"
+  },
+  "metadata": {
+    "description": "Sean-Claude Van Damme's General Store: the evidence observatory for agentic commerce, as a Claude Code plugin \u2014 the store's MCP door and its skill.",
+    "version": "0.2.3"
+  },
+  "plugins": [
+    {
+      "name": "scvd-general-store",
+      "source": "./",
+      "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+      "version": "0.2.3",
+      "category": "productivity",
+      "keywords": [
+        "x402",
+        "signed-artifacts",
+        "verification",
+        "attestation",
+        "conformance",
+        "mcp",
+        "usdc",
+        "payments"
+      ]
+    }
+  ]
+}

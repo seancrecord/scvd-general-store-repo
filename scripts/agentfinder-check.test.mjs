@@ -120,6 +120,22 @@ test("a skill entry points at a SKILL.md that exists in this repository, on main
   }
 });
 
+test("a plugin entry points at the Claude Code plugin manifest and names its capabilities", () => {
+  const plugins = entries().filter(({ entry }) => entry.mediaType === "application/vnd.github.copilot-plugin");
+  assert.equal(plugins.length, 1);
+  const [{ name, entry }] = plugins;
+  assert.equal(entry.metadata.sourceSet, REPO);
+  assert.equal(entry.metadata.repoPath, ".claude-plugin/plugin.json");
+  assert.ok(existsSync(join(ROOT, entry.metadata.repoPath)), "the plugin manifest must exist");
+  assert.equal(entry.url, `https://github.com/${REPO}/blob/main/${entry.metadata.repoPath}`);
+  assert.equal(entry.identifier, `urn:ai:github.com:${REPO.replace("/", ":")}:${name.replace(/\.json$/, "")}`);
+  // Not a canvas: it carries the capability tags the catalog reserves for real plugins.
+  assert.ok(entry.tags.includes("mcp-server") && entry.tags.includes("skill"));
+  assert.ok(!entry.tags.includes("canvas-only"));
+  const manifest = JSON.parse(readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8"));
+  assert.ok(entry.description.startsWith(manifest.description), `${name}: description must open with the manifest's own sentence`);
+});
+
 test("the MCP entry repeats server.json, never a hand-typed copy of it", () => {
   const mcp = entries().filter(({ entry }) => entry.mediaType === "application/mcp-server+json");
   assert.equal(mcp.length, 1, "one MCP entry: the store; the tab joins when its registry version catches up");
