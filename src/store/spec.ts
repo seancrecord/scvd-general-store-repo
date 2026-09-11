@@ -3,7 +3,7 @@
  * 2026-07-23). Registrar-plain by doctrine: every figure true or
  * absent, no adjectives, no claims a signature can't back.
  */
-import { BLESSINGS } from "@/store/blessings";
+import { BLESSINGS, BLESSING_SEASONS } from "@/store/blessings";
 import { RETIRED_KEYS } from "@/store/key-registry";
 
 /**
@@ -506,7 +506,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
-    `One blessing slip from a ${BLESSINGS.length}-slip jar, never the same slip twice in a row, delivered instantly.`,
+    `One blessing slip from a ${BLESSINGS.length}-slip jar filled in ${BLESSING_SEASONS.length} seasons so far, never the same slip twice in a row, delivered instantly.`,
   daily_fortune:
     "The day's fortune, deterministic for the calendar date (UTC) and delivered instantly with fortune_date beside it: every buyer today reads the same line, tomorrow's buyers read the next. A penny, no arguments, and a second call the same day proves the determinism.",
   the_confession:

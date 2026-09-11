@@ -122,6 +122,10 @@ export interface OfficePageData {
    * the kind of claim this store spends its time refusing.
    */
   takeReadAt?: string | null;
+  /** Whether every bump goes through the counter ledger on this deployment. */
+  countersSerialized?: boolean;
+  /** The hourly raise's last pass: when, and how many counters it lifted. */
+  lastRaise?: { at: string; raised: number } | null;
   /** Settle counters against payer rows, all-time on both sides. */
   reconciliation: SettleReconciliation | null;
   /**
@@ -287,12 +291,23 @@ function trendHtml(ledger: MonthLedger): string {
  * it. All three are on this page on purpose; this box says which one
  * to believe.
  */
-function howToReadTheMoneyHtml(takeReadAt: string | null): string {
+function howToReadTheMoneyHtml(
+  takeReadAt: string | null,
+  serialized: boolean,
+  lastRaise: { at: string; raised: number } | null,
+): string {
+  const tallyState = serialized
+    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), so a burst of a thousand sales lands as a thousand.`
+    : `<strong style="color:#8c2f1b">This deployment has no counter ledger binding, so bumps are back on KV read-add-write and a burst can lose counts.</strong>`;
+  const raiseState = lastRaise
+    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.`
+    : `No raise has run on this deployment yet.`;
   return `<div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
-    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. When they disagree, the certificates win.</strong></p>
+    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
     <ol style="margin:0;padding-left:1.4em">
-      <li><strong>Certificates</strong> — one per sale, minted when it settled. A certificate cannot go missing the way a tally can. <em>The take</em> below and <a href="/admin/buyers">the buyers page</a> count these. <strong>This is the true number.</strong></li>
-      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. A tally that can miss a count when sales land seconds apart, and is never higher than the truth. A missed count does not come back on its own; the payer rows have a repair button on the buyers page, the storefront's count has none yet.</li>
+      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> below and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
+      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. ${tallyState} Every hour the raise lifts any counter still short of its records (organic only, never lowered), so these go up to where they belong on their own. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
+        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise every short counter to its records now</button></form></li>
       <li><strong>The take on this desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
     </ol>
   </div>`;
@@ -922,7 +937,7 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
-    ${howToReadTheMoneyHtml(data.takeReadAt ?? null)}
+    ${howToReadTheMoneyHtml(data.takeReadAt ?? null, data.countersSerialized ?? false, data.lastRaise ?? null)}
     ${
       data.take
         ? `${takeSectionHtml(data.take, data.allTime)}

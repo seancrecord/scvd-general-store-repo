@@ -91,6 +91,12 @@ export interface Env {
   DESVELA_REGISTRY_SECRET?: string;
   GUESTBOOK: KVNamespace;
   COUNTERS: KVNamespace;
+  /**
+   * The serialized counter ledger (services/counter-ledger.ts). Optional
+   * so a preview upload before its migration keeps working on the old
+   * KV read-add-write; when present, every bump goes through it.
+   */
+  COUNTER_LEDGER?: DurableObjectNamespace<import("@/services/counter-ledger").CounterLedger>;
   PATRONS: KVNamespace;
   /**
    * The corpus's object store (2026-08-19, the R2 graduation the
