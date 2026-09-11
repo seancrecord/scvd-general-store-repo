@@ -262,6 +262,15 @@ in TASKS.md.
 
 ## Part E — the cross-protocol re-read, 2026-08-30. THE PART B GATE IS RE-POSED, NOT RE-RULED.
 
+**When a second protocol lights (2026-09-11 note).** Every paid
+operation in `openapi.json` declares `x-payment-info.protocols`,
+the discovery shape AgentCash, x402scan and mppscan share, and today
+it reads `[{ x402: {} }]`. The day MPP or any other protocol becomes
+payable here, add its object to that array in `paidOp()`
+(`src/routes/openapi.ts`); `test/openapi-discovery-shape.spec.ts`
+pins the array to exactly `[{ x402: {} }]` and will fail until it is
+updated, so the reminder is a test, not a memory.
+
 Part B ruled MPP to WAIT-AND-SEE on 2026-08-04 and named its own two
 reopening conditions: a named counterparty asking to pay that way, OR
 the scheme showing up as ecosystem-adopted in drift data. A full read
