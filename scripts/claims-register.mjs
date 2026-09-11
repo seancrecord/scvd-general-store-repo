@@ -253,6 +253,35 @@ export const REGISTER = [
    * repeat it as asOf so the resolution carries the date a reader
    * was promised. Re-taking the observation means buying again.
    */
+  /*
+   * THE REDEMPTION GAS FIGURES (2026-09-11). Both are readings of ONE
+   * transaction on Base, named in the sentence itself, so a reader who
+   * doubts either can fetch the receipt and recompute rather than
+   * taking the page's word. That is the strongest binding a claim
+   * about money gets here: not our ledger, not our memory, a hash.
+   *
+   * The gas UNITS are a fact of the transaction and do not drift. The
+   * fee in dollars does drift, with the base fee and the ETH price,
+   * which is exactly why the sentence tells the reader to multiply it
+   * out themselves instead of quoting a number that will quietly go
+   * stale on the page.
+   */
+  {
+    id: "bounty.redemption.gas-observed",
+    file: "src/routes/bounties.ts",
+    match: "One redemption of ours used 92,332 gas",
+    resolution: "external",
+    asOf: "2026-09-11",
+    why: "gasUsed from the receipt of 0xa59a9232267f5dcad1b07ae58e0f063a8777e7eeab75cff9d0e2d8287d7f381e on Base, read from mainnet.base.org. The hash is in the sentence; the number is recomputable by anyone, and the dollar figure beside it is explicitly handed back to the reader to derive.",
+  },
+  {
+    id: "bounty.redemption.third-party-submitter",
+    file: "src/routes/bounties.ts",
+    match: "We have seen this work without arranging it.",
+    resolution: "external",
+    asOf: "2026-09-11",
+    why: "The same receipt: a USDC Transfer log moving 0.10 to the walker, in a transaction whose sender is a different address and whose `to` is Multicall3. An observation of what the chain shows, named as not arranged, not endorsed and not verified by us.",
+  },
   {
     id: "neighbours.clinic.per-line-price",
     file: "src/store/neighbours.ts",

@@ -131,8 +131,53 @@ function workedWalk(base: string) {
         note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing.`,
       },
     ],
+    redeeming_without_gas: REDEEMING_WITHOUT_GAS,
   };
 }
+
+/**
+ * "I HAVE NO GAS" — THE QUESTION STEP 4 LEFT HANGING (2026-09-11).
+ *
+ * A visitor wrote to ask whether this store offers a gas-sponsored
+ * redemption route, or knows a relayer whose fee is under the reward.
+ * Their venture held no funded Base account at all. Step 4 said the
+ * authorization "is submittable by anyone" in a single clause and left
+ * every practical consequence of that clause unwritten, so the
+ * question was fair and the page owed an answer.
+ *
+ * TWO THINGS ARE TRUE AND THEY ARE OFTEN CONFUSED. The COST of
+ * redeeming is nearly nothing. Having a BALANCE AT ALL is a
+ * precondition you cannot buy your way out of with a small number.
+ * A wallet with zero ETH cannot send a transaction that costs a
+ * hundredth of a cent any more than one that costs ten dollars. The
+ * letter asked about fees; the blocker is the balance.
+ *
+ * WHAT THIS STORE WILL NOT DO, stated so nobody has to infer it: we
+ * sponsor no gas, run no relayer, and broadcast nothing. That is the
+ * same property that makes the reward safe — the store never holds
+ * your money and never needs your key — and it is not a gap we are
+ * planning to close. Saying "not offered" is a cleaner answer than
+ * inventing a service we would then have to keep running.
+ *
+ * WHAT WE CAN DO IS POINT AT THE CHAIN, which is the whole business:
+ * a reward of ours was redeemed by a third party's transaction, and
+ * the walker paid no gas themselves. That is an observation, not an
+ * endorsement, and it is named here with its hash so a reader checks
+ * it rather than believing us.
+ */
+const REDEEMING_WITHOUT_GAS = {
+  does_the_store_sponsor_gas: "No. The store holds no gas, runs no relayer and broadcasts nothing — the same design that means it never holds your money and never needs your key. A reward is a signed authorization, and sending it is yours.",
+  what_it_actually_costs:
+    "One redemption of ours used 92,332 gas (transaction 0xa59a9232267f5dcad1b07ae58e0f063a8777e7eeab75cff9d0e2d8287d7f381e, Base). At the base fee in force that day the fee was a small fraction of one cent — under two percent of the $0.10 reward it released. Multiply the gas by the current base fee yourself rather than trusting that figure; the point is the order of magnitude, not the number.",
+  the_real_blocker:
+    "Cost is not what stops a wallet with nothing in it. Any transaction needs a non-zero balance, however cheap it is, so a walker holding only USDC — or only some other chain's coin — cannot send the redemption at all. This is a bootstrapping problem, not a pricing one, and reading it as a pricing one sends you looking for a cheaper relayer when what you need is any submitter.",
+  why_that_is_survivable:
+    "transferWithAuthorization is a BEARER instrument: the signature authorises a transfer from the store's wallet to YOUR address, and the transaction carrying it may be sent by any address at all. Whoever submits it pays the gas and cannot redirect the money — the destination is inside the signed payload. So a submitter needs no trust from you beyond the gas they are spending.",
+  observed_in_the_wild:
+    "We have seen this work without arranging it. Transaction 0xa59a9232267f5dcad1b07ae58e0f063a8777e7eeab75cff9d0e2d8287d7f381e moved $0.10 of a bounty reward to the walker's address, and was submitted by a different address entirely, through the public Multicall3 contract at 0xcA11bde05977b3631167028862bE2a173976CA11. The walker spent no gas. We did not provide, arrange, endorse or verify that route, and we name no relayer as recommended — it is simply what the chain shows happened.",
+  if_you_still_cannot_send:
+    "The authorization does not rot before it expires, so a reward can wait while you fund an address. Nothing is lost by claiming first and redeeming later, as long as it is inside the window on the authorization. What the store will never do is hold the money for you in the meantime.",
+} as const;
 
 /**
  * ONE COPY OF THE BOARD'S WORDS for every face that serves them: the
