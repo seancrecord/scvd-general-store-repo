@@ -121,8 +121,12 @@ async function handToStore(
 export const handOverFirst: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!doorsReady(c.env)) return handToStore(c, "not-ready");
   if (paymentHeaderOf(c)) return handToStore(c, "paid");
-  // This admission reads an operator fixture and uses the store-owned rate limiter.
-  if (c.req.path.replace(/\/+$/, "") === "/api/buy/a2a_repair_kit" && new URL(c.req.url).searchParams.has("url")) return handToStore(c, "passed");
+  // These validations use store-only capabilities: the field wallet, or
+  // an operator fixture and its store-owned rate limiter. The doors Worker
+  // must not mistake a secret it never receives for a closed store shelf.
+  const itemPath = c.req.path.replace(/\/+$/, "");
+  if (["/api/buy/launch_check", "/api/buy/opening_day"].includes(itemPath) ||
+    (itemPath === "/api/buy/a2a_repair_kit" && new URL(c.req.url).searchParams.has("url"))) return handToStore(c, "passed");
   if (c.req.raw.body !== null && !c.req.raw.bodyUsed) {
     pristine.set(c.req.raw, c.req.raw.clone());
   }

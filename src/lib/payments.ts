@@ -540,10 +540,8 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         item_id: item.id,
         min_price_usdc: item.price_usdc,
         pricing: item.pricing,
-        // An unsigned request now gets the price even when the item
-        // needs input (the probe rule, buy.ts). Then the challenge has
-        // to say what to send, or the caller learns the requirement by
-        // being refused, which is worse manners than we keep.
+        // Repeat the validated input contract so the signed retry carries
+        // the same buyer request. Price-only discovery is in the free catalog.
         ...requiredParamsNote(item),
         /**
          * THE PROMISE, AT THE MOMENT OF DECISION (the Price Club
