@@ -37,7 +37,26 @@ or held; nothing settles. `npm run space:test` compiles it and runs
 launched locally with the MCP server on and its
 `/gradio_api/mcp/schema` listed the five tools by the door's names.
 
-## The press
+## The paywall, read 2026-09-11 evening
+
+Per the Hub's docs: "Static Spaces are free for everyone. Gradio and
+Docker Spaces run on compute and require a paid plan to create: PRO
+for personal accounts, Team or Enterprise for organizations. Free
+personal accounts in good standing can still host up to 2 Gradio
+Spaces running on ZeroGPU" — good standing meaning a verified email
+and an account older than 30 days. `keeper-scvd` was created
+2026-09-03, so it qualifies from 2026-10-03. The keeper's ruling is
+to wait; a reminder is scheduled for 2026-10-04. The push below is
+unchanged except for one click: at creation, SDK **Gradio**, hardware
+**ZeroGPU**. The app needs no GPU code; the `@spaces.GPU` decorator is
+optional and absent.
+
+The static Space CV pushed on 2026-09-11 (`keeper-scvd/scvd-general-store`,
+`sdk: static`, tag `agent-skill`) was the only free shape open to him
+and was deleted the same day: its `SKILL.md` was a version stale and
+hf-discover does not read that tag.
+
+## The press (from 2026-10-03)
 
 A **fine-grained** token, write on this one Space only, with an
 expiry — never the account token, never anything from this repo's

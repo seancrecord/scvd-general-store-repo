@@ -964,21 +964,21 @@ Do not relitigate without you.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **RULE: delete the static Space CV pushed, then push the real one
-  (2026-09-11, evening).** `spaces/keeper-scvd/scvd-general-store`
-  went up as a STATIC Space tagged `agent-skill` — before the Gradio
-  Space's code had reached `main`, because #630 merged at its
-  docs-only head and the code rode the commits after. Its `SKILL.md`
-  is already stale: 2 KB short of `main`'s, missing the postcard rule,
-  a safety instruction. hf-discover indexes neither `agent-skill`
-  Spaces nor anything without an MCP endpoint. Recommendation: delete
-  it (Settings → Delete this Space); a stale copy of a safety line
-  under our name is a false claim, and it carries nothing the store
-  does not serve. Then, once the findability PR merges, CV pushes
-  `spaces/scvd-x402-verifier/` as `keeper-scvd/scvd-x402-verifier`
-  per `registry/FOR_CV_2026-09-11.md` §2. If you keep the static one
-  instead, its `SKILL.md` must be re-uploaded from `main` on every
-  `SKILL_VERSION` bump, by hand, forever.
+- **Hugging Face: the Space waits for the account to turn 30
+  (2026-09-11, evening).** Read off the Hub's own docs after the
+  static Space came down: Gradio and Docker Spaces need a paid plan
+  (PRO, $9/mo) — only static Spaces are free — with one exception,
+  a free personal account older than 30 days may host two Gradio
+  Spaces on ZeroGPU. `keeper-scvd` was created 2026-09-03, so the
+  free route opens 2026-10-03. CV's static Space was the only free
+  shape available to him; taking it down was still right (its
+  `SKILL.md` was a version stale, missing the postcard rule, and the
+  `agent-skill` tag is not an index hf-discover reads). Your ruling:
+  wait, which is the recommendation — a reminder fires into the
+  session on 2026-10-04 with the steps (create the Space with SDK
+  Gradio, hardware ZeroGPU, paste the four files from
+  `spaces/scvd-x402-verifier/`, read the MCP schema, file the
+  hf-discover search). PRO now is the alternative if a month matters.
 
 - **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
   submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
