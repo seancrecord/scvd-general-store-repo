@@ -52,7 +52,7 @@ export function selfHost(env: Env): string {
   }
 }
 
-export async function readReferrerHosts(
+export async function readReferrerCensus(
   env: Env,
   month: string,
 ): Promise<Record<string, number>> {
@@ -81,7 +81,7 @@ export async function recordReferrerHost(
   if (!host) return false;
   const own = selfHost(env);
   if (own && (host === own || host.endsWith(`.${own}`))) return false;
-  const census = await readReferrerHosts(env, month);
+  const census = await readReferrerCensus(env, month);
   if (census[host] === undefined && Object.keys(census).length >= REFERRER_HOST_CAP) {
     census["other"] = (census["other"] ?? 0) + 1;
   } else {

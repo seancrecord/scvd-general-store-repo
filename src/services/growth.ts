@@ -12,7 +12,7 @@ import {
   type PorchLedger,
 } from "@/lib/metrics";
 import { porchSurfaceKind, type PorchSurfaceKind } from "@/lib/porch-surface";
-import { readReferrerHosts } from "@/lib/referrer-census";
+import { readReferrerCensus } from "@/lib/referrer-census";
 import { readBellRings } from "@/services/bell";
 import { derivedFromCorpus } from "@/services/corpus-list";
 import {
@@ -515,7 +515,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
           readMcpClients(env, month),
           readBountyLedger(env, month),
           readVerifyAge(env, month),
-          readReferrerHosts(env, month),
+          readReferrerCensus(env, month),
           readBellRings(env, month),
           readGrowthLog(env, month),
         ]);

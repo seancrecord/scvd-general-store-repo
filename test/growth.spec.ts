@@ -2,7 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { metricsMonth, monthsSinceOpening, readMonthLedger, recordPorchVisit, type PorchLedger } from "@/lib/metrics";
-import { REFERRER_HOST_CAP, readReferrerHosts, recordReferrerHost } from "@/lib/referrer-census";
+import { REFERRER_HOST_CAP, readReferrerCensus, recordReferrerHost } from "@/lib/referrer-census";
 import { readBellRings, ringBell } from "@/services/bell";
 import {
   computeGrowth,
@@ -79,7 +79,7 @@ describe("the two counters that were missing", () => {
     await recordPorchVisit(testEnv, "corpus", { referrer: "https://www.x402scan.com/resources/123?q=1" });
     await recordPorchVisit(testEnv, "corpus", { referrer: "https://scvd.store/menu" });
     await recordPorchVisit(testEnv, "corpus", { referrer: "not a url" });
-    const census = await readReferrerHosts(testEnv, metricsMonth());
+    const census = await readReferrerCensus(testEnv, metricsMonth());
     expect(census["www.x402scan.com"]).toBeGreaterThanOrEqual(1);
     expect(Object.keys(census).some((host) => host.includes("scvd.store"))).toBe(false);
     // The host, never the path: the query string is not ours to keep.
@@ -92,7 +92,7 @@ describe("the two counters that were missing", () => {
       expect(await recordReferrerHost(testEnv, `https://host-${i}.example/`, month)).toBe(true);
     }
     expect(await recordReferrerHost(testEnv, "https://one-too-many.example/", month)).toBe(true);
-    const census = await readReferrerHosts(testEnv, month);
+    const census = await readReferrerCensus(testEnv, month);
     expect(Object.keys(census)).toHaveLength(REFERRER_HOST_CAP + 1);
     expect(census["other"]).toBe(1);
     expect(census["one-too-many.example"]).toBeUndefined();
