@@ -88,11 +88,12 @@ export interface TrustListDealing extends TrustListEntryBase {
  * Revocable by either side unpublishing: the statement is re-read,
  * never cached as a promise, and `last_checked` says when.
  *
- * The roster is EMPTY UNTIL THE KEEPER HAS READ THE STATEMENT. The
- * first yes was reported in words this build environment could not
+ * AN ENTRY LANDS ONLY AFTER THE KEEPER HAS READ THE STATEMENT. The
+ * first yes was reported in words the build environment could not
  * check (its egress refused the host), and an entry for a URL nobody
  * here has opened would be the same wishful thinking counterparts.ts
- * refuses. The entry lands by his hand, dated the day he read it.
+ * refuses. So the first entry waited a day, and is dated the day he
+ * read it rather than the day they published.
  */
 export interface TrustListTreaty extends TrustListEntryBase {
   relation: "treaty";
@@ -147,6 +148,30 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
       "Probes what you submit and says how many endpoints actually answered. Ours came back three of six, which is how we found a real bug. A directory that disagrees with you is worth more than one that doesn't.",
     first_verified: "2026-07-27",
     last_checked: "2026-08-21",
+    status: "verified",
+  },
+  /**
+   * THE FIRST TREATY, landed 2026-09-11. StillOS Notary published
+   * their half on 2026-09-10 and told us in public the same day
+   * (issue #622); the keeper read the statement on the 11th and it
+   * says what the issue said: our origin, our key URL, our verify
+   * URL, and that a verified SCVD artifact is evidence of exactly
+   * what it attests and nothing more. Their statement carries its own
+   * removal policy (down on our request, no reason required) and its
+   * own reciprocity note (complete when we cite its URL — which this
+   * entry is). The three URLs below are theirs, copied from their
+   * statement, not inferred: the keyring resolves each receipt's own
+   * notary_fp against the key active when it was signed, so a
+   * rotation there never invalidates an artifact already honoured.
+   */
+  {
+    origin: "https://stillosdigitalholdings.com",
+    relation: "treaty",
+    statement_url: "https://stillosdigitalholdings.com/notary/trust?format=json",
+    verify_url: "https://stillosdigitalholdings.com/notary/r/{receipt_hash}",
+    key_url: "https://stillosdigitalholdings.com/notary/keyring",
+    first_verified: "2026-09-11",
+    last_checked: "2026-09-11",
     status: "verified",
   },
 ] as const;

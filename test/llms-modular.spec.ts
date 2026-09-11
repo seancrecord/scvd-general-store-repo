@@ -869,8 +869,12 @@ const BASE = "https://scvd.store";
 // other operator's own statement. Verified the same way: with the prose
 // and the trust-list modules restored from HEAD in an isolated run the
 // prior digest matched exactly, and this copy reproduces the new one.
+// 2026-09-11: the first treaty entry landed, so the count the paragraph
+// prints moved from 0 to 1 with no prose change. The 09-10 pin was taken
+// on the same tree with the roster empty and reproduced exactly before
+// the entry was added; this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "82c88d567d9df025f0e86e27a41b7e4543c9c1b7f9dc9def6bc909ffe565e9e3";
+  "594fe47ab14f3a9ac07f1bb992c88f39b8adba6f3b4e3962c28a6f25b5e4dd87";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

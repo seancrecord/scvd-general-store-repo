@@ -120,53 +120,41 @@ and carries a third relation, `treaty`, beside `transacted` and `used`:
   carries a paraphrase of their words: the list points, it does not
   quote.
 
-### What waits on the keeper
+### The entry (landed 2026-09-11)
 
-The entry. When he has opened their statement and it says what the
-issue says, this is the row, dated the day he read it:
+The keeper read their statement on 2026-09-11. It names our origin,
+our key URL, our verify URL template, and says in its own words what
+the issue said — with two things the issue did not carry: a
+`removal_policy` (the entry comes down on our request, no reason
+required) and a `reciprocity_note` (complete when the counterparty
+publishes a statement citing its URL). This entry is that citation:
 
 ```ts
 {
   origin: "https://stillosdigitalholdings.com",
   relation: "treaty",
   statement_url: "https://stillosdigitalholdings.com/notary/trust?format=json",
-  verify_url: null, // theirs; the issue did not give one
-  key_url: null,    // theirs; the issue did not give one
-  first_verified: "<the day he read it>",
-  last_checked: "<the same day>",
+  verify_url: "https://stillosdigitalholdings.com/notary/r/{receipt_hash}",
+  key_url: "https://stillosdigitalholdings.com/notary/keyring",
+  first_verified: "2026-09-11",
+  last_checked: "2026-09-11",
   status: "verified",
 }
 ```
 
-The two nulls are the gap in our half. The treaty as defined above
-runs both ways only when their artifacts verify somewhere we can
-point at; the issue describes a keyring resolving each receipt's own
-`notary_fp` and re-verification on every request, but names no key
-URL and no verify URL. The reply asks for both.
+The three URLs are theirs, copied from `signing_keys`,
+`verify_url_template` and the statement's own address. Their keyring
+resolves each receipt's `notary_fp` against the key active when it was
+signed, so a rotation there never invalidates an artifact already
+honoured; our list's freshness-dating covers the case where either
+statement is gone when re-read.
 
-### The reply, for the keeper's pen (issue #622)
+### The reply (sent 2026-09-11, on the keeper's word)
 
-> Marcus — yes. Read your note; the treaty relation is now built on
-> our side (/trust-list.json, version 2: a third relation beside
-> transacted and used, terms stated once, treaties counted apart, and
-> each entry pointing at the other operator's own statement URL rather
-> than restating it). Your entry lands the day I read your statement
-> myself; the build could not reach your host and the list does not
-> carry a URL nobody here has opened.
->
-> Two things I need from you for our half to run both ways: the URL
-> where your public key lives, and the URL where one of your receipts
-> verifies. The treaty as we wrote it is "artifacts signed by {their
-> published key} verify at {their verify URL}," and the issue gave
-> neither. Our entry will carry both, null until you say.
->
-> Domain corrected in the register. The bad 402 at your door is noted;
-> we won't retry on your account and we don't take a key in the
-> runtime, as you guessed. The §7 read on #3220/#3376 I have not
-> checked yet and will not pretend to have; it goes on the spec-watch
-> desk and you'll hear what we find, either way.
->
-> On the verifier that was quietly wrong: that is the argument, and
-> it is why the list only ever points at your words.
+Posted on issue #622 after he read the statement and said to send it.
+The text is in the issue; it says the entry exists and what it points
+at, that their two URLs made the ask for them unnecessary, that the
+credit offer is his to rule and not yet ruled, and that the §7 read
+is unchecked here and will be answered either way.
 
-Not sent. Sending is his hand.
+The 402 at their door is not retried, and no key goes in the runtime.
