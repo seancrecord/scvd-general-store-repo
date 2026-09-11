@@ -1,5 +1,6 @@
+import { installBuyerHarness, baseline, items, testEnv as quoteEnv } from "./helpers/buyer-harness";
 import { env } from "cloudflare:test";
-import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { app } from "@/index";
 import { MENU_ITEMS } from "@/store/menu";
 import { acceptedNetworks } from "@/lib/payment-networks";
@@ -7,17 +8,17 @@ import { verifyOwnJws } from "@/lib/offer-receipt";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { markKeeperSeen } from "@/services/shutter";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 
+installBuyerHarness();
 const base = "https://scvd.store";
 const receiver = "0x3333333333333333333333333333333333333333";
-const bindings = { ...env, POLYGON_PAY_TO: receiver, ARBITRUM_PAY_TO: receiver, WORLD_PAY_TO: receiver, SOLANA_PAY_TO: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE" } as unknown as Env;
+const bindings = { ...env, FIELD_WALLET_KEY: quoteEnv.FIELD_WALLET_KEY, POLYGON_PAY_TO: receiver, ARBITRUM_PAY_TO: receiver, WORLD_PAY_TO: receiver, SOLANA_PAY_TO: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE" } as unknown as Env;
 beforeAll(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-09-06T12:00:00Z"));
   await markKeeperSeen(bindings);
-  installFacilitatorMock();
+
   const original = globalThis.fetch;
   vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
     const response = await original(input, init);
@@ -27,6 +28,9 @@ beforeAll(async () => {
     body.kinds.push(...["eip155:137", "eip155:42161", "eip155:480"].map(network => ({ x402Version: 2, scheme: "exact", network })));
     return Response.json(body);
   });
+
+});
+beforeEach(async () => {
   await bindings.ORDERS.put(KV_KEYS.gazetteIssue(901), JSON.stringify({ issue_number: 901, title: "Fixture", date: "2026-09-01", markdown: "A test page", contributors: [], tip_ids: [] }));
 });
 afterAll(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
@@ -34,7 +38,7 @@ const get = (path: string) => app.request(base + path, { headers: { Accept: "app
 type Offers = { "offer-receipt": { info: { offers: { signature: string; acceptIndex: number }[] } } };
 
 it("fits every five-network menu and publication quote within stock Node response headers", async () => {
-  const paths = MENU_ITEMS.map(item => `/api/buy/${item.id}`);
+  const paths = MENU_ITEMS.map(item => `/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
   for (const [path, field] of [["/almanac", "entries"], ["/gazette", "issues"], ["/zodiac/archive", "pages"]]) {
     const index = await (await get(`${path}?view=compact`)).json() as Record<string, { buy_url: string }[]>;
     expect(index[field!]!.length).toBeGreaterThan(0);
@@ -56,7 +60,7 @@ it("fits every five-network menu and publication quote within stock Node respons
 });
 
 it("keeps every wide-quote signature verifiable in the body when its header mirror would overflow", async () => {
-  const response = await get("/api/buy/graffiti_on_a_train");
+  const response = await get("/api/buy/graffiti_on_a_train?tag=fixture");
   const quote = decodePaymentRequired(response);
   expect(quote.extensions?.["offer-receipt"]).toBeUndefined();
   expect(quote.extensions?.bazaar).toBeDefined();

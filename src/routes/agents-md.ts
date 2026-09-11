@@ -137,7 +137,7 @@ under "Before you start" above.
 ## Usage: purchasing flow (HTTP)
 
 1. Read the catalog: GET ${base}/menu.json — every item id, price, and input schema.
-2. Request an item: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON), plus a plain-English note in the body.
+2. Read prices and required inputs free at ${base}/menu/{item_id}?view=compact or ${base}/api/catalog/v1. Request an item with valid query inputs: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON). Missing or invalid inputs receive a field refusal without payment terms.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
 ${spendCapParagraph()}
 4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.

@@ -256,7 +256,10 @@ ${signals}
 The example URLs carry \`?src=skill\`, "how'd you hear about us" at
 the door, identifying this skill file, never you. Leave it on.
 
-1. \`GET ${base}/api/buy/{item_id}?src=skill\` (worked example: \`GET ${base}/api/buy/hello?src=skill\`)
+1. Read prices and required inputs free at \`${base}/menu/{item_id}?view=compact\`
+   or \`${base}/api/catalog/v1\`. Then \`GET ${base}/api/buy/{item_id}?src=skill\`
+   with valid inputs (worked example needing none: \`GET ${base}/api/buy/hello?src=skill\`).
+   Missing or invalid inputs receive a field refusal without payment terms.
 2. We answer \`402 Payment Required\`. Machine-readable terms ride the
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,
    The enabled networks are ${paymentNetworkNames(c.env)} — USDC

@@ -19,7 +19,7 @@ The full audit contains six SEV-1 findings. The three wrong-good cases are BUY-0
 
 The parent count measures complete original findings, not commits or equal-sized units of work. The recovery findings span products, HTTP/MCP profiles, rails, partial writes and historical records. The checked substeps below are completed work inside those findings; some overlap, so they must not be presented as a count of unique fixes. CI/build repairs are tracked separately and do not close a buyer finding.
 
-**37/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
+**38/39 original findings are complete, including all 6/6 SEV-1s.** Existing catalogue recovery coverage is derived from `supportsArtifactRecovery()` and `MENU_ITEMS`; all 33 current products are admitted. Newly recorded commission/publication recovery, historical original-order retrieval, evidence-backed resolution and the final legacy retry guard complete the recovery parents. Atomic admission also prevents concurrent fresh authorizations from charging the same new keyed purchase twice. Original signed payments now recover retained goods or private status after expiry without the original key. The remaining P1/P2 findings below retain their own scope.
 
 ## Completion-callback, target and capacity evidence — 2026-09-11
 
@@ -35,6 +35,12 @@ Validation: **12,851 passed across 666 files**, 1 existing skip, zero failures. 
 
 The signatures establish correspondence to the accepted commission and exact text, not the quality of human research. Legacy acceptance is never backdated. No live payment, buyer callback or human order was sent.
 
+## HTTP input validation and free discovery evidence — 2026-09-11
+
+Validation: **13,152 passed across 667 files**, 1 existing skip, zero failures. All 1,511 frozen source/test/config hashes matched after the full run. Typecheck, both Worker bundles, native startup and the remaining CI compatibility gates passed. 156 initial missing-input regressions failed before the input-policy fix; the retained missing-input ask test separately failed before preserving its observation. The final suite covers 300 new input-policy cases plus the shared-header regression.
+
+External scanners must adopt the free discovery contract themselves; the store does not invent example buyer inputs to obtain quotes. Refused missing-input asks remain visible without usable payment terms. No live payment, buyer callback or human order was sent.
+
 ## Recovery SEV-1 status
 
 The checked substeps below are completed repairs, not provisional work. An open parent does not mean those repairs failed. The original audit and regression evidence use local fixtures, including deliberately constructed legacy state; this checklist is not an inventory of unresolved production customer orders.
@@ -47,7 +53,7 @@ These are tested repair mechanisms, not production-customer inventory or live-re
 
 ## Remaining findings
 
-- [ ] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — open.
+- [x] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — HTTP purchase inputs are validated before usable terms; free catalog and compact item contracts provide price discovery. Both Workers agree, and authenticated retained goods remain recoverable.
 - [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [x] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — complete for all four audited products: Spot Check, Provenance Check, Passport Refresh and Trust Profile carry independently verifiable observation envelopes beside their purchase certificates. See the proof-completion evidence below. Durable response-loss recovery remains BUY-017/037.

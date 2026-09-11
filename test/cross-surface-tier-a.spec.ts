@@ -1,9 +1,9 @@
+import { installBuyerHarness, baseline, items, request as quoteRequest } from "./helpers/buyer-harness";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { markKeeperSeen } from "@/services/shutter";
 import { MENU_ITEMS, getMenuItem } from "@/store";
 import type { Env } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   ADVISORY_NAMES,
   BATTERY_CHANGELOG,
@@ -31,9 +31,10 @@ import { buyDiscoveryExtensions } from "@/lib/bazaar-discovery";
  *   - the battery changelog carries the date.
  */
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
-beforeAll(installFacilitatorMock);
+
 
 const USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const PAY_TO = "0x0000000000000000000000000000000000000001";
@@ -99,14 +100,14 @@ describe("discovery-info-fails-schema: the block against its own schema", () => 
     await markKeeperSeen(env as unknown as Env);
     const silent = ["discovery-info-fails-schema", "resource-description-absent", "offer-contradicts-challenge"];
     for (const item of MENU_ITEMS) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+      const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       expect(response.status, `${item.id} did not answer 402`).toBe(402);
       const body = await response.text();
       const report = runChecks(
         new Response(body, { status: 402, headers: { "PAYMENT-REQUIRED": response.headers.get("PAYMENT-REQUIRED")! } }),
         false,
         body,
-        `${BASE}/api/buy/${item.id}`,
+        `${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`,
       );
       for (const name of silent) {
         expect(advisory(report, name), `${item.id}: ${advisory(report, name)?.detail ?? ""}`).toBeUndefined();

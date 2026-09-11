@@ -1,8 +1,9 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { MENU_ITEMS } from "@/store";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 /**
@@ -14,13 +15,13 @@ const BASE = "https://scvd.store";
  */
 describe("X-Robots-Tag on every 402", { timeout: 120_000 }, () => {
   beforeAll(() => {
-    installFacilitatorMock();
+
   });
 
   it("marks every paid door's challenge noindex", async () => {
     let challenges = 0;
     for (const item of MENU_ITEMS) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`, {
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`, {
         headers: { "User-Agent": "Googlebot/2.1", Accept: "text/html" },
       });
       if (response.status !== 402) continue;

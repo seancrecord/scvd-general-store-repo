@@ -113,10 +113,11 @@ describe("the 402 says how much history stands behind the subject", () => {
     expect(depth.doors_seen).toBe(0);
   });
 
-  it("with no subject named, the 402 carries the archive's own depth; other items carry none", async () => {
+  it("with no subject named, the free catalogue carries the archive's own depth; other items carry none", async () => {
     await chain([round("2026-W31", [host("a.example", "ready"), host("b.example", "ready")])]);
-    const bare = await json(await SELF.fetch(`${BASE}/api/buy/spot_check`));
-    const depth = bare.archive_depth as Record<string, unknown>;
+    const catalog = await json(await SELF.fetch(`${BASE}/menu.json`));
+    const rows = catalog.items as Array<Record<string, unknown>>;
+    const depth = rows.find(item => item.id === "spot_check")!.archive_depth as Record<string, unknown>;
     expect(depth.kind).toBe("archive");
     expect(depth.weeks_in_chain).toBe(1);
     expect(depth.hosts_seen).toBe(2);
@@ -203,11 +204,12 @@ describe("depth availability is distinct from a measured zero", () => {
     expect(result).toEqual({ archive_depth: null, archive_depth_status: "unavailable" });
     expect(await archiveDepthDisclosure(unavailable, BASE, "hello", {})).toEqual({});
   });
-  it("labels a successfully read empty archive on the free quote", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/spot_check`);
-    expect(response.status).toBe(402);
-    expect(await json(response)).toMatchObject({
-      archive_depth_status: "available", archive_depth: { weeks_in_chain: 0, hosts_seen: 0 },
+  it("labels a successfully read empty archive in the free catalogue", async () => {
+    const response = await SELF.fetch(`${BASE}/menu.json`);
+    expect(response.status).toBe(200);
+    const catalog = await json(response), rows = catalog.items as Array<Record<string, unknown>>;
+    expect(rows.find(item => item.id === "spot_check")).toMatchObject({
+      archive_depth: { weeks_in_chain: 0, hosts_seen: 0 },
     });
   });
 });
