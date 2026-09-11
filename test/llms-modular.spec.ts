@@ -869,8 +869,15 @@ const BASE = "https://scvd.store";
 // with only llms.ts restored to the prior commit, the prior digest
 // reproduced in the run that caught this edit, and this copy
 // reproduces the new one.
+// 2026-09-11: the settlement attestation gained a signed binding class
+// (none / authorization_nonce / reserved input_commitment) and a battery;
+// the listing's narrowing rule now says what a matched nonce binds the
+// transaction to — one authorization, never one request. Verified the
+// same way: with only menu-utility.ts restored to the prior commit, the
+// prior digest reproduced in the run that caught this edit, and this
+// copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7dbc5fa4cf68900c6de13284586b436158e93a6c09831b91b16bb6d3f946d085";
+  "b9f3c6487165ef82a456ac8aa79768e76aedecb5dd662b49d6b5fb22bb9a25e4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -126,9 +126,9 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Settlement attestations (single, or each member of a sheaf)",
     trust_model: "third_party_observation",
     signs:
-      "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, and the moment of observation. A sheaf (attestation_bundle) is this artifact at volume — every member signed alone over the same fields, quotable alone.",
+      "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, the moment of observation, the desk's battery, and the binding — what, if anything, ties the transaction to one payment authorization (none, authorization_nonce, or the reserved input_commitment), beside what was asked. Observations signed before 2026-09-11 carry neither battery nor binding: read that absence as predating binding classes, never as unbound, and an artifact citing the battery without the binding as defective. A sheaf (attestation_bundle) is this artifact at volume — every member signed alone over the same fields, quotable alone.",
     does_not_prove:
-      "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. One RPC read of public state, at one moment, signed by a party with no interest in the answer.",
+      "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. That the transaction was the settlement of any particular request: binding says what it ties, and authorization_nonce ties one EIP-3009 authorization, not one 402 challenge — whether the door tied that nonce to a single request is the door's work and unobserved. One RPC read of public state, at one moment, signed by a party with no interest in the answer.",
     verify_url: "/api/verify/{cert_id}",
   },
   {
