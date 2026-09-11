@@ -565,6 +565,12 @@ export const KV_KEYS = {
    * `wallet:<pay-to digest>` — never a verbatim address.
    */
   standingNote: (subject: string): string => `standing_note:${subject}`,
+  /**
+   * The growth ledger's frozen month (2026-09-11): what the books said
+   * at close, written once by the hourly press and never overwritten.
+   * The live counters stay the book; this is the record of a reading.
+   */
+  growthLog: (month: string): string => `growth_log:${month}`,
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,
   metricMonthPrefix: (month: string): string => `metric:${month}:`,

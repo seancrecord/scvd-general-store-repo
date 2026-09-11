@@ -19,6 +19,7 @@ import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
  * the one a stranger could otherwise mint without limit.
  */
 import { venueCounterKey } from "@/store/venues";
+import { recordReferrerHost } from "@/lib/referrer-census";
 import type { Channel, Env, PayerRecord } from "@/types";
 
 /**
@@ -628,6 +629,12 @@ export async function recordPorchVisit(
       ),
     );
   }
+  // Who linked here, by month (lib/referrer-census.ts): organic only,
+  // hosts only, our own host excluded there. The event row keeps the
+  // verbatim referrer for 90 days; this keeps the host for good.
+  if (suffix === "" && event.referrer) {
+    await recordReferrerHost(env, event.referrer, metricsMonth()).catch(() => undefined);
+  }
   // Same diet as the challenge path: a crawler reading the porch is
   // the noise floor, and the aggregate counter above already says how
   // much of it there was. The bell ledger and the porch surface tables
@@ -1131,8 +1138,18 @@ export interface MonthLedger {
   settlesWithoutPayer: Record<string, number>;
   /** USDC, organic and house apart. */
   revenueUsdc: number;
+  /** True when the month's key scan hit its cap: every count above is a floor. */
+  truncated?: boolean;
   revenueHouseUsdc: number;
 }
+
+/** The counter kinds keyed by shelf item; every other kind has its own reader. */
+const SHELF_KINDS: ReadonlySet<string> = new Set([
+  "402", "402h", "402i",
+  "paid", "paidh",
+  "verify", "verifyh", "verifyi",
+  "decl", "declh",
+]);
 
 function emptyRow(): LedgerRow {
   return {
@@ -1429,6 +1446,7 @@ export async function readMonthLedger(
     prefix: KV_KEYS.metricMonthPrefix(month),
     cap: METRIC_KEY_CAP,
   });
+  ledger.truncated = listed.truncated;
   const values = await bulkGetText(
     env.COUNTERS,
     listed.names,
@@ -1510,6 +1528,14 @@ export async function readMonthLedger(
       const tier =
         tail.slice(splitAt + 1) + (kind === "tierh" ? " (house)" : "");
       row.tiers[tier] = value;
+      continue;
+    }
+    // Only a shelf kind may mint a shelf row (2026-09-11). Before this
+    // every kind the branches above did not name — lat, err, verifyage,
+    // the mcpclient census, the referral markers — fell through here
+    // and minted an all-zero item called after its own tail, and the
+    // growth ledger's "items most asked for" would have listed them.
+    if (!SHELF_KINDS.has(kind ?? "")) {
       continue;
     }
     // Summed, never assigned: the 402 kinds are spread over shards

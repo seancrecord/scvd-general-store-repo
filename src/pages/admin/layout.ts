@@ -62,6 +62,13 @@ export type AdminTab =
    */
   | "buyers"
   | "instruments"
+  /**
+   * GROWTH (2026-09-11): every month since opening side by side — the
+   * porch, the free instruments and the funnel under them, who knocked
+   * at the MCP door, what was asked for, what the corpus saw of the
+   * market. The office had the counts and no history.
+   */
+  | "growth"
   | "ward"
   /**
    * The second ward (2026-09-04). Its own tab rather than a section of
@@ -136,6 +143,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "census", href: "/admin/census", label: "The census" },
   { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
   { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
+  { tab: "growth", href: "/admin/growth", label: "Growth" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
   { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
@@ -233,6 +241,7 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/deliveries", label: "Deliveries (money in vs goods out)" },
   { href: "/admin/settlement-unknown", label: "Settlements the store could not read" },
   { href: "/admin/glance", label: "The glance" },
+  { href: "/admin/growth.json", label: "Growth, as JSON (every month, every block)" },
   { href: "/admin/events", label: "Item events" },
   { href: "/admin/trace", label: "Client trace (one user-agent, whole trail)" },
   { href: "/admin/bell", label: "The bell" },
