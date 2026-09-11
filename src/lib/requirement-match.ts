@@ -165,10 +165,45 @@ export function describeMismatch(
 }
 
 /**
+ * THE RAIL THE BUYER WANTED (2026-09-11). A payment signed for a
+ * network the challenge did not offer fails the match on `network`,
+ * and on `asset` and `payTo` beside it, because USDC's contract and
+ * the store's recipient differ per chain. Alphabetical order put
+ * `asset` first, so the books read `requirement_mismatch:asset` and
+ * the one fact worth keeping — which chain somebody opened a wallet
+ * on and could not pay from — never left the 402 body. The rails
+ * intake rule in PAYMENT_RAILS.md wants a named counterparty before
+ * a rail grows; this is where that counterparty shows up, and the
+ * desk could not see it.
+ *
+ * Bounded on purpose: the id is somebody else's string, so only a
+ * CAIP-2 shape rides into the code and anything else books as
+ * `other`. A family of codes the books can tally, not a free field.
+ */
+const CAIP2_SHAPE = /^[a-z0-9]{1,16}:[A-Za-z0-9_-]{1,48}$/;
+
+/** The network the buyer's echo named, when that is what turned it away. */
+export function wantedNetwork(report: MismatchReport): string | undefined {
+  const network = report.mismatches.find((entry) => entry.field === "network");
+  if (!network) {
+    return undefined;
+  }
+  return typeof network.you_sent === "string" && CAIP2_SHAPE.test(network.you_sent)
+    ? network.you_sent
+    : "other";
+}
+
+/**
  * The books want a short, bounded string. The field that disagreed is
- * the whole diagnosis, so it rides in the reason itself.
+ * the whole diagnosis, so it rides in the reason itself — and when
+ * the network disagreed, that field wins and the rail it named rides
+ * with it, because a buyer on the wrong chain is demand, not a typo.
  */
 export function mismatchReasonCode(report: MismatchReport): string {
+  const wanted = wantedNetwork(report);
+  if (wanted) {
+    return `local:requirement_mismatch:network:${wanted}`;
+  }
   const first = report.mismatches[0];
   return first
     ? `local:requirement_mismatch:${first.field}`
