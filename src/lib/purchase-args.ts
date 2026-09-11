@@ -1,3 +1,5 @@
+import { checkOptionalObservationConstraints } from "@/lib/purchase-constraints";
+import { unicodeLength, hasUnpairedSurrogate } from "@/lib/unicode";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 export { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES } from "@/lib/attestation-bundle-terms";
 import { target as a2aTarget } from "@/lib/a2a-instrument";
@@ -8,7 +10,8 @@ import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discov
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
-import { checkProbeTarget } from "@/lib/probe-target";
+import { canonicalHostname, checkProbeTarget } from "@/lib/probe-target";
+import { checkCompletionCallback } from "@/lib/completion-callback";
 import { issuePassport } from "@/services/passport";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
@@ -102,6 +105,7 @@ export function toolArgs(args: Record<string, unknown>): PurchaseArgs {
     get(name) {
       const value = args[name];
       if (typeof value === "string") return value;
+      if (typeof value === "number") return String(value);
       return undefined;
     },
     field: (name) => `${name} argument`,
@@ -137,9 +141,10 @@ export function checkPurchaseEncoding(item: MenuItem, args: PurchaseArgs): Purch
   // value of a required field. Refuse it before quoting instead of selling
   // either an empty good or silently changed text. Derive the buyer fields.
   for (const field of Object.keys(buyInputSchema(item).properties)) {
-    if (args.get(field)?.includes("\0")) {
+    const value = args.get(field);
+    if (value !== undefined && (value.includes("\0") || hasUnpairedSurrogate(value))) {
       return refuse(400, "bad_request",
-        `${args.field(field)} contains an unsupported U+0000 character. Remove it before purchasing. Nothing charged.`,
+        `${args.field(field)} contains an unsupported U+0000 character or unpaired Unicode surrogate. Remove it before purchasing. Nothing charged.`,
         { input_field: field });
     }
   }
@@ -160,8 +165,28 @@ export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: P
         { input_field: field, expected_type: "string", received_type: receivedType });
     }
   }
+  if (args.raw) for (const [field, schema] of Object.entries(buyInputSchema(item).properties)) {
+    if (!args.has?.(field) || !schema || typeof schema !== "object" || !("type" in schema) || schema.type !== "number") continue;
+    if (typeof args.raw(field) !== "number") return refuse(400, "bad_request", `${args.field(field)} must be a JSON number. Nothing charged.`, { input_field: field, expected_type: "number" });
+  }
+  const constraint = checkOptionalObservationConstraints(item.id, args);
+  if (constraint) return refuse(400, "bad_request", `${constraint.reason} Nothing charged.`, { input_field: constraint.field });
   const encoding = checkPurchaseEncoding(item, args);
   if (encoding) return encoding;
+  const callback = args.get("callback_url");
+  if (item.fulfillment === "human_queue" && (callback !== undefined || args.has?.("callback_url"))) {
+    const verdict = checkCompletionCallback(callback, new URL(env.STORE_BASE_URL).hostname);
+    if (!verdict.ok) return refuse(400, "callback_refused",
+      `The completion callback was refused: ${verdict.reason} Nothing charged.`, { input_field: "callback_url" });
+  }
+  for (const [field, schema] of Object.entries(buyInputSchema(item).properties)) {
+    if (field === "purpose" || !schema || typeof schema !== "object" || !("maxLength" in schema) || typeof schema.maxLength !== "number") continue;
+    const value = args.get(field);
+    if (value !== undefined && unicodeLength(value) > schema.maxLength) {
+      return refuse(400, "bad_request", `${args.field(field)} exceeds ${schema.maxLength} Unicode characters. Shorten it before purchasing; we do not truncate accepted text. Nothing charged.`,
+        { input_field: field, max_length: schema.maxLength });
+    }
+  }
   const purpose = args.get("purpose");
   if (purpose !== undefined && Array.from(purpose).length > PURCHASE_PURPOSE_MAX_LENGTH) {
     return refuse(400, "bad_request",
@@ -230,12 +255,13 @@ function targetVerdict(
     return refuse(400, "bad_request", missing, { input_field: "url" });
   }
   const url = new URL(raw!);
-  const verdict = checkProbeTarget(url, "");
+  const ownHost = new URL(env.STORE_BASE_URL).hostname;
+  if (canonicalHostname(url.hostname) === canonicalHostname(ownHost)) {
+    return refuse(400, "target_refused", ownHostRefusal, { input_field: "url" });
+  }
+  const verdict = checkProbeTarget(url, ownHost);
   if (!verdict.ok) {
     return refuse(400, "target_refused", `${verdict.reason} Nothing charged.`, { input_field: "url" });
-  }
-  if (url.host.toLowerCase() === new URL(env.STORE_BASE_URL).host.toLowerCase()) {
-    return refuse(400, "target_refused", ownHostRefusal, { input_field: "url" });
   }
   return undefined;
 }
@@ -292,7 +318,7 @@ export async function checkPurchaseArgs(
         { before_you_file: ANCHOR_CHECKLIST, input_field: "summary" },
       );
     }
-    if (summary.length > ANCHOR_SUMMARY_CAP) {
+    if (unicodeLength(summary) > ANCHOR_SUMMARY_CAP) {
       return refuse(
         400,
         "bad_request",
@@ -457,7 +483,7 @@ export async function checkPurchaseArgs(
         { input_field: "mandate" },
       );
     }
-    if (text.length > 2000) {
+    if (unicodeLength(text) > 2000) {
       return refuse(
         400,
         "bad_request",
@@ -530,7 +556,7 @@ export async function checkPurchaseArgs(
         { input_field: "confession" },
       );
     }
-    if (confession.length > 500) {
+    if (unicodeLength(confession) > 500) {
       return refuse(
         400,
         "bad_request",
@@ -551,11 +577,11 @@ export async function checkPurchaseArgs(
       );
     }
     const claim = read("claim");
-    if (claim !== undefined && claim.length > CASE_FILE_CLAIM_CAP) {
+    if (claim !== undefined && unicodeLength(claim) > CASE_FILE_CLAIM_CAP) {
       return refuse(
         400,
         "bad_request",
-        `claim is ${claim.length} characters; the file stores up to ${CASE_FILE_CLAIM_CAP}, verbatim. Shorten it — nothing is truncated on your behalf and nothing was charged.`,
+        `claim is ${unicodeLength(claim)} characters; the file stores up to ${CASE_FILE_CLAIM_CAP}, verbatim. Shorten it — nothing is truncated on your behalf and nothing was charged.`,
         { input_field: "claim" },
       );
     }
@@ -592,7 +618,7 @@ export async function checkPurchaseArgs(
         { input_field: "win" },
       );
     }
-    if (win.length > COFFEE_WIN_CAP) {
+    if (unicodeLength(win) > COFFEE_WIN_CAP) {
       return refuse(
         400,
         "bad_request",
@@ -636,7 +662,7 @@ export async function checkPurchaseArgs(
         { input_field: "tag" },
       );
     }
-    if (tag.length > TAG_CAP) {
+    if (unicodeLength(tag) > TAG_CAP) {
       return refuse(
         400,
         "bad_request",
@@ -812,14 +838,14 @@ export function purchaseInputFrom(
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
 
-  const agentName = sanitizeText(read("agent_name"), 80);
+  const agentName = read("agent_name") ?? "";
   if (agentName && item.id !== "the_confession") {
     // Confessions stay anonymous unless sign_as says otherwise.
     input.agentName = agentName;
   }
   if (item.id === "the_confession") {
     input.confessionText = (read("confession") ?? "").replace(/\0/g, "");
-    const signAs = sanitizeText(read("sign_as"), 80);
+    const signAs = read("sign_as") ?? "";
     if (signAs && signAs.toLowerCase() !== "anonymous") {
       input.agentName = signAs;
     }
@@ -867,12 +893,12 @@ export function purchaseInputFrom(
      * This store never verifies a stranger's account of their own
      * machine, and the signed bytes say so.
      */
-    const capRaw = Number(read("max_usd"));
-    if (Number.isFinite(capRaw) && capRaw > 0) {
+    const capRaw = read("max_usd") ? Number(read("max_usd")) : NaN;
+    if (Number.isFinite(capRaw) && capRaw >= 0) {
       input.buyerCapUsd = capRaw;
     }
-    if (read("no_spend_controls") === "true") {
-      input.buyerSpendControlsOff = true;
+    if (read("no_spend_controls")) {
+      input.buyerSpendControlsOff = read("no_spend_controls") === "true";
     }
   }
   if (item.id === "provenance_check") {
@@ -903,11 +929,11 @@ export function purchaseInputFrom(
     const query: NonNullable<FulfillmentInput["attestationQuery"]> = {
       txHash: read("tx_hash") ?? "",
     };
-    const payer = sanitizeText(read("payer"), 60);
+    const payer = read("payer")?.trim() ?? "";
     if (payer) query.payer = payer;
-    const recipient = sanitizeText(read("recipient"), 60);
+    const recipient = read("recipient")?.trim() ?? "";
     if (recipient) query.recipient = recipient;
-    const nonce = sanitizeText(read("nonce"), 80);
+    const nonce = read("nonce")?.trim() ?? "";
     if (nonce) query.nonce = nonce;
     // A caller checking their own payment already holds the payload
     // they sent. Read it with the same extractPaymentNonce the replay
@@ -917,7 +943,7 @@ export function purchaseInputFrom(
       const fromPayload = nonceFromPaymentPayload(payload);
       if (fromPayload) query.nonce = fromPayload;
     }
-    const amount = Number.parseFloat(read("amount_usdc") ?? "");
+    const amount = Number(read("amount_usdc"));
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
     input.attestationQuery = query;
   }
@@ -925,11 +951,11 @@ export function purchaseInputFrom(
     const query: NonNullable<FulfillmentInput["reconciliationQuery"]> = {
       txHash: read("tx_hash") ?? "",
     };
-    const payer = sanitizeText(read("payer"), 60);
+    const payer = read("payer")?.trim() ?? "";
     if (payer) query.payer = payer;
-    const recipient = sanitizeText(read("recipient"), 60);
+    const recipient = read("recipient")?.trim() ?? "";
     if (recipient) query.recipient = recipient;
-    const cap = Number.parseFloat(read("declared_cap_usdc") ?? "");
+    const cap = Number(read("declared_cap_usdc"));
     if (Number.isFinite(cap) && cap > 0) query.declaredCapUsdc = cap;
     input.reconciliationQuery = query;
   }
@@ -941,11 +967,11 @@ export function purchaseInputFrom(
     if (mandateId) ask.mandateId = mandateId;
     const url = read("url");
     if (url) ask.endpointUrl = url;
-    const payer = sanitizeText(read("payer"), 60);
+    const payer = read("payer")?.trim() ?? "";
     if (payer) ask.payer = payer;
-    const recipient = sanitizeText(read("recipient"), 60);
+    const recipient = read("recipient")?.trim() ?? "";
     if (recipient) ask.recipient = recipient;
-    const amount = Number.parseFloat(read("expected_amount_usdc") ?? "");
+    const amount = Number(read("expected_amount_usdc"));
     if (Number.isFinite(amount) && amount > 0) ask.expectedAmountUsdc = amount;
     const claim = (read("claim") ?? "").replace(/\0/g, "");
     if (claim) ask.claim = claim;
@@ -955,7 +981,7 @@ export function purchaseInputFrom(
   }
   if (item.id === "bitcoin_anchor") {
     input.anchorDigest = read("digest") ?? "";
-    const label = sanitizeText(read("label"), 120);
+    const label = read("label") ?? "";
     if (label) input.anchorLabel = label;
   }
   if (item.id === "attestation_bundle") {
@@ -994,12 +1020,12 @@ export function purchaseInputFrom(
     input.mandateId = mandateId;
   }
   if (item.id === "the_mandate") {
-    input.mandateText = (read("mandate") ?? "").replace(/\0/g, "").trim();
+    input.mandateText = read("mandate") ?? "";
     const submittedAs = read("submitted_as");
     if (submittedAs === "agent" || submittedAs === "principal") {
       input.mandateSubmittedAs = submittedAs;
     }
-    const cap = Number.parseFloat(read("declared_cap_usdc") ?? "");
+    const cap = Number(read("declared_cap_usdc"));
     if (Number.isFinite(cap) && cap > 0) {
       input.mandateDeclaredCap = cap;
     }
@@ -1008,7 +1034,7 @@ export function purchaseInputFrom(
       input.mandateExpiresAt = expires;
     }
   }
-  const detail = sanitizeText(read("detail"), 600);
+  const detail = read("detail") ?? "";
   if (detail) {
     input.detail = detail;
   }

@@ -29,7 +29,9 @@ for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp",
       const item = items.find(item => item.id === id)!, tool = shelves(item)[0]!;
       const prefix = `SCVD-E2E-${crypto.randomUUID()}-${"x".repeat(610)}`;
       const args = { ...baseline(item), detail: `${prefix}-ORIGINAL` };
-      const quote = await call(item, door === "http" ? "http" : "mcp", args, tool);
+      // Obtain current terms with a valid fixture brief, then read the older
+      // retained attempt below, whose full brief predates today's length limit.
+      const quote = await call(item, door === "http" ? "http" : "mcp", { ...args, detail: "SCVD-E2E current quote" }, tool);
       expect(quote.quote).toBe(true);
       const wire = await evmPayment(quote.offers.find(offer => offer.network === network)!);
       const authorization = object(object(wire.payload).authorization);
@@ -57,7 +59,9 @@ for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp",
       } else {
         const retry = await call(item, door, retryArgs, tool, payment);
         body = retry.body; failed = retry.protocolError;
-        if (door === "http") expect(retry.status).toBe(owner === "same" ? 500 : 503);
+        // Oversized historical briefs use the authenticated status reader;
+        // unavailable original goods remain owed and answer 503.
+        if (door === "http") expect(retry.status).toBe(503);
         expect(retry.quote).toBe(false);
       }
       expect(failed).toBe(true);

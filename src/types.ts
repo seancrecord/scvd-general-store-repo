@@ -454,6 +454,8 @@ export const TERMINAL_ORDER_STATUSES = ["completed"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export interface OrderRecord {
+  commission?: import("@/services/human-order-proof").HumanOrderProof;
+  completion_proof?: import("@/services/human-order-proof").HumanOrderProof;
   /** This order's mutable state is coordinated; KV is its listing projection. */
   managed_order?: true;
   order_id: string;

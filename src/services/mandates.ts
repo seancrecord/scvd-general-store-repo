@@ -34,8 +34,7 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  * audit rail an agent's word alone can never be.
  */
 
-/** Verbatim text cap, enforced at the door before money. */
-export const MANDATE_TEXT_CAP = 2000;
+export { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
 
 export interface MandateInput {
   /** The instructions as claimed, verbatim. UNTRUSTED. */

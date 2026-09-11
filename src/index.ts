@@ -675,6 +675,25 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     /**
+     * THE GROWTH LOG rides the hourly press (2026-09-11): the first
+     * firing after a month closes freezes that month's reading, and
+     * every later firing finds it frozen. A failure alerts rather
+     * than passing quietly — a month that never got logged would read
+     * exactly like one that had not closed yet.
+     */
+    ctx.waitUntil(
+      import("@/services/growth").then(({ logClosedMonth }) =>
+        logClosedMonth(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Growth log pass failed: ${String(error)}. The closed month is re-tried on the next hourly firing; a repeat means the counter scan or the log write is broken.`,
+            }),
+        ),
+      ),
+    );
+    /**
      * MACHINE 1's resolver rides the same hourly firing (#56): every
      * open settlement_unknown row gets the chain asked where a chain
      * can answer, on a per-row cursor. Bounded per pass; a failure

@@ -1,3 +1,5 @@
+import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
+import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { beforeYouStartSentence } from "@/lib/before-you-start";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
@@ -63,6 +65,9 @@ import { MODES } from "@/routes/ask";
 export const openapiRoutes = new Hono<HonoEnv>();
 
 type OpenApiObject = Record<string, unknown>;
+
+const BUYER_PROOF_REF: OpenApiObject = { $ref: "#/components/schemas/BuyerProof" };
+const HUMAN_PROOF_REFERENCES = Object.fromEntries(Object.keys(HUMAN_PROOF_PROPERTIES).map(name => [name, BUYER_PROOF_REF]));
 
 // Project only the OpenAPI description. MCP keeps its self-contained schemas.
 // The shared source objects identify repeated schemas without a second field
@@ -4102,6 +4107,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
     },
     patron_number: { type: "integer" },
     commission: WATCH_COMMISSION_REF,
+    purchased_text: BUYER_PROOF_REF,
     confession_receipt: {
       type: "object",
       description: "Confession only. Private proof binding the stored text to this purchase. Absent from public certificates and verification. Share only by choice.",
@@ -4171,6 +4177,7 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["message", "order_id", "status", "order_url", "paid_usdc"],
   properties: {
+    ...HUMAN_PROOF_REFERENCES,
     message: { type: "string" },
     order_id: { type: "string" },
     status: {
@@ -5388,7 +5395,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * elevator version for a reader that only opens the spec.
        */
       "x-guidance":
-        `SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on a network offered in the current quote; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt. ${beforeYouStartSentence(base, c.env)}`,
+        `SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on a network offered in the current quote; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Starting prices run $${Math.min(...MENU_ITEMS.map(item => item.price_usdc))}–$${Math.max(...MENU_ITEMS.map(item => item.price_usdc))}; optional payment tiers reach $${Math.max(...MENU_ITEMS.flatMap(priceTiersUsdc))}; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt. ${beforeYouStartSentence(base, c.env)}`,
     },
     servers: [{ url: base }],
     /**
@@ -5418,6 +5425,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
+        BuyerProof: BUYER_PROOF_SCHEMA,
         TradeCheck: TRADE_CHECK_SCHEMA,
         TradeDelivery: TRADE_DELIVERY_SCHEMA,
         TradeRefusal: TRADE_REFUSAL_SCHEMA,
@@ -7475,6 +7483,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                     type: "object",
                     required: ["order_id", "item_id", "status", "created_at"],
                     properties: {
+                      ...HUMAN_PROOF_REFERENCES,
                       order_id: { type: "string" },
                       item_id: { type: "string" },
                       item_name: { type: "string" },
@@ -7486,6 +7495,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
                       },
                       created_at: { type: "string", format: "date-time" },
                       completed_at: { type: "string", format: "date-time" },
+                      callback: COMPLETION_CALLBACK_STATUS_SCHEMA,
+                      webhook: { type: "string", description: "The recorded callback outcome, also available as callback.result." },
                       sla_hours: {
                         type: "number",
                         description:

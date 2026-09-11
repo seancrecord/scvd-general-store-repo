@@ -1,5 +1,32 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-11 — exact buyer text and independent completion evidence
+
+Read [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
+[JSON Schema 2020-12 validation](https://json-schema.org/draft/2020-12/json-schema-validation),
+and [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/).
+JCS preserves string data, does not normalize Unicode, and refuses lone
+surrogates. Schema string limits count characters rather than UTF-16 units.
+The new envelopes use the existing ed25519 signer over canonical JSON;
+private human inputs and exact completion bytes are committed with SHA-256.
+Tests use an independent verifier and mutate the signed identities, input
+hashes and delivered text. Fixture orders with no acceptance proof say so;
+no old acceptance is backdated. See [buyer evidence](BUYER_TEXT_EVIDENCE.md)
+for the recipient's checks and limits. No live purchase or callback was sent.
+
+## 2026-09-11 — Completion callback destinations and redirects
+
+Read Cloudflare's [Request runtime API](https://developers.cloudflare.com/workers/runtime-apis/request/)
+and [Fetch runtime API](https://developers.cloudflare.com/workers/runtime-apis/fetch/).
+An outgoing request defaults to following redirects; manual mode returns the
+redirect response without contacting its destination. Completion callbacks now
+use manual mode and record the refused redirect while retaining the goods.
+The shared probe policy checks the supplied URL, including public-address
+literals, credentials, port and canonical own hostname. It does not resolve DNS
+or establish protection against DNS rebinding. Local fixtures observe the
+requested redirect mode and the destinations reached; they are not live edge
+egress or public DNS measurements. No payment or callback went to a live buyer.
+
 ## 2026-09-10 — compact package readers and release preparation
 
 Read the live `/corpus/index.json?limit=1` response at 14:49 UTC and the

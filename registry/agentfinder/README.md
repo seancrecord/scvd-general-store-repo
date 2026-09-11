@@ -16,6 +16,56 @@ community catalog behind it is the repository
 `catalog/<github-account>/`, merged by pull request, regenerated into
 a root `ai-catalog.json` that the service ingests.
 
+## The press was already pressed (found 2026-09-11)
+
+CV opened [github/agentfinder-catalog#34](https://github.com/github/agentfinder-catalog/pull/34)
+on 2026-09-06 ("Add scvd-general-store", one commit, one skill entry:
+the store skill). It was open with no review on 2026-09-11. Two
+things about it worth the keeper's eye:
+
+- Its description quotes the practice counter at "from $0.004"; the
+  SKILL.md it points at, and the store, say from $0.001. One PR
+  description in one place, so a reviewer who reads both sees a
+  store disagreeing with itself. A one-line edit to the PR body.
+- It carries one entry. The other two drafted here — the
+  `x402-before-you-pay` skill and the MCP server — are not in it.
+  Either push them onto the same branch before it merges (one review
+  instead of two) or open a second PR after; the files in
+  `catalog/seancrecord/` are the ones to copy either way.
+
+The replacement — the corrected file, the two missing entries, the
+validation commands, a new title and a body a reviewer can approve
+from — is `PR_BODY.md` beside this file, written for CV to paste.
+
+## Hugging Face (2026-09-11)
+
+CV reports a submission there; the link the keeper has is the Hub's
+token settings page, which means a push is planned rather than done.
+What the index actually takes, read off hf-discover's own README:
+
+- **Skills**: the curated `huggingface/skills` GitHub repository,
+  Hugging Face's own set (train, evaluate, datasets). A store skill
+  does not belong in it and a PR there would be declined on scope.
+- **MCP servers**: a Space tagged `mcp-server`. hf-discover reads the
+  Space's metadata and writes an MCP-registry-style descriptor whose
+  `remotes[]` is the Space's OWN Gradio streamable-HTTP endpoint. It
+  does not take a remote URL, so a Space cannot simply point at
+  `https://scvd.store/mcp`.
+
+So the honest shape is a Space that runs a small Gradio app with
+`mcp_server=True` exposing the store's FREE doors as read-only tools
+(preflight, before-you-pay, conformance, verify, the corpus per host),
+each one an HTTPS call to scvd.store — the "SCVD x402 Verifier" the
+keeper's 2026-09-03 memo already describes for the ChatGPT listing.
+No `buy_*` tools, so no payment ever transits Hugging Face and no
+secret lives in the Space: the free doors need no key. The token for
+the push: fine-grained, write on that one Space only, with an expiry;
+never the account-wide token, and nothing from this repo's secrets.
+Tag the Space `mcp-server`, name it `scvd-x402-verifier`, and give
+its README the sixty words and the same money paragraph as the
+catalog PR. When it is up, an hf-discover search for `scvd` is the
+read to file beside the 2026-09-06 zero.
+
 ## Where the store stands (read 2026-09-10)
 
 - **Not listed.** The 2026-09-06 search for `scvd.store`

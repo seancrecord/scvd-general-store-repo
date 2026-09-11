@@ -206,7 +206,9 @@ import { RETIRED_KEYS } from "@/store/key-registry";
 /** 3.16.2: distinguish cached replies from durable same-key payment admission. */
 /** 3.16.2: ClawHub audit — anchor summary via the MCP body, tab install pinned. */
 /** 3.16.3: original signed payments recover retained purchases after expiry. */
-export const SKILL_VERSION = "3.16.3";
+/** 3.16.4: completion callback policy, visible outcomes and capacity refusals. */
+/** 3.16.5: exact buyer text and separate purchased-text/human-work proofs. */
+export const SKILL_VERSION = "3.16.5";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -496,17 +498,17 @@ export const SPEC_RETURNS: Record<string, string> = {
   hello:
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   the_collab:
-    "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
+    "One piece brainstormed by both proprietors, shipped under the store byline. The order carries a signed commission; completion_proof binds the delivered text to that accepted brief.",
   aura_walk:
-    "An order id now; within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
+    "An order id and signed commission now; completion_proof binds the delivered report to the accepted brief and target. Within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
-    "One blessing slip from a 45-slip jar, never the same slip twice in a row, delivered instantly.",
+    "One blessing slip, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate.",
   daily_fortune:
-    "The day's fortune, deterministic for the calendar date (UTC) and delivered instantly with fortune_date beside it: every buyer today reads the same line, tomorrow's buyers read the next. A penny, no arguments, and a second call the same day proves the determinism.",
+    "The day's fortune and fortune_date (UTC), with purchased_text: an ed25519 envelope binding the exact words, date and purchase certificate. Every buyer today reads the same line.",
   the_confession:
     "A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published.",
   context_anchor:

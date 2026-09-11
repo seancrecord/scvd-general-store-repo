@@ -1,3 +1,5 @@
+import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
+import { BUYER_PROOF_SCHEMA, HUMAN_PROOF_PROPERTIES } from "@/lib/buyer-proof-schema";
 import { A2A_CHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import {
   MCP_REFUSAL_CODES,
@@ -356,6 +358,7 @@ function purchaseOutputSchema(item: MenuItem): Schema {
       type: "object",
       properties: {
         deliverable: str("The goods themselves, as text."),
+        ...(["small_blessing", "daily_fortune"].includes(item.id) ? { purchased_text: BUYER_PROOF_SCHEMA } : {}),
         ...common,
       },
       required: ["deliverable", "cert_id", "patron_number"],
@@ -364,6 +367,7 @@ function purchaseOutputSchema(item: MenuItem): Schema {
   return {
     type: "object",
     properties: {
+      ...HUMAN_PROOF_PROPERTIES,
       order_id: str("Your place in the human queue."),
       order_url: str("Poll here over HTTP, or call check_order with the order_id on this door; completed orders carry the goods."),
       sla_hours: { type: "number", description: "The delivery promise, in hours." },
@@ -623,11 +627,13 @@ function clusterOutputSchema(items: MenuItem[]): Schema {
   return {
     type: "object",
     properties: {
+      ...(items.some(item => ["small_blessing", "daily_fortune"].includes(item.id)) ? { purchased_text: BUYER_PROOF_SCHEMA } : {}),
       ...(hasInstant
         ? { deliverable: str("The goods themselves, as text. Instant items.") }
         : {}),
       ...(hasQueue
         ? {
+            ...HUMAN_PROOF_PROPERTIES,
             order_id: str("Your place in the human queue. Human-queue items."),
             order_url: str("Poll here over HTTP, or call check_order with the order_id on this door; completed orders carry the goods."),
             sla_hours: {
@@ -1246,6 +1252,7 @@ const FREE_TOOLS: McpTool[] = [
     outputSchema: {
       type: "object",
       properties: {
+        ...HUMAN_PROOF_PROPERTIES,
         order_id: str("The order polled."),
         item_id: str("What was bought."),
         item_name: str("Its name on the shelf."),
@@ -1256,6 +1263,8 @@ const FREE_TOOLS: McpTool[] = [
         badge_url: str("The patron badge, an SVG."),
         deliverable: str("The goods, as text. Present once status is completed."),
         completed_at: str("When it was delivered, ISO 8601. Present once completed."),
+        callback: COMPLETION_CALLBACK_STATUS_SCHEMA,
+        webhook: str("The recorded callback outcome; also available as callback.result."),
         message: str("The store's word on where things stand."),
         window_breached: {
           type: "object",
@@ -1533,6 +1542,10 @@ function doesInYourName(tool: McpTool): string {
 function underContract(tool: McpTool, base: string): McpTool {
   const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
   const human = [tool.itemId, ...(tool.itemIds ?? [])].some(id => id && getMenuItem(id)?.fulfillment === "human_queue");
+  const scarce = [tool.itemId, ...(tool.itemIds ?? [])].some(id => {
+    const item = id ? getMenuItem(id) : undefined;
+    return item && (item.stocked || item.weekly_inventory !== undefined);
+  });
   return {
     ...tool,
     /**
@@ -1543,7 +1556,9 @@ function underContract(tool: McpTool, base: string): McpTool {
      */
     title: tool.title ?? tool.annotations?.title ?? tool.name,
     errors: MCP_REFUSAL_CODES.filter(
-      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) && (refusal.code !== "purchase_resolved" || human),
+      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) &&
+        (!["purchase_resolved", "callback_refused", "capacity_unavailable", "shelf_closed"].includes(refusal.code) || human) &&
+        (refusal.code !== "sold_out" || scarce),
     ),
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),

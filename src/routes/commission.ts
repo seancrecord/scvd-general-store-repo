@@ -162,6 +162,8 @@ const deskLaborCheck = async (c: Context<HonoEnv>): Promise<Response | void> => 
     return c.json(
       {
         error: verdict.reason,
+        code: "capacity_unavailable",
+        charged: false,
         open_orders: verdict.open,
         cap: verdict.cap,
       },

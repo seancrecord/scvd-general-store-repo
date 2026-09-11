@@ -842,7 +842,7 @@ function recordGateOutcome(c: Context<HonoEnv>, outcome: string): void {
   }
 }
 
-async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: SignedPurchaseRecovery): Promise<Response> {
+export async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: SignedPurchaseRecovery): Promise<Response> {
   c.header("Cache-Control", "no-store");
   c.header("Paid-Retry", "true");
   if (recovery.kind === "status") return c.json(recovery.body, recovery.body.code === "purchase_resolved" ? 409 : 503);

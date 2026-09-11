@@ -1,6 +1,19 @@
 # Buyer repair plan — September 6, 2026
 
-Current status is maintained in the [completion checklist](BUYER_REPAIR_CHECKLIST.md), which records individual repairs, commits and validation. BUY-034's human-order scope is repaired through durable reconstruction, legacy retrieval and evidence-backed manual resolution. BUY-017 and BUY-037 remain open for the remaining artifact families and historical nonhuman obligations. The plan below preserves the original sequence; [repair progress](buyer-repair-progress-2026-09-06.md) and the [finding log](BUYER_AUDIT_LOG.md) retain the evidence. All payment tests use local fixtures.
+Current status is maintained in the [completion checklist](BUYER_REPAIR_CHECKLIST.md), which records individual repairs, commits and validation. The BUY-017/034/037 recovery repairs are complete through retained original goods, truthful unresolved status and evidence-backed resolution. Remaining findings follow the keeper's four-PR grouping below. The plan below preserves the original sequence; [repair progress](buyer-repair-progress-2026-09-06.md) and the [finding log](BUYER_AUDIT_LOG.md) retain the evidence. All payment tests use local fixtures.
+
+## Current remaining-work batches — keeper decision, 2026-09-11
+
+The remaining fifteen findings are split into four PRs:
+
+1. BUY-029/030/031/032/033/036: completion callbacks, own-host aliases and machine-readable capacity refusals.
+2. BUY-009/020/021/022/025/026/027: exact buyer text, price guidance, recipient-verifiable goods and briefs, Unicode, and optional observation constraints.
+3. BUY-002 alone: HTTP input validation before usable payment terms, with its discovery/client transition.
+4. BUY-035 alone: atomic human-capacity reservation across concurrent buyers.
+
+Each batch runs focused regressions with source-removed controls, typechecking,
+Worker bundles, native startup and the full local suite before its commit/PR.
+The canonical checklist records completion; this grouping itself closes nothing.
 
 ## Outcome
 

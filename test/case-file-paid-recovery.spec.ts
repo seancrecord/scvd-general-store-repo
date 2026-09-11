@@ -99,7 +99,7 @@ async function purchase(door: LaborDoor, rail: number, given?: Obj) {
   if (mandate) await storeMandate(sourceEnv, mandate, "fixture-prior-mandate");
   const args = given ?? { tx_hash: `0x${digest}`, claim: `${canary}\nRecord \"π & 🚀\" exactly.`,
     url: `https://door.example/${canary}?a=1&b=2`, mandate_id: mandate!.mandate_id, launch_check_id: `lc_${canary}`,
-    payer: evmBuyer.address, recipient: "0x2222222222222222222222222222222222222222", expected_amount_usdc: "1.25", purpose: canary };
+    payer: evmBuyer.address, recipient: "0x2222222222222222222222222222222222222222", expected_amount_usdc: 1.25, purpose: canary };
   const quote = await call(item, "mcp", args, shelves(item)[0]);
   const offer = quote.offers.find(o => o.network === network);
   expect(offer, JSON.stringify(quote.body)).toBeDefined();

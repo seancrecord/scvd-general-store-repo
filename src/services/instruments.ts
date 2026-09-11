@@ -246,6 +246,11 @@ export interface InstrumentInputs {
   handoff?: Handoff | null;
 }
 
+/** The roster entry a surface falls under, overrides applied; the growth ledger reads it rather than retyping the roster. */
+export function instrumentEntry(surface: string): InstrumentEntry | undefined {
+  return rosterEntry(surface);
+}
+
 function rosterEntry(surface: string): InstrumentEntry | undefined {
   const base = FREE_INSTRUMENTS.find((p) => surface === p.prefix || surface.startsWith(`${p.prefix}:`) || surface.startsWith(p.prefix));
   if (!base) return undefined;
