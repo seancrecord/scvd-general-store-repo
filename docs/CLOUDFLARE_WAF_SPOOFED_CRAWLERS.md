@@ -1,4 +1,4 @@
-# Blocking spoofed crawlers at the edge (keeper's press, 2026-09-11)
+# Blocking spoofed crawlers at the edge (keeper's press, 2026-09-11 — DEPLOYED the same day)
 
 The Cloudflare AI-crawler panel's 404s are a secrets scan (`/stripe.json`,
 `/.aws/credentials.old`, `/config/master.key`, …) sent under the
@@ -57,3 +57,17 @@ The store's own probes present `scvd-*` user-agents and are unaffected.
 In the AI-crawler panel: the 4xx bill should move to 403s and the
 200s should not move. If Claude-User's 200s on `/mcp` fall, Cloudflare
 has stopped verifying it; remove that one name and say so on the desk.
+
+## Read from outside, 2026-09-11, the hour it went live
+
+| user-agent sent from a non-crawler IP | `/robots.txt` |
+|---|---|
+| `Mozilla/5.0 (compatible; ClaudeBot/1.0; …)` | 403 |
+| `… compatible; GPTBot/1.2; …` | 403 |
+| `Mozilla/5.0 (compatible; Googlebot/2.1; …)` | 403 |
+| `Mozilla/5.0 (compatible; YouBot/1.0)` (unverifiable, off the list) | 200 |
+| `scvd-findability-check/1` (the store's own probes) | 200 |
+| `curl/8.5.0` | 200 |
+
+`POST /mcp` from a plain client: 200. `/stripe.json` under a spoofed
+ClaudeBot: 403 where the scan used to draw a 404.

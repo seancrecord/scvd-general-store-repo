@@ -982,13 +982,16 @@ Do not relitigate without you.
   the resubmission is the five-tool verifier already served at
   `/mcp/verifier` — the same door the Hugging Face Space wraps.
 
-- **The WAF rule, paste-ready (2026-09-11).** You said block them; the
-  first paste failed on a trailing quote and the doc now says so, with
-  the field every plan has (`cf.client.bot`).
-  `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`: the exact expression,
-  the one toggle NOT to press, and what to watch for a week. A test
-  holds every name in the expression to the roster robots.txt
-  welcomes.
+- **LOOK: the spoofed-crawler rule, one week on (deployed 2026-09-11).**
+  You pressed it; read from outside the same hour: a spoofed ClaudeBot,
+  GPTBot and Googlebot answer 403, YouBot (unverifiable, off the list)
+  and plain clients answer 200, `POST /mcp` answers 200, and the scan's
+  favourite path (`/stripe.json`) under a spoofed ClaudeBot is a 403
+  instead of a 404. Around 2026-09-18, open the AI-crawler panel: the
+  4xx bill should have moved to 403s and Claude-User's 200s on `/mcp`
+  should not have moved. If they fell, Cloudflare stopped verifying
+  Claude-User; drop that one name from the rule and say so here. The
+  rule and the toggle not to press: `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`.
 
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
