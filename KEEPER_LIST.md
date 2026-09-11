@@ -951,6 +951,19 @@ Do not relitigate without you.
   `scvd-*` user-agents and are unaffected. Watch the panel a week:
   the 4xx bill moves to 403s and the 200s do not move.
 
+- **LOOK: what does www.scvd.store answer? (2026-09-11).** Cloudflare's
+  AI-answers panel shows requests landing on `www.scvd.store` (12 to
+  `/fetch` alone). The name resolves to Cloudflare, but the Worker's
+  only route is the apex (`wrangler.jsonc`: `scvd.store`, custom
+  domain), and nothing in the code canonicalises `www`. So whatever
+  www serves today is not the store. Run `curl -sI https://www.scvd.store/`
+  from your machine (this build's egress refuses the host). If it is
+  not a 301 to `https://scvd.store/`, add one: Cloudflare → Rules →
+  Redirect Rules → "www to apex", 301, preserve path and query. One
+  rule, no code. A duplicate host that answers is a duplicate an
+  indexer has to adjudicate; a host that errors is a door that reads
+  as broken.
+
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
   2026-09-06 with the store skill alone; no review as of 09-11. Its
