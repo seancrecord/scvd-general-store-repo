@@ -615,11 +615,12 @@ for 60 seconds; retries crossing that boundary also check the previous
 minute's value for the original purchase, without another charge.
 
 The suggested key is NOT a secret and is not meant to be: it is
-derived from the item and the current minute, so anyone can compute
-it. It selects a cache slot; it does not open one. Slots are keyed by
-the VERIFIED paying wallet, so echoing it can only ever reach your own
-earlier purchase, never somebody else's — a stranger who computes your
-key still needs your signature. Your own key is honoured as-is if you
+derived from the item, the current minute and a digest of the body
+or tool arguments, so anyone can compute it. It selects a cache
+slot; it does not open one. Slots are keyed by the VERIFIED paying
+wallet, so echoing it can only ever reach your own earlier purchase,
+never somebody else's — a stranger who computes your key still needs
+your signature. Your own key is honoured as-is if you
 prefer one, and sending none is charged normally. Nothing here can
 refuse a sale.
 

@@ -1886,6 +1886,66 @@ The release and remaining population work are tracked in
 `docs/EVIDENCE_READER_COVERAGE_2026-09.md`. Raw bytes and sizes are retained
 in `research/verification-2026-09-09/capture-manifest.json`.
 
+### 26. The idempotency slot did not bind the request body — FIXED 2026-09-11
+
+Entry 19 made the replay cache safe to read; the 2026-08-25 scope fix
+(lib/idempotency.ts) made it name what was asked for — path plus
+canonical query. It still did not name the BODY. A purchase whose
+input rides in the request body — a JSON POST, or MCP tool arguments,
+which are the body — contributed nothing to the slot, and the store's
+own suggested key was `scvd-suggested-<item>-<minute>`, item and
+minute only. Same payer, same item, same minute, two different bodies:
+one slot. The second purchase was replay-served the first's cached
+result — no settlement, no charge, the wrong goods, and on a signed
+artifact a signature that covers body-derived fields naming the wrong
+subject and verifies cleanly against them. The same defect as the
+query bug, one layer down, admitted publicly on
+x402-foundation/x402#3325 with this commit owed back to that thread.
+
+Exposure, stated exactly: every HTTP paid door on this shelf is a GET,
+so the HTTP side was latent — a first POST door would have reopened
+it. The MCP door had folded its PRIMITIVE arguments in as a query
+string on 2026-08-25, which held for a shelf whose every input is a
+string and would have stopped holding at the first nested argument
+(dropped by the filter) or the first `1` beside a `"1"` (collapsed by
+`String()`).
+
+The fix mirrors the query canonicalization. `idempotencyScope` takes
+an optional body digest — sha256 of the RFC 8785 bytes for JSON (the
+same canonicalizer the signatures use, so reordered keys are one
+purchase and a string carrying `{` or `,` cannot become structure),
+raw bytes for anything else — folded into the preimage behind a
+delimiter the encoded query cannot contain. No body contributes
+nothing, so every GET scope is byte-identical to before and the slots
+a looping client holds right now stay reachable. `suggestedIdempotencyKey`
+carries the first eight hex characters of the same digest
+(`scvd-suggested-<item>-<minute>-<digest8>`), and the bucket grace
+compares the client's echo against the suggestion THIS request would
+be offered, so a keyed POST loop still finds its purchase across the
+minute boundary and never graces across bodies. The HTTP gate reads
+the body from a clone; the MCP door's body is its whole arguments
+object, digested by the helper it already used for the delivery
+intent.
+
+Stated cost: the MCP surface's bytes changed, so a keyed MCP retry
+that straddles this deploy misses its earlier slot once and is charged
+as a fresh purchase — the direction this file fails, never the other
+buyer's goods.
+
+From the same x402#3325 comment, a smaller promise kept on the same
+branch: the 24-hour replay horizon is now stated in the challenge
+beside the key it applies to (`replay_ttl_seconds`, `replay_horizon`;
+`scvd/idempotency-replay-ttl-seconds` in the tool-result envelope),
+derived from the constant rather than typed.
+
+*Proven, not asserted:* test/idempotency-scope.spec.ts and
+test/idempotency-suggested-key.spec.ts carry the acceptance cases —
+body A then body B is charged twice with the right goods, A then A
+replays, reordered JSON is one slot, GET format and behaviour
+unchanged, grace across the boundary with a body, and two MCP buys
+with different arguments in one minute each charged with their own
+goods.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare

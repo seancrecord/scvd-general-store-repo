@@ -2,7 +2,6 @@ import { buyerGuidance } from "@/lib/buyer-guidance";
 import { freeA2ACheck } from "@/lib/a2a-admission";
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
-import { jcsCanonicalize } from "@/lib/jcs";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
 import { decodeBase64Json } from "@/lib/base64-json";
 import { priceLine } from "@/services/menu-markdown";
@@ -65,9 +64,11 @@ import { getCertificate } from "@/services/certificates";
 import { fulfillPurchase, stockedShelfCount } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
+  IDEMPOTENCY_TTL_SECONDS,
   idempotencyScope,
-  sha256Hex,
+  jsonBodyDigest,
   lookupIdempotentWithBucketGrace,
+  replayHorizonBlock,
   replayNote,
   SUGGESTED_KEY_BUCKET_SECONDS,
   suggestedIdempotencyKey,
@@ -860,25 +861,31 @@ async function callPurchaseTool(
    */
   const idempotencyKey = usableIdempotencyKey(rawIdempotencyKey);
   /*
-   * THE ARGUMENTS ARE PART OF THE SURFACE. `mcp:buy_<id>` alone meant
-   * two different purchases of the same tool by the same payer in the
-   * same minute collided, and the second caller was handed the FIRST
-   * caller's signed artifact — signature and all, over the wrong
-   * subject. Same defect as the HTTP door's missing query string,
-   * fixed the same day and the same way.
+   * THE ARGUMENTS ARE THE BODY, AND THE BODY IS PART OF THE SURFACE.
+   *
+   * `mcp:buy_<id>` alone meant two different purchases of the same
+   * tool by the same payer in the same minute collided, and the second
+   * caller was handed the FIRST caller's signed artifact — signature
+   * and all, over the wrong subject. The 2026-08-25 fix folded the
+   * primitive arguments in as a query string, which held for a shelf
+   * whose every input is a string and would have stopped holding at
+   * the first nested argument (dropped by the filter) or the first
+   * `1` beside a `"1"` (collapsed by String()). As of 2026-09-11 the
+   * whole arguments object is the body term: RFC 8785 bytes, then
+   * sha256 — the same digest the delivery intent already carries —
+   * so reordered keys are one purchase and any difference at any
+   * depth is two. Same helper as the HTTP door, on purpose.
+   *
+   * Stated cost: the surface's bytes changed, so a keyed retry that
+   * straddles this deploy misses its earlier slot once and is charged
+   * as a fresh purchase — the direction this file fails, never the
+   * other buyer's goods.
    */
+  const inputDigest = await jsonBodyDigest(args);
   const idempotencySurface = await idempotencyScope(
     `mcp:buy_${item.id}`,
-    // Every PRIMITIVE argument, not only the strings. Today every buy_*
-    // input is a string, so filtering to strings was correct and
-    // latent — but the first numeric or boolean argument that decides
-    // the goods would drop silently out of the cache scope and bring
-    // the wrong-subject bug straight back.
-    new URLSearchParams(
-      Object.entries(args)
-        .filter(([, value]) => value !== null && typeof value !== "object")
-        .map(([key, value]): [string, string] => [key, String(value)]),
-    ),
+    new URLSearchParams(),
+    inputDigest,
   );
   let replayedTransaction: string | undefined;
   const replayCheck = idempotencyKey
@@ -889,6 +896,8 @@ async function callPurchaseTool(
           verifiedPayer,
           idempotencyKey,
           item.id,
+          Date.now(),
+          inputDigest,
         );
         if (replay) replayedTransaction = replay.transaction;
         return replay
@@ -932,7 +941,6 @@ async function callPurchaseTool(
     const unavailable = await admitPurchase();
     if (unavailable) return rpcRefusal(id, -32000, unavailable.code, unavailable.message, unavailable.details);
   }
-  const inputDigest = await sha256Hex(jcsCanonicalize(args));
   const outcome = await runMcpPayment(
     c.env,
     item.id,
@@ -1010,7 +1018,7 @@ async function callPurchaseTool(
       const challenge = isRecord(outcome.challenge)
         ? outcome.challenge
         : { ...await readMcpPaymentChallenge(c.env, item.id), error: "Invalid payment" };
-      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, idempotencyKey));
+      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, idempotencyKey, inputDigest));
     }
     return rpcError(
       id,
@@ -1040,13 +1048,16 @@ async function callPurchaseTool(
          * shared and was not.
          */
         idempotency: {
-          suggested_key: idempotencyKey ?? suggestedIdempotencyKey(item.id),
+          // The tool arguments are this door's body; the suggestion
+          // carries their digest, as the HTTP door's carries a POST's.
+          suggested_key: idempotencyKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest),
           how: "Send it back as _meta['x402/idempotency-key'] with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
           optional:
             "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
           not_a_secret:
-            "Derived from the item and the current minute, so anyone can compute it. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this only ever reaches your own earlier purchase.",
+            "Derived from the item, the current minute and a digest of these tool arguments, so anyone can compute it. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet and by the arguments, so echoing this only ever reaches your own earlier purchase with these exact arguments.",
           stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+          ...replayHorizonBlock(),
         },
         verification: {
           verify_url: `${base}/api/verify/{id}`,
@@ -1190,7 +1201,7 @@ async function callPurchaseTool(
       // This is the processor's answered refusal. A replacement challenge
       // would discard its reason and look like a new request for payment.
       if (standardPayment(c)) {
-        return rpcResult(id, standardPaymentResult(c, item, refusal, idempotencyKey));
+        return rpcResult(id, standardPaymentResult(c, item, refusal, idempotencyKey, inputDigest));
       }
       return rpcResult(id, { ...toolText(refusal) as Record<string, unknown>, isError: true });
     }
@@ -1256,13 +1267,16 @@ function standardPaymentResult(
   item: MenuItem,
   challenge: Record<string, unknown>,
   retryKey?: string | null,
+  inputDigest: string | null = null,
 ): Record<string, unknown> {
   return {
     isError: true,
     structuredContent: challenge,
     content: [{ type: "text", text: JSON.stringify(challenge) }],
     _meta: {
-      "x402/idempotency-key": retryKey ?? suggestedIdempotencyKey(item.id),
+      "x402/idempotency-key": retryKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest),
+      // The horizon, in the envelope this profile reads (x402#3325).
+      "scvd/idempotency-replay-ttl-seconds": IDEMPOTENCY_TTL_SECONDS,
       "scvd/required-params": buyInputSchema(item).required ?? [],
       "scvd/input-contract": `${c.env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     },

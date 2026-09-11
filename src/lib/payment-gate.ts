@@ -54,7 +54,9 @@ import {
 import {
   idempotencyScope,
   lookupIdempotentWithBucketGrace,
+  replayHorizonBlock,
   replayNote,
+  requestBodyDigest,
   SUGGESTED_KEY_BUCKET_SECONDS,
   suggestedIdempotencyKey,
   storeIdempotent,
@@ -329,6 +331,7 @@ async function enrich402Body(
   signedUntil?: number,
   network?: string,
   originalKey?: string,
+  bodyDigest: string | null = null,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -458,13 +461,22 @@ async function enrich402Body(
            * as it did before it existed.
            */
           idempotency: {
-            suggested_key: originalKey ?? suggestedIdempotencyKey(item.id),
+            // The challenge sees the inbound request, so the
+            // suggestion can carry the body it was quoted for.
+            suggested_key: originalKey ?? suggestedIdempotencyKey(item.id, Date.now(), bodyDigest),
             how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status — no settlement, no second charge.",
             optional:
               "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
             not_a_secret:
-              "This value is derived from the item and the current minute, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this key only ever reaches your own earlier purchase, never somebody else's.",
+              "This value is derived from the item, the current minute and a digest of the request body when there is one, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet and by what was asked for (path, query, body), so echoing this key only ever reaches your own earlier purchase of this exact request, never somebody else's and never a different one of yours.",
             stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+            /*
+             * THE HORIZON, DISCLOSED WHERE THE KEY IS OFFERED. The
+             * replay cache was always 24 hours; the number lived in
+             * the docs and not in the one place a client that never
+             * read them would look. Promised on x402#3325.
+             */
+            ...replayHorizonBlock(),
           },
         }
       : {}),
@@ -870,6 +882,17 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
 
+  /**
+   * WHAT WAS ASKED FOR INCLUDES THE BODY (2026-09-11). Every paid door
+   * on this shelf is a GET today, so this is null on every live
+   * request and nothing below changes shape — but the idempotency
+   * scope, the suggested key and the bucket grace all take it now, so
+   * the first POST door does not reopen the wrong-goods replay the
+   * query term closed on 2026-08-25. Read from a clone; the handler
+   * keeps its body.
+   */
+  const bodyDigest = await requestBodyDigest(c.req.raw);
+
   // THE PRE-FLIGHT, and CV named why it is load-bearing rather than
   // polish: the facilitator's own errors are permanently opaque to us
   // (200-character truncation, generic union-type message), so these
@@ -1097,6 +1120,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           signedValidBefore(paymentHeader),
           paymentNetwork(paymentHeader),
           idempotencyKey ?? undefined,
+          bodyDigest,
         );
         /*
          * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store
@@ -1163,7 +1187,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   try {
     const resolution = await resolvedHumanPayment(c.env, c.req.path, result.paymentRequirements.network,
       payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
-      idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined);
+      idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams, bodyDigest), key: idempotencyKey } : undefined);
     if (resolution) {
       c.header("Cache-Control", "no-store");
       const work = resolvedHumanDelivery(resolution);
@@ -1185,10 +1209,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // signed artifact minted for `?tag=FIRST`.
     const replay = await lookupIdempotentWithBucketGrace(
       c.env,
-      await idempotencyScope(c.req.path, new URL(c.req.url).searchParams),
+      await idempotencyScope(c.req.path, new URL(c.req.url).searchParams, bodyDigest),
       idempotencyPayer,
       idempotencyKey,
       itemKeyFromPath(c.req.path),
+      Date.now(),
+      bodyDigest,
     );
     if (replay) {
       c.header("Cache-Control", "no-store");
@@ -1206,7 +1232,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const recorded = (c.get("publicationPurchase") || c.req.path.startsWith("/api/buy/") || c.req.path.startsWith("/api/commission/pay/")) ? await lookupRecordedPurchase(c.env, result.paymentRequirements.network,
     payerOfVerifiedRequest(result.paymentPayload, result.paymentRequirements.network, declineSlot), result.paymentPayload,
     { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) },
-    idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams), key: idempotencyKey } : undefined) : null;
+    idempotencyKey ? { surface: await idempotencyScope(c.req.path, new URL(c.req.url).searchParams, bodyDigest), key: idempotencyKey } : undefined) : null;
   if (recorded?.kind === "refused") return c.json(recorded.body, 503);
   if (recorded?.kind === "complete") {
     c.header("Cache-Control", "no-store");
@@ -1392,7 +1418,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     query.delete("payment_payload");
     const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
-      ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query), key: idempotencyKey } } : {}),
+      ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query, bodyDigest), key: idempotencyKey } } : {}),
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
     }) : undefined;
@@ -1881,6 +1907,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             await idempotencyScope(
               c.req.path,
               new URL(c.req.url).searchParams,
+              bodyDigest,
             ),
             idempotencyPayer,
             idempotencyKey,

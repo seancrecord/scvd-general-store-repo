@@ -2,6 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { jcsCanonicalize } from "@/lib/jcs";
 
 /**
  * IDEMPOTENCY-KEY ENFORCEMENT — the infinite-loop wallet drain,
@@ -85,6 +86,9 @@ export function idempotencyBucket(nowMs: number = Date.now()): number {
   return Math.floor(nowMs / (SUGGESTED_KEY_BUCKET_SECONDS * 1000));
 }
 
+/** How much of the body digest the suggested key carries. */
+export const SUGGESTED_KEY_BODY_TAG_LENGTH = 8;
+
 /**
  * Deliberately readable and comfortably over the minimum length by
  * construction — the prefix alone is 15 characters, so no item id is
@@ -94,8 +98,26 @@ export function idempotencyBucket(nowMs: number = Date.now()): number {
 export function suggestedIdempotencyKey(
   itemId: string,
   nowMs: number = Date.now(),
+  bodyDigest: string | null = null,
 ): string {
-  return `scvd-suggested-${itemId}-${idempotencyBucket(nowMs)}`;
+  const key = `scvd-suggested-${itemId}-${idempotencyBucket(nowMs)}`;
+  /*
+   * THE BODY RIDES IN THE SUGGESTION TOO (2026-09-11). The key is a
+   * bucketing function, and until now it bucketed on item and minute
+   * alone — so two purchases whose difference lived in the request
+   * BODY were handed one suggestion and landed in one slot. The slot
+   * itself is now body-scoped (idempotencyScope below), which closes
+   * the wrong-goods replay on its own; the short digest here exists
+   * so the current/previous-bucket grace compares the client's echo
+   * against the value THIS request would be offered, and so a reader
+   * of two challenges can see they are not for the same purchase.
+   * Eight hex characters, not the whole hash: still a value that
+   * reads as derivable, still comfortably under the maximum length.
+   * A request with no body keeps the exact format shipped 2026-08-01.
+   */
+  return bodyDigest
+    ? `${key}-${bodyDigest.slice(0, SUGGESTED_KEY_BODY_TAG_LENGTH)}`
+    : key;
 }
 
 /**
@@ -122,6 +144,7 @@ export function suggestedIdempotencyKey(
 export async function idempotencyScope(
   path: string,
   query: URLSearchParams,
+  bodyDigest: string | null = null,
 ): Promise<string> {
   /*
    * ENCODE BEFORE JOINING — corrected 2026-08-25, hours after the
@@ -138,12 +161,81 @@ export async function idempotencyScope(
    * Sorted by code point rather than locale: this value is a cache
    * key, and localeCompare is ICU-dependent by contract.
    */
-  const canonical = [...query.entries()]
+  const canonicalQuery = [...query.entries()]
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .sort()
     .join("&");
+  /*
+   * THE BODY IS AN ARGUMENT TOO — found 2026-09-11, the same defect
+   * as above one layer down. A purchase whose input rides in the
+   * request body (a JSON POST; MCP tool arguments, which ARE the
+   * body) had no term here, so two different purchases by the same
+   * payer in the same minute shared a slot and the second was served
+   * the first's cached goods: no settlement, no charge, and a signed
+   * artifact naming the wrong subject. Admitted on
+   * x402-foundation/x402#3325.
+   *
+   * The term is the sha256 of the CANONICAL body (see
+   * requestBodyDigest / jsonBodyDigest), folded into the preimage
+   * after a delimiter the encoded query can never contain — `#` is
+   * percent-encoded by encodeURIComponent — so no query value can
+   * impersonate a body term and no body can impersonate a query.
+   * An absent body contributes nothing, which keeps every GET scope
+   * byte-identical to what it was before this term existed: the
+   * slots a looping client is holding right now stay reachable.
+   */
+  const canonical = bodyDigest
+    ? `${canonicalQuery}#body:${bodyDigest}`
+    : canonicalQuery;
   if (!canonical) return path;
   return `${path}#${(await sha256Hex(canonical)).slice(0, 16)}`;
+}
+
+/**
+ * The canonical digest of a JSON body: RFC 8785 bytes (recursive key
+ * sort, no whitespace, ECMAScript number and string serialization —
+ * lib/jcs, the same canonicalizer the signatures use), then sha256.
+ * So `{"a":1,"b":2}` and `{"b":2,"a":1}` are one purchase, and a value
+ * that happens to contain `{`, `,` or `:` cannot become structure:
+ * JCS quotes and escapes strings before it joins them, which is the
+ * same care the query encoder above takes with `=` and `&`.
+ */
+export async function jsonBodyDigest(value: unknown): Promise<string> {
+  return sha256HexBytes(new TextEncoder().encode(jcsCanonicalize(value)));
+}
+
+/**
+ * The canonical digest of an HTTP request's body, or null when there is
+ * nothing to bind — the GET/HEAD case and the empty POST, which must
+ * keep today's scope and today's suggested key exactly.
+ *
+ * JSON (by Content-Type) is canonicalized before hashing so a client
+ * that re-serializes its own request does not lose its replay; a
+ * body that claims JSON and is not parses as what it is, raw bytes.
+ * Anything else is hashed as the bytes on the wire: two encodings of
+ * one intent become two purchases, which is the direction this file
+ * always fails — a second charge, never somebody else's goods.
+ *
+ * Reads a CLONE, so the handler behind the gate still gets its body.
+ */
+export async function requestBodyDigest(request: Request): Promise<string | null> {
+  if (request.method === "GET" || request.method === "HEAD") return null;
+  let bytes: Uint8Array;
+  try {
+    bytes = new Uint8Array(await request.clone().arrayBuffer());
+  } catch {
+    return null;
+  }
+  if (bytes.byteLength === 0) return null;
+  const contentType = (request.headers.get("Content-Type") ?? "").split(";")[0]!.trim().toLowerCase();
+  if (contentType === "application/json" || contentType.endsWith("+json")) {
+    try {
+      return await jsonBodyDigest(JSON.parse(new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(bytes)));
+    } catch {
+      // Not JSON after all: hashed as the bytes it is, below.
+    }
+  }
+  return sha256HexBytes(bytes);
 }
 
 export function usableIdempotencyKey(key: string | undefined): string | null {
@@ -158,10 +250,11 @@ export function usableIdempotencyKey(key: string | undefined): string | null {
 }
 
 export async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
+  return sha256HexBytes(new TextEncoder().encode(value));
+}
+
+export async function sha256HexBytes(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -225,17 +318,25 @@ export async function lookupIdempotentWithBucketGrace(
   presentedKey: string,
   itemId: string,
   nowMs: number = Date.now(),
+  bodyDigest: string | null = null,
 ): Promise<StoredReplay | null> {
   const direct = await lookupIdempotent(env, surface, payer, presentedKey);
   if (direct) {
     return direct;
   }
-  if (presentedKey !== suggestedIdempotencyKey(itemId, nowMs)) {
+  /*
+   * The same digest the challenge folded into its suggestion, or the
+   * comparison never matches for a keyed POST and the grace silently
+   * stops working at every boundary — and the surface already carries
+   * the body, so a grace hit can only ever be this body's purchase.
+   */
+  if (presentedKey !== suggestedIdempotencyKey(itemId, nowMs, bodyDigest)) {
     return null;
   }
   const previous = suggestedIdempotencyKey(
     itemId,
     nowMs - SUGGESTED_KEY_BUCKET_SECONDS * 1000,
+    bodyDigest,
   );
   return lookupIdempotent(env, surface, payer, previous);
 }
@@ -286,6 +387,18 @@ export async function storeIdempotent(
   } catch {
     // Storing the replay is a courtesy; the sale already happened.
   }
+}
+
+/**
+ * How long a replay stays collectable, stated beside the key it applies
+ * to — on both doors, from this one helper. Derived from the constant,
+ * never typed: the day the TTL changes, the challenge changes with it.
+ */
+export function replayHorizonBlock(): Record<string, unknown> {
+  return {
+    replay_ttl_seconds: IDEMPOTENCY_TTL_SECONDS,
+    replay_horizon: `The ORIGINAL result is served from cache for ${IDEMPOTENCY_TTL_SECONDS / 3600} hours after the first sale. Past that, a repeat with the same key is not a cached replay; the original signed payment can still retrieve retained goods or their status, and a fresh key is a deliberate second purchase.`,
+  };
 }
 
 /** The note a replayed response carries, so a reader (or the looping

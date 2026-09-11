@@ -1,5 +1,5 @@
 import { installExpiredPaymentFixture, refuseSpentVerification } from "./helpers/expired-payment";
-import { idempotencyScope, idempotentPurchaseStore, storeIdempotent } from "@/lib/idempotency";
+import { idempotencyScope, idempotentPurchaseStore, jsonBodyDigest, storeIdempotent } from "@/lib/idempotency";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { runInDurableObject, runDurableObjectAlarm } from "cloudflare:test";
 import { installLaborAdmissionHarness, laborNetworks, signLabor, transfers, sendLabor } from "./helpers/labor-admission";
@@ -214,8 +214,9 @@ for (const [rail] of laborNetworks().entries()) for (const door of ["http", "mcp
     const s = await seed(rail, "small_blessing", true), key = crypto.randomUUID();
     const query = new URL(s.url, testEnv.STORE_BASE_URL).searchParams;
     const args = Object.fromEntries(query);
-    const surface = await idempotencyScope(door === "http" ? s.path : "mcp:buy_small_blessing",
-      door === "http" ? query : new URLSearchParams({ item_id: "small_blessing", ...args }));
+    const surface = door === "http"
+      ? await idempotencyScope(s.path, query)
+      : await idempotencyScope("mcp:buy_small_blessing", new URLSearchParams(), await jsonBodyDigest({ item_id: "small_blessing", ...args }));
     const slot = await idempotentPurchaseStore(testEnv, surface, s.payer, key);
     expect(await slot.claimIdempotentPurchase(s.record!.id)).toBe(s.record!.id);
     await storeIdempotent(testEnv, surface, s.payer, key, { obsolete_cached_goods: true });

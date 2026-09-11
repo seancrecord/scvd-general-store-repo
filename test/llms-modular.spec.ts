@@ -863,8 +863,14 @@ const BASE = "https://scvd.store";
 // host history, and the asked-for queue at /corpus/asked.json. Verified
 // the same way: the prior text reproduced the prior digest in the run
 // that caught this edit, and this copy reproduces the new one.
+// 2026-09-11: the suggested idempotency key now binds the request body
+// (tool arguments, over MCP) — ledger #26, x402#3325 — and the retry
+// paragraph says so in one tightened sentence. Verified the same way:
+// with only llms.ts restored to the prior commit, the prior digest
+// reproduced in the run that caught this edit, and this copy
+// reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "ee78bd0d900f56a5b44eaf163ae763c5c5b3505b8026c68da48752d859090ece";
+  "7dbc5fa4cf68900c6de13284586b436158e93a6c09831b91b16bb6d3f946d085";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

@@ -302,8 +302,9 @@ the door, identifying this skill file, never you. Leave it on.
    If the original evidence is unavailable, use the private status handle or
    Claims; missing goods remain owed until evidence-backed resolution.
    Send no key and a fresh authorization can charge again.
-   The suggested value is derived from the item
-   and the current minute, so anyone can compute it — deliberately. It
+   The suggested value is derived from the item, the current minute
+   and, when the call carries a body or tool arguments, a short digest
+   of them, so anyone can compute it — deliberately. It
    selects a cache slot rather than opening one: slots are keyed by
    the VERIFIED paying wallet, so echoing the key only ever reaches
    your own earlier purchase, never somebody else's.
