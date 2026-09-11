@@ -935,8 +935,15 @@ adminRoutes.get("/admin", async (c) => {
     shelf(refunds, [], "refunds", notes).filter(
       (refund) => refund.status === "refund_pending",
     ).length;
+  const { readLastRaise } = await import("@/services/counter-raise");
+  const { countersSerialized } = await import("@/lib/counter-ledger");
+  const lastRaise = await readLastRaise(c.env).catch(() => null);
   return c.html(
     renderOfficePage({
+      countersSerialized: countersSerialized(c.env),
+      lastRaise: lastRaise
+        ? { at: lastRaise.at, raised: lastRaise.raised.length + lastRaise.payer_rows_raised.length }
+        : null,
       monthLedger: shelf(monthLedger, emptyLedger, "month ledger", notes),
       porchLedger: shelf(
         porchLedger,
@@ -1114,6 +1121,12 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
     renderReconciliationPage(
       {
         settles: settlesValue,
+        countersSerialized: (await import("@/lib/counter-ledger")).countersSerialized(c.env),
+        lastRaise: await import("@/services/counter-raise").then(({ readLastRaise }) =>
+          readLastRaise(c.env).then((last) =>
+            last ? { at: last.at, raised: last.raised.length + last.payer_rows_raised.length } : null,
+          ),
+        ).catch(() => null),
         certs: certsValue,
         chain: {
           baseCursor: shelf(baseCursor, null, "base cursor", notes),
@@ -1395,6 +1408,28 @@ adminRoutes.post("/admin/repair/payer-case", async (c) => {
 adminRoutes.post("/admin/repair/payer-settles", async (c) => {
   const { backfillPayerSettlesFromCertificates } = await import("@/services/payer-repair");
   return c.json(await backfillPayerSettlesFromCertificates(c.env));
+});
+
+/**
+ * THE RAISE (2026-09-11): every counter lifted to what the per-settle
+ * records and certificates say, organic only, never lowered. Rides
+ * the hourly round; this button is for the keeper who does not want
+ * to wait an hour. Idempotent. services/counter-raise.ts.
+ */
+adminRoutes.post("/admin/repair/raise-counters", async (c) => {
+  const { raiseCountersToRecords } = await import("@/services/counter-raise");
+  return c.json(await raiseCountersToRecords(c.env));
+});
+
+/** The last raise, as the hourly round or the button left it. */
+adminRoutes.get("/admin/raise-log", async (c) => {
+  const { readLastRaise } = await import("@/services/counter-raise");
+  const last = await readLastRaise(c.env);
+  return c.json(
+    last ?? {
+      note: "No raise has run yet on this deployment. The hourly round runs one; POST /admin/repair/raise-counters runs one now.",
+    },
+  );
 });
 
 /**

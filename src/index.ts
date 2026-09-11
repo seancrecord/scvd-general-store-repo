@@ -975,6 +975,22 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     /**
+     * THE RAISE rides the same hourly press (2026-09-11). The tallies
+     * were the only lossy witness to a sale and the storefront read
+     * them; the per-settle records and the certificates cannot lose
+     * one. Every counter short of its records is lifted here, organic
+     * only, never lowered, so the public number goes up to where it
+     * belongs without anyone cross-referencing the books. With the
+     * counter ledger serializing every bump the pass should raise
+     * nothing, and /admin/raise-log saying so each hour is the
+     * evidence that it holds.
+     */
+    ctx.waitUntil(
+      import("@/services/counter-raise").then(({ raiseCountersToRecords }) =>
+        raiseCountersToRecords(env).catch(() => undefined),
+      ),
+    );
+    /**
      * THE DELIVERY AUDIT. The one failure this store cannot be told
      * about: a payment settled, the handler never delivered, and the
      * buyer is an agent that may not be running any more to complain.
@@ -1256,3 +1272,4 @@ export { A2ATaskStore } from "@/services/a2a-tasks";
 
 export { A2AKitStore } from "@/services/a2a-kit";
 export { BountyClaimLocks } from "@/services/bounty-claim-locks";
+export { CounterLedger } from "@/services/counter-ledger";

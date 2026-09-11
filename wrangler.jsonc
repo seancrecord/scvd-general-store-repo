@@ -118,7 +118,10 @@
       { "name": "PAID_RECOVERIES", "class_name": "PaidRecoveryStore" },
       { "name": "A2A_KITS", "class_name": "A2AKitStore" },
       { "name": "A2A_TASKS", "class_name": "A2ATaskStore" },
-      { "name": "BOUNTY_CLAIM_LOCKS", "class_name": "BountyClaimLocks" }
+      { "name": "BOUNTY_CLAIM_LOCKS", "class_name": "BountyClaimLocks" },
+      // Every counter's one writer (2026-09-11): a burst of sales on
+      // KV read-add-write lost counts; this cannot. services/counter-ledger.ts.
+      { "name": "COUNTER_LEDGER", "class_name": "CounterLedger" }
     ]
   },
   "migrations": [
@@ -130,7 +133,9 @@
     { "tag": "v4-a2a-kits", "new_sqlite_classes": ["A2AKitStore"] },
     // One claim at a time per bounty: the double-pay race the claim
     // door documented and KV could not close.
-    { "tag": "v5-bounty-claim-locks", "new_sqlite_classes": ["BountyClaimLocks"] }
+    { "tag": "v5-bounty-claim-locks", "new_sqlite_classes": ["BountyClaimLocks"] },
+    // One writer per counter; the tally that lost counts under a burst.
+    { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] }
   ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",

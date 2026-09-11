@@ -130,6 +130,11 @@ describe("the porch log", () => {
       body: JSON.stringify({ agent_name: "porch-test" }),
     });
 
+    // The porch write is deferred past the response (waitUntil), and
+    // since 2026-09-11 it goes through the counter ledger before it
+    // reaches KV; give the last one a beat to land, as the alarm and
+    // standing-row suites do for their own deferred work.
+    await new Promise((resolve) => setTimeout(resolve, 50));
     const porch = await readPorchLedger(testEnv);
     expect(porch.surfaces["llms.txt"]?.["organic"]).toBeGreaterThanOrEqual(1);
     expect(porch.surfaces["llms.txt"]?.["organic:direct"]).toBeGreaterThanOrEqual(1);

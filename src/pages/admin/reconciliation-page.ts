@@ -2,6 +2,7 @@ import { resolutionEvidenceFields } from "@/pages/admin/resolution-fields";
 import type { SettleReconciliation } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { howToReadTheMoneyHtml } from "@/pages/admin/office-page";
 import type { CertificatesAgainstSettles } from "@/services/settle-sources";
 import {
   unreadBlocks,
@@ -49,6 +50,10 @@ interface AlertLogEntry {
 
 export interface ReconciliationPageData {
   settles: SettleReconciliation | null;
+  /** Whether every bump goes through the counter ledger on this deployment. */
+  countersSerialized?: boolean;
+  /** The hourly raise's last pass: when, and how many counters it lifted. */
+  lastRaise?: { at: string; raised: number } | null;
   /** The certificates read beside the counters and the rows; absent until the route wires it. */
   certs?: CertificatesAgainstSettles | null;
   chain: {
@@ -110,23 +115,25 @@ function certsHtml(c: CertificatesAgainstSettles | null | undefined, settles: Se
 function settlesHtml(r: SettleReconciliation | null): string {
   if (!r) return `<p>${ATTENTION} — the recount didn't load. Reload to retry.</p>`;
   /*
-   * A READING, NOT AN ALARM (2026-09-05). Until this date a nonzero
-   * difference here read ATTENTION and paged hourly. It paged twice
-   * in a week and both times the cause was a lost read-modify-write
-   * on a shared KV key: the settle counters and the payer rows are
-   * both written that way, either can drop an increment under a
-   * burst, and the keeper ruled on 2026-09-04 that a lost increment
-   * is not a books defect. So the three figures are floors, read
-   * beside the certificates below — the third witness, and the only
-   * one that names a wallet — and the alarm now lives on the one
-   * thing a certificate can prove: a settle the books never recorded.
+   * A READING, NOT AN ALARM (2026-09-05), AND THEN THE RULING MOVED
+   * (2026-09-11). Until 2026-09-05 a nonzero difference here paged
+   * hourly; it paged twice in a week over lost read-modify-writes on
+   * shared KV keys, and the keeper ruled a lost increment was not a
+   * books defect. Then one wallet bought 66 times in an afternoon and
+   * the storefront lost thirteen of them, and the keeper ruled the
+   * other way: the public tally has to be right. So the counters now
+   * have one serialized writer (services/counter-ledger.ts) and the
+   * hourly raise (services/counter-raise.ts) lifts any counter still
+   * short of the per-settle records and certificates. The three
+   * figures are expected to AGREE. A difference is read the same way
+   * either direction: the raise clears it within the hour, and one
+   * that outlives the next raise is real.
    */
   const verdict =
     r.unexplained === 0
-      ? `<p>${PASS} — the counters and the derived payer purchases agree, allowing for the founding settle and any settle that arrived without a wallet address. Both are floors; agreement is a good sign, not a proof.</p>`
-      : r.unexplained > 0
-        ? `<p>${PASS} — the counters read ${r.unexplained} settle${r.unexplained === 1 ? "" : "s"} more than the derived payer purchases. A payer row dropped an increment under a burst, most likely; the per-settle records and the certificates cannot lose one, and a settle none of the three knows would show below as a certificate without its record. Not an alarm.</p>`
-        : `<p>${PASS} — the derived payer purchases read ${-r.unexplained} more than the counters. A shared month counter dropped an increment under a burst, most likely; the counters are the lossiest of the three witnesses and are read as a floor. Not an alarm.</p>`;
+      ? `<p>${PASS} — the counters and the derived payer purchases agree, allowing for the founding settle and any settle that arrived without a wallet address. Since 2026-09-11 that is the expected state, not a good sign: every counter has one writer, and the hourly raise lifts anything short of its records.</p>`
+      : `<p>${PASS} — the ${r.unexplained > 0 ? "counters" : "derived payer purchases"} read ${Math.abs(r.unexplained)} settle${Math.abs(r.unexplained) === 1 ? "" : "s"} more than the ${r.unexplained > 0 ? "derived payer purchases" : "counters"}. Until 2026-09-11 that was a lost increment under a burst and read as a floor. It no longer is: the hourly raise lifts whichever side is short to the per-settle records, so this should read zero after the next raise (or now, with the button below). If it is still nonzero an hour from now, that is real, and a certificate without its record shows below.</p>
+        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0"><button type="submit">Raise every short counter and payer row to its records now</button></form>`;
   return `${verdict}
     <details><summary>The arithmetic</summary>
     <table border="1" cellpadding="4">
@@ -142,7 +149,8 @@ function settlesHtml(r: SettleReconciliation | null): string {
     wallet's row and its per-settle records. A certificate whose settle
     has no record is the defect this page pages on; the repair is
     <code>POST /admin/repair/payer-settles</code>, which books it from
-    the certificate. Row-level detail lives at <a href="/admin/recount">the recount</a>.</small></p>
+    the certificate. Row-level detail lives at <a href="/admin/recount">the recount</a>;
+    the last raise, and what it lifted, at <a href="/admin/raise-log">/admin/raise-log</a>.</small></p>
     </details>`;
 }
 
@@ -401,8 +409,10 @@ export function renderReconciliationPage(
     first. A quiet page and a quiet phone mean the same thing here.</p>
   </section>
 
+  ${howToReadTheMoneyHtml(null, data.countersSerialized ?? false, data.lastRaise ?? null)}
+
   <section>
-    <h2>Settle counters vs payer rows (three floors, one reading)</h2>
+    <h2>Settle counters vs payer rows (three witnesses, expected to agree)</h2>
     ${settlesHtml(data.settles)}
     ${certsHtml(data.certs, data.settles)}
   </section>
