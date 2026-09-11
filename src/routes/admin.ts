@@ -36,6 +36,7 @@ import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCensusPage } from "@/pages/admin/census-page";
 import { renderBuyersPage } from "@/pages/admin/buyers-page";
 import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
+import { renderGrowthPage } from "@/pages/admin/growth-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderTracePage } from "@/pages/admin/trace-page";
@@ -2201,6 +2202,23 @@ adminRoutes.get("/admin/instruments", async (c) => {
   const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, declines, last, unknown, handoff });
   deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
   return c.html(renderInstrumentsPage(usage));
+});
+
+/**
+ * THE GROWTH LEDGER (2026-09-11; docs/GROWTH_LEDGER_2026-09.md): every
+ * month since opening side by side. One derivation, two doors: the
+ * page for the keeper, the JSON for a spreadsheet. The frozen months
+ * ride the same read, so "what the books said at close" is on the
+ * page rather than in a second place.
+ */
+adminRoutes.get("/admin/growth", async (c) => {
+  const { computeGrowth } = await import("@/services/growth");
+  return c.html(renderGrowthPage(await computeGrowth(c.env)));
+});
+
+adminRoutes.get("/admin/growth.json", async (c) => {
+  const { computeGrowth } = await import("@/services/growth");
+  return c.json(await computeGrowth(c.env));
 });
 
 adminRoutes.get("/admin/census", async (c) => {

@@ -1,6 +1,7 @@
 import { cadenceFor } from "@/lib/cadence";
 import type { Cadence } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { metricsMonth } from "@/lib/metrics";
 import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
@@ -17,6 +18,22 @@ export interface BellResult {
   count: number;
   /** When the ring resets, so a scheduled visitor can plan around us. */
   cadence?: Cadence;
+}
+
+/** Rings that counted this month: `metric:<month>:bell:rings`. */
+export function bellRingsKey(month: string = metricsMonth()): string {
+  return KV_KEYS.metric(month, "bell", "rings");
+}
+
+async function bumpMonthlyRings(env: Env): Promise<void> {
+  const key = bellRingsKey();
+  const current = await kvGet(env.COUNTERS, key);
+  await kvPut(env.COUNTERS, key, String((current ? parseInt(current, 10) : 0) + 1));
+}
+
+export async function readBellRings(env: Env, month: string = metricsMonth()): Promise<number> {
+  const raw = await kvGet(env.COUNTERS, bellRingsKey(month));
+  return raw ? parseInt(raw, 10) || 0 : 0;
 }
 
 export async function ringBell(env: Env, who: string): Promise<BellResult> {
@@ -39,5 +56,15 @@ export async function ringBell(env: Env, who: string): Promise<BellResult> {
   const count = currentCount + 1;
   await kvPut(env.COUNTERS, KV_KEYS.bellCount, String(count));
   await kvPut(env.COUNTERS, ringKey, "1", { expirationTtl: DAY_SECONDS });
+  /*
+   * THE MONTH'S RINGS (2026-09-11, the growth ledger). The lifetime
+   * count above is the marquee's number and cannot say whether this
+   * month rang more than last; the porch's `bell` surface counts
+   * attempts, refused repeats included. This is rings that counted,
+   * by month, beside every other monthly counter. A lost increment
+   * under contention is a floor at bell volumes, and the ring itself
+   * never waits on it.
+   */
+  await bumpMonthlyRings(env).catch(() => undefined);
   return { message: bellLine(count), count, ...(cadence ? { cadence } : {}) };
 }
