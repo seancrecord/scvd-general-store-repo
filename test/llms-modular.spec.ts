@@ -876,8 +876,15 @@ const BASE = "https://scvd.store";
 // same way: with only menu-utility.ts restored to the prior commit, the
 // prior digest reproduced in the run that caught this edit, and this
 // copy reproduces the new one.
+// 2026-09-11, later the same day: the attestation accepts payment_response
+// — the facilitator's settlement response, received and never observed —
+// and the listing's house rules say what the artifact does with it
+// (digest inside the signature, bytes outside, a per-field agreement
+// table). Verified the same way: with only menu-utility.ts restored to
+// the prior commit, the prior digest reproduced in the run that caught
+// this edit, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "b9f3c6487165ef82a456ac8aa79768e76aedecb5dd662b49d6b5fb22bb9a25e4";
+  "86f417060b672cda634e621a99af5903652d4f58f03b35a5f69585d402896ec4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

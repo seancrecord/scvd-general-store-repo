@@ -213,6 +213,11 @@ describe("the overlap classes — the artifacts in the receipts race's lane", ()
     delete subset["signature_covers"];
     delete subset["signature_jcs"];
     delete subset["signature_jcs_covers"];
+    // And the two signature_covers names as outside both signatures
+    // (2026-09-11): the projection, signed on its own, and the echoed
+    // facilitator bytes when a settlement response was given.
+    delete subset["projection"];
+    delete subset["received_not_observed"];
     expect(
       await verifyMessageSignature(
         jcsCanonicalize(subset),

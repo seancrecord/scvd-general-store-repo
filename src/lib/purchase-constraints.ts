@@ -1,6 +1,7 @@
 import { decodeBase58 } from "@/lib/base58";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { nonceFromPaymentPayload } from "@/services/attestation";
+import { decodeSettlementResponseClaim } from "@/services/attestation-claims";
 import type { PurchaseArgs } from "@/lib/purchase-args";
 
 const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
@@ -39,6 +40,9 @@ export function checkOptionalObservationConstraints(itemId: string, args: Purcha
         const nonce = nonceFromPaymentPayload(args.get("payment_payload") ?? "");
         if (solana || nonce === null || !EVM_NONCE.test(nonce)) return { field: "payment_payload", reason: "payment_payload must be readable base64 JSON containing an EVM bytes32 authorization nonce beside an EVM transaction, or omitted." };
         if (present("nonce") && nonce.toLowerCase() !== args.get("nonce")?.trim().toLowerCase()) return { field: "payment_payload", reason: "The payload nonce disagrees with the explicit nonce. Supply one consistent constraint." };
+      }
+      if (present("payment_response") && !decodeSettlementResponseClaim(args.get("payment_response") ?? "")) {
+        return { field: "payment_response", reason: "payment_response must be the PAYMENT-RESPONSE header verbatim (base64 JSON) or its decoded JSON, naming at least one of transaction, network, payer or success, or omitted." };
       }
     }
   }

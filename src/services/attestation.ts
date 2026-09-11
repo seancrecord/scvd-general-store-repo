@@ -12,6 +12,20 @@ import {
 import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
+import {
+  RECEIVED_NOTE,
+  claimReading,
+  compareClaim,
+  decodeSettlementResponseClaim,
+  sha256Hex,
+} from "@/services/attestation-claims";
+import type {
+  InputClaims,
+  ObservedForClaims,
+  ReceivedNotObserved,
+} from "@/services/attestation-claims";
+import { projectSettlementAttestation } from "@/services/attestation-projection";
+import type { SettlementAttestationProjection } from "@/services/attestation-projection";
 import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
 import {
   getSlot,
@@ -279,6 +293,14 @@ export interface AttestationQuery {
   nonce?: string;
   /** Expected amount in whole USDC. */
   amountUsdc?: number;
+  /**
+   * The facilitator's settlement response as the buyer holds it: the
+   * PAYMENT-RESPONSE header verbatim, or its JSON. Received, not
+   * observed — it never enters the signed payload; see
+   * attestation-claims.ts. Stripped from the echoed query for the
+   * same reason: its digest rides in input_claims instead.
+   */
+  paymentResponse?: string;
 }
 
 /**
@@ -317,6 +339,11 @@ export interface SettlementObservation {
   confirmations: number | null;
   /** What, if anything, ties this transaction to one payment. */
   binding: SettlementBinding;
+  /**
+   * Present only when a settlement response was given: a digest of
+   * its bytes and, per field, whether it agrees with the chain.
+   */
+  input_claims?: InputClaims;
   /** What was asked, echoed so the answer cannot be re-pointed later. */
   query: AttestationQuery;
   /** Stable digest of the observed facts. */
@@ -337,6 +364,13 @@ export interface SignedAttestation extends SettlementObservation {
    */
   signature_jcs: string;
   signature_jcs_covers: string;
+  /**
+   * Outside both signatures by design: somebody else's bytes, echoed
+   * so the reader can check input_claims.received_sha256 and the table.
+   */
+  received_not_observed?: ReceivedNotObserved;
+  /** Outside both signatures, signed on its own, pointing back here. */
+  projection: SettlementAttestationProjection;
 }
 
 /**
@@ -633,30 +667,76 @@ export async function observeSettlement(
 }
 
 /**
+ * The echoed query, minus the facilitator's bytes. Everything else a
+ * caller asked is theirs and is echoed verbatim; the settlement
+ * response is somebody else's word and is committed by digest instead.
+ */
+function echoedQuery(query: AttestationQuery): AttestationQuery {
+  const { paymentResponse: _dropped, ...rest } = query;
+  return rest;
+}
+
+/**
+ * Both halves of "received, not observed": the signed digest-and-table
+ * and the unsigned echo. Nothing when no response was given.
+ */
+async function inputClaimsFor(
+  query: AttestationQuery,
+  observed: ObservedForClaims,
+): Promise<{ claims?: InputClaims; received?: ReceivedNotObserved }> {
+  if (!query.paymentResponse) return {};
+  const decoded = decodeSettlementResponseClaim(query.paymentResponse);
+  if (!decoded) return {};
+  const digest = await sha256Hex(query.paymentResponse);
+  const agreement = compareClaim(decoded, observed);
+  return {
+    claims: {
+      source: "PAYMENT-RESPONSE",
+      standing: "received, not observed",
+      received_sha256: digest,
+      agreement,
+      reading: claimReading(agreement, decoded, observed),
+    },
+    received: {
+      standing: "received, not observed",
+      payment_response: query.paymentResponse,
+      sha256: digest,
+      decoded,
+      note: RECEIVED_NOTE,
+    },
+  };
+}
+
+/**
  * Sign one finished observation, both disciplines. Shared by the two
- * rails so the artifact shape cannot drift between them.
+ * rails so the artifact shape cannot drift between them. The two
+ * trailing fields are appended AFTER signing on purpose: one is
+ * somebody else's bytes, the other carries its own signature.
  */
 async function signObservation(
   env: Env,
   observation: SettlementObservation,
+  received?: ReceivedNotObserved,
 ): Promise<SignedAttestation> {
   const { signature, publicKey } = await signMessage(
     JSON.stringify(observation),
     env.SIGNING_KEY,
   );
-  return {
+  const signed = {
     ...observation,
     signature,
     public_key: publicKey,
     signature_covers:
-      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
+      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key. Fields below signature_jcs_covers — received_not_observed and projection — sit outside both signatures by design: the first is somebody else's bytes, the second is signed on its own and points back here.",
     // Same fields, sorted-key byte order, for JCS-conformant tooling.
     signature_jcs: await signJcs(
       observation as unknown as Record<string, unknown>,
       env.SIGNING_KEY,
     ),
     signature_jcs_covers: JCS_SIGNATURE_COVERS,
+    ...(received ? { received_not_observed: received } : {}),
   };
+  return { ...signed, projection: await projectSettlementAttestation(env, signed) };
 }
 
 /**
@@ -730,6 +810,12 @@ export async function observeSolanaSettlement(
   }
 
   const solanaObservedAt = now.toISOString();
+  const { claims, received } = await inputClaimsFor(query, {
+    txHash: query.txHash ?? null,
+    chain: SOLANA_CHAIN,
+    payer,
+    status,
+  });
   const core = {
     observed_at: solanaObservedAt,
     stale_after: staleAfterFrom(solanaObservedAt),
@@ -744,14 +830,19 @@ export async function observeSolanaSettlement(
     chain_head: headSlot,
     confirmations,
     binding: SOLANA_BINDING,
-    query,
+    ...(claims ? { input_claims: claims } : {}),
+    query: echoedQuery(query),
   };
-  return signObservation(env, {
-    ...core,
-    evidence_hash: await evidenceHash(core),
-    reading: SOLANA_READINGS[status],
-    scope: SOLANA_SCOPE,
-  });
+  return signObservation(
+    env,
+    {
+      ...core,
+      evidence_hash: await evidenceHash(core),
+      reading: SOLANA_READINGS[status],
+      scope: SOLANA_SCOPE,
+    },
+    received,
+  );
 }
 
 /**
@@ -776,6 +867,12 @@ export async function observeWithFacts(
 ): Promise<SignedAttestation> {
   const verdict = classify(receipt, query, head, chain);
   const observedAt = now.toISOString();
+  const { claims, received } = await inputClaimsFor(query, {
+    txHash: query.txHash ?? null,
+    chain: chain.caip2,
+    payer: verdict.payer,
+    status: verdict.status,
+  });
   const core = {
     observed_at: observedAt,
     stale_after: staleAfterFrom(observedAt),
@@ -795,14 +892,19 @@ export async function observeWithFacts(
     chain_head: head,
     confirmations: verdict.confirmations,
     binding: evmBinding(query, receipt, verdict.status, verdict.nonces),
-    query,
+    ...(claims ? { input_claims: claims } : {}),
+    query: echoedQuery(query),
   };
-  return signObservation(env, {
-    ...core,
-    evidence_hash: await evidenceHash(core),
-    reading: evmReadings(chain, options.checkedBothEvmChains === true)[
-      verdict.status
-    ],
-    scope: evmScope(chain),
-  });
+  return signObservation(
+    env,
+    {
+      ...core,
+      evidence_hash: await evidenceHash(core),
+      reading: evmReadings(chain, options.checkedBothEvmChains === true)[
+        verdict.status
+      ],
+      scope: evmScope(chain),
+    },
+    received,
+  );
 }

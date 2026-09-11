@@ -16,6 +16,7 @@ import { issuePassport } from "@/services/passport";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { nonceFromPaymentPayload } from "@/services/attestation";
+import { decodeSettlementResponseClaim } from "@/services/attestation-claims";
 import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { fulfillPurchase } from "@/services/fulfillment";
 import type { Env, MenuItem } from "@/types";
@@ -725,6 +726,21 @@ export async function checkPurchaseArgs(
         { input_field: "nonce" },
       );
     }
+    /**
+     * A SETTLEMENT RESPONSE WE CANNOT READ IS REFUSED AT THE DOOR
+     * (2026-09-11). The facilitator's bytes are accepted as input and
+     * never as fact; an agreement table over bytes we could not parse
+     * would be a table about nothing, so the door says so first.
+     */
+    const paymentResponse = read("payment_response");
+    if (paymentResponse && !decodeSettlementResponseClaim(paymentResponse)) {
+      return refuse(
+        400,
+        "bad_request",
+        "payment_response must be the PAYMENT-RESPONSE header you received, verbatim (base64 JSON), or its decoded JSON, naming at least one of transaction, network, payer or success. We could not read this one, and we will not sign an agreement table over bytes we could not read. Nothing charged.",
+        { input_field: "payment_response" },
+      );
+    }
   }
 
   if (item.id === "settlement_reconciliation") {
@@ -945,6 +961,10 @@ export function purchaseInputFrom(
     }
     const amount = Number(read("amount_usdc"));
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
+    // Received, not observed: the desk digests it and echoes it
+    // outside the signature. It never rides the signed payload.
+    const paymentResponse = read("payment_response");
+    if (paymentResponse) query.paymentResponse = paymentResponse;
     input.attestationQuery = query;
   }
   if (item.id === "settlement_reconciliation") {

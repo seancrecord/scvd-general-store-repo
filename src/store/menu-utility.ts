@@ -582,6 +582,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     constraints: [
       "Give the transaction in the tx_hash query parameter: an EVM hash (0x + 64 hex, read on Base and then Polygon) or a Solana signature (base58) — the shape picks the rail",
       "Optional narrowing: payer, recipient, nonce (EVM rails only — refused beside a Solana signature), amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code). The artifact's binding field says what the answer ties the transaction to: a matched nonce binds it to one authorization, never to one request",
+      "Optional payment_response: the PAYMENT-RESPONSE header you received, verbatim. Received, not observed — its bytes are digested into the signature and echoed outside it, and each claimed field (transaction, network, payer, success) is set beside what the chain showed: agrees, disagrees, not claimed, or not observed",
       "Observes settlement only, never delivery",
       "One read at one moment; no polling, no retry, no second look",
     ],

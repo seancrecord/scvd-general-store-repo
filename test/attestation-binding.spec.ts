@@ -136,6 +136,9 @@ describe("what the artifact says it is bound to", () => {
       signature_covers: _c,
       signature_jcs: _j,
       signature_jcs_covers: _jc,
+      // Below both signatures by design; see signature_covers.
+      projection: _p,
+      received_not_observed: _r,
       ...observation
     } = signed;
     expect(Object.keys(observation)).toContain("battery");
