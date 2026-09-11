@@ -1120,6 +1120,12 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
     renderReconciliationPage(
       {
         settles: settlesValue,
+        countersSerialized: (await import("@/lib/counter-ledger")).countersSerialized(c.env),
+        lastRaise: await import("@/services/counter-raise").then(({ readLastRaise }) =>
+          readLastRaise(c.env).then((last) =>
+            last ? { at: last.at, raised: last.raised.length + last.payer_rows_raised.length } : null,
+          ),
+        ).catch(() => null),
         certs: certsValue,
         chain: {
           baseCursor: shelf(baseCursor, null, "base cursor", notes),

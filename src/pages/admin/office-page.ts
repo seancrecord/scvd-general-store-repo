@@ -291,7 +291,7 @@ function trendHtml(ledger: MonthLedger): string {
  * it. All three are on this page on purpose; this box says which one
  * to believe.
  */
-function howToReadTheMoneyHtml(
+export function howToReadTheMoneyHtml(
   takeReadAt: string | null,
   serialized: boolean,
   lastRaise: { at: string; raised: number } | null,
@@ -305,10 +305,10 @@ function howToReadTheMoneyHtml(
   return `<div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
     <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
     <ol style="margin:0;padding-left:1.4em">
-      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> below and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
+      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> on the desk and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
       <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. ${tallyState} Every hour the raise lifts any counter still short of its records (organic only, never lowered), so these go up to where they belong on their own. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
         <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise every short counter to its records now</button></form></li>
-      <li><strong>The take on this desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
+      <li><strong>The take on the desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
     </ol>
   </div>`;
 }
@@ -1009,7 +1009,7 @@ export function renderOfficePage(data: OfficePageData): string {
         ? `<p>Not checked here \u2014 the chain walk runs at <a href="/admin/reconciliation">the books check</a>, which is where its verdicts belong. This page no longer pays for one to print a sentence about it.</p>`
         : data.reconciliation.unexplained === 0
           ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
-          : `<p><strong>They differ by ${Math.abs(data.reconciliation.unexplained)}</strong> — a lost increment on a shared key, read as a floor, not an alarm (ruled 2026-09-04). The three witnesses and the arithmetic are at <a href="/admin/reconciliation">the books check</a>.</p>`
+          : `<p><strong>They differ by ${Math.abs(data.reconciliation.unexplained)}</strong>. Since 2026-09-11 every counter has one serialized writer and the hourly raise lifts any counter short of its records, so a difference here should clear within the hour; one that outlives the next raise is real and worth chasing. The three witnesses and the arithmetic are at <a href="/admin/reconciliation">the books check</a>; the last raise is at <a href="/admin/raise-log">/admin/raise-log</a>.</p>`
     }
   </section>
 
