@@ -1,3 +1,4 @@
+import { LABOR_CAPACITY_ID } from "@/services/labor-reservations";
 import { createExecutionContext, env, runInDurableObject, waitOnExecutionContext } from "cloudflare:test";
 import { afterAll, beforeAll, beforeEach, expect, vi } from "vitest";
 import { app } from "@/index";
@@ -112,6 +113,8 @@ export async function call(item: Item, door: Door, args: Obj, tool?: Tool, payme
     offers: (challenge.accepts ?? []) as ChallengeRequirement[] };
 }
 export async function clean(): Promise<void> {
+  const bench = sourceEnv.PAID_RECOVERIES!.get(sourceEnv.PAID_RECOVERIES!.idFromName(LABOR_CAPACITY_ID));
+  await runInDurableObject(bench, async (_instance, state) => state.storage.deleteAll());
   // The clock is fixed across cases; each buyer gets a fresh admission budget.
   const budget = sourceEnv.A2A_KITS!.get(sourceEnv.A2A_KITS!.idFromName("a2a-free-budget"));
   await runInDurableObject(budget, async (_instance, state) => state.storage.deleteAll());

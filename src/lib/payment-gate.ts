@@ -1397,6 +1397,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     } | null;
     deliveryKey: string | null;
     recovery?: Record<string, unknown>;
+    purchasedAt?: string;
     payer?: string;
   } = { payment: null, settled: null, deliveryKey: null };
 
@@ -1422,7 +1423,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
     }) : undefined;
-    if (purchase) till.recovery = purchaseRecovery(c.env, purchase);
+    if (purchase) { till.recovery = purchaseRecovery(c.env, purchase); till.purchasedAt = purchase.created_at; }
     let settlement: Awaited<
       ReturnType<typeof stack.httpServer.processSettlement>
     >;
@@ -1728,6 +1729,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), verifiedRequirements.network, payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot), verifiedPayload, c.req.path, await httpArtifactDigest(c.req.url)),
     settle: settleNow,
     purchaseRecovery: () => till.recovery,
+    purchaseCreatedAt: () => till.purchasedAt,
   });
 
   try {

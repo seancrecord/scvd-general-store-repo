@@ -207,7 +207,7 @@ export async function fulfillPurchase(
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
-  recovery?: { digest: string; path: string; purchasedAt?: string },
+  recovery?: { digest: string; path: string; purchasedAt?: string; purchaseId?: string },
 ): Promise<Record<string, unknown>> {
   const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
     try { return await work(); }
@@ -615,6 +615,9 @@ export async function fulfillPurchase(
   if (payment.trade) {
     mintOptions.trade = payment.trade;
   }
+  const privateRecovery = pending.purchaseRecovery?.();
+  let laborPurchaseId = item.fulfillment === "human_queue"
+    ? recovery?.purchaseId ?? (typeof privateRecovery?.purchase_id === "string" ? privateRecovery.purchase_id : undefined) : undefined;
   let checkpoint: ArtifactCheckpoint | undefined;
   let purchaseCreatedAt: string | undefined;
   const recoveryPayer = payment.payer ?? pending.payer;
@@ -628,8 +631,9 @@ export async function fulfillPurchase(
     checkpoint = artifactCheckpoint(env, payment.network, payment.transaction, recovery.digest);
     // Retain the brief and sale-time terms even if the catalogue changes
     // before an interrupted mint can create the order.
-    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: recovery.purchasedAt ?? new Date().toISOString() });
+    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: recovery.purchasedAt ?? (item.fulfillment === "human_queue" ? pending.purchaseCreatedAt?.() : undefined) ?? new Date().toISOString(), laborPurchaseId });
     purchaseCreatedAt = original.purchasedAt;
+    laborPurchaseId = original.laborPurchaseId ?? laborPurchaseId;
     item = original.item;
     input = original.input;
     mintOptions = original.mintOptions;
@@ -695,7 +699,6 @@ export async function fulfillPurchase(
   const receiptAmount = payment.trade
     ? `via ${payment.trade.partner_name}`
     : `$${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
-  const privateRecovery = pending.purchaseRecovery?.();
   const patronBlock = {
     ...(privateRecovery ? { recovery: privateRecovery } : {}),
     buyer_guidance: buyerGuidance(item, env.STORE_BASE_URL, typeof input.spotCheckHost === "string" ? { host: input.spotCheckHost } : {}),
@@ -942,6 +945,7 @@ export async function fulfillPurchase(
   }
 
   const orderOptions: Parameters<typeof createOrder>[1] = {
+    ...(laborPurchaseId ? { laborPurchaseId } : {}),
     ...(purchaseCreatedAt ? { createdAt: purchaseCreatedAt } : {}),
     item,
     paidUsdc: payment.paidUsdc,
