@@ -33,6 +33,14 @@ const hfApi = process.env.HF_API ?? "https://huggingface.co";
 const zenodoToken = process.env.ZENODO_TOKEN;
 const hfToken = process.env.HF_TOKEN;
 
+// Every request names itself. Zenodo's traffic filter has answered an
+// anonymous runner with "403 Forbidden: unusual traffic" (2026-09-11);
+// a descriptive User-Agent is what their API guidelines ask for.
+const userAgent = "scvd-corpus-publish/1 (+https://scvd.store/corpus)";
+const bareFetch = globalThis.fetch;
+const fetch = (url, init = {}) =>
+  bareFetch(url, { ...init, headers: { "User-Agent": userAgent, ...(init.headers ?? {}) } });
+
 async function getJson(url, init) {
   const r = await fetch(url, init);
   if (!r.ok) throw new Error(`${init?.method ?? "GET"} ${url} → ${r.status} ${(await r.text()).slice(0, 300)}`);

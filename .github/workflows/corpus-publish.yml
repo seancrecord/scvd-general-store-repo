@@ -1,5 +1,9 @@
-# Mirror the newest signed round to Zenodo and Hugging Face, Mondays at
-# 09:00 UTC (the walk signs the round Sundays at 11:00 UTC), or by hand.
+# Mirror the newest signed round to Zenodo and Hugging Face, daily at
+# 09:00 UTC, or by hand. The walk is scheduled for Sundays at 11:00 UTC,
+# but rounds have landed on a Monday, a Tuesday and a Wednesday too
+# (rounds 3 to 6), and a once-a-week run on Monday morning saw each of
+# those a week late. Running daily costs nothing on a quiet day: the
+# script asks each mirror what it holds and says "nothing to send".
 # Both mirrors are optional: a missing token skips that mirror with a
 # line saying so. scripts/corpus-publish.mjs; secrets ZENODO_TOKEN and
 # HF_TOKEN in the repository's Actions secrets.
@@ -8,7 +12,7 @@ name: corpus publish
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 9 * * 1"
+    - cron: "0 9 * * *"
 
 permissions:
   contents: read
