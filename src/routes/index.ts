@@ -5,6 +5,7 @@ export { llmsRoutes } from "@/routes/llms";
 export { agentsMdRoutes } from "@/routes/agents-md";
 export { skillRoutes } from "@/routes/skill";
 export { executionContractRoutes } from "@/routes/execution-contract";
+export { agentSkillsIndexRoutes } from "@/routes/agent-skills-index";
 export { catalogRoutes } from "@/routes/catalog";
 export { openapiRoutes } from "@/routes/openapi";
 export { wellKnownRoutes } from "@/routes/well-known";

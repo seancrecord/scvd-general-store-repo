@@ -883,8 +883,19 @@ const BASE = "https://scvd.store";
 // treaty paragraph with its count of one (this branch) land together;
 // each was pinned alone against its own parent, and this pin is the
 // guide with both in it.
+// 2026-09-11: the menu section names the Agent Skills discovery index
+// at /.well-known/agent-skills/index.json and the digested SKILL.md
+// copies beneath it (three guide lines; Cloudflare's readiness scan had
+// read the store as publishing no skills). Verified the same way: with
+// only llms.ts restored to the prior commit, the prior digest
+// reproduced in the run that caught this edit, and this copy
+// reproduces the new one.
+// 2026-09-11, merge: the skills-index lines (this branch) and the
+// treaty count of one with the idempotency-key sentence (main) land
+// together; each was pinned alone against its own parent, and this pin
+// is the guide with both in it.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6c2d55f476aae612d130e374935c1bbf594731b35ad4f6d51b3c63ae3908e58a";
+  "1faa12b688c1c10d33668034220286ef0d775c49552d5975dbe23581acee63c9";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

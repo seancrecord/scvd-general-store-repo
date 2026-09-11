@@ -1075,10 +1075,40 @@ Do not relitigate without you.
   re-check cycle. The tab has no host to serve one from;
   their other route is connecting the GitHub account that
   holds the repo, on their site. Your press.
-- **DNSSEC.** VerifyMCP's one Fail on endpoint security.
-  Cloudflare dashboard → DNS → Settings → Enable DNSSEC,
-  then paste the DS record at the registrar. Five minutes,
-  yours alone; no code can do it.
+- **DNSSEC.** Done — you said so on 2026-09-11; not
+  verified from the repo (the session could not resolve
+  DNS). LOOK once: https://dnsviz.net/d/scvd.store/dnssec/
+  should draw a green chain to the root.
+- **DNS-AID records (2026-09-11).** TEST. Cloudflare's
+  readiness scan wants the agent doors declared in DNS under
+  `_agents` (draft-mozleywilliams-dnsop-dnsaid; SVCB, RFC
+  9460), signed — which is why DNSSEC came first. Records
+  live at your DNS provider, not in this repo; the build
+  side (the A2A card, the MCP server, the ARD catalog at
+  `/.well-known/ard.json`) already exists. Cloudflare
+  dashboard → DNS → Records → Add, type SVCB, one per line:
+
+  ```
+  _a2a._agents.scvd.store.  3600 IN SVCB 1 scvd.store. alpn="a2a" port=443 mandatory="alpn,port"
+  _mcp._agents.scvd.store.  3600 IN SVCB 1 scvd.store. alpn="mcp" port=443 mandatory="alpn,port"
+  _index._agents.scvd.store. 3600 IN TXT "agents=evidence:a2a,store:mcp"
+  ```
+
+  In the dashboard form that is: name `_a2a._agents`,
+  priority `1`, target `scvd.store.`, value
+  `alpn="a2a" port="443" mandatory="alpn,port"`; likewise
+  `_mcp._agents` with `alpn="mcp"`. The TXT index is the
+  shape the reference implementation (dns-aid-core) writes
+  and reads; the scanner's own text names `_index._agents`
+  as an SVCB entrypoint too, and the exact params it wants
+  for that one are not published anywhere the session could
+  read — add the two SVCB rows and the TXT, re-scan at
+  https://isitagentready.com, and if `dnsAid` still reads
+  fail, the next thing to try is `_index._agents` as a
+  fourth row, SVCB, target `scvd.store.`, `alpn="https"
+  port=443` (a pointer at the host serving the catalog).
+  Not a guess dressed as a fact: the draft text is behind
+  a wall the session could not pass.
 - **`check_before_you_pay` — rename or leave.** RULE.
   VerifyMCP reads "pay" in the name as an irreversible act
   and wants a `destructiveHint` on it; the tool declares

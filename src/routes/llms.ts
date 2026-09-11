@@ -439,6 +439,10 @@ Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
+Skills discovery index (Agent Skills Discovery RFC v0.2.0: both skills,
+each with the SHA-256 digest of the file it points at):
+${base}/.well-known/agent-skills/index.json — the digested copies at
+\`${base}/.well-known/agent-skills/{name}/SKILL.md\`
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json
