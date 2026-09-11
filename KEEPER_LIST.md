@@ -982,16 +982,20 @@ Do not relitigate without you.
   the resubmission is the five-tool verifier already served at
   `/mcp/verifier` — the same door the Hugging Face Space wraps.
 
-- **LOOK: the spoofed-crawler rule, one week on (deployed 2026-09-11).**
-  You pressed it; read from outside the same hour: a spoofed ClaudeBot,
-  GPTBot and Googlebot answer 403, YouBot (unverifiable, off the list)
-  and plain clients answer 200, `POST /mcp` answers 200, and the scan's
-  favourite path (`/stripe.json`) under a spoofed ClaudeBot is a 403
-  instead of a 404. Around 2026-09-18, open the AI-crawler panel: the
-  4xx bill should have moved to 403s and Claude-User's 200s on `/mcp`
-  should not have moved. If they fell, Cloudflare stopped verifying
-  Claude-User; drop that one name from the rule and say so here. The
-  rule and the toggle not to press: `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`.
+- **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
+  user-agent rule you pressed worked and, within the hour, an
+  agent-readiness scanner scored the store "Some agents blocked:
+  GPTBot, ClaudeBot, ChatGPT-User…" — scanners test that claim by
+  sending exactly those user-agents from their own IPs, which is
+  byte-identical to a spoofer. So the rule is re-scoped to the
+  PATHS the scan asks for (`/.aws/`, `/.env`, `api_keys`, `.key`,
+  `.pem`, `/stripe.json`, …), none of which is a substring of any of
+  the 345 routes the store serves, a test keeps it so, and a scanner
+  reading `/robots.txt` as GPTBot passes again. Edit the existing
+  rule's expression from `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`
+  (the first fenced block), re-run the scan, and it should read 2/2.
+  Then the one-week look around 2026-09-18 as before: the 4xx bill
+  moves to 403s, the 200s do not move.
 
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on

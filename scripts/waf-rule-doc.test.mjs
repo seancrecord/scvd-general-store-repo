@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -15,37 +15,46 @@ import test from "node:test";
  */
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const doc = readFileSync(join(ROOT, "docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md"), "utf8");
-const source = readFileSync(join(ROOT, "src/lib/crawlers.ts"), "utf8");
 
-function rosterOf(constant) {
-  const block = source.match(new RegExp(`export const ${constant}[^=]*=\\s*\\[([\\s\\S]*?)\\n\\];`))?.[1] ?? "";
-  // Strip comments, then read the quoted tokens.
-  const stripped = block.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-  return [...stripped.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+// The live rule is the first fenced expression in the doc; the
+// superseded one follows it, kept for the record.
+const fences = [...doc.matchAll(/```\n([^`]+?)\n```/g)].map((m) => m[1].trim());
+const live = fences[0] ?? "";
+const superseded = fences[1] ?? "";
+
+/** Every route pattern the store mounts, read off src/routes and src/index.ts. */
+function routePatterns() {
+  const files = readdirSync(join(ROOT, "src/routes")).filter((f) => f.endsWith(".ts")).map((f) => join(ROOT, "src/routes", f));
+  files.push(join(ROOT, "src/index.ts"));
+  const patterns = new Set();
+  for (const file of files) {
+    for (const m of readFileSync(file, "utf8").matchAll(/\.(?:get|post|all|on)\("([^"]+)"/g)) patterns.add(m[1]);
+  }
+  return [...patterns];
 }
 
-const roster = new Set([...rosterOf("NAMED_AI_CRAWLERS"), ...rosterOf("SEARCH_CRAWLERS")]);
-const expression = doc.match(/```\n\((http\.user_agent[\s\S]*?)\n```/)?.[1] ?? "";
-const names = [...expression.matchAll(/http\.user_agent contains "([^"]+)"/g)].map((m) => m[1]);
-
-test("the roster was read, not guessed", () => {
-  assert.ok(roster.has("GPTBot") && roster.has("Googlebot"), "the crawler file did not parse");
-  assert.ok(roster.size > 30);
+test("the live rule blocks on what is asked for, never on a user-agent alone", () => {
+  assert.ok(live.startsWith("not cf.client.bot and ("), "verified crawlers stay on the honest 404");
+  assert.ok(!live.includes("http.user_agent"), "a user-agent clause is what failed the readiness scanners");
+  assert.ok(live.trimEnd().endsWith(")"), "nothing may follow the closing parenthesis: a trailing character was the parse error of 2026-09-11");
+  assert.ok(!live.includes(" matches "), "regex operators are not on every plan");
 });
 
-test("the rule names the big five and nothing outside the roster", () => {
-  assert.ok(names.length >= 5, "no expression found in the doc");
-  for (const name of names) assert.ok(roster.has(name), `${name} is in the WAF rule but not on the roster`);
-  for (const must of ["ClaudeBot", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "Claude-User"]) assert.ok(names.includes(must), must);
-});
-
-test("the rule blocks only when the claim is unverified", () => {
-  assert.ok(expression.includes("and not cf.client.bot"), "the verified-bot boolean every plan has");
-  assert.ok(expression.trimEnd().endsWith("cf.client.bot"), "nothing may follow the field: a trailing character is the parse error of 2026-09-11");
-});
-
-test("the unverifiable names stay off the list", () => {
-  for (const off of ["YouBot", "KimiBot", "ora-agent", "GrokBot", "DeepSeekBot", "TavilyBot"]) {
-    assert.ok(!names.includes(off), `${off} cannot be verified and would be blocked while robots.txt welcomes it`);
+test("no probe fragment is a substring of any route the store serves", () => {
+  const fragments = [...live.matchAll(/http\.request\.uri\.path (?:contains|ends_with) "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(fragments.length >= 20, "the fragment list did not parse");
+  const routes = routePatterns();
+  assert.ok(routes.length > 200, "the router did not parse");
+  for (const fragment of fragments) {
+    const hit = routes.find((route) => route.includes(fragment));
+    assert.equal(hit, undefined, `probe fragment ${fragment} would block the store's own route ${hit}`);
   }
+});
+
+test("the superseded rule is kept for the record and named only roster crawlers", () => {
+  const source = readFileSync(join(ROOT, "src/lib/crawlers.ts"), "utf8");
+  const roster = new Set([...source.matchAll(/^\s*"([^"]+)",\s*$/gm)].map((m) => m[1]));
+  const names = [...superseded.matchAll(/http\.user_agent contains "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(names.length >= 5, "the superseded expression is missing from the doc");
+  for (const name of names) assert.ok(roster.has(name), `${name} is not on the roster`);
 });

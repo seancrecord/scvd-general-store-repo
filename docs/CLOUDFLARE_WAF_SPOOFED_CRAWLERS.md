@@ -1,4 +1,4 @@
-# Blocking spoofed crawlers at the edge (keeper's press, 2026-09-11 — DEPLOYED the same day)
+# Blocking the credential probes at the edge (keeper's press, 2026-09-11)
 
 The Cloudflare AI-crawler panel's 404s are a secrets scan (`/stripe.json`,
 `/.aws/credentials.old`, `/config/master.key`, …) sent under the
@@ -13,6 +13,43 @@ Cloudflare → Security → Bots → **"Block AI bots"**. It blocks VERIFIED
 AI crawlers too — ClaudeBot, GPTBot, OAI-SearchBot and PerplexityBot by
 name — and would undo the robots.txt position (`Content-Signal:
 ai-train=yes`, every crawler welcomed by name) in one click.
+
+## REVISED THE SAME DAY: block the probe, not the name
+
+The first rule (below, kept for the record) blocked any unverified
+request that claimed a crawler's name. It worked — and within the
+hour an agent-readiness scanner scored the store "Some agents
+blocked: GPTBot, ClaudeBot, ChatGPT-User, PerplexityBot,
+Applebot-Extended". Readiness scanners test "are you blocking AI
+crawlers" by sending exactly those user-agents from their own IPs,
+which is byte-identical to a spoofer. The store's business is being
+read and scored well; a rule that fails every scanner to tidy a
+panel is the wrong trade.
+
+So the rule is scoped to WHAT is asked for rather than WHO claims to
+ask. Every fragment below is a credential or config probe from the
+Cloudflare 4xx tab, and none of them is a substring of any of the
+345 routes the store serves (`scripts/waf-rule-doc.test.mjs` walks
+`src/routes/` to keep that true). A scanner testing `/robots.txt` or
+`/` under a GPTBot user-agent passes; a scanner asking for
+`/.aws/credentials` under any name is blocked, which is fine.
+
+Cloudflare → Security → WAF → Custom rules → edit the existing rule.
+
+- Name: `Credential probes`
+- Action: **Block**
+- Expression (paste as one line into "Edit expression"; nothing after
+  the closing parenthesis):
+
+```
+not cf.client.bot and (http.request.uri.path contains "/.aws/" or http.request.uri.path contains "/.git" or http.request.uri.path contains "/.openai/" or http.request.uri.path contains "/@fs/" or http.request.uri.path contains "/.env" or http.request.uri.path contains "/config/" or http.request.uri.path contains "credentials" or http.request.uri.path contains "secret" or http.request.uri.path contains "/ssl/" or http.request.uri.path contains "service-account" or http.request.uri.path contains "docker-compose" or http.request.uri.path contains "appsettings" or http.request.uri.path contains "api_keys" or http.request.uri.path contains "master.key" or http.request.uri.path contains "wp-" or http.request.uri.path contains "phpinfo" or http.request.uri.path contains "/backup" or http.request.uri.path contains "/dump" or http.request.uri.path ends_with ".key" or http.request.uri.path ends_with ".pem" or http.request.uri.path ends_with ".yml" or http.request.uri.path ends_with ".yaml" or http.request.uri.path ends_with ".sql" or http.request.uri.path ends_with ".bak" or http.request.uri.path ends_with ".old" or http.request.uri.path ends_with "/stripe.json" or http.request.uri.path ends_with "/azure.json" or http.request.uri.path ends_with "/firebase.json")
+```
+
+`contains` and `ends_with` are on every plan; `matches` (regex) is
+not, which is why the list is spelled out. `not cf.client.bot` keeps
+a verified crawler that ever fetches such a path on the honest 404.
+
+## The first rule, superseded (deployed and read 2026-09-11, replaced the same day)
 
 ## Press this one
 
