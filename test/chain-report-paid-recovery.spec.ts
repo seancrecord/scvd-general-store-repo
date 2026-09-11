@@ -147,9 +147,9 @@ async function purchase(id: string, door: LaborDoor, rail: number, subjectNetwor
   subjectTx = subjectNetwork === "solana" ? encodeBase58(hexToBytes(`0x${digest.repeat(2)}`)) : `0x${digest}`;
   outTx = `0x${await sha256Hex(canary + "out")}`;
   const subject = id === "the_statement" ? subjectWallet : subjectTx;
-  const args: Record<string, string> = id === "the_statement"
+  const args: Obj = id === "the_statement"
     ? { wallet: subjectWallet, network: subjectNetwork, hours: "3", purpose: canary }
-    : { tx_hash: subjectTx, payer: subjectWallet, recipient: other, declared_cap_usdc: "0.73", purpose: canary };
+    : { tx_hash: subjectTx, payer: subjectWallet, recipient: other, declared_cap_usdc: 0.73, purpose: canary };
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
   const signed = await signLabor(offer), payer = network.startsWith("eip155:") ? evmBuyer.address.toLowerCase() : solBuyer;
   const identity = extractPaymentNonce(signed) ?? object(signed.payload).transaction;

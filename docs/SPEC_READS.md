@@ -1,5 +1,19 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-09-11 — exact buyer text and independent completion evidence
+
+Read [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
+[JSON Schema 2020-12 validation](https://json-schema.org/draft/2020-12/json-schema-validation),
+and [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/).
+JCS preserves string data, does not normalize Unicode, and refuses lone
+surrogates. Schema string limits count characters rather than UTF-16 units.
+The new envelopes use the existing ed25519 signer over canonical JSON;
+private human inputs and exact completion bytes are committed with SHA-256.
+Tests use an independent verifier and mutate the signed identities, input
+hashes and delivered text. Fixture orders with no acceptance proof say so;
+no old acceptance is backdated. See [buyer evidence](BUYER_TEXT_EVIDENCE.md)
+for the recipient's checks and limits. No live purchase or callback was sent.
+
 ## 2026-09-11 — Completion callback destinations and redirects
 
 Read Cloudflare's [Request runtime API](https://developers.cloudflare.com/workers/runtime-apis/request/)
@@ -953,3 +967,17 @@ its actual run. Publication does not establish third-party adoption.
 Read the current [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/), [EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) and [Solana transaction documentation](https://solana.com/docs/core/transactions). The EIP-3009 signature commits to the authorization values and EIP-712 domain; the transfer operation separately checks its validity interval and usage. Solana signatures cover the transaction message, with signers corresponding to the first static account keys; expiry affects broadcast eligibility. These are ownership proofs for retained records, not evidence that a fresh transfer is currently spendable or that settlement occurred.
 
 Checked the installed `@x402/evm` exported `authorizationTypes`, viem `verifyTypedData` utility, and the existing bounded Solana framing helper. The viem documentation endpoint could not be read by the browsing tool; the installed utility and real signed fixture tests supply compatibility evidence. Contract signatures that cannot be rechecked locally use an exact one-way fingerprint captured only after the original facilitator verification. Existing `PAID_RECOVERIES` JSON records gain one optional field, with no binding migration or new dependency. The current Workers types were retrieved for BUY-016 earlier the same day; this increment reuses those existing bindings and timing-safe comparison APIs. No production chain transaction is submitted by these checks.
+
+
+## 2026-09-11 — BUY-002 HTTP input checks and shared response headers
+
+Read the [OpenAPI 3.1 Response Object](https://spec.openapis.org/oas/v3.1.0.html#response-object) and [x402 v2 core payment flow](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md). OpenAPI response headers accept Header Objects or Reference Objects; the generated document keeps each response header name and references its shared definition. A regression resolves every paid route's header references and compares the definitions, alongside the all-rails document-size check.
+
+The x402 flow provides requirements when payment is needed and binds them to a resource. Validating product inputs before offering those requirements is this store's purchase policy. Free prices and input descriptions remain available through the existing catalog and compact item views. This does not establish that third-party bare-URL scanners will adopt those discovery routes; their migration remains outside this code change.
+
+## 2026-09-11 — Atomic human-capacity reservations (BUY-035)
+
+- [Cloudflare Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/): reviewed transaction isolation and durable storage before placing the keeper's shared capacity limits in one storage transaction. Settlement and order publication run outside that transaction while the durable hold remains.
+- [Rules of Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/rules-of-durable-objects/): the coordination unit is one keeper's bench, reached only by human-work admissions and reconciliation. Machine purchases do not share this coordinator. No new namespace, migration, dependency or secret is introduced.
+
+Local evidence includes simultaneous signed fixture purchases, lost acknowledgements, failed order publication, delayed capacity release, unknown settlement across a week boundary, and a settlement crossing midnight. The original admission clock is injected on both sides of the weekly-ledger assertion. The migration's dependency on the existing KV projection is recorded in `docs/LABOR_RESERVATIONS.md`.

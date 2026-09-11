@@ -133,9 +133,11 @@ describe("the conformance watch", () => {
     expect(body.error).toContain("vouching for itself");
   });
 
-  it("answers a bare probe with a price — the probe rule", async () => {
+  it("refuses a bare purchase before issuing payment terms", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/conformance_watch`);
-    expect(response.status).toBe(402);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ charged: false, input_field: "url" });
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
   it("sells a week that starts on the next rounds, paid", async () => {

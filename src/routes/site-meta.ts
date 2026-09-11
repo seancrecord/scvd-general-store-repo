@@ -58,6 +58,38 @@ export const HUMAN_SURFACES: readonly string[] = [
 export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
 
 /**
+ * THE SAME POLICY, IN THE TWO OTHER VOCABULARIES IT IS ASKED IN
+ * (2026-09-11, the findability walk). Content-Signal is one grammar
+ * for "may you train on this"; two more are read by crawlers that
+ * never learned it: the W3C TDM Reservation Protocol
+ * (/.well-known/tdmrep.json, read by European text-and-data-mining
+ * crawlers under the DSM directive) and Spawning's ai.txt (/ai.txt,
+ * robots grammar by media type). Both derive from CONTENT_SIGNAL,
+ * so the three cannot disagree: flip ai-train there and the
+ * reservation here flips with it. No fourth copy of the position.
+ */
+export function aiTrainingAllowed(signal: string = CONTENT_SIGNAL): boolean {
+  return /\bai-train=yes\b/.test(signal);
+}
+
+/** TDMRep: `tdm-reservation` 0 means no reservation, i.e. mining is permitted. */
+export function tdmrepDocument(signal: string = CONTENT_SIGNAL) {
+  return [{ location: "/", "tdm-reservation": aiTrainingAllowed(signal) ? 0 : 1 }];
+}
+
+/** ai.txt, Spawning's grammar: one stanza, every media type, one answer. */
+export function aiTxtDocument(signal: string = CONTENT_SIGNAL, base = "https://scvd.store"): string {
+  const verb = aiTrainingAllowed(signal) ? "Allow" : "Disallow";
+  return `# ai.txt — Spawning's AI training permissions, by media type.
+# Derived from the Content-Signal line in ${base}/robots.txt (${signal}),
+# so this file and that line cannot say different things.
+User-Agent: *
+${verb}: /
+${["txt", "md", "json", "xml", "html", "png", "svg", "jpg", "gif", "mp3", "mp4"].map((ext) => `${verb}: *.${ext}`).join("\n")}
+`;
+}
+
+/**
  * THE NAMED AI CRAWLERS, ALLOWED OUT LOUD.
  *
  * `User-agent: *` with `Allow: /` already permits every one of these,
@@ -113,6 +145,17 @@ siteMetaRoutes.get("/og.png", (c) => {
     "Cache-Control": "public, max-age=86400",
   });
 });
+
+siteMetaRoutes.get("/.well-known/tdmrep.json", (c) =>
+  c.json(tdmrepDocument(), 200, { "Cache-Control": "public, max-age=86400" }),
+);
+
+siteMetaRoutes.get("/ai.txt", (c) =>
+  c.text(aiTxtDocument(CONTENT_SIGNAL, c.env.STORE_BASE_URL), 200, {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "public, max-age=86400",
+  }),
+);
 
 siteMetaRoutes.get("/robots.txt", (c) => {
   const base = c.env.STORE_BASE_URL;

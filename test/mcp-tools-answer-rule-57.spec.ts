@@ -80,9 +80,10 @@ describe("every served tool answers 57.4 and 57.5", () => {
        * branch that never fires, which is as misleading as omitting
        * one it will meet.
        */
-      const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
+      const ids = [tool.itemId, ...(tool.itemIds ?? [])];
+      const scarce = MENU_ITEMS.some(item => ids.includes(item.id) && (item.stocked || item.weekly_inventory !== undefined));
       const codes = errors.map((error) => String(error.code));
-      expect(codes.includes("sold_out"), `${tool.name} free/paid mismatch`).toBe(paid);
+      expect(codes.includes("sold_out"), `${tool.name} stock contract mismatch`).toBe(scarce);
       expect(codes).toContain("bad_request");
     }
   });

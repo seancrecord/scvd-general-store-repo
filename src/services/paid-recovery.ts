@@ -1,3 +1,4 @@
+import { LaborCapacityStore, laborCapacity } from "@/services/labor-reservations";
 import { PatronageRecoveryStore, type PatronageGrantInput } from "@/services/patronage-recovery";
 import { LaunchCheckStore } from "@/services/launch-check-recovery";
 import { WatchRecoveryStore, type RecoverableWatch } from "@/services/watch-recovery";
@@ -103,6 +104,11 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       return JSON.stringify(result);
     });
   }
+  private readonly labor = new LaborCapacityStore(this.ctx.storage, this.env);
+  reserveLabor(purchaseId: string, item: import("@/types").MenuItem, at: string) { return this.labor.reserve(purchaseId, item, at); }
+  releaseUnpaidLabor(purchaseId: string) { return this.labor.notSettled(purchaseId); }
+  noteLaborOrder(order: OrderRecord, purchaseId?: string) { return this.labor.noteOrder(order, purchaseId); }
+
   private readonly patronage = new PatronageRecoveryStore(this.ctx.storage, this.env);
   grantPatronage(input: PatronageGrantInput) { return this.patronage.grant(input); }
   readPatronage(passId: string) { return this.patronage.read(passId); }
@@ -201,13 +207,20 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   }
 
   async updatePurchase(update: { state?: PurchaseIntent["state"]; payment?: SettledPayment; reconciliation_reference?: string }): Promise<void> {
-    await this.ctx.storage.transaction(async (txn) => {
+    const record = await this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (!prior) throw new Error("Purchase record missing");
       // Confirmed outcomes never regress to uncertainty on a delayed writer.
-      if (prior.state !== "unknown" && update.state) return;
-      await txn.put("purchase", { ...prior, ...update });
+      if (prior.state !== "unknown" && update.state) return prior;
+      const next = { ...prior, ...update };
+      await txn.put("purchase", next);
+      return next;
     });
+    // Persist definitive non-payment before freeing the bench. Lost release
+    // acknowledgements over-refuse until the next reservation reconciles it.
+    if (record.state === "not_settled" && record.item?.fulfillment === "human_queue") {
+      await laborCapacity(this.env).releaseUnpaidLabor(record.id);
+    }
   }
 
   async schedulePurchaseRecovery(): Promise<void> {
@@ -372,6 +385,9 @@ export class PaidRecoveryStore extends DurableObject<Env> {
         if (state.order.order_id !== seed.order_id || state.order.cert_id !== seed.cert_id) return null;
         if (mutation?.kind === "acknowledge") state.order.acknowledged_at = mutation.at;
         if (mutation?.kind === "complete") {
+          if (state.order.commission && !mutation.proof) return null;
+          if (mutation.proof) state.order.completion_proof = mutation.proof;
+          else delete state.order.completion_proof;
           state.order.status = "completed";
           state.order.deliverable = mutation.deliverable;
           state.order.completed_at = mutation.at;

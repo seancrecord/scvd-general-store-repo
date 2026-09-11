@@ -73,7 +73,9 @@ function listingHtml(listing: DirectoryListing, base: string): string {
     ? `<p class="menu-meta">Also on the <a href="/trust-list.json">signed trust list</a>, as ${escapeHtml(
         entry.relation === "transacted"
           ? "a paid transaction that delivered"
-          : "used, with nothing paid",
+          : entry.relation === "treaty"
+            ? "a receipt treaty, pointing at their own statement"
+            : "used, with nothing paid",
       )}, first checked ${escapeHtml(entry.first_verified)}.</p>`
     : "";
   return `<div class="menu-item">

@@ -1,3 +1,4 @@
+import { humanOrderEvidence } from "@/services/human-order-proof";
 import { VOICE } from "@/store";
 import type { OrderRecord } from "@/types";
 import { COMPLETION_CALLBACK_POLICY } from "@/lib/completion-callback";
@@ -23,6 +24,7 @@ export function orderStatusBody(
   now: number = Date.now(),
 ): Record<string, unknown> {
   const response: Record<string, unknown> = {
+    ...humanOrderEvidence(order),
     order_id: order.order_id,
     item_id: order.item_id,
     item_name: order.item_name,

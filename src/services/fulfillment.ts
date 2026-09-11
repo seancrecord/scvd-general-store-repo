@@ -1,3 +1,4 @@
+import { humanOrderEvidence } from "@/services/human-order-proof";
 import { creditPickup } from "@/lib/credit-terms";
 import { buyerGuidance } from "@/lib/buyer-guidance";
 import { prepareOperatorStatement } from "@/services/operator-statement";
@@ -12,7 +13,6 @@ import { existingCaseFor, performCaseFile, type CaseFileInput, type SignedCaseFi
 import { preparePatronage, InvalidPatronageTarget } from "@/services/patronage";
 import { performProvenanceCheck, type SignedProvenanceCheck } from "@/services/provenance-check";
 import { storeIdentity } from "@/lib/identity";
-import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { canonicalizeCertificate } from "@/lib/signing";
 import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
@@ -73,7 +73,7 @@ import {
 } from "@/services/orders";
 import { takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
-import { VOICE } from "@/store";
+import { getMenuItem, VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
 /**
@@ -207,7 +207,7 @@ export async function fulfillPurchase(
   item: MenuItem,
   pending: PendingPayment,
   input: FulfillmentInput,
-  recovery?: { digest: string; path: string; purchasedAt?: string },
+  recovery?: { digest: string; path: string; purchasedAt?: string; purchaseId?: string },
 ): Promise<Record<string, unknown>> {
   const retainHosted = async <T>(work: () => Promise<T>): Promise<T> => {
     try { return await work(); }
@@ -354,7 +354,7 @@ export async function fulfillPurchase(
       ...(input.buyerCapUsd !== undefined
         ? { max_amount_per_payment_usd: input.buyerCapUsd }
         : {}),
-      ...(input.buyerSpendControlsOff ? { spend_controls_disabled: true } : {}),
+      ...(input.buyerSpendControlsOff !== undefined ? { spend_controls_disabled: input.buyerSpendControlsOff } : {}),
     });
     mintOptions.attests = goodBuyer.evidence_hash;
   }
@@ -615,6 +615,9 @@ export async function fulfillPurchase(
   if (payment.trade) {
     mintOptions.trade = payment.trade;
   }
+  const privateRecovery = pending.purchaseRecovery?.();
+  let laborPurchaseId = item.fulfillment === "human_queue"
+    ? recovery?.purchaseId ?? (typeof privateRecovery?.purchase_id === "string" ? privateRecovery.purchase_id : undefined) : undefined;
   let checkpoint: ArtifactCheckpoint | undefined;
   let purchaseCreatedAt: string | undefined;
   const recoveryPayer = payment.payer ?? pending.payer;
@@ -628,8 +631,9 @@ export async function fulfillPurchase(
     checkpoint = artifactCheckpoint(env, payment.network, payment.transaction, recovery.digest);
     // Retain the brief and sale-time terms even if the catalogue changes
     // before an interrupted mint can create the order.
-    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: recovery.purchasedAt ?? new Date().toISOString() });
+    const original = await checkpoint.save("fulfillment", { item, input, mintOptions, purchasedAt: recovery.purchasedAt ?? (item.fulfillment === "human_queue" ? pending.purchaseCreatedAt?.() : undefined) ?? new Date().toISOString(), laborPurchaseId });
     purchaseCreatedAt = original.purchasedAt;
+    laborPurchaseId = original.laborPurchaseId ?? laborPurchaseId;
     item = original.item;
     input = original.input;
     mintOptions = original.mintOptions;
@@ -638,7 +642,7 @@ export async function fulfillPurchase(
       if (item.fulfillment === "human_queue" && typeof saved.order_id === "string") {
         const current = await getOrder(env, saved.order_id);
         if (!current) throw new Error("Paid order missing");
-        return { ...saved, status: current.status,
+        return { ...saved, ...humanOrderEvidence(current), status: current.status,
           ...(current.deliverable !== undefined ? { message: VOICE.instantThanks, deliverable: current.deliverable } : {}),
         };
       }
@@ -695,7 +699,6 @@ export async function fulfillPurchase(
   const receiptAmount = payment.trade
     ? `via ${payment.trade.partner_name}`
     : `$${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
-  const privateRecovery = pending.purchaseRecovery?.();
   const patronBlock = {
     ...(privateRecovery ? { recovery: privateRecovery } : {}),
     buyer_guidance: buyerGuidance(item, env.STORE_BASE_URL, typeof input.spotCheckHost === "string" ? { host: input.spotCheckHost } : {}),
@@ -743,7 +746,8 @@ export async function fulfillPurchase(
       ? {
           attest_this_purchase: {
             url: `${env.STORE_BASE_URL}/api/buy/settlement_attestation?tx_hash=${payment.transaction}`,
-            note: `You now hold a settlement transaction — the one input the trust tier's cheapest door requires. ${CHEAPEST_ON_THE_SHELF} buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.`,
+            price_usdc: getMenuItem("settlement_attestation")!.price_usdc,
+            note: `You now hold a settlement transaction — the input Settlement Attestation requires. $${getMenuItem("settlement_attestation")!.price_usdc} buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.`,
           },
         }
       : {}),
@@ -941,6 +945,7 @@ export async function fulfillPurchase(
   }
 
   const orderOptions: Parameters<typeof createOrder>[1] = {
+    ...(laborPurchaseId ? { laborPurchaseId } : {}),
     ...(purchaseCreatedAt ? { createdAt: purchaseCreatedAt } : {}),
     item,
     paidUsdc: payment.paidUsdc,
@@ -1006,9 +1011,11 @@ export async function fulfillPurchase(
         item.id === "the_drawer"
           ? drawerNote(unit.fields["item"] ?? "", unit.fields["does"] ?? "")
           : bestowedNameNote(unit.fields["name"] ?? "");
-      await completeOrder(env, order.order_id, note);
+      const completed = await completeOrder(env, order.order_id, note);
+      if (!completed) throw new Error("Completed stocked order unavailable");
       return {
         message: VOICE.instantThanks,
+        ...humanOrderEvidence(completed),
         order_id: order.order_id,
         status: "completed",
         deliverable: note,
@@ -1022,6 +1029,7 @@ export async function fulfillPurchase(
 
   const response = {
     message: order.status === "completed" ? VOICE.instantThanks : VOICE.queueConfirmation,
+    ...humanOrderEvidence(order),
     order_id: order.order_id,
     ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}),
     status: order.status,

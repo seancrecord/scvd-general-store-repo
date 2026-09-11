@@ -55,8 +55,12 @@ it("MCP discovery explains weekly sold-out refusals and the waitlist", async () 
   const purchases = tools.filter(tool => String(tool.name).startsWith("buy_"));
   expect(purchases.length).toBeGreaterThan(0);
   for (const tool of purchases) {
-    const soldOut = (tool.errors as Obj[]).find(error => error.code === "sold_out")!;
-    expect(String(soldOut.means)).toMatch(/week/i);
-    expect(String(soldOut.what_to_do)).toMatch(/waitlist/i);
+    const soldOut = (tool.errors as Obj[]).find(error => error.code === "sold_out");
+    const ids = [tool.itemId, ...(Array.isArray(tool.itemIds) ? tool.itemIds : [])];
+    const scarce = MENU_ITEMS.some(item => ids.includes(item.id) && (item.stocked || item.weekly_inventory !== undefined));
+    if (scarce) {
+      expect(String(soldOut?.means)).toMatch(/week/i);
+      expect(String(soldOut?.what_to_do)).toMatch(/waitlist/i);
+    } else expect(soldOut).toBeUndefined();
   }
 });

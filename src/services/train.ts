@@ -1,9 +1,10 @@
+import { clipCodePoints } from "@/lib/unicode";
 import { retainPersonalRecord, publishPersonalRecord, mutatePersonalRecord, type PersonalPurchase } from "@/services/personal-goods";
 import { listKeys } from "@/lib/kv-list";
 import { newTagId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { sanitizeText } from "@/lib/sanitize";
+import { NAME_CAP } from "@/lib/sanitize";
 import type { Env, TrainTagRecord, TrainTagStatus } from "@/types";
 
 /**
@@ -63,7 +64,7 @@ export async function paintTag(
   const prepared = await retainPersonalRecord(purchase, () => {
     const record: TrainTagRecord = {
       id: newTagId(),
-      tag: input.tag.slice(0, TAG_CAP),
+      tag: clipCodePoints(input.tag, TAG_CAP),
       status: "pending_review",
       date: purchase?.purchasedAt ?? new Date().toISOString(),
       cert_id: input.certId,
@@ -72,7 +73,7 @@ export async function paintTag(
     if (typeof input.paidUsdc === "number" && Number.isFinite(input.paidUsdc)) {
       record.paid_usdc = input.paidUsdc;
     }
-    const name = sanitizeText(input.name, 80);
+    const name = clipCodePoints(input.name ?? "", NAME_CAP);
     if (name) {
       record.name = name;
     }

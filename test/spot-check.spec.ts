@@ -53,13 +53,13 @@ describe("the spot check reads the books at the counter", () => {
 
   it("refuses the sale without a host: no host, no charge", async () => {
     const challenge = await SELF.fetch(`${BASE}/api/buy/spot_check`);
-    // The probe rule: unsigned asks the price and gets a 402 that
-    // names the required parameter.
-    expect(challenge.status).toBe(402);
+    // An incomplete purchase is refused before it offers payment terms.
+    expect(challenge.status).toBe(400);
     const body = (await challenge.json()) as Record<string, unknown>;
     expect(body["required_params"]).toEqual(["host"]);
 
-    const required = decodePaymentRequired(challenge);
+    const valid = await SELF.fetch(`${BASE}/api/buy/spot_check?host=example.com`);
+    const required = decodePaymentRequired(valid);
     const accepted = required.accepts[0]!;
     const paid = await SELF.fetch(`${BASE}/api/buy/spot_check`, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
@@ -70,7 +70,7 @@ describe("the spot check reads the books at the counter", () => {
   });
 
   it("refuses a URL where it asked for a hostname", async () => {
-    const paid = await buySpotCheck("?host=https://example.com/api");
+    const paid = await SELF.fetch(`${BASE}/api/buy/spot_check?host=https://example.com/api`);
     expect(paid.status).toBe(400);
   });
 

@@ -1,0 +1,30 @@
+# CITATION.cff — GitHub's "Cite this repository" reads this file (cff-version 1.2.0).
+# The DOI is the corpus dataset's CONCEPT DOI (src/store/corpus-dataset.ts), which
+# resolves to the latest weekly round; the code itself has no DOI and claims none.
+cff-version: 1.2.0
+message: "If you use the corpus or cite an observation, cite the dataset DOI below; if you build on the code, cite this repository."
+type: software
+title: "scvd.store — an evidence observatory for agentic commerce"
+abstract: "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations. Independent, signed observation of x402 endpoints, payments and receipts; a weekly Bitcoin-anchored corpus (CC BY 4.0); a general store for AI agents paid over x402 in USDC."
+authors:
+  - name: "Record Creative Co. LLC"
+    website: "https://scvd.store"
+repository-code: "https://github.com/seancrecord/scvd-general-store-repo"
+url: "https://scvd.store"
+license: MIT
+keywords:
+  - x402
+  - signed-artifacts
+  - verification
+  - attestation
+  - conformance
+  - mcp
+  - usdc
+  - payments
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22284887"
+    description: "The x402 endpoint-readiness corpus (concept DOI; resolves to the latest weekly round)"
+  - type: url
+    value: "https://scvd.store/corpus.json"
+    description: "The live signed corpus this repository publishes"

@@ -1,3 +1,5 @@
+import { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
+import { NAME_CAP } from "@/lib/sanitize";
 import { BUNDLE_MIN_HASHES, BUNDLE_MAX_HASHES, BUNDLE_HASH_CHARACTERS } from "@/lib/attestation-bundle-terms";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
@@ -20,6 +22,7 @@ export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
 
 const AGENT_NAME_SCHEMA = {
   type: "string",
+  maxLength: NAME_CAP,
   description:
     "Optional name to put on the certificate and patron badge, up to 80 characters.",
 } as const;
@@ -125,12 +128,13 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["max_usd"] = {
       type: "string",
       description:
-        "Optional. Your client's spendControls.maxAmountPerPayment, in dollars. Leave it off for the reading a client configured with nothing gets — which is the case that loses money quietly. Recorded as your declaration, never verified.",
+        "Optional finite nonnegative decimal. Your client's spendControls.maxAmountPerPayment, in dollars; zero is retained. Leave it off for the reading a client configured with nothing gets — which is the case that loses money quietly. Recorded as your declaration, never verified.",
     };
     properties["no_spend_controls"] = {
       type: "string",
+      enum: ["", "true", "false"],
       description:
-        "Optional, \"true\" if you pass spendControls: false — the one escape from the whole filter. Recorded as your declaration, never verified.",
+        "Optional: \"true\" for spendControls: false, \"false\" for enabled controls, or empty to omit. Declared, never verified.",
     };
     required.push("url");
   }
@@ -203,8 +207,9 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "the_mandate") {
     properties["mandate"] = {
       type: "string",
+      maxLength: MANDATE_TEXT_CAP,
       description:
-        "The claimed instructions, verbatim, up to 2000 characters: what this agent is authorized to do, as the submitter claims it. Recorded exactly as it arrives, signed and dated. Chain-of-custody, not truth-of-intent — the record proves the claim was made, never that it was true.",
+        `The claimed instructions, verbatim, up to ${MANDATE_TEXT_CAP} Unicode characters: what this agent is authorized to do, as the submitter claims it. Recorded exactly as it arrives, signed and dated. Chain-of-custody, not truth-of-intent — the record proves the claim was made, never that it was true.`,
     };
     properties["submitted_as"] = {
       type: "string",
@@ -299,7 +304,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     properties["sign_as"] = {
       type: "string",
-      maxLength: 80,
+      maxLength: NAME_CAP,
       description:
         'Optional name to sign with. Unstated, the confession stays anonymous.',
     };
@@ -363,11 +368,11 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     properties["payer"] = {
       type: "string",
-      description: "Optional. Narrow the match to transfers from this address.",
+      description: "Optional payer: 0x EVM address, or Solana public key for a Solana transaction.",
     };
     properties["recipient"] = {
       type: "string",
-      description: "Optional. Narrow the match to transfers to this address.",
+      description: "Optional recipient: 0x EVM address, or Solana public key for a Solana transaction.",
     };
     properties["nonce"] = {
       type: "string",
@@ -376,6 +381,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     properties["amount_usdc"] = {
       type: "number",
+      exclusiveMinimum: 0,
       description:
         "Optional. Require a transfer of exactly this many USDC. Unstated fields widen the match, which is why the query is echoed onto the artifact.",
     };
@@ -392,6 +398,9 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "The transaction to assemble the case around: 0x + 64 hex for Base or Polygon, a base58 signature for Solana. The shape picks the chain.",
     };
+    properties["payer"] = { type: "string", description: "Optional payer address matching the transaction family." };
+    properties["recipient"] = { type: "string", description: "Optional recipient address matching the transaction family." };
+    properties["expected_amount_usdc"] = { type: "number", exclusiveMinimum: 0, description: "Optional positive USDC amount claimed for this purchase." };
     properties["mandate_id"] = { type: "string", description: "Optional. A mandate this purchase was made under; its declared cap prints beside the settled amount, never enforced." };
     properties["url"] = { type: "string", format: "uri", description: "Optional. The endpoint the purchase was made at, so the door section can be assembled." };
     properties["claim"] = { type: "string", maxLength: 1000, description: "Optional. Your own account of what happened, stored verbatim and marked declared. Never checked." };
@@ -407,14 +416,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     properties["payer"] = {
       type: "string",
-      description: "Optional. Narrow the match to transfers from this address.",
+      description: "Optional payer: 0x EVM address, or Solana public key for a Solana transaction.",
     };
     properties["recipient"] = {
       type: "string",
-      description: "Optional. Narrow the match to transfers to this address.",
+      description: "Optional recipient: 0x EVM address, or Solana public key for a Solana transaction.",
     };
     properties["declared_cap_usdc"] = {
       type: "number",
+      exclusiveMinimum: 0,
       description:
         "Optional, and understand what it buys: the ceiling YOU say applied. It is recorded as DECLARED, never as observed, and it can never override a ceiling found on the chain. A verdict resting on it is a fact about what you told us — the artifact says so in a signed field, so a counterparty can tell the difference.",
     };
@@ -652,10 +662,9 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * the same schema Bazaar and the MCP tools use, so the 402 body can
  * never drift from the listing.
  *
- * Needed because of the probe rule (see routes/buy.ts): an unsigned
- * request now gets a price even when the item takes input, so the
- * challenge has to say what to send. Learning the requirement by
- * being refused is worse manners than we keep.
+ * Quotes require valid buyer inputs. Free compact menu pages publish
+ * prices and these fields before the buyer constructs a purchase; the
+ * challenge repeats them so a payment client can retain the contract.
  */
 /**
  * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
@@ -669,7 +678,7 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  *
  * One reading, three doors: the HTTP gate stamps it on the ask row,
  * the MCP door does the same from its arguments, and the pre-gate
- * refusal uses it to name the input a SIGNED request forgot.
+ * refusal uses it to name the input any purchase request forgot.
  */
 export function missingRequiredInputs(
   item: MenuItem,
@@ -723,9 +732,9 @@ export function requiredInputsExtension(
       queryParams: [...required],
       note: `This door cannot be served without ${required
         .map((name) => `?${name}=`)
-        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.`,
+        .join(" and ")}. Supply valid inputs before requesting payment terms and retain them for the signed retry. Inspect prices free in the compact menu or catalog.`,
       ...(base
-        ? { retry_url_template: `${base}/api/buy/${item.id}?${query}` }
+        ? { retry_url_template: `${base}/api/buy/${item.id}?${query}`, price_discovery_url: `${base}/menu/${item.id}?view=compact` }
         : {}),
     } as unknown as DiscoveryExtension,
   };
@@ -745,7 +754,7 @@ export function requiredParamsNote(item: MenuItem): {
       .map((name) => `?${name}=`)
       .join(
         " and ",
-      )} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves.`,
+      )} before requesting payment terms. Read the free compact menu or catalog for prices without supplying purchase inputs; invalid inputs are refused before a payment quote.`,
   };
 }
 
@@ -787,7 +796,7 @@ export function buyerInputRepair(
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     issues: purchaseInputIssues(item, args, location, refusalBody),
     ...catalogRecovery(base, item.id),
-    next_action: "Read the input contract, correct the inputs, then retry the same purchase. No charge was taken.",
+    next_action: "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken.",
   };
 }
 

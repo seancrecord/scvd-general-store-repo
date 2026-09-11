@@ -1,7 +1,7 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   SIGNING_WINDOW_SECONDS,
   priceTiersUsdc,
@@ -11,6 +11,7 @@ import { MENU_ITEMS } from "@/store";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 /**
@@ -81,7 +82,7 @@ describe("the signing window is ours, not a fallback", () => {
 
 describe("every door serves the window we chose", () => {
   beforeAll(() => {
-    installFacilitatorMock();
+
   });
 
   /*
@@ -94,7 +95,7 @@ describe("every door serves the window we chose", () => {
     const priced = MENU_ITEMS.filter((item) => item.price_usdc > 0);
     expect(priced.length).toBeGreaterThan(0);
     for (const item of priced.slice(0, 6)) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       expect(response.status, item.id).toBe(402);
       const header = response.headers.get("PAYMENT-REQUIRED");
       expect(header, `${item.id} served no challenge to read`).toBeTruthy();
@@ -122,7 +123,7 @@ describe("every door serves the window we chose", () => {
     const item = MENU_ITEMS.find((i) => i.price_usdc > 0);
     expect(item).toBeDefined();
     if (!item) return;
-    const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
     const body = (await response.json()) as Record<string, unknown>;
     const repair = JSON.stringify(body);
     const match = /"validBefore":"(\d+)"/.exec(repair);

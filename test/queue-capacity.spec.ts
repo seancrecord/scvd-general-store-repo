@@ -185,7 +185,7 @@ describe("at the door", () => {
     for (let index = 0; index < OPEN_LABOR_CAP + 3; index += 1) {
       await putOrder(`full${index}`, "the_collab");
     }
-    const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`);
+    const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation?tx_hash=0x${"ab".repeat(32)}`);
     expect(response.status).toBe(402);
   });
 });

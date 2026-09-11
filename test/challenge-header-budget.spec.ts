@@ -1,7 +1,8 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 /**
@@ -73,7 +74,7 @@ function headerBytes(response: Response): number {
  */
 describe("every priced door fits through a stock Node client", () => {
   beforeAll(() => {
-    installFacilitatorMock();
+
   });
 
   it("keeps one signed offer under its envelope budget", async () => {
@@ -142,7 +143,9 @@ describe("every priced door fits through a stock Node client", () => {
     const measured: { path: string; status: number; bytes: number }[] = [];
     for (const resource of resourceUrls) {
       const path = new URL(resource).pathname;
-      const response = await SELF.fetch(`${BASE}${path}`);
+      const item = items.find(row => path === `/api/buy/${row.id}`);
+      const query = item ? new URLSearchParams(Object.entries(baseline(item)).map(([key, value]) => [key, String(value)])) : "";
+      const response = await SELF.fetch(`${BASE}${path}?${query}`);
       measured.push({ path, status: response.status, bytes: headerBytes(response) });
     }
 

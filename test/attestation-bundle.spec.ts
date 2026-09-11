@@ -79,7 +79,7 @@ describe("a sheaf of attestations", () => {
     expect(body.error).toContain("settlement_attestation");
   });
 
-  it("refuses twenty-one hashes by count, not by silently truncating", async () => {
+  it("refuses twenty-one hashes without silently truncating", async () => {
     const hashes = Array.from(
       { length: 21 },
       (_, index) => `0x${index.toString(16).padStart(64, "0")}`,
@@ -89,8 +89,9 @@ describe("a sheaf of attestations", () => {
       { headers: buying },
     );
     expect(response.status).toBe(400);
-    const body = (await response.json()) as { error: string };
-    expect(body.error).toContain("21");
+    const body = await response.json() as Record<string, unknown>;
+    expect(body).toMatchObject({ code: "bad_request", charged: false, input_field: "tx_hashes" });
+    expect(String(body.error)).toContain("Nothing charged");
   });
 
   it("refuses a malformed hash by name", async () => {
@@ -114,9 +115,11 @@ describe("a sheaf of attestations", () => {
     expect(body.error.toLowerCase()).toContain("duplicate");
   });
 
-  it("answers a bare probe with a price, never a refusal — the probe rule", async () => {
+  it("refuses a bare purchase before issuing payment terms", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/attestation_bundle`);
-    expect(response.status).toBe(402);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ charged: false, input_field: "tx_hashes" });
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
   it("answers a valid sheaf with a 402, not a refusal", async () => {

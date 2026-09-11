@@ -1,3 +1,5 @@
+import { humanOrderEvidence } from "@/services/human-order-proof";
+import { laborCapacity } from "@/services/labor-reservations";
 import { publicationDelivery, type PublicationSnapshot } from "@/lib/publication-recovery";
 import type { CommissionPurchase } from "@/services/commission-purchase";
 import { recordedHumanResolution, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
@@ -216,6 +218,26 @@ export async function beginPurchaseIntent(env: Env, input: {
       { status: 503, headers: { "Cache-Control": "no-store" } }));
   }
   if (!started) throw new RecordedPurchase(env, record);
+  if (record.item?.fulfillment === "human_queue") {
+    let verdict: Awaited<ReturnType<ReturnType<typeof laborCapacity>["reserveLabor"]>>;
+    try {
+      verdict = await laborCapacity(env).reserveLabor(record.id, record.item, record.created_at);
+    } catch {
+      // Settlement has not been called on this newly-created journal. Even a
+      // lost reservation acknowledgement can therefore be released as unpaid.
+      await purchaseIntentStore(env, record.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
+      throw new SettlementDeclined(Response.json({ code: "capacity_unavailable", charged: false, settlement_attempted: false,
+        recovery: purchaseRecovery(env, record),
+        error: "Human capacity could not be reserved. No charge. Read this attempt's status. If it confirms not_settled, start a new purchase with a fresh payment and a new idempotency key once capacity is available." }, { status: 503 }));
+    }
+    if (!verdict.ok) {
+      await purchaseIntentStore(env, record.id).updatePurchase({ state: "not_settled" }).catch(() => undefined);
+      throw new SettlementDeclined(Response.json({ code: "capacity_unavailable", charged: false, settlement_attempted: false,
+        ...(verdict.scope === "week" ? { sold_this_week: verdict.open } : { open_orders: verdict.open }), cap: verdict.cap, capacity_scope: verdict.scope,
+        recovery: purchaseRecovery(env, record),
+        error: "The available human capacity was taken before payment. No charge. Read this attempt's status. If it confirms not_settled, start a new purchase with a fresh payment and a new idempotency key when capacity opens." }, { status: 503 }));
+    }
+  }
   return record;
 }
 
@@ -230,7 +252,7 @@ async function purchaseDelivery(env: Env, record: PurchaseIntent): Promise<Recor
     const { getOrder } = await import("@/services/orders");
     const order = await getOrder(env, record.delivery.order_id);
     if (!order) throw new Error("Purchased order unavailable");
-    return { ...record.delivery, status: order.status,
+    return { ...record.delivery, ...humanOrderEvidence(order), status: order.status,
       ...(order.deliverable !== undefined ? { deliverable: order.deliverable } : {}) };
   }
   return record.delivery ?? publicationDelivery(record);

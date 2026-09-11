@@ -22,9 +22,9 @@ import { signedRecoveryResponse } from "@/lib/payment-gate";
  */
 import type { MiddlewareHandler } from "hono";
 import { gateSignals, paymentGate } from "@/lib/payment-gate";
-import { buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { buyerInputRepair, missingRequiredInputs, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { catalogRecovery } from "@/lib/catalog-recovery";
-import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
+import { itemKeyFromPath, recordChallengeIssued, recordPaymentDecline } from "@/lib/metrics";
 import { waitlistHowToJoin } from "@/routes/requests";
 import {
   PAYMENT_VARY,
@@ -39,7 +39,6 @@ import {
 import {
   checkPurchaseArgs,
   checkPurchaseAvailability,
-  checkPurchaseInputSafety,
   queryArgs,
 } from "@/lib/purchase-args";
 import { stockedShelfCount } from "@/services/stock";
@@ -202,11 +201,12 @@ const inventoryCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * July that partition was total: registered items took 132-864
  * challenges each, unregistered ones 0-11, no overlap.
  *
- * So: a request with no PAYMENT-SIGNATURE is asking the price, not
- * placing an order. It gets the 402, with the requirement stated in
- * the challenge. A request that carries a signature is buying, and
- * every guard below applies exactly as before — refusing before
- * settlement, no money moved, the promise unchanged.
+ * Historical policy (superseded by BUY-002, 2026-09-11): a request
+ * with no PAYMENT-SIGNATURE was treated as asking the price, not
+ * placing an order. It received a 402 even without valid inputs. The
+ * keeper's buyer repair now requires valid purchase inputs before terms;
+ * free catalog reads answer price and schema questions separately. The
+ * predicate below only distinguishes signed attempts for replay/admission.
  */
 export function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
   return Boolean(
@@ -325,13 +325,20 @@ export const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 // read is needed to tell the books which check actually refused this buyer.
 export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
-  if (c.res.status !== 400 || !isBuying(c)) {
+  if (c.res.status !== 400) {
     return;
   }
   // From the path, not c.req.param(): this runs on the "/api/buy/*"
   // wildcard, ahead of the named route that would bind item_id.
   const item = getMenuItem(itemKeyFromPath(c.req.path));
   if (!item) {
+    return;
+  }
+  if (!isBuying(c)) {
+    // Keep the missing-input ask visible even though it received no quote.
+    if (missingRequiredInputs(item, c.req.query()).length > 0) {
+      await recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(() => undefined);
+    }
     return;
   }
   const reason = purchaseInputDeclineReason(item, c.req.query(), c.get("inputRefusal"));
@@ -352,10 +359,9 @@ export const bookRefusalBeforeGate: MiddlewareHandler<HonoEnv> = async (c, next)
  * twenty-fourth copy here — see the note at the top of
  * lib/purchase-args.ts.
  *
- * Malformed text encoding is refused even before a quote. The remaining
- * probe rule is unchanged: only a request PRESENTING PAYMENT is
- * gated, so asking the price without the required inputs stays free
- * and still answers with the 402 that names them.
+ * Every purchase request validates its inputs before usable payment terms.
+ * Price-only discovery remains free at the item's compact menu contract;
+ * a malformed or incomplete purchase points there without issuing a 402.
  */
 export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const item = getMenuItem(buyItemId(c));
@@ -363,13 +369,11 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   const args = queryArgs((name) => c.req.query(name));
-  const refusal = isBuying(c)
-    ? await checkPurchaseArgs(c.env, item, args, { deferAvailability: true })
-    : await checkPurchaseInputSafety(c.env, item, args);
+  const refusal = await checkPurchaseArgs(c.env, item, args, { deferAvailability: true });
   if (refusal) {
     // A new destination rule cannot confiscate already-paid work. This
     // authenticates retained goods only; it never runs a callback or settles.
-    if (isBuying(c) && ["callback_refused", "target_refused"].includes(String(refusal.body.code))) {
+    if (isBuying(c) && ["callback_refused", "target_refused", "bad_request"].includes(String(refusal.body.code))) {
       const recovered = await recoverSignedPurchase(c.env,
         decodePaymentHeader(c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT")),
         { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
@@ -393,8 +397,8 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       if (refusal) return refusal;
     }
     const item = getMenuItem(buyItemId(c));
-    // A bare catalog probe still quotes its required inputs. A supplied
-    // target must be available before new terms or settlement.
+    // Input validation precedes this guard. A supplied target must also
+    // be available before new terms or settlement.
     if (item && c.req.query("url")) {
       const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
       if (refusal) return c.json(refusal.body, refusal.status);
@@ -413,7 +417,7 @@ export const doorChecks: readonly MiddlewareHandler<HonoEnv>[] = [
   noStore,
   shelfCheck,
   bookRefusalBeforeGate,
-  admissionCheck,
   argCheck,
+  admissionCheck,
   paymentGate,
 ];

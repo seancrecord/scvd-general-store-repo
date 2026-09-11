@@ -36,9 +36,13 @@ export const EXECUTION_CONTRACT_VERSION = "1.0.0";
 
 export const executionContractRoutes = new Hono<HonoEnv>();
 
-executionContractRoutes.get("/skills/execution-contract.md", (c) => {
-  const base = c.env.STORE_BASE_URL;
-  const body = `---
+/**
+ * Exported so the Agent Skills discovery index can list this document
+ * under a digest of the same bytes it serves. Deterministic on
+ * purpose: nothing in it is read at request time but the base URL.
+ */
+export function renderExecutionContract(base: string): string {
+  return `---
 name: execution-contract
 description: A behavioral contract for autonomous work. Name the success criteria before acting, spend the cheapest evidence first, keep a bounded attempt budget per failure class, stop only on a named terminal state, and hand back an evidence ledger instead of an assurance. Instruction only — no endpoints, no wallet, nothing to install.
 license: Free to copy, adapt, and republish, with or without attribution.
@@ -162,6 +166,10 @@ with, and most of them will never be our customer.
 
 Copy it, fork it, ship it under your own name. Safe travels.
 `;
+}
+
+executionContractRoutes.get("/skills/execution-contract.md", (c) => {
+  const body = renderExecutionContract(c.env.STORE_BASE_URL);
   return c.text(body, 200, {
     "Content-Type": "text/markdown; charset=utf-8",
   });

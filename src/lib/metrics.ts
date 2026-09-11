@@ -332,7 +332,10 @@ function bucketSuffix(event: MetricEvent, allowInfra: boolean): string {
   return "";
 }
 
-/** A 402 went out. The organic issued/settled gap is the price signal. */
+/**
+ * A purchase ask: either issued terms or a tagged missing-input refusal.
+ * The legacy "challenge" event alone is not proof that a usable quote went out.
+ */
 export async function recordChallengeIssued(
   env: Env,
   path: string,

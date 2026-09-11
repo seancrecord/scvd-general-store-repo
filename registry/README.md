@@ -64,6 +64,32 @@ finder's index on the last read (2026-09-06). Steps, the two judgment
 calls a reviewer might raise, and why the tab is not yet in the drawer:
 `agentfinder/README.md`.
 
+## Hugging Face (`huggingface/`)
+
+The corpus dataset is already on the Hub under `keeper-scvd`. The
+verifier Space — `spaces/scvd-x402-verifier/`, five read-only tools
+fronting `/mcp/verifier` as a Gradio MCP server, nothing paid reachable
+— is the shape hf-discover indexes; `huggingface/README.md` has the
+token scope and the three commands. `npm run space:test` holds the
+Space's tool module to the door's contract.
+
+## The findability reading (`npm run findability:check`)
+
+Thirty-four fixed paths registries and crawlers read, in the repo and
+on the site, each with who reads it: `scripts/lib/findability.mjs`.
+Prints present / missing / unreachable and never fails a build; a
+missing row is a decision for the desk. On 2026-09-11 the walk found
+six missing and all six were filled the same day (the Claude Code
+plugin and marketplace manifests, the Gemini extension, CITATION.cff,
+`/.well-known/tdmrep.json`, `/ai.txt`).
+
+## For CV (`FOR_CV_2026-09-11.md`)
+
+The two presses handed to CV on 2026-09-11 — copying the catalog
+entries verbatim into agentfinder-catalog#34 with a verify loop, and
+pushing the verifier Space under a fine-grained token — with the
+order they depend on (#630 first) and what not to do.
+
 ## On hold
 
 Agentic.market listing request waits until MCP and Bazaar channels are

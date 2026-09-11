@@ -1,3 +1,4 @@
+import { humanOrderEvidence } from "@/services/human-order-proof";
 import { commissionPurchaseResponse } from "@/lib/commission-purchase-response";
 import { solanaPaymentEvidence } from "@/lib/solana-payment-evidence";
 import { paymentRecoverySigners } from "@/lib/payment-recovery-signature";
@@ -120,6 +121,7 @@ export async function recoverSignedPurchase(env: Env, wire: unknown,
             if (typeof delivery.order_id === "string") {
               const order = await getOrder(env, delivery.order_id);
               if (!order) throw new Error("Retained order unavailable");
+              Object.assign(delivery, humanOrderEvidence(order));
               delivery.status = order.status;
               if (order.deliverable !== undefined) delivery.deliverable = order.deliverable;
             }

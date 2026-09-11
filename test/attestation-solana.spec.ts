@@ -187,15 +187,16 @@ describe("the paid door, both rails", () => {
 
   it("refuses a nonce beside a Solana signature, before any money moves", async () => {
     installFacilitatorMock();
-    const url = `${BASE}/api/buy/settlement_attestation?tx_hash=${SIG}&nonce=0xabc`;
+    const url = `${BASE}/api/buy/settlement_attestation?tx_hash=${SIG}&nonce=0x${"ab".repeat(32)}`;
     const challenge = await SELF.fetch(`${BASE}/api/buy/settlement_attestation?tx_hash=${SIG}`);
     const accepted = decodePaymentRequired(challenge).accepts[0]!;
     const refused = await SELF.fetch(url, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
     });
     expect(refused.status).toBe(400);
-    const body = (await refused.json()) as { error: string };
-    expect(body.error).toContain("EIP-3009");
+    const body = await refused.json() as { error: string };
+    expect(body).toMatchObject({ code: "bad_request", charged: false, input_field: "nonce" });
+    expect(body.error).toContain("beside an EVM transaction");
     expect(body.error).toContain("Nothing charged");
   });
 
