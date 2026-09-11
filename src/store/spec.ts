@@ -206,7 +206,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
 /** 3.16.2: distinguish cached replies from durable same-key payment admission. */
 /** 3.16.2: ClawHub audit — anchor summary via the MCP body, tab install pinned. */
 /** 3.16.3: original signed payments recover retained purchases after expiry. */
-export const SKILL_VERSION = "3.16.3";
+/** 3.16.4: completion callback policy, visible outcomes and capacity refusals. */
+export const SKILL_VERSION = "3.16.4";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

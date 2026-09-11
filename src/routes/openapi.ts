@@ -1,3 +1,4 @@
+import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { CORPUS_INDEX_PAGE_SIZE } from "@/services/corpus-index";
 import { beforeYouStartSentence } from "@/lib/before-you-start";
 import { CONFESSION_RECEIPT_TYPE } from "@/services/confession-receipt";
@@ -7486,6 +7487,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
                       },
                       created_at: { type: "string", format: "date-time" },
                       completed_at: { type: "string", format: "date-time" },
+                      callback: COMPLETION_CALLBACK_STATUS_SCHEMA,
+                      webhook: { type: "string", description: "The recorded callback outcome, also available as callback.result." },
                       sla_hours: {
                         type: "number",
                         description:

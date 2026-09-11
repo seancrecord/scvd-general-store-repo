@@ -45,6 +45,9 @@ export interface ProbeTargetVerdict {
 
 const OK: ProbeTargetVerdict = { ok: true };
 
+/** DNS root dots and hostname casing do not create a different destination. */
+export const canonicalHostname = (name: string): string => name.toLowerCase().replace(/\.+$/, "");
+
 /**
  * Name suffixes that are internal by definition. `.local` is mDNS,
  * `.internal` is the convention every cloud uses for private zones,
@@ -214,12 +217,11 @@ export function checkProbeTarget(url: URL, ownHost: string): ProbeTargetVerdict 
    * before any name is compared, and struck on the own-host side too
    * so `scvd.store.` is still us.
    */
-  const bare = (name: string): string => name.toLowerCase().replace(/\.+$/, "");
-  const hostname = bare(url.hostname);
+  const hostname = canonicalHostname(url.hostname);
   if (hostname === "") {
     return { ok: false, reason: "That URL names no host." };
   }
-  if (hostname === bare(url.host) && hostname === bare(ownHost)) {
+  if (hostname === canonicalHostname(url.host) && hostname === canonicalHostname(ownHost)) {
     // Handled by the doors with a fuller explanation; kept here so the
     // backstop is complete rather than nearly complete.
     return {

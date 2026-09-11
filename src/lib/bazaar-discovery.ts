@@ -28,7 +28,7 @@ const CALLBACK_URL_SCHEMA = {
   type: "string",
   format: "uri",
   description:
-    "Optional https URL that receives a POST with the deliverable when a human-queue order completes.",
+    "Optional public https:443 completion POST; no credentials or own host. Invalid values refused before payment. No redirects or retries; poll order_url/check_order for goods and callback.result.",
 } as const;
 
 export type QuerySchema = Record<string, unknown> & {

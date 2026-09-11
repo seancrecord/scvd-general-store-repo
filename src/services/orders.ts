@@ -7,6 +7,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
+import { checkCompletionCallback } from "@/lib/completion-callback";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on inventory scans. An unnamed cap is a silent one. */
@@ -229,26 +230,34 @@ export async function completeOrder(
     // which is also the buyer's cue that polling the order URL is on
     // them from here.
     try {
-      const response = await fetch(order.callback_url, {
-        method: "POST",
-        // On a leash: see ORDER_CALLBACK_TIMEOUT_MS above. A hang at
-        // the buyer's origin becomes the "unreachable" note below,
-        // never a pinned-open settled purchase.
-        signal: AbortSignal.timeout(callbackTimeoutMs),
-        // The one outbound call that lands in a BUYER's log. Identity
-        // attached for the same reason the certificates are signed:
-        // whoever reads it later should be able to trace it back.
-        headers: outboundHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          order_id: order.order_id,
-          item_id: order.item_id,
-          status: order.status,
-          deliverable: order.deliverable,
-        }),
-      });
-      order.webhook = response.ok
-        ? `delivered (HTTP ${response.status})`
-        : `attempted once, your endpoint answered HTTP ${response.status} — not retried; the deliverable stays at this order URL forever`;
+      const target = checkCompletionCallback(order.callback_url, new URL(env.STORE_BASE_URL).hostname);
+      if (!target.ok) {
+        order.webhook = "not attempted: callback destination refused by the public https policy — not retried; the deliverable stays at this order URL";
+      } else {
+        const response = await fetch(order.callback_url, {
+          method: "POST",
+          redirect: "manual",
+          // On a leash: see ORDER_CALLBACK_TIMEOUT_MS above. A hang at
+          // the buyer's origin becomes the "unreachable" note below,
+          // never a pinned-open settled purchase.
+          signal: AbortSignal.timeout(callbackTimeoutMs),
+          // The one outbound call that lands in a BUYER's log. Identity
+          // attached for the same reason the certificates are signed:
+          // whoever reads it later should be able to trace it back.
+          headers: outboundHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({
+            order_id: order.order_id,
+            item_id: order.item_id,
+            status: order.status,
+            deliverable: order.deliverable,
+          }),
+        });
+        order.webhook = response.ok
+          ? `delivered (HTTP ${response.status})`
+          : response.status >= 300 && response.status < 400
+          ? `attempted once, your endpoint answered HTTP ${response.status}; redirect not followed — not retried; the deliverable stays at this order URL forever`
+          : `attempted once, your endpoint answered HTTP ${response.status} — not retried; the deliverable stays at this order URL forever`;
+      }
     } catch {
       // The bell rings on; delivery is still visible at /api/order/:id.
       order.webhook =

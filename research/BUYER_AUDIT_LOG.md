@@ -266,6 +266,8 @@ Repair: resolve and validate the supplied pass id before payment; refuse unknown
 
 ### BUY-029 — P1: an invalid callback silently disappears after payment
 
+**Repair completed — 2026-09-11.** Supplied human-order callbacks are validated before quotes or payment; malformed values cannot disappear silently. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
+
 **Open · boundary audit and local completion controls.** HTTP and MCP accept `callback_url:"x"` on an Aura Walk purchase, settle and queue it. Completing both local fixtures sends zero callbacks. The mapper only copies a callback that passes its URL check, with no prepayment rejection or explicit notice that the supplied callback was discarded. The original good remains retrievable, so this is a broken requested completion channel, not demonstrated loss of the entire artifact.
 
 Repair: validate a supplied callback before charging, including its documented HTTPS requirement and usable length, and distinguish omission from invalid input. Preserve the existing recorded-outcome behavior for a valid callback that later fails. `src/lib/purchase-args.ts` and `src/services/orders.ts`.
@@ -274,11 +276,15 @@ Repair: validate a supplied callback before charging, including its documented H
 
 ### BUY-030 — P1: a trailing-dot own hostname bypasses the purchase refusal
 
+**Repair completed — 2026-09-11.** Probe purchases compare canonical own hostnames, including case and trailing DNS root dots. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
+
 **Open · isolated target-selection audit.** Eleven probe/human-target products refuse `scvd.store` but let `scvd.store.` past the purchase gate. Nine settle (54 door/rail observations); Passport Refresh and Trust Profile refuse deeper in fulfillment and instead return a generic 500 after verification (12 observations). The generic answer says to wait and retry, although the target deterministically remains unacceptable. Six first-watch controls reproduce scheduled observations of the alias. No live self-fetch or paid incident is claimed.
 
 Repair: canonicalize the target and configured own hostname once and use the existing guard before issuing usable terms or verifying payment. Keep target-policy failures as specific `charged:false` refusals, including late defense-in-depth failures. `src/lib/purchase-args.ts:targetVerdict` passes an empty own hostname into a guard that already strips root dots, then compares the original host strings. Evidence: [target-selection audit](buyer-target-selection-2026-09-06.md).
 
 ### BUY-031 — P1: paid human callbacks skip destination validation
+
+**Repair completed — 2026-09-11.** Human completion callbacks are validated at admission and again before dispatch. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
 
 **Open · target-selection audit; application egress gap, not proven live private-network access.** Aura Walk and The Collab accept private/local/metadata callback URLs, plain HTTP despite the published HTTPS requirement, URL credentials and own-host callbacks. All 480 cases designated for prepayment refusal settle and attempt a callback on fixture completion. The existing probe-target protections do not run on this paid callback path. Trade-account callbacks have a separate validator, so the protection is not absent everywhere.
 
@@ -286,11 +292,15 @@ Repair: validate a supplied completion destination before purchase, with a field
 
 ### BUY-032 — P1: callback redirects are not confined to approved destinations
 
+**Repair completed — 2026-09-11.** Completion callbacks use manual redirects; no redirect destination is followed. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
+
 **Open · local redirect simulation.** Forty-eight public-to-private or chained callback cases follow the fixture's 307 redirect toward a private destination. The initial callback fetch supplies no redirect policy; the fixture then models runtime refusal. This is evidence of missing application redirect confinement, not successful access to internal infrastructure. Probe products' manual redirects pass the equivalent controls.
 
 Repair: refuse redirects for completion callbacks or apply the same destination policy at every hop, with bounded hops and a deliberate policy for forwarding the completed deliverable. Record a redirect refusal as a callback outcome visible to the buyer. `src/services/orders.ts:completeOrder`. Validating only the initial URL, as proposed in BUY-031, does not close this path.
 
 ### BUY-033 — P2: buyers cannot see callback failure or its retry policy
+
+**Repair completed — 2026-09-11.** HTTP order polling and MCP check_order expose callback outcomes, retrieval and the no-automatic-retry policy. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
 
 **Open · completed-order HTTP/MCP controls.** Twelve failures (HTTP 503, simulated blocked DNS, or private redirect) are correctly recorded in `order.webhook`, but both `/api/order/{id}` and MCP `check_order` omit that field and still say “Delivered, as promised.” Four successful controls confirm that the test distinguishes success from failure. The completed artifact remains available: this is missing delivery-channel status, not loss of the completed good.
 
@@ -317,6 +327,8 @@ Repair: make acceptance of the human obligation durable before exposing a comple
 Repair: reserve human capacity atomically before payment can settle, with safe release/recovery semantics and one shared admission path for both doors. Rechecking an eventually consistent counter alone is not a reservation. Preserve the existing alert for exceptional oversells. Relevant paths: `src/services/queue-capacity.ts`, `src/routes/door-checks.ts`, `src/services/fulfillment.ts` after `createOrder`.
 
 ### BUY-036 — P2: capacity refusal explains itself only in prose
+
+**Repair completed — 2026-09-11.** HTTP catalogue and commission capacity refusals return capacity_unavailable, charged:false and their counts, matching MCP. Full validation and limits are recorded in the [completion checklist](BUYER_REPAIR_CHECKLIST.md). The original audit follows.
 
 **Open · HTTP human-queue audit.** Thirty-six at-item-cap, at-global-cap and capacity-filled-after-quote requests safely refuse with a clear explanation and next steps, but their bodies omit `charged:false` and a machine-readable refusal code. The human understands “Nothing charged”; a literal agent must infer it from text. This does not claim the prose is unhelpful or that these HTTP refusals moved money.
 

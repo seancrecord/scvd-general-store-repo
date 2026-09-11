@@ -1,3 +1,4 @@
+import { COMPLETION_CALLBACK_STATUS_SCHEMA } from "@/lib/completion-callback";
 import { A2A_CHECK_SCHEMA } from "@/lib/a2a-desk-schema";
 import {
   MCP_REFUSAL_CODES,
@@ -1256,6 +1257,8 @@ const FREE_TOOLS: McpTool[] = [
         badge_url: str("The patron badge, an SVG."),
         deliverable: str("The goods, as text. Present once status is completed."),
         completed_at: str("When it was delivered, ISO 8601. Present once completed."),
+        callback: COMPLETION_CALLBACK_STATUS_SCHEMA,
+        webhook: str("The recorded callback outcome; also available as callback.result."),
         message: str("The store's word on where things stand."),
         window_breached: {
           type: "object",
@@ -1543,7 +1546,7 @@ function underContract(tool: McpTool, base: string): McpTool {
      */
     title: tool.title ?? tool.annotations?.title ?? tool.name,
     errors: MCP_REFUSAL_CODES.filter(
-      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) && (refusal.code !== "purchase_resolved" || human),
+      (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) && (!["purchase_resolved", "callback_refused", "capacity_unavailable"].includes(refusal.code) || human),
     ),
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),
