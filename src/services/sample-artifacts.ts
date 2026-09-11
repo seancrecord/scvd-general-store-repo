@@ -461,7 +461,7 @@ export function sampleLaunchCheck(env: Env, price: number): SampleEnvelope<Launc
 
 type UnsignedAttestation = Omit<
   SignedAttestation,
-  "signature" | "public_key" | "signature_covers" | "signature_jcs" | "signature_jcs_covers" | "evidence_hash"
+  "signature" | "public_key" | "signature_covers" | "signature_jcs" | "signature_jcs_covers" | "evidence_hash" | "projection"
 >;
 
 export async function sampleSettlementAttestation(
@@ -500,6 +500,9 @@ export async function sampleSettlementAttestation(
     signature_jcs: _j,
     signature_jcs_covers: _jc,
     evidence_hash: _e,
+    // The projection carries a real JWS and a real evidence hash; a
+    // specimen must never look checkable, so it goes too.
+    projection: _p,
     ...unsigned
   } = signed;
   return envelope(

@@ -119,6 +119,9 @@ describe("a well-formed hash that never existed", () => {
       // its explainer, same as it never covered signature_covers.
       signature_jcs: _jcs,
       signature_jcs_covers: _jcsCovers,
+      // And the projection (2026-09-11), signed on its own below both;
+      // received_not_observed rides there too when a response was given.
+      projection: _projection,
       ...core
     } = observation;
     expect(

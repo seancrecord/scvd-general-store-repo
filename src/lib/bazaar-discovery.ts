@@ -390,6 +390,11 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself.",
     };
+    properties["payment_response"] = {
+      type: "string",
+      description:
+        "Optional. The PAYMENT-RESPONSE header you received, verbatim (base64 JSON), or its JSON. Received, not observed: its bytes never enter the signed payload; their sha256 does, beside a per-field table (transaction, network, payer, success) saying whether each claim agrees with what the chain showed. The bytes are echoed outside the signature so you can check both.",
+    };
     required.push("tx_hash");
   }
   if (item.id === "the_case_file") {

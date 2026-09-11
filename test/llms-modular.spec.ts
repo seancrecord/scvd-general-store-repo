@@ -894,8 +894,26 @@ const BASE = "https://scvd.store";
 // treaty count of one with the idempotency-key sentence (main) land
 // together; each was pinned alone against its own parent, and this pin
 // is the guide with both in it.
+// 2026-09-11: the settlement attestation gained a signed binding class
+// (none / authorization_nonce / reserved input_commitment) and a battery;
+// the listing's narrowing rule now says what a matched nonce binds the
+// transaction to — one authorization, never one request. Verified the
+// same way: with only menu-utility.ts restored to the prior commit, the
+// prior digest reproduced in the run that caught this edit, and this
+// copy reproduces the new one.
+// 2026-09-11, later the same day: the attestation accepts payment_response
+// — the facilitator's settlement response, received and never observed —
+// and the listing's house rules say what the artifact does with it
+// (digest inside the signature, bytes outside, a per-field agreement
+// table). Verified the same way: with only menu-utility.ts restored to
+// the prior commit, the prior digest reproduced in the run that caught
+// this edit, and this copy reproduces the new one.
+// 2026-09-11, merge: the skills-index lines and the treaty count (main)
+// and the settlement attestation's binding class and payment_response
+// house rules (this branch) land together; each was pinned alone against
+// its own parent, and this pin is the guide with both in it.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1faa12b688c1c10d33668034220286ef0d775c49552d5975dbe23581acee63c9";
+  "242b893f9d80b18672955c97ef68d6496fca1a671607396efed4869cc01ee30c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

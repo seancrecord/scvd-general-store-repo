@@ -12,6 +12,20 @@ import {
 import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
+import {
+  RECEIVED_NOTE,
+  claimReading,
+  compareClaim,
+  decodeSettlementResponseClaim,
+  sha256Hex,
+} from "@/services/attestation-claims";
+import type {
+  InputClaims,
+  ObservedForClaims,
+  ReceivedNotObserved,
+} from "@/services/attestation-claims";
+import { projectSettlementAttestation } from "@/services/attestation-projection";
+import type { SettlementAttestationProjection } from "@/services/attestation-projection";
 import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
 import {
   getSlot,
@@ -99,6 +113,179 @@ export const FINALITY_BLOCKS = 12;
  */
 export const SOLANA_FINALITY_SLOTS = 32;
 
+/**
+ * THE DESK'S BATTERY (2026-09-11). Every observation now names the
+ * revision of the desk that produced it, as the launch check has since
+ * D6. The first revision never wrote one down, so its absence is how a
+ * reader knows an artifact predates this line. That matters because v1
+ * carried no `binding` field either, and "predates binding classes"
+ * must never be read as "unbound": one is a date, the other is a
+ * finding. Under this battery both fields are mandatory, and an
+ * artifact citing it without them is defective, not merely old.
+ * readBinding() applies that rule so no reader has to reconstruct it.
+ */
+export const SETTLEMENT_ATTESTATION_BATTERY = "settlement-attestation-v2";
+
+/**
+ * WHAT TIES THE OBSERVED TRANSACTION TO ONE PAYMENT (2026-09-11).
+ *
+ * A transaction-hash observation answers "did this settle" and, by
+ * hash, "was this settled twice". It does not answer "is this the
+ * settlement of THAT authorization" unless the chain's own record says
+ * so. The desk has read EIP-3009 nonces out of AuthorizationUsed events
+ * since it opened, but folded the answer into SETTLED versus
+ * INSUFFICIENT_MATCH, so two SETTLED artifacts — one asked with a
+ * nonce, one without — looked identical unless a reader dug through
+ * the echoed query. The binding class states it outright.
+ *
+ *   none                — nothing on the artifact ties the transaction
+ *                         to one authorization or request. The usual
+ *                         value, and an honest one: it is what every
+ *                         artifact before this battery meant.
+ *   authorization_nonce — the nonce asked about appears in an
+ *                         AuthorizationUsed event of this transaction,
+ *                         read from the chain. The transfer is the
+ *                         settlement of that one EIP-3009 authorization.
+ *   input_commitment    — reserved. A commitment to the request itself,
+ *                         carried in the settlement (masumi's
+ *                         inputCommitment is the live example). No rail
+ *                         this desk reads carries one; the class exists
+ *                         so the vocabulary is declared before it is
+ *                         needed rather than invented under pressure.
+ *
+ * THE SEAM, stated where it cannot be missed: authorization_nonce ties
+ * the transaction to ONE AUTHORIZATION, not to one request. Whether the
+ * door tied that nonce to a single 402 challenge is the door's work and
+ * is not observed here. The default x402 scheme carries no server-side
+ * nonce, so a payload signed against one challenge can be presented
+ * against a fresh one with the same terms; dedupe by transaction
+ * answers "settled twice", not "bound to this request". This field
+ * types the gap. It does not close it, and says so.
+ */
+export type BindingClass = "none" | "authorization_nonce" | "input_commitment";
+
+/**
+ * Other people's words for the same classes, kept beside ours so the
+ * mapping is a table rather than a private dialect. The x402 spec
+ * thread had not settled its nouns when this shipped (its §5.3.5 text
+ * was still on a branch; a separate issue titles the gap "request
+ * commitment"). When the words land, the alias lands here and the
+ * class name stays.
+ */
+export const BINDING_CLASS_ALIASES: Record<BindingClass, readonly string[]> = {
+  none: [],
+  authorization_nonce: ["EIP-3009 nonce", "AuthorizationUsed(authorizer, nonce)"],
+  input_commitment: ["inputCommitment (masumi)", "request commitment (x402 thread)"],
+};
+
+export interface SettlementBinding {
+  /** What this artifact establishes. */
+  class: BindingClass;
+  /** What the caller asked to have checked; "none" when nothing was. */
+  asked: BindingClass;
+  /** Plain words: what the class ties, and what it leaves untied. */
+  reading: string;
+}
+
+const BINDING_SEAM =
+  "This ties the transaction to one authorization, not to one request: whether the door tied that nonce to a single 402 challenge is the door's job and is not observed here.";
+
+const UNASKED_BINDING: SettlementBinding = {
+  class: "none",
+  asked: "none",
+  reading:
+    "No authorization nonce was asked about, so nothing on this artifact ties the transaction to one payment authorization or request; it is identified by its hash and the stated transfer fields only. To bind, ask again with the nonce from the PAYMENT-SIGNATURE payload (or send payment_payload) and the desk reads it against the transaction's AuthorizationUsed events.",
+};
+
+const SOLANA_BINDING: SettlementBinding = {
+  class: "none",
+  asked: "none",
+  reading:
+    "Solana carries no EIP-3009 authorization nonce and this desk reads no request commitment on that rail, so nothing on this artifact ties the transaction to one payment authorization or request; it is identified by its signature and the stated balance movements only. The door refuses a nonce beside a Solana signature rather than sign an artifact that skipped the check.",
+};
+
+function evmBinding(
+  query: AttestationQuery,
+  receipt: RpcReceipt | null,
+  status: SettlementStatus,
+  nonces: string[],
+): SettlementBinding {
+  if (!query.nonce) return UNASKED_BINDING;
+  if (!receipt) {
+    return {
+      class: "none",
+      asked: "authorization_nonce",
+      reading:
+        "A nonce was asked about, but there was no transaction to read it against at the moment observed. No binding is established; this says nothing about later.",
+    };
+  }
+  if (status === "REVERTED") {
+    return {
+      class: "none",
+      asked: "authorization_nonce",
+      reading:
+        "A nonce was asked about, but the transaction reverted: no authorization was used and no value moved, so no binding is established.",
+    };
+  }
+  if (nonces.includes(query.nonce.toLowerCase())) {
+    return {
+      class: "authorization_nonce",
+      asked: "authorization_nonce",
+      reading: `The nonce asked about appears in an AuthorizationUsed event of this transaction, read from the chain, so the observed transfer is the settlement of that one EIP-3009 authorization. ${BINDING_SEAM}`,
+    };
+  }
+  return {
+    class: "none",
+    asked: "authorization_nonce",
+    reading:
+      "The nonce asked about does not appear in any AuthorizationUsed event of this transaction. No binding is established, and status reads INSUFFICIENT_MATCH for that reason.",
+  };
+}
+
+/**
+ * HOW A READER TAKES THE FIELD, including when it is not there. Three
+ * answers, kept apart on purpose: an artifact from before the battery
+ * is silent about binding (it never spoke; read its echoed query); an
+ * artifact under the battery declares it; an artifact citing the
+ * battery without it is defective. Absence means one thing per
+ * version, never two.
+ */
+export type BindingRead =
+  | { kind: "declared"; binding: SettlementBinding }
+  | { kind: "predates"; note: string }
+  | { kind: "defect"; note: string };
+
+const BINDING_CLASSES: readonly BindingClass[] = ["none", "authorization_nonce", "input_commitment"];
+
+function isSettlementBinding(value: unknown): value is SettlementBinding {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    BINDING_CLASSES.includes(candidate.class as BindingClass) &&
+    BINDING_CLASSES.includes(candidate.asked as BindingClass) &&
+    typeof candidate.reading === "string"
+  );
+}
+
+export function readBinding(artifact: object): BindingRead {
+  // Any artifact-shaped object: a live SignedAttestation, a parsed
+  // JSON body, or a partial. The reader looks at two fields only.
+  const record = artifact as { battery?: unknown; binding?: unknown };
+  if (record.battery === undefined) {
+    return {
+      kind: "predates",
+      note: `This observation names no battery, so it predates ${SETTLEMENT_ATTESTATION_BATTERY} and binding classes (2026-09-11). It is silent about binding — not "unbound", not "unasked". Its echoed query says whether a nonce was asked, and its status already folded the answer in.`,
+    };
+  }
+  if (isSettlementBinding(record.binding)) {
+    return { kind: "declared", binding: record.binding };
+  }
+  return {
+    kind: "defect",
+    note: `This observation cites battery ${String(record.battery)} but carries no well-formed binding field, which that battery makes mandatory. Treat the artifact as defective, not as unbound.`,
+  };
+}
+
 export interface AttestationQuery {
   txHash?: string;
   payer?: string;
@@ -106,6 +293,14 @@ export interface AttestationQuery {
   nonce?: string;
   /** Expected amount in whole USDC. */
   amountUsdc?: number;
+  /**
+   * The facilitator's settlement response as the buyer holds it: the
+   * PAYMENT-RESPONSE header verbatim, or its JSON. Received, not
+   * observed — it never enters the signed payload; see
+   * attestation-claims.ts. Stripped from the echoed query for the
+   * same reason: its digest rides in input_claims instead.
+   */
+  paymentResponse?: string;
 }
 
 /**
@@ -129,6 +324,9 @@ export function nonceFromPaymentPayload(encoded: string): string | null {
 
 export interface SettlementObservation {
   observed_at: string;
+  stale_after: string;
+  /** Which revision of the desk produced this. Absent before 2026-09-11. */
+  battery: string;
   chain: string;
   tx_hash: string | null;
   recipient: string | null;
@@ -139,6 +337,13 @@ export interface SettlementObservation {
   /** Head at the moment of the read, so depth is checkable. */
   chain_head: number | null;
   confirmations: number | null;
+  /** What, if anything, ties this transaction to one payment. */
+  binding: SettlementBinding;
+  /**
+   * Present only when a settlement response was given: a digest of
+   * its bytes and, per field, whether it agrees with the chain.
+   */
+  input_claims?: InputClaims;
   /** What was asked, echoed so the answer cannot be re-pointed later. */
   query: AttestationQuery;
   /** Stable digest of the observed facts. */
@@ -159,6 +364,13 @@ export interface SignedAttestation extends SettlementObservation {
    */
   signature_jcs: string;
   signature_jcs_covers: string;
+  /**
+   * Outside both signatures by design: somebody else's bytes, echoed
+   * so the reader can check input_claims.received_sha256 and the table.
+   */
+  received_not_observed?: ReceivedNotObserved;
+  /** Outside both signatures, signed on its own, pointing back here. */
+  projection: SettlementAttestationProjection;
 }
 
 /**
@@ -167,7 +379,7 @@ export interface SignedAttestation extends SettlementObservation {
  * that could drift.
  */
 function evmScope(chain: EvmChain): string {
-  return `This observes public ${chain.label} chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.`;
+  return `This observes public ${chain.label} chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. The binding field says what, if anything, ties this transaction to one payment authorization; read it before citing this artifact as proof of which payment settled, because a hash alone proves settlement, not correspondence. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.`;
 }
 
 const SCOPE = evmScope(BASE_EVM);
@@ -182,7 +394,7 @@ const SCOPE = evmScope(BASE_EVM);
  * artifact that silently skipped a check.
  */
 const SOLANA_SCOPE =
-  "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is an EVM facility and is not evaluated on Solana. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
+  "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is an EVM facility and is not evaluated on Solana; the binding field says so, and says that nothing on this artifact ties the transaction to one payment authorization. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
 
 function evmReadings(
   chain: EvmChain,
@@ -303,6 +515,8 @@ function classify(
   amountUsdc: number | null;
   blockHeight: number | null;
   confirmations: number | null;
+  /** Every EIP-3009 nonce the transaction burned; the binding reads these. */
+  nonces: string[];
 } {
   if (!receipt) {
     return {
@@ -312,6 +526,7 @@ function classify(
       amountUsdc: null,
       blockHeight: null,
       confirmations: null,
+      nonces: [],
     };
   }
   const blockHeight = Number.parseInt(receipt.blockNumber, 16);
@@ -328,6 +543,7 @@ function classify(
       amountUsdc: null,
       blockHeight,
       confirmations,
+      nonces: [],
     };
   }
 
@@ -370,6 +586,7 @@ function classify(
       amountUsdc: echoed ? usdcFromUnits(echoed.amount) : null,
       blockHeight,
       confirmations,
+      nonces,
     };
   }
 
@@ -383,6 +600,7 @@ function classify(
     amountUsdc: usdcFromUnits(match.amount),
     blockHeight,
     confirmations,
+    nonces,
   };
 }
 
@@ -449,30 +667,76 @@ export async function observeSettlement(
 }
 
 /**
+ * The echoed query, minus the facilitator's bytes. Everything else a
+ * caller asked is theirs and is echoed verbatim; the settlement
+ * response is somebody else's word and is committed by digest instead.
+ */
+function echoedQuery(query: AttestationQuery): AttestationQuery {
+  const { paymentResponse: _dropped, ...rest } = query;
+  return rest;
+}
+
+/**
+ * Both halves of "received, not observed": the signed digest-and-table
+ * and the unsigned echo. Nothing when no response was given.
+ */
+async function inputClaimsFor(
+  query: AttestationQuery,
+  observed: ObservedForClaims,
+): Promise<{ claims?: InputClaims; received?: ReceivedNotObserved }> {
+  if (!query.paymentResponse) return {};
+  const decoded = decodeSettlementResponseClaim(query.paymentResponse);
+  if (!decoded) return {};
+  const digest = await sha256Hex(query.paymentResponse);
+  const agreement = compareClaim(decoded, observed);
+  return {
+    claims: {
+      source: "PAYMENT-RESPONSE",
+      standing: "received, not observed",
+      received_sha256: digest,
+      agreement,
+      reading: claimReading(agreement, decoded, observed),
+    },
+    received: {
+      standing: "received, not observed",
+      payment_response: query.paymentResponse,
+      sha256: digest,
+      decoded,
+      note: RECEIVED_NOTE,
+    },
+  };
+}
+
+/**
  * Sign one finished observation, both disciplines. Shared by the two
- * rails so the artifact shape cannot drift between them.
+ * rails so the artifact shape cannot drift between them. The two
+ * trailing fields are appended AFTER signing on purpose: one is
+ * somebody else's bytes, the other carries its own signature.
  */
 async function signObservation(
   env: Env,
   observation: SettlementObservation,
+  received?: ReceivedNotObserved,
 ): Promise<SignedAttestation> {
   const { signature, publicKey } = await signMessage(
     JSON.stringify(observation),
     env.SIGNING_KEY,
   );
-  return {
+  const signed = {
     ...observation,
     signature,
     public_key: publicKey,
     signature_covers:
-      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
+      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key. Fields below signature_jcs_covers — received_not_observed and projection — sit outside both signatures by design: the first is somebody else's bytes, the second is signed on its own and points back here.",
     // Same fields, sorted-key byte order, for JCS-conformant tooling.
     signature_jcs: await signJcs(
       observation as unknown as Record<string, unknown>,
       env.SIGNING_KEY,
     ),
     signature_jcs_covers: JCS_SIGNATURE_COVERS,
+    ...(received ? { received_not_observed: received } : {}),
   };
+  return { ...signed, projection: await projectSettlementAttestation(env, signed) };
 }
 
 /**
@@ -546,9 +810,16 @@ export async function observeSolanaSettlement(
   }
 
   const solanaObservedAt = now.toISOString();
+  const { claims, received } = await inputClaimsFor(query, {
+    txHash: query.txHash ?? null,
+    chain: SOLANA_CHAIN,
+    payer,
+    status,
+  });
   const core = {
     observed_at: solanaObservedAt,
     stale_after: staleAfterFrom(solanaObservedAt),
+    battery: SETTLEMENT_ATTESTATION_BATTERY,
     chain: SOLANA_CHAIN,
     tx_hash: query.txHash ?? null,
     recipient,
@@ -558,14 +829,20 @@ export async function observeSolanaSettlement(
     block_height: slot,
     chain_head: headSlot,
     confirmations,
-    query,
+    binding: SOLANA_BINDING,
+    ...(claims ? { input_claims: claims } : {}),
+    query: echoedQuery(query),
   };
-  return signObservation(env, {
-    ...core,
-    evidence_hash: await evidenceHash(core),
-    reading: SOLANA_READINGS[status],
-    scope: SOLANA_SCOPE,
-  });
+  return signObservation(
+    env,
+    {
+      ...core,
+      evidence_hash: await evidenceHash(core),
+      reading: SOLANA_READINGS[status],
+      scope: SOLANA_SCOPE,
+    },
+    received,
+  );
 }
 
 /**
@@ -590,9 +867,16 @@ export async function observeWithFacts(
 ): Promise<SignedAttestation> {
   const verdict = classify(receipt, query, head, chain);
   const observedAt = now.toISOString();
+  const { claims, received } = await inputClaimsFor(query, {
+    txHash: query.txHash ?? null,
+    chain: chain.caip2,
+    payer: verdict.payer,
+    status: verdict.status,
+  });
   const core = {
     observed_at: observedAt,
     stale_after: staleAfterFrom(observedAt),
+    battery: SETTLEMENT_ATTESTATION_BATTERY,
     chain: chain.caip2,
     // Named only when more than one chain was actually read — the
     // NOT_FOUND that checked both EVM rails says so on the artifact.
@@ -607,14 +891,20 @@ export async function observeWithFacts(
     block_height: verdict.blockHeight,
     chain_head: head,
     confirmations: verdict.confirmations,
-    query,
+    binding: evmBinding(query, receipt, verdict.status, verdict.nonces),
+    ...(claims ? { input_claims: claims } : {}),
+    query: echoedQuery(query),
   };
-  return signObservation(env, {
-    ...core,
-    evidence_hash: await evidenceHash(core),
-    reading: evmReadings(chain, options.checkedBothEvmChains === true)[
-      verdict.status
-    ],
-    scope: evmScope(chain),
-  });
+  return signObservation(
+    env,
+    {
+      ...core,
+      evidence_hash: await evidenceHash(core),
+      reading: evmReadings(chain, options.checkedBothEvmChains === true)[
+        verdict.status
+      ],
+      scope: evmScope(chain),
+    },
+    received,
+  );
 }
