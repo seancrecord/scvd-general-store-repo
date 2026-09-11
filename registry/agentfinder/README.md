@@ -16,6 +16,29 @@ community catalog behind it is the repository
 `catalog/<github-account>/`, merged by pull request, regenerated into
 a root `ai-catalog.json` that the service ingests.
 
+## The press was already pressed (found 2026-09-11)
+
+CV opened [github/agentfinder-catalog#34](https://github.com/github/agentfinder-catalog/pull/34)
+on 2026-09-06 ("Add scvd-general-store", one commit, one skill entry:
+the store skill). It was open with no review on 2026-09-11. Two
+things about it worth the keeper's eye:
+
+- Its description quotes the practice counter at "from $0.004"; the
+  SKILL.md it points at, and the store, say from $0.001. One PR
+  description in one place, so a reviewer who reads both sees a
+  store disagreeing with itself. A one-line edit to the PR body.
+- It carries one entry. The other two drafted here — the
+  `x402-before-you-pay` skill and the MCP server — are not in it.
+  Either push them onto the same branch before it merges (one review
+  instead of two) or open a second PR after; the files in
+  `catalog/seancrecord/` are the ones to copy either way.
+
+Hugging Face: CV reports a submission there too. Nothing on file says
+where or what; the only Hugging Face read this repo holds is the
+hf-discover search of 2026-09-06 (zero results, and hf-discover
+indexes Hugging Face Skills and Spaces, not arbitrary domains). Paste
+the link and it gets a row.
+
 ## Where the store stands (read 2026-09-10)
 
 - **Not listed.** The 2026-09-06 search for `scvd.store`

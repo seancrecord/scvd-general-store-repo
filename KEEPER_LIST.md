@@ -914,29 +914,37 @@ Do not relitigate without you.
 
 ### Directory and listings (press is yours, rule 30)
 
-- **LOOK: the crawler 404s, by path (2026-09-10).** The Cloudflare
-  AI-crawler panel you pasted shows 858 404s in the month and names
-  none of them; every one of the 2,990 sitemap URLs answered 200 when
-  walked as Claude-User the same day, so they are guesses. Two of the
-  guesses now answer (`/.well-known/ai-plugin.json` serves the retired
-  plugin manifest over our contract; `/index.html` is a 301 to `/`).
-  In that panel, "Most crawled paths" → the 4xx tab → paste the top
-  rows here. One dominant path is a fix; a long tail is a probe and
-  nothing to do. The same panel's 301s are trailing slashes and
-  http→https, which is normal.
+- **RULE: the crawler 404s are a secrets scan, not crawlers
+  (2026-09-11).** The 4xx tab you pasted names the top paths:
+  `/stripe.json`, `/ssl/localhost.key`, `/@fs/app/.env.local`,
+  `/firebase-service-account.json`, `/config/master.key`,
+  `/docker-compose.prod.yml`, `/app/.env.staging`,
+  `/.openai/config.json`, plus `/fetch` and `/proxy`. That is a
+  vulnerability scanner probing for leaked credentials, sent under
+  spoofed AI user-agents (Claude-User, GPTBot, ChatGPT-User,
+  OAI-SearchBot, Bytespider all appear on it in near-equal shares,
+  which no real crawler population does). None of those files exist
+  here and 404 is the right answer; nothing gets redirected, on
+  purpose. Two of the true guesses were answered on 2026-09-10
+  (`/.well-known/ai-plugin.json`, `/index.html`). The one decision
+  that is yours: Cloudflare can challenge or block a request whose
+  user-agent claims a known AI crawler but whose source does not
+  verify as that bot (WAF rule on `cf.verified_bot_category`, or
+  AI Crawl Control's "block unverified" toggle). It removes the
+  spoofers from the panel and the 404 bill and touches no real
+  crawler. The store's stance welcomes crawlers; this welcomes only
+  the ones that are who they say. Your press, if you want it.
 
-- **GitHub Agent Finder: the catalog PR (2026-09-10).** Copilot's
-  agent finder did not return the store on 2026-09-06, and the
-  community catalog behind it (`github/agentfinder-catalog`) takes
-  one JSON file per augment by pull request. Three are drafted and
-  validated in `registry/agentfinder/catalog/seancrecord/` — the
-  store skill, the before-you-pay skill, the store's MCP server —
-  and the press is the fork-and-PR in `registry/agentfinder/README.md`.
-  The tab has no entry until its registry version is republished
-  (the press two rows down); an entry naming 0.11.1 would point at
-  a version the registry does not hold. RULE, small: the MCP entry
-  uses the feed's identifier shape rather than the guide's; the README
-  says why, and either passes.
+- **GitHub Agent Finder: CV's PR is open; two entries and one number
+  to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
+  2026-09-06 with the store skill alone; no review as of 09-11. Its
+  description says "from $0.004" where the SKILL.md and the store
+  say $0.001 — edit the PR body. The before-you-pay skill and the
+  MCP server entry drafted in `registry/agentfinder/catalog/seancrecord/`
+  are not in it: push them onto CV's branch before merge, or a second
+  PR after. Hugging Face: CV reports a submission; paste the link so
+  it gets a row (nothing on file says where). The tab still has no
+  entry until its registry version is republished.
 
 - **Desvela Registry Watch activation (2026-09-06).** After the receiver
   is deployed at `https://scvd.store/webhooks/desvela-registry`, register
