@@ -47,6 +47,15 @@ ${doors}`;
  * draft of this page used headings of our own, which made a stranger
  * read the whole thing to find out there was nothing to register for.
  *
+ * THE TITLE IS THE FILE'S NAME, NOT A WORD FOR ITS SUBJECT (2026-09-11).
+ * The spec's own document opens `# auth.md`, and that literal is how a
+ * scanner tells an auth.md from any page that happens to discuss
+ * authentication. The second draft here said `# Authentication`,
+ * which is better English and the wrong label: Cloudflare's readiness
+ * scan reported "auth.md exists but is missing the expected heading",
+ * a document found and then not recognised. The H1 is the label; the
+ * preamble under it is where the English goes.
+ *
  * FOUR OF THE SEVEN ANSWER "NOTHING", AND THAT IS THE CONTENT, not a
  * gap in it. A store with no credentials has no registration step, no
  * claim step and no revocation step, and saying so under the heading
@@ -72,7 +81,7 @@ currency: "${STORE_METADATA.currency}"
 contact: "${base}/api/letter"
 ---
 
-# Authentication
+# auth.md
 
 **There is no account here.** No key to request, no signup form, no
 approval queue, no waitlist, no tier you get promoted into. That is

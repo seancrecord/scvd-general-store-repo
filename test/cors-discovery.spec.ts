@@ -126,6 +126,7 @@ describe("the discovery surface answers browsers from any origin", () => {
     "/.well-known/x402.json",
     "/.well-known/ai-catalog.json",
     "/.well-known/ard.json",
+    "/.well-known/agent-skills/index.json",
     "/openapi.json",
     "/llms.txt",
     "/menu.json",

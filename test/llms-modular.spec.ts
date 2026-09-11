@@ -869,8 +869,15 @@ const BASE = "https://scvd.store";
 // with only llms.ts restored to the prior commit, the prior digest
 // reproduced in the run that caught this edit, and this copy
 // reproduces the new one.
+// 2026-09-11: the menu section names the Agent Skills discovery index
+// at /.well-known/agent-skills/index.json and the digested SKILL.md
+// copies beneath it (three guide lines; Cloudflare's readiness scan had
+// read the store as publishing no skills). Verified the same way: with
+// only llms.ts restored to the prior commit, the prior digest
+// reproduced in the run that caught this edit, and this copy
+// reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "7dbc5fa4cf68900c6de13284586b436158e93a6c09831b91b16bb6d3f946d085";
+  "5c9f9842611c58c7c0b85b4d94e6c25df88628335a1ddc7048f6de0b3029a174";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
