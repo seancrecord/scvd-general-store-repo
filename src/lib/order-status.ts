@@ -1,5 +1,6 @@
 import { VOICE } from "@/store";
 import type { OrderRecord } from "@/types";
+import { COMPLETION_CALLBACK_POLICY } from "@/lib/completion-callback";
 
 /**
  * THE ORDER'S OWN PAGE, ONE DERIVATION, TWO DOORS (2026-09-05).
@@ -34,9 +35,20 @@ export function orderStatusBody(
   if (order.status === "completed") {
     response["deliverable"] = order.deliverable;
     response["completed_at"] = order.completed_at;
-    response["message"] = VOICE.orderCompleted;
+    response["message"] = order.callback_url
+      ? "The completed work is available here. The callback result below reports whether its separate delivery attempt succeeded."
+      : VOICE.orderCompleted;
   } else {
     response["message"] = VOICE.queueConfirmation;
+  }
+  if (order.callback_url) {
+    response["callback"] = {
+      requested: true,
+      result: order.webhook ?? null,
+      ...COMPLETION_CALLBACK_POLICY,
+      retrieve: `${base}/api/order/${order.order_id}`,
+    };
+    if (order.webhook !== undefined) response["webhook"] = order.webhook;
   }
 
   /**

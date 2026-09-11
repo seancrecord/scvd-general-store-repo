@@ -8,7 +8,8 @@ import { buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discov
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
-import { checkProbeTarget } from "@/lib/probe-target";
+import { canonicalHostname, checkProbeTarget } from "@/lib/probe-target";
+import { checkCompletionCallback } from "@/lib/completion-callback";
 import { issuePassport } from "@/services/passport";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
@@ -162,6 +163,12 @@ export async function checkPurchaseInputSafety(env: Env, item: MenuItem, args: P
   }
   const encoding = checkPurchaseEncoding(item, args);
   if (encoding) return encoding;
+  const callback = args.get("callback_url");
+  if (item.fulfillment === "human_queue" && (callback !== undefined || args.has?.("callback_url"))) {
+    const verdict = checkCompletionCallback(callback, new URL(env.STORE_BASE_URL).hostname);
+    if (!verdict.ok) return refuse(400, "callback_refused",
+      `The completion callback was refused: ${verdict.reason} Nothing charged.`, { input_field: "callback_url" });
+  }
   const purpose = args.get("purpose");
   if (purpose !== undefined && Array.from(purpose).length > PURCHASE_PURPOSE_MAX_LENGTH) {
     return refuse(400, "bad_request",
@@ -230,12 +237,13 @@ function targetVerdict(
     return refuse(400, "bad_request", missing, { input_field: "url" });
   }
   const url = new URL(raw!);
-  const verdict = checkProbeTarget(url, "");
+  const ownHost = new URL(env.STORE_BASE_URL).hostname;
+  if (canonicalHostname(url.hostname) === canonicalHostname(ownHost)) {
+    return refuse(400, "target_refused", ownHostRefusal, { input_field: "url" });
+  }
+  const verdict = checkProbeTarget(url, ownHost);
   if (!verdict.ok) {
     return refuse(400, "target_refused", `${verdict.reason} Nothing charged.`, { input_field: "url" });
-  }
-  if (url.host.toLowerCase() === new URL(env.STORE_BASE_URL).host.toLowerCase()) {
-    return refuse(400, "target_refused", ownHostRefusal, { input_field: "url" });
   }
   return undefined;
 }

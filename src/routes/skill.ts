@@ -315,7 +315,11 @@ the door, identifying this skill file, never you. Leave it on.
    delivery that fails takes no money and leaves nothing to refund.
    Instant items arrive in the response body. Human-queue items return an \`order_id\`: poll
    \`${base}/api/order/{order_id}\`; optional \`callback_url\` gets a
-   POST on completion.
+   single POST on completion. Supplied callbacks must be public https on
+   port 443, without credentials or this store’s hostname; invalid callbacks
+   are refused before payment. Redirects are not followed and failures are not
+   retried. The order URL and \`check_order\` report \`callback.result\` and
+   retain the completed goods even when that attempt fails.
 5. Verify anything we ever signed, free, forever:
    \`GET ${base}/api/verify/{id}\`.
 

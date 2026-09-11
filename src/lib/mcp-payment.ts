@@ -220,7 +220,7 @@ export async function readMcpPaymentChallenge(env: Env, itemId: string): Promise
   return challenge;
 }
 
-function signedRecoveryOutcome(recovery: SignedPurchaseRecovery): McpPaymentOutcome {
+export function signedRecoveryOutcome(recovery: SignedPurchaseRecovery): McpPaymentOutcome {
   if (recovery.kind === "status") return { kind: "purchase-status", body: recovery.body };
   const payment = recovery.payment;
   return { kind: "authorized", recovered: true, savedDelivery: recovery.delivery, verifiedPayer: payment.payer,
