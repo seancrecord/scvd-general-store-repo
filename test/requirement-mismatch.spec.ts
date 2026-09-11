@@ -404,8 +404,11 @@ describe("a refusal before the facilitator", () => {
       [{ scheme: "exact", network: "eip155:8453" }],
       { scheme: "exact", network: "eip155:84532" },
     );
+    // A network disagreement also carries the chain the buyer named,
+    // since 2026-09-11: that is the rails intake rule's counterparty,
+    // and the desk tallies it (test/rails-asked-for.spec.ts).
     expect(mismatchReasonCode(report as never)).toBe(
-      "local:requirement_mismatch:network",
+      "local:requirement_mismatch:network:eip155:84532",
     );
   });
 

@@ -37,7 +37,15 @@ Two independently-growing lists, never entangled:
 1. **Accepted payment schemes** grow by one entry only when a real,
    named counterparty proves an existing entry doesn't serve them —
    never preemptively because a player is big. (This gate already
-   ruled correctly once: `gokite-aa` stayed out.)
+   ruled correctly once: `gokite-aa` stayed out.) Since 2026-09-11 the
+   counterparty has a place to appear: a payment signed for a network
+   the challenge did not offer books as
+   `local:requirement_mismatch:network:<caip-2>` and the decline desk
+   tallies those by chain under "rails asked for and not offered."
+   Before that, the books kept the first mismatched field
+   alphabetically — `asset` — and the chain never left the 402 body.
+   What the desk still cannot see: a client that read the accepts,
+   found nothing it could sign, and never sent a payment.
 2. **Discovery registry listings** grow additively — metadata
    registrations, never payment-flow changes. Tracked separately,
    shipped independently.

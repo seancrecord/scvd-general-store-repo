@@ -137,6 +137,30 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
           below is a guess about someone else's error code. If one client repeats the
           same reason, treat it as ours until proven otherwise.</p>`;
 
+  // Demand for a rail the store does not run, the only place it shows.
+  const railRows = Object.entries(r.rails_asked_for)
+    .sort((a, b) => b[1] - a[1])
+    .map(
+      ([network, count]) =>
+        `<tr><td><code>${escapeHtml(network)}</code></td><td>${count}</td></tr>`,
+    )
+    .join("\n");
+  const railsSection =
+    railRows === ""
+      ? ""
+      : `<section>
+    <h2>Rails asked for and not offered</h2>
+    <p>Each row is a payment signed for a network the challenge did not carry —
+    somebody opened a funded wallet on that chain and could not pay here. This is
+    the named counterparty the rails intake rule in <code>PAYMENT_RAILS.md</code>
+    waits for. Intent-bearing declines only; one chain recurring across different
+    clients is the case for a rail, one client retrying is not.</p>
+    <table>
+      <tr><th>network</th><th>signed payments refused</th></tr>
+      ${railRows}
+    </table>
+  </section>`;
+
   const reasonRows = Object.entries(r.by_reason)
     .sort((a, b) => b[1] - a[1])
     .map(
@@ -180,6 +204,8 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
         : ""
     }
   </section>
+
+  ${railsSection}
 
   <section>
     <h2>Every decline, newest first</h2>
