@@ -52,6 +52,9 @@ What the index actually takes, read off hf-discover's own README:
   does not take a remote URL, so a Space cannot simply point at
   `https://scvd.store/mcp`.
 
+Built 2026-09-11: `spaces/scvd-x402-verifier/`, and the press is in
+`registry/huggingface/README.md`. The reasoning, kept:
+
 So the honest shape is a Space that runs a small Gradio app with
 `mcp_server=True` exposing the store's FREE doors as read-only tools
 (preflight, before-you-pay, conformance, verify, the corpus per host),
@@ -98,6 +101,7 @@ read to file beside the 2026-09-06 zero.
 | `scvd-general-store.json` | `application/ai-skill` | `skills/scvd-general-store/SKILL.md` on `main` |
 | `x402-before-you-pay.json` | `application/ai-skill` | `examples/claude-code/SKILL.md` on `main` |
 | `scvd-general-store-mcp.json` | `application/mcp-server+json` | the registry's version URL for `store.scvd/general-store` at `server.json`'s version |
+| `scvd-general-store-plugin.json` | `application/vnd.github.copilot-plugin` | `.claude-plugin/plugin.json` on `main` (added 2026-09-11 with the manifest itself; the catalog's third entry type, 177 rows strong) |
 
 `npm run listings:test` runs `scripts/agentfinder-check.test.mjs`,
 which ports the catalog's own validator (their
@@ -149,8 +153,8 @@ the result beside the 09-06 read.
 
 ## Not prepared, on purpose
 
-A Copilot plugin entry would need a `.claude-plugin/plugin.json` in
-this repository, which does not exist; the root `plugin.json` is the
-agent-plugins.org manifest, a different schema. Whether the store
-wants a third listing of the same door is the keeper's call
-(`KEEPER_LIST.md`).
+The tab's MCP entry, until its registry version is republished
+(the entry would name a version the registry does not hold). The
+Copilot plugin entry that was held back here on 2026-09-10 exists
+now: `.claude-plugin/plugin.json` was added 2026-09-11 and the fourth
+catalog file points at it.

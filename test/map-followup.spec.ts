@@ -1,15 +1,15 @@
+import { installBuyerHarness, baseline, items } from "./helpers/buyer-harness";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { getMenuItem } from "@/store";
 import { FREE_INSTRUMENTS, ROUTES } from "@/lib/when-to-buy";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS } from "@/services/preflight";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 const PRICE_NOTES = ["signature_agent_card", "the_statement", "luckies", "coffees_for_closers"];
 
 describe("the map's price contradictions stay closed", () => {
-  beforeAll(() => installFacilitatorMock());
 
   it.each(PRICE_NOTES)("%s quotes its current price, including after a price change", (id) => {
     const item = getMenuItem(id)!;
@@ -37,7 +37,7 @@ describe("the map's price contradictions stay closed", () => {
     const listing = menu.items.find((entry) => entry.id === id)!;
     expect(listing.price_usdc).toBe(item.price_usdc);
     expect(listing.note_402).toBe(item.note_402);
-    const response = await SELF.fetch(`${BASE}/api/buy/${id}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = await response.json() as { error: string };
     const challenge = JSON.parse(atob(response.headers.get("PAYMENT-REQUIRED")!)) as { accepts: { amount: string }[] };

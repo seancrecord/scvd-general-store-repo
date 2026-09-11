@@ -64,7 +64,9 @@ describe("the agent-auth surfaces", () => {
      * an answer rather than an omission.
      */
     for (const heading of [
-      "# Authentication",
+      // The spec's own H1, verbatim: the label a scanner recognises
+      // the file by. "# Authentication" was found and not recognised.
+      "# auth.md",
       "## Discover",
       "## Pick a method",
       "## Register",

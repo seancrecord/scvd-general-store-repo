@@ -665,9 +665,12 @@ describe("the launch check door", () => {
     );
   });
 
-  it("answers a bare probe with a price — the probe rule", async () => {
+  it("refuses a bare purchase before issuing payment terms", async () => {
+    testEnv.FIELD_WALLET_KEY = TEST_FIELD_KEY;
     const response = await SELF.fetch(`${BASE}/api/buy/launch_check`);
-    expect(response.status).toBe(402);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ charged: false, input_field: "url" });
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
   it("delivers the walk end to end on the keyless default: settled, evidence bound, served forever", async () => {

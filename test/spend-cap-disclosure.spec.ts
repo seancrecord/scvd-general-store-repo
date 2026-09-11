@@ -1,7 +1,7 @@
+import { installBuyerHarness, baseline, items, request as quoteRequest } from "./helpers/buyer-harness";
 import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   CLIENT_CAP_LABEL,
   CLIENT_CAP_READABLE,
@@ -13,6 +13,7 @@ import { agentsMd } from "@/routes/agents-md";
 import { runChecks } from "@/services/preflight";
 import { MENU_ITEMS } from "@/store";
 
+installBuyerHarness();
 const BASE = "https://scvd.store";
 
 /**
@@ -83,14 +84,14 @@ describe("the cap the store publishes is the cap the client applies", () => {
 
 describe("a door that a stock client will refuse says so in its own 402", () => {
   beforeAll(() => {
-    installFacilitatorMock();
+
   });
 
   it("puts the notice, the figure and the two settings in the 402 body", async () => {
     const item = overCapItems()[0];
     expect(item, "no over-cap item to probe").toBeDefined();
     if (!item) return;
-    const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
+    const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     const notice = String(body["client_spend_cap"] ?? "");
@@ -117,7 +118,7 @@ describe("a door that a stock client will refuse says so in its own 402", () => 
     });
     expect(cheap, "no wholly-under-cap item on the shelf").toBeDefined();
     if (!cheap) return;
-    const response = await SELF.fetch(`${BASE}/api/buy/${cheap.id}`);
+    const response = await quoteRequest(`${BASE}/api/buy/${cheap.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === cheap.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(
       response.status,
       "the control door did not even answer 402 — an absence read off an error page proves nothing (rule 46)",

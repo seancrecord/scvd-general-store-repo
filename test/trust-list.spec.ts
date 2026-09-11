@@ -8,7 +8,9 @@ const BASE = "https://scvd.store";
 
 /**
  * Trust List v0. The format and the signature are the product; the
- * list is one entry long and that entry is us.
+ * list is one entry long and that entry is us. (v1 added the unpaid
+ * "used" relation; v2 the mutual "treaty" one. The gate below survived
+ * both.)
  *
  * The tests that matter here are the scope guards, because the
  * liability edge is a wording problem: the moment this list says
@@ -24,7 +26,7 @@ describe("the trust list", () => {
     expect(isRecord(body)).toBe(true);
     if (!isRecord(body)) return;
 
-    expect(body.version).toBe(1);
+    expect(body.version).toBe(2);
     expect(typeof body.signature).toBe("string");
     expect(typeof body.public_key).toBe("string");
 
@@ -100,12 +102,61 @@ describe("the trust list", () => {
     expect(transacted[0]?.origin).toBe("https://scvd.store");
   });
 
-  it("marks every entry as paid or unpaid, never leaving it to be assumed", () => {
+  it("marks every entry as paid, unpaid or treaty, never leaving it to be assumed", () => {
     for (const entry of TRUST_LIST_ENTRIES) {
       expect(
-        ["transacted", "used"].includes(entry.relation),
+        ["transacted", "used", "treaty"].includes(entry.relation),
         `${entry.origin} has no relation, so a reader would guess`,
       ).toBe(true);
+    }
+  });
+
+  /**
+   * v2, 2026-09-10. The treaty relation exists on the list from the
+   * day the first yes arrived, before its first entry does: the terms
+   * are stated once, the count is a real zero, and a reader learns
+   * what a treaty here would mean without one having to exist first.
+   * The per-entry guard below is vacuous today and fires the day the
+   * keeper lands the first entry by hand.
+   */
+  it("states the treaty terms once, counts treaties apart, and points at their words rather than quoting them", async () => {
+    const body: unknown = await (
+      await SELF.fetch(`${BASE}/trust-list.json`)
+    ).json();
+    if (!isRecord(body) || !Array.isArray(body.entries)) {
+      throw new Error("no entries");
+    }
+    const attests = String(body.attests).toLowerCase();
+    expect(attests).toContain('"treaty"');
+    expect(attests).toContain("honours");
+
+    const terms = String(body.treaty_terms).toLowerCase();
+    // The negative half is the load-bearing part.
+    expect(terms).toContain("nothing more");
+    expect(terms).toContain("not an endorsement");
+    expect(terms).toContain("not liability");
+    expect(terms).toContain("unpublishing");
+    expect(terms).toContain("rather than quoting");
+
+    if (!isRecord(body.counts)) throw new Error("no counts");
+    expect(typeof body.counts.treaty).toBe("number");
+    expect(body.counts.treaty).toBe(
+      TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "treaty")
+        .length,
+    );
+
+    for (const entry of TRUST_LIST_ENTRIES) {
+      if (entry.relation !== "treaty") continue;
+      // Their statement, at a URL they control, over TLS. A treaty
+      // entry with no statement URL is a paraphrase, which is the one
+      // thing the relation exists to refuse.
+      expect(entry.statement_url.startsWith("https://")).toBe(true);
+      expect(new URL(entry.statement_url).origin).toBe(
+        new URL(entry.origin).origin,
+      );
+      for (const url of [entry.verify_url, entry.key_url]) {
+        if (url !== null) expect(url.startsWith("https://")).toBe(true);
+      }
     }
   });
 
@@ -124,7 +175,14 @@ describe("the trust list", () => {
     // And the counts let a reader weigh the list without walking it.
     if (!isRecord(body.counts)) throw new Error("no counts");
     expect(body.counts.transacted).toBe(1);
-    expect(body.counts.used).toBe(TRUST_LIST_ENTRIES.length - 1);
+    expect(body.counts.used).toBe(
+      TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used").length,
+    );
+    expect(
+      Number(body.counts.transacted) +
+        Number(body.counts.used) +
+        Number(body.counts.treaty),
+    ).toBe(TRUST_LIST_ENTRIES.length);
   });
 
   it("says how an origin gets considered, and that asking is not enough", async () => {
@@ -155,9 +213,13 @@ describe("the trust list", () => {
     for (const entry of body.entries) {
       expect(isRecord(entry)).toBe(true);
       if (!isRecord(entry)) continue;
+      // A dealing carries what was transacted; a treaty carries where
+      // their statement lives instead. Same dates and status for both.
+      const ownField =
+        entry.relation === "treaty" ? "statement_url" : "transacted";
       for (const field of [
         "origin",
-        "transacted",
+        ownField,
         "first_verified",
         "last_checked",
         "status",

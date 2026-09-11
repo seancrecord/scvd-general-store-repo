@@ -88,7 +88,7 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
     const { fulfillCommissionPurchase } = await import("@/services/commission-purchase");
     const digest = await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
     return fulfillCommissionPurchase(env, item, { ...payment, settle: async () => payment }, record.commission,
-      { path: record.path, digest, purchasedAt: record.created_at });
+      { path: record.path, digest, purchasedAt: record.created_at, purchaseId: record.id });
   }
   // A commission with no retained quote must never become a generic collab.
   if (record.path.startsWith("/api/commission/pay/")) return null;
@@ -99,5 +99,5 @@ export async function deliverRecordedPurchase(env: Env, record: PurchaseIntent):
   const digest = args ? await sha256Hex(jcsCanonicalize(args))
     : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
   return fulfillPurchase(env, item, { ...payment, observation: supportsObservationRecovery(item) ? observationCheckpoint(env, record.id, record.path, digest, true) : undefined, settle: async () => payment }, input,
-    { path: record.path, digest, purchasedAt: record.created_at });
+    { path: record.path, digest, purchasedAt: record.created_at, purchaseId: record.id });
 }

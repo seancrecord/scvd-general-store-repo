@@ -869,6 +869,31 @@ const BASE = "https://scvd.store";
 // with only llms.ts restored to the prior commit, the prior digest
 // reproduced in the run that caught this edit, and this copy
 // reproduces the new one.
+// 2026-09-10: the trust-list paragraph carries the third relation — the
+// treaty count beside transacted and used, the version number it prints
+// moving from 1 to 2, and the sentence that a treaty entry points at the
+// other operator's own statement. Verified the same way: with the prose
+// and the trust-list modules restored from HEAD in an isolated run the
+// prior digest matched exactly, and this copy reproduces the new one.
+// 2026-09-11: the first treaty entry landed, so the count the paragraph
+// prints moved from 0 to 1 with no prose change. The 09-10 pin was taken
+// on the same tree with the roster empty and reproduced exactly before
+// the entry was added; this copy reproduces the new one.
+// 2026-09-11, merge: the idempotency-key sentence (main) and the
+// treaty paragraph with its count of one (this branch) land together;
+// each was pinned alone against its own parent, and this pin is the
+// guide with both in it.
+// 2026-09-11: the menu section names the Agent Skills discovery index
+// at /.well-known/agent-skills/index.json and the digested SKILL.md
+// copies beneath it (three guide lines; Cloudflare's readiness scan had
+// read the store as publishing no skills). Verified the same way: with
+// only llms.ts restored to the prior commit, the prior digest
+// reproduced in the run that caught this edit, and this copy
+// reproduces the new one.
+// 2026-09-11, merge: the skills-index lines (this branch) and the
+// treaty count of one with the idempotency-key sentence (main) land
+// together; each was pinned alone against its own parent, and this pin
+// is the guide with both in it.
 // 2026-09-11: the settlement attestation gained a signed binding class
 // (none / authorization_nonce / reserved input_commitment) and a battery;
 // the listing's narrowing rule now says what a matched nonce binds the
@@ -883,8 +908,12 @@ const BASE = "https://scvd.store";
 // table). Verified the same way: with only menu-utility.ts restored to
 // the prior commit, the prior digest reproduced in the run that caught
 // this edit, and this copy reproduces the new one.
+// 2026-09-11, merge: the skills-index lines and the treaty count (main)
+// and the settlement attestation's binding class and payment_response
+// house rules (this branch) land together; each was pinned alone against
+// its own parent, and this pin is the guide with both in it.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "86f417060b672cda634e621a99af5903652d4f58f03b35a5f69585d402896ec4";
+  "242b893f9d80b18672955c97ef68d6496fca1a671607396efed4869cc01ee30c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

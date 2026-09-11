@@ -667,10 +667,9 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * the same schema Bazaar and the MCP tools use, so the 402 body can
  * never drift from the listing.
  *
- * Needed because of the probe rule (see routes/buy.ts): an unsigned
- * request now gets a price even when the item takes input, so the
- * challenge has to say what to send. Learning the requirement by
- * being refused is worse manners than we keep.
+ * Quotes require valid buyer inputs. Free compact menu pages publish
+ * prices and these fields before the buyer constructs a purchase; the
+ * challenge repeats them so a payment client can retain the contract.
  */
 /**
  * WHICH REQUIRED INPUTS A REQUEST ARRIVED WITHOUT (2026-09-04).
@@ -684,7 +683,7 @@ export function buyOutputExample(item: MenuItem): Record<string, unknown> {
  *
  * One reading, three doors: the HTTP gate stamps it on the ask row,
  * the MCP door does the same from its arguments, and the pre-gate
- * refusal uses it to name the input a SIGNED request forgot.
+ * refusal uses it to name the input any purchase request forgot.
  */
 export function missingRequiredInputs(
   item: MenuItem,
@@ -738,9 +737,9 @@ export function requiredInputsExtension(
       queryParams: [...required],
       note: `This door cannot be served without ${required
         .map((name) => `?${name}=`)
-        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.`,
+        .join(" and ")}. Supply valid inputs before requesting payment terms and retain them for the signed retry. Inspect prices free in the compact menu or catalog.`,
       ...(base
-        ? { retry_url_template: `${base}/api/buy/${item.id}?${query}` }
+        ? { retry_url_template: `${base}/api/buy/${item.id}?${query}`, price_discovery_url: `${base}/menu/${item.id}?view=compact` }
         : {}),
     } as unknown as DiscoveryExtension,
   };
@@ -760,7 +759,7 @@ export function requiredParamsNote(item: MenuItem): {
       .map((name) => `?${name}=`)
       .join(
         " and ",
-      )} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves.`,
+      )} before requesting payment terms. Read the free compact menu or catalog for prices without supplying purchase inputs; invalid inputs are refused before a payment quote.`,
   };
 }
 
@@ -802,7 +801,7 @@ export function buyerInputRepair(
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     issues: purchaseInputIssues(item, args, location, refusalBody),
     ...catalogRecovery(base, item.id),
-    next_action: "Read the input contract, correct the inputs, then retry the same purchase. No charge was taken.",
+    next_action: "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken.",
   };
 }
 

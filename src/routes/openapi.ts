@@ -4603,6 +4603,7 @@ const ID_LIST: OpenApiObject = { type: "array", items: { type: "string" } };
  * any field named here stopped arriving.
  */
 const COMPACT_BUYER_LINKS: OpenApiObject = {
+  price_discovery_url: { type: "string", format: "uri" },
   required_params: { type: "array", items: { type: "string" } },
   input_contract_url: { type: "string", format: "uri" },
   mcp_url: { type: "string", format: "uri" },
@@ -4954,7 +4955,7 @@ const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
       type: "array",
       items: { type: "string" },
       description:
-        "Query parameters this item refuses to be bought without. Asking the price without them is free; buying without them is refused before any money moves. Absent where the door takes none.",
+        "Query parameters this item refuses to be bought without. Valid inputs are required before a payment quote. Inspect prices free at /menu/{item_id}?view=compact or /api/catalog/v1. Absent where the door takes none.",
     },
     required_params_note: { type: "string" },
     payload_template: {
@@ -5014,6 +5015,24 @@ const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
     },
   },
 };
+
+// Keep the challenge headers complete without repeating them on every paid
+// operation. Their names stay inline; OpenAPI resolves each Header Object.
+export const PAYMENT_CHALLENGE_HEADERS: Record<string, OpenApiObject> = {
+  "PAYMENT-REQUIRED": {
+    schema: { type: "string" },
+    description:
+      "Base64-encoded x402 v2 payment requirements: the accepts[] array, one entry per rail per price tier, mirroring x-payment-info.accepts on this operation.",
+  },
+  "WWW-Authenticate": {
+    schema: { type: "string" },
+    description:
+      'X402 resource_metadata="<origin>/.well-known/oauth-protected-resource" — what gates this resource, at the fixed path a client constructs without being told.',
+  },
+};
+const PAYMENT_CHALLENGE_HEADER_REFS = Object.fromEntries(Object.keys(PAYMENT_CHALLENGE_HEADERS).map(name =>
+  [name, { $ref: `#/components/headers/${name}` }],
+));
 
 const PAYMENT_REQUIRED_REF: OpenApiObject = {
   $ref: "#/components/schemas/PaymentRequiredChallenge",
@@ -5107,18 +5126,7 @@ function paidOp(
       "402": {
         description:
           "Payment required — this is the offer, not a failure. The signable requirements ride base64-encoded in the PAYMENT-REQUIRED response header (x402 v2); the body carries the same terms readably, plus a fill-in-the-blanks payload template. Retry the same URL with a signed PAYMENT-SIGNATURE header to complete the purchase.",
-        headers: {
-          "PAYMENT-REQUIRED": {
-            schema: { type: "string" },
-            description:
-              "Base64-encoded x402 v2 payment requirements: the accepts[] array, one entry per rail per price tier, mirroring x-payment-info.accepts on this operation.",
-          },
-          "WWW-Authenticate": {
-            schema: { type: "string" },
-            description:
-              'X402 resource_metadata="<origin>/.well-known/oauth-protected-resource" — what gates this resource, at the fixed path a client constructs without being told.',
-          },
-        },
+        headers: PAYMENT_CHALLENGE_HEADER_REFS,
         content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
       },
       ...COMMON_RESPONSES,
@@ -5244,6 +5252,8 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   paymentInfo["input"] = {
     location: "query",
     method: "GET",
+    valid_inputs_required_before_quote: true,
+    price_discovery_url: `${env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     schema: requestSchema,
   };
   operation["x-request-schema"] = requestSchema;
@@ -5290,7 +5300,7 @@ function buyOperation(env: Env, items: readonly MenuItem[]): OpenApiObject {
     ...paidOp(
       env,
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
+      "One x402 v2 purchase per request. Valid buyer inputs are required before a usable 402 quote. Missing or invalid inputs receive a field refusal without payment terms; use /menu/{item_id}?view=compact or /api/catalog/v1 for free price and input discovery. Query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
       allPrices,
     ),
     parameters: [
@@ -5445,7 +5455,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         AskAnswer: ASK_SCHEMA,
       },
       responses: SHARED_RESPONSES,
-      headers: RATE_LIMIT_HEADER_SPEC,
+      headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
     },
     /**

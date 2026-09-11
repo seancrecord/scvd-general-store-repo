@@ -91,9 +91,11 @@ describe("the tag guard, before money moves", () => {
     expect(tagHasUrl("agent-7 wuz here. again.")).toBe(false);
   });
 
-  it("still quotes a price to anyone who only asks, per the probe rule", async () => {
+  it("refuses a bare purchase before issuing payment terms", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/graffiti_on_a_train`);
-    expect(response.status).not.toBe(400);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ charged: false, input_field: "tag" });
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 });
 

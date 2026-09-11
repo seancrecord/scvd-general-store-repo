@@ -964,6 +964,45 @@ Do not relitigate without you.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
+- **Hugging Face: the Space waits for the account to turn 30
+  (2026-09-11, evening).** Read off the Hub's own docs after the
+  static Space came down: Gradio and Docker Spaces need a paid plan
+  (PRO, $9/mo) — only static Spaces are free — with one exception,
+  a free personal account older than 30 days may host two Gradio
+  Spaces on ZeroGPU. `keeper-scvd` was created 2026-09-03, so the
+  free route opens 2026-10-03. CV's static Space was the only free
+  shape available to him; taking it down was still right (its
+  `SKILL.md` was a version stale, missing the postcard rule, and the
+  `agent-skill` tag is not an index hf-discover reads). Your ruling:
+  wait, which is the recommendation — a reminder fires into the
+  session on 2026-10-04 with the steps (create the Space with SDK
+  Gradio, hardware ZeroGPU, paste the four files from
+  `spaces/scvd-x402-verifier/`, read the MCP schema, file the
+  hf-discover search). PRO now is the alternative if a month matters.
+
+- **The ChatGPT plugin: your press, confirmed (2026-09-11).** You
+  submitted "SCVD General Store" on 2026-09-03 (DISTRIBUTION §5b);
+  it points at the full `/mcp` door and sits in review. The open
+  risk there is unchanged: the scan lists six `buy_*` tools and
+  OpenAI's guideline bars digital commerce. If the review objects,
+  the resubmission is the five-tool verifier already served at
+  `/mcp/verifier` — the same door the Hugging Face Space wraps.
+
+- **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
+  user-agent rule you pressed worked and, within the hour, an
+  agent-readiness scanner scored the store "Some agents blocked:
+  GPTBot, ClaudeBot, ChatGPT-User…" — scanners test that claim by
+  sending exactly those user-agents from their own IPs, which is
+  byte-identical to a spoofer. So the rule is re-scoped to the
+  PATHS the scan asks for (`/.aws/`, `/.env`, `api_keys`, `.key`,
+  `.pem`, `/stripe.json`, …), none of which is a substring of any of
+  the 345 routes the store serves, a test keeps it so, and a scanner
+  reading `/robots.txt` as GPTBot passes again. Edit the existing
+  rule's expression from `docs/CLOUDFLARE_WAF_SPOOFED_CRAWLERS.md`
+  (the first fenced block), re-run the scan, and it should read 2/2.
+  Then the one-week look around 2026-09-18 as before: the 4xx bill
+  moves to 403s, the 200s do not move.
+
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
   2026-09-06 with the store skill alone; no review as of 09-11. Its
@@ -1036,10 +1075,40 @@ Do not relitigate without you.
   re-check cycle. The tab has no host to serve one from;
   their other route is connecting the GitHub account that
   holds the repo, on their site. Your press.
-- **DNSSEC.** VerifyMCP's one Fail on endpoint security.
-  Cloudflare dashboard → DNS → Settings → Enable DNSSEC,
-  then paste the DS record at the registrar. Five minutes,
-  yours alone; no code can do it.
+- **DNSSEC.** Done — you said so on 2026-09-11; not
+  verified from the repo (the session could not resolve
+  DNS). LOOK once: https://dnsviz.net/d/scvd.store/dnssec/
+  should draw a green chain to the root.
+- **DNS-AID records (2026-09-11).** TEST. Cloudflare's
+  readiness scan wants the agent doors declared in DNS under
+  `_agents` (draft-mozleywilliams-dnsop-dnsaid; SVCB, RFC
+  9460), signed — which is why DNSSEC came first. Records
+  live at your DNS provider, not in this repo; the build
+  side (the A2A card, the MCP server, the ARD catalog at
+  `/.well-known/ard.json`) already exists. Cloudflare
+  dashboard → DNS → Records → Add, type SVCB, one per line:
+
+  ```
+  _a2a._agents.scvd.store.  3600 IN SVCB 1 scvd.store. alpn="a2a" port=443 mandatory="alpn,port"
+  _mcp._agents.scvd.store.  3600 IN SVCB 1 scvd.store. alpn="mcp" port=443 mandatory="alpn,port"
+  _index._agents.scvd.store. 3600 IN TXT "agents=evidence:a2a,store:mcp"
+  ```
+
+  In the dashboard form that is: name `_a2a._agents`,
+  priority `1`, target `scvd.store.`, value
+  `alpn="a2a" port="443" mandatory="alpn,port"`; likewise
+  `_mcp._agents` with `alpn="mcp"`. The TXT index is the
+  shape the reference implementation (dns-aid-core) writes
+  and reads; the scanner's own text names `_index._agents`
+  as an SVCB entrypoint too, and the exact params it wants
+  for that one are not published anywhere the session could
+  read — add the two SVCB rows and the TXT, re-scan at
+  https://isitagentready.com, and if `dnsAid` still reads
+  fail, the next thing to try is `_index._agents` as a
+  fourth row, SVCB, target `scvd.store.`, `alpn="https"
+  port=443` (a pointer at the host serving the catalog).
+  Not a guess dressed as a fact: the draft text is behind
+  a wall the session could not pass.
 - **`check_before_you_pay` — rename or leave.** RULE.
   VerifyMCP reads "pay" in the name as an irreversible act
   and wants a `destructiveHint` on it; the tool declares
@@ -1271,8 +1340,23 @@ Do not relitigate without you.
   registration fee; their adoption signals exclude
   captive wallets, so the buys cannot flatter the
   grade. Their grade is still not ours. LOOK your books.
-- **Receipt treaty.** Ask is drafted
-  (`docs/RECEIPT_TREATY_ASK.md`). Send is your hand.
+- **Receipt treaty — the first entry landed (09-11).** StillOS
+  Notary answered the drafted ask unprompted in issue #622
+  (09-10). You read their statement on the 11th; it names
+  our origin, key URL and verify URL and says what the issue
+  said. Their origin is now the first treaty entry on
+  `/trust-list.json` (v2), citing their statement URL,
+  keyring and verify template. The reply went back on the
+  issue on your word. One hand left:
+  1. RULE — their offer of credit on a key after our house
+     wallet's bad 402 at their door. A key in the runtime is
+     what they said they would not accept either; the wallet
+     law's blanks are still open. Decline, or hold. Not a
+     code task.
+  Not your hand: their §7 claim on x402 #3220/#3376 (the
+  binding table keyed on signature scheme, populated from
+  `accepted.scheme`) is a spec read for the desk, unchecked
+  here — the PR text was outside the session's reach.
 - **Key succession.** Gate is physical: a second seed,
   not beside the first. `PROBLEMS.md` #1. We cannot
   check it from here.

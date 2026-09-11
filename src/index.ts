@@ -57,6 +57,7 @@ import {
   siteMetaRoutes,
   skillRoutes,
   executionContractRoutes,
+  agentSkillsIndexRoutes,
   statsRoutes,
   corpusRoutes,
   reportRoutes,
@@ -269,6 +270,7 @@ app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);
 app.route("/", skillRoutes);
 app.route("/", executionContractRoutes);
+app.route("/", agentSkillsIndexRoutes);
 app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);

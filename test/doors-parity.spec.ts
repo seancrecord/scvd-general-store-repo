@@ -185,10 +185,11 @@ describe("byte parity: the unpaid knock", () => {
     expect(doorsReady(testEnv)).toBe(false);
   });
 
-  it("every paid door answers the same 402, header for header, byte for byte", async () => {
+  it("every paid door answers the same quote or input refusal, header for header, byte for byte", async () => {
     let challenged = 0;
     for (const item of MENU_ITEMS) {
-      const answer = await bothAnswerAlike(`/api/buy/${item.id}`, { headers: JSON_ACCEPT });
+      const answer = await bothAnswerAlike(`/api/buy/${item.id}`, { headers: JSON_ACCEPT },
+        ["launch_check", "opening_day"].includes(item.id) ? { handOver: "passed" } : {});
       if (answer.status === 402) {
         challenged += 1;
         expect(answer.headers["payment-required"], item.id).toBeTruthy();
@@ -205,9 +206,8 @@ describe("byte parity: the unpaid knock", () => {
     const [first] = MENU_ITEMS;
     expect(first).toBeDefined();
     const door = `/api/buy/${first!.id}`;
-    // An unpaid HEAD passes the gate (x402 requires payment of a GET)
-    // and the store's own handler answers it; the doors hand it over.
-    await bothAnswerAlike(door, { method: "HEAD", headers: JSON_ACCEPT }, { handOver: "passed" });
+    // Missing required inputs are refused before the payment gate, including HEAD.
+    await bothAnswerAlike(door, { method: "HEAD", headers: JSON_ACCEPT });
     await bothAnswerAlike(`${door}/`, { headers: JSON_ACCEPT });
     await bothAnswerAlike(`${door}.`, { headers: JSON_ACCEPT, redirect: "manual" });
     await bothAnswerAlike(door, { headers: { Accept: "text/html,application/xhtml+xml", "User-Agent": "Mozilla/5.0" } });

@@ -1,0 +1,28 @@
+{
+  "name": "scvd-general-store",
+  "version": "0.2.3",
+  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+  "author": {
+    "name": "Record Creative Co. LLC",
+    "url": "https://scvd.store"
+  },
+  "homepage": "https://scvd.store",
+  "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+  "license": "MIT",
+  "keywords": [
+    "x402",
+    "signed-artifacts",
+    "verification",
+    "attestation",
+    "conformance",
+    "mcp",
+    "usdc",
+    "payments"
+  ],
+  "mcpServers": {
+    "scvd-store": {
+      "type": "http",
+      "url": "https://scvd.store/mcp"
+    }
+  }
+}

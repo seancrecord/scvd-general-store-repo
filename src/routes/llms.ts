@@ -439,6 +439,10 @@ Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
+Skills discovery index (Agent Skills Discovery RFC v0.2.0: both skills,
+each with the SHA-256 digest of the file it points at):
+${base}/.well-known/agent-skills/index.json — the digested copies at
+\`${base}/.well-known/agent-skills/{name}/SKILL.md\`
 OpenAPI 3.1 contract: ${base}/openapi.json
 The free instruments as function-calling tools, one worked call each,
 derived from the MCP catalog: ${base}/openapi-tools.json
@@ -1547,12 +1551,15 @@ came in and didn't sign, which is most of them.
 
 A signed list of origins the keeper has personally dealt with, at
 ${base}/trust-list.json. Version ${TRUST_LIST_VERSION} carries
-${trustListCounts().transacted} he has TRANSACTED with and
-${trustListCounts().used} he has only USED — the strong claim and the
-weak one kept apart, never blurred. It grows by hand and only after he
-has done the thing himself. Each entry
+${trustListCounts().transacted} he has TRANSACTED with,
+${trustListCounts().used} he has only USED, and
+${trustListCounts().treaty} under a receipt TREATY — the strong claim,
+the weak one, and the mutual one kept apart, never blurred. It grows
+by hand and only after he has done the thing himself. Each entry
 records an observation about a past event, not a promise about
-anyone's future.
+anyone's future. A treaty entry points at the other operator's own
+published statement and never paraphrases it; the terms both sides
+commit to are stated once on the list.
 
 ## The promise
 
