@@ -10,13 +10,13 @@ import type { Env } from "@/types";
 
 /**
  * Which object a key belongs to: month and kind for metrics, a slice
- * of the address for payer rows. Under COUNTER_LEDGER_SINGLE_SHARD
+ * of the address for payer rows. Under COUNTER_LEDGER_FOLLOW_KV
  * (the test pool sets it) everything goes to one object, so a test
  * can start from an empty ledger by wiping one object — object
  * storage is not isolated per test the way KV is.
  */
-export function ledgerShardName(key: string, env?: Pick<Env, "COUNTER_LEDGER_SINGLE_SHARD">): string {
-  if (env?.COUNTER_LEDGER_SINGLE_SHARD) return "single";
+export function ledgerShardName(key: string, env?: Pick<Env, "COUNTER_LEDGER_FOLLOW_KV">): string {
+  if (env?.COUNTER_LEDGER_FOLLOW_KV) return "single";
   const parts = key.split(":");
   if (parts[0] === "metric" && parts.length >= 3) return `${parts[1]}/${parts[2]}`;
   if (parts[0] === "payer" && parts[1]) {

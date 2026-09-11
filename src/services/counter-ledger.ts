@@ -75,6 +75,7 @@ export class CounterLedger extends DurableObject<Env> {
 
   /** Add to a counter and return the new value. One statement; cannot interleave. */
   async add(key: string, amount: number): Promise<number> {
+    if (this.followsKv()) return this.kvCounter(key, (value) => value + amount);
     await this.seedCounter(key);
     const row = this.schema()
       .exec<{ value: number }>("UPDATE counters SET value = value + ? WHERE key = ? RETURNING value", amount, key)
@@ -85,6 +86,7 @@ export class CounterLedger extends DurableObject<Env> {
 
   /** Lift a counter to at least `floor`; never lowers. Returns the value. */
   async raiseTo(key: string, floor: number): Promise<number> {
+    if (this.followsKv()) return this.kvCounter(key, (value) => Math.max(value, floor));
     await this.seedCounter(key);
     const row = this.schema()
       .exec<{ value: number }>("UPDATE counters SET value = MAX(value, ?) WHERE key = ? RETURNING value", floor, key)
@@ -95,6 +97,7 @@ export class CounterLedger extends DurableObject<Env> {
 
   /** The counter as this object holds it (seeded from KV if unseen). */
   async read(key: string): Promise<number> {
+    if (this.followsKv()) return this.kvCounter(key, (value) => value);
     await this.seedCounter(key);
     return this.counterValue(key) ?? 0;
   }
@@ -111,6 +114,21 @@ export class CounterLedger extends DurableObject<Env> {
     now: string,
     legacy: PayerRecord | null,
   ): Promise<PayerRecord> {
+    const touch = (row: PayerRecord | null): PayerRecord => {
+      if (legacy) {
+        row = row
+          ? {
+              ...row,
+              purchases: row.purchases + legacy.purchases,
+              first_seen: legacy.first_seen < row.first_seen ? legacy.first_seen : row.first_seen,
+            }
+          : legacy;
+      }
+      return row
+        ? { ...row, address, last_seen: now, purchases: row.purchases + 1 }
+        : { address, first_seen: now, last_seen: now, purchases: 1 };
+    };
+    if (this.followsKv()) return (await this.kvRow(key, touch)) as PayerRecord;
     await this.seedRow(key);
     let row = this.rowValue(key);
     if (legacy) {
@@ -132,6 +150,7 @@ export class CounterLedger extends DurableObject<Env> {
 
   /** The payer row as this object holds it (seeded from KV if unseen). */
   async readPayerRow(key: string): Promise<PayerRecord | null> {
+    if (this.followsKv()) return this.kvRow(key, (row) => row);
     await this.seedRow(key);
     return this.rowValue(key);
   }
@@ -143,6 +162,15 @@ export class CounterLedger extends DurableObject<Env> {
     floor: number,
     firstSeen: string,
   ): Promise<PayerRecord | null> {
+    if (this.followsKv()) {
+      return this.kvRow(key, (row) =>
+        row && row.purchases >= floor
+          ? row
+          : row
+            ? { ...row, purchases: floor }
+            : { address, first_seen: firstSeen, last_seen: firstSeen, purchases: floor },
+      );
+    }
     await this.seedRow(key);
     const row = this.rowValue(key);
     if (row && row.purchases >= floor) return row;
@@ -152,6 +180,22 @@ export class CounterLedger extends DurableObject<Env> {
     this.writeRow(key, next);
     await this.mirror(key, JSON.stringify(next));
     return next;
+  }
+
+  /**
+   * Forget everything this object holds. For the test pool, which
+   * wipes the one ledger object before each test; a plain SQL delete
+   * rather than storage.deleteAll() because a deleteAll racing an
+   * in-flight write breaks the output gate and aborts the object, and
+   * every call in flight with it. Nothing in production calls this.
+   */
+  async reset(): Promise<void> {
+    const sql = this.schema();
+    sql.exec("DELETE FROM counters");
+    sql.exec("DELETE FROM rows");
+    sql.exec("DELETE FROM dirty");
+    this.lastMirror.clear();
+    await this.ctx.storage.deleteAlarm();
   }
 
   /** Flush every mirror write the throttle held back. */
@@ -239,6 +283,52 @@ export class CounterLedger extends DurableObject<Env> {
         return;
       }
       this.schema().exec("INSERT OR IGNORE INTO rows (key, value) VALUES (?, ?)", key, raw);
+    });
+  }
+
+  /**
+   * FOLLOWING KV, TEST POOL ONLY. In production this object is the
+   * truth and KV is its mirror. The test pool isolates KV per test
+   * but not object storage, and hundreds of tests wipe or seed a
+   * counter key in KV and expect the next bump to build on that. So
+   * under COUNTER_LEDGER_FOLLOW_KV the object keeps nothing: every
+   * call is one serialized read-add-write against KV, which in the
+   * pool is in-memory and read-your-writes. Same one-writer guarantee
+   * (blockConcurrencyWhile holds every other call), no object state
+   * to leak between tests. Never set in production; the production
+   * path is exercised by test/counter-ledger.spec.ts directly.
+   */
+  private followsKv(): boolean {
+    return Boolean(this.env.COUNTER_LEDGER_FOLLOW_KV);
+  }
+
+  private kvCounter(key: string, change: (value: number) => number): Promise<number> {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const raw = await this.env.COUNTERS.get(key);
+      const parsed = raw ? parseInt(raw, 10) : 0;
+      const value = change(Number.isFinite(parsed) ? parsed : 0);
+      await kvPut(this.env.COUNTERS, key, String(value));
+      return value;
+    });
+  }
+
+  private kvRow(
+    key: string,
+    change: (row: PayerRecord | null) => PayerRecord | null,
+  ): Promise<PayerRecord | null> {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const raw = await this.env.COUNTERS.get(key);
+      let row: PayerRecord | null = null;
+      if (raw) {
+        try {
+          row = JSON.parse(raw) as PayerRecord;
+        } catch {
+          row = null;
+        }
+      }
+      const next = change(row);
+      if (next && next !== row) await kvPut(this.env.COUNTERS, key, JSON.stringify(next));
+      return next;
     });
   }
 

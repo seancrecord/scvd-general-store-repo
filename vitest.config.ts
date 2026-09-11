@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: ["./test/setup-purchase-alarms.ts", "./test/setup-counter-ledger.ts"],
+    setupFiles: ["./test/setup-purchase-alarms.ts"],
     /**
      * The store's suite ONLY. The Tab (tab/) is a filesystem product
      * tested on Node's own runner (npm run tab:test, its own CI
@@ -74,8 +74,8 @@ export default defineConfig({
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
-          // One ledger object for the whole suite; setup-counter-ledger.ts wipes it per test.
-          COUNTER_LEDGER_SINGLE_SHARD: "1",
+          // The ledger follows KV when a test wipes or seeds a key under it (services/counter-ledger.ts).
+          COUNTER_LEDGER_FOLLOW_KV: "1",
           // A test-only IndexNow key; the route serves it back, nothing pings.
           INDEXNOW_KEY: "0123456789abcdef0123456789abcdef",
           // Empty = no CDP JWT generation; tests mock the facilitator.

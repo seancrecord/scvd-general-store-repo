@@ -1,4 +1,4 @@
-import { env, runInDurableObject, SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { counterLedger } from "@/lib/counter-ledger";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -28,19 +28,8 @@ const WALLETS = [
 const PER_WALLET = 50;
 
 async function wipe() {
-  for (const shard of ["paid", "dpaid", "rev", "rail", "revrail", "tier", "src", "venue"]) {
-    const stub = counterLedger(testEnv, `metric:${MONTH}:${shard}:x`)!;
-    await runInDurableObject(stub as never, async (_i: unknown, state: DurableObjectState) => {
-      await state.storage.deleteAll();
-    });
-  }
-  for (const wallet of WALLETS) {
-    const stub = counterLedger(testEnv, KV_KEYS.payer(wallet))!;
-    await runInDurableObject(stub as never, async (_i: unknown, state: DurableObjectState) => {
-      await state.storage.deleteAll();
-    });
-    await testEnv.COUNTERS.delete(KV_KEYS.payer(wallet));
-  }
+    await counterLedger(testEnv, "metric:test:reset:x")!.reset();
+  for (const wallet of WALLETS) await testEnv.COUNTERS.delete(KV_KEYS.payer(wallet));
   for (const prefix of ["metric:", KV_KEYS.payerSettlePrefix()]) {
     const listed = await testEnv.COUNTERS.list({ prefix });
     for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);

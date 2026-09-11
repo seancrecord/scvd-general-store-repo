@@ -38,16 +38,7 @@ describe("the counter ledger", () => {
   beforeEach(async () => {
     // Object storage outlives a test the way KV does here; start each
     // case from an empty ledger on every shard a settle can touch.
-    for (const shard of ["paid", "dpaid", "rev", "rail", "revrail", "tier", "src", "venue", "cpaid"]) {
-      const stub = counterLedger(testEnv, `metric:${MONTH}:${shard}:x`)!;
-      await runInDurableObject(stub as never, async (_instance: unknown, state: DurableObjectState) => {
-        await state.storage.deleteAll();
-      });
-    }
-    const payerStub = counterLedger(testEnv, KV_KEYS.payer(WALLET))!;
-    await runInDurableObject(payerStub as never, async (_instance: unknown, state: DurableObjectState) => {
-      await state.storage.deleteAll();
-    });
+    await counterLedger(testEnv, "metric:test:reset:x")!.reset();
     const listed = await testEnv.COUNTERS.list({ prefix: "metric:" });
     for (const key of listed.keys) await testEnv.COUNTERS.delete(key.name);
     await testEnv.COUNTERS.delete(KV_KEYS.payer(WALLET));
@@ -108,6 +99,26 @@ describe("the counter ledger", () => {
     const second = await raiseCountersToRecords(testEnv);
     expect(second.raised).toEqual([]);
     expect(second.payer_rows_raised).toEqual([]);
+  });
+
+  it("on the production path (object storage as truth), sixty concurrent adds land as sixty and the KV mirror ends on sixty", async () => {
+    const key = `metric:${MONTH}:paid:production-path`;
+    const stub = counterLedger(testEnv, key)!;
+    const result = await runInDurableObject(stub as never, async (instance: unknown) => {
+      // The pool sets COUNTER_LEDGER_FOLLOW_KV so every other test can
+      // wipe KV between runs; this one turns it off inside the object
+      // to exercise the path production runs: SQL as truth, KV mirrored.
+      const ledger = instance as { env: Record<string, unknown>; add: (k: string, n: number) => Promise<number>; read: (k: string) => Promise<number>; reset: () => Promise<void> };
+      ledger.env.COUNTER_LEDGER_FOLLOW_KV = "";
+      await ledger.reset();
+      await Promise.all(Array.from({ length: 60 }, () => ledger.add(key, 1)));
+      const held = await ledger.read(key);
+      const mirrored = await testEnv.COUNTERS.get(key);
+      ledger.env.COUNTER_LEDGER_FOLLOW_KV = "1";
+      return { held, mirrored };
+    });
+    expect(result.held).toBe(60);
+    expect(result.mirrored).toBe("60");
   });
 
   it("raises a payer row that sits below its settle records", async () => {
