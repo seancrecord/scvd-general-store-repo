@@ -5054,6 +5054,29 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
  * and readers have generated against it; adding a field is free,
  * removing one breaks somebody quietly.
  */
+/**
+ * The discovery spec's flat price hint: one tier is `fixed` with its
+ * price; several are `dynamic` with the range, since a buyer choosing
+ * a tier is exactly what that mode describes. Decimal strings, never
+ * numbers — the spec reads strings, and a float that prints in
+ * exponent form would be a different number to a parser.
+ */
+export function discoveryPriceHint(
+  priceUsdcOptions: number[],
+): Record<string, string> {
+  const tiers = [...new Set(priceUsdcOptions)].sort((a, b) => a - b);
+  const decimal = (price: number): string => price.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+  if (tiers.length <= 1) {
+    return { pricingMode: "fixed", price: decimal(tiers[0] ?? 0), currency: "USD" };
+  }
+  return {
+    pricingMode: "dynamic",
+    minPrice: decimal(tiers[0] ?? 0),
+    maxPrice: decimal(tiers[tiers.length - 1] ?? 0),
+    currency: "USD",
+  };
+}
+
 function paidOp(
   env: Env,
   summary: string,
@@ -5084,6 +5107,24 @@ function paidOp(
     },
     "x-payment-info": {
       protocol: "x402",
+      /*
+       * THE DISCOVERY SHAPE THREE INDEXERS SHARE (2026-09-11). A
+       * scanner operator wrote in that his index counted zero paid
+       * operations here: it reads `protocols` as an array of protocol
+       * objects and ignores the `protocol` string above. That array
+       * is AgentCash's discovery spec, which x402scan adopted (their
+       * change moved it from `["x402"]` to `[{ x402: {} }]`) and
+       * mppscan reads as well, so the string was the store's own
+       * dialect and the array is the shared one. Both stay: the
+       * string predates the array and readers generated against it.
+       * `pricingMode`, `price` and `currency` beside it are the same
+       * spec's flat price hint, the shape its validator accepts
+       * today (its documented nested form is rejected by its own
+       * parser, per x402scan issue 1014). Decimal USD, derived from
+       * the same tiers the accepts are, so the two cannot drift.
+       */
+      protocols: [{ x402: {} }],
+      ...discoveryPriceHint(priceUsdcOptions),
       x402Version: 2,
       scheme: "exact",
       asset: "USDC",
