@@ -38,8 +38,13 @@ export const X402_LIST_API = "https://x402-list.com/api/v1";
 export const OUR_X402_LIST_SLUG = "sean-claude-van-damme-s-general-store";
 /** Pages of a hundred the category read will walk before calling itself partial. */
 export const PEER_PAGE_CAP = 5;
-/** Weeks the page keeps side by side. */
-export const PEER_WEEKS_CAP = 60;
+/**
+ * Weeks the shelf listing walks. KV lists keys in ascending order and
+ * `peer_shelf:<week>` sorts oldest first, so a cap that a decade of
+ * weeks cannot reach is the only cap that never drops the NEWEST
+ * week; the flag is read anyway and a capped listing says so.
+ */
+export const PEER_WEEKS_CAP = 520;
 const FETCH_TIMEOUT_MS = 15_000;
 
 export interface PeerTraction {
@@ -276,16 +281,20 @@ export async function readPeerShelf(env: Env, week: string): Promise<PeerShelf |
   return kvGetJson<PeerShelf>(env.COUNTERS, KV_KEYS.peerShelf(week), "json").catch(() => null);
 }
 
-/** Every week read, newest first, bounded. */
-export async function readPeerShelves(env: Env): Promise<PeerShelf[]> {
+export type PeerShelves = PeerShelf[] & { listing_truncated?: boolean };
+
+/** Every week read, newest first. `listing_truncated` when the scan hit PEER_WEEKS_CAP: the newest weeks may be missing. */
+export async function readPeerShelves(env: Env): Promise<PeerShelves> {
   const listed = await listKeys(env.COUNTERS, { prefix: KV_KEYS.peerShelfPrefix, cap: PEER_WEEKS_CAP });
   const values = await bulkGetJson<PeerShelf>(env.COUNTERS, listed.names);
-  const shelves: PeerShelf[] = [];
+  const shelves: PeerShelves = [];
   for (const name of listed.names) {
     const shelf = values.get(name);
     if (shelf) shelves.push(shelf);
   }
-  return shelves.sort((a, b) => b.week.localeCompare(a.week));
+  shelves.sort((a, b) => b.week.localeCompare(a.week));
+  if (listed.truncated) shelves.listing_truncated = true;
+  return shelves;
 }
 
 /**

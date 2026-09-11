@@ -1,6 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import { OUR_X402_LIST_SLUG, type PeerRow, type PeerShelf } from "@/services/peer-shelf";
+import { OUR_X402_LIST_SLUG, type PeerRow, type PeerShelf, type PeerShelves } from "@/services/peer-shelf";
 
 /**
  * THE PEERS PAGE (2026-09-11). Weeks as columns, newest first; every
@@ -60,8 +60,11 @@ function totalsHtml(shelves: PeerShelf[]): string {
   </table>`;
 }
 
-export function renderPeersPage(shelves: PeerShelf[]): string {
+export function renderPeersPage(shelves: PeerShelves): string {
   const newest = shelves[0];
+  const capped = shelves.listing_truncated
+    ? `<p class="shelf-trouble"><strong>The week listing hit its cap</strong>, and KV lists oldest first: the newest weeks may be missing from this page. Raise PEER_WEEKS_CAP in services/peer-shelf.ts.</p>`
+    : "";
   const body = newest
     ? `<section>
     <h2>The peers: the ${escapeHtml(newest.category)} shelf on x402-list, by week</h2>
@@ -83,5 +86,5 @@ export function renderPeersPage(shelves: PeerShelf[]): string {
     <h2>The peers</h2>
     <p class="menu-desc">No week has been read yet. The hourly press takes the first reading on its next firing and one each ISO week after. If this line is still here an hour after deploy, the directory read is failing and the press has been alerting.</p>
   </section>`;
-  return renderAdminShell("peers", body);
+  return renderAdminShell("peers", capped + body);
 }

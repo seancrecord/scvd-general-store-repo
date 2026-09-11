@@ -84,17 +84,32 @@ export interface InstrumentClients {
   top: { client: string; calls: number }[];
 }
 
-/** Every instrument's census for the month, keyed by surface. Empty before the census existed. */
+/**
+ * Every instrument's census for the month, keyed by surface. Empty
+ * before the census existed. `truncated` on the map says the key scan
+ * hit its cap, which the roster's size makes unreachable today; it is
+ * carried rather than assumed.
+ */
+export interface InstrumentClientsMap extends Map<string, InstrumentClients> {
+  truncated?: boolean;
+}
+
 export async function readInstrumentClients(
   env: Env,
   month: string,
   top = 5,
-): Promise<Map<string, InstrumentClients>> {
+): Promise<InstrumentClientsMap> {
   const prefix = `${KV_KEYS.metricMonthPrefix(month)}${KIND}:`;
-  // One key per censused surface, so the cap is the roster's size with room.
+  // BOUNDED-READ-SAFE: one key per censused surface per month, and a
+  // surface is a name off the porch roster (lib/instrument-roster.ts:
+  // a few dozen free instruments and paid tools), never a stranger's
+  // string — no request can mint a key here. The cap is several times
+  // the roster; the truncated flag is carried anyway, so a census that
+  // ever hit it reads as a floor rather than a total.
   const listed = await listKeys(env.COUNTERS, { prefix, cap: 200 });
   const values = await bulkGetText(env.COUNTERS, listed.names);
-  const out = new Map<string, InstrumentClients>();
+  const out: InstrumentClientsMap = new Map<string, InstrumentClients>();
+  if (listed.truncated) out.truncated = true;
   for (const name of listed.names) {
     const surface = name.slice(prefix.length);
     const census = parse(values.get(name) ?? null);
