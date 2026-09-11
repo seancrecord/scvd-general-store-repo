@@ -231,7 +231,8 @@ export function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean 
  * input: the shape every stock client, indexer and directory checker
  * sends first. It is answered with the 402 that names what the door
  * needs. An unsigned request that brought every required input is a
- * purchase being composed, and is validated like one.
+ * purchase being composed, and is validated like one. House rule 62:
+ * anything that moves this line moves the rule.
  */
 export function isProbe(c: Parameters<MiddlewareHandler<HonoEnv>>[0], item: MenuItem): boolean {
   return !isBuying(c) && missingRequiredInputs(item, c.req.query()).length > 0;

@@ -966,6 +966,55 @@ LORE & TRADITION
     against the served surfaces. Rule 46 applies: the guard was
     watched red before it was trusted.
 
+62. A BARE KNOCK ON A PAID DOOR ANSWERS 402. (Adopted 2026-09-11,
+    the day PR #636 made twenty-five of thirty-two doors answer a
+    bare probe with 400, and x402-list counted seven of us alive
+    within fifteen minutes. The probe rule of 2026-07-26 was being
+    re-learned; this makes it a rule instead of a comment.)
+
+    An unsigned request to any /api/buy door that lacks what the door
+    needs is a PROBE. It answers 402 Payment Required: the signable
+    terms in PAYMENT-REQUIRED, and required_params, required_params_note
+    and input_contract_url in the body, so the envelope says what to
+    send. Never a 400, never a 200, never a redirect. What a door
+    needs is read from the challenge, not learned by being refused.
+
+    62.1 WHY THE PROBE IS SACRED. The flow every stock client, every
+    indexer and every directory checker implements is request, 402,
+    sign, retry the same URL. None of them reads a catalogue first,
+    and none of them ever will on our schedule. A door that answers
+    that first request with anything else is, to all of them, not an
+    x402 endpoint. Our own free preflight says exactly this on its
+    status-402 check, and our own defect vocabulary names the shape
+    (inputs-undeclared: "declare required parameters in the challenge
+    itself, before payment"). We do not sell a check we fail.
+
+    62.2 WHAT THE RULE DOES NOT LICENSE. It is not permission to quote
+    garbage. A request that SUPPLIES its inputs, signed or not, is
+    validated in full before any terms go out, and an invalid input
+    gets a field refusal with no offer. A signed request missing an
+    input is refused before the gate, no money moved. BUY-002 asked
+    for that protection and was answered by breaking discovery; the
+    two are not in tension. They split at one predicate, isProbe in
+    src/routes/door-checks.ts: unsigned AND missing a required input.
+    Anything that moves that line moves this rule.
+
+    62.3 THE GUARD. test/buyer-http-validation.spec.ts walks every
+    menu item through both Workers and fails the build if a bare
+    probe answers anything but 402, or if a supplied invalid input
+    ever produces payment terms. Rule 46 applies: it was watched red
+    against the #636 tree before it was trusted.
+
+    62.4 CHANGE CONTROL. Any change to what a bare probe receives is
+    a discovery change first and a purchase-policy change second. It
+    needs, BEFORE merge: the primary-source read (rule 61); the
+    store's own preflight run against its own doors; and the outside
+    witness checked — x402-list's per-check history, Bazaar's
+    listing — with the number of doors it can see written in the PR.
+    A "coordinated discovery/client transition" named in a plan is a
+    precondition, not a footnote, and a merge that skips it earns a
+    corrections-ledger entry, which #636 now has.
+
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the
 audit was archived; rule 44 points here. Each string is TRUE today

@@ -21,6 +21,9 @@ installLaborAdmissionHarness();
  *               in full before terms. Garbage gets a field refusal and
  *               no offer, so a client never signs terms it cannot use.
  *   SIGNED    — a missing input still fails before verification.
+ *
+ * House rule 62 is held here. Rule 46: watched red against the #636
+ * tree before it was trusted.
  */
 
 async function get(surface: "store" | "doors", path: string, headers?: HeadersInit): Promise<Response> {

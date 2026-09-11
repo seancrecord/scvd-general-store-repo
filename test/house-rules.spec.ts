@@ -69,10 +69,12 @@ describe("the house rules stay citable", () => {
       expect(numbers[index]!).toBeGreaterThan(numbers[index - 1]!);
     }
 
-    // The highest number is the newest rule, and rule 61 is the newest
-    // (2026-09-06, agent-ecosystem facts expire — read the primary
-    // source and record it in docs/SPEC_READS.md before building on
-    // it; 60 on 2026-09-03 was every outward surface consumable,
+    // The highest number is the newest rule, and rule 62 is the newest
+    // (2026-09-11, a bare knock on a paid door answers 402 — the probe
+    // rule, made a rule the day PR #636 broke it; 61 on 2026-09-06 was
+    // agent-ecosystem facts expire — read the primary source and
+    // record it in docs/SPEC_READS.md before building on it; 60 on
+    // 2026-09-03 was every outward surface consumable,
     // findable, one proposition — the feature register; 59 on
     // 2026-09-01 was the reader's limits as part of the contract; 57 and
     // 58, findability for agents and for people, were adopted together
@@ -81,7 +83,7 @@ describe("the house rules stay citable", () => {
     // section, and rule 50 skipped ahead on the keeper's instruction.
     // A gap is history; the loop above still bans a duplicate or a
     // decrease, which are the ambiguities that matter.)
-    expect(Math.max(...numbers)).toBe(61);
+    expect(Math.max(...numbers)).toBe(62);
   });
 
   it("dates every rule added or amended since the practice began", () => {
