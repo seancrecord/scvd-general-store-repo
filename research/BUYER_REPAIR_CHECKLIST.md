@@ -59,7 +59,7 @@ These are tested repair mechanisms, not production-customer inventory or live-re
 
 ## Remaining findings
 
-- [x] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — HTTP purchase inputs are validated before usable terms; free catalog and compact item contracts provide price discovery. Both Workers agree, and authenticated retained goods remain recoverable.
+- [x] **BUY-002 — P1: invalid HTTP requests receive usable payment terms** — Repaired for composed requests only: a signed request, or an unsigned request that supplies every required input, is validated before usable terms, and an invalid supplied input receives a field refusal without an offer. The 2026-09-11 attempt to validate bare unsigned probes too (PR #636) answered 25 of 32 doors with 400 and took the store off x402-list's live board within fifteen minutes; the probe rule (bare probe → 402 naming `required_params`) was restored the same day, since the audit itself recorded that "a quote alone is not evidence of money loss" and that the discovery/client transition was a precondition. Both Workers agree, and authenticated retained goods remain recoverable.
 - [x] **BUY-003 — P2: MCP silently coerces wrong primitive types into text** — fixed in `94561d25`.
 - [x] **BUY-004 — P2: over-limit purpose silently truncates after payment** — fixed in `35df82f6`.
 - [x] **BUY-006 — P1: observation signatures are overwritten in the purchase response** — complete for all four audited products: Spot Check, Provenance Check, Passport Refresh and Trust Profile carry independently verifiable observation envelopes beside their purchase certificates. See the proof-completion evidence below. Durable response-loss recovery remains BUY-017/037.

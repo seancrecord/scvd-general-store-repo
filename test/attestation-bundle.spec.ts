@@ -115,11 +115,11 @@ describe("a sheaf of attestations", () => {
     expect(body.error.toLowerCase()).toContain("duplicate");
   });
 
-  it("refuses a bare purchase before issuing payment terms", async () => {
+  it("answers a bare probe with a price — the probe rule", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/attestation_bundle`);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: "tx_hashes" });
-    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
+    expect(response.status).toBe(402);
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+    expect(await response.json()).toMatchObject({ required_params: ["tx_hashes"] });
   });
 
   it("answers a valid sheaf with a 402, not a refusal", async () => {

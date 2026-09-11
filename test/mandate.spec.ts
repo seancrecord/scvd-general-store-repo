@@ -155,10 +155,10 @@ describe("the mandate — recorded before the acting", () => {
     expect(body.error).toContain("/api/buy/the_mandate");
   });
 
-  it("refuses a bare purchase before issuing payment terms", async () => {
+  it("answers a bare probe with a price — the probe rule", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/the_mandate`);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: "mandate" });
-    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
+    expect(response.status).toBe(402);
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+    expect(await response.json()).toMatchObject({ required_params: ["mandate"] });
   });
 });

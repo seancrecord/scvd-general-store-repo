@@ -5,8 +5,15 @@ import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
 
-/** The old bare-402 discovery policy is superseded by BUY-002. A scanner
- * learns prices and inputs free, then requests terms for a valid purchase. */
+/**
+ * THE PROBE RULE. Two outside witnesses on 2026-07-26 said the same
+ * thing: Bazaar had registered 14 of 21 items, and x402scout's probe
+ * found 3 valid endpoints out of 6 submitted. Both sets of misses were
+ * the routes that refuse before the payment gate quotes a price.
+ *
+ * Asking the price is free and always answers 402. Buying without what
+ * the item needs is still refused, before any money moves.
+ */
 
 const NEEDS_INPUT = [
   { id: "context_anchor", param: "summary", value: "a state worth keeping" },
@@ -19,24 +26,21 @@ beforeAll(() => {
   installFacilitatorMock();
 });
 
-describe("strict purchase inputs and free discovery", () => {
+describe("the probe rule", () => {
   for (const item of NEEDS_INPUT) {
-    it(`routes a bare ${item.id} probe to its free contract before quoting`, async () => {
+    it(`quotes ${item.id} to a bare probe instead of refusing it`, async () => {
       const response = await SELF.fetch(`${BASE}/api/buy/${item.id}`);
-      expect(response.status).toBe(400);
-      expect(response.headers.get("PAYMENT-REQUIRED")).toBeNull();
-      const body = await response.json() as Record<string, unknown>;
-      expect(body.input_field).toBe(item.param);
-      const discovery = await SELF.fetch(String(body.input_contract_url));
-      expect(discovery.status).toBe(200);
-      expect(discovery.headers.get("PAYMENT-REQUIRED")).toBeNull();
-      const contract = await discovery.json() as Record<string, unknown>;
-      expect(typeof contract.price_usdc).toBe("number");
-      const url = new URL(`${BASE}/api/buy/${item.id}`);
-      url.searchParams.set(item.param, item.value);
-      const quote = await SELF.fetch(url);
-      expect(quote.status).toBe(402);
-      expect(quote.headers.get("PAYMENT-REQUIRED")).toBeTruthy();
+      // An indexer arrives with no params and no signature. It has to
+      // come away knowing this is an x402 endpoint and what it costs.
+      expect(response.status).toBe(402);
+      expect(response.headers.get("PAYMENT-REQUIRED")).toBeTruthy();
+
+      const body: unknown = await response.json();
+      expect(isRecord(body)).toBe(true);
+      if (!isRecord(body)) return;
+      // And what to send when it comes back to buy.
+      expect(body.required_params).toContain(item.param);
+      expect(typeof body.required_params_note).toBe("string");
     });
 
     it(`still refuses to sell ${item.id} without its ${item.param}`, async () => {

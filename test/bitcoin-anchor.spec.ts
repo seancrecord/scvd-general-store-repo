@@ -73,11 +73,11 @@ describe("a bitcoin anchor", () => {
     expect(body.error).toContain("no 0x prefix");
   });
 
-  it("refuses a bare purchase before issuing payment terms", async () => {
+  it("answers a bare probe with a price — the probe rule", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/bitcoin_anchor`);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ charged: false, input_field: "digest" });
-    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
+    expect(response.status).toBe(402);
+    expect(response.headers.has("PAYMENT-REQUIRED")).toBe(true);
+    expect(await response.json()).toMatchObject({ required_params: ["digest"] });
   });
 
   it("delivers a certificate binding the digest and a living proof URL, paid", async () => {

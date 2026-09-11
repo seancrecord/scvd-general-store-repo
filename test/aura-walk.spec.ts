@@ -38,8 +38,8 @@ const ID = "aura_walk";
  *      from the menu and the copy is checked against it.
  */
 
-async function paid(path: string, quotePath = path): Promise<Response> {
-  const challenge = await SELF.fetch(`${BASE}${quotePath}`);
+async function paid(path: string): Promise<Response> {
+  const challenge = await SELF.fetch(`${BASE}${path}`);
   expect(challenge.status).toBe(402);
   const accepted = decodePaymentRequired(challenge).accepts[0]!;
   const signature = buildPaymentSignature(accepted);
@@ -161,15 +161,15 @@ describe("keeper-time answers to two doors now", () => {
 });
 
 describe("the door", () => {
-  it("answers valid buyer inputs with the 402 and the refund promise", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/${ID}?url=https://door.example/api/x`);
+  it("answers the free knock with the 402 and the refund promise", async () => {
+    const response = await SELF.fetch(`${BASE}/api/buy/${ID}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     expect(String(body["refund_promise"])).toContain("168 hours");
   });
 
   it("refuses the paid request without a door, before any money moves", async () => {
-    const response = await paid(`/api/buy/${ID}`, `/api/buy/${ID}?url=https://door.example/api/x`);
+    const response = await paid(`/api/buy/${ID}`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);
@@ -178,7 +178,7 @@ describe("the door", () => {
   });
 
   it("refuses our own hostname, naming the free passes instead", async () => {
-    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent(`${BASE}/api/buy/hello`)}`, `/api/buy/${ID}?url=https://door.example/api/x`);
+    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent(`${BASE}/api/buy/hello`)}`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);
@@ -187,7 +187,7 @@ describe("the door", () => {
   });
 
   it("refuses a door the shared law refuses (plain http), nothing charged", async () => {
-    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent("http://door.example/api/x")}`, `/api/buy/${ID}?url=https://door.example/api/x`);
+    const response = await paid(`/api/buy/${ID}?url=${encodeURIComponent("http://door.example/api/x")}`);
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["charged"]).toBe(false);
