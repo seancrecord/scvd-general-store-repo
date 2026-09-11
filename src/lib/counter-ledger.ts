@@ -8,8 +8,15 @@ import type { Env } from "@/types";
  * belongs to and hands back its stub.
  */
 
-/** Which object a key belongs to: month and kind for metrics, a slice of the address for payer rows. */
-export function ledgerShardName(key: string): string {
+/**
+ * Which object a key belongs to: month and kind for metrics, a slice
+ * of the address for payer rows. Under COUNTER_LEDGER_SINGLE_SHARD
+ * (the test pool sets it) everything goes to one object, so a test
+ * can start from an empty ledger by wiping one object — object
+ * storage is not isolated per test the way KV is.
+ */
+export function ledgerShardName(key: string, env?: Pick<Env, "COUNTER_LEDGER_SINGLE_SHARD">): string {
+  if (env?.COUNTER_LEDGER_SINGLE_SHARD) return "single";
   const parts = key.split(":");
   if (parts[0] === "metric" && parts.length >= 3) return `${parts[1]}/${parts[2]}`;
   if (parts[0] === "payer" && parts[1]) {
@@ -26,7 +33,7 @@ export function counterLedger(
 ): DurableObjectStub<CounterLedger> | null {
   const namespace = env.COUNTER_LEDGER;
   if (!namespace) return null;
-  return namespace.get(namespace.idFromName(ledgerShardName(key)));
+  return namespace.get(namespace.idFromName(ledgerShardName(key, env)));
 }
 
 /** Whether counters are serialized on this deployment. For the desk. */

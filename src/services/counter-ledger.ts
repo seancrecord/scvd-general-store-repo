@@ -243,30 +243,49 @@ export class CounterLedger extends DurableObject<Env> {
   }
 
   /**
-   * Write through when the key has been quiet for a second; otherwise
-   * mark it dirty and let the alarm carry it. A write that fails after
-   * kvPut's own retries is also left to the alarm rather than lost.
+   * WRITE THROUGH, COALESCED. Every value goes to KV as soon as the
+   * previous write for that key has landed: nothing in flight means
+   * write now, something in flight means mark it dirty and the
+   * in-flight writer carries the newest value on its way out. A burst
+   * of a thousand bumps becomes a handful of writes, each an absolute
+   * that ends on the latest, and a quiet key is on KV before the
+   * bump returns — which is what every reader (and every test) of
+   * these keys has always assumed. A write that fails after kvPut's
+   * own retries is left dirty for the alarm rather than lost.
    */
   private async mirror(key: string, text: string): Promise<void> {
-    const now = Date.now();
-    const last = this.lastMirror.get(key) ?? 0;
-    // A write in flight for this key would race ours to last-write-
-    // wins on KV; the alarm carries the newer value instead.
-    if (now - last >= FLUSH_MS && !this.inflight.has(key)) {
-      this.lastMirror.set(key, now);
-      this.inflight.add(key);
-      try {
-        await kvPut(this.env.COUNTERS, key, text);
-        return;
-      } catch {
-        // fall through: the alarm retries it
-      } finally {
-        this.inflight.delete(key);
-      }
+    if (this.inflight.has(key)) {
+      this.schema().exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
+      return;
     }
-    this.schema().exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
-    if ((await this.ctx.storage.getAlarm()) === null) {
-      await this.ctx.storage.setAlarm(now + FLUSH_MS);
+    this.inflight.add(key);
+    try {
+      let next: string | null = text;
+      while (next !== null) {
+        await kvPut(this.env.COUNTERS, key, next);
+        this.lastMirror.set(key, Date.now());
+        next = this.takeDirty(key);
+      }
+    } catch {
+      this.schema().exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
+      if ((await this.ctx.storage.getAlarm()) === null) {
+        await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
+      }
+    } finally {
+      this.inflight.delete(key);
     }
   }
+
+  /** If the key went dirty while a write was out, clear it and hand back the newest value. */
+  private takeDirty(key: string): string | null {
+    const sql = this.schema();
+    const dirty = sql.exec<{ key: string }>("SELECT key FROM dirty WHERE key = ?", key).toArray();
+    if (dirty.length === 0) return null;
+    sql.exec("DELETE FROM dirty WHERE key = ?", key);
+    const counter = this.counterValue(key);
+    if (counter !== null) return String(counter);
+    const row = this.rowValue(key);
+    return row ? JSON.stringify(row) : null;
+  }
+
 }

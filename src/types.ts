@@ -97,6 +97,8 @@ export interface Env {
    * KV read-add-write; when present, every bump goes through it.
    */
   COUNTER_LEDGER?: DurableObjectNamespace<import("@/services/counter-ledger").CounterLedger>;
+  /** Test pool only: route every counter to one ledger object so a test can wipe it. */
+  COUNTER_LEDGER_SINGLE_SHARD?: string;
   PATRONS: KVNamespace;
   /**
    * The corpus's object store (2026-08-19, the R2 graduation the
