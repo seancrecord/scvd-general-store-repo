@@ -1547,12 +1547,15 @@ came in and didn't sign, which is most of them.
 
 A signed list of origins the keeper has personally dealt with, at
 ${base}/trust-list.json. Version ${TRUST_LIST_VERSION} carries
-${trustListCounts().transacted} he has TRANSACTED with and
-${trustListCounts().used} he has only USED — the strong claim and the
-weak one kept apart, never blurred. It grows by hand and only after he
-has done the thing himself. Each entry
+${trustListCounts().transacted} he has TRANSACTED with,
+${trustListCounts().used} he has only USED, and
+${trustListCounts().treaty} under a receipt TREATY — the strong claim,
+the weak one, and the mutual one kept apart, never blurred. It grows
+by hand and only after he has done the thing himself. Each entry
 records an observation about a past event, not a promise about
-anyone's future.
+anyone's future. A treaty entry points at the other operator's own
+published statement and never paraphrases it; the terms both sides
+commit to are stated once on the list.
 
 ## The promise
 

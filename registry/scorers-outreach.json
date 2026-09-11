@@ -876,12 +876,12 @@
     },
     {
       "name": "StillOS Notary",
-      "url": "https://nolawealthfinancial.com",
+      "url": "https://stillosdigitalholdings.com",
       "what_it_scores": "Signed x402 verification and screening primitives: claim notarization, resolver-graded verdicts, OFAC SDN screening, and validated corporate distress scoring, backed by an on-chain correctness bond.",
-      "contact": "https://nolawealthfinancial.com/about/",
+      "contact": "https://github.com/stillmarcus24 (operator, Marcus; the 2026-09-04 pull recorded nolawealthfinancial.com, which their discovery metadata was still serving as the legacy domain — canonical is stillosdigitalholdings.com by their own word, and the old one still resolves)",
       "found_on": "x402-list.com Verification category (API pull 2026-09-04)",
       "note_sent": null,
-      "reply": null,
+      "reply": "2026-09-10, unprompted, in issue #622 on the public repository: yes to the receipt treaty, with their half stated at https://stillosdigitalholdings.com/notary/trust (?format=json for the machine form, shaped to mirror /trust-list.json, marked reciprocated: false) — read by the keeper 2026-09-11 and answered on the issue the same day, with their origin now the first treaty entry on /trust-list.json citing that statement URL.",
       "cites_since": null
     },
     {

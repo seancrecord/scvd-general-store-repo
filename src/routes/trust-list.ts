@@ -10,11 +10,16 @@ import {
   TRUST_LIST_SCOPE_NOTE,
   TRUST_LIST_STALE_AFTER_DAYS,
   TRUST_LIST_SUBMISSION_NOTE,
+  TRUST_LIST_TREATY_TERMS,
 } from "@/store/trust-list";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /trust-list.json — the signed trust list, v1.
+ * GET /trust-list.json — the signed trust list, v2.
+ *
+ * v2 (2026-09-10) adds the treaty relation and states its terms on
+ * the list. Same key, same signature shape; a copy of v1 saved before
+ * today still verifies against its own body.
  *
  * Mechanism first: a working, verifiable artifact at a stable URL and
  * nothing else. No storefront section, no pitch, no page explaining
@@ -29,7 +34,7 @@ import type { HonoEnv } from "@/types";
 export const trustListRoutes = new Hono<HonoEnv>();
 
 export const TRUST_LIST_PATH = "/trust-list.json";
-export const TRUST_LIST_VERSION = 1;
+export const TRUST_LIST_VERSION = 2;
 
 /**
  * The two counts, exported so prose cannot drift from the payload.
@@ -40,12 +45,21 @@ export const TRUST_LIST_VERSION = 1;
  * standing in the other. A number typed into prose is a number that
  * only some of its copies get updated.
  */
-export function trustListCounts(): { transacted: number; used: number } {
+export function trustListCounts(): {
+  transacted: number;
+  used: number;
+  treaty: number;
+} {
   return {
     transacted: TRUST_LIST_ENTRIES.filter(
       (entry) => entry.relation === "transacted",
     ).length,
     used: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used")
+      .length,
+    // Zero is a real count: the relation exists on the list before its
+    // first entry does, so a reader learns what a treaty here would
+    // mean without one having to exist first.
+    treaty: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "treaty")
       .length,
   };
 }
@@ -70,6 +84,9 @@ trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
     // Counted, not just listed, so a reader can weigh the list without
     // walking it: the strong claim and the weak one, apart.
     counts: trustListCounts(),
+    // The third relation's terms, once, where every treaty entry can
+    // point at them instead of restating them.
+    treaty_terms: TRUST_LIST_TREATY_TERMS,
     // Age is computed at serve time and stated per entry, so a check
     // from the spring cannot sit beside one from yesterday looking
     // identical. The dates were always here; the arithmetic wasn't.
