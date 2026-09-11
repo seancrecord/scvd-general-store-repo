@@ -1,3 +1,4 @@
+import { graphemes } from "@/lib/unicode";
 import { inkParamsFromSignature } from "@/lib/ink";
 import { escapeHtml } from "@/lib/sanitize";
 import { dinoMark } from "@/services/favicon";
@@ -29,7 +30,8 @@ export interface PatronBadgeOptions {
 
 /** SVG text doesn't wrap; long names get trimmed to fit the label. */
 function fitName(name: string, max: number): string {
-  return name.length > max ? `${name.slice(0, max - 1)}\u2026` : name;
+  const chars = graphemes(name);
+  return chars.length > max ? `${chars.slice(0, max - 1).join("")}\u2026` : name;
 }
 
 /**
@@ -87,7 +89,7 @@ export function fitToWidth(
   letterSpacing = 0,
 ): string {
   if (textWidth(text, fontSize, letterSpacing) <= maxWidth) return text;
-  const chars = [...text];
+  const chars = graphemes(text);
   for (let take = chars.length - 1; take > 0; take -= 1) {
     const candidate = `${chars.slice(0, take).join("").trimEnd()}\u2026`;
     if (textWidth(candidate, fontSize, letterSpacing) <= maxWidth) return candidate;

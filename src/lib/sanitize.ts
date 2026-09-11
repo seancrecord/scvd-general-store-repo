@@ -1,3 +1,4 @@
+import { clipCodePoints } from "@/lib/unicode";
 /**
  * Input scrubbing for anything a visitor writes on our walls.
  * Friendly but firm: strip markup, cap length, keep the register human.
@@ -97,10 +98,9 @@ export function sanitizeText(input: unknown, maxLength: number): string {
   if (typeof input !== "string") {
     return "";
   }
-  return stripTags(scrubBrokenText(input).replace(CONTROL_CHARS, ""))
+  return clipCodePoints(stripTags(scrubBrokenText(input).replace(CONTROL_CHARS, ""))
     .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxLength);
+    .trim(), maxLength);
 }
 
 /**

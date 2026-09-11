@@ -1,3 +1,4 @@
+import { signHumanCommission, signHumanCompletion, humanOrderEvidence } from "@/services/human-order-proof";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { currentOrder, hydrateOrders, writeManagedOrder } from "@/services/managed-orders";
 import { listKeys } from "@/lib/kv-list";
@@ -88,6 +89,7 @@ export async function createOrder(
   if (options.referrer) {
     order.referrer = options.referrer;
   }
+  if (options.item.fulfillment === "human_queue") order.commission = await signHumanCommission(env, order);
   if (checkpoint) {
     order.managed_order = true;
     order = await checkpoint.save("order", order);
@@ -204,17 +206,20 @@ export async function completeOrder(
   if (!order) {
     return null;
   }
+  const completedAt = new Date().toISOString();
+  const proof = await signHumanCompletion(env, order, deliverable, completedAt);
   let completion = 0;
   if (order.managed_order) {
     const saved = await writeManagedOrder(env, order, {
-      kind: "complete", deliverable, at: new Date().toISOString(),
+      kind: "complete", deliverable, at: completedAt, proof,
     });
     order = saved.order;
     completion = saved.completion;
   } else {
     order.status = "completed";
     order.deliverable = deliverable;
-    order.completed_at = new Date().toISOString();
+    order.completed_at = completedAt;
+    order.completion_proof = proof;
     await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
   }
   // Finished work stops occupying the bench. A missed delete only ever
@@ -250,6 +255,7 @@ export async function completeOrder(
             item_id: order.item_id,
             status: order.status,
             deliverable: order.deliverable,
+            ...humanOrderEvidence(order),
           }),
         });
         order.webhook = response.ok

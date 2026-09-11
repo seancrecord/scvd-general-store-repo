@@ -4,7 +4,7 @@ import type { Env, OrderRecord } from "@/types";
 export interface ManagedOrderState { order: OrderRecord; completion: number }
 export type OrderMutation =
   | { kind: "acknowledge"; at: string }
-  | { kind: "complete"; at: string; deliverable: string }
+  | { kind: "complete"; at: string; deliverable: string; proof?: import("@/services/human-order-proof").HumanOrderProof }
   | { kind: "webhook"; completion: number; result: string };
 
 function coordinator(env: Env, orderId: string) {

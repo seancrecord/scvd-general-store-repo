@@ -1,3 +1,5 @@
+import { jcsCanonicalize } from "@/lib/jcs";
+import { signMessage } from "@/lib/signing";
 import { deliverA2AKit, type PreparedA2AKit } from "@/services/a2a-kit";
 import type { ArtifactCheckpoint } from "@/lib/artifact-checkpoint";
 import { caseFileNote, storeCaseFile, type CaseFileInput, type SignedCaseFile } from "@/services/case-file";
@@ -156,6 +158,22 @@ export interface InstantGoods {
   extras?: Record<string, unknown>;
 }
 
+/** The purchased words need their own proof; a product/payment certificate
+ * alone cannot expose a replacement blessing or fortune. The goods checkpoint
+ * retains this envelope together with the exact text across retries. */
+async function signedTextGoods(env: Env, item: MenuItem, input: InstantGoodsInput,
+  deliverable: string, fortuneDate?: string): Promise<InstantGoods> {
+  if (!input.certId) throw new Error("Purchased text has no certificate identity");
+  const signed_payload = jcsCanonicalize({ type: "scvd.purchased-text.v1", cert_id: input.certId,
+    item_id: item.id, deliverable, ...(fortuneDate ? { fortune_date: fortuneDate } : {}) });
+  const signed = await signMessage(signed_payload, env.SIGNING_KEY);
+  return { deliverable, extras: {
+    ...(fortuneDate ? { fortune_date: fortuneDate } : {}),
+    purchased_text: { signed_payload, signature: signed.signature, public_key: signed.publicKey,
+      signature_covers: "UTF-8 bytes of signed_payload, RFC 8785 canonical JSON. Binds the exact purchased words and date, when present, to the purchase certificate." },
+  } };
+}
+
 export async function deliverInstantGoods(
   env: Env,
   item: MenuItem,
@@ -165,14 +183,13 @@ export async function deliverInstantGoods(
   switch (item.id) {
     case "dibs":
       return { deliverable: dibsNote(input.patronNumber) };
-    case "small_blessing":
-      return { deliverable: await drawBlessing(env) };
+    case "small_blessing": {
+      const deliverable = await drawBlessing(env);
+      return signedTextGoods(env, item, input, deliverable);
+    }
     case "daily_fortune": {
       const date = input.purchasedAt ? new Date(input.purchasedAt) : new Date();
-      return {
-        deliverable: dailyFortune(date),
-        extras: { fortune_date: date.toISOString().slice(0, 10) },
-      };
+      return signedTextGoods(env, item, input, dailyFortune(date), date.toISOString().slice(0, 10));
     }
     case "context_anchor": {
       const anchorInput: Parameters<typeof createAnchor>[1] = {

@@ -369,7 +369,7 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (refusal) {
     // A new destination rule cannot confiscate already-paid work. This
     // authenticates retained goods only; it never runs a callback or settles.
-    if (isBuying(c) && ["callback_refused", "target_refused"].includes(String(refusal.body.code))) {
+    if (isBuying(c) && ["callback_refused", "target_refused", "bad_request"].includes(String(refusal.body.code))) {
       const recovered = await recoverSignedPurchase(c.env,
         decodePaymentHeader(c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT")),
         { path: c.req.path, door: "http", digest: await httpArtifactDigest(c.req.url) });
