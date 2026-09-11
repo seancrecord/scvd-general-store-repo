@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import type { Handoff, InstrumentMonth, InstrumentRow, InstrumentUsage, UnknownSplit } from "@/services/instruments";
+import type { InstrumentClients } from "@/lib/client-census";
+import type { DaySample, Handoff, InstrumentMonth, InstrumentRow, InstrumentUsage, UnknownSplit } from "@/services/instruments";
 
 function signed(n: number | null): string {
   if (n === null) return "—";
@@ -73,6 +74,32 @@ function handoffHtml(h: Handoff): string {
     string is indistinguishable from a buyer's SDK here, deliberately, and is counted above as organic.</small></p>`;
 }
 
+/**
+ * WHO CALLED EACH INSTRUMENT: the census (this month) or a day's rows
+ * (on request). One name carrying most of a line's calls is a script,
+ * whatever the total says — the reading the conformance drop needed.
+ */
+function clientsHtml(rows: InstrumentClients[], heading: string, note: string): string {
+  if (rows.length === 0) return `<p><small><strong>${heading}</strong>: nothing counted. ${note}</small></p>`;
+  const lines = rows
+    .map((r) => {
+      const top = r.top.map((c) => `<a href="/admin/trace?ua=${encodeURIComponent(c.client)}"><code>${escapeHtml(c.client)}</code></a> ${c.calls}`).join(", ");
+      return `<li><code>${escapeHtml(r.surface)}</code>: ${r.calls} calls from ${r.distinct} distinct · busiest ${top}</li>`;
+    })
+    .join("");
+  return `<p><small><strong>${heading}</strong>. ${note} A user-agent is software, not a person; each links to its trail.</small></p><ul>${lines}</ul>`;
+}
+
+function daySampleHtml(sample: DaySample | null): string {
+  const form = `<form method="get" action="/admin/instruments"><label>A day's rows, by instrument, by client: <input type="date" name="day" value="${sample ? escapeHtml(sample.day) : ""}"></label> <button type="submit">read the day</button></form>
+    <p><small>Reads one UTC day by its own key slices, so a month the newest-first scan cannot reach — August — is one request. Rows keep ninety days.</small></p>`;
+  if (!sample) return `<section><h3>A day, on request</h3>${form}</section>`;
+  const floor = sample.complete ? "every slice of the day listed to its end" : "the read hit its cap: a floor";
+  return `<section><h3>A day, on request: ${escapeHtml(sample.day)}</h3>${form}
+    ${clientsHtml(sample.instruments, `Organic instrument calls on ${escapeHtml(sample.day)}`, `${sample.rows_read} rows read, ${floor}.`)}
+  </section>`;
+}
+
 function afterSaleHtml(m: InstrumentMonth): string {
   const artifactReads = m.free.filter((r) => r.surface === "artifact:read").reduce((s, r) => s + r.organic, 0);
   const settled = m.settled === null ? "unknown" : String(m.settled);
@@ -110,6 +137,7 @@ function monthHtml(m: InstrumentMonth): string {
     </table>
     ${m.unknown ? unknownHtml(m.unknown) : ""}
     ${m.handoff ? handoffHtml(m.handoff) : ""}
+    ${m.clients ? clientsHtml(m.clients, `Who called, ${escapeHtml(m.month)}`, "Off the client census, organic calls since 2026-09-11; past 40 names a line counts to <code>other</code>.") : ""}
     ${
       m.paid_tools.length > 0
         ? `<p><small>Paid tools the same month:</small></p><table border="1" cellpadding="4">${HEAD}${rowsHtml(m.paid_tools)}</table>`
@@ -130,6 +158,7 @@ export function renderInstrumentsPage(usage: InstrumentUsage): string {
     on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}, the documentation door's on ${escapeHtml(usage.docs_logged_since)}.
     A zero before a row's logged-since date is the counter's absence, not the agents'. "Per day" divides by the days the line existed this month, so a partial month reads beside a whole one.</small></p>
   </section>
+  ${daySampleHtml(usage.day_sample)}
   ${usage.months.map(monthHtml).join("")}
   <section><p><small>Roster, by prefix: ${usage.roster
     .map((r) => `<code>${escapeHtml(r.prefix)}</code> <em>${r.kind}</em>`)

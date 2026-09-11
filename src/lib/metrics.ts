@@ -20,6 +20,8 @@ import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
  */
 import { venueCounterKey } from "@/store/venues";
 import { recordReferrerHost } from "@/lib/referrer-census";
+import { recordInstrumentClient } from "@/lib/client-census";
+import { isCensusedInstrument } from "@/lib/instrument-roster";
 import type { Channel, Env, PayerRecord } from "@/types";
 
 /**
@@ -637,6 +639,12 @@ export async function recordPorchVisit(
   // verbatim referrer for 90 days; this keeps the host for good.
   if (suffix === "" && event.referrer) {
     await recordReferrerHost(env, event.referrer, metricsMonth()).catch(() => undefined);
+  }
+  // Who calls each instrument (lib/client-census.ts): organic calls to
+  // the free roster and the paid tools, by user-agent, one capped map
+  // per instrument per month. The answer to "one prober or many".
+  if (suffix === "" && isCensusedInstrument(surface)) {
+    await recordInstrumentClient(env, surface, event.user_agent, metricsMonth()).catch(() => undefined);
   }
   // Same diet as the challenge path: a crawler reading the porch is
   // the noise floor, and the aggregate counter above already says how

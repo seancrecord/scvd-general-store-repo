@@ -3,8 +3,45 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 import type { MetricEvent } from "@/lib/metrics";
 import { walkerKey } from "@/lib/walkers";
+import { clientKey, type InstrumentClients } from "@/lib/client-census";
+import { invertedTimestamp } from "@/lib/kv-keys";
+import { isCensusedInstrument } from "@/lib/instrument-roster";
 import { isNoiseFloor } from "@/lib/declines";
 import type { Observatory, SurfaceCount } from "@/services/observatory";
+import {
+  DOCS_LOGGED_SINCE,
+  DOORS_LOGGED_SINCE,
+  FREE_INSTRUMENTS,
+  PORCH_COUNTING_SINCE,
+  VERIFIER_LOGGED_SINCE,
+  instrumentEntry,
+  instrumentKind,
+  isFreeInstrument,
+  isPaidTool,
+  type InstrumentEntry,
+  type InstrumentKind,
+} from "@/lib/instrument-roster";
+
+/**
+ * THE ROSTER LIVES IN lib/instrument-roster.ts (2026-09-11) so the
+ * porch counter in lib/metrics.ts can ask "is this a free instrument"
+ * at write time for the client census; lib does not import services.
+ * Everything here that named the roster still does, by re-export.
+ */
+export {
+  DOCS_LOGGED_SINCE,
+  DOORS_LOGGED_SINCE,
+  FREE_INSTRUMENTS,
+  FREE_INSTRUMENT_PREFIXES,
+  PAID_TOOL_PREFIXES,
+  PORCH_COUNTING_SINCE,
+  VERIFIER_LOGGED_SINCE,
+  instrumentEntry,
+  isFreeInstrument,
+  instrumentKind,
+  type InstrumentEntry,
+  type InstrumentKind,
+} from "@/lib/instrument-roster";
 import type { Env } from "@/types";
 
 /**
@@ -48,79 +85,12 @@ import type { Env } from "@/types";
  * the porch's floors, with the porch's caveats.
  */
 
-export type InstrumentKind = "argument" | "read";
-
-export interface InstrumentEntry {
-  prefix: string;
-  /**
-   * "argument": the call takes input (a URL, a receipt, a host to check).
-   * Automated callers can supply it too. "read": a GET of a
-   * page or list that any walker fetches by following links.
-   */
-  kind: InstrumentKind;
-  /** The date the porch first counted this surface, off the dated comments in porch-surface.ts and the Worker entry. */
-  logged_since: string;
-}
-
-/** The porch began counting surfaces on this day; anything without its own dated line is a floor at this date. */
-export const PORCH_COUNTING_SINCE = "2026-08-21";
-/** The interactive doors and free resources were given porch lines on this day. */
-export const DOORS_LOGGED_SINCE = "2026-09-04";
-/** The verifier door at /mcp/verifier, open since 2026-09-03, was given porch lines on this day. */
-export const VERIFIER_LOGGED_SINCE = "2026-09-05";
-/** The documentation door at /mcp.md and /mcp/docs, counted from the day it opened. */
-export const DOCS_LOGGED_SINCE = "2026-09-05";
-
-export const FREE_INSTRUMENTS: readonly InstrumentEntry[] = [
-  { prefix: "preflight", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "look", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "before-you-pay", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "conformance", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "verify-receipt", kind: "argument", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "artifact:read", kind: "read", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "bot-auth", kind: "read", logged_since: DOORS_LOGGED_SINCE },
-  { prefix: "corpus", kind: "read", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:preflight_endpoint", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:check_before_you_pay", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:look_at_door", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:check_conformance", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:verify_artifact", kind: "argument", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp:tool:read_store_guide", kind: "read", logged_since: PORCH_COUNTING_SINCE },
-  { prefix: "mcp-verifier:tool:", kind: "argument", logged_since: VERIFIER_LOGGED_SINCE },
-  /* The documentation door's one tool hands back reference material by name: a read, like the store guide. */
-  { prefix: "mcp-docs:tool:", kind: "read", logged_since: DOCS_LOGGED_SINCE },
-];
-
-/**
- * Sub-surfaces whose kind or date differs from their prefix. The
- * conformance desk's HUMAN page is a read even though the API takes a
- * body; the preflight's check list is a GET; the bot-auth CHECK takes
- * a signed request where the bot-auth page is prose; the MCP variants
- * of the HTTP doors were logged with the MCP handler, not the doors.
- */
-const SURFACE_OVERRIDES: Readonly<Record<string, Partial<InstrumentEntry>>> = {
-  "conformance:desk": { kind: "read", logged_since: DOORS_LOGGED_SINCE },
-  "conformance-watch:history": { kind: "read" },
-  "conformance:mcp": { logged_since: PORCH_COUNTING_SINCE },
-  "preflight:checks": { kind: "read" },
-  "preflight:mcp": { logged_since: PORCH_COUNTING_SINCE },
-  "look:mcp": { logged_since: PORCH_COUNTING_SINCE },
-  "before-you-pay:mcp": { logged_since: PORCH_COUNTING_SINCE },
-  "bot-auth:check": { kind: "argument" },
-  /* The defect vocabulary is a read with or without an id; every other verifier tool needs a URL, a receipt or a host. */
-  "mcp-verifier:tool:get_defect_definition": { kind: "read" },
-};
-
-export const FREE_INSTRUMENT_PREFIXES: readonly string[] = FREE_INSTRUMENTS.map((entry) => entry.prefix);
-
 /** Every MCP door's opening handshake: the denominator for how many sessions become tool calls. */
 const MCP_HANDSHAKE_SURFACES: ReadonlySet<string> = new Set([
   "mcp:initialize",
   "mcp-verifier:initialize",
   "mcp-docs:initialize",
 ]);
-
-export const PAID_TOOL_PREFIXES: readonly string[] = ["mcp:tool:buy_"];
 
 export interface InstrumentRow extends SurfaceCount {
   kind: InstrumentKind;
@@ -206,6 +176,8 @@ export interface InstrumentMonth {
   mcp_handshakes: number;
   unknown: UnknownSplit | null;
   handoff: Handoff | null;
+  /** The month's client census per instrument (lib/client-census.ts), busiest first; null for months the route did not read. */
+  clients: InstrumentClients[] | null;
   /** The reading the deltas are against, when there was one for this month. */
   since: string | null;
   truncated: boolean;
@@ -228,6 +200,8 @@ export interface InstrumentUsage {
   docs_logged_since: string;
   /** What this render stored for the next one to diff against. */
   reading: InstrumentReading;
+  /** One UTC day's rows, by instrument, by client, when the keeper asked for a day. */
+  day_sample: DaySample | null;
 }
 
 export interface InstrumentInputs {
@@ -244,30 +218,96 @@ export interface InstrumentInputs {
   unknown?: UnknownSplit | null;
   /** The current month's handoff, off the same rows. */
   handoff?: Handoff | null;
+  /** The current month's client census, off lib/client-census.ts. */
+  clients?: Map<string, InstrumentClients> | null;
+  /** A day's rows read on request, already grouped. */
+  daySample?: DaySample | null;
 }
 
-/** The roster entry a surface falls under, overrides applied; the growth ledger reads it rather than retyping the roster. */
-export function instrumentEntry(surface: string): InstrumentEntry | undefined {
-  return rosterEntry(surface);
+/**
+ * A DAY'S ROWS, BY INSTRUMENT, BY CLIENT (2026-09-11). The client
+ * census answers "one prober or many" from the day it began; it
+ * cannot answer it for August. The event rows can — they keep ninety
+ * days — but the month scan reads newest-first under a cap that a
+ * busy month exhausts inside a day, so August was unreachable from
+ * any page. This reads ONE UTC day by its key prefixes instead: the
+ * inverted timestamp's leading digits bucket the rows into ~2.8-hour
+ * slices, so a day is at most ten listings and never a walk through
+ * everything newer. Bounded by DAY_SAMPLE_CAP; the row says when it
+ * hit it.
+ */
+export interface DaySample {
+  day: string;
+  rows_read: number;
+  /** True when every slice of the day was listed to its end. */
+  complete: boolean;
+  /** Busiest instrument first; software, never people. */
+  instruments: InstrumentClients[];
 }
 
-function rosterEntry(surface: string): InstrumentEntry | undefined {
-  const base = FREE_INSTRUMENTS.find((p) => surface === p.prefix || surface.startsWith(`${p.prefix}:`) || surface.startsWith(p.prefix));
-  if (!base) return undefined;
-  const override = SURFACE_OVERRIDES[surface];
-  return override ? { ...base, ...override, prefix: base.prefix } : base;
+export const DAY_SAMPLE_CAP = 8000;
+/** The inverted timestamp has 13 digits; a 6-digit prefix is a 10^7 ms slice, about 2.8 hours. */
+const SLICE_MS = 10_000_000;
+const SLICE_PREFIX_DIGITS = 6;
+
+/** The `evt:` key prefixes whose slices intersect the UTC day, newest slice first. */
+export function dayEventPrefixes(day: string): string[] {
+  const start = Date.parse(`${day}T00:00:00.000Z`);
+  if (!Number.isFinite(start)) return [];
+  const end = start + 86_400_000 - 1;
+  const first = Math.floor(Number(invertedTimestamp(end)) / SLICE_MS);
+  const last = Math.floor(Number(invertedTimestamp(start)) / SLICE_MS);
+  const prefixes: string[] = [];
+  for (let slice = first; slice <= last; slice += 1) {
+    prefixes.push(`evt:${String(slice).padStart(SLICE_PREFIX_DIGITS, "0")}`);
+  }
+  return prefixes;
 }
 
-export function isFreeInstrument(surface: string): boolean {
-  return rosterEntry(surface) !== undefined;
-}
-function isPaidTool(surface: string): boolean {
-  return PAID_TOOL_PREFIXES.some((p) => surface.startsWith(p));
+export async function readDayEvents(env: Env, day: string, cap = DAY_SAMPLE_CAP): Promise<MonthEvents> {
+  const events: MetricEvent[] = [];
+  let scanned = 0;
+  let complete = true;
+  for (const prefix of dayEventPrefixes(day)) {
+    let cursor: string | undefined;
+    do {
+      if (scanned >= cap) {
+        complete = false;
+        return { events, rows_scanned: scanned, complete };
+      }
+      const listed = await kvList(env.COUNTERS, { prefix, limit: Math.min(1000, cap - scanned), ...(cursor ? { cursor } : {}) });
+      const names = listed.keys.map((key) => key.name);
+      scanned += names.length;
+      const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+      for (const name of names) {
+        const event = values.get(name);
+        if (event && event.at.startsWith(day)) events.push(event);
+      }
+      cursor = listed.list_complete ? undefined : listed.cursor;
+    } while (cursor);
+  }
+  return { events, rows_scanned: scanned, complete };
 }
 
-/** The kind of a surface on the roster; used by the unknown split to weight what it found. */
-export function instrumentKind(surface: string): InstrumentKind | undefined {
-  return rosterEntry(surface)?.kind;
+/** Organic porch rows on censused instruments, grouped by user-agent. Pure. */
+export function clientsByInstrument(events: readonly MetricEvent[], top = 5): InstrumentClients[] {
+  const bySurface = new Map<string, Map<string, number>>();
+  for (const event of events) {
+    if (event.kind !== "porch" || event.house || event.channel === "infrastructure") continue;
+    if (!isCensusedInstrument(event.item)) continue;
+    const clients = bySurface.get(event.item) ?? new Map<string, number>();
+    const key = clientKey(event.user_agent);
+    clients.set(key, (clients.get(key) ?? 0) + 1);
+    bySurface.set(event.item, clients);
+  }
+  return [...bySurface.entries()]
+    .map(([surface, clients]) => {
+      const rows = [...clients.entries()]
+        .map(([client, calls]) => ({ client, calls }))
+        .sort((a, b) => b.calls - a.calls || a.client.localeCompare(b.client));
+      return { surface, distinct: rows.length, calls: rows.reduce((sum, row) => sum + row.calls, 0), top: rows.slice(0, top) };
+    })
+    .sort((a, b) => b.calls - a.calls || a.surface.localeCompare(b.surface));
 }
 
 const DAY_MS = 86400 * 1000;
@@ -310,7 +350,7 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
     const last = inputs.last && inputs.last.month === m.month ? inputs.last : null;
     const free = m.surfaces
       .flatMap((s) => {
-        const entry = rosterEntry(s.surface);
+        const entry = instrumentEntry(s.surface);
         return entry ? [toRow(s, entry, m.month, now, last?.free ?? null)] : [];
       })
       .sort((a, b) => b.organic - a.organic);
@@ -342,6 +382,10 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
         .reduce((sum, s) => sum + s.organic, 0),
       unknown: m.month === currentMonth ? (inputs.unknown ?? null) : null,
       handoff: m.month === currentMonth ? (inputs.handoff ?? null) : null,
+      clients:
+        m.month === currentMonth && inputs.clients
+          ? [...inputs.clients.values()].sort((a, b) => b.calls - a.calls || a.surface.localeCompare(b.surface))
+          : null,
       since: last?.at ?? null,
       truncated: m.truncated,
     };
@@ -362,6 +406,7 @@ export function freeInstrumentUsage(observatory: Observatory, inputs: Instrument
     verifier_logged_since: VERIFIER_LOGGED_SINCE,
     docs_logged_since: DOCS_LOGGED_SINCE,
     reading,
+    day_sample: inputs.daySample ?? null,
   };
 }
 

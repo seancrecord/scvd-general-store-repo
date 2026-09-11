@@ -571,6 +571,12 @@ export const KV_KEYS = {
    * The live counters stay the book; this is the record of a reading.
    */
   growthLog: (month: string): string => `growth_log:${month}`,
+  /**
+   * The peer shelf (2026-09-11): one week's reading of the directory
+   * category this store is listed in, taken once and never rewritten.
+   */
+  peerShelf: (week: string): string => `peer_shelf:${week}`,
+  peerShelfPrefix: "peer_shelf:",
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,
   metricMonthPrefix: (month: string): string => `metric:${month}:`,

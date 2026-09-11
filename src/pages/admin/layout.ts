@@ -69,6 +69,13 @@ export type AdminTab =
    * market. The office had the counts and no history.
    */
   | "growth"
+  /**
+   * THE PEERS (2026-09-11): the directory category this store is
+   * listed in, every service in it read the same way once a week,
+   * ours beside theirs. The one instrument that can see anyone
+   * else's share. Never a ranking: alphabetical, counts, denominators.
+   */
+  | "peers"
   | "ward"
   /**
    * The second ward (2026-09-04). Its own tab rather than a section of
@@ -144,6 +151,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
   { tab: "instruments", href: "/admin/instruments", label: "Free instruments" },
   { tab: "growth", href: "/admin/growth", label: "Growth" },
+  { tab: "peers", href: "/admin/peers", label: "The peers" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
   { tab: "mcp-ward", href: "/admin/mcp-ward", label: "The MCP ward" },
@@ -242,6 +250,7 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/settlement-unknown", label: "Settlements the store could not read" },
   { href: "/admin/glance", label: "The glance" },
   { href: "/admin/growth.json", label: "Growth, as JSON (every month, every block)" },
+  { href: "/admin/peers.json", label: "The peers, as JSON (every week read)" },
   { href: "/admin/events", label: "Item events" },
   { href: "/admin/trace", label: "Client trace (one user-agent, whole trail)" },
   { href: "/admin/bell", label: "The bell" },

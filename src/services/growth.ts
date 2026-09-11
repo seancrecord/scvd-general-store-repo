@@ -13,6 +13,7 @@ import {
 } from "@/lib/metrics";
 import { porchSurfaceKind, type PorchSurfaceKind } from "@/lib/porch-surface";
 import { readReferrerCensus } from "@/lib/referrer-census";
+import { readInstrumentClients, type InstrumentClients } from "@/lib/client-census";
 import { readBellRings } from "@/services/bell";
 import { derivedFromCorpus } from "@/services/corpus-list";
 import {
@@ -101,6 +102,10 @@ export interface GrowthInstrumentRow {
   /** The month before's organic count; null when this is the first month read. */
   previous: number | null;
   delta: number | null;
+  /** Distinct user-agents in the month's client census; null before the census existed (2026-09-11). A floor on software, never on people. */
+  distinct_clients: number | null;
+  /** The busiest clients, bounded; empty when there is no census. */
+  top_clients: { client: string; calls: number }[];
 }
 
 export interface GrowthFunnel {
@@ -255,6 +260,8 @@ export interface MonthInputs {
   pulse: PulseWindow | null;
   state: MonthState | null;
   logged: GrowthMonth | null;
+  /** The month's per-instrument client census, keyed by surface; empty before the census existed. */
+  instrumentClients: Map<string, InstrumentClients>;
   /** Every surface with organic use in any EARLIER month. */
   seenBefore: ReadonlySet<string>;
   /** The month before's organic count per surface; null when this is the first month read. */
@@ -362,6 +369,7 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     }
     const days = daysCounted(month, entry.logged_since, now);
     const before = previous ? (previous.get(surface) ?? 0) : null;
+    const census = inputs.instrumentClients.get(surface);
     byInstrument.push({
       surface,
       kind: entry.kind,
@@ -370,6 +378,8 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
       per_day: days > 0 ? Number((organic / days).toFixed(1)) : null,
       previous: before,
       delta: before === null ? null : organic - before,
+      distinct_clients: census ? census.distinct : null,
+      top_clients: census ? census.top.slice(0, 3) : [],
     });
   }
   byInstrument.sort((a, b) => b.organic - a.organic || a.surface.localeCompare(b.surface));
@@ -509,7 +519,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
     monthlyStates(env),
     Promise.all(
       all.map(async (month) => {
-        const [porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged] = await Promise.all([
+        const [porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients] = await Promise.all([
           readPorchLedger(env, month),
           readMonthLedger(env, month),
           readMcpClients(env, month),
@@ -518,8 +528,9 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
           readReferrerCensus(env, month),
           readBellRings(env, month),
           readGrowthLog(env, month),
+          readInstrumentClients(env, month),
         ]);
-        return { month, porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged };
+        return { month, porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients };
       }),
     ),
   ]);

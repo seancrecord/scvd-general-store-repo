@@ -88,7 +88,8 @@ function instrumentsHtml(months: GrowthMonth[]): string {
     const r = m.free_instruments.by_instrument.find((entry) => entry.surface === surface);
     if (!r) return "<small>—</small>";
     const delta = r.delta === null ? "" : ` <small>(${r.delta > 0 ? "+" : ""}${r.delta})</small>`;
-    return `${r.organic}${r.per_day !== null ? ` <small>· ${r.per_day}/d</small>` : ""}${delta}`;
+    const clients = r.distinct_clients === null ? "" : ` <small>· ${r.distinct_clients} client${r.distinct_clients === 1 ? "" : "s"}</small>`;
+    return `${r.organic}${r.per_day !== null ? ` <small>· ${r.per_day}/d</small>` : ""}${delta}${clients}`;
   };
   const lines = ordered
     .map((surface) => {
@@ -115,7 +116,29 @@ function instrumentsHtml(months: GrowthMonth[]): string {
       ${monthHead(months)}
       ${lines || `<tr><td colspan="${months.length + 1}">no free instrument has been used yet</td></tr>`}
     </table>
+    ${clientsHtml(months[0])}
   </section>`;
+}
+
+/**
+ * WHO CALLED, this month: the busiest user-agents per instrument off
+ * the client census. The question the conformance drop raised — one
+ * script at seventy a day, or seventy callers — answered as a list
+ * rather than inferred from a total. Software, never people.
+ */
+function clientsHtml(newest: GrowthMonth | undefined): string {
+  if (!newest) return "";
+  const rows = newest.free_instruments.by_instrument.filter((r) => r.distinct_clients !== null && r.distinct_clients > 0);
+  if (rows.length === 0) {
+    return `<p><small>No client census for ${escapeHtml(newest.month)} yet: the census began 2026-09-11 and counts organic calls from then.</small></p>`;
+  }
+  const lines = rows
+    .map((r) => {
+      const top = r.top_clients.map((c) => `<code>${escapeHtml(c.client)}</code> ${c.calls}`).join(", ");
+      return `<li><code>${escapeHtml(r.surface)}</code>: ${r.distinct_clients} distinct · busiest ${top}</li>`;
+    })
+    .join("");
+  return `<p><small><strong>Who called, ${escapeHtml(newest.month)}</strong> — distinct user-agents per instrument off the client census (organic only; a user-agent is software, not a person; past 40 names the count lands on <code>other</code>). One name carrying most of a line's calls is a script, whatever the total says.</small></p><ul>${lines}</ul>`;
 }
 
 function agentsHtml(months: GrowthMonth[]): string {

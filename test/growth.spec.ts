@@ -61,6 +61,7 @@ function inputs(over: Partial<MonthInputs>, ledger: Awaited<ReturnType<typeof le
     pulse: null,
     state: null,
     logged: null,
+    instrumentClients: new Map(),
     seenBefore: new Set(),
     previous: null,
     ...over,
