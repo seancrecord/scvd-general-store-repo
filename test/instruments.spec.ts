@@ -322,3 +322,79 @@ describe("the free instruments, sorted out of the observatory", () => {
     expect(stored?.month).toBe(new Date().toISOString().slice(0, 7));
   });
 });
+
+/**
+ * THE CLIENT CENSUS AND THE DAY SAMPLE (2026-09-11): the conformance
+ * desk read 791 organic calls in eleven August days and 247 in eleven
+ * September days, and no page could say whether August was seventy
+ * callers or one script. The census answers it from now on; the day
+ * sample answers it for the ninety days the rows keep.
+ */
+describe("who called, by instrument", () => {
+  it("censuses organic calls on the roster and the paid tools, never on the handshake", async () => {
+    const { recordPorchVisit, metricsMonth } = await import("@/lib/metrics");
+    const { readInstrumentClients, INSTRUMENT_CLIENT_CAP } = await import("@/lib/client-census");
+    await recordPorchVisit(testEnv, "conformance", { userAgent: "node-fetch/3.3.2" });
+    await recordPorchVisit(testEnv, "conformance", { userAgent: "node-fetch/3.3.2" });
+    await recordPorchVisit(testEnv, "conformance", { userAgent: "curl/8.4.0" });
+    await recordPorchVisit(testEnv, "conformance", {});
+    await recordPorchVisit(testEnv, "mcp:tool:buy_simple", { userAgent: "buyer-sdk/1.0", viaMcp: true });
+    await recordPorchVisit(testEnv, "mcp:initialize", { userAgent: "buyer-sdk/1.0", viaMcp: true });
+    // A known crawler is infrastructure at the door and never reaches the census.
+    await recordPorchVisit(testEnv, "conformance", { userAgent: "x402-conformance-monitor/0.1" });
+    const census = await readInstrumentClients(testEnv, metricsMonth());
+    const conformance = census.get("conformance")!;
+    expect(conformance.distinct).toBe(3);
+    expect(conformance.calls).toBe(4);
+    expect(conformance.top[0]).toEqual({ client: "node-fetch/3.3.2", calls: 2 });
+    expect(conformance.top.map((c) => c.client)).toContain("(no user-agent)");
+    expect(JSON.stringify(conformance)).not.toContain("conformance-monitor");
+    expect(census.get("mcp:tool:buy_simple")?.top[0]).toEqual({ client: "buyer-sdk/1.0", calls: 1 });
+    expect(census.has("mcp:initialize")).toBe(false);
+    expect(INSTRUMENT_CLIENT_CAP).toBeGreaterThan(0);
+  });
+
+  it("names the day's key slices and reads one day by them, grouped by client", async () => {
+    const { dayEventPrefixes, readDayEvents } = await import("@/services/instruments");
+    const { invertedTimestamp } = await import("@/lib/kv-keys");
+    const day = "2026-08-25";
+    const prefixes = dayEventPrefixes(day);
+    expect(prefixes.length).toBeGreaterThanOrEqual(9);
+    expect(prefixes.length).toBeLessThanOrEqual(10);
+    expect(prefixes.every((p) => /^evt:\d{6}$/.test(p))).toBe(true);
+    expect(dayEventPrefixes("not-a-day")).toEqual([]);
+
+    const put = async (at: string, item: string, ua: string | undefined, extra: Partial<MetricEvent> = {}) => {
+      const event: MetricEvent = { kind: "porch", item, channel: ua ? "direct" : "unknown", house: false, at, ...(ua ? { user_agent: ua } : {}), ...extra };
+      await testEnv.COUNTERS.put(`evt:${invertedTimestamp(Date.parse(at))}:${Math.random().toString(36).slice(2, 8)}`, JSON.stringify(event));
+    };
+    await put("2026-08-25T01:00:00.000Z", "conformance", "one-script/1.0");
+    await put("2026-08-25T13:00:00.000Z", "conformance", "one-script/1.0");
+    await put("2026-08-25T23:59:59.000Z", "conformance", "one-script/1.0");
+    await put("2026-08-25T12:00:00.000Z", "conformance", "curl/8.4.0");
+    await put("2026-08-25T12:00:01.000Z", "conformance", "one-script/1.0", { house: true });
+    await put("2026-08-25T12:00:02.000Z", "mcp:initialize", "one-script/1.0");
+    await put("2026-08-26T00:00:00.000Z", "conformance", "next-day/1.0");
+    await put("2026-08-24T23:59:59.999Z", "conformance", "day-before/1.0");
+
+    const read = await readDayEvents(testEnv, day);
+    expect(read.complete).toBe(true);
+    expect(read.events.every((e) => e.at.startsWith(day))).toBe(true);
+    const { clientsByInstrument } = await import("@/services/instruments");
+    const grouped = clientsByInstrument(read.events);
+    const conformance = grouped.find((r) => r.surface === "conformance")!;
+    expect(conformance.calls).toBe(4);
+    expect(conformance.distinct).toBe(2);
+    expect(conformance.top[0]).toEqual({ client: "one-script/1.0", calls: 3 });
+    expect(grouped.find((r) => r.surface === "mcp:initialize")).toBeUndefined();
+    expect(JSON.stringify(grouped)).not.toContain("next-day");
+    expect(JSON.stringify(grouped)).not.toContain("day-before");
+
+    const page = await SELF.fetch(`https://scvd.store/admin/instruments?day=${day}`, { headers: AUTH });
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain(`A day, on request: ${day}`);
+    expect(html).toContain("one-script/1.0");
+    expect(html).toContain("Who called,");
+  });
+});

@@ -37,6 +37,7 @@ import { renderCensusPage } from "@/pages/admin/census-page";
 import { renderBuyersPage } from "@/pages/admin/buyers-page";
 import { renderInstrumentsPage } from "@/pages/admin/instruments-page";
 import { renderGrowthPage } from "@/pages/admin/growth-page";
+import { renderPeersPage } from "@/pages/admin/peers-page";
 import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderTracePage } from "@/pages/admin/trace-page";
@@ -2168,20 +2169,31 @@ adminRoutes.get("/admin/buyers", async (c) => {
 adminRoutes.get("/admin/instruments", async (c) => {
   const { computeObservatory } = await import("@/services/observatory");
   const { computePulse } = await import("@/services/pulse");
-  const { freeInstrumentUsage, handoffs, readInstrumentReading, readMonthEvents, splitUnknown, writeInstrumentReading } =
+  const { clientsByInstrument, freeInstrumentUsage, handoffs, readDayEvents, readInstrumentReading, readMonthEvents, splitUnknown, writeInstrumentReading } =
     await import("@/services/instruments");
+  const { readInstrumentClients } = await import("@/lib/client-census");
   const now = new Date();
   const month = metricsMonth(now);
+  // A day the keeper asked for, read by its own key slices (2026-09-11):
+  // the one way to reach a month the newest-first scan cannot.
+  const dayQuery = c.req.query("day") ?? "";
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(dayQuery) ? dayQuery : null;
   // One wave: the observatory, the funnel's counts, the last reading
   // and the month's event rows read disjoint keys. The funnel figures
   // and everything off the rows are decorations; any failing leaves
   // the page standing with the field null and said so.
-  const [observatory, pulse, last, rows] = await Promise.all([
+  const [observatory, pulse, last, rows, clients, dayRows] = await Promise.all([
     computeObservatory(c.env, now),
     computePulse(c.env).catch(() => null),
     readInstrumentReading(c.env),
     readMonthEvents(c.env, month).catch(() => null),
+    readInstrumentClients(c.env, month).catch(() => null),
+    day ? readDayEvents(c.env, day).catch(() => null) : Promise.resolve(null),
   ]);
+  const daySample =
+    day && dayRows
+      ? { day, rows_read: dayRows.rows_scanned, complete: dayRows.complete, instruments: clientsByInstrument(dayRows.events) }
+      : null;
   const settled: Record<string, number> = {};
   const rechecks: Record<string, number> = {};
   const declines: Record<string, number> = {};
@@ -2199,7 +2211,7 @@ adminRoutes.get("/admin/instruments", async (c) => {
   }
   const unknown = rows ? splitUnknown(rows.events, month, rows.rows_scanned, rows.complete, selfHost) : null;
   const handoff = rows ? handoffs(rows.events, month) : null;
-  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, declines, last, unknown, handoff });
+  const usage = freeInstrumentUsage(observatory, { now, settled, rechecks, declines, last, unknown, handoff, clients, daySample });
   deferBookkeeping(c, writeInstrumentReading(c.env, usage.reading));
   return c.html(renderInstrumentsPage(usage));
 });
@@ -2214,6 +2226,22 @@ adminRoutes.get("/admin/instruments", async (c) => {
 adminRoutes.get("/admin/growth", async (c) => {
   const { computeGrowth } = await import("@/services/growth");
   return c.html(renderGrowthPage(await computeGrowth(c.env)));
+});
+
+/**
+ * THE PEERS (2026-09-11): the directory category this store is listed
+ * in, read weekly by the hourly press and kept. The page reads what
+ * the press kept and fetches nothing itself: a keeper's page load is
+ * never a subrequest to somebody else's directory.
+ */
+adminRoutes.get("/admin/peers", async (c) => {
+  const { readPeerShelves } = await import("@/services/peer-shelf");
+  return c.html(renderPeersPage(await readPeerShelves(c.env)));
+});
+
+adminRoutes.get("/admin/peers.json", async (c) => {
+  const { readPeerShelves } = await import("@/services/peer-shelf");
+  return c.json(await readPeerShelves(c.env));
 });
 
 adminRoutes.get("/admin/growth.json", async (c) => {

@@ -151,6 +151,44 @@ no referring hosts — unmeasured, printed as such. September is the
 first month with every block. The first frozen month is written on
 the first hourly firing of October.
 
+## The follow-through, 2026-09-11 (the same day)
+
+The first reading of the ledger put a question on the desk: the
+conformance desk read 791 organic calls in the last eleven days of
+August and 247 in the first eleven of September. Nothing on any page
+could say whether August was seventy callers or one script, and no
+instrument here could see whether anyone else was taking that trade.
+Three things closed those two gaps, on one branch:
+
+1. **The client census, per instrument** (`src/lib/client-census.ts`).
+   Every organic call to a free instrument or a paid tool adds one to
+   a capped map of user-agent → calls under
+   `metric:<month>:uaclient:<surface>`, the MCP client census's shape.
+   Handshakes and catalogue reads are not censused; known crawlers
+   never reach it. The growth ledger prints distinct clients beside
+   each instrument's count and the busiest three; the instruments desk
+   prints the month's list with each name linked to its trail. The
+   roster the census consults moved from `services/instruments.ts` to
+   `src/lib/instrument-roster.ts` so the porch counter in lib could
+   read it; the service re-exports every name.
+2. **A day, on request** (`?day=YYYY-MM-DD` on `/admin/instruments`).
+   The census starts today; August's rows are still in the ninety-day
+   window but the month scan reads newest-first under a cap a busy
+   month exhausts inside a day. The day sample lists one UTC day by
+   its inverted-timestamp key slices (ten listings, not a walk through
+   everything newer) and groups the day's organic instrument calls by
+   client. Two August days answer the August question.
+3. **The peer shelf** (`src/services/peer-shelf.ts`, `/admin/peers`).
+   x402-list.com publishes, CC BY 4.0, a measured thirty-day
+   settlement floor for every service it lists. The hourly press reads
+   the category our own row sits in (read off that row, never typed)
+   once per ISO week and keeps it: every service alphabetical, ours
+   among them, the category's measured totals, our floor per hundred
+   of the category's, who arrived and who left. Never a ranking; their
+   percentile does not travel. It sees paid settlements through the
+   facilitators they measure, and nothing about anyone's free
+   instruments — the page says so.
+
 ## What this is not
 
 Not unique visitors. Not attribution of a free check to a later

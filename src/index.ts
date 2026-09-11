@@ -692,6 +692,25 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     /**
+     * THE PEER SHELF rides the hourly press too (2026-09-11): the first
+     * firing of each ISO week reads the directory category this store
+     * sits in and freezes it; every later firing that week finds it
+     * frozen. A failure alerts, because a week with no reading would
+     * read exactly like a directory that went quiet.
+     */
+    ctx.waitUntil(
+      import("@/services/peer-shelf").then(({ ensureWeekPeerShelf }) =>
+        ensureWeekPeerShelf(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Peer shelf pass failed: ${String(error)}. The week is re-tried on the next hourly firing; a repeat means the directory read or the shelf write is broken.`,
+            }),
+        ),
+      ),
+    );
+    /**
      * MACHINE 1's resolver rides the same hourly firing (#56): every
      * open settlement_unknown row gets the chain asked where a chain
      * can answer, on a per-row cursor. Bounded per pass; a failure
