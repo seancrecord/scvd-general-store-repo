@@ -280,6 +280,24 @@ function trendHtml(ledger: MonthLedger): string {
  * second copy of the store's money table, which is the exact defect
  * class this repo spends its time closing.
  */
+/**
+ * HOW TO READ THE MONEY NUMBERS (2026-09-11, the keeper: "I need this
+ * to be very explicit"). One wallet bought 66 times in an afternoon,
+ * ten seconds apart, and the desk showed three different counts of
+ * it. All three are on this page on purpose; this box says which one
+ * to believe.
+ */
+function howToReadTheMoneyHtml(takeReadAt: string | null): string {
+  return `<div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
+    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. When they disagree, the certificates win.</strong></p>
+    <ol style="margin:0;padding-left:1.4em">
+      <li><strong>Certificates</strong> — one per sale, minted when it settled. A certificate cannot go missing the way a tally can. <em>The take</em> below and <a href="/admin/buyers">the buyers page</a> count these. <strong>This is the true number.</strong></li>
+      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. A tally that can miss a count when sales land seconds apart, and is never higher than the truth. A missed count does not come back on its own; the payer rows have a repair button on the buyers page, the storefront's count has none yet.</li>
+      <li><strong>The take on this desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
+    </ol>
+  </div>`;
+}
+
 export function takeSectionHtml(
   take: TakeSummary | null,
   allTime: { organic: number; house: number } | null,
@@ -305,7 +323,7 @@ export function takeSectionHtml(
     if (diff > 0) {
       return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is settles that minted no certificate, listed by item under <a href="#no-certificate">settled at the till, no certificate</a> below. Same books, two honest counts, and now both on the page.</small></p>`;
     }
-    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}). Penny pages cannot explain a negative gap — this is worth chasing.</strong></small></p>`;
+    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. What can: a run of sales seconds apart, where the till's tally misses counts (ruled a floor, 2026-09-04). The certificates are right; the storefront's number is ${take.total.organic_sales - allTime.organic} low and will stay low, because a missed count never comes back on its own.</small></p>`;
   })();
   const money = (value: number): string => `$${value.toFixed(2)}`;
   const rows = take.lines
@@ -904,6 +922,7 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
+    ${howToReadTheMoneyHtml(data.takeReadAt ?? null)}
     ${
       data.take
         ? `${takeSectionHtml(data.take, data.allTime)}
