@@ -33,11 +33,38 @@ things about it worth the keeper's eye:
   instead of two) or open a second PR after; the files in
   `catalog/seancrecord/` are the ones to copy either way.
 
-Hugging Face: CV reports a submission there too. Nothing on file says
-where or what; the only Hugging Face read this repo holds is the
-hf-discover search of 2026-09-06 (zero results, and hf-discover
-indexes Hugging Face Skills and Spaces, not arbitrary domains). Paste
-the link and it gets a row.
+The replacement — the corrected file, the two missing entries, the
+validation commands, a new title and a body a reviewer can approve
+from — is `PR_BODY.md` beside this file, written for CV to paste.
+
+## Hugging Face (2026-09-11)
+
+CV reports a submission there; the link the keeper has is the Hub's
+token settings page, which means a push is planned rather than done.
+What the index actually takes, read off hf-discover's own README:
+
+- **Skills**: the curated `huggingface/skills` GitHub repository,
+  Hugging Face's own set (train, evaluate, datasets). A store skill
+  does not belong in it and a PR there would be declined on scope.
+- **MCP servers**: a Space tagged `mcp-server`. hf-discover reads the
+  Space's metadata and writes an MCP-registry-style descriptor whose
+  `remotes[]` is the Space's OWN Gradio streamable-HTTP endpoint. It
+  does not take a remote URL, so a Space cannot simply point at
+  `https://scvd.store/mcp`.
+
+So the honest shape is a Space that runs a small Gradio app with
+`mcp_server=True` exposing the store's FREE doors as read-only tools
+(preflight, before-you-pay, conformance, verify, the corpus per host),
+each one an HTTPS call to scvd.store — the "SCVD x402 Verifier" the
+keeper's 2026-09-03 memo already describes for the ChatGPT listing.
+No `buy_*` tools, so no payment ever transits Hugging Face and no
+secret lives in the Space: the free doors need no key. The token for
+the push: fine-grained, write on that one Space only, with an expiry;
+never the account-wide token, and nothing from this repo's secrets.
+Tag the Space `mcp-server`, name it `scvd-x402-verifier`, and give
+its README the sixty words and the same money paragraph as the
+catalog PR. When it is up, an hf-discover search for `scvd` is the
+read to file beside the 2026-09-06 zero.
 
 ## Where the store stands (read 2026-09-10)
 

@@ -933,7 +933,23 @@ Do not relitigate without you.
   AI Crawl Control's "block unverified" toggle). It removes the
   spoofers from the panel and the 404 bill and touches no real
   crawler. The store's stance welcomes crawlers; this welcomes only
-  the ones that are who they say. Your press, if you want it.
+  the ones that are who they say. Your press, if you want it — and
+  the exact shape matters (2026-09-11): NOT the dashboard's "Block
+  AI bots" toggle, which blocks VERIFIED crawlers too (ClaudeBot,
+  GPTBot, OAI-SearchBot, PerplexityBot by name) and would undo the
+  whole robots.txt position in one click. A custom WAF rule, action
+  Block: user-agent contains any of ClaudeBot, Claude-User,
+  Claude-SearchBot, GPTBot, ChatGPT-User, OAI-SearchBot,
+  PerplexityBot, Perplexity-User, Amazonbot, Applebot,
+  Meta-ExternalAgent, Bytespider, CCBot, Googlebot, bingbot — AND
+  `not cf.verified_bot`. Every name on that list is one Cloudflare
+  verifies (Claude-User and ChatGPT-User as "AI Assistant",
+  ClaudeBot as "AI Crawler"), so a real one always passes and the
+  /mcp traffic from claude.ai is untouched; a name Cloudflare cannot
+  verify (YouBot, Kimi, ora-agent, xAI) stays OFF the list, or the
+  rule would block the honest ones. The store's own probes present
+  `scvd-*` user-agents and are unaffected. Watch the panel a week:
+  the 4xx bill moves to 403s and the 200s do not move.
 
 - **GitHub Agent Finder: CV's PR is open; two entries and one number
   to fix (2026-09-11).** CV opened github/agentfinder-catalog#34 on
