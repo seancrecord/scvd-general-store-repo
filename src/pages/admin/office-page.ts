@@ -122,6 +122,12 @@ export interface OfficePageData {
    * the kind of claim this store spends its time refusing.
    */
   takeReadAt?: string | null;
+  /**
+   * When the desk's readings (ledgers, payers, window-shoppers, the
+   * census, the wallet, the board) were taken by the hourly round.
+   * Null when this open took them live (a cold or pre-2026-09-12 blob).
+   */
+  deskReadAt?: string | null;
   /** Whether every bump goes through the counter ledger on this deployment. */
   countersSerialized?: boolean;
   /** The hourly raise's last pass: when, and how many counters it lifted. */
@@ -291,6 +297,18 @@ function trendHtml(ledger: MonthLedger): string {
  * it. All three are on this page on purpose; this box says which one
  * to believe.
  */
+/**
+ * The desk's readings come from the hourly round now; this line says
+ * when, and the button takes them again. Live only on a cold open.
+ */
+function deskReadAtHtml(deskReadAt: string | null): string {
+  const when = deskReadAt
+    ? `The readings on this desk were taken at ${escapeHtml(deskReadAt)} by the hourly round`
+    : `The readings on this desk were taken just now (no hourly reading was on file)`;
+  return `<p><small>${when}. Orders, letters, reviews and alarms are always live.
+    <form method="post" action="/admin/glance/refresh" style="display:inline;margin:0"><button type="submit">Take every reading again now</button></form></small></p>`;
+}
+
 export function howToReadTheMoneyHtml(
   takeReadAt: string | null,
   serialized: boolean,
@@ -300,9 +318,13 @@ export function howToReadTheMoneyHtml(
     ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), so a burst of a thousand sales lands as a thousand.`
     : `<strong style="color:#8c2f1b">This deployment has no counter ledger binding, so bumps are back on KV read-add-write and a burst can lose counts.</strong>`;
   const raiseState = lastRaise
-    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.`
+    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.${
+        takeReadAt && lastRaise.at > takeReadAt
+          ? ` <strong>That raise ran after the reading below was taken; the numbers here predate it.</strong> Press the button above to take them again.`
+          : ""
+      }`
     : `No raise has run on this deployment yet.`;
-  return `<div style="border:1px solid #999;padding:0.6em 0.9em;margin:0.5em 0 1em;background:#fbfaf6">
+  return `<div style="border:1px solid currentColor;padding:0.6em 0.9em;margin:0.5em 0 1em;background:var(--card)">
     <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
     <ol style="margin:0;padding-left:1.4em">
       <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> on the desk and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
@@ -937,6 +959,7 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
+    ${deskReadAtHtml(data.deskReadAt ?? null)}
     ${howToReadTheMoneyHtml(data.takeReadAt ?? null, data.countersSerialized ?? false, data.lastRaise ?? null)}
     ${
       data.take

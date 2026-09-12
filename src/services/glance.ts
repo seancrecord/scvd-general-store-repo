@@ -1,6 +1,10 @@
 import { listAlerts } from "@/lib/alerts";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import type { TakeSummary } from "@/services/books-summary";
+import type { MetricEvent, MonthLedger, PorchLedger } from "@/lib/metrics";
+import type { FieldWalletReading } from "@/services/field-wallet";
+import type { MonthReclassAdjustment } from "@/services/reclassify";
+import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
 import type { Env } from "@/types";
 
 /**
@@ -36,6 +40,35 @@ import type { Env } from "@/types";
 
 export const GLANCE_KEY = "glance:latest";
 
+/**
+ * THE DESK'S READINGS, CACHED WITH THE GLANCE (2026-09-12). The desk
+ * still fanned out to eleven loads on every open after the take moved
+ * here — the month and porch ledgers (metric key scans), the payers,
+ * the recent 402s (event rows), the Bazaar ledger, the Gazette,
+ * the reclassification cert walk, the MCP census, the paying wallet
+ * (an eth_call on a leash) and the bounty board. The keeper asked why
+ * the desk was slow. This is why. They now ride the hourly glance,
+ * dated on the page, with a button that takes them again on demand.
+ * What stays live is what carries a promise: orders, letters, tips,
+ * confessions, refunds and alarms, each a small list.
+ */
+export interface DeskGlance {
+  month_ledger: MonthLedger;
+  porch_ledger: PorchLedger;
+  payers: PayerRecord[];
+  recent_challenges: MetricEvent[];
+  bazaar_ledger: BazaarLedgerEntry[];
+  gazette_issues: GazetteIssue[];
+  month_reclass: { months: Record<string, MonthReclassAdjustment>; truncated: boolean } | null;
+  mcp_clients: Record<string, number>;
+  field_wallet: FieldWalletReading | null;
+  bounty: BountyBoardReading | null;
+  /** Readings that failed to take, by name; the desk says so beside them. */
+  missing: string[];
+}
+
+export type BountyBoardReading = Awaited<ReturnType<typeof import("@/services/bounty-board").bountyBoard>>;
+
 export interface Glance {
   /** When these numbers were read. Shown on the desk, never hidden. */
   computed_at: string;
@@ -68,6 +101,8 @@ export interface Glance {
    * the corpus and the take already live under.
    */
   truncated: boolean;
+  /** The desk's readings, taken with the rest; absent on a blob from before 2026-09-12. */
+  desk?: DeskGlance;
 }
 
 /**
@@ -102,8 +137,8 @@ export async function readGlance(env: Env): Promise<Glance | null> {
  * the walks it needs are being paid for anyway.
  */
 export async function writeGlance(env: Env): Promise<Glance> {
-  const [orders, tips, confessions, refunds, alerts, take, stats] =
-    await Promise.all([
+  const [[orders, tips, confessions, refunds, alerts, take, stats], desk] = await Promise.all([
+    Promise.all([
     import("@/services/orders").then(({ listOrders }) => listOrders(env)),
     import("@/services/tips").then(({ listTips }) => listTips(env)),
     import("@/services/confessions").then(({ listConfessions }) =>
@@ -115,6 +150,8 @@ export async function writeGlance(env: Env): Promise<Glance> {
       takeSummary(env),
     ),
     import("@/services/stats").then(({ computeStats }) => computeStats(env)),
+    ]),
+    readDesk(env),
   ]);
 
   const glance: Glance = {
@@ -134,9 +171,67 @@ export async function writeGlance(env: Env): Promise<Glance> {
       house: stats.house_settlements,
     },
     truncated: take.truncated,
+    desk,
   };
   await kvPut(env.COUNTERS, GLANCE_KEY, JSON.stringify(glance));
   return glance;
+}
+
+/**
+ * Every desk reading in one wave, each on its own: one that fails is
+ * named in `missing` and the rest still land, which is the same rule
+ * the desk applied when it took them itself.
+ */
+async function readDesk(env: Env): Promise<DeskGlance> {
+  const missing: string[] = [];
+  const take = <T>(name: string, fallback: T) => (result: PromiseSettledResult<T>): T => {
+    if (result.status === "fulfilled") return result.value;
+    missing.push(name);
+    return fallback;
+  };
+  const metrics = await import("@/lib/metrics");
+  const [
+    monthLedger,
+    porchLedger,
+    payers,
+    recentChallenges,
+    bazaarLedger,
+    gazetteIssues,
+    monthReclass,
+    mcpClients,
+    fieldWallet,
+    bounty,
+  ] = await Promise.allSettled([
+    metrics.readMonthLedger(env),
+    metrics.readPorchLedger(env),
+    metrics.listPayers(env),
+    metrics.listRecentPricedEvents(env),
+    import("@/lib/bazaar-observer").then(({ listBazaarLedger }) => listBazaarLedger(env)),
+    import("@/services/gazette").then(({ listIssues }) => listIssues(env)),
+    import("@/services/reclassify").then(({ monthReclassAdjustments }) => monthReclassAdjustments(env)),
+    import("@/services/mcp-clients").then(({ readMcpClients }) => readMcpClients(env)),
+    // The paying wallet is one eth_call on a three-second leash, as
+    // the desk always held it: a provider outage must not hold the
+    // whole glance.
+    Promise.race([
+      import("@/services/field-wallet").then(({ readFieldWallet }) => readFieldWallet(env)),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("the paying wallet read timed out")), 3000)),
+    ]),
+    import("@/services/bounty-board").then(({ bountyBoard }) => bountyBoard(env)),
+  ]);
+  return {
+    month_ledger: take("month ledger", metrics.emptyMonthLedger())(monthLedger),
+    porch_ledger: take<PorchLedger>("porch", { surfaces: {}, organicVisits: 0, porchToPurchase: null, truncated: false })(porchLedger),
+    payers: take<PayerRecord[]>("payers", [])(payers),
+    recent_challenges: take<MetricEvent[]>("window-shoppers", [])(recentChallenges),
+    bazaar_ledger: take<BazaarLedgerEntry[]>("bazaar ledger", [])(bazaarLedger),
+    gazette_issues: take<GazetteIssue[]>("gazette", [])(gazetteIssues),
+    month_reclass: take<DeskGlance["month_reclass"]>("reclass ledger", null)(monthReclass),
+    mcp_clients: take<Record<string, number>>("the mcp census", {})(mcpClients),
+    field_wallet: take<FieldWalletReading | null>("the paying wallet", null)(fieldWallet),
+    bounty: take<BountyBoardReading | null>("the bounty board", null)(bounty),
+    missing,
+  };
 }
 
 /**

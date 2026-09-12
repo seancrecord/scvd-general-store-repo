@@ -95,6 +95,33 @@ describe("what the desk does on open", () => {
     }
   });
 
+  it("says when its readings were taken and offers to take them again", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: auth })
+    ).text();
+    expect(html).toContain("The readings on this desk were taken");
+    expect(html).toContain('action="/admin/glance/refresh"');
+  });
+
+  it("retakes the glance after a raise and sends the keeper back to the page he pressed", async () => {
+    const before = await SELF.fetch(`${BASE}/admin`, { headers: auth });
+    expect(before.status).toBe(200);
+    const pressed = await SELF.fetch(`${BASE}/admin/repair/raise-counters`, {
+      method: "POST",
+      headers: { ...auth, Accept: "text/html", Referer: `${BASE}/admin/reconciliation` },
+      redirect: "manual",
+    });
+    expect(pressed.status).toBe(303);
+    expect(pressed.headers.get("Location")).toContain("/admin/reconciliation");
+    const asJson = await SELF.fetch(`${BASE}/admin/repair/raise-counters`, {
+      method: "POST",
+      headers: { ...auth, Accept: "application/json" },
+    });
+    expect(asJson.status).toBe(200);
+    const body = (await asJson.json()) as { raised: unknown[]; serialized: boolean };
+    expect(Array.isArray(body.raised)).toBe(true);
+  });
+
   it("still answers, and points at the money page", async () => {
     const html = await (
       await SELF.fetch(`${BASE}/admin`, { headers: auth })

@@ -969,10 +969,21 @@ const worker: ExportedHandler<Env> = {
      * would be a number that looks current and is not, which is
      * exactly what this shape prevents.
      */
+    /*
+     * THE RAISE RUNS FIRST, THEN THE GLANCE (2026-09-12). Taken in the
+     * same instant, the glance captured the counters before the raise
+     * lifted them and the desk showed an hour-old shortfall the
+     * storefront had already closed. Sequenced, the glance never sees
+     * a number the raise is about to move.
+     */
     ctx.waitUntil(
-      import("@/services/glance").then(({ writeGlance }) =>
-        writeGlance(env).catch(() => undefined),
-      ),
+      import("@/services/counter-raise")
+        .then(({ raiseCountersToRecords }) => raiseCountersToRecords(env).catch(() => undefined))
+        .then(() =>
+          import("@/services/glance").then(({ writeGlance }) =>
+            writeGlance(env).catch(() => undefined),
+          ),
+        ),
     );
     /**
      * THE RAISE rides the same hourly press (2026-09-11). The tallies
@@ -985,11 +996,7 @@ const worker: ExportedHandler<Env> = {
      * nothing, and /admin/raise-log saying so each hour is the
      * evidence that it holds.
      */
-    ctx.waitUntil(
-      import("@/services/counter-raise").then(({ raiseCountersToRecords }) =>
-        raiseCountersToRecords(env).catch(() => undefined),
-      ),
-    );
+
     /**
      * THE DELIVERY AUDIT. The one failure this store cannot be told
      * about: a payment settled, the handler never delivered, and the
