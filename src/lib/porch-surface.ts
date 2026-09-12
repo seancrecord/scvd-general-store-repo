@@ -404,6 +404,20 @@ export function porchSurface(path: string, method: string): string | undefined {
   if (path === "/zodiac" || path.startsWith("/zodiac/")) {
     return "zodiac";
   }
+  /**
+   * THE CARD TABLE (2026-09-12): the room, a binder, a card's page.
+   * The card images (.svg, .png) are pictures, edge-cached, and stay
+   * uncounted on the same reasoning as the lucky cards and the chips.
+   */
+  if (path === "/cards") {
+    return "cards";
+  }
+  if (path.startsWith("/cards/binder/")) {
+    return "cards:binder";
+  }
+  if (path.startsWith("/cards/") && !/\.(svg|png)$/.test(path)) {
+    return "cards:card";
+  }
   if (path === "/api/bell" && method === "POST") {
     return "bell";
   }

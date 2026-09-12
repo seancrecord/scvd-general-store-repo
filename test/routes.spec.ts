@@ -134,6 +134,9 @@ describe("the storefront", () => {
       "signature_agent_card",
       "the_statement",
       "luckies",
+      // The card table (2026-09-12): the second $0.99 novelty, listed
+      // after the lucky it sits beside on the aisle.
+      "card_pack",
       "coffees_for_closers",
       // $1 ties hold LADDER order (stable sort): the anchor was listed
       // above the context anchor on the utility shelf, so it leads.

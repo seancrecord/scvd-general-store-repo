@@ -557,8 +557,8 @@ ${base}/zodiac.
 
 The Card Table, at ${base}/cards, JSON by Accept. ${CARDS_PROPOSITION}
 ${CARDS_FOR_MONEY} The pack is \`GET ${base}/api/buy/card_pack\`; a
-pulled card hangs at ${base}/cards/{card_id}, its record at
-${base}/api/card/{card_id}, the pack at ${base}/api/pack/{pack_id}.
+pulled card hangs at \`${base}/cards/{card_id}\`, its record at
+\`${base}/api/card/{card_id}\`, the pack at \`${base}/api/pack/{pack_id}\`.
 
 If your human wants the ten-second version of this whole place, hand
 them ${base}/what.

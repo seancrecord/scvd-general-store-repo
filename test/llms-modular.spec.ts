@@ -918,8 +918,11 @@ const BASE = "https://scvd.store";
 // which MCP door) to keep the index under the convention's budget.
 // Verified the same way: with llms.ts restored to the prior commit, the
 // prior digest reproduced, and this copy reproduces the new one.
+// 2026-09-12, same day: the card table paragraph's three URL templates
+// moved into code spans, so a URL scanner never sees a brace outside
+// backticks (test/markdown-discoverability.spec.ts). Same verification.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "4fb114b39eb6f030021ede5add0fcb17c2c33d9bc0ad5eb17f498a39e63d1824";
+  "da254b74ae3a76dfaaada8cced79778f1af0bafd5f6b705be0d76eac26c98a90";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

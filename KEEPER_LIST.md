@@ -753,6 +753,13 @@ merged. Merging is your press; these three are why it waits.
   kill. Three link texts on the llms.txt door list were shortened to
   stay under the 30,000 budget (charter.md, protected-resource,
   which MCP door); yours to reverse.
+- **RULE — the OpenAPI warning budget.** Any new listing costs the
+  contract about 8 KB, and the September 10 reduction left 4,544
+  bytes. The pack tripped the guard by construction; the budget in
+  `src/store/reader-limits.ts` moved 700,000 → 750,000 (three
+  quarters of the 1 MB hard cap, about four more listings) with the
+  reason beside it. Yours to keep, lower, or replace with a per-item
+  thinning you would rather do.
 - **LOOK** — `/cards/sample.svg` and one real card's `/cards/{id}`
   page pasted into X or Slack: does the plaque unfurl, and is the
   card "cool" enough for the second season, or does it want art?

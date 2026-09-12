@@ -49,7 +49,7 @@ scored in §7 so the forecast is a forecast and not a hunch.
    pips, seasons as sets, a collection view. We did NOT build:
    timers, free daily packs, wonder pick, trading, flair, or any
    market. §2 says why each one was left.
-3. **The three rulings (OPEN).** Rule 22 (is a paid booster pack
+3. **The rulings (OPEN).** Rule 22 (is a paid booster pack
    gacha psychology or honest randomness with custody — the paper
    argues the second, on the luckies' precedent, given the shape
    §2 describes). Rule 41 (loot-box exposure: paid random draws are
@@ -236,7 +236,7 @@ keeper should decide whether he wants a lawyer's sentence on this
 before the merge or after the first hundred packs. Rule 41 says the
 question gets asked before it ships. It is asked here.
 
-## 6. The three rulings (OPEN)
+## 6. The rulings (OPEN)
 
 1. **RULE — rule 22.** Is a paid five-card pack on published,
    derived, recomputable odds "honest randomness with custody"
@@ -248,7 +248,14 @@ question gets asked before it ships. It is asked here.
    before the item is live, or is the built posture enough for a
    $0.99 novelty? Recommended: merge, and ask the question in the
    same week rather than before.
-3. **RULE — rule 7.** Every card name and line, the shelf copy, the
+3. **RULE — the OpenAPI warning budget.** The contract's warning
+   budget (`SCANNER_BUDGET_BYTES`) was 700,000 with 4,544 bytes of
+   headroom after the September 10 reduction; a listing costs about
+   8 KB, so the pack tripped the guard by construction. It now
+   stands at 750,000, three quarters of the hard cap, with the
+   reason beside the number. Keep, lower, or thin the contract
+   per item instead.
+4. **RULE — rule 7.** Every card name and line, the shelf copy, the
    402 line, the storefront line and the set's name (*Oak City*) are
    drafted. He kills or inks. The index trims (three link texts
    shortened on the door list to keep llms.txt under the 30,000

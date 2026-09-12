@@ -44,7 +44,9 @@ describe("the front counter is derived, not remembered", () => {
     // Cheapest first: $0.005, $0.01, $0.50. The 2026-08-20 retirement
     // took daily_fortune and dibs off this counter; the fortune came
     // back on 2026-09-02 and passes every rule as it did before.
-    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello"]);
+    // The card table (2026-09-12) added a $0.99 instant novelty that
+    // passes every rule the counter states, so it is admitted here.
+    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello", "card_pack"]);
   });
 
   it("keeps recurring_patronage out for the reason that actually applies", () => {

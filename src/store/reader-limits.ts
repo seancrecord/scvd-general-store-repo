@@ -26,7 +26,20 @@ export const SCANNER_FETCH_CAP_BYTES = 1_000_000;
  * guard that fires at 99% of a limit fires when it is already
  * too late to do anything cheap about it.
  */
-export const SCANNER_BUDGET_BYTES = 700_000;
+/*
+ * RAISED 700_000 -> 750_000 on 2026-09-12, and the reason is on the
+ * record rather than in a diff: the September 10 reduction left
+ * 4,544 bytes of headroom, and every listed item costs the contract
+ * about 8 KB (its buy door: the x402 terms per rail, the request
+ * schema, the async-job stamp, the parameters — none of which this
+ * store will thin per item, because scanners read them verbatim).
+ * The card table's pack was the first listing after the reduction
+ * and tripped the guard by construction, as the paper said the next
+ * one would. 750,000 is three quarters of the hard cap and admits
+ * about four more listings before this rings again; the next ring
+ * is a ruling, not a number to move. ⚑ Keeper's pen on the number.
+ */
+export const SCANNER_BUDGET_BYTES = 750_000;
 
 /**
  * The llmstxt.org recommendation. /llms.txt is the index;
