@@ -1201,11 +1201,21 @@ Do not relitigate without you.
   opening_day moved to the store (09-11) the shelf quoted
   one wallet two ways and one rail on 30 doors only. Code
   now checksums every EVM pay-to (one spelling on both
-  Workers). YOURS: enter ARBITRUM_PAY_TO on the store
-  Worker, same wallet as the doors Worker; then
-  `npm run doors:live -- --doors=https://scvd.store` must
-  read every door as agreeing with discovery. Their next
-  feePayer rotation re-captures the envelope on its own.
+  Workers), and the bare probe of those two doors no longer
+  wakes the store at all — their own history had every check
+  that found 31 doors taking 430 ms or more and every check
+  that found all 32 taking 403 ms or less (#660,
+  research/x402-list-found-count-2026-09-12.md). CLOSED the
+  same day, checked on the wire after the deploy: the store
+  carries ARBITRUM_PAY_TO (its /rails names eip155:42161),
+  all 32 doors offer four EVM rails, all 160 EVM entries
+  carry ONE spelling of the wallet, and
+  `npm run doors:live -- --doors=https://scvd.store` reads
+  33 of 33 doors agreeing with discovery — it read 2 of 33
+  before. Nothing here is yours. Their next feePayer
+  rotation re-captures the envelope on its own; the EIP-712
+  row should read pass again on that capture, and if it does
+  not, the cause is new and not this one.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
