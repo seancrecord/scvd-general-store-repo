@@ -1618,6 +1618,8 @@ async function assembleWalkRound(
       : {}),
     // The tail the week never reached is the cap that bound here.
     capped: walk.cursor < walk.roster.length,
+    // The bank's note rides the assembled round as it rides the one-shot.
+    ...(walk.door_bank ? { door_bank: walk.door_bank } : {}),
     our_search_presence: presence,
     our_doors: doors,
     ...(catalogMeasured(rows)

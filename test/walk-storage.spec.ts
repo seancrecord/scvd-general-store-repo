@@ -62,6 +62,15 @@ function stubWorld(total: number) {
 
 async function reset(): Promise<void> {
   await testEnv.COUNTERS.delete(KV_KEYS.longWalkState);
+  /*
+   * The bank is memory ACROSS weeks (2026-09-12): since the walk reads
+   * it back, an earlier test's 150-door feed is a later test's thirty
+   * revisits, and a row count here would be counting the fixture. The
+   * behaviour is right — a door the feed stopped naming is walked from
+   * memory — so the bank is cleared between tests rather than the
+   * count being raised to absorb it.
+   */
+  await testEnv.COUNTERS.delete(KV_KEYS.wardDoorBank);
   await testEnv.COUNTERS.delete(KV_KEYS.wardRoundLatest);
   await testEnv.COUNTERS.delete(KV_KEYS.wardRoundPrevious);
   await testEnv.COUNTERS.delete(KV_KEYS.wardRound(currentWeekKey()));
