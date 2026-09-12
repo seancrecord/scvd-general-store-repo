@@ -807,6 +807,21 @@ Do not relitigate without you.
 
 ### Presses waiting (2026-09-03, evening)
 
+- **SEND the reply to David at Slidingbox (2026-09-12).** His two
+  notes of 09-12 answered the welcome: the passport rows for
+  slidingbox.ai (W33–W36 listed-not-walked, coverage suspect) and
+  an unlisted door, `GET https://slidingbox.ai/v1/verify?resource=`
+  on eip155:8453. Both checked. The rows were right and the gap was
+  ours: the feed read was capped at 100 rows in W33–W34 and
+  page-capped through W36 (each row said so), repaired 09-04, and
+  W37 walked him. The verify door answered a well-formed 402 to our
+  free preflight at 2026-09-12T17:50Z. A revisit gap in the long
+  walk (bank written, never read back) is fixed on the branch; it
+  did not touch his rows. Draft is in the session chat, not on a
+  flag; copy taste is yours (rule 7). His blocklist claim is
+  CONFIRMED (Spamhaus DBL, read 09-12) — the LOOK is under Walks,
+  and the reply should say so plainly.
+
 - **RECORD THE LISTINGS AND ROSTER BASELINES — after PR 525 merges.**
   The Saturday job gained a third battery that re-reads all forty-nine
   venue rows served at `/.well-known/trust.json`, and it has nothing to
@@ -1305,6 +1320,44 @@ Do not relitigate without you.
 
 ### Walks
 
+- **URI blocklist LOOK (2026-09-12).** David at Slidingbox could
+  not reply to the welcome: his provider (Namecheap Private Email,
+  code JFE040005) refused to relay any mail carrying `scvd.store`,
+  and the send went through once he cut the quoted note. That is
+  a sender-side URI-blocklist refusal and it never reaches us as a
+  bounce. Read 09-12: SURBL clean by DNS, URIBL "NOT Listed" on
+  its own lookup page, and your Spamhaus reputation panel reads
+  -7.3 (human 0, identity 0, infra -2.25, malware 0, smtp -5).
+  CONFIRMED the same evening: the checker reads "scvd.store has
+  1 listing — Domain Blocklist (DBL)". That is the list Namecheap's
+  filter reads, so David's refusal is explained exactly. Your
+  hand: the "Why is this domain listed?" panel names two causes,
+  poor sending reputation or a hijacked site, and only the first
+  fits (the site is ours and serving). Its "More Info" button
+  carries the delisting request; DBL removal is self-service
+  there once the cause has stopped. The mail records
+  are not the cause: SPF names Resend's SES path, DKIM is
+  published at `resend._domainkey`, DMARC is `p=reject`. What is
+  left is the profile David named — a domain registered 07-21
+  appearing in cold notes with six links to itself and an `<img>`
+  snippet. The DBL is a list of DOMAINS SEEN IN MAIL, not of
+  senders: the notes you send by hand from Gmail with scvd.store
+  links in them count exactly as the Resend wire's do, so the
+  pause covers both hands. Until the listing clears, no note that
+  carries the domain goes out from any address (the wire's
+  default is already the pause); after it does, a plain-text
+  note with one link and no chip snippet is the cheaper shape.
+  THE PBL ROW IS A DIFFERENT ANIMAL and not ours to fix: the
+  Spamhaus PBL lists IP RANGES, never domains, and
+  `136.48.0.0/12` is on it as POLICY — an ISP range not permitted
+  to deliver unauthenticated mail straight to a recipient's MX.
+  Every ordinary consumer range is on it by design; it is not an
+  accusation and it has no bearing on the DBL listing. It would
+  only bite if a mail server ran on that IP, and none does: Gmail
+  and Resend both relay from their own authenticated addresses.
+  Read it and let it be. Tell David the DBL listing was
+  confirmed — he asked for nothing, and it is the kind of reply
+  the store owes.
 - **Findability afternoon.** Run the batch 4 queries
   (attic). Write who appears. Google still blank for
   `scvd.store` / "SCVD general store." No new `/x402/`

@@ -10,7 +10,7 @@ import {
   readWalkResults,
   WALK_BATCH,
 } from "@/services/long-walk";
-import { latestWardRound, runWardRound } from "@/services/ward-round";
+import { latestWardRound, runWardRound, wardDelta } from "@/services/ward-round";
 import {
   getCorpusEntry,
   listCorpus,
@@ -128,6 +128,9 @@ function stubWalkWorld(options: { total: number }) {
 
 async function clearWalkState(): Promise<void> {
   await testEnv.COUNTERS.delete(KV_KEYS.longWalkState);
+  // The bank is memory across weeks; a test's feed must not become the
+  // next test's revisits.
+  await testEnv.COUNTERS.delete(KV_KEYS.wardDoorBank);
 }
 
 beforeAll(async () => {
@@ -427,5 +430,70 @@ describe("the feed read resumes across firings", () => {
       catalog: null,
     });
     await testEnv.COUNTERS.delete(KV_KEYS.wellKnownDoors);
+  });
+});
+
+/**
+ * THE BANK'S REVISITS (2026-09-12). From 2026-W35 the long walk
+ * merged every week's feed doors into the door bank and never read
+ * it back: a door the feed named once and then stopped naming was
+ * never knocked on again from memory, on the path that had become the
+ * only path. The one-shot round had done this since 2026-08-18. An
+ * operator asked whether the walker was dropping hosts it had already
+ * listed; this is the test that would have said yes.
+ */
+describe("the walk reads its own memory back", () => {
+  it("re-walks a banked door no feed named this week, behind the feed, and says so", async () => {
+    await clearWalkState();
+    stubWalkWorld({ total: 250 });
+    const { readDoorBank, writeDoorBank } = await import("@/services/door-bank");
+    await writeDoorBank(testEnv, {
+      doors: {
+        "banked.example": {
+          url: "https://banked.example/api/pay",
+          first_listed: "2026-W33",
+          last_listed: "2026-W33",
+        },
+        // Named by this week's feed too: the feed wins, no second row.
+        "walk-0.example": {
+          url: "https://walk-0.example/api/buy/x",
+          first_listed: "2026-W33",
+          last_listed: "2026-W33",
+        },
+      },
+      cursor: null,
+    });
+
+    const pass = await longWalkPass(testEnv);
+    expect(pass.phase).toBe("started");
+    expect(probeCount, "the freeze knocked on a door").toBe(0);
+    const frozen = (await readLongWalk(testEnv))!;
+    expect(frozen.roster).toHaveLength(251);
+    expect(frozen.roster[250]).toEqual({
+      host: "banked.example",
+      url: "https://banked.example/api/pay",
+      source: "revisit",
+      catalog: null,
+    });
+    expect(frozen.roster.filter((entry) => entry.host === "walk-0.example")).toHaveLength(1);
+    expect(frozen.door_bank).toEqual({ known: 251, revisited: 1 });
+    // The rotation advanced and the feed's doors refreshed their week.
+    const bank = await readDoorBank(testEnv);
+    expect(bank.cursor).toBe("banked.example");
+    expect(bank.doors["walk-0.example"]!.last_listed).toBe(currentWeekKey());
+    expect(bank.doors["banked.example"]!.last_listed).toBe("2026-W33");
+
+    await longWalkPass(testEnv); // 100
+    await longWalkPass(testEnv); // 200
+    await longWalkPass(testEnv); // 251, finished
+    const round = await runWardRound(testEnv);
+    expect(round.door_bank).toEqual({ known: 251, revisited: 1 });
+    const row = round.hosts.find((h) => h.host === "banked.example");
+    expect(row?.source).toBe("revisit");
+    expect(row?.verdict).toBe("ready");
+    // No index row named it this week, and the column says so.
+    expect(row?.catalog).toEqual({ state: "not_listed" });
+    // A revisit is memory, not a listing: it sits out the delta.
+    expect(wardDelta(round, null).new_hosts).not.toContain("banked.example");
   });
 });

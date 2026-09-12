@@ -1,6 +1,6 @@
 import type { CatalogTerms } from "@/services/catalog-agreement";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
-import { mergeDoors, readDoorBank, writeDoorBank } from "@/services/door-bank";
+import { mergeDoors, pickRevisits, readDoorBank, writeDoorBank } from "@/services/door-bank";
 import { pickSweep, readAskedFor, writeAskedFor } from "@/services/asked-queue";
 import { readFuchssProviders } from "@/services/ward-sources";
 import { readDirectoryDoors } from "@/services/directory-doors";
@@ -72,7 +72,7 @@ const WALK_CONCURRENCY = 20;
 interface WalkRosterEntry {
   host: string;
   url: string;
-  source: "discovery" | "both" | "well-known" | "directory";
+  source: "discovery" | "both" | "well-known" | "directory" | "revisit";
   /**
    * The catalog's copy of the door's terms, frozen with the roster
    * (S8 Tier C). The index is read once at walk start and the probes
@@ -176,6 +176,13 @@ export interface LongWalkState {
   finished_at?: string;
   /** The well-known sweep over name-only hosts; absent on states frozen before it. */
   sweep?: SweepState;
+  /**
+   * THE BANK'S REVISITS (2026-09-12): how many doors the bank held at
+   * freeze and how many of them rode this roster's tail because no
+   * feed named them this week. Absent on states frozen before the
+   * walk read its own memory back.
+   */
+  door_bank?: { known: number; revisited: number; evicted?: number };
 }
 
 export interface SweepState {
@@ -430,6 +437,42 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
   }
 
   /*
+   * THE BANK'S REVISITS (2026-09-12). The one-shot round has spent its
+   * spare slots re-probing banked doors since 2026-08-18; the long
+   * walk merged every week's feed doors INTO the bank and never read
+   * it back, so from the week the walk took over, a door the feed
+   * named once and then stopped naming (or whose page a capped read
+   * never reached) was never knocked on again from memory. An
+   * operator asked whether the walker was dropping hosts it had
+   * already listed; on this path it was. Banked doors no feed named
+   * this week ride the tail behind the declared doors, on the bank's
+   * own rotating cursor, up to the room the roster cap leaves.
+   * Fenced like the one-shot: a bank that cannot be read costs the
+   * revisits, never the week's walk.
+   */
+  try {
+    const merged = mergeDoors(await readDoorBank(env), feedEntries, week);
+    const taken = new Set<string>([
+      ...rosterHosts,
+      ownHost,
+      ...(leaderboard ? leaderboard.byHost.keys() : []),
+    ]);
+    const picked = pickRevisits(merged.bank, taken, WALK_ROSTER_CAP - roster.length);
+    for (const pick of picked.picks) {
+      roster.push({ host: pick.host, url: pick.url, source: "revisit", catalog: null });
+      rosterHosts.add(pick.host);
+    }
+    await writeDoorBank(env, { ...merged.bank, cursor: picked.cursor });
+    state.door_bank = {
+      known: Object.keys(merged.bank.doors).length,
+      revisited: picked.picks.length,
+      ...(merged.evicted ? { evicted: merged.evicted } : {}),
+    };
+  } catch {
+    // The bank is memory, not the walk; a KV hiccup costs nothing here.
+  }
+
+  /*
    * THE SWEEP'S LIST: every host the name directory lists that no feed
    * gave a door for, minus any already read this week by hand. A
    * directory that could not be read leaves nothing to sweep, and the
@@ -504,14 +547,6 @@ async function freezeRoster(env: Env, state: LongWalkState): Promise<WalkPass> {
         });
       }
     }
-  }
-
-  // The bank remembers every declared door, same as the one-shot path.
-  try {
-    const merged = mergeDoors(await readDoorBank(env), feedEntries, week);
-    await writeDoorBank(env, merged.bank);
-  } catch {
-    // The bank is memory, not the walk; a KV hiccup costs nothing here.
   }
 
   delete state.feed;
@@ -659,8 +694,12 @@ async function walkBatch(env: Env, state: LongWalkState): Promise<WalkPass> {
       env,
       entry.url,
       // A roster frozen before the column carries no terms; the
-      // reading is then absent rather than invented.
-      entry.catalog === undefined ? undefined : { listed: true, terms: entry.catalog },
+      // reading is then absent rather than invented. A revisit is a
+      // door no index row named this week (the one-shot's law), so
+      // its catalog column says not_listed rather than "listed bare".
+      entry.catalog === undefined
+        ? undefined
+        : { listed: entry.source !== "revisit", terms: entry.catalog },
     );
     const claim = state.claims[entry.host];
     return {
