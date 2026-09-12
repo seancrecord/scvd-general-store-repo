@@ -1,6 +1,8 @@
 {
   "name": "tempo-default-testnet",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "method tempo with chainId absent: the draft's default is 42431, Tempo Moderato, the testnet. Every check passes; the advisory names the trap.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

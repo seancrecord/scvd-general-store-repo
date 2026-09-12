@@ -1,6 +1,8 @@
 {
   "name": "accepts-missing-asset",
   "recorded": "2026-08-26, hand-built: an entry with a hole where the asset goes",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A client cannot construct a payment from a hole.",
   "expect_failed": [
     "accepts"

@@ -1,6 +1,8 @@
 {
   "name": "comma-in-description",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "The trap the design names: a comma inside a quoted description. A split on commas would read three challenges; RFC 9110 reads one, and every check passes.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

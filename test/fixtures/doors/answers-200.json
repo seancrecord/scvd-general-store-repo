@@ -1,6 +1,8 @@
 {
   "name": "answers-200",
   "recorded": "2026-08-26, hand-built from the shape the August field run found in 57% of one directory's listings",
+  "source": "simulated",
+  "captured_at": null,
   "why": "Listed but functionally absent: a 200 where a buyer's client needs a 402.",
   "expect_failed": [
     "status-402"

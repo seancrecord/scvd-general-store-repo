@@ -1,6 +1,8 @@
 {
   "name": "settled-clean",
   "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "source": "simulated",
+  "captured_at": null,
   "why": "The good case: success true, a 32-byte transaction hash, a CAIP-2 network and a payer. Every check passes and a reader concludes settled.",
   "expect_failed": [],
   "expect_outcome": "settled",

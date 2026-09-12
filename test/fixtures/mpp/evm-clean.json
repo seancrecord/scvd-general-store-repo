@@ -1,6 +1,8 @@
 {
   "name": "evm-clean",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A well-formed MPP charge on evm, Base mainnet: every Tier 0 check passes; the body is problem+json with a registered type.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [
