@@ -337,6 +337,19 @@ describe("a pack, bought", () => {
       const bytes = new Uint8Array(await sheet.arrayBuffer());
       expect([...bytes.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
 
+      // The face itself as PNG, rasterized in the Worker with the one font.
+      const facePng = await SELF.fetch(String(card["face_png_url"]));
+      expect(facePng.status).toBe(200);
+      expect(facePng.headers.get("Content-Type")).toBe("image/png");
+      const faceBytes = new Uint8Array(await facePng.arrayBuffer());
+      expect([...faceBytes.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+      // IHDR: width 1000, height 1400 at native size.
+      const view = new DataView(faceBytes.buffer);
+      expect(view.getUint32(16)).toBe(1000);
+      expect(view.getUint32(20)).toBe(1400);
+      const small = await SELF.fetch(`${String(card["face_png_url"])}?w=400`);
+      expect(new DataView(new Uint8Array(await small.arrayBuffer()).buffer).getUint32(16)).toBe(400);
+
       const page = await SELF.fetch(String(card["page_url"]), { headers: { Accept: "text/html" } });
       expect(page.status).toBe(200);
       const html = await page.text();

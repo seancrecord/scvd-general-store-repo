@@ -192,6 +192,7 @@ export function pressingSummary(base: string, card: CardRecord) {
     ...(card.print_cap !== undefined ? { print_cap: card.print_cap } : {}),
     ...(card.slot !== undefined ? { slot: card.slot } : {}),
     face_url: `${base}/p/${card.card_id}.svg`,
+    face_png_url: `${base}/p/${card.card_id}.face.png`,
     share_url: `${base}/p/${card.card_id}.png`,
     page_url: `${base}/p/${card.card_id}`,
     verify_id: card.card_id,

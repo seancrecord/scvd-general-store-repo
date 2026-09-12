@@ -78,9 +78,17 @@ reasoning, named as desk reasoning.
    host, read once a day — and the count prints on the face beside
    the door hash. 402 the Chicken caps at one. The Keeper and three
    Events cap at one; Twenty-Three at 23. Nothing else caps.
-6. **The faces (STANDING).** Card face 1000×1400 as SVG (§5 for PNG),
-   share sheet 1200×675 as PNG, `/p/{card_id}` with OG tags, a real
-   QR on the machine strip. The plates: 46 drawings, and every
+6. **The faces (STANDING).** Card face 1000×1400 as SVG and, since
+   the keeper's "just pick one that looks nice" (2026-09-12), as PNG
+   too at `/p/{card_id}.face.png` (`?w=` scales it): resvg compiled
+   to WebAssembly inside the Worker with one font, IBM Plex Serif
+   under the OFL, regular and bold, every family on the face
+   resolving to it; the paper grain is left off the PNG (it costs
+   the rasterizer a second of CPU and a browser nothing); each face
+   renders once and is kept in KV; the Worker's CPU ceiling moved
+   100 → 1000 ms for that one path, reason beside it in
+   wrangler.jsonc (§5). Share sheet 1200×675 as PNG, `/p/{card_id}`
+   with OG tags, a real QR on the machine strip. The plates: 46 drawings, and every
    renamed key of the third pass is aliased to the drawing of the
    thing it depicts (`src/store/plates.ts`), and the cat and the
    five models have drawings of their own, so 46 of the 60 press
@@ -268,20 +276,27 @@ the pixel engine already draws the engraved hand.
   "not in first build".
 - **`/design` motion.** Static; the "boots" data layer on hover is a
   script, and rule 17's property test applies. PROPOSED.
-- **The PNG card face.** §5.
 
-## 5. The face as PNG needs a ruling
+## 5. The face as PNG (STANDING, 2026-09-12)
 
-The handoff says both assets are static PNG, "Puppeteer as before".
-This store is a Worker: no Chromium, no fonts. Two roads, both his:
-(a) Cloudflare Browser Rendering (a paid binding; `wrangler.jsonc`
-gains a `browser` binding and the face renders through it from the
-same SVG); (b) `@resvg/resvg-wasm` in the bundle with two font files
-(a serif and a mono, about 2.5 MB together; a new dependency on a
-rendering path, AT_SCALE rule 6). Until then the face is SVG, which
-every browser, the binder, the page and the download render, and
-the share sheet — the asset that actually stops the scroll — is PNG
-already. OPEN.
+Ruled and built the same afternoon: "do we even need two? just
+pick one that looks nice." The Worker has no browser and no fonts,
+so the rasterizer ships inside it — `@resvg/resvg-wasm` (2 MB of
+WebAssembly) and one font, IBM Plex Serif, regular and bold, under
+the SIL Open Font License (`assets/fonts/`, licence beside the
+files). Every family the SVG names resolves to Plex Serif in the
+PNG; the SVG keeps its own stack where a browser has the fonts, and
+its italics, which the PNG renders upright for want of a third
+file. The paper-grain filter stays off the PNG: measured at
+1000×1400, 1,382 ms of CPU with it and 233 ms without, against a
+Worker ceiling that was 100 ms. The ceiling is now 1,000 ms for
+that one path, stated in `wrangler.jsonc` with the reason, and each
+face is rendered once and kept in KV, so the cost is paid per card,
+not per view. The bundle went from 4.4 MB to 7.2 MB raw, 1.4 MB to
+2.5 MB gzipped, inside the plan's limit. Nothing is fetched at
+render time, nothing is billed per render, and the same bytes come
+out every time. The door is `/p/{card_id}.face.png`, `?w=` scales;
+every pressing carries `face_png_url`.
 
 ## 6. The rulings (OPEN), in the order the merge needs them
 

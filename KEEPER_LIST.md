@@ -774,10 +774,14 @@ Merging is your press; these are why it waits.
   likeness, no name, cites /neighbours, rides the rare pool. Bell
   streaks built the same day (first ring Bellringer, day 7 a pack,
   day 30 Bellringer II), and every card in the count now draws.
-- **RULE — the card face as PNG.** The Worker has no browser and no
-  fonts. Cloudflare Browser Rendering (a paid binding), or resvg-wasm
-  plus two font files (~2.5 MB). Until then the face is SVG and the
-  share sheet — the asset that stops the scroll — is PNG already.
+- **DONE — the card face as PNG (2026-09-12, "just pick one that
+  looks nice").** resvg inside the Worker with one font, IBM Plex
+  Serif (OFL), at `/p/{id}.face.png`; the grain left off the PNG,
+  each face kept in KV after its first render. Two numbers moved
+  with it and are yours: the Worker's CPU ceiling 100 → 1,000 ms in
+  `wrangler.jsonc` (that one path needs ~230 ms; lower it and the
+  PNG goes to 600 wide), and the bundle 1.4 → 2.5 MB gzipped. RULE
+  either if you mind.
 - **RULED, the OpenAPI budget (2026-09-12): "can we thin the contract
   somehow? what about latency?"** Thinned, and the number is back at
   700,000: the 304 answer is one shared component instead of

@@ -717,6 +717,8 @@ export const KV_KEYS = {
   paywallBurn: (cardId: string): string => `paywall_burn:${cardId}`,
   /** Pack credit per wallet, in packs, on the counter ledger. */
   paywallCredit: (wallet: string): string => `paywall_credit:${wallet}`,
+  /** A face rendered to PNG once, at a width; the bytes never change, so the first render is the last. */
+  paywallFacePng: (cardId: string, width: number): string => `paywall_face_png:${cardId}:${width}`,
   /** A wallet's bell streak: the last UTC day it rang and the run of days (the Paywall). */
   paywallStreak: (wallet: string): string => `paywall_streak:${wallet}`,
   /** The burn and redeem desks' single-use challenge nonce. */

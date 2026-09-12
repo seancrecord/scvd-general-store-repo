@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -82,6 +82,7 @@
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
     "@noble/ed25519": "^3.2.0",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@x402/core": "^2.25.0",
     "@x402/evm": "^2.25.0",
     "@x402/extensions": "^2.25.0",

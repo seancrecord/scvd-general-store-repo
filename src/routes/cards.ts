@@ -8,6 +8,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { renderCardFace, renderSpecimenFace } from "@/services/card-svg";
 import { renderShareSheet } from "@/services/card-share";
+import { renderFacePng } from "@/services/card-png";
 import {
   BurnRefused,
   burnForCredit,
@@ -152,6 +153,7 @@ async function pressingJson(c: Context<HonoEnv>, record: SignedCardRecord) {
     public_key: record.public_key,
     algorithm: "ed25519",
     face_url: `${base}/p/${id}.svg`,
+    face_png_url: `${base}/p/${id}.face.png`,
     share_url: `${base}/p/${id}.png`,
     page_url: `${base}/p/${id}`,
     verify_id: id,
@@ -567,6 +569,24 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.svg}", async (c) => {
   return c.body(renderCardFace({ card: record.card, signature: record.signature, verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${cardId}` }), 200, SVG_HEADERS);
 });
 
+/** The face itself as PNG, rasterized in the Worker (services/card-png.ts). Native 1000×1400; ?w= scales it down. */
+cardRoutes.get("/p/:card{card_[a-z0-9]+\\.face\\.png}", async (c) => {
+  const cardId = c.req.param("card").replace(/\.face\.png$/, "");
+  const record = await getCard(c.env, cardId);
+  if (!record) return c.text("No card by that id was ever pressed here.", 404);
+  const wanted = Number.parseInt(c.req.query("w") ?? "", 10);
+  const width = Number.isFinite(wanted) && wanted >= 200 && wanted < 1000 ? wanted : undefined;
+  // A pressing's face never changes, so the bytes are rendered once and kept.
+  const cacheKey = KV_KEYS.paywallFacePng(cardId, width ?? 1000);
+  const kept = await c.env.PATRONS.get(cacheKey, "arrayBuffer");
+  if (kept) return c.body(kept, 200, PNG_HEADERS);
+  const svg = renderCardFace({ card: record.card, signature: record.signature, verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${cardId}` });
+  const png = await renderFacePng(svg, width);
+  const bytes = png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) as ArrayBuffer;
+  c.executionCtx.waitUntil(c.env.PATRONS.put(cacheKey, bytes));
+  return c.body(bytes, 200, PNG_HEADERS);
+});
+
 cardRoutes.get("/p/:card{card_[a-z0-9]+\\.png}", async (c) => {
   const cardId = c.req.param("card").replace(/\.png$/, "");
   const record = await getCard(c.env, cardId);
@@ -626,7 +646,7 @@ cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
             ${card.door_hash ? `<p class="menu-meta">A numbered Door: the endpoint is shown as its hash, <code>${escapeHtml(card.door_hash.slice(0, 16))}…</code>, and its observation count, ${card.observations ?? 0}, which is also this card's cap. Never the URL.</p>` : ""}
             ${burn ? `<p class="weather">${escapeHtml(CARD_LINES.clearedMark)}: ${burn.burn.cleared_by === "credit" ? "burned into pack credit by its holder" : burn.burn.cleared_by === "idempotency" ? "cleared by a purchase carrying an idempotency key" : `cleared by buying ${escapeHtml(getMenuItem(burn.burn.cleared_by)?.name ?? burn.burn.cleared_by)}`} on ${escapeHtml(burn.burn.at.slice(0, 10))}. The pressing stays signed; so does the burn.</p>` : ""}
             <p class="menu-meta">Depicts <a href="${escapeHtml(card.cite)}"><code>${escapeHtml(card.cite)}</code></a>. Pressed ${escapeHtml(card.date.slice(0, 10))} from the ${escapeHtml(card.source)}${card.pack_id ? `, slot ${card.slot} of <a href="/api/pack/${escapeHtml(card.pack_id)}"><code>${escapeHtml(card.pack_id)}</code></a>` : ""}${card.commit ? `, under seed commit <code>${escapeHtml(card.commit.slice(0, 16))}…</code>` : ""}.${card.holder ? ` Held by <a href="/binder/${escapeHtml(card.holder)}"><code>${escapeHtml(card.holder)}</code></a>${card.transfers ? `, moved through the window ${card.transfers} time${card.transfers === 1 ? "" : "s"}` : ""}.` : ""}</p>
-            <p class="menu-meta">Signature ${valid ? "verifies" : "does NOT verify"} against the store's key: <a href="/api/verify/${escapeHtml(cardId)}"><code>/api/verify/${escapeHtml(cardId)}</code></a>. The share sheet: <a href="/p/${escapeHtml(cardId)}.png"><code>/p/${escapeHtml(cardId)}.png</code></a>. The set, the odds and a pack of your own: <a href="/design">Paywall</a>.</p>
+            <p class="menu-meta">Signature ${valid ? "verifies" : "does NOT verify"} against the store's key: <a href="/api/verify/${escapeHtml(cardId)}"><code>/api/verify/${escapeHtml(cardId)}</code></a>. The share sheet: <a href="/p/${escapeHtml(cardId)}.png"><code>/p/${escapeHtml(cardId)}.png</code></a>; the face as PNG, to post as a picture: <a href="/p/${escapeHtml(cardId)}.face.png"><code>/p/${escapeHtml(cardId)}.face.png</code></a>. The set, the odds and a pack of your own: <a href="/design">Paywall</a>.</p>
           </div>
         </div>
       </section>`,

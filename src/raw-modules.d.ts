@@ -50,3 +50,15 @@ declare module "*/webmcp/purchase.js" {
   const contents: string;
   export default contents;
 }
+
+/** The card face's font, as bytes (wrangler rule: Data). */
+declare module "*.ttf" {
+  const bytes: ArrayBuffer;
+  export default bytes;
+}
+
+/** A compiled WebAssembly module (wrangler's CompiledWasm rule). */
+declare module "*.wasm" {
+  const module: WebAssembly.Module;
+  export default module;
+}
