@@ -232,7 +232,7 @@ export const ROUTES: readonly Route[] = [
   },
   {
     job: "I want to test that my x402 client works against a real counterparty before it matters.",
-    items: ["small_blessing", "daily_fortune", "luckies", "pack"],
+    items: ["small_blessing", "daily_fortune", "luckies", "pack", "window_pick"],
   },
   {
     job: "I want a machine-readable checkup of what my page gives a machine reader.",

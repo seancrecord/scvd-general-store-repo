@@ -729,56 +729,69 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
-### The Paywall (2026-09-12, handoff v2, `docs/CARD_TABLE_2026-09.md`)
+### The Paywall (2026-09-12, first pass reconciled, `docs/CARD_TABLE_2026-09.md`)
 
-Built on `claude/compassionate-planck-6pba4v` to your handoff, green
-locally, not merged. Merging is your press; these are why it waits.
+Built on `claude/compassionate-planck-6pba4v` to your handoff and
+then to the first-pass plan in full, green locally, not merged.
+Merging is your press; these are why it waits.
 
 - **RULE — rule 22.** Five draws a pack under a committed, derived
-  seed anyone recomputes the morning after; one common a day off the
-  bell; a window pick chosen by the seed; a card on every purchase.
-  Honest randomness with custody, or gacha by shape? Your handoff
-  says build it; the prototype's paper had argued against the bell
-  card and the window. Recommended: merge as built.
+  seed anyone recomputes the morning after; the plan's odds table as
+  wheels; one common a day off the bell; a window pick chosen by the
+  seed; no pity timer, no near-miss, no closing window. Honest
+  randomness with custody, or gacha by shape? Recommended: merge.
 - **RULE — rule 41.** Paid random draws are loot boxes in Belgium,
   the Netherlands, Japan and under the UK code. Nothing cashable,
-  nothing tradeable, nothing bought back, odds and seed public.
-  Lawyer before the merge, or the week after? Recommended: after.
-- **RULE — rule 15 vs handoff §6.** The Season 2 `mint_to_chain`
-  door is a token. Rule 15 says no token, permanently. Nothing is
-  built toward it. Your call; not this season's.
-- **RULE — the numbers.** The first-pass plan was not in either
-  repository, on main, or in Drive, so these are assumptions: P =
-  $0.99, the pick at $0.49, Doors capped at 250, the wheels as
-  printed on /design, 52 not 60, Places = Hurricane Junction and
-  Node 21 with Oak City as the subtitle, Mark = the Dinosaur, QR not
-  barcode on the strip. One edit each.
-- **RULE — the card face as PNG.** The handoff wants static PNG
-  faces "Puppeteer as before"; the Worker has no browser and no
-  fonts. Cloudflare Browser Rendering (a paid binding you enable),
-  or resvg-wasm plus two font files in the bundle (a new rendering
-  dependency, ~2.5 MB). Until then the face is SVG and the share
-  sheet — the asset that stops the scroll — is PNG already.
+  nothing bought back, odds and seed public — and the window MOVES a
+  card between strangers' binders for $0.49, which is the one new
+  fact a lawyer should hear. Before the merge, or the week after?
+  Recommended: after, with the window sentence in the brief.
+- **RULE — holder perks against the pricing charter.** The plan's 5%
+  off with a Rail holo and the Keeper's free pick are prices that
+  depend on who is buying; the charter's one-price clause is older.
+  Built without perks. Amend the charter, or keep the perks that are
+  not prices (a Door card's preflight is free already; the Keeper's
+  pick can be a hand press).
+- **RULE — the cuts, one edit each.** *Gas Was Nothing* and *Node
+  21* out to hold 52 (the plan's own count); Door #0017 a real
+  degraded door (tick.hugen.tokyo) since the store cannot probe its
+  own row and a door capped at its observation count would never
+  press; Door #0410 is api.m2mcent.com, listed and never reached, so
+  it never presses until a round reaches it, and the card says so.
+- **RULE — rule 15 vs the Season 2 `mint_to_chain` door.** A token.
+  Rule 15 says no token, permanently. Nothing built toward it.
+- **RULE — Cairn's consent.** In the set at rare, on no wheel until
+  consent is on record; one field flips it.
+- **RULE — the card face as PNG.** The Worker has no browser and no
+  fonts. Cloudflare Browser Rendering (a paid binding), or resvg-wasm
+  plus two font files (~2.5 MB). Until then the face is SVG and the
+  share sheet — the asset that stops the scroll — is PNG already.
 - **RULE — the OpenAPI warning budget.** 700,000 → 750,000 in
-  `src/store/reader-limits.ts` with the reason beside it; a listing
-  costs about 8 KB and the September 10 reduction left 4,544 bytes.
-  Keep, lower, or thin per item.
+  `src/store/reader-limits.ts` with the reason beside it. Keep,
+  lower, or thin per item.
 - **RULE — rule 7.** Every card name, line and post sentence in
-  `src/store/cards.ts`; the pack and window-pick copy; the storefront
-  lines; the guide's Paywall paragraph; the skill paragraph; the
-  declined-positions WebMCP sentence tightened by 63 characters to
-  keep the developers area under budget; three link texts on the
-  door list shortened for the index budget. Ink or kill.
-- **TEST — press The Keeper.** `/admin/tools`, the new lever: a
-  wallet, one press, and the card should hang at `/p/{id}` in the
-  inverted cream stock and land in that wallet's binder.
+  `src/store/cards.ts` (your words, with the three cuts); the pack
+  and window-pick copy; the credit desk's challenge sentence; the
+  storefront lines; the guide's Paywall paragraph; the skill
+  paragraph; the declined-positions WebMCP sentence tightened by 63
+  characters. Ink or kill.
+- **TEST — press the Keeper into the window.** `/admin/tools`: key
+  `keeper`, destination `window`; it should hang at `/p/{id}` in the
+  inverted stock, show on `/api/paywall/window`, and move to
+  whichever wallet's $0.49 the seed favours.
+- **TEST — the credit desk with a real wallet.** Twenty commons in
+  a binder, `POST /api/paywall/challenge`, sign it, `POST
+  /api/paywall/burn`, then `/redeem` for a pack. The desk is EVM
+  only (EIP-191); a Solana binder can hold cards and cannot burn
+  them yet.
 - **LOOK — the unfurl.** Paste one real `/p/{id}` into X and Slack.
   The share sheet is the product; if the sentence on the right does
   not read at timeline size, the post copy is the thing to redraw.
-- **LOOK — the Herd.** Eleven of the twelve Herd animals press as
-  "not yet pressed" silhouettes; the T-Rex is the favicon's own
-  drawing. The handoff wanted all twelve drawn at ship. Art is the
-  long pole it named, and it is yours or an artist's.
+- **LOOK — the Herd.** Eleven of the twelve Herd animals, the jar,
+  the Tab and Cairn press as "not yet pressed" silhouettes; every
+  other card borrows the drawing of the thing it depicts. The plan
+  wanted all twelve Herd drawn at ship. Art is the long pole it
+  named, and it is yours or an artist's.
 
 ### The Trade Counter (2026-09-03, `TRADE_COUNTER.md`)
 

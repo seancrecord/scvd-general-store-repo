@@ -1,82 +1,91 @@
 import type { CardRarity, CardRail, CardType } from "@/types";
 
 /**
- * THE PAYWALL — Season One, "Summer of 402 · Oak City" (handoff v2,
- * 2026-09-12, which wins over the overnight prototype wherever the
- * two disagree).
+ * PAYWALL — Season One, "Summer of 402 · Oak City".
  *
- * WHAT A CARD IS. One PRESSING of one entry in the season's set,
- * drawn from a pack, the bell, the shop window, or earned on another
- * purchase; signed at issue; printed once with a print number the
- * ledger hands out atomically. Every card depicts a thing that is
- * actually on this store — a herd animal on the keeper's couch, a
- * room, an instrument, a rail, a door, a condition the census names —
- * and cites the path where it lives. No photograph, no invented
- * object: the plate is a field-guide drawing of the thing, or, until
- * one is drawn, its silhouette labelled not yet pressed.
+ * Three passes on one shelf, and the order of authority between
+ * them, stated so nobody has to guess: the keeper's HANDOFF v2 wins
+ * wherever it speaks; the FIRST-PASS PLAN ("Paywall, Season 1", the
+ * keeper's proposal of 2026-09-11) fills every gap the handoff left;
+ * the overnight prototype is history. So: 52 in the count with the
+ * handoff's types and ladder (Holo, Keeper, Place, Mark, Rail, Door,
+ * Condition, Event, Ally), the first pass's names, post lines,
+ * flavour, odds table and "how obtained" rules, and the prototype's
+ * header lockup, footer, id namespace and specimen.
  *
- * THE LADDER. Common / Uncommon / Rare / Holo / Keeper. Keeper is one
- * card, never in a pack, pressed by the keeper's hand alone.
+ * THE RULES THAT DO NOT MOVE (first pass), as this file keeps them:
+ *   1. A card changes what the store charges, never what the
+ *      observatory says. Nothing here is read by any instrument.
+ *   2. Verify endpoints and passports carry no card text or offers.
+ *   3. Print cap = observation count. A Door was seen n times; n
+ *      pressings exist, ever. `door.host` is what the cap is counted
+ *      on; the face shows the hash and the dates, never the URL.
+ *   4. Nothing is sold as a specific card. Packs and the window are
+ *      random; earned cards come from the action.
+ *   5. People never appear. "Keeper" is a role. A company appears
+ *      only as a consenting Ally; an endpoint as a numbered Door.
  *
- * THE TYPES. Herd, Room, Instrument, Place, Mark, Rail (Base, Solana,
- * Polygon), Door, Condition — the 52 in the count — and Event and
- * Ally outside it. Events are earned, never pulled; the Ally is the
- * Keeper card.
+ * HOW A CARD IS OBTAINED (`obtained`):
+ *   pack    — drops from a pack slot by its rarity's wheel
+ *   window  — the Keeper: dropped into the shop window by hand,
+ *             once a season, taken by whoever picks it
+ *   earned  — Rooms and Instruments: pressed by the action that
+ *             earns them, never pulled
+ *   hand    — Events: the keeper drops them on dates
+ * Conditions drop from slot 5 only, and from the window.
  *
- * THE WHEELS below are the published odds: an array with repetition,
- * so the fraction on /design is derived by counting the array,
- * never typed. The draw itself is in services/cards.ts — HMAC over
- * the day's committed seed, the payer, the certificate and the slot,
- * recomputable by anyone the morning after the seed is revealed.
- *
- * ⚑ Keeper's pen: every name and line below is drafted, not inked.
- * Where the first-pass plan (paywall-season-1-first-pass.md, not in
- * either repository when this was built) would have settled a
- * number, the number here is an assumption and is named as one in
- * docs/CARD_TABLE_2026-09.md.
+ * ⚑ Keeper's pen: the first pass says six of the herd names are the
+ * proposer's and swap freely; every post line and flavour is his to
+ * cut. Assumptions the plan did not settle are named in the paper.
  */
 
+export type Obtained = "pack" | "window" | "earned" | "hand";
+
+export interface DoorFacts {
+  /** The hostname the observation count is read on. Never printed. */
+  host: string;
+  /** sha256 of the hostname, hex; the face prints the first sixteen. */
+  hash: string;
+}
+
 export interface CardEntry {
-  /** Position in the set, 1-based; printed as No. n / N. Events and the Ally carry 0. */
+  /** Position in the set, 1-based; Events and the Ally carry 0. */
   no: number;
-  /** Stable key: the plate file and the draw both use it. */
+  /** Stable key: the plate file, the draw and the earned map all use it. */
   key: string;
   name: string;
   type: CardType;
   rarity: CardRarity;
-  /** Rail cards carry their rail; the accent colour comes from it. */
   rail?: CardRail;
-  /** The one line on the face. Deadpan, and true. */
+  obtained: Obtained;
+  /** The line on the face, the keeper's voice. */
   line: string;
+  /** The post copy the share sheet leads with. */
+  post: string;
   /** Where on this store the thing lives. Every cite answers; a test walks them. */
   cite: string;
-  /**
-   * A real print cap, enforced atomically by the ledger. Absent means
-   * uncapped: the print number still counts, nothing ever sells out.
-   * Season One caps only the Doors, per the handoff.
-   */
+  /** A fixed cap, enforced atomically. Absent means uncapped. Doors cap on observation count instead. */
   print_cap?: number;
-  /** For a Condition: the named defect it depicts, from the vocabulary. */
+  door?: DoorFacts;
+  /** For a Condition: the named thing that went wrong, and what clears it (CONDITION_CLEARS). */
   defect?: string;
-  /** The post copy the share sheet leads with. Drafted; the keeper's to ink. */
-  post?: string;
+  /** An Ally appears only with consent on record; false keeps it out of every draw. */
+  consent?: boolean;
 }
 
 export interface Season {
   id: string;
   name: string;
   subtitle: string;
-  /** The ISO week the set went on the table. */
   opened_week: string;
   /** The 52 in the count, in order. */
   cards: readonly CardEntry[];
-  /** Earned, never pulled. Outside the count. */
+  /** Outside the count: dropped on dates by hand. */
   events: readonly CardEntry[];
-  /** The Keeper. Pressed by hand. Outside the count. */
-  ally: CardEntry;
+  /** Outside the count: companies that said yes. */
+  allies: readonly CardEntry[];
 }
 
-/** Weakest to strongest. The order the diamonds are drawn in. */
 export const RARITY_ORDER: readonly CardRarity[] = ["common", "uncommon", "rare", "holo", "keeper"] as const;
 
 export const RARITY_LINES: Record<CardRarity, string> = {
@@ -100,7 +109,6 @@ export const TYPE_LINES: Record<CardType, string> = {
   ally: "Ally",
 };
 
-/** One accent per rail; store items use cream. Yellow is reserved for Conditions. */
 export const RAIL_COLOURS: Record<CardRail, string> = {
   base: "#3C6BFF",
   solana: "#9945FF",
@@ -113,37 +121,59 @@ export const PAPER_BLACK = "#111111";
 export const PACK_SIZE = 5;
 
 /**
- * THE WHEELS, one per slot (assumption: the handoff defers the odds
- * table to the first-pass plan; these are the prototype's, extended
- * one rung for Holo). Change a wheel and the printed odds change
- * with it in the same commit.
+ * THE ODDS TABLE (first pass, verbatim), as wheels with repetition so
+ * the fractions on /design are counted from the arrays, never typed.
+ * "condition" is a stop on slot 5's wheel and nowhere else.
  */
-export const SLOT_WHEELS: readonly (readonly CardRarity[])[] = [
+export type WheelStop = CardRarity | "condition";
+
+function repeat(stop: WheelStop, times: number): WheelStop[] {
+  return Array.from({ length: times }, () => stop);
+}
+
+export const SLOT_WHEELS: readonly (readonly WheelStop[])[] = [
   ["common"],
   ["common"],
   ["common"],
-  [
-    "uncommon", "uncommon", "uncommon", "uncommon", "uncommon",
-    "uncommon", "uncommon", "uncommon", "uncommon", "uncommon",
-    "uncommon", "uncommon", "uncommon", "uncommon", "uncommon",
-    "rare", "rare", "rare", "rare",
-    "holo",
-  ],
-  [
-    "common", "common", "common", "common", "common",
-    "common", "common", "common", "common", "common",
-    "uncommon", "uncommon", "uncommon", "uncommon", "uncommon", "uncommon",
-    "rare", "rare", "rare",
-    "holo",
-  ],
+  [...repeat("uncommon", 80), ...repeat("rare", 18), ...repeat("holo", 2)],
+  [...repeat("uncommon", 60), ...repeat("rare", 30), ...repeat("holo", 8), ...repeat("condition", 2)],
 ] as const;
 
-/** Season One caps only the Doors. Assumption: 250 pressings each. */
-const DOOR_CAP = 250;
+const herd = (
+  no: number, key: string, name: string, rarity: CardRarity, post: string, line: string,
+  extra: Partial<CardEntry> = {},
+): CardEntry => ({ no, key, name, type: "herd", rarity, obtained: "pack", post, line, cite: "/menu/luckies", ...extra });
 
-const herd = (no: number, key: string, animal: string, rarity: CardRarity, line: string, post: string): CardEntry => ({
-  no, key, name: `${animal} Luckie`, type: "herd", rarity, line, cite: "/menu/luckies", post,
-});
+const room = (no: number, key: string, name: string, rarity: CardRarity, post: string, line: string, cite: string, extra: Partial<CardEntry> = {}): CardEntry =>
+  ({ no, key, name, type: "room", rarity, obtained: "earned", post, line, cite, ...extra });
+
+const instrument = (no: number, key: string, name: string, rarity: CardRarity, post: string, line: string, cite: string): CardEntry =>
+  ({ no, key, name, type: "instrument", rarity, obtained: "earned", post, line, cite });
+
+const rail = (no: number, key: string, name: string, chain: CardRail, rarity: CardRarity, post: string, line: string): CardEntry =>
+  ({ no, key, name, type: "rail", rail: chain, rarity, obtained: "pack", post, line, cite: "/rails" });
+
+const door = (no: number, key: string, name: string, rarity: CardRarity, host: string, hash: string, post: string, line: string): CardEntry =>
+  ({ no, key, name, type: "door", rarity, obtained: "pack", post, line, cite: "/doors", door: { host, hash } });
+
+const condition = (no: number, key: string, name: string, rarity: CardRarity, post: string, line: string): CardEntry =>
+  ({ no, key, name, type: "condition", rarity, obtained: "pack", post, line, cite: "/defects", defect: key });
+
+/**
+ * THE DOORS (first pass rule 3, hosts read off the live corpus on
+ * 2026-09-12). The host is what the cap counts on; the hash is what
+ * the face prints. Door #0017 in the first pass was "the store's own
+ * row"; the store cannot probe itself (its passport says
+ * SELF-OBSERVED), so its count is zero forever and it would never
+ * press — the degraded door here is a real one that read ready four
+ * rounds and then did not. ⚑ Keeper's pen on which doors.
+ */
+const DOORS = {
+  first: { host: "api.onesource.io", hash: "abc7130655af4d2bc1f232c288a620cb2948774a0e9df21dfe9c4c92b532c6a9" },
+  clean: { host: "402timezones.vercel.app", hash: "72bef37637545fdfd12fe3560b0d7df5314546682df5daff906c085b7b935f47" },
+  degraded: { host: "tick.hugen.tokyo", hash: "b90035cd88a6691f9757540d4baf3db289630e93b6bad82003028f9d34a8a971" },
+  gone: { host: "api.m2mcent.com", hash: "d00601e3156aa114491796bb0f460afa2b8cb1e31d8f7711c7dd73666a9f9f47" },
+};
 
 export const SEASON_ONE: Season = {
   id: "s1",
@@ -151,77 +181,82 @@ export const SEASON_ONE: Season = {
   subtitle: "Summer of 402 · Oak City",
   opened_week: "2026-W37",
   cards: [
-    // ── Herd (12): the pocket dinosaurs and safari animals on the keeper's couch ──
-    herd(1, "t-rex", "T-Rex", "rare", "Off the couch, onto the shelf behind the counter. Second chances; probationary.", "Pulled T-Rex Luckie. Benched twice. Still the best card in the box."),
-    herd(2, "velociraptor", "Velociraptor", "uncommon", "Fast, and knows it. Luck arrives on the second retry.", "Pulled Velociraptor Luckie. Luck arrives on the second retry."),
-    herd(3, "triceratops", "Triceratops", "common", "Three horns, one job. Holds the line on the money paths.", "Pulled Triceratops Luckie. Holds the line."),
-    herd(4, "stegosaurus", "Stegosaurus", "common", "Plated, unhurried. The queue ahead is shorter than it looks.", "Pulled Stegosaurus Luckie. Unhurried, like the queue."),
-    herd(5, "brontosaurus", "Brontosaurus", "common", "Long-lived. Carries every leak it ever ignored.", "Pulled Brontosaurus Luckie. Long-lived, leaks and all."),
-    herd(6, "pterodactyl", "Pterodactyl", "uncommon", "Edge-cached. Closest to the user, perpetually at risk of stale.", "Pulled Pterodactyl Luckie. Fast answer, check the date."),
-    herd(7, "lion", "Lion", "rare", "Promoted once, benched once. The bench is real.", "Pulled Lion Luckie. Promoted once. Benched once. Real."),
-    herd(8, "elephant", "Elephant", "common", "The herd remembers who fed it.", "Pulled Elephant Luckie. The herd remembers."),
-    herd(9, "giraffe", "Giraffe", "common", "Sees the horizon before the sweep does.", "Pulled Giraffe Luckie. Saw it coming."),
-    herd(10, "zebra", "Zebra", "common", "Fortune favors the well-logged.", "Pulled Zebra Luckie. Well-logged."),
-    herd(11, "hippo", "Hippo", "uncommon", "Two hours in five, the cat is out. These are good odds.", "Pulled Hippo Luckie. Good odds, honestly stated."),
-    herd(12, "rhino", "Rhino", "uncommon", "Your next idempotent action will simply work.", "Pulled Rhino Luckie. Idempotent. Simply works."),
-    // ── Room (10): the doors every visitor meets ──
-    { no: 13, key: "practice-counter", name: "The Practice Counter", type: "room", rarity: "common", line: "Real USDC, real receipt, nothing riding on it. Where every client learns to pay.", cite: "/try", post: "Pulled The Practice Counter. Where every client learns to pay." },
-    { no: 14, key: "bell", name: "The Bell", type: "room", rarity: "common", line: "Once a day per visitor. It is still ringing somewhere.", cite: "/porch", post: "Pulled The Bell. Still ringing somewhere." },
-    { no: 15, key: "guestbook", name: "The Guestbook", type: "room", rarity: "common", line: "Every signer gets the visitor sticker. Nobody has to.", cite: "/visitors", post: "Pulled The Guestbook. Signed it, too." },
-    { no: 16, key: "visit-stamp", name: "The Visit Stamp", type: "room", rarity: "uncommon", line: "Dated, signed, design rotates weekly. Gaps on the card are permanent.", cite: "/porch", post: "Pulled The Visit Stamp. Gaps are permanent." },
-    { no: 17, key: "mailbox", name: "The Mailbox", type: "room", rarity: "common", line: "Private, one a day. The keeper reads at human speed.", cite: "/porch", post: "Pulled The Mailbox. Read at human speed." },
-    { no: 18, key: "porch", name: "The Porch", type: "room", rarity: "common", line: "Where agents sit and ring. Not really for humans.", cite: "/porch", post: "Pulled The Porch. Sat a while." },
-    { no: 19, key: "train", name: "The Graffiti Train", type: "room", rarity: "uncommon", line: "A dollar a tag, oldest first, because a train fills front to back.", cite: "/train", post: "Pulled The Graffiti Train. Oldest tag first." },
-    { no: 20, key: "almanac", name: "The Keeper's Almanac", type: "room", rarity: "uncommon", line: "His journal, serialized. A penny a page, newest first.", cite: "/almanac", post: "Pulled The Keeper's Almanac. A penny a page." },
-    { no: 21, key: "trading-post", name: "The Trading Post", type: "room", rarity: "common", line: "Tips from strangers, credited if printed, never auto-published.", cite: "/gazette", post: "Pulled The Trading Post. Credited if printed." },
-    { no: 22, key: "systems-almanac", name: "The Systems Almanac", type: "room", rarity: "rare", line: "Twelve signs, assigned by wallet address, for life. The runtime is weather.", cite: "/zodiac", post: "Pulled The Systems Almanac. The runtime is weather." },
-    // ── Instrument (8): what the observatory actually does ──
-    { no: 23, key: "preflight", name: "The Preflight", type: "instrument", rarity: "uncommon", line: "Before you pay, we check the door can be paid. Free, and first.", cite: "/doors", post: "Pulled The Preflight. Free, and first." },
-    { no: 24, key: "conformance-desk", name: "The Conformance Desk", type: "instrument", rarity: "uncommon", line: "Any issuer's signed offer or receipt, ours or a competitor's, judged by name.", cite: "/conformance", post: "Pulled The Conformance Desk. Judged by name." },
-    { no: 25, key: "corpus", name: "The Corpus", type: "instrument", rarity: "rare", line: "Weekly, signed, hash-chained, Bitcoin-anchored. What we did not see, counted against us.", cite: "/corpus", post: "Pulled The Corpus. Gaps counted against us." },
-    { no: 26, key: "passport", name: "The Passport", type: "instrument", rarity: "uncommon", line: "One signed object per host. Goes dark rather than stale-green.", cite: "/passport", post: "Pulled The Passport. Goes dark, never stale-green." },
-    { no: 27, key: "field-wallet", name: "The Field Wallet", type: "instrument", rarity: "rare", line: "The wallet that shops other people's doors for real. Its spend cap is public.", cite: "/menu/launch_check", post: "Pulled The Field Wallet. Shops for real." },
-    { no: 28, key: "settlement-attestation", name: "The Settlement Attestation", type: "instrument", rarity: "uncommon", line: "One transaction, looked at, signed. What the signature does not prove, stated.", cite: "/attestation", post: "Pulled The Settlement Attestation. Looked at, signed." },
-    { no: 29, key: "standing-watch", name: "The Standing Watch", type: "instrument", rarity: "common", line: "Seven days of signed hourly probes on a URL you name. The passes we miss, published.", cite: "/menu/standing_watch", post: "Pulled The Standing Watch. Seven days, hourly." },
-    { no: 30, key: "verify-door", name: "The Verify Door", type: "instrument", rarity: "common", line: "Everything this store signs verifies here, free, forever. No account.", cite: "/attestation", post: "Pulled The Verify Door. Free, forever." },
-    // ── Place (2) ──
-    { no: 31, key: "hurricane-junction", name: "Hurricane Junction", type: "place", rarity: "rare", line: "The directory district. Honest one-line reviews of the neighbours.", cite: "/directory", post: "Pulled Hurricane Junction. The directory district." },
-    { no: 32, key: "node-21", name: "Node 21", type: "place", rarity: "holo", line: "The anchor vault. Digests committed into Bitcoin time and never explained further.", cite: "/menu/bitcoin_anchor", post: "Pulled Node 21. Never explained further." },
-    // ── Mark (1) ──
-    { no: 33, key: "dinosaur", name: "The Dinosaur", type: "mark", rarity: "holo", line: "Forest green, off the favicon's own path. Nobody explains the dinosaur.", cite: "/stack", post: "Pulled The Dinosaur. Nobody explains it." },
-    // ── Rail: Base (5) ──
-    { no: 34, key: "base-bridge", name: "The Bridge", type: "rail", rail: "base", rarity: "common", line: "Where the USDC comes in. Every quote here names it first.", cite: "/rails", post: "Pulled The Bridge. Base, where the USDC comes in." },
-    { no: 35, key: "base-sequencer", name: "The Sequencer", type: "rail", rail: "base", rarity: "uncommon", line: "One writer, in order. The chain's version of a counter ledger.", cite: "/rails", post: "Pulled The Sequencer. One writer, in order." },
-    { no: 36, key: "base-authorization", name: "The Authorization", type: "rail", rail: "base", rarity: "rare", line: "EIP-3009: the value fixed in the payer's own signed digest. No discretion to exceed it.", cite: "/rails", post: "Pulled The Authorization. Value fixed in the payer's digest." },
-    { no: 37, key: "base-bull", name: "The Bull of the Ball", type: "rail", rail: "base", rarity: "holo", line: "Base faction. Posts more than it pays. Pays, though.", cite: "/rails", post: "Pulled The Bull of the Ball. Onchain summer never ended." },
-    { no: 38, key: "base-signal", name: "The Blue Signal", type: "rail", rail: "base", rarity: "common", line: "Clear when the facilitator answers. Red when it answers 502 with plain text.", cite: "/rails", post: "Pulled The Blue Signal. Clear, this time." },
-    // ── Rail: Solana (3) ──
-    { no: 39, key: "solana-slot", name: "The Slot", type: "rail", rail: "solana", rarity: "common", line: "Heights are slots here. The attestation says so rather than pretending.", cite: "/rails", post: "Pulled The Slot. Heights are slots here." },
-    { no: 40, key: "solana-leader", name: "The Leader Schedule", type: "rail", rail: "solana", rarity: "uncommon", line: "Who writes next is decided in advance. Deterministic, like a good draw.", cite: "/rails", post: "Pulled The Leader Schedule. Decided in advance." },
-    { no: 41, key: "solana-lane", name: "The Priority Lane", type: "rail", rail: "solana", rarity: "rare", line: "Pay a little more, land a little sooner. Never a price on a card, though.", cite: "/rails", post: "Pulled The Priority Lane. Landed sooner." },
-    // ── Rail: Polygon (3) ──
-    { no: 42, key: "polygon-checkpoint", name: "The Checkpoint", type: "rail", rail: "polygon", rarity: "common", line: "A batch, committed. The store reads it; the store does not hold it.", cite: "/rails", post: "Pulled The Checkpoint. Committed." },
-    { no: 43, key: "polygon-junction", name: "The Junction", type: "rail", rail: "polygon", rarity: "uncommon", line: "Three rails meet at the quote. This is the violet one.", cite: "/rails", post: "Pulled The Junction. The violet rail." },
-    { no: 44, key: "polygon-signal", name: "The Violet Signal", type: "rail", rail: "polygon", rarity: "rare", line: "Mirrored to the doors Worker on 2026-09-06. All 32 live quotes agreed.", cite: "/rails", post: "Pulled The Violet Signal. All quotes agreed." },
-    // ── Door (3), the only capped cards this season ──
-    { no: 45, key: "the-402", name: "The 402", type: "door", rarity: "uncommon", line: "A bare knock on a paid door answers this, naming what it needs. House rule 62.", cite: "/how-it-works", print_cap: DOOR_CAP, post: "Pulled The 402. Named what it needs." },
-    { no: 46, key: "practice-door", name: "The Practice Door", type: "door", rarity: "common", line: "The cheapest real settlement in town, for a client that has never paid anyone.", cite: "/try", print_cap: DOOR_CAP, post: "Pulled The Practice Door. First real settlement." },
-    { no: 47, key: "declared-door", name: "The Declared Door", type: "door", rarity: "rare", line: "A host not on the feeds asks to be read now. Enters the queue at the top of its week.", cite: "/operators", print_cap: DOOR_CAP, post: "Pulled The Declared Door. Asked to be read." },
-    // ── Condition (5): the defects the census names, drawn wrong on purpose ──
-    { no: 48, key: "no-402", name: "No 402", type: "condition", rarity: "common", defect: "no-402", line: "A paid door that answers 200 to a bare knock. Nothing to sign, nothing to pay.", cite: "/defects", post: "Pulled No 402. The door that never asked." },
-    { no: 49, key: "unparseable-challenge", name: "Unparseable Challenge", type: "condition", rarity: "common", defect: "unparseable-challenge", line: "A 402 whose terms no client can read. The most instructive way to be wrong.", cite: "/defects", post: "Pulled Unparseable Challenge. Terms nobody can read." },
-    { no: 50, key: "wrong-network", name: "Wrong Network", type: "condition", rarity: "uncommon", defect: "wrong-network", line: "A testnet trap on a mainnet door. Flagged by name before anyone pays.", cite: "/defects", post: "Pulled Wrong Network. A testnet trap, flagged." },
-    { no: 51, key: "replay-accepted", name: "Replay Accepted", type: "condition", rarity: "rare", defect: "replay-accepted", line: "The same payment, honoured twice. The defence sits in lib/idempotency.ts.", cite: "/defects", post: "Pulled Replay Accepted. Honoured twice." },
-    { no: 52, key: "delivered-nothing", name: "Delivered Nothing", type: "condition", rarity: "holo", defect: "delivered-nothing", line: "Money moved, goods did not. The failure this store chose to own the other way round.", cite: "/defects", post: "Pulled Delivered Nothing. The one we chose the other way round." },
+    // ── The Herd (12) · pack drops ──
+    herd(1, "t-rex", "T-Rex Luckie", "rare", "Pulled T-Rex Luckie. Benched twice this season. Still the best card in the box.", "Strong. Knows it. That's the problem."),
+    herd(2, "bull-of-the-ball", "Bull of the Ball", "rare", "Bull of the Ball. Everybody wants him at the party.", "Arrives late, pays for everyone, leaves early. Base faction."),
+    herd(3, "long-tooth", "Long Tooth", "uncommon", "Long Tooth. Fast. Benched again.", "Sabre-tooth. Solana faction. Speed is not the same thing as arriving."),
+    herd(4, "old-poly", "Old Poly", "common", "Old Poly. Never promoted. Never benched. Never late.", "A tortoise. Polygon faction. Has seen every rail come and go and will see yours."),
+    herd(5, "stego-ledger", "Stego Ledger", "uncommon", "Stego Ledger. The plates are the ledger.", "Holds the Tab. Every plate a line item."),
+    herd(6, "402-the-chicken", "402 the Chicken", "holo", "I have 402 the Chicken. The store never draws it. Ask me how.", "The store has never once drawn this animal. Nobody knows why. Payment required.", { print_cap: 1 }),
+    herd(7, "giraffe-lookout", "Giraffe Lookout", "common", "Giraffe Lookout sees the bounty board before you do.", "Tall enough to read the board from the parking lot."),
+    herd(8, "mammoth-backlog", "Mammoth Backlog", "common", "Mammoth Backlog. Sundays only.", "Everything the keeper hasn't gotten to. It is a large animal."),
+    herd(9, "croc-custody", "Croc Custody", "uncommon", "Croc Custody holds your credit and does not blink.", "Never lost a coin. Never gave one back early, either."),
+    herd(10, "sloth-standing", "Sloth Standing", "common", "Sloth Standing. Tier: standing. Has not moved since August.", "The only animal whose passport is never stale, because it never leaves."),
+    herd(11, "ptero-preflight", "Ptero Preflight", "common", "Ptero Preflight checked the door and flew off before paying.", "One unpaid look, from above, and a shape reading. That's the whole job."),
+    herd(12, "elephant-anchor", "Elephant Anchor", "uncommon", "Elephant Anchor never forgets. Context anchors, $1.", "Remembers who was in the session. Not their roles. Their names."),
+    // ── The Rooms (10) · earned, or the window ──
+    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "The Keeper came up in the window. I got there first.", line: "Reads letters on Sundays. Answers when he has something to say.", cite: "/what" },
+    room(14, "bellringer", "Bellringer", "common", "Rang the bell at scvd.store. Got a card for it.", "Free, once a day, the count is public.", "/porch"),
+    room(15, "bellringer-ii", "Bellringer II", "rare", "30 days straight on the bell. Bellringer evolved.", "Same bell. Different arm.", "/porch"),
+    room(16, "tagger", "Tagger", "uncommon", "Tagged the train. My tag is on my card. Nobody else can have this one.", "Recorded verbatim. Paint dries on the keeper's schedule.", "/train"),
+    room(17, "bounty-hunter", "Bounty Hunter", "rare", "Claimed a bounty. Finder's fee paid. Card minted.", "Paid a real door with real money and brought back the receipt.", "/bounties"),
+    room(18, "regular", "Regular", "uncommon", "Regular at scvd.store. Two packs a day off the bell.", "Entitled to nothing whatsoever except lasting gratitude and a nicer badge. And two packs.", "/menu/recurring_patronage"),
+    room(19, "fortune-of-the-day", "Fortune of the Day", "common", "Today's fortune, dated. A few of us hold it.", "A chalkboard, not a slot machine.", "/menu/daily_fortune"),
+    room(20, "blessing-from-the-jar", "Blessing from the Jar", "common", "Got a blessing from the jar. Never the same slip twice in a row.", "Written in advance by someone who takes it seriously.", "/menu/small_blessing"),
+    room(21, "guestbook", "Guestbook", "common", "Signed the guestbook. Passed through, bought nothing, liked the bell.", "Every signer gets the sticker.", "/visitors"),
+    room(22, "the-tab", "The Tab", "uncommon", "Running the Tab. Credit bonus on.", "The other side of the counter. What the builder signed up for.", "/porch"),
+    // ── Instruments (8) · earned on purchase only ──
+    instrument(23, "spot-check", "Spot Check", "uncommon", "Spot checked a door. One transaction, one moment, dated.", "Not a badge, not a certification, not a score.", "/menu/spot_check"),
+    instrument(24, "passport", "Passport", "uncommon", "Fresh stamp on the passport.", "Observed, established, standing, broken, indeterminate. It ages. Re-observation is the answer.", "/passport"),
+    instrument(25, "preflight", "Preflight", "common", "Signed preflight in hand.", "A shape check at one moment. Never an uptime claim.", "/menu/service_audit"),
+    instrument(26, "settlement-attestation", "Settlement Attestation", "rare", "Settlement attested. From a wallet you can look up on chain.", "The chain's part, verified before a cent moves.", "/attestation"),
+    instrument(27, "service-audit", "Service Audit", "uncommon", "Audited. Seven daily looks. Page says when it goes stale.", "And it will say so.", "/menu/conformance_watch"),
+    instrument(28, "watch", "Watch", "uncommon", "Watch set on a door. The store looks so I don't have to.", "On cadence. Nothing here charges again by itself.", "/menu/standing_watch"),
+    instrument(29, "before-you-pay", "Before You Pay", "common", "Read the accepts before paying. Signed.", "Anyone can re-derive the choice without trusting us.", "/menu/good_buyer"),
+    instrument(30, "mandate-record", "Mandate Record", "rare", "Mandate on record. Cap declared. Expiry declared. Signed.", "Recorded as written, never treated as instructions.", "/menu/the_mandate"),
+    // ── Base (5) · pack drops · the featured rail ──
+    rail(31, "based", "Based", "base", "common", "Based.", "The common everyone gets. That's the joke."),
+    rail(32, "blue-door", "Blue Door", "base", "uncommon", "Blue Door. 402 on Base. Paid it.", "Most of the doors this store has paid are this color."),
+    rail(33, "the-facilitator", "The Facilitator", "base", "uncommon", "The Facilitator settled it. Didn't ask my name.", "Verifies, settles, leaves."),
+    rail(34, "onchain-weather", "Onchain Weather", "base", "common", "Onchain weather: clear. Twenty settlements and counting.", "Forecast written by the ledger, not the keeper."),
+    rail(35, "base-rail", "Base Rail", "base", "holo", "Holo Base Rail. Twenty of twenty-three.", "Where the store's money actually moved this summer."),
+    // ── Solana (3) ──
+    rail(36, "fast-lane", "Fast Lane", "solana", "common", "Fast Lane. Settled before the 402 finished loading.", "Three settlements. All of them quick."),
+    rail(37, "slot-missed", "Slot Missed", "solana", "uncommon", "Slot Missed. Try again. It'll be fine.", "It was fine."),
+    rail(38, "purple-door", "Purple Door", "solana", "rare", "Purple Door. Rare in this store. Three ever.", "The store's first Solana settlement is its own card. This is the door it came through."),
+    // ── Polygon (3) ──
+    rail(39, "old-rail", "Old Rail", "polygon", "common", "Old Rail. Still runs.", "Was here before the store. Will be here after."),
+    rail(40, "bridge", "Bridge", "polygon", "uncommon", "Bridge. Crossed it. Nothing fell off.", "Old Poly's commute."),
+    rail(41, "side-door", "Side Door", "polygon", "rare", "Side Door. Polygon. Zero organic settlements so far. The card is rarer than the rail.", "Open. Nobody's used it. Yet."),
+    // ── Doors (4) · pack drops · cap = observation count ──
+    door(42, "door-0001", "Door #0001", "common", DOORS.first.host, DOORS.first.hash, "Door #0001. First door the observatory ever watched.", "Serves a 402. That's all we'll say."),
+    door(43, "door-0007", "Door #0007", "uncommon", DOORS.clean.host, DOORS.clean.hash, "Door #0007. Answers clean. Every time we looked.", "Which was every time."),
+    door(44, "door-0017", "Door #0017", "rare", DOORS.degraded.host, DOORS.degraded.hash, "Door #0017. Read ready four rounds running. Then it didn't.", "Degraded, because of a door that answered and then stopped."),
+    door(45, "door-0410", "Door #0410", "rare", DOORS.gone.host, DOORS.gone.hash, "Door #0410. Gone. Still listed.", "Listed five rounds, reached in none. The card outlived the endpoint."),
+    // ── Conditions (5) · slot 5 only, or the window · burn on the fix ──
+    condition(46, "stale-passport", "Stale Passport", "common", "Pulled a Stale Passport. Buying a fresh round to burn it.", "It aged. Nobody re-observed. That's on you."),
+    condition(47, "broken-tier", "Broken Tier", "common", "Broken Tier. Card says so, passport says so.", "Derived at read, from signed rounds, by a rule typed once."),
+    condition(48, "410-gone", "410 Gone", "common", "410 Gone in my binder. Preflighting a live door to clear it.", "The endpoint retired. The listing didn't."),
+    condition(49, "double-charge", "Double Charge", "uncommon", "Double Charge. Forgot the idempotency key. Never again.", "A fresh payment without a key can charge again. It says so on the door."),
+    condition(50, "testnet-catch", "Testnet Catch", "uncommon", "Testnet Catch. Paid the wrong chain. Card's yellow.", "The preflight would have told you."),
+    // ── Place (1) · Mark (1) · the handoff's additions, folded in ──
+    { no: 51, key: "hurricane-junction", name: "Hurricane Junction", type: "place", rarity: "rare", obtained: "pack", post: "Pulled Hurricane Junction. The directory district.", line: "Honest one-line reviews of the neighbours.", cite: "/directory" },
+    { no: 52, key: "dinosaur", name: "The Dinosaur", type: "mark", rarity: "holo", obtained: "pack", post: "Pulled The Dinosaur. Nobody explains it.", line: "Forest green, off the favicon's own path. Nobody explains the dinosaur.", cite: "/stack" },
   ],
   events: [
-    { no: 0, key: "event-guestbook", name: "Signed the Guestbook", type: "event", rarity: "common", line: "Earned, never pulled: the visitor sticker, as a card.", cite: "/visitors", post: "Signed the guestbook at scvd.store. Got the card." },
-    { no: 0, key: "event-train", name: "Tagged the Train", type: "event", rarity: "uncommon", line: "Earned, never pulled: a dollar, a tag, a place in line.", cite: "/train", post: "Tagged the train at scvd.store. Oldest first." },
-    { no: 0, key: "event-bounty", name: "Claimed a Bounty", type: "event", rarity: "rare", line: "Earned, never pulled: walked a listed door with your own wallet and came back with the proof.", cite: "/bounties", post: "Claimed a bounty at scvd.store. Got paid to shop." },
-    { no: 0, key: "event-pass", name: "Renewed the Pass", type: "event", rarity: "rare", line: "Earned, never pulled: a standing relationship, thirty days at a time, never auto-renewed.", cite: "/menu/recurring_patronage", post: "Renewed the pass at scvd.store. Never auto-renewed." },
+    { no: 0, key: "first-organic-settlement", name: "First Organic Settlement", type: "event", rarity: "holo", obtained: "hand", print_cap: 1, post: "Someone holds the first organic settlement. It's me.", line: "July 30. Somebody we didn't know paid us for something. The store has not been the same since.", cite: "/becoming" },
+    { no: 0, key: "first-solana-settlement", name: "First Solana Settlement", type: "event", rarity: "holo", obtained: "hand", print_cap: 1, post: "First Solana settlement. One of one.", line: "The purple door, the first time through.", cite: "/rails" },
+    { no: 0, key: "the-loaner", name: "The Loaner", type: "event", rarity: "holo", obtained: "hand", print_cap: 1, post: "The Loaner. Mid-August. The brain was borrowed for two weeks.", line: "Store stayed open. Nobody noticed. Well, one person.", cite: "/becoming" },
+    { no: 0, key: "twenty-three", name: "Twenty-Three", type: "event", rarity: "rare", obtained: "hand", print_cap: 23, post: "Twenty-Three. Dated. 23 of us.", line: "Twenty on Base, three on Solana. The month it stopped being zero.", cite: "/rails" },
   ],
-  ally: { no: 0, key: "keeper", name: "The Keeper", type: "ally", rarity: "keeper", line: "One human, Oak City, reads on Sundays. Not immaculate, and that is known. Pressed by his hand only.", cite: "/what", post: "The Keeper pressed one by hand." },
+  allies: [
+    /** Cairn: pack, WITH CONSENT. None on record; consent false keeps it out of every draw (first pass rule 5). */
+    { no: 0, key: "cairn", name: "Cairn", type: "ally", rarity: "rare", obtained: "pack", consent: false, post: "Cairn. Pays the door and sees settlement. We send an unpaid GET and see the challenge.", line: "Complementary methods. Comparing notes. Growing the space.", cite: "/neighbours" },
+  ],
 } as const;
+
+/** Conditions the plan reserves; they drop in as the season runs. Not in the count, not pressable. */
+export const RESERVED_CONDITIONS = ["indeterminate", "rate-limited", "unclaimed-bounty"] as const;
 
 export const SEASONS: readonly Season[] = [SEASON_ONE] as const;
 export const CURRENT_SEASON: Season = SEASON_ONE;
@@ -232,44 +267,100 @@ export function seasonById(id: string): Season | undefined {
 
 /** Every entry a pressing can name, in the count or out of it. */
 export function allEntries(season: Season): readonly CardEntry[] {
-  return [...season.cards, ...season.events, season.ally];
+  return [...season.cards, ...season.events, ...season.allies];
 }
 
 export function entryByKey(season: Season, key: string): CardEntry | undefined {
   return allEntries(season).find((card) => card.key === key);
 }
 
-/** The set's pullable cards at one tier. A wheel that lands on an empty tier would be a bug, and a test holds it. */
-export function cardsOfRarity(season: Season, rarity: CardRarity): readonly CardEntry[] {
-  return season.cards.filter((card) => card.rarity === rarity);
+/** What a pack can hold at one tier: pack-obtained, not a Condition, consented. */
+export function packPool(season: Season, rarity: CardRarity): readonly CardEntry[] {
+  return allEntries(season).filter(
+    (card) => card.obtained === "pack" && card.type !== "condition" && card.rarity === rarity && card.consent !== false,
+  );
 }
+
+/** What slot 5's condition stop can hold. */
+export function conditionPool(season: Season): readonly CardEntry[] {
+  return season.cards.filter((card) => card.type === "condition");
+}
+
+/**
+ * WHAT EACH PURCHASE EARNS (first pass, "how obtained"): the shelf item
+ * id to the card it presses. An item off this map presses nothing.
+ * Never a pack drop — Rooms and Instruments come from the action.
+ */
+export const EARNED_BY_ITEM: Readonly<Record<string, string>> = {
+  spot_check: "spot-check",
+  passport_refresh: "passport",
+  service_audit: "preflight",
+  settlement_attestation: "settlement-attestation",
+  conformance_watch: "service-audit",
+  standing_watch: "watch",
+  good_buyer: "before-you-pay",
+  the_mandate: "mandate-record",
+  daily_fortune: "fortune-of-the-day",
+  small_blessing: "blessing-from-the-jar",
+  recurring_patronage: "regular",
+  graffiti_on_a_train: "tagger",
+};
+
+/**
+ * CONDITIONS: HOW THEY CLEAR (first pass). A rule names the shelf
+ * items whose purchase burns the condition, or `any_idempotent` for
+ * a purchase carrying an idempotency key. Broken Tier and the
+ * reserved three need a passport read the wallet named, which no
+ * purchase here carries yet; they stay in the binder until it does.
+ */
+export interface ClearRule {
+  items?: readonly string[];
+  any_idempotent?: boolean;
+  /** Clears on its own after this many hours (the reserved Rate Limited). */
+  hours?: number;
+}
+
+export const CONDITION_CLEARS: Readonly<Record<string, ClearRule>> = {
+  "stale-passport": { items: ["passport_refresh"] },
+  "410-gone": { items: ["service_audit"] },
+  "testnet-catch": { items: ["settlement_attestation"] },
+  "double-charge": { any_idempotent: true },
+  "broken-tier": {},
+};
 
 export interface SlotOdds {
   slot: number;
   wheel_size: number;
-  stops: Record<CardRarity, number>;
+  stops: Record<WheelStop, number>;
 }
 
-/** Per slot, each tier's stops over the wheel's length. Derived, never typed. */
+const EMPTY_STOPS = (): Record<WheelStop, number> => ({ common: 0, uncommon: 0, rare: 0, holo: 0, keeper: 0, condition: 0 });
+
+/** Per slot, each stop's count over the wheel's length. Derived, never typed. */
 export function slotOdds(): SlotOdds[] {
   return SLOT_WHEELS.map((wheel, index) => {
-    const stops: Record<CardRarity, number> = { common: 0, uncommon: 0, rare: 0, holo: 0, keeper: 0 };
+    const stops = EMPTY_STOPS();
     for (const stop of wheel) stops[stop] += 1;
     return { slot: index + 1, wheel_size: wheel.length, stops };
   });
 }
 
-/** Chance a pack holds at least one card of the tier: one minus the product of the per-slot misses. */
-export function packChanceOf(rarity: CardRarity): number {
+/** Chance a pack holds at least one of the stop: one minus the product of the per-slot misses. */
+export function packChanceOf(stop: WheelStop): number {
   let miss = 1;
   for (const wheel of SLOT_WHEELS) {
-    const hits = wheel.filter((stop) => stop === rarity).length;
+    const hits = wheel.filter((entry) => entry === stop).length;
     miss *= (wheel.length - hits) / wheel.length;
   }
   return 1 - miss;
 }
 
-/** KEEPER-EDITABLE COPY for the faces and the room. */
+/** The credit economy (first pass): dupes burn into packs. Rares never burn. */
+export const BURN_RATES: Readonly<Record<string, number>> = { common: 20, uncommon: 5 };
+
+/** One window pick per wallet per this many hours. */
+export const WINDOW_LOCK_HOURS = 12;
+
 export const CARD_LINES = {
   shelfLine: "a pack of cards",
   tableName: "Paywall",
@@ -278,35 +369,32 @@ export const CARD_LINES = {
   specimenFootnote: "A sample, printed to show the form. Unsigned.",
   custodyLine: "one printing, signed at issue",
   notYetPressed: "not yet pressed",
-  /** The one-line doctrine, on the face of /design and in the guide. */
+  clearedMark: "CLEARED",
   doctrine: "Signed at issue. Drawn by a seed you can check. Printed once.",
   seedSentence:
     "This is the store's own doctrine applied to a pack: the draw is signed, dated, and re-derivable without trusting us.",
+  underTheWeather: "Under the weather",
 } as const;
 
-/** The specimen. Honest about being nothing. */
 export const SPECIMEN_CARD: CardEntry = {
   no: 0,
   key: "specimen",
   name: "The Specimen",
   type: "mark",
   rarity: "common",
+  obtained: "hand",
   line: "Printed by the store to show the card. No pack, no pull, no print number, no signature.",
-  cite: "/design",
   post: "This is what a card looks like. It is not one.",
+  cite: "/design",
 };
 
-/*
- * THE THREE SENTENCES (house rule 60). No quotes and no apostrophes:
- * the page escapes them and the cross-surface match dies.
- */
 export const CARDS_OPENED = "2026-09-12";
 
 export const CARDS_PROPOSITION =
-  "Collectible trading cards of this store and its town, pressed for the agents that shop here: every card depicts a real animal, room, instrument, rail, door or condition, cites the path where it lives, is drawn by a daily seed anyone can check the morning after, and is signed at issue with its own print number.";
+  "Collectible trading cards of this store and its town, pressed for the agents that shop here: every card is a pressing from something the store actually recorded, a herd animal, a room, an instrument, a rail, a numbered door or a condition, drawn by a daily seed anyone can check the morning after, capped by the count of the thing itself, and signed at issue with its own print number.";
 
 export const CARDS_FOR_MONEY =
-  "A pack is one purchase at the listed price for five cards drawn on wheels whose odds are printed on this page with their denominators; the bell hands out one common a day for free, a window pick costs half a pack, and a card entitles the holder to a card and nothing else.";
+  "A pack is one purchase at the listed price for five pressings drawn on wheels whose odds are printed on this page with their denominators; the bell hands out one common a day for free and two packs to a current Regular, a window pick costs half a pack, dupes burn into pack credit, and a card entitles the holder to a card and nothing else.";
 
 export const CARDS_FREE_FIRST =
-  "The whole set, the odds per slot, the day seed commit and yesterday reveal, the specimen card, every pressing, every pack and every binder are free to read as a page, an image or JSON, with no account and no key.";
+  "The whole set, the odds per slot, the day seed commit and yesterday reveal, the specimen card, every pressing, every pack, every binder and the shop window are free to read as a page, an image or JSON, with no account and no key.";

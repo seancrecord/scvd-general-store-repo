@@ -1288,7 +1288,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         }
         c.set("payment", payment);
         c.set("pending", { paidUsdc: payment.paidUsdc, tipUsdc: payment.tipUsdc,
-          payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment });
+          payer: payment.payer, observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), result.paymentRequirements.network, payer, result.paymentPayload, c.req.path, await httpArtifactDigest(c.req.url), true), settle: async () => payment, recovered: true });
         await next();
         if (c.res.status < 300) {
           await closeDeliveryIntent(c.env, KV_KEYS.deliveryIntent(payment.transaction)).catch(() => undefined);

@@ -5979,8 +5979,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/api/paywall/window": {
         get: returns(
           freeOp(
-            "The shop window: the last five packs opened store-wide",
-            "Free to look at. A window pick (GET /api/buy/window_pick) takes one card of those on show, chosen by the day seed, at half a pack.",
+            "The shop window: the last five pressings pulled store-wide",
+            "Free to look at. A window pick (GET /api/buy/window_pick) moves one of the pressings on show to the picker's binder, chosen by the day seed, at half a pack; one pick per wallet per twelve hours.",
           ),
           {
             type: "object",
@@ -5990,6 +5990,76 @@ openapiRoutes.get("/openapi.json", async (c) => {
               size: { type: "integer" },
               pick_url: { type: "string", format: "uri" },
               note: { type: "string" },
+            },
+          },
+        ),
+      },
+      "/api/paywall/challenge": {
+        post: returns(
+          postOp(
+            "The credit desk's challenge: a nonce to sign",
+            "Free. Single-use, five minutes. EIP-191 personal_sign the exact challenge string with the wallet's own key, then present it at /api/paywall/burn or /api/paywall/redeem. EVM wallets only.",
+            "The wallet: 0x plus forty hex.",
+            { type: "object", required: ["address"], additionalProperties: false, properties: { address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" } } },
+          ),
+          {
+            type: "object",
+            required: ["challenge", "expires_in_seconds"],
+            properties: { challenge: { type: "string" }, expires_in_seconds: { type: "integer" }, how: { type: "string" } },
+          },
+        ),
+      },
+      "/api/paywall/burn": {
+        post: returns(
+          postOp(
+            "Burn dupes into pack credit",
+            "Free. Twenty commons or five uncommons this wallet holds burn into one pack of credit; rares never, Conditions never, whole batches only. Each burn is a signed record beside the pressing. Refuses by name (400) and burns nothing on a refusal.",
+            "The wallet, its signature over the live challenge, and the card ids to burn.",
+            {
+              type: "object",
+              required: ["address", "signature", "card_ids"],
+              additionalProperties: false,
+              properties: {
+                address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" },
+                signature: { type: "string" },
+                card_ids: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 100 },
+              },
+            },
+          ),
+          {
+            type: "object",
+            required: ["burned", "credits", "balance"],
+            properties: { burned: { type: "array", items: { type: "string" } }, credits: { type: "integer" }, balance: { type: "integer" }, note: { type: "string" } },
+          },
+        ),
+      },
+      "/api/paywall/redeem": {
+        post: returns(
+          postOp(
+            "Spend one pack of credit",
+            "Free; the credit is the payment and nothing settles. One credit buys a pack at full odds or a window pick under the same twelve-hour lock. Never an instrument, a specific card, or cash. Refuses (400) with no credit or an empty window.",
+            "The wallet, its signature over the live challenge, and what the credit buys.",
+            {
+              type: "object",
+              required: ["address", "signature", "want"],
+              additionalProperties: false,
+              properties: {
+                address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" },
+                signature: { type: "string" },
+                want: { type: "string", enum: ["pack", "window_pick"] },
+              },
+            },
+          ),
+          {
+            type: "object",
+            required: ["spent", "balance"],
+            properties: {
+              spent: { type: "integer" },
+              balance: { type: "integer" },
+              pack_id: { type: "string" },
+              pack_url: { type: "string", format: "uri" },
+              cards: { type: "array", items: { type: "object" } },
+              pressing: { type: "object" },
             },
           },
         ),

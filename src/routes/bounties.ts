@@ -599,8 +599,13 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
      * on a refusal (walker-offer.ts states why), and never a condition
      * of anything above it — the reward was decided by the chain.
      */
+    // The Bounty Hunter card (Paywall): pressed to the wallet the reward
+    // went to, on the way out; never a condition of the payout above.
+    const { earnedPressing } = await import("@/services/cards");
+    const { pressingSummary } = await import("@/services/instant-goods");
+    const hunter = await earnedPressing(c.env, { key: "bounty-hunter", certId: `bounty:${bountyId}`, payer: result.payout.authorization.to }).catch(() => null);
     return c.json(
-      { ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL) },
+      { ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL), ...(hunter ? { pressing: pressingSummary(c.env.STORE_BASE_URL, hunter.card) } : {}) },
       200,
     );
   } catch (error) {

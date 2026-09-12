@@ -971,8 +971,8 @@ export type CardRarity = "common" | "uncommon" | "rare" | "holo" | "keeper";
 export type CardType =
   | "herd" | "room" | "instrument" | "place" | "mark" | "rail" | "door" | "condition" | "event" | "ally";
 export type CardRail = "base" | "solana" | "polygon";
-/** Where a pressing came from. */
-export type PressingSource = "pack" | "bell" | "window" | "earned" | "hand";
+/** Where a pressing came from. A window pick transfers a pressing; it keeps its source. */
+export type PressingSource = "pack" | "bell" | "earned" | "hand" | "credit";
 
 export interface CardRecord {
   card_id: string;
@@ -1004,6 +1004,28 @@ export interface CardRecord {
   patron_number?: number;
   /** The paying wallet, when the draw had one; keys the binder. */
   holder?: string;
+  /** How many times the window has moved this pressing between wallets; re-signed each time. */
+  transfers?: number;
+  /** For a Door: what the cap was counted on at press time — the host's hash and its observation count. */
+  door_hash?: string;
+  observations?: number;
+}
+
+/** A Condition cleared by the action the rule names. Signed; the pressing itself never changes. */
+export interface ConditionBurn {
+  card_id: string;
+  key: string;
+  holder: string;
+  /** The shelf item whose purchase cleared it, or "idempotency" for the Double Charge rule, or "credit" for a burn into pack credit. */
+  cleared_by: string;
+  cert_id?: string;
+  at: string;
+}
+
+export interface SignedConditionBurn {
+  burn: ConditionBurn;
+  signature: string;
+  public_key: string;
 }
 
 export interface SignedCardRecord {

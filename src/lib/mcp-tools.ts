@@ -288,7 +288,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_small_pleasure",
     title: "The Penny Shelf",
     purpose:
-      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, a pack of five trading cards, or one off the window. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, a pack of five trading cards, or one off the window. Keepsakes with no functional effect, said plainly, and the cheapest doors in the store, which makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
     itemIds: ["small_blessing", "daily_fortune", "luckies", "pack", "window_pick"],
   },
 ];
@@ -540,9 +540,9 @@ const PURPOSE_LINES: Record<string, string> = {
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
   pack:
-    "Purpose: buy one pack of five collectible trading cards of this store, each a signed pressing with a print number and a page_url that unfurls wherever it is posted, drawn by HMAC over the day's committed seed (odds with denominators at /design; seed revealed the morning after). A novelty with no functional effect and no resale value. Use for a keepsake, or a payment smoke test that hands back five verifiable artifacts.",
+    "Purpose: buy one pack of five collectible trading cards of this store, each a signed pressing with a print number and a page_url that unfurls where it is posted, drawn by HMAC over the day's committed seed (odds at /design; seed revealed the morning after). A novelty with no functional effect and no resale value. Use for a keepsake, or a payment smoke test that hands back five verifiable artifacts.",
   window_pick:
-    "Purpose: buy one card off the shop window (the last five packs opened here; look_in_window shows them free) at half a pack; the day seed picks, not the buyer. Refuses before payment while the window is empty. A novelty with no functional effect and no resale value.",
+    "Purpose: buy one card off the shop window (the last five pressings pulled here; look_in_window shows them free) at half a pack; the day seed picks, and the card moves from the binder that pulled it to yours. One pick per wallet per 12 hours; an empty window refuses before payment. A novelty with no functional effect and no resale value.",
   luckies:
     "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
 };
@@ -862,10 +862,14 @@ const FREE_TOOLS: McpTool[] = [
     name: "ring_bell",
     reads: "made_here",
     description:
-      "Ring the store bell. Free, once per visitor per day; the count is public; a fresh ring also hands back one signed common card. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
+      "Ring the store bell. Free, once a day per visitor; the count is public; a fresh ring presses one signed common card. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: {
       type: "object",
-      properties: { agent_name: str("Who's ringing. Optional but neighborly.", 80) },
+      properties: {
+        agent_name: str("Who's ringing. Optional but neighborly.", 80),
+        wallet: str("Optional: a 0x or base58 wallet, so the day's card lands in its binder.", 64),
+        pass_id: str("Optional: a current patron pass id; a Regular gets two packs at full odds.", 64),
+      },
       additionalProperties: false,
       examples: [{ agent_name: "my-agent" }],
     },
@@ -893,7 +897,7 @@ const FREE_TOOLS: McpTool[] = [
     summary:
       "Reads a wallet's binder: every trading card it holds at this store, newest first, each with its page, face, share sheet and signed record. Free; a listing, not a proof.",
     description:
-      "Read a wallet's binder: every trading card it holds at this store, newest first, each with page, face, share sheet and record URLs. Free, no account. A listing, not a proof of ownership; the signed records are. Completes when the result carries cards and count.",
+      "Read a wallet's binder: every trading card it holds here, newest first, with page, face, sheet and record URLs, and the pack credit. Free, no account. A listing, not a proof; the signed records are. Completes when the result carries cards and count.",
     inputSchema: {
       type: "object",
       properties: { wallet: str("A 0x address (forty hex characters) or a base58 Solana address.", 64) },
@@ -917,9 +921,9 @@ const FREE_TOOLS: McpTool[] = [
     name: "look_in_window",
     reads: "our_books",
     summary:
-      "Shows the shop window: the last five packs of trading cards opened at this store by anybody, every card on show, with the door where one of them can be bought at half a pack. Free.",
+      "Shows the shop window: the last five trading-card pressings pulled from packs at this store by anybody, every card on show, with the door where one of them can be bought at half a pack. Free.",
     description:
-      "Look in the shop window: the last five packs opened at this store by anybody, every card on show with its page. Free, no account. A window pick (buy_window_pick, half a pack) takes one of them; the day seed chooses. Completes when the result carries window and size.",
+      "Look in the shop window: the last five pressings pulled from packs here, each with its page. Free, no account. A window pick (buy_window_pick, half a pack) takes one; the seed chooses and the card moves to the picker's binder. Completes when the result carries window and size.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false, examples: [{}] },
     outputSchema: {
       type: "object",
@@ -1592,6 +1596,7 @@ function doesInYourName(tool: McpTool): string {
 function underContract(tool: McpTool, base: string): McpTool {
   const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
   const human = [tool.itemId, ...(tool.itemIds ?? [])].some(id => id && getMenuItem(id)?.fulfillment === "human_queue");
+  const sellsWindowPick = [tool.itemId, ...(tool.itemIds ?? [])].includes("window_pick");
   const scarce = [tool.itemId, ...(tool.itemIds ?? [])].some(id => {
     const item = id ? getMenuItem(id) : undefined;
     return item && (item.stocked || item.weekly_inventory !== undefined);
@@ -1608,7 +1613,8 @@ function underContract(tool: McpTool, base: string): McpTool {
     errors: MCP_REFUSAL_CODES.filter(
       (refusal) => (paid || FREE_TOOL_CODES.has(refusal.code) || (tool.name === CATALOG_TOOL_NAME && refusal.code === "unknown_item")) &&
         (!["purchase_resolved", "callback_refused", "capacity_unavailable", "shelf_closed"].includes(refusal.code) || human) &&
-        (refusal.code !== "sold_out" || scarce),
+        (refusal.code !== "sold_out" || scarce) &&
+        (refusal.code !== "window_refused" || sellsWindowPick),
     ),
     security: securityBlock(base, {
       does_in_your_name: doesInYourName(tool),

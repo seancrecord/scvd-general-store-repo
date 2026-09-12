@@ -927,7 +927,7 @@ const BASE = "https://scvd.store";
 // gained the pack and the window pick, and the declined-positions
 // sentence names two more browser tools. Verified the same way.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c7e5ae7a8aca7ede17c6877e027fa222e3c3eb6a9d0c0c04201a8c3da65e6fe6";
+  "d9efac27b1810c2f0984c24ad9891768399801a553acfdedf45207567bfb4b1b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

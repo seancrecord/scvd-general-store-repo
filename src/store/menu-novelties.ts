@@ -73,10 +73,12 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     /**
-     * THE WINDOW PICK (handoff v2 §5). One card of the last five packs
-     * opened store-wide, at half a pack; the seed, not the buyer, says
-     * which. Refuses before payment terms while the window is empty.
-     * ⚑ Keeper's pen: half of P, so $0.49 while P is $0.99.
+     * THE WINDOW PICK (first pass, "the shop window"). One of the last
+     * five pressings pulled from packs store-wide, at half a pack; the
+     * seed, not the buyer, says which, and the card moves from the
+     * binder that pulled it to the picker's. One pick per wallet per
+     * twelve hours. Refuses before payment terms while the window is
+     * empty. ⚑ Keeper's pen: half of P, so $0.49 while P is $0.99.
      */
     id: "window_pick",
     listed_week: "2026-W37",
@@ -87,13 +89,13 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     reads: "our_books",
     fulfillment: "instant",
     description:
-      "One card from the shop window, the last five packs opened here by anybody, free to look at at /api/paywall/window. Half a pack; the day seed, your wallet and your certificate say which card on show you get, pressed fresh with its own print number and page. A card entitles the holder to a card.",
+      "One card from the shop window, the last five pressings pulled from packs here by anybody, free to look at at /api/paywall/window. Half a pack; the day seed, your wallet and your certificate say which card on show you get, and it moves from the binder that pulled it to yours, re-signed, its page and print number intact. One pick per wallet per twelve hours. A card entitles the holder to a card.",
     get note_402(): string {
       return `That'll be $${this.price_usdc}, friend, for one off the window. Look first, it's free; the seed picks, not you.`;
     },
     constraints: [
-      "The window is the last five packs opened store-wide; an empty window refuses before payment terms and nothing is charged",
-      "Which card you get is HMAC-SHA256 over the day seed, your wallet, your certificate and the window's pack ids; recomputable once the seed is revealed",
+      "The window is the last five pressings pulled from packs store-wide; an empty window, or a second pick inside twelve hours, refuses before payment terms and nothing is charged",
+      "Which card you get is HMAC-SHA256 over the day seed, your wallet, your certificate and the window's card ids; recomputable once the seed is revealed. It may be somebody else's Condition",
       "No price on a card, no store-run market, nothing bought back",
     ],
     sample_url: "/p/specimen.svg",

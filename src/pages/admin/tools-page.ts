@@ -207,10 +207,12 @@ export function renderToolsPage(data: ToolsPageData): string {
 
 
   <section>
-    <h2>The Keeper card</h2>
-    <p>What this is for: the one card of Keeper rarity, never in a pack, pressed by your hand to a wallet you name. Each press is a new print number; the ledger counts them. The pressing lands in that wallet's binder and hangs at its own page.</p>
+    <h2>The keeper's hand (Paywall)</h2>
+    <p>What this is for: the Keeper card (window only, once a season), an Event on its date, or an Ally once consent is on record — pressed by your hand. To a wallet, it lands in that binder; into the window, whoever picks next takes it. Each press is a new print number; the ledger counts them and the caps hold.</p>
     <form method="POST" action="/admin/paywall/press">
-      <input type="text" name="wallet" placeholder="0x… or a base58 Solana address" required>
+      <input type="text" name="key" placeholder="entry key, e.g. keeper, first-organic-settlement" value="keeper" required>
+      <input type="text" name="wallet" placeholder="0x… or base58 (ignored for the window)">
+      <select name="destination"><option value="wallet">to a wallet</option><option value="window">into the window</option></select>
       <button type="submit">Press one</button>
     </form>
   </section>

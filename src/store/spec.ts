@@ -364,7 +364,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   pack:
     "Pull five collectible trading cards of this store from a set the keeper wrote, on odds he weighted and published, under a seed I can check tomorrow",
   window_pick:
-    "Take one card off the last five packs anybody opened here, chosen by the day seed, for half a pack",
+    "Take one pressing off the last five anybody pulled here, chosen by the day seed, for half a pack",
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
@@ -512,7 +512,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   pack:
     "Five signed pressings from the season's set, drawn by HMAC over the day's committed seed on the wheels at /design, each with a print number, a page at /p/{card_id} that unfurls, and a verify URL; the signed manifest at /api/pack/{pack_id} binds the seed commit and the inputs. Instant.",
   window_pick:
-    "One signed pressing of a card from the shop window (the last five packs opened, free at /api/paywall/window), chosen by the day seed, with its print number, page and verify URL. Instant; refused before payment while the window is empty.",
+    "One pressing from the shop window (the last five pulled from packs, free at /api/paywall/window), chosen by the day seed and moved to your binder re-signed, with its print number, page and verify URL. Instant; refused before payment while the window is empty or inside your twelve-hour lock.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:

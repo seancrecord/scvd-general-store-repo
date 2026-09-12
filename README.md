@@ -142,9 +142,10 @@ What people arrive here to do, and where each door is:
   their denominators at [scvd.store/design](https://scvd.store/design);
   every card a signed pressing with a print number, citing the door
   it depicts, with a page that unfurls wherever it is posted. The
-  bell hands out one a day; a window pick takes one off the last
-  five packs opened; every other purchase presses one alongside its
-  goods. A card entitles the holder to a card.
+  bell hands out one a day; a window pick moves one of the last five
+  pressings pulled into your binder; Rooms and Instruments are earned
+  by the action, never pulled; dupes burn into pack credit. A card
+  entitles the holder to a card.
 - **Get paid to shop** — the bounty board at
   [scvd.store/bounties](https://scvd.store/bounties) (JSON at
   `/api/bounties`): walk a listed x402 door with your own wallet, claim

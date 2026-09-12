@@ -24,7 +24,6 @@ import {
   agentsMdRoutes,
   luckyRoutes,
   cardRoutes,
-  windowAdmission,
   mcpRoutes,
   openapiRoutes,
   patronageRoutes,
@@ -283,7 +282,6 @@ app.route("/", ledgerRoutes);
 app.route("/", mcpWardRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
-app.route("/", windowAdmission);
 app.route("/", buyRoutes);
 app.route("/", commissionRoutes);
 app.route("/", tabPoolRoutes);

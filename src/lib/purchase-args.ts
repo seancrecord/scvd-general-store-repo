@@ -120,7 +120,7 @@ export function toolArgs(args: Record<string, unknown>): PurchaseArgs {
  * envelopes — never two wordings.
  */
 export interface PurchaseRefusal {
-  status: 400 | 403 | 503;
+  status: 400 | 403 | 409 | 503;
   body: Record<string, unknown>;
 }
 
@@ -129,7 +129,7 @@ export interface PurchaseRefusal {
  * the buyer and the books never have to infer a field from the message.
  */
 function refuse(
-  status: 400 | 403 | 503,
+  status: 400 | 403 | 409 | 503,
   code: string,
   error: string,
   extra: Record<string, unknown> = {},
@@ -279,6 +279,21 @@ export async function checkPurchaseAvailability(env: Env, item: MenuItem, args: 
     if (!isValidHttpUrl(raw)) return undefined; // Argument validation owns malformed targets.
     const gate = await issuePassport(env, new URL(raw!).host.toLowerCase());
     return gate.issued ? undefined : refuse(403, "passport_refused", `${gate.detail} Nothing charged.`);
+  }
+  /**
+   * AN EMPTY WINDOW REFUSES BEFORE PAYMENT TERMS (the Paywall,
+   * 2026-09-12), the way a bare stocked shelf does: nothing is quoted
+   * for a card that cannot be picked. The twelve-hour lock needs the
+   * payer, which only the verified authorization names, so fulfillment
+   * asks that one above its settle line under the same code.
+   */
+  if (item.id === "window_pick") {
+    const { readWindow } = await import("@/services/cards");
+    if ((await readWindow(env)).length > 0) return undefined;
+    return refuse(409, "window_refused", "The window is empty: nobody has opened a pack yet, so there is nothing to pick. Nothing charged.", {
+      window_url: `${env.STORE_BASE_URL}/api/paywall/window`,
+      pack_url: `${env.STORE_BASE_URL}/api/buy/pack`,
+    });
   }
   if (item.id !== "a2a_repair_kit") return undefined;
   const error = await a2aAdmission(env, args.get("url"));

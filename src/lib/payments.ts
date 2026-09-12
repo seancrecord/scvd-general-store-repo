@@ -1643,6 +1643,12 @@ export interface PendingPayment {
   payer?: string;
   network?: string;
   /**
+   * An already-settled purchase re-presented for its goods: the money
+   * moved on an earlier request, so a pre-settle refusal that says
+   * "nothing charged" would be false here. Fulfillment skips those.
+   */
+  recovered?: true;
+  /**
    * Present the authorization and take the money. MEMOIZED — calling
    * twice settles once and returns the same result, so a handler need
    * not thread the payment through its own call graph to avoid a

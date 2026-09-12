@@ -146,7 +146,7 @@ guestbookRoutes.post("/api/guestbook", async (c) => {
     );
   }
   const result = outcome.result;
-  const earned = await earnedPressing(c.env, { key: "event-guestbook", certId: `guestbook:${result.entry.id}` }).catch(() => null);
+  const earned = await earnedPressing(c.env, { key: "guestbook", certId: `guestbook:${result.entry.id}` }).catch(() => null);
   return c.json(
     {
       message: VOICE.guestbookThanks,

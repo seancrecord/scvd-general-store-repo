@@ -15,7 +15,7 @@ import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
 import type { SignedAttestation } from "@/services/attestation";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
-import { earnedPressing, openPack, windowPick } from "@/services/cards";
+import { clearConditions, earnedPressing, openPack, windowPick } from "@/services/cards";
 import type { CardRecord } from "@/types";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
@@ -153,6 +153,8 @@ export interface InstantGoodsInput {
   paidUsdc?: number;
   /** grudge, luckies, the pack and every earned pressing: the certificate id behind this purchase. */
   certId?: string;
+  /** Whether the purchase carried an idempotency key (the Double Charge condition clears on one). */
+  idempotent?: boolean;
 }
 
 export interface InstantGoods {
@@ -196,19 +198,14 @@ export function pressingSummary(base: string, card: CardRecord) {
   };
 }
 
-/** Which Event a purchase earns, where it earns one; everything else draws a common. */
-const EARNED_EVENTS: Record<string, string> = {
-  graffiti_on_a_train: "event-train",
-  recurring_patronage: "event-pass",
-};
-
 /**
- * EVERY PURCHASE PRESSES A CARD (handoff v2 §5): the goods as before,
- * and a `pressing` beside them — an Event where the shelf item is one
- * of the store's traditions, a common everywhere else. The pack and
- * the window pick are the cards themselves and press nothing extra.
- * The goods checkpoint retains the whole result, so a retry returns
- * the same pressing rather than a second print.
+ * THE ACTION IS THE PRICE (first-pass plan, "how obtained"): a purchase
+ * on the earned map presses that item's card beside its goods — the
+ * instrument's own card, the Regular, the Tagger, the fortune, the
+ * blessing — and nothing else presses anything. Then every Condition
+ * in the buyer's binder whose rule names this purchase burns. The
+ * goods checkpoint retains the whole result, so a retry returns the
+ * same pressing rather than a second print.
  */
 export async function deliverInstantGoods(
   env: Env,
@@ -218,13 +215,24 @@ export async function deliverInstantGoods(
 ): Promise<InstantGoods> {
   const goods = await deliverGoods(env, item, input, checkpoint);
   if (item.id === "pack" || item.id === "window_pick" || !input.certId) return goods;
+  const base = env.STORE_BASE_URL;
   const pressing = await earnedPressing(env, {
-    ...(EARNED_EVENTS[item.id] ? { key: EARNED_EVENTS[item.id] } : {}),
+    itemId: item.id,
     certId: input.certId,
     patronNumber: input.patronNumber,
     ...(input.payer ? { payer: input.payer } : {}),
   });
-  return { ...goods, extras: { ...(goods.extras ?? {}), pressing: pressingSummary(env.STORE_BASE_URL, pressing.card) } };
+  const cleared = input.payer
+    ? await clearConditions(env, input.payer, { itemId: item.id, certId: input.certId, ...(input.idempotent ? { idempotent: true } : {}) }).catch(() => [])
+    : [];
+  return {
+    ...goods,
+    extras: {
+      ...(goods.extras ?? {}),
+      ...(pressing ? { pressing: pressingSummary(base, pressing.card) } : {}),
+      ...(cleared.length > 0 ? { conditions_cleared: cleared.map((burn) => ({ card_id: burn.burn.card_id, key: burn.burn.key, cleared_by: burn.burn.cleared_by, verify_url: `${base}/api/card/${burn.burn.card_id}` })) } : {}),
+    },
+  };
 }
 
 async function deliverGoods(
@@ -944,10 +952,10 @@ async function deliverGoods(
       }, { checkpoint, purchasedAt: input.purchasedAt });
       const base = env.STORE_BASE_URL;
       return {
-        deliverable: `Off the window: ${picked.pressing.card.name} (${picked.pressing.card.rarity}), print ${picked.pressing.card.print_no}, from pack ${picked.from_pack}. The seed picked; the card is yours, signed, at ${base}/p/${picked.pressing.card.card_id}. A card entitles the holder to a card.`,
+        deliverable: `Off the window: ${picked.pressing.card.name} (${picked.pressing.card.rarity}), print ${picked.pressing.card.print_no}${picked.from_holder ? ", out of another wallet's binder" : ""}. The seed picked; the card is yours now, re-signed, at ${base}/p/${picked.pressing.card.card_id}. A card entitles the holder to a card.`,
         extras: {
           pressing: pressingSummary(base, picked.pressing.card),
-          from_pack: picked.from_pack,
+          ...(picked.from_holder ? { from_holder: picked.from_holder } : {}),
           window: picked.window,
           odds_url: `${base}/design`,
         },

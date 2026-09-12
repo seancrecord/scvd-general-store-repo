@@ -78,7 +78,9 @@ describe("every pre-payment refusal says so in a field, not only in a sentence",
     // A guard over an empty set is a guard that cannot fail.
     expect(sites.length).toBeGreaterThan(30);
     for (const site of sites) {
-      expect(["400", "403", "503"]).toContain(site[1]);
+      // 409 joined 2026-09-12: an empty shop window refuses a pick the
+      // way a bare stocked shelf refuses, before any payment terms.
+      expect(["400", "403", "409", "503"]).toContain(site[1]);
     }
   });
 

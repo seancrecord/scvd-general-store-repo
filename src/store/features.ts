@@ -97,7 +97,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: CARDS_PROPOSITION,
     for_money: CARDS_FOR_MONEY,
     free_first: CARDS_FREE_FIRST,
-    doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/paywall/binder/{wallet}", "/api/paywall/seed/{date}", "/api/paywall/set", "/api/paywall/window"],
+    doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/paywall/binder/{wallet}", "/api/paywall/burn", "/api/paywall/challenge", "/api/paywall/redeem", "/api/paywall/seed/{date}", "/api/paywall/set", "/api/paywall/window"],
     named_on: [],
     opened: CARDS_OPENED,
   },

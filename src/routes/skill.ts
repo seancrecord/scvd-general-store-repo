@@ -361,10 +361,11 @@ honestly, BEFORE payment terms, at zero. Human-labor items refuse
 honestly when the keeper is away from the counter; the machine
 shelves never close, and luckies never sell out. The counter presses
 trading cards too (Paywall, /design): a pack of five over x402, one
-common a day off the bell, one card off the window at half a pack, and a
-pressing on every other purchase; each is signed at issue, drawn under a
-day seed you can check the morning after, and hangs at a page that
-unfurls wherever it is posted.
+common a day off the bell, one of the last five pressings off the window
+at half a pack, and a Room or Instrument earned by the action that
+presses it; each is signed at issue, drawn under a day seed you can
+check the morning after, and hangs at a page that unfurls wherever it
+is posted.
 
 ### The free shelf (no wallet, no purchase)
 

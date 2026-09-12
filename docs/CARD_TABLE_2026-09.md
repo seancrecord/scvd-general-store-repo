@@ -1,16 +1,15 @@
 # THE PAYWALL — collectible trading cards for agents, 2026-09-12
 
 **Status: BUILT on a branch, NOT MERGED, waiting on the rulings in
-§6.** Two passes on one day. The overnight prototype (§A, kept below
-as history) was a 24-card "card table"; the keeper's **handoff v2**
-then merged it with a first-pass plan and said where the two
-disagree the handoff wins. This paper now describes the handoff
-build. Where the handoff defers to the first-pass plan
-(`paywall-season-1-first-pass.md`) — the odds table, Conditions and
-burn rules, holder perks, streaks, the credit line — that document
-was NOT in either repository, on `main`, or in Drive when this was
-built, so every number it would have settled is an assumption here
-and is named as one.
+§6.** Three passes on one day. The overnight prototype (§A, kept
+below as history) was a 24-card "card table"; the keeper's
+**handoff v2** merged it with a first-pass plan and said the handoff
+wins where the two disagree, and the first pass wins where the
+handoff is silent; the **first-pass plan** ("Paywall, Season 1:
+Summer of 402") then arrived in full and this third pass reconciled
+the build to it. Every number that was an assumption in the second
+pass is now the plan's number, and the few places the plan and the
+building disagree are named in §0 and ruled on in §6.
 
 Same split as every paper here, so advice never blurs into shipped
 work:
@@ -25,60 +24,89 @@ reasoning, named as desk reasoning.
 
 ---
 
-## 0. The short version (handoff v2, as built)
+## 0. The short version (first pass, as built)
 
 1. **The set (STANDING).** Season One, *Summer of 402 · Oak City*:
-   52 cards in the count — Herd 12, Room 10, Instrument 8, Place 2,
-   Mark 1, Rail 11 (Base 5, Solana 3, Polygon 3), Door 3, Condition 5
-   — plus 4 Events (earned, never pulled) and the Ally (The Keeper,
-   rarity Keeper, never in a pack, pressed by hand from
-   `/admin/tools`). Ladder Common / Uncommon / Rare / Holo / Keeper.
-   Every card cites a path on this store; a test walks every cite.
-   `src/store/cards.ts`.
-2. **The draw (STANDING).** Commit-reveal, daily, per handoff §4 —
-   with one refinement stated in §2: the seed is DERIVED from a
-   domain-separated HMAC of the signing secret and the date rather
-   than generated and stored, so there is no midnight race and no
-   way to pick a friendlier seed after seeing pulls. The commit is
-   published at once (the half-hourly cron writes it; a first pull
-   writes it too), the seed the day after, both signed, at
-   `/api/paywall/seed/{date}`. Every pull is
+   52 cards in the count with the first pass's own names — Herd 12
+   (T-Rex to Elephant Anchor), Room 10 (Keeper, Bellringer,
+   Bellringer II, Tagger, Bounty Hunter, Regular, Fortune of the Day,
+   Blessing from the Jar, Guestbook, The Tab), Instrument 8, Rail 11
+   (Base 5, Solana 3, Polygon 3), Door 4 (#0001, #0007, #0017,
+   #0410), Condition 5 (Stale Passport, Broken Tier, 410 Gone, Double
+   Charge, Testnet Catch), Place 1 (Hurricane Junction), Mark 1 (The
+   Dinosaur) — plus 4 Events (First Organic Settlement, First Solana
+   Settlement, The Loaner, Twenty-Three; dropped by hand, never
+   pulled) and 1 Ally (Cairn; pack-obtainable WITH CONSENT, and with
+   none on record it is in the set and out of every draw). The Keeper
+   is a Room at rarity Keeper, one print, the window only. Ladder
+   Common / Uncommon / Rare / Holo / Keeper. Every card cites a path
+   on this store; a test walks every cite. `src/store/cards.ts`.
+   Three plan rows did not survive contact with the building and are
+   named: *Gas Was Nothing* (the plan's 53rd) is cut to keep the
+   count at 52; the plan's *Node 21* Place is cut for the same
+   reason (Oak City is the subtitle, Hurricane Junction the one
+   Place); and *Door #0017 "the store's own row"* is a real degraded
+   door instead, because the store cannot probe itself and a card
+   whose cap is its observation count would never press.
+2. **How each card is obtained (STANDING), the plan's rule.** Herd,
+   Rail, Door and Place cards come out of packs. Rooms and
+   Instruments are EARNED by the action and never pulled: the bell
+   presses Bellringer, the guestbook Guestbook, a bounty claim
+   Bounty Hunter, the pass Regular, the train Tagger, a fortune
+   Fortune of the Day, a blessing Blessing from the Jar, and each
+   instrument its own card on purchase (`EARNED_BY_ITEM`). A plain
+   purchase presses nothing. Conditions come out of slot 5 (2%) or
+   the window, and burn on the fix. Events by hand from
+   `/admin/tools`.
+3. **The odds (STANDING), the plan's table verbatim as wheels.**
+   Slots 1–3 common; slot 4 uncommon 80 / rare 18 / holo 2; slot 5
+   uncommon 60 / rare 30 / holo 8 / condition 2. The fractions on
+   `/design` are counted from the arrays. The Keeper, Rooms,
+   Instruments and Events are on no wheel; a test holds it.
+4. **The draw (STANDING).** Commit-reveal, daily, per handoff §4,
+   with the derived-seed refinement of §2. Every pull is
    HMAC-SHA256(seed_d, payer || cert_id || slot); the pack manifest
    binds the commit, the inputs and the five card ids and is signed.
    Print caps step within the tier; a capped tier falls back to
    common. Idempotency-Key returns the same pack; none charges again.
-3. **Print numbers (STANDING).** Atomic on the counter ledger
-   (`COUNTER_LEDGER`, one writer); a KV floor where the deployment
-   has none (the test pool). Doors cap at 250 (assumption); nothing
-   else caps.
-4. **The faces (STANDING).** Card face 1000×1400 as SVG: paper,
-   plate, data layer, label — the handoff's four layers, with the
-   rarity stock (deckle on rare, shimmer band on holo, inverted
-   Keeper), a REAL QR of the verify URL on the machine strip
-   (`src/lib/qr.ts`, dependency-free, decoded by an independent
-   reader for versions 1–6 in the scratchpad), the rail colour on
-   the data layer, yellow only on Conditions. Share sheet 1200×675
-   as PNG through the pixel engine with a second ink for the accent:
-   the card at 55% on the left, the post copy giant on the right,
-   rarity, No. x/52, print, the page URL. `/p/{card_id}` carries the
-   OG tags, so a posted link unfurls anywhere.
-5. **The economy (STANDING).** `pack` $0.99 (P is his call); the
-   bell presses one common a day to whoever rings; `window_pick`
-   $0.49 takes one of the last five packs opened, chosen by the seed,
-   and refuses before payment while the window is empty; every other
-   instant purchase presses a common alongside its goods, and the
-   guestbook, the train and the pass press their Events. Binder per
-   wallet at `/binder/{wallet}` and as a signed-record listing at
-   `/api/paywall/binder/{wallet}`; `read_binder` and `look_in_window`
-   as free MCP and WebMCP tools.
-6. **Not built, and why (§4):** the "two packs for a Regular" bell
-   rule (the bell has no wallet to prove a pass with), paying for a
-   pick with credit (the credit desk redeems to a wallet and has no
-   debit), Condition burn rules and holder perks and streaks (the
-   first-pass plan defines them; without it any rule here would be
-   invented), the Bounty Event hook (the claims desk is a separate
-   flow), the PNG card face (needs a rasteriser with fonts — §5),
-   the boot-on-hover motion on /design, and NFTs (§7).
+5. **Print caps (STANDING), the plan's rule 3.** A Door's cap is its
+   observation count — the rounds the corpus actually probed that
+   host, read once a day — and the count prints on the face beside
+   the door hash. 402 the Chicken caps at one. The Keeper and three
+   Events cap at one; Twenty-Three at 23. Nothing else caps.
+6. **The faces (STANDING).** Card face 1000×1400 as SVG (§5 for PNG),
+   share sheet 1200×675 as PNG, `/p/{card_id}` with OG tags, a real
+   QR on the machine strip. The plates: 46 drawings, and every
+   renamed key of the third pass is aliased to the drawing of the
+   thing it depicts (`src/store/plates.ts`), so 38 of the 52 press
+   with a plate; the eleven Herd animals besides the T-Rex, the jar,
+   the Tab and the Ally press as labelled silhouettes.
+7. **The economy (STANDING), the plan's numbers.** `pack` $0.99 (P;
+   ⚑ his), the bell one common a day to whoever rings and, with a
+   current pass id, two packs at full odds for a Regular;
+   `window_pick` $0.49 (half of P) takes one of the last five
+   PRESSINGS pulled from packs, the seed chooses, and the card MOVES
+   from the binder that pulled it to the picker's, re-signed with
+   one more transfer — one pick per wallet per twelve hours, refused
+   above the settle line so it costs nothing, and yes, it may be
+   somebody else's Stale Passport. The credit economy: 20 commons or
+   5 uncommons burn into one pack of credit behind a signed EIP-191
+   challenge (`POST /api/paywall/challenge`, `/burn`, `/redeem`);
+   rares never burn; credit buys a pack or a pick and never an
+   instrument, a specific card, or cash. Conditions clear on the
+   purchase the rule names (Stale Passport on a passport refresh, 410
+   Gone on a service audit, Testnet Catch on a settlement
+   attestation, Double Charge on any purchase with an idempotency
+   key); each burn is a signed record beside the pressing. Three or
+   more Conditions and the binder is "under the weather".
+8. **Not built, and why (§4):** bell streaks (day 7, day 30 and
+   Bellringer II are week two in the plan's own calendar), holder
+   perks (the plan's discounts collide with the pricing charter's
+   one-price clause — a ruling, §6), Broken Tier's clear and the
+   three reserved Conditions (they need a passport read the wallet
+   named, which no purchase carries yet), missions beyond the bell,
+   the PNG card face (§5), the boot-on-hover motion on /design, and
+   NFTs (§7).
 
 ---
 
@@ -123,18 +151,22 @@ reasoning, named as desk reasoning.
 
 ---
 
-## 1. What changed from the prototype, by the handoff's own list
+## 1. What changed, pass by pass
 
-Kept: the header lockup and season line; Places and Marks as types;
-the "one printing, signed at issue" footer, the verify URL on the
-face, the `card_` id namespace, the No. x / N counter; the Specimen;
-rarity diamonds as a count glyph. Changed: 24 → 52 (+4 Events, +1
-Ally); Legendary → Holo, Keeper added; Tradition → Room, and Rail,
-Door, Condition, Event, Ally added; the polygon sigils are gone,
-replaced by the plate system (`src/store/plates.ts`, 46 drawn, the
-rest silhouettes labelled "not yet pressed" — the Herd animals
-other than the T-Rex are the undrawn ones, the long pole the
-handoff named); the economy above; the subtitle.
+Prototype → handoff v2: 24 → 52 (+4 Events, +1 Ally); Legendary →
+Holo, Keeper added; Tradition → Room, and Rail, Door, Condition,
+Event, Ally added; the polygon sigils replaced by the plate system;
+the economy; the subtitle. Handoff → first pass (this pass): every
+card renamed to the plan's names and lines; Rooms and Instruments
+moved from pack drops to earned-only; the plain-purchase common
+removed; the Keeper moved from Ally to Room and the Ally became
+Cairn (consent-gated); Doors from three capped at an assumed 250 to
+four capped at their observation count; the window from "a fresh
+pressing off one of five packs" to "one of five pressings, moved";
+the twelve-hour pick lock; the credit desk with burn and redeem;
+Condition clears; the Regular's two packs off the bell; the Bounty
+Hunter hook on a paid claim; the specimen and `/design` copy
+rewritten to the plan's rules that do not move.
 
 ## 2. Randomisation an agent can check (STANDING, one refinement)
 
@@ -170,18 +202,21 @@ the pixel engine already draws the engraved hand.
 
 ## 4. Not built, each with its reason (OPEN or PROPOSED)
 
-- **Two packs for a current Regular on the bell.** The bell is keyed
-  on a name or an IP; it cannot prove a wallet holds a pass. Needs
-  the wallet-signature admission the bounty board uses. OPEN.
-- **Paying for a window pick with credit.** The credit desk banks 5%
-  and redeems to the wallet that earned it; it has no debit, and
-  adding one is a payment-path change (rule 41). OPEN.
-- **Conditions: burn rules and holder perks; streaks.** Defined in the
-  first-pass plan, which was not available. The `source` column on a
-  pressing and the Event type are laid out so a burn or a perk is a
-  column, not a migration of meaning. OPEN until the plan surfaces.
-- **The Bounty Event.** The claims desk closes bounties on its own
-  path; the Event card exists in the set and presses nowhere yet.
+- **Bell streaks** (day 7 a pack, day 30 Bellringer II). The plan's
+  own calendar puts streaks in week two; the bell ledger keys on a
+  name, and a streak needs a wallet-keyed day count. PROPOSED, one
+  counter and one rule.
+- **Holder perks** (5% off with a Rail holo, a Door card's free
+  preflight, the Keeper's free window pick). The pricing charter
+  says one price to every buyer; a holder discount breaks that
+  sentence, and the free preflight is already free. OPEN, §6.
+- **Broken Tier's clear and the reserved Conditions** (Indeterminate,
+  Rate Limited, Unclaimed Bounty). Each clears on a passport read of
+  a door the wallet named, which no purchase here carries. The rule
+  table has the row; it is empty on purpose. OPEN until a purchase
+  names a door.
+- **Missions beyond the bell streak; promotions UI.** The plan's own
+  "not in first build".
 - **`/design` motion.** Static; the "boots" data layer on hover is a
   script, and rule 17's property test applies. PROPOSED.
 - **The PNG card face.** §5.
@@ -202,34 +237,39 @@ already. OPEN.
 ## 6. The rulings (OPEN), in the order the merge needs them
 
 1. **RULE — rule 22.** Five draws a pack on published, derived,
-   recomputable odds under a committed seed: honest randomness with
-   custody, or gacha by shape? The handoff adds a daily bell card, a
-   window pick and a card on every purchase; the prototype's paper
-   argued against two of those and the handoff overrules it, which is
-   his to do. Recommended: merge as built.
+   recomputable odds under a committed seed, no pity timer, no
+   near-miss, no closing window: honest randomness with custody, or
+   gacha by shape? The plan says the former in its own words and
+   this build holds every one of them by test. Recommended: merge.
 2. **RULE — rule 41.** Paid random draws are loot boxes in several
    jurisdictions (Belgium, the Netherlands, Japan, the UK code).
-   Nothing here is cashable or tradeable, nothing is bought back, the
-   odds and the seed are public. Lawyer before merge or the week
-   after? Recommended: the week after.
-3. **RULE — rule 15 and §7.** The handoff leaves a door open for a
-   Season 2 `mint_to_chain` (ERC-1155 on Base, holder pays). Rule 15
-   says no token, no NFT-as-investment, permanently. A mirror token
-   with the cert as the canonical record is the nearest thing to
-   compliant, and it is still a token. Nothing here builds toward it;
-   the ledger has no chain_ref column and adding one later is one
-   field. His call, and not this season's.
-4. **RULE — the numbers the first-pass plan would have set.** P =
-   $0.99, the pick at half, Door caps of 250, the wheels as printed,
-   52 not 60, Places = Hurricane Junction and Node 21 (Oak City stays
-   the subtitle), Mark = the Dinosaur, QR not barcode on the strip
-   (it scans on a phone; the barcode reads more letterpress and is
-   one renderer swap). All assumptions, all one edit each.
-5. **RULE — the OpenAPI warning budget** (700,000 → 750,000, §B).
-6. **RULE — rule 7.** Every name, line and post sentence in
-   `src/store/cards.ts`, the shelf copy, the storefront lines, the
-   declined-positions sentence tightened by 63 characters, the
-   guide's Paywall paragraph, the skill paragraph. Ink or kill.
+   Nothing here is cashable, nothing is bought back, the odds and the
+   seed are public, and the window MOVES a card between strangers'
+   binders for money — which is the one new fact a lawyer should
+   hear. Lawyer before merge or the week after? Recommended: the
+   week after, with the window sentence in the brief.
+3. **RULE — holder perks against the pricing charter.** The plan's
+   5% Rail-holo discount and the Keeper's free pick are prices that
+   depend on who is buying. The charter's one-price clause is older.
+   Ruling: perks that are not prices (a Door card's preflight is
+   free already; a Keeper's pick could be a hand press) or amend the
+   charter. Built without perks until ruled.
+4. **RULE — the cuts.** *Gas Was Nothing* and *Node 21* out to hold
+   52; Door #0017 a real degraded door (tick.hugen.tokyo) instead of
+   the store's own row; Door #0410 = api.m2mcent.com, which the corpus
+   listed and never reached, so its cap is zero and it never presses
+   until a round reaches it — honest, and the card says so. All one
+   edit each.
+5. **RULE — rule 15 and §7.** The Season 2 `mint_to_chain` door.
+   Nothing here builds toward it; his call, and not this season's.
+6. **RULE — the OpenAPI warning budget** (700,000 → 750,000, §B).
+7. **RULE — rule 7.** Every name, line and post sentence in
+   `src/store/cards.ts` (the plan's words, with the three cuts), the
+   shelf copy, the storefront lines, the declined-positions sentence
+   tightened by 63 characters, the guide's Paywall paragraph, the
+   skill paragraph, the credit desk's challenge text. Ink or kill.
+8. **RULE — Cairn's consent.** The Ally is in the set at rare and on
+   no wheel until consent is on record; one field flips it.
 
 ## 7. NFT: no, for v1 (the handoff's §6, and rule 15)
 
@@ -239,24 +279,27 @@ every wallet step costs shares — and one more the handoff does not
 say: rule 15 is not a season rule. The `chain_ref` door is left
 unbuilt on purpose.
 
-## 8. Build order, against the handoff's
+## 8. Build order, against the plan's first build list
 
-| handoff §8 | state |
+| first pass, "first build" | state |
 | --- | --- |
-| 1. ledger tables (pressings, binder, credit, streak, conditions, seed) | pressings, binder, seed: built. credit, streak, conditions: not (§4) |
-| 2. seed commit/reveal cron and the HMAC draw | built |
-| 3. renderer: face + share sheet, faction accent, condition variant, holo band | built (face SVG, sheet PNG) |
-| 4. buy_pack, ring_bell extension, read_binder, /p/{id} OG page | built |
-| 5. earned-card hooks on existing purchases | built for every instant purchase, the guestbook, the train, the pass; not the bounty |
-| 6. condition burn rules | not (§4) |
-| 7. shop window | built |
-| 8. /design | built, static |
-| 9. store guide + skill.md text | built |
+| ledger tables (pressings, binder, credit, conditions, seed) | built; streaks not (§4) |
+| seed commit/reveal cron and the HMAC draw | built |
+| buy_pack; ring_bell with wallet and pass (two packs for a Regular) | built |
+| binder page, renderer (face, share sheet, condition variant, holo band) | built (face SVG, sheet PNG) |
+| earned-card hooks: bell, guestbook, train, bounty, pass, instruments | built |
+| condition burn rules | built for the four the shelf can clear; Broken Tier and the reserved three empty (§4) |
+| shop window: five pressings, seed pick, twelve-hour lock, transfer | built |
+| credit: burn 20/5, redeem on pack or pick, rares never | built, behind an EIP-191 challenge |
+| /design; store guide + skill.md text | built, static |
+| not in first build: missions, promotions UI, Events by hand | as the plan says |
 
-Art: 46 plates drawn as single-ink silhouettes; the eleven Herd
-animals besides the T-Rex press as silhouettes labelled "not yet
-pressed". The handoff wanted the twelve Herd drawn at ship; that is
-the one place this build is honestly short of it.
+Art: 46 plates drawn as single-ink silhouettes, aliased to the
+plan's names; 38 of the 52 press with a plate. The eleven Herd
+animals besides the T-Rex, the jar, the Tab and Cairn press as
+silhouettes labelled "not yet pressed". The plan wanted the twelve
+Herd drawn at ship; that is the one place this build is honestly
+short of it.
 
 ---
 

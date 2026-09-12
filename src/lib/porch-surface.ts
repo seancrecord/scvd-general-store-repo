@@ -421,6 +421,10 @@ export function porchSurface(path: string, method: string): string | undefined {
   if (path.startsWith("/p/") && !/\.(svg|png)$/.test(path)) {
     return "cards:card";
   }
+  /** The credit desk: a challenge, a burn, a redeem. Written to, never browsed. */
+  if (path === "/api/paywall/challenge" || path === "/api/paywall/burn" || path === "/api/paywall/redeem") {
+    return method === "POST" ? "cards:desk" : undefined;
+  }
   if (path === "/api/bell" && method === "POST") {
     return "bell";
   }

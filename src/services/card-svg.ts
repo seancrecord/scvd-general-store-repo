@@ -78,6 +78,9 @@ interface FaceBody {
   commit?: string;
   signature?: string;
   verifyUrl?: string;
+  /** A Door: the host's hash and the observation count the cap was read from. Never the URL. */
+  doorHash?: string;
+  observations?: number;
   /** What the QR carries. The specimen's points at the room. */
   qrText: string;
 }
@@ -175,7 +178,9 @@ export function renderCardFace(options: FaceOptions): string {
       type: card.type,
       rarity: card.rarity,
       ...(card.rail ? { rail: card.rail } : {}),
+      obtained: "pack",
       line: card.line,
+      post: card.line,
       cite: card.cite,
       ...(card.print_cap !== undefined ? { print_cap: card.print_cap } : {}),
     },
@@ -187,6 +192,7 @@ export function renderCardFace(options: FaceOptions): string {
     ...(card.print_cap !== undefined ? { printCap: card.print_cap } : {}),
     date: card.date,
     ...(card.commit ? { commit: card.commit } : {}),
+    ...(card.door_hash ? { doorHash: card.door_hash, observations: card.observations ?? 0 } : {}),
     signature: options.signature,
     verifyUrl: options.verifyUrl,
     qrText: options.verifyUrl,
@@ -243,7 +249,9 @@ function renderFace(body: FaceBody): string {
     ? [CARD_LINES.specimenMark, "no signature · no print", body.qrText]
     : [
         `${body.cardId} · ${printLine}`,
-        `${(body.date ?? "").slice(0, 10)} · commit ${(body.commit ?? "").slice(0, 16)}…`,
+        body.doorHash
+          ? `door ${body.doorHash.slice(0, 16)} · seen ${body.observations ?? 0} · ${(body.date ?? "").slice(0, 10)}`
+          : `${(body.date ?? "").slice(0, 10)} · commit ${(body.commit ?? "").slice(0, 16)}…`,
         body.verifyUrl ?? "",
       ];
   const dataSvg = dataLines

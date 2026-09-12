@@ -4,6 +4,7 @@ import { afterAll, beforeAll, beforeEach, expect, vi } from "vitest";
 import { app } from "@/index";
 import { MENU_ITEMS } from "@/store";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { handPress } from "@/services/cards";
 import { encodeBase58 } from "@/lib/base58";
 import { acceptedNetworks, POLYGON_NETWORK } from "@/lib/payments";
 import type { Env } from "@/types";
@@ -135,6 +136,10 @@ export async function clean(): Promise<void> {
         hosts: [{ host: "buyer-fixture.example", url: values.url, verdict: "ready", failed: [], advisories: [] }] } },
     digest: "0".repeat(64), signature: "0".repeat(128), public_key: "0".repeat(64),
   }));
+  // The shop window refuses a pick before payment terms while it is
+  // empty (an honest zero, like a bare stocked shelf), so every buyer
+  // finds one pressing set out in it, the way the keeper's hand would.
+  await handPress(sourceEnv, "based", { window: true }, NOW);
 }
 export function installBuyerHarness(): void {
 beforeAll(async () => {

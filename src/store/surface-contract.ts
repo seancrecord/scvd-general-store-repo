@@ -163,6 +163,11 @@ export function securityBlock(
  */
 export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
+    code: "window_refused", http: 409, charged: false,
+    means: "the shop window has nothing to pick (nobody has opened a pack yet), or this wallet picked inside the last twelve hours; the pick was refused before any settle call",
+    what_to_do: "Look first: GET /api/paywall/window is free and lists what is on show. An empty window fills when anyone opens a pack; a locked wallet picks again after twelve hours. Do not retry inside the lock; nothing was charged.",
+  },
+  {
     code: "callback_refused", http: 400, charged: false,
     means: "the supplied completion callback is malformed or violates the public https destination policy",
     what_to_do: "Use a public https URL on port 443 without credentials or this store's hostname, or omit callback_url and poll the order URL. Retain the original payment to retrieve an older purchase.",
@@ -361,6 +366,13 @@ export type RpcRefusal = {
 );
 
 export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
+  {
+    code: "window_refused",
+    jsonrpc: -32000,
+    charged: false,
+    means: "the shop window is empty, or this wallet picked inside the last twelve hours; refused before any settle call",
+    what_to_do: "look_in_window is free and shows what is on show. Wait for a pack to open, or for the lock to lift; do not retry inside it. Nothing charged.",
+  },
   {
     code: "callback_refused",
     jsonrpc: -32602,

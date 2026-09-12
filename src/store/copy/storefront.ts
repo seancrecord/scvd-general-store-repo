@@ -61,7 +61,7 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     // ⚑ Keeper's pen: drafted 2026-09-12 with the window, not inked.
     id: "window_pick",
     name: "a window pick",
-    line: "One card off the last five packs anybody opened. Look first, it's free. The seed picks, not you.",
+    line: "One of the last five pressings anybody pulled, moved to your binder. Look first, it's free. The seed picks, not you.",
   },
   {
     id: "hello",

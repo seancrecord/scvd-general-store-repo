@@ -706,9 +706,19 @@ export const KV_KEYS = {
   paywallSeed: (date: string): string => `paywall_seed:${date}`,
   /** Print counters, one per season entry, on the counter ledger. */
   paywallPress: (season: string, key: string): string => `paywall_press:${season}:${key}`,
-  /** The shop window: the last packs opened store-wide, newest first. */
-  paywallWindow: (invertedTs: string, packId: string): string => `paywall_window:${invertedTs}:${packId}`,
+  /** The shop window: the last pressings pulled from packs store-wide, newest first. */
+  paywallWindow: (invertedTs: string, cardId: string): string => `paywall_window:${invertedTs}:${cardId}`,
   paywallWindowPrefix: "paywall_window:",
+  /** One window pick per wallet per WINDOW_LOCK_HOURS. */
+  paywallWindowLock: (wallet: string): string => `paywall_window_lock:${wallet}`,
+  /** A Door's observation count, read off the corpus once a day. */
+  paywallDoorObservations: (key: string, date: string): string => `paywall_door_obs:${key}:${date}`,
+  /** A Condition cleared, or a dupe burned into credit: the signed burn beside the pressing. */
+  paywallBurn: (cardId: string): string => `paywall_burn:${cardId}`,
+  /** Pack credit per wallet, in packs, on the counter ledger. */
+  paywallCredit: (wallet: string): string => `paywall_credit:${wallet}`,
+  /** The burn and redeem desks' single-use challenge nonce. */
+  paywallChallenge: (wallet: string): string => `paywall_challenge:${wallet}`,
   /**
    * THE TRADE COUNTER'S BOOKS (2026-09-03, services/trade-counter.ts).
    * One row per delivery, in ORDERS beside the orders, newest first —

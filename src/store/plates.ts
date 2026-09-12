@@ -154,10 +154,66 @@ const PLATES: Record<string, Plate> = {
   "event-pass": { d: "M14 26h72v48H14z M22 34v32h56V34z M30 42h14v14H30z M50 44h20v4H50z M50 54h14v4H50z" },
 };
 
+/**
+ * THE SET'S KEYS TO THE DRAWINGS (third pass, 2026-09-12). The first
+ * pass renamed most of the set; the drawings did not change. Each
+ * alias names the plate that depicts the same thing (the bell for
+ * both Bellringers, the train for the Tagger, the pass for the
+ * Regular, the passport for Stale Passport), and a Condition reuses
+ * the plate of the thing that went wrong, since the yellow rides on
+ * top. Herd animals other than the T-Rex, the jar, the Tab, and the
+ * Ally have no drawing yet and press as labelled silhouettes.
+ */
+const ALIASES: Record<string, string> = {
+  // rooms
+  keeper: "mailbox",
+  bellringer: "bell",
+  "bellringer-ii": "bell",
+  tagger: "train",
+  "bounty-hunter": "event-bounty",
+  regular: "event-pass",
+  "fortune-of-the-day": "almanac",
+  // instruments
+  "spot-check": "verify-door",
+  "service-audit": "conformance-desk",
+  watch: "standing-watch",
+  "before-you-pay": "field-wallet",
+  "mandate-record": "corpus",
+  // rails
+  based: "base-bull",
+  "blue-door": "base-authorization",
+  "the-facilitator": "base-sequencer",
+  "onchain-weather": "base-signal",
+  "base-rail": "base-bridge",
+  "fast-lane": "solana-lane",
+  "slot-missed": "solana-slot",
+  "purple-door": "solana-leader",
+  "old-rail": "polygon-junction",
+  bridge: "polygon-checkpoint",
+  "side-door": "polygon-signal",
+  // doors
+  "door-0001": "the-402",
+  "door-0007": "practice-door",
+  "door-0017": "declared-door",
+  "door-0410": "no-402",
+  // conditions: the plate that went wrong
+  "stale-passport": "passport",
+  "broken-tier": "unparseable-challenge",
+  "410-gone": "delivered-nothing",
+  "double-charge": "replay-accepted",
+  "testnet-catch": "wrong-network",
+  // events
+  "first-organic-settlement": "settlement-attestation",
+  "first-solana-settlement": "solana-lane",
+  "the-loaner": "systems-almanac",
+  "twenty-three": "corpus",
+};
+
 export function plateFor(key: string): Plate | null {
-  return PLATES[key] ?? null;
+  return PLATES[key] ?? PLATES[ALIASES[key] ?? ""] ?? null;
 }
 
+/** Every key that draws a plate: the drawings and the set keys that borrow one. */
 export function drawnPlateKeys(): string[] {
-  return Object.keys(PLATES);
+  return [...Object.keys(PLATES), ...Object.keys(ALIASES)];
 }
