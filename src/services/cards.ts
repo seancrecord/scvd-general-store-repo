@@ -373,25 +373,46 @@ export async function openPack(env: Env, options: OpenPackOptions, purchase?: Pe
     const commit = await commitOf(seed);
     const payer = (options.payer ?? "none").toLowerCase();
     const packId = newPackId();
-    const capped = capReader(env, season, now);
+    /**
+     * A CAP MUST NEVER COST A PAID PACK (2026-09-12, found by walking
+     * our own doors). The draw steps past a card whose cap is already
+     * spent, but the read and the press are two moments: two buyers can
+     * both draw the last print of a one-of-one, and the second press
+     * refuses. This function runs BELOW the settle line, so a refusal
+     * there would be money taken and no pack handed over. So the slot
+     * re-draws instead, with the exhausted key added to what counts as
+     * capped, and the pull stays inside its tier the same way the
+     * draw's own stepping does.
+     */
+    const exhausted = new Set<string>();
+    const capReadThrough = capReader(env, season, now);
+    const capped: CapReader = async (entry) => exhausted.has(entry.key) || (await capReadThrough(entry));
     const cards: SignedCardRecord[] = [];
     for (let slot = 1; slot <= PACK_SIZE; slot += 1) {
-      const drawn = await drawSlot(seed, payer, options.certId, slot, { season, capped });
-      cards.push(
-        await press(env, {
-          entry: drawn.card,
-          source: options.source ?? "pack",
-          date,
-          season,
-          slot,
-          packId,
-          certId: options.certId,
-          commit,
-          patronNumber: options.patronNumber,
-          ...(options.payer ? { holder: options.payer } : {}),
-          ...(drawn.card.door ? { observations: await doorObservations(env, drawn.card, now) } : {}),
-        }),
-      );
+      let pressed: SignedCardRecord | null = null;
+      for (let attempt = 0; attempt < PACK_SIZE && !pressed; attempt += 1) {
+        const drawn = await drawSlot(seed, payer, options.certId, slot, { season, capped });
+        try {
+          pressed = await press(env, {
+            entry: drawn.card,
+            source: options.source ?? "pack",
+            date,
+            season,
+            slot,
+            packId,
+            certId: options.certId,
+            commit,
+            patronNumber: options.patronNumber,
+            ...(options.payer ? { holder: options.payer } : {}),
+            ...(drawn.card.door ? { observations: await doorObservations(env, drawn.card, now) } : {}),
+          });
+        } catch (error) {
+          if (!(error instanceof CapReached)) throw error;
+          exhausted.add(drawn.card.key);
+        }
+      }
+      if (!pressed) throw new Error("Every card the wheel offered this slot is capped");
+      cards.push(pressed);
     }
     const pack: PackRecord = {
       pack_id: packId,
@@ -497,9 +518,25 @@ async function holds(env: Env, wallet: string, key: string): Promise<boolean> {
  * The bell is keyed on a name; the wallet and the pass are what the
  * ringer offers, and the pass is checked live, never assumed.
  */
-export async function bellPressing(env: Env, who: string, options: BellPressingOptions = {}): Promise<BellPressings> {
+export async function bellPressing(env: Env, who: string, options: BellPressingOptions = {}): Promise<BellPressings | null> {
   const now = options.now ?? new Date();
   const seedDate = utcDate(now);
+  /**
+   * ONE CARD A DAY MEANS ONE CARD A DAY (2026-09-12, found by walking
+   * our own doors). The bell's own repeat guard keys on the name the
+   * caller gave, which the caller invents: twenty-two names rang
+   * twenty-two free commons into one binder in one afternoon, and
+   * twenty commons burn into a pack of credit. The card now keys on
+   * the WALLET it would land in, so a binder takes one a day however
+   * many names knock. A ring with no wallet still presses — that card
+   * has no holder, so it can never burn — and the bell itself is
+   * unchanged: it rings, it counts, it says its line.
+   */
+  if (options.wallet) {
+    const dayKey = KV_KEYS.paywallBellDay(options.wallet.toLowerCase(), seedDate);
+    if (await kvGet(env.COUNTERS, dayKey)) return null;
+    await kvPut(env.COUNTERS, dayKey, now.toISOString(), { expirationTtl: 2 * 86400 });
+  }
   await publishSeedRecord(env, seedDate, now);
   const seed = await seedFor(env, seedDate);
   const commit = await commitOf(seed);
@@ -747,15 +784,33 @@ export async function burnForCredit(env: Env, wallet: string, cardIds: readonly 
     if (!bucket) throw new BurnRefused(`${cardId} is ${record.card.rarity}; rares never burn.`);
     bucket.push(record.card);
   }
+  /**
+   * CLAIM EACH CARD BEFORE IT COUNTS (2026-09-12, found by walking our
+   * own doors). The challenge nonce is single-use, but two requests
+   * carrying one signature can both read it before either deletes it,
+   * and then both would burn the same twenty cards and both bank a
+   * credit. The claim counter is the ledger's atomic add where the
+   * deployment has one: the request that takes a card from 0 to 1 owns
+   * it, and a second request finds 2 and counts nothing. Where no
+   * ledger is bound the add is a KV read-modify-write and this is a
+   * narrowing, not a proof — the same honest limit every counter here
+   * carries, and the desk says so.
+   */
   const burned: string[] = [];
   let credits = 0;
   for (const [rarity, cards] of Object.entries(byRarity)) {
     const rate = BURN_RATES[rarity]!;
-    const batches = Math.floor(cards.length / rate);
-    for (const card of cards.slice(0, batches * rate)) {
+    const mine: CardRecord[] = [];
+    for (const card of cards) {
+      if ((await addCounter(env, KV_KEYS.paywallBurnClaim(card.card_id), 1)) === 1) mine.push(card);
+    }
+    const batches = Math.floor(mine.length / rate);
+    for (const card of mine.slice(0, batches * rate)) {
       await burnPressing(env, card, "credit", undefined, now);
       burned.push(card.card_id);
     }
+    // A card claimed but not burned (the remainder of a part batch) is released.
+    for (const card of mine.slice(batches * rate)) await addCounter(env, KV_KEYS.paywallBurnClaim(card.card_id), -1);
     credits += batches;
   }
   if (credits === 0) throw new BurnRefused(`Nothing burned: a pack of credit takes ${BURN_RATES["common"]} commons or ${BURN_RATES["uncommon"]} uncommons, whole batches only.`);
@@ -767,9 +822,20 @@ export async function burnForCredit(env: Env, wallet: string, cardIds: readonly 
 export async function redeemCredit(env: Env, wallet: string, want: "pack" | "window_pick", now: Date = new Date()): Promise<{ pack?: SignedPackRecord; pressing?: SignedCardRecord; balance: number }> {
   const holder = wallet.toLowerCase();
   const key = KV_KEYS.paywallCredit(holder);
-  const balance = await readCounter(env, key);
-  if (balance < 1) throw new BurnRefused("No pack credit on this wallet. Twenty commons or five uncommons burn into one.");
+  /**
+   * SPEND FIRST, THEN LOOK (2026-09-12, found by walking our own
+   * doors). Reading the balance and then decrementing let two
+   * concurrent redemptions both see one credit, both take a pack, and
+   * leave the balance at minus one — a number the books cannot mean.
+   * The decrement is the check now: the request that lands below zero
+   * puts its credit back and is refused, and the ledger never holds a
+   * negative.
+   */
   const after = await addCounter(env, key, -1);
+  if (after < 0) {
+    await addCounter(env, key, 1);
+    throw new BurnRefused("No pack credit on this wallet. Twenty commons or five uncommons burn into one.");
+  }
   const certId = `credit:${holder}:${now.toISOString()}`;
   try {
     if (want === "pack") {

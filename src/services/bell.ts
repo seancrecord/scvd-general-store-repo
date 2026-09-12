@@ -82,6 +82,6 @@ export async function ringBell(env: Env, who: string, options: RingOptions = {})
    * pressing that fails to sign or file never breaks the ring — the
    * bell rang first, and it says so without the card.
    */
-  const pressing = await bellPressing(env, who, options).catch(() => undefined);
+  const pressing = (await bellPressing(env, who, options).catch(() => null)) ?? undefined;
   return { message: bellLine(count), count, ...(cadence ? { cadence } : {}), ...(pressing ? { pressing } : {}) };
 }

@@ -719,6 +719,10 @@ export const KV_KEYS = {
   paywallCredit: (wallet: string): string => `paywall_credit:${wallet}`,
   /** A face rendered to PNG once, at a width; the bytes never change, so the first render is the last. */
   paywallFacePng: (cardId: string, width: number): string => `paywall_face_png:${cardId}:${width}`,
+  /** One bell pressing per wallet per UTC day, whatever name rang it. */
+  paywallBellDay: (wallet: string, date: string): string => `paywall_bell_day:${wallet}:${date}`,
+  /** An atomic claim on one card's burn, so two requests cannot both credit it. */
+  paywallBurnClaim: (cardId: string): string => `paywall_burn_claim:${cardId}`,
   /** Which pressing of the Rail holo a wallet holds; the perk reads this, not the whole binder. */
   paywallHolo: (wallet: string): string => `paywall_holo:${wallet}`,
   /** The one-of-one's holder perk, granted once per pressing. */

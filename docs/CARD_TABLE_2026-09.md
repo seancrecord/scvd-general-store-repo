@@ -243,6 +243,66 @@ as read, all STANDING:
   `prefers-reduced-motion`. No script, so rule 17 has nothing to
   test.
 
+## 0d. Walking our own doors (2026-09-12, "dark team it")
+
+Attacked the branch instead of reading it. Six holes, all fixed and
+all pinned by test in `test/cards.spec.ts` under "the holes we
+walked into ourselves". Stated here because a paper that only lists
+what works is advertising.
+
+1. **The bell was a money printer.** Its repeat guard keys on the
+   name the caller gives, and the caller invents the name. Twenty-two
+   invented names rang twenty-two free commons into one binder in one
+   afternoon; twenty commons burn into a pack of credit; the credit
+   buys a pack; a pack holds a holo about one time in ten. A free
+   door produced unbounded paid goods. FIXED: the CARD keys on the
+   wallet it would land in, one a day, however many names knock. The
+   bell itself is untouched — it rings, it counts, it says its line —
+   and a ring with no wallet still presses a card that has no holder
+   and so can never burn.
+2. **One signature, two burns.** The challenge nonce is single-use,
+   but two requests carrying one signature both read it before either
+   deletes it, and both would bank a credit for the same twenty
+   cards. FIXED: each card is claimed on the counter ledger's atomic
+   add before it counts; the request that takes a card from zero to
+   one owns it. Where no ledger is bound this is a narrowing, not a
+   proof, and it says so in the code.
+3. **Credit could go negative.** Two concurrent redemptions both read
+   one credit, both took a pack, and left the balance at minus one —
+   a number the books cannot mean. FIXED: the decrement is the check
+   now; a request that lands below zero puts its credit back and is
+   refused.
+4. **A cap could eat a paid pack.** The cap check added for the
+   one-of-ones runs below the settle line: two buyers drawing the
+   last print of a capped card at once meant money taken and no pack.
+   FIXED: the slot re-draws with the exhausted key treated as capped,
+   the same way the draw's own stepping works. A cap can cost a card;
+   it can never cost a delivery.
+5. **The PNG face was a free CPU and storage faucet.** Any width from
+   200 to 999 minted a KV row and spent a quarter-second of CPU, per
+   width per card, on request. FIXED: `w` snaps to one of three
+   sizes, and the cache expires in thirty days — it is a cache of a
+   pure function, not a record.
+6. **Stated, not fixed, because they are the design** (§0e).
+
+## 0e. What an attacker can still do, on purpose
+
+- **Take a one-of-one out of somebody's binder for $0.49.** The
+  window moves cards; the seed picks among five, so a determined
+  buyer with several wallets can have the Keeper for a few dollars.
+  That is the window working. ⚑ If it should not be, the fix is one
+  line: keep rarity `keeper` out of `readWindow`.
+- **Stack the rebates to ten percent.** A wallet holding Base Rail
+  earns 5% back on top of the Regulars' 5%. Both are credit, not
+  price, so the charter holds; the number is the keeper's.
+- **Buy the rebate for about thirty dollars.** Base Rail is one of
+  three holos in the pack pool at roughly a 10% holo rate, so around
+  thirty packs buys a permanent 5% back on everything after.
+- **Race a counter where no ledger is bound.** Print numbers, credit
+  and burn claims are atomic under `COUNTER_LEDGER` and
+  read-modify-write without it. The deployment binds it; a fork might
+  not, and then two one-of-ones could both print number one.
+
 ## 1. What changed, pass by pass
 
 Prototype → handoff v2: 24 → 52 (+4 Events, +1 Ally); Legendary →

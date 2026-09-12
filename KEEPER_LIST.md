@@ -759,6 +759,22 @@ Merging is your press; these are why it waits.
 - **DONE, `/design`.** All five window pressings on show, each with
   its post button; CSS-only motion (a card lifts, the hero tilts),
   off entirely under `prefers-reduced-motion`.
+- **DARK TEAMED (2026-09-12, your word).** Attacked the branch. Six
+  holes, all fixed and pinned by test; the worst was the bell, whose
+  repeat guard keys on a name the caller invents — twenty-two names
+  rang twenty-two free commons into one binder, twenty of which burn
+  into a pack of credit, so a free door made paid goods without
+  limit. The card now keys on the wallet. Also fixed: one signature
+  burning twice, credit going negative on concurrent redemptions, a
+  spent cap failing a PAID pack below the settle line, and the PNG
+  face rendering at any of eight hundred widths on a free door. Full
+  list and the four things an attacker can still do BY DESIGN:
+  §0d–0e of `docs/CARD_TABLE_2026-09.md`.
+- **RULE — the window and the one-of-ones.** A Keeper or CV set into
+  the window can be taken out of its holder's binder for $0.49, and
+  several wallets make that a certainty rather than a one-in-five.
+  That is the window working as written. Keep it, or keep rarity
+  `keeper` out of the window — one line either way.
 - **DONE, your second reading (2026-09-12).** CV as the season's
   other one-of-one (Room, rarity Keeper, window only, cap 1 held on
   the hand press too); Roger Sterling, rare, with his own plate; 402

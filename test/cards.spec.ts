@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, clearConditions, drawSlot, handPress, holdsRailHolo, readBinder } from "@/services/cards";
+import { bellPressing, burnForCredit, clearConditions, drawSlot, handPress, holdsRailHolo, readBinder, readCredit, redeemCredit } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -479,34 +479,39 @@ describe("cards ride the other doors", () => {
     expect(((await json(await SELF.fetch(`${BASE}/api/card/${String(common["card_id"])}`)))["card"] as Record<string, unknown>)["source"]).toBe("bell");
     const again = await json(await post("/api/bell", { agent_name: "bell-tester", wallet }));
     expect(again["pressing"]).toBeUndefined();
+    // A fresh name is a fresh ring, and still no second card for that wallet.
+    const renamed = await json(await post("/api/bell", { agent_name: "bell-tester-two", wallet }));
+    expect(renamed["message"]).toBeDefined();
+    expect(renamed["pressing"]).toBeUndefined();
+    expect((await readBinder(testEnv, wallet)).rows).toHaveLength(1);
   });
 
   it("a wallet's first ring earns Bellringer, a run of seven days hands a pack, day thirty presses Bellringer II, and a gap resets", async () => {
     const wallet = "0x5555555555555555555555555555555555555555";
     const ring = (day: string) => bellPressing(testEnv, `streak-tester-${day}`, { wallet, now: new Date(`${day}T09:00:00Z`) });
-    const first = await ring("2026-07-01");
+    const first = (await ring("2026-07-01"))!;
     expect(first.pressing.card.key).toBe("bellringer");
     expect(first.pressing.card.source).toBe("earned");
     expect(first.streak?.days).toBe(1);
     expect(first.streak?.pack).toBeUndefined();
-    const second = await ring("2026-07-02");
+    const second = (await ring("2026-07-02"))!;
     expect(second.pressing.card.key).not.toBe("bellringer");
     expect(second.pressing.card.rarity).toBe("common");
     expect(second.streak?.days).toBe(2);
     for (const day of ["2026-07-03", "2026-07-04", "2026-07-05", "2026-07-06"]) await ring(day);
-    const seventh = await ring("2026-07-07");
+    const seventh = (await ring("2026-07-07"))!;
     expect(seventh.streak?.days).toBe(7);
     expect(seventh.streak?.pack?.cards).toHaveLength(PACK_SIZE);
     expect(seventh.streak?.pack?.cards[0]!.card.holder).toBe(wallet);
-    // The same day again hands nothing twice.
-    const again = await ring("2026-07-07");
-    expect(again.streak?.days).toBe(7);
-    expect(again.streak?.pack).toBeUndefined();
+    // The same wallet, the same day, under any name: nothing at all.
+    // (Twenty-two invented names rang twenty-two free commons into one
+    // binder before this guard; the bell still rings, the card does not.)
+    expect(await ring("2026-07-07")).toBeNull();
     // A gap resets the run.
-    const gapped = await ring("2026-07-09");
+    const gapped = (await ring("2026-07-09"))!;
     expect(gapped.streak?.days).toBe(1);
     // Thirty straight: Bellringer II, once.
-    let last: Awaited<ReturnType<typeof ring>> | undefined;
+    let last: Awaited<ReturnType<typeof ring>> = null;
     for (let n = 1; n <= 30; n += 1) {
       const at = new Date(Date.UTC(2026, 7, n)); // August: thirty straight, all before the test clock
       last = await ring(at.toISOString().slice(0, 10));
@@ -665,6 +670,77 @@ describe("the one-of-ones", () => {
     expect(cleared.map((burn) => burn.burn.card_id)).toEqual([condition.card.card_id]);
     expect(cleared[0]!.burn.cleared_by).toBe("passport_refresh");
     expect((await readBinder(testEnv, wallet)).rows.some((row) => row.card_id === condition.card.card_id)).toBe(false);
+  });
+});
+
+/**
+ * WALKING OUR OWN DOORS (2026-09-12). Each of these was a live hole
+ * found by attacking the branch rather than reading it, and each one
+ * is pinned here so it cannot come back quietly.
+ */
+describe("the holes we walked into ourselves", () => {
+  it("gives one bell card per wallet per day however many names knock", async () => {
+    const farmer = "0xfeed000000000000000000000000000000000001";
+    for (let n = 0; n < 22; n += 1) {
+      await post("/api/bell", { agent_name: `farmer-${n}`, wallet: farmer });
+    }
+    // Before the guard: twenty-two free commons, twenty of which burned
+    // into a pack of credit, from a door that takes no payment at all.
+    const binder = await readBinder(testEnv, farmer);
+    expect(binder.rows).toHaveLength(1);
+    await expect(burnForCredit(testEnv, farmer, binder.rows.map((row) => row.card_id))).rejects.toThrow(/whole batches/);
+  });
+
+  it("never lets two redemptions spend one credit, and never leaves the balance below zero", async () => {
+    const wallet = "0xfeed000000000000000000000000000000000002";
+    const ids: string[] = [];
+    for (let n = 0; n < BURN_RATES["common"]!; n += 1) ids.push((await handPress(testEnv, "based", { wallet })).card.card_id);
+    expect((await burnForCredit(testEnv, wallet, ids)).credits).toBe(1);
+
+    const both = await Promise.allSettled([redeemCredit(testEnv, wallet, "pack"), redeemCredit(testEnv, wallet, "pack")]);
+    expect(both.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    expect(await readCredit(testEnv, wallet)).toBe(0);
+    await expect(redeemCredit(testEnv, wallet, "pack")).rejects.toThrow(/No pack credit/);
+  });
+
+  it("counts a card's burn once, even when one signature arrives twice", async () => {
+    const wallet = "0xfeed000000000000000000000000000000000003";
+    const ids: string[] = [];
+    for (let n = 0; n < BURN_RATES["common"]!; n += 1) ids.push((await handPress(testEnv, "based", { wallet })).card.card_id);
+    // Two requests carrying one live nonce can both pass the desk; only
+    // one of them may bank a credit for the same twenty cards.
+    const both = await Promise.allSettled([burnForCredit(testEnv, wallet, ids), burnForCredit(testEnv, wallet, ids)]);
+    const credited = both.reduce((sum, result) => sum + (result.status === "fulfilled" ? result.value.credits : 0), 0);
+    expect(credited).toBe(1);
+    expect(await readCredit(testEnv, wallet)).toBe(1);
+  });
+
+  it("re-draws inside a paid pack when a cap is spent, rather than failing the delivery", async () => {
+    // 402 the Chicken is the season's capped holo. Press its one print
+    // by hand, then buy: the draw must land somewhere else, and the
+    // buyer must get five cards rather than a delivery failure.
+    const pressed = await handPress(testEnv, "402-the-chicken", { wallet: "0xfeed000000000000000000000000000000000004" }).catch(() => null);
+    if (pressed) expect(pressed.card.print_cap).toBe(1);
+    await expect(handPress(testEnv, "402-the-chicken", { wallet: TEST_PAYER })).rejects.toThrow(/capped/);
+    for (let n = 0; n < 3; n += 1) {
+      const body = await buy("pack");
+      const cards = body["cards"] as Array<Record<string, unknown>>;
+      expect(cards).toHaveLength(PACK_SIZE);
+      expect(cards.map((card) => card["key"])).not.toContain("402-the-chicken");
+    }
+  });
+
+  it("renders the PNG face at a few sizes, not at any width a caller names", async () => {
+    const pressed = await handPress(testEnv, "based", { wallet: TEST_PAYER });
+    const widthOf = async (query: string): Promise<number> => {
+      const response = await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.face.png${query}`);
+      expect(response.status).toBe(200);
+      return new DataView(new Uint8Array(await response.arrayBuffer()).buffer).getUint32(16);
+    };
+    expect(await widthOf("?w=603")).toBe(600);
+    expect(await widthOf("?w=207")).toBe(400);
+    expect(await widthOf("?w=999")).toBe(800);
+    expect(await widthOf("")).toBe(1000);
   });
 });
 

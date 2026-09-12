@@ -91,6 +91,9 @@ const WINDOW_ITEM = "window_pick";
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const CHALLENGE_TTL_SECONDS = 300;
 
+/** The widths the PNG face is rendered at; anything else snaps to the nearest. */
+const FACE_PNG_WIDTHS = [400, 600, 800] as const;
+
 const SVG_HEADERS = { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" } as const;
 const PNG_HEADERS = { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" } as const;
 
@@ -599,8 +602,17 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.face\\.png}", async (c) => {
   const cardId = c.req.param("card").replace(/\.face\.png$/, "");
   const record = await getCard(c.env, cardId);
   if (!record) return c.text("No card by that id was ever pressed here.", 404);
+  /**
+   * FOUR SIZES, NOT EIGHT HUNDRED (2026-09-12, found by walking our
+   * own doors). Any width between 200 and 999 meant a free door that
+   * mints a KV entry and spends a quarter-second of CPU per width per
+   * card, on request, forever. A `w` now snaps to the nearest of four
+   * sizes, so the work per card is bounded and the cache is four rows.
+   */
   const wanted = Number.parseInt(c.req.query("w") ?? "", 10);
-  const width = Number.isFinite(wanted) && wanted >= 200 && wanted < 1000 ? wanted : undefined;
+  const width = Number.isFinite(wanted) && wanted >= 200 && wanted < 1000
+    ? FACE_PNG_WIDTHS.reduce((best, size) => (Math.abs(size - wanted) < Math.abs(best - wanted) ? size : best))
+    : undefined;
   // A pressing's face never changes, so the bytes are rendered once and kept.
   const cacheKey = KV_KEYS.paywallFacePng(cardId, width ?? 1000);
   const kept = await c.env.PATRONS.get(cacheKey, "arrayBuffer");
@@ -608,7 +620,10 @@ cardRoutes.get("/p/:card{card_[a-z0-9]+\\.face\\.png}", async (c) => {
   const svg = renderCardFace({ card: record.card, signature: record.signature, verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${cardId}` });
   const png = await renderFacePng(svg, width);
   const bytes = png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) as ArrayBuffer;
-  c.executionCtx.waitUntil(c.env.PATRONS.put(cacheKey, bytes));
+  // A cache of a pure function, not a record: it expires, and the next
+  // caller pays the render again rather than the store paying storage
+  // for every size of every card that was ever looked at once.
+  c.executionCtx.waitUntil(c.env.PATRONS.put(cacheKey, bytes, { expirationTtl: 30 * 86400 }));
   return c.body(bytes, 200, PNG_HEADERS);
 });
 
