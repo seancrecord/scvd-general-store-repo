@@ -62,6 +62,22 @@ export function purchaseRecovery(env: Env, record: PurchaseIntent) {
     status_auth: "GET status_url with Authorization: Bearer <status_token>. Keep the token private. This read is free and never submits payment." };
 }
 
+/**
+ * THE WRONG-SCOPE REFUSAL, built in one place so the replay kit
+ * (services/replay-kit.ts) serves the same bytes the door does: a
+ * settled payment re-presented against a different product or inputs
+ * is refused, charged once and never twice, with the original
+ * purchase's private recovery handle attached. Derived by both
+ * callers from this function, never typed beside it.
+ */
+export function inputMismatchRefusal(recovery: Record<string, unknown>) {
+  return {
+    error: "This payment bought a different request. Retry the original product and inputs, or read its purchase status. No additional payment was submitted.",
+    code: "purchase_input_mismatch" as const, charged: true, charged_again: false, settlement_attempted: false,
+    recovery,
+  };
+}
+
 export function purchaseStatus(record: PurchaseIntent) {
   const delivery = record.delivery ?? publicationDelivery(record);
   return { purchase_id: record.id, payment_state: record.state,
@@ -150,11 +166,7 @@ export async function lookupRecordedPurchase(env: Env, network: string, payer: s
       ? await sha256Hex(jcsCanonicalize(JSON.parse(record.request)))
       : await httpArtifactDigest(`${env.STORE_BASE_URL}${record.path}?${record.request}`);
     if (record.path !== request.path || record.door !== request.door || digest !== request.digest) {
-      return { kind: "refused", body: {
-        error: "This payment bought a different request. Retry the original product and inputs, or read its purchase status. No additional payment was submitted.",
-        code: "purchase_input_mismatch", charged: true, charged_again: false, settlement_attempted: false,
-        recovery: purchaseRecovery(env, record),
-      } };
+      return { kind: "refused", body: inputMismatchRefusal(purchaseRecovery(env, record)) };
     }
     return { kind: "complete", delivery: (await purchaseDelivery(env, record))!, payment: record.payment, recovery: purchaseRecovery(env, record) };
   } catch {

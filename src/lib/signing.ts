@@ -145,6 +145,18 @@ export const CERT_FIELDS = [
   "trade_partner",
   "trade_price_usd",
   "trade_instruction",
+  /**
+   * THE ACCEPTED QUOTE, added 2026-09-12. Appended, never inserted,
+   * and OUT of LEGACY_FIELDS_ADDED_SINCE by the same law as the
+   * mandate link: no legacy certificate can honestly carry a quote
+   * hash (the field did not exist), so stapling one onto an old
+   * certificate must break BOTH forms. sha256 over the JCS form of
+   * the five terms the buyer's payment signature was bound to
+   * (discovery/receipt-surface.ts, quotedTerms). Unsigned, anyone
+   * could claim a different price was quoted under our signature —
+   * and "what was quoted" is exactly the claim a dispute turns on.
+   */
+  "quote",
 ] as const;
 
 /**

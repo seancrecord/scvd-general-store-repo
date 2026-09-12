@@ -132,6 +132,71 @@ The reserved field, filled by the smallest honest mandate there is:
   link checkable alone; together, the audit an agent's word alone
   can never be.
 
+## 6. `quote` and `settlement_state` — the cash-register asks (2026-09-12)
+
+The week the hundredth organic settlement landed, an outside reader
+named the six things a "cash register with logs" exposes per call:
+product id, agent id, quote, settlement id, delivery hash, failed
+retry state. Four were already inside the signature (`item`,
+`patron_number` + `payer`, `settlement_tx`, `attests`). The two that
+were not, built the same day:
+
+- **`quote`** — sha256 over the RFC 8785 form of the five x402 terms
+  the buyer's payment signature was bound to: scheme, network, asset,
+  payTo, amount, with EVM asset and payTo lowercased before hashing
+  (checksum casing is presentation; the SDK serves it one way and our
+  manifest another, and a hash must not care). Read from the VERIFIED
+  requirements by the door that
+  settled them (HTTP gate and MCP door alike), carried through
+  fulfillment untouched, bound into the certificate SIGNED (appended
+  to CERT_FIELDS, outside the legacy form, same law as purpose and
+  mandate_id — an unsigned "what was quoted" is the one claim a
+  dispute turns on and anyone could forge it onto our signature).
+  The store's signed offer in the 402 commits to the same five plus
+  version, resourceUrl and validUntil, so a buyer holding that JWS
+  can decode it, keep the five, hash, and match the receipt without
+  asking us. `saw` stays what it was: the shelf as listed. `quote`
+  is the tier and rail actually paid. Only where money moved.
+- **`settlement_state`** — on every certificate verify, JSON and
+  page, derived at read and never stored: which way the money moved
+  (from the signed fields), the ordering the sale ran under (from
+  the mint date against the 2026-08-10 amendment), and whether the
+  delivery-audit row keyed to its settlement is closed — the row the
+  audit opens after settle and deletes only when goods went out.
+  Honest about the limit: a failed attempt cannot appear on a
+  receipt because nothing was receipted — no money moved, nothing
+  minted. Per-attempt state (settled / not_settled / unknown,
+  charged, reconciliation reference) stays on the buyer's own
+  purchase journal behind the buyer's token, and the verify response
+  says exactly where: the store publishes its own conduct, never a
+  buyer's failed attempts.
+
+## 7. The replay kit — one paid call as an integration test (2026-09-12)
+
+The follow-up ask, once the quote was signed: a verifier sample an
+agent can replay — one paid call id, the JWS offer, settlement proof,
+response hash, and the refusal code when scope is wrong. Every part
+existed at some URL; none stood together. `/api/replay/{cert_id}`
+is the stitching, derived on every read and stored nowhere:
+
+- the certificate's signed bytes, signature and artifact hash;
+- the five accepted terms, recovered by hashing the catalog's current
+  accepts against the certificate's signed `quote` (exact match or
+  nothing), and a JWS offer signed over them by the same key — with
+  the kit saying in words that the 402's original offer, which
+  differed only in validUntil, was not retained;
+- the settlement transaction, network, explorer and payer, and the
+  sale's standing from section 6;
+- the wrong-scope refusal body, built by the same function the door
+  uses (`inputMismatchRefusal`), with placeholder ids where a real
+  refusal carries the buyer's private handle;
+- the replay steps, the list of what is not retained, and a detached
+  JWS over the kit's own RFC 8785 form under the did:web kid.
+
+Declared on /attestation as its own class. Its signature proves the
+store assembled these parts on this read; it makes no part truer than
+that part's own signature and the chain already do.
+
 ## What would catch it going stale
 
 - The cert-shape tests extend to the new optional fields and to the
@@ -140,6 +205,16 @@ The reserved field, filled by the smallest honest mandate there is:
 - The receipt page joins the onpage battery like every human surface.
 - The `receipt_for_your_human` block joins the purchase-response
   tests so it cannot be dropped by a refactor.
+- `quote` is recomputed from the accepted offer through both doors
+  in test/quote-and-settlement-state.spec.ts, and a stapled quote
+  must read `invalid`, never `legacy`. `settlement_state` is
+  asserted closed after a real purchase and named open when the
+  audit row still stands.
+- test/replay-kit.spec.ts recovers the offer's five terms from a real
+  purchase, verifies the fresh JWS and the kit's detached signature
+  against the store key, pins the refusal body to the door's own
+  function, and asserts a pre-quote certificate reads not_observed
+  with no offer signed.
 
 ## Order of work, once the pen approves
 

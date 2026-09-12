@@ -69,6 +69,7 @@ import {
 } from "@/lib/replay-guard";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { getOpenDeliveryIntent, openDeliveryIntent } from "@/services/delivery-audit";
+import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import { isRecord } from "@/types";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
 import { withSignedOffers } from "@/lib/offer-receipt";
@@ -747,6 +748,7 @@ export async function runMcpPayment(
   return payment;
   };
 
+  const acceptedQuote = quotedTerms(result.paymentRequirements);
   const pending: PendingPayment = {
     observation,
     paidUsdc: paidUsdcQuoted,
@@ -754,6 +756,9 @@ export async function runMcpPayment(
     ...(payerFromPaymentHeader(paymentHeader)
       ? { payer: payerFromPaymentHeader(paymentHeader) }
       : {}),
+    // Same law as the HTTP gate: the accepted terms are hashed by the
+    // door that verified them (discovery/receipt-surface.ts).
+    ...(acceptedQuote ? { quote: await hashQuotedTerms(acceptedQuote) } : {}),
     settle,
     purchaseRecovery: () => recoveryHandle,
     purchaseCreatedAt: () => purchasedAt,

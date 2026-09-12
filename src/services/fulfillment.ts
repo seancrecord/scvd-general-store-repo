@@ -236,6 +236,15 @@ export async function fulfillPurchase(
    * instrument that worked.
    */
   mintOptions.paidUsdc = pending.paidUsdc;
+  /**
+   * THE QUOTE, the same way: the door hashed the terms the buyer's
+   * signature was bound to, and the receipt names them or names
+   * nothing. Carried through, never recomputed here — fulfillment
+   * never saw the accepts entry and must not pretend to.
+   */
+  if (pending.quote) {
+    mintOptions.quote = pending.quote;
+  }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
   }
@@ -718,6 +727,9 @@ export async function fulfillPurchase(
     signature_jcs_discipline: JCS_DISCIPLINE,
     signature_jcs_covers: JCS_SIGNATURE_COVERS,
     verify_url: minted.verifyUrl,
+    // One paid call as an integration test: offer, settlement, response
+    // hash, refusal, in one signed document (services/replay-kit.ts).
+    replay_url: `${env.STORE_BASE_URL}/api/replay/${minted.certificate.cert_id}`,
     /**
      * THE BREADCRUMB. Assembled at serve time and stored nowhere, so
      * the wording can improve for artifacts already in strangers'

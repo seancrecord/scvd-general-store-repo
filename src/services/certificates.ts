@@ -141,6 +141,14 @@ export interface MintOptions {
    * can appear on a certificate no chain carried.
    */
   trade?: TradeSettlement;
+  /**
+   * The accepted quote's hash, computed by the payment door from the
+   * requirements it verified (discovery/receipt-surface.ts). The door
+   * is the only party that saw which accepts entry the buyer signed,
+   * so it is the only honest source; fulfillment carries it through
+   * untouched and the mint binds it into the signature.
+   */
+  quote?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -283,6 +291,16 @@ async function prepareCertificate(
   const menuItem = getMenuItem(options.itemId);
   if (menuItem) {
     certificate.saw = await hashSelectedSurface(selectedSurface(menuItem));
+  }
+  /**
+   * THE QUOTE THE BUYER ACCEPTED rides beside the surface they saw:
+   * `saw` is what the shelf listed, `quote` is the tier and rail the
+   * payment signature actually bound. Only where money moved — a
+   * quote on a free-shelf artifact would be a claim that terms were
+   * accepted when none were offered.
+   */
+  if (options.quote && options.paidUsdc !== undefined && options.paidUsdc > 0) {
+    certificate.quote = options.quote;
   }
 
   const { signature, publicKey } = await signCertificate(
