@@ -345,6 +345,12 @@ the door, identifying this skill file, never you. Leave it on.
    retain the completed goods even when that attempt fails.
 5. Verify anything we ever signed, free, forever:
    \`GET ${base}/api/verify/{id}\`.
+6. Replay one of our paid calls as an integration test, free:
+   \`GET ${base}/api/replay/{cert_id}\` — the signed bytes and their
+   hash, the accepted x402 terms with a JWS offer over them, the
+   settlement transaction and where to read it, the sale's standing,
+   and the exact refusal a wrong-scope re-presentation gets. It names
+   what we do not retain.
 
 Item-specific required inputs (also in each listing's \`spec.inputs\`
 in ${base}/menu.json): \`summary\` on context_anchor \u00B7 \`url\` on
