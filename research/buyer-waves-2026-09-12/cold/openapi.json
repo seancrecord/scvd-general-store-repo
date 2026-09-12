@@ -1,0 +1,114 @@
+{
+  "initial_context": {
+    "store_specific_business_or_source_facts_disclosed": false,
+    "cold_validity": true,
+    "local_files_repositories_instructions_credentials_read": false
+  },
+  "ordered_calls": [
+    {
+      "order": 1,
+      "method": "GET",
+      "url": "https://scvd.store/openapi.json",
+      "tool": "web.open",
+      "result": "Specification retrieved; tool reported a four-day-old crawl, without raw HTTP status."
+    },
+    {
+      "order": 2,
+      "method": "GET",
+      "url": "https://scvd.store/menu.json",
+      "tool": "Python urllib, Accept: application/json",
+      "result": "HTTP 403; urllib raised HTTPError. Response body and headers were not captured, so origin-versus-edge attribution is unknown."
+    },
+    {
+      "order": 3,
+      "method": "GET",
+      "url": "https://scvd.store/menu.json",
+      "tool": "web.open",
+      "result": "Catalog retrieved through a three-day-old crawl."
+    },
+    {
+      "order": 4,
+      "method": "GET",
+      "url": "https://scvd.store/api/buy/spot_check?host=scvd.store",
+      "tool": "curl, Accept: application/json, HTTPS-only",
+      "result": "HTTP 402 with PAYMENT-REQUIRED header and usable payment template. Stopped."
+    }
+  ],
+  "request_budget": {
+    "public_request_attempts": 4,
+    "limit": 12,
+    "qualification": "Browser cache retrievals counted conservatively; underlying browser-tool origin requests are not exposed."
+  },
+  "guesses": [
+    "Interpreted suitable as the cheapest paid artifact whose required input could be supplied from public discovery.",
+    "Selected scvd.store as the subject hostname; no endpoint or parameter names were guessed."
+  ],
+  "retries": [
+    "Retried catalog retrieval using web.open after urllib received 403.",
+    "No quote or payment retry."
+  ],
+  "failures": {
+    "actual_origin_400s": [],
+    "observed_http_failure": "One HTTP 403 of undetermined origin.",
+    "tool_failure": "urllib surfaced that HTTP refusal as an exception; this was not evidence of malformed store input.",
+    "source_limitations": "Discovery documents were cached. The live quote confirmed the selected price and input contract."
+  },
+  "selection": {
+    "item_id": "spot_check",
+    "price_usdc": "0.001",
+    "atomic_amount": "1000",
+    "pricing": "fixed",
+    "basis": "Catalog identifies this as the cheapest door; live quote confirms its price.",
+    "required_input": {
+      "host": "scvd.store",
+      "format": "Bare hostname"
+    },
+    "optional_inputs": {
+      "agent_name": "Up to 80 characters; omitted.",
+      "purpose": "Up to 280 characters; omitted."
+    },
+    "input_validation": "The supplied hostname reached a usable 402 quote."
+  },
+  "deliverable_understanding": {
+    "expected": "An instant signed, certificate-bound record of existing observations, dates, coverage and gaps for the hostname.",
+    "subject_evidence": "Quote reports never_observed=true and zero rounds for scvd.store; expect an absence-of-observation result, not a host verdict.",
+    "limitations": "No fresh probe. A signature authenticates signed bytes, not observational truth.",
+    "free_alternative": "https://scvd.store/corpus/host/scvd.store.json",
+    "paid_value": "Signed certificate-bound copy of the recorded facts.",
+    "received": false
+  },
+  "quote": {
+    "usable": true,
+    "buyer_signature_supplied": false,
+    "protocol": "x402 v2",
+    "scheme": "exact",
+    "template_network": "eip155:8453",
+    "template_asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "template_pay_to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+    "max_timeout_seconds": 300,
+    "authorization_valid_before": "1789178943",
+    "missing_payment_inputs": [
+      "Payer wallet address",
+      "Fresh nonce",
+      "Wallet signature"
+    ],
+    "interpretation_402": "Expected payment challenge, not a purchase receipt, delivery, settlement failure or HTTP 400. Payment would require signing offered terms and retrying with PAYMENT-SIGNATURE.",
+    "seller_offer_signatures": "JWS offers were present but not cryptographically verified."
+  },
+  "purchase": {
+    "status": "unexercised",
+    "spent_usdc": "0",
+    "reason": "Zero-spend environment with no wallet; stopped at first usable unsigned quote."
+  },
+  "result_verification": {
+    "status": "unexercised",
+    "reason": "No purchased artifact or certificate exists from this run.",
+    "documented_method": "Use the delivered certificate ID at https://scvd.store/api/verify/{id}, and verify signed bytes against the published signing key.",
+    "verification_requests_made": 0
+  },
+  "sources": [
+    "[OpenAPI](https://scvd.store/openapi.json)",
+    "[Catalog](https://scvd.store/menu.json)",
+    "[Live quote](https://scvd.store/api/buy/spot_check?host=scvd.store)"
+  ]
+}

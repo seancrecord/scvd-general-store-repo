@@ -1,0 +1,885 @@
+[
+  {
+    "item": "spot_check",
+    "quote_request": 834,
+    "quoted_at": "2026-09-12T01:59:17.593Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.001
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.001
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.001
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.001
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.001
+      }
+    ]
+  },
+  {
+    "item": "settlement_attestation",
+    "quote_request": 835,
+    "quoted_at": "2026-09-12T01:59:17.630Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.004
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.004
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.004
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.004
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.004
+      }
+    ]
+  },
+  {
+    "item": "small_blessing",
+    "quote_request": 836,
+    "quoted_at": "2026-09-12T01:59:17.633Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.005
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.005
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.005
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.005
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.005
+      }
+    ]
+  },
+  {
+    "item": "settlement_reconciliation",
+    "quote_request": 837,
+    "quoted_at": "2026-09-12T01:59:17.672Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.006
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.006
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.006
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.006
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.006
+      }
+    ]
+  },
+  {
+    "item": "daily_fortune",
+    "quote_request": 838,
+    "quoted_at": "2026-09-12T01:59:17.682Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.01
+      }
+    ]
+  },
+  {
+    "item": "the_confession",
+    "quote_request": 839,
+    "quoted_at": "2026-09-12T01:59:17.705Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.01
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.01
+      }
+    ]
+  },
+  {
+    "item": "attestation_bundle",
+    "quote_request": 840,
+    "quoted_at": "2026-09-12T01:59:17.742Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.05
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.05
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.05
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.05
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.05
+      }
+    ]
+  },
+  {
+    "item": "the_mandate",
+    "quote_request": 841,
+    "quoted_at": "2026-09-12T01:59:17.743Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.1
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.1
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.1
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.1
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.1
+      }
+    ]
+  },
+  {
+    "item": "the_case_file",
+    "quote_request": 842,
+    "quoted_at": "2026-09-12T01:59:17.778Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.25
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.25
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.25
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.25
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.25
+      }
+    ]
+  },
+  {
+    "item": "hello",
+    "quote_request": 843,
+    "quoted_at": "2026-09-12T01:59:17.797Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.5
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.5
+      }
+    ]
+  },
+  {
+    "item": "good_buyer",
+    "quote_request": 844,
+    "quoted_at": "2026-09-12T01:59:17.817Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.99
+      }
+    ]
+  },
+  {
+    "item": "signature_agent_card",
+    "quote_request": 845,
+    "quoted_at": "2026-09-12T01:59:17.834Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.99
+      }
+    ]
+  },
+  {
+    "item": "the_statement",
+    "quote_request": 846,
+    "quoted_at": "2026-09-12T01:59:17.849Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.99
+      }
+    ]
+  },
+  {
+    "item": "luckies",
+    "quote_request": 847,
+    "quoted_at": "2026-09-12T01:59:17.872Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.99
+      }
+    ]
+  },
+  {
+    "item": "coffees_for_closers",
+    "quote_request": 848,
+    "quoted_at": "2026-09-12T01:59:17.882Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 0.99
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 0.99
+      }
+    ]
+  },
+  {
+    "item": "bitcoin_anchor",
+    "quote_request": 849,
+    "quoted_at": "2026-09-12T01:59:17.910Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 1
+      }
+    ]
+  },
+  {
+    "item": "context_anchor",
+    "quote_request": 850,
+    "quoted_at": "2026-09-12T01:59:17.913Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 1
+      }
+    ]
+  },
+  {
+    "item": "passport_refresh",
+    "quote_request": 851,
+    "quoted_at": "2026-09-12T01:59:17.939Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 1
+      }
+    ]
+  },
+  {
+    "item": "graffiti_on_a_train",
+    "quote_request": 852,
+    "quoted_at": "2026-09-12T01:59:17.955Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 1
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 1
+      }
+    ]
+  },
+  {
+    "item": "a2a_repair_kit",
+    "quote_request": 853,
+    "quoted_at": "2026-09-12T01:59:17.970Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 49
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 49
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 49
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 49
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 49
+      }
+    ]
+  },
+  {
+    "item": "standing_watch",
+    "quote_request": 854,
+    "quoted_at": "2026-09-12T01:59:18.005Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 5
+      }
+    ]
+  },
+  {
+    "item": "service_audit",
+    "quote_request": 855,
+    "quoted_at": "2026-09-12T01:59:18.005Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 5
+      }
+    ]
+  },
+  {
+    "item": "conformance_watch",
+    "quote_request": 856,
+    "quoted_at": "2026-09-12T01:59:18.033Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 5
+      }
+    ]
+  },
+  {
+    "item": "onpage_audit",
+    "quote_request": 857,
+    "quoted_at": "2026-09-12T01:59:18.044Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 3
+      }
+    ]
+  },
+  {
+    "item": "launch_check",
+    "quote_request": 858,
+    "quoted_at": "2026-09-12T01:59:18.066Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 5
+      }
+    ]
+  },
+  {
+    "item": "opening_day",
+    "quote_request": 859,
+    "quoted_at": "2026-09-12T01:59:18.081Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 9
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 9
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 9
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 9
+      }
+    ]
+  },
+  {
+    "item": "provenance_check",
+    "quote_request": 860,
+    "quoted_at": "2026-09-12T01:59:18.104Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 5
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 5
+      }
+    ]
+  },
+  {
+    "item": "recurring_patronage",
+    "quote_request": 861,
+    "quoted_at": "2026-09-12T01:59:18.141Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 3
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 3
+      }
+    ]
+  },
+  {
+    "item": "trust_profile",
+    "quote_request": 862,
+    "quoted_at": "2026-09-12T01:59:18.142Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 21
+      }
+    ]
+  },
+  {
+    "item": "operator_statement",
+    "quote_request": 863,
+    "quoted_at": "2026-09-12T01:59:18.175Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 21
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 21
+      }
+    ]
+  },
+  {
+    "item": "certificate_of_patronage",
+    "quote_request": 864,
+    "quoted_at": "2026-09-12T01:59:18.204Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 20
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 20
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 20
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 20
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 20
+      }
+    ]
+  },
+  {
+    "item": "aura_walk",
+    "quote_request": 865,
+    "quoted_at": "2026-09-12T01:59:18.246Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 150
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 150
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 150
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 150
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 150
+      }
+    ]
+  },
+  {
+    "item": "the_collab",
+    "quote_request": 866,
+    "quoted_at": "2026-09-12T01:59:18.309Z",
+    "offers": [
+      {
+        "network": "eip155:137",
+        "minimum_usdc": 300
+      },
+      {
+        "network": "eip155:42161",
+        "minimum_usdc": 300
+      },
+      {
+        "network": "eip155:480",
+        "minimum_usdc": 300
+      },
+      {
+        "network": "eip155:8453",
+        "minimum_usdc": 300
+      },
+      {
+        "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "minimum_usdc": 300
+      }
+    ]
+  }
+]

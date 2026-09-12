@@ -1,0 +1,91 @@
+{
+  "cold_validity": true,
+  "initial_context_store_facts": false,
+  "status": "Stopped at unsigned quote; purchase and result verification unexercised.",
+  "requests": [
+    {
+      "url": "https://scvd.store/skill.md",
+      "call": "web.open",
+      "result": "Tool timeout reported as 400; no content returned."
+    },
+    {
+      "url": "https://scvd.store/skill.md",
+      "call": "web.open retry",
+      "result": "Tool timeout reported as 400; no content returned."
+    },
+    {
+      "url": "https://scvd.store/skill.md",
+      "call": "curl GET",
+      "result": "HTTP 200; entry instructions obtained."
+    },
+    {
+      "url": "https://scvd.store/api/buy/spot_check?src=skill",
+      "call": "curl GET",
+      "result": "HTTP 402; price-discovery quote, missing required host."
+    },
+    {
+      "url": "https://scvd.store/api/buy/spot_check?host=example.com&src=skill",
+      "call": "curl GET",
+      "result": "HTTP 402; first usable unsigned quote."
+    }
+  ],
+  "retries": {
+    "entry_url": 1,
+    "purchase_quote": 0
+  },
+  "actual_origin_400s": [],
+  "source_or_tool_failures": [
+    "The web fetch tool twice reported a 400 timeout.",
+    "Direct HTTPS curl succeeded with HTTP 200, so the 400s were tool-layer failures, not origin responses."
+  ],
+  "selection": {
+    "item": "spot_check",
+    "reason": "Cheapest suitable paid item listed.",
+    "price_usdc": 0.001,
+    "atomic_units": "1000",
+    "protocol": "x402 v2",
+    "networks_offered": [
+      "Base",
+      "Polygon",
+      "World",
+      "Solana"
+    ]
+  },
+  "guesses": {
+    "host": "example.com",
+    "reason": "No target host was supplied; used the guide's example hostname.",
+    "impact": "The quote concerns example.com and is not a claim about any user-intended host."
+  },
+  "required_inputs": {
+    "required": [
+      "host"
+    ],
+    "optional": [
+      "agent_name",
+      "purpose"
+    ],
+    "format": "Bare hostname in the host query parameter."
+  },
+  "deliverable": {
+    "type": "Instant signed artifact",
+    "content": "Signed copy of the store's existing corpus observations for the named host, including rounds, recorded verdicts, observation dates, coverage, and gaps.",
+    "limitations": [
+      "No live request is made to the host.",
+      "An unobserved host returns not_observed.",
+      "Signature validity does not prove the underlying observation is true."
+    ],
+    "included_after_purchase": [
+      "Signed certificate",
+      "Sequential patron number",
+      "Badge URL",
+      "Verification URL"
+    ],
+    "verification_url_template": "https://scvd.store/api/verify/{id}",
+    "verification_cost": "Free"
+  },
+  "402_interpretation": "HTTP 402 is the unsigned x402 payment challenge, not an origin failure. It supplies payment terms in PAYMENT-REQUIRED and requires a wallet-signed PAYMENT-SIGNATURE retry. No wallet or funds were available, so no signing, payment, delivery, or verification was attempted.",
+  "spend": {
+    "spent_usdc": 0,
+    "wallet_available": false
+  }
+}
