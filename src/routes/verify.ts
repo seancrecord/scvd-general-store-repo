@@ -988,6 +988,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   );
 });
 
+// Retain the key-registry address published in earlier llms indexes.
+verifyRoutes.get("/keys", (c) => c.redirect("/.well-known/scvd-signing-key", 308));
+
 verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
   const publicKey = await cachedPublicKeyHex(c.env.SIGNING_KEY);
   return c.json({

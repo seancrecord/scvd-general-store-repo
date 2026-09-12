@@ -10,7 +10,7 @@ import {
   type SecurityBlock,
 } from "@/store/surface-contract";
 import { isRecord, type ItemReads } from "@/types";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputExample, buyInputSchema } from "@/lib/bazaar-discovery";
 import { CATALOG_ROW_SCHEMA } from "@/store/catalog-row";
 import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
@@ -395,9 +395,9 @@ function purchaseOutputSchema(item: MenuItem): Schema {
  *
  * Derived, never typed per item: the example is built from the
  * schema's own required fields, so an item that grows a field grows
- * its example in the same commit. The sample VALUES are the only
- * hand-written part, keyed by field name, and each is shaped like
- * the thing the field's description asks for. Optional fields stay
+ * its example in the same commit. Purchase values come from the
+ * HTTP/Bazaar worked example, with field-shaped defaults where that
+ * example has no value. Optional fields stay
  * out — the example is the smallest correct call, not the largest.
  */
 const EXAMPLE_STRINGS: Record<string, string> = {
@@ -467,11 +467,12 @@ function exampleArguments(
   properties: Record<string, Schema>,
   required: string[],
   fixed: Record<string, unknown> = {},
+  values: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const example: Record<string, unknown> = { ...fixed };
   for (const field of required) {
     if (field in example || !(field in properties)) continue;
-    example[field] = exampleValue(field, properties[field]!);
+    example[field] = values[field] ?? exampleValue(field, properties[field]!);
   }
   return example;
 }
@@ -485,7 +486,9 @@ function purchaseInputSchema(item: MenuItem): Schema {
     additionalProperties: false,
     properties,
     required,
-    examples: [exampleArguments(properties, required)],
+    // Reuse the HTTP/Bazaar worked inputs. A field-name placeholder can
+    // satisfy JSON Schema while failing the purchase's actual validation.
+    examples: [exampleArguments(properties, required, {}, buyInputExample(item))],
   };
 }
 
@@ -588,7 +591,7 @@ function clusterInputSchema(items: MenuItem[]): Schema {
     const perProperties = (per["properties"] ?? {}) as Record<string, Schema>;
     const perRequired = (per["required"] ?? []) as string[];
     examples.push(
-      exampleArguments(perProperties, perRequired, { item_id: item.id }),
+      exampleArguments(perProperties, perRequired, { item_id: item.id }, buyInputExample(item)),
     );
     for (const [field, schema] of Object.entries(perProperties)) {
       if (!(field in properties)) {
