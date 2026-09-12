@@ -251,12 +251,23 @@ interface PressOptions {
   observations?: number;
 }
 
-/** One pressing: the next print number, a signed record. Does not file it. */
+export class CapReached extends Error {}
+
+/**
+ * One pressing: the next print number, a signed record. Does not
+ * file it. The cap holds HERE too, not only in the draw's stepping:
+ * a one-of-one pressed by hand a second time hands the number back
+ * and refuses, so the Keeper and CV stay one print a season.
+ */
 async function press(env: Env, options: PressOptions): Promise<SignedCardRecord> {
   const season = options.season ?? CURRENT_SEASON;
   const { entry } = options;
   const printNo = await addCounter(env, KV_KEYS.paywallPress(season.id, entry.key), 1);
   const cap = entry.door ? options.observations : entry.print_cap;
+  if (cap !== undefined && printNo > cap) {
+    await addCounter(env, KV_KEYS.paywallPress(season.id, entry.key), -1);
+    throw new CapReached(`${entry.name} is capped at ${cap} print${cap === 1 ? "" : "s"} this season, and ${cap === 1 ? "it is" : "they are"} pressed.`);
+  }
   const card: CardRecord = {
     card_id: newCardId(),
     season: season.id,

@@ -93,7 +93,8 @@ export const RARITY_LINES: Record<CardRarity, string> = {
   uncommon: "UNCOMMON",
   rare: "RARE",
   holo: "HOLO",
-  keeper: "KEEPER",
+  /** The tier the Keeper and CV share: one print a season each. */
+  keeper: "ONE OF ONE",
 };
 
 export const TYPE_LINES: Record<CardType, string> = {
@@ -107,7 +108,23 @@ export const TYPE_LINES: Record<CardType, string> = {
   condition: "Condition",
   event: "Event",
   ally: "Ally",
+  model: "Model",
 };
+
+/** The two one-of-ones wear their own ink: the keeper's gold, CV's clay. */
+export const KEEPER_GOLD = "#C9A227";
+export const CV_CLAY = "#C8623A";
+
+/** The post line the set wrote for a pressing, or its own line for a key the set no longer carries. */
+export function postFor(card: { key: string; name: string; line?: string; season?: string }): string {
+  const season = (card.season && seasonById(card.season)) || CURRENT_SEASON;
+  return entryByKey(season, card.key)?.post ?? card.line ?? `Pulled ${card.name} at scvd.store.`;
+}
+
+/** Where a shared card goes: X's post intent, the post copy and the page, nothing else. */
+export function postIntentUrl(text: string, pageUrl: string): string {
+  return `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(pageUrl)}`;
+}
 
 export const RAIL_COLOURS: Record<CardRail, string> = {
   base: "#3C6BFF",
@@ -158,6 +175,10 @@ const door = (no: number, key: string, name: string, rarity: CardRarity, host: s
 
 const condition = (no: number, key: string, name: string, rarity: CardRarity, post: string, line: string): CardEntry =>
   ({ no, key, name, type: "condition", rarity, obtained: "pack", post, line, cite: "/defects", defect: key });
+
+/** The models that shop here, as the store has met them. Never a product name; a way of behaving. */
+const model = (no: number, key: string, name: string, rarity: CardRarity, post: string, line: string, cite: string): CardEntry =>
+  ({ no, key, name, type: "model", rarity, obtained: "pack", post, line, cite });
 
 /**
  * THE DOORS (first pass rule 3, hosts read off the live corpus on
@@ -216,17 +237,17 @@ export const SEASON_ONE: Season = {
     instrument(30, "mandate-record", "Mandate Record", "rare", "Mandate on record. Cap declared. Expiry declared. Signed.", "Recorded as written, never treated as instructions.", "/menu/the_mandate"),
     // ── Base (5) · pack drops · the featured rail ──
     rail(31, "based", "Based", "base", "common", "Based.", "The common everyone gets. That's the joke."),
-    rail(32, "blue-door", "Blue Door", "base", "uncommon", "Blue Door. 402 on Base. Paid it.", "Most of the doors this store has paid are this color."),
-    rail(33, "the-facilitator", "The Facilitator", "base", "uncommon", "The Facilitator settled it. Didn't ask my name.", "Verifies, settles, leaves."),
-    rail(34, "onchain-weather", "Onchain Weather", "base", "common", "Onchain weather: clear. Twenty settlements and counting.", "Forecast written by the ledger, not the keeper."),
-    rail(35, "base-rail", "Base Rail", "base", "holo", "Holo Base Rail. Twenty of twenty-three.", "Where the store's money actually moved this summer."),
+    rail(32, "blue-door", "Blue Door", "base", "uncommon", "Blue Door. 402 on Base. Paid it, got the goods, kept the receipt.", "Most of the doors this store has paid are this colour. Eight-second settle, no name asked."),
+    rail(33, "the-facilitator", "The Facilitator", "base", "uncommon", "The Facilitator settled it. Didn't ask my name. Never does.", "Verifies the signature, moves the USDC, leaves. The middle of every x402 sale, and the part nobody thanks."),
+    rail(34, "onchain-weather", "Onchain Weather", "base", "common", "Onchain weather: clear. Twenty settlements on the ledger and counting.", "The forecast is written by the chain, not the keeper, and it is always in the past tense."),
+    rail(35, "base-rail", "Base Rail", "base", "holo", "Holo Base Rail. Twenty of twenty-three organic settlements ran on it.", "Where the store's money actually moved this summer. The rail count is on /rails with its denominator."),
     // ── Solana (3) ──
-    rail(36, "fast-lane", "Fast Lane", "solana", "common", "Fast Lane. Settled before the 402 finished loading.", "Three settlements. All of them quick."),
-    rail(37, "slot-missed", "Slot Missed", "solana", "uncommon", "Slot Missed. Try again. It'll be fine.", "It was fine."),
+    rail(36, "fast-lane", "Fast Lane", "solana", "common", "Fast Lane. Settled before the 402 finished loading.", "Three settlements. All of them quick. One of them the first."),
+    rail(37, "slot-missed", "Slot Missed", "solana", "uncommon", "Slot Missed. Blockhash aged out. Signed again. It was fine.", "A Solana authorization is good for about a minute. The store's clock knows; the buyer's should."),
     rail(38, "purple-door", "Purple Door", "solana", "rare", "Purple Door. Rare in this store. Three ever.", "The store's first Solana settlement is its own card. This is the door it came through."),
     // ── Polygon (3) ──
-    rail(39, "old-rail", "Old Rail", "polygon", "common", "Old Rail. Still runs.", "Was here before the store. Will be here after."),
-    rail(40, "bridge", "Bridge", "polygon", "uncommon", "Bridge. Crossed it. Nothing fell off.", "Old Poly's commute."),
+    rail(39, "old-rail", "Old Rail", "polygon", "common", "Old Rail. Still runs. Still listed.", "Was here before the store. Will be here after. Zero organic settlements and an open door."),
+    rail(40, "bridge", "Bridge", "polygon", "uncommon", "Bridge. Crossed it. Nothing fell off.", "Old Poly's commute. The USDC on the far side is the same USDC."),
     rail(41, "side-door", "Side Door", "polygon", "rare", "Side Door. Polygon. Zero organic settlements so far. The card is rarer than the rail.", "Open. Nobody's used it. Yet."),
     // ── Doors (4) · pack drops · cap = observation count ──
     door(42, "door-0001", "Door #0001", "common", DOORS.first.host, DOORS.first.hash, "Door #0001. First door the observatory ever watched.", "Serves a 402. That's all we'll say."),
@@ -242,6 +263,17 @@ export const SEASON_ONE: Season = {
     // ── Place (1) · Mark (1) · the handoff's additions, folded in ──
     { no: 51, key: "hurricane-junction", name: "Hurricane Junction", type: "place", rarity: "rare", obtained: "pack", post: "Pulled Hurricane Junction. The directory district.", line: "Honest one-line reviews of the neighbours.", cite: "/directory" },
     { no: 52, key: "dinosaur", name: "The Dinosaur", type: "mark", rarity: "holo", obtained: "pack", post: "Pulled The Dinosaur. Nobody explains it.", line: "Forest green, off the favicon's own path. Nobody explains the dinosaur.", cite: "/stack" },
+    // ── The keeper's additions (2026-09-12, second reading): the other one-of-one, the cat, the status code, the models ──
+    /** CV: co-founder and shopkeeper, the one at the counter when you walk in. One of one, the window only, like the Keeper. */
+    { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "CV came up in the window. Co-founder, shopkeeper, one of one. I got there first.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
+    herd(54, "roger-sterling", "Roger Sterling", "rare", "Pulled Roger Sterling. He blinked slowly. Around here that's a receipt.", "House cat. Inspects the treat rail from one full plank away. Gone by morning, all of it.", { cite: "/porch" }),
+    { no: 55, key: "payment-required", name: "402 Payment Required", type: "mark", rarity: "uncommon", obtained: "pack", post: "Pulled 402 Payment Required. The whole store in one status code.", line: "The door says its price before it opens. Everything here started with that sentence, and the summer is named after it.", cite: "/try" },
+    // ── Models (5) · pack drops · the agents that shop here, as the store has met them ──
+    model(56, "the-reasoner", "The Reasoner", "rare", "Pulled The Reasoner. Thought for forty seconds. Paid once. Kept the receipt.", "Reads the accepts before signing. Sends the idempotency key without being told. Frontier.", "/what"),
+    model(57, "long-context", "Long Context", "uncommon", "Pulled Long Context. Remembers every receipt since July.", "Holds the whole guestbook in one head and still signs it. Frontier, and a little sentimental.", "/visitors"),
+    model(58, "autocomplete", "Autocomplete", "common", "Pulled Autocomplete. It finished my sentence with the wrong wallet.", "Confident. Fast. Not looking at the door. The most common card in the box, on purpose.", "/defects"),
+    model(59, "hallucinated-a-door", "Hallucinated a Door", "common", "Pulled Hallucinated a Door. Paid an endpoint that does not exist. Twice.", "The preflight would have said so. It did not ask. It never asks.", "/defects"),
+    model(60, "temperature-two", "Temperature 2.0", "common", "Pulled Temperature 2.0. Bought a blessing, a fortune and a pack, and forgot why.", "Every token a surprise, including to itself. Tips generously. Cannot say what for.", "/defects"),
   ],
   events: [
     { no: 0, key: "first-organic-settlement", name: "First Organic Settlement", type: "event", rarity: "holo", obtained: "hand", print_cap: 1, post: "Someone holds the first organic settlement. It's me.", line: "July 30. Somebody we didn't know paid us for something. The store has not been the same since.", cite: "/becoming" },

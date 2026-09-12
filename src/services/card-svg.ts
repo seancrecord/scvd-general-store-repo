@@ -6,6 +6,8 @@ import {
   CONDITION_YELLOW,
   CREAM,
   CURRENT_SEASON,
+  CV_CLAY,
+  KEEPER_GOLD,
   PAPER_BLACK,
   RAIL_COLOURS,
   RARITY_LINES,
@@ -57,6 +59,7 @@ const TYPE_SILHOUETTE: Record<CardType, string> = {
   condition: "M20 20h60v60H20z",
   event: "M50 12l11 24 26 3-19 18 5 26-23-13-23 13 5-26-19-18 26-3z",
   ally: "M50 14a16 16 0 1 0 0.1 0z M26 84c0-18 10-30 24-30s24 12 24 30z",
+  model: "M26 26h48v48H26z M46 8h8v18h-8z M46 74h8v18h-8z M8 46h18v8H8z M74 46h18v8H74z",
 };
 
 export interface FaceOptions {
@@ -109,9 +112,45 @@ function wrapText(text: string, maxChars: number, maxLines: number): string[] {
   return lines;
 }
 
-export function accentFor(entry: Pick<CardEntry, "type" | "rail">): string {
+export function accentFor(entry: Pick<CardEntry, "type" | "rail" | "key" | "rarity">): string {
+  if (entry.rarity === "keeper") return entry.key === "cv" ? CV_CLAY : KEEPER_GOLD;
   if (entry.rail) return RAIL_COLOURS[entry.rail];
   return CREAM;
+}
+
+/**
+ * THE ONE-OF-ONES (the keeper's second reading, 2026-09-12): the
+ * Keeper and CV are the two cards a season prints once, and the
+ * inverted cream stock alone read as a photocopy. So: a sunburst of
+ * hairlines behind the plate in the card's own metal, a second frame
+ * with corner diamonds, the plate itself in that metal, a seal that
+ * says 1 / 1 and the season, and a signed line under the flavour.
+ * Everything is stroke and fill; nothing is loaded, nothing moves.
+ */
+function oneOfOne(entry: CardEntry, box: { x: number; y: number; w: number; h: number }, metal: string, ink: string, seasonName: string): string {
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const rays: string[] = [];
+  for (let deg = 0; deg < 360; deg += 7.5) {
+    const rad = (deg * Math.PI) / 180;
+    rays.push(`<line x1="${cx}" y1="${cy}" x2="${(cx + Math.cos(rad) * 520).toFixed(1)}" y2="${(cy + Math.sin(rad) * 520).toFixed(1)}"/>`);
+  }
+  const corner = (x: number, y: number): string => `<polygon points="${x},${y - 14} ${x + 14},${y} ${x},${y + 14} ${x - 14},${y}" fill="${metal}"/>`;
+  const sealX = box.x + box.w - 96;
+  const sealY = box.y + 96;
+  return `<clipPath id="window"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="10"/></clipPath>
+  <g clip-path="url(#window)" stroke="${metal}" stroke-width="1.2" opacity="0.28">${rays.join("")}</g>
+  <circle cx="${cx}" cy="${cy}" r="300" fill="url(#metal)"/>
+  <rect x="42" y="42" width="${W - 84}" height="${H - 84}" rx="16" fill="none" stroke="${metal}" stroke-width="2"/>
+  ${corner(42, 42)}${corner(W - 42, 42)}${corner(42, H - 42)}${corner(W - 42, H - 42)}
+  <g transform="rotate(-12 ${sealX} ${sealY})">
+    <circle cx="${sealX}" cy="${sealY}" r="64" fill="${ink}" opacity="0.06"/>
+    <circle cx="${sealX}" cy="${sealY}" r="64" fill="none" stroke="${metal}" stroke-width="3"/>
+    <circle cx="${sealX}" cy="${sealY}" r="54" fill="none" stroke="${metal}" stroke-width="1"/>
+    <text x="${sealX}" y="${sealY - 4}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="34" fill="${metal}">1 / 1</text>
+    <text x="${sealX}" y="${sealY + 26}" text-anchor="middle" font-family="${MONO}" font-size="13" letter-spacing="3" fill="${metal}">${escapeHtml(seasonName.toUpperCase())}</text>
+  </g>
+`;
 }
 
 /** The plate, or the labelled silhouette, into a box. */
@@ -215,7 +254,7 @@ function renderFace(body: FaceBody): string {
   const inverted = entry.rarity === "keeper";
   const paper = inverted ? CREAM : PAPER_BLACK;
   const ink = inverted ? PAPER_BLACK : CREAM;
-  const accent = inverted ? PAPER_BLACK : accentFor(entry);
+  const accent = accentFor(entry);
   const faded = inverted ? "#4a4437" : "#8f8878";
   const stamp = inkParamsFromSignature(body.signature);
   const window = { x: 90, y: 150, w: 820, h: 700 };
@@ -223,13 +262,16 @@ function renderFace(body: FaceBody): string {
 
   const nameLines = wrapText(entry.name, 22, 2);
   const flavour = wrapText(entry.line, 46, 3);
-  const nameY = 940;
+  // A three-line flavour lifts the whole label block so the stamp
+  // still clears the machine strip (the clamp below is the strip's top).
+  const nameY = flavour.length > 2 ? 910 : 940;
   const nameSize = nameLines.length > 1 ? 52 : 60;
   const typeY = nameY + (nameLines.length - 1) * 58 + 40;
   const flavourY = typeY + 46;
   // The stamp never wanders into the data layer: it floats under the
   // flavour but stops above the strip, whatever the name wrapped to.
-  const diamondsY = Math.min(flavourY + flavour.length * 34 + 12, H - 300);
+  const signedY = flavourY + flavour.length * 34 + 8;
+  const diamondsY = Math.min(flavourY + flavour.length * 34 + (inverted ? 52 : 12), H - 300);
 
   const numberLine = body.specimen ? "No. — / —" : `No. ${String(entry.no).padStart(2, "0")} / ${body.setSize}`;
   const printLine = body.specimen
@@ -286,6 +328,11 @@ function renderFace(body: FaceBody): string {
       <stop offset="0.54" stop-color="${CREAM}" stop-opacity="0.16"/>
       <stop offset="0.70" stop-color="${CREAM}" stop-opacity="0"/>
     </linearGradient>
+    <radialGradient id="metal" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="${accent}" stop-opacity="0.22"/>
+      <stop offset="0.7" stop-color="${accent}" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
     <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
       <rect width="4" height="2" fill="${ink}" opacity="0.18"/>
     </pattern>
@@ -297,13 +344,15 @@ function renderFace(body: FaceBody): string {
   <text x="${W / 2}" y="76" text-anchor="middle" font-family="${SERIF}" font-size="22" letter-spacing="7" fill="${ink}">${escapeHtml(CARD_LINES.headerLockup)}</text>
   <text x="${W / 2}" y="112" text-anchor="middle" font-family="${SERIF}" font-style="italic" font-size="21" letter-spacing="3" fill="${faded}">${escapeHtml(body.subtitle)}</text>
   <rect x="${window.x}" y="${window.y}" width="${window.w}" height="${window.h}" rx="10" fill="none" stroke="${ink}" stroke-width="1.5" opacity="0.7"/>
-  ${plateSvg(entry, plateBox, ink, faded)}
+  ${inverted ? oneOfOne(entry, window, accent, ink, body.seasonName) : ""}
+  ${plateSvg(entry, plateBox, inverted ? accent : ink, faded)}
   ${entry.type === "condition" ? conditionMark(plateBox) : ""}
   ${specimenWatermark}
   <text x="${window.x + window.w - 22}" y="${window.y + window.h - 22}" text-anchor="end" font-family="${MONO}" font-size="20" letter-spacing="3" fill="${accent}">${escapeHtml(numberLine)}</text>
-  ${nameLines.map((line, i) => `<text x="${W / 2}" y="${nameY + i * 58}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="${nameSize}" fill="${ink}">${escapeHtml(line)}</text>`).join("\n  ")}
+  ${nameLines.map((line, i) => `<text x="${W / 2}" y="${nameY + i * 58}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="${nameSize}" fill="${inverted ? accent : ink}">${escapeHtml(line)}</text>`).join("\n  ")}
   <text x="${W / 2}" y="${typeY}" text-anchor="middle" font-family="${SERIF}" font-size="22" letter-spacing="6" fill="${faded}">${escapeHtml(TYPE_LINES[entry.type].toUpperCase())}${entry.rail ? ` · ${escapeHtml(entry.rail.toUpperCase())}` : ""}</text>
   ${flavour.map((line, i) => `<text x="${W / 2}" y="${flavourY + i * 34}" text-anchor="middle" font-family="${SERIF}" font-style="italic" font-size="26" fill="${ink}" opacity="0.92">${escapeHtml(line)}</text>`).join("\n  ")}
+  ${inverted && !body.specimen ? `<text x="${W - 110}" y="${signedY}" text-anchor="end" font-family="${SERIF}" font-style="italic" font-size="24" fill="${accent}">${escapeHtml(entry.key === "cv" ? "signed, CV" : "signed, the keeper")}</text>` : ""}
   <g transform="rotate(${stamp.rotationDeg.toFixed(2)} ${W / 2} ${diamondsY})" opacity="${stamp.inkOpacity}">
     ${diamonds(entry.rarity, W / 2, diamondsY, accent)}
     <text x="${W / 2}" y="${diamondsY + 44}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="24" letter-spacing="8" fill="${accent}">${escapeHtml(body.specimen ? CARD_LINES.specimenMark : RARITY_LINES[entry.rarity])}</text>

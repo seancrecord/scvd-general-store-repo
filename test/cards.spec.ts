@@ -74,14 +74,14 @@ async function post(path: string, body: unknown): Promise<Response> {
 }
 
 describe("the set", () => {
-  it("numbers its 52 cards with no gaps, no duplicate names, no duplicate keys, plus four Events and one Ally", () => {
+  it("numbers its 60 cards with no gaps, no duplicate names, no duplicate keys, plus four Events and one Ally", () => {
     for (const season of SEASONS) {
       expect(season.cards.map((card) => card.no)).toEqual(season.cards.map((_, index) => index + 1));
       const entries = allEntries(season);
       expect(new Set(entries.map((card) => card.name)).size).toBe(entries.length);
       expect(new Set(entries.map((card) => card.key)).size).toBe(entries.length);
     }
-    expect(CURRENT_SEASON.cards.length).toBe(52);
+    expect(CURRENT_SEASON.cards.length).toBe(60);
     expect(CURRENT_SEASON.events.length).toBe(4);
     expect(CURRENT_SEASON.allies.length).toBe(1);
     for (const event of CURRENT_SEASON.events) expect(event.no).toBe(0);
@@ -102,6 +102,20 @@ describe("the set", () => {
       }
     }
     expect(packPool(CURRENT_SEASON, "keeper")).toHaveLength(0);
+    // The season's two one-of-ones: the Keeper and CV, each one print, the window only.
+    const oneOfOnes = CURRENT_SEASON.cards.filter((card) => card.rarity === "keeper");
+    expect(oneOfOnes.map((card) => card.key).sort()).toEqual(["cv", "keeper"]);
+    for (const card of oneOfOnes) {
+      expect(card.print_cap, card.name).toBe(1);
+      expect(card.obtained, card.name).toBe("window");
+    }
+    // The models: the frontier ones rare or uncommon, the goofing ones all common and in packs.
+    const models = CURRENT_SEASON.cards.filter((card) => card.type === "model");
+    expect(models.length).toBeGreaterThanOrEqual(5);
+    expect(models.filter((card) => card.rarity === "common").length).toBeGreaterThanOrEqual(3);
+    for (const card of models) expect(card.obtained, card.name).toBe("pack");
+    expect(entryByKey(CURRENT_SEASON, "roger-sterling")?.rarity).toBe("rare");
+    expect(entryByKey(CURRENT_SEASON, "payment-required")?.type).toBe("mark");
     expect(packPool(CURRENT_SEASON, "rare").some((card) => card.key === "cairn")).toBe(false);
     for (const wheel of SLOT_WHEELS) {
       for (const stop of new Set(wheel)) {
@@ -296,7 +310,9 @@ describe("a pack, bought", () => {
 
     for (const card of cards) {
       expect(card["print_no"]).toBeGreaterThan(0);
+      expect(String(card["post_url"])).toMatch(/^https:\/\/x\.com\/intent\/post\?text=.+&url=https%3A%2F%2Fscvd\.store%2Fp%2Fcard_/);
       const record = await json(await SELF.fetch(String(card["verify_url"]).replace("/api/verify/", "/api/card/")));
+      expect(String(record["post_url"])).toContain("x.com/intent/post");
       const inner = record["card"] as Record<string, unknown>;
       expect(inner["name"]).toBe(card["name"]);
       expect(inner["holder"]).toBe(TEST_PAYER.toLowerCase());
@@ -322,6 +338,7 @@ describe("a pack, bought", () => {
       const html = await page.text();
       expect(html).toContain(`<meta property="og:image" content="${BASE}/p/${String(card["card_id"])}.png">`);
       expect(html).toContain('name="twitter:card" content="summary_large_image"');
+      expect(html).toContain('class="post-button" href="https://x.com/intent/post?text=');
 
       const verified = await json(await SELF.fetch(String(card["verify_url"])));
       expect(verified["valid"]).toBe(true);
@@ -347,7 +364,24 @@ describe("a pack, bought", () => {
     for (const card of cards) expect(ids).toContain(card["card_id"]);
     expect((binder["credit"] as Record<string, unknown>)["burn"]).toEqual(BURN_RATES);
     expect(typeof binder["under_the_weather"]).toBe("boolean");
-    expect((await SELF.fetch(`${BASE}/binder/${TEST_PAYER}`, { headers: { Accept: "text/html" } })).status).toBe(200);
+    // The collection view: held of the set, the missing keys, and a post for the whole binder.
+    const collection = binder["collection"] as Record<string, unknown>;
+    expect(collection["of"]).toBe(CURRENT_SEASON.cards.length);
+    expect(collection["held"]).toBeGreaterThan(0);
+    expect((collection["missing"] as string[]).length + Number(collection["held"])).toBe(CURRENT_SEASON.cards.length);
+    expect(String(collection["post_url"])).toContain("x.com/intent/post");
+    const page = await SELF.fetch(`${BASE}/binder/${TEST_PAYER}`, { headers: { Accept: "text/html" } });
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain(`The collection: ${collection["held"]} of ${CURRENT_SEASON.cards.length}`);
+    expect(html).toContain('class="entry held');
+    expect(html).toContain('class="entry missing');
+    expect(html).toContain("Post my binder on X");
+    // The lookup from /design lands on the wallet's page.
+    const lookup = await SELF.fetch(`${BASE}/binder?wallet=${TEST_PAYER}`, { redirect: "manual" });
+    expect(lookup.status).toBe(302);
+    expect(lookup.headers.get("Location")).toBe(`/binder/${TEST_PAYER.toLowerCase()}`);
+    expect((await SELF.fetch(`${BASE}/binder?wallet=nope`)).status).toBe(400);
     expect((await SELF.fetch(`${BASE}/api/paywall/binder/not-a-wallet`)).status).toBe(400);
   });
 
@@ -493,6 +527,26 @@ describe("the credit desk", () => {
   });
 });
 
+describe("the one-of-ones", () => {
+  it("press the Keeper and CV in their own metal, with the seal, the sunburst and the signed line, and only into the window", async () => {
+    for (const [key, signed, metal] of [["keeper", "signed, the keeper", "#C9A227"], ["cv", "signed, CV", "#C8623A"]] as const) {
+      const pressed = await handPress(testEnv, key, { window: true });
+      expect(pressed.card.print_cap).toBe(1);
+      const face = await (await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.svg`)).text();
+      expect(face).toContain("1 / 1");
+      expect(face).toContain(signed);
+      expect(face).toContain(metal);
+      expect(face).toContain('clip-path="url(#window)"');
+      const sheet = await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.png`);
+      expect(sheet.status).toBe(200);
+      const window = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
+      expect((window["window"] as Array<Record<string, unknown>>).map((row) => row["card_id"])).toContain(pressed.card.card_id);
+    }
+    // A second print of either refuses: the cap is one.
+    await expect(handPress(testEnv, "keeper", { window: true })).rejects.toThrow();
+  });
+});
+
 describe("the room", () => {
   it("prints every fraction beside its denominator, today's commit, the rules that do not move, and hangs an honest specimen", async () => {
     const twin = await json(await SELF.fetch(`${BASE}/design`, { headers: { Accept: "application/json" } }));
@@ -518,7 +572,7 @@ describe("the room", () => {
     expect(svg).toContain("SPECIMEN");
     expect(svg).not.toContain("/api/verify/");
     const set2 = await json(await SELF.fetch(`${BASE}/api/paywall/set`));
-    expect((set2["cards"] as unknown[]).length).toBe(52);
+    expect((set2["cards"] as unknown[]).length).toBe(60);
   });
 });
 

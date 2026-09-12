@@ -752,8 +752,19 @@ Merging is your press; these are why it waits.
   Built without perks. Amend the charter, or keep the perks that are
   not prices (a Door card's preflight is free already; the Keeper's
   pick can be a hand press).
+- **DONE, your second reading (2026-09-12).** CV as the season's
+  other one-of-one (Room, rarity Keeper, window only, cap 1 held on
+  the hand press too); Roger Sterling, rare, with his own plate; 402
+  Payment Required as the x402 reference; five Models (two frontier,
+  three goofing and common); the Rails tightened to citable facts;
+  the Keeper and CV faces in their own metal with the sunburst, the
+  seal and the signed line; the binder as a collection checklist
+  with a lookup on /design; a post button on every card page, the
+  binder and the window, and `post_url` on every pressing. The count
+  is 60. ⚑ Every new name and line is the keeper's pen.
 - **RULE — the cuts, one edit each.** *Gas Was Nothing* and *Node
-  21* out to hold 52 (the plan's own count); Door #0017 a real
+  21* stay out (the count is 60 with your eight, not their two);
+  Door #0017 a real
   degraded door (tick.hugen.tokyo) since the store cannot probe its
   own row and a door capped at its observation count would never
   press; Door #0410 is api.m2mcent.com, listed and never reached, so
@@ -778,10 +789,14 @@ Merging is your press; these are why it waits.
   storefront lines; the guide's Paywall paragraph; the skill
   paragraph; the declined-positions WebMCP sentence tightened by 63
   characters. Ink or kill.
-- **TEST — press the Keeper into the window.** `/admin/tools`: key
-  `keeper`, destination `window`; it should hang at `/p/{id}` in the
-  inverted stock, show on `/api/paywall/window`, and move to
-  whichever wallet's $0.49 the seed favours.
+- **TEST — press the Keeper and CV into the window.** `/admin/tools`:
+  key `keeper`, then `cv`, destination `window`; each should hang at
+  `/p/{id}` in its metal with the 1 / 1 seal, show on
+  `/api/paywall/window`, and move to whichever wallet's $0.49 the
+  seed favours. A second press of either answers 409.
+- **LOOK — the post button.** Open any `/p/{id}` and press "Post it
+  on X": the composer should open with the card's line and the page
+  URL, nothing else. Same on a binder.
 - **TEST — the credit desk with a real wallet.** Twenty commons in
   a binder, `POST /api/paywall/challenge`, sign it, `POST
   /api/paywall/burn`, then `/redeem` for a pack. The desk is EVM

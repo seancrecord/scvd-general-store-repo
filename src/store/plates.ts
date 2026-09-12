@@ -147,6 +147,13 @@ const PLATES: Record<string, Plate> = {
   "wrong-network": { d: "M46 20h8v70h-8z M36 10h28v46H36z M42 16v34h16V16z M50 22a5 5 0 1 0 0.1 0z M50 38a5 5 0 1 0 0.1 0z M30 90h40v4H30z" },
   "replay-accepted": { d: "M50 10a22 22 0 1 0 0.1 0z M50 18a14 14 0 1 1-0.1 0z M46 40h8v48h-8z M54 66h14v6H54z M54 78h10v6H54z" },
   "delivered-nothing": { d: "M14 30h64a8 8 0 0 1 8 8v40a8 8 0 0 1-8 8H14z M22 38v40h56V38z" },
+  // ── the second reading (2026-09-12): the cat, the models ──
+  "roger-sterling": { d: "M22 78c-4-14 2-30 14-36l2-14 10 8h18l10-8 2 14c12 6 18 22 14 36z M34 42a4 4 0 1 0 0.1 0z M62 42a4 4 0 1 0 0.1 0z M46 52h8l-4 5z M80 60c8-6 14 0 12 8s-8 12-16 8l2-4c6 2 10 0 10-4s-4-6-8-2z M28 78h44v6H28z" },
+  "the-reasoner": { d: "M26 26h48v48H26z M34 34v32h32V34z M42 42h16v16H42z M46 8h8v18h-8z M46 74h8v18h-8z M8 46h18v8H8z M74 46h18v8H74z" },
+  "long-context": { d: "M12 22h76v10H12z M12 38h76v10H12z M12 54h76v10H12z M12 70h52v10H12z M70 70h18v10H70z M20 14h60v4H20z M20 84h60v4H20z" },
+  autocomplete: { d: "M14 30h6v40h-6z M8 26h18v4H8z M8 70h18v4H8z M34 46a6 6 0 1 0 0.1 0z M54 46a6 6 0 1 0 0.1 0z M74 46a6 6 0 1 0 0.1 0z" },
+  "hallucinated-a-door": { d: "M22 90V34a28 28 0 0 1 56 0v56h-8V36a20 20 0 0 0-40 0v54z M40 90h6v-8h-6z M54 90h6v-8h-6z M46 46h8v6h-8z M42 56h16v6H42z M46 66h8v6h-8z" },
+  "temperature-two": { d: "M42 10h16v52a14 14 0 1 1-16 0z M46 16v50a8 8 0 1 0 8 0V16z M48 24h4v40h-4z M64 20h14v4H64z M64 34h14v4H64z M64 48h14v4H64z" },
   // ── events ──
   "event-guestbook": { d: "M18 16h64v68H18z M26 24v52h48V24z M32 34h36v3H32z M32 44h36v3H32z M64 60l10-14 6 4-10 14-8 2z" },
   "event-train": { d: "M10 34h64l16 16v18H10z M18 42v18h62v-6L70 42z M22 46h12v10H22z M40 46h12v10H40z M14 74a6 6 0 1 0 12 0a6 6 0 1 0-12 0z M68 74a6 6 0 1 0 12 0a6 6 0 1 0-12 0z" },
@@ -161,8 +168,8 @@ const PLATES: Record<string, Plate> = {
  * both Bellringers, the train for the Tagger, the pass for the
  * Regular, the passport for Stale Passport), and a Condition reuses
  * the plate of the thing that went wrong, since the yellow rides on
- * top. Herd animals other than the T-Rex, the jar, the Tab, and the
- * Ally have no drawing yet and press as labelled silhouettes.
+ * top. Herd animals other than the T-Rex and the cat, the jar, the Tab,
+ * and the Ally have no drawing yet and press as labelled silhouettes.
  */
 const ALIASES: Record<string, string> = {
   // rooms
@@ -202,6 +209,9 @@ const ALIASES: Record<string, string> = {
   "410-gone": "delivered-nothing",
   "double-charge": "replay-accepted",
   "testnet-catch": "wrong-network",
+  // the second reading
+  cv: "practice-counter",
+  "payment-required": "the-402",
   // events
   "first-organic-settlement": "settlement-attestation",
   "first-solana-settlement": "solana-lane",

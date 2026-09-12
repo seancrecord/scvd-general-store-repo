@@ -1,5 +1,5 @@
 import { drawText, fitLine, flattenPath, renderTwoInkPng, Surface, textWidth } from "@/lib/pixel-card";
-import { CONDITION_YELLOW, CREAM, RAIL_COLOURS, RARITY_LINES, RARITY_ORDER, seasonById } from "@/store/cards";
+import { CONDITION_YELLOW, CREAM, CV_CLAY, KEEPER_GOLD, RAIL_COLOURS, RARITY_LINES, RARITY_ORDER, seasonById } from "@/store/cards";
 import { plateFor } from "@/store/plates";
 import type { CardRecord } from "@/types";
 
@@ -47,7 +47,7 @@ export function renderShareSheet(card: CardRecord, base: string, post: string): 
   const accent = new Surface(W, H);
   const season = seasonById(card.season);
   const setSize = season?.cards.length ?? 0;
-  const accentHex = card.rail ? RAIL_COLOURS[card.rail] : card.type === "condition" ? CONDITION_YELLOW : CREAM;
+  const accentHex = card.rarity === "keeper" ? (card.key === "cv" ? CV_CLAY : KEEPER_GOLD) : card.rail ? RAIL_COLOURS[card.rail] : card.type === "condition" ? CONDITION_YELLOW : CREAM;
   const accentSurface = accentHex === CREAM ? ink : accent;
 
   // The card, small, on the left: 5:7 at 55% of the sheet's height.

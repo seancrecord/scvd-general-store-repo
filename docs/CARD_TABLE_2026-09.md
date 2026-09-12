@@ -27,18 +27,21 @@ reasoning, named as desk reasoning.
 ## 0. The short version (first pass, as built)
 
 1. **The set (STANDING).** Season One, *Summer of 402 · Oak City*:
-   52 cards in the count with the first pass's own names — Herd 12
-   (T-Rex to Elephant Anchor), Room 10 (Keeper, Bellringer,
+   60 cards in the count: the first pass's 52 with its own names,
+   plus the eight of the keeper's second reading (§0b) — Herd 13
+   (T-Rex to Elephant Anchor, and Roger Sterling), Room 11 (Keeper, CV, Bellringer,
    Bellringer II, Tagger, Bounty Hunter, Regular, Fortune of the Day,
    Blessing from the Jar, Guestbook, The Tab), Instrument 8, Rail 11
    (Base 5, Solana 3, Polygon 3), Door 4 (#0001, #0007, #0017,
    #0410), Condition 5 (Stale Passport, Broken Tier, 410 Gone, Double
-   Charge, Testnet Catch), Place 1 (Hurricane Junction), Mark 1 (The
-   Dinosaur) — plus 4 Events (First Organic Settlement, First Solana
+   Charge, Testnet Catch), Place 1 (Hurricane Junction), Mark 2 (The
+   Dinosaur, 402 Payment Required), Model 5 — plus 4 Events (First Organic Settlement, First Solana
    Settlement, The Loaner, Twenty-Three; dropped by hand, never
    pulled) and 1 Ally (Cairn; pack-obtainable WITH CONSENT, and with
    none on record it is in the set and out of every draw). The Keeper
-   is a Room at rarity Keeper, one print, the window only. Ladder
+   and CV are the season's two one-of-ones: Rooms at rarity Keeper,
+   one print each, the window only, and the cap holds on the hand
+   press too. Ladder
    Common / Uncommon / Rare / Holo / Keeper. Every card cites a path
    on this store; a test walks every cite. `src/store/cards.ts`.
    Three plan rows did not survive contact with the building and are
@@ -78,9 +81,17 @@ reasoning, named as desk reasoning.
    share sheet 1200×675 as PNG, `/p/{card_id}` with OG tags, a real
    QR on the machine strip. The plates: 46 drawings, and every
    renamed key of the third pass is aliased to the drawing of the
-   thing it depicts (`src/store/plates.ts`), so 38 of the 52 press
-   with a plate; the eleven Herd animals besides the T-Rex, the jar,
-   the Tab and the Ally press as labelled silhouettes.
+   thing it depicts (`src/store/plates.ts`), and the cat and the
+   five models have drawings of their own, so 46 of the 60 press
+   with a plate; the eleven Herd animals besides the T-Rex and the
+   cat, the jar, the Tab and the Ally press as labelled silhouettes.
+   The two one-of-ones wear their own metal (the keeper's gold, CV's
+   clay): a sunburst behind the plate, a second frame with corner
+   diamonds, the plate and the name in the metal, a 1 / 1 seal with
+   the season, and a signed line. Every card page, the binder and
+   the window carry a post button — X's post intent with the set's
+   own line and the page URL, no script, no key — and every pressing
+   in a purchase response carries `post_url` and `post_text`.
 7. **The economy (STANDING), the plan's numbers.** `pack` $0.99 (P;
    ⚑ his), the bell one common a day to whoever rings and, with a
    current pass id, two packs at full odds for a Regular;
@@ -150,6 +161,42 @@ reasoning, named as desk reasoning.
    trades as a signed transfer of custody between wallets.
 
 ---
+
+## 0b. The second reading (2026-09-12, the keeper's notes on the build)
+
+"The keeper card needs more pizzazz; we need a CV card too, one of
+one each season; a Roger Sterling card, pretty rare; more lore;
+tighten the crypto cards and an x402 reference; a few frontier
+models and dumb models goofing, the dumb ones super common; tie the
+collection view to the wallet; a tweet button on everything." Built
+as read, all STANDING:
+
+- **CV** (No. 53), the co-founder and shopkeeper of the founding
+  gazette, the other half of the byline: Room, rarity Keeper, one
+  print, the window only. The rule now reads: each season has one
+  Keeper and one CV, one of one each.
+- **Roger Sterling** (No. 54), the house cat off the porch's treat
+  rail: Herd, rare, with his own plate.
+- **402 Payment Required** (No. 55): Mark, uncommon, the x402
+  reference; it cites the practice counter.
+- **Models** (No. 56–60), a new type, the agents that shop here as
+  the store has met them and never a product name: The Reasoner
+  (rare) and Long Context (uncommon) for the frontier; Autocomplete,
+  Hallucinated a Door and Temperature 2.0 for the goofing, all
+  common and all pack drops, so slots 1–3 hand them out freely.
+- **The Rails tightened**: each line now states a fact the store can
+  cite (twenty of twenty-three on Base, three on Solana, zero on
+  Polygon, the facilitator's job, the minute a Solana authorization
+  lives).
+- **The collection view**: `/binder/{wallet}` lays out the whole
+  set with the wallet's held cards lit and the rest saying how they
+  are obtained, `held of 60` in the heading, a lookup form on
+  `/design` (`GET /binder?wallet=…` redirects), and `collection`
+  {held, of, missing, page_url, post_url} on the binder JSON.
+- **The post button** on every card page, the binder and the window;
+  `post_url` on every pressing everywhere it rides.
+- The count moves 52 → 60, which was the plan's own alternative;
+  *Gas Was Nothing* and *Node 21* stay cut (§6).
 
 ## 1. What changed, pass by pass
 
@@ -255,7 +302,8 @@ already. OPEN.
    free already; a Keeper's pick could be a hand press) or amend the
    charter. Built without perks until ruled.
 4. **RULE — the cuts.** *Gas Was Nothing* and *Node 21* out to hold
-   52; Door #0017 a real degraded door (tick.hugen.tokyo) instead of
+   52 (now 60 with the second reading's eight, §0b); Door #0017 a
+   real degraded door (tick.hugen.tokyo) instead of
    the store's own row; Door #0410 = api.m2mcent.com, which the corpus
    listed and never reached, so its cap is zero and it never presses
    until a round reaches it — honest, and the card says so. All one
@@ -299,7 +347,7 @@ unbuilt on purpose.
 | not in first build: missions, promotions UI, Events by hand | as the plan says |
 
 Art: 46 plates drawn as single-ink silhouettes, aliased to the
-plan's names; 38 of the 52 press with a plate. The eleven Herd
+plan's names; 46 of the 60 press with a plate. The eleven Herd
 animals besides the T-Rex, the jar, the Tab and Cairn press as
 silhouettes labelled "not yet pressed". The plan wanted the twelve
 Herd drawn at ship; that is the one place this build is honestly

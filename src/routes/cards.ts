@@ -21,17 +21,18 @@ import {
   redeemCredit,
   verifyCardSignature,
   WINDOW_SIZE,
+  type BinderRow,
 } from "@/services/cards";
 import { pressingSummary } from "@/services/instant-goods";
 import { publishSeedRecord, utcDate } from "@/services/paywall-seed";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import {
   BURN_RATES,
-  CARD_LINES,
   CARDS_FOR_MONEY,
   CARDS_FREE_FIRST,
   CARDS_OPENED,
   CARDS_PROPOSITION,
+  CARD_LINES,
   CONDITION_CLEARS,
   CURRENT_SEASON,
   PACK_SIZE,
@@ -43,6 +44,8 @@ import {
   allEntries,
   entryByKey,
   packChanceOf,
+  postFor,
+  postIntentUrl,
   slotOdds,
   type CardEntry,
   type WheelStop,
@@ -104,6 +107,12 @@ const DESIGN_CSS = `
 .paywall .tier-holo { color: #b8a04a; } .paywall .tier-rare { color: #9fb1c4; } .paywall .tier-uncommon { color: #c77d3a; } .paywall .tier-keeper { color: #e8dcc0; }
 .paywall .rail-base { color: #6f8cff; } .paywall .rail-solana { color: #b07cff; } .paywall .rail-polygon { color: #a37cf0; }
 .paywall .weather { border: 1px dashed var(--line); padding: 0.6rem 0.9rem; font-style: italic; }
+.paywall .post-button { display: inline-block; border: 2px solid currentColor; padding: 0.45rem 1rem; font-weight: bold; text-decoration: none; letter-spacing: 0.04em; margin: 0.25rem 0 0.75rem; }
+.paywall .post-button:hover { background: var(--card); }
+.paywall .entry.held { border-color: currentColor; }
+.paywall .entry.missing { opacity: 0.45; }
+.paywall .lookup { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+.paywall .lookup input { flex: 1 1 18rem; padding: 0.45rem 0.6rem; font-family: ui-monospace, monospace; }
 `;
 
 function fraction(numerator: number, denominator: number): string {
@@ -124,10 +133,6 @@ function oddsTable() {
     perPack[stop] = { chance: packChanceOf(stop), derivation: `1 - (${misses.join(" × ")})` };
   }
   return { rows, per_pack: perPack };
-}
-
-function postFor(card: CardRecord): string {
-  return entryByKey(CURRENT_SEASON, card.key)?.post ?? card.line;
 }
 
 const OBTAINED_LINES: Record<CardEntry["obtained"], string> = {
@@ -154,6 +159,7 @@ async function pressingJson(c: Context<HonoEnv>, record: SignedCardRecord) {
     ...(record.card.pack_id ? { pack_url: `${base}/api/pack/${record.card.pack_id}` } : {}),
     cite_url: `${base}${record.card.cite}`,
     post: postFor(record.card),
+    post_url: postIntentUrl(postFor(record.card), `${base}/p/${id}`),
     ...(burn ? { burned: burn } : {}),
     note: burn
       ? burn.burn.cleared_by === "credit"
@@ -311,7 +317,7 @@ cardRoutes.get("/design", async (c) => {
     offers: { "@type": "Offer", price: String(pack?.price_usdc ?? 0), ...offerCurrencyFields(), url: `${base}/menu/${PACK_ITEM}`, availability: "https://schema.org/InStock", seller: organizationRef(base) },
   });
   const latestBlock = latestCard
-    ? `<div class="hero"><img src="/p/${escapeHtml(latestCard.card.card_id)}.svg" width="1000" height="1400" alt="${escapeHtml(latestCard.card.name)}, the most recent pressing"><div><p class="menu-desc">In the window now: <a href="/p/${escapeHtml(latestCard.card.card_id)}"><strong>${escapeHtml(latestCard.card.name)}</strong></a>, ${escapeHtml(RARITY_LINES[latestCard.card.rarity].toLowerCase())}, print ${latestCard.card.print_no}${latestCard.card.holder ? `, in <a href="/binder/${escapeHtml(latestCard.card.holder)}">a binder</a> until somebody picks it` : ""}.</p><p class="menu-desc">Its share sheet, exactly as X renders a pasted link:</p><img class="sheet" src="/p/${escapeHtml(latestCard.card.card_id)}.png" width="1200" height="675" alt="The share sheet for ${escapeHtml(latestCard.card.name)}"></div></div>`
+    ? `<div class="hero"><img src="/p/${escapeHtml(latestCard.card.card_id)}.svg" width="1000" height="1400" alt="${escapeHtml(latestCard.card.name)}, the most recent pressing"><div><p class="menu-desc">In the window now: <a href="/p/${escapeHtml(latestCard.card.card_id)}"><strong>${escapeHtml(latestCard.card.name)}</strong></a>, ${escapeHtml(RARITY_LINES[latestCard.card.rarity].toLowerCase())}, print ${latestCard.card.print_no}${latestCard.card.holder ? `, in <a href="/binder/${escapeHtml(latestCard.card.holder)}">a binder</a> until somebody picks it` : ""}.</p><p><a class="post-button" href="${escapeHtml(postIntentUrl(postFor(latestCard.card), `${base}/p/${latestCard.card.card_id}`))}" rel="noopener">Post it on X</a></p><p class="menu-desc">Its share sheet, exactly as X renders a pasted link:</p><img class="sheet" src="/p/${escapeHtml(latestCard.card.card_id)}.png" width="1200" height="675" alt="The share sheet for ${escapeHtml(latestCard.card.name)}"></div></div>`
     : `<p class="menu-meta">Nobody has opened a pack yet. The first pressing hangs here the moment one does.</p>`;
   return c.html(
     renderSimplePage({
@@ -326,6 +332,7 @@ cardRoutes.get("/design", async (c) => {
           <div>
             <p class="doctrine">${escapeHtml(CARD_LINES.doctrine)}</p>
             <p class="menu-desc">${escapeHtml(CARDS_PROPOSITION)}</p>
+            <form class="lookup" action="/binder" method="get"><input type="text" name="wallet" placeholder="your wallet: 0x… or a base58 address" aria-label="Wallet address"><button type="submit">My collection</button></form>
             <p class="menu-desc">${escapeHtml(CARDS_FOR_MONEY)}</p>
             <p class="menu-meta">${escapeHtml(CARDS_FREE_FIRST)}</p>
             <p class="menu-meta">A pack is <a href="/menu/${PACK_ITEM}">${escapeHtml(pack?.name ?? CARD_LINES.shelfLine)}</a>, $${pack?.price_usdc ?? "—"}; a window pick is $${pick?.price_usdc ?? "—"}. ${set.plates_drawn} of ${CURRENT_SEASON.cards.length} plates are drawn; the rest press as silhouettes until they are.</p>
@@ -413,14 +420,22 @@ async function binderJson(c: Context<HonoEnv>, raw: string) {
   if (!wallet) return c.json({ error: "A binder is keyed by a wallet: a 0x address (forty hex characters) or a base58 Solana address." }, 400);
   const binder = await readBinder(c.env, wallet);
   const credit = await readCredit(c.env, wallet);
+  const heldKeys = new Set(binder.rows.map((row) => row.key));
   return c.json({
     wallet,
-    cards: binder.rows.map((row) => ({ ...row, page_url: `${base}/p/${row.card_id}`, face_url: `${base}/p/${row.card_id}.svg`, share_url: `${base}/p/${row.card_id}.png`, record_url: `${base}/api/card/${row.card_id}` })),
+    cards: binder.rows.map((row) => ({ ...row, page_url: `${base}/p/${row.card_id}`, post_url: postIntentUrl(postFor(row), `${base}/p/${row.card_id}`), face_url: `${base}/p/${row.card_id}.svg`, share_url: `${base}/p/${row.card_id}.png`, record_url: `${base}/api/card/${row.card_id}` })),
     count: binder.rows.length,
     truncated: binder.truncated,
     conditions: binder.conditions,
     under_the_weather: binder.under_the_weather,
     credit: { packs: credit, burn: BURN_RATES, redeem_url: `${base}/api/paywall/redeem` },
+    collection: {
+      held: CURRENT_SEASON.cards.filter((card) => heldKeys.has(card.key)).length,
+      of: CURRENT_SEASON.cards.length,
+      missing: CURRENT_SEASON.cards.filter((card) => !heldKeys.has(card.key)).map((card) => card.key),
+      page_url: `${base}/binder/${wallet}`,
+      post_url: postIntentUrl(`My binder at scvd.store: ${CURRENT_SEASON.cards.filter((card) => heldKeys.has(card.key)).length} of ${CURRENT_SEASON.cards.length} in the Season One set.`, `${base}/binder/${wallet}`),
+    },
     note: binder.rows.length === 0
       ? "Nothing in this binder. Either the wallet never pulled a card here, or its certificates carried no payer; both look the same from here."
       : "Newest first. A binder is a listing; the signed records are the proof.",
@@ -429,6 +444,13 @@ async function binderJson(c: Context<HonoEnv>, raw: string) {
 
 cardRoutes.get("/api/paywall/binder/:wallet", (c) => binderJson(c, c.req.param("wallet")));
 
+/** The lookup: /design's form lands here and the wallet's binder is one redirect away. */
+cardRoutes.get("/binder", (c) => {
+  const wallet = walletOrNull(c.req.query("wallet") ?? "");
+  if (!wallet) return c.text("Which binder? GET /binder?wallet=0x… (forty hex) or a base58 Solana address; the page is /binder/{wallet}.", 400);
+  return c.redirect(`/binder/${wallet}`, 302);
+});
+
 cardRoutes.get("/binder/:wallet", async (c) => {
   const raw = c.req.param("wallet");
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return binderJson(c, raw);
@@ -436,6 +458,16 @@ cardRoutes.get("/binder/:wallet", async (c) => {
   if (!wallet) return c.text("A binder is keyed by a wallet address.", 400);
   const binder = await readBinder(c.env, wallet);
   const credit = await readCredit(c.env, wallet);
+  const heldKeys = new Map<string, BinderRow>();
+  for (const row of binder.rows) if (!heldKeys.has(row.key)) heldKeys.set(row.key, row);
+  const held = CURRENT_SEASON.cards.filter((card) => heldKeys.has(card.key)).length;
+  const collectionPost = `My binder at scvd.store: ${held} of ${CURRENT_SEASON.cards.length} in the Season One set${binder.under_the_weather ? ", and under the weather" : ""}.`;
+  const checklist = CURRENT_SEASON.cards.map((card) => {
+    const row = heldKeys.get(card.key);
+    return row
+      ? `<div class="entry held tier-${card.rarity}"><span class="no">No. ${String(card.no).padStart(2, "0")} · ${escapeHtml(RARITY_LINES[card.rarity])}</span><a class="name" href="/p/${escapeHtml(row.card_id)}">${escapeHtml(card.name)}</a><span class="no">print ${row.print_no}</span></div>`
+      : `<div class="entry missing tier-${card.rarity}"><span class="no">No. ${String(card.no).padStart(2, "0")} · ${escapeHtml(RARITY_LINES[card.rarity])}</span><span class="name">${escapeHtml(card.name)}</span><span class="no">${escapeHtml(OBTAINED_LINES[card.obtained])}</span></div>`;
+  }).join("");
   const list = binder.rows.length
     ? binder.rows.map((row) => `<div class="entry tier-${row.rarity}"><span class="no">${row.card_no ? `No. ${String(row.card_no).padStart(2, "0")} · ` : ""}${escapeHtml(RARITY_LINES[row.rarity])} · print ${row.print_no}</span><a class="name" href="/p/${escapeHtml(row.card_id)}">${escapeHtml(row.name)}</a><span class="no">${escapeHtml(row.source)} · ${escapeHtml(row.date.slice(0, 10))}</span></div>`).join("\n")
     : `<p class="menu-desc">Nothing in this binder yet.</p>`;
@@ -447,7 +479,7 @@ cardRoutes.get("/binder/:wallet", async (c) => {
       extraCss: DESIGN_CSS,
       bodyClass: "paywall",
       ogImage: binder.rows[0] ? `${c.env.STORE_BASE_URL}/p/${binder.rows[0].card_id}.png` : undefined,
-      bodyHtml: `<section><p class="menu-meta">${escapeHtml(wallet)} · ${binder.rows.length} card${binder.rows.length === 1 ? "" : "s"}${binder.truncated ? " shown; the binder holds more than this page lists" : ""} · ${credit} pack${credit === 1 ? "" : "s"} of credit</p>${binder.under_the_weather ? `<p class="weather">${escapeHtml(CARD_LINES.underTheWeather)}: ${binder.conditions} Conditions at once. It clears when one does.</p>` : ""}<div class="set">${list}</div><p class="menu-meta">The set, the odds and a pack of your own: <a href="/design">Paywall</a>. Manifest: <a href="/api/paywall/binder/${escapeHtml(wallet)}"><code>/api/paywall/binder/${escapeHtml(wallet)}</code></a>.</p></section>`,
+      bodyHtml: `<section><p class="menu-meta">${escapeHtml(wallet)} · ${binder.rows.length} card${binder.rows.length === 1 ? "" : "s"}${binder.truncated ? " shown; the binder holds more than this page lists" : ""} · ${credit} pack${credit === 1 ? "" : "s"} of credit</p>${binder.under_the_weather ? `<p class="weather">${escapeHtml(CARD_LINES.underTheWeather)}: ${binder.conditions} Conditions at once. It clears when one does.</p>` : ""}<p><a class="post-button" href="${escapeHtml(postIntentUrl(collectionPost, `${c.env.STORE_BASE_URL}/binder/${wallet}`))}" rel="noopener">Post my binder on X</a></p><h2>The collection: ${held} of ${CURRENT_SEASON.cards.length}</h2><p class="menu-meta">Every card in the Season One set, the ones this wallet holds lit; the rest say how they are obtained. Each held card's page carries its own post button.</p><div class="set">${checklist}</div><h2>The pressings, newest first</h2><div class="set">${list}</div><p class="menu-meta">The set, the odds and a pack of your own: <a href="/design">Paywall</a>. Manifest: <a href="/api/paywall/binder/${escapeHtml(wallet)}"><code>/api/paywall/binder/${escapeHtml(wallet)}</code></a>.</p></section>`,
     }),
   );
 });
@@ -588,6 +620,7 @@ cardRoutes.get("/p/:card_id{card_[a-z0-9]+}", async (c) => {
           <img src="/p/${escapeHtml(cardId)}.svg" width="1000" height="1400" alt="${escapeHtml(card.name)}, ${escapeHtml(RARITY_LINES[card.rarity].toLowerCase())}">
           <div>
             <p class="doctrine">${escapeHtml(post)}</p>
+            <p><a class="post-button" href="${escapeHtml(postIntentUrl(post, `${base}/p/${cardId}`))}" rel="noopener">Post it on X</a></p>
             <p class="menu-desc"><strong>${escapeHtml(card.name)}</strong> · ${escapeHtml(RARITY_LINES[card.rarity])} · ${escapeHtml(TYPE_LINES[card.type])}${card.rail ? ` · ${escapeHtml(card.rail)}` : ""}${card.card_no ? ` · No. ${String(card.card_no).padStart(2, "0")} of ${CURRENT_SEASON.cards.length}` : ""} · print ${card.print_no}${card.print_cap !== undefined ? ` of ${card.print_cap}` : ""}</p>
             <p class="menu-desc"><em>${escapeHtml(card.line)}</em></p>
             ${card.door_hash ? `<p class="menu-meta">A numbered Door: the endpoint is shown as its hash, <code>${escapeHtml(card.door_hash.slice(0, 16))}…</code>, and its observation count, ${card.observations ?? 0}, which is also this card's cap. Never the URL.</p>` : ""}

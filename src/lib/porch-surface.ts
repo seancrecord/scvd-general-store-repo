@@ -415,7 +415,7 @@ export function porchSurface(path: string, method: string): string | undefined {
   if (path === "/design") {
     return "cards";
   }
-  if (path.startsWith("/binder/")) {
+  if (path === "/binder" || path.startsWith("/binder/")) {
     return "cards:binder";
   }
   if (path.startsWith("/p/") && !/\.(svg|png)$/.test(path)) {

@@ -1,3 +1,4 @@
+import { postFor, postIntentUrl } from "@/store/cards";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
 import { deliverA2AKit, type PreparedA2AKit } from "@/services/a2a-kit";
@@ -195,6 +196,9 @@ export function pressingSummary(base: string, card: CardRecord) {
     page_url: `${base}/p/${card.card_id}`,
     verify_id: card.card_id,
     verify_url: `${base}/api/verify/${card.card_id}`,
+    // The post, ready to hand on: the set's own line and the page that unfurls.
+    post_text: postFor(card),
+    post_url: postIntentUrl(postFor(card), `${base}/p/${card.card_id}`),
   };
 }
 

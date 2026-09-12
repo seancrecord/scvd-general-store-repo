@@ -86,7 +86,7 @@ import {
   parseLuckyStrength,
   setLuckyStatus,
 } from "@/services/luckies";
-import { handPress } from "@/services/cards";
+import { handPress, CapReached } from "@/services/cards";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import { luckyNote } from "@/store/copy";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
@@ -3763,8 +3763,13 @@ adminRoutes.post("/admin/paywall/press", async (c) => {
   if (!toWindow && (!wallet || !(isWalletAddress(wallet) || isSolanaWalletAddress(wallet)))) {
     return c.text("A hand press goes to a wallet (a 0x address or a base58 Solana address) or into the window.", 400);
   }
-  const pressed = await handPress(c.env, key, toWindow ? { window: true } : { wallet });
-  return c.redirect(`/p/${pressed.card.card_id}`);
+  try {
+    const pressed = await handPress(c.env, key, toWindow ? { window: true } : { wallet });
+    return c.redirect(`/p/${pressed.card.card_id}`);
+  } catch (error) {
+    if (error instanceof CapReached) return c.text(error.message, 409);
+    throw error;
+  }
 });
 
 adminRoutes.post("/admin/guestbook/delete", async (c) => {

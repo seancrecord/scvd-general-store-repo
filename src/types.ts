@@ -969,7 +969,7 @@ export interface SignedLuckyRecord {
  */
 export type CardRarity = "common" | "uncommon" | "rare" | "holo" | "keeper";
 export type CardType =
-  | "herd" | "room" | "instrument" | "place" | "mark" | "rail" | "door" | "condition" | "event" | "ally";
+  | "herd" | "room" | "instrument" | "place" | "mark" | "rail" | "door" | "condition" | "event" | "ally" | "model";
 export type CardRail = "base" | "solana" | "polygon";
 /** Where a pressing came from. A window pick transfers a pressing; it keeps its source. */
 export type PressingSource = "pack" | "bell" | "earned" | "hand" | "credit";
