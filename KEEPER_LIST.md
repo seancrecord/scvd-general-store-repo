@@ -729,6 +729,34 @@ Do not relitigate without you.
 
 ## NEXT — your hands
 
+### The card table (2026-09-12, `docs/CARD_TABLE_2026-09.md`)
+
+Built on `claude/compassionate-planck-6pba4v`, green locally, not
+merged. Merging is your press; these three are why it waits.
+
+- **RULE — rule 22.** A $0.99 pack of five cards, drawn from the
+  certificate id on wheels whose odds are derived and printed with
+  denominators, recomputable by the buyer, no timer, no pity, no
+  window, no price on a card, no market: honest randomness with
+  custody (the luckies' ruling, five draws instead of one), or gacha
+  by shape? Recommended: the first. If the second, the room stays
+  free and the shelf item comes off the branch.
+- **RULE — rule 41.** Paid random draws are loot boxes in several
+  jurisdictions (§5 of the paper: Belgium, Netherlands, Japan, the
+  UK code). Built posture: nothing cashable, nothing tradeable,
+  nothing bought back, odds published. Residual stated. Do you want
+  a lawyer's sentence before the merge, or in the same week after?
+  Recommended: same week after; it is a dollar novelty.
+- **RULE — rule 7.** Every card name and line in `src/store/cards.ts`,
+  the set's name (*Oak City*), the shelf copy and 402 line in
+  `menu-novelties.ts`, and the storefront line are drafted. Ink or
+  kill. Three link texts on the llms.txt door list were shortened to
+  stay under the 30,000 budget (charter.md, protected-resource,
+  which MCP door); yours to reverse.
+- **LOOK** — `/cards/sample.svg` and one real card's `/cards/{id}`
+  page pasted into X or Slack: does the plaque unfurl, and is the
+  card "cool" enough for the second season, or does it want art?
+
 ### A corpus a buyer must check (2026-09-10, ROADMAP CV0–CV2)
 
 - **LOOK** — after the next Sunday round, open `/corpus/asked.json`.

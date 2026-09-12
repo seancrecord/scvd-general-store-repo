@@ -77,6 +77,21 @@ export function luckyNote(options: {
   ].join(" ");
 }
 
+/** The pack, opened: five names and their tiers, then where the records hang. */
+export function packNote(options: {
+  cards: { name: string; rarity: string }[];
+  packUrl: string;
+  tableUrl: string;
+}): string {
+  const pulls = options.cards.map((card) => `${card.name} (${card.rarity})`).join(", ");
+  return [
+    `Pack opened: ${pulls}.`,
+    `Every card is signed and hangs at its own page; the pack record answers at ${options.packUrl}.`,
+    `The odds you drew on, with their denominators, are on the table at ${options.tableUrl}; the draw is recomputable from your certificate id.`,
+    "A card entitles the holder to a card.",
+  ].join(" ");
+}
+
 /**
  * Instant since the keeper-load ruling (2026-07-24): same note every
  * time, consistent by design.

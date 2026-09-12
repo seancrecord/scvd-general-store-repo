@@ -5865,6 +5865,73 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [pathParam("case_id", "From the purchase response; starts case_.")],
         },
       },
+      /**
+       * THE CARD TABLE (2026-09-12): one card, one pack, one binder.
+       * The odds and the set are on the room's own twin (/cards with
+       * Accept: application/json), not a door of their own.
+       */
+      "/api/card/{card_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "A trading card's signed record, served forever",
+              "The card as pulled: set position, name, tier, the line, the path it cites, its slot and pack. Odds and set at /cards.",
+            ),
+            signedCardSchema({
+              payloadKey: "card",
+              payloadDescription: "The card, as pulled and signed.",
+              extras: {
+                card_url: { type: "string", format: "uri" },
+                share_url: { type: "string", format: "uri" },
+                image_url: { type: "string", format: "uri" },
+                pack_url: { type: "string", format: "uri" },
+                cite_url: { type: "string", format: "uri" },
+              },
+            }),
+          ),
+          parameters: [pathParam("card_id", "From the purchase response; starts card_.")],
+        },
+      },
+      "/api/pack/{pack_id}": {
+        get: {
+          ...returns(
+            freeOp(
+              "A pack's signed manifest and its five cards",
+              "The manifest names the five card ids and is signed on its own; each card rides the response as a signed record. `draw` recomputes the pull from cert_id and the wheels on /cards.",
+            ),
+            signedCardSchema({
+              payloadKey: "pack",
+              payloadDescription: "The manifest: pack_id, season, card_ids, date, cert_id, patron_number.",
+              extras: {
+                cards: { type: "array", items: { type: "object" } },
+                draw: { type: "array", items: { type: "object" } },
+              },
+            }),
+          ),
+          parameters: [pathParam("pack_id", "From the purchase response; starts pack_.")],
+        },
+      },
+      "/api/cards/binder/{wallet}": {
+        get: {
+          ...returns(
+            freeOp(
+              "What one wallet has pulled, newest first",
+              "A listing keyed by the paying wallet, when the certificate carried one. A listing, not a proof of ownership: the signed records are. 400 for a string that is not a 0x or base58 address.",
+            ),
+            {
+              type: "object",
+              required: ["wallet", "cards", "count"],
+              properties: {
+                wallet: { type: "string" },
+                count: { type: "integer" },
+                cards: { type: "array", items: { type: "object" } },
+                note: { type: "string" },
+              },
+            },
+          ),
+          parameters: [pathParam("wallet", "A 0x address or a base58 Solana address.")],
+        },
+      },
       "/api/lucky/{lucky_id}": {
         get: {
           ...returns(

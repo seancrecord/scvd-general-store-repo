@@ -97,6 +97,7 @@ export const ITEM_ASKED_FOR: Record<string, string> = {
   recurring_patronage: "a standing pass a third party can check is current",
   certificate_of_patronage: "a signed certificate that entitles the holder to nothing",
   luckies: "a signed charm drawn from the keeper's herd",
+  card_pack: "five signed collectible trading cards of the store, drawn on published odds",
   the_confession: "an anonymous line kept on a counter, signed",
   coffees_for_closers: "a closed win on a signed record",
   the_collab: "the keeper's hands on a task, with a shared byline",

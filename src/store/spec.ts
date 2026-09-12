@@ -361,6 +361,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
    */
   luckies:
     "Be issued a charm from a herd the keeper wrote, drawn on odds he weighted",
+  card_pack:
+    "Pull five collectible trading cards of this store from a set the keeper wrote, on odds he weighted and published",
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
@@ -456,6 +458,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
   "luckies",
+  "card_pack",
   "daily_fortune",
   "the_confession",
   "coffees_for_closers",
@@ -503,6 +506,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "One piece brainstormed by both proprietors, shipped under the store byline. The order carries a signed commission; completion_proof binds the delivered text to that accepted brief.",
   aura_walk:
     "An order id and signed commission now; completion_proof binds the delivered report to the accepted brief and target. Within the promised window the completed order carries the report: for each entry point walked, the round trips to first success, the avoidable 400s, and where in the read order the strongest trust signal appeared — each with the model that walked it named, every transcript attached verbatim, dated, under the order's certificate. Counts and quotations only; no grade of any kind.",
+  card_pack:
+    "Five signed trading cards from the current season's set, drawn per slot from the certificate id on the wheels published at /cards: each card's record, its own page, SVG and share image, plus the signed pack manifest at /api/pack/{pack_id}, instantly (specimen at /cards/sample.svg).",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   coffees_for_closers:

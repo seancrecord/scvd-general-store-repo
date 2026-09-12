@@ -288,8 +288,8 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_small_pleasure",
     title: "The Penny Shelf",
     purpose:
-      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), or a lucky totem drawn from the keeper's collection. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
-    itemIds: ["small_blessing", "daily_fortune", "luckies"],
+      "Purpose: buy a small signed novelty — a blessing from the jar, the day's fortune (the same line for every buyer until midnight UTC), a lucky totem drawn from the keeper's collection, or a pack of five collectible trading cards of the store itself, drawn on published odds. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+    itemIds: ["small_blessing", "daily_fortune", "luckies", "card_pack"],
   },
 ];
 
@@ -539,6 +539,8 @@ const PURPOSE_LINES: Record<string, string> = {
     "Purpose: permanently record a short message (your tag, in the tag input) on a signed, dated certificate; the store's public /train wall may display it later at the keeper's discretion. Use when an agent wants to leave a durable public mark.",
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
+  card_pack:
+    "Purpose: buy one pack of five collectible trading cards from the store's own Season One set, each a signed record depicting a real door, instrument, place or hand here, drawn from your certificate id on odds published with their denominators at /cards. A novelty with no functional effect and no resale value, stated plainly. Use when an agent wants a keepsake it can show, or a live payment smoke test that hands back five verifiable artifacts.",
   luckies:
     "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
 };

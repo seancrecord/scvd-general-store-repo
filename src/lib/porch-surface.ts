@@ -177,6 +177,9 @@ const ARTIFACT_READ_PREFIXES = [
   "/api/good-buyer/",
   "/api/launch-check/",
   "/api/lucky/",
+  "/api/card/",
+  "/api/pack/",
+  "/api/cards/binder/",
   "/api/mandate/",
   "/api/onpage-audit/",
   "/api/opening-day/",
@@ -240,6 +243,7 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["pricing", "storefront"],
   ["trade", "room"],
   ["luckies:", "room"],
+  ["cards", "room"],
 ];
 
 const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {

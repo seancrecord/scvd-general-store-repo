@@ -120,6 +120,7 @@ export { rightsRoutes } from "@/routes/rights";
 export { windDownRoutes } from "@/routes/wind-down";
 export { becomingRoutes } from "@/routes/becoming";
 export { luckyRoutes } from "@/routes/luckies";
+export { cardRoutes } from "@/routes/cards";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";
 export { adminRoutes } from "@/routes/admin";

@@ -14,6 +14,7 @@
  *            payer:<address>
  * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>,
  *            lucky:<id> (signed lucky records; the card is the record),
+ *            pack:<id>, card:<id>, binder:<wallet>:<ts>:<card_id> (the card table),
  *            stamp_card:<nameSlug> (append-only visit-week log)
  * COUNTERS   stamp_condition:<week> (write-once, same week only)
  */
@@ -688,6 +689,19 @@ export const KV_KEYS = {
   patronagePass: (passId: string): string => `pass:${passId}`,
   lucky: (luckyId: string): string => `lucky:${luckyId}`,
   luckyPrefix: "lucky:",
+  /**
+   * THE CARD TABLE (2026-09-12): a pack is the signed unit of purchase,
+   * each card inside it is projected to its own key so a single card
+   * resolves and verifies alone, and a binder row per paying wallet
+   * lists what that wallet pulled, newest first.
+   */
+  pack: (packId: string): string => `pack:${packId}`,
+  packPrefix: "pack:",
+  card: (cardId: string): string => `card:${cardId}`,
+  cardPrefix: "card:",
+  binder: (wallet: string, invertedTs: string, cardId: string): string =>
+    `binder:${wallet}:${invertedTs}:${cardId}`,
+  binderPrefix: (wallet: string): string => `binder:${wallet}:`,
   /**
    * THE TRADE COUNTER'S BOOKS (2026-09-03, services/trade-counter.ts).
    * One row per delivery, in ORDERS beside the orders, newest first —

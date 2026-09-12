@@ -52,6 +52,12 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     line: "A lucky totem. Results may vary. Or they might not. They vary variously. The keeper keeps it close; the luck's all yours.",
   },
   {
+    // ⚑ Keeper's pen: drafted 2026-09-12 with the card table, not inked.
+    id: "card_pack",
+    name: "a pack of cards",
+    line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table. Nobody buys one back.",
+  },
+  {
     id: "hello",
     name: "A Signed Hello",
     line: "The traditional first purchase. Cheapest handshake in town.",

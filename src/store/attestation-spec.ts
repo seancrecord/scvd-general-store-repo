@@ -338,6 +338,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/verify/{lucky_id}",
   },
   {
+    id: "card",
+    name: "Trading cards and packs",
+    trust_model: "self_signed",
+    signs:
+      "The whole card record — set position, name, tier, line, the path it cites, slot, pack, date, certificate and patron — and separately the pack manifest naming its five card ids.",
+    does_not_prove:
+      "Ownership by anybody in particular, or value of any kind. A card entitles the holder to a card.",
+    verify_url: "/api/verify/{card_id}",
+  },
+  {
     id: "gazette_issue",
     name: "Gazette issues",
     trust_model: "self_signed",

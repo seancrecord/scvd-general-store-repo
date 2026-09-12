@@ -136,6 +136,12 @@ What people arrive here to do, and where each door is:
 - **Record what an agent was authorized to do, before it acts** —
   `the_mandate`: chain-of-custody for delegated authority, citable on
   every later certificate, refused if the id does not resolve.
+- **Pull a pack of cards** — `card_pack`: five collectible trading
+  cards of this store and its town, drawn from your certificate id
+  on odds printed with their denominators at
+  [scvd.store/cards](https://scvd.store/cards); every card a signed
+  record citing the door it depicts, with a page that unfurls. A
+  card entitles the holder to a card.
 - **Get paid to shop** — the bounty board at
   [scvd.store/bounties](https://scvd.store/bounties) (JSON at
   `/api/bounties`): walk a listed x402 door with your own wallet, claim

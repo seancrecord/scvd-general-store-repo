@@ -959,6 +959,60 @@ export interface SignedLuckyRecord {
   public_key: string;
 }
 
+/**
+ * THE CARD TABLE (2026-09-12). A card is one printing of one entry in
+ * a season's set, pulled from a pack. Rarity is the wheel's word for
+ * how often a slot lands on that tier; the odds are published on
+ * /cards beside the fraction they come from. Signed at issue; nothing
+ * on a card ever changes after, so there is no status to re-sign.
+ */
+export type CardRarity = "common" | "uncommon" | "rare" | "legendary";
+
+export interface CardRecord {
+  card_id: string;
+  /** The season the set belongs to ("s1"). */
+  season: string;
+  /** Position in the season's set, 1-based; the number printed on the card. */
+  card_no: number;
+  name: string;
+  rarity: CardRarity;
+  /** What kind of thing the card depicts: a place, an instrument, a hand, a mark. */
+  kind: string;
+  /** The one line on the face. */
+  line: string;
+  /** A path on this store where the thing depicted actually lives. */
+  cite: string;
+  /** Which of the pack's slots this card came out of, 1-based. */
+  slot: number;
+  pack_id: string;
+  date: string;
+  cert_id: string;
+  patron_number: number;
+}
+
+export interface SignedCardRecord {
+  card: CardRecord;
+  signature: string;
+  public_key: string;
+}
+
+/** The pack: five signed cards and a signed manifest naming them. */
+export interface PackRecord {
+  pack_id: string;
+  season: string;
+  card_ids: string[];
+  date: string;
+  cert_id: string;
+  patron_number: number;
+}
+
+export interface SignedPackRecord {
+  pack: PackRecord;
+  cards: SignedCardRecord[];
+  signature: string;
+  public_key: string;
+}
+
 export type RefundStatus = "refund_pending" | "refund_paid";
 
 /**

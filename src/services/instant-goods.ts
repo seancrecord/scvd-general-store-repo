@@ -15,6 +15,7 @@ import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
 import type { SignedAttestation } from "@/services/attestation";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
+import { openPack } from "@/services/cards";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
@@ -58,6 +59,7 @@ import {
   dibsNote,
   helloNote,
   luckyNote,
+  packNote,
   patronageCertificateNote,
   patronagePassNote,
   launchCheckNote,
@@ -148,7 +150,7 @@ export interface InstantGoodsInput {
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
-  /** grudge and luckies: the certificate id behind this purchase. */
+  /** grudge, luckies and card_pack: the certificate id behind this purchase. */
   certId?: string;
 }
 
@@ -852,6 +854,42 @@ export async function deliverInstantGoods(
           lucky_id: record.lucky.lucky_id,
           card_url: cardUrl,
           record_url: recordUrl,
+        },
+      };
+    }
+    case "card_pack": {
+      // The card table (2026-09-12): same shape as the lucky above —
+      // preset set, deterministic draw off the certificate id, the
+      // pack checkpointed so a retry hands back the same five cards.
+      const pack = await openPack(env, {
+        certId: input.certId ?? "",
+        patronNumber: input.patronNumber,
+        ...(input.payer ? { payer: input.payer } : {}),
+      }, { checkpoint, purchasedAt: input.purchasedAt });
+      const base = env.STORE_BASE_URL;
+      const packUrl = `${base}/api/pack/${pack.pack.pack_id}`;
+      return {
+        deliverable: packNote({
+          cards: pack.cards.map((signed) => ({ name: signed.card.name, rarity: signed.card.rarity })),
+          packUrl,
+          tableUrl: `${base}/cards`,
+        }),
+        extras: {
+          pack_id: pack.pack.pack_id,
+          pack_url: packUrl,
+          season: pack.pack.season,
+          cards: pack.cards.map((signed) => ({
+            card_id: signed.card.card_id,
+            card_no: signed.card.card_no,
+            name: signed.card.name,
+            rarity: signed.card.rarity,
+            slot: signed.card.slot,
+            card_url: `${base}/cards/${signed.card.card_id}.svg`,
+            share_url: `${base}/cards/${signed.card.card_id}`,
+            record_url: `${base}/api/card/${signed.card.card_id}`,
+            verify_url: `${base}/api/verify/${signed.card.card_id}`,
+          })),
+          odds_url: `${base}/cards`,
         },
       };
     }

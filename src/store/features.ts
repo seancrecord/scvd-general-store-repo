@@ -1,5 +1,6 @@
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import { ROOMS } from "@/store/rooms";
+import { CARDS_FOR_MONEY, CARDS_FREE_FIRST, CARDS_OPENED, CARDS_PROPOSITION } from "@/store/cards";
 import {
   SCORERS_FOR_MONEY,
   SCORERS_FREE_FIRST,
@@ -83,6 +84,23 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  {
+    /**
+     * THE CARD TABLE (2026-09-12). A novelty shelf with a room of its
+     * own because the odds have to live somewhere a buyer can recount
+     * them, and rule 60 asks the room for its three sentences and its
+     * five answers like any other.
+     */
+    id: "card_table",
+    name: "The Card Table",
+    room: "/cards",
+    proposition: CARDS_PROPOSITION,
+    for_money: CARDS_FOR_MONEY,
+    free_first: CARDS_FREE_FIRST,
+    doors: ["/api/card/{card_id}", "/api/pack/{pack_id}", "/api/cards/binder/{wallet}"],
+    named_on: [],
+    opened: CARDS_OPENED,
+  },
   { id: "a2a_desk", name: "A2A checks and repair kits", room: "/a2a-desk", proposition: A2A_PROPOSITION, for_money: A2A_MONEY, free_first: A2A_FREE, doors: ["/a2a-desk.json", "/api/a2a/check", "/api/a2a/runner.mjs", "/api/a2a/kits/{kit_id}", "/api/a2a/kits/{kit_id}/recheck"], named_on: ["/operators", "/developers", "/conformance"], opened: "2026-09-07" },
   {
     id: "trade_counter",

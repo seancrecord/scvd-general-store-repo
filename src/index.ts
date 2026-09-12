@@ -22,6 +22,7 @@ import {
   llmsRoutes,
   agentsMdRoutes,
   luckyRoutes,
+  cardRoutes,
   mcpRoutes,
   openapiRoutes,
   patronageRoutes,
@@ -303,6 +304,7 @@ app.route("/", tradingPostRoutes);
 app.route("/", requestRoutes);
 app.route("/", verifyRoutes);
 app.route("/", luckyRoutes);
+app.route("/", cardRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
 

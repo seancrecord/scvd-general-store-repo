@@ -92,6 +92,14 @@ export function newLuckyId(): string {
   return `lucky_${randomToken(10)}`;
 }
 
+export function newPackId(): string {
+  return `pack_${randomToken(10)}`;
+}
+
+export function newCardId(): string {
+  return `card_${randomToken(10)}`;
+}
+
 export function newLuckyStockId(): string {
   return `stock_${randomToken(8)}`;
 }

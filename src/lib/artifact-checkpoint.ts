@@ -57,7 +57,7 @@ export function supportsWatchRecovery(item: MenuItem): boolean {
 }
 
 export function supportsPersonalRecovery(item: MenuItem): boolean {
-  return item.fulfillment === "instant" && ["the_confession", "coffees_for_closers", "graffiti_on_a_train", "luckies"].includes(item.id);
+  return item.fulfillment === "instant" && ["the_confession", "coffees_for_closers", "graffiti_on_a_train", "luckies", "card_pack"].includes(item.id);
 }
 
 /** Stocked goods consume external inventory; their recovery needs a separate journal. */

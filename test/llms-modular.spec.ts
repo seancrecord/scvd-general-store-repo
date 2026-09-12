@@ -912,8 +912,14 @@ const BASE = "https://scvd.store";
 // and the settlement attestation's binding class and payment_response
 // house rules (this branch) land together; each was pinned alone against
 // its own parent, and this pin is the guide with both in it.
+// 2026-09-12: the card table — a paragraph in the reading room carrying
+// the room's three sentences, its link on the door list, and three
+// link texts on that list shortened (charter.md, protected-resource,
+// which MCP door) to keep the index under the convention's budget.
+// Verified the same way: with llms.ts restored to the prior commit, the
+// prior digest reproduced, and this copy reproduces the new one.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "242b893f9d80b18672955c97ef68d6496fca1a671607396efed4869cc01ee30c";
+  "4fb114b39eb6f030021ede5add0fcb17c2c33d9bc0ad5eb17f498a39e63d1824";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

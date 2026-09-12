@@ -57,6 +57,7 @@ import {
   getLucky,
   verifyLuckySignature,
 } from "@/services/luckies";
+import { canonicalizeCard, canonicalizePack, getCard, getPack, verifyCardSignature, verifyPackSignature } from "@/services/cards";
 import {
   canonicalizeStamp,
   getStamp,
@@ -713,6 +714,51 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       note: valid
         ? "Genuine anchor. Signed by the store when it says it was."
         : "Signature doesn't match. Treat this anchor as compromised.",
+    });
+  }
+
+  const cardRecord = await getCard(c.env, id);
+  if (cardRecord) {
+    await noteVerify(c, "card_pack");
+    const valid = await verifyCardSignature(cardRecord);
+    return c.json({
+      valid,
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      card: cardRecord.card,
+      signature: cardRecord.signature,
+      public_key: cardRecord.public_key,
+      ...(await signedBy(c, cardRecord.public_key, cardRecord.card.date)),
+      algorithm: "ed25519",
+      signed_payload: canonicalizeCard(cardRecord.card),
+      artifact_hash: await artifactHash(canonicalizeCard(cardRecord.card)),
+      signature_covers: HOW_TO_VERIFY,
+      card_url: `${c.env.STORE_BASE_URL}/cards/${cardRecord.card.card_id}.svg`,
+      pack_url: `${c.env.STORE_BASE_URL}/api/pack/${cardRecord.card.pack_id}`,
+      note: valid
+        ? "Genuine card. Drawn from the certificate id on the published wheels and signed by the store itself. It entitles the holder to a card."
+        : "Signature doesn't match. That's not one of our cards.",
+    });
+  }
+
+  const packRecord = await getPack(c.env, id);
+  if (packRecord) {
+    await noteVerify(c, "card_pack");
+    const valid = await verifyPackSignature(packRecord);
+    return c.json({
+      valid,
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      pack: packRecord.pack,
+      signature: packRecord.signature,
+      public_key: packRecord.public_key,
+      ...(await signedBy(c, packRecord.public_key, packRecord.pack.date)),
+      algorithm: "ed25519",
+      signed_payload: canonicalizePack(packRecord.pack),
+      artifact_hash: await artifactHash(canonicalizePack(packRecord.pack)),
+      signature_covers: HOW_TO_VERIFY,
+      cards: packRecord.pack.card_ids.map((cardId) => `${c.env.STORE_BASE_URL}/api/verify/${cardId}`),
+      note: valid
+        ? "Genuine pack manifest. Each card inside verifies on its own at the URLs listed."
+        : "Signature doesn't match. That's not one of our packs.",
     });
   }
 
