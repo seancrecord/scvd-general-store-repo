@@ -53,7 +53,8 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
       route.startsWith("GET /luckies/") ||
       // The card table's pictures (2026-09-12); its room, pages and binders are counted.
       route === "GET /p/specimen.svg" ||
-      /^GET \/p\/:card\{.*\.(svg|png|face\\\.png)\}$/.test(route),
+      /^GET \/p\/:card\{.*\.(svg|png|face\\\.png)\}$/.test(route) ||
+      /^GET \/binder\/:wallet\{.*\.png\}$/.test(route),
   },
   {
     why: "The three MCP doors log INSIDE their handlers, because the surface depends on the JSON-RPC method and the tool name, which a path cannot see.",

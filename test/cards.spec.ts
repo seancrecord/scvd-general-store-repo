@@ -394,6 +394,13 @@ describe("a pack, bought", () => {
     expect(html).toContain('class="entry held');
     expect(html).toContain('class="entry missing');
     expect(html).toContain("Post my binder on X");
+    expect(html).toContain(`<meta property="og:image" content="${BASE}/binder/${TEST_PAYER.toLowerCase()}.png">`);
+    // The binder as a picture: the set as a grid with the held cards drawn.
+    const sheet = await SELF.fetch(`${BASE}/binder/${TEST_PAYER}.png`);
+    expect(sheet.status).toBe(200);
+    expect(sheet.headers.get("Content-Type")).toBe("image/png");
+    expect([...new Uint8Array(await sheet.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    expect(String(collection["sheet_url"])).toBe(`${BASE}/binder/${TEST_PAYER.toLowerCase()}.png`);
     // The lookup from /design lands on the wallet's page.
     const lookup = await SELF.fetch(`${BASE}/binder?wallet=${TEST_PAYER}`, { redirect: "manual" });
     expect(lookup.status).toBe(302);

@@ -88,7 +88,12 @@ reasoning, named as desk reasoning.
    renders once and is kept in KV; the Worker's CPU ceiling moved
    100 → 1000 ms for that one path, reason beside it in
    wrangler.jsonc (§5). Share sheet 1200×675 as PNG, `/p/{card_id}`
-   with OG tags, a real QR on the machine strip. The plates: 46 drawings, and every
+   with OG tags, a real QR on the machine strip. The binder has a
+   sheet of its own (2026-09-12): `/binder/{wallet}.png`, the set as
+   a grid with the held cards drawn and the count giant, the OG
+   image of the binder page and `sheet_url` on its JSON. The
+   one-of-ones' signed line sits in the plate window, bottom-left,
+   opposite the number. The plates: 46 drawings, and every
    renamed key of the third pass is aliased to the drawing of the
    thing it depicts (`src/store/plates.ts`), and the cat and the
    five models have drawings of their own, so 46 of the 60 press

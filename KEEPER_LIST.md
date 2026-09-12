@@ -820,7 +820,9 @@ Merging is your press; these are why it waits.
   seed favours. A second press of either answers 409.
 - **LOOK — the post button.** Open any `/p/{id}` and press "Post it
   on X": the composer should open with the card's line and the page
-  URL, nothing else. Same on a binder.
+  URL, nothing else. Same on a binder, whose unfurl is now its own
+  sheet, `/binder/{wallet}.png`: the set as a grid, held cards
+  drawn, the count giant.
 - **TEST — the credit desk with a real wallet.** Twenty commons in
   a binder, `POST /api/paywall/challenge`, sign it, `POST
   /api/paywall/burn`, then `/redeem` for a pack. The desk is EVM

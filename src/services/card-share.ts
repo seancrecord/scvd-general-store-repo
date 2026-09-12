@@ -1,7 +1,7 @@
 import { drawText, fitLine, flattenPath, renderTwoInkPng, Surface, textWidth } from "@/lib/pixel-card";
-import { CONDITION_YELLOW, CREAM, CV_CLAY, KEEPER_GOLD, RAIL_COLOURS, RARITY_LINES, RARITY_ORDER, seasonById } from "@/store/cards";
+import { CONDITION_YELLOW, CREAM, CURRENT_SEASON, CV_CLAY, KEEPER_GOLD, RAIL_COLOURS, RARITY_LINES, RARITY_ORDER, seasonById, type CardEntry } from "@/store/cards";
 import { plateFor } from "@/store/plates";
-import type { CardRecord } from "@/types";
+import type { CardRarity, CardRecord } from "@/types";
 
 /**
  * THE SHARE SHEET, 1200×675 (handoff v2 §2): the card face at about
@@ -141,4 +141,90 @@ export function renderShareSheet(card: CardRecord, base: string, post: string): 
   drawText(ink, "SIGNED AT ISSUE · DRAWN BY A SEED YOU CAN CHECK · PRINTED ONCE", colX + colW / 2, H - 50, { cell: 1.5, tracking: 3 });
 
   return renderTwoInkPng(ink, accent, { field: FIELD, ink: INK, accent: rgb(accentHex) });
+}
+
+/** A plate into a box on a surface; the labelled square where there is no drawing. */
+function drawPlate(surface: Surface, key: string, x: number, y: number, size: number): void {
+  const plate = plateFor(key);
+  if (!plate) {
+    surface.frame(x + size * 0.2, y + size * 0.2, size * 0.6, size * 0.6, 1);
+    return;
+  }
+  const scale = size / 100;
+  const map = plate.transform
+    ? (px: number, py: number): [number, number] => [x + (4 + px * 0.01118568 * 0.92) * scale, y + (-2 + (100 - py * 0.01118568) * 0.92) * scale]
+    : (px: number, py: number): [number, number] => [x + px * scale, y + py * scale];
+  surface.polygons(flattenPath(plate.d, map));
+}
+
+/**
+ * THE BINDER SHEET, 1200×675 (2026-09-12): the whole set as a grid on
+ * the left, every card this wallet holds drawn in ink and every card
+ * it does not as a dot, and on the right the count, giant. The
+ * collection is the thing a collector posts; this is the picture
+ * that goes with it, off the same desk as the card's own sheet.
+ */
+export function renderBinderSheet(held: ReadonlySet<string>, wallet: string, base: string, conditions = 0): Uint8Array {
+  const ink = new Surface(W, H);
+  const accent = new Surface(W, H);
+  const cards: readonly CardEntry[] = CURRENT_SEASON.cards;
+  const cols = 10;
+  const rows = Math.ceil(cards.length / cols);
+  const cell = 62;
+  const gridW = cols * cell;
+  const gridX = 56;
+  const gridY = Math.round((H - rows * cell) / 2);
+  ink.frame(gridX - 12, gridY - 12, gridW + 24, rows * cell + 24, 2);
+  const byRarity: Record<CardRarity, number> = { common: 0, uncommon: 0, rare: 0, holo: 0, keeper: 0 };
+  let count = 0;
+  cards.forEach((card, index) => {
+    const x = gridX + (index % cols) * cell;
+    const y = gridY + Math.floor(index / cols) * cell;
+    if (held.has(card.key)) {
+      count += 1;
+      byRarity[card.rarity] += 1;
+      // The one-of-ones and the holos in the accent ink; the rest in the cream.
+      drawPlate(card.rarity === "keeper" || card.rarity === "holo" ? accent : ink, card.key, x + 7, y + 7, cell - 14);
+    } else {
+      ink.rect(x + cell / 2 - 2, y + cell / 2 - 2, 4, 4);
+    }
+  });
+
+  const colX = gridX + gridW + 56;
+  const colW = W - colX - 56;
+  const big = `${count} / ${cards.length}`;
+  const bigFit = fitLine(big, 9, colW, 4);
+  drawText(ink, bigFit.text, colX + colW / 2, 200, { cell: bigFit.cell, tracking: 4 });
+  drawText(ink, "IN THE BINDER", colX + colW / 2, 290, { cell: 2.2, tracking: 4 });
+  // The tally wraps by entry, never inside one: "1 RARE" stays together.
+  const entries = (["keeper", "holo", "rare", "uncommon", "common"] as const)
+    .filter((rarity) => byRarity[rarity] > 0)
+    .map((rarity) => `${byRarity[rarity]} ${RARITY_LINES[rarity]}`);
+  const tallyLines: string[] = [];
+  for (const entry of entries) {
+    const last = tallyLines[tallyLines.length - 1];
+    const joined = last ? `${last} · ${entry}` : entry;
+    if (last && textWidth(joined, { cell: 2, tracking: 3 }) <= colW) tallyLines[tallyLines.length - 1] = joined;
+    else tallyLines.push(entry);
+  }
+  // The right column flows: the tally, the weather if any, the wallet, the door.
+  let cursor = 340;
+  for (const line of tallyLines) {
+    drawText(accent, line, colX + colW / 2, cursor, { cell: 2, tracking: 3 });
+    cursor += 32;
+  }
+  if (conditions >= 3) {
+    cursor += 12;
+    drawText(accent, "UNDER THE WEATHER", colX + colW / 2, cursor, { cell: 2, tracking: 4 });
+    cursor += 32;
+  }
+  cursor += 28;
+  // The pixel font has no ellipsis; three stops say the same thing.
+  const who = `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
+  drawText(ink, who.toUpperCase(), colX + colW / 2, cursor, { cell: 2.4, tracking: 3 });
+  const where = `${base.replace(/^https?:\/\//, "")}/binder`;
+  drawText(accent, where, colX + colW / 2, cursor + 40, { cell: 2, tracking: 2 });
+  accent.rect(colX, H - 64, colW, 2);
+  drawText(ink, "SEASON ONE · SUMMER OF 402 · OAK CITY", colX + colW / 2, H - 50, { cell: 1.5, tracking: 3 });
+  return renderTwoInkPng(ink, accent, { field: FIELD, ink: INK, accent: rgb(KEEPER_GOLD) });
 }

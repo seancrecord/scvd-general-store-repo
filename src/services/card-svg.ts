@@ -270,8 +270,7 @@ function renderFace(body: FaceBody): string {
   const flavourY = typeY + 46;
   // The stamp never wanders into the data layer: it floats under the
   // flavour but stops above the strip, whatever the name wrapped to.
-  const signedY = flavourY + flavour.length * 34 + 8;
-  const diamondsY = Math.min(flavourY + flavour.length * 34 + (inverted ? 52 : 12), H - 300);
+  const diamondsY = Math.min(flavourY + flavour.length * 34 + 12, H - 300);
 
   const numberLine = body.specimen ? "No. — / —" : `No. ${String(entry.no).padStart(2, "0")} / ${body.setSize}`;
   const printLine = body.specimen
@@ -352,7 +351,7 @@ function renderFace(body: FaceBody): string {
   ${nameLines.map((line, i) => `<text x="${W / 2}" y="${nameY + i * 58}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="${nameSize}" fill="${inverted ? accent : ink}">${escapeHtml(line)}</text>`).join("\n  ")}
   <text x="${W / 2}" y="${typeY}" text-anchor="middle" font-family="${SERIF}" font-size="22" letter-spacing="6" fill="${faded}">${escapeHtml(TYPE_LINES[entry.type].toUpperCase())}${entry.rail ? ` · ${escapeHtml(entry.rail.toUpperCase())}` : ""}</text>
   ${flavour.map((line, i) => `<text x="${W / 2}" y="${flavourY + i * 34}" text-anchor="middle" font-family="${SERIF}" font-style="italic" font-size="26" fill="${ink}" opacity="0.92">${escapeHtml(line)}</text>`).join("\n  ")}
-  ${inverted && !body.specimen ? `<text x="${W - 110}" y="${signedY}" text-anchor="end" font-family="${SERIF}" font-style="italic" font-size="24" fill="${accent}">${escapeHtml(entry.key === "cv" ? "signed, CV" : "signed, the keeper")}</text>` : ""}
+  ${inverted && !body.specimen ? `<text x="${window.x + 22}" y="${window.y + window.h - 22}" font-family="${SERIF}" font-style="italic" font-size="24" fill="${accent}">${escapeHtml(entry.key === "cv" ? "signed, CV" : "signed, the keeper")}</text>` : ""}
   <g transform="rotate(${stamp.rotationDeg.toFixed(2)} ${W / 2} ${diamondsY})" opacity="${stamp.inkOpacity}">
     ${diamonds(entry.rarity, W / 2, diamondsY, accent)}
     <text x="${W / 2}" y="${diamondsY + 44}" text-anchor="middle" font-family="${SERIF}" font-weight="bold" font-size="24" letter-spacing="8" fill="${accent}">${escapeHtml(body.specimen ? CARD_LINES.specimenMark : RARITY_LINES[entry.rarity])}</text>

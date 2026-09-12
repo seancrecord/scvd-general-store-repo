@@ -7,7 +7,7 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { renderCardFace, renderSpecimenFace } from "@/services/card-svg";
-import { renderShareSheet } from "@/services/card-share";
+import { renderBinderSheet, renderShareSheet } from "@/services/card-share";
 import { renderFacePng } from "@/services/card-png";
 import {
   BurnRefused,
@@ -436,6 +436,7 @@ async function binderJson(c: Context<HonoEnv>, raw: string) {
       of: CURRENT_SEASON.cards.length,
       missing: CURRENT_SEASON.cards.filter((card) => !heldKeys.has(card.key)).map((card) => card.key),
       page_url: `${base}/binder/${wallet}`,
+      sheet_url: `${base}/binder/${wallet}.png`,
       post_url: postIntentUrl(`My binder at scvd.store: ${CURRENT_SEASON.cards.filter((card) => heldKeys.has(card.key)).length} of ${CURRENT_SEASON.cards.length} in the Season One set.`, `${base}/binder/${wallet}`),
     },
     note: binder.rows.length === 0
@@ -451,6 +452,15 @@ cardRoutes.get("/binder", (c) => {
   const wallet = walletOrNull(c.req.query("wallet") ?? "");
   if (!wallet) return c.text("Which binder? GET /binder?wallet=0x… (forty hex) or a base58 Solana address; the page is /binder/{wallet}.", 400);
   return c.redirect(`/binder/${wallet}`, 302);
+});
+
+/** The binder as a picture: the set as a grid, the held cards drawn, the count giant. */
+cardRoutes.get("/binder/:wallet{[A-Za-z0-9]+\\.png}", async (c) => {
+  const wallet = walletOrNull(c.req.param("wallet").replace(/\.png$/, ""));
+  if (!wallet) return c.text("A binder is keyed by a wallet address.", 400);
+  const binder = await readBinder(c.env, wallet);
+  const png = renderBinderSheet(new Set(binder.rows.map((row) => row.key)), wallet, c.env.STORE_BASE_URL, binder.conditions);
+  return c.body(png.buffer as ArrayBuffer, 200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" });
 });
 
 cardRoutes.get("/binder/:wallet", async (c) => {
@@ -480,7 +490,7 @@ cardRoutes.get("/binder/:wallet", async (c) => {
       path: `/binder/${wallet}`,
       extraCss: DESIGN_CSS,
       bodyClass: "paywall",
-      ogImage: binder.rows[0] ? `${c.env.STORE_BASE_URL}/p/${binder.rows[0].card_id}.png` : undefined,
+      ogImage: `${c.env.STORE_BASE_URL}/binder/${wallet}.png`,
       bodyHtml: `<section><p class="menu-meta">${escapeHtml(wallet)} · ${binder.rows.length} card${binder.rows.length === 1 ? "" : "s"}${binder.truncated ? " shown; the binder holds more than this page lists" : ""} · ${credit} pack${credit === 1 ? "" : "s"} of credit</p>${binder.under_the_weather ? `<p class="weather">${escapeHtml(CARD_LINES.underTheWeather)}: ${binder.conditions} Conditions at once. It clears when one does.</p>` : ""}<p><a class="post-button" href="${escapeHtml(postIntentUrl(collectionPost, `${c.env.STORE_BASE_URL}/binder/${wallet}`))}" rel="noopener">Post my binder on X</a></p><h2>The collection: ${held} of ${CURRENT_SEASON.cards.length}</h2><p class="menu-meta">Every card in the Season One set, the ones this wallet holds lit; the rest say how they are obtained. Each held card's page carries its own post button.</p><div class="set">${checklist}</div><h2>The pressings, newest first</h2><div class="set">${list}</div><p class="menu-meta">The set, the odds and a pack of your own: <a href="/design">Paywall</a>. Manifest: <a href="/api/paywall/binder/${escapeHtml(wallet)}"><code>/api/paywall/binder/${escapeHtml(wallet)}</code></a>.</p></section>`,
     }),
   );
