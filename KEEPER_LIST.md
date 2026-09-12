@@ -1193,6 +1193,19 @@ Do not relitigate without you.
   passes) and the FORTE tier (they pay one real call;
   `settlement_attestation` at $0.004 is the cheapest
   target). Both are asks through the same owner flow.
+  ⚑ 2026-09-12: their EIP-712 row went pass → unknown on
+  the 04:30 UTC re-capture. Cause on our side, not theirs:
+  the doors Worker's POLYGON/ARBITRUM/WORLD_PAY_TO were
+  typed lowercase, the store's checksummed, and the store
+  has no ARBITRUM_PAY_TO at all — so once launch_check and
+  opening_day moved to the store (09-11) the shelf quoted
+  one wallet two ways and one rail on 30 doors only. Code
+  now checksums every EVM pay-to (one spelling on both
+  Workers). YOURS: enter ARBITRUM_PAY_TO on the store
+  Worker, same wallet as the doors Worker; then
+  `npm run doors:live -- --doors=https://scvd.store` must
+  read every door as agreeing with discovery. Their next
+  feePayer rotation re-captures the envelope on its own.
 - **OpenAI / Claude MCP hosts.** LOOK: what they require
   to list vs what we already declare. Do not start a
   second WebMCP note.
