@@ -735,17 +735,16 @@ Built on `claude/compassionate-planck-6pba4v` to your handoff and
 then to the first-pass plan in full, green locally, not merged.
 Merging is your press; these are why it waits.
 
-- **RULE — rule 22.** Five draws a pack under a committed, derived
-  seed anyone recomputes the morning after; the plan's odds table as
-  wheels; one common a day off the bell; a window pick chosen by the
-  seed; no pity timer, no near-miss, no closing window. Honest
-  randomness with custody, or gacha by shape? Recommended: merge.
-- **RULE — rule 41.** Paid random draws are loot boxes in Belgium,
-  the Netherlands, Japan and under the UK code. Nothing cashable,
-  nothing bought back, odds and seed public — and the window MOVES a
-  card between strangers' binders for $0.49, which is the one new
-  fact a lawyer should hear. Before the merge, or the week after?
-  Recommended: after, with the window sentence in the brief.
+- **RULED, rule 22 (2026-09-12): "the first."** Honest randomness
+  with custody. The room stays paid, the shelf item stays on, and
+  every hedge the build carries (derived seed, published wheels, no
+  pity timer, no near-miss, no closing window, no price on a card)
+  is the reason the ruling holds.
+- **RULED, rule 41 (2026-09-12): "no lawyer at all, let's just make
+  it work."** Noted as ruled, not argued. What the build already
+  does for you: nothing cashable, nothing bought back, odds and seed
+  public, the window sentence on /design in plain words. If a
+  regulator ever writes, the record of that is here, dated.
 - **RULE — holder perks against the pricing charter.** The plan's 5%
   off with a Rail holo and the Keeper's free pick are prices that
   depend on who is buying; the charter's one-price clause is older.
@@ -779,18 +778,34 @@ Merging is your press; these are why it waits.
   fonts. Cloudflare Browser Rendering (a paid binding), or resvg-wasm
   plus two font files (~2.5 MB). Until then the face is SVG and the
   share sheet — the asset that stops the scroll — is PNG already.
-- **RULE — two budgets moved.** The OpenAPI warning budget 700,000
-  → 750,000 in `src/store/reader-limits.ts`, and the MCP tools/list
-  ceiling 140,000 → 152,000 bytes in
-  `test/mcp-tool-catalog-budget.spec.ts` (two free tools, two items,
-  one published refusal; measured 147,028 with the descriptions cut
-  first). Each carries its reason beside it. Keep, lower, or thin.
-- **RULE — rule 7.** Every card name, line and post sentence in
-  `src/store/cards.ts` (your words, with the three cuts); the pack
-  and window-pick copy; the credit desk's challenge sentence; the
-  storefront lines; the guide's Paywall paragraph; the skill
-  paragraph; the declined-positions WebMCP sentence tightened by 63
-  characters. Ink or kill.
+- **RULED, the OpenAPI budget (2026-09-12): "can we thin the contract
+  somehow? what about latency?"** Thinned, and the number is back at
+  700,000: the 304 answer is one shared component instead of
+  eighty-one inline copies, the 402 offer says its sentence in half
+  the words on every paid door, and the idempotency parameter's long
+  form lives on /developers and in every 402 body instead of
+  thirty-seven times in the contract; the async-job prose and the
+  purpose parameter say their sentence once, briefly. Measured:
+  654,898 bytes on today's rails and 683,371 with every checkout
+  rail enabled, from 697,332 and 703,235. That is six listings of
+  headroom today and two in the all-rails case. The next cut is a
+  ruling, not an edit: every paid door carries its input contract
+  three times (parameters, x-request-schema, x-payment-info.input),
+  each copy added for a named reader; dropping one saves ~33 KB and
+  loses that reader. Latency was never the number:
+  the document builds in about 35 ms and travels gzipped at about
+  86 KB; the budget is the uncompressed byte count a scanner with a
+  fetch cap sees. The MCP tools/list ceiling stays at 152,000
+  (140,000 before the two free tools), reason beside it. RULE if you
+  want that one thinned too.
+- **RULED, rule 7 (2026-09-12): "okay they look good."** Inked: every
+  card name, line and post sentence in `src/store/cards.ts`, the pack
+  and window-pick copy, the credit desk's challenge sentence, the
+  storefront lines, the guide's Paywall paragraph, the skill
+  paragraph, the declined-positions sentence. The pen marks in the
+  source say so. New lines since (the second reading's eight cards,
+  the streak, the Neighbour) are yours the same way; say if any
+  should change.
 - **TEST — press the Keeper and CV into the window.** `/admin/tools`:
   key `keeper`, then `cv`, destination `window`; each should hang at
   `/p/{id}` in its metal with the 1 / 1 seal, show on

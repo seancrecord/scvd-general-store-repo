@@ -34,7 +34,7 @@ import type { CardRarity, CardRail, CardType } from "@/types";
  *   hand    — Events: the keeper drops them on dates
  * Conditions drop from slot 5 only, and from the window.
  *
- * ⚑ Keeper's pen: the first pass says six of the herd names are the
+ * Inked by the keeper 2026-09-12 (rule 7). The first pass says six of the herd names are the
  * proposer's and swap freely; every post line and flavour is his to
  * cut. Assumptions the plan did not settle are named in the paper.
  */
@@ -187,7 +187,7 @@ const model = (no: number, key: string, name: string, rarity: CardRarity, post: 
  * row"; the store cannot probe itself (its passport says
  * SELF-OBSERVED), so its count is zero forever and it would never
  * press — the degraded door here is a real one that read ready four
- * rounds and then did not. ⚑ Keeper's pen on which doors.
+ * rounds and then did not. The doors as chosen were inked 2026-09-12.
  */
 const DOORS = {
   first: { host: "api.onesource.io", hash: "abc7130655af4d2bc1f232c288a620cb2948774a0e9df21dfe9c4c92b532c6a9" },

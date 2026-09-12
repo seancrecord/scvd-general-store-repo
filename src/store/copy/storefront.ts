@@ -52,13 +52,13 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     line: "A lucky totem. Results may vary. Or they might not. They vary variously. The keeper keeps it close; the luck's all yours.",
   },
   {
-    // ⚑ Keeper's pen: drafted 2026-09-12 with the card table, not inked.
+    // Inked by the keeper 2026-09-12 ("okay they look good").
     id: "pack",
     name: "a pack of cards",
     line: "Five cards of this store and its town, three commons and two off the wheel. The odds are on the table, the seed is committed. Nobody buys one back.",
   },
   {
-    // ⚑ Keeper's pen: drafted 2026-09-12 with the window, not inked.
+    // Inked by the keeper 2026-09-12 ("okay they look good").
     id: "window_pick",
     name: "a window pick",
     line: "One of the last five pressings anybody pulled, moved to your binder. Look first, it's free. The seed picks, not you.",

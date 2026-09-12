@@ -285,18 +285,12 @@ already. OPEN.
 
 ## 6. The rulings (OPEN), in the order the merge needs them
 
-1. **RULE — rule 22.** Five draws a pack on published, derived,
-   recomputable odds under a committed seed, no pity timer, no
-   near-miss, no closing window: honest randomness with custody, or
-   gacha by shape? The plan says the former in its own words and
-   this build holds every one of them by test. Recommended: merge.
-2. **RULE — rule 41.** Paid random draws are loot boxes in several
-   jurisdictions (Belgium, the Netherlands, Japan, the UK code).
-   Nothing here is cashable, nothing is bought back, the odds and the
-   seed are public, and the window MOVES a card between strangers'
-   binders for money — which is the one new fact a lawyer should
-   hear. Lawyer before merge or the week after? Recommended: the
-   week after, with the window sentence in the brief.
+1. **RULED, rule 22 (2026-09-12): "the first."** Honest randomness
+   with custody. The room stays paid and the shelf item stays on.
+2. **RULED, rule 41 (2026-09-12): "no lawyer at all, let's just
+   make it work."** Recorded as ruled. The build's own hedges stand:
+   nothing cashable, nothing bought back, odds and seed public, the
+   window sentence in plain words on /design.
 3. **RULE — holder perks against the pricing charter.** The plan's
    5% Rail-holo discount and the Keeper's free pick are prices that
    depend on who is buying. The charter's one-price clause is older.
@@ -312,16 +306,18 @@ already. OPEN.
    edit each.
 5. **RULE — rule 15 and §7.** The Season 2 `mint_to_chain` door.
    Nothing here builds toward it; his call, and not this season's.
-6. **RULE — two budgets** (§B): the OpenAPI warning budget 700,000
-   → 750,000, and the MCP tools/list ceiling 140,000 → 152,000 bytes
-   for two free tools, two items and one published refusal, measured
-   at 147,028 after the descriptions were cut under their own 34k
-   line.
-7. **RULE — rule 7.** Every name, line and post sentence in
-   `src/store/cards.ts` (the plan's words, with the three cuts), the
-   shelf copy, the storefront lines, the declined-positions sentence
-   tightened by 63 characters, the guide's Paywall paragraph, the
-   skill paragraph, the credit desk's challenge text. Ink or kill.
+6. **RULED, the OpenAPI budget (2026-09-12): thinned, not raised.**
+   Back at 700,000 (§B): the 304 answer is one shared component
+   instead of eighty-one copies, the 402 offer is half as long on
+   every paid door, the idempotency parameter's long form moved to
+   /developers, the async-job prose and the purpose parameter say
+   their sentence once. Measured: 654,898 bytes on today's rails,
+   683,371 with every rail on, from 697,332 and 703,235. Latency was
+   never the number (about 35 ms to build, about 86 KB gzipped on
+   the wire). The MCP tools/list ceiling
+   stays at 152,000 with its reason; RULE if it should be thinned
+   too.
+7. **RULED, rule 7 (2026-09-12): "okay they look good."** Inked.
 8. **DONE — the Ally anonymized.** "Idk if we can use Cairn's
    likeness like that or even want to." The Neighbour names nobody,
    cites the arrangement page, and rides the rare pool.

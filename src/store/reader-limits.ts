@@ -39,7 +39,21 @@ export const SCANNER_FETCH_CAP_BYTES = 1_000_000;
  * about four more listings before this rings again; the next ring
  * is a ruling, not a number to move. ⚑ Keeper's pen on the number.
  */
-export const SCANNER_BUDGET_BYTES = 750_000;
+/**
+ * BACK TO 700,000 (2026-09-12, the keeper: "can we thin the contract
+ * somehow?"). Thinned instead of raised: the 304 answer became one
+ * shared component instead of eighty-one inline copies, the 402 offer
+ * says its sentence in half the words on every paid door, and the
+ * idempotency parameter's long form moved to /developers, where it
+ * is read once rather than thirty-seven times; the async-job prose
+ * and the purpose parameter say their sentence once, briefly.
+ * Measured after (2026-09-12): 654,898 bytes on today's rails,
+ * 683,371 with every checkout rail enabled (the headroom test's
+ * case), from 697,332 and 703,235 before. Not a latency number — the document
+ * builds in about 35 ms and travels gzipped at about 86 KB; this is
+ * the uncompressed byte count a scanner with a fetch cap sees.
+ */
+export const SCANNER_BUDGET_BYTES = 700_000;
 
 /**
  * The llmstxt.org recommendation. /llms.txt is the index;

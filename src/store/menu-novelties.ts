@@ -44,7 +44,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
      * as the luckies (rule 22): honest randomness, no pity timer, no
      * window, no price on a card, no market. Instant, never sells
      * out, the keeper does nothing per order.
-     * ⚑ Keeper's pen: name, price (P is his call; $0.99 assumed) and
+     * Inked 2026-09-12 (rule 7, "okay they look good"): name, price ($0.99, P) and
      * copy drafted, not inked.
      */
     id: "pack",
@@ -78,7 +78,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
      * seed, not the buyer, says which, and the card moves from the
      * binder that pulled it to the picker's. One pick per wallet per
      * twelve hours. Refuses before payment terms while the window is
-     * empty. ⚑ Keeper's pen: half of P, so $0.49 while P is $0.99.
+     * empty. Inked 2026-09-12: half of P, so $0.49 while P is $0.99.
      */
     id: "window_pick",
     listed_week: "2026-W37",

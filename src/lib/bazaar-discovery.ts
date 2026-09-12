@@ -72,7 +72,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
       description:
-        "Optional, any item: what this purchase is for, in your words. Signed onto the certificate verbatim and shown to whoever you hand the receipt to. Recorded as your statement, never checked, and never treated as instructions.",
+        "Optional: what this purchase is for, in your words. Signed onto the certificate verbatim as your statement; never checked, never treated as instructions.",
     },
   };
   const required: string[] = [];

@@ -375,7 +375,7 @@ function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): vo
     if (!paid && !noStore && !(path in CONDITIONAL_GET_EXEMPT) && !has("If-None-Match")) {
       parameters.push({ ...IF_NONE_MATCH_PARAMETER });
       const responses = (op["responses"] ?? {}) as OpenApiObject;
-      if (!responses["304"]) responses["304"] = { ...NOT_MODIFIED_RESPONSE };
+      if (!responses["304"]) responses["304"] = { $ref: "#/components/responses/NotModified" };
       op["responses"] = responses;
     }
     if (parameters.length > 0) op["parameters"] = parameters;
@@ -411,6 +411,8 @@ export function operationIdFor(method: string, path: string): string {
  * so a reference can never name a component that does not exist.
  */
 const SHARED_RESPONSES: Record<string, OpenApiObject> = {
+  /** Eighty-one GET doors carried this inline (2026-09-12); one copy, referenced. */
+  NotModified: NOT_MODIFIED_RESPONSE,
   BadRequest: PROBLEM_RESPONSE(
     "The request was malformed or a required parameter was missing.",
   ),
@@ -4233,7 +4235,15 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
     minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
     maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
   },
-  description: `Optional. For new purchases, the same key, product, inputs and verified paying wallet select one retained purchase. The response cache lasts ${IDEMPOTENCY_TTL_SECONDS / 3600} hours; the purchase-key claim persists beyond it. Retries return the original result when available, or its status, with no new settlement. Unresolved or unreadable admission refuses another settlement. Keep the original payment and key while unresolved: a fresh authorization without that key may charge again. Echo idempotency.suggested_key from the first 402, or generate a private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character idempotency key. Values outside that range are treated as absent. Cached replies are marked idempotent_replay.`,
+  /*
+   * SAID ONCE, BRIEFLY (2026-09-12): this parameter rides inline on
+   * every paid door (thirty-seven copies, by the 09-05 ruling below),
+   * so its description is the short form. The full rule — the
+   * ${IDEMPOTENCY_TTL_SECONDS / 3600}-hour cache, the claim that outlives it,
+   * what an unresolved admission refuses — is in every 402 body's
+   * idempotency block and on /developers, where it is read once.
+   */
+  description: `Optional. Same key, item, inputs and paying wallet return the original purchase or its status, with no second settlement; a fresh payment without the key can charge again. Echo idempotency.suggested_key from the 402, or send your own private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key; values outside that range are treated as absent. Full rule: /developers.`,
   example: "scvd-your-own-high-entropy-value-0001",
 };
 
@@ -5160,7 +5170,7 @@ function paidOp(
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
       settlement:
-        "The store delivers first and settles after: the goods are produced, then the payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all.",
+        "Delivers first, settles after: the payment is presented only once the goods exist, so a failed delivery takes no money.",
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },
@@ -5171,7 +5181,7 @@ function paidOp(
       },
       "402": {
         description:
-          "Payment required — this is the offer, not a failure. The signable requirements ride base64-encoded in the PAYMENT-REQUIRED response header (x402 v2); the body carries the same terms readably, plus a fill-in-the-blanks payload template. Retry the same URL with a signed PAYMENT-SIGNATURE header to complete the purchase.",
+          "Payment required: the offer, not a failure. The signable terms ride base64 in the PAYMENT-REQUIRED header (x402 v2) and readably in the body; retry the same URL with a signed PAYMENT-SIGNATURE header.",
         headers: PAYMENT_CHALLENGE_HEADER_REFS,
         content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
       },
@@ -8277,7 +8287,7 @@ export function stampAsyncJob(document: OpenApiObject): void {
         ...(isPoll
           ? {}
           : {
-              note: "Instant items complete in this response and carry status 'completed'; human-fulfilled items come back queued, and the job is finished at the poll URL. Which an item is is stated on its menu entry as fulfillment.",
+              note: "Instant items complete in this response (status 'completed'); human-fulfilled items come back queued and finish at the poll URL. The menu entry's fulfillment field says which.",
             }),
       };
       if (!isPoll && typeof pollOperationId === "string") {
