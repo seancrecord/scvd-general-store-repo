@@ -5259,7 +5259,12 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
    * the vocabulary a generated client needs. This says it in the
    * vocabulary a payment scanner reads: one JSON Schema object,
    * $schema-declared, every property carrying its own description and
-   * `required` naming what the door will refuse without. Both come
+   * `required` naming what the door will refuse without. It rides
+   * ONCE, as x-payment-info.input.schema, the discovery spec's own
+   * slot; the bare x-request-schema copy of the same object came off
+   * every paid door on 2026-09-12 ("just cut one") for the read
+   * budget, since no reader named it and the two were byte-identical.
+   * Both come
    * from `buyInputSchema` — the same object the Bazaar entry, the MCP
    * tool definition, the live 402 body and the buy route's own guard
    * are built from — so there is one place a field can be described
@@ -5313,7 +5318,6 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     price_discovery_url: `${env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     schema: requestSchema,
   };
-  operation["x-request-schema"] = requestSchema;
   return operation;
 }
 

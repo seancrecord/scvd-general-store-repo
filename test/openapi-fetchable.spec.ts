@@ -214,11 +214,12 @@ describe("the contract says how to understand and how to pay", () => {
     for (const [path, item] of Object.entries(paths)) {
       if (!path.startsWith("/api/buy/")) continue;
       const op = item["get"] as Record<string, unknown>;
-      const requestSchema = op["x-request-schema"] as
+      // The one copy of the request schema: the discovery spec's own slot (2026-09-12).
+      const requestSchema = ((op["x-payment-info"] as Record<string, unknown> | undefined)?.["input"] as Record<string, unknown> | undefined)?.["schema"] as
         | Record<string, unknown>
         | undefined;
       if (!requestSchema) {
-        problems.push(`${path}: no x-request-schema`);
+        problems.push(`${path}: no x-payment-info.input.schema`);
         continue;
       }
       const properties = requestSchema["properties"] as Record<

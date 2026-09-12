@@ -788,11 +788,13 @@ Merging is your press; these are why it waits.
   purpose parameter say their sentence once, briefly. Measured:
   654,898 bytes on today's rails and 683,371 with every checkout
   rail enabled, from 697,332 and 703,235. That is six listings of
-  headroom today and two in the all-rails case. The next cut is a
-  ruling, not an edit: every paid door carries its input contract
-  three times (parameters, x-request-schema, x-payment-info.input),
-  each copy added for a named reader; dropping one saves ~33 KB and
-  loses that reader. Latency was never the number:
+  headroom today and two in the all-rails case. Then your "just cut
+  one, you decide": the bare x-request-schema copy came off every
+  paid door, since no reader named it and it was byte-identical to
+  x-payment-info.input.schema, the discovery spec's own slot, which
+  stays; parameters stay for generated clients. Measured after:
+  616,345 on today's rails, 644,818 with every rail on, eleven and
+  seven listings of headroom. Latency was never the number:
   the document builds in about 35 ms and travels gzipped at about
   86 KB; the budget is the uncompressed byte count a scanner with a
   fetch cap sees. The MCP tools/list ceiling stays at 152,000

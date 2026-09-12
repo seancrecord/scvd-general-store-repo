@@ -311,8 +311,10 @@ already. OPEN.
    instead of eighty-one copies, the 402 offer is half as long on
    every paid door, the idempotency parameter's long form moved to
    /developers, the async-job prose and the purpose parameter say
-   their sentence once. Measured: 654,898 bytes on today's rails,
-   683,371 with every rail on, from 697,332 and 703,235. Latency was
+   their sentence once, and the duplicate x-request-schema came off
+   every paid door on "just cut one". Measured: 616,345 bytes on
+   today's rails, 644,818 with every rail on, from 697,332 and
+   703,235. Latency was
    never the number (about 35 ms to build, about 86 KB gzipped on
    the wire). The MCP tools/list ceiling
    stays at 152,000 with its reason; RULE if it should be thinned

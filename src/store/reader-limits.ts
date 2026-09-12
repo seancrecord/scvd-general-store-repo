@@ -47,9 +47,11 @@ export const SCANNER_FETCH_CAP_BYTES = 1_000_000;
  * idempotency parameter's long form moved to /developers, where it
  * is read once rather than thirty-seven times; the async-job prose
  * and the purpose parameter say their sentence once, briefly.
- * Measured after (2026-09-12): 654,898 bytes on today's rails,
- * 683,371 with every checkout rail enabled (the headroom test's
- * case), from 697,332 and 703,235 before. Not a latency number — the document
+ * Then the keeper's "just cut one": the bare x-request-schema copy
+ * of every paid door's input schema came off, x-payment-info.input
+ * keeping the one copy. Measured after (2026-09-12): 616,345 bytes
+ * on today's rails, 644,818 with every checkout rail enabled (the
+ * headroom test's case), from 697,332 and 703,235 before. Not a latency number — the document
  * builds in about 35 ms and travels gzipped at about 86 KB; this is
  * the uncompressed byte count a scanner with a fetch cap sees.
  */
