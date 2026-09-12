@@ -1,6 +1,6 @@
 {
   "what_this_is": "A snapshot of https://scvd.store/defects.json cut from the store's own source at the version below (npm run defects:cut). The live document is the authority; fetchLatest() reads it, and isStale() says whether this file is behind.",
-  "version": "13",
+  "version": "14",
   "url": "https://scvd.store/defects",
   "cross_instrument_mappings_read_on": "2026-08-23",
   "classes": [
@@ -114,11 +114,11 @@
     {
       "id": "replay-accepted",
       "title": "Serves the goods twice for one settled payment",
-      "asserts": "A byte-identical, already-settled payment presented a second time is refused.",
+      "asserts": "A byte-identical, already-settled payment presented a second time is not served as a new sale: it is refused, or answered with the original purchase's own outcome naming the settlement that paid for it.",
       "costs": "The seller gives its product away. The authorization's nonce is spent, so nothing reaches them on the second pass — and from their side both requests look like successful sales.",
       "detectable": "paid",
-      "our_signal": "launch_check stage: replay",
-      "falsified_by": "The endpoint refusing the identical presented payment on the second attempt at the stated moment.",
+      "our_signal": "launch_check stage: replay (outcome served_again)",
+      "falsified_by": "The endpoint answering the identical presented payment on the second attempt with a refusal, or with the original purchase naming its settlement transaction, at the stated moment.",
       "also_known_as": [
         {
           "instrument": "Cairn (cairnwake.com)",
@@ -127,7 +127,7 @@
           "falsified_by": "Their check asserting something other than the refusal of an identical already-settled payment."
         }
       ],
-      "repair_hint": "Record each settled authorization nonce at settle time and refuse a byte-identical presentation BEFORE fulfillment runs — one keyed read at the till. Refusing with a reference to the original settlement also keeps you clear of the nonce-unbound class below.",
+      "repair_hint": "Record each settled authorization nonce at settle time and, BEFORE fulfillment runs, either refuse a byte-identical presentation or answer it with the original purchase and its settlement reference, charged nothing — one keyed read at the till. Naming the original settlement either way keeps you clear of the nonce-unbound class below.",
       "buyer_hint": "This costs the seller, not you, but it tells you the till keeps no settlement ledger: keep your own record of what you paid and the response you got, because the door cannot help you reconstruct it later."
     },
     {
@@ -142,6 +142,19 @@
       "registered": "2026-08-27",
       "repair_hint": "Store the settlement transaction hash beside the nonce when you mark it spent, and return it on the replay refusal — one extra column, and a buyer's honest recovery becomes distinguishable from fraud.",
       "buyer_hint": "Keep the settlement transaction hash yourself, from your wallet or the facilitator's response, before you need it: this door cannot tell you what spent your nonce, so your honest recovery of a lost response rests on your own record."
+    },
+    {
+      "id": "re-challenges-spent-authorization",
+      "title": "Asks for new money when a settled payment is presented again",
+      "asserts": "A byte-identical, already-settled payment presented a second time is answered with the original outcome or a refusal, never with a fresh payment challenge.",
+      "costs": "A buyer who paid and lost the response re-presents the same authorization and is told to pay. Its nonce is spent, so the only way through the new challenge is a second signature — and the second signature is a second charge for goods the first one already bought. From the buyer's side it is one purchase attempted twice; from the seller's, two sales. This is the receiver-side defect the x402 specification thread measured in seven of ten money paths in September 2026.",
+      "detectable": "paid",
+      "our_signal": "launch_check stage: replay (outcome rechallenged)",
+      "falsified_by": "The endpoint answering the identical presented payment on the second attempt with anything other than a new payment challenge — a refusal, or the original purchase — at the stated moment.",
+      "sourced_by": "The x402 specification thread: aurumflux20's field read of ten money paths (x402-foundation/x402#3325, 2026-09-03) and the receiver obligation drafted from it (#3437). This store is the registrar, not the author.",
+      "registered": "2026-09-12",
+      "repair_hint": "When a presented authorization's nonce is already spent, look it up before you build a challenge: answer with the original purchase's outcome and its settlement reference (a paid retry, charged nothing), or refuse naming that settlement. Never let the spent-nonce path fall through to the code that issues a fresh 402.",
+      "buyer_hint": "If a door answers your re-presented payment with a new challenge, do not sign it: your first authorization may have settled, and a second one is a second charge. Keep the settlement reference from your first response, read the chain for it, and use the door's recovery path or ask for delivery against that settlement before paying again."
     },
     {
       "id": "settlement-error",
@@ -464,6 +477,12 @@
       "date": "2026-09-07",
       "at_the_instigation_of": "0200project (github.com/0200project), correcting the falsifier they had supplied for v12, against the line in their own source rather than a description of it",
       "what_changed": "cleared-not-examined keeps its assertion and loses its falsifier. v12 read `checks.assessed_for` as the check's published COVERAGE SET; it is the check's SUBJECT — the principals whose exposure the statuses describe, the payer on a relayed transfer. The examined set is derived from that field, not equal to it: the `assets_moved[].to` whose `.from` appears in `assessed_for`. The v12 rule therefore MISFIRED ON THE COMMONEST SHAPE THERE IS — on a plain transfer `assessed_for` is [sender], the recipient was screened and is absent from the field, so the rule reported unscreened about an address the check had examined. A false reading, inside a label whose entire subject is the provenance of readings. Its author found it by RUNNING it rather than reasoning about it (a blocklisted recipient absent from `assessed_for` still raises the instrument's own drainer flag, which is only possible if it was screened) and disclosed it four hours after this register shipped the wrong version, unprompted and again unpaid. THE V12 TEXT, SO IT STAYS READABLE: 'Reading the check's own published coverage set — `checks.assessed_for` in the instrument that named the class — and finding the subject present in it. Any subject absent from that set is unscreened whatever the status beside it says. Exact on the three settlement shapes its author tested (plain, relayed, batched); it OVER-FIRES ON APPROVALS, where a spender is screened without any movement being involved, and that boundary is part of the finding rather than a caveat on it.' Two things this store owes the record. The v12 entry disclosed that WE HAD NOT RUN THE FALSIFIER, and that disclosure is the only reason this is a correction to a definition rather than an instance of cleared-not-examined in the register that named it — a passing claim about a subject its registrar never examined. And the approvals boundary is no longer an over-fire noted beside the rule but a shape the derivation does not reach at all, stated as such above."
+    },
+    {
+      "version": "14",
+      "date": "2026-09-12",
+      "at_the_instigation_of": "the x402 specification thread (x402-foundation/x402#3325 and #3437): aurumflux20's field read of ten money paths and the receiver obligation drafted from it; this store registers the class as source, not author",
+      "what_changed": "Added re-challenges-spent-authorization: a door that answers a byte-identical, already-settled payment with a fresh payment challenge, so a buyer who lost the response is asked to sign — and pay — again. The thread's finding was that the double-charge defect lives on the RECEIVING side of a settlement response, and this store's launch check had been reading every non-2xx on its replay stage as a correct refusal, a 402 carrying new terms included; from this version the stage reads the answer four ways (served again, re-challenged, refused, unknown) and says whether it named the original settlement. replay-accepted is AMENDED in the same breath, and the amendment is self-implicating: its assertion since v1 read 'is refused', and this store's own till does not refuse — it answers the replay with the original purchase, charged nothing, naming its settlement (the paid-retry lane). By the letter of v1 the registrar exhibited the class. The assertion now reads 'is not served as a new sale: refused, or answered with the original purchase naming the settlement that paid for it', which is what the receiver obligation asks of a door and what a walk can observe from outside. Costs, detectability and the Cairn mapping are unchanged; Cairn's replay_rejected may count a re-delivery as accepted, and that divergence is stated here rather than hidden in the mapping. Beside the vocabulary, the scvd-defects package from 0.14.0 ships settlement-response fixtures and a reader (settlement-response-v1) for the other side of the same seam: what a SettleResponse lets a reader conclude, with the pending shapes as the negative control a naive reader fails."
     }
   ],
   "license": "CC BY 4.0 for the names; MIT for the code that carries them."

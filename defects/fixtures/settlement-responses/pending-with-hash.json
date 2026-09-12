@@ -1,0 +1,18 @@
+{
+  "name": "pending-with-hash",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "THE NEGATIVE CONTROL. success false with errorReason settlement_pending and a broadcast hash. §9 makes this code non-terminal: the transaction may still confirm. A reader that maps success:false to failed will re-challenge a buyer whose money is on its way — the seven-of-ten defect the spec thread measured. Every check passes; the reading is unresolved, never failed.",
+  "expect_failed": [],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "failed"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjpmYWxzZSwiZXJyb3JSZWFzb24iOiJzZXR0bGVtZW50X3BlbmRpbmciLCJ0cmFuc2FjdGlvbiI6IjB4NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NyIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsInBheWVyIjoiMHg0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0In0=",
+  "decoded": {
+    "success": false,
+    "errorReason": "settlement_pending",
+    "transaction": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77",
+    "network": "eip155:8453",
+    "payer": "0x4444444444444444444444444444444444444444"
+  }
+}

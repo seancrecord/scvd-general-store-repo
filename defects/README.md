@@ -24,6 +24,15 @@ VOCABULARY_VERSION;                    // the bundled vocabulary version
 await isStale();                       // { stale, snapshot, live }
 ```
 
+```js
+import { readSettlementResponse } from "scvd-defects/settlement-response";
+
+const reading = readSettlementResponse(paymentResponseHeader);
+reading.outcome;   // "settled" | "failed" | "unresolved"
+reading.failed;    // the settlement-response-v1 checks the bytes fail
+reading.reading;   // one sentence on what a reader may conclude
+```
+
 `defects.json` is a snapshot of `https://scvd.store/defects.json` cut
 from the store's own source. The live document is the authority;
 definitions are never edited in place, so a snapshot is never wrong
@@ -39,6 +48,21 @@ and no others. They are the store's own release gate for a battery
 version; here they are a test corpus for your client: a parser that
 handles every one of them handles the shapes the August field run
 proved real.
+
+`fixtures/settlement-responses/*.json` are settlement responses — the
+`SettleResponse` a buyer holds base64 in `PAYMENT-RESPONSE`, or a
+facilitator's `/settle` body — each with `expect_failed` (the
+`settlement-response-v1` checks it fails), `expect_outcome` (what a
+reader must conclude: settled, failed or unresolved) and
+`must_not_conclude`. The pending shapes are the negative control:
+`settlement_pending` is non-terminal under x402 v2 §9, and a reader
+that maps `success:false` to failed re-challenges a buyer whose money
+is on its way. Run your own reader over the twelve and compare; a
+suite that passes them all and cannot fail the naive reader is not a
+suite. The reader beside them, `readSettlementResponse`, is the
+reference, and it reads the merged specification only: the settlement
+status vocabulary proposed on x402-foundation/x402#3325 is ignored
+until it merges.
 
 ## What it is not
 

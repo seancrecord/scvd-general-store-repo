@@ -1,0 +1,16 @@
+{
+  "name": "failed-no-reason",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "success false with no errorReason. The field is optional, so nothing is wrong with the shape; the reference implementation substitutes a generic 'Settlement failed' string. A reader learns that it failed and nothing about why, which is the erasure the spec thread named for canceled authorizations.",
+  "expect_failed": [],
+  "expect_outcome": "failed",
+  "must_not_conclude": [
+    "settled"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjpmYWxzZSwidHJhbnNhY3Rpb24iOiIiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMifQ==",
+  "decoded": {
+    "success": false,
+    "transaction": "",
+    "network": "eip155:8453"
+  }
+}

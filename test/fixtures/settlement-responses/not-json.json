@@ -1,0 +1,15 @@
+{
+  "name": "not-json",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "Bytes that are neither JSON nor base64 JSON. Only the json check runs; the rest are not reached and must not fire. A reader holding an unreadable settlement response holds no settlement response, which is unresolved, not failed.",
+  "expect_failed": [
+    "json"
+  ],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "settled",
+    "failed"
+  ],
+  "payment_response": "this is not a settlement response",
+  "decoded": null
+}

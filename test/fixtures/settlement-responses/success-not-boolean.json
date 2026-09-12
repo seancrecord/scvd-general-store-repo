@@ -1,0 +1,19 @@
+{
+  "name": "success-not-boolean",
+  "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "why": "success is the string 'true'. A truthy string reads as settled in a loose language and as a schema failure in a strict one; the check fails and the reading is unresolved because the one required boolean is not a boolean.",
+  "expect_failed": [
+    "success-boolean"
+  ],
+  "expect_outcome": "unresolved",
+  "must_not_conclude": [
+    "settled",
+    "failed"
+  ],
+  "payment_response": "eyJzdWNjZXNzIjoidHJ1ZSIsInRyYW5zYWN0aW9uIjoiMHg1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3NWU3NzVlNzc1ZTc3IiwibmV0d29yayI6ImVpcDE1NTo4NDUzIn0=",
+  "decoded": {
+    "success": "true",
+    "transaction": "0x5e775e775e775e775e775e775e775e775e775e775e775e775e775e775e775e77",
+    "network": "eip155:8453"
+  }
+}

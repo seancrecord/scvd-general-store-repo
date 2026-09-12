@@ -188,7 +188,24 @@ export function launchCheckNote(
    * so it now branches on what the chain read actually saw.
    */
   txHashStatus?: string | null,
+  /**
+   * The walk's replay reading (battery v3, 2026-09-12): served_again,
+   * redelivered, rechallenged, refused or unknown. Absent on records
+   * signed before it existed, when replay_served alone decides.
+   */
+  replayOutcome?: string | null,
 ): string {
+  /*
+   * THE FINDING THAT COSTS THE BUYER MONEY LEADS TOO. A door that
+   * answers the same settled payment with a fresh challenge is not
+   * giving anything away — it is charging twice. The x402 spec thread
+   * measured this in seven of ten money paths, on the receiving side
+   * of the settlement response, and it is invisible from the seller's
+   * logs: both look like sales.
+   */
+  if (verdict === "settled" && replayOutcome === "rechallenged") {
+    return "Your till took our money — and when we presented the very same settled payment a second time, it asked us to pay again. Read that carefully: a buyer who lost your first response and re-presents its authorization is met with a fresh challenge, and the only way through it is a second signature, which is a second charge for goods the first one already bought. The replay stage has the exact response. From your side both look like sales; from the buyer's side it is the double charge the x402 receiver obligation exists to stop. The fix is one keyed read: a spent nonce answers with the original purchase or a refusal that names it, never a new 402.";
+  }
   /*
    * THE FINDING THAT COSTS THEM MONEY LEADS. A door that settles
    * correctly and then serves the SAME already-settled payment again
