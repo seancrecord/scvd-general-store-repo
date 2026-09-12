@@ -28,28 +28,29 @@ import { pressingSummary } from "@/services/instant-goods";
 import { publishSeedRecord, utcDate } from "@/services/paywall-seed";
 import { isSolanaWalletAddress, isWalletAddress } from "@/services/zodiac";
 import {
+  allEntries,
   BURN_RATES,
+  CARD_LINES,
   CARDS_FOR_MONEY,
   CARDS_FREE_FIRST,
   CARDS_OPENED,
   CARDS_PROPOSITION,
-  CARD_LINES,
+  CLEARING_ACTIONS,
   CONDITION_CLEARS,
   CURRENT_SEASON,
-  PACK_SIZE,
-  RARITY_LINES,
-  RARITY_ORDER,
-  RESERVED_CONDITIONS,
-  TYPE_LINES,
-  WINDOW_LOCK_HOURS,
-  allEntries,
   entryByKey,
+  PACK_SIZE,
   packChanceOf,
   postFor,
   postIntentUrl,
+  RARITY_LINES,
+  RARITY_ORDER,
+  RESERVED_CONDITIONS,
   slotOdds,
   type CardEntry,
   type WheelStop,
+  TYPE_LINES,
+  WINDOW_LOCK_HOURS,
 } from "@/store/cards";
 import { drawnPlateKeys } from "@/store/plates";
 import { getMenuItem } from "@/store/menu";
@@ -110,6 +111,12 @@ const DESIGN_CSS = `
 .paywall .weather { border: 1px dashed var(--line); padding: 0.6rem 0.9rem; font-style: italic; }
 .paywall .post-button { display: inline-block; border: 2px solid currentColor; padding: 0.45rem 1rem; font-weight: bold; text-decoration: none; letter-spacing: 0.04em; margin: 0.25rem 0 0.75rem; }
 .paywall .post-button:hover { background: var(--card); }
+.paywall .post-button.small { font-size: 0.8rem; padding: 0.25rem 0.6rem; margin: 0.35rem 0 0; }
+.paywall .entry { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.paywall .entry:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28); }
+.paywall .hero img { transition: transform 0.25s ease; transform-origin: 50% 60%; }
+.paywall .hero img:hover { transform: rotate(-1.5deg) scale(1.02); }
+@media (prefers-reduced-motion: reduce) { .paywall .entry, .paywall .hero img { transition: none; } .paywall .entry:hover, .paywall .hero img:hover { transform: none; } }
 .paywall .entry.held { border-color: currentColor; }
 .paywall .entry.missing { opacity: 0.45; }
 .paywall .lookup { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
@@ -281,7 +288,8 @@ cardRoutes.get("/design", async (c) => {
   const odds = oddsTable();
   const drawn = new Set(drawnPlateKeys());
   const window = await readWindow(c.env);
-  const latestCard = window[0] ? await getCard(c.env, window[0].card_id) : null;
+  const windowCards = (await Promise.all(window.map((row) => getCard(c.env, row.card_id)))).filter((card): card is NonNullable<typeof card> => card !== null);
+  const latestCard = windowCards[0] ?? null;
   const byType = new Map<string, CardEntry[]>();
   for (const card of CURRENT_SEASON.cards) byType.set(card.type, [...(byType.get(card.type) ?? []), card]);
   const entryHtml = (card: CardEntry) => {
@@ -304,7 +312,13 @@ cardRoutes.get("/design", async (c) => {
   const packRows = STOPS.map((stop) => `<tr><td>${escapeHtml(stop === "condition" ? "Condition" : RARITY_LINES[stop])}</td><td>${percent(odds.per_pack[stop].chance)}</td><td><code>${escapeHtml(odds.per_pack[stop].derivation)}</code></td></tr>`).join("\n");
   const clearRows = CURRENT_SEASON.cards.filter((card) => card.type === "condition").map((card) => {
     const rule = CONDITION_CLEARS[card.key] ?? {};
-    const how = rule.items?.length ? `buying ${rule.items.map((id) => getMenuItem(id)?.name ?? id).join(" or ")}` : rule.any_idempotent ? "any purchase carrying an idempotency key" : "not yet wired; it stays until it is";
+    const how = rule.items?.length
+      ? rule.items.map((id) => CLEARING_ACTIONS[id] ?? `buying ${getMenuItem(id)?.name ?? id}`).join(" or ")
+      : rule.any_idempotent
+        ? "any purchase carrying an idempotency key"
+        : rule.hours
+          ? `on its own, ${rule.hours} hours after it was pressed`
+          : "not yet wired; it stays until it is";
     return `<tr><td>${escapeHtml(card.name)}</td><td>${escapeHtml(how)}</td></tr>`;
   }).join("\n");
   const productNode = jsonLdScript({
@@ -318,8 +332,9 @@ cardRoutes.get("/design", async (c) => {
     isPartOf: { "@type": "CreativeWorkSeries", name: `${CARD_LINES.tableName}, Season One: ${CURRENT_SEASON.subtitle}` },
     offers: { "@type": "Offer", price: String(pack?.price_usdc ?? 0), ...offerCurrencyFields(), url: `${base}/menu/${PACK_ITEM}`, availability: "https://schema.org/InStock", seller: organizationRef(base) },
   });
+  const windowRest = windowCards.slice(1).map((record) => `<div class="entry tier-${record.card.rarity}"><span class="no">${record.card.card_no ? `No. ${String(record.card.card_no).padStart(2, "0")} · ` : ""}${escapeHtml(RARITY_LINES[record.card.rarity])} · print ${record.card.print_no}</span><a class="name" href="/p/${escapeHtml(record.card.card_id)}">${escapeHtml(record.card.name)}</a><a class="post-button small" href="${escapeHtml(postIntentUrl(postFor(record.card), `${base}/p/${record.card.card_id}`))}" rel="noopener">Post it on X</a></div>`).join("");
   const latestBlock = latestCard
-    ? `<div class="hero"><img src="/p/${escapeHtml(latestCard.card.card_id)}.svg" width="1000" height="1400" alt="${escapeHtml(latestCard.card.name)}, the most recent pressing"><div><p class="menu-desc">In the window now: <a href="/p/${escapeHtml(latestCard.card.card_id)}"><strong>${escapeHtml(latestCard.card.name)}</strong></a>, ${escapeHtml(RARITY_LINES[latestCard.card.rarity].toLowerCase())}, print ${latestCard.card.print_no}${latestCard.card.holder ? `, in <a href="/binder/${escapeHtml(latestCard.card.holder)}">a binder</a> until somebody picks it` : ""}.</p><p><a class="post-button" href="${escapeHtml(postIntentUrl(postFor(latestCard.card), `${base}/p/${latestCard.card.card_id}`))}" rel="noopener">Post it on X</a></p><p class="menu-desc">Its share sheet, exactly as X renders a pasted link:</p><img class="sheet" src="/p/${escapeHtml(latestCard.card.card_id)}.png" width="1200" height="675" alt="The share sheet for ${escapeHtml(latestCard.card.name)}"></div></div>`
+    ? `<div class="hero"><img src="/p/${escapeHtml(latestCard.card.card_id)}.svg" width="1000" height="1400" alt="${escapeHtml(latestCard.card.name)}, the most recent pressing"><div><p class="menu-desc">In the window now: <a href="/p/${escapeHtml(latestCard.card.card_id)}"><strong>${escapeHtml(latestCard.card.name)}</strong></a>, ${escapeHtml(RARITY_LINES[latestCard.card.rarity].toLowerCase())}, print ${latestCard.card.print_no}${latestCard.card.holder ? `, in <a href="/binder/${escapeHtml(latestCard.card.holder)}">a binder</a> until somebody picks it` : ""}.</p><p><a class="post-button" href="${escapeHtml(postIntentUrl(postFor(latestCard.card), `${base}/p/${latestCard.card.card_id}`))}" rel="noopener">Post it on X</a></p><p class="menu-desc">Its share sheet, exactly as X renders a pasted link:</p><img class="sheet" src="/p/${escapeHtml(latestCard.card.card_id)}.png" width="1200" height="675" alt="The share sheet for ${escapeHtml(latestCard.card.name)}"></div></div>${windowRest ? `<p class="menu-meta">Also in the window, oldest last; a pick takes whichever the seed says:</p><div class="set">${windowRest}</div>` : ""}`
     : `<p class="menu-meta">Nobody has opened a pack yet. The first pressing hangs here the moment one does.</p>`;
   return c.html(
     renderSimplePage({
@@ -362,7 +377,7 @@ cardRoutes.get("/design", async (c) => {
         <p class="menu-desc">Dupes are the credit economy: ${BURN_RATES["common"]} commons or ${BURN_RATES["uncommon"]} uncommons burn into one pack of credit, spent on a pack or a window pick. Rares never burn. Credit never buys an instrument, a specific card, or cash. The desks: <code>POST /api/paywall/challenge</code>, sign it, then <code>POST /api/paywall/burn</code> or <code>POST /api/paywall/redeem</code>.</p>
         <h3>Conditions, and what clears them</h3>
         <table class="odds"><thead><tr><th>condition</th><th>clears on</th></tr></thead><tbody>${clearRows}</tbody></table>
-        <p class="menu-meta">Three or more Conditions at once mark a binder <em>${escapeHtml(CARD_LINES.underTheWeather)}</em> until one clears. Cosmetic, shareable, mildly humiliating. Reserved for the season: ${RESERVED_CONDITIONS.join(", ")}.</p>
+        <p class="menu-meta">Three or more Conditions at once mark a binder <em>${escapeHtml(CARD_LINES.underTheWeather)}</em> until one clears. Cosmetic, shareable, mildly humiliating.${RESERVED_CONDITIONS.length ? ` Reserved for the season: ${RESERVED_CONDITIONS.join(", ")}.` : ""}</p>
       </section>
       <section>
         <h2>Season One: ${escapeHtml(CURRENT_SEASON.subtitle)}, ${CURRENT_SEASON.cards.length} cards</h2>

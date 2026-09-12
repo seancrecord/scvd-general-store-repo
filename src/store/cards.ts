@@ -274,6 +274,10 @@ export const SEASON_ONE: Season = {
     model(58, "autocomplete", "Autocomplete", "common", "Pulled Autocomplete. It finished my sentence with the wrong wallet.", "Confident. Fast. Not looking at the door. The most common card in the box, on purpose.", "/defects"),
     model(59, "hallucinated-a-door", "Hallucinated a Door", "common", "Pulled Hallucinated a Door. Paid an endpoint that does not exist. Twice.", "The preflight would have said so. It did not ask. It never asks.", "/defects"),
     model(60, "temperature-two", "Temperature 2.0", "common", "Pulled Temperature 2.0. Bought a blessing, a fortune and a pack, and forgot why.", "Every token a surprise, including to itself. Tips generously. Cannot say what for.", "/defects"),
+    // ── Conditions, the reserved three, dropped in (the keeper, 2026-09-12: "the rest you can do") ──
+    condition(61, "indeterminate", "Indeterminate", "common", "Pulled Indeterminate. The passport could not say. Neither can the card.", "Not broken, not ready: the rounds did not agree. A fresh read clears it, either way."),
+    condition(62, "rate-limited", "Rate Limited", "common", "Pulled Rate Limited. Rang the bell too fast. 429.", "The owl does one call an hour and calls it professional. This clears on its own, given a day."),
+    condition(63, "unclaimed-bounty", "Unclaimed Bounty", "uncommon", "Pulled Unclaimed Bounty. The board listed it. Nobody walked it.", "A door with a finder's fee on it and no finder. Claim one and this burns."),
   ],
   events: [
     { no: 0, key: "first-organic-settlement", name: "First Organic Settlement", type: "event", rarity: "holo", obtained: "hand", print_cap: 1, post: "Someone holds the first organic settlement. It's me.", line: "July 30. Somebody we didn't know paid us for something. The store has not been the same since.", cite: "/becoming" },
@@ -293,8 +297,8 @@ export const SEASON_ONE: Season = {
   ],
 } as const;
 
-/** Conditions the plan reserves; they drop in as the season runs. Not in the count, not pressable. */
-export const RESERVED_CONDITIONS = ["indeterminate", "rate-limited", "unclaimed-bounty"] as const;
+/** The plan reserved three Conditions for later in the season; they dropped in on 2026-09-12 (Nos. 61–63). Nothing is reserved now. */
+export const RESERVED_CONDITIONS: readonly string[] = [];
 
 export const SEASONS: readonly Season[] = [SEASON_ONE] as const;
 export const CURRENT_SEASON: Season = SEASON_ONE;
@@ -366,7 +370,19 @@ export const CONDITION_CLEARS: Readonly<Record<string, ClearRule>> = {
   "double-charge": { any_idempotent: true },
   /** A passport read of a door the wallet named: the refresh, or the trust profile that reads one (2026-09-12). */
   "broken-tier": { items: ["passport_refresh", "trust_profile"] },
+  /** The rounds did not agree; a fresh read of the door settles it either way. */
+  indeterminate: { items: ["passport_refresh", "trust_profile"] },
+  /** 429 clears on its own: a day in the binder, then it burns at the next read. */
+  "rate-limited": { hours: 24 },
+  /** Burns the day the wallet claims a bounty (routes/bounties.ts names the action). */
+  "unclaimed-bounty": { items: ["bounty_claim"] },
 };
+
+/** Actions that clear a Condition but are not shelf items; the table on /design names them in words. */
+export const CLEARING_ACTIONS: Readonly<Record<string, string>> = { bounty_claim: "claiming a bounty on the board" };
+
+/** The one Rail holo; a wallet holding it earns the plan's 5% back as store credit, after the sale. */
+export const RAIL_HOLO_KEY = "base-rail";
 
 export interface SlotOdds {
   slot: number;

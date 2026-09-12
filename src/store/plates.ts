@@ -225,6 +225,9 @@ const ALIASES: Record<string, string> = {
   "410-gone": "delivered-nothing",
   "double-charge": "replay-accepted",
   "testnet-catch": "wrong-network",
+  indeterminate: "passport",
+  "rate-limited": "bell",
+  "unclaimed-bounty": "event-bounty",
   // the second reading
   "payment-required": "the-402",
   // events

@@ -122,8 +122,9 @@ reasoning, named as desk reasoning.
    purchase the rule names (Stale Passport on a passport refresh, 410
    Gone on a service audit, Testnet Catch on a settlement
    attestation, Double Charge on any purchase with an idempotency
-   key, Broken Tier on a passport refresh or a trust profile, the
-   two purchases that read a door the wallet named); each burn is a
+   key, Broken Tier and Indeterminate on a passport refresh or a
+   trust profile, Unclaimed Bounty on a bounty claim, Rate Limited on
+   the clock at twenty-four hours); each burn is a
    signed record beside the pressing. Three or more Conditions and
    the binder is "under the weather". The one-of-one's perk: the
    wallet a Keeper or CV lands with gets one pack of credit, once.
@@ -221,6 +222,27 @@ as read, all STANDING:
 - The count moves 52 → 60, which was the plan's own alternative;
   *Gas Was Nothing* and *Node 21* stay cut (§6).
 
+## 0c. The rest of the list (2026-09-12, "the rest you can do in any order")
+
+- **The reserved three, dropped in** as Nos. 61–63, so the count is
+  63 and nothing is reserved: Indeterminate (clears on a passport
+  read, like Broken Tier), Rate Limited (clears on its own after
+  twenty-four hours — the binder read burns it, signed, cleared_by
+  "time"), Unclaimed Bounty (burns the day the wallet claims a
+  bounty on the board). Conditions are eight of the sixty-three; the
+  clear table on `/design` is still derived from the rules.
+- **The Rail holo's perk, as a rebate** (§6.3): 5% back as store
+  credit after the sale, never a discount, so the pricing charter is
+  untouched. Read off a marker the pressing leaves rather than a
+  binder listing, so the money path pays two KV reads at most.
+- **The window on `/design`**: all five pressings on show now, the
+  newest as the hero with its share sheet and the other four beside
+  it, each with its own post button.
+- **Motion**: CSS only — a card lifts on hover, the hero tilts a
+  degree and a half — and every bit of it is off under
+  `prefers-reduced-motion`. No script, so rule 17 has nothing to
+  test.
+
 ## 1. What changed, pass by pass
 
 Prototype → handoff v2: 24 → 52 (+4 Events, +1 Ally); Legendary →
@@ -272,17 +294,11 @@ the pixel engine already draws the engraved hand.
 
 ## 4. Not built, each with its reason (OPEN or PROPOSED)
 
-- **Holder perks, the half that is a price.** The plan's 5% off with
-  a Rail holo is a price that depends on who is buying, and the
-  pricing charter says one price to every buyer. OPEN, §6. The half
-  that is not a price is built (2026-09-12): the wallet a Keeper or
-  CV lands with gets one pack of credit, once per pressing, to spend
-  on a pack or the window (the plan's "free window pick"); a Door
-  card's preflight is free already.
-- **The reserved Conditions** (Indeterminate, Rate Limited, Unclaimed
-  Bounty) drop in as the season runs; not in the count, not pressable
-  yet. Broken Tier's clear is built: a passport read of a door the
-  wallet named, which the refresh and the trust profile both are.
+- **Nothing from the plan is unbuilt now** except the missions and
+  the promotions UI, which the plan itself put outside the first
+  build, and Season Two, which the keeper is holding. Holder perks,
+  the reserved Conditions, the PNG face and `/design`'s motion all
+  landed 2026-09-12 (§0c).
 - **Missions beyond the bell streak; promotions UI.** The plan's own
   "not in first build".
 - **`/design` motion.** Static; the "boots" data layer on hover is a
@@ -316,12 +332,14 @@ every pressing carries `face_png_url`.
    make it work."** Recorded as ruled. The build's own hedges stand:
    nothing cashable, nothing bought back, odds and seed public, the
    window sentence in plain words on /design.
-3. **RULE — the Rail-holo discount against the pricing charter.**
-   The plan's 5% off is a price that depends on who is buying; the
-   charter's one-price clause is older. The perks that are not
-   prices are built (the one-of-one's pack of credit; the Door
-   card's preflight is free already). Amend the charter, or let the
-   discount go.
+3. **RULED by construction — the Rail-holo perk, without touching
+   the charter.** The plan wanted 5% off; a discount is a price that
+   depends on who is buying, and `one_price` is older. So it is 5%
+   BACK instead: a wallet holding Base Rail earns store credit after
+   the sale, accrued exactly the way the Regulars' rebate already
+   is. The 402 the holder sees is the 402 everyone sees, byte for
+   byte, which is what the clause actually promises. RULE if you
+   wanted the discount itself; that one needs the charter amended.
 4. **RULE — the cuts.** *Gas Was Nothing* and *Node 21* out to hold
    52 (now 60 with the second reading's eight, §0b); Door #0017 a
    real degraded door (tick.hugen.tokyo) instead of

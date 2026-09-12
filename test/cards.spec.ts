@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, clearConditions, drawSlot, handPress, readBinder } from "@/services/cards";
+import { bellPressing, clearConditions, drawSlot, handPress, holdsRailHolo, readBinder } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -13,6 +13,7 @@ import {
   CURRENT_SEASON,
   EARNED_BY_ITEM,
   PACK_SIZE,
+  RESERVED_CONDITIONS,
   RARITY_ORDER,
   SEASONS,
   SLOT_WHEELS,
@@ -74,14 +75,14 @@ async function post(path: string, body: unknown): Promise<Response> {
 }
 
 describe("the set", () => {
-  it("numbers its 60 cards with no gaps, no duplicate names, no duplicate keys, plus four Events and one Ally", () => {
+  it("numbers its 63 cards with no gaps, no duplicate names, no duplicate keys, plus four Events and one Ally", () => {
     for (const season of SEASONS) {
       expect(season.cards.map((card) => card.no)).toEqual(season.cards.map((_, index) => index + 1));
       const entries = allEntries(season);
       expect(new Set(entries.map((card) => card.name)).size).toBe(entries.length);
       expect(new Set(entries.map((card) => card.key)).size).toBe(entries.length);
     }
-    expect(CURRENT_SEASON.cards.length).toBe(60);
+    expect(CURRENT_SEASON.cards.length).toBe(63);
     expect(CURRENT_SEASON.events.length).toBe(4);
     expect(CURRENT_SEASON.allies.length).toBe(1);
     for (const event of CURRENT_SEASON.events) expect(event.no).toBe(0);
@@ -129,7 +130,10 @@ describe("the set", () => {
     expect(SLOT_WHEELS.length).toBe(PACK_SIZE);
     for (let slot = 0; slot < PACK_SIZE - 1; slot += 1) expect(SLOT_WHEELS[slot]).not.toContain("condition");
     expect(SLOT_WHEELS[PACK_SIZE - 1]).toContain("condition");
-    expect(conditionPool(CURRENT_SEASON)).toHaveLength(5);
+    expect(conditionPool(CURRENT_SEASON)).toHaveLength(8);
+    // Nothing is reserved any more: every Condition the plan named is in the count with a clear.
+    expect(RESERVED_CONDITIONS).toHaveLength(0);
+    for (const card of conditionPool(CURRENT_SEASON)) expect(CONDITION_CLEARS[card.key], card.name).toBeDefined();
   });
 
   it("cites a path on this store for every card, and every path answers", async () => {
@@ -624,6 +628,35 @@ describe("the one-of-ones", () => {
     await expect(handPress(testEnv, "cv", { wallet: collector })).rejects.toThrow();
   });
 
+  it("Rate Limited clears on the clock, and a wallet holding the Rail holo earns the plan's five percent back", async () => {
+    const wallet = "0x9999999999999999999999999999999999999999";
+    const fresh = await handPress(testEnv, "rate-limited", { wallet });
+    expect((await readBinder(testEnv, wallet)).rows.some((row) => row.card_id === fresh.card.card_id)).toBe(true);
+    // A day later it burns at the read, signed, cleared_by "time".
+    const later = new Date(Date.parse(fresh.card.date) + 25 * 3_600_000);
+    expect((await readBinder(testEnv, wallet, 100, later)).rows.some((row) => row.card_id === fresh.card.card_id)).toBe(false);
+    const record = await json(await SELF.fetch(`${BASE}/api/card/${fresh.card.card_id}`));
+    expect(((record["burned"] as Record<string, unknown>)["burn"] as Record<string, unknown>)["cleared_by"]).toBe("time");
+
+    // The Rail holo's perk: 5% back as store credit, after the sale, never a price.
+    // (The payer may already have pulled Base Rail out of a pack above; a
+    // wallet that has not holds no rebate, and that is the half worth pinning.)
+    if (!(await holdsRailHolo(testEnv, TEST_PAYER))) {
+      expect((await buy("hello"))["holo_rebate"]).toBeUndefined();
+    }
+    expect(await holdsRailHolo(testEnv, "0xabc0000000000000000000000000000000000000")).toBe(false);
+    await handPress(testEnv, "base-rail", { wallet: TEST_PAYER });
+    expect(await holdsRailHolo(testEnv, TEST_PAYER)).toBe(true);
+    const held = await buy("hello");
+    const rebate = held["holo_rebate"] as Record<string, unknown>;
+    expect(rebate).toBeDefined();
+    expect(Number(rebate["earned_usd"])).toBeGreaterThan(0);
+    expect(String(rebate["note"])).toContain("Base Rail");
+    // The price did not move: the 402 is the same quote it was before.
+    const quote = await SELF.fetch(`${BASE}/api/buy/hello`);
+    expect(decodePaymentRequired(quote).accepts[0]!.amount).toBe(decodePaymentRequired(await SELF.fetch(`${BASE}/api/buy/hello`)).accepts[0]!.amount);
+  });
+
   it("Broken Tier clears on a passport read the wallet named", async () => {
     const wallet = "0x8888888888888888888888888888888888888888";
     const condition = await handPress(testEnv, "broken-tier", { wallet });
@@ -660,7 +693,7 @@ describe("the room", () => {
     expect(svg).toContain("SPECIMEN");
     expect(svg).not.toContain("/api/verify/");
     const set2 = await json(await SELF.fetch(`${BASE}/api/paywall/set`));
-    expect((set2["cards"] as unknown[]).length).toBe(60);
+    expect((set2["cards"] as unknown[]).length).toBe(63);
   });
 });
 

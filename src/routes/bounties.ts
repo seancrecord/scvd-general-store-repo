@@ -601,11 +601,18 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
      */
     // The Bounty Hunter card (Paywall): pressed to the wallet the reward
     // went to, on the way out; never a condition of the payout above.
-    const { earnedPressing } = await import("@/services/cards");
+    const { clearConditions, earnedPressing } = await import("@/services/cards");
     const { pressingSummary } = await import("@/services/instant-goods");
     const hunter = await earnedPressing(c.env, { key: "bounty-hunter", certId: `bounty:${bountyId}`, payer: result.payout.authorization.to }).catch(() => null);
+    // An Unclaimed Bounty in that wallet's binder burns on the claim.
+    const cleared = await clearConditions(c.env, result.payout.authorization.to, { itemId: "bounty_claim", certId: `bounty:${bountyId}` }).catch(() => []);
     return c.json(
-      { ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL), ...(hunter ? { pressing: pressingSummary(c.env.STORE_BASE_URL, hunter.card) } : {}) },
+      {
+        ...result,
+        spend_it_here: walkerOffer(c.env.STORE_BASE_URL),
+        ...(hunter ? { pressing: pressingSummary(c.env.STORE_BASE_URL, hunter.card) } : {}),
+        ...(cleared.length > 0 ? { conditions_cleared: cleared.map((burn) => ({ card_id: burn.burn.card_id, key: burn.burn.key, cleared_by: burn.burn.cleared_by })) } : {}),
+      },
       200,
     );
   } catch (error) {

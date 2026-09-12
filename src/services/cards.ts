@@ -30,11 +30,12 @@ import {
   entryByKey,
   PACK_SIZE,
   packPool,
+  RAIL_HOLO_KEY,
   SLOT_WHEELS,
-  WINDOW_LOCK_HOURS,
   type CardEntry,
   type Season,
   type WheelStop,
+  WINDOW_LOCK_HOURS,
 } from "@/store/cards";
 import type {
   CardRarity,
@@ -335,6 +336,11 @@ async function filePressing(env: Env, signed: SignedCardRecord): Promise<void> {
   await kvPut(env.PATRONS, KV_KEYS.card(signed.card.card_id), JSON.stringify(signed));
   const key = binderKey(signed.card);
   if (key) await kvPut(env.PATRONS, key, JSON.stringify(binderRowOf(signed.card)));
+  // The Rail holo leaves a marker on its holder, so the perk below is one
+  // KV read on the money path instead of a listing of the whole binder.
+  if (signed.card.key === RAIL_HOLO_KEY && signed.card.holder) {
+    await kvPut(env.COUNTERS, KV_KEYS.paywallHolo(signed.card.holder.toLowerCase()), signed.card.card_id);
+  }
 }
 
 async function setInWindow(env: Env, signed: SignedCardRecord): Promise<void> {
@@ -806,15 +812,39 @@ export interface Binder {
 
 export const BINDER_CAP = 100;
 
-export async function readBinder(env: Env, wallet: string, cap = BINDER_CAP): Promise<Binder> {
+export async function readBinder(env: Env, wallet: string, cap = BINDER_CAP, now: Date = new Date()): Promise<Binder> {
   const listed = await listKeys(env.PATRONS, { prefix: KV_KEYS.binderPrefix(wallet.toLowerCase()), cap });
   const rows: BinderRow[] = [];
   for (const name of listed.names) {
     const row = await kvGetJson<BinderRow>(env.PATRONS, name, "json");
-    if (row) rows.push(row);
+    if (!row) continue;
+    // A Condition that clears on the clock (Rate Limited) burns at the
+    // first read after its hours are up: a signed burn, cleared_by "time".
+    const hours = row.type === "condition" ? CONDITION_CLEARS[row.key]?.hours : undefined;
+    if (hours !== undefined && Date.parse(row.date) + hours * 3_600_000 <= now.getTime()) {
+      const record = await getCard(env, row.card_id);
+      if (record && !(await readBurn(env, row.card_id))) await burnPressing(env, record.card, "time", undefined, now);
+      continue;
+    }
+    rows.push(row);
   }
   const conditions = rows.filter((row) => row.type === "condition").length;
   return { rows, truncated: listed.truncated, under_the_weather: conditions >= 3, conditions };
+}
+
+/**
+ * Whether a wallet holds the season's Rail holo (the plan's 5% perk
+ * rides on this). Read off the marker filePressing leaves, then
+ * confirmed against the pressing itself — the window can move a card
+ * out of a binder, and a marker alone would keep paying its old
+ * holder. Two KV reads at most, on a path that runs per sale.
+ */
+export async function holdsRailHolo(env: Env, wallet: string): Promise<boolean> {
+  const holder = wallet.toLowerCase();
+  const cardId = await kvGet(env.COUNTERS, KV_KEYS.paywallHolo(holder));
+  if (!cardId) return false;
+  const record = await getCard(env, cardId);
+  return record?.card.holder?.toLowerCase() === holder;
 }
 
 export { PACK_SIZE };

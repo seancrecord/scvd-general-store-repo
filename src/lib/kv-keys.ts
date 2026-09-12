@@ -719,6 +719,8 @@ export const KV_KEYS = {
   paywallCredit: (wallet: string): string => `paywall_credit:${wallet}`,
   /** A face rendered to PNG once, at a width; the bytes never change, so the first render is the last. */
   paywallFacePng: (cardId: string, width: number): string => `paywall_face_png:${cardId}:${width}`,
+  /** Which pressing of the Rail holo a wallet holds; the perk reads this, not the whole binder. */
+  paywallHolo: (wallet: string): string => `paywall_holo:${wallet}`,
   /** The one-of-one's holder perk, granted once per pressing. */
   paywallPerk: (cardId: string): string => `paywall_perk:${cardId}`,
   /** A wallet's bell streak: the last UTC day it rang and the run of days (the Paywall). */

@@ -745,13 +745,20 @@ Merging is your press; these are why it waits.
   does for you: nothing cashable, nothing bought back, odds and seed
   public, the window sentence on /design in plain words. If a
   regulator ever writes, the record of that is here, dated.
-- **RULE — the Rail-holo discount against the pricing charter.** The
-  plan's 5% off is a price that depends on who is buying; the
-  charter's one-price clause is older. The perks that are not prices
-  are built (2026-09-12): the wallet a Keeper or CV lands with gets
-  one pack of credit, once, and a Door card's preflight was free
-  already. Broken Tier clears now too, on a passport refresh or a
-  trust profile. Amend the charter for the discount, or let it go.
+- **DONE, the Rail holo's perk — without touching the charter.** You
+  wanted 5% off; a discount is a price that depends on who is
+  buying, and `one_price` is older than the Paywall. So it is 5%
+  BACK: a wallet holding Base Rail earns store credit after the
+  sale, the same accrual the Regulars' rebate uses, and the 402 it
+  sees is the 402 everyone sees. RULE only if you meant the discount
+  itself, which needs the charter amended.
+- **DONE, the reserved three.** Indeterminate, Rate Limited and
+  Unclaimed Bounty are Nos. 61–63; the count is 63 and nothing is
+  reserved. Rate Limited clears on the clock (a day), Unclaimed
+  Bounty on a bounty claim, Indeterminate on a passport read.
+- **DONE, `/design`.** All five window pressings on show, each with
+  its post button; CSS-only motion (a card lifts, the hero tilts),
+  off entirely under `prefers-reduced-motion`.
 - **DONE, your second reading (2026-09-12).** CV as the season's
   other one-of-one (Room, rarity Keeper, window only, cap 1 held on
   the hand press too); Roger Sterling, rare, with his own plate; 402
