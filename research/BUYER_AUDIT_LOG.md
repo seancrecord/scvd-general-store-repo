@@ -364,6 +364,26 @@ Local repair commit: `0b61e5fc`. Original reproduction and repair scope follow.
 
 Repair: derive payment state from each error's contract. Safe refusals remain false, `delivery_failed` is true, and `invalid_settlement_receipt` is explicitly null. Publish the new code on MCP purchase tools as well as HTTP listings. Three discovery regressions were observed red before these changes; all pass afterward in `test/settlement-receipt-integrity.spec.ts`. This fixes discovery metadata; it does not close the separate runtime response-serialization defect BUY-038.
 
+## September 12 — discovery repair batch
+
+Audit evidence is committed as `71869170` in [PR #655](https://github.com/seancrecord/scvd-general-store-repo/pull/655). Repairs below start from current main `5b66fe97` on `codex/buyer-discovery-repairs`. They are local changes, not deployed fixes. No payment or production configuration change was made.
+
+### BUY-042 — literal MCP purchase examples
+
+**Local repair implemented and verified; deployment pending.** The live MCP bundle example still says `tx_hashes: "tx hashes"`. The Bitcoin example now has all 64 digest characters, but retains the forbidden `sha256:` prefix: submitting it unchanged still fails the actual purchase validator. A complete-looking value is not a valid worked call.
+
+Both clustered and single-item MCP purchase tools now take their required example values from the existing HTTP/Bazaar worked inputs. Optional inputs remain omitted. `test/buyer-discovery-entry.spec.ts` copies the served bundle and Bitcoin examples literally through both MCP payment profiles and requires usable payment terms, with no signed payment. The broader guard checks every advertised shelf membership against the actual input validator; external A2A readiness and capacity are deliberately separate, not called successful purchases. The guide's byte snapshot was updated only after restoring the old source reproduced the previous snapshot.
+
+### BUY-044 — key-registry discovery
+
+**Local repair implemented and verified; deployment pending.** A fresh unsigned live read still returned 404 for `/keys`. The llms index now links to the existing signing-key document, which contains the current key and retired-key history. The old `/keys` address redirects permanently to that document so previously saved discovery links recover too. The route-discovery and visit-count inventories explicitly classify it as a compatibility redirect to the already listed and counted registry. Regression checks follow the published llms link, require JSON/current/history fields, and follow the old address without payment or an account.
+
+### BUY-040 — checkout rail mismatch remains open
+
+**Reproduced live on September 12; not repaired in this batch.** An unsigned Signed Hello HTTP quote offered Base, Polygon, Arbitrum, World and Solana; the same item through the discovered `buy_simple` MCP tool offered all except Arbitrum. Both routes already derive rails from payment configuration, and the doors deployment documentation already requires matching optional checkout settings. This is evidence to investigate the deployed Workers' configuration, not justification to hard-code a network or claim that a local unit test repaired the live mismatch. Broader shelf/rail revalidation remains pending.
+
+Validation evidence for this batch: all 11 final buyer checks failed on original source and passed with the repair, including the broader guard for examples outside the two reproduced products. The related run passed all 78 tests across eight files. The full application run completed 686 files: 13,460 passed, one existing skip, and two failures naming the new `/keys` route in the discovery and visit-count inventories. Both inventories now explain the compatibility redirect; their reruns passed all six tests. Application source stayed unchanged throughout the full run; only those two test inventories changed after the failures were observed. This was not an uninterrupted green full run, and no unresolved failure remains. Typecheck, documentation checks and both Worker dry-run bundles passed. No prior finding is silently closed by these local checks.
+
 ## Coverage to retain and extend
 
 The [input-survival report](buyer-input-survival-2026-09-06.md) records the full tested denominator, passing controls and limitations. The initial `#481` URL/bundle subjects survive; the detector was demonstrated red by temporarily dropping the mapper's URL and restoring it. First scheduled observations and human-order completion/polling/callbacks also run locally.

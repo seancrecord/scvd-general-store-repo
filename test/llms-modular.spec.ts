@@ -912,8 +912,11 @@ const BASE = "https://scvd.store";
 // and the settlement attestation's binding class and payment_response
 // house rules (this branch) land together; each was pinned alone against
 // its own parent, and this pin is the guide with both in it.
+// 2026-09-12: MCP purchase examples now use the HTTP/Bazaar worked inputs.
+// Restoring the pre-repair MCP catalogue and llms source reproduced the prior
+// digest; the new buyer tests submit the published examples without editing.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "242b893f9d80b18672955c97ef68d6496fca1a671607396efed4869cc01ee30c";
+  "2c4387f99c86dfbe79427512912aa93839f011d1dcc2340c920bdf658bdb5421";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;

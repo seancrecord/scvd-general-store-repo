@@ -108,6 +108,8 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /ask/feed.json",
   "GET /trust-list.json",
   "GET /house-ledger.json",
+  // Compatibility redirect; the destination key registry is the counted surface.
+  "GET /keys",
   /**
    * THE STOREFRONT'S OWN FURNITURE. /shop-window.json is what
    * /shop-window.js polls once a minute while somebody has the front
