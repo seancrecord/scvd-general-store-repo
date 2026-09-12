@@ -39,9 +39,9 @@ export async function hashSelectedSurface(
  * signature is bound to: scheme, network, asset, payTo, amount. The
  * certificate stores sha256 of their JCS form as `quote`, so a holder
  * of the 402's JWS offer can decode its payload, drop `version`,
- * `resourceUrl` and `validUntil`, hash the five that remain, and see
- * the receipt name the offer it was paid against — without trusting
- * this store to say so.
+ * `resourceUrl` and `validUntil`, lowercase the two EVM addresses,
+ * hash the five that remain, and see the receipt name the offer it
+ * was paid against — without trusting this store to say so.
  *
  * Read from the VERIFIED requirements the gate settled, never from
  * the catalog: `saw` already binds what the shelf listed, and this
@@ -75,7 +75,24 @@ export function quotedTerms(
     // not_observed rather than signing a partial commitment.
     return null;
   }
-  return { scheme, network, asset, payTo, amount };
+  /**
+   * EVM ADDRESSES LOWERCASED BEFORE HASHING, and the rule is stated
+   * wherever the hash is explained. An EVM address is one identifier
+   * however it is cased; EIP-55 checksum casing is presentation, and
+   * the x402 SDK serves the asset checksummed while this store's own
+   * manifest lowercases it. Found the day this shipped, by the replay
+   * kit failing to recover terms from the catalog that had hashed
+   * differently from the 402 they were served in. Solana addresses
+   * are base58 and case-significant; they are left exactly as served.
+   */
+  const evm = network.startsWith("eip155:");
+  return {
+    scheme,
+    network,
+    asset: evm ? asset.toLowerCase() : asset,
+    payTo: evm ? payTo.toLowerCase() : payTo,
+    amount,
+  };
 }
 
 /** SHA-256 of the JCS form. The certificate stores this hex as `quote`. */

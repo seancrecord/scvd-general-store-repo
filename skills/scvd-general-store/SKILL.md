@@ -492,6 +492,13 @@ luckies never sell out.
   set.
 - **Verify anything** — `GET https://scvd.store/api/verify/{id}` checks
   any certificate, stamp, card, or anchor the store has ever signed.
+- **Replay a paid call** — `GET https://scvd.store/api/replay/{cert_id}`
+  assembles one purchase as an integration test: the signed bytes and
+  their hash, the five accepted terms recovered from the certificate's
+  signed `quote` with a JWS offer over them, the settlement transaction
+  and where to read it, the sale's standing, and the exact refusal body
+  a wrong-scope re-presentation gets. One signed document; it names
+  what the store does not retain.
 - **The Mailbox** — `POST https://scvd.store/api/letter` with
   `{"letter": "..."}`. Private, one a day; the keeper reads Sundays and
   replies when he has something to say, which is not always.
@@ -919,7 +926,8 @@ artifact from the same key as any other route in.
   explorer for the recorded settlement network are one
   fact checked twice. Since 2026-09-12 also `quote`: sha256 of the
   RFC 8785 form of the five x402 terms your payment signature was
-  bound to (scheme, network, asset, payTo, amount) — the same five
+  bound to (scheme, network, asset, payTo, amount; EVM addresses
+  lowercased before hashing) — the same five
   the signed offer in the 402 commits to, so the offer you hold and
   the receipt you get match without asking us. Any field shown but
   not covered by the signature is named as such in the verify

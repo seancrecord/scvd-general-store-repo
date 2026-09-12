@@ -727,6 +727,9 @@ export async function fulfillPurchase(
     signature_jcs_discipline: JCS_DISCIPLINE,
     signature_jcs_covers: JCS_SIGNATURE_COVERS,
     verify_url: minted.verifyUrl,
+    // One paid call as an integration test: offer, settlement, response
+    // hash, refusal, in one signed document (services/replay-kit.ts).
+    replay_url: `${env.STORE_BASE_URL}/api/replay/${minted.certificate.cert_id}`,
     /**
      * THE BREADCRUMB. Assembled at serve time and stored nowhere, so
      * the wording can improve for artifacts already in strangers'

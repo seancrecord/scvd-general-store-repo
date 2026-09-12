@@ -143,7 +143,10 @@ were not, built the same day:
 
 - **`quote`** — sha256 over the RFC 8785 form of the five x402 terms
   the buyer's payment signature was bound to: scheme, network, asset,
-  payTo, amount. Read from the VERIFIED requirements by the door that
+  payTo, amount, with EVM asset and payTo lowercased before hashing
+  (checksum casing is presentation; the SDK serves it one way and our
+  manifest another, and a hash must not care). Read from the VERIFIED
+  requirements by the door that
   settled them (HTTP gate and MCP door alike), carried through
   fulfillment untouched, bound into the certificate SIGNED (appended
   to CERT_FIELDS, outside the legacy form, same law as purpose and
@@ -168,6 +171,32 @@ were not, built the same day:
   says exactly where: the store publishes its own conduct, never a
   buyer's failed attempts.
 
+## 7. The replay kit — one paid call as an integration test (2026-09-12)
+
+The follow-up ask, once the quote was signed: a verifier sample an
+agent can replay — one paid call id, the JWS offer, settlement proof,
+response hash, and the refusal code when scope is wrong. Every part
+existed at some URL; none stood together. `/api/replay/{cert_id}`
+is the stitching, derived on every read and stored nowhere:
+
+- the certificate's signed bytes, signature and artifact hash;
+- the five accepted terms, recovered by hashing the catalog's current
+  accepts against the certificate's signed `quote` (exact match or
+  nothing), and a JWS offer signed over them by the same key — with
+  the kit saying in words that the 402's original offer, which
+  differed only in validUntil, was not retained;
+- the settlement transaction, network, explorer and payer, and the
+  sale's standing from section 6;
+- the wrong-scope refusal body, built by the same function the door
+  uses (`inputMismatchRefusal`), with placeholder ids where a real
+  refusal carries the buyer's private handle;
+- the replay steps, the list of what is not retained, and a detached
+  JWS over the kit's own RFC 8785 form under the did:web kid.
+
+Declared on /attestation as its own class. Its signature proves the
+store assembled these parts on this read; it makes no part truer than
+that part's own signature and the chain already do.
+
 ## What would catch it going stale
 
 - The cert-shape tests extend to the new optional fields and to the
@@ -181,6 +210,11 @@ were not, built the same day:
   must read `invalid`, never `legacy`. `settlement_state` is
   asserted closed after a real purchase and named open when the
   audit row still stands.
+- test/replay-kit.spec.ts recovers the offer's five terms from a real
+  purchase, verifies the fresh JWS and the kit's detached signature
+  against the store key, pins the refusal body to the door's own
+  function, and asserts a pre-quote certificate reads not_observed
+  with no offer signed.
 
 ## Order of work, once the pen approves
 

@@ -56,6 +56,17 @@ describe("quotedTerms: the five terms an offer commits to, or nothing", () => {
     );
   });
 
+  it("lowercases EVM addresses so checksum casing cannot split one quote into two", async () => {
+    const { quotedTerms, hashQuotedTerms } = await import("@/discovery/receipt-surface");
+    const checksummed = quotedTerms({ scheme: "exact", network: "eip155:8453", asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", payTo: "0xAbCdEf0000000000000000000000000000000001", amount: "500000" })!;
+    const lower = quotedTerms({ scheme: "exact", network: "eip155:8453", asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", payTo: "0xabcdef0000000000000000000000000000000001", amount: "500000" })!;
+    expect(checksummed).toEqual(lower);
+    expect(await hashQuotedTerms(checksummed)).toBe(await hashQuotedTerms(lower));
+    // Solana is base58 and case-significant: left exactly as served.
+    const solana = quotedTerms({ scheme: "exact", network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", asset: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", payTo: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE", amount: "500000" })!;
+    expect(solana.asset).toBe("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  });
+
   it("refuses to quote with a hole in it", async () => {
     const { quotedTerms } = await import("@/discovery/receipt-surface");
     expect(quotedTerms({ scheme: "exact", network: "eip155:8453", asset: "0xusdc", payTo: "0xstore" })).toBeNull();

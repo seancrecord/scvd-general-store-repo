@@ -97,7 +97,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Certificates of purchase",
     trust_model: "self_signed",
     signs:
-      `The canonical JSON of the certificate's own fields, in a fixed declared order: ${CERT_FIELDS.join(", ")} — every one of those that is present. DERIVED FROM THE SIGNING CODE, NOT TYPED BESIDE IT: this sentence was hand-written and had fallen a day behind by 2026-07-31, omitting made_by and then the five payment fields, on the page whose entire job is stating exactly what bytes a signature covers. paid_usdc is the TOTAL settled rather than the tip, payer is the paying wallet (chain-verifiable, unlike a chosen name), settlement_tx is the on-chain transaction, and quote is sha256 over the RFC 8785 form of the five accepted x402 terms (scheme, network, asset, payTo, amount) the buyer's payment signature was bound to — the same five the store's signed offer in the 402 commits to, so a held offer and a receipt can be matched without asking us. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.`,
+      `The canonical JSON of the certificate's own fields, in a fixed declared order: ${CERT_FIELDS.join(", ")} — every one of those that is present. DERIVED FROM THE SIGNING CODE, NOT TYPED BESIDE IT: this sentence was hand-written and had fallen a day behind by 2026-07-31, omitting made_by and then the five payment fields, on the page whose entire job is stating exactly what bytes a signature covers. paid_usdc is the TOTAL settled rather than the tip, payer is the paying wallet (chain-verifiable, unlike a chosen name), settlement_tx is the on-chain transaction, and quote is sha256 over the RFC 8785 form of the five accepted x402 terms (scheme, network, asset, payTo, amount; EVM asset and payTo lowercased first) the buyer's payment signature was bound to — the same five the store's signed offer in the 402 commits to, so a held offer and a receipt can be matched without asking us. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.`,
     does_not_prove:
       "That the goods were delivered, that they were any good, or that the buyer was who they said. It proves this store issued this certificate, with these fields, on this date.",
     verify_url: "/api/verify/{cert_id}",
@@ -296,6 +296,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     does_not_prove:
       "That the observed services behave the same at any other moment, or that the record is complete. The chain proves WE did not rewrite our own history; it cannot prove we saw everything.",
     verify_url: "/corpus.json",
+  },
+  {
+    id: "replay_kit",
+    name: "Replay kits",
+    trust_model: "self_signed",
+    signs:
+      "The RFC 8785 form of the whole kit at /api/replay/{cert_id} — the certificate's signed bytes and signature, the settlement transaction, the accepted terms recovered by matching the catalog against the certificate's signed quote, a fresh JWS offer over those same terms, the sale's standing, and the wrong-scope refusal body — as the detached payload of an EdDSA JWS under the did:web kid the kit names. Assembled on every read from the record and the live catalog, stored nowhere.",
+    does_not_prove:
+      "That the 402 the buyer paid carried this exact offer: the original was minted per challenge with a five-minute validUntil and was not retained, so the kit signs a fresh one over the five terms the signed quote recovers, and says so. The kit's own signature proves this store assembled these parts on this read; each part is only as true as its own signature and the chain.",
+    verify_url: "/api/replay/{cert_id}",
   },
   {
     id: "phantom_check",
