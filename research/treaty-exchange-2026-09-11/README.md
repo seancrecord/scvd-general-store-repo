@@ -71,3 +71,58 @@ An earlier attempt the same night (`codex/ward-index-readings`,
 runner and sent a GET; the door's `method_not_allowed` body was filed
 as `malformed_challenge`. A true reading of the wrong question, never a
 payment; kept there, superseded here.
+
+## His answer, and what it settled (2026-09-12)
+
+Marcus replied on issue #622 the same night, with both findings fixed
+and his own walk run before posting.
+
+**The door.** He confirms both readings. His `PAYMENT-REQUIRED` header
+was a v2 challenge and every paid path read only v1's `X-PAYMENT`;
+`PAYMENT-SIGNATURE` sat in his CORS allow-list and in no gate. His fix
+decodes `PAYMENT-SIGNATURE`, translates the v2 envelope to v1, and
+passes the inner payload untouched to the existing verifier.
+
+One part of that we can check from here without walking anything, and
+did: he says the translation cannot disturb the signature because the
+network label is not signed. Our own signing code agrees —
+`typedData()` in `scripts/lib/walkabout.mjs` builds the EIP-712 domain
+as `{name, version, chainId: 8453, verifyingContract}`, and no
+envelope's network string appears in it. `base` and `eip155:8453` are
+the same chain id, so the authorization our field wallet signed on
+2026-09-12 is byte-identical under either label. That is a reading of
+our own code, not a verification of his server; whether his door now
+settles is a walk, and a walk is the keeper's press.
+
+He also leaves one thing open in his own words: the v1 body still
+carries a v1 error string under the v2 header. Deliberate for now, and
+"still wrong to instruct a v2 payer with." Named by him, not by us.
+
+**The preimage, answered.** Our open question was what `claim_sha256`
+covers. It is not the claim text: on a `resolved_verdict` it commits
+to the sealed verdict object, which is why no whitespace or wrapping
+of the sentence closed it. They published the summary, not the object.
+
+And the answer carries a harder fact he volunteered rather than
+buried: `e851b71a…`'s binding is **unreproducible by anyone**,
+permanently. One field of that object is the SHA-256 of the resolver
+that ruled; that file changed on an SSRF fix the morning of the 12th,
+and the preimage was never stored. So the first artifact across this
+treaty stands as intact at the receipt layer — chain, signature and
+`notary_fp` all reproduced here — and unreproducible at the claim
+layer, forever. Both halves are true at once and neither cancels the
+other.
+
+What changed on his side: `GET /notary/preimage?hash=<receipt_hash>`
+now serves the literal bytes hashed at ruling time, every
+`resolved_verdict` carries a pointer to it, and old receipts get that
+explanation there rather than a bare 404. `verify.mjs` now hashes such
+bytes when they sit beside a receipt as `<receipt-file>.preimage`, and
+says it had nothing to hash when they do not — the check never passes
+quietly on an absent file.
+
+This is the treaty doing the thing it was for, in both directions
+within two days: his verifier caught its own drift on our reciprocal
+pass, our walk caught his paid path, and his answer caught a binding
+of his own that no longer reproduces. None of it required trusting
+either operator's word.
