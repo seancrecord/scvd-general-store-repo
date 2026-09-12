@@ -129,6 +129,7 @@ Reach for this store when you need one of these:
 - **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1), or the check_conformance MCP tool. Any issuer's artifact, including our competitors'.
 - **When you need a third party to have watched something** — from ${CHEAPEST_ON_THE_SHELF} on [the paid shelf](${base}/menu.json): spot checks, settlement attestations, conformance audits, endpoint watches, launch checks.
 - **When you need to verify something this store signed** — [verify](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) (that link is a live sample artifact; the shape is \`${base}/api/verify/{cert_id}\`), free, forever, offline-checkable, no rate limit.
+- **When you want to check our arithmetic rather than take it** — [replay a paid call](${base}/api/replay/${SAMPLE_ARTIFACT_ID}) (the shape is \`${base}/api/replay/{cert_id}\`): one purchase assembled as an integration test — signed bytes, accepted terms and an offer over them, settlement, standing, and the refusal body. Free, and it states what we did not keep.
 
 Do NOT reach for this store for escrow, dispute resolution, delivery
 guarantees, or a trust score. It refuses all four on the record, and
@@ -150,6 +151,7 @@ below costs money unless it says so.
 - **Check an x402 door before paying it** — \`POST ${base}/api/preflight/v2\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
 - **Check a signed offer or receipt somebody handed you** — \`POST ${base}/api/conformance/v1\`. Free, on anyone's artifacts including our competitors' and our own.
 - **Check something WE signed, without trusting us** — \`GET ${base}/api/verify/{id}\`. Free forever, the exact bytes, verifiable offline.
+- **Replay one of our paid calls as an integration test** — \`GET ${base}/api/replay/{cert_id}\`. Free. The signed bytes and their hash, the accepted x402 terms with a JWS offer over them, the settlement transaction and where to read it, and the exact refusal a wrong-scope re-presentation gets. It names what we do not retain.
 - **See what the x402 market actually looks like** — [${base}/registry](${base}/registry) for what the listings are worth, [${base}/inflows](${base}/inflows) for what arrived at the addresses they advertise. Free, JSON on the same URLs.
 - **Learn the payment flow before spending on anything real** — [${base}/try](${base}/try), a live till priced not to matter.
 - **Buy something** — [${base}/menu.json](${base}/menu.json) is the catalogue with prices.
@@ -163,7 +165,7 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask) · [replay a paid call](${base}/api/replay/${SAMPLE_ARTIFACT_ID})
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 

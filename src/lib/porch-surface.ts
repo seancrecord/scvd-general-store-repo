@@ -223,6 +223,8 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["before-you-pay", "instrument"],
   ["look", "instrument"],
   ["discovery", "instrument"],
+  // An agent replaying a paid call is running a free check on us.
+  ["replay", "instrument"],
   ["bounty", "door"],
   ["bounties", "door"],
   ["letter:", "door"],
@@ -499,6 +501,19 @@ export function porchSurface(path: string, method: string): string | undefined {
   }
   if (path.startsWith("/api/refund/")) {
     return "refund:read";
+  }
+  /**
+   * THE REPLAY KIT gets its own key rather than joining artifact:read
+   * (2026-09-12). Both are "an artifact read back by its id", so the
+   * bucketing rule is the same — one key for every cert_id, never one
+   * per stranger's id — but the question each answers is different.
+   * artifact:read counts a buyer collecting goods; this counts
+   * somebody REPLAYING a paid call to check the store's arithmetic,
+   * which is the only number that says whether the evidence is used
+   * as evidence. Folded into artifact:read it would be unfindable.
+   */
+  if (path.startsWith("/api/replay/")) {
+    return "replay";
   }
   if (ARTIFACT_READ_PREFIXES.some((prefix) => path.startsWith(prefix))) {
     return "artifact:read";
