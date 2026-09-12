@@ -104,6 +104,23 @@ describe("the glance", () => {
     expect(Array.isArray(glance.desk!.missing)).toBe(true);
   });
 
+  it("keeps the month's numbers monthly and names the storefront's number beside the certificates", async () => {
+    /*
+     * 2026-09-12: "Sales this month" had carried the ALL-TIME
+     * certificate count since the glance shipped, and the keeper read
+     * 94 as a month. The month's count now comes off the month ledger
+     * the desk's own line uses; the all-time count is the till's, the
+     * storefront's number; the certificates ride beside it, labelled.
+     */
+    await writeGlance(testEnv);
+    const glance = (await readGlance(testEnv))!;
+    const monthSettles = Object.values(glance.desk!.month_ledger.items).reduce((sum, row) => sum + row.settled, 0);
+    expect(glance.organic_settlements).toBeLessThanOrEqual(monthSettles);
+    expect(glance.organic_settlements).toBeLessThanOrEqual(glance.organic_sales_all_time);
+    expect(glance.with_certificate_all_time).toBeLessThanOrEqual(glance.organic_sales_all_time);
+    expect(glance.organic_sales_all_time).toBe(glance.all_time!.organic);
+  });
+
   it("counts every number as a number, never a string that looks like one", async () => {
     await writeGlance(testEnv);
     const glance = (await readGlance(testEnv))!;

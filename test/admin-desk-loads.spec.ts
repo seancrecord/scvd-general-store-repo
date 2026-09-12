@@ -156,6 +156,14 @@ describe("the money page", () => {
     expect([401, 403, 302]).toContain(response.status);
   });
 
+  it("leads the take with the storefront's number and counts certificates beneath it", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin/take`, { headers: auth })
+    ).text();
+    expect(html).toContain("the storefront's number");
+    expect(html).toContain("of those carry a certificate");
+  });
+
   it("carries the take and the all-time split", async () => {
     const html = await (
       await SELF.fetch(`${BASE}/admin/take`, { headers: auth })

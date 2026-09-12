@@ -271,9 +271,11 @@ function trendHtml(ledger: MonthLedger): string {
         `<tr><td>${escapeHtml(ledger.month)}-${escapeHtml(day)}</td><td>${counts.challenges}</td><td>${counts.settles}</td><td>${"\u25A0".repeat(Math.min(counts.settles, 40)) || ""}</td></tr>`,
     )
     .join("\n");
+  const total = days.reduce((sum, [, counts]) => sum + counts.settles, 0);
   return `
+    <p><small>${escapeHtml(ledger.month)} by day, newest first, up to fourteen days with traffic. A day's count is that day's alone; the month's total is ${total}.</small></p>
     <table border="1" cellpadding="4">
-      <tr><th>day</th><th>organic 402s</th><th>organic settles</th><th></th></tr>
+      <tr><th>day</th><th>organic 402s</th><th>organic sales that day</th><th></th></tr>
       ${rows}
     </table>`;
 }
@@ -375,11 +377,27 @@ export function takeSectionHtml(
   const t = take.total;
   const rail = (slice: { sales: number; usdc: number }, label: string): string =>
     `<strong>${slice.sales}</strong> on ${label} for <strong>${money(slice.usdc)}</strong>`;
-  return `
-    <p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic, all-time
+  /*
+   * ONE VOCABULARY (2026-09-12). "Organic sales" means what the
+   * storefront means: settles at the till, penny pages included. The
+   * certificates are a sub-count of those, never the headline —
+   * the keeper read "94 organic sales" here beside 98 on the front and
+   * called it inconsistent, and he was right: they were two different
+   * things wearing one name.
+   */
+  const noCert = allTime ? allTime.organic - t.organic_sales : null;
+  const headline = allTime
+    ? `<p style="font-size:1.25em"><strong>${allTime.organic}</strong> organic sale${allTime.organic === 1 ? "" : "s"}, all-time
+    <small>(the storefront's number; +${allTime.house} house)</small> ·
+    <strong>${money(t.organic_usdc)}</strong> on certificates <small>(+${money(t.house_usdc)} house)</small></p>
+    <p><strong>${t.organic_sales}</strong> of those carry a certificate${noCert !== null && noCert >= 0 ? `; <strong>${noCert}</strong> settled on penny pages, which mint none` : ""}.
+    Money below is the certificates' money; the penny pages' pennies are on the till table further down.</p>`
+    : `<p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic on certificates, all-time
     <small>(+${money(t.house_usdc)} house)</small> ·
-    <strong>${t.organic_sales}</strong> organic sale${t.organic_sales === 1 ? "" : "s"}</p>
-    <p>${rail(take.rails.base, "Base")} · ${rail(take.rails.solana, "Solana")}${take.rails.unknown.sales > 0 ? ` · ${rail(take.rails.unknown, "an unrecorded rail")}` : ""} <small>(organic only, by each certificate's network)</small></p>
+    <strong>${t.organic_sales}</strong> certificate${t.organic_sales === 1 ? "" : "s"}</p>`;
+  return `
+    ${headline}
+    <p>${rail(take.rails.base, "Base")} · ${rail(take.rails.solana, "Solana")}${take.rails.unknown.sales > 0 ? ` · ${rail(take.rails.unknown, "an unrecorded rail")}` : ""} <small>(certificates only, by each certificate's network)</small></p>
     ${bridge}
     <table border="1" cellpadding="4">
       <tr><th>shelf</th><th>organic (sales)</th><th>house (sales)</th></tr>
@@ -606,10 +624,10 @@ function glanceHtml(data: OfficePageData): string {
       : "";
   return `
     <p style="font-size:1.15em">
-      <strong>${escapeHtml(ledger.month)}:</strong>
+      <strong>${escapeHtml(ledger.month)} so far:</strong>
       <strong>$${revenueUsdc.toFixed(2)}</strong> organic revenue
       <small>(+$${revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
-      <strong>${organicSettles}</strong> organic settle${organicSettles === 1 ? "" : "s"} \u00B7
+      <strong>${organicSettles}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
       <strong>${organic402s}</strong> organic 402s \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
