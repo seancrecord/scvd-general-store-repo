@@ -1,6 +1,8 @@
 {
   "name": "id-missing-realm-missing",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "No id and no realm: clients and parsers MUST reject a challenge without an id.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

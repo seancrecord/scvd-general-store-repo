@@ -1,6 +1,8 @@
 {
   "name": "basic-beside-x402",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A proxy's WWW-Authenticate: Basic beside a door's PAYMENT-REQUIRED is not MPP. protocols_spoken is x402 only; the MPP battery does not run.",
   "url": "https://door.example/api/paid",
   "expect_spoken": [

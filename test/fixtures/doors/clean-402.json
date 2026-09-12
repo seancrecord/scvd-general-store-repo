@@ -1,6 +1,8 @@
 {
   "name": "clean-402",
   "recorded": "2026-08-26, this store's own hello door, terms replaced with a neutral payTo",
+  "source": "derived",
+  "captured_at": "2026-08-26",
   "why": "The good case. Every core check passes; nothing is red.",
   "expect_failed": [],
   "status": 402,

@@ -1,6 +1,8 @@
 {
   "name": "failed-invalid-signature",
   "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A terminal failure with a §9 code: the authorization did not verify, nothing was broadcast, transaction is the empty string the spec prescribes. Failed, cleanly.",
   "expect_failed": [],
   "expect_outcome": "failed",

@@ -1,6 +1,8 @@
 {
   "name": "settled-amount-not-atomic",
   "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "source": "simulated",
+  "captured_at": null,
   "why": "amount is optional and, when present, atomic units as a digit string. '0.005' is a decimal a reader cannot compare to a quote without guessing the decimals. Settled, with the amount check failed.",
   "expect_failed": [
     "amount-atomic"

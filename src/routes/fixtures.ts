@@ -70,11 +70,55 @@ import type { HonoEnv } from "@/types";
  */
 export const fixturesRoutes = new Hono<HonoEnv>();
 
+/**
+ * PROVENANCE, IN THE THREAD'S OWN WORDS (2026-09-12). x402#3396 and the
+ * corpus index cut from it at smartflowproai-lang/x402-endpoint-validator
+ * v1.5.1 settled a vocabulary for a conformance row: `proves` declared
+ * inside the vector file rather than in prose beside it; `source` from a
+ * closed set — simulated, observed, derived — never an aspirational
+ * plural; and the (claim-birth, freshness) pair, `captured_at` beside
+ * `last_verified_at`, because a conformance verdict is a claim about the
+ * day it ran. This store's fixtures already carried the substance as
+ * prose (`recorded`, `why`); this makes each half a field a third party
+ * can regenerate from, and adds the freshness half honestly.
+ *
+ * WHERE EACH FIELD COMES FROM, and nothing is typed twice:
+ *   - `source` and `captured_at` are declared IN the fixture file for the
+ *     wrapped sets (doors, mpp, settlement-responses). A raw capture
+ *     (402index, x402scan) cannot carry a field without altering the
+ *     bytes it is, so its provenance is declared once on the set, and an
+ *     x402scan body reads `captured_at` off the `.terms.json` sibling
+ *     that was captured beside it. The verifier's vectors already use
+ *     `source` as a pointer to the vector set they were cut from; that
+ *     meaning is kept, and the set declares them simulated.
+ *   - `proves` is the file's `why` (the verifier's `note`, else its
+ *     `expect`); a raw capture proves what its set says it is for.
+ *   - `last_verified_at` is the deploy that carries this index, read
+ *     from the Worker's version metadata: every fixture is replayed by
+ *     the suite on every push, so the build that answers is the last
+ *     verification, and `verified_by` names the spec that replays the
+ *     set. Absent version metadata (a local run) reads null, never a
+ *     typed date.
+ */
+export const FIXTURE_SOURCES = ["simulated", "observed", "derived"] as const;
+export type FixtureSource = (typeof FIXTURE_SOURCES)[number];
+
+export interface FixtureProvenance {
+  source: FixtureSource;
+  /** ISO 8601; null for a constructed shape. Precision is whatever was recorded. */
+  captured_at: string | null;
+  note?: string;
+}
+
 export interface FixtureSet {
   set: string;
   directory: string;
   what: string;
   entries: { name: string; body: Record<string, unknown> }[];
+  /** The spec that replays every entry of this set, so a reader can run the same verification. */
+  verified_by: string;
+  /** Set-level provenance for files that cannot or do not declare their own. */
+  provenance?: FixtureProvenance;
 }
 
 export const FIXTURE_SETS: readonly FixtureSet[] = [
@@ -82,6 +126,7 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "doors",
     directory: "test/fixtures/doors",
     what: "Recorded x402 402 responses (status, headers, body), each naming the battery checks it fails and no others: the release gate for a battery version.",
+    verified_by: "test/door-fixtures.spec.ts",
     entries: [
       { name: "accepts-empty", body: door_accepts_empty as Record<string, unknown> },
       { name: "accepts-missing-asset", body: door_accepts_missing_asset as Record<string, unknown> },
@@ -98,6 +143,7 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "mpp",
     directory: "test/fixtures/mpp",
     what: "Recorded and synthetic Machine Payments Protocol 402s (WWW-Authenticate: Payment), each naming the MPP battery checks it fails and the advisories it raises.",
+    verified_by: "test/mpp-battery.spec.ts",
     entries: [
       { name: "bad-amount-unknown-method", body: mpp_bad_amount_unknown_method as Record<string, unknown> },
       { name: "basic-beside-x402", body: mpp_basic_beside_x402 as Record<string, unknown> },
@@ -118,6 +164,8 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "402index",
     directory: "test/fixtures/402index",
     what: "One page of 402index.io's free service list as captured by the keeper on 2026-09-04 (limit 25, offset 0, total 104,106): the shape the directory walk reads, kept so the reader's parser is held to real bytes.",
+    verified_by: "test/directory-walk.spec.ts",
+    provenance: { source: "observed", captured_at: "2026-09-04", note: "one free page captured 2026-09-04 under the house field wallet (test/fixtures/README.md); the file is the response body verbatim, so its provenance is declared here rather than inside it" },
     entries: [
       { name: "services-page1", body: index402_services_page1 as Record<string, unknown> },
     ],
@@ -126,6 +174,8 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "x402scan",
     directory: "test/fixtures/x402scan",
     what: "x402scan.com's paid directory API as captured by the keeper on 2026-09-04 ($0.03 in total): three response bodies, each beside the decoded Payment-Required challenge that priced it, so the price evidence sits next to the shape. A cent a call, USDC on Base, one payTo across all fourteen endpoints.",
+    verified_by: "test/directory-walk.spec.ts",
+    provenance: { source: "observed", captured_at: "2026-09-04", note: "paid captures on 2026-09-04 under the house field wallet (test/fixtures/README.md); each body's captured_at is read off the .terms.json captured beside it" },
     entries: [
       { name: "facilitators-stats", body: x402scan_facilitators_stats as Record<string, unknown> },
       { name: "facilitators-stats.terms", body: x402scan_facilitators_stats_terms as Record<string, unknown> },
@@ -139,6 +189,7 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "settlement-responses",
     directory: "test/fixtures/settlement-responses",
     what: "Settlement responses (the SettleResponse a buyer holds in PAYMENT-RESPONSE, or a facilitator's /settle body), each naming the settlement-response-v1 checks it fails and the outcome a reader must reach — settled, failed or unresolved — with the outcomes it must not reach. The pending shapes are the negative control: a reader that maps success:false to failed fails them.",
+    verified_by: "test/settlement-response-fixtures.spec.ts",
     entries: [
       { name: "draft-status-fields", body: settle_draft_status_fields as Record<string, unknown> },
       { name: "failed-invalid-signature", body: settle_failed_invalid_signature as Record<string, unknown> },
@@ -158,6 +209,8 @@ export const FIXTURE_SETS: readonly FixtureSet[] = [
     set: "verifier",
     directory: "verifier/fixtures",
     what: "The x402-verify package's vectors: signed receipts and offers, valid and deliberately broken, with the key document they verify against.",
+    verified_by: "test/verifier-package.spec.ts",
+    provenance: { source: "simulated", captured_at: null, note: "cut deterministically from conformance/offer-receipt-vectors.json under a published test key; the file's own source field points at the vector it was cut from" },
     entries: [
       { name: "issuer-key-document", body: verifier_issuer_key_document as Record<string, unknown> },
       { name: "offer-expired-but-wellformed", body: verifier_offer_expired_but_wellformed as Record<string, unknown> },
@@ -179,20 +232,66 @@ async function sha256Hex(text: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function fixturesIndex(base: string): Promise<Record<string, unknown>> {
+/** What the row proves, from inside the file: `why`, the verifier's `note`, else its `expect`. */
+function provesOf(set: FixtureSet, body: Record<string, unknown>): string {
+  for (const key of ["why", "note", "expect"]) {
+    const value = body[key];
+    if (typeof value === "string" && value) return value;
+  }
+  return set.what;
+}
+
+/**
+ * Per-entry provenance: the file's own declaration first, then the
+ * x402scan sibling's capture stamp, then the set's declaration.
+ */
+export function provenanceOf(set: FixtureSet, entry: { name: string; body: Record<string, unknown> }): FixtureProvenance {
+  const declared = entry.body["source"];
+  if (typeof declared === "string" && (FIXTURE_SOURCES as readonly string[]).includes(declared)) {
+    const captured = entry.body["captured_at"];
+    return { source: declared as FixtureSource, captured_at: typeof captured === "string" ? captured : null };
+  }
+  const sibling = set.entries.find((candidate) => candidate.name === `${entry.name}.terms`);
+  const stamp = sibling?.body["captured"] ?? entry.body["captured"];
+  if (set.provenance && typeof stamp === "string" && stamp) {
+    return { ...set.provenance, captured_at: stamp };
+  }
+  if (set.provenance) return set.provenance;
+  throw new Error(`fixture ${set.set}/${entry.name} declares no provenance and its set declares none`);
+}
+
+const precisionOf = (captured: string | null): "minute" | "date" | null =>
+  captured === null ? null : captured.includes("T") ? "minute" : "date";
+
+export async function fixturesIndex(
+  base: string,
+  version?: { id: string; timestamp: string } | null,
+): Promise<Record<string, unknown>> {
+  const lastVerifiedAt = version?.timestamp ? version.timestamp : null;
   const sets = await Promise.all(
     FIXTURE_SETS.map(async (set) => ({
       set: set.set,
       directory: set.directory,
       what: set.what,
+      verified_by: set.verified_by,
       entries: await Promise.all(
-        set.entries.map(async (entry) => ({
-          name: entry.name,
-          url: `${base}/fixtures/${set.set}/${entry.name}.json`,
-          sha256: await sha256Hex(fixtureBytes(entry.body)),
-          ...(typeof entry.body["why"] === "string" ? { why: entry.body["why"] } : {}),
-          ...(typeof entry.body["recorded"] === "string" ? { recorded: entry.body["recorded"] } : {}),
-        })),
+        set.entries.map(async (entry) => {
+          const provenance = provenanceOf(set, entry);
+          return {
+            name: entry.name,
+            url: `${base}/fixtures/${set.set}/${entry.name}.json`,
+            sha256: await sha256Hex(fixtureBytes(entry.body)),
+            proves: provesOf(set, entry.body),
+            source: provenance.source,
+            captured_at: provenance.captured_at,
+            captured_at_precision: precisionOf(provenance.captured_at),
+            last_verified_at: lastVerifiedAt,
+            verified_by: set.verified_by,
+            ...(provenance.note ? { provenance_note: provenance.note } : {}),
+            ...(typeof entry.body["why"] === "string" ? { why: entry.body["why"] } : {}),
+            ...(typeof entry.body["recorded"] === "string" ? { recorded: entry.body["recorded"] } : {}),
+          };
+        }),
       ),
     })),
   );
@@ -212,7 +311,19 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
       { "@type": "PropertyValue", name: "the stable URL whose bytes are the fixture", propertyID: "sets[].entries[].url" },
       { "@type": "PropertyValue", name: "the sha256 of exactly the bytes that URL returns", propertyID: "sets[].entries[].sha256" },
       { "@type": "PropertyValue", name: "what the fixture demonstrates and where its bytes came from", propertyID: "sets[].entries[].why, sets[].entries[].recorded" },
+      { "@type": "PropertyValue", name: "the claim the row makes, declared inside the file", propertyID: "sets[].entries[].proves" },
+      { "@type": "PropertyValue", name: "where the bytes came from: simulated, observed or derived, never a plural", propertyID: "sets[].entries[].source" },
+      { "@type": "PropertyValue", name: "the claim's birth date (null for a constructed shape) and its precision", propertyID: "sets[].entries[].captured_at, sets[].entries[].captured_at_precision" },
+      { "@type": "PropertyValue", name: "the deploy that last replayed every row, and the spec that did it", propertyID: "sets[].entries[].last_verified_at, sets[].entries[].verified_by" },
     ],
+    freshness: {
+      claim_birth: "captured_at is when the bytes were taken from a live door (observed), or altered from such a capture (derived); a constructed shape (simulated) has none and says null.",
+      last_verified_at: lastVerifiedAt,
+      verified_by: "every set is replayed by the spec its row names on every push; the deploy carrying this index is therefore the last verification, and its version metadata is the timestamp",
+      deploy_id: version?.id ?? null,
+      ...(lastVerifiedAt ? {} : { not_verified_here: "this build carries no version metadata, so no verification time is claimed" }),
+      vocabulary: "source, captured_at, last_verified_at and proves follow the conformance-corpus vocabulary agreed on x402-foundation/x402#3396 and cut at smartflowproai-lang/x402-endpoint-validator v1.5.1, so a row here can be read beside one there without translation",
+    },
     how_to_read: "Pick a set, fetch an entry's URL, hash the bytes you received and compare to sha256; then run your own instrument over the fixture and compare your findings to the checks it names. A fixture is a test corpus, not a finding about any live door.",
     what_this_is_not: `${NEVER_A_RANKING_SENTENCE} These are not observations of live doors and not signed: a recorded fixture is material to test a client or an instrument against, kept verbatim, and a synthetic one is built from a specification's own examples and says so. Nothing here names a live operator.`,
     fixture_count: count,
@@ -222,7 +333,7 @@ export async function fixturesIndex(base: string): Promise<Record<string, unknow
   };
 }
 
-fixturesRoutes.get("/fixtures.json", async (c) => c.json(await fixturesIndex(c.env.STORE_BASE_URL), 200, { "Cache-Control": "public, max-age=3600" }));
+fixturesRoutes.get("/fixtures.json", async (c) => c.json(await fixturesIndex(c.env.STORE_BASE_URL, c.env.CF_VERSION_METADATA ?? null), 200, { "Cache-Control": "public, max-age=3600" }));
 
 /*
  * A set may start with a digit (402index), carry a hyphen

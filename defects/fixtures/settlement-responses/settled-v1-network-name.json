@@ -1,6 +1,8 @@
 {
   "name": "settled-v1-network-name",
   "recorded": "2026-09-12, hand-built from x402-specification-v2.md §5.3.2 (SettleResponse fields) and §9 (settlement_pending); no live door, no hostname",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A v1 network name ('base') where v2 requires CAIP-2. The settlement is readable and settled; only the network check fails. A reader that refuses this outright has turned a naming drift into a lost purchase.",
   "expect_failed": [
     "network-caip2"

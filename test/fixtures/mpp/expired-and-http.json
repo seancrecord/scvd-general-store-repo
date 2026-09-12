@@ -1,6 +1,8 @@
 {
   "name": "expired-and-http",
   "recorded": "synthetic, built from github.com/tempoxyz/mpp-specs draft-00 at main 2026-09-03 (no live MPP door was reachable from the build environment; the first live capture replaces this note)",
+  "source": "simulated",
+  "captured_at": null,
   "why": "A challenge already expired at issue, over plain http: two MUSTs broken. The body is JSON but not problem+json, so the advisory rides too.",
   "url": "http://door.example/api/paid",
   "expect_spoken": [

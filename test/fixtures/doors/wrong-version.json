@@ -1,6 +1,8 @@
 {
   "name": "wrong-version",
   "recorded": "2026-08-26, hand-built: x402Version 1 in a v2-shaped envelope",
+  "source": "simulated",
+  "captured_at": null,
   "why": "Version drift: the envelope announces a protocol version this battery does not test.",
   "expect_failed": [
     "x402-version"
