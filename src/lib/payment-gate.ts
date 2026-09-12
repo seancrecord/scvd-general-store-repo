@@ -21,6 +21,7 @@ import type {
 import type { Context, MiddlewareHandler } from "hono";
 import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
 import { offerExtensionsFor } from "@/lib/offer-receipt";
+import { hashQuotedTerms, quotedTerms } from "@/discovery/receipt-surface";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { sendAlert } from "@/lib/alerts";
@@ -1720,12 +1721,18 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * THE HANDLER RUNS FIRST NOW. Everything above happens only if it
    * asks, or if it succeeds and never asked.
    */
+  const acceptedQuote = quotedTerms(verifiedRequirements);
   c.set("pending", {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
     ...(payerFromPaymentHeader(paymentHeaderOf(c))
       ? { payer: payerFromPaymentHeader(paymentHeaderOf(c)) }
       : {}),
+    // The accepted terms, hashed here and nowhere else: this is the
+    // one place that holds the requirements the buyer's signature
+    // verified against, so the certificate's `quote` cannot be a
+    // caller's guess (discovery/receipt-surface.ts).
+    ...(acceptedQuote ? { quote: await hashQuotedTerms(acceptedQuote) } : {}),
     observation: await verifiedObservationCheckpoint(c.env, getMenuItem(itemKeyFromPath(c.req.path)), verifiedRequirements.network, payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot), verifiedPayload, c.req.path, await httpArtifactDigest(c.req.url)),
     settle: settleNow,
     purchaseRecovery: () => till.recovery,

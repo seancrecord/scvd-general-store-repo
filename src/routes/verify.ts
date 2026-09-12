@@ -31,6 +31,7 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import { DELIVER_FIRST_SINCE, settlementStateFor, type SettlementState } from "@/services/settlement-state";
 import {
   existenceVerdict,
   type ExistenceInput,
@@ -337,6 +338,8 @@ interface ReceiptChecks {
   doesNotProve: string;
   /** This page's own URL, for the take-it-with-you steps. */
   verifyUrl: string;
+  /** Where the sale stands: payment, ordering, delivery-audit row. */
+  settlement: SettlementState;
 }
 
 function anchorLine(existence: ExistenceVerdict | undefined): string {
@@ -402,6 +405,7 @@ function receiptPageHtml(
       ${cert.name ? row("For", escapeHtml(cert.name)) : ""}
       ${cert.made_by ? row("Made by", escapeHtml(cert.made_by)) : ""}
       ${cert.saw ? row("Catalog surface", `<code>${escapeHtml(cert.saw)}</code> <span class="menu-meta">(sha256 of the route, list price, and required inputs this receipt was minted against)</span>`) : ""}
+      ${cert.quote ? row("Accepted quote", `<code>${escapeHtml(cert.quote)}</code> <span class="menu-meta">(sha256 of the RFC 8785 form of the five x402 terms the payment signature was bound to — scheme, network, asset, payTo, amount; the same five the store's signed offer in the 402 commits to, EVM addresses lowercased before hashing, so a held offer matches this line without asking us)</span>`) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${escapeHtml(explorer)}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
@@ -431,6 +435,16 @@ function receiptPageHtml(
       </ul>
     </section>
     <section>
+      <h2>Where this sale stands</h2>
+      <p class="menu-meta">Derived on this load from the signed fields above and the delivery-audit row for the settlement, never stored beside the receipt.</p>
+      <ul>
+        ${check(`Payment — <strong>${escapeHtml(checks.settlement.payment_state.replace(/_/g, " "))}</strong>.`)}
+        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">(since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing)</span>.`)}
+        ${check(`Delivery audit — <strong>${escapeHtml(checks.settlement.delivery_audit.state.replace(/_/g, " "))}</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.delivery_audit.means)})</span>.`)}
+        ${check(`Failed attempts on this receipt — <strong>none possible</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.failed_attempts.why)} ${escapeHtml(checks.settlement.failed_attempts.where)})</span>.`)}
+      </ul>
+    </section>
+    <section>
       <h2>What this does not prove</h2>
       <p class="menu-desc">${escapeHtml(checks.doesNotProve)}</p>
       <p class="menu-meta">Stated per artifact class, with what the signature covers and whose word you are taking, at <a href="/attestation">/attestation</a>.</p>
@@ -442,6 +456,7 @@ function receiptPageHtml(
       <p class="menu-desc">Check it without asking us, against a key you fetch yourself from <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>: <code>ed25519_verify(utf8(signed_payload), signature, public_key)</code>. Or export everything, Bitcoin proof included, and verify offline:</p>
       <pre><code>npx -p x402-verify scvd-evidence export ${escapeHtml(checks.verifyUrl)} --out ./receipt-${escapeHtml(cert.cert_id)}
 npx -p x402-verify scvd-evidence verify ./receipt-${escapeHtml(cert.cert_id)}/bundle.json --public-key &lt;the key you fetched&gt;</code></pre>
+      <p class="menu-desc">Or replay the whole call as an integration test — the signed bytes, the accepted terms and a JWS offer over them, the settlement transaction, the sale's standing, and the refusal body a wrong-scope re-presentation gets — in one signed document: <a href="/api/replay/${escapeHtml(cert.cert_id)}"><code>/api/replay/${escapeHtml(cert.cert_id)}</code></a>.</p>
       <p class="menu-meta">This page re-checks the ed25519 signature on every load; reload it and the check runs again. Re-verification is free, forever, and answers for anyone, not only whoever bought the thing.</p>
     </section>`;
 }
@@ -617,6 +632,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
               artifactHash: certificateArtifactHash,
               doesNotProve: artifactClass?.does_not_prove ?? "",
               verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}`,
+              settlement: await settlementStateFor(c.env, record.certificate),
             },
           )}${jsonLdScript({
             "@context": "https://schema.org",
@@ -684,6 +700,20 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: certificateSignedPayload,
       artifact_hash: certificateArtifactHash,
       signature_covers: HOW_TO_VERIFY,
+      ...(record.certificate.quote
+        ? {
+            quote_covers:
+              "quote is sha256 over the RFC 8785 (JCS) form of {scheme, network, asset, payTo, amount} — the accepted x402 terms the buyer's payment signature was bound to, read by the door that verified them. The store's signed offer in the 402 (extensions[\"offer-receipt\"]) commits to the same five plus version, resourceUrl and validUntil: decode that JWS payload, keep the five, lowercase asset and payTo on eip155 networks (Solana addresses stay exactly as served), canonicalize, hash, and compare. A match binds this receipt to that offer; a mismatch means a different tier or rail was paid than the offer you hold.",
+          }
+        : {}),
+      /**
+       * WHERE THE SALE STANDS (2026-09-12): the per-receipt answer to
+       * "failed retry state", derived at read and never stored. See
+       * services/settlement-state.ts for why the honest answer is not
+       * a counter and where the per-attempt record actually lives.
+       */
+      settlement_state: await settlementStateFor(c.env, record.certificate),
+      replay_url: `${c.env.STORE_BASE_URL}/api/replay/${record.certificate.cert_id}`,
       existence,
       ...citeBlock({ base: c.env.STORE_BASE_URL, what: "receipt", which: record.certificate.cert_id, observed_at: record.certificate.date, url: `${c.env.STORE_BASE_URL}/api/verify/${record.certificate.cert_id}` }),
       /*

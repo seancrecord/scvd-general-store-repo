@@ -120,6 +120,7 @@ import {
   deprecationRoutes,
   tradingPostRoutes,
   verifyRoutes,
+  replayRoutes,
   wellKnownRoutes,
   coverageRoutes,
   sourceRoutes,
@@ -302,6 +303,7 @@ app.route("/", stampRoutes);
 app.route("/", tradingPostRoutes);
 app.route("/", requestRoutes);
 app.route("/", verifyRoutes);
+app.route("/", replayRoutes);
 app.route("/", luckyRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
