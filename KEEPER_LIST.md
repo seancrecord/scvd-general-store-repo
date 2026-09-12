@@ -1347,14 +1347,12 @@ Do not relitigate without you.
   (`research/treaty-exchange-2026-09-11/`); one binding did not
   reproduce and is a question on the issue. RULED 09-11: the credit
   key declined — a key skips the 402 and cannot verify the fix.
-  1. TEST — walk his door once, your words as the override. Pull
-     the branch of #647 (per-target method and body), then on your
-     machine with `FIELD_WALLET_KEY` in `.env`:
-     `node scripts/walkabout.mjs walk --targets stillos.json
-     --per-item 0.10 --override "maybe not regularly but the one
-     time"`, then `reconcile` and `report` on
-     `research/field-run-2026-09-11/ledger.jsonl`. The targets file
-     is in the session; commit the run folder after.
+  WALKED 09-12, your press, ten cents authorised, nothing moved:
+  his header speaks v2, his body v1, and his paid path reads only
+  the v1 `X-PAYMENT` header, so a v2 buyer following his header
+  cannot pay (`research/field-run-2026-09-12/`). Back to him on the
+  issue with the ledger line. If he fixes it and asks, a second walk
+  is a second press.
   Not your hand: the §7 read on x402 #3220/#3376 is still owed to
   him from a session that can reach those PRs.
 - **Key succession.** Gate is physical: a second seed,
