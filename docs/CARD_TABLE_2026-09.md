@@ -117,8 +117,12 @@ reasoning, named as desk reasoning.
    purchase the rule names (Stale Passport on a passport refresh, 410
    Gone on a service audit, Testnet Catch on a settlement
    attestation, Double Charge on any purchase with an idempotency
-   key); each burn is a signed record beside the pressing. Three or
-   more Conditions and the binder is "under the weather". The streak
+   key, Broken Tier on a passport refresh or a trust profile, the
+   two purchases that read a door the wallet named); each burn is a
+   signed record beside the pressing. Three or more Conditions and
+   the binder is "under the weather". The one-of-one's perk: the
+   wallet a Keeper or CV lands with gets one pack of credit, once.
+   The streak
    (STANDING, 2026-09-12): keyed on the wallet the ringer sends, a
    wallet's first ring earns the Bellringer Room, every ring after
    hands a common, day 7 and every seventh day a pack at full odds,
@@ -263,15 +267,17 @@ the pixel engine already draws the engraved hand.
 
 ## 4. Not built, each with its reason (OPEN or PROPOSED)
 
-- **Holder perks** (5% off with a Rail holo, a Door card's free
-  preflight, the Keeper's free window pick). The pricing charter
-  says one price to every buyer; a holder discount breaks that
-  sentence, and the free preflight is already free. OPEN, §6.
-- **Broken Tier's clear and the reserved Conditions** (Indeterminate,
-  Rate Limited, Unclaimed Bounty). Each clears on a passport read of
-  a door the wallet named, which no purchase here carries. The rule
-  table has the row; it is empty on purpose. OPEN until a purchase
-  names a door.
+- **Holder perks, the half that is a price.** The plan's 5% off with
+  a Rail holo is a price that depends on who is buying, and the
+  pricing charter says one price to every buyer. OPEN, §6. The half
+  that is not a price is built (2026-09-12): the wallet a Keeper or
+  CV lands with gets one pack of credit, once per pressing, to spend
+  on a pack or the window (the plan's "free window pick"); a Door
+  card's preflight is free already.
+- **The reserved Conditions** (Indeterminate, Rate Limited, Unclaimed
+  Bounty) drop in as the season runs; not in the count, not pressable
+  yet. Broken Tier's clear is built: a passport read of a door the
+  wallet named, which the refresh and the trust profile both are.
 - **Missions beyond the bell streak; promotions UI.** The plan's own
   "not in first build".
 - **`/design` motion.** Static; the "boots" data layer on hover is a
@@ -282,12 +288,11 @@ the pixel engine already draws the engraved hand.
 Ruled and built the same afternoon: "do we even need two? just
 pick one that looks nice." The Worker has no browser and no fonts,
 so the rasterizer ships inside it — `@resvg/resvg-wasm` (2 MB of
-WebAssembly) and one font, IBM Plex Serif, regular and bold, under
-the SIL Open Font License (`assets/fonts/`, licence beside the
-files). Every family the SVG names resolves to Plex Serif in the
-PNG; the SVG keeps its own stack where a browser has the fonts, and
-its italics, which the PNG renders upright for want of a third
-file. The paper-grain filter stays off the PNG: measured at
+WebAssembly) and one font, IBM Plex Serif, regular, bold and
+italic, under the SIL Open Font License (`assets/fonts/`, licence
+beside the files). Every family the SVG names resolves to Plex Serif
+in the PNG; the SVG keeps its own stack where a browser has the
+fonts. The paper-grain filter stays off the PNG: measured at
 1000×1400, 1,382 ms of CPU with it and 233 ms without, against a
 Worker ceiling that was 100 ms. The ceiling is now 1,000 ms for
 that one path, stated in `wrangler.jsonc` with the reason, and each
@@ -306,12 +311,12 @@ every pressing carries `face_png_url`.
    make it work."** Recorded as ruled. The build's own hedges stand:
    nothing cashable, nothing bought back, odds and seed public, the
    window sentence in plain words on /design.
-3. **RULE — holder perks against the pricing charter.** The plan's
-   5% Rail-holo discount and the Keeper's free pick are prices that
-   depend on who is buying. The charter's one-price clause is older.
-   Ruling: perks that are not prices (a Door card's preflight is
-   free already; a Keeper's pick could be a hand press) or amend the
-   charter. Built without perks until ruled.
+3. **RULE — the Rail-holo discount against the pricing charter.**
+   The plan's 5% off is a price that depends on who is buying; the
+   charter's one-price clause is older. The perks that are not
+   prices are built (the one-of-one's pack of credit; the Door
+   card's preflight is free already). Amend the charter, or let the
+   discount go.
 4. **RULE — the cuts.** *Gas Was Nothing* and *Node 21* out to hold
    52 (now 60 with the second reading's eight, §0b); Door #0017 a
    real degraded door (tick.hugen.tokyo) instead of

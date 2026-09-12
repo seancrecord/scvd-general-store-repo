@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, drawSlot, handPress, readBinder } from "@/services/cards";
+import { bellPressing, clearConditions, drawSlot, handPress, readBinder } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -592,9 +592,11 @@ describe("the credit desk", () => {
 });
 
 describe("the one-of-ones", () => {
-  it("press the Keeper and CV in their own metal, with the seal, the sunburst and the signed line, and only into the window", async () => {
+  it("press the Keeper and CV in their own metal, with the seal, the sunburst and the signed line, and the holder's one pack of credit", async () => {
+    const collector = "0x7777777777777777777777777777777777777777";
     for (const [key, signed, metal] of [["keeper", "signed, the keeper", "#C9A227"], ["cv", "signed, CV", "#C8623A"]] as const) {
-      const pressed = await handPress(testEnv, key, { window: true });
+      // The Keeper goes into the window; CV lands straight in a binder, and the perk lands with it.
+      const pressed = key === "keeper" ? await handPress(testEnv, key, { window: true }) : await handPress(testEnv, key, { wallet: collector });
       expect(pressed.card.print_cap).toBe(1);
       const face = await (await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.svg`)).text();
       expect(face).toContain("1 / 1");
@@ -603,11 +605,26 @@ describe("the one-of-ones", () => {
       expect(face).toContain('clip-path="url(#window)"');
       const sheet = await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.png`);
       expect(sheet.status).toBe(200);
-      const window = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
-      expect((window["window"] as Array<Record<string, unknown>>).map((row) => row["card_id"])).toContain(pressed.card.card_id);
+      if (key === "keeper") {
+        const window = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
+        expect((window["window"] as Array<Record<string, unknown>>).map((row) => row["card_id"])).toContain(pressed.card.card_id);
+      }
     }
+    const binder = await json(await SELF.fetch(`${BASE}/api/paywall/binder/${collector}`));
+    expect((binder["credit"] as Record<string, unknown>)["packs"]).toBe(1);
     // A second print of either refuses: the cap is one.
     await expect(handPress(testEnv, "keeper", { window: true })).rejects.toThrow();
+    await expect(handPress(testEnv, "cv", { wallet: collector })).rejects.toThrow();
+  });
+
+  it("Broken Tier clears on a passport read the wallet named", async () => {
+    const wallet = "0x8888888888888888888888888888888888888888";
+    const condition = await handPress(testEnv, "broken-tier", { wallet });
+    expect(await clearConditions(testEnv, wallet, { itemId: "hello" })).toHaveLength(0);
+    const cleared = await clearConditions(testEnv, wallet, { itemId: "passport_refresh", certId: "cert_test_refresh" });
+    expect(cleared.map((burn) => burn.burn.card_id)).toEqual([condition.card.card_id]);
+    expect(cleared[0]!.burn.cleared_by).toBe("passport_refresh");
+    expect((await readBinder(testEnv, wallet)).rows.some((row) => row.card_id === condition.card.card_id)).toBe(false);
   });
 });
 

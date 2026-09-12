@@ -745,12 +745,13 @@ Merging is your press; these are why it waits.
   does for you: nothing cashable, nothing bought back, odds and seed
   public, the window sentence on /design in plain words. If a
   regulator ever writes, the record of that is here, dated.
-- **RULE — holder perks against the pricing charter.** The plan's 5%
-  off with a Rail holo and the Keeper's free pick are prices that
-  depend on who is buying; the charter's one-price clause is older.
-  Built without perks. Amend the charter, or keep the perks that are
-  not prices (a Door card's preflight is free already; the Keeper's
-  pick can be a hand press).
+- **RULE — the Rail-holo discount against the pricing charter.** The
+  plan's 5% off is a price that depends on who is buying; the
+  charter's one-price clause is older. The perks that are not prices
+  are built (2026-09-12): the wallet a Keeper or CV lands with gets
+  one pack of credit, once, and a Door card's preflight was free
+  already. Broken Tier clears now too, on a passport refresh or a
+  trust profile. Amend the charter for the discount, or let it go.
 - **DONE, your second reading (2026-09-12).** CV as the season's
   other one-of-one (Room, rarity Keeper, window only, cap 1 held on
   the hand press too); Roger Sterling, rare, with his own plate; 402

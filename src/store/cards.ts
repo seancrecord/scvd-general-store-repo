@@ -347,9 +347,10 @@ export const EARNED_BY_ITEM: Readonly<Record<string, string>> = {
 /**
  * CONDITIONS: HOW THEY CLEAR (first pass). A rule names the shelf
  * items whose purchase burns the condition, or `any_idempotent` for
- * a purchase carrying an idempotency key. Broken Tier and the
- * reserved three need a passport read the wallet named, which no
- * purchase here carries yet; they stay in the binder until it does.
+ * a purchase carrying an idempotency key. Broken Tier clears on a
+ * passport read of a door the wallet named (the refresh, or a trust
+ * profile, both of which take a url). The reserved three drop in as
+ * the season runs and are not pressable yet.
  */
 export interface ClearRule {
   items?: readonly string[];
@@ -363,7 +364,8 @@ export const CONDITION_CLEARS: Readonly<Record<string, ClearRule>> = {
   "410-gone": { items: ["service_audit"] },
   "testnet-catch": { items: ["settlement_attestation"] },
   "double-charge": { any_idempotent: true },
-  "broken-tier": {},
+  /** A passport read of a door the wallet named: the refresh, or the trust profile that reads one (2026-09-12). */
+  "broken-tier": { items: ["passport_refresh", "trust_profile"] },
 };
 
 export interface SlotOdds {

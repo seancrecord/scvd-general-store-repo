@@ -645,8 +645,26 @@ export async function windowPick(env: Env, options: OpenPackOptions, purchase?: 
   await filePressing(env, moved);
   if (wallet) {
     await kvPut(env.COUNTERS, KV_KEYS.paywallWindowLock(wallet), now.toISOString(), { expirationTtl: WINDOW_LOCK_HOURS * 3600 });
+    await grantHolderPerk(env, moved.card);
   }
   return { pressing: moved, from_holder: fromHolder, window: ids };
+}
+
+/* ── the holder's perk ────────────────────────────────────────────── */
+
+/**
+ * THE ONE-OF-ONE'S PERK (first pass, "holder perks", the part that is
+ * not a price): the wallet a Keeper or CV lands with gets one pack of
+ * credit, once per pressing, to spend on a pack or the window. The
+ * plan's 5% off for a Rail holo is a price and waits on the pricing
+ * charter's one-price clause; this is not, and does not.
+ */
+export async function grantHolderPerk(env: Env, card: CardRecord): Promise<number | null> {
+  if (card.rarity !== "keeper" || !card.holder) return null;
+  const marker = KV_KEYS.paywallPerk(card.card_id);
+  if (await kvGet(env.COUNTERS, marker)) return null;
+  await kvPut(env.COUNTERS, marker, card.holder.toLowerCase());
+  return addCounter(env, KV_KEYS.paywallCredit(card.holder.toLowerCase()), 1);
 }
 
 /* ── the keeper's hand ────────────────────────────────────────────── */
@@ -658,6 +676,7 @@ export async function handPress(env: Env, key: string, destination: { wallet?: s
   const signed = await press(env, { entry, source: "hand", date: now.toISOString(), ...(destination.wallet ? { holder: destination.wallet } : {}) });
   await filePressing(env, signed);
   if (destination.window) await setInWindow(env, signed);
+  else await grantHolderPerk(env, signed.card);
   return signed;
 }
 

@@ -1,6 +1,7 @@
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import resvgWasm from "@resvg/resvg-wasm/index_bg.wasm";
 import plexBold from "../../assets/fonts/IBMPlexSerif-Bold.ttf";
+import plexItalic from "../../assets/fonts/IBMPlexSerif-Italic.ttf";
 import plexRegular from "../../assets/fonts/IBMPlexSerif-Regular.ttf";
 
 /**
@@ -8,7 +9,7 @@ import plexRegular from "../../assets/fonts/IBMPlexSerif-Regular.ttf";
  * nice"). The Worker has no browser and no fonts, so the rasterizer
  * ships inside it: resvg compiled to WebAssembly, and one font, IBM
  * Plex Serif under the SIL Open Font License (assets/fonts/OFL.txt),
- * regular and bold. Every family the SVG names — the serif for the
+ * regular, bold and italic. Every family the SVG names — the serif for the
  * display, the monospace for the data strip — resolves to Plex Serif
  * here, so the PNG is the same card in one voice; the SVG keeps its
  * own stack where a browser has the fonts. Nothing is fetched, nothing
@@ -39,7 +40,7 @@ export async function renderFacePng(svg: string, width?: number): Promise<Uint8A
   const renderer = new Resvg(svg.replace(GRAIN_RECT, ""), {
     fitTo: width ? { mode: "width", value: width } : { mode: "original" },
     font: {
-      fontBuffers: [new Uint8Array(plexRegular), new Uint8Array(plexBold)],
+      fontBuffers: [new Uint8Array(plexRegular), new Uint8Array(plexBold), new Uint8Array(plexItalic)],
       defaultFontFamily: FACE_FONT,
       serifFamily: FACE_FONT,
       monospaceFamily: FACE_FONT,
