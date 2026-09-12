@@ -76,6 +76,9 @@ function registryEntry(version, description, isLatest) {
   };
 }
 
+/** The rails the synthetic store's document and door both name. */
+const RAILS = ["eip155:8453", "eip155:137", "eip155:42161", "eip155:480", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"];
+
 /** A store that does everything the six doors ask of it. */
 function goodSnapshot() {
   const token = originTrialToken(Math.floor(NOW / 1000) + 200 * 86_400);
@@ -111,7 +114,24 @@ function goodSnapshot() {
       ok: true,
       status: 200,
       text: '{"paths":{"/menu.json":{},"/api/buy":{"post":{"responses":{"402":{}}}}}}',
-      json: { paths: { "/menu.json": {}, "/api/buy": {} } },
+      json: {
+        paths: {
+          "/menu.json": {},
+          "/api/buy": {},
+          "/api/buy/small_blessing": {
+            get: {
+              responses: { 402: {} },
+              "x-payment-info": { accepts: RAILS.map((network) => ({ network })) },
+            },
+          },
+        },
+      },
+    },
+    challenge: {
+      ok: true,
+      status: 402,
+      path: "/api/buy/small_blessing",
+      json: { accepts: RAILS.map((network) => ({ network })) },
     },
     apiCatalog: { ok: true, status: 200, text: "{}", json: {} },
     x402: { ok: true, status: 200, text: '{"x402Version":2}' },
@@ -713,3 +733,72 @@ test("a markdown twin is not a room missing its landmark", async () => {
     server.close();
   }
 });
+
+/* ── the document and the door ─────────────────────────────────────── */
+
+function agreement(mutate) {
+  const snapshot = goodSnapshot();
+  mutate(snapshot);
+  return readDoors(snapshot, NOW)
+    .doors.find((door) => door.id === "raw_api")
+    .criteria.find((criterion) => criterion.id === "document_and_door_agree");
+}
+
+test("the document and the door agree when they name the same rails", () => {
+  const reading = agreement(() => {});
+  assert.equal(reading.verdict, "met");
+  assert.match(reading.note, /^5 rails/);
+});
+
+test("a rail the door offers and the document omits is a finding that names the rail", () => {
+  // 2026-09-11: ARBITRUM_PAY_TO set on scvd-doors and not on the store
+  // Worker. The 402 offered Arbitrum; openapi.json did not.
+  const reading = agreement((snapshot) => {
+    const op = snapshot.openapi.json.paths["/api/buy/small_blessing"].get;
+    op["x-payment-info"].accepts = op["x-payment-info"].accepts.filter(
+      (entry) => entry.network !== "eip155:42161",
+    );
+  });
+  assert.equal(reading.verdict, "unmet");
+  assert.match(reading.note, /door offers eip155:42161 and the document omits it/);
+  assert.match(reading.note, /Two Workers/);
+});
+
+test("a rail the document declares and the door does not offer is the other finding", () => {
+  const reading = agreement((snapshot) => {
+    snapshot.challenge.json.accepts = snapshot.challenge.json.accepts.filter(
+      (entry) => entry.network !== "eip155:480",
+    );
+  });
+  assert.equal(reading.verdict, "unmet");
+  assert.match(reading.note, /document declares eip155:480 and the door does not offer it/);
+});
+
+test("a door that answered something other than a challenge is unknown, not a finding", () => {
+  assert.equal(
+    agreement((snapshot) => {
+      snapshot.challenge = { ok: false, status: 200, path: "/api/buy/small_blessing", error: "answered 200, not a challenge" };
+    }).verdict,
+    "unknown",
+  );
+  assert.equal(
+    agreement((snapshot) => {
+      snapshot.challenge = { ok: true, status: 402, path: "/api/buy/small_blessing", json: {} };
+    }).verdict,
+    "unknown",
+  );
+  assert.equal(
+    agreement((snapshot) => {
+      delete snapshot.challenge;
+    }).verdict,
+    "unknown",
+  );
+});
+
+test("a door the document spells differently is compared against every paid operation", () => {
+  const reading = agreement((snapshot) => {
+    snapshot.challenge.path = "/api/buy/a_door_under_another_name";
+  });
+  assert.equal(reading.verdict, "met");
+});
+

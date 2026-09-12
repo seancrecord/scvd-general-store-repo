@@ -73,6 +73,39 @@ const partial = (note) => ({ verdict: "partial", note });
 const unmet = (note) => ({ verdict: "unmet", note });
 const unknown = (note) => ({ verdict: "unknown", note });
 
+/**
+ * The rails openapi.json promises for one path: every network named in
+ * that path's x-payment-info.accepts, across its methods. Falls back
+ * to the union over every paid operation when the path is not in the
+ * document, so a door the spec spells differently is still compared
+ * against something rather than waved through.
+ */
+export function documentNetworks(openapiJson, path) {
+  const paths = openapiJson?.paths;
+  if (!paths || typeof paths !== "object") return new Set();
+  const networksOf = (operations) => {
+    const found = new Set();
+    for (const operation of Object.values(operations ?? {})) {
+      const accepts = operation?.["x-payment-info"]?.accepts;
+      if (!Array.isArray(accepts)) continue;
+      for (const entry of accepts) {
+        const network = String(entry?.network ?? "");
+        if (network) found.add(network);
+      }
+    }
+    return found;
+  };
+  if (path && paths[path]) {
+    const own = networksOf(paths[path]);
+    if (own.size > 0) return own;
+  }
+  const union = new Set();
+  for (const operations of Object.values(paths)) {
+    for (const network of networksOf(operations)) union.add(network);
+  }
+  return union;
+}
+
 /** A fetch that did not land tells us nothing about the door. */
 function reached(snap, key) {
   const row = snap[key];
@@ -404,6 +437,55 @@ export const DOORS = [
             return unmet("discovery document does not name the payment protocol");
           }
           return met("x402 discovery document served");
+        },
+      },
+      {
+        /**
+         * TWO WORKERS SERVE THIS HOSTNAME, AND THEY CAN DISAGREE
+         * (2026-09-11). `scvd.store/api/buy/*` is routed to scvd-doors;
+         * every other path, the OpenAPI document included, is the store
+         * Worker. Each holds its own copy of the checkout secrets, and
+         * for a day the door offered Arbitrum while the document did
+         * not: ARBITRUM_PAY_TO was set on one Worker and not the other.
+         * Nothing here caught it, because this battery read the doors
+         * and the doors were fine. So: knock at one door, decode the
+         * challenge it actually sends, and hold it against what the
+         * document promised for the same path. A rail on one side only
+         * is exactly what a secret set on one Worker only looks like.
+         */
+        id: "document_and_door_agree",
+        asks: "Do the document and the door offer the same rails?",
+        how: "curl -sI https://scvd.store/api/buy/small_blessing | grep -i payment-required | cut -d' ' -f2 | base64 -d | jq '[.accepts[].network]' — against jq '.paths[\"/api/buy/small_blessing\"].get[\"x-payment-info\"].accepts[].network' on /openapi.json",
+        read(snap) {
+          const miss = reached(snap, "openapi") ?? reached(snap, "challenge");
+          if (miss) return miss;
+          const path = snap.challenge.path ?? "the door";
+          const accepts = snap.challenge.json?.accepts;
+          if (!Array.isArray(accepts) || accepts.length === 0) {
+            return unknown(`${path}: the 402 carried no accepts to compare`);
+          }
+          const door = new Set(
+            accepts.map((entry) => String(entry?.network ?? "")).filter(Boolean),
+          );
+          const document = documentNetworks(snap.openapi.json, snap.challenge.path);
+          if (document.size === 0) {
+            return unknown(`${path}: openapi.json declares no x-payment-info.accepts for it`);
+          }
+          const documentOnly = [...document].filter((network) => !door.has(network));
+          const doorOnly = [...door].filter((network) => !document.has(network));
+          if (documentOnly.length === 0 && doorOnly.length === 0) {
+            return met(`${door.size} rails, and the document and the door name the same ones`);
+          }
+          const sides = [];
+          if (doorOnly.length > 0) {
+            sides.push(`the door offers ${doorOnly.join(", ")} and the document omits it`);
+          }
+          if (documentOnly.length > 0) {
+            sides.push(`the document declares ${documentOnly.join(", ")} and the door does not offer it`);
+          }
+          return unmet(
+            `${path}: ${sides.join("; ")}. Two Workers serve this hostname; a checkout secret set on one and not the other reads exactly like this.`,
+          );
         },
       },
       {
