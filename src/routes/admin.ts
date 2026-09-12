@@ -814,6 +814,20 @@ adminRoutes.get("/admin/counter", async (c) => {
 
 adminRoutes.get("/admin", async (c) => {
   const notes: string[] = [];
+  /*
+   * THE GLANCE FIRST (2026-09-12). The heavy readings — both ledgers,
+   * the payers, the recent 402s, the Bazaar and Gazette lists, the
+   * reclassification cert walk, the MCP census, the paying wallet
+   * and the bounty board — ride the hourly glance now, dated on the
+   * page, with a button that takes them again. A blob from before
+   * this shipped carries no desk section; that one open takes them
+   * live, and the next round writes them.
+   */
+  const { ensureGlance } = await import("@/services/glance");
+  const glanceRead = await ensureGlance(c.env).catch(() => null);
+  const desk = glanceRead?.desk ?? null;
+  const cached = <T>(value: T | undefined, live: () => Promise<T>): Promise<T> =>
+    desk && value !== undefined ? Promise.resolve(value) : live();
   const [
     monthLedger,
     porchLedger,
@@ -838,20 +852,22 @@ adminRoutes.get("/admin", async (c) => {
     wardLatest,
     officeAlarmsSeenRead,
   ] = await Promise.allSettled([
-    readMonthLedger(c.env),
-    readPorchLedger(c.env),
-    listPayers(c.env),
-    listRecentPricedEvents(c.env),
-    listBazaarLedger(c.env),
-    listIssues(c.env),
+    cached(desk?.month_ledger, () => readMonthLedger(c.env)),
+    cached(desk?.porch_ledger, () => readPorchLedger(c.env)),
+    cached(desk?.payers, () => listPayers(c.env)),
+    cached(desk?.recent_challenges, () => listRecentPricedEvents(c.env)),
+    cached(desk?.bazaar_ledger, () => listBazaarLedger(c.env)),
+    cached(desk?.gazette_issues, () => listIssues(c.env)),
     listOrders(c.env),
     listLetters(c.env),
     listTips(c.env),
     listConfessions(c.env),
     listRefunds(c.env),
     listAlerts(c.env, 5),
-    import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
-      monthReclassAdjustments(c.env),
+    cached(desk?.month_reclass, () =>
+      import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
+        monthReclassAdjustments(c.env),
+      ),
     ),
     /*
      * The take arrives from the hourly glance — one read — rather
@@ -864,27 +880,31 @@ adminRoutes.get("/admin", async (c) => {
      * keeper opens the desk. Cold: compute once, store, show it.
      * Warm: one read. Either way, never a walk per open.
      */
-    import("@/services/glance").then(({ ensureGlance }) =>
-      ensureGlance(c.env),
-    ),
+    Promise.resolve(glanceRead),
     // One key. The census the MCP door started keeping 2026-08-29.
-    import("@/services/mcp-clients").then(({ readMcpClients }) =>
-      readMcpClients(c.env),
+    cached(desk?.mcp_clients, () =>
+      import("@/services/mcp-clients").then(({ readMcpClients }) =>
+        readMcpClients(c.env),
+      ),
     ),
     /*
      * MONEY OUT (2026-09-04): the paying wallet's balance, one
      * eth_call on a three-second leash so a provider outage cannot
      * hold the desk shut, and the bounty board's own state (KV only).
      */
-    withDeadline(
-      import("@/services/field-wallet").then(({ readFieldWallet }) =>
-        readFieldWallet(c.env),
+    cached(desk?.field_wallet, () =>
+      withDeadline(
+        import("@/services/field-wallet").then(({ readFieldWallet }) =>
+          readFieldWallet(c.env),
+        ),
+        3000,
+        "the paying wallet read",
       ),
-      3000,
-      "the paying wallet read",
     ),
-    import("@/services/bounty-board").then(({ bountyBoard }) =>
-      bountyBoard(c.env),
+    cached(desk?.bounty, () =>
+      import("@/services/bounty-board").then(({ bountyBoard }) =>
+        bountyBoard(c.env),
+      ),
     ),
     // One KV read: the latest Sunday round, for the visibility line.
     import("@/services/ward-round").then(({ latestWardRound }) =>
@@ -938,8 +958,10 @@ adminRoutes.get("/admin", async (c) => {
   const { readLastRaise } = await import("@/services/counter-raise");
   const { countersSerialized } = await import("@/lib/counter-ledger");
   const lastRaise = await readLastRaise(c.env).catch(() => null);
+  for (const name of desk?.missing ?? []) notes.push(`${name}: the hourly round could not take this reading`);
   return c.html(
     renderOfficePage({
+      deskReadAt: desk ? (glanceRead?.computed_at ?? null) : null,
       countersSerialized: countersSerialized(c.env),
       lastRaise: lastRaise
         ? { at: lastRaise.at, raised: lastRaise.raised.length + lastRaise.payer_rows_raised.length }
@@ -1418,8 +1440,43 @@ adminRoutes.post("/admin/repair/payer-settles", async (c) => {
  */
 adminRoutes.post("/admin/repair/raise-counters", async (c) => {
   const { raiseCountersToRecords } = await import("@/services/counter-raise");
-  return c.json(await raiseCountersToRecords(c.env));
+  const result = await raiseCountersToRecords(c.env);
+  /*
+   * THE GLANCE FOLLOWS THE RAISE (2026-09-12). The first live raise
+   * lifted the storefront to 98 while the desk kept saying 83 beside
+   * 94 certificates, because the hourly round had taken the glance
+   * at the same instant the raise ran. A button that moves the
+   * number and leaves the desk reading the old one is the confusion
+   * the box exists to remove, so the glance is retaken here and the
+   * keeper is sent back to the page he pressed it on.
+   */
+  await import("@/services/glance").then(({ writeGlance }) => writeGlance(c.env)).catch(() => undefined);
+  if ((c.req.header("Accept") ?? "").includes("text/html")) {
+    return c.redirect(adminReturnPath(c.req.header("Referer")), 303);
+  }
+  return c.json(result);
 });
+
+/** The desk's readings, taken again now rather than at the next hour. */
+adminRoutes.post("/admin/glance/refresh", async (c) => {
+  await import("@/services/glance").then(({ writeGlance }) => writeGlance(c.env)).catch(() => undefined);
+  if ((c.req.header("Accept") ?? "").includes("text/html")) {
+    return c.redirect(adminReturnPath(c.req.header("Referer")), 303);
+  }
+  const { readGlance } = await import("@/services/glance");
+  return c.json(await readGlance(c.env));
+});
+
+/** Back to the admin page a form was pressed on, and never anywhere else. */
+function adminReturnPath(referer: string | undefined): string {
+  if (!referer) return "/admin";
+  try {
+    const url = new URL(referer);
+    return url.pathname.startsWith("/admin") ? url.pathname : "/admin";
+  } catch {
+    return "/admin";
+  }
+}
 
 /** The last raise, as the hourly round or the button left it. */
 adminRoutes.get("/admin/raise-log", async (c) => {

@@ -88,6 +88,22 @@ describe("the glance", () => {
     expect(reads).toBe(1);
   });
 
+  it("carries the desk's readings, dated with the rest, and names any it could not take", async () => {
+    /*
+     * 2026-09-12: the desk fanned out to eleven loads on every open
+     * after the take moved here. They ride the glance now; the desk
+     * reads one key and says when the readings were taken.
+     */
+    await writeGlance(testEnv);
+    const glance = (await readGlance(testEnv))!;
+    expect(glance.desk, "the glance carries no desk section").toBeTruthy();
+    expect(typeof glance.desk!.month_ledger).toBe("object");
+    expect(typeof glance.desk!.porch_ledger).toBe("object");
+    expect(Array.isArray(glance.desk!.payers)).toBe(true);
+    expect(Array.isArray(glance.desk!.recent_challenges)).toBe(true);
+    expect(Array.isArray(glance.desk!.missing)).toBe(true);
+  });
+
   it("counts every number as a number, never a string that looks like one", async () => {
     await writeGlance(testEnv);
     const glance = (await readGlance(testEnv))!;
