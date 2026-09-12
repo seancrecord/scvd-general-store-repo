@@ -85,12 +85,32 @@ describe("the receipt page: same URL, human register", () => {
   it("renders a re-verified receipt for a browser and JSON for a machine", async () => {
     const response = await buyWithPurpose("proving the receipt page renders");
     const verifyUrl = response["verify_url"] as string;
+    const cert = response["certificate"] as import("@/types").Certificate;
     const page = await (
       await SELF.fetch(verifyUrl, { headers: { Accept: "text/html" } })
     ).text();
     expect(page).toContain("Signature verified just now");
     expect(page).toContain("A Signed Hello");
     expect(page).toContain("proving the receipt page renders");
+    // 2026-09-12: each property on its own line, never one green badge.
+    // The JSON always separated these; the page now does too.
+    expect(page).toContain("Verify this yourself");
+    expect(page).toContain("Checked on this load, not asserted");
+    expect(page).toContain("Record <strong>found</strong>");
+    expect(page).toContain("Artifact hash <code>");
+    expect(page).toContain("Signature <strong>valid</strong>");
+    expect(page).toContain("current</strong> key");
+    expect(page).toContain("Interop signature (RFC 8785)");
+    expect(page).toContain("Bitcoin anchor");
+    // The class's own limit is on the receipt, not one click away.
+    const { artifactClassForItem, ARTIFACT_CLASSES } = await import("@/store/attestation-spec");
+    const cls = artifactClassForItem(cert.item) ?? ARTIFACT_CLASSES.find((entry) => entry.id === "certificate");
+    expect(page).toContain("What this does not prove");
+    expect(page).toContain(cls!.does_not_prove.slice(0, 60));
+    // The steps, not a button: the JSON, the key, the offline command.
+    expect(page).toContain("Accept: application/json");
+    expect(page).toContain("/.well-known/scvd-signing-key");
+    expect(page).toContain("scvd-evidence export");
     // The store's word prints on the human copy.
     const { RECEIPT_NOTES } = await import("@/store/copy/receipt-notes");
     expect(RECEIPT_NOTES.some((note) => page.includes(note))).toBe(true);
