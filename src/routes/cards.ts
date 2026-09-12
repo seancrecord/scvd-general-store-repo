@@ -150,7 +150,7 @@ const OBTAINED_LINES: Record<CardEntry["obtained"], string> = {
   pack: "pack drop",
   window: "the window only",
   earned: "earned by the action",
-  hand: "dropped by hand",
+  hand: "handed over by the keeper",
 };
 
 async function pressingJson(c: Context<HonoEnv>, record: SignedCardRecord) {
@@ -372,7 +372,7 @@ cardRoutes.get("/design", async (c) => {
         <table class="odds"><thead><tr><th></th>${STOPS.map((stop) => `<th>${escapeHtml(stop === "condition" ? "condition" : RARITY_LINES[stop].toLowerCase())}</th>`).join("")}</tr></thead><tbody>${slotRows}</tbody></table>
         <p class="menu-desc">Per pack, the chance of at least one:</p>
         <table class="odds"><thead><tr><th>tier</th><th>chance</th><th>derivation</th></tr></thead><tbody>${packRows}</tbody></table>
-        <p class="menu-meta">Rooms and Instruments are earned by the action, never pulled. The Keeper is one card, the window only, once a season. Events drop by hand on dates. Doors cap at their observation count; 402 the Chicken caps at one. No pity timer, no near-miss, no window that closes, no price on a card, no store-run market. A card entitles the holder to a card.</p>
+        <p class="menu-meta">Rooms and Instruments are earned by the action, never pulled. The Keeper and CV are one card each, once a season: they hang in the window to be looked at, and the keeper hands them over. A pick never takes one, because a wallet that can make five picks could otherwise buy a specific card outright, and nothing here is sold as a specific card. Events drop by hand on dates. Doors cap at their observation count; 402 the Chicken caps at one. No pity timer, no near-miss, no window that closes, no price on a card, no store-run market. A card entitles the holder to a card.</p>
       </section>
       <section>
         <h2>The bell, the window, the credit</h2>

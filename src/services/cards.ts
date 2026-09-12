@@ -1,4 +1,4 @@
-import { counterLedger } from "@/lib/counter-ledger";
+import { counterLedger, countersSerialized } from "@/lib/counter-ledger";
 import { newCardId, newPackId } from "@/lib/ids";
 import { listKeys } from "@/lib/kv-list";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
@@ -263,6 +263,18 @@ export class CapReached extends Error {}
 async function press(env: Env, options: PressOptions): Promise<SignedCardRecord> {
   const season = options.season ?? CURRENT_SEASON;
   const { entry } = options;
+  /**
+   * A CAP NOBODY CAN ENFORCE IS NOT A CAP (2026-09-12). Print numbers
+   * are atomic on the counter ledger and a read-modify-write without
+   * it, so on a deployment with no COUNTER_LEDGER bound two presses of
+   * a one-of-one could both come back number one. Rather than print a
+   * second "1 / 1" and let the face tell that lie, the press refuses
+   * and says why. Fixed caps only: a Door's cap is its observation
+   * count, which moves on its own and was never a promise of scarcity.
+   */
+  if (entry.print_cap !== undefined && !countersSerialized(env)) {
+    throw new CapReached(`${entry.name} is capped at ${entry.print_cap}, and this deployment has no serialized counter to enforce it. Nothing pressed.`);
+  }
   const printNo = await addCounter(env, KV_KEYS.paywallPress(season.id, entry.key), 1);
   const cap = entry.door ? options.observations : entry.print_cap;
   if (cap !== undefined && printNo > cap) {
@@ -652,6 +664,8 @@ export class WindowRefused extends Error {}
  * the callers that do not pay (credit, the keeper).
  */
 export async function assertWindowOpenFor(env: Env, wallet?: string): Promise<BinderRow[]> {
+  // A window holding nothing but one-of-ones has nothing to sell, and
+  // the refusal belongs above the settle line with the empty one.
   if (wallet) {
     const locked = await kvGet(env.COUNTERS, KV_KEYS.paywallWindowLock(wallet.toLowerCase()));
     if (locked) {
@@ -660,13 +674,32 @@ export async function assertWindowOpenFor(env: Env, wallet?: string): Promise<Bi
   }
   const window = await readWindow(env);
   if (window.length === 0) throw new WindowRefused("The window is empty: nobody has opened a pack yet. Nothing charged.");
+  if (window.every((row) => row.rarity === "keeper")) {
+    throw new WindowRefused("Everything in the window is one of one: on show, handed over by the keeper, never sold. Nothing charged.");
+  }
   return window;
+}
+
+/**
+ * A ONE-OF-ONE IS ON SHOW, NOT FOR SALE (2026-09-12, after walking our
+ * own doors). The pick's twelve-hour lock is per wallet, and a buyer
+ * with five wallets can sweep a five-deep window: two dollars and
+ * forty-five cents bought the Keeper with certainty, which is not a
+ * lottery, it is a price on a specific card — the one thing the table
+ * promises it will never do. So the seed draws from the window's
+ * ordinary pressings; the Keeper and CV hang there to be looked at and
+ * are handed over by the keeper, whose pen every one-of-one already
+ * carries. ⚑ To sell them again, delete this filter: one line.
+ */
+function pickable(rows: readonly BinderRow[]): BinderRow[] {
+  return rows.filter((row) => row.rarity !== "keeper");
 }
 
 export async function windowPick(env: Env, options: OpenPackOptions, purchase?: PersonalPurchase): Promise<{ pressing: SignedCardRecord; from_holder: string | null; window: string[] }> {
   const now = options.now ?? (purchase?.purchasedAt ? new Date(purchase.purchasedAt) : new Date());
   const wallet = options.payer?.toLowerCase();
-  const window = await assertWindowOpenFor(env, wallet);
+  const window = pickable(await assertWindowOpenFor(env, wallet));
+  if (window.length === 0) throw new WindowRefused("Everything in the window is one of one: on show, handed over by the keeper, never sold. Nothing charged.");
   const seedDate = utcDate(now);
   await publishSeedRecord(env, seedDate, now);
   const seed = await seedFor(env, seedDate);

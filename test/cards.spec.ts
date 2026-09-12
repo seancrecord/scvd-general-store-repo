@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { encodeQr } from "@/lib/qr";
 import { flattenPath } from "@/lib/pixel-card";
-import { bellPressing, burnForCredit, clearConditions, drawSlot, handPress, holdsRailHolo, readBinder, readCredit, redeemCredit } from "@/services/cards";
+import { bellPressing, burnForCredit, clearConditions, drawSlot, getCard, handPress, holdsRailHolo, readBinder, readCredit, redeemCredit, windowPick } from "@/services/cards";
 import { commitOf, dayHasEnded, publishSeedRecord, seedFor, utcDate } from "@/services/paywall-seed";
 import { getMenuItem } from "@/store";
 import {
@@ -94,7 +94,7 @@ describe("the set", () => {
     const keeper = entryByKey(CURRENT_SEASON, "keeper")!;
     expect(keeper.rarity).toBe("keeper");
     expect(keeper.type).toBe("room");
-    expect(keeper.obtained).toBe("window");
+    expect(keeper.obtained).toBe("hand");
     expect(keeper.print_cap).toBe(1);
     for (const rarity of RARITY_ORDER) {
       for (const card of packPool(CURRENT_SEASON, rarity)) {
@@ -108,7 +108,8 @@ describe("the set", () => {
     expect(oneOfOnes.map((card) => card.key).sort()).toEqual(["cv", "keeper"]);
     for (const card of oneOfOnes) {
       expect(card.print_cap, card.name).toBe(1);
-      expect(card.obtained, card.name).toBe("window");
+      // On show in the window, handed over by the keeper; a pick never takes one.
+      expect(card.obtained, card.name).toBe("hand");
     }
     // The models: the frontier ones rare or uncommon, the goofing ones all common and in packs.
     const models = CURRENT_SEASON.cards.filter((card) => card.type === "model");
@@ -608,11 +609,13 @@ describe("the credit desk", () => {
 });
 
 describe("the one-of-ones", () => {
-  it("press the Keeper and CV in their own metal, with the seal, the sunburst and the signed line, and the holder's one pack of credit", async () => {
+  it("hangs a one-of-one in the window without selling it, and hands it over with a pack of credit", async () => {
     const collector = "0x7777777777777777777777777777777777777777";
+    let keeperCard: Awaited<ReturnType<typeof handPress>> | null = null;
     for (const [key, signed, metal] of [["keeper", "signed, the keeper", "#C9A227"], ["cv", "signed, CV", "#C8623A"]] as const) {
       // The Keeper goes into the window; CV lands straight in a binder, and the perk lands with it.
       const pressed = key === "keeper" ? await handPress(testEnv, key, { window: true }) : await handPress(testEnv, key, { wallet: collector });
+      if (key === "keeper") keeperCard = pressed;
       expect(pressed.card.print_cap).toBe(1);
       const face = await (await SELF.fetch(`${BASE}/p/${pressed.card.card_id}.svg`)).text();
       expect(face).toContain("1 / 1");
@@ -628,6 +631,18 @@ describe("the one-of-ones", () => {
     }
     const binder = await json(await SELF.fetch(`${BASE}/api/paywall/binder/${collector}`));
     expect((binder["credit"] as Record<string, unknown>)["packs"]).toBe(1);
+
+    // The Keeper hangs in the window, and no amount of picking takes it:
+    // five wallets could otherwise sweep a five-deep window for $2.45.
+    const onShow = await json(await SELF.fetch(`${BASE}/api/paywall/window`));
+    const shown = (onShow["window"] as Array<Record<string, unknown>>);
+    expect(shown.some((row) => row["key"] === "keeper")).toBe(true);
+    for (let n = 0; n < 6; n += 1) {
+      await testEnv.COUNTERS.delete(KV_KEYS.paywallWindowLock(TEST_PAYER.toLowerCase()));
+      const picked = await windowPick(testEnv, { certId: `cert_sweep_${n}`, patronNumber: 0, payer: TEST_PAYER }).catch(() => null);
+      if (picked) expect(picked.pressing.card.rarity).not.toBe("keeper");
+    }
+    expect((await getCard(testEnv, keeperCard!.card.card_id))!.card.holder).toBeUndefined();
     // A second print of either refuses: the cap is one.
     await expect(handPress(testEnv, "keeper", { window: true })).rejects.toThrow();
     await expect(handPress(testEnv, "cv", { wallet: collector })).rejects.toThrow();

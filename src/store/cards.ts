@@ -216,7 +216,7 @@ export const SEASON_ONE: Season = {
     herd(11, "ptero-preflight", "Ptero Preflight", "common", "Ptero Preflight checked the door and flew off before paying.", "One unpaid look, from above, and a shape reading. That's the whole job."),
     herd(12, "elephant-anchor", "Elephant Anchor", "uncommon", "Elephant Anchor never forgets. Context anchors, $1.", "Remembers who was in the session. Not their roles. Their names."),
     // ── The Rooms (10) · earned, or the window ──
-    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "The Keeper came up in the window. I got there first.", line: "The named human behind the counter. Signs everything, answers the mail on Sundays, and has never once explained the dinosaur.", cite: "/what" },
+    { no: 13, key: "keeper", name: "Keeper", type: "room", rarity: "keeper", obtained: "hand", print_cap: 1, post: "The keeper handed me the Keeper. One of one. It hung in the window first.", line: "The named human behind the counter. Signs everything, answers the mail on Sundays, and has never once explained the dinosaur.", cite: "/what" },
     room(14, "bellringer", "Bellringer", "common", "Rang the bell at scvd.store. Got a card for it.", "Free, once a day, the count is public.", "/porch"),
     room(15, "bellringer-ii", "Bellringer II", "rare", "30 days straight on the bell. Bellringer evolved.", "Same bell. Different arm.", "/porch"),
     room(16, "tagger", "Tagger", "uncommon", "Tagged the train. My tag is on my card. Nobody else can have this one.", "Recorded verbatim. Paint dries on the keeper's schedule.", "/train"),
@@ -264,8 +264,8 @@ export const SEASON_ONE: Season = {
     { no: 51, key: "hurricane-junction", name: "Hurricane Junction", type: "place", rarity: "rare", obtained: "pack", post: "Pulled Hurricane Junction. The directory district.", line: "Honest one-line reviews of the neighbours.", cite: "/directory" },
     { no: 52, key: "dinosaur", name: "The Dinosaur", type: "mark", rarity: "holo", obtained: "pack", post: "Pulled The Dinosaur. Nobody explains it.", line: "Forest green, off the favicon's own path. Nobody explains the dinosaur.", cite: "/stack" },
     // ── The keeper's additions (2026-09-12, second reading): the other one-of-one, the cat, the status code, the models ──
-    /** CV: co-founder and shopkeeper, the one at the counter when you walk in. One of one, the window only, like the Keeper. */
-    { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "window", print_cap: 1, post: "CV came up in the window. Co-founder, shopkeeper, one of one. I got there first.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
+    /** CV: co-founder and shopkeeper, the one at the counter when you walk in. One of one, on show and handed over, like the Keeper. */
+    { no: 53, key: "cv", name: "CV", type: "room", rarity: "keeper", obtained: "hand", print_cap: 1, post: "The keeper handed me CV. Co-founder, shopkeeper, and the print number on the face reads 1 of 1.", line: "The one at the counter when you walk in. The byline on the door is both names at once.", cite: "/what" },
     herd(54, "roger-sterling", "Roger Sterling", "rare", "Pulled Roger Sterling. He blinked slowly. Around here that's a receipt.", "House cat. Inspects the treat rail from one plank away. Gone by morning.", { cite: "/porch" }),
     { no: 55, key: "payment-required", name: "402 Payment Required", type: "mark", rarity: "uncommon", obtained: "pack", post: "Pulled 402 Payment Required. The whole store in one status code.", line: "The door says its price before it opens. Everything here started with that sentence, and the summer is named after it.", cite: "/try" },
     // ── Models (5) · pack drops · the agents that shop here, as the store has met them ──

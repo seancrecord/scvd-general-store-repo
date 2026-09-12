@@ -770,11 +770,19 @@ Merging is your press; these are why it waits.
   face rendering at any of eight hundred widths on a free door. Full
   list and the four things an attacker can still do BY DESIGN:
   §0d–0e of `docs/CARD_TABLE_2026-09.md`.
-- **RULE — the window and the one-of-ones.** A Keeper or CV set into
-  the window can be taken out of its holder's binder for $0.49, and
-  several wallets make that a certainty rather than a one-in-five.
-  That is the window working as written. Keep it, or keep rarity
-  `keeper` out of the window — one line either way.
+- **FIXED on your "make the fixes" — the window and the one-of-ones.**
+  Five wallets could sweep a five-deep window, so $2.45 bought the
+  Keeper with certainty: a price on a specific card, which the table
+  promises never to do. The seed now draws from the window's ordinary
+  pressings; the Keeper and CV hang there to be looked at and YOU
+  hand them over (`/admin/tools`, destination a wallet). Their
+  `obtained` reads "hand". ⚑ To sell them again, delete the filter in
+  `windowPick` — one line, named in its own comment.
+- **FIXED — a cap nobody could enforce.** Without `COUNTER_LEDGER`
+  bound, two presses of a one-of-one could both come back "1 / 1",
+  which is a lie on the face rather than a race. A fixed cap now
+  refuses to press where counters are not serialized. Doors are
+  exempt; their cap is an observation count, not a promise.
 - **DONE, your second reading (2026-09-12).** CV as the season's
   other one-of-one (Room, rarity Keeper, window only, cap 1 held on
   the hand press too); Roger Sterling, rare, with his own plate; 402
@@ -836,11 +844,12 @@ Merging is your press; these are why it waits.
   source say so. New lines since (the second reading's eight cards,
   the streak, the Neighbour) are yours the same way; say if any
   should change.
-- **TEST — press the Keeper and CV into the window.** `/admin/tools`:
-  key `keeper`, then `cv`, destination `window`; each should hang at
-  `/p/{id}` in its metal with the 1 / 1 seal, show on
-  `/api/paywall/window`, and move to whichever wallet's $0.49 the
-  seed favours. A second press of either answers 409.
+- **TEST — hang the Keeper and CV, then hand them over.**
+  `/admin/tools`: key `keeper`, then `cv`, destination `window`; each
+  should hang at `/p/{id}` in its metal with the 1 / 1 seal and show
+  on `/api/paywall/window`, and no pick will take one however many
+  are bought. To hand one over, press it to a wallet instead. A
+  second press of either answers 409.
 - **LOOK — the post button.** Open any `/p/{id}` and press "Post it
   on X": the composer should open with the card's line and the page
   URL, nothing else. Same on a binder, whose unfurl is now its own

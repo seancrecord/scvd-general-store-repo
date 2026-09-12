@@ -41,8 +41,8 @@ reasoning, named as desk reasoning.
    no likeness and no name, so no consent to ask for, and in the rare
    pool like any pack drop). The Keeper
    and CV are the season's two one-of-ones: Rooms at rarity Keeper,
-   one print each, the window only, and the cap holds on the hand
-   press too. Ladder
+   one print each, hung in the window to be looked at and handed over
+   by the keeper (§0d.6), with the cap held on the press itself. Ladder
    Common / Uncommon / Rare / Holo / Keeper. Every card cites a path
    on this store; a test walks every cite. `src/store/cards.ts`.
    Three plan rows did not survive contact with the building and are
@@ -283,25 +283,38 @@ what works is advertising.
    width per card, on request. FIXED: `w` snaps to one of three
    sizes, and the cache expires in thirty days — it is a cache of a
    pure function, not a record.
-6. **Stated, not fixed, because they are the design** (§0e).
+6. **A one-of-one had a price.** The pick's lock is per wallet, and a
+   five-deep window is five picks: two dollars and forty-five cents
+   bought the Keeper with certainty. That is not a lottery, it is a
+   price on a specific card, which is the one thing the table
+   promises it will never do. FIXED: the seed draws from the
+   window's ordinary pressings. The Keeper and CV hang there to be
+   looked at and are handed over by the keeper, whose pen every
+   one-of-one already carried; their `obtained` reads "hand" now, and
+   `/design` says so in the room. ⚑ To sell them again, delete the
+   filter in `windowPick`: one line, named in the comment.
+7. **A cap nobody could enforce.** Print numbers are atomic on the
+   counter ledger and a read-modify-write without it, so a
+   deployment with no `COUNTER_LEDGER` bound could print two cards
+   numbered "1 / 1" — a lie on the face, not merely a race. FIXED: a
+   fixed cap refuses to press at all where counters are not
+   serialized, and says why. Doors are exempt: their cap is an
+   observation count, which moves on its own and was never a
+   promise of scarcity.
 
-## 0e. What an attacker can still do, on purpose
+## 0e. What is true by design, stated rather than hidden
 
-- **Take a one-of-one out of somebody's binder for $0.49.** The
-  window moves cards; the seed picks among five, so a determined
-  buyer with several wallets can have the Keeper for a few dollars.
-  That is the window working. ⚑ If it should not be, the fix is one
-  line: keep rarity `keeper` out of `readWindow`.
-- **Stack the rebates to ten percent.** A wallet holding Base Rail
-  earns 5% back on top of the Regulars' 5%. Both are credit, not
-  price, so the charter holds; the number is the keeper's.
-- **Buy the rebate for about thirty dollars.** Base Rail is one of
-  three holos in the pack pool at roughly a 10% holo rate, so around
-  thirty packs buys a permanent 5% back on everything after.
-- **Race a counter where no ledger is bound.** Print numbers, credit
-  and burn claims are atomic under `COUNTER_LEDGER` and
-  read-modify-write without it. The deployment binds it; a fork might
-  not, and then two one-of-ones could both print number one.
+- **The window still moves ordinary cards between binders.** A rare
+  somebody pulled can be picked out of their binder for half a pack.
+  That is the window, in the plan's own words, and the room says so.
+- **The rebates stack to ten percent.** Everyone organic earns the
+  Regulars' 5%; a wallet holding Base Rail earns 5% more, which is
+  exactly the 5% the plan wanted, expressed as credit rather than as
+  a price. Both are bounded by the credit cap.
+- **The rebate can be bought for about thirty dollars.** Base Rail is
+  one of three holos in the pack pool at roughly a 10% holo rate, so
+  around thirty packs buys a standing 5% back. It is a card doing
+  what the plan said cards do.
 
 ## 1. What changed, pass by pass
 
